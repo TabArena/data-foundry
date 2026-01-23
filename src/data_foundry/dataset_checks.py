@@ -78,8 +78,12 @@ def run_all_checks(
             processed_vals.append(str(val))
 
         return ", ".join(processed_vals)
+
     summary["examples"] = data.apply(get_examples)
-    summary = summary.sort_values(["dtype", "pct_missing"], ascending=[True, False]).reset_index()
+    summary["dtype"] = summary["dtype"].astype("string")
+    summary = summary.sort_values(
+        ["dtype", "pct_missing"], ascending=[True, False]
+    ).reset_index()
 
     # Detailed statistics for numeric features
     numeric_stats = "No numeric features to summarize."
@@ -91,25 +95,34 @@ def run_all_checks(
     # Detailed statistics for non-numeric (categorical or object) features
     cat_stats = "No categorical/object features to summarize."
     cat_cols = data.select_dtypes(exclude=[np.number])
+    MAX_LEN = 67
+
+    def truncate_value(v, max_len=MAX_LEN):
+        if pd.isna(v):
+            return "<NA>"
+        s = str(v)
+        return s if len(s) <= max_len else s[: max_len - 3] + "..."
+
     if not cat_cols.empty:
-        cat_stats_list = []
+        frames = []
+        n = len(data)
 
         for col in cat_cols.columns:
-            value_counts = data[col].value_counts(dropna=False)
-            top_values = value_counts.head(5)
+            vc = data[col].value_counts(dropna=False).head(5)
 
-            df_col = pd.DataFrame(
-                {
-                    "column": col,
-                    "value": top_values.index,
-                    "count": top_values.values,
-                    "pct": (top_values.values / len(data) * 100).round(2),
-                }
-            )
+            df_col = vc.rename_axis("value").reset_index(name="count")
+            df_col["value"] = df_col["value"].map(truncate_value)
+            df_col["pct"] = (df_col["count"] / n * 100).round(2)
+            df_col["rank"] = range(1, len(df_col) + 1)
+            df_col["column"] = col
 
-            cat_stats_list.append(df_col)
+            frames.append(df_col[["column", "rank", "value", "count", "pct"]])
 
-        cat_stats = pd.concat(cat_stats_list, ignore_index=True)
+        cat_stats = (
+            pd.concat(frames, ignore_index=True)
+            .set_index(["column", "rank"])
+            .sort_index()
+        )
 
     # Target distribution (classification task)
     if classification:

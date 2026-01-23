@@ -37,11 +37,13 @@ DatasetSource = Literal[
     "Other",
 ]
 DataTags = Literal[
+    # Important tags for the task
     "IID",
     "Non-IID",
     "Temporal",
     "Grouped",
-    "Spatial",
+    # Other context tags (not statistical information!)
+    "Spatial",  # data that contains spatial/geographical information
 ]
 ProblemType = Literal[
     "binary_classification", "multiclass_classification", "regression"

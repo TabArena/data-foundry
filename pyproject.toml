@@ -17,6 +17,7 @@ dependencies = [
     "tqdm",
     "pydantic",
     "kaggle",
+    "uuid6",
     # Reqs for notebooks?
 ]
 
