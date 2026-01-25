@@ -18,6 +18,7 @@ dependencies = [
     "pydantic",
     "kaggle",
     "uuid6",
+    "langdetect",
     # Reqs for notebooks?
 ]
 
