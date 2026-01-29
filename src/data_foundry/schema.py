@@ -11,6 +11,7 @@ DEFAULT_LOCAL_DATA_DIR = str(
     Path(__file__).parent.parent.parent / "local-data-warehouse"
 )
 
+# TODO: converge on set of domains we want to check
 Domain = Literal[
     "education",
     "environmental science & climate",
@@ -25,6 +26,8 @@ Domain = Literal[
     "finance",
     "social science",
     "business & marketing",
+    # Newer domain strings
+    "insurance",
 ]
 DatasetSource = Literal[
     "Kaggle",
@@ -44,6 +47,7 @@ DataTags = Literal[
     "Grouped",
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
+    "Anonymized", # data that has no semantic meaning anymore on purpose
 ]
 ProblemType = Literal[
     "binary_classification", "multiclass_classification", "regression"
