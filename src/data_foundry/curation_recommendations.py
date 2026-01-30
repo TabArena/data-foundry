@@ -91,6 +91,7 @@ def get_recommended_iid_splits(
 
     # Repeated (Stratified) K-Fold Cross-Validation
     if stratify_on is not None:
+        print("Using Stratified IID splits.")
         rkf = RepeatedStratifiedKFold(
             n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE
         )
