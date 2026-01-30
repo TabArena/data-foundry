@@ -205,6 +205,19 @@ def run_all_checks(
     print(
         f"Duplicate rows ignoring target: {dups_wo_target} ({pct_dups_wo_target:.2f}% of dataset)"
     )
-    print("\nData quality checks completed.")
 
+    # Column duplicate check (standard Pandas)
+    dup_cols_mask = data.T.duplicated()
+    dup_cols = data.columns[dup_cols_mask]
+
+    n_dup_cols = dup_cols_mask.sum()
+    pct_dup_cols = n_dup_cols / data.shape[1] * 100
+
+    print(f"Duplicate columns: {n_dup_cols} ({pct_dup_cols:.2f}% of columns)")
+    if n_dup_cols > 0:
+        print("Duplicate column names:")
+        for col in dup_cols:
+            print(f"  - {col}")
+
+    print("\nData quality checks completed.")
     return df_head, summary, numeric_stats, cat_stats, target_df
