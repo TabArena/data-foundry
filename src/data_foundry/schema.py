@@ -163,7 +163,7 @@ class PredictiveMLTaskMetadata:
     """
     stratify_on: str | None = None
     """The name of the column used for stratification during splitting."""
-    group_on: str | None = None
+    group_on: str | list[str] | None = None
     """The name of the column used for grouping during splitting."""
     time_on: str | None = None
     """The name of the column used for temporal splitting."""
