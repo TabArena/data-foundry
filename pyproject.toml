@@ -19,6 +19,7 @@ dependencies = [
     "kaggle",
     "uuid6",
     "langdetect",
+    "xlrd",
     # Reqs for notebooks?
 ]
 
