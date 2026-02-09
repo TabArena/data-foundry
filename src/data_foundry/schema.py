@@ -164,7 +164,7 @@ class PredictiveMLTaskMetadata:
     reasonable metric (e.g. ROC AUC for binary classification, log loss for
     multiclass, RMSE for regression); use sklearn names where possible.
     """
-    stratify_on: str | None = None
+    stratify_on: str | list[str] | None = None
     """The name of the column used for stratification during splitting."""
     group_on: str | list[str] | None = None
     """The name of the column used for grouping during splitting."""
