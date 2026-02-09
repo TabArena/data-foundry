@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
-from scipy import stats
-
 
 def run_all_checks(
     *,
@@ -34,6 +30,10 @@ def run_all_checks(
     duplicate_column_check: bool
         Whether to check for duplicate columns. Default is True.
     """
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
+
     # Set display options to show all rows and columns
     pd.set_option("display.max_rows", None)
     pd.set_option("display.max_columns", None)

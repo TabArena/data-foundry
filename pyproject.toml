@@ -7,23 +7,31 @@ name = "data-foundry"
 version = "0.0.1"
 requires-python = "~=3.10.0"
 dependencies = [
-    "autogluon",
     "pandas",
+    "numpy",
+    "pydantic",
+    "uuid6",
+    "pyarrow",
+]
+
+[project.optional-dependencies]
+dev = [
+    "autogluon",
     "openml",
     "ruff",
     "pyyaml",
     "seaborn",
     "tueplots",
     "tqdm",
-    "pydantic",
     "kaggle",
-    "uuid6",
     "langdetect",
     "xlrd",
-    # Reqs for notebooks?
+    "scipy",
 ]
-
-
+tests = [
+    "pytest",
+    "scikit-learn",
+]
 
 [tool.ruff]
 target-version = "py39"

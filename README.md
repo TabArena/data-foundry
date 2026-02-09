@@ -28,5 +28,11 @@ place-to-be for future data curation of TabArena and the tabular community.
 To install the required dependencies, run:
 
 ```bash
-pip install -e .
+uv pip install -e .
+```
+
+For all dev dependencies, run:
+
+```bash
+uv pip install -e ".[dev,tests]"
 ```
