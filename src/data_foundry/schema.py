@@ -47,7 +47,10 @@ DataTags = Literal[
     "Grouped",
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
-    "Anonymized", # data that has no semantic meaning anymore on purpose
+    "Anonymized",  # data that has no semantic meaning anymore on purpose
+    # data that is IID by construction of the data.
+    #   - e.g. temporal data that is missing the timestamp
+    "ForcedIIDFromTemporal",
 ]
 ProblemType = Literal[
     "binary_classification", "multiclass_classification", "regression"
