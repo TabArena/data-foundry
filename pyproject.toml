@@ -27,6 +27,7 @@ dev = [
     "langdetect",
     "xlrd",
     "scipy",
+    "polars",
 ]
 tests = [
     "pytest",
