@@ -51,6 +51,7 @@ DataTags = Literal[
     # data that is IID by construction of the data.
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
+    "2ndTierData", # Data that is not of the highest quality but still a reasonable task
 ]
 ProblemType = Literal[
     "binary_classification", "multiclass_classification", "regression"
