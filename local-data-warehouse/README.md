@@ -13,5 +13,3 @@ Furthermore, curators can download from this storage to inspect and re-work on d
 ```bash
 gsutil -m rsync -r ./local_folder gs://your-bucket/path/ 
 ```
-
-# agent-fitting-data-models/data-foundry-remote-data-warehouse
