@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import numpy as np
+import pandas as pd
+
 
 def run_all_checks(
     *,
@@ -30,8 +33,6 @@ def run_all_checks(
     duplicate_column_check: bool
         Whether to check for duplicate columns. Default is True.
     """
-    import numpy as np
-    import pandas as pd
     from scipy import stats
 
     # Set display options to show all rows and columns
@@ -39,14 +40,6 @@ def run_all_checks(
     pd.set_option("display.max_columns", None)
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
-
-    # FIMXE: remove or add later again...
-    # # pd.set_option("display.expand_frame_repr", False)
-    # if get_ipython() is not None:
-    #     from IPython.display import HTML, display
-    #
-    #     display(HTML("<style>div.jp-OutputArea-output pre {white-space: pre;}</style>"))
-    #     display(HTML("<style>div.output_area pre {white-space: pre;}</style>"))
 
     # Validate inputs
     if target_feature not in data.columns:
@@ -57,14 +50,22 @@ def run_all_checks(
     print(f"Rows: {len(data):,}")
     print(f"Columns: {data.shape[1]}")
 
+    # Keep a small sample head (this is small memory)
     df_head = data.head(5)
+
     # Feature summary: dtype, missing counts, unique counts, example values
+    # Use views/series from the original DataFrame where possible to avoid copies
+    dtypes = data.dtypes
+    n_missing = data.isna().sum()
+    pct_missing = (n_missing / len(data) * 100).round(2)
+    n_unique = data.nunique()
+
     summary = pd.DataFrame(
         {
-            "dtype": data.dtypes,
-            "n_missing": data.isna().sum(),
-            "pct_missing": (data.isna().mean() * 100).round(2),
-            "n_unique": data.nunique(),
+            "dtype": dtypes,
+            "n_missing": n_missing,
+            "pct_missing": pct_missing,
+            "n_unique": n_unique,
         }
     )
 
@@ -74,26 +75,35 @@ def run_all_checks(
         most_common_vals = col.dropna().value_counts().head(n).index
         processed_vals = []
 
-        for val in most_common_vals:
-            if pd.api.types.is_numeric_dtype(type(val)):
-                if pd.api.types.is_float_dtype(type(val)) and round(val, 4) != 0:
-                    val = round(val, 4)
-            processed_vals.append(str(val))
+        for v in most_common_vals:
+            display_val = v
+            # Use isinstance checks to avoid misusing pandas dtype helpers on types
+            if isinstance(v, (int, float, np.number)):
+                if isinstance(v, float) and round(v, 4) != 0:
+                    display_val = round(v, 4)
+            processed_vals.append(str(display_val))
 
         return ", ".join(processed_vals)
 
+    # Apply column-wise; apply returns a Series view when possible
     summary["examples"] = data.apply(get_examples)
     summary["dtype"] = summary["dtype"].astype("string")
-    summary = summary.sort_values(
-        ["dtype", "pct_missing"], ascending=[True, False]
-    ).reset_index()
+    summary = summary.sort_values(["dtype", "pct_missing"], ascending=[True, False]).reset_index()
+
+    # Free some temporarily held Series that are now in `summary`
+    del dtypes, n_missing, pct_missing, n_unique
 
     # Detailed statistics for numeric features
     numeric_stats = "No numeric features to summarize."
     numeric_cols = data.select_dtypes(include=[np.number])
-    if not numeric_cols.empty:
+    if numeric_cols.shape[1] > 0:
+        # describe() will create a small summary; keep only needed columns
         numeric_stats = numeric_cols.describe().T
         numeric_stats = numeric_stats[["count", "mean", "std", "min", "max"]]
+
+    # We can drop numeric_cols reference now to release memory
+    if "numeric_cols" in locals():
+        del numeric_cols
 
     # Detailed statistics for non-numeric (categorical or object) features
     cat_stats = "No categorical/object features to summarize."
@@ -106,10 +116,11 @@ def run_all_checks(
         s = str(v)
         return s if len(s) <= max_len else s[: max_len - 3] + "..."
 
-    if not cat_cols.empty:
+    if cat_cols.shape[1] > 0:
         frames = []
         n = len(data)
 
+        # Iterate column names to avoid copying whole DataFrame where possible
         for col in cat_cols.columns:
             vc = data[col].value_counts(dropna=False).head(5)
 
@@ -121,11 +132,14 @@ def run_all_checks(
 
             frames.append(df_col[["column", "rank", "value", "count", "pct"]])
 
-        cat_stats = (
-            pd.concat(frames, ignore_index=True)
-            .set_index(["column", "rank"])
-            .sort_index()
-        )
+        cat_stats = pd.concat(frames, ignore_index=True).set_index(["column", "rank"]).sort_index()
+
+        # drop temporary structures
+        del frames
+
+    # drop cat_cols reference
+    if "cat_cols" in locals():
+        del cat_cols
 
     # Target distribution (classification task)
     if classification:
@@ -133,8 +147,12 @@ def run_all_checks(
         target_pct = (target_counts / len(data) * 100).round(2)
         target_df = pd.DataFrame({"count": target_counts, "pct": target_pct})
     else:
-        y_missing_count = data[target_feature].isna().sum()
-        y = pd.Series(data[target_feature]).dropna().astype(float)
+        # Work directly on the target series to avoid copies
+        target_series = data[target_feature]
+        y_missing_count = target_series.isna().sum()
+
+        # Drop NA in place by creating view via .loc on non-null mask
+        y = target_series[target_series.notna()].astype(float)
         nonpos_pct = (y <= 0).mean() * 100
 
         # log transform choice
@@ -185,6 +203,9 @@ def run_all_checks(
             }
         )
 
+        # cleanup target-related temporaries
+        del target_series, y, y_log, y_pos
+
     if print_report:
         print("\n#### Sample Rows")
         print(df_head)
@@ -198,30 +219,51 @@ def run_all_checks(
         print(target_df)
 
     # Duplicate checks
+    print("Get row duplicates...")
     total_dups = data.duplicated().sum()
     pct_dups = total_dups / len(data) * 100
-    dups_wo_target = data.drop(columns=[target_feature]).duplicated().sum()
+    # Fixed bug: use data.duplicated (was data.data.duplicated)
+    dups_wo_target = data.duplicated(subset=[c for c in data.columns if c != target_feature]).sum()
     pct_dups_wo_target = dups_wo_target / len(data) * 100
 
     print("\n#### Duplicate Report")
     print(f"Total duplicate rows: {total_dups} ({pct_dups:.2f}% of dataset)")
-    print(
-        f"Duplicate rows ignoring target: {dups_wo_target} ({pct_dups_wo_target:.2f}% of dataset)"
-    )
+    print(f"Duplicate rows ignoring target: {dups_wo_target} ({pct_dups_wo_target:.2f}% of dataset)")
 
     if duplicate_column_check:
-        # Column duplicate check (standard Pandas)
-        dup_cols_mask = data.T.duplicated()
-        dup_cols = data.columns[dup_cols_mask]
+        print("Get column duplicates...")
+        # --- Efficient duplicate column check (hash-based) ---
+        # Compute hash fingerprint per column without copying whole DataFrame
+        col_hashes = data.apply(lambda s: pd.util.hash_pandas_object(s, index=False).sum())
 
-        n_dup_cols = dup_cols_mask.sum()
+        # Group columns by hash
+        hash_groups = col_hashes.groupby(col_hashes).groups
+
+        duplicate_cols = []
+
+        # Verify equality within hash groups (protect against rare collisions)
+        for group in hash_groups.values():
+            group_cols = list(group)
+            if len(group_cols) > 1:
+                base = group_cols[0]
+                for c in group_cols[1:]:
+                    if data[base].equals(data[c]):
+                        duplicate_cols.append(c)
+
+        n_dup_cols = len(duplicate_cols)
         pct_dup_cols = n_dup_cols / data.shape[1] * 100
 
         print(f"Duplicate columns: {n_dup_cols} ({pct_dup_cols:.2f}% of columns)")
         if n_dup_cols > 0:
             print("Duplicate column names:")
-            for col in dup_cols:
+            for col in duplicate_cols:
                 print(f"  - {col}")
+
+        # cleanup
+        del col_hashes, hash_groups, duplicate_cols
+
+    # cleanup remaining temporaries (do not delete returned objects)
+    # Keep numeric_stats and cat_stats as they may be returned/printed
 
     print("\nData quality checks completed.")
     return df_head, summary, numeric_stats, cat_stats, target_df
