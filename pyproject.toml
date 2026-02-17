@@ -28,6 +28,7 @@ dev = [
     "xlrd",
     "scipy",
     "polars",
+    "fastexcel",
 ]
 tests = [
     "pytest",
