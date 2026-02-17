@@ -11,6 +11,10 @@ def run_all_checks(
     target_feature: str,
     print_report: bool = True,
     duplicate_column_check: bool = True,
+    # Performance tuning for very large DataFrames
+    sample_threshold: int = 1_000_000,
+    sample_frac: float = 0.1,
+    sample_random_state: int = 0,
 ):
     """Run a suite of common checks on tabular data to surface potential issues.
 
@@ -18,6 +22,12 @@ def run_all_checks(
     statistics, feature-level information, missing values, unique values,
     example values and duplicate ratios. It also reports target class counts
     when performing classification.
+
+    For very large DataFrames, you can set `sample_threshold` and `sample_frac`
+    to run the heavier, approximate computations (example values, top category
+    frequencies, numeric summaries and distribution fitting) on a random
+    sample. Missing-value counts, duplicate detection and exact target class
+    counts are always computed on the full dataset.
 
     Parameters
     ----------
@@ -32,6 +42,13 @@ def run_all_checks(
         Whether to print the report to the console. Default is True.
     duplicate_column_check: bool
         Whether to check for duplicate columns. Default is True.
+    sample_threshold : int
+        If len(data) > sample_threshold, heavy computations use a random sample.
+        Default 1_000_000 (disabled for smaller datasets).
+    sample_frac : float
+        Fraction of rows to sample for heavy computations when sampling is used.
+    sample_random_state : int
+        Random state used for sampling reproducibility.
     """
     from scipy import stats
 
@@ -45,20 +62,35 @@ def run_all_checks(
     if target_feature not in data.columns:
         raise ValueError(f"target_feature '{target_feature}' is not in the DataFrame.")
 
+    # Decide whether to sample for heavy operations
+    n_rows = len(data)
+    use_sampling = sample_frac is not None and n_rows > sample_threshold and 0.0 < sample_frac < 1.0
+    sample_df = data.sample(frac=sample_frac, random_state=sample_random_state) if use_sampling else data
+
     # Display high-level overview
+    cols = list(data.columns)
+
     print("\n#### Dataset Overview")
-    print(f"Rows: {len(data):,}")
-    print(f"Columns: {data.shape[1]}")
+    print(f"Rows: {n_rows:,}")
+    print(f"Columns: {len(cols)}")
 
     # Keep a small sample head (this is small memory)
     df_head = data.head(5)
 
     # Feature summary: dtype, missing counts, unique counts, example values
-    # Use views/series from the original DataFrame where possible to avoid copies
-    dtypes = data.dtypes
-    n_missing = data.isna().sum()
-    pct_missing = (n_missing / len(data) * 100).round(2)
-    n_unique = data.nunique()
+    # For very large DataFrames avoid creating full intermediate DataFrames
+    dtypes = data.dtypes  # small
+
+    # Compute missing and unique counts per-column without creating a full isna() DataFrame
+    n_missing = pd.Series(index=cols, dtype=int)
+    n_unique = pd.Series(index=cols, dtype=int)
+    for c in cols:
+        s = data[c]
+        n_missing[c] = int(s.isna().sum())
+        # keep pandas default behavior for nunique (dropna=True)
+        n_unique[c] = int(s.nunique())
+
+    pct_missing = (n_missing / n_rows * 100).round(2)
 
     summary = pd.DataFrame(
         {
@@ -69,45 +101,51 @@ def run_all_checks(
         }
     )
 
-    # Collect up to 10 example values for each column
-    def get_examples(col: pd.Series, n: int = 10) -> str:
-        # get most frequent non-null values
-        most_common_vals = col.dropna().value_counts().head(n).index
-        processed_vals = []
+    # Helper that extracts examples from a Series; uses sample_df for heavy ops when sampling
+    def get_examples_from_series(s: pd.Series, n: int = 10) -> str:
+        s_for = s if not use_sampling else s.loc[s.index.isin(sample_df.index)]
+        vc_index = s_for.dropna().value_counts().head(n).index
+        vals = []
+        for v in vc_index:
+            # avoid expensive dtype checks on the whole Series; handle numeric formatting here
+            display_v = (round(v, 4) if round(v, 4) != 0 else 0.0) if isinstance(v, float) and not np.isnan(v) else v
+            vals.append(str(display_v))
+        return ", ".join(vals)
 
-        for v in most_common_vals:
-            display_val = v
-            # Use isinstance checks to avoid misusing pandas dtype helpers on types
-            if isinstance(v, (int, float, np.number)):
-                if isinstance(v, float) and round(v, 4) != 0:
-                    display_val = round(v, 4)
-            processed_vals.append(str(display_val))
+    # Build examples per-column (avoids DataFrame.apply which can allocate)
+    examples = {}
+    for c in cols:
+        examples[c] = get_examples_from_series(data[c])
 
-        return ", ".join(processed_vals)
-
-    # Apply column-wise; apply returns a Series view when possible
-    summary["examples"] = data.apply(get_examples)
+    summary["examples"] = pd.Series(examples)
     summary["dtype"] = summary["dtype"].astype("string")
     summary = summary.sort_values(["dtype", "pct_missing"], ascending=[True, False]).reset_index()
 
     # Free some temporarily held Series that are now in `summary`
-    del dtypes, n_missing, pct_missing, n_unique
+    del dtypes, n_missing, pct_missing, n_unique, examples
 
-    # Detailed statistics for numeric features
+    # Detailed statistics for numeric features computed per-column; use sample_df for heavy ops when enabled
     numeric_stats = "No numeric features to summarize."
-    numeric_cols = data.select_dtypes(include=[np.number])
-    if numeric_cols.shape[1] > 0:
-        # describe() will create a small summary; keep only needed columns
-        numeric_stats = numeric_cols.describe().T
+    numeric_cols = [c for c in cols if np.issubdtype(data[c].dtype, np.number)]
+    if numeric_cols:
+        stats_rows = {}
+        for c in numeric_cols:
+            s_full = data[c]
+            s_for = s_full if not use_sampling else s_full.loc[s_full.index.isin(sample_df.index)]
+            cnt = s_for.count()
+            stats_rows[c] = {
+                "count": float(cnt),
+                "mean": float(s_for.mean()) if cnt > 0 else np.nan,
+                "std": float(s_for.std()) if cnt > 0 else np.nan,
+                "min": float(s_for.min()) if cnt > 0 else np.nan,
+                "max": float(s_for.max()) if cnt > 0 else np.nan,
+            }
+        numeric_stats = pd.DataFrame.from_dict(stats_rows, orient="index")
         numeric_stats = numeric_stats[["count", "mean", "std", "min", "max"]]
-
-    # We can drop numeric_cols reference now to release memory
-    if "numeric_cols" in locals():
-        del numeric_cols
 
     # Detailed statistics for non-numeric (categorical or object) features
     cat_stats = "No categorical/object features to summarize."
-    cat_cols = data.select_dtypes(exclude=[np.number])
+    cat_cols = [c for c in cols if c not in numeric_cols]
     MAX_LEN = 67
 
     def truncate_value(v, max_len=MAX_LEN):
@@ -116,44 +154,36 @@ def run_all_checks(
         s = str(v)
         return s if len(s) <= max_len else s[: max_len - 3] + "..."
 
-    if cat_cols.shape[1] > 0:
+    if cat_cols:
         frames = []
-        n = len(data)
-
-        # Iterate column names to avoid copying whole DataFrame where possible
-        for col in cat_cols.columns:
-            vc = data[col].value_counts(dropna=False).head(5)
-
+        n = n_rows if not use_sampling else len(sample_df)
+        for col in cat_cols:
+            s_col = data[col]
+            s_for = s_col if not use_sampling else s_col.loc[s_col.index.isin(sample_df.index)]
+            vc = s_for.value_counts(dropna=False).head(5)
             df_col = vc.rename_axis("value").reset_index(name="count")
             df_col["value"] = df_col["value"].map(truncate_value)
             df_col["pct"] = (df_col["count"] / n * 100).round(2)
             df_col["rank"] = range(1, len(df_col) + 1)
             df_col["column"] = col
-
             frames.append(df_col[["column", "rank", "value", "count", "pct"]])
-
-        cat_stats = pd.concat(frames, ignore_index=True).set_index(["column", "rank"]).sort_index()
-
-        # drop temporary structures
+        if frames:
+            cat_stats = pd.concat(frames, ignore_index=True).set_index(["column", "rank"]).sort_index()
         del frames
 
-    # drop cat_cols reference
-    if "cat_cols" in locals():
-        del cat_cols
-
-    # Target distribution (classification task)
+    # Target distribution (classification task) - always exact on full data
     if classification:
         target_counts = data[target_feature].value_counts(dropna=False)
-        target_pct = (target_counts / len(data) * 100).round(2)
+        target_pct = (target_counts / n_rows * 100).round(2)
         target_df = pd.DataFrame({"count": target_counts, "pct": target_pct})
     else:
-        # Work directly on the target series to avoid copies
+        # Work directly on the target series to avoid copies; for distribution fitting, use sample_df when enabled
         target_series = data[target_feature]
-        y_missing_count = target_series.isna().sum()
+        y_missing_count = int(target_series.isna().sum())
 
-        # Drop NA in place by creating view via .loc on non-null mask
-        y = target_series[target_series.notna()].astype(float)
-        nonpos_pct = (y <= 0).mean() * 100
+        y_full = target_series[target_series.notna()].astype(float)
+        y = y_full if not use_sampling else y_full.loc[y_full.index.isin(sample_df.index)]
+        nonpos_pct = float((y <= 0).mean() * 100) if len(y) > 0 else 0.0
 
         # log transform choice
         if (y > 0).all():
@@ -163,24 +193,22 @@ def run_all_checks(
             y_log = np.log1p(y)
             log_type = "log1p"
 
-        # basic shape stats
-        skew_y = stats.skew(y, bias=False)
-        skew_log = stats.skew(y_log, bias=False)
+        # basic shape stats computed on Series
+        skew_y = float(stats.skew(y, bias=False)) if len(y) > 0 else np.nan
+        skew_log = float(stats.skew(y_log, bias=False)) if len(y_log) > 0 else np.nan
 
-        var_y = y.var()
-        var_log = y_log.var()
+        var_y = float(y.var()) if len(y) > 0 else np.nan
+        var_log = float(y_log.var()) if len(y_log) > 0 else np.nan
 
         # distribution check on positive values only
         y_pos = y[y > 0]
         if len(y_pos) >= 30:
-            # exponential
             _, scale = stats.expon.fit(y_pos)
             ll_exp = np.sum(stats.expon.logpdf(y_pos, scale=scale))
             aic_exp = 2 * 1 - 2 * ll_exp  # 1 param: scale
 
-            # lognormal
-            s, _, scale = stats.lognorm.fit(y_pos)
-            ll_logn = np.sum(stats.lognorm.logpdf(y_pos, s=s, scale=scale))
+            s_fit, _, scale = stats.lognorm.fit(y_pos)
+            ll_logn = np.sum(stats.lognorm.logpdf(y_pos, s=s_fit, scale=scale))
             aic_logn = 2 * 2 - 2 * ll_logn  # 2 params: s, scale
 
             dist_hint = "lognormal" if aic_logn < aic_exp else "exponential"
@@ -204,7 +232,7 @@ def run_all_checks(
         )
 
         # cleanup target-related temporaries
-        del target_series, y, y_log, y_pos
+        del target_series, y_full, y, y_log, y_pos
 
     if print_report:
         print("\n#### Sample Rows")
@@ -220,11 +248,12 @@ def run_all_checks(
 
     # Duplicate checks
     print("Get row duplicates...")
-    total_dups = data.duplicated().sum()
-    pct_dups = total_dups / len(data) * 100
-    # Fixed bug: use data.duplicated (was data.data.duplicated)
-    dups_wo_target = data.duplicated(subset=[c for c in data.columns if c != target_feature]).sum()
-    pct_dups_wo_target = dups_wo_target / len(data) * 100
+    total_dups = int(data.duplicated().sum())
+    pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
+    # Duplicate rows ignoring target
+    cols_wo_target = [c for c in cols if c != target_feature]
+    dups_wo_target = int(data.duplicated(subset=cols_wo_target).sum())
+    pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
 
     print("\n#### Duplicate Report")
     print(f"Total duplicate rows: {total_dups} ({pct_dups:.2f}% of dataset)")
@@ -232,16 +261,16 @@ def run_all_checks(
 
     if duplicate_column_check:
         print("Get column duplicates...")
-        # --- Efficient duplicate column check (hash-based) ---
-        # Compute hash fingerprint per column without copying whole DataFrame
-        col_hashes = data.apply(lambda s: pd.util.hash_pandas_object(s, index=False).sum())
+        # Compute a hash fingerprint per column in a memory-friendly loop
+        # (pd.util.hash_pandas_object applied per-series)
+        col_hashes = pd.Series(index=cols, dtype="uint64")
+        for c in cols:
+            col_hashes[c] = int(pd.util.hash_pandas_object(data[c], index=False).sum())
 
-        # Group columns by hash
+        # Group columns by hash value
         hash_groups = col_hashes.groupby(col_hashes).groups
 
         duplicate_cols = []
-
-        # Verify equality within hash groups (protect against rare collisions)
         for group in hash_groups.values():
             group_cols = list(group)
             if len(group_cols) > 1:
@@ -251,7 +280,7 @@ def run_all_checks(
                         duplicate_cols.append(c)
 
         n_dup_cols = len(duplicate_cols)
-        pct_dup_cols = n_dup_cols / data.shape[1] * 100
+        pct_dup_cols = n_dup_cols / len(cols) * 100 if len(cols) > 0 else 0.0
 
         print(f"Duplicate columns: {n_dup_cols} ({pct_dup_cols:.2f}% of columns)")
         if n_dup_cols > 0:
@@ -263,7 +292,6 @@ def run_all_checks(
         del col_hashes, hash_groups, duplicate_cols
 
     # cleanup remaining temporaries (do not delete returned objects)
-    # Keep numeric_stats and cat_stats as they may be returned/printed
 
     print("\nData quality checks completed.")
     return df_head, summary, numeric_stats, cat_stats, target_df
