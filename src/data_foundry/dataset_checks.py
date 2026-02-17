@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from pandas.api import types as pdtypes
 
 
 def run_all_checks(
@@ -10,6 +11,7 @@ def run_all_checks(
     classification: bool,
     target_feature: str,
     print_report: bool = True,
+    duplicate_row_check: bool = True,
     duplicate_column_check: bool = True,
     # Performance tuning for very large DataFrames
     sample_threshold: int = 1_000_000,
@@ -126,7 +128,8 @@ def run_all_checks(
 
     # Detailed statistics for numeric features computed per-column; use sample_df for heavy ops when enabled
     numeric_stats = "No numeric features to summarize."
-    numeric_cols = [c for c in cols if np.issubdtype(data[c].dtype, np.number)]
+    # Use pandas dtype check which correctly handles pandas-specific dtypes
+    numeric_cols = [c for c in cols if pdtypes.is_numeric_dtype(data[c])]
     if numeric_cols:
         stats_rows = {}
         for c in numeric_cols:
@@ -247,17 +250,18 @@ def run_all_checks(
         print(target_df)
 
     # Duplicate checks
-    print("Get row duplicates...")
-    total_dups = int(data.duplicated().sum())
-    pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
-    # Duplicate rows ignoring target
-    cols_wo_target = [c for c in cols if c != target_feature]
-    dups_wo_target = int(data.duplicated(subset=cols_wo_target).sum())
-    pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
+    if duplicate_row_check:
+        print("Get row duplicates...")
+        total_dups = int(data.duplicated().sum())
+        pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
+        # Duplicate rows ignoring target
+        cols_wo_target = [c for c in cols if c != target_feature]
+        dups_wo_target = int(data.duplicated(subset=cols_wo_target).sum())
+        pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
 
-    print("\n#### Duplicate Report")
-    print(f"Total duplicate rows: {total_dups} ({pct_dups:.2f}% of dataset)")
-    print(f"Duplicate rows ignoring target: {dups_wo_target} ({pct_dups_wo_target:.2f}% of dataset)")
+        print("\n#### Duplicate Report")
+        print(f"Total duplicate rows: {total_dups} ({pct_dups:.2f}% of dataset)")
+        print(f"Duplicate rows ignoring target: {dups_wo_target} ({pct_dups_wo_target:.2f}% of dataset)")
 
     if duplicate_column_check:
         print("Get column duplicates...")
