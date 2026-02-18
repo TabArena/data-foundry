@@ -8,6 +8,9 @@ def get_recommended_iid_splits_dimensions(
 ) -> tuple[int, int, int | None]:
     """Returns the recommended number of repeats and folds for IID splits.
 
+    N represents the amount of training data we have to a fit a model.
+    As we use 3-fold splits, we set N to be len(dataset)*2/3.
+
     Split recommendations for random split:
       * N < 500: 20-3 (20-repeated 3-fold cross-validation)
       * 500 <= N < 2_500: 10-3
@@ -24,7 +27,7 @@ def get_recommended_iid_splits_dimensions(
             * n_test_size: Size of the test set for single train-test split.
                 None if cross-validation is recommended.
     """
-    n_samples = len(dataset)
+    n_samples = int(len(dataset) * 2 / 3)
     if n_samples < 500:
         return 20, 3, None
     if n_samples < 2_500:
