@@ -27,14 +27,14 @@ def get_recommended_iid_splits_dimensions(
             * n_test_size: Size of the test set for single train-test split.
                 None if cross-validation is recommended.
     """
-    n_samples = int(len(dataset) * 2 / 3)
-    if n_samples < 500:
+    n_train_samples = int(len(dataset) * 2 / 3)
+    if n_train_samples < 500:
         return 20, 3, None
-    if n_samples < 2_500:
+    if n_train_samples < 2_500:
         return 10, 3, None
-    if n_samples < 250_000:
+    if n_train_samples < 250_000:
         return 3, 3, None
-    if n_samples < 1_000_000:
+    if n_train_samples < 1_000_000:
         return 1, 3, None
 
     return 1, 1, 250_000
