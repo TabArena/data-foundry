@@ -288,11 +288,12 @@ def run_all_checks(
     # Duplicate checks
     if duplicate_row_check:
         # Use a staged duplicate detection to avoid scanning the entire DataFrame when it's large.
-        # Strategy:
         # 1. Pick the top-K columns with the largest number of unique values (most discriminative).
         # 2. Use duplicated(subset=top_cols, keep=False) to find rows that could be duplicates.
-        # 3. Run an exact duplicated() only on that much smaller candidate set to get counts.
-        print("Get row duplicates (staged)...")
+        # 3. Run exact duplicated() on that candidate set to compute both:
+        #    - total duplicates (full-row equality)
+        #    - duplicates ignoring the target (compare on cols_wo_target)
+        print("Get row duplicates (staged, merged)...")
         try:
             top_k = min(10, len(cols))
             # `summary` was built earlier and contains a reset index column with original column names in 'index'
@@ -300,9 +301,12 @@ def run_all_checks(
                 cols_by_unique = list(
                     summary.sort_values("n_unique", ascending=False)["index"].tolist()
                 )
-                top_cols = [c for c in cols_by_unique if c in cols][:top_k]
+                top_cols = [c for c in cols_by_unique if c in cols]
             else:
-                top_cols = cols[:top_k]
+                top_cols = cols
+
+            # Ensure target is not yet influencing the duplicate check
+            top_cols = [c for c in top_cols if c != target_feature][:top_k]
 
             if len(top_cols) == 0:
                 raise ValueError("No top columns found; falling back to full duplicate detection (may be memory heavy).")
@@ -316,11 +320,22 @@ def run_all_checks(
             if n_candidates == 0:
                 total_dups = 0
                 pct_dups = 0.0
+                dups_wo_target = 0
+                pct_dups_wo_target = 0.0
             else:
                 # Candidate set should be much smaller; run exact duplicated on it
                 candidates_df = data.loc[stage_mask]
+
+                # Total duplicates (exact row duplicates) within candidates
                 total_dups = int(candidates_df.duplicated().sum())
                 pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
+
+                # Duplicates ignoring the target: check duplicates on cols_wo_target within the same candidate set
+
+                # exact duplicates ignoring the target, evaluated on the candidate set
+                cols_wo_target = [c for c in cols if c != target_feature]
+                dups_wo_target = int(candidates_df.duplicated(subset=cols_wo_target).sum())
+                pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
 
         except Exception as e:
             # If staged method fails for any unexpected reason, fall back to conservative full-scan
@@ -328,39 +343,6 @@ def run_all_checks(
             total_dups = int(data.duplicated().sum())
             pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
 
-        # Duplicate rows ignoring target: do a similar staged approach but excluding the target feature
-        try:
-            cols_wo_target = [c for c in cols if c != target_feature]
-            if len(cols_wo_target) == 0:
-                dups_wo_target = 0
-                pct_dups_wo_target = 0.0
-            else:
-                # pick top columns among cols_wo_target
-                top_cols_wo = [c for c in top_cols if c != target_feature]
-                # If top_cols_wo ends up empty, fall back to a selection from summary excluding target
-                if len(top_cols_wo) == 0 and "n_unique" in summary.columns:
-                    cols_by_unique_wo = [c for c in summary.sort_values("n_unique", ascending=False)["index"].tolist() if c in cols_wo_target]
-                    top_cols_wo = cols_by_unique_wo[:min(10, len(cols_by_unique_wo))]
-
-                if len(top_cols_wo) == 0:
-                    # fallback to full subset duplicate detection (may be heavy)
-                    dups_wo_target = int(data.duplicated(subset=cols_wo_target).sum())
-                    pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
-                else:
-                    print(f"Using top-{len(top_cols_wo)} columns (excluding target) for initial filtering: {top_cols_wo}")
-                    stage_mask_wo = data.duplicated(subset=top_cols_wo, keep=False)
-                    n_candidates_wo = int(stage_mask_wo.sum())
-                    print(f"Rows remaining as candidates after top-{len(top_cols_wo)} filter (wo target): {n_candidates_wo:,} (of {n_rows:,})")
-                    if n_candidates_wo == 0:
-                        dups_wo_target = 0
-                        pct_dups_wo_target = 0.0
-                    else:
-                        candidates_wo_df = data.loc[stage_mask_wo]
-                        # exact duplicates ignoring the target: check duplicates on full cols_wo_target within candidate set
-                        dups_wo_target = int(candidates_wo_df.duplicated(subset=cols_wo_target).sum())
-                        pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
-        except Exception as e:
-            print(f"Staged duplicate-wo-target detection failed with error: {e}; falling back to full detection.")
             cols_wo_target = [c for c in cols if c != target_feature]
             dups_wo_target = int(data.duplicated(subset=cols_wo_target).sum())
             pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
