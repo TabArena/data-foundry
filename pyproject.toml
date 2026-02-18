@@ -29,6 +29,7 @@ dev = [
     "scipy",
     "polars",
     "fastexcel",
+    "openpyxl",
 ]
 tests = [
     "pytest",
