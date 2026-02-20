@@ -40,11 +40,14 @@ DatasetSource = Literal[
     "Other",
 ]
 DataTags = Literal[
-    # Important tags for the task
+    # Important tags for the task, feel free to add more that seem reasonable!
     "IID",
     "Non-IID",
-    "Temporal",
-    "Grouped",
+    # What kind of non-iid task (i.e., split) the data represents
+    #   - Only set Grouped XOR Temporal. PredictiveMLTaskMetadata has more details on the difference for splits.
+    "Temporal", # Split on temporal information (e.g. timestamp) to predict on the future.
+    "Grouped", # Split on groups (e.g. customers) to predict on unseen groups.
+    "GroupedTemporal", # Data that is split using grouped and temporal information - unsure if this exists.
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
@@ -52,6 +55,7 @@ DataTags = Literal[
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
     "2ndTierData", # Data that is not of the highest quality but still a reasonable task
+    "WrongDomain", # Task that was transformed to another domain (like audio) to tabular.
 ]
 ProblemType = Literal[
     "binary_classification", "multiclass_classification", "regression"
@@ -170,10 +174,40 @@ class PredictiveMLTaskMetadata:
     group_on: str | list[str] | None = None
     """The name of the column used for grouping during splitting."""
     time_on: str | None = None
-    """The name of the column used for temporal splitting."""
+    """The name of the column used for temporal splitting.
+    
+    Note, if you have temporal-grouped data and want to split the data such that you
+    only predict on future groups, then do not set the group_on column. Since any temporal split
+    would automatically ensure that the test groups are all from the future. 
+    
+    In the cases where you do a grouped split and each group has rows ordered by a time index (e.g. a timestamp),
+    we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split, 
+    so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it. 
+    Thus, ensure to set `group_time_on` in that case.
+    """
+    group_time_on: str | None = None
+    """The name of the column that contains the time information for each group in case of grouped data.
+    
+    This column name is not used for splitting!
+    
+    Ensure to set this value if you have, for example, data about customers (group_on = "customer_id") and each row
+    has a timestamp (group_time_on = "timestamp"), then we can read this metadata as "grouped data where the 
+    groups are ordered in time based on the group_time_on column".
+    Moreover, the could include cases where different groups are not on the same time scale, but the model shall
+    predict for a group based on the time information of that group. Thus, the pipeline needs to know this column
+    to be able to normalize the time per group and globally correctly.
+    """
 
     type_adapter_id: str = "predictive-ml-task-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    def __post_init__(self):
+        # either group_on or time_on can be set, but not both
+        if (self.group_on is not None) and (self.time_on is not None):
+            raise ValueError(
+                "group_on and time_on cannot both be set for the same task."
+                "Did you want to set `group_time_on`?"
+            )
 
     @property
     def is_classification(self) -> bool:
