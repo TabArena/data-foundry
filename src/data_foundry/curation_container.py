@@ -116,14 +116,17 @@ class CuratedContainer:
         return save_path
 
     @staticmethod
-    def load(path: Path | str) -> CuratedContainer:
+    def load(path: Path | str, *, load_dataset: bool = True) -> CuratedContainer:
         """Load a curated data collection from a path directory."""
         if isinstance(path, str):
             path = Path(path)
 
         # Load dataset
-        dataset_path = path / "dataset.parquet"
-        dataset = pd.read_parquet(dataset_path)
+        if load_dataset:
+            dataset_path = path / "dataset.parquet"
+            dataset = pd.read_parquet(dataset_path)
+        else:
+            dataset = None
 
         # Load metadata
         metadata_objs = {}
