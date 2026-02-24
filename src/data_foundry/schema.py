@@ -116,7 +116,7 @@ class DatasetMetadata:
     Bibtex, include DOI if possible."""
     academic_reference_bibtex_key: str
     """The Bibtex citation key for the entry from `academic_reference_bibtex`."""
-    licence: str | None
+    license: str | None
     """License under which the data is made available.
     E.g. "CC BY 4.0", "MIT, "GPL-3.0", "Public Domain".
     Set to None if license is unknown or missing.

@@ -37,7 +37,7 @@ def make_toy_objects(
         download_description="desc",
         academic_reference_bibtex="bib",
         academic_reference_bibtex_key="key",
-        licence=None,
+        license=None,
         data_tags=["IID"],
         curation_comments=None,
         local_data_directory_base=str(tmp_path),

@@ -73,41 +73,90 @@ def search_local_warehouse():
 def dataset_paths_to_metadata(dataset_paths: list[Path]) -> pd.DataFrame:
 
     columns = [
-        "warehouse_path",
-        "unique_name",
-        "num_rows",
-        "num_columns",
-        "problem_type",
+        "name",
+        "task_type",
+        "dataset_identifier",
+        "container_name",
+        "container_uuid",
+        "tags",
+        "num_samples",
+        "num_features",
+        "num_classes",
         "target_column",
         "is_iid",
         "is_non_iid",
+        "stratify_column",
+        "group_column",
+        "time_column",
+        "group_time_column",
+        "checksum",
     ]
     metadata = []
     for path in tqdm(dataset_paths, desc="Extracting metadata from datasets"):
         container = CuratedContainer.load(path)
 
-        warehouse_path = "/".join(path.parts[-2:])
+        container_name, container_uuid = path.parts[-2:]
         name = container.dataset_metadata.unique_name
-        num_rows, num_columns = container.dataset.shape
-        problem_type = container.task_metadata.problem_type
-        target_column = container.task_metadata.target_column_name
+
+        task_type = container.task_metadata.problem_type
+        if task_type == "regression":
+            task_type = "regression"
+        else:
+            task_type = "multiclass"
+        dataset_identifier = f"df_{name}"
+        tags = ["data_foundry", "gcp"]
 
         data_tags = container.dataset_metadata.data_tags
         is_iid = "IID" in data_tags
         is_non_iid = "Non-IID" in data_tags
+        if is_iid:
+            tags.append("iid")
+        if is_non_iid:
+            if "Grouped" in data_tags:
+                tags.append("grouped")
+            if "Temporal" in data_tags:
+                tags.append("temporal")
+
+        num_samples, num_features = container.dataset.shape
+        num_features = num_features - 1 # exclude target column
+        target_column = container.task_metadata.target_column_name
+
+        if task_type == "classification":
+            num_classes = container.dataset[target_column].nunique()
+        else:
+            num_classes = None
+
+        stratify_column = container.task_metadata.stratify_on
+        group_column = container.task_metadata.group_on
+        time_column = container.task_metadata.time_on
+        group_time_column = container.task_metadata.group_time_on
+
+        checksum = container.checksum
+
+
 
         metadata.append(
             [
-                warehouse_path,
                 name,
-                num_rows,
-                num_columns,
-                problem_type,
+                task_type,
+                dataset_identifier,
+                container_name,
+                container_uuid,
+                tags,
+                num_samples,
+                num_features,
+                num_classes,
                 target_column,
                 is_iid,
                 is_non_iid,
+                stratify_column,
+                group_column,
+                time_column,
+                group_time_column,
+                checksum,
             ]
         )
+        del container # free memory
 
     return pd.DataFrame(metadata, columns=columns)
 
