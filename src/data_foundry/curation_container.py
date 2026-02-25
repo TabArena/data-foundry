@@ -135,6 +135,11 @@ class CuratedContainer:
             adapter = TypeAdapter(MetadataRegistry[type_adapter_id])
             with meta_file.open("r") as f:
                 meta_data = json.load(f)
+
+            # backward compatibility for typo (FIXME: remove in the future)
+            if "licence" in meta_data.keys():
+                meta_data["license"] = meta_data.pop("licence")
+
             metadata_objs[meta_name] = adapter.validate_python(meta_data)
 
         # Load container metadata
