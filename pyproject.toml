@@ -30,7 +30,7 @@ dev = [
     "polars",
     "fastexcel",
     "openpyxl",
-    "python-calamin",
+    "python-calamine",
 ]
 tests = [
     "pytest",
