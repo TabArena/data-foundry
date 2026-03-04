@@ -172,7 +172,7 @@ def get_recommended_grouped_splits(
         )
 
     if stratify_on is not None:
-        print("Using Stratified IID splits.")
+        print("Using Stratified Grouped splits.")
 
     X = dataset
     y = dataset[stratify_on] if stratify_on is not None else None
