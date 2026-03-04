@@ -185,10 +185,21 @@ def get_recommended_grouped_splits(
     # Single train-test split
     if n_repeats == 1 and n_splits == 1:
         n_groups = group.nunique()
+        # approximate number of folds to use so that each test fold contains
+        # roughly `test_size` groups. Bound the number of folds between 2 and
+        # n_groups to ensure the splitter accepts the value.
+        if test_size is None or test_size <= 0:
+            raise ValueError("test_size must be a positive integer for single train-test split!")
+
         approximate_splits = round(n_groups / test_size)
-        train_index, test_index = splitter(
+        approximate_splits = int(max(2, min(n_groups, approximate_splits)))
+
+        splitter_inst = splitter(
             n_splits=approximate_splits, shuffle=True, random_state=SPLIT_RANDOM_STATE
-        ).split(X=X, y=y, groups=group)[0]
+        )
+        train_index, test_index = next(
+            splitter_inst.split(X=X, y=y, groups=group)
+        )
 
         splits[0] = {0: (train_index.tolist(), test_index.tolist())}
         return splits
