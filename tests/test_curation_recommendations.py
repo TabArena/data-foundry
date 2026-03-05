@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 from data_foundry.curation_recommendations import (
     get_recommended_iid_splits,
-    get_recommended_iid_splits_dimensions,
+    get_recommended_splits_dimensions,
+    get_recommended_grouped_splits,
 )
 from data_foundry.schema import PredictiveMLSplitsMetadata
 
@@ -23,20 +24,22 @@ class DummySized:
 @pytest.mark.parametrize(
     ("n_samples", "expected"),
     [
-        (100, (20, 3, None)),  # < 500
-        (500, (10, 3, None)),  # 500 <= n < 2500
-        (2499, (10, 3, None)),
-        (2500, (3, 3, None)),  # 2500 <= n < 250000
-        (249_999, (3, 3, None)),
-        (250_000, (1, 3, None)),  # 250000 <= n < 1_000_000
-        (999_999, (1, 3, None)),
-        (1_000_000, (1, 1, 250_000)),  # >= 1_000_000
+        # The function computes n_train = int(n_samples * 2 / 3) and uses that
+        # value to decide thresholds. The expected tuples below reflect that.
+        (100, (20, 3, None)),  # n_train = 66 -> < 500
+        (500, (20, 3, None)),  # n_train = 333 -> < 500
+        (2499, (10, 3, None)),  # n_train = 1666 -> < 2500
+        (2500, (10, 3, None)),  # n_train = 1666 -> < 2500
+        (249_999, (3, 3, None)),  # n_train = 166666 -> < 250000
+        (250_000, (3, 3, None)),  # n_train = 166666 -> < 250000
+        (999_999, (1, 3, None)),  # n_train = 666666 -> < 1_000_000
+        (1_000_000, (1, 3, None)),  # n_train = 666666 -> < 1_000_000
     ],
 )
 def test_get_recommended_iid_splits_dimensions(n_samples, expected):
     # use DummySized to avoid allocating huge DataFrames
     obj = DummySized(n_samples)
-    got = get_recommended_iid_splits_dimensions(obj)
+    got = get_recommended_splits_dimensions(dataset=obj)
     assert got == expected
 
 
@@ -153,3 +156,57 @@ def test_non_range_index_raises(make_dataset):
             test_size=2,
             stratify_on=None,
         )
+
+
+def test_grouped_repeated_cv_structure(make_dataset):
+    # create dataset with groups
+    group_size = 5
+    n_groups = 12
+    n = group_size * n_groups
+    df = make_dataset(n)
+    df["group"] = np.repeat(np.arange(n_groups), group_size)
+
+    n_repeats, n_splits = 2, 3
+    splits = get_recommended_grouped_splits(
+        dataset=df,
+        n_repeats=n_repeats,
+        n_splits=n_splits,
+        group_on="group",
+        test_size=None,
+        stratify_on=None,
+    )
+
+    assert len(splits) == n_repeats
+    for _rep_id, fold_dict in splits.items():
+        assert len(fold_dict) == n_splits
+        all_test = []
+        for _fold_id, (train_idx, test_idx) in fold_dict.items():
+            _validate_iid_train_test_pair(n, train_idx, test_idx)
+            all_test.extend(test_idx)
+        assert set(all_test) == set(range(n))
+
+
+def test_grouped_single_train_test_makeable_and_valid(make_dataset):
+    # single train-test grouped split should be creatable and valid
+    group_size = 4
+    n_groups = 8
+    n = group_size * n_groups
+    df = make_dataset(n)
+    df["group"] = np.repeat(np.arange(n_groups), group_size)
+
+    splits = get_recommended_grouped_splits(
+        dataset=df,
+        n_repeats=1,
+        n_splits=1,
+        group_on="group",
+        test_size=2,  # test_size here relates to approximate groups per test
+        stratify_on=None,
+    )
+
+    assert 0 in splits
+    assert 0 in splits[0]
+    train_idx, test_idx = splits[0][0]
+    _validate_iid_train_test_pair(n, train_idx, test_idx)
+    sm = PredictiveMLSplitsMetadata(splits_comment="grouped-single", splits=splits)
+    assert sm.splits == splits
+

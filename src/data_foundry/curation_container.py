@@ -40,6 +40,10 @@ class CuratedContainer:
     experiment_metadata: PredictiveMLSplitsMetadata
     """Metadata about the experiments for the task."""
 
+    # Special cases
+    test_dataset: pd.DataFrame | None = None
+    """An optional test dataset. Used for inference/deployment evaluation."""
+
     # Container Metadata
     version_comment: MultilineStr | None = None
     """A comment about the version of the curated data collection. If no changes
@@ -48,6 +52,10 @@ class CuratedContainer:
     """A unique identifier for the curated data collection."""
     checksum: str | None = None
     """A checksum for the curated data collection to verify integrity."""
+
+    # Cache meta-data
+    loaded_from_path: Path | None = None
+    """The path from which the curated container was loaded, if applicable. Used for caching purposes."""
 
     def __post_init__(self):
         """Post-initialization to set the UUID if not provided."""
@@ -97,6 +105,10 @@ class CuratedContainer:
         dataset_path = save_path / "dataset.parquet"
         self.dataset.to_parquet(dataset_path, index=False)
 
+        if self.test_dataset is not None:
+            test_dataset_path = save_path / "test_dataset.parquet"
+            self.test_dataset.to_parquet(test_dataset_path)
+
         # Save metadata
         for meta_name, meta_obj in [
             ("dataset_metadata", self.dataset_metadata),
@@ -115,8 +127,36 @@ class CuratedContainer:
 
         return save_path
 
+
+    def load_test_dataset(self, path: Path | str | None = None) -> pd.DataFrame:
+        """Load the test dataset if it exists."""
+        if self.test_dataset is not None:
+            return self.test_dataset
+
+        if path is None:
+            if self.loaded_from_path is not None:
+                path = self.loaded_from_path
+            else:
+                raise ValueError("Path must be provided to load test dataset if not already loaded.")
+
+        self.test_dataset = self._load_test_dataset(path=path)
+
+        if self.test_dataset is None:
+            raise ValueError("Curation container path does not include a test dataset!")
+
+        return self.test_dataset
+
     @staticmethod
-    def load(path: Path | str, *, load_dataset: bool = True) -> CuratedContainer:
+    def _load_test_dataset(path: Path) -> pd.DataFrame | None:
+        """Load the test dataset if it exists."""
+        test_dataset_path = path / "test_dataset.parquet"
+        if test_dataset_path.exists():
+            return pd.read_parquet(test_dataset_path)
+        else:
+            return None
+
+    @staticmethod
+    def load(path: Path | str, *, load_dataset: bool = True, load_test_data: bool = False) -> CuratedContainer:
         """Load a curated data collection from a path directory."""
         if isinstance(path, str):
             path = Path(path)
@@ -127,6 +167,10 @@ class CuratedContainer:
             dataset = pd.read_parquet(dataset_path)
         else:
             dataset = None
+        if load_test_data:
+            test_dataset = CuratedContainer._load_test_dataset(path=path)
+        else:
+            test_dataset = None
 
         # Load metadata
         metadata_objs = {}
@@ -149,8 +193,10 @@ class CuratedContainer:
 
         return CuratedContainer(
             dataset=dataset,
+            test_dataset=test_dataset,
             dataset_metadata=metadata_objs["dataset_metadata"],
             task_metadata=metadata_objs["task_metadata"],
             experiment_metadata=metadata_objs["experiment_metadata"],
+            loaded_from_path=path,
             **container_metadata,
         )
