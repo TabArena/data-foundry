@@ -184,7 +184,7 @@ def get_recommended_grouped_splits(
             if len(unique_values) > 1:
                 multi_label_group_found = True
 
-    if (stratify_on is not None) and (multi_label_group_found):
+    if (stratify_on is not None) and multi_label_group_found:
         print(
             "Falling back to Repeated Stratified GroupKFold logic because groups "
             "contain multiple values for the stratify column."
