@@ -65,6 +65,11 @@ class CuratedContainer:
             self.checksum = self._create_checksum()
 
     @property
+    def unique_name(self) -> str:
+        """Return a unique name for the container."""
+        return f"{self.dataset_metadata.unique_name}/{self.uuid}"
+
+    @property
     def container_metadata(self) -> dict[str, str | None]:
         """Return a dictionary of the container's metadata."""
         assert self.uuid is not None, "UUID must be set."
