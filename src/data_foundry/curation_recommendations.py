@@ -3,7 +3,6 @@ from __future__ import annotations
 import pandas as pd
 
 
-
 def get_recommended_splits_dimensions(
     *, dataset: pd.DataFrame, group_on: str | None = None, time_on: str | None = None
 ) -> tuple[int, int, int | None]:
@@ -28,7 +27,6 @@ def get_recommended_splits_dimensions(
             * n_test_size: Size of the test set for single train-test split.
                 None if cross-validation is recommended.
     """
-
     if time_on is not None:
         raise ValueError(
             "We cannot provide recommend split dimensions for time-based splits. "
@@ -151,20 +149,13 @@ def get_recommended_grouped_splits(
         n_splits (int): Number of splits/folds for cross-validation.
         test_size (int | None): Size of the test set for single train-test split.
             If None, cross-validation is performed.
-        stratify_on (str | None): Column name to use for stratification. If None,
-            no stratification is applied.
-        group_on (str): Column name to use for grouping. If None, no
-            grouping is applied.
+        stratify_on (str | None): Column name to use for stratification.
+        group_on (str): Column name to use for grouping.
 
     Returns:
         dict[int, dict[int, tuple[list[int], list[int]]]]: A dictionary of
             train-test splits per repeat and fold.
     """
-    from sklearn.model_selection import (
-        StratifiedGroupKFold,
-        GroupKFold,
-    )
-
     # Sanity check that index is reset
     if not dataset.index.equals(pd.RangeIndex(start=0, stop=len(dataset))):
         raise ValueError(
@@ -174,42 +165,126 @@ def get_recommended_grouped_splits(
     if stratify_on is not None:
         print("Using Stratified Grouped splits.")
 
+    if n_repeats == 1 and n_splits == 1 and (test_size is None or test_size <= 0):
+        raise ValueError(
+            "test_size must be a positive integer for single train-test split!"
+        )
+
+    group_values: list[str | int] = []
+    group_samples: list[list[int]] = []
+    group_stratify: list[object] = []
+    multi_label_group_found: bool = False
+
+    for group_value, group_df in dataset.groupby(group_on, sort=False, observed=True):
+        group_values.append(group_value)
+        group_samples.append(group_df.index.tolist())
+        if stratify_on is not None:
+            unique_values = list(group_df[stratify_on].unique())
+            group_stratify.append(unique_values[0])
+            if len(unique_values) > 1:
+                multi_label_group_found = True
+
+    if (stratify_on is not None) and (multi_label_group_found):
+        print(
+            "Falling back to Repeated Stratified GroupKFold logic because groups "
+            "contain multiple values for the stratify column."
+        )
+        print("WARNING: we cannot guarantee that each class is in each split!")
+        return _get_grouped_splits_via_groupkfold(
+            dataset=dataset,
+            n_repeats=n_repeats,
+            n_splits=n_splits,
+            group_on=group_on,
+            test_size=test_size,
+            stratify_on=stratify_on,
+        )
+
+    group_dataset = pd.DataFrame({group_on: group_values})
+    if stratify_on is not None:
+        group_dataset[stratify_on] = group_stratify
+    group_dataset = group_dataset.reset_index(drop=True)
+
+    group_splits = get_recommended_iid_splits(
+        dataset=group_dataset,
+        n_repeats=n_repeats,
+        n_splits=n_splits,
+        test_size=test_size,
+        stratify_on=stratify_on,
+    )
+
+    def map_group_indices(indices: list[int]) -> list[int]:
+        mapped: list[int] = []
+        for group_idx in indices:
+            mapped.extend(group_samples[group_idx])
+        return mapped
+
+    mapped_splits: dict[int, dict[int, tuple[list[int], list[int]]]] = {}
+    all_groups = set(dataset[group_on].unique())
+    for repeat_i, folds in group_splits.items():
+        mapped_splits[repeat_i] = {}
+        for fold_i, (train_group_idxs, test_group_idxs) in folds.items():
+            train_idxs = map_group_indices(train_group_idxs)
+            test_idxs = map_group_indices(test_group_idxs)
+
+            # sanity check that groups are not mixed between train and test
+            train_groups = set(dataset.iloc[train_idxs][group_on].unique())
+            test_groups = set(dataset.iloc[test_idxs][group_on].unique())
+            # no group should appear in both train and test
+            assert train_groups.isdisjoint(test_groups)
+            # together they should match the full set of groups
+            assert train_groups.union(test_groups) == all_groups
+
+            mapped_splits[repeat_i][fold_i] = (
+                train_idxs,
+                test_idxs,
+            )
+
+    return mapped_splits
+
+
+def _get_grouped_splits_via_groupkfold(
+    *,
+    dataset: pd.DataFrame,
+    n_repeats: int,
+    n_splits: int,
+    group_on: str,
+    test_size: int | None,
+    stratify_on: str | None,
+) -> dict[int, dict[int, tuple[list[int], list[int]]]]:
+    """Fallback for grouped splits."""
+    from sklearn.model_selection import GroupKFold, StratifiedGroupKFold
+
     X = dataset
     y = dataset[stratify_on] if stratify_on is not None else None
     group = dataset[group_on]
-
-    splits = {}
+    splits: dict[int, dict[int, tuple[list[int], list[int]]]] = {}
     SPLIT_RANDOM_STATE = 4267
-    splitter = GroupKFold if stratify_on is None else StratifiedGroupKFold
+    splitter_cls = StratifiedGroupKFold if stratify_on is not None else GroupKFold
 
-    # Single train-test split
     if n_repeats == 1 and n_splits == 1:
-        n_groups = group.nunique()
-        # approximate number of folds to use so that each test fold contains
-        # roughly `test_size` groups. Bound the number of folds between 2 and
-        # n_groups to ensure the splitter accepts the value.
         if test_size is None or test_size <= 0:
-            raise ValueError("test_size must be a positive integer for single train-test split!")
+            raise ValueError(
+                "test_size must be a positive integer for single train-test split!"
+            )
 
+        n_groups = group.nunique()
         approximate_splits = round(n_groups / test_size)
         approximate_splits = int(max(2, min(n_groups, approximate_splits)))
 
-        splitter_inst = splitter(
+        splitter_inst = splitter_cls(
             n_splits=approximate_splits, shuffle=True, random_state=SPLIT_RANDOM_STATE
         )
-        train_index, test_index = next(
-            splitter_inst.split(X=X, y=y, groups=group)
-        )
-
-        splits[0] = {0: (train_index.tolist(), test_index.tolist())}
-        return splits
+        train_index, test_index = next(splitter_inst.split(X=X, y=y, groups=group))
+        return {0: {0: (train_index.tolist(), test_index.tolist())}}
 
     for repeat_i in range(n_repeats):
         splits[repeat_i] = {}
-
-        sklearn_splits = splitter(
-            n_splits=n_splits, random_state=SPLIT_RANDOM_STATE + repeat_i, shuffle=True
-        ).split(X=X, y=y, groups=group)
+        splitter_inst = splitter_cls(
+            n_splits=n_splits,
+            random_state=SPLIT_RANDOM_STATE + repeat_i,
+            shuffle=True,
+        )
+        sklearn_splits = splitter_inst.split(X=X, y=y, groups=group)
 
         for fold_idx, (train_index, test_index) in enumerate(sklearn_splits):
             splits[repeat_i][fold_idx] = (train_index.tolist(), test_index.tolist())
