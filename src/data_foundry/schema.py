@@ -265,5 +265,19 @@ class PredictiveMLSplitsMetadata:
     for their specific purpose.
     """
 
+    time_horizon: str | int | float | None = None
+    """The time horizon for the splits for temporal splits.
+    Defines the amount of time between the training and test splits for temporal splits.
+    """
+    time_horizon_unit: Literal["steps", "days", "weeks", "months", "years"] | str | None = None
+    """The unit for the time_horizon.
+
+        - If "steps", then the time_horizon is interpreted as a number of steps (e.g. rows) of time points in
+            the test data. Use this if the time information is time index and not a timestamp.
+        - If "months" or "years", then the time_horizon is interpreted as the number of calender months.
+            This ignores that months vary in size!
+        - If "days" or "weeks", then the time_horizon is interpreted as unit of 1 or 7 days, respectively.
+    """
+
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""

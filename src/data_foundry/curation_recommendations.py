@@ -305,6 +305,8 @@ def subsample_temporal(
     """Subsample existing train/test splits, reduce the dataframe to only those rows,
     reset the index, and return the new train/test indices.
 
+    NOTE: we assume the input indices are iloc-based indices!
+
     Args:
         df: Source dataframe.
         train_idx: Existing train indices referring to rows in `df`.
@@ -327,10 +329,20 @@ def subsample_temporal(
     stratify_data = df[stratify_on] if stratify_on is not None else None
 
     if len(train_idx) > train_cap:
-        train_idx, _ = train_test_split(train_idx, train_size=train_cap, random_state=seed, stratify=stratify_data)
+        train_idx, _ = train_test_split(
+            train_idx,
+            train_size=train_cap,
+            random_state=seed,
+            stratify=stratify_data.iloc[train_idx] if stratify_data is not None else None,
+        )
 
     if len(test_idx) > test_cap:
-        test_idx, _ = train_test_split(test_idx, train_size=test_cap, random_state=seed, stratify=stratify_data)
+        test_idx, _ = train_test_split(
+            test_idx,
+            train_size=test_cap,
+            random_state=seed,
+            stratify=stratify_data.iloc[test_idx] if stratify_data is not None else None,
+        )
 
     # Preserve train first, then test, so rebuilding indices is trivial and stable.
     selected_idx = np.concatenate([train_idx, test_idx])
