@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 
+if TYPE_CHECKING:
+    from data_foundry.schema import GroupLabelTypes
+
 
 def get_recommended_splits_dimensions(
-    *, dataset: pd.DataFrame, group_on: str | None = None, time_on: str | None = None
+    *,
+    dataset: pd.DataFrame,
+    group_on: str | None = None,
+    time_on: str | None = None,
+    group_labels: GroupLabelTypes | None = None,
 ) -> tuple[int, int, int | None]:
     """Returns the recommended number of repeats and folds for IID splits.
 
@@ -36,7 +45,7 @@ def get_recommended_splits_dimensions(
 
     n_samples = len(dataset)
 
-    if group_on is not None:
+    if (group_on is not None) and (group_labels == "per_group"):
         n_groups = dataset[group_on].nunique()
         print(f"Providing recommendations based on number of groups ({n_groups}).")
         n_samples = n_groups
@@ -137,10 +146,21 @@ def get_recommended_grouped_splits(
     n_repeats: int,
     n_splits: int,
     group_on: str,
+    group_labels: GroupLabelTypes,
     test_size: int | None,
     stratify_on: str | None,
+    show_splits: bool = False,
+    target_on: str | None = None,
 ):
     """Generates recommended grouped splits for the dataset.
+
+    This logic has two pathways:
+        1) If group_labels is "per_group", we assume that each group has a single unique value
+            for the stratify column and create group splits on just the group IDs.
+            This ignores the size of the groups when splitting.
+        2) If group_labels is "per_sample", we use sklearn's GroupKFold or StratifiedGroupKFold,
+            which takes into account the size of the groups when splitting, but does not guarantee
+            perfect stratification at the sample level when stratify_on is not None.
 
     Parameters:
         dataset (pd.DataFrame): The dataset to split.
@@ -150,6 +170,10 @@ def get_recommended_grouped_splits(
             If None, cross-validation is performed.
         stratify_on (str | None): Column name to use for stratification.
         group_on (str): Column name to use for grouping.
+        group_labels: Specification of group label type
+        show_splits: Whether to print out the distribution of target and group labels in
+            the generated splits for sanity checking.
+        target_on: only needed for show_splits to give an overview of the target distribution.
 
     Returns:
         dict[int, dict[int, tuple[list[int], list[int]]]]: A dictionary of
@@ -165,6 +189,56 @@ def get_recommended_grouped_splits(
     if n_repeats == 1 and n_splits == 1 and (test_size is None or test_size <= 0):
         raise ValueError("test_size must be a positive integer for single train-test split!")
 
+    if (group_labels == "per_group") and (stratify_on is not None):
+        is_per_group = (dataset.groupby(group_on, observed=True)[stratify_on].nunique() == 1).all()
+        if not is_per_group:
+            raise ValueError(
+                "group_labels is set to 'per_group', but not all groups have "
+                "a single unique value for the stratify column!"
+            )
+
+    if group_labels == "per_sample":
+        print("Using label-per-sample grouped splits.")
+        splits = _get_grouped_splits_via_groupkfold(
+            dataset=dataset,
+            n_repeats=n_repeats,
+            n_splits=n_splits,
+            group_on=group_on,
+            test_size=test_size,
+            stratify_on=stratify_on,
+        )
+    else:
+        print("Using label-per-group grouped splits.")
+        splits = _get_grouped_splits_via_index_split(
+            dataset=dataset,
+            n_repeats=n_repeats,
+            n_splits=n_splits,
+            group_on=group_on,
+            test_size=test_size,
+            stratify_on=stratify_on,
+        )
+    if show_splits:
+        _show_grouped_splits(
+            df=dataset,
+            splits=splits,
+            group_on=group_on,
+            target_on=target_on,
+        )
+    return splits
+
+
+def _get_grouped_splits_via_index_split(
+    *,
+    dataset: pd.DataFrame,
+    n_repeats: int,
+    n_splits: int,
+    group_on: str,
+    test_size: int | None,
+    stratify_on: str | None,
+) -> dict[int, dict[int, tuple[list[int], list[int]]]]:
+    """Create grouped splits by performing normal IID splits on the group indices.
+    This logic ignores the impact of group sizes!
+    """
     group_values: list[str | int] = []
     group_samples: list[list[int]] = []
     group_stratify: list[object] = []
@@ -179,33 +253,21 @@ def get_recommended_grouped_splits(
             if len(unique_values) > 1:
                 multi_label_group_found = True
 
-    if (stratify_on is not None) and multi_label_group_found:
-        print(
-            "Falling back to Repeated Stratified GroupKFold logic because groups "
-            "contain multiple values for the stratify column."
-        )
-        print("WARNING: we cannot guarantee that each class is in each split!")
-        return _get_grouped_splits_via_groupkfold(
-            dataset=dataset,
-            n_repeats=n_repeats,
-            n_splits=n_splits,
-            group_on=group_on,
-            test_size=test_size,
-            stratify_on=stratify_on,
-        )
+    if multi_label_group_found:
+        raise ValueError("Multi-label group found but: groper_labels='per_group'!")
 
     group_dataset = pd.DataFrame({group_on: group_values})
     if stratify_on is not None:
         group_dataset[stratify_on] = group_stratify
     group_dataset = group_dataset.reset_index(drop=True)
 
-    # Update test size for group_dataset
     if test_size is not None:
-        n_groups = len(group_dataset)
-        approximate_splits = round(n_groups / test_size)
-        approximate_splits = int(max(2, min(n_groups, approximate_splits)))
-        test_size = n_groups // approximate_splits
+        # Adjust test_size such that it is approximately the right size when mapping
+        # back from groups to samples, based on the average group size.
+        avg_samples_per_group = np.mean([len(samples) for samples in group_samples])
+        test_size = test_size // avg_samples_per_group
 
+    print(f"Creating index-based splits for {len(group_dataset)} groups")
     group_splits = get_recommended_iid_splits(
         dataset=group_dataset,
         n_repeats=n_repeats,
@@ -354,3 +416,47 @@ def subsample_temporal(
     new_test_idx = np.arange(n_train, len(df_reduced))
 
     return df_reduced, new_train_idx.tolist(), new_test_idx.tolist()
+
+
+def _show_grouped_splits(
+    *,
+    df: pd.DataFrame,
+    splits: dict[int, dict[int, tuple[list[int], list[int]]]],
+    group_on: str,
+    target_on: str | None = None,
+):
+    """Simple utility to show the distribution of groups and target labels in the generated splits."""
+    for repeat_idx, fold_values in splits.items():
+        for fold_idx, (train_index, test_index) in fold_values.items():
+            train_data = df.iloc[train_index]
+            test_data = df.iloc[test_index]
+
+            if target_on is None:
+                train_target_dist, test_target_dist = None, None
+            elif df.iloc[test_index][target_on].dtype.name == "category":
+                train_target_dist = df.iloc[train_index][target_on].value_counts(normalize=True).to_dict()
+                test_target_dist = df.iloc[test_index][target_on].value_counts(normalize=True).to_dict()
+
+                train_classes = list(np.unique(df.iloc[train_index][target_on]))
+                test_classes = list(np.unique(df.iloc[test_index][target_on]))
+                if train_classes != test_classes:
+                    raise ValueError(
+                        f"Warning: Train and test splits have different classes for target {target_on}!"
+                        f"\n\tTrain classes: {train_classes}"
+                        f"\n\tTest classes: {test_classes}"
+                        f"\n\tMissing in train: {set(test_classes) - set(train_classes)}"
+                        f"\n\tMissing in test: {set(train_classes) - set(test_classes)}"
+                    )
+            else:
+                train_target_dist = df.iloc[train_index][target_on].mean()
+                test_target_dist = df.iloc[test_index][target_on].mean()
+
+            print(f"""Repeat {repeat_idx}, Fold {fold_idx}:
+            Train N: {len(train_index)}, Test N: {len(test_index)}
+            Target Distribution:
+            \tTrain target distribution: {train_target_dist}
+            \tTest target distribution: {test_target_dist}
+            Group Distribution {group_on}:
+            \tTrain: {len(train_data[group_on].unique())}
+            \tTest: {len(test_data[group_on].unique())}
+            """)

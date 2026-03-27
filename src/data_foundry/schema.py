@@ -60,6 +60,7 @@ ProblemTypeClassification = [
     "binary_classification",
     "multiclass_classification",
 ]
+GroupLabelTypes = Literal["per_group", "per_sample"]
 
 
 # TODO: fields that might be cool to add in the future
@@ -190,8 +191,6 @@ class PredictiveMLTaskMetadata:
     """
     stratify_on: str | list[str] | None = None
     """The name of the column used for stratification during splitting."""
-    group_on: str | list[str] | None = None
-    """The name of the column used for grouping during splitting."""
     time_on: str | None = None
     """The name of the column used for temporal splitting.
 
@@ -203,6 +202,15 @@ class PredictiveMLTaskMetadata:
     we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split,
     so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it.
     Thus, ensure to set `group_time_on` in that case.
+    """
+    group_on: str | list[str] | None = None
+    """The name of the column used for grouping during splitting."""
+    group_labels: GroupLabelTypes | None = None
+    """Whether the group labels are per group or per sample.
+        - If "per_group", then the group_on column contains one label per group,
+            and all samples in the same group have the same label.
+        - If "per_sample", then the group_on column contains a label for each sample,
+            and samples in the same group can have different labels.
     """
     group_time_on: str | None = None
     """The name of the column that contains the time information for each group in case of grouped data.
@@ -225,6 +233,11 @@ class PredictiveMLTaskMetadata:
         if (self.group_on is not None) and (self.time_on is not None):
             raise ValueError(
                 "group_on and time_on cannot both be set for the same task.Did you want to set `group_time_on`?"
+            )
+        if (self.group_on is not None) and (self.group_labels is None):
+            raise ValueError(
+                "If group_on is set, then group_labels must also be set to indicate whether "
+                "the group labels are per group or per sample."
             )
 
     @property
