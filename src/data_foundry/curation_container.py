@@ -103,7 +103,7 @@ class CuratedContainer:
 
     def save(self):
         """Save the curated data collection to the local data directory."""
-        save_path = self.dataset_metadata.path / self.uuid
+        save_path = self.dataset_metadata.get_save_path(uuid=self.uuid)
         save_path.mkdir(parents=True, exist_ok=True)
 
         # Save dataset

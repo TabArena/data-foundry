@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 
@@ -40,6 +41,11 @@ def get_recommended_splits_dimensions(
         print(f"Providing recommendations based on number of groups ({n_groups}).")
         n_samples = n_groups
 
+    # Dataset provides enough samples for a single train-test split with a large test set,
+    # so we recommend that.
+    if n_samples >= 1_250_000:
+        return 1, 1, 250_000
+
     n_train_samples = int(n_samples * 2 / 3)
     if n_train_samples < 500:
         return 20, 3, None
@@ -47,10 +53,9 @@ def get_recommended_splits_dimensions(
         return 10, 3, None
     if n_train_samples < 250_000:
         return 3, 3, None
-    if n_train_samples < 1_000_000:
-        return 1, 3, None
 
-    return 1, 1, 250_000
+    # if n_train_samples < 1_000_000:
+    return 1, 3, None
 
 
 def get_recommended_iid_splits(
@@ -84,9 +89,7 @@ def get_recommended_iid_splits(
 
     # Sanity check that index is reset
     if not dataset.index.equals(pd.RangeIndex(start=0, stop=len(dataset))):
-        raise ValueError(
-            "Dataset index must be a RangeIndex starting from 0 (do reset_index!)."
-        )
+        raise ValueError("Dataset index must be a RangeIndex starting from 0 (do reset_index!).")
 
     if stratify_on is not None:
         print("Using Stratified IID splits.")
@@ -110,13 +113,9 @@ def get_recommended_iid_splits(
 
     # Repeated (Stratified) K-Fold Cross-Validation
     if stratify_on is not None:
-        rkf = RepeatedStratifiedKFold(
-            n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE
-        )
+        rkf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE)
     else:
-        rkf = RepeatedKFold(
-            n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE
-        )
+        rkf = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE)
     sklearn_splits = rkf.split(
         X=X,
         y=y,
@@ -158,17 +157,13 @@ def get_recommended_grouped_splits(
     """
     # Sanity check that index is reset
     if not dataset.index.equals(pd.RangeIndex(start=0, stop=len(dataset))):
-        raise ValueError(
-            "Dataset index must be a RangeIndex starting from 0 (do reset_index!)."
-        )
+        raise ValueError("Dataset index must be a RangeIndex starting from 0 (do reset_index!).")
 
     if stratify_on is not None:
         print("Using Stratified Grouped splits.")
 
     if n_repeats == 1 and n_splits == 1 and (test_size is None or test_size <= 0):
-        raise ValueError(
-            "test_size must be a positive integer for single train-test split!"
-        )
+        raise ValueError("test_size must be a positive integer for single train-test split!")
 
     group_values: list[str | int] = []
     group_samples: list[list[int]] = []
@@ -203,6 +198,13 @@ def get_recommended_grouped_splits(
     if stratify_on is not None:
         group_dataset[stratify_on] = group_stratify
     group_dataset = group_dataset.reset_index(drop=True)
+
+    # Update test size for group_dataset
+    if test_size is not None:
+        n_groups = len(group_dataset)
+        approximate_splits = round(n_groups / test_size)
+        approximate_splits = int(max(2, min(n_groups, approximate_splits)))
+        test_size = n_groups // approximate_splits
 
     group_splits = get_recommended_iid_splits(
         dataset=group_dataset,
@@ -263,17 +265,15 @@ def _get_grouped_splits_via_groupkfold(
 
     if n_repeats == 1 and n_splits == 1:
         if test_size is None or test_size <= 0:
-            raise ValueError(
-                "test_size must be a positive integer for single train-test split!"
-            )
+            raise ValueError("test_size must be a positive integer for single train-test split!")
 
         n_groups = group.nunique()
-        approximate_splits = round(n_groups / test_size)
+        avg_rows_per_group = group.value_counts().average()
+        group_test_size = test_size / avg_rows_per_group
+        approximate_splits = round(n_groups / group_test_size)
         approximate_splits = int(max(2, min(n_groups, approximate_splits)))
 
-        splitter_inst = splitter_cls(
-            n_splits=approximate_splits, shuffle=True, random_state=SPLIT_RANDOM_STATE
-        )
+        splitter_inst = splitter_cls(n_splits=approximate_splits, shuffle=True, random_state=SPLIT_RANDOM_STATE)
         train_index, test_index = next(splitter_inst.split(X=X, y=y, groups=group))
         return {0: {0: (train_index.tolist(), test_index.tolist())}}
 
@@ -290,3 +290,55 @@ def _get_grouped_splits_via_groupkfold(
             splits[repeat_i][fold_idx] = (train_index.tolist(), test_index.tolist())
 
     return splits
+
+
+def subsample_temporal(
+    *,
+    df: pd.DataFrame,
+    train_idx: list[int],
+    test_idx: list[int],
+    train_cap: int = 1_000_000,
+    test_cap: int = 250_000,
+    seed: int = 42,
+    stratify_on: str | None = None,
+) -> tuple[pd.DataFrame, list[int], list[int]]:
+    """Subsample existing train/test splits, reduce the dataframe to only those rows,
+    reset the index, and return the new train/test indices.
+
+    Args:
+        df: Source dataframe.
+        train_idx: Existing train indices referring to rows in `df`.
+        test_idx: Existing test indices referring to rows in `df`.
+        train_cap: Maximum number of train samples to keep.
+        test_cap: Maximum number of test samples to keep.
+        seed: Random seed for reproducible subsampling.
+        stratify_on: Optional column name to use for stratified subsampling.
+            If None, no stratification is applied.
+
+    Returns:
+        df_reduced: Filtered dataframe with reset integer index.
+        new_train_idx: New train indices in `df_reduced`.
+        new_test_idx: New test indices in `df_reduced`.
+    """
+    from sklearn.model_selection import train_test_split
+
+    train_idx = np.asarray(train_idx)
+    test_idx = np.asarray(test_idx)
+    stratify_data = df[stratify_on] if stratify_on is not None else None
+
+    if len(train_idx) > train_cap:
+        train_idx, _ = train_test_split(train_idx, train_size=train_cap, random_state=seed, stratify=stratify_data)
+
+    if len(test_idx) > test_cap:
+        test_idx, _ = train_test_split(test_idx, train_size=test_cap, random_state=seed, stratify=stratify_data)
+
+    # Preserve train first, then test, so rebuilding indices is trivial and stable.
+    selected_idx = np.concatenate([train_idx, test_idx])
+
+    df_reduced = df.loc[selected_idx].copy().reset_index(drop=True)
+
+    n_train = len(train_idx)
+    new_train_idx = np.arange(n_train)
+    new_test_idx = np.arange(n_train, len(df_reduced))
+
+    return df_reduced, new_train_idx.tolist(), new_test_idx.tolist()

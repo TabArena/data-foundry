@@ -7,9 +7,7 @@ import pydantic
 
 MultilineStr = Annotated[str, "multiline"]
 
-DEFAULT_LOCAL_DATA_DIR = str(
-    Path(__file__).parent.parent.parent / "local-data-warehouse"
-)
+DEFAULT_LOCAL_DATA_DIR = str(Path(__file__).parent.parent.parent / "local-data-warehouse")
 
 # TODO: converge on set of domains we want to check
 Domain = Literal[
@@ -45,21 +43,19 @@ DataTags = Literal[
     "Non-IID",
     # What kind of non-iid task (i.e., split) the data represents
     #   - Only set Grouped XOR Temporal. PredictiveMLTaskMetadata has more details on the difference for splits.
-    "Temporal", # Split on temporal information (e.g. timestamp) to predict on the future.
-    "Grouped", # Split on groups (e.g. customers) to predict on unseen groups.
-    "GroupedTemporal", # Data that is split using grouped and temporal information - unsure if this exists.
+    "Temporal",  # Split on temporal information (e.g. timestamp) to predict on the future.
+    "Grouped",  # Split on groups (e.g. customers) to predict on unseen groups.
+    "GroupedTemporal",  # Data that is split using grouped and temporal information - unsure if this exists.
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
     # data that is IID by construction of the data.
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
-    "2ndTierData", # Data that is not of the highest quality but still a reasonable task
-    "WrongDomain", # Task that was transformed to another domain (like audio) to tabular.
+    "2ndTierData",  # Data that is not of the highest quality but still a reasonable task
+    "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
-ProblemType = Literal[
-    "binary_classification", "multiclass_classification", "regression"
-]
+ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",
     "multiclass_classification",
@@ -141,6 +137,16 @@ class DatasetMetadata:
     Set to None, if there are no comments (e.g., you only had to load a CSV file).
     """
 
+    version_from_unique_name: str | None = None
+    """Indicates if the datasets is a version of another dataset.
+    If the dataset is a version of another dataset, provide the unique_name of that dataset here.
+
+    This name will be used to group them together in the data warehouse and to keep a
+    linage of the dataset versions.
+    """
+    version_comment: MultilineStr | None = None
+    """Comment about the dataset version and how it differs from the original dataset."""
+
     local_data_directory_base: str = DEFAULT_LOCAL_DATA_DIR
     """Link to a directory that contains the all data related files."""
     type_adapter_id: str = "dataset-mold-v1"
@@ -148,8 +154,21 @@ class DatasetMetadata:
 
     @property
     def path(self) -> Path:
-        """Get the full local path to the dataset directory."""
-        return Path(self.local_data_directory_base) / self.unique_name
+        """Get the full local path to the dataset base directory."""
+        path_name = self.unique_name
+        if self.version_from_unique_name is not None:
+            path_name = self.version_from_unique_name
+
+        return Path(self.local_data_directory_base) / path_name
+
+    def get_save_path(self, uuid: str) -> Path:
+        """Get the version-aware save path for the dataset based on the provided uuid."""
+        base_path = self.path
+
+        if self.version_from_unique_name is not None:
+            base_path = base_path / "versions"
+
+        return base_path / uuid
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -175,23 +194,23 @@ class PredictiveMLTaskMetadata:
     """The name of the column used for grouping during splitting."""
     time_on: str | None = None
     """The name of the column used for temporal splitting.
-    
+
     Note, if you have temporal-grouped data and want to split the data such that you
     only predict on future groups, then do not set the group_on column. Since any temporal split
-    would automatically ensure that the test groups are all from the future. 
-    
+    would automatically ensure that the test groups are all from the future.
+
     In the cases where you do a grouped split and each group has rows ordered by a time index (e.g. a timestamp),
-    we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split, 
-    so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it. 
+    we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split,
+    so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it.
     Thus, ensure to set `group_time_on` in that case.
     """
     group_time_on: str | None = None
     """The name of the column that contains the time information for each group in case of grouped data.
-    
+
     This column name is not used for splitting!
-    
+
     Ensure to set this value if you have, for example, data about customers (group_on = "customer_id") and each row
-    has a timestamp (group_time_on = "timestamp"), then we can read this metadata as "grouped data where the 
+    has a timestamp (group_time_on = "timestamp"), then we can read this metadata as "grouped data where the
     groups are ordered in time based on the group_time_on column".
     Moreover, the could include cases where different groups are not on the same time scale, but the model shall
     predict for a group based on the time information of that group. Thus, the pipeline needs to know this column
@@ -205,8 +224,7 @@ class PredictiveMLTaskMetadata:
         # either group_on or time_on can be set, but not both
         if (self.group_on is not None) and (self.time_on is not None):
             raise ValueError(
-                "group_on and time_on cannot both be set for the same task."
-                "Did you want to set `group_time_on`?"
+                "group_on and time_on cannot both be set for the same task.Did you want to set `group_time_on`?"
             )
 
     @property
