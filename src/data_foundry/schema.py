@@ -7,9 +7,7 @@ import pydantic
 
 MultilineStr = Annotated[str, "multiline"]
 
-DEFAULT_LOCAL_DATA_DIR = str(
-    Path(__file__).parent.parent.parent / "local-data-warehouse"
-)
+DEFAULT_LOCAL_DATA_DIR = str(Path(__file__).parent.parent.parent / "local-data-warehouse")
 
 # TODO: converge on set of domains we want to check
 Domain = Literal[
@@ -45,25 +43,24 @@ DataTags = Literal[
     "Non-IID",
     # What kind of non-iid task (i.e., split) the data represents
     #   - Only set Grouped XOR Temporal. PredictiveMLTaskMetadata has more details on the difference for splits.
-    "Temporal", # Split on temporal information (e.g. timestamp) to predict on the future.
-    "Grouped", # Split on groups (e.g. customers) to predict on unseen groups.
-    "GroupedTemporal", # Data that is split using grouped and temporal information - unsure if this exists.
+    "Temporal",  # Split on temporal information (e.g. timestamp) to predict on the future.
+    "Grouped",  # Split on groups (e.g. customers) to predict on unseen groups.
+    "GroupedTemporal",  # Data that is split using grouped and temporal information - unsure if this exists.
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
     # data that is IID by construction of the data.
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
-    "2ndTierData", # Data that is not of the highest quality but still a reasonable task
-    "WrongDomain", # Task that was transformed to another domain (like audio) to tabular.
+    "2ndTierData",  # Data that is not of the highest quality but still a reasonable task
+    "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
-ProblemType = Literal[
-    "binary_classification", "multiclass_classification", "regression"
-]
+ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",
     "multiclass_classification",
 ]
+GroupLabelTypes = Literal["per_group", "per_sample"]
 
 
 # TODO: fields that might be cool to add in the future
@@ -141,6 +138,16 @@ class DatasetMetadata:
     Set to None, if there are no comments (e.g., you only had to load a CSV file).
     """
 
+    version_from_unique_name: str | None = None
+    """Indicates if the datasets is a version of another dataset.
+    If the dataset is a version of another dataset, provide the unique_name of that dataset here.
+
+    This name will be used to group them together in the data warehouse and to keep a
+    linage of the dataset versions.
+    """
+    version_comment: MultilineStr | None = None
+    """Comment about the dataset version and how it differs from the original dataset."""
+
     local_data_directory_base: str = DEFAULT_LOCAL_DATA_DIR
     """Link to a directory that contains the all data related files."""
     type_adapter_id: str = "dataset-mold-v1"
@@ -148,8 +155,21 @@ class DatasetMetadata:
 
     @property
     def path(self) -> Path:
-        """Get the full local path to the dataset directory."""
-        return Path(self.local_data_directory_base) / self.unique_name
+        """Get the full local path to the dataset base directory."""
+        path_name = self.unique_name
+        if self.version_from_unique_name is not None:
+            path_name = self.version_from_unique_name
+
+        return Path(self.local_data_directory_base) / path_name
+
+    def get_save_path(self, uuid: str) -> Path:
+        """Get the version-aware save path for the dataset based on the provided uuid."""
+        base_path = self.path
+
+        if self.version_from_unique_name is not None:
+            base_path = base_path / "versions"
+
+        return base_path / uuid
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -171,27 +191,34 @@ class PredictiveMLTaskMetadata:
     """
     stratify_on: str | list[str] | None = None
     """The name of the column used for stratification during splitting."""
-    group_on: str | list[str] | None = None
-    """The name of the column used for grouping during splitting."""
     time_on: str | None = None
     """The name of the column used for temporal splitting.
-    
+
     Note, if you have temporal-grouped data and want to split the data such that you
     only predict on future groups, then do not set the group_on column. Since any temporal split
-    would automatically ensure that the test groups are all from the future. 
-    
+    would automatically ensure that the test groups are all from the future.
+
     In the cases where you do a grouped split and each group has rows ordered by a time index (e.g. a timestamp),
-    we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split, 
-    so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it. 
+    we wont use that for splitting as a grouped split will ensure that all rows from a group are in the same split,
+    so there is no risk of data leakage. We still want to keep this metadata as pipelines might need it.
     Thus, ensure to set `group_time_on` in that case.
+    """
+    group_on: str | list[str] | None = None
+    """The name of the column used for grouping during splitting."""
+    group_labels: GroupLabelTypes | None = None
+    """Whether the group labels are per group or per sample.
+        - If "per_group", then the group_on column contains one label per group,
+            and all samples in the same group have the same label.
+        - If "per_sample", then the group_on column contains a label for each sample,
+            and samples in the same group can have different labels.
     """
     group_time_on: str | None = None
     """The name of the column that contains the time information for each group in case of grouped data.
-    
+
     This column name is not used for splitting!
-    
+
     Ensure to set this value if you have, for example, data about customers (group_on = "customer_id") and each row
-    has a timestamp (group_time_on = "timestamp"), then we can read this metadata as "grouped data where the 
+    has a timestamp (group_time_on = "timestamp"), then we can read this metadata as "grouped data where the
     groups are ordered in time based on the group_time_on column".
     Moreover, the could include cases where different groups are not on the same time scale, but the model shall
     predict for a group based on the time information of that group. Thus, the pipeline needs to know this column
@@ -205,8 +232,12 @@ class PredictiveMLTaskMetadata:
         # either group_on or time_on can be set, but not both
         if (self.group_on is not None) and (self.time_on is not None):
             raise ValueError(
-                "group_on and time_on cannot both be set for the same task."
-                "Did you want to set `group_time_on`?"
+                "group_on and time_on cannot both be set for the same task.Did you want to set `group_time_on`?"
+            )
+        if (self.group_on is not None) and (self.group_labels is None):
+            raise ValueError(
+                "If group_on is set, then group_labels must also be set to indicate whether "
+                "the group labels are per group or per sample."
             )
 
     @property
@@ -245,6 +276,20 @@ class PredictiveMLSplitsMetadata:
     It is up to the user to ensure that the splits are valid and make sense for the
     task at hand. Moreover, code that ingests these splits should also validate them
     for their specific purpose.
+    """
+
+    time_horizon: str | int | float | None = None
+    """The time horizon for the splits for temporal splits.
+    Defines the amount of time between the training and test splits for temporal splits.
+    """
+    time_horizon_unit: Literal["steps", "days", "weeks", "months", "years"] | str | None = None
+    """The unit for the time_horizon.
+
+        - If "steps", then the time_horizon is interpreted as a number of steps (e.g. rows) of time points in
+            the test data. Use this if the time information is time index and not a timestamp.
+        - If "months" or "years", then the time_horizon is interpreted as the number of calender months.
+            This ignores that months vary in size!
+        - If "days" or "weeks", then the time_horizon is interpreted as unit of 1 or 7 days, respectively.
     """
 
     type_adapter_id: str = "predictive-ml-splits-mold-v1"

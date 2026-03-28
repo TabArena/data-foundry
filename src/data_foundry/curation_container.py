@@ -103,8 +103,10 @@ class CuratedContainer:
 
     def save(self):
         """Save the curated data collection to the local data directory."""
-        save_path = self.dataset_metadata.path / self.uuid
+        save_path = self.dataset_metadata.get_save_path(uuid=self.uuid)
         save_path.mkdir(parents=True, exist_ok=True)
+        warehouse_path = save_path.relative_to(self.dataset_metadata.local_data_directory_base)
+        print(f"Saving curated container to {warehouse_path}")
 
         # Save dataset
         dataset_path = save_path / "dataset.parquet"
@@ -131,7 +133,6 @@ class CuratedContainer:
             json.dump(self.container_metadata, f, indent=2)
 
         return save_path
-
 
     def load_test_dataset(self, path: Path | str | None = None) -> pd.DataFrame:
         """Load the test dataset if it exists."""

@@ -60,6 +60,10 @@ def run_all_checks(
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
 
+    object_cols = data.select_dtypes(include=["object"]).columns.tolist()
+    if object_cols:
+        raise TypeError(f"DataFrame contains object dtype columns: {object_cols}")
+
     # Validate inputs
     if target_feature not in data.columns:
         raise ValueError(f"target_feature '{target_feature}' is not in the DataFrame.")
