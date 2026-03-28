@@ -66,6 +66,7 @@ def toy_test_dataset() -> pd.DataFrame:
     )
 
 
+# --- Save / load round-trip ---
 def test_curated_container_save_load_checksum_and_files(make_toy_objects):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
 
@@ -201,20 +202,7 @@ def test_load_test_dataset_raises_without_path_or_file(make_toy_objects):
         loaded.load_test_dataset()
 
 
-def test_checksum_changes_when_dataset_changes(make_toy_objects):
-    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
-    curated = CuratedContainer(
-        dataset=df.copy(),
-        dataset_metadata=dataset_metadata,
-        task_metadata=task_metadata,
-        experiment_metadata=splits_metadata,
-    )
-    checksum_before = curated._create_checksum()
-    curated.dataset.loc[0, "feat1"] = 999.0
-    checksum_after = curated._create_checksum()
-    assert checksum_before != checksum_after
-
-
+# --- Backward compatibility ---
 def test_load_backward_compatible_licence_key(make_toy_objects):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
@@ -235,3 +223,177 @@ def test_load_backward_compatible_licence_key(make_toy_objects):
     loaded = CuratedContainer.load(save_path)
     assert loaded.dataset_metadata.license is None
 
+
+# --- Checksum behaviour ---
+def test_checksum_changes_when_dataset_changes(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df.copy(),
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    checksum_before = curated._create_checksum()
+    curated.dataset.loc[0, "feat1"] = 999.0
+    checksum_after = curated._create_checksum()
+    assert checksum_before != checksum_after
+
+
+def test_checksum_is_deterministic(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    assert curated._create_checksum() == curated._create_checksum()
+
+
+def test_checksum_changes_when_task_metadata_changes(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    task_metadata_alt = PredictiveMLTaskMetadata(
+        target_column_name="target",
+        problem_type="binary_classification",
+        objective_metric_name="different_metric",
+    )
+    c1 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    c2 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata_alt,
+        experiment_metadata=splits_metadata,
+    )
+    assert c1.checksum != c2.checksum
+
+
+def test_checksum_changes_when_experiment_metadata_changes(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    splits_alt = PredictiveMLSplitsMetadata(
+        splits_comment="different splits",
+        splits={0: {0: ([0, 2], [1, 3])}},
+    )
+    c1 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    c2 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_alt,
+    )
+    assert c1.checksum != c2.checksum
+
+
+# --- UUID and properties ---
+def test_uuid_is_auto_generated(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    assert curated.uuid is not None
+    assert isinstance(curated.uuid, str)
+    assert len(curated.uuid) > 0
+
+
+def test_uuid_uniqueness(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    c1 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    c2 = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    assert c1.uuid != c2.uuid
+
+
+def test_unique_name_property(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    assert curated.unique_name == f"toy_ds/{curated.uuid}"
+
+
+def test_container_metadata_property(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    meta = curated.container_metadata
+    assert set(meta.keys()) == {"uuid", "checksum", "version_comment"}
+    assert meta["uuid"] == curated.uuid
+    assert meta["checksum"] == curated.checksum
+    assert meta["version_comment"] is None
+
+
+def test_version_comment_saved_and_loaded(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+        version_comment="First stable release",
+    )
+    save_path = curated.save()
+    loaded = CuratedContainer.load(save_path)
+    assert loaded.version_comment == "First stable release"
+
+
+def test_versioned_save_path(tmp_path):
+    df = pd.DataFrame({"feat": [1, 2], "target": [0, 1]})
+    dataset_metadata = DatasetMetadata(
+        unique_name="toy_v2",
+        dataset_year="2025",
+        domain_str="finance",
+        dataset_source="Kaggle",
+        original_dataset_source_download_link="http://example",
+        download_description="desc",
+        academic_reference_bibtex="bib",
+        academic_reference_bibtex_key="key",
+        license=None,
+        data_tags=["IID"],
+        curation_comments=None,
+        local_data_directory_base=str(tmp_path),
+        version_from_unique_name="toy_base",
+    )
+    task_metadata = PredictiveMLTaskMetadata(
+        target_column_name="target",
+        problem_type="binary_classification",
+        objective_metric_name="roc_auc",
+    )
+    splits_metadata = PredictiveMLSplitsMetadata(splits_comment="s", splits={0: {0: ([0], [1])}})
+
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    save_path = curated.save()
+    assert "versions" in str(save_path)
+    assert save_path.exists()
