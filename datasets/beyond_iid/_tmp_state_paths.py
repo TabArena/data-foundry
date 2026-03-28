@@ -27,8 +27,10 @@ GROUPED_TESTING = [
     "musk/019d3199-b80d-7a81-913b-6bf76f29a4b8",
     "micro_mass/019d319c-d4d7-7b90-9c84-1201e1f4eb51",
     "parkinsons_biomedical_voice_measurements/019d31a1-372f-7747-8f85-5a2f4db00156",
+    "amex_non_iid/versions/019d31ff-7b8d-7085-ad19-77fecaae5d49",
     # labels per sample
     "telemonitoring_parkinsons_biomedical_voice_measurements/019d3199-5680-7c5b-a46f-4e903e243c78",
     "dementia_prediction/019d319a-9692-77bc-adc4-1d10e79a59d6",
     "covertype/019d319b-4e2b-7eb3-b3ba-5082672806cb",
+    "sepsis_prediction/versions/019d31fc-b169-742d-b28a-140b6c6163a5",
 ]

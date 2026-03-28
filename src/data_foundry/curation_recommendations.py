@@ -265,7 +265,7 @@ def _get_grouped_splits_via_index_split(
         # Adjust test_size such that it is approximately the right size when mapping
         # back from groups to samples, based on the average group size.
         avg_samples_per_group = np.mean([len(samples) for samples in group_samples])
-        test_size = test_size // avg_samples_per_group
+        test_size = int(test_size // avg_samples_per_group)
 
     print(f"Creating index-based splits for {len(group_dataset)} groups")
     group_splits = get_recommended_iid_splits(
@@ -330,7 +330,7 @@ def _get_grouped_splits_via_groupkfold(
             raise ValueError("test_size must be a positive integer for single train-test split!")
 
         n_groups = group.nunique()
-        avg_rows_per_group = group.value_counts().average()
+        avg_rows_per_group = group.value_counts().mean()
         group_test_size = test_size / avg_rows_per_group
         approximate_splits = round(n_groups / group_test_size)
         approximate_splits = int(max(2, min(n_groups, approximate_splits)))
