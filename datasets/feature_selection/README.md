@@ -4,6 +4,7 @@ The following datasets were only curated for the feature selection benchmark:
 - brasilian_houses
 - clock_protein_period
 - clock_protein_toxicity
+- coil_2000_insurance_policies
 - colon_tumor
 - framingham_heart_study
 - ionoshpere
@@ -57,7 +58,6 @@ The following datasets stem from the new_iid folder:
 - allstate_claims_severity
 - audiology_diagnosis
 - body_density_prediction
-- coil_2000_insurance_policies
 - credit_approval
 - drug_induced_autoimmunity_prediction
 - forest_fires
