@@ -36,6 +36,7 @@ DatasetSource = Literal[
     "GOV Website",
     "Customer",
     "Other",
+    "ASlib",
 ]
 DataTags = Literal[
     # Important tags for the task, feel free to add more that seem reasonable!
