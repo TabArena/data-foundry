@@ -36,4 +36,5 @@ GROUPED_TESTING = [
     "cardiotocography/019d436b-554c-7414-9550-bcd4d9b807dc",
     "sat11_hand_algo_runtime/019d4414-2726-7318-8ad1-e4c6d6f5907a",
     "asp_potassco_classification/019d446e-400c-7e01-96ee-3842694b51ef",
+    "video_transcoding_time_prediction/019d4511-c926-7192-9183-35f9cd8adb70",
 ]
