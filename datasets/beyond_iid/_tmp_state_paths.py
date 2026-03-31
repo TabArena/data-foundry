@@ -38,5 +38,5 @@ GROUPED_TESTING = [
     "asp_potassco_classification/019d446e-400c-7e01-96ee-3842694b51ef",
     "video_transcoding_time_prediction/019d4511-c926-7192-9183-35f9cd8adb70",
     "video_game_fps_prediction/019d4555-8f57-70ec-b003-1946e22f6185",
-    "electric_motor_temperature_prediction/019d4594-3ca7-7ce3-a81e-28afee1558e3",
+    "electric_motor_temperature_prediction/019d459a-334a-7077-812d-776a08a70ee2",
 ]
