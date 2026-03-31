@@ -33,4 +33,6 @@ GROUPED_TESTING = [
     "dementia_prediction/019d319a-9692-77bc-adc4-1d10e79a59d6",
     "covertype/019d319b-4e2b-7eb3-b3ba-5082672806cb",
     "sepsis_prediction/versions/019d31fc-b169-742d-b28a-140b6c6163a5",
+    "cardiotocography/019d436b-554c-7414-9550-bcd4d9b807dc",
+    "sat11_hand_algo_runtime/019d4414-2726-7318-8ad1-e4c6d6f5907a",
 ]
