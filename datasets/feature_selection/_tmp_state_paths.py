@@ -22,7 +22,7 @@ TEMPORAL_TESTING = [
     "credit_card_clients_default/019d4444-27b6-7cd6-81b7-8d97dfdb7bca",
     "customer_satisfaction_in_airline/019d4444-a63c-7efa-9537-5108e14ef4c0",
     "drug_induced_autoimmunity_prediction/019c9f82-d8aa-7c13-b593-d70835a80e0a",
-    "forest_fires/",
+    "forest_fires/019c71ac-de50-7c3e-bd8d-84dec1f5213f",
     "framingham_heart_study/019d4448-90df-7e75-b057-b72b7edfd6a8",
     "give_me_some_credit/019d4448-cbe4-71ad-9236-a9fe6a291951",
     "hazelnut_spread_contaminant_detection_10GHz/019d4452-ccab-7144-b341-ab8a2375aa88",
