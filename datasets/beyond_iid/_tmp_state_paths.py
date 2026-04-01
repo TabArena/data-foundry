@@ -35,4 +35,8 @@ GROUPED_TESTING = [
     "sepsis_prediction/versions/019d31fc-b169-742d-b28a-140b6c6163a5",
     "cardiotocography/019d436b-554c-7414-9550-bcd4d9b807dc",
     "sat11_hand_algo_runtime/019d4414-2726-7318-8ad1-e4c6d6f5907a",
+    "asp_potassco_classification/019d446e-400c-7e01-96ee-3842694b51ef",
+    "video_transcoding_time_prediction/019d4511-c926-7192-9183-35f9cd8adb70",
+    "video_game_fps_prediction/019d4555-8f57-70ec-b003-1946e22f6185",
+    "electric_motor_temperature_prediction/019d459a-334a-7077-812d-776a08a70ee2",
 ]

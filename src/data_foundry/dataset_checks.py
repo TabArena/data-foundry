@@ -68,6 +68,14 @@ def run_all_checks(
     if target_feature not in data.columns:
         raise ValueError(f"target_feature '{target_feature}' is not in the DataFrame.")
 
+    # Check if we have constant features (1 unique value, even with nans)
+    constant_cols = [c for c in data.columns if data[c].eq(data[c].iloc[0]).all()]
+    if constant_cols:
+        print(
+            f"Warning: Found {len(constant_cols)} constant feature(s) with 1 or "
+            f"fewer unique values (including NaNs): {constant_cols}"
+        )
+
     # Decide whether to sample for heavy operations
     n_rows = len(data)
     use_sampling = sample_frac is not None and n_rows > sample_threshold and 0.0 < sample_frac < 1.0
@@ -82,9 +90,11 @@ def run_all_checks(
         try:
             from tqdm.auto import tqdm  # type: ignore
         except Exception:
+
             def tqdm(x, **kwargs):
                 return x
     else:
+
         def tqdm(x, **kwargs):
             return x
 
@@ -302,9 +312,7 @@ def run_all_checks(
             top_k = min(10, len(cols))
             # `summary` was built earlier and contains a reset index column with original column names in 'index'
             if "n_unique" in summary.columns and "index" in summary.columns and top_k > 0:
-                cols_by_unique = list(
-                    summary.sort_values("n_unique", ascending=False)["index"].tolist()
-                )
+                cols_by_unique = list(summary.sort_values("n_unique", ascending=False)["index"].tolist())
                 top_cols = [c for c in cols_by_unique if c in cols]
             else:
                 top_cols = cols
@@ -313,7 +321,9 @@ def run_all_checks(
             top_cols = [c for c in top_cols if c != target_feature][:top_k]
 
             if len(top_cols) == 0:
-                raise ValueError("No top columns found; falling back to full duplicate detection (may be memory heavy).")
+                raise ValueError(
+                    "No top columns found; falling back to full duplicate detection (may be memory heavy)."
+                )
 
             # Stage 1: find candidate rows that collide on the top columns
             print(f"Using top-{len(top_cols)} columns for initial filtering: {top_cols}")
