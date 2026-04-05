@@ -1,9 +1,9 @@
 """Saving some paths to final data warehouse objects we can use to test pipelines."""
 
-# All datasets from TabArena-v0.1 except for anneal
 from __future__ import annotations
 
 OLD_IID = [
+    # All datasets from TabArena-v0.1 except for anneal
     "airfoil_self_noise/019d5a0c-3004-72c3-b77b-bc348a86d057",
     "amazon_employee_access/019d5a13-37b4-7594-8a48-a780986aac02",
     "aps_failure/019d5a19-a77e-7e75-9285-03d7590d92ac",
