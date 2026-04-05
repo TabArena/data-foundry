@@ -1,6 +1,7 @@
 # TODO
 
 ## Discussions
+* [infrared_thermography_features](new_iid/infrared_thermography_features) -> grouped data?
 * [phiusil_phishing](new_iid/phiusil_phishing) -> is grouped data?
 * Is label per group really a grouped data problem, or just IID with preprocessing? 
   * Amex IID > Amex non IID for splits? but Amex non IID allows for trying to learn the aggregation. Also sepsis prediction is weird. -> add amex iid as well?
