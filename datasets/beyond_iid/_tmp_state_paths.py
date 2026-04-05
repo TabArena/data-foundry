@@ -35,7 +35,25 @@ OLD_IID = [
     "in_vehicle_coupon_recommendation/019d5a7b-062c-76a7-932c-23529541fe88",
     "jm1/019d5a7c-b7d2-7552-901d-84a3d2cdf8cf",
     "kdd_cup_09_appetency/019d5a82-90fb-75cf-8d91-f257af303383",
-    # FIXME finish: stopped at marketing_campaign
+    "marketing_campaign/019d5cd5-f942-787a-8d75-a924527a671c",
+    "maternal_health_risk/019d5cd8-1d5f-758b-9fec-101f35e058e6",
+    "miami_housing/019d5cdf-824f-7703-84b4-8e6949a71166",
+    "mic/019d5ce5-2c20-7057-8545-8e291f3bd5e2",
+    "naticusdroid_android_permissions_dataset/019d5d44-d4d7-714b-b848-49e0ee9b00e6",
+    "online_shoppers_purchasing_intention_dataset/019d5d48-8a54-7743-9167-11e37104fcbe",
+    "physiochemical_protein/019d5d4e-a083-7edb-861a-a115682c9e57",
+    "polish_companies_bankruptcy/019d5d55-ca4c-701f-8dc8-99f3351ef2de",
+    "predict_students_dropout_and_academic_success/019d5d5e-c4bc-774e-97ee-19fe4e8a3021",
+    "qsar_biodeg/019d5d65-c601-77dd-80e6-8317575698cc",
+    "qsar_fish_toxicity/019d5d6a-e2fd-7264-a287-a64eb9d92da5",
+    "qsar_tid_11/019d5d79-dacf-75d3-ac6c-d9b7332d37a2",
+    "sdss_17/019d5d7e-67a0-731b-b8c6-251346c50866",
+    "seismic_bumps/019d5d87-13d4-740b-9d69-607682e7900e",
+    "splice/019d5d8a-93df-760e-affe-9f8fd3a5b2df",
+    "superconductivity/019d5d93-078c-7dc3-9455-e9e56481d7ec",
+    "taiwanese_bankruptcy_prediction/019d5d97-a099-74fa-a2ca-48f596397dfa",
+    "website_phishing/019d5da0-9be1-7a5a-b9c2-53bfc0f43aed",
+    "wine_quality/019d5da4-9f37-7398-845a-ecd6ad3317db",
 ]
 
 NEW_IID = []
