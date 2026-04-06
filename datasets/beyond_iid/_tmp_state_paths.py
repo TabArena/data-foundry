@@ -109,6 +109,7 @@ NEW_IID = [
     "wids_diabetes_mellitus/019d5dca-97d8-77e8-9938-c7284735aaed",
     "wine_world_cost/019d5dca-b064-738a-b8f2-656fb1808db8",
     "iranian_churn/019d5e89-8f4c-76f4-9a54-510d3e86de53",
+    "obesity_estimation/019d633a-b275-78cc-8a11-43693dff428b",
 ]
 
 
