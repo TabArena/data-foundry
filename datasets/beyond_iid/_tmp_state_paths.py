@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 OLD_IID = [
-    # All datasets from TabArena-v0.1 except for anneal
+    # All datasets from TabArena-v0.1 except for anneal and diabetes
     "airfoil_self_noise/019d5a0c-3004-72c3-b77b-bc348a86d057",
     "amazon_employee_access/019d5a13-37b4-7594-8a48-a780986aac02",
     "aps_failure/019d5a19-a77e-7e75-9285-03d7590d92ac",
@@ -18,7 +18,6 @@ OLD_IID = [
     "credit_card_clients_default/019d5a3b-bdd6-77da-b7ac-8e0530344f06",
     "credit_g/019d5a3e-45e9-73c3-8bbc-51310c58e706",
     "customer_satisfaction_in_airline/019d5a40-723c-766e-9204-b4b7a43433b9",
-    "diabetes/019d5a42-a734-7a8e-ab43-f20a26441cdf",
     "diabetes_130_us/019d5a45-e831-764b-acac-3b1d4b86efc1",
     "diamonds/019d5a49-17e3-7e0b-96e4-a249e9811d58",
     "ecommerce_shipping/019d5a4d-7f92-7bc7-a5fc-5a63ac679eef",
