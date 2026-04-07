@@ -26,7 +26,7 @@ OLD_IID = [
     "food_delivery_time/019d5a56-f4f0-7a67-ba99-b4488a29da26",
     "give_me_some_credit/019d5a5a-0489-724b-8585-d85f7f89ef19",
     "hazelnut_spread_contaminant_detection/019d5a5e-88ba-798d-b9ce-5d608eb75376",
-    "healthcare_insurance_expenses/019d5a62-7abf-7865-8e8a-52175c085ace",
+    "healthcare_insurance_expenses/019d67b9-c865-77be-a4a2-c2d2a1afe39a",
     "heloc/019d5a64-d939-7d49-bb24-54f75fe34648",
     "hiva_agnostic/019d5a6c-8da8-76cc-b302-67c9e72919e3",
     "houses/019d6777-66ca-79c0-bcd6-4facc94eaa64",
