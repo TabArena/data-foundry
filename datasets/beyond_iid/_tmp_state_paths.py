@@ -21,7 +21,7 @@ OLD_IID = [
     "diabetes_130_us/019d5a45-e831-764b-acac-3b1d4b86efc1",
     "diamonds/019d5a49-17e3-7e0b-96e4-a249e9811d58",
     "ecommerce_shipping/019d5a4d-7f92-7bc7-a5fc-5a63ac679eef",
-    "fiat_500/019d5a4f-cfd0-7f95-843b-6a5809c4dad6",
+    "fiat_500/019d67c1-1abf-75b3-8c25-08cc46339a1d",
     "fitness_club/019d5a51-af8e-757c-8da2-a796806da5ec",
     "food_delivery_time/019d5a56-f4f0-7a67-ba99-b4488a29da26",
     "give_me_some_credit/019d5a5a-0489-724b-8585-d85f7f89ef19",
