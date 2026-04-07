@@ -110,6 +110,7 @@ NEW_IID = [
     "iranian_churn/019d5e89-8f4c-76f4-9a54-510d3e86de53",
     "obesity_estimation/019d633a-b275-78cc-8a11-43693dff428b",
     "immoscout_german_house_prices/019d635a-0de5-72fd-857c-da243744398f",
+    "biogeographical_ancestry_prediction/019d6753-fe37-7501-920e-17a40971dca5",
 ]
 
 
