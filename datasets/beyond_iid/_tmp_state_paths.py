@@ -144,6 +144,7 @@ GROUPED = [
     "micro_mass/019d319c-d4d7-7b90-9c84-1201e1f4eb51",
     "parkinsons_biomedical_voice_measurements/019d31a1-372f-7747-8f85-5a2f4db00156",
     "amex_non_iid/versions/019d31ff-7b8d-7085-ad19-77fecaae5d49",
+    "pancreatic_cancer_mouse_detection/019d6e60-7e79-79a1-b9ea-265b0e1246bd",
     # labels per sample
     "telemonitoring_parkinsons_biomedical_voice_measurements/019d3199-5680-7c5b-a46f-4e903e243c78",
     "dementia_prediction/019d319a-9692-77bc-adc4-1d10e79a59d6",
