@@ -114,6 +114,7 @@ NEW_IID = [
     "homeq_default_prediction/019d6daf-af36-77f3-9486-588def3d195f",
     "lung_cancer/019d6e03-622d-7ca8-b1bf-5ef42a921012",
     "clock_protein_toxicity/019d6e6c-6a8b-7585-be08-ed7267a148b8",
+    "ovarian_cancer_prediction/019d6e94-c974-7a4a-9159-334be748c176",
 ]
 
 
