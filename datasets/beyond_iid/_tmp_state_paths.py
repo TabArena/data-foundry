@@ -113,6 +113,7 @@ NEW_IID = [
     "biogeographical_ancestry_prediction/019d6753-fe37-7501-920e-17a40971dca5",
     "homeq_default_prediction/019d6daf-af36-77f3-9486-588def3d195f",
     "lung_cancer/019d6e03-622d-7ca8-b1bf-5ef42a921012",
+    "clock_protein_toxicity/019d6e6c-6a8b-7585-be08-ed7267a148b8",
 ]
 
 
