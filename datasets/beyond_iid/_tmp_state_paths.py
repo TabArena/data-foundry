@@ -116,6 +116,7 @@ NEW_IID = [
     "clock_protein_toxicity/019d6e6c-6a8b-7585-be08-ed7267a148b8",
     "ovarian_cancer_prediction/019d6e94-c974-7a4a-9159-334be748c176",
     "prostate_cancer_detection/019d6eb1-3a29-7224-b0b4-c40eb7c82064",
+    "pca_genexp_prediction/019d6ec0-f5e5-76fd-afb3-b16610b309ba",
 ]
 
 
