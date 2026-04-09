@@ -144,7 +144,7 @@ TEMPORAL = [
 
 GROUPED = [
     # labels per group
-    "mice_protein_trisomy_discriminant/019d3198-e47c-7c16-8878-751d864d733a",
+    "mice_protein_trisomy_discriminant/019d732a-bdd8-712c-9db6-80bb69d8086f",
     "musk/019d3199-b80d-7a81-913b-6bf76f29a4b8",
     "micro_mass/019d319c-d4d7-7b90-9c84-1201e1f4eb51",
     "parkinsons_biomedical_voice_measurements/019d31a1-372f-7747-8f85-5a2f4db00156",
