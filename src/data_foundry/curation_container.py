@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 from pydantic import TypeAdapter
 from uuid6 import uuid7
+
+logger = logging.getLogger(__name__)
 
 from data_foundry.schema import (
     DatasetMetadata,
@@ -101,6 +104,39 @@ class CuratedContainer:
         h.update(encode_pydantic_metadata(self.experiment_metadata))
         return h.hexdigest()
 
+    @staticmethod
+    def _save_dtypes(df: pd.DataFrame, path: Path) -> None:
+        """Save DataFrame column dtypes to a JSON file."""
+        dtypes = {str(col): str(dtype) for col, dtype in df.dtypes.items()}
+        with path.open("w") as f:
+            json.dump(dtypes, f, indent=2)
+
+    @staticmethod
+    def _restore_dtypes(df: pd.DataFrame, path: Path) -> pd.DataFrame:
+        """Restore DataFrame column dtypes from a JSON file.
+
+        If the file does not exist, logs a warning and returns the DataFrame unchanged.
+        If a column cast fails, logs a warning for that column and skips it.
+        """
+        if not path.exists():
+            logger.warning("dtype file %s not found — skipping dtype restoration (backward compatibility).", path)
+            return df
+
+        with path.open("r") as f:
+            dtypes = json.load(f)
+
+        for col, dtype_str in dtypes.items():
+            if col not in df.columns:
+                logger.warning("Column '%s' from dtype file not found in DataFrame — skipping.", col)
+                continue
+            if str(df[col].dtype) == dtype_str:
+                continue
+            try:
+                df[col] = df[col].astype(dtype_str)
+            except (ValueError, TypeError) as e:
+                logger.warning("Failed to cast column '%s' to %s: %s — skipping.", col, dtype_str, e)
+        return df
+
     def save(self):
         """Save the curated data collection to the local data directory."""
         save_path = self.dataset_metadata.get_save_path(uuid=self.uuid)
@@ -111,10 +147,12 @@ class CuratedContainer:
         # Save dataset
         dataset_path = save_path / "dataset.parquet"
         self.dataset.to_parquet(dataset_path, index=False)
+        self._save_dtypes(self.dataset, save_path / "dtypes.json")
 
         if self.test_dataset is not None:
             test_dataset_path = save_path / "test_dataset.parquet"
             self.test_dataset.to_parquet(test_dataset_path)
+            self._save_dtypes(self.test_dataset, save_path / "test_dtypes.json")
 
         # Save metadata
         for meta_name, meta_obj in [
@@ -157,9 +195,9 @@ class CuratedContainer:
         """Load the test dataset if it exists."""
         test_dataset_path = path / "test_dataset.parquet"
         if test_dataset_path.exists():
-            return pd.read_parquet(test_dataset_path)
-        else:
-            return None
+            df = pd.read_parquet(test_dataset_path)
+            return CuratedContainer._restore_dtypes(df, path / "test_dtypes.json")
+        return None
 
     @staticmethod
     def load(path: Path | str, *, load_dataset: bool = True, load_test_data: bool = False) -> CuratedContainer:
@@ -171,12 +209,10 @@ class CuratedContainer:
         if load_dataset:
             dataset_path = path / "dataset.parquet"
             dataset = pd.read_parquet(dataset_path)
+            dataset = CuratedContainer._restore_dtypes(dataset, path / "dtypes.json")
         else:
             dataset = None
-        if load_test_data:
-            test_dataset = CuratedContainer._load_test_dataset(path=path)
-        else:
-            test_dataset = None
+        test_dataset = CuratedContainer._load_test_dataset(path=path) if load_test_data else None
 
         # Load metadata
         metadata_objs = {}
@@ -187,7 +223,7 @@ class CuratedContainer:
                 meta_data = json.load(f)
 
             # backward compatibility for typo (FIXME: remove in the future)
-            if "licence" in meta_data.keys():
+            if "licence" in meta_data:
                 meta_data["license"] = meta_data.pop("licence")
 
             metadata_objs[meta_name] = adapter.validate_python(meta_data)
