@@ -8,8 +8,9 @@ from pandas.api import types as pdtypes
 def run_all_checks(
     *,
     data: pd.DataFrame,
-    classification: bool,
+    classification: bool | None = None,
     target_feature: str,
+    problem_type: str | None = None,
     print_report: bool = True,
     duplicate_row_check: bool = True,
     duplicate_column_check: bool = True,
@@ -35,11 +36,20 @@ def run_all_checks(
     ----------
     data : pandas.DataFrame
         The dataset to evaluate.
-    classification : bool
-        Whether the task is classification. If True, the function will display
-        the distribution of the target classes.
+    classification : bool or None
+        Whether the task is classification. Kept for backward compatibility.
+        When *problem_type* is provided, classification is derived from it
+        automatically; passing *classification* explicitly is not required.
+        At least one of *classification* or *problem_type* must be given.
     target_feature : str
         Name of the target variable.
+    problem_type : str or None
+        The problem type (``"binary_classification"``,
+        ``"multiclass_classification"``, or ``"regression"``).  When provided
+        for classification problems the function validates that the target
+        column has ``category`` dtype and that the number of unique classes
+        matches the problem type (exactly 2 for binary, at least 3 for
+        multiclass).
     print_report : bool
         Whether to print the report to the console. Default is True.
     duplicate_column_check: bool
@@ -64,9 +74,36 @@ def run_all_checks(
     if object_cols:
         raise TypeError(f"DataFrame contains object dtype columns: {object_cols}")
 
+    # Derive classification flag: problem_type takes precedence, fall back to explicit flag
+    if problem_type is not None:
+        classification = problem_type in ("binary_classification", "multiclass_classification")
+    elif classification is None:
+        raise ValueError("At least one of 'classification' or 'problem_type' must be provided.")
+
     # Validate inputs
     if target_feature not in data.columns:
         raise ValueError(f"target_feature '{target_feature}' is not in the DataFrame.")
+
+    # Classification-specific validations (only when problem_type is provided)
+    if classification and (problem_type is not None):
+        target_dtype = data[target_feature].dtype
+        if not isinstance(target_dtype, pd.CategoricalDtype):
+            raise TypeError(
+                f"Classification target '{target_feature}' has dtype '{target_dtype}'. "
+                "Expected category dtype for classification tasks."
+            )
+
+        n_classes = data[target_feature].nunique()
+        if problem_type == "binary_classification" and n_classes != 2:
+            raise ValueError(
+                f"problem_type is 'binary_classification' but target '{target_feature}' "
+                f"has {n_classes} unique classes (expected exactly 2)."
+            )
+        if problem_type == "multiclass_classification" and n_classes < 3:
+            raise ValueError(
+                f"problem_type is 'multiclass_classification' but target '{target_feature}' "
+                f"has {n_classes} unique classes (expected at least 3)."
+            )
 
     # Check if we have constant features (1 unique value, even with nans)
     constant_cols = [c for c in data.columns if data[c].eq(data[c].iloc[0]).all()]
