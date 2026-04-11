@@ -29,6 +29,7 @@ Domain = Literal[
 ]
 DatasetSource = Literal[
     "Kaggle",
+    "Zindi",
     "OpenML",
     "GitHub",
     "UCI",
