@@ -317,6 +317,7 @@ def _get_grouped_splits_via_groupkfold(
 ) -> dict[int, dict[int, tuple[list[int], list[int]]]]:
     """Fallback for grouped splits."""
     from sklearn.model_selection import GroupKFold, StratifiedGroupKFold
+    from sklearn.utils.multiclass import type_of_target
 
     X = dataset
     y = dataset[stratify_on] if stratify_on is not None else None
@@ -324,6 +325,14 @@ def _get_grouped_splits_via_groupkfold(
     splits: dict[int, dict[int, tuple[list[int], list[int]]]] = {}
     SPLIT_RANDOM_STATE = 4267
     splitter_cls = StratifiedGroupKFold if stratify_on is not None else GroupKFold
+
+    if stratify_on:
+        target_type = type_of_target(y)
+        if target_type not in ("binary", "multiclass"):
+            raise ValueError(
+                f"StratifiedGroupKFold only supports binary and multiclass targets, but got {target_type}!",
+                "Solution: Cast your target to 'category' dtype with 2 or more unique values for stratification.",
+            )
 
     if n_repeats == 1 and n_splits == 1:
         if test_size is None or test_size <= 0:
