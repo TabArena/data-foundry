@@ -418,7 +418,9 @@ def subsample_temporal(
     # Preserve train first, then test, so rebuilding indices is trivial and stable.
     selected_idx = np.concatenate([train_idx, test_idx])
 
-    df_reduced = df.loc[selected_idx].copy().reset_index(drop=True)
+    # The input indices are documented as iloc-based positions, so preserve
+    # positional semantics even when the DataFrame has custom index labels.
+    df_reduced = df.iloc[selected_idx].copy().reset_index(drop=True)
 
     n_train = len(train_idx)
     new_train_idx = np.arange(n_train)

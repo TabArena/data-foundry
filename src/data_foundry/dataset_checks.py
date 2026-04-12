@@ -267,12 +267,13 @@ def run_all_checks(
         target_pct = (target_counts / n_rows * 100).round(2)
         target_df = pd.DataFrame({"count": target_counts, "pct": target_pct})
     else:
-        # Work directly on the target series to avoid copies; for distribution fitting, use sample_df when enabled
+        # Use the sampled frame directly so missing targets in sampled rows are
+        # dropped without breaking label alignment.
         target_series = data[target_feature]
         y_missing_count = int(target_series.isna().sum())
 
-        y_full = target_series[target_series.notna()].astype(float)
-        y = y_full if sample_idx is None else y_full.loc[sample_idx]
+        target_source = sample_df if sample_idx is not None else data
+        y = target_source[target_feature].dropna().astype(float)
         nonpos_pct = float((y <= 0).mean() * 100) if len(y) > 0 else 0.0
 
         # log transform choice
@@ -322,7 +323,7 @@ def run_all_checks(
         )
 
         # cleanup target-related temporaries
-        del target_series, y_full, y, y_log, y_pos
+        del target_series, target_source, y, y_log, y_pos
 
     if print_report:
         print("\n#### Sample Rows")
