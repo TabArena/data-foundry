@@ -146,6 +146,31 @@ def test_run_all_checks_sampling_branch_runs(base_df):
     assert set(target_df.columns) == {"count", "pct"}
 
 
+def test_run_all_checks_sampling_regression_handles_missing_targets():
+    df = pd.DataFrame(
+        {
+            "f1": range(10),
+            "target": [1.0, None, 3.0, 4.0, None, 6.0, 7.0, 8.0, 9.0, 10.0],
+        }
+    )
+
+    _, summary, _, _, target_df = run_all_checks(
+        data=df,
+        problem_type="regression",
+        target_feature="target",
+        print_report=False,
+        sample_threshold=5,
+        sample_frac=0.5,
+        sample_random_state=0,
+        duplicate_row_check=False,
+        duplicate_column_check=False,
+    )
+
+    assert "examples" in summary.columns
+    assert target_df["y_missing_count"].iloc[0] == 2
+    assert target_df["dist_hint"].iloc[0] == "insufficient_data"
+
+
 # --- Duplicate detection ---
 def test_run_all_checks_duplicate_checks_prints(capsys, base_df):
     run_all_checks(

@@ -400,3 +400,28 @@ def test_subsample_temporal_no_stratification(make_dataset):
     assert len(new_train_idx) == 50
     assert len(new_test_idx) == 20
     assert set(new_train_idx).isdisjoint(set(new_test_idx))
+
+
+def test_subsample_temporal_uses_iloc_positions_for_non_range_index():
+    df = pd.DataFrame(
+        {
+            "feat": [10, 11, 12, 13],
+            "target": pd.Categorical([0, 1, 0, 1]),
+        },
+        index=[100, 101, 102, 103],
+    )
+
+    df_reduced, new_train_idx, new_test_idx = subsample_temporal(
+        df=df,
+        train_idx=[0, 1],
+        test_idx=[2, 3],
+        train_cap=10,
+        test_cap=10,
+        seed=42,
+        stratify_on=None,
+    )
+
+    assert df_reduced["feat"].tolist() == [10, 11, 12, 13]
+    assert df_reduced.index.tolist() == [0, 1, 2, 3]
+    assert new_train_idx == [0, 1]
+    assert new_test_idx == [2, 3]
