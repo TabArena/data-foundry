@@ -94,7 +94,7 @@ NEW_IID = [
     "mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef",
     "otto_group_product_classification_challenge/019d736f-6330-78c4-91bb-c37e46162244",
     "porto_seguro/019d736f-86ed-700f-96c9-8f4be8546db1",
-    "pva_revenue_prediction_kddcup98/019d736f-e91d-72ea-acc4-9d2c2b139bab",
+    "pva_revenue_prediction_kddcup98/019d8e0b-bebc-7290-b45a-9400dfbbb772",
     "qsar_aquatic_toxicity/019d7370-0517-71a1-9e18-dc2a826fa01a",
     "regensburg_pediatric_appendicitis/019d7370-1dc6-7c1e-8ff1-80ddeb4c4207",
     "santander_customer_satisfaction/019d7370-56f7-7b35-ba45-c77b1e3c531b",
