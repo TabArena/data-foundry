@@ -131,7 +131,7 @@ TEMPORAL = [
     "kick/019d744f-147d-721e-affc-94b58645c0ad",
     "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
     "real_estate_valuation/019d7384-cde4-77bd-a865-3a6e40882d55",
-    "sberbank_housing_market_forecasting/019d7384-f3e1-7248-bbfc-f8115677fa9a",
+    "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     # Has Text features
     "california_house_prices_2020/019d7388-c562-72b3-a533-5f588dc737c9",
