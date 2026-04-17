@@ -2,6 +2,15 @@
 
 from __future__ import annotations
 
+TODO = [
+    "5g_energy_consumption", # grouped
+    "ghanas_indigenous_intel", # temporal
+    "ieee_fraud_detection", # temporal
+    "anes_voting_2026", # temporal
+    "early_learning_prediction", # grouped
+    "rossmann_store_sales", # temporal
+]
+
 OLD_IID = [
     # All datasets from TabArena-v0.1 except for anneal and diabetes
     "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",
@@ -130,7 +139,7 @@ TEMPORAL = [
     "hotel_booking_demand/019d744d-e681-74c7-88af-71937e88720d",
     "kick/019d744f-147d-721e-affc-94b58645c0ad",
     "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
-    "real_estate_valuation/019d7384-cde4-77bd-a865-3a6e40882d55",
+    # "real_estate_valuation/019d7384-cde4-77bd-a865-3a6e40882d55", # deprecated due to data quality issues
     "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     # Has Text features
