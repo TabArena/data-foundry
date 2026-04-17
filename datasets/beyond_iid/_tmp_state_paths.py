@@ -9,6 +9,8 @@ TODO = [
     "anes_voting_2026", # temporal
     "early_learning_prediction", # grouped
     "rossmann_store_sales", # temporal
+    "hotel_booking_demand", # temporal - RERUN
+    "garments_worker_productivity", # temporal
 ]
 
 OLD_IID = [
@@ -136,7 +138,6 @@ TEMPORAL = [
     "cooking_time/versions/019d737d-b4b1-7c24-8930-70a2c242b3f9",
     "delivery_eta/versions/019d7382-df54-7dd3-8198-0567d7499858",
     "home_credit_default_stability/versions/019d7383-f45a-72f7-ac99-09447cf6d41f",
-    "hotel_booking_demand/019d744d-e681-74c7-88af-71937e88720d",
     "kick/019d744f-147d-721e-affc-94b58645c0ad",
     "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
     # "real_estate_valuation/019d7384-cde4-77bd-a865-3a6e40882d55", # deprecated due to data quality issues
