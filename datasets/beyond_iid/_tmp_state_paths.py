@@ -126,7 +126,7 @@ TEMPORAL = [
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     "hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c",
     "ghanas_indigenous_intel/019db4a7-bea3-76f5-8e30-bef055c10b03",
-    "ieee_fraud_detection/019db4ac-af93-7b01-9255-e42bcd42e627",
+    "ieee_fraud_detection/019db516-2f8e-7e50-a8c4-f1c57754f52c",
     "anes_voting_2026/019db4ba-6124-7a56-a0b5-9df8811adc2f",
     "rossmann_store_sales/019db4fb-6d9e-7c15-b8cb-1bf97ea88782",
     "garments_worker_productivity/019db501-f4c4-7de2-b626-fcb769c7d82e",
