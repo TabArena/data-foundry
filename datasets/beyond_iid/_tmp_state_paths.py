@@ -2,16 +2,6 @@
 
 from __future__ import annotations
 
-TODO = [
-    "5g_energy_consumption", # grouped
-    "ghanas_indigenous_intel", # temporal
-    "ieee_fraud_detection", # temporal
-    "anes_voting_2026", # temporal
-    "early_learning_prediction", # grouped
-    "rossmann_store_sales", # temporal
-    "garments_worker_productivity", # temporal
-]
-
 OLD_IID = [
     # All datasets from TabArena-v0.1 except for anneal and diabetes
     "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",
@@ -135,7 +125,11 @@ TEMPORAL = [
     "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     "hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c",
-    # Has Text features
+    "ghanas_indigenous_intel/019db4a7-bea3-76f5-8e30-bef055c10b03",
+    "ieee_fraud_detection/019db4ac-af93-7b01-9255-e42bcd42e627",
+    "anes_voting_2026/019db4ba-6124-7a56-a0b5-9df8811adc2f",
+    "rossmann_store_sales/019db4fb-6d9e-7c15-b8cb-1bf97ea88782",
+    "garments_worker_productivity/019db501-f4c4-7de2-b626-fcb769c7d82e",
     "california_house_prices_2020/019d7388-c562-72b3-a533-5f588dc737c9",
     "coffee_rating_prediction/019d7388-dffd-7bc4-ab3d-40bf6581786e",
     "consumer_complaints/versions/019d738b-4c6e-751f-972a-5f63b1508f70",
@@ -153,6 +147,8 @@ GROUPED = [
     "amex_non_iid/versions/019d7455-0e4e-7261-9842-93177684d486",
     "pancreatic_cancer_mouse_detection/019d7391-358e-725a-bc70-bbee346e9267",
     # labels per sample
+    "early_learning_predictors/019db4ff-b5e9-7b27-80b1-8cf2ca025d20",
+    "5g_energy_consumption/019db4c5-d45f-7c07-80c9-bdd75ea01338",
     "telemonitoring_parkinsons_biomedical_voice_measurements/019d7391-4b65-7d0e-a950-684a098c3df9",
     "dementia_prediction/019d7391-61e5-7cca-9a66-e85718233be9",
     "covertype/019d7391-8e33-757b-b38a-79ec188fa001",
