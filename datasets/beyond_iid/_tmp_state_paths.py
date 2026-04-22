@@ -72,7 +72,6 @@ NEW_IID = [
     "biomechanical_orthopaedic_prediction/019d736a-4c2d-74b6-95a3-c63bd4b8fff7",
     "blood_tests_drink_prediction/019d736a-5d45-743a-b7c5-11da6b494fb7",
     "body_density_prediction/019d736a-6e2b-77a5-ae25-1222ef4fe4e9",
-    "chronic_kidney_disease/019d736a-7fb8-75a2-b734-3007a0b73c9d",
     "cirrhosis_patient_survival_prediction/019d736a-9116-7589-9cad-4cee540f2926",
     "credit_approval/019d736a-a27c-7c85-90c5-ca1d5dc849bd",
     "drug_induced_autoimmunity_prediction/019d736a-b4b1-7f51-9563-dde2b6ecd948",
@@ -85,7 +84,6 @@ NEW_IID = [
     "gallstone_disease/019d736b-3795-7523-ac59-9fbe676ebc70",
     "heart_disease_cleveland/019d736b-4900-714b-8dfc-be588ce802c3",
     "heart_disease_hungary/019d736b-5a1a-7c95-92f0-8c2fe5334ad2",
-    "heart_disease_switzerland/019d736b-6b4a-7fdd-98ca-cc9fb596ca6c",
     "heart_disease_va_long_beach/019d736b-7c92-71e1-a6d6-27a91ed15d3d",
     "heart_failure_followup_survival/019d736b-8d9f-7f20-8f5c-45207fb0251d",
     "hepatitis_c_prediction/019d736b-9eba-79b8-8c5a-78d95163e286",
@@ -94,12 +92,9 @@ NEW_IID = [
     "homesite_quote_conversion/019d736d-c045-7597-b0e9-665db9c61dac",
     "horse_colic_survival/019d736d-db15-7ad1-b407-b937aa958bd9",
     "indian_liver_patient_dataset/019d736d-ec03-75de-b8e9-075fcdde7993",
-    "japanese_credit_screening/019d7448-47ff-7854-96d2-af799a5270a5",
-    "keel_appendicitis/019d736e-0dd5-79ae-a591-2ecb2349fe34",
     "labour_inspection_compliance/019d736e-5a12-720a-9281-b652d1acae27",
     "ljubljana_breast_cancer/019d736e-6ea7-7889-b0ff-20fbdd628b8a",
     "ljubljana_primary_tumor/019d736e-819e-7f44-a8b2-5b93d4cce230",
-    "lymphography/019d736e-95bd-706c-bfde-81923c5af586",
     "mercari_price_suggestion/019d736e-d881-72ea-b2fb-663546914423",
     "mercari_price_suggestion/versions/019d736f-26fd-73bd-8853-dc219e5f4ed5",
     "mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef",
@@ -125,9 +120,7 @@ NEW_IID = [
     "homeq_default_prediction/019d7374-cab8-700e-97f3-9c55ea980153",
     "lung_cancer/019d7375-0c48-7822-8f4e-5e071cbcabe5",
     "clock_protein_toxicity/019d7375-2841-7bfb-a6da-5adfdcd43d98",
-    "ovarian_cancer_prediction/019d7375-7dd3-73dc-929b-0920229c06c2",
     "prostate_cancer_detection/019d7375-de7b-7b43-8340-ea47165661d3",
-    "pca_genexp_prediction/019d7376-206a-713c-86be-9d76eefe1448",
     "lung_cancer_epithelial_genexp/019d7376-82a5-76cc-b1ce-92dc200f3173",
 ]
 
@@ -140,7 +133,6 @@ TEMPORAL = [
     "home_credit_default_stability/versions/019d7383-f45a-72f7-ac99-09447cf6d41f",
     "kick/019d744f-147d-721e-affc-94b58645c0ad",
     "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
-    # "real_estate_valuation/019d7384-cde4-77bd-a865-3a6e40882d55", # deprecated due to data quality issues
     "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     # Has Text features
