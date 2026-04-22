@@ -9,7 +9,6 @@ TODO = [
     "anes_voting_2026", # temporal
     "early_learning_prediction", # grouped
     "rossmann_store_sales", # temporal
-    "hotel_booking_demand", # temporal - RERUN
     "garments_worker_productivity", # temporal
 ]
 
@@ -100,7 +99,7 @@ NEW_IID = [
     "mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef",
     "otto_group_product_classification_challenge/019d736f-6330-78c4-91bb-c37e46162244",
     "porto_seguro/019d736f-86ed-700f-96c9-8f4be8546db1",
-    "pva_revenue_prediction_kddcup98/019d8e0b-bebc-7290-b45a-9400dfbbb772",
+    "pva_revenue_prediction_kddcup98/019db49b-9c05-72b8-b4a5-7b967a18225b",
     "qsar_aquatic_toxicity/019d7370-0517-71a1-9e18-dc2a826fa01a",
     "regensburg_pediatric_appendicitis/019d7370-1dc6-7c1e-8ff1-80ddeb4c4207",
     "santander_customer_satisfaction/019d7370-56f7-7b35-ba45-c77b1e3c531b",
@@ -135,12 +134,13 @@ TEMPORAL = [
     "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
     "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
+    "hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c",
     # Has Text features
     "california_house_prices_2020/019d7388-c562-72b3-a533-5f588dc737c9",
     "coffee_rating_prediction/019d7388-dffd-7bc4-ab3d-40bf6581786e",
     "consumer_complaints/versions/019d738b-4c6e-751f-972a-5f63b1508f70",
     "lending_club/versions/019d738c-5edd-7437-9116-e3bc87a8b0c5",
-    "kickstarter/019d738d-1f88-76ce-b22e-a63ed579b280",
+    "kickstarter/019db497-6b35-71e0-9c6b-f4a7286f8f6f",
     "sf_permit_time/019d738d-80c6-71a6-99f0-e3e0955ce2d0",
 ]
 
