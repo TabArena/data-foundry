@@ -84,7 +84,6 @@ NEW_IID = [
     "labour_inspection_compliance/019d736e-5a12-720a-9281-b652d1acae27",
     "ljubljana_breast_cancer/019d736e-6ea7-7889-b0ff-20fbdd628b8a",
     "ljubljana_primary_tumor/019d736e-819e-7f44-a8b2-5b93d4cce230",
-    "mercari_price_suggestion/019d736e-d881-72ea-b2fb-663546914423",
     "mercari_price_suggestion/versions/019d736f-26fd-73bd-8853-dc219e5f4ed5",
     "mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef",
     "otto_group_product_classification_challenge/019d736f-6330-78c4-91bb-c37e46162244",
