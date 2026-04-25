@@ -1,4 +1,4 @@
-"""Dataset Insight Plots
+"""Dataset Insight Plots.
 
 Each function produces one self-contained figure (saved as PDF + PNG)
 in the `output_plots/` directory next to this file.
@@ -17,11 +17,12 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import LogNorm
 from matplotlib.offsetbox import (
     AnchoredOffsetbox,
+    DrawingArea,
     HPacker,
     TextArea,
     VPacker,
 )
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Rectangle
 from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 
 SCRIPT_DIR = Path(__file__).parent
@@ -38,7 +39,7 @@ FEATURE_TYPE_COLORS = {
     "Numeric": BRIGHT[0],  # blue
     "Categorical": BRIGHT[1],  # orange
     "Binary": BRIGHT[3],
-    "Date/Time": BRIGHT[4], # "#FAFF19",
+    "Date/Time": BRIGHT[4],  # "#FAFF19",
     "Text": BRIGHT[2],
 }
 
@@ -73,25 +74,27 @@ PROBLEM_TYPE_ORDER = ["binary_classification", "regression", "multiclass_classif
 
 def set_style() -> None:
     sns.set_theme(style="whitegrid", context="paper")
-    plt.rcParams.update({
-        "font.family": "serif",
-        "font.size": 11,
-        "axes.titlesize": 13,
-        "axes.titleweight": "semibold",
-        "axes.labelsize": 11,
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
-        "legend.fontsize": 10,
-        "legend.title_fontsize": 10,
-        "axes.grid": True,
-        "grid.alpha": 0.35,
-        "grid.linestyle": "--",
-        "grid.linewidth": 0.6,
-        "axes.edgecolor": "0.2",
-        "axes.linewidth": 0.8,
-        "pdf.fonttype": 42,
-        "ps.fonttype": 42,
-    })
+    plt.rcParams.update(
+        {
+            "font.family": "serif",
+            "font.size": 11,
+            "axes.titlesize": 13,
+            "axes.titleweight": "semibold",
+            "axes.labelsize": 11,
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
+            "legend.fontsize": 10,
+            "legend.title_fontsize": 10,
+            "axes.grid": True,
+            "grid.alpha": 0.35,
+            "grid.linestyle": "--",
+            "grid.linewidth": 0.6,
+            "axes.edgecolor": "0.2",
+            "axes.linewidth": 0.8,
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+        }
+    )
 
 
 set_style()
@@ -100,9 +103,7 @@ set_style()
 def load_data() -> pd.DataFrame:
     df = pd.read_csv(INPUT_CSV)
     duplicates = df["name"].duplicated()
-    assert not duplicates.any(), (
-        f"Input data has duplicate names: {df.loc[duplicates, 'name'].tolist()}"
-    )
+    assert not duplicates.any(), f"Input data has duplicate names: {df.loc[duplicates, 'name'].tolist()}"
     # Hotfix missing metadata
     rossmann = df["name"] == "rossmann_store_sales"
     df.loc[rossmann, "time_horizon"] = 42
@@ -140,10 +141,7 @@ def plot_domain_breakdown(
     else:
         top = counts
 
-    labels = [
-        lbl if lbl.startswith("Other") else lbl.title()
-        for lbl in top.index
-    ]
+    labels = [lbl if lbl.startswith("Other") else lbl.title() for lbl in top.index]
 
     fig, ax = plt.subplots(figsize=(7.0, 4.6))
 
@@ -179,20 +177,18 @@ def plot_domain_breakdown(
 def plot_feature_type_stack(
     df: pd.DataFrame,
     feature_parts: list[tuple[str, str, object]] = FEATURE_PARTS_WITH_BINARY,
-    sort_by_col: str ="num_numerical_non_binary_cols",
-    save_name: str ="feature_type_stack_with_binary",
+    sort_by_col: str = "num_numerical_non_binary_cols",
+    save_name: str = "feature_type_stack_with_binary",
 ) -> None:
     order = (df[sort_by_col] / df["num_cols"]).sort_values().index
-    shares = pd.DataFrame({
-        name: df.loc[order, col] / df.loc[order, "num_cols"]
-        for name, col, _ in feature_parts
-    }).reset_index(drop=True)
+    shares = pd.DataFrame(
+        {name: df.loc[order, col] / df.loc[order, "num_cols"] for name, col, _ in feature_parts}
+    ).reset_index(drop=True)
     feature_names = [name for name, _, _ in feature_parts]
     palette = {name: color for name, _, color in feature_parts}
 
-    long_df = (
-        shares.reset_index(names="dataset_idx")
-        .melt(id_vars="dataset_idx", var_name="feature_type", value_name="share")
+    long_df = shares.reset_index(names="dataset_idx").melt(
+        id_vars="dataset_idx", var_name="feature_type", value_name="share"
     )
 
     fig, ax = plt.subplots(figsize=(6.0, 4))
@@ -220,18 +216,43 @@ def plot_feature_type_stack(
     ax.set_ylabel("Share of columns")
 
     feature_names = [*feature_names[:-2], feature_names[-1], feature_names[-2]]
-    handles = [Patch(facecolor=palette[name], edgecolor="white", label=name)
-               for name in feature_names]
-    ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, -0.28),
-              ncol=len(feature_names), frameon=False)
+
+    def _legend_entry(name: str) -> HPacker:
+        rect_w, rect_h = 14, 9
+        da = DrawingArea(rect_w, rect_h, 0, 0)
+        da.add_artist(
+            Rectangle(
+                (0, 0),
+                rect_w,
+                rect_h,
+                facecolor=palette[name],
+                edgecolor="white",
+                linewidth=0.5,
+            )
+        )
+        label = TextArea(name, textprops=dict(fontsize=plt.rcParams["legend.fontsize"]))
+        return HPacker(children=[da, label], align="center", pad=0, sep=4)
+
+    row1 = HPacker(children=[_legend_entry(n) for n in feature_names[:3]], align="center", pad=0, sep=12)
+    row2 = HPacker(children=[_legend_entry(n) for n in feature_names[3:]], align="center", pad=0, sep=12)
+    legend_box = VPacker(children=[row1, row2], align="center", pad=0, sep=2)
+    ab = AnchoredOffsetbox(
+        loc="lower center",
+        child=legend_box,
+        pad=0.4,
+        borderpad=0,
+        frameon=True,
+        bbox_to_anchor=(0.5, 1.02),
+        bbox_transform=ax.transAxes,
+    )
+    ab.patch.set_edgecolor("0.6")
+    ab.patch.set_linewidth(0.8)
+    ax.add_artist(ab)
     ax.grid(axis="x", visible=False)
 
     fig.tight_layout()
     save_fig(fig, name=save_name, subdir="main_paper")
     fig.show()
-
-
-
 
 
 # ---------------------------------------------------------------------------
@@ -263,13 +284,12 @@ def plot_dataset_year_timeline(df: pd.DataFrame) -> None:
         ax=ax,
     )
 
-    ax.set_xlabel("Dataset Release Year")
+    ax.set_xlabel("Year")
     ax.set_ylabel("Number of Datasets")
     ax.set_xticks(np.arange(1985, year_max + 1, 5))
     ax.set_xlim(year_min - 0.5, year_max + 1)
 
-    handles = [Patch(facecolor=palette[t], edgecolor="white", label=TASK_TYPE_LABELS[t])
-               for t in task_order]
+    handles = [Patch(facecolor=palette[t], edgecolor="white", label=TASK_TYPE_LABELS[t]) for t in task_order]
     ax.legend(handles=handles, title="Task Type", loc="upper left", frameon=False)
 
     fig.tight_layout()
@@ -340,11 +360,9 @@ def plot_dataset_composition_bars(df: pd.DataFrame, top_n_domains: int = 4) -> N
     named_src = ["UCI", "Kaggle"]
     named_src = [s for s in named_src if s in counts_src.index]
     others = counts_src.drop(labels=named_src, errors="ignore")
-    src_segs: list[tuple[str, int]] = [
-        (name, int(counts_src[name])) for name in named_src
-    ]
+    src_segs: list[tuple[str, int]] = [(name, int(counts_src[name])) for name in named_src]
     if len(others) > 0:
-        other_label = f"Other\n(OpenML, ...)"
+        other_label = "Other\n(OpenML, ...)"
         src_segs.append((other_label, int(others.sum())))
     rows.append(("Source", src_segs))
 
@@ -373,19 +391,27 @@ def plot_dataset_composition_bars(df: pd.DataFrame, top_n_domains: int = 4) -> N
         for seg_label, count in segs:
             frac = count / total
             color = cmap(norm(frac))
-            ax.barh(y, frac, left=left, height=bar_height,
-                    color=color, edgecolor="white", linewidth=0.8)
+            ax.barh(y, frac, left=left, height=bar_height, color=color, edgecolor="white", linewidth=0.8)
             if frac >= 0.05:
                 ax.text(
-                    left + frac / 2, y + 0.04, seg_label,
-                    ha="center", va="bottom",
-                    fontsize=8, color="black", fontweight="bold",
+                    left + frac / 2,
+                    y + 0.04,
+                    seg_label,
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                    color="black",
+                    fontweight="bold",
                 )
                 ax.text(
-                    left + frac / 2, y - 0.04,
+                    left + frac / 2,
+                    y - 0.04,
                     f"{count} ({frac * 100:.0f}%)",
-                    ha="center", va="top",
-                    fontsize=8, color="black", fontweight="medium",
+                    ha="center",
+                    va="top",
+                    fontsize=8,
+                    color="black",
+                    fontweight="medium",
                 )
             left += frac
 
@@ -419,8 +445,7 @@ def _colored_axis_label(
     for i, (text, color) in enumerate(parts):
         if i > 0:
             children.append(TextArea(separator, textprops=dict(color="0.3", fontsize=fontsize)))
-        children.append(TextArea(text, textprops=dict(
-            color=color, fontsize=fontsize, fontweight="bold")))
+        children.append(TextArea(text, textprops=dict(color=color, fontsize=fontsize, fontweight="bold")))
 
     if axis == "y":
         ax.set_ylabel("")
@@ -432,8 +457,13 @@ def _colored_axis_label(
         anchor = (0.5, -pad)
 
     ab = AnchoredOffsetbox(
-        loc="center", child=box, pad=0, frameon=False,
-        bbox_to_anchor=anchor, bbox_transform=ax.transAxes, borderpad=0,
+        loc="center",
+        child=box,
+        pad=0,
+        frameon=False,
+        bbox_to_anchor=anchor,
+        bbox_transform=ax.transAxes,
+        borderpad=0,
     )
     ax.add_artist(ab)
 
@@ -451,8 +481,12 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
     palette = {"Rows": BRIGHT[0], "Columns": BRIGHT[1]}
     box_alpha = 0.55
     common_kwargs = dict(
-        data=melted, hue="metric", hue_order=["Rows", "Columns"],
-        palette=palette, showfliers=False, linewidth=0.8,
+        data=melted,
+        hue="metric",
+        hue_order=["Rows", "Columns"],
+        palette=palette,
+        showfliers=False,
+        linewidth=0.8,
     )
 
     def _soften_boxes(ax: plt.Axes) -> None:
@@ -463,31 +497,43 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
     # --- Domain (two horizontal boxplots: Rows and Columns) ---
     domain_counts = df["domain"].value_counts()
     domain_order = domain_counts.index.tolist()
-    domain_labels = [
-        f"{str(d).title()}  (n={int(domain_counts[d])})" for d in domain_order
-    ]
+    domain_labels = [f"{str(d).title()}  (n={int(domain_counts[d])})" for d in domain_order]
     domain_palette = sns.color_palette("bright", n_colors=len(domain_order))
 
     fig, axes = plt.subplots(
-        1, 2,
+        1,
+        2,
         figsize=(12, max(4.5, 0.42 * len(domain_order) + 1.5)),
         sharey=True,
     )
-    for ax, value_col, panel_label in zip(
-        axes, ["num_rows", "num_cols"], ["Number of Rows", "Number of Columns"]
-    ):
+    for ax, value_col, panel_label in zip(axes, ["num_rows", "num_cols"], ["Number of Rows", "Number of Columns"]):
         sns.boxplot(
-            data=df, y="domain", x=value_col, order=domain_order,
-            hue="domain", palette=domain_palette, orient="h",
-            legend=False, showfliers=False, linewidth=0.8, ax=ax,
+            data=df,
+            y="domain",
+            x=value_col,
+            order=domain_order,
+            hue="domain",
+            palette=domain_palette,
+            orient="h",
+            legend=False,
+            showfliers=False,
+            linewidth=0.8,
+            ax=ax,
         )
         _soften_boxes(ax)
         sns.stripplot(
-            data=df, y="domain", x=value_col, order=domain_order,
-            color="black", alpha=0.6, size=3, jitter=0.25, ax=ax,
+            data=df,
+            y="domain",
+            x=value_col,
+            order=domain_order,
+            color="black",
+            alpha=0.6,
+            size=3,
+            jitter=0.25,
+            ax=ax,
         )
         ax.set_xscale("log")
-        ax.set_xlabel(f"{panel_label} (log scale)")
+        ax.set_xlabel(f"{panel_label}")
         for i in range(len(domain_order) - 1):
             ax.axhline(i + 0.5, color="0.7", linewidth=0.6, linestyle="-", zorder=0)
         ax.grid(axis="y", visible=False)
@@ -504,19 +550,26 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
     # --- Task type ---
     task_counts = df["task_type"].value_counts()
     task_order = [t for t in TASK_TYPE_ORDER if t in task_counts.index]
-    task_labels = [
-        f"{TASK_TYPE_LABELS[t]}\n(n={int(task_counts[t])})" for t in task_order
-    ]
+    task_labels = [f"{TASK_TYPE_LABELS[t]}\n(n={int(task_counts[t])})" for t in task_order]
 
     fig, ax = plt.subplots(figsize=(5, 4.4))
-    sns.boxplot(x="task_type", y="value", order=task_order,
-                ax=ax, **common_kwargs)
+    sns.boxplot(x="task_type", y="value", order=task_order, ax=ax, **common_kwargs)
     _soften_boxes(ax)
     sns.stripplot(
-        data=melted, x="task_type", y="value", order=task_order,
-        hue="metric", hue_order=["Rows", "Columns"],
-        color="black", dodge=True, size=2.5, alpha=0.6,
-        jitter=0.18, edgecolor="none", legend=False, ax=ax,
+        data=melted,
+        x="task_type",
+        y="value",
+        order=task_order,
+        hue="metric",
+        hue_order=["Rows", "Columns"],
+        color="black",
+        dodge=True,
+        size=2.5,
+        alpha=0.6,
+        jitter=0.18,
+        edgecolor="none",
+        legend=False,
+        ax=ax,
     )
     ax.set_yscale("log")
     ax.set_xlabel("Task Type")
@@ -527,9 +580,13 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
         ax.axvline(i + 0.5, color="0.7", linewidth=0.6, linestyle="-", zorder=0)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(
-        handles[:2], labels[:2], title="",
-        loc="lower center", bbox_to_anchor=(0.5, 1.02),
-        ncol=2, frameon=False,
+        handles[:2],
+        labels[:2],
+        title="",
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        frameon=False,
     )
     ax.grid(axis="x", visible=False)
     fig.tight_layout()
@@ -539,19 +596,26 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
     # --- Problem type ---
     pt_counts = df["problem_type"].value_counts()
     pt_order = [p for p in PROBLEM_TYPE_ORDER if p in pt_counts.index]
-    pt_labels = [
-        f"{PROBLEM_TYPE_LABELS[p]}\n(n={int(pt_counts[p])})" for p in pt_order
-    ]
+    pt_labels = [f"{PROBLEM_TYPE_LABELS[p]}\n(n={int(pt_counts[p])})" for p in pt_order]
 
     fig, ax = plt.subplots(figsize=(5, 4.4))
-    sns.boxplot(x="problem_type", y="value", order=pt_order,
-                ax=ax, **common_kwargs)
+    sns.boxplot(x="problem_type", y="value", order=pt_order, ax=ax, **common_kwargs)
     _soften_boxes(ax)
     sns.stripplot(
-        data=melted, x="problem_type", y="value", order=pt_order,
-        hue="metric", hue_order=["Rows", "Columns"],
-        color="black", dodge=True, size=2.5, alpha=0.6,
-        jitter=0.18, edgecolor="none", legend=False, ax=ax,
+        data=melted,
+        x="problem_type",
+        y="value",
+        order=pt_order,
+        hue="metric",
+        hue_order=["Rows", "Columns"],
+        color="black",
+        dodge=True,
+        size=2.5,
+        alpha=0.6,
+        jitter=0.18,
+        edgecolor="none",
+        legend=False,
+        ax=ax,
     )
     ax.set_yscale("log")
     ax.set_xlabel("Problem Type")
@@ -562,9 +626,13 @@ def plot_size_boxplots_by_category(df: pd.DataFrame) -> None:
         ax.axvline(i + 0.5, color="0.7", linewidth=0.6, linestyle="-", zorder=0)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(
-        handles[:2], labels[:2], title="",
-        loc="lower center", bbox_to_anchor=(0.5, 1.02),
-        ncol=2, frameon=False,
+        handles[:2],
+        labels[:2],
+        title="",
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        frameon=False,
     )
     ax.grid(axis="x", visible=False)
     fig.tight_layout()
@@ -615,13 +683,11 @@ def plot_text_footprint_scatter(df: pd.DataFrame) -> None:
             return f"{x / 1_000_000:g}M"
         if x >= 1_000:
             return f"{x / 1_000:g}k"
-        return f"{int(round(x))}"
+        return f"{round(x)}"
 
     cbar.ax.yaxis.set_major_locator(LogLocator(base=10, numticks=15))
     cbar.ax.yaxis.set_major_formatter(FuncFormatter(_fmt_plain))
-    cbar.ax.yaxis.set_minor_locator(
-        LogLocator(base=10, subs=tuple(range(2, 10)), numticks=15)
-    )
+    cbar.ax.yaxis.set_minor_locator(LogLocator(base=10, subs=tuple(range(2, 10)), numticks=15))
     cbar.ax.yaxis.set_minor_formatter(NullFormatter())
 
     fig.tight_layout()
@@ -633,13 +699,7 @@ def plot_text_footprint_scatter(df: pd.DataFrame) -> None:
 # appendix_paper / categorical_cardinality_distribution
 # ---------------------------------------------------------------------------
 def plot_categorical_cardinality_distribution(df: pd.DataFrame) -> None:
-    cards = (
-        df["categorical_non_binary_cardinalities"]
-        .apply(ast.literal_eval)
-        .explode()
-        .dropna()
-        .astype(int)
-    )
+    cards = df["categorical_non_binary_cardinalities"].apply(ast.literal_eval).explode().dropna().astype(int)
 
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.histplot(
@@ -658,15 +718,19 @@ def plot_categorical_cardinality_distribution(df: pd.DataFrame) -> None:
     pct_high = 100 * n_high / len(cards)
     ax.axvline(high_card_threshold, color="0.25", linestyle="--", linewidth=1.2)
     ax.text(
-        high_card_threshold * 1.1, ax.get_ylim()[1] * 0.95,
+        high_card_threshold * 1.1,
+        ax.get_ylim()[1] * 0.95,
         f"High cardinality (>{high_card_threshold})\nn={n_high} ({pct_high:.1f}%)",
-        ha="left", va="top", fontsize=9, color="0.25",
+        ha="left",
+        va="top",
+        fontsize=9,
+        color="0.25",
     )
     ax.set_xlim(3, 1e5)
     ax.set_xticks([3, 10, 100, 1_000, 10_000, 100_000])
     ax.set_xticklabels(["3", "10", "100", "1k", "10k", "100k"])
-    ax.set_xlabel(f"Cardinality (n={len(cards)} columns)")
-    ax.set_ylabel("Number of Categorical Columns")
+    ax.set_xlabel("Cardinality")
+    ax.set_ylabel(f"Number of Categorical Columns (n={len(cards)})")
     ax.grid(axis="x", visible=False)
 
     fig.tight_layout()
@@ -696,18 +760,20 @@ def plot_time_horizon_unit_pie(df: pd.DataFrame) -> None:
         wedgeprops=dict(width=0.4, edgecolor="white", linewidth=1.5),
     )
     ax.set_aspect("equal")
-    ax.text(0, 0, f"N = {n_total}", ha="center", va="center",
-            fontsize=18, fontweight="bold", color="0.2")
+    ax.text(0, 0, f"N = {n_total}", ha="center", va="center", fontsize=18, fontweight="bold", color="0.2")
 
     legend_labels = [
-        f"{unit}: {int(row['count'])} "
-        f"({100 * row['count'] / n_total:.0f}%, avg={row['mean']:.1f})"
+        f"{unit}: {int(row['count'])} ({100 * row['count'] / n_total:.0f}%, avg={row['mean']:.1f})"
         for unit, row in stats.iterrows()
     ]
     ax.legend(
-        wedges, legend_labels,
-        loc="center left", bbox_to_anchor=(0.9, 0.5),
-        frameon=False, handlelength=1.2, handleheight=1.2,
+        wedges,
+        legend_labels,
+        loc="center left",
+        bbox_to_anchor=(0.9, 0.5),
+        frameon=False,
+        handlelength=1.2,
+        handleheight=1.2,
     )
 
     ax.grid(False)
@@ -732,4 +798,3 @@ if __name__ == "__main__":
     plot_text_footprint_scatter(df)
     plot_categorical_cardinality_distribution(df)
     plot_time_horizon_unit_pie(df)
-
