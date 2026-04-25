@@ -68,6 +68,12 @@ def _categorical_cardinality_stats(
     return int(cardinalities.max()), float(cardinalities.mean()), float(cardinalities.median()), num_high
 
 
+def _categorical_non_binary_cardinalities(feature_df: pd.DataFrame) -> list[int]:
+    """Return per-column unique-value counts for categorical non-binary feature columns."""
+    cat_cols = feature_df.select_dtypes(include=["category"]).columns
+    return [int(feature_df[c].nunique(dropna=True)) for c in cat_cols if feature_df[c].nunique(dropna=True) > 2]
+
+
 def _text_char_stats(
     feature_df: pd.DataFrame,
 ) -> tuple[float | None, float | None, int | None, int | None]:
@@ -110,6 +116,7 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
         "mean_categorical_cardinality",
         "median_categorical_cardinality",
         "num_high_cardinality_cats",
+        "categorical_non_binary_cardinalities",
         "text_char_mean",
         "text_char_median",
         "text_char_max",
@@ -187,6 +194,7 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
             )
 
         max_cat_card, mean_cat_card, median_cat_card, num_high_card_cats = _categorical_cardinality_stats(feature_df)
+        cat_non_binary_cardinalities = _categorical_non_binary_cardinalities(feature_df)
         text_char_mean, text_char_median, text_char_max, text_char_num_high = _text_char_stats(feature_df)
 
         splits = container.experiment_metadata.splits
@@ -226,6 +234,7 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
                 mean_cat_card,
                 median_cat_card,
                 num_high_card_cats,
+                cat_non_binary_cardinalities,
                 text_char_mean,
                 text_char_median,
                 text_char_max,
