@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+TODO = [
+    "african_credit_scoring" # temporal
+]
+
 OLD_IID = [
     # All datasets from TabArena-v0.1 except for anneal and diabetes
     "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",
