@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-TODO = [
-    "african_credit_scoring" # temporal
-]
-
 OLD_IID = [
     # All datasets from TabArena-v0.1 except for anneal and diabetes
     "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",
@@ -128,7 +124,7 @@ TEMPORAL = [
     "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
     "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
     "hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c",
-    "ghanas_indigenous_intel/019db4a7-bea3-76f5-8e30-bef055c10b03",
+    "ghanas_indigenous_intel/019dd375-4259-77c1-a177-5acc1f4d0134",
     "ieee_fraud_detection/019db516-2f8e-7e50-a8c4-f1c57754f52c",
     "anes_voting_2026/019db4ba-6124-7a56-a0b5-9df8811adc2f",
     "rossmann_store_sales/019db4fb-6d9e-7c15-b8cb-1bf97ea88782",
