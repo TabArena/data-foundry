@@ -100,7 +100,10 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
         "reference_key",
         "problem_type",
         "num_rows",
+        "max_train_rows",
         "num_cols",
+        "num_cols_after_preprocessing",
+        "missing_value_fraction",
         "num_classes",
         "minority_class_pct",
         "num_numerical_cols",
@@ -202,8 +205,20 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
         fold_counts = {len(v) for v in splits.values()}
         assert len(fold_counts) == 1, f"Inconsistent fold counts across repeats for {name}: {fold_counts}"
         num_folds = fold_counts.pop()
+        max_train_rows = max(
+            len(train_idx) for repeat in splits.values() for train_idx, _ in repeat.values()
+        )
         time_horizon = container.experiment_metadata.time_horizon
         time_horizon_unit = container.experiment_metadata.time_horizon_unit
+
+        missing_value_fraction = float(feature_df.isna().to_numpy().sum() / feature_df.size)
+        num_cols_after_preprocessing = (
+            col_type_counts["numerical_non_binary"]
+            + col_type_counts["categorical_non_binary"]
+            + col_type_counts["text"] * 32
+            + col_type_counts["binary"]
+            + col_type_counts["datetime"] * 10
+        )
 
         uri = str(path.relative_to(warehouse_root))
 
@@ -218,7 +233,10 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
                 reference_key,
                 problem_type,
                 num_rows,
+                max_train_rows,
                 num_cols,
+                num_cols_after_preprocessing,
+                missing_value_fraction,
                 num_classes,
                 minority_class_pct,
                 col_type_counts["numerical"],

@@ -1,0 +1,1356 @@
+name,domain,dataset_year,age,source,reference,reference_key,problem_type,num_rows,max_train_rows,num_cols,num_cols_after_preprocessing,missing_value_fraction,num_classes,minority_class_pct,num_numerical_cols,num_categorical_cols,num_datetime_cols,num_text_cols,num_binary_cols,num_numerical_non_binary_cols,num_categorical_non_binary_cols,num_datetime_non_binary_cols,num_text_non_binary_cols,max_categorical_cardinality,mean_categorical_cardinality,median_categorical_cardinality,num_high_cardinality_cats,categorical_non_binary_cardinalities,text_char_mean,text_char_median,text_char_max,text_char_num_high,num_repeats,num_folds,time_horizon,time_horizon_unit,task_type,uri
+airfoil_self_noise,physics & astronomy,2014,12,UCI,"@techreport{brooks1989airfoil,
+  title={Airfoil self-noise and prediction},
+  author={Brooks, Thomas F and Pope, D Stuart and Marcolini, Michael A},
+  year={1989}
+}
+",brooks1989airfoil,regression,1503,1002,5,5,0.0,,,4,1,0,0,0,4,1,0,0,27.0,27.0,27.0,0,[27],,,,,10,3,,,iid,airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6
+amazon_employee_access,business & marketing,2010,16,Kaggle,"@misc{hamner2013amazon,
+  author       = {Ben Hamner and kenmonta and Will Cukierski},
+  title        = {Amazon.com - Employee Access Challenge},
+  year         = {2013},
+  howpublished = {\url{https://www.kaggle.com/competitions/amazon-employee-access-challenge}},
+  note         = {Kaggle competition},
+}
+",hamner2013amazon,binary_classification,32769,21846,9,9,0.0,2.0,5.789007903811529,0,9,0,0,0,0,9,0,0,7518.0,1736.2222222222222,343.0,9,"[7518, 4243, 128, 177, 449, 343, 2358, 67, 343]",,,,,3,3,,,iid,amazon_employee_access/019d7366-58b8-7e97-bf34-83c96a915561
+aps_failure,industry & manufacturing,2016,10,UCI,"@misc{ida2016challenge,
+  author       = {{IDA2016Challenge}},
+  title        = {IDA2016Challenge [Dataset]},
+  year         = {2016},
+  howpublished = {\url{https://doi.org/10.24432/C5V60Q}},
+  note         = {UCI Machine Learning Repository},
+}
+",ida2016challenge,binary_classification,76000,50667,170,170,0.08349032507739938,2.0,1.8092105263157894,170,0,0,0,1,169,0,0,0,,,,0,[],,,,,3,3,,,iid,aps_failure/019d7366-7373-7942-9438-aa122a6ca492
+bad_customer_detection,business & marketing,2020,6,Kaggle,"@misc{Podsyp2020IsThisAGoodCustomer,
+  title={Is This a Good Customer?},
+  author={Podsyp},
+  year={2020},
+  publisher={Kaggle},
+  url={https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer}
+}
+",Podsyp2020IsThisAGoodCustomer,binary_classification,1723,1149,13,13,0.0,2.0,11.375507835171213,5,8,0,0,3,5,5,0,0,22.0,5.625,3.0,0,"[6, 22, 3, 3, 5]",,,,,10,3,,,iid,bad_customer_detection/019d7366-8875-7ee1-8f3b-5ad96bdd2324
+bank_customer_churn,business & marketing,2020,6,Kaggle,"@misc{Topre2022BankCustomerChurn,
+  title={Bank Customer Churn Dataset},
+  author={Gaurav Topre},
+  year={2022},
+  publisher={Kaggle},
+  url={https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset}
+}
+",Topre2022BankCustomerChurn,binary_classification,10000,6667,10,10,0.0,2.0,20.37,6,4,0,0,3,6,1,0,0,3.0,2.25,2.0,0,[3],,,,,3,3,,,iid,bank_customer_churn/019d7366-99cc-77cc-8d41-5c3ccc8eff96
+bank_marketing,finance,2012,14,UCI,"@article{moro2014bank-marketing,
+  title={A data-driven approach to predict the success of bank telemarketing},
+  author={Moro, S{\'e}rgio and Cortez, Paulo and Rita, Paulo},
+  journal={Decision Support Systems},
+  volume={62},
+  pages={22--31},
+  year={2014},
+  publisher={Elsevier}
+}
+",moro2014bank-marketing,binary_classification,45211,30141,13,13,0.0,2.0,11.698480458295547,3,10,0,0,3,3,7,0,0,48.0,12.1,3.5,0,"[12, 3, 4, 3, 48, 41, 4]",,,,,3,3,,,iid,bank_marketing/019d7366-abe0-7dcc-a9fb-069bfb233c78
+bioresponse,biology & life sciences,2012,14,Kaggle,"@misc{bioresponse2012hamner,
+    author = {Ben Hamner and dcthompson and Jorg},
+    title = {Predicting a Biological Response},
+    year = {2012},
+    howpublished = {https://kaggle.com/competitions/bioresponse},
+    note = {Kaggle}
+}
+",bioresponse2012hamner,binary_classification,3751,2501,1776,1776,0.0,2.0,45.77446014396161,1776,0,0,0,835,941,0,0,0,,,,0,[],,,,,3,3,,,iid,bioresponse/019d7366-c770-7d3c-8dd9-b9cc456542d6
+blood_transfusion,medical & healthcare,2008,18,UCI,"@article{yeh2009knowledge,
+  title={Knowledge discovery on RFM model using Bernoulli sequence},
+  author={Yeh, I-Cheng and Yang, King-Jang and Ting, Tao-Ming},
+  journal={Expert Systems with applications},
+  volume={36},
+  number={3},
+  pages={5866--5871},
+  year={2009},
+  publisher={Elsevier}
+}
+",yeh2009knowledge,binary_classification,748,499,4,4,0.0,2.0,23.796791443850267,4,0,0,0,0,4,0,0,0,,,,0,[],,,,,20,3,,,iid,blood_transfusion/019d7366-d9d0-777d-b0ae-e7a5175f7f09
+churn,technology & internet,2005,21,OpenML,"@misc{marcoulides2005churn,
+  title={Discovering knowledge in data: An introduction to data mining},
+  author={Marcoulides, George A},
+  year={2005},
+  publisher={Taylor \& Francis}
+}
+",marcoulides2005churn,binary_classification,5000,3334,19,19,0.0,2.0,14.14,15,4,0,0,2,15,2,0,0,51.0,14.5,2.5,1,"[51, 3]",,,,,3,3,,,iid,churn/019d7366-eb2d-72f9-9998-72dfc5b6cc79
+coil_2000,business & marketing,2000,26,UCI,"@techreport{van2000coil,
+  title={CoIL challenge 2000: The insurance company case},
+  author={Van Der Putten, Peter and van Someren, Maarten and others},
+  year={2000},
+  institution={Technical Report 2000--09, Leiden Institute of Advanced Computer Science}
+}
+",van2000coil,binary_classification,9822,6548,85,85,0.0,2.0,5.966198330278965,80,5,0,0,5,75,5,0,0,39.0,13.8,10.0,0,"[39, 6, 10, 10, 4]",,,,,3,3,,,iid,coil_2000/019d7366-fdc2-7225-a22c-314c624711f6
+concrete_compressive_strength,chemistry & material science,1998,28,UCI,"@article{yeh1998modeling,
+  title={Modeling of strength of high-performance concrete using artificial neural networks},
+  author={Yeh, I-C},
+  journal={Cement and Concrete research},
+  volume={28},
+  number={12},
+  pages={1797--1808},
+  year={1998},
+  publisher={Elsevier}
+}
+",yeh1998modeling,regression,1030,687,8,8,0.0,,,8,0,0,0,0,8,0,0,0,,,,0,[],,,,,10,3,,,iid,concrete_compressive_strength/019d7367-0f12-7c25-b411-de9c711bd4ec
+credit_card_clients_default,finance,2009,17,UCI,"@article{yeh2009comparisons,
+  title={The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients},
+  author={Yeh, I-Cheng and Lien, Che-hui},
+  journal={Expert systems with applications},
+  volume={36},
+  number={2},
+  pages={2473--2480},
+  year={2009},
+  publisher={Elsevier}
+}
+",yeh2009comparisons,binary_classification,30000,20000,23,23,0.0,2.0,22.12,20,3,0,0,1,20,2,0,0,7.0,4.333333333333333,4.0,0,"[7, 4]",,,,,3,3,,,iid,credit_card_clients_default/019d7367-23b0-7125-9a7b-9ad1a90dc75d
+credit_g,finance,1994,32,UCI,"@misc{hofmann1994statlog,
+  author       = {Hofmann, H.},
+  title        = {Statlog (German Credit Data) [Dataset]},
+  year         = {1994},
+  howpublished = {\url{https://doi.org/10.24432/C5NC77}},
+  note         = {UCI Machine Learning Repository},
+}
+",hofmann1994statlog,binary_classification,1000,667,20,20,0.0,2.0,30.0,7,13,0,0,3,6,11,0,0,10.0,4.153846153846154,4.0,0,"[4, 5, 10, 5, 5, 4, 3, 4, 3, 3, 4]",,,,,10,3,,,iid,credit_g/019d7367-39a7-7335-8448-2dc9b2872361
+customer_satisfaction_in_airline,biology & life sciences,2023,3,Kaggle,"@misc{yakhyojon2023airlinesatisfaction,
+    author = {Kaggle User Yakhyojon},
+    title = {Customer Satisfaction in Airline.},
+    year = {2023},
+    howpublished = {url{https://www.kaggle.com/datasets/yakhyojon/customer-satisfaction-in-airline}},
+    note = {Kaggle}
+}
+",yakhyojon2023airlinesatisfaction,binary_classification,129880,86587,21,21,0.00014408904923225835,2.0,45.26716969510317,4,17,0,0,2,4,15,0,0,6.0,5.294117647058823,6.0,0,"[3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6]",,,,,3,3,,,iid,customer_satisfaction_in_airline/019d7367-4d56-7274-a470-1609f3a3d6fe
+diabetes_130_us,medical & healthcare,2014,12,UCI,"@article{strack2014impact,
+  title={Impact of HbA1c measurement on hospital readmission rates: analysis of 70,000 clinical database patient records},
+  author={Strack, Beata and DeShazo, Jonathan P and Gennings, Chris and Olmo, Juan L and Ventura, Sebastian and Cios, Krzysztof J and Clore, John N},
+  journal={BioMed research international},
+  volume={2014},
+  number={1},
+  pages={781670},
+  year={2014},
+  publisher={Wiley Online Library}
+}
+",strack2014impact,binary_classification,71518,47679,44,44,0.04022954170469481,2.0,8.799183422355211,8,36,0,0,9,8,27,0,0,759.0,67.38888888888889,4.0,4,"[6, 3, 10, 10, 8, 26, 17, 18, 71, 697, 726, 759, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4]",,,,,3,3,,,iid,diabetes_130_us/019d7367-64e4-7883-956d-9ba2fc8db41b
+diamonds,business & marketing,2015,11,Other,"@incollection{wickham2016data,
+  title={Data analysis},
+  author={Wickham, Hadley},
+  booktitle={ggplot2: Elegant graphics for data analysis},
+  pages={189--201},
+  year={2016},
+  publisher={Springer}
+}
+",wickham2016data,regression,53940,35960,9,9,0.0,,,6,3,0,0,0,6,3,0,0,8.0,6.666666666666667,7.0,0,"[5, 7, 8]",,,,,3,3,,,iid,diamonds/019d7367-779c-707e-b777-849180166b74
+ecommerce_shipping,business & marketing,2021,5,Kaggle,"@misc{gopalani2021ecommerce,
+  author       = {Prachi Gopalani},
+  title        = {E-Commerce Shipping Data},
+  year         = {2021},
+  howpublished = {\url{https://www.kaggle.com/datasets/prachi13/customer-analytics}},
+  note         = {Kaggle dataset},
+}
+",gopalani2021ecommerce,binary_classification,10999,7333,10,10,0.0,2.0,40.33093917628875,6,4,0,0,1,6,3,0,0,5.0,3.25,3.0,0,"[5, 3, 3]",,,,,3,3,,,iid,ecommerce_shipping/019d7367-8a04-7bf2-8ab2-68d1726cf31e
+fiat_500,technology & internet,2020,6,Kaggle,"@misc{paolocons2020fiat,
+  author       = {Kaggle User Paolocons},
+  title        = {Another Dataset on Used Fiat 500 (1538 Rows)},
+  year         = {2020},
+  howpublished = {\url{https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows}},
+  note         = {Kaggle dataset},
+}
+",paolocons2020fiat,regression,1538,1026,7,7,0.0,,,6,1,0,0,0,6,1,0,0,3.0,3.0,3.0,0,[3],,,,,10,3,,,iid,fiat_500/019d7367-9b82-78a9-a53a-570038a28d0a
+fitness_club,business & marketing,2023,3,Kaggle,"@misc{ddosad2023fitness,
+  author       = {Kaggle User Ddosad},
+  title        = {Fitness Club Dataset for ML Classification},
+  year         = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/ddosad/datacamps-data-science-associate-certification}},
+  note         = {Kaggle dataset},
+}
+",ddosad2023fitness,binary_classification,1500,1000,6,6,0.0022222222222222222,2.0,30.266666666666666,3,3,0,0,1,3,2,0,0,7.0,5.0,6.0,0,"[7, 6]",,,,,10,3,,,iid,fitness_club/019d7367-aced-7960-94c9-b19b393cb0ad
+food_delivery_time,business & marketing,2023,3,Kaggle,"@misc{rajatkumar302023food,
+  author       = {Kaggle User Rajatkumar30},
+  title        = {Food Delivery Time},
+  year         = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time}},
+  note         = {Kaggle dataset},
+}
+",rajatkumar302023food,regression,45451,30301,9,9,0.0,,,6,3,0,0,0,6,3,0,0,1320.0,442.6666666666667,4.0,1,"[1320, 4, 4]",,,,,3,3,,,iid,food_delivery_time/019d7367-beff-7ca7-9033-8f346962f7a1
+give_me_some_credit,finance,2011,15,Kaggle,"@misc{cukierski2011credit,
+    author = {Credit Fusion and Will Cukierski},
+    title = {Give Me Some Credit},
+    year = {2011},
+    howpublished = {url{https://kaggle.com/competitions/GiveMeSomeCredit}},
+    note = {Kaggle}
+}
+",cukierski2011credit,binary_classification,150000,100000,10,10,0.022436666666666667,2.0,6.684,9,1,0,0,0,9,1,0,0,125728.0,125728.0,125728.0,1,[125728],,,,,3,3,,,iid,give_me_some_credit/019d7367-d331-7295-991e-7eab46ea49ba
+hazelnut_spread_contaminant_detection,biology & life sciences,2020,6,OpenML,"@article{ricci2021machine,
+  title={Machine-learning-based microwave sensing: A case study for the food industry},
+  author={Ricci, Marco and {\v{S}}titi{\'c}, Bernardita and Urbinati, Luca and Di Guglielmo, Giuseppe and Vasquez, Jorge A Tob{\'o}n and Carloni, Luca P and Vipiana, Francesca and Casu, Mario R},
+  journal={IEEE Journal on Emerging and Selected Topics in Circuits and Systems},
+  volume={11},
+  number={3},
+  pages={503--514},
+  year={2021},
+  publisher={IEEE}
+}
+",ricci2021machine,binary_classification,2400,1600,30,30,0.0,2.0,50.0,30,0,0,0,0,30,0,0,0,,,,0,[],,,,,10,3,,,iid,hazelnut_spread_contaminant_detection/019d7367-e731-79fc-9677-4c5d1bab73ff
+healthcare_insurance_expenses,medical & healthcare,2023,3,Kaggle,"@misc{arunjangir2452023insurance,
+  author       = {Kaggle User Arunjangir245},
+  title        = {Healthcare Insurance Expenses},
+  year         = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/arunjangir245/healthcare-insurance-expenses/}},
+  note         = {Kaggle dataset},
+}
+",arunjangir2452023insurance,regression,1338,892,6,6,0.0,,,3,3,0,0,2,3,1,0,0,4.0,2.6666666666666665,2.0,0,[4],,,,,10,3,,,iid,healthcare_insurance_expenses/019d7367-f8cf-77a8-86e8-cabed951a9f6
+heloc,finance,2021,5,Kaggle,"@misc{averkiyoliabev2021heloc,
+  author       = {Kaggle User Averkiyoliabev},
+  title        = {Home Equity Line of Credit (HELOC)},
+  year         = {2021},
+  howpublished = {\url{https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc}},
+  note         = {Kaggle dataset},
+}
+",averkiyoliabev2021heloc,binary_classification,10459,6973,23,23,0.0,2.0,47.805717563820636,23,0,0,0,0,23,0,0,0,,,,0,[],,,,,3,3,,,iid,heloc/019d7368-0a52-7460-abf5-b78381cf69f0
+hiva_agnostic,chemistry & material science,2007,19,Other,"@inproceedings{guyon2007agnostic,
+  author={Isabelle Guyon and Amir Saffari and Gideon Dror and Gavin Cawley},
+  booktitle={2007 International Joint Conference on Neural Networks}, 
+  title={Agnostic Learning vs. Prior Knowledge Challenge}, 
+  year={2007},
+  pages={829-834},
+  doi={10.1109/IJCNN.2007.4371065}
+}
+",guyon2007agnostic,binary_classification,3845,2564,1518,1518,0.0,2.0,3.5110533159947983,0,1518,0,0,1518,0,0,0,0,2.0,2.0,2.0,0,[],,,,,3,3,,,iid,hiva_agnostic/019d7368-2dd6-7aa8-b7f3-42a416dc1315
+houses,business & marketing,1990,36,Other,"@article{pace1997sparse,
+  title={Sparse spatial autoregressions},
+  author={Pace, R Kelley and Barry, Ronald},
+  journal={Statistics \\& Probability Letters},
+  volume={33},
+  number={3},
+  pages={291--297},
+  year={1997},
+  publisher={Elsevier}
+}
+",pace1997sparse,regression,19675,13117,8,8,0.0,,,8,0,0,0,0,8,0,0,0,,,,0,[],,,,,3,3,,,iid,houses/019d7368-4493-7f1a-a1e6-d784558ee09a
+hr_analytics,business & marketing,2021,5,Kaggle,"@misc{arashnic2021hr,
+  author       = {Kaggle User Arashnic},
+  title        = {HR Analytics: Job Change of Data Scientists},
+  year         = {2021},
+  howpublished = {\url{https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists}},
+  note         = {Kaggle dataset},
+}
+",arashnic2021hr,binary_classification,19158,12772,12,12,0.09018425722935589,2.0,24.934753105752165,2,10,0,0,1,2,9,0,0,123.0,18.4,6.0,1,"[123, 3, 3, 5, 6, 22, 8, 6, 6]",,,,,3,3,,,iid,hr_analytics/019d7368-56c6-75a9-b489-eb6faf376ce5
+in_vehicle_coupon_recommendation,business & marketing,2017,9,UCI,"@article{wang2017bayesian,
+  title={A bayesian framework for learning rule sets for interpretable classification},
+  author={Wang, Tong and Rudin, Cynthia and Doshi-Velez, Finale and Liu, Yimin and Klampfl, Erica and MacNeille, Perry},
+  journal={Journal of Machine Learning Research},
+  volume={18},
+  number={70},
+  pages={1--37},
+  year={2017}
+}
+",wang2017bayesian,binary_classification,12684,8456,24,24,0.04392016188373804,2.0,43.15673289183223,2,22,0,0,7,2,15,0,0,25.0,5.090909090909091,5.0,0,"[3, 4, 3, 5, 8, 5, 6, 25, 9, 5, 5, 5, 5, 5, 5]",,,,,3,3,,,iid,in_vehicle_coupon_recommendation/019d7368-68cc-754c-99e4-7e145a96e287
+jm1,technology & internet,2004,22,OpenML,"@inproceedings{menzies2004good,
+  title={How good is your blind spot sampling policy},
+  author={Menzies, Tim and Di Stefano, Justin S},
+  booktitle={Eighth IEEE International Symposium on High Assurance Systems Engineering, 2004. Proceedings.},
+  pages={129--138},
+  year={2004},
+  organization={IEEE}
+}
+",menzies2004good,binary_classification,10885,7257,21,21,0.0001093685062449417,2.0,19.347726228755167,21,0,0,0,0,21,0,0,0,,,,0,[],,,,,3,3,,,iid,jm1/019d7368-7f0b-74da-a01f-3c5e7dd31dab
+kdd_cup_09_appetency,business & marketing,2008,18,Other,"@inproceedings{guyon2009analysis,
+  title={Analysis of the kdd cup 2009: Fast scoring on a large orange customer database},
+  author={Guyon, Isabelle and Lemaire, Vincent and Boull{\'e}, Marc and Dror, Gideon and Vogel, David},
+  booktitle={KDD-Cup 2009 Competition},
+  pages={1--22},
+  year={2009},
+  organization={PMLR}
+}
+",guyon2009analysis,binary_classification,50000,33334,212,212,0.6720898113207547,2.0,1.78,174,38,0,0,11,167,34,0,0,15415.0,1881.6842105263158,17.5,14,"[361, 51, 3, 23, 4, 225, 4291, 5073, 15415, 5713, 5, 100, 3, 21, 14, 6, 81, 15415, 2016, 13990, 22, 4291, 7, 4291, 4, 3, 23, 7, 30, 4]",,,,,3,3,,,iid,kdd_cup_09_appetency/019d7368-96e4-777a-bfbb-4fcb8602465c
+marketing_campaign,business & marketing,2020,6,Kaggle,"@misc{saldanha2020marketing,
+  author       = {Saldanha, Rodolfo},
+  title        = {Marketing Campaign},
+  year         = {2020},
+  howpublished = {\url{https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign}},
+  note         = {Kaggle dataset},
+}
+",saldanha2020marketing,binary_classification,2240,1494,25,34,0.00042857142857142855,2.0,14.910714285714286,17,7,1,0,6,16,2,1,0,8.0,3.2857142857142856,2.0,0,"[5, 8]",,,,,10,3,,,iid,marketing_campaign/019d7441-e83d-7bb2-bed5-7eb8a1ad36f6
+maternal_health_risk,medical & healthcare,2020,6,UCI,"@inproceedings{ahmed2020review,
+  title={Review and analysis of risk factor of maternal health in remote area using the Internet of Things (IoT)},
+  author={Ahmed, Marzia and Kashem, Mohammod Abul and Rahman, Mostafijur and Khatun, Sabira},
+  booktitle={InECCE2019: Proceedings of the 5th International Conference on Electrical, Control \& Computer Engineering, Kuantan, Pahang, Malaysia, 29th July 2019},
+  pages={357--365},
+  year={2020},
+  organization={Springer}
+}
+",ahmed2020review,multiclass_classification,1014,676,6,6,0.0,3.0,26.82445759368836,6,0,0,0,0,6,0,0,0,,,,0,[],,,,,10,3,,,iid,maternal_health_risk/019d7368-bc0d-723e-a4f9-abfd36e085e9
+miami_housing,finance,2016,10,Kaggle,"@article{bourassa2021big,
+  title={Big data, accessibility and urban house prices},
+  author={Bourassa, Steven C and Hoesli, Martin and Merlin, Louis and Renne, John},
+  journal={Urban Studies},
+  volume={58},
+  number={15},
+  pages={3176--3195},
+  year={2021},
+  publisher={SAGE Publications Sage UK: London, England}
+}
+",bourassa2021big,regression,13776,9184,15,15,0.0,,,14,1,0,0,1,14,0,0,0,2.0,2.0,2.0,0,[],,,,,3,3,,,iid,miami_housing/019d7368-cda5-7177-b500-4986a5e77a82
+mic,medical & healthcare,2020,6,UCI,"@article{golovenkin2020trajectories,
+  title={Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data},
+  author={Golovenkin, Sergey E and Bac, Jonathan and Chervov, Alexander and Mirkes, Evgeny M and Orlova, Yuliya V and Barillot, Emmanuel and Gorban, Alexander N and Zinovyev, Andrei},
+  journal={GigaScience},
+  volume={9},
+  number={11},
+  pages={giaa128},
+  year={2020},
+  publisher={Oxford University Press}
+}
+",golovenkin2020trajectories,multiclass_classification,1699,1133,111,111,0.08465499048194751,8.0,0.7062978222483814,17,94,0,0,78,17,16,0,0,9.0,2.5319148936170213,2.0,0,"[4, 7, 5, 3, 4, 8, 5, 5, 5, 5, 5, 9, 4, 4, 4, 5]",,,,,10,3,,,iid,mic/019d7444-22cb-7d04-940f-6fa8b0436ea2
+naticusdroid_android_permissions_dataset,technology & internet,2021,5,UCI,"@article{mathur2021naticusdroid,
+  title={NATICUSdroid: A malware detection framework for Android using native and custom permissions},
+  author={Mathur, Akshay and Podila, Laxmi Mounika and Kulkarni, Keyur and Niyaz, Quamar and Javaid, Ahmad Y},
+  journal={Journal of Information Security and Applications},
+  volume={58},
+  pages={102696},
+  year={2021},
+  publisher={Elsevier}
+}
+",mathur2021naticusdroid,binary_classification,7491,4994,85,85,0.0,2.0,35.02870110799626,0,85,0,0,85,0,0,0,0,2.0,2.0,2.0,0,[],,,,,3,3,,,iid,naticusdroid_android_permissions_dataset/019d7368-f37d-77e2-be2e-0d8d94e9c27d
+online_shoppers_purchasing_intention_dataset,business & marketing,2017,9,UCI,"@article{sakar2019real,
+  title={Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks},
+  author={Sakar, C Okan and Polat, S Olcay and Katircioglu, Mete and Kastro, Yomi},
+  journal={Neural Computing and Applications},
+  volume={31},
+  number={10},
+  pages={6893--6908},
+  year={2019},
+  publisher={Springer}
+}
+",sakar2019real,binary_classification,12330,8220,17,17,0.0,2.0,15.474452554744525,10,7,0,0,1,10,6,0,0,20.0,9.285714285714286,9.0,0,"[10, 8, 13, 9, 20, 3]",,,,,3,3,,,iid,online_shoppers_purchasing_intention_dataset/019d7445-801c-7a91-831e-5f6725779505
+physiochemical_protein,chemistry & material science,2013,13,UCI,"@misc{rana2013protein,
+  author       = {Rana, Prashant},
+  title        = {Physicochemical Properties of Protein Tertiary Structure},
+  year         = {2013},
+  howpublished = {\url{https://doi.org/10.24432/C5QW3H}},
+  note         = {UCI Machine Learning Repository},
+}
+",rana2013protein,regression,45730,30487,9,9,0.0,,,9,0,0,0,0,9,0,0,0,,,,0,[],,,,,3,3,,,iid,physiochemical_protein/019d7369-1810-7d24-8e20-84da94babb3e
+polish_companies_bankruptcy,finance,2010,16,UCI,"@article{zikeba2016ensemble,
+  title={Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction},
+  author={Zi{\k{e}}ba, Maciej and Tomczak, Sebastian K and Tomczak, Jakub M},
+  journal={Expert systems with applications},
+  volume={58},
+  pages={93--101},
+  year={2016},
+  publisher={Elsevier}
+}
+",zikeba2016ensemble,binary_classification,5790,3860,64,64,0.012419041450777202,2.0,7.0120898100172715,64,0,0,0,0,64,0,0,0,,,,0,[],,,,,3,3,,,iid,polish_companies_bankruptcy/019d7369-2c20-709c-83cd-e27fab38e009
+predict_students_dropout_and_academic_success,education,2021,5,UCI,"@inproceedings{martins2021early,
+  title={Early prediction of student’s performance in higher education: A case study},
+  author={Martins, M{\'o}nica V and Tolledo, Daniel and Machado, Jorge and Baptista, Lu{\'\i}s MT and Realinho, Valentim},
+  booktitle={Trends and Applications in Information Systems and Technologies: Volume 1 9},
+  pages={166--175},
+  year={2021},
+  organization={Springer}
+}
+",martins2021early,multiclass_classification,4424,2950,36,36,0.0,3.0,17.94755877034358,19,17,0,0,8,19,9,0,0,46.0,13.882352941176471,6.0,0,"[6, 18, 17, 17, 21, 29, 34, 32, 46]",,,,,3,3,,,iid,predict_students_dropout_and_academic_success/019d7369-3ffd-7889-91d3-46e5b502f4ec
+qsar_biodeg,biology & life sciences,2013,13,UCI,"@article{mansouri2013quantitative,
+  title={Quantitative structure--activity relationship models for ready biodegradability of chemicals},
+  author={Mansouri, Kamel and Ringsted, Tine and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
+  journal={Journal of chemical information and modeling},
+  volume={53},
+  number={4},
+  pages={867--878},
+  year={2013},
+  publisher={ACS Publications}
+}
+",mansouri2013quantitative,binary_classification,1054,703,41,41,0.0,2.0,33.68121442125237,36,5,0,0,3,36,2,0,0,11.0,4.2,2.0,0,"[4, 11]",,,,,10,3,,,iid,qsar_biodeg/019d7369-5170-7d75-8932-e2a5778ee70b
+qsar_fish_toxicity,biology & life sciences,2015,11,UCI,"@article{cassotti2015similarity,
+  title={A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)},
+  author={Cassotti, Matteo and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
+  journal={SAR and QSAR in Environmental Research},
+  volume={26},
+  number={3},
+  pages={217--243},
+  year={2015},
+  publisher={Taylor \& Francis}
+}
+",cassotti2015similarity,regression,908,606,6,6,0.0,,,6,0,0,0,0,6,0,0,0,,,,0,[],,,,,10,3,,,iid,qsar_fish_toxicity/019d7369-62fc-7ea1-9c58-8ac89144f820
+qsar_tid_11,chemistry & material science,2015,11,OpenML,"@article{olier2018meta,
+  title={Meta-QSAR: a large-scale application of meta-learning to drug design and discovery},
+  author={Olier, Ivan and Sadawi, Noureddin and Bickerton, G Richard and Vanschoren, Joaquin and Grosan, Crina and Soldatova, Larisa and King, Ross D},
+  journal={Machine Learning},
+  volume={107},
+  pages={285--311},
+  year={2018},
+  publisher={Springer}
+}
+",olier2018meta,regression,5741,3828,1024,1024,0.0,,,1024,0,0,0,1024,0,0,0,0,,,,0,[],,,,,3,3,,,iid,qsar_tid_11/019d7369-7ffa-7d6a-b578-fa8c63c7adb6
+sdss_17,physics & astronomy,2022,4,Kaggle,"@article{accetta2022seventeenth,
+  title={The seventeenth data release of the Sloan Digital Sky Surveys: Complete release of MaNGA, MaStar, and APOGEE-2 data},
+  author={Accetta, Katherine and Aerts, Conny and Aguirre, Victor Silva and Ahumada, Romina and Ajgaonkar, Nikhil and Ak, N Filiz and Alam, Shadab and Prieto, Carlos Allende and Almeida, Andres and Anders, Friedrich and others},
+  journal={The Astrophysical Journal Supplement Series},
+  volume={259},
+  number={2},
+  pages={35},
+  year={2022},
+  publisher={IOP Publishing}
+}
+",accetta2022seventeenth,multiclass_classification,78053,52036,11,11,0.0,3.0,17.928843221913315,9,2,0,0,0,9,2,0,0,6264.0,3632.0,3632.0,2,"[6264, 1000]",,,,,3,3,,,iid,sdss_17/019d7369-942d-72c0-b327-e812c4b56b7e
+seismic_bumps,environmental science & climate,2013,13,UCI,"@article{sikora2010application,
+  title={Application of rule induction algorithms for analysis of data collected by seismic hazard monitoring systems in coal mines},
+  author={Sikora, Marek and Wr{\'o}bel, {\L}ukasz},
+  journal={Archives of Mining Sciences},
+  volume={55},
+  number={1},
+  pages={91--114},
+  year={2010}
+}
+",sikora2010application,binary_classification,2584,1723,15,15,0.0,2.0,6.578947368421052,11,4,0,0,3,10,2,0,0,3.0,2.5,2.5,0,"[3, 3]",,,,,10,3,,,iid,seismic_bumps/019d7369-a6b4-7060-a145-dc996b59cf1b
+splice,biology & life sciences,1991,35,UCI,"@article{towell1994knowledge,
+  title={Knowledge-based artificial neural networks},
+  author={Towell, Geoffrey G and Shavlik, Jude W},
+  journal={Artificial intelligence},
+  volume={70},
+  number={1-2},
+  pages={119--165},
+  year={1994},
+  publisher={Elsevier}
+}
+",towell1994knowledge,multiclass_classification,3190,2127,60,60,0.0,3.0,24.043887147335422,0,60,0,0,0,0,60,0,0,6.0,4.783333333333333,5.0,0,"[5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]",,,,,10,3,,,iid,splice/019d7369-b922-718a-adbf-099484b95908
+superconductivity,physics & astronomy,2018,8,UCI,"@article{hamidieh2018data,
+  title={A data-driven statistical model for predicting the critical temperature of a superconductor},
+  author={Hamidieh, Kam},
+  journal={Computational Materials Science},
+  volume={154},
+  pages={346--354},
+  year={2018},
+  publisher={Elsevier}
+}
+",hamidieh2018data,regression,21263,14176,81,81,0.0,,,81,0,0,0,0,81,0,0,0,,,,0,[],,,,,3,3,,,iid,superconductivity/019d7369-cca6-7baa-b958-4ec60c44e1c1
+taiwanese_bankruptcy_prediction,finance,2009,17,UCI,"@article{liang2016financial,
+  title={Financial ratios and corporate governance indicators in bankruptcy prediction: A comprehensive study},
+  author={Liang, Deron and Lu, Chia-Chi and Tsai, Chih-Fong and Shih, Guan-An},
+  journal={European journal of operational research},
+  volume={252},
+  number={2},
+  pages={561--572},
+  year={2016},
+  publisher={Elsevier}
+}
+",liang2016financial,binary_classification,6819,4546,92,92,0.0,2.0,3.2262795131250916,92,0,0,0,1,91,0,0,0,,,,0,[],,,,,3,3,,,iid,taiwanese_bankruptcy_prediction/019d7369-df9e-716f-974e-19cc910078ee
+website_phishing,technology & internet,2014,12,UCI,"@article{abdelhamid2014phishing,
+  title={Phishing detection based associative classification data mining},
+  author={Abdelhamid, Neda and Ayesh, Aladdin and Thabtah, Fadi},
+  journal={Expert Systems with Applications},
+  volume={41},
+  number={13},
+  pages={5948--5959},
+  year={2014},
+  publisher={Elsevier}
+}
+",abdelhamid2014phishing,multiclass_classification,1353,902,9,9,0.0,3.0,7.612712490761271,0,9,0,0,2,0,7,0,0,3.0,2.7777777777777777,3.0,0,"[3, 3, 3, 3, 3, 3, 3]",,,,,10,3,,,iid,website_phishing/019d7369-f10c-78e6-bd19-b8b0a72399fe
+wine_quality,chemistry & material science,2009,17,UCI,"@article{cortez2009modeling,
+  title={Modeling wine preferences by data mining from physicochemical properties},
+  author={Cortez, Paulo and Cerdeira, Ant{\'o}nio and Almeida, Fernando and Matos, Telmo and Reis, Jos{\'e}},
+  journal={Decision support systems},
+  volume={47},
+  number={4},
+  pages={547--553},
+  year={2009},
+  publisher={Elsevier}
+}
+",cortez2009modeling,regression,6497,4332,12,12,0.0,,,11,1,0,0,1,11,0,0,0,2.0,2.0,2.0,0,[],,,,,3,3,,,iid,wine_quality/019d736a-03ee-7297-95da-6bfa50c97f79
+allstate_claims_severity,insurance,2016,10,Kaggle,"@misc{Ferguson2016AllstateClaimsSeverity,
+  author = {Dana Ferguson and Meg Risdal and NoTrick and Sara R. Sillah and Tim Emmerling and Will Cukierski},
+  title  = {Allstate Claims Severity},
+  year   = {2016},
+  howpublished = {\url{https://kaggle.com/competitions/allstate-claims-severity},
+  note   = {Kaggle competition}
+}
+",Ferguson2016AllstateClaimsSeverity,regression,188317,125545,130,130,0.0,,,14,116,0,0,72,14,44,0,0,326.0,9.818965517241379,2.0,5,"[3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8, 7, 8, 7, 5, 7, 5, 8, 7, 5, 16, 15, 19, 9, 13, 17, 20, 17, 20, 11, 84, 131, 16, 51, 61, 19, 23, 326]",,,,,3,3,,,iid,allstate_claims_severity/019d736a-2321-76da-a36a-ddc5e1fbf7b6
+audiology_diagnosis,medical & healthcare,1987,39,UCI,"@incollection{bareiss1990protos,
+  title={Protos: An exemplar-based learning apprentice},
+  author={Bareiss, E Ray and Porter, Bruce W and Wier, Craig C},
+  booktitle={Machine learning},
+  pages={112--127},
+  year={1990},
+  publisher={Elsevier}
+}
+",bareiss1990protos,multiclass_classification,199,133,68,68,0.020691693762932308,3.0,9.045226130653266,0,68,0,0,60,0,8,0,0,6.0,2.235294117647059,2.0,0,"[5, 3, 3, 4, 3, 3, 6, 5]",,,,,20,3,,,iid,audiology_diagnosis/019d736a-3b3d-73da-8d65-b4b7a39e1590
+biomechanical_orthopaedic_prediction,medical & healthcare,2011,15,UCI,"@misc{Barreto2005Vertebral,
+  author       = {Barreto, Guilherme and Neto, Ajalmar},
+  title        = {{Vertebral Column}},
+  year         = {2005},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C5K89B}
+}
+",Barreto2005Vertebral,multiclass_classification,310,207,6,6,0.0,3.0,19.35483870967742,6,0,0,0,0,6,0,0,0,,,,0,[],,,,,20,3,,,iid,biomechanical_orthopaedic_prediction/019d736a-4c2d-74b6-95a3-c63bd4b8fff7
+blood_tests_drink_prediction,medical & healthcare,1996,30,UCI,"@misc{UCILiverDisorders2016,
+  title        = {Liver Disorders},
+  author       = {{UCI Machine Learning Repository}},
+  year         = {2016},
+  howpublished = {\url{https://doi.org/10.24432/C54G67}},
+  note         = {Dataset}
+}
+",,regression,345,230,5,5,0.0,,,5,0,0,0,0,5,0,0,0,,,,0,[],,,,,20,3,,,iid,blood_tests_drink_prediction/019d736a-5d45-743a-b7c5-11da6b494fb7
+body_density_prediction,medical & healthcare,1985,41,Kaggle,"@article{penrose1985generalized,
+  title={Generalized body composition prediction equation for men using simple measurement techniques},
+  author={Penrose, Keith W and Nelson, Arnold G and Fisher, Arnold Garth},
+  journal={Medicine \& Science in Sports \& Exercise},
+  volume={17},
+  number={2},
+  pages={189},
+  year={1985},
+  publisher={Ovid Technologies (Wolters Kluwer Health)}
+}
+",penrose1985generalized,regression,252,168,13,13,0.0,,,13,0,0,0,0,13,0,0,0,,,,0,[],,,,,20,3,,,iid,body_density_prediction/019d736a-6e2b-77a5-ae25-1222ef4fe4e9
+cirrhosis_patient_survival_prediction,medical & healthcare,1984,42,UCI,"@article{dickson1989prognosis,
+  title={Prognosis in primary biliary cirrhosis: model for decision making},
+  author={Dickson, E Rolland and Grambsch, Patricia M and Fleming, Thomas R and Fisher, Lloyd D and Langworthy, Alice},
+  journal={Hepatology},
+  volume={10},
+  number={1},
+  pages={1--7},
+  year={1989},
+  publisher={Wiley Online Library}
+}
+",dickson1989prognosis,regression,161,108,17,17,0.13116550968213372,,,10,7,0,0,5,10,2,0,0,4.0,2.4285714285714284,2.0,0,"[3, 4]",,,,,20,3,,,iid,cirrhosis_patient_survival_prediction/019d736a-9116-7589-9cad-4cee540f2926
+credit_approval,finance,1987,39,UCI,"@article{quinlan1987simplifying,
+  title={Simplifying decision trees},
+  author={Quinlan, J. Ross},
+  journal={International journal of man-machine studies},
+  volume={27},
+  number={3},
+  pages={221--234},
+  year={1987},
+  publisher={Elsevier}
+}
+",quinlan1987simplifying,binary_classification,690,460,15,15,0.006473429951690821,2.0,44.492753623188406,6,9,0,0,4,6,5,0,0,14.0,4.444444444444445,3.0,0,"[3, 3, 14, 9, 3]",,,,,20,3,,,iid,credit_approval/019d736a-a27c-7c85-90c5-ca1d5dc849bd
+drug_induced_autoimmunity_prediction,medical & healthcare,2025,1,UCI,"@article{huang2025interdia,
+  title={InterDIA: Interpretable prediction of drug-induced autoimmunity through ensemble machine learning approaches},
+  author={Huang, Lina and Liu, Peineng and Huang, Xiaojie},
+  journal={Toxicology},
+  volume={511},
+  pages={154064},
+  year={2025},
+  publisher={Elsevier}
+}
+",huang2025interdia,binary_classification,597,398,177,208,0.0,2.0,24.79061976549414,176,0,0,1,20,156,0,0,1,,,,0,[],55.39530988274707,49.0,208.0,46.0,20,3,,,iid,drug_induced_autoimmunity_prediction/019d736a-b4b1-7f51-9563-dde2b6ecd948
+early_stage_diabetes_risk_prediction,medical & healthcare,2019,7,UCI,"@inproceedings{islam2019likelihood,
+  title={Likelihood prediction of diabetes at early stage using data mining techniques},
+  author={Islam, MM Faniqul and Ferdousi, Rahatara and Rahman, Sadikur and Bushra, Humayra Yasmin},
+  booktitle={Computer Vision and Machine Intelligence in Medical Image Analysis: International Symposium, ISCMM 2019},
+  pages={113--125},
+  year={2019},
+  organization={Springer}
+}
+",islam2019likelihood,binary_classification,251,168,16,16,0.0,2.0,31.07569721115538,1,15,0,0,15,1,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,early_stage_diabetes_risk_prediction/019d736a-c5ee-7069-9b14-686535f9caa9
+ecoli_proteins,biology & life sciences,1996,30,UCI,"@inproceedings{horton1996probabilistic,
+  title={A probabilistic classification system for predicting the cellular localization sites of proteins.},
+  author={Horton, Paul and Nakai, Kenta},
+  booktitle={Ismb},
+  volume={4},
+  pages={109--115},
+  year={1996},
+  organization={St. Louis, Missouri, USA}
+}
+",horton1996probabilistic,multiclass_classification,327,218,6,6,0.0,5.0,6.116207951070336,5,1,0,0,1,5,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,ecoli_proteins/019d736a-d6d2-7e28-aeff-7da6b7126b9d
+emscad,business & marketing,2014,12,Other,"@article{vidros2017automatic,
+  title={Automatic detection of online recruitment frauds: Characteristics, methods, and a public dataset},
+  author={Vidros, Sokratis and Kolias, Constantinos and Kambourakis, Georgios and Akoglu, Leman},
+  journal={Future Internet},
+  volume={9},
+  number={1},
+  pages={6},
+  year={2017},
+  publisher={MDPI}
+}
+",vidros2017automatic,binary_classification,17460,11640,17,265,0.28441816589178626,2.0,4.885452462772051,1,8,0,8,3,1,5,0,8,131.0,24.875,6.0,1,"[5, 7, 13, 131, 37]",467.16592218231744,139.0,14907.0,52221.0,3,3,,,iid,emscad/019d736a-ed4a-7aaa-89df-d52558565db9
+eryhemato_squamous_disease,medical & healthcare,1997,29,UCI,"@article{guvenir1998learning,
+  title={Learning differential diagnosis of erythemato-squamous diseases using voting feature intervals},
+  author={G{\""u}venir, H Altay and Demir{\""o}z, G{\""u}l{\c{s}}en and Ilter, Nilsel},
+  journal={Artificial intelligence in medicine},
+  volume={13},
+  number={3},
+  pages={147--165},
+  year={1998},
+  publisher={Elsevier}
+}
+",guvenir1998learning,multiclass_classification,366,244,34,34,0.0006428801028608164,6.0,5.46448087431694,1,33,0,0,1,1,32,0,0,4.0,3.909090909090909,4.0,0,"[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]",,,,,20,3,,,iid,eryhemato_squamous_disease/019d736b-020a-7fbc-9785-6438802781f2
+forensic_glass_identification,chemistry & material science,1987,39,UCI,"@misc{German1987glass,
+  author       = {German, B.},
+  title        = {{Glass Identification}},
+  year         = {1987},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C5WW2P}
+}
+",German1987glass,multiclass_classification,214,143,9,9,0.0,6.0,4.205607476635514,9,0,0,0,0,9,0,0,0,,,,0,[],,,,,20,3,,,iid,forensic_glass_identification/019d736b-12da-73ae-a0d2-65e6294a7f01
+forest_fires,environmental science & climate,2008,18,UCI,"@article{cortez2007data,
+  title={A data mining approach to predict forest fires using meteorological data},
+  author={Cortez, Paulo and Morais, An{\'\i}bal de Jesus Raimundo},
+  year={2007},
+  publisher={Associa{\c{c}}{\~a}o Portuguesa para a Intelig{\^e}ncia Artificial (APPIA)}
+}
+",cortez2007data,regression,517,345,12,12,0.0,,,10,2,0,0,0,10,2,0,0,12.0,9.5,9.5,0,"[12, 7]",,,,,20,3,,,iid,forest_fires/019d736b-2610-7f4f-ae46-3f6a4c98962e
+gallstone_disease,medical & healthcare,2023,3,UCI,"@article{esen2024early,
+  title={Early prediction of gallstone disease with a machine learning-based method from bioimpedance and laboratory data},
+  author={Esen, {\.I}rfan and Arslan, Hilal and Esen, Selin Akt{\""u}rk and G{\""u}l{\c{s}}en, Mervenur and K{\""u}ltekin, Nimet and {\""O}zdemir, O{\u{g}}uzhan},
+  journal={Medicine},
+  volume={103},
+  number={8},
+  pages={e37258},
+  year={2024},
+  publisher={LWW}
+}
+",esen2024early,binary_classification,319,213,38,38,0.0,2.0,49.529780564263326,32,6,0,0,5,32,1,0,0,4.0,2.3333333333333335,2.0,0,[4],,,,,20,3,,,iid,gallstone_disease/019d736b-3795-7523-ac59-9fbe676ebc70
+heart_disease_cleveland,medical & healthcare,1989,37,UCI,"@article{detrano1989international,
+  title={International application of a new probability algorithm for the diagnosis of coronary artery disease},
+  author={Detrano, Robert and Janosi, Andras and Steinbrunn, Walter and Pfisterer, Matthias and Schmid, Johann-Jakob and Sandhu, Sarbjit and Guppy, Kern H and Lee, Stella and Froelicher, Victor},
+  journal={The American journal of cardiology},
+  volume={64},
+  number={5},
+  pages={304--310},
+  year={1989},
+  publisher={Elsevier}
+}
+",detrano1989international,binary_classification,303,202,13,13,0.0015232292460015233,2.0,45.87458745874587,6,7,0,0,3,6,4,0,0,4.0,2.7142857142857144,3.0,0,"[4, 3, 3, 3]",,,,,20,3,,,iid,heart_disease_cleveland/019d736b-4900-714b-8dfc-be588ce802c3
+heart_disease_hungary,medical & healthcare,1989,37,UCI,"@article{detrano1989international,
+  title={International application of a new probability algorithm for the diagnosis of coronary artery disease},
+  author={Detrano, Robert and Janosi, Andras and Steinbrunn, Walter and Pfisterer, Matthias and Schmid, Johann-Jakob and Sandhu, Sarbjit and Guppy, Kern H and Lee, Stella and Froelicher, Victor},
+  journal={The American journal of cardiology},
+  volume={64},
+  number={5},
+  pages={304--310},
+  year={1989},
+  publisher={Elsevier}
+}
+",detrano1989international,binary_classification,294,196,13,13,0.20460491889063318,2.0,36.054421768707485,6,7,0,0,3,6,4,0,0,4.0,2.7142857142857144,3.0,0,"[4, 3, 3, 3]",,,,,20,3,,,iid,heart_disease_hungary/019d736b-5a1a-7c95-92f0-8c2fe5334ad2
+heart_disease_va_long_beach,medical & healthcare,1989,37,UCI,"@article{detrano1989international,
+  title={International application of a new probability algorithm for the diagnosis of coronary artery disease},
+  author={Detrano, Robert and Janosi, Andras and Steinbrunn, Walter and Pfisterer, Matthias and Schmid, Johann-Jakob and Sandhu, Sarbjit and Guppy, Kern H and Lee, Stella and Froelicher, Victor},
+  journal={The American journal of cardiology},
+  volume={64},
+  number={5},
+  pages={304--310},
+  year={1989},
+  publisher={Elsevier}
+}
+",detrano1989international,binary_classification,200,134,13,13,0.2684615384615385,2.0,25.5,6,7,0,0,3,6,4,0,0,4.0,2.7142857142857144,3.0,0,"[4, 3, 3, 3]",,,,,20,3,,,iid,heart_disease_va_long_beach/019d736b-7c92-71e1-a6d6-27a91ed15d3d
+heart_failure_followup_survival,medical & healthcare,2020,6,UCI,"@article{chicco2020machine,
+  title={Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone},
+  author={Chicco, Davide and Jurman, Giuseppe},
+  journal={BMC medical informatics and decision making},
+  volume={20},
+  number={1},
+  pages={16},
+  year={2020},
+  publisher={Springer}
+}
+",chicco2020machine,binary_classification,299,200,12,12,0.0,2.0,32.10702341137124,7,5,0,0,5,7,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,heart_failure_followup_survival/019d736b-8d9f-7f20-8f5c-45207fb0251d
+hepatitis_c_prediction,medical & healthcare,2018,8,UCI,"@article{hoffmann2018using,
+  title={Using machine learning techniques to generate laboratory diagnostic pathways—a case study},
+  author={Hoffmann, Georg and Bietenbeck, Andreas and Lichtinghagen, Ralf and Klawonn, Frank},
+  journal={Journal of Laboratory and Precision Medicine},
+  volume={3},
+  number={6},
+  year={2018},
+  publisher={AME Publishing Company}
+}
+",hoffmann2018using,multiclass_classification,608,406,12,12,0.00424890350877193,4.0,3.4539473684210527,11,1,0,0,1,11,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,hepatitis_c_prediction/019d736b-9eba-79b8-8c5a-78d95163e286
+hepatitis_survival_prediction,medical & healthcare,1981,45,UCI,"@inproceedings{efron1981statistical,
+  title={Statistical theory and the computer},
+  author={Efron, Bradley and Gong, Gail},
+  booktitle={Computer science and statistics: Proceedings of the 13th Symposium on the Interface},
+  pages={3--7},
+  year={1981},
+  organization={Springer}
+}
+",efron1981statistical,binary_classification,155,104,19,19,0.0567062818336163,2.0,20.64516129032258,6,13,0,0,13,6,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,hepatitis_survival_prediction/019d736b-afda-7edf-9f73-3cd8e3799329
+home_credit_default_risk,finance,2018,8,Kaggle,"@misc{Montoya2018HomeCreditDefaultRisk,
+  author = {Anna Montoya and inversion and Kirill Odintsov and Martin Kotek},
+  title  = {Home Credit Default Risk},
+  year   = {2018},
+  howpublished = {\url{https://kaggle.com/competitions/home-credit-default-risk}},
+  note   = {Kaggle competition}
+}
+",Montoya2018HomeCreditDefaultRisk,binary_classification,307507,205005,504,504,0.3369085777941511,2.0,8.07298695639449,482,22,0,0,11,482,11,0,0,58.0,6.863636363636363,2.5,1,"[7, 8, 5, 6, 6, 18, 7, 58, 4, 3, 7]",,,,,3,3,,,iid,home_credit_default_risk/019d736d-6a16-7087-999b-e953d48f7516
+homesite_quote_conversion,insurance,2015,11,Kaggle,"@misc{Darrel2015HomesiteQuoteConversion,
+  author = {Darrel and Stephen D. Stayton and Will Cukierski},
+  title  = {Homesite Quote Conversion},
+  year   = {2015},
+  howpublished = {\url{https://kaggle.com/competitions/homesite-quote-conversion}},
+  note   = {Kaggle competition}
+}
+",Darrel2015HomesiteQuoteConversion,binary_classification,260753,173836,295,304,0.04642657149336794,2.0,18.75107860695754,268,26,1,0,18,261,15,1,0,66.0,12.76923076923077,4.0,3,"[8, 7, 12, 7, 50, 66, 61, 57, 19, 4, 4, 4, 4, 3, 4]",,,,,3,3,,,iid,homesite_quote_conversion/019d736d-c045-7597-b0e9-665db9c61dac
+horse_colic_survival,biology & life sciences,1989,37,UCI,"@misc{McLeish1989HorseColic,
+  author       = {McLeish, Mary and Cecile, Matt},
+  title        = {{Horse Colic}},
+  year         = {1989},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C58W23}
+}
+",McLeish1989HorseColic,multiclass_classification,344,230,20,20,0.26656976744186045,3.0,14.534883720930232,8,12,0,0,1,7,12,0,0,6.0,4.0,4.0,0,"[4, 4, 6, 3, 5, 4, 4, 3, 3, 4, 5, 3]",,,,,20,3,,,iid,horse_colic_survival/019d736d-db15-7ad1-b407-b937aa958bd9
+indian_liver_patient_dataset,medical & healthcare,2012,14,UCI,"@article{ramana2012critical,
+  title={A critical comparative study of liver patients from USA and INDIA: an exploratory analysis},
+  author={Ramana, Bendi Venkata and Babu, M Surendra Prasad and Venkateswarlu, NB},
+  journal={International Journal of Computer Science Issues (IJCSI)},
+  volume={9},
+  number={3},
+  pages={506},
+  year={2012},
+  publisher={International Journal of Computer Science Issues (IJCSI)}
+}
+",ramana2012critical,binary_classification,583,389,10,10,0.0006861063464837049,2.0,28.644939965694682,9,1,0,0,1,9,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,indian_liver_patient_dataset/019d736d-ec03-75de-b8e9-075fcdde7993
+labour_inspection_compliance,industry & manufacturing,2019,7,Other,"@inproceedings{flogard2022dataset,
+  title={A dataset for efforts towards achieving the sustainable development goal of safe working environments},
+  author={Flogard, Eirik Lund and Mengshoel, Ole Jakob},
+  booktitle={Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
+  year={2022}
+}
+",flogard2022dataset,binary_classification,63634,42423,376,500,0.8594863310728441,2.0,25.72366973630449,367,5,0,4,5,362,5,0,4,84.0,21.4,8.0,1,"[84, 3, 3, 9, 8]",98.98282364773549,35.0,893.0,57545.0,3,3,,,iid,labour_inspection_compliance/019d736e-5a12-720a-9281-b652d1acae27
+ljubljana_breast_cancer,medical & healthcare,1988,38,UCI,"@misc{Zwitter1988BreastCancer,
+  author       = {Zwitter, Matjaz and Soklic, Milan},
+  title        = {{Breast Cancer}},
+  year         = {1988},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C51P4M}
+}
+",Zwitter1988BreastCancer,binary_classification,286,191,9,9,0.0034965034965034965,2.0,29.72027972027972,4,5,0,0,3,4,2,0,0,5.0,2.8,2.0,0,"[3, 5]",,,,,20,3,,,iid,ljubljana_breast_cancer/019d736e-6ea7-7889-b0ff-20fbdd628b8a
+ljubljana_primary_tumor,medical & healthcare,1987,39,UCI,"@misc{Zwitter1987primarytumor,
+  author       = {Zwitter, M. and Soklic, M.},
+  title        = {{Primary Tumor}},
+  year         = {1987},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C5WK5Q}
+}
+",Zwitter1987primarytumor,multiclass_classification,302,202,17,17,0.038955979742890535,11.0,3.3112582781456954,0,17,0,0,14,0,3,0,0,3.0,2.176470588235294,2.0,0,"[3, 3, 3]",,,,,20,3,,,iid,ljubljana_primary_tumor/019d736e-819e-7f44-a8b2-5b93d4cce230
+mercari_price_suggestion_1m,business & marketing,2018,8,Kaggle,"@misc{Howard2017MercariPriceSuggestionChallenge,
+  author = {{Kaggle} and Addison Howard and kaoriiida and Kei Otagaki and Mark McDonald and mueno and Wendy Kan and Zhang and zyaga},
+  title  = {Mercari Price Suggestion Challenge},
+  year   = {2017},
+  howpublished = {\url{https://kaggle.com/competitions/mercari-price-suggestion-challenge}},
+  note   = {Kaggle competition}
+}
+",Howard2017MercariPriceSuggestionChallenge,regression,1250000,1000000,6,130,0.081118,,,0,2,0,4,1,0,1,0,4,5.0,3.5,3.5,0,[5],58.51834302414943,28.0,1046.0,548852.0,1,1,,,iid,mercari_price_suggestion/versions/019d736f-26fd-73bd-8853-dc219e5f4ed5
+mutual_funds_india,finance,2023,3,Kaggle,"@misc{Barnawal2022MutualFundsIndiaDetailed,
+  author = {Ravi Barnawal},
+  title  = {Mutual Funds India Detailed},
+  year   = {2022},
+  howpublished = {\url{https://www.kaggle.com/datasets/ravibarnawal/mutual-funds-india-detailed}},
+  note   = {Kaggle dataset}
+}
+",Barnawal2022MutualFundsIndiaDetailed,regression,793,529,12,105,0.0,,,7,2,0,3,0,7,2,0,3,38.0,21.5,21.5,0,"[5, 38]",20.924758301807483,19.0,57.0,0.0,10,3,,,iid,mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef
+otto_group_product_classification_challenge,business & marketing,2015,11,Kaggle,"@misc{Bossan2015OttoGroupProductClassificationChallenge,
+  author = {Benjamin Bossan and Josef Feigl and Wendy Kan},
+  title  = {Otto Group Product Classification Challenge},
+  year   = {2015},
+  howpublished = {\url{https://kaggle.com/competitions/otto-group-product-classification-challenge}},
+  note   = {Kaggle competition}
+}
+",Bossan2015OttoGroupProductClassificationChallenge,multiclass_classification,61878,41252,93,93,0.0,9.0,3.1174246097158926,93,0,0,0,0,93,0,0,0,,,,0,[],,,,,3,3,,,iid,otto_group_product_classification_challenge/019d736f-6330-78c4-91bb-c37e46162244
+porto_seguro,insurance,2017,9,Kaggle,"@misc{Howard2017PortoSegurosSafeDriverPrediction,
+  author = {Addison Howard and Adriano Moala and Walter Reade},
+  title  = {Porto Seguro’s Safe Driver Prediction},
+  year   = {2017},
+  howpublished = {\url{https://kaggle.com/competitions/porto-seguro-safe-driver-prediction}},
+  note   = {Kaggle competition}
+}
+",Howard2017PortoSegurosSafeDriverPrediction,binary_classification,595206,396804,37,37,0.038435023767832914,2.0,3.644620517938327,12,25,0,0,17,12,8,0,0,104.0,7.88,2.0,1,"[4, 7, 12, 10, 18, 5, 3, 104]",,,,,1,3,,,iid,porto_seguro/019d736f-86ed-700f-96c9-8f4be8546db1
+pva_revenue_prediction_kddcup98,business & marketing,1997,29,Other,"@misc{Parsa1998KDDCup1998,
+  author = {Ismail Parsa},
+  title  = {KDD Cup 1998},
+  year   = {1998},
+  howpublished = {\url{https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html}},
+  note   = {Dataset, UCI Machine Learning Repository. DOI: 10.24432/C5401H}
+}
+",Parsa1998KDDCup1998,binary_classification,144095,96064,477,1799,0.1672669505319218,2.0,5.1743641347721985,347,50,53,27,16,347,42,45,27,62.0,4.78,2.0,2,"[4, 53, 3, 3, 3, 3, 3, 6, 3, 5, 9, 8, 3, 4, 4, 62, 4, 5, 4, 5, 5, 4]",3.1569051912545603,3.0,19.0,0.0,3,3,,,iid,pva_revenue_prediction_kddcup98/019db49b-9c05-72b8-b4a5-7b967a18225b
+qsar_aquatic_toxicity,biology & life sciences,2014,12,UCI,"@article{cassotti2014prediction,
+  title={Prediction of acute aquatic toxicity toward daphnia magna by using the ga-k nn method},
+  author={Cassotti, Matteo and Ballabio, Davide and Consonni, Viviana and Mauri, Andrea and Tetko, Igor V and Todeschini, Roberto},
+  journal={Alternatives to Laboratory Animals},
+  volume={42},
+  number={1},
+  pages={31--41},
+  year={2014},
+  publisher={SAGE Publications Sage UK: London, England}
+}
+",cassotti2014prediction,regression,546,364,8,8,0.0,,,8,0,0,0,0,8,0,0,0,,,,0,[],,,,,20,3,,,iid,qsar_aquatic_toxicity/019d7370-0517-71a1-9e18-dc2a826fa01a
+regensburg_pediatric_appendicitis,medical & healthcare,2021,5,Other,"@article{marcinkevivcs2024interpretable,
+  title={Interpretable and intervenable ultrasonography-based machine learning models for pediatric appendicitis},
+  author={Marcinkevi{\v{c}}s, Ri{\v{c}}ards and Wolfertstetter, Patricia Reis and Klimiene, Ugne and Chin-Cheong, Kieran and Paschke, Alyssia and Zerres, Julia and Denzinger, Markus and Niederberger, David and Wellmann, Sven and Ozkan, Ece and others},
+  journal={Medical image analysis},
+  volume={91},
+  pages={103042},
+  year={2024},
+  publisher={Elsevier}
+}
+",marcinkevivcs2024interpretable,binary_classification,763,509,51,144,0.34469200524246396,2.0,15.07208387942333,16,32,0,3,22,16,10,0,3,4.0,2.53125,2.0,0,"[4, 4, 4, 4, 3, 4, 3, 4, 4, 3]",12.48125,11.0,187.0,1.0,10,3,,,iid,regensburg_pediatric_appendicitis/019d7370-1dc6-7c1e-8ff1-80ddeb4c4207
+santander_customer_satisfaction,business & marketing,2016,10,Kaggle,"@misc{Jimenez2016SantanderCustomerSatisfaction,
+  author = {Soraya Jimenez and Will Cukierski},
+  title  = {Santander Customer Satisfaction},
+  year   = {2016},
+  howpublished = {\url{https://kaggle.com/competitions/santander-customer-satisfaction}},
+  note   = {Kaggle competition}
+}
+",Jimenez2016SantanderCustomerSatisfaction,binary_classification,71080,47387,307,307,4.903407455745602e-06,2.0,3.81541924592009,307,0,0,0,85,222,0,0,0,,,,0,[],,,,,3,3,,,iid,santander_customer_satisfaction/019d7370-56f7-7b35-ba45-c77b1e3c531b
+santander_customer_transaction_prediction,finance,2019,7,Kaggle,"@misc{Piedra2019SantanderCustomerTransactionPrediction,
+  author = {Mercedes Piedra and Sohier Dane and Soraya Jimenez},
+  title  = {Santander Customer Transaction Prediction},
+  year   = {2019},
+  howpublished = {\url{https://kaggle.com/competitions/santander-customer-transaction-prediction}},
+  note   = {Kaggle competition}
+}
+",Piedra2019SantanderCustomerTransactionPrediction,binary_classification,200000,133334,600,600,0.0,2.0,10.049,200,400,0,0,200,200,200,0,0,4.0,3.0,3.0,0,"[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]",,,,,3,3,,,iid,santander_customer_transaction_prediction/019d7373-33b4-7002-948b-c14d1fffe341
+santander_transaction_value,finance,2018,8,Kaggle,"@misc{McDonald2018SantanderValuePredictionChallenge,
+  author = {Mark McDonald and Mercedes Piedra and Sohier Dane and Soraya Jimenez},
+  title  = {Santander Value Prediction Challenge},
+  year   = {2018},
+  howpublished = {\url{https://kaggle.com/competitions/santander-value-prediction-challenge}},
+  note   = {Kaggle competition}
+}
+",McDonald2018SantanderValuePredictionChallenge,regression,4447,2965,540,540,0.416789512696866,,,540,0,0,0,0,540,0,0,0,,,,0,[],,,,,3,3,,,iid,santander_transaction_value/019d7373-d139-7c8f-be3e-579006c05fad
+sepsis_survival_minimal_clinical_records,medical & healthcare,2020,6,UCI,"""@article{chicco2020survival,
+  title={Survival prediction of patients with sepsis from age, sex, and septic episode number alone},
+  author={Chicco, Davide and Jurman, Giuseppe},
+  journal={Scientific reports},
+  volume={10},
+  number={1},
+  pages={17156},
+  year={2020},
+  publisher={Nature Publishing Group UK London}
+}""
+",hicco2020survival,binary_classification,110204,73470,3,3,0.0,2.0,7.354542484846285,2,1,0,0,1,2,0,0,0,2.0,2.0,2.0,0,[],,,,,3,3,,,iid,sepsis_survival_minimal_clinical_records/019d7373-e475-7208-bd58-accca4615b01
+south_africa_coronary_heart_disease,medical & healthcare,1983,43,Kaggle,"@article{rossouw1983coronary,
+  title={Coronary risk factor screening in three rural communities. The CORIS baseline study.},
+  author={Rossouw, JE and Du Plessis, JP and Benad{\'e}, AJ and Jordaan, PC and Kotze, JP and Jooste, PL and Ferreira, JJ},
+  journal={South African medical journal= Suid-Afrikaanse tydskrif vir geneeskunde},
+  volume={64},
+  number={12},
+  pages={430--436},
+  year={1983}
+}
+",rossouw1983coronary,binary_classification,462,308,9,9,0.0,2.0,34.63203463203463,8,1,0,0,1,8,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,iid,south_africa_coronary_heart_disease/019d7373-f750-7ecd-8cda-f16d5d36be62
+student_portuguese_performance,education,2008,18,UCI,"@article{silva2008using,
+  title={Using data mining to predict secondary school student performance},
+  author={Silva, Alice},
+  year={2008}
+}
+",silva2008using,regression,649,433,30,30,0.0,,,13,17,0,0,13,13,4,0,0,5.0,2.5294117647058822,2.0,0,"[5, 5, 4, 3]",,,,,20,3,,,iid,student_portuguese_performance/019d7374-09f4-79ea-a27f-1ad571967f90
+thyroid_discordant,medical & healthcare,1986,40,UCI,"@article{quinlan1987simplifying,
+  title={Simplifying decision trees},
+  author={Quinlan, J. Ross},
+  journal={International journal of man-machine studies},
+  volume={27},
+  number={3},
+  pages={221--234},
+  year={1987},
+  publisher={Elsevier}
+}
+",quinlan1987simplifying,binary_classification,3711,2474,26,26,0.02063511804821425,2.0,1.5629210455402855,6,20,0,0,20,6,0,0,0,2.0,2.0,2.0,0,[],,,,,10,3,,,iid,thyroid_discordant/019d7374-1c19-79e6-986d-2afd2c16101e
+tour_travels_churn,business & marketing,2021,5,Kaggle,"@misc{Tejashvi2023TourTravelsCustomerChurnPrediction,
+  author = {Tejashvi},
+  title  = {Tour & Travels Customer Churn Prediction},
+  year   = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction}},
+  note   = {Kaggle dataset}
+}
+",Tejashvi2023TourTravelsCustomerChurnPrediction,binary_classification,954,636,6,6,0.0,2.0,23.48008385744235,2,4,0,0,2,2,2,0,0,3.0,2.5,2.5,0,"[3, 3]",,,,,10,3,,,iid,tour_travels_churn/019d7374-2df2-7b85-94a6-3ec9d1796737
+wids_diabetes_mellitus,medical & healthcare,2021,5,Kaggle,"@misc{Matthys2021WiDSDatathon2021,
+  author = {Karen Matthys and Meredith Lee and Neha Goel and Sharada Kalanidhi and Valerie and Vani M.},
+  title  = {WiDS Datathon 2021},
+  year   = {2021},
+  howpublished = {\url{https://kaggle.com/competitions/widsdatathon2021}},
+  note   = {Kaggle competition}
+}
+",Matthys2021WiDSDatathon2021,binary_classification,127358,84906,181,243,0.32905862701035293,2.0,21.637431492328712,151,28,0,2,21,151,7,0,2,328.0,21.821428571428573,2.0,2,"[204, 6, 15, 5, 328, 3, 8]",5.597422469941369,5.0,7.0,0.0,3,3,,,iid,wids_diabetes_mellitus/019d7374-50ba-7416-9d10-a526040930ee
+wine_world_cost,business & marketing,2023,3,Kaggle,"@misc{Rustamov2023WineDataset,
+  author = {Elvin Rustamov},
+  title  = {Wine Dataset},
+  year   = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/elvinrustam/wine-dataset}},
+  note   = {Kaggle dataset}
+}
+",Rustamov2023WineDataset,regression,1279,853,14,262,0.10476935105551212,,,3,3,0,8,0,3,3,0,8,16.0,8.666666666666666,6.0,0,"[4, 6, 16]",95.91899116689912,17.0,1328.0,1288.0,10,3,,,iid,wine_world_cost/019d7374-6961-7fb3-9ca1-2e20e35fbbb0
+iranian_churn,business & marketing,2011,15,UCI,"@article{keramati2011churn,
+  title={Churn analysis for an Iranian mobile operator},
+  author={Keramati, Abbas and Ardabili, Seyed MS},
+  journal={Telecommunications Policy},
+  volume={35},
+  number={4},
+  pages={344--356},
+  year={2011},
+  publisher={Elsevier}
+}
+",keramati2011churn,binary_classification,2850,1900,13,13,0.0,2.0,15.649122807017545,10,3,0,0,3,10,0,0,0,2.0,2.0,2.0,0,[],,,,,10,3,,,iid,iranian_churn/019d7374-7b3c-7eed-940f-e8ac3c68e2f4
+obesity_estimation,medical & healthcare,2019,7,UCI,"@article{palechor2019dataset,
+    title={Dataset for estimation of obesity levels based on eating habits and physical condition in individuals from Colombia, Peru and Mexico},
+    author={Palechor, Fabio Mendoza and De la Hoz Manotas, Alexis},
+    journal={Data in brief},
+    volume={25},
+    pages={104344},
+    year={2019},
+    publisher={Elsevier}
+}
+",palechor2019dataset,regression,498,332,14,14,0.0,,,1,13,0,0,5,1,8,0,0,5.0,3.0,3.0,0,"[3, 3, 4, 3, 4, 3, 4, 5]",,,,,20,3,,,iid,obesity_estimation/019d7374-8d75-752a-aca4-1f311044d316
+immoscout_german_house_prices,business & marketing,2019,7,Kaggle,"@misc{OpenML43342Dataset,
+  author = {{OpenML}},
+  title  = {ImmoScout24 OpenML Dataset 43342},
+  year   = {2023},
+  howpublished = {\url{https://www.openml.org/d/43342}},
+  note   = {OpenML dataset}
+}
+@misc{Shritech2019GermanHousingPricePrediction,
+  author = {shritech1404},
+  title  = {German Housing Price Prediction},
+  year   = {2019},
+  howpublished = {\url{https://www.kaggle.com/code/shritech1404/german-housing-price-prediction}},
+  note   = {Kaggle notebook}
+}
+","Shritech2019GermanHousingPricePrediction,OpenML43342Dataset",regression,10317,6878,23,147,0.18782844692803352,,,11,8,0,4,1,11,7,0,4,13.0,7.375,8.0,0,"[11, 4, 10, 13, 3, 9, 7]",11.579809552523805,11.0,43.0,0.0,3,3,,,iid,immoscout_german_house_prices/019d7374-a0e4-7646-b11b-f762fe9b693b
+biogeographical_ancestry_prediction,biology & life sciences,2025,1,GitHub,"@article{heinzel2025advancing,
+  title={Advancing biogeographical ancestry predictions through machine learning},
+  author={Heinzel, Carola Sophia and Purucker, Lennart and Hutter, Frank and Pfaffelhuber, Peter},
+  journal={Forensic Science International: Genetics},
+  volume={79},
+  pages={103290},
+  year={2025},
+  publisher={Elsevier}
+}
+@article{ruiz2023development,
+  title={Development and evaluations of the ancestry informative markers of the VISAGE Enhanced Tool for Appearance and Ancestry},
+  author={Ruiz-Ram{\'\i}rez, Jorge and de La Puente, M and Xavier, Catarina and Ambroa-Conde, Adri{\'a}n and {\'A}lvarez-Dios, J and Freire-Aradas, A and Mosquera-Miguel, Ana and Ralf, Arwin and Amory, Christina and Katsara, Maria Alexandra and others},
+  journal={Forensic Science International: Genetics},
+  volume={64},
+  pages={102853},
+  year={2023},
+  publisher={Elsevier}
+}
+@article{xavier2020development,
+  title={Development and validation of the VISAGE AmpliSeq basic tool to predict appearance and ancestry from DNA},
+  author={Xavier, Catarina and de la Puente, Maria and Mosquera-Miguel, Ana and Freire-Aradas, Ana and Kalamara, Vivian and Vidaki, Athina and Gross, Theresa E and Revoir, Andrew and Po{\'s}piech, Ewelina and Kartasi{\'n}ska, Ewa and others},
+  journal={Forensic Science International: Genetics},
+  volume={48},
+  pages={102336},
+  year={2020},
+  publisher={Elsevier}
+}
+","heinzel2025advancing,ruiz2023development,xavier2020development",multiclass_classification,635,424,104,104,0.0,10.0,3.622047244094488,0,104,0,0,10,0,94,0,0,7.0,3.826923076923077,3.0,0,"[3, 3, 6, 3, 3, 3, 6, 3, 3, 4, 3, 3, 7, 3, 4, 3, 3, 3, 6, 7, 3, 3, 3, 3, 3, 3, 4, 7, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 6, 6, 3, 6, 6, 3, 3, 7, 3, 3, 3, 4, 3, 3, 3, 3, 3, 7, 7, 7, 3, 3, 6, 3, 4, 3, 7, 6, 4, 3, 3, 7, 6, 3, 3, 3, 5, 3, 6, 3, 4, 6, 4, 4, 6, 3, 6, 3, 4, 4, 3, 3, 3, 6, 4]",,,,,20,3,,,iid,biogeographical_ancestry_prediction/019d7374-b899-714c-9372-37a48f580b0f
+homeq_default_prediction,business & marketing,2016,10,Other,"@book{baesens2016credit,
+  title={Credit risk analytics: Measurement techniques, applications, and examples in SAS},
+  author={Baesens, Bart and Roesch, Daniel and Scheule, Harald},
+  year={2016},
+  publisher={John Wiley \& Sons}
+}
+",baesens2016credit,binary_classification,5708,3806,12,12,0.06087946741415557,2.0,19.989488437281008,10,2,0,0,1,10,1,0,0,6.0,4.0,4.0,0,[6],,,,,3,3,,,iid,homeq_default_prediction/019d7374-cab8-700e-97f3-9c55ea980153
+lung_cancer,medical & healthcare,2001,25,Other,"@article{bhattacharjee2001classification,
+  title={Classification of human lung carcinomas by mRNA expression profiling reveals distinct adenocarcinoma subclasses},
+  author={Bhattacharjee, Arindam and Richards, William G and Staunton, Jane and Li, Cheng and Monti, Stefano and Vasa, Priya and Ladd, Christine and Beheshti, Javad and Bueno, Raphael and Gillette, Michael and others},
+  journal={Proceedings of the National Academy of Sciences},
+  volume={98},
+  number={24},
+  pages={13790--13795},
+  year={2001},
+  publisher={The National Academy of Sciences}
+}
+",bhattacharjee2001classification,multiclass_classification,197,132,12600,12600,0.0,4.0,8.629441624365482,12600,0,0,0,0,12600,0,0,0,,,,0,[],,,,,20,3,,,iid,lung_cancer/019d7375-0c48-7822-8f4e-5e071cbcabe5
+clock_protein_toxicity,biology & life sciences,2021,5,UCI,"@article{gul2021structure,
+  title={Structure-based design and classifications of small molecules regulating the circadian rhythm period},
+  author={Gul, Seref and Rahim, Fatih and Isin, Safak and Yilmaz, Fatma and Ozturk, Nuri and Turkay, Metin and Kavakli, Ibrahim Halil},
+  journal={Scientific reports},
+  volume={11},
+  number={1},
+  pages={18510},
+  year={2021},
+  publisher={Nature Publishing Group UK London}
+}
+",gul2021structure,binary_classification,171,114,1117,1117,0.0,2.0,32.748538011695906,1117,0,0,0,28,1089,0,0,0,,,,0,[],,,,,20,3,,,iid,clock_protein_toxicity/019d7375-2841-7bfb-a6da-5adfdcd43d98
+prostate_cancer_detection,medical & healthcare,2002,24,Other,"@article{petricoin2002serum,
+  title={Serum proteomic patterns for detection of prostate cancer},
+  author={Petricoin III, Emanuel F and Ornstein, David K and Paweletz, Cloud P and Ardekani, Ali and Hackett, Paul S and Hitt, Ben A and Velassco, Alfredo and Trucco, Christian and Wiegand, Laura and Wood, Kamillah and others},
+  journal={Journal of the National Cancer Institute},
+  volume={94},
+  number={20},
+  pages={1576--1578},
+  year={2002},
+  publisher={Oxford University Press}
+}
+",petricoin2002serum,binary_classification,322,215,15154,15154,0.0,2.0,21.428571428571427,15154,0,0,0,0,15154,0,0,0,,,,0,[],,,,,20,3,,,iid,prostate_cancer_detection/019d7375-de7b-7b43-8340-ea47165661d3
+lung_cancer_epithelial_genexp,medical & healthcare,2006,20,GOV Website,"@article{spira2007airway,
+  title={Airway epithelial gene expression in the diagnostic evaluation of smokers with suspect lung cancer},
+  author={Spira, Avrum and Beane, Jennifer E and Shah, Vishal and Steiling, Katrina and Liu, Gang and Schembri, Frank and Gilman, Sean and Dumas, Yves-Martine and Calner, Paul and Sebastiani, Paola and others},
+  journal={Nature medicine},
+  volume={13},
+  number={3},
+  pages={361--366},
+  year={2007},
+  publisher={Nature Publishing Group US New York}
+}
+",spira2007airway,binary_classification,187,125,22215,22215,0.0,2.0,48.1283422459893,22215,0,0,0,0,22215,0,0,0,,,,0,[],,,,,20,3,,,iid,lung_cancer_epithelial_genexp/019d7376-82a5-76cc-b1ce-92dc200f3173
+acquire_valued_shoppers_challenge,business & marketing,2014,12,Kaggle,"@misc{DMDave2014AcquireValuedShoppersChallenge,
+  author = {DMDave and Todd B and Will Cukierski},
+  title  = {Acquire Valued Shoppers Challenge},
+  year   = {2014},
+  howpublished = {\url{https://kaggle.com/competitions/acquire-valued-shoppers-challenge}},
+  note   = {Kaggle competition}
+}
+",DMDave2014AcquireValuedShoppersChallenge,binary_classification,160057,140701,111,120,0.0,2.0,27.13908170214361,104,6,1,0,6,104,0,1,0,2.0,2.0,2.0,0,[],,,,,5,1,5,days,temporal,acquire_valued_shoppers_challenge/019d7376-a3c5-7df7-88c0-ba4e87c3dfa0
+climate_model_weather_forecasting_1m,environmental science & climate,2024,2,Kaggle,"@inproceedings{rubachev2025tabred,
+  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+}
+",rubachev2025tabred,regression,1250000,1000000,100,109,0.00793796,,,95,4,1,0,3,95,1,1,0,1862.0,467.0,2.0,1,[1862],,,,,1,1,7,days,temporal,climate_model_weather_forecasting/versions/019d7379-7906-707e-95e9-f479afb2e2c1
+cooking_time_1m,industry & manufacturing,2024,2,Kaggle,"@inproceedings{rubachev2025tabred,
+  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+}
+",rubachev2025tabred,regression,1250000,1000000,196,205,0.08051920816326531,,,186,9,1,0,3,186,6,1,0,47817.0,16036.333333333334,9796.0,5,"[47817, 17423, 9796, 36226, 3, 33056]",,,,,1,1,7,days,temporal,cooking_time/versions/019d737d-b4b1-7c24-8930-70a2c242b3f9
+delivery_eta_1m,industry & manufacturing,2024,2,Kaggle,"@inproceedings{rubachev2025tabred,
+  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+}
+",rubachev2025tabred,regression,1250000,1000000,225,234,0.1718779022222222,,,221,3,1,0,2,220,2,1,0,523.0,337.6666666666667,488.0,2,"[488, 523]",,,,,1,1,7,days,temporal,delivery_eta/versions/019d7382-df54-7dd3-8198-0567d7499858
+home_credit_default_stability_1m,finance,2024,2,Kaggle,"@misc{Herman2024HomeCreditCreditRiskModelStability,
+  author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
+  title  = {Home Credit - Credit Risk Model Stability},
+  year   = {2024},
+  howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
+  note   = {Kaggle competition}
+}
+",Herman2024HomeCreditCreditRiskModelStability,binary_classification,1224927,1000000,711,720,0.3280449295513402,2.0,3.1033686089048573,597,113,1,0,36,577,97,1,0,3514.0,261.32142857142856,9.0,26,"[3, 3, 3, 44, 214, 73, 44, 187, 18, 14, 11, 223, 5, 5, 6, 6, 3, 62, 73, 6, 3, 3, 395, 943, 6, 6, 5, 5, 3, 3, 9, 9, 3087, 1670, 17, 18, 11, 14, 10, 11, 3, 11, 22, 294, 46, 55, 189, 10, 11, 128, 266, 9, 175, 3, 19, 18, 21, 8, 6, 586, 944, 3427, 3510, 6, 6, 3, 24, 19, 223, 21, 3281, 5, 6, 8, 9, 3, 3, 606, 958, 3426, 3514, 10, 10, 3, 7, 6, 3, 5, 3, 7, 11, 15, 8, 15, 5, 8, 9]",,,,,1,1,5,months,temporal,home_credit_default_stability/versions/019d7383-f45a-72f7-ac99-09447cf6d41f
+kick,business & marketing,2011,15,Kaggle,"@misc{DontGetKicked,
+    author = {faysal and Will Adams and Will Cukierski},
+    title = {Don't Get Kicked!},
+    year = {2011},
+    howpublished = {\url{https://kaggle.com/competitions/DontGetKicked}},
+    note = {Kaggle}
+}
+",DontGetKicked,binary_classification,72983,68012,32,41,0.0638860248276996,2.0,12.298754504473644,14,17,1,0,3,13,15,1,0,1063.0,141.76470588235293,12.0,5,"[3, 33, 1063, 134, 863, 16, 3, 4, 3, 4, 12, 4, 74, 153, 37]",,,,,9,1,28,days,temporal,kick/019d744f-147d-721e-affc-94b58645c0ad
+mercedes_benz_greener_manufacturing,industry & manufacturing,2017,9,Kaggle,"@misc{Novy2017MercedesBenzGreenerManufacturing,
+  author = {Alexander Novy and CH1Mercedes and Christian Drescher and Christian Pfaundler and KOESIM and Will Cukierski},
+  title  = {Mercedes-Benz Greener Manufacturing},
+  year   = {2017},
+  howpublished = {\url{https://kaggle.com/competitions/mercedes-benz-greener-manufacturing}},
+  note   = {Kaggle competition}
+}
+",Novy2017MercedesBenzGreenerManufacturing,regression,4204,3884,371,371,0.0,,,1,370,0,0,356,1,14,0,0,47.0,2.272972972972973,2.0,0,"[47, 27, 44]",,,,,9,1,320,steps,temporal,mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc
+sberbank_housing_market_forecasting,business & marketing,2017,9,Kaggle,"@misc{Herman2024HomeCreditCreditRiskModelStability,
+  author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
+  title  = {Home Credit - Credit Risk Model Stability},
+  year   = {2024},
+  howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
+  note   = {Kaggle competition}
+}
+",Herman2024HomeCreditCreditRiskModelStability,regression,27195,24386,386,395,0.0404360371791904,,,362,23,1,0,22,353,10,1,0,145.0,25.130434782608695,2.0,4,"[6, 4, 145, 132, 132, 48, 58, 8, 14, 5]",,,,,5,1,6,months,temporal,sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0
+maps_router_eta_1m,industry & manufacturing,2024,2,Kaggle,"@inproceedings{rubachev2025tabred,
+  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+}
+",rubachev2025tabred,regression,1250000,1000000,988,997,0.046503566801619434,,,985,2,1,0,0,985,2,1,0,64.0,64.0,64.0,2,"[64, 64]",,,,,1,1,7,days,temporal,maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71
+hotel_booking_demand,business & marketing,2019,7,Other,"@article{antonio2019hotel,
+  title={Hotel booking demand datasets},
+  author={Antonio, Nuno and de Almeida, Ana and Nunes, Luis},
+  journal={Data in brief},
+  volume={22},
+  pages={41--49},
+  year={2019},
+  publisher={Elsevier}
+}
+",antonio2019hotel,binary_classification,81418,63372,31,49,0.00013470905617288403,2.0,29.07465179689995,17,12,2,0,2,16,11,2,0,326.0,72.91666666666667,8.0,3,"[12, 5, 172, 8, 5, 8, 10, 3, 320, 326, 4]",,,,,9,1,1,months,temporal,hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c
+ghanas_indigenous_intel,environmental science & climate,2025,1,Zindi,"@misc{zindi_ghana_indigenous_intel_2025,
+    author       = {{Zindi}},
+    title        = {Ghana's Indigenous Intel Challenge [BEGINNERS ONLY]: Data},
+    year         = {2025},
+    howpublished = {\url{https://zindi.africa/competitions/ghana-indigenous-intel-challenge/data}},
+    note         = {Zindi dataset page. Accessed 2026-04-11}
+}
+",zindi_ghana_indigenous_intel_2025,multiclass_classification,10928,9933,10,19,0.29157210834553443,4.0,2.1961932650073206,3,6,1,0,1,2,6,1,0,43.0,21.666666666666668,19.0,0,"[43, 38, 3, 10, 28, 8]",,,,,6,1,3,days,temporal,ghanas_indigenous_intel/019dd375-4259-77c1-a177-5acc1f4d0134
+ieee_fraud_detection,finance,2019,7,Kaggle,"@misc{ieee-fraud-detection,
+    author = {Addison Howard and Bernadette Bouchon-Meunier and IEEE CIS and inversion and John Lei and Lynn@Vesta and Marcus2010 and Prof. Hussein Abbass},
+    title = {IEEE-CIS Fraud Detection},
+    year = {2019},
+    howpublished = {\url{https://kaggle.com/competitions/ieee-fraud-detection}},
+    note = {Kaggle}
+}
+",ieee-fraud-detection,binary_classification,590540,417559,435,444,0.45006736090755045,2.0,3.499000914417313,384,50,1,0,25,377,32,1,0,306173.0,6507.62,4.5,20,"[5, 13553, 500, 114, 4, 119, 4, 332, 74, 59, 60, 3, 54, 25, 3, 104, 18, 522, 394, 490, 25, 3, 12, 341, 95, 75, 130, 4, 260, 4, 1786, 306173]",,,,,3,1,1,months,temporal,ieee_fraud_detection/019db516-2f8e-7e50-a8c4-f1c57754f52c
+anes_voting_2026,social science,2026,0,Other,"@misc{anes2026timeseries,
+    author       = {{American National Election Studies}},
+    title        = {{ANES Time Series Cumulative Data File [dataset and documentation]}},
+    year         = {2026},
+    month        = feb,
+    note         = {February 5, 2026 version},
+    howpublished = {\url{https://www.electionstudies.org}}
+}
+",anes2026timeseries,binary_classification,48587,43633,318,318,0.5773751112087984,2.0,22.036758803795255,27,291,0,0,1,27,290,0,0,399.0,44.06185567010309,8.0,46,"[8, 6, 5, 9, 5, 96, 5, 4, 4, 6, 7, 8, 6, 6, 3, 9, 5, 9, 8, 145, 4, 4, 9, 5, 6, 5, 6, 6, 8, 9, 4, 4, 8, 9, 7, 7, 17, 7, 125, 72, 15, 6, 5, 5, 243, 8, 7, 4, 5, 5, 3, 7, 7, 12, 12, 7, 7, 12, 12, 22, 22, 19, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 4, 4, 4, 4, 4, 246, 14, 264, 12, 218, 10, 167, 9, 122, 9, 4, 314, 14, 311, 12, 253, 12, 181, 11, 115, 9, 4, 289, 14, 284, 12, 237, 12, 161, 9, 100, 9, 4, 316, 14, 311, 12, 252, 11, 193, 12, 144, 10, 7, 7, 12, 12, 7, 7, 12, 12, 22, 22, 19, 4, 6, 4, 334, 14, 323, 12, 286, 11, 233, 12, 188, 11, 4, 367, 14, 359, 12, 308, 12, 224, 12, 161, 11, 4, 334, 14, 327, 12, 296, 11, 220, 11, 161, 11, 4, 399, 14, 370, 12, 334, 11, 247, 12, 212, 11, 6, 4, 9, 9, 10, 10, 5, 5, 9, 5, 4, 92, 8, 6, 5, 4, 10, 10, 9, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 8, 4, 5, 6, 6, 8, 8, 8, 8, 8, 8, 8, 8, 4, 4, 5, 5, 6, 5, 7, 4, 5, 7, 5, 7, 5, 5, 5, 5, 9, 6, 6, 5, 6, 5, 7, 14, 14, 4, 7, 8, 5, 6, 5, 5, 7, 7, 7, 7, 6, 6, 4, 4, 4, 7, 3, 3, 3, 6, 6, 4, 5, 9, 9, 9, 9, 5, 5, 5, 4, 6, 4, 4, 4]",,,,,9,1,1,years,temporal,anes_voting_2026/019db4ba-6124-7a56-a0b5-9df8811adc2f
+rossmann_store_sales,business & marketing,2015,11,Kaggle,"@misc{kaggle_rossmann_store_sales,
+    title        = {Rossmann Store Sales},
+    author       = {{Kaggle}},
+    howpublished = {\url{https://www.kaggle.com/competitions/rossmann-store-sales/overview}},
+    note         = {Kaggle competition page. Accessed: 2026-03-19},
+    year         = {2015}
+}
+",kaggle_rossmann_store_sales,regression,844392,802996,15,24,0.14285189817051797,,,8,6,1,0,3,5,6,1,0,1115.0,189.33333333333334,4.0,1,"[1115, 7, 4, 4, 3, 3]",,,,,3,1,,,temporal,rossmann_store_sales/019db4fb-6d9e-7c15-b8cb-1bf97ea88782
+garments_worker_productivity,industry & manufacturing,2020,6,UCI,"@article{imran2021mining,
+    title={Mining the productivity data of the garment industry},
+    author={Imran, Abdullah Al and Rahim, Md Shamsur and Ahmed, Tanvir},
+    journal={International Journal of Business Intelligence and Data Mining},
+    volume={19},
+    number={3},
+    pages={319--342},
+    year={2021},
+    publisher={Inderscience Publishers (IEL)}
+}
+",imran2021mining,regression,1197,1173,15,24,0.0355332776385408,,,10,4,1,0,1,10,3,1,0,12.0,6.25,5.5,0,"[5, 6, 12]",,,,,30,1,1,days,temporal,garments_worker_productivity/019db501-f4c4-7de2-b626-fcb769c7d82e
+california_house_prices_2020,business & marketing,2021,5,Kaggle,"@misc{d2lcourse2021california_house_prices,
+  author       = {d2lcourse},
+  title        = {California House Prices},
+  year         = {2021},
+  howpublished = {\url{https://kaggle.com/competitions/california-house-prices}},
+  note         = {Kaggle}
+}
+",d2lcourse2021california_house_prices,regression,41528,31146,41,657,0.1565197269194807,,,18,1,3,19,0,18,1,3,19,5.0,5.0,5.0,0,[5],67.79432128405803,15.0,5860.0,43190.0,3,1,10382,steps,temporal,california_house_prices_2020/019d7388-c562-72b3-a533-5f588dc737c9
+coffee_rating_prediction,business & marketing,2023,3,Kaggle,"@misc{AlIrsyad2023CoffeeDataCoffeeReview,
+  author = {Hanif Al Irsyad},
+  title  = {Coffee Data CoffeeReview},
+  year   = {2023},
+  howpublished = {\url{https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview}},
+  note   = {Kaggle dataset}
+}
+",AlIrsyad2023CoffeeDataCoffeeReview,regression,2369,2137,12,207,0.06296608977064866,,,3,2,1,6,0,3,2,1,6,5.0,3.0,3.0,0,[5],101.19954967632987,30.0,509.0,4696.0,5,1,6,months,temporal,coffee_rating_prediction/019d7388-dffd-7bc4-ab3d-40bf6581786e
+consumer_complaints_1m,finance,2025,1,GOV Website,"@misc{cfpb2025ConsumerComplaintDatabase,
+  author       = {{Consumer Financial Protection Bureau}},
+  title        = {Consumer Complaint Database},
+  year         = {2025},
+  howpublished = {\url{https://www.consumerfinance.gov/data-research/consumer-complaints/}},
+  note         = {Accessed: 2026-01-23},
+}
+",cfpb2025ConsumerComplaintDatabase,multiclass_classification,1226140,1000000,12,114,0.16095959678340158,3.0,2.1968127620010764,0,8,1,3,3,0,5,1,3,211.0,54.0,32.0,3,"[14, 58, 93, 211, 50]",351.35243618839786,31.0,35984.0,1187336.0,1,1,3,months,temporal,consumer_complaints/versions/019d738b-4c6e-751f-972a-5f63b1508f70
+lending_club_1m,finance,2018,8,Kaggle,"@article{sanz2025credit,
+  title={Credit Risk Meets Large Language Models: Building a Risk Indicator from Loan Descriptions in P2P Lending},
+  author={Sanz-Guerrero, Mario and Arroyo, Javier},
+  journal={Inteligencia Artificial},
+  volume={28},
+  number={75},
+  pages={220--247},
+  year={2025}
+}
+",sanz2025credit,binary_classification,1064751,814751,96,278,0.3226203043403262,2.0,19.562132367098034,83,5,3,5,2,83,3,3,5,14.0,6.8,4.0,0,"[12, 14, 4]",15.125405170033595,5.0,3943.0,68083.0,1,1,1,years,temporal,lending_club/versions/019d738c-5edd-7437-9116-e3bc87a8b0c5
+kickstarter,business & marketing,2025,1,Other,"@misc{webrobots2026kickstarter,
+  title        = {Kickstarter Datasets},
+  author       = {{Web Robots}},
+  howpublished = {\url{https://webrobots.io/kickstarter-datasets/}},
+  note         = {Accessed: 2026-01-25},
+  year         = {2026},
+  organization = {Web Robots}
+}
+",webrobots2026kickstarter,binary_classification,187118,166292,15,206,0.05605268689632567,2.0,37.39351639072671,1,5,4,5,2,1,3,4,5,161.0,41.0,15.0,1,"[25, 161, 15]",44.72364891546464,21.0,255.0,142433.0,3,1,1,years,temporal,kickstarter/019db497-6b35-71e0-9c6b-f4a7286f8f6f
+sf_permit_time,business & marketing,2025,1,GOV Website,"@misc{SanFrancisco2026BuildingPermits,
+  author = {{City and County of San Francisco}},
+  title  = {Building Permits},
+  year   = {2026},
+  howpublished = {\url{https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data}},
+  note   = {DataSF Open Data Portal dataset, Accessed: 2026-02-05}
+}
+",SanFrancisco2026BuildingPermits,regression,116954,108379,37,480,0.25284438464834175,,,8,14,1,14,2,8,12,1,14,41.0,5.928571428571429,2.0,0,"[8, 5, 5, 3, 11, 41]",18.151501204817396,5.0,300.0,74795.0,6,1,1,years,temporal,sf_permit_time/019d738d-80c6-71a6-99f0-e3e0955ce2d0
+mice_protein_trisomy_discriminant,biology & life sciences,2015,11,UCI,"@article{higuera2015self,
+  title={Self-organizing feature maps identify proteins critical to learning in a mouse model of down syndrome},
+  author={Higuera, Clara and Gardiner, Katheleen J and Cios, Krzysztof J},
+  journal={PloS one},
+  volume={10},
+  number={6},
+  pages={e0129126},
+  year={2015},
+  publisher={Public Library of Science San Francisco, CA USA}
+}
+",higuera2015self,multiclass_classification,1080,720,76,76,0.017007797270955166,8.0,9.722222222222221,76,0,0,0,0,76,0,0,0,,,,0,[],,,,,20,3,,,grouped,mice_protein_trisomy_discriminant/019d738d-99a8-7850-b911-f244ac4ad485
+musk,chemistry & material science,1994,32,UCI,"@article{dietterich1993comparison,
+  title={A comparison of dynamic reposing and tangent distance for drug activity prediction},
+  author={Dietterich, Thomas and Jain, Ajay and Lathrop, Richard and Lozano-Perez, Tomas},
+  journal={Advances in neural information processing systems},
+  volume={6},
+  year={1993}
+}
+",dietterich1993comparison,binary_classification,6598,6106,166,166,0.0,2.0,15.413761745983631,166,0,0,0,0,166,0,0,0,,,,0,[],,,,,20,3,,,grouped,musk/019d738d-ae72-7a0a-a2e4-6b797ab153fd
+micro_mass,biology & life sciences,2013,13,UCI,"@article{mahe2014automatic,
+  title={Automatic identification of mixed bacterial species fingerprints in a MALDI-TOF mass-spectrum},
+  author={Mahe, Pierre and Arsac, Maud and Chatellier, Sonia and Monnin, Val{\'e}rie and Perrot, Nadine and Mailler, Sandrine and Girard, Victoria and Ramjeet, Mahendrasingh and Surre, J{\'e}r{\'e}my and Lacroix, Bruno and others},
+  journal={Bioinformatics},
+  volume={30},
+  number={9},
+  pages={1280--1286},
+  year={2014},
+  publisher={Oxford University Press}
+}
+",mahe2014automatic,multiclass_classification,571,396,1082,1082,0.0,20.0,1.926444833625219,1082,0,0,0,40,1042,0,0,0,,,,0,[],,,,,20,3,,,grouped,micro_mass/019d738d-c82e-796a-9343-e30919f324d5
+parkinsons_biomedical_voice_measurements,medical & healthcare,2007,19,UCI,"@article{little2007exploiting,
+  title={Exploiting nonlinear recurrence and fractal scaling properties for voice disorder detection},
+  author={Little, Max and Mcsharry, Patrick and Roberts, Stephen and Costello, Declan and Moroz, Irene},
+  journal={Nature Precedings},
+  pages={1--1},
+  year={2007},
+  publisher={Nature Publishing Group UK London}
+}
+",little2007exploiting,binary_classification,195,135,23,23,0.0,2.0,24.615384615384617,23,0,0,0,0,23,0,0,0,,,,0,[],,,,,20,3,,,grouped,parkinsons_biomedical_voice_measurements/019d738d-db39-7b5b-83dc-664e66da1854
+amex_non_iid_1m,finance,2022,4,Kaggle,"@misc{howard2022amex,
+  author       = {Howard, Addison and AritraAmex and Xu, Di and Vashani, Hossein and inversion and Negin and Dane, Sohier},
+  title        = {American Express -- Default Prediction},
+  year         = {2022},
+  howpublished = {Kaggle Competition},
+  url          = {https://kaggle.com/competitions/amex-default-prediction},
+  note         = {Accessed via Kaggle}
+}
+",howard2022amex,binary_classification,1249605,1000350,189,198,0.08585139147356809,2.0,24.87402019038016,177,11,1,0,21,156,11,1,0,8.0,5.0,4.0,0,"[6, 5, 3, 8, 4, 8, 3, 3, 8, 3, 4]",,,,,1,1,,,grouped,amex_non_iid/versions/019d7455-0e4e-7261-9842-93177684d486
+pancreatic_cancer_mouse_detection,medical & healthcare,2003,23,Other,"""@article{hingorani2003preinvasive,
+  title={Preinvasive and invasive ductal pancreatic cancer and its early detection in the mouse},
+  author={Hingorani, Sunil R and Petricoin, Emanuel F and Maitra, Anirban and Rajapakse, Vinodh and King, Catrina and Jacobetz, Michael A and Ross, Sally and Conrads, Thomas P and Veenstra, Timothy D and Hitt, Ben A and others},
+  journal={Cancer cell},
+  volume={4},
+  number={6},
+  pages={437--450},
+  year={2003},
+  publisher={Elsevier}
+}""
+",hingorani2003preinvasive,binary_classification,181,135,6771,6771,0.0,2.0,44.19889502762431,6771,0,0,0,0,6771,0,0,0,,,,0,[],,,,,20,3,,,grouped,pancreatic_cancer_mouse_detection/019d7391-358e-725a-bc70-bbee346e9267
+early_learning_predictors,education,2023,3,Other,"@dataset{DataDrive2030_2024_elom_thrivebyfive,
+    author       = {{DataDrive2030}},
+    title        = {ELOM and Thrive by Five Index 2016--2023, Merged Data},
+    version      = {1},
+    year         = {2024},
+    address      = {Cape Town},
+    publisher    = {DataDrive2030},
+    note         = {[dataset]. Producer: DataDrive2030; Distributor: DataFirst},
+    doi          = {10.25828/WG0D-Y909},
+    url          = {https://doi.org/10.25828/WG0D-Y909}
+}
+",DataDrive2030_2024_elom_thrivebyfive,regression,18874,12839,743,752,0.8031274481433937,,,231,511,1,0,402,219,121,1,0,1134.0,14.238747553816047,2.0,33,"[3, 4, 4, 107, 4, 52, 14, 152, 4, 10, 3, 3, 3, 3, 167, 103, 102, 3, 155, 84, 15, 10, 39, 5, 9, 49, 68, 70, 56, 45, 27, 17, 7, 3, 18, 12, 15, 30, 30, 11, 5, 25, 8, 167, 6, 94, 1134, 3, 47, 60, 28, 8, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 8, 31, 4, 60, 4, 12, 13, 66, 20, 11, 33, 21, 8, 27, 236, 201, 38, 5, 28, 15, 189, 18, 5, 33, 8, 16, 20, 42, 157, 137, 169, 114, 56, 53, 257, 83, 73, 82, 124, 9, 8, 16, 16, 93, 40, 10, 34, 29, 19, 3, 587]",,,,,3,3,,,grouped,early_learning_predictors/019db4ff-b5e9-7b27-80b1-8cf2ca025d20
+5g_energy_consumption,technology & internet,2023,3,HuggingFace,"@misc{huawei_netop_5g_energy_consumption,
+  author       = {{HUAWEI Netop Team}},
+  title        = {5G Network Energy Consumption Dataset},
+  year         = {n.d.},
+  howpublished = {\url{https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption}},
+  note         = {Dataset hosted on Hugging Face, accessed 2026-04-15}
+}
+",huawei_netop_5g_energy_consumption,regression,92629,62529,20,20,0.23549320407215882,,,18,2,0,0,1,18,1,0,0,12.0,7.0,7.0,0,[12],,,,,3,3,,,grouped,5g_energy_consumption/019db4c5-d45f-7c07-80c9-bdd75ea01338
+telemonitoring_parkinsons_biomedical_voice_measurements,medical & healthcare,2007,19,UCI,"@article{tsanas2009accurate,
+  title={Accurate telemonitoring of Parkinson’s disease progression by non-invasive speech tests},
+  author={Tsanas, Athanasios and Little, Max and McSharry, Patrick and Ramig, Lorraine},
+  journal={Nature Precedings},
+  pages={1--1},
+  year={2009},
+  publisher={Nature Publishing Group UK London}
+}
+",tsanas2009accurate,regression,502,354,19,19,0.0,,,18,1,0,0,1,18,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,grouped,telemonitoring_parkinsons_biomedical_voice_measurements/019d7391-4b65-7d0e-a950-684a098c3df9
+dementia_prediction,medical & healthcare,2010,16,Other,"@article{marcus2010open,
+  title={Open access series of imaging studies: longitudinal MRI data in nondemented and demented older adults},
+  author={Marcus, Daniel S and Fotenos, Anthony F and Csernansky, John G and Morris, John C and Buckner, Randy L},
+  journal={Journal of cognitive neuroscience},
+  volume={22},
+  number={12},
+  pages={2677--2684},
+  year={2010},
+}
+",marcus2010open,multiclass_classification,370,258,8,8,0.007094594594594595,3.0,11.08108108108108,7,1,0,0,1,7,0,0,0,2.0,2.0,2.0,0,[],,,,,20,3,,,grouped,dementia_prediction/019d7391-61e5-7cca-9a66-e85718233be9
+covertype,environmental science & climate,1998,28,UCI,"@article{blackard1999comparative,
+  title={Comparative accuracies of artificial neural networks and discriminant analysis in predicting forest cover types from cartographic variables},
+  author={Blackard, Jock A and Dean, Denis J},
+  journal={Computers and electronics in agriculture},
+  volume={24},
+  number={3},
+  pages={131--151},
+  year={1999},
+  publisher={Elsevier}
+}
+",blackard1999comparative,multiclass_classification,512625,482741,13,13,0.0,3.0,4.000975371860521,10,3,0,0,0,10,3,0,0,35.0,15.0,6.0,0,"[35, 6, 4]",,,,,1,3,,,grouped,covertype/019d7391-8e33-757b-b38a-79ec188fa001
+sepsis_prediction_1m,medical & healthcare,2019,7,Other,"@article{reyna2020early,
+  title={Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019},
+  author={Reyna, Matthew A and Josef, Christopher S and Jeter, Russell and Shashikumar, Supreeth P and Westover, M Brandon and Nemati, Shamim and Clifford, Gari D and Sharma, Ashish},
+  journal={Critical care medicine},
+  volume={48},
+  number={2},
+  pages={210--217},
+  year={2020},
+  publisher={LWW}
+}
+",reyna2020early,binary_classification,1228686,970175,42,42,0.6672615918065935,2.0,1.77995028835683,38,4,0,0,4,38,0,0,0,2.0,2.0,2.0,0,[],,,,,1,1,,,grouped,sepsis_prediction/versions/019d7391-f36e-72f8-89d7-f7ca71725034
+cardiotocography,medical & healthcare,2010,16,UCI,"@misc{campos2010cardiotocography,
+  author       = {Campos, D. and Bernardes, J.},
+  title        = {{Cardiotocography}},
+  year         = {2000},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C51S4N}
+}
+",campos2010cardiotocography,multiclass_classification,2126,1568,22,22,0.0,3.0,8.278457196613358,22,0,0,0,1,21,0,0,0,,,,0,[],,,,,10,3,,,grouped,cardiotocography/019d7392-12c2-7a87-991c-13a7246555d4
+sat11_hand_algo_runtime,technology & internet,2011,15,ASlib,"@inproceedings{xu-sat12a,
+  author    = {L. Xu and F. Hutter and H. Hoos and K. Leyton-Brown},
+  title     = {Evaluating Component Solver Contributions to Portfolio-Based Algorithm Selectors},
+  pages     = {228-241},
+  crossref  = {sat12}
+}
+@Proceedings{sat12,
+  editor =         {A. Cimatti and R. Sebastiani},
+  title =         {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
+  booktitle = {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
+  publisher =         springer,
+  series =         lncs,
+  volume =         7317,
+  year =         2012
+}
+@article{bischl_aslib_2016,
+	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
+	number = {237},
+	journal = {Artificial Intelligence Journal (AIJ)},
+	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
+	year = {2016},
+	pages = {41--58}
+}
+","xu-sat12a,sat12,bischl_aslib_2016",regression,2960,1980,169,169,0.03618263233647849,,,169,0,0,0,3,166,0,0,0,,,,0,[],,,,,10,3,,,grouped,sat11_hand_algo_runtime/019d7392-268a-7998-a20d-29e9a2236dcd
+asp_potassco_classification,technology & internet,2014,12,ASlib,"@article{hoos2014claspfolio,
+  title={claspfolio 2: Advances in algorithm selection for answer set programming},
+  author={Hoos, Holger and Lindauer, Marius and Schaub, Torsten},
+  journal={Theory and Practice of Logic Programming},
+  volume={14},
+  number={4-5},
+  pages={569--585},
+  year={2014},
+  publisher={Cambridge University Press}
+}
+@article{bischl_aslib_2016,
+	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
+	number = {237},
+	journal = {Artificial Intelligence Journal (AIJ)},
+	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
+	year = {2016},
+	pages = {41--58}
+}
+","hoos2014claspfolio,bischl_aslib_2016",multiclass_classification,1212,935,136,136,0.10896549213744904,11.0,1.7326732673267327,136,0,0,0,3,133,0,0,0,,,,0,[],,,,,10,3,,,grouped,asp_potassco_classification/019d73ec-935f-7f88-8a82-af3ad2f44e9f
+video_transcoding_time_prediction,technology & internet,2015,11,UCI,"@inproceedings{deneke2014video,
+  title={Video transcoding time prediction for proactive load balancing},
+  author={Deneke, Tewodors and Haile, Habtegebreil and Lafond, S{'e}bastien and Lilius, Johan},
+  booktitle={2014 IEEE International Conference on Multimedia and Expo (ICME)},
+  pages={1--6},
+  year={2014},
+  organization={IEEE}
+}
+",deneke2014video,regression,68784,49098,18,18,0.0,,,16,2,0,0,0,16,2,0,0,4.0,4.0,4.0,0,"[4, 4]",,,,,3,3,,,grouped,video_transcoding_time_prediction/019d7392-553f-7bb2-b0f4-0d80ea446f63
+video_game_fps_prediction,technology & internet,2020,6,OpenML,"@inproceedings{peeters2021performance,
+  title={Performance Prediction for Hardware-Software Configurations: A Case Study for Video Games},
+  author={Peeters, Sven and Melnikov, Vitalik and H{""""u}llermeier, Eyke},
+  booktitle={International Symposium on Intelligent Data Analysis},
+  pages={222--234},
+  year={2021},
+  organization={Springer}
+}
+",peeters2021performance,regression,12288,8208,38,38,0.04810855263157895,,,28,10,0,0,7,26,5,0,0,24.0,4.8,2.0,0,"[6, 4, 3, 24]",,,,,3,3,,,grouped,video_game_fps_prediction/019d7392-6ce5-72bc-b598-193597825a66
+electric_motor_temperature_prediction,industry & manufacturing,2021,5,Kaggle,"@article{kirchgassner2020estimating,
+  title={Estimating electric motor temperatures with deep residual machine learning},
+  author={Kirchg{""a}ssner, Wilhelm and Wallscheid, Oliver and B{""o}cker, Joachim},
+  journal={IEEE Transactions on Power Electronics},
+  volume={36},
+  number={7},
+  pages={7480--7488},
+  year={2020},
+  publisher={IEEE}
+}
+",kirchgassner2020estimating,regression,1296316,968996,109,109,0.0,,,109,0,0,0,0,109,0,0,0,,,,0,[],,,,,1,1,,,grouped,electric_motor_temperature_prediction/019d7392-e21f-7e60-9efb-2141c3513fd9
