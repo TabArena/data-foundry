@@ -35,7 +35,5 @@ with zipfile.ZipFile(OUTPUT_ZIP, "w", zipfile.ZIP_DEFLATED) as zf:
             if full.is_file():
                 zf.write(full, arcname=str(Path(BUNDLE_NAME) / uri / f))
 
-size_mb = OUTPUT_ZIP.stat().st_size / 1024 / 1024
-print(f"\nCreated: {OUTPUT_ZIP}")
-print(f"Size: {size_mb:.1f} MB")
-print(f"Datasets: {len(all_paths)}")
+size_mb = OUTPUT_ZIP.stat().st_size / 1e9
+print(f"\nCreated: {OUTPUT_ZIP} ({size_mb:.1f} GB)")
