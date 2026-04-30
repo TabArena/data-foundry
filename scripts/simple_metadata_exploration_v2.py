@@ -129,6 +129,11 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
         "time_horizon",
         "time_horizon_unit",
         "task_type",
+        "time_on",
+        "group_on",
+        "stratify_on",
+        "group_time_on",
+        "group_labels",
         "uri",
     ]
     current_year = datetime.now().year
@@ -152,16 +157,20 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
         problem_type = container.task_metadata.problem_type
         target_column = container.task_metadata.target_column_name
 
-        if container.task_metadata.time_on is not None:
+        time_on = container.task_metadata.time_on
+        group_on = container.task_metadata.group_on
+        stratify_on = container.task_metadata.stratify_on
+        group_time_on = container.task_metadata.group_time_on
+        group_labels = container.task_metadata.group_labels
+        if time_on is not None:
             task_type = "temporal"
-        elif container.task_metadata.group_on is not None:
+        elif group_on is not None:
             task_type = "grouped"
         else:
-            task_type = "iid"
+            task_type = "random"
 
         excluded_columns = {target_column}
         if task_type == "grouped":
-            group_on = container.task_metadata.group_on
             if isinstance(group_on, list):
                 excluded_columns.update(group_on)
             else:
@@ -262,6 +271,11 @@ def dataset_paths_to_metadata(dataset_paths: list[Path], warehouse_root: Path) -
                 time_horizon,
                 time_horizon_unit,
                 task_type,
+                time_on,
+                group_on,
+                stratify_on,
+                group_time_on,
+                group_labels,
                 uri,
             ]
         )
