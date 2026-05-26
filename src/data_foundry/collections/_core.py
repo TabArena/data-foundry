@@ -6,7 +6,11 @@ from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from data_foundry.collections._sources import DataSource, resolve_cache_dir
+from data_foundry.collections._sources import (
+    DataSource,
+    clear_cache as _clear_cache,
+    resolve_cache_dir,
+)
 from data_foundry.curation_container import CuratedContainer
 
 
@@ -133,12 +137,14 @@ class DatasetCollection:
         cache_dir: Path | str | None = None,
         load_dataset: bool = True,
         load_test_data: bool = False,
+        force_download: bool = False,
     ) -> Iterator[CuratedContainer]:
         """Yield each :class:`CuratedContainer` in the collection.
 
         Pass ``base_dir`` to load from a pre-populated local warehouse, or
         leave it ``None`` to fetch via :attr:`source` (using ``cache_dir`` /
-        ``$DATA_FOUNDRY_CACHE``).
+        ``$DATA_FOUNDRY_CACHE``). ``force_download`` is only meaningful when
+        loading via :attr:`source` — it bypasses the cache for every entry.
         """
         for entry in self.entries:
             if base_dir is not None:
@@ -153,6 +159,7 @@ class DatasetCollection:
                     cache_dir=cache_dir,
                     load_dataset=load_dataset,
                     load_test_data=load_test_data,
+                    force_download=force_download,
                 )
 
     def find_entry(self, name_or_uuid: str) -> CollectionEntry:
@@ -171,6 +178,7 @@ class DatasetCollection:
         cache_dir: Path | str | None = None,
         load_dataset: bool = True,
         load_test_data: bool = False,
+        force_download: bool = False,
     ) -> CuratedContainer:
         """Download (if needed) and load one container from this collection.
 
@@ -182,6 +190,9 @@ class DatasetCollection:
                 is created automatically.
             load_dataset: See :meth:`CuratedContainer.load`.
             load_test_data: See :meth:`CuratedContainer.load`.
+            force_download: When ``True``, bypass any cached copy and re-fetch
+                from :attr:`source`. Use this to invalidate stale data — e.g.
+                after a known upstream revision change.
         """
         if self.source is None:
             raise RuntimeError(
@@ -190,12 +201,21 @@ class DatasetCollection:
             )
         entry = self.find_entry(name_or_uuid)
         cache_root = resolve_cache_dir(cache_dir, collection_name=self.name)
-        container_path = self.source.fetch(entry, cache_root)
+        container_path = self.source.fetch(entry, cache_root, force_download=force_download)
         return CuratedContainer.load(
             container_path,
             load_dataset=load_dataset,
             load_test_data=load_test_data,
         )
+
+    def clear_cache(self, cache_dir: Path | str | None = None) -> Path:
+        """Delete this collection's cache subdirectory and return its path.
+
+        Resolves the cache root the same way as :meth:`get_dataset`, so the
+        same ``cache_dir`` / ``$DATA_FOUNDRY_CACHE`` precedence applies. A
+        missing path is a no-op (still returned for logging).
+        """
+        return _clear_cache(cache_dir, collection_name=self.name)
 
     @classmethod
     def from_relative_paths(

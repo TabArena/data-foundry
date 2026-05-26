@@ -11,6 +11,7 @@ from data_foundry.collections import (
     DataSource,
     DatasetCollection,
     HuggingFaceSource,
+    clear_cache,
     get_collection,
     list_collections,
     resolve_cache_dir,
@@ -86,7 +87,7 @@ class _RecordingSource(DataSource):
         self.container_dir = container_dir
         self.calls: list[tuple[CollectionEntry, Path]] = []
 
-    def fetch(self, entry: CollectionEntry, cache_dir: Path) -> Path:
+    def fetch(self, entry: CollectionEntry, cache_dir: Path, *, force_download: bool = False) -> Path:
         self.calls.append((entry, cache_dir))
         return self.container_dir
 
@@ -278,6 +279,51 @@ def test_fetch_raises_import_error_on_cache_miss_without_hf(tmp_path, monkeypatc
         src.fetch(entry, tmp_path)
 
 
+def test_fetch_force_download_skips_cache_and_passes_flag(tmp_path, monkeypatch):
+    """`force_download=True` must bypass the local cache hit and forward the flag to HF."""
+    _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
+
+    import huggingface_hub
+
+    fresh_dir = tmp_path / "fresh" / "name" / "uuid"
+    fresh_dir.mkdir(parents=True)
+    calls: list[dict] = []
+
+    def fake_snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(tmp_path / "fresh")
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", fake_snapshot_download)
+
+    entry = CollectionEntry(unique_name="name", uuid="uuid")
+    src = HuggingFaceSource(repo_id="org/repo")
+    result = src.fetch(entry, tmp_path, force_download=True)
+
+    assert result == fresh_dir
+    assert len(calls) == 1
+    assert calls[0]["force_download"] is True
+
+
+def test_get_dataset_forwards_force_download_to_source(tmp_path):
+    from data_foundry.examples import get_toy_container_path
+
+    received: list[bool] = []
+
+    class _FlagCapturingSource(DataSource):
+        def fetch(self, entry, cache_dir, *, force_download=False):
+            received.append(force_download)
+            return get_toy_container_path()
+
+    coll = DatasetCollection.from_relative_paths(
+        name="forward-test",
+        description="x",
+        relative_paths=["a/uuid-a"],
+        source=_FlagCapturingSource(),
+    )
+    coll.get_dataset("a", cache_dir=tmp_path, force_download=True)
+    assert received == [True]
+
+
 def test_fetch_falls_back_to_download_on_cache_miss(tmp_path, monkeypatch):
     """When nothing is cached, fetch should call snapshot_download and return its path."""
     import huggingface_hub
@@ -302,3 +348,58 @@ def test_fetch_falls_back_to_download_on_cache_miss(tmp_path, monkeypatch):
     assert calls[0]["repo_id"] == "org/repo"
     assert calls[0]["revision"] == "v1"
     assert calls[0]["allow_patterns"] == ["name/uuid/*"]
+    assert calls[0]["force_download"] is False
+
+
+# --- clear_cache helper ---
+def test_clear_cache_removes_collection_subdir(tmp_path):
+    target = tmp_path / "BeyondArena"
+    target.mkdir()
+    (target / "junk.bin").write_bytes(b"x")
+    sibling = tmp_path / "OtherCollection"
+    sibling.mkdir()
+    (sibling / "keep.bin").write_bytes(b"y")
+
+    removed = clear_cache(tmp_path, collection_name="BeyondArena")
+
+    assert removed == target
+    assert not target.exists()
+    assert sibling.exists(), "sibling collection cache should be untouched"
+
+
+def test_clear_cache_removes_entire_cache_root(tmp_path):
+    (tmp_path / "BeyondArena").mkdir()
+    (tmp_path / "OtherCollection").mkdir()
+
+    removed = clear_cache(tmp_path)
+
+    assert removed == tmp_path
+    assert not tmp_path.exists()
+
+
+def test_clear_cache_missing_path_is_noop(tmp_path):
+    missing = tmp_path / "never-existed"
+    # Should not raise; returns the resolved path.
+    assert clear_cache(missing) == missing
+
+
+def test_clear_cache_uses_env_when_no_explicit_dir(tmp_path, monkeypatch):
+    monkeypatch.setenv(DATA_FOUNDRY_CACHE_ENV, str(tmp_path / "env-cache"))
+    (tmp_path / "env-cache" / "C").mkdir(parents=True)
+
+    removed = clear_cache(collection_name="C")
+    assert removed == tmp_path / "env-cache" / "C"
+    assert not removed.exists()
+
+
+def test_dataset_collection_clear_cache_targets_own_subdir(tmp_path):
+    coll = DatasetCollection.from_relative_paths(
+        name="my-coll", description="x", relative_paths=["a/uuid-a"],
+    )
+    target = tmp_path / "my-coll"
+    target.mkdir()
+    (target / "junk").write_text("x")
+
+    removed = coll.clear_cache(cache_dir=tmp_path)
+    assert removed == target
+    assert not target.exists()

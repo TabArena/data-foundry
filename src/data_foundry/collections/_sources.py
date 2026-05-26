@@ -13,6 +13,7 @@ the rest of the package.
 from __future__ import annotations
 
 import os
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -27,6 +28,14 @@ DEFAULT_CACHE_DIR = Path.home() / ".cache" / "data_foundry"
 """Default cache directory (used when no env var or explicit ``cache_dir`` is given)."""
 
 
+def _resolve_base_cache_dir(cache_dir: Path | str | None) -> Path:
+    """Resolve the cache root without creating it (no per-collection suffix)."""
+    if cache_dir is None:
+        env_value = os.environ.get(DATA_FOUNDRY_CACHE_ENV)
+        cache_dir = Path(env_value) if env_value else DEFAULT_CACHE_DIR
+    return Path(cache_dir).expanduser()
+
+
 def resolve_cache_dir(
     cache_dir: Path | str | None,
     *,
@@ -39,14 +48,30 @@ def resolve_cache_dir(
     per-collection subdirectory is appended so different collections don't
     share an HF snapshot cache.
     """
-    if cache_dir is None:
-        env_value = os.environ.get(DATA_FOUNDRY_CACHE_ENV)
-        cache_dir = Path(env_value) if env_value else DEFAULT_CACHE_DIR
-    cache_dir = Path(cache_dir).expanduser()
+    cache_dir = _resolve_base_cache_dir(cache_dir)
     if collection_name is not None:
         cache_dir = cache_dir / collection_name
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
+
+
+def clear_cache(
+    cache_dir: Path | str | None = None,
+    *,
+    collection_name: str | None = None,
+) -> Path:
+    """Delete the data_foundry cache directory.
+
+    Resolves the cache root the same way as :func:`resolve_cache_dir`. When
+    ``collection_name`` is given, only that collection's subdirectory is
+    removed; otherwise the entire cache root is removed. Missing paths are a
+    no-op (the path is still returned so callers can log it).
+    """
+    base = _resolve_base_cache_dir(cache_dir)
+    target = base / collection_name if collection_name is not None else base
+    if target.exists():
+        shutil.rmtree(target)
+    return target
 
 
 class DataSource:
@@ -59,11 +84,19 @@ class DataSource:
     Subclasses must implement :meth:`fetch`.
     """
 
-    def fetch(self, entry: CollectionEntry, cache_dir: Path) -> Path:
+    def fetch(
+        self,
+        entry: CollectionEntry,
+        cache_dir: Path,
+        *,
+        force_download: bool = False,
+    ) -> Path:
         """Return a local directory holding the curated container files for ``entry``.
 
         Implementations are expected to be idempotent — repeated calls with the
-        same ``entry`` and ``cache_dir`` should reuse cached files.
+        same ``entry`` and ``cache_dir`` should reuse cached files. When
+        ``force_download`` is ``True``, cached files must be bypassed and the
+        source re-fetched from its origin.
         """
         raise NotImplementedError
 
@@ -86,18 +119,26 @@ class HuggingFaceSource(DataSource):
     repo_type: str = "dataset"
     """The HF repo type; almost always ``"dataset"``."""
 
-    def fetch(self, entry: CollectionEntry, cache_dir: Path) -> Path:
+    def fetch(
+        self,
+        entry: CollectionEntry,
+        cache_dir: Path,
+        *,
+        force_download: bool = False,
+    ) -> Path:
         """Download only the files for ``entry`` (if not already cached) and return its directory.
 
         Checks the local HF cache first and returns the existing path without
         importing :mod:`huggingface_hub` when the files are already present.
-        The dependency is only required on a cache miss.
+        The dependency is only required on a cache miss. Pass
+        ``force_download=True`` to skip the cache and re-fetch from the Hub.
         """
         relative = entry.relative_path.as_posix()
 
-        cached = self._find_cached(cache_dir, relative)
-        if cached is not None:
-            return cached
+        if not force_download:
+            cached = self._find_cached(cache_dir, relative)
+            if cached is not None:
+                return cached
 
         try:
             from huggingface_hub import snapshot_download
@@ -113,6 +154,7 @@ class HuggingFaceSource(DataSource):
             revision=self.revision,
             cache_dir=str(cache_dir),
             allow_patterns=[f"{relative}/*"],
+            force_download=force_download,
         )
         return Path(snapshot_path) / relative
 
