@@ -90,6 +90,17 @@ class DatasetCollection:
     warehouse ``base_dir``.
     """
 
+    def __post_init__(self) -> None:
+        seen: dict[str, str] = {}
+        for entry in self.entries:
+            if entry.unique_name in seen:
+                raise ValueError(
+                    f"Duplicate `unique_name` {entry.unique_name!r} in collection "
+                    f"{self.name!r}: uuids {seen[entry.unique_name]!r} and "
+                    f"{entry.uuid!r} both map to the same name.",
+                )
+            seen[entry.unique_name] = entry.uuid
+
     def __len__(self) -> int:
         return len(self.entries)
 

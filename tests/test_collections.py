@@ -162,6 +162,20 @@ def test_beyond_arena_has_versioned_entries():
     assert versioned, "expected at least one versioned entry in BEYOND_ARENA"
 
 
+def test_dataset_collection_rejects_duplicate_unique_names():
+    with pytest.raises(ValueError, match="Duplicate `unique_name` 'a'"):
+        DatasetCollection.from_relative_paths(
+            name="dup",
+            description="x",
+            relative_paths=["a/uuid-1", "a/versions/uuid-2"],
+        )
+
+
+def test_beyond_arena_has_unique_names():
+    names = BEYOND_ARENA.unique_names
+    assert len(set(names)) == len(names), "duplicate unique_names in BEYOND_ARENA"
+
+
 # --- HuggingFaceSource caching ---
 def _make_hf_snapshot(cache_dir: Path, repo_id: str, sha: str, relative: str, *, ref: str | None = None) -> Path:
     """Build a fake HF-style snapshot tree and return the container directory."""
