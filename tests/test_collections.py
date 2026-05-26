@@ -279,6 +279,89 @@ def test_fetch_raises_import_error_on_cache_miss_without_hf(tmp_path, monkeypatc
         src.fetch(entry, tmp_path)
 
 
+def test_fetch_all_uses_cache_without_importing_huggingface_hub(tmp_path, monkeypatch):
+    """Batch path must short-circuit when every entry is already cached."""
+    expected_a = _make_hf_snapshot(tmp_path, "org/repo", sha="abc", relative="a/uuid-a")
+    expected_b = _make_hf_snapshot(tmp_path, "org/repo", sha="abc", relative="b/versions/uuid-b")
+
+    import builtins
+    real_import = builtins.__import__
+
+    def blocked_import(name, *args, **kwargs):
+        if name == "huggingface_hub" or name.startswith("huggingface_hub."):
+            raise AssertionError(f"huggingface_hub should not be imported when fully cached (got {name!r})")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", blocked_import)
+
+    entries = [
+        CollectionEntry(unique_name="a", uuid="uuid-a"),
+        CollectionEntry(unique_name="b", uuid="uuid-b", is_versioned=True),
+    ]
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src.fetch_all(entries, tmp_path) == [expected_a, expected_b]
+
+
+def test_fetch_all_batches_into_single_snapshot_download(tmp_path, monkeypatch):
+    """On any cache miss, fetch_all must issue exactly one HF call with all patterns."""
+    # Only one of the two entries is cached — still a miss for the batch.
+    _make_hf_snapshot(tmp_path, "org/repo", sha="abc", relative="a/uuid-a")
+
+    import huggingface_hub
+
+    snapshot_root = tmp_path / "downloaded"
+    (snapshot_root / "a" / "uuid-a").mkdir(parents=True)
+    (snapshot_root / "b" / "versions" / "uuid-b").mkdir(parents=True)
+    calls: list[dict] = []
+
+    def fake_snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(snapshot_root)
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", fake_snapshot_download)
+
+    entries = [
+        CollectionEntry(unique_name="a", uuid="uuid-a"),
+        CollectionEntry(unique_name="b", uuid="uuid-b", is_versioned=True),
+    ]
+    src = HuggingFaceSource(repo_id="org/repo")
+    paths = src.fetch_all(entries, tmp_path)
+
+    assert paths == [
+        snapshot_root / "a" / "uuid-a",
+        snapshot_root / "b" / "versions" / "uuid-b",
+    ]
+    assert len(calls) == 1, "fetch_all must batch into a single snapshot_download call"
+    assert calls[0]["allow_patterns"] == ["a/uuid-a/*", "b/versions/uuid-b/*"]
+    assert calls[0]["force_download"] is False
+
+
+def test_fetch_all_force_download_bypasses_cache(tmp_path, monkeypatch):
+    """`force_download=True` must skip the all-cached short-circuit."""
+    _make_hf_snapshot(tmp_path, "org/repo", sha="abc", relative="a/uuid-a")
+
+    import huggingface_hub
+
+    snapshot_root = tmp_path / "fresh"
+    (snapshot_root / "a" / "uuid-a").mkdir(parents=True)
+    calls: list[dict] = []
+
+    def fake_snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(snapshot_root)
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", fake_snapshot_download)
+
+    src = HuggingFaceSource(repo_id="org/repo")
+    paths = src.fetch_all(
+        [CollectionEntry(unique_name="a", uuid="uuid-a")],
+        tmp_path,
+        force_download=True,
+    )
+    assert paths == [snapshot_root / "a" / "uuid-a"]
+    assert calls[0]["force_download"] is True
+
+
 def test_fetch_force_download_skips_cache_and_passes_flag(tmp_path, monkeypatch):
     """`force_download=True` must bypass the local cache hit and forward the flag to HF."""
     _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
@@ -302,6 +385,80 @@ def test_fetch_force_download_skips_cache_and_passes_flag(tmp_path, monkeypatch)
     assert result == fresh_dir
     assert len(calls) == 1
     assert calls[0]["force_download"] is True
+
+
+def test_prefetch_calls_source_for_each_entry(tmp_path):
+    from data_foundry.examples import get_toy_container_path
+
+    src = _RecordingSource(container_dir=get_toy_container_path())
+    coll = DatasetCollection.from_relative_paths(
+        name="prefetch-test",
+        description="x",
+        relative_paths=["a/uuid-a", "b/versions/uuid-b"],
+        source=src,
+    )
+
+    paths = coll.prefetch(cache_dir=tmp_path)
+
+    # Default `fetch_all` loops `fetch`, so each entry shows up in `calls`.
+    assert paths == [src.container_dir, src.container_dir]
+    assert [entry.unique_name for entry, _ in src.calls] == ["a", "b"]
+    # All calls share the per-collection cache subdir.
+    assert {cache for _, cache in src.calls} == {tmp_path / "prefetch-test"}
+
+
+def test_prefetch_uses_source_fetch_all(tmp_path):
+    """`prefetch` must delegate to `source.fetch_all` so batched sources are honored."""
+    captured: dict[str, object] = {}
+
+    class _BatchSource(DataSource):
+        def fetch(self, entry, cache_dir, *, force_download=False):
+            raise AssertionError("prefetch should call fetch_all, not fetch")
+
+        def fetch_all(self, entries, cache_dir, *, force_download=False):
+            captured["entries"] = list(entries)
+            captured["cache_dir"] = cache_dir
+            captured["force_download"] = force_download
+            return [cache_dir / e.uuid for e in entries]
+
+    coll = DatasetCollection.from_relative_paths(
+        name="batch",
+        description="x",
+        relative_paths=["a/uuid-a", "b/uuid-b"],
+        source=_BatchSource(),
+    )
+    paths = coll.prefetch(cache_dir=tmp_path, force_download=True)
+
+    assert captured["force_download"] is True
+    assert captured["cache_dir"] == tmp_path / "batch"
+    assert [e.unique_name for e in captured["entries"]] == ["a", "b"]
+    assert paths == [tmp_path / "batch" / "uuid-a", tmp_path / "batch" / "uuid-b"]
+
+
+def test_prefetch_without_source_raises():
+    coll = DatasetCollection.from_relative_paths(
+        name="no-src", description="x", relative_paths=["a/uuid-a"],
+    )
+    with pytest.raises(RuntimeError, match="nothing to prefetch"):
+        coll.prefetch()
+
+
+def test_prefetch_forwards_force_download(tmp_path):
+    received: list[bool] = []
+
+    class _FlagCapturingSource(DataSource):
+        def fetch(self, entry, cache_dir, *, force_download=False):
+            received.append(force_download)
+            return tmp_path / entry.uuid
+
+    coll = DatasetCollection.from_relative_paths(
+        name="ff-test",
+        description="x",
+        relative_paths=["a/uuid-a", "b/uuid-b"],
+        source=_FlagCapturingSource(),
+    )
+    coll.prefetch(cache_dir=tmp_path, force_download=True)
+    assert received == [True, True]
 
 
 def test_get_dataset_forwards_force_download_to_source(tmp_path):

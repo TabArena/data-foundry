@@ -208,6 +208,36 @@ class DatasetCollection:
             load_test_data=load_test_data,
         )
 
+    def prefetch(
+        self,
+        cache_dir: Path | str | None = None,
+        *,
+        force_download: bool = False,
+    ) -> list[Path]:
+        """Download every container in the collection without loading it.
+
+        Walks :attr:`entries` and asks :attr:`source` to materialize each
+        container on disk, returning the resolved paths in collection order.
+        Use this to warm the cache up front — e.g. before an offline benchmark
+        run — so later :meth:`iter_containers` calls hit the cache instead of
+        reaching out to the source.
+
+        Args:
+            cache_dir: Override the cache root (same precedence as
+                :meth:`get_dataset`).
+            force_download: When ``True``, re-fetch every container even if
+                cached.
+        """
+        if self.source is None:
+            raise RuntimeError(
+                f"Collection {self.name!r} has no `source` configured — "
+                "nothing to prefetch.",
+            )
+        cache_root = resolve_cache_dir(cache_dir, collection_name=self.name)
+        return self.source.fetch_all(
+            self.entries, cache_root, force_download=force_download,
+        )
+
     def clear_cache(self, cache_dir: Path | str | None = None) -> Path:
         """Delete this collection's cache subdirectory and return its path.
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -100,6 +101,21 @@ class DataSource:
         """
         raise NotImplementedError
 
+    def fetch_all(
+        self,
+        entries: Sequence[CollectionEntry],
+        cache_dir: Path,
+        *,
+        force_download: bool = False,
+    ) -> list[Path]:
+        """Materialize many entries and return their paths in input order.
+
+        Default implementation loops :meth:`fetch`. Subclasses can override to
+        batch the underlying transport (e.g. a single ``snapshot_download``
+        call covering every entry) when their backend supports it.
+        """
+        return [self.fetch(e, cache_dir, force_download=force_download) for e in entries]
+
 
 @dataclass(frozen=True)
 class HuggingFaceSource(DataSource):
@@ -157,6 +173,46 @@ class HuggingFaceSource(DataSource):
             force_download=force_download,
         )
         return Path(snapshot_path) / relative
+
+    def fetch_all(
+        self,
+        entries: Sequence[CollectionEntry],
+        cache_dir: Path,
+        *,
+        force_download: bool = False,
+    ) -> list[Path]:
+        """Batch-download every entry with a single ``snapshot_download`` call.
+
+        Short-circuits without importing :mod:`huggingface_hub` when every
+        entry is already cached and ``force_download`` is ``False``. On any
+        miss, issues one HF call with ``allow_patterns`` covering each entry —
+        much faster than per-entry calls because the Hub indices are fetched
+        only once.
+        """
+        relatives = [e.relative_path.as_posix() for e in entries]
+
+        if not force_download:
+            cached = [self._find_cached(cache_dir, r) for r in relatives]
+            if all(c is not None for c in cached):
+                return [c for c in cached if c is not None]
+
+        try:
+            from huggingface_hub import snapshot_download
+        except ImportError as exc:
+            raise ImportError(
+                "HuggingFaceSource requires the `huggingface_hub` package. "
+                "Install with: pip install huggingface_hub",
+            ) from exc
+
+        snapshot_path = snapshot_download(
+            repo_id=self.repo_id,
+            repo_type=self.repo_type,
+            revision=self.revision,
+            cache_dir=str(cache_dir),
+            allow_patterns=[f"{r}/*" for r in relatives],
+            force_download=force_download,
+        )
+        return [Path(snapshot_path) / r for r in relatives]
 
     def _find_cached(self, cache_dir: Path, relative: str) -> Path | None:
         """Return the cached container directory if present, else ``None``.
