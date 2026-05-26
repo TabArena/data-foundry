@@ -1,4 +1,4 @@
-"""Re-run all notebooks referenced in _tmp_state_paths_bad_dtypes.py and update UUIDs in _tmp_state_paths.py."""
+"""Re-run all notebooks referenced in _tmp_state_paths_bad_dtypes.py and update UUIDs in final_uuid_list.py."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BEYOND_IID = ROOT / "datasets" / "beyond_iid"
-STATE_PATHS_FILE = BEYOND_IID / "_tmp_state_paths.py"
+STATE_PATHS_FILE = BEYOND_IID / "final_uuid_list.py"
 PROGRESS_FILE = BEYOND_IID / "_rerun_progress.json"
 
 UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")

@@ -17,7 +17,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 
 sys.path.insert(0, str(ROOT_DIR / "datasets" / "beyond_iid"))
-from _tmp_state_paths import GROUPED, NEW_IID, OLD_IID, TEMPORAL
+from final_uuid_list import GROUPED, NEW_IID, OLD_IID, TEMPORAL
 
 ALL_DATASETS = OLD_IID + NEW_IID + TEMPORAL + GROUPED
 

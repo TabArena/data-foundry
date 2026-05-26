@@ -1,4 +1,4 @@
-"""Create a zip archive of all curated dataset folders referenced in _tmp_state_paths.py."""
+"""Create a zip archive of all curated dataset folders referenced in final_uuid_list.py."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 
 sys.path.insert(0, str(ROOT_DIR / "datasets" / "beyond_iid"))
-from _tmp_state_paths import GROUPED, NEW_IID, OLD_IID, TEMPORAL
+from final_uuid_list import GROUPED, NEW_IID, OLD_IID, TEMPORAL
 
 WAREHOUSE = ROOT_DIR / "local-data-warehouse"
 BUNDLE_NAME = "beyond_iid_data_bundle"
