@@ -1,4 +1,4 @@
-"""Saving some paths to final data warehouse objects we can use to test pipelines."""
+"""UUIDs for curation containers used in SelectArena."""
 
 TEMPORAL_TESTING = [
     "allstate_claims_severity/019c0a71-9029-727e-a7d9-a4c48238c737",

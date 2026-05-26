@@ -1,0 +1,11 @@
+{
+  "target_column_name": "target",
+  "problem_type": "binary_classification",
+  "objective_metric_name": "roc_auc",
+  "stratify_on": "target",
+  "time_on": null,
+  "group_on": null,
+  "group_labels": null,
+  "group_time_on": null,
+  "type_adapter_id": "predictive-ml-task-mold-v1"
+}

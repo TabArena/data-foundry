@@ -1,0 +1,6 @@
+{
+  "feat_num": "float32",
+  "feat_int": "int32",
+  "feat_cat": "category",
+  "target": "int64"
+}

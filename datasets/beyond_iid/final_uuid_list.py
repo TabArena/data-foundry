@@ -1,4 +1,4 @@
-"""Saving some paths to final data warehouse objects we can use to test pipelines."""
+"""UUIDs for curation containers used in BeyondArena."""
 
 from __future__ import annotations
 
