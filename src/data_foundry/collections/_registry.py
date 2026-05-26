@@ -1,0 +1,187 @@
+"""Official curated dataset collections — hardcoded pointers to curated containers.
+
+Each entry is a stable ``<unique_name>/[versions/]<uuid>`` pointer to a curated
+container in a public data warehouse.
+
+Layout mirrors :meth:`data_foundry.curation_container.CuratedContainer.save`,
+so collection entries can be passed straight to
+:meth:`data_foundry.curation_container.CuratedContainer.load`.
+"""
+
+from __future__ import annotations
+
+from data_foundry.collections._core import DatasetCollection
+from data_foundry.collections._sources import HuggingFaceSource
+
+BEYOND_ARENA_UUIDS = (
+    "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",
+    "amazon_employee_access/019d7366-58b8-7e97-bf34-83c96a915561",
+    "aps_failure/019d7366-7373-7942-9438-aa122a6ca492",
+    "bad_customer_detection/019d7366-8875-7ee1-8f3b-5ad96bdd2324",
+    "bank_customer_churn/019d7366-99cc-77cc-8d41-5c3ccc8eff96",
+    "bank_marketing/019d7366-abe0-7dcc-a9fb-069bfb233c78",
+    "bioresponse/019d7366-c770-7d3c-8dd9-b9cc456542d6",
+    "blood_transfusion/019d7366-d9d0-777d-b0ae-e7a5175f7f09",
+    "churn/019d7366-eb2d-72f9-9998-72dfc5b6cc79",
+    "coil_2000/019d7366-fdc2-7225-a22c-314c624711f6",
+    "concrete_compressive_strength/019d7367-0f12-7c25-b411-de9c711bd4ec",
+    "credit_card_clients_default/019d7367-23b0-7125-9a7b-9ad1a90dc75d",
+    "credit_g/019d7367-39a7-7335-8448-2dc9b2872361",
+    "customer_satisfaction_in_airline/019d7367-4d56-7274-a470-1609f3a3d6fe",
+    "diabetes_130_us/019d7367-64e4-7883-956d-9ba2fc8db41b",
+    "diamonds/019d7367-779c-707e-b777-849180166b74",
+    "ecommerce_shipping/019d7367-8a04-7bf2-8ab2-68d1726cf31e",
+    "fiat_500/019d7367-9b82-78a9-a53a-570038a28d0a",
+    "fitness_club/019d7367-aced-7960-94c9-b19b393cb0ad",
+    "food_delivery_time/019d7367-beff-7ca7-9033-8f346962f7a1",
+    "give_me_some_credit/019d7367-d331-7295-991e-7eab46ea49ba",
+    "hazelnut_spread_contaminant_detection/019d7367-e731-79fc-9677-4c5d1bab73ff",
+    "healthcare_insurance_expenses/019d7367-f8cf-77a8-86e8-cabed951a9f6",
+    "heloc/019d7368-0a52-7460-abf5-b78381cf69f0",
+    "hiva_agnostic/019d7368-2dd6-7aa8-b7f3-42a416dc1315",
+    "houses/019d7368-4493-7f1a-a1e6-d784558ee09a",
+    "hr_analytics/019d7368-56c6-75a9-b489-eb6faf376ce5",
+    "in_vehicle_coupon_recommendation/019d7368-68cc-754c-99e4-7e145a96e287",
+    "jm1/019d7368-7f0b-74da-a01f-3c5e7dd31dab",
+    "kdd_cup_09_appetency/019d7368-96e4-777a-bfbb-4fcb8602465c",
+    "marketing_campaign/019d7441-e83d-7bb2-bed5-7eb8a1ad36f6",
+    "maternal_health_risk/019d7368-bc0d-723e-a4f9-abfd36e085e9",
+    "miami_housing/019d7368-cda5-7177-b500-4986a5e77a82",
+    "mic/019d7444-22cb-7d04-940f-6fa8b0436ea2",
+    "naticusdroid_android_permissions_dataset/019d7368-f37d-77e2-be2e-0d8d94e9c27d",
+    "online_shoppers_purchasing_intention_dataset/019d7445-801c-7a91-831e-5f6725779505",
+    "physiochemical_protein/019d7369-1810-7d24-8e20-84da94babb3e",
+    "polish_companies_bankruptcy/019d7369-2c20-709c-83cd-e27fab38e009",
+    "predict_students_dropout_and_academic_success/019d7369-3ffd-7889-91d3-46e5b502f4ec",
+    "qsar_biodeg/019d7369-5170-7d75-8932-e2a5778ee70b",
+    "qsar_fish_toxicity/019d7369-62fc-7ea1-9c58-8ac89144f820",
+    "qsar_tid_11/019d7369-7ffa-7d6a-b578-fa8c63c7adb6",
+    "sdss_17/019d7369-942d-72c0-b327-e812c4b56b7e",
+    "seismic_bumps/019d7369-a6b4-7060-a145-dc996b59cf1b",
+    "splice/019d7369-b922-718a-adbf-099484b95908",
+    "superconductivity/019d7369-cca6-7baa-b958-4ec60c44e1c1",
+    "taiwanese_bankruptcy_prediction/019d7369-df9e-716f-974e-19cc910078ee",
+    "website_phishing/019d7369-f10c-78e6-bd19-b8b0a72399fe",
+    "wine_quality/019d736a-03ee-7297-95da-6bfa50c97f79",
+    "allstate_claims_severity/019d736a-2321-76da-a36a-ddc5e1fbf7b6",
+    "audiology_diagnosis/019d736a-3b3d-73da-8d65-b4b7a39e1590",
+    "biomechanical_orthopaedic_prediction/019d736a-4c2d-74b6-95a3-c63bd4b8fff7",
+    "blood_tests_drink_prediction/019d736a-5d45-743a-b7c5-11da6b494fb7",
+    "body_density_prediction/019d736a-6e2b-77a5-ae25-1222ef4fe4e9",
+    "cirrhosis_patient_survival_prediction/019d736a-9116-7589-9cad-4cee540f2926",
+    "credit_approval/019d736a-a27c-7c85-90c5-ca1d5dc849bd",
+    "drug_induced_autoimmunity_prediction/019d736a-b4b1-7f51-9563-dde2b6ecd948",
+    "early_stage_diabetes_risk_prediction/019d736a-c5ee-7069-9b14-686535f9caa9",
+    "ecoli_proteins/019d736a-d6d2-7e28-aeff-7da6b7126b9d",
+    "emscad/019d736a-ed4a-7aaa-89df-d52558565db9",
+    "eryhemato_squamous_disease/019d736b-020a-7fbc-9785-6438802781f2",
+    "forensic_glass_identification/019d736b-12da-73ae-a0d2-65e6294a7f01",
+    "forest_fires/019d736b-2610-7f4f-ae46-3f6a4c98962e",
+    "gallstone_disease/019d736b-3795-7523-ac59-9fbe676ebc70",
+    "heart_disease_cleveland/019d736b-4900-714b-8dfc-be588ce802c3",
+    "heart_disease_hungary/019d736b-5a1a-7c95-92f0-8c2fe5334ad2",
+    "heart_disease_va_long_beach/019d736b-7c92-71e1-a6d6-27a91ed15d3d",
+    "heart_failure_followup_survival/019d736b-8d9f-7f20-8f5c-45207fb0251d",
+    "hepatitis_c_prediction/019d736b-9eba-79b8-8c5a-78d95163e286",
+    "hepatitis_survival_prediction/019d736b-afda-7edf-9f73-3cd8e3799329",
+    "home_credit_default_risk/019d736d-6a16-7087-999b-e953d48f7516",
+    "homesite_quote_conversion/019d736d-c045-7597-b0e9-665db9c61dac",
+    "horse_colic_survival/019d736d-db15-7ad1-b407-b937aa958bd9",
+    "indian_liver_patient_dataset/019d736d-ec03-75de-b8e9-075fcdde7993",
+    "labour_inspection_compliance/019d736e-5a12-720a-9281-b652d1acae27",
+    "ljubljana_breast_cancer/019d736e-6ea7-7889-b0ff-20fbdd628b8a",
+    "ljubljana_primary_tumor/019d736e-819e-7f44-a8b2-5b93d4cce230",
+    "mercari_price_suggestion/versions/019d736f-26fd-73bd-8853-dc219e5f4ed5",
+    "mutual_funds_india/019d736f-4e6b-7953-9a01-a5476b6708ef",
+    "otto_group_product_classification_challenge/019d736f-6330-78c4-91bb-c37e46162244",
+    "porto_seguro/019d736f-86ed-700f-96c9-8f4be8546db1",
+    "pva_revenue_prediction_kddcup98/019db49b-9c05-72b8-b4a5-7b967a18225b",
+    "qsar_aquatic_toxicity/019d7370-0517-71a1-9e18-dc2a826fa01a",
+    "regensburg_pediatric_appendicitis/019d7370-1dc6-7c1e-8ff1-80ddeb4c4207",
+    "santander_customer_satisfaction/019d7370-56f7-7b35-ba45-c77b1e3c531b",
+    "santander_customer_transaction_prediction/019d7373-33b4-7002-948b-c14d1fffe341",
+    "santander_transaction_value/019d7373-d139-7c8f-be3e-579006c05fad",
+    "sepsis_survival_minimal_clinical_records/019d7373-e475-7208-bd58-accca4615b01",
+    "south_africa_coronary_heart_disease/019d7373-f750-7ecd-8cda-f16d5d36be62",
+    "student_portuguese_performance/019d7374-09f4-79ea-a27f-1ad571967f90",
+    "thyroid_discordant/019d7374-1c19-79e6-986d-2afd2c16101e",
+    "tour_travels_churn/019d7374-2df2-7b85-94a6-3ec9d1796737",
+    "wids_diabetes_mellitus/019d7374-50ba-7416-9d10-a526040930ee",
+    "wine_world_cost/019d7374-6961-7fb3-9ca1-2e20e35fbbb0",
+    "iranian_churn/019d7374-7b3c-7eed-940f-e8ac3c68e2f4",
+    "obesity_estimation/019d7374-8d75-752a-aca4-1f311044d316",
+    "immoscout_german_house_prices/019d7374-a0e4-7646-b11b-f762fe9b693b",
+    "biogeographical_ancestry_prediction/019d7374-b899-714c-9372-37a48f580b0f",
+    "homeq_default_prediction/019d7374-cab8-700e-97f3-9c55ea980153",
+    "lung_cancer/019d7375-0c48-7822-8f4e-5e071cbcabe5",
+    "clock_protein_toxicity/019d7375-2841-7bfb-a6da-5adfdcd43d98",
+    "prostate_cancer_detection/019d7375-de7b-7b43-8340-ea47165661d3",
+    "lung_cancer_epithelial_genexp/019d7376-82a5-76cc-b1ce-92dc200f3173",
+    "acquire_valued_shoppers_challenge/019d7376-a3c5-7df7-88c0-ba4e87c3dfa0",
+    "climate_model_weather_forecasting/versions/019d7379-7906-707e-95e9-f479afb2e2c1",
+    "cooking_time/versions/019d737d-b4b1-7c24-8930-70a2c242b3f9",
+    "delivery_eta/versions/019d7382-df54-7dd3-8198-0567d7499858",
+    "home_credit_default_stability/versions/019d7383-f45a-72f7-ac99-09447cf6d41f",
+    "kick/019d744f-147d-721e-affc-94b58645c0ad",
+    "mercedes_benz_greener_manufacturing/019d7384-bae5-71ab-ab7c-361f23e277dc",
+    "sberbank_housing_market_forecasting/019d9279-a91a-73ac-a221-72a6aab17df0",
+    "maps_router_eta/versions/019d7407-606f-7147-b041-c7d0a3847c71",
+    "hotel_booking_demand/019db498-7402-74ea-a334-69938355ae2c",
+    "ghanas_indigenous_intel/019dd375-4259-77c1-a177-5acc1f4d0134",
+    "ieee_fraud_detection/019db516-2f8e-7e50-a8c4-f1c57754f52c",
+    "anes_voting_2026/019db4ba-6124-7a56-a0b5-9df8811adc2f",
+    "rossmann_store_sales/019db4fb-6d9e-7c15-b8cb-1bf97ea88782",
+    "garments_worker_productivity/019db501-f4c4-7de2-b626-fcb769c7d82e",
+    "california_house_prices_2020/019d7388-c562-72b3-a533-5f588dc737c9",
+    "coffee_rating_prediction/019d7388-dffd-7bc4-ab3d-40bf6581786e",
+    "consumer_complaints/versions/019d738b-4c6e-751f-972a-5f63b1508f70",
+    "lending_club/versions/019d738c-5edd-7437-9116-e3bc87a8b0c5",
+    "kickstarter/019db497-6b35-71e0-9c6b-f4a7286f8f6f",
+    "sf_permit_time/019d738d-80c6-71a6-99f0-e3e0955ce2d0",
+    "mice_protein_trisomy_discriminant/019d738d-99a8-7850-b911-f244ac4ad485",
+    "musk/019d738d-ae72-7a0a-a2e4-6b797ab153fd",
+    "micro_mass/019d738d-c82e-796a-9343-e30919f324d5",
+    "parkinsons_biomedical_voice_measurements/019d738d-db39-7b5b-83dc-664e66da1854",
+    "amex_non_iid/versions/019d7455-0e4e-7261-9842-93177684d486",
+    "pancreatic_cancer_mouse_detection/019d7391-358e-725a-bc70-bbee346e9267",
+    "early_learning_predictors/019db4ff-b5e9-7b27-80b1-8cf2ca025d20",
+    "5g_energy_consumption/019db4c5-d45f-7c07-80c9-bdd75ea01338",
+    "telemonitoring_parkinsons_biomedical_voice_measurements/019d7391-4b65-7d0e-a950-684a098c3df9",
+    "dementia_prediction/019d7391-61e5-7cca-9a66-e85718233be9",
+    "covertype/019d7391-8e33-757b-b38a-79ec188fa001",
+    "sepsis_prediction/versions/019d7391-f36e-72f8-89d7-f7ca71725034",
+    "cardiotocography/019d7392-12c2-7a87-991c-13a7246555d4",
+    "sat11_hand_algo_runtime/019d7392-268a-7998-a20d-29e9a2236dcd",
+    "asp_potassco_classification/019d73ec-935f-7f88-8a82-af3ad2f44e9f",
+    "video_transcoding_time_prediction/019d7392-553f-7bb2-b0f4-0d80ea446f63",
+    "video_game_fps_prediction/019d7392-6ce5-72bc-b598-193597825a66",
+    "electric_motor_temperature_prediction/019d7392-e21f-7e60-9efb-2141c3513fd9",
+)
+
+
+BEYOND_ARENA = DatasetCollection.from_relative_paths(
+    name="BeyondArena",
+    description=(
+        "BeyondArena — the official curated dataset collection. "
+    ),
+    relative_paths=BEYOND_ARENA_UUIDS,
+    source=HuggingFaceSource(repo_id="TabArena/BeyondArena"),
+)
+
+
+_OFFICIAL_COLLECTIONS: dict[str, DatasetCollection] = {BEYOND_ARENA.name: BEYOND_ARENA}
+
+
+def list_collections() -> list[str]:
+    """Return the names of all official collections shipped with this release."""
+    return list(_OFFICIAL_COLLECTIONS)
+
+
+def get_collection(name: str) -> DatasetCollection:
+    """Look up an official collection by name (see :func:`list_collections`)."""
+    try:
+        return _OFFICIAL_COLLECTIONS[name]
+    except KeyError as exc:
+        raise KeyError(
+            f"Unknown collection {name!r}. Available: {sorted(_OFFICIAL_COLLECTIONS)}",
+        ) from exc

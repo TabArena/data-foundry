@@ -12,6 +12,7 @@ dependencies = [
     "pydantic",
     "uuid6",
     "pyarrow",
+    "huggingface_hub",
 ]
 
 [project.optional-dependencies]
