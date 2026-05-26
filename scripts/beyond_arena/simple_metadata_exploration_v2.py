@@ -12,9 +12,9 @@ from tqdm import tqdm
 
 DATA_FOUNDRY_CACHE = Path("/home/lennart_priorlabs_ai/code/large_data_ensemble/data-foundry/local-data-warehouse")
 
-# Resolve paths relative to the data-foundry root
+# Resolve paths relative to the data-foundry root (script now lives under scripts/beyond_arena/).
 SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = SCRIPT_DIR.parent
+ROOT_DIR = SCRIPT_DIR.parent.parent
 
 sys.path.insert(0, str(ROOT_DIR / "datasets" / "beyond_iid"))
 from final_uuid_list import GROUPED, NEW_IID, OLD_IID, TEMPORAL

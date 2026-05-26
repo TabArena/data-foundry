@@ -9,9 +9,9 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-# Resolve paths relative to the data-foundry root
+# Resolve paths relative to the data-foundry root (script now lives under scripts/beyond_arena/).
 SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = SCRIPT_DIR.parent
+ROOT_DIR = SCRIPT_DIR.parent.parent
 
 sys.path.insert(0, str(ROOT_DIR / "datasets" / "beyond_iid"))
 from final_uuid_list import GROUPED, NEW_IID, OLD_IID, TEMPORAL

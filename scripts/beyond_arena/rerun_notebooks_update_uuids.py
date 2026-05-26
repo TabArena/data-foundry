@@ -9,7 +9,8 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+# Resolve the data-foundry root (script now lives under scripts/beyond_arena/).
+ROOT = Path(__file__).resolve().parent.parent.parent
 BEYOND_IID = ROOT / "datasets" / "beyond_iid"
 STATE_PATHS_FILE = BEYOND_IID / "final_uuid_list.py"
 PROGRESS_FILE = BEYOND_IID / "_rerun_progress.json"
