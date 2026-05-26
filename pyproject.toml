@@ -5,7 +5,35 @@ build-backend = "uv_build"
 [project]
 name = "data-foundry"
 version = "0.0.1"
-requires-python = "~=3.10.0"
+description = "A schema and toolkit for curating tabular datasets and benchmarking tasks (the data layer behind TabArena)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "TabArena Maintainers", email = "mail@tabarena.ai" },
+]
+keywords = [
+    "tabular",
+    "machine-learning",
+    "benchmark",
+    "datasets",
+    "data-curation",
+    "tabarena",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "pandas",
     "numpy",
@@ -14,6 +42,13 @@ dependencies = [
     "pyarrow",
     "huggingface_hub",
 ]
+
+[project.urls]
+Homepage = "https://github.com/TabArena/data-foundry"
+Repository = "https://github.com/TabArena/data-foundry"
+Issues = "https://github.com/TabArena/data-foundry/issues"
+"BeyondArena Datasets" = "https://huggingface.co/datasets/TabArena/BeyondArena"
+"TabArena" = "https://tabarena.ai/"
 
 [project.optional-dependencies]
 dev = [

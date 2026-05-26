@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -8,6 +9,31 @@ import pydantic
 MultilineStr = Annotated[str, "multiline"]
 
 DEFAULT_LOCAL_DATA_DIR = str(Path(__file__).parent.parent.parent / "local-data-warehouse")
+"""Default local data warehouse directory (used when no env var override is set).
+
+Resolves to ``<data-foundry-root>/local-data-warehouse`` for editable installs.
+For pip installs you almost certainly want to override via the
+:data:`DATA_FOUNDRY_WAREHOUSE_ENV` environment variable instead, since the
+default would otherwise land inside ``site-packages``.
+"""
+
+DATA_FOUNDRY_WAREHOUSE_ENV = "DATA_FOUNDRY_WAREHOUSE"
+"""Environment variable that overrides :data:`DEFAULT_LOCAL_DATA_DIR`.
+
+Set this when your raw downloads + saved containers do not live next to the
+data-foundry source tree (e.g. on a pip-installed deployment, or in a shared
+team warehouse).
+"""
+
+
+def resolve_warehouse_dir() -> Path:
+    """Resolve the local data warehouse root.
+
+    Precedence: ``$DATA_FOUNDRY_WAREHOUSE`` > :data:`DEFAULT_LOCAL_DATA_DIR`.
+    The path is **not** created — callers (curation notebooks, ``save``) are
+    responsible for ensuring it exists when they need to write.
+    """
+    return Path(os.environ.get(DATA_FOUNDRY_WAREHOUSE_ENV) or DEFAULT_LOCAL_DATA_DIR).expanduser()
 
 # TODO: converge on set of domains we want to check
 Domain = Literal[
@@ -152,6 +178,29 @@ class DatasetMetadata:
 
     type_adapter_id: str = "dataset-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    @property
+    def path(self) -> Path:
+        """Local directory where this dataset's raw downloads live.
+
+        Resolves to ``<warehouse>/<unique_name>/`` where ``<warehouse>`` is
+        the result of :func:`resolve_warehouse_dir` (i.e. respects the
+        ``$DATA_FOUNDRY_WAREHOUSE`` env var, falling back to the editable
+        install's ``local-data-warehouse/``).
+
+        This is the directory the curation notebook's ``download_description``
+        is expected to populate, and the directory the preprocessing cell
+        reads from (e.g. ``pd.read_csv(dataset_mold.path / "raw.csv")``).
+        The directory is **not** created here — call ``path.mkdir(parents=True,
+        exist_ok=True)`` yourself if you need it materialized before download.
+
+        Note: ``CuratedContainer.save`` writes containers under
+        ``<warehouse>/<unique_name>/<uuid>/`` (or
+        ``<warehouse>/<version_from_unique_name>/versions/<uuid>/`` for
+        versioned datasets), so curated artifacts and raw downloads share the
+        ``<unique_name>`` parent directory by design.
+        """
+        return resolve_warehouse_dir() / self.unique_name
 
     def describe(self) -> str:
         """Return a human-readable summary of every dataset-level field.

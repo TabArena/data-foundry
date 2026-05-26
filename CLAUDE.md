@@ -1,0 +1,24 @@
+# CLAUDE.md
+
+Guidance for Claude Code (and other AI assistants) working in this repo.
+
+This file is intentionally short. The full agent-facing brief — what the
+repo is, the high-value use cases, the conventions to follow, and the
+gotchas that look like blockers but aren't — lives in
+[**AGENTS.md**](AGENTS.md). Read that first.
+
+## TL;DR
+
+* **Repo:** [Data Foundry](README.md) — schema and curation toolkit for
+  tabular datasets behind BeyondArena / TabArena.
+* **You touch code mainly to:**
+  * scaffold a new curation notebook via the `/new-dataset` slash command
+    ([`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md)),
+  * extend the package (`src/data_foundry/`),
+  * update examples (`examples/`) when an API changes.
+* **Before changes land:** `pytest -q && ruff check . && ruff format --check .`
+* **Conventions:** `from __future__ import annotations` is mandatory; lines
+  ≤120 chars; Google-style docstrings; no commits/pushes without explicit
+  human ask.
+
+See [AGENTS.md](AGENTS.md) for the long form.

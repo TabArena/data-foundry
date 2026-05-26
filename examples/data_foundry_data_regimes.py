@@ -15,13 +15,14 @@ through the curated metadata:
   ``time_on``; future rows must not leak backwards)
 
 The key distinguisher is which column the task sets:
-The key distinguisher is which column the task sets:
-The key distinguisher is which column the task sets:
-The key distinguisher is which column the task sets:
 
 * ``time_on`` set        → temporal non-IID
 * ``group_on`` set       → grouped non-IID
 * neither set            → IID
+
+Run::
+
+    python examples/data_foundry_data_regimes.py
 """
 
 from __future__ import annotations

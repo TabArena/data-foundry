@@ -3,10 +3,12 @@ from __future__ import annotations
 import pydantic
 import pytest
 from data_foundry.schema import (
+    DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    resolve_warehouse_dir,
 )
 
 
@@ -293,3 +295,36 @@ def test_predictive_splits_metadata_defaults_are_none():
     sm = PredictiveMLSplitsMetadata(splits_comment="x", splits={0: {0: ([0], [1])}})
     assert sm.time_horizon is None
     assert sm.time_horizon_unit is None
+
+
+# --- DatasetMetadata.path / warehouse resolution ---
+def test_dataset_metadata_path_defaults_to_warehouse_root(base_dataset_metadata_kwargs, monkeypatch):
+    from pathlib import Path
+
+    monkeypatch.delenv(DATA_FOUNDRY_WAREHOUSE_ENV, raising=False)
+    dsm = DatasetMetadata(**base_dataset_metadata_kwargs)
+    assert dsm.path == Path(DEFAULT_LOCAL_DATA_DIR) / dsm.unique_name
+
+
+def test_dataset_metadata_path_respects_env_override(base_dataset_metadata_kwargs, tmp_path, monkeypatch):
+    monkeypatch.setenv(DATA_FOUNDRY_WAREHOUSE_ENV, str(tmp_path / "my-warehouse"))
+    dsm = DatasetMetadata(**base_dataset_metadata_kwargs)
+    assert dsm.path == tmp_path / "my-warehouse" / dsm.unique_name
+
+
+def test_resolve_warehouse_dir_precedence(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    monkeypatch.delenv(DATA_FOUNDRY_WAREHOUSE_ENV, raising=False)
+    assert resolve_warehouse_dir() == Path(DEFAULT_LOCAL_DATA_DIR)
+
+    monkeypatch.setenv(DATA_FOUNDRY_WAREHOUSE_ENV, str(tmp_path / "wh"))
+    assert resolve_warehouse_dir() == tmp_path / "wh"
+
+
+def test_dataset_metadata_path_not_created(base_dataset_metadata_kwargs, tmp_path, monkeypatch):
+    """`path` is pure resolution — it must not touch the filesystem."""
+    monkeypatch.setenv(DATA_FOUNDRY_WAREHOUSE_ENV, str(tmp_path / "wh"))
+    dsm = DatasetMetadata(**base_dataset_metadata_kwargs)
+    _ = dsm.path
+    assert not (tmp_path / "wh").exists()
