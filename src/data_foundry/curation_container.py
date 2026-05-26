@@ -110,6 +110,105 @@ class CuratedContainer:
         h.update(encode_pydantic_metadata(self.experiment_metadata))
         return h.hexdigest()
 
+    def _feature_dtype_counts(self) -> dict[str, int]:
+        """Count feature-column dtypes.
+
+        Excludes the target column and any ``group_on`` columns. Binary
+        columns (exactly two distinct non-null values, regardless of dtype)
+        are counted only in the ``binary`` bucket — the ``numeric``,
+        ``categorical``, ``datetime``, and ``text`` buckets all exclude
+        binary columns, so the four buckets plus ``binary`` partition
+        ``n_features``.
+        """
+        excluded: set[str] = {self.task_metadata.target_column_name}
+        group_on = self.task_metadata.group_on
+        if isinstance(group_on, list):
+            excluded.update(group_on)
+        elif isinstance(group_on, str):
+            excluded.add(group_on)
+
+        feature_df = self.dataset.drop(
+            columns=[c for c in excluded if c in self.dataset.columns],
+        )
+        binary_cols = {c for c in feature_df.columns if feature_df[c].nunique(dropna=True) == 2}
+        numeric_cols = feature_df.select_dtypes(include=["number"], exclude=["bool"]).columns
+        categorical_cols = feature_df.select_dtypes(include=["category", "bool"]).columns
+        datetime_cols = list(feature_df.select_dtypes(include=["datetime", "datetimetz"]).columns)
+        datetime_cols += [
+            c for c in feature_df.columns
+            if isinstance(feature_df[c].dtype, pd.PeriodDtype)
+        ]
+        text_cols = feature_df.select_dtypes(include=["string"]).columns
+
+        return {
+            "numeric": sum(c not in binary_cols for c in numeric_cols),
+            "categorical": sum(c not in binary_cols for c in categorical_cols),
+            "datetime": sum(c not in binary_cols for c in datetime_cols),
+            "text": sum(c not in binary_cols for c in text_cols),
+            "binary": len(binary_cols),
+            "n_features": feature_df.shape[1],
+        }
+
+    def describe_container(self) -> str:
+        """Return the container-level identity: ``unique_name``, ``uuid``, ``checksum``.
+
+        These are *container* attributes (not dataset/task/experiment
+        metadata). UUID and checksum are truncated so the summary stays on
+        one line each.
+        """
+        uuid_short = (self.uuid or "")[:18] + "…" if self.uuid and len(self.uuid) > 18 else self.uuid
+        checksum_short = (
+            (self.checksum or "")[:16] + "…" if self.checksum and len(self.checksum) > 16 else self.checksum
+        )
+        return "\n".join([
+            "CuratedContainer:",
+            f"  unique_name:   {self.dataset_metadata.unique_name}",
+            f"  uuid:          {uuid_short}",
+            f"  checksum:      {checksum_short}",
+        ])
+
+    def describe_dataset(self) -> str:
+        """Return the DataFrame summary: shape and feature-dtype counts.
+
+        Covers only the loaded :attr:`dataset` — see
+        :meth:`describe_container` for the container's identity and
+        :meth:`DatasetMetadata.describe` for the dataset-level metadata.
+        """
+        if self.dataset is None:
+            raise ValueError("Dataset must be loaded before calling describe_dataset().")
+
+        counts = self._feature_dtype_counts()
+        target = self.task_metadata.target_column_name
+        return "\n".join([
+            "Dataset:",
+            f"  shape:         {self.dataset.shape}",
+            f"  feature dtypes ({counts['n_features']} features, excluding target `{target}`):",
+            f"    numeric:     {counts['numeric']}",
+            f"    categorical: {counts['categorical']}",
+            f"    datetime:    {counts['datetime']}",
+            f"    text:        {counts['text']}",
+            f"    binary:      {counts['binary']}",
+        ])
+
+    def describe(self) -> str:
+        """Return a high-level summary of the container.
+
+        Composes :meth:`describe_container` (identity), :meth:`describe_dataset`
+        (shape + dtype counts), and the per-section :meth:`describe` outputs
+        of the dataset, task, and experiment metadata objects.
+        """
+        return "\n".join([
+            self.describe_container(),
+            "",
+            self.describe_dataset(),
+            "",
+            self.dataset_metadata.describe(),
+            "",
+            self.task_metadata.describe(),
+            "",
+            self.experiment_metadata.describe(),
+        ])
+
     @staticmethod
     def _save_dtypes(df: pd.DataFrame, path: Path) -> None:
         """Save DataFrame column dtypes to a JSON file."""

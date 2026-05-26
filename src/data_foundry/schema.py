@@ -153,6 +153,36 @@ class DatasetMetadata:
     type_adapter_id: str = "dataset-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
+    def describe(self) -> str:
+        """Return a human-readable summary of every dataset-level field.
+
+        Long multi-line fields (download description, BibTeX, curation
+        comments) are truncated to one line so the summary stays scannable.
+        """
+
+        def _one_line(value: str | None, limit: int = 80) -> str:
+            if value is None:
+                return "None"
+            first = value.strip().splitlines()[0] if value.strip() else ""
+            return first if len(first) <= limit else first[: limit - 1] + "…"
+
+        return "\n".join([
+            "DatasetMetadata:",
+            f"  unique_name:                          {self.unique_name}",
+            f"  dataset_year:                         {self.dataset_year}",
+            f"  domain_str:                           {self.domain_str}",
+            f"  dataset_source:                       {self.dataset_source}",
+            f"  original_dataset_source_download_link: {self.original_dataset_source_download_link}",
+            f"  download_description:                 {_one_line(self.download_description)}",
+            f"  academic_reference_bibtex_key:        {self.academic_reference_bibtex_key}",
+            f"  academic_reference_bibtex:            {_one_line(self.academic_reference_bibtex)}",
+            f"  license:                              {self.license}",
+            f"  data_tags:                            {self.data_tags}",
+            f"  curation_comments:                    {_one_line(self.curation_comments)}",
+            f"  version_from_unique_name:             {self.version_from_unique_name}",
+            f"  version_comment:                      {_one_line(self.version_comment)}",
+        ])
+
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class PredictiveMLTaskMetadata:
@@ -227,6 +257,61 @@ class PredictiveMLTaskMetadata:
         """Check if the task is a classification task."""
         return self.problem_type in ProblemTypeClassification
 
+    @property
+    def split_regime(self) -> str:
+        """Classify the task's split regime based on which columns are set.
+
+        Returns one of:
+
+        * ``"temporal_non_iid"`` — ``time_on`` is set; rows are ordered in time
+          and future rows must not leak into the training fold.
+        * ``"grouped_non_iid"`` — ``group_on`` is set; all rows of a group stay
+          together (``group_time_on`` may carry ordering info that is *not*
+          used for splitting).
+        * ``"iid"`` — neither is set; standard random / stratified splitting
+          applies.
+
+        ``time_on`` and ``group_on`` are mutually exclusive — see
+        :meth:`__post_init__`.
+        """
+        if self.time_on is not None:
+            return "temporal_non_iid"
+        if self.group_on is not None:
+            return "grouped_non_iid"
+        return "iid"
+
+    def describe(self) -> str:
+        """Return a human-readable summary of every field plus the split regime.
+
+        Use ``print(task.describe())`` to inspect a task at a glance — useful
+        for example scripts and notebooks. See :attr:`split_regime` for the
+        IID / temporal / grouped classification logic.
+        """
+        regime = self.split_regime
+        if regime == "temporal_non_iid":
+            regime_desc = f"temporal non-IID (time column: `{self.time_on}`)"
+        elif regime == "grouped_non_iid":
+            regime_desc = (
+                f"grouped non-IID (group column: `{self.group_on}`, "
+                f"labels={self.group_labels})"
+            )
+        else:
+            regime_desc = "IID"
+
+        return "\n".join([
+            "PredictiveMLTaskMetadata:",
+            f"  target_column_name:    {self.target_column_name}",
+            f"  problem_type:          {self.problem_type}",
+            f"  objective_metric_name: {self.objective_metric_name}",
+            f"  stratify_on:           {self.stratify_on}",
+            f"  time_on:               {self.time_on}",
+            f"  group_on:              {self.group_on}",
+            f"  group_labels:          {self.group_labels}",
+            f"  group_time_on:         {self.group_time_on}",
+            f"  is_classification:     {self.is_classification}",
+            f"  → split regime:        {regime_desc}",
+        ])
+
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class PredictiveMLSplitsMetadata:
@@ -276,3 +361,60 @@ class PredictiveMLSplitsMetadata:
 
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    def describe(self) -> str:
+        """Return a human-readable summary of the outer splits and split metadata.
+
+        Reports the number of repeats, how many splits each repeat contains
+        (collapsed to a single number when uniform; listed per-repeat
+        otherwise), the total split count, the temporal-split metadata
+        fields, and — at the end — a per-(repeat, fold) overview of the
+        train/test sizes. Pair with :meth:`PredictiveMLTaskMetadata.describe`
+        for the full task picture.
+        """
+        splits_per_repeat = {r: len(folds) for r, folds in self.splits.items()}
+        total_splits = sum(splits_per_repeat.values())
+        if splits_per_repeat and len(set(splits_per_repeat.values())) == 1:
+            per_repeat_desc = f"{next(iter(splits_per_repeat.values()))} per repeat"
+        else:
+            per_repeat_desc = ", ".join(
+                f"r{r}={n}" for r, n in splits_per_repeat.items()
+            ) or "(no splits)"
+
+        lines = [
+            "PredictiveMLSplitsMetadata:",
+            f"  # repeats:           {len(self.splits)}",
+            f"  splits/repeat:       {per_repeat_desc}",
+            f"  total splits:        {total_splits}",
+            f"  time_horizon:        {self.time_horizon}",
+            f"  time_horizon_unit:   {self.time_horizon_unit}",
+            f"  splits_comment:      {self.splits_comment}",
+        ]
+
+        if self.splits:
+            preview_limit = 3
+            flat = [
+                (r, f, train_idx, test_idx)
+                for r, folds in self.splits.items()
+                for f, (train_idx, test_idx) in folds.items()
+            ]
+            preview = flat[:preview_limit]
+            train_w = max(len(str(len(t))) for _, _, t, _ in preview)
+            test_w = max(len(str(len(t))) for _, _, _, t in preview)
+            header = "  splits shape (train / test sizes"
+            if len(flat) > preview_limit:
+                header += f", first {preview_limit} of {len(flat)}"
+            header += "):"
+            lines.append(header)
+            for repeat_id, fold_id, train_idx, test_idx in preview:
+                lines.append(
+                    f"    r{repeat_id}/f{fold_id}:  "
+                    f"train={len(train_idx):>{train_w}}  "
+                    f"test={len(test_idx):>{test_w}}",
+                )
+            if len(flat) > preview_limit:
+                lines.append(f"    … ({len(flat) - preview_limit} more)")
+        else:
+            lines.append("  splits shape:        (no splits)")
+
+        return "\n".join(lines)
