@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pydantic
 import pytest
 from data_foundry.schema import (
@@ -13,7 +11,7 @@ from data_foundry.schema import (
 
 
 @pytest.fixture
-def base_dataset_metadata_kwargs(tmp_path) -> dict:
+def base_dataset_metadata_kwargs() -> dict:
     return {
         "unique_name": "toy",
         "dataset_year": "2025",
@@ -26,31 +24,7 @@ def base_dataset_metadata_kwargs(tmp_path) -> dict:
         "license": None,
         "data_tags": ["IID"],
         "curation_comments": None,
-        "local_data_directory_base": str(tmp_path),
     }
-
-
-# --- DatasetMetadata: path and save_path ---
-@pytest.mark.parametrize(
-    ("version_from_unique_name", "expected_path_suffix", "expected_save_suffix"),
-    [
-        (None, "toy", "toy/abc123"),
-        ("toy_base", "toy_base", "toy_base/versions/abc123"),
-    ],
-)
-def test_dataset_metadata_path_and_save_path(
-    base_dataset_metadata_kwargs,
-    version_from_unique_name,
-    expected_path_suffix,
-    expected_save_suffix,
-):
-    dm = DatasetMetadata(
-        **base_dataset_metadata_kwargs,
-        version_from_unique_name=version_from_unique_name,
-    )
-
-    assert dm.path == Path(base_dataset_metadata_kwargs["local_data_directory_base"]) / expected_path_suffix
-    assert dm.get_save_path(uuid="abc123") == Path(base_dataset_metadata_kwargs["local_data_directory_base"]) / expected_save_suffix
 
 
 def test_dataset_metadata_type_adapter_id(base_dataset_metadata_kwargs):
@@ -60,12 +34,6 @@ def test_dataset_metadata_type_adapter_id(base_dataset_metadata_kwargs):
 
 def test_default_local_data_dir_is_string():
     assert isinstance(DEFAULT_LOCAL_DATA_DIR, str)
-
-
-def test_dataset_metadata_default_local_data_directory(base_dataset_metadata_kwargs):
-    kwargs = {k: v for k, v in base_dataset_metadata_kwargs.items() if k != "local_data_directory_base"}
-    dm = DatasetMetadata(**kwargs)
-    assert dm.local_data_directory_base == DEFAULT_LOCAL_DATA_DIR
 
 
 def test_dataset_metadata_version_comment(base_dataset_metadata_kwargs):

@@ -150,28 +150,8 @@ class DatasetMetadata:
     version_comment: MultilineStr | None = None
     """Comment about the dataset version and how it differs from the original dataset."""
 
-    local_data_directory_base: str = DEFAULT_LOCAL_DATA_DIR
-    """Link to a directory that contains the all data related files."""
     type_adapter_id: str = "dataset-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
-
-    @property
-    def path(self) -> Path:
-        """Get the full local path to the dataset base directory."""
-        path_name = self.unique_name
-        if self.version_from_unique_name is not None:
-            path_name = self.version_from_unique_name
-
-        return Path(self.local_data_directory_base) / path_name
-
-    def get_save_path(self, uuid: str) -> Path:
-        """Get the version-aware save path for the dataset based on the provided uuid."""
-        base_path = self.path
-
-        if self.version_from_unique_name is not None:
-            base_path = base_path / "versions"
-
-        return base_path / uuid
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))

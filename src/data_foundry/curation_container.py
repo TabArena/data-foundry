@@ -13,6 +13,7 @@ from uuid6 import uuid7
 logger = logging.getLogger(__name__)
 
 from data_foundry.schema import (
+    DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
     MultilineStr,
     PredictiveMLSplitsMetadata,
@@ -137,11 +138,27 @@ class CuratedContainer:
                 logger.warning("Failed to cast column '%s' to %s: %s — skipping.", col, dtype_str, e)
         return df
 
-    def save(self):
-        """Save the curated data collection to the local data directory."""
-        save_path = self.dataset_metadata.get_save_path(uuid=self.uuid)
+    def _save_path(self, save_dir: Path) -> Path:
+        """Resolve the on-disk save directory for this container under ``save_dir``."""
+        meta = self.dataset_metadata
+        path_name = meta.version_from_unique_name or meta.unique_name
+        base = save_dir / path_name
+        if meta.version_from_unique_name is not None:
+            base = base / "versions"
+        return base / self.uuid
+
+    def save(self, save_dir: Path | str = DEFAULT_LOCAL_DATA_DIR) -> Path:
+        """Save the curated data collection under ``save_dir``.
+
+        The container is written to
+        ``<save_dir>/<unique_name>/<uuid>/`` (or
+        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/`` for
+        versioned datasets).
+        """
+        save_dir = Path(save_dir)
+        save_path = self._save_path(save_dir)
         save_path.mkdir(parents=True, exist_ok=True)
-        warehouse_path = save_path.relative_to(self.dataset_metadata.local_data_directory_base)
+        warehouse_path = save_path.relative_to(save_dir)
         print(f"Saving curated container to {warehouse_path}")
 
         # Save dataset
@@ -225,6 +242,9 @@ class CuratedContainer:
             # backward compatibility for typo (FIXME: remove in the future)
             if "licence" in meta_data:
                 meta_data["license"] = meta_data.pop("licence")
+
+            # backward compatibility
+            meta_data.pop("local_data_directory_base", None)
 
             metadata_objs[meta_name] = adapter.validate_python(meta_data)
 

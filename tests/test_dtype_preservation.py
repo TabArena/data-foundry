@@ -20,7 +20,7 @@ from data_foundry.schema import (
 # ---------------------------------------------------------------------------
 
 
-def _make_metadata(tmp_path):
+def _make_metadata():
     """Return (dataset_metadata, task_metadata, splits_metadata) with target='target'."""
     dataset_metadata = DatasetMetadata(
         unique_name="dtype_test",
@@ -34,7 +34,6 @@ def _make_metadata(tmp_path):
         license=None,
         data_tags=["IID"],
         curation_comments=None,
-        local_data_directory_base=str(tmp_path),
     )
     task_metadata = PredictiveMLTaskMetadata(
         target_column_name="target",
@@ -50,7 +49,7 @@ def _make_metadata(tmp_path):
 
 def _round_trip(df: pd.DataFrame, tmp_path, *, as_test_dataset: bool = False) -> pd.DataFrame:
     """Save a CuratedContainer and load it back, returning the loaded DataFrame."""
-    dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+    dataset_metadata, task_metadata, splits_metadata = _make_metadata()
 
     if as_test_dataset:
         # Use a trivial main dataset so target column exists
@@ -62,7 +61,7 @@ def _round_trip(df: pd.DataFrame, tmp_path, *, as_test_dataset: bool = False) ->
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
         loaded = CuratedContainer.load(save_path, load_test_data=True)
         return loaded.test_dataset
     # Ensure the df has a 'target' column for the task metadata
@@ -75,7 +74,7 @@ def _round_trip(df: pd.DataFrame, tmp_path, *, as_test_dataset: bool = False) ->
         task_metadata=task_metadata,
         experiment_metadata=splits_metadata,
     )
-    save_path = container.save()
+    save_path = container.save(save_dir=tmp_path)
     loaded = CuratedContainer.load(save_path)
     return loaded.dataset
 
@@ -371,7 +370,7 @@ class TestTestDatasetDtypes:
 
     def test_test_dataset_load_via_load_test_dataset_method(self, tmp_path):
         """Dtypes and values should be preserved when using load_test_dataset() method."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         main_df = pd.DataFrame({"target": [0, 1, 0, 1], "x": [1, 2, 3, 4]})
         test_df = pd.DataFrame(
             {
@@ -386,7 +385,7 @@ class TestTestDatasetDtypes:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         loaded = CuratedContainer.load(save_path, load_test_data=False)
         assert loaded.test_dataset is None
@@ -403,7 +402,7 @@ class TestTestDatasetDtypes:
 class TestBackwardCompatibility:
     def test_load_without_dtypes_json(self, tmp_path, caplog):
         """Legacy saves without dtypes.json should load with a warning, no crash."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame(
             {
                 "a": pd.array([1, 2, 3, 4], dtype="Int64"),
@@ -416,7 +415,7 @@ class TestBackwardCompatibility:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         # Remove dtypes.json to simulate a legacy save
         dtypes_file = save_path / "dtypes.json"
@@ -431,7 +430,7 @@ class TestBackwardCompatibility:
 
     def test_load_test_dataset_without_test_dtypes_json(self, tmp_path, caplog):
         """Legacy saves without test_dtypes.json should load with a warning."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         main_df = pd.DataFrame({"target": [0, 1, 0, 1], "x": [1, 2, 3, 4]})
         test_df = pd.DataFrame({"a": pd.array([1, None, 3, 4], dtype="Int32"), "target": [0, 1, 0, 1]})
 
@@ -442,7 +441,7 @@ class TestBackwardCompatibility:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         # Remove test_dtypes.json
         test_dtypes_file = save_path / "test_dtypes.json"
@@ -457,7 +456,7 @@ class TestBackwardCompatibility:
 
     def test_dtypes_json_with_extra_column(self, tmp_path, caplog):
         """If dtypes.json mentions a column not in the DataFrame, warn and skip."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame({"a": [1, 2, 3, 4], "target": [0, 1, 0, 1]})
         container = CuratedContainer(
             dataset=df,
@@ -465,7 +464,7 @@ class TestBackwardCompatibility:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         # Add a fake column to dtypes.json
         dtypes_file = save_path / "dtypes.json"
@@ -483,7 +482,7 @@ class TestBackwardCompatibility:
 
     def test_dtypes_json_with_invalid_dtype(self, tmp_path, caplog):
         """If a dtype string is invalid/uncastable, warn and skip that column."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame({"a": ["hello", "world", "foo", "bar"], "target": [0, 1, 0, 1]})
         container = CuratedContainer(
             dataset=df,
@@ -491,7 +490,7 @@ class TestBackwardCompatibility:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         # Corrupt the dtype for column 'a'
         dtypes_file = save_path / "dtypes.json"
@@ -516,7 +515,7 @@ class TestBackwardCompatibility:
 class TestDtypesJsonFile:
     def test_dtypes_json_is_written(self, tmp_path):
         """The dtypes.json file should exist after save."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame({"a": [1, 2, 3, 4], "target": [0, 1, 0, 1]})
         container = CuratedContainer(
             dataset=df,
@@ -524,12 +523,12 @@ class TestDtypesJsonFile:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
         assert (save_path / "dtypes.json").exists()
 
     def test_dtypes_json_contents(self, tmp_path):
         """The dtypes.json should contain correct dtype strings."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame(
             {
                 "a": pd.array([1, 2, 3, 4], dtype="Int64"),
@@ -544,7 +543,7 @@ class TestDtypesJsonFile:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         with (save_path / "dtypes.json").open("r") as f:
             dtypes = json.load(f)
@@ -555,7 +554,7 @@ class TestDtypesJsonFile:
 
     def test_test_dtypes_json_is_written(self, tmp_path):
         """The test_dtypes.json file should exist after save when test_dataset is present."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         main_df = pd.DataFrame({"target": [0, 1, 0, 1], "x": [1, 2, 3, 4]})
         test_df = pd.DataFrame({"target": [0, 1, 0, 1], "x": [5, 6, 7, 8]})
         container = CuratedContainer(
@@ -565,12 +564,12 @@ class TestDtypesJsonFile:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
         assert (save_path / "test_dtypes.json").exists()
 
     def test_no_test_dtypes_json_when_no_test_dataset(self, tmp_path):
         """test_dtypes.json should NOT exist when there's no test_dataset."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame({"a": [1, 2, 3, 4], "target": [0, 1, 0, 1]})
         container = CuratedContainer(
             dataset=df,
@@ -578,7 +577,7 @@ class TestDtypesJsonFile:
             task_metadata=task_metadata,
             experiment_metadata=splits_metadata,
         )
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
         assert not (save_path / "test_dtypes.json").exists()
 
 
@@ -590,7 +589,7 @@ class TestDtypesJsonFile:
 class TestChecksumStability:
     def test_checksum_stable_after_round_trip(self, tmp_path):
         """Loading a saved container should produce the same checksum."""
-        dataset_metadata, task_metadata, splits_metadata = _make_metadata(tmp_path)
+        dataset_metadata, task_metadata, splits_metadata = _make_metadata()
         df = pd.DataFrame(
             {
                 "a": pd.array([1, None, 3, 4], dtype="Int64"),
@@ -605,7 +604,7 @@ class TestChecksumStability:
             experiment_metadata=splits_metadata,
         )
         original_checksum = container.checksum
-        save_path = container.save()
+        save_path = container.save(save_dir=tmp_path)
 
         loaded = CuratedContainer.load(save_path)
         recomputed_checksum = loaded._create_checksum()

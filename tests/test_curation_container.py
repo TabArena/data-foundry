@@ -39,7 +39,6 @@ def make_toy_objects(
         license=None,
         data_tags=["IID"],
         curation_comments=None,
-        local_data_directory_base=str(tmp_path),
     )
 
     task_metadata = PredictiveMLTaskMetadata(
@@ -67,7 +66,7 @@ def toy_test_dataset() -> pd.DataFrame:
 
 
 # --- Save / load round-trip ---
-def test_curated_container_save_load_checksum_and_files(make_toy_objects):
+def test_curated_container_save_load_checksum_and_files(make_toy_objects, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
 
     curated = CuratedContainer(
@@ -77,7 +76,7 @@ def test_curated_container_save_load_checksum_and_files(make_toy_objects):
         experiment_metadata=splits_metadata,
     )
 
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
     assert save_path.exists()
     assert save_path.is_dir()
 
@@ -112,7 +111,7 @@ def test_curated_container_save_load_checksum_and_files(make_toy_objects):
     assert loaded.experiment_metadata.splits == splits_metadata.splits
 
 
-def test_save_and_load_with_test_dataset(make_toy_objects, toy_test_dataset):
+def test_save_and_load_with_test_dataset(make_toy_objects, toy_test_dataset, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
         dataset=df,
@@ -122,7 +121,7 @@ def test_save_and_load_with_test_dataset(make_toy_objects, toy_test_dataset):
         experiment_metadata=splits_metadata,
     )
 
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
     assert (save_path / "test_dataset.parquet").exists()
 
     loaded = CuratedContainer.load(save_path, load_test_data=True)
@@ -141,6 +140,7 @@ def test_save_and_load_with_test_dataset(make_toy_objects, toy_test_dataset):
 def test_load_flags_behavior(
     make_toy_objects,
     toy_test_dataset,
+    tmp_path,
     load_dataset,
     load_test_data,
     expect_dataset_none,
@@ -154,7 +154,7 @@ def test_load_flags_behavior(
         task_metadata=task_metadata,
         experiment_metadata=splits_metadata,
     )
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
 
     loaded = CuratedContainer.load(
         save_path,
@@ -166,7 +166,7 @@ def test_load_flags_behavior(
     assert (loaded.test_dataset is None) is expect_test_none
 
 
-def test_load_test_dataset_uses_loaded_from_path(make_toy_objects, toy_test_dataset):
+def test_load_test_dataset_uses_loaded_from_path(make_toy_objects, toy_test_dataset, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
         dataset=df,
@@ -175,7 +175,7 @@ def test_load_test_dataset_uses_loaded_from_path(make_toy_objects, toy_test_data
         task_metadata=task_metadata,
         experiment_metadata=splits_metadata,
     )
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
 
     loaded = CuratedContainer.load(save_path, load_test_data=False)
     assert loaded.test_dataset is None
@@ -184,7 +184,7 @@ def test_load_test_dataset_uses_loaded_from_path(make_toy_objects, toy_test_data
     pdt.assert_frame_equal(got, toy_test_dataset)
 
 
-def test_load_test_dataset_raises_without_path_or_file(make_toy_objects):
+def test_load_test_dataset_raises_without_path_or_file(make_toy_objects, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
         dataset=df,
@@ -196,14 +196,14 @@ def test_load_test_dataset_raises_without_path_or_file(make_toy_objects):
     with pytest.raises(ValueError, match="Path must be provided"):
         curated.load_test_dataset()
 
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
     loaded = CuratedContainer.load(save_path)
     with pytest.raises(ValueError, match="does not include a test dataset"):
         loaded.load_test_dataset()
 
 
 # --- Backward compatibility ---
-def test_load_backward_compatible_licence_key(make_toy_objects):
+def test_load_backward_compatible_licence_key(make_toy_objects, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
         dataset=df,
@@ -211,7 +211,7 @@ def test_load_backward_compatible_licence_key(make_toy_objects):
         task_metadata=task_metadata,
         experiment_metadata=splits_metadata,
     )
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
 
     dataset_meta_file = save_path / f"dataset_metadata.{dataset_metadata.type_adapter_id}.json"
     with dataset_meta_file.open("r") as f:
@@ -350,7 +350,7 @@ def test_container_metadata_property(make_toy_objects):
     assert meta["version_comment"] is None
 
 
-def test_version_comment_saved_and_loaded(make_toy_objects):
+def test_version_comment_saved_and_loaded(make_toy_objects, tmp_path):
     df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
     curated = CuratedContainer(
         dataset=df,
@@ -359,7 +359,7 @@ def test_version_comment_saved_and_loaded(make_toy_objects):
         experiment_metadata=splits_metadata,
         version_comment="First stable release",
     )
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
     loaded = CuratedContainer.load(save_path)
     assert loaded.version_comment == "First stable release"
 
@@ -378,7 +378,6 @@ def test_versioned_save_path(tmp_path):
         license=None,
         data_tags=["IID"],
         curation_comments=None,
-        local_data_directory_base=str(tmp_path),
         version_from_unique_name="toy_base",
     )
     task_metadata = PredictiveMLTaskMetadata(
@@ -394,6 +393,6 @@ def test_versioned_save_path(tmp_path):
         task_metadata=task_metadata,
         experiment_metadata=splits_metadata,
     )
-    save_path = curated.save()
+    save_path = curated.save(save_dir=tmp_path)
     assert "versions" in str(save_path)
     assert save_path.exists()
