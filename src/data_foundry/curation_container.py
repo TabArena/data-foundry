@@ -92,6 +92,11 @@ class CuratedContainer:
 
     def _create_checksum(self) -> str:
         """Hex digest checksum across dataframe + all metadata, using pydantic dumping."""
+
+        # Ensure container is fully loaded before calculating checksum
+        if self.dataset is None:
+            raise ValueError("Dataset must be loaded to calculate checksum.")
+
         print("Calculating checksum for curated container...")
         h = hashlib.blake2b(digest_size=32)
         h.update(b"\0")
