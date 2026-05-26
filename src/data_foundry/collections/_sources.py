@@ -87,7 +87,18 @@ class HuggingFaceSource(DataSource):
     """The HF repo type; almost always ``"dataset"``."""
 
     def fetch(self, entry: CollectionEntry, cache_dir: Path) -> Path:
-        """Download only the files for ``entry`` (if not already cached) and return its directory."""
+        """Download only the files for ``entry`` (if not already cached) and return its directory.
+
+        Checks the local HF cache first and returns the existing path without
+        importing :mod:`huggingface_hub` when the files are already present.
+        The dependency is only required on a cache miss.
+        """
+        relative = entry.relative_path.as_posix()
+
+        cached = self._find_cached(cache_dir, relative)
+        if cached is not None:
+            return cached
+
         try:
             from huggingface_hub import snapshot_download
         except ImportError as exc:
@@ -96,7 +107,6 @@ class HuggingFaceSource(DataSource):
                 "Install with: pip install huggingface_hub",
             ) from exc
 
-        relative = entry.relative_path.as_posix()
         snapshot_path = snapshot_download(
             repo_id=self.repo_id,
             repo_type=self.repo_type,
@@ -105,3 +115,34 @@ class HuggingFaceSource(DataSource):
             allow_patterns=[f"{relative}/*"],
         )
         return Path(snapshot_path) / relative
+
+    def _find_cached(self, cache_dir: Path, relative: str) -> Path | None:
+        """Return the cached container directory if present, else ``None``.
+
+        Mirrors the on-disk layout used by ``huggingface_hub``:
+        ``<cache_dir>/<repo_type>s--<org>--<name>/snapshots/<sha>/<relative>``,
+        with branch/tag names resolved via the sibling ``refs/`` directory.
+        """
+        repo_folder = f"{self.repo_type}s--{self.repo_id.replace('/', '--')}"
+        repo_root = Path(cache_dir) / repo_folder
+        snapshots_dir = repo_root / "snapshots"
+        if not snapshots_dir.is_dir():
+            return None
+
+        if self.revision is not None:
+            direct = snapshots_dir / self.revision / relative
+            if direct.is_dir():
+                return direct
+            ref_file = repo_root / "refs" / self.revision
+            if ref_file.is_file():
+                sha = ref_file.read_text().strip()
+                candidate = snapshots_dir / sha / relative
+                if candidate.is_dir():
+                    return candidate
+            return None
+
+        for snapshot in snapshots_dir.iterdir():
+            candidate = snapshot / relative
+            if candidate.is_dir():
+                return candidate
+        return None

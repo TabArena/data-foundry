@@ -160,3 +160,131 @@ def test_beyond_arena_has_unique_uuids():
 def test_beyond_arena_has_versioned_entries():
     versioned = [e for e in BEYOND_ARENA if e.is_versioned]
     assert versioned, "expected at least one versioned entry in BEYOND_ARENA"
+
+
+# --- HuggingFaceSource caching ---
+def _make_hf_snapshot(cache_dir: Path, repo_id: str, sha: str, relative: str, *, ref: str | None = None) -> Path:
+    """Build a fake HF-style snapshot tree and return the container directory."""
+    repo_folder = cache_dir / f"datasets--{repo_id.replace('/', '--')}"
+    snapshot_dir = repo_folder / "snapshots" / sha / relative
+    snapshot_dir.mkdir(parents=True)
+    (snapshot_dir / "container_metadata.json").write_text("{}")
+    if ref is not None:
+        refs_dir = repo_folder / "refs"
+        refs_dir.mkdir(parents=True, exist_ok=True)
+        (refs_dir / ref).write_text(sha)
+    return snapshot_dir
+
+
+def test_find_cached_returns_none_when_cache_empty(tmp_path):
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") is None
+
+
+def test_find_cached_picks_any_snapshot_when_no_revision(tmp_path):
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_skips_snapshots_missing_the_entry(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="other/uuid")
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="def456", relative="name/uuid")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_uses_pinned_commit_revision(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="stale1", relative="name/uuid")
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="pinned", relative="name/uuid")
+    src = HuggingFaceSource(repo_id="org/repo", revision="pinned")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_resolves_revision_through_refs(tmp_path):
+    expected = _make_hf_snapshot(
+        tmp_path, "org/repo", sha="abc123", relative="name/uuid", ref="main",
+    )
+    src = HuggingFaceSource(repo_id="org/repo", revision="main")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_returns_none_when_pinned_revision_missing(tmp_path):
+    # Snapshot exists but under a different sha; pinned revision does not resolve.
+    _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
+    src = HuggingFaceSource(repo_id="org/repo", revision="not-cached")
+    assert src._find_cached(tmp_path, "name/uuid") is None
+
+
+def test_find_cached_repo_type_changes_folder_prefix(tmp_path):
+    repo_folder = tmp_path / "models--org--repo"
+    snapshot_dir = repo_folder / "snapshots" / "abc" / "name/uuid"
+    snapshot_dir.mkdir(parents=True)
+    src = HuggingFaceSource(repo_id="org/repo", repo_type="model")
+    assert src._find_cached(tmp_path, "name/uuid") == snapshot_dir
+
+
+def test_fetch_uses_cache_without_importing_huggingface_hub(tmp_path, monkeypatch):
+    """When the container is already on disk, fetch must not require huggingface_hub."""
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
+
+    # Block the import so any attempt to reach the HF code path would fail loudly.
+    import builtins
+    real_import = builtins.__import__
+
+    def blocked_import(name, *args, **kwargs):
+        if name == "huggingface_hub" or name.startswith("huggingface_hub."):
+            raise AssertionError(f"huggingface_hub should not be imported on cache hit (got {name!r})")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", blocked_import)
+
+    entry = CollectionEntry(unique_name="name", uuid="uuid")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src.fetch(entry, tmp_path) == expected
+
+
+def test_fetch_raises_import_error_on_cache_miss_without_hf(tmp_path, monkeypatch):
+    """Cache miss must surface the ImportError, not a confusing inner failure."""
+    import builtins
+    real_import = builtins.__import__
+
+    def blocked_import(name, *args, **kwargs):
+        if name == "huggingface_hub" or name.startswith("huggingface_hub."):
+            raise ImportError("simulated missing huggingface_hub")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", blocked_import)
+    # Also drop any already-imported copy so the import statement re-runs.
+    monkeypatch.delitem(__import__("sys").modules, "huggingface_hub", raising=False)
+
+    entry = CollectionEntry(unique_name="name", uuid="uuid")
+    src = HuggingFaceSource(repo_id="org/repo")
+    with pytest.raises(ImportError, match="huggingface_hub"):
+        src.fetch(entry, tmp_path)
+
+
+def test_fetch_falls_back_to_download_on_cache_miss(tmp_path, monkeypatch):
+    """When nothing is cached, fetch should call snapshot_download and return its path."""
+    import huggingface_hub
+
+    target = tmp_path / "downloaded" / "name" / "uuid"
+    target.mkdir(parents=True)
+    snapshot_root = tmp_path / "downloaded"
+    calls: list[dict] = []
+
+    def fake_snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(snapshot_root)
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", fake_snapshot_download)
+
+    entry = CollectionEntry(unique_name="name", uuid="uuid")
+    src = HuggingFaceSource(repo_id="org/repo", revision="v1")
+    result = src.fetch(entry, tmp_path)
+
+    assert result == target
+    assert len(calls) == 1
+    assert calls[0]["repo_id"] == "org/repo"
+    assert calls[0]["revision"] == "v1"
+    assert calls[0]["allow_patterns"] == ["name/uuid/*"]
