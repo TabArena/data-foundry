@@ -15,11 +15,7 @@ agent-facing brief on the codebase.
 # 2. Build sdist + wheel.
 uv build
 
-# 3. (Optional) sanity-check against TestPyPI first.
-uv publish --publish-url https://test.pypi.org/legacy/ --token "$TESTPYPI_TOKEN"
-pip install --index-url https://test.pypi.org/simple/ data-foundry==<version>
-
-# 4. Publish.
+# 3. Publish.
 uv publish --token "$PYPI_TOKEN"
 ```
 
