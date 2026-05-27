@@ -7,7 +7,7 @@
 
 ---
 
-**Data Foundry** is the data layer behind [BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena) and the next generation of [TabArena](https://tabarena.ai/) datasets. It provides:
+**Data Foundry** is the data layer behind the next generation of [TabArena](https://tabarena.ai/) datasets. It provides:
 
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
 - A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact in one notebook.
@@ -16,12 +16,30 @@
 ## ⚡ Quickstart
 
 > [!TIP]
-> The fastest way to look at a real curated container — no Hugging Face download required. The toy container ships inside the package.
+> Pull a real curated dataset from BeyondArena and inspect its full metadata + outer CV splits. The first call fetches from Hugging Face; subsequent calls hit your local cache.
 
 ```bash
 pip install data-foundry
 python examples/load_curated_container.py
 ```
+
+```python
+from data_foundry.collections import BEYOND_ARENA
+
+container = BEYOND_ARENA.get_dataset("airfoil_self_noise")
+print(container.describe())          # full identity + dtypes + task + splits
+print(container.dataset.shape)       # the actual DataFrame
+print(container.task_metadata.split_regime)  # "iid", "temporal_non_iid", or "grouped_non_iid"
+```
+
+That's the whole API surface in three lines. See [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py) for benchmarking Random Forest on the data! 
+
+## 🕹️ Use Cases
+
+<details>
+<summary><b>🧪 Inspect a curated container offline</b> — no Hugging Face download required</summary>
+
+The package ships a toy `CuratedContainer` so you can poke at the full API — schema, dtypes, splits, `describe()` — without touching the network. Identical interface to a downloaded BeyondArena container.
 
 ```python
 from data_foundry.curation_container import CuratedContainer
@@ -33,9 +51,9 @@ print(container.dataset.shape)       # the actual DataFrame
 print(container.task_metadata.split_regime)  # "iid", "temporal_non_iid", or "grouped_non_iid"
 ```
 
-That's the whole API surface in three lines. See [`examples/load_curated_container.py`](examples/load_curated_container.py) for the full inspection script.
+Full inspection script (every metadata field printed): [`examples/load_curated_container.py`](examples/load_curated_container.py).
 
-## 🕹️ Use Cases
+</details>
 
 <details>
 <summary><b>📦 Use one dataset</b> — IID and non-IID variants</summary>
@@ -276,7 +294,6 @@ gotchas, the `/new-dataset` Claude Code scaffolding skill): see
 ## 📄 Citation
 
 **PLACEHOLDER**
-Placeholderk*
 📄 [arXiv:XXXX](https://arxiv.org/abs/XXX)
 
 ```bibtex
