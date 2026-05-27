@@ -294,7 +294,6 @@ gotchas, the `/new-dataset` Claude Code scaffolding skill): see
 ## 📄 Citation
 
 **PLACEHOLDER**
-📄 [arXiv:XXXX](https://arxiv.org/abs/XXX)
 
 ```bibtex
 PLACEHOLDER
