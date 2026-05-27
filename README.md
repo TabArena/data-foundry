@@ -11,7 +11,7 @@
 
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
 - A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact in one notebook.
-- A **collections API** that pins ``(unique_name, uuid)`` pointers to immutable curated containers and resolves them against a local warehouse or directly against the [BeyondArena Hugging Face](https://huggingface.co/datasets/TabArena/BeyondArena) mirror.
+- A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena).
 
 ## ⚡ Quickstart
 
