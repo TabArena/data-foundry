@@ -49,6 +49,30 @@ in two situations:
   match the version in `pyproject.toml`, so the bump and the tag must
   agree.
 
+### Prereleases (no git tag)
+
+Two flavors, both publish to PyPI without creating a git tag, commit, or
+GitHub Release. The version is set only on the CI runner.
+
+**Automatic `.dev` builds on every push to `main`** —
+[`.github/workflows/dev-release.yaml`](.github/workflows/dev-release.yaml).
+Triggered via `workflow_run` after the `Tests` workflow succeeds. The
+version is computed as `<next-patch>.dev<UTC-timestamp>` (e.g.
+`0.0.4.dev20260528170102` when `pyproject.toml` is at `0.0.3`). This is
+the AutoGluon-style "every commit is on PyPI" pattern — install with:
+
+```bash
+pip install --pre data-foundry        # any prerelease
+pip install data-foundry==0.0.4.dev*  # a specific dev cycle
+```
+
+**Manual `alpha`/`beta`/`rc` from the Actions UI** —
+[`.github/workflows/prerelease.yaml`](.github/workflows/prerelease.yaml).
+Go to `Actions → Prerelease → Run workflow`, enter a PEP 440 prerelease
+version (e.g. `0.0.4a1`, `0.0.4b2`, `0.0.4rc1`), and it publishes that
+exact version. Stable `X.Y.Z` inputs are rejected — use the tag-push
+release flow for those.
+
 ### One-time setup
 
 * Add a `PYPI_TOKEN` secret in the GitHub `pypi` environment

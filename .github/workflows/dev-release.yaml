@@ -1,0 +1,60 @@
+name: Dev Release
+
+# AutoGluon-style: publish a `.devN` build to PyPI for every successful push
+# to `main`. No git tag, no commit, no GitHub Release — the version is
+# computed on the runner and exists only on PyPI.
+#
+# Gated on the Tests workflow succeeding for that commit, so a broken main
+# does not get published.
+
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  publish-dev:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # (future) PyPI trusted publishing via OIDC
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Compute .dev version
+        id: ver
+        run: |
+          base="$(uv version --short)"
+          if [[ ! "$base" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::pyproject version '$base' is not a plain X.Y.Z; refusing to derive a dev version"
+            exit 1
+          fi
+          IFS=. read -r major minor patch <<<"$base"
+          next="${major}.${minor}.$((patch + 1))"
+          # PEP 440: <next-release>.dev<UTC timestamp>. Sorts before <next-release>
+          # and after any prior release. Strictly monotonic across commits.
+          ts="$(date -u +%Y%m%d%H%M%S)"
+          version="${next}.dev${ts}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing dev version: $version (base $base, commit ${{ github.event.workflow_run.head_sha }})"
+
+      - name: Set version (ephemeral, not committed)
+        run: uv version "${{ steps.ver.outputs.version }}"
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish

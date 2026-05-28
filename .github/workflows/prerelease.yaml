@@ -1,0 +1,50 @@
+name: Prerelease
+
+# Publish a PEP 440 prerelease (alpha/beta/rc/dev) to PyPI WITHOUT creating a
+# git tag, commit, or GitHub Release. The version is set on the runner only;
+# nothing is pushed back to the repo.
+#
+# Trigger from the Actions UI:
+#   Actions -> Prerelease -> Run workflow -> enter version (e.g. 0.0.4a1)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Prerelease version (e.g. 0.0.4a1, 0.0.4b2, 0.0.4rc1, 0.0.4.dev3)"
+        required: true
+        type: string
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # (future) PyPI trusted publishing via OIDC
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Reject stable versions
+        run: |
+          v="${{ inputs.version }}"
+          if [[ ! "$v" =~ [a-z] ]]; then
+            echo "::error::'$v' has no prerelease segment. Use the Release workflow (push a v$v tag) for stable releases."
+            exit 1
+          fi
+
+      - name: Set version (ephemeral, not committed)
+        run: uv version "${{ inputs.version }}"
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish
