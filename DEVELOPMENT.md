@@ -23,11 +23,31 @@ What this triggers:
 
 1. Local script checks the working tree is clean and on `main`, bumps the
    version in `pyproject.toml` (via `uv version`), commits, creates an
-   annotated `vX.Y.Z` git tag, and pushes both to `origin`.
-2. The [`Release` workflow](.github/workflows/release.yaml) fires on the
-   pushed `v*` tag and runs `uv build` + `uv publish`, publishing the
-   sdist and wheel to PyPI and creating a GitHub Release with the
-   artifacts attached.
+   annotated `vX.Y.Z` git tag, and pushes both the commit and the tag.
+2. **Pushing the tag is what fires the release.** The
+   [`Release` workflow](.github/workflows/release.yaml) listens for
+   `push: tags: ['v*']`, so any `vX.Y.Z` tag that reaches GitHub kicks
+   off `uv build` + `uv publish` and creates a GitHub Release with the
+   sdist + wheel attached. The branch push on its own does nothing.
+
+### Re-triggering or releasing without the script
+
+Because the trigger is the tag push, you can drive the workflow by hand
+in two situations:
+
+* **Re-run a failed release** (e.g. PyPI auth blew up): go to
+  `Actions → Release → <failed run> → Re-run failed jobs`. No new tag,
+  no new commit — the workflow re-checks out the same tagged commit.
+* **Release without the script:** bump `pyproject.toml` manually, commit
+  on `main`, then:
+  ```bash
+  git tag -a vX.Y.Z -m "data-foundry X.Y.Z"
+  git push <remote> main
+  git push <remote> vX.Y.Z   # <- this line is what triggers the workflow
+  ```
+  The workflow's first step refuses to publish if the tag name doesn't
+  match the version in `pyproject.toml`, so the bump and the tag must
+  agree.
 
 ### One-time setup
 
