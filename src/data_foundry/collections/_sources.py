@@ -5,9 +5,11 @@ e.g. a Hugging Face dataset repo, an S3 bucket, or a directory you already
 have on disk. The collection asks the source to ``fetch`` an entry; the source
 returns a local path that :meth:`CuratedContainer.load` can read.
 
-Currently only :class:`HuggingFaceSource` is implemented, but the abstraction
-is designed so additional sources (URL/S3/local) can slot in without touching
-the rest of the package.
+Two sources ship with the package: :class:`HuggingFaceSource` (download from
+a Hub dataset repo) and :class:`LocalWarehouseSource` (point at a directory
+that already mirrors the warehouse layout). The abstraction is designed so
+additional sources (URL/S3/etc.) can slot in without touching the rest of
+the package.
 """
 
 from __future__ import annotations
@@ -115,6 +117,46 @@ class DataSource:
         call covering every entry) when their backend supports it.
         """
         return [self.fetch(e, cache_dir, force_download=force_download) for e in entries]
+
+
+@dataclass(frozen=True)
+class LocalWarehouseSource(DataSource):
+    """Source backed by a pre-populated local warehouse directory.
+
+    Use this when the curated containers already live on disk in the standard
+    warehouse layout (``<base_dir>/<unique_name>/[versions/]<uuid>/``) and no
+    download is required — e.g. a shared filesystem on a compute cluster, or a
+    locally-curated set of containers that has not been published to the Hub.
+
+    ``fetch`` is a no-op pointer lookup: it returns the entry's path under
+    ``base_dir`` (and validates that the directory exists). ``cache_dir`` and
+    ``force_download`` are ignored because nothing is cached or downloaded.
+    """
+
+    base_dir: Path
+    """Root of the local warehouse — the directory that contains
+    ``<unique_name>/`` subfolders."""
+
+    def fetch(
+        self,
+        entry: CollectionEntry,
+        cache_dir: Path,  # noqa: ARG002 — kept to match DataSource interface
+        *,
+        force_download: bool = False,  # noqa: ARG002 — same reason
+    ) -> Path:
+        """Return the on-disk path for ``entry`` under :attr:`base_dir`.
+
+        Raises ``FileNotFoundError`` if the container directory is missing.
+        ``cache_dir`` and ``force_download`` are ignored.
+        """
+        path = entry.local_path(self.base_dir)
+        if not path.is_dir():
+            raise FileNotFoundError(
+                f"No curated container at {path}. Expected a directory "
+                f"matching entry {entry.relative_path.as_posix()!r} under the "
+                f"local warehouse {self.base_dir!s}.",
+            )
+        return path
 
 
 @dataclass(frozen=True)

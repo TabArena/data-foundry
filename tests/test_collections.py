@@ -11,6 +11,7 @@ from data_foundry.collections import (
     DataSource,
     DatasetCollection,
     HuggingFaceSource,
+    LocalWarehouseSource,
     clear_cache,
     get_collection,
     list_collections,
@@ -560,3 +561,59 @@ def test_dataset_collection_clear_cache_targets_own_subdir(tmp_path):
     removed = coll.clear_cache(cache_dir=tmp_path)
     assert removed == target
     assert not target.exists()
+
+
+# --- LocalWarehouseSource ---
+def test_local_warehouse_source_returns_entry_path(tmp_path):
+    container_dir = tmp_path / "a" / "uuid-a"
+    container_dir.mkdir(parents=True)
+    src = LocalWarehouseSource(base_dir=tmp_path)
+    entry = CollectionEntry.from_relative_path("a/uuid-a")
+    # cache_dir is ignored — pass anything.
+    assert src.fetch(entry, tmp_path / "ignored-cache") == container_dir
+
+
+def test_local_warehouse_source_handles_versioned_entry(tmp_path):
+    container_dir = tmp_path / "a" / "versions" / "uuid-a"
+    container_dir.mkdir(parents=True)
+    src = LocalWarehouseSource(base_dir=tmp_path)
+    entry = CollectionEntry.from_relative_path("a/versions/uuid-a")
+    assert src.fetch(entry, tmp_path) == container_dir
+
+
+def test_local_warehouse_source_missing_entry_raises(tmp_path):
+    src = LocalWarehouseSource(base_dir=tmp_path)
+    entry = CollectionEntry.from_relative_path("a/uuid-a")
+    with pytest.raises(FileNotFoundError, match="No curated container at"):
+        src.fetch(entry, tmp_path)
+
+
+def test_local_warehouse_source_force_download_is_noop(tmp_path):
+    container_dir = tmp_path / "a" / "uuid-a"
+    container_dir.mkdir(parents=True)
+    src = LocalWarehouseSource(base_dir=tmp_path)
+    entry = CollectionEntry.from_relative_path("a/uuid-a")
+    # force_download must not change behavior — nothing to re-download.
+    assert src.fetch(entry, tmp_path, force_download=True) == container_dir
+
+
+def test_local_warehouse_collection_loads_via_get_dataset(tmp_path):
+    """End-to-end: build a collection with LocalWarehouseSource and load a container."""
+    from data_foundry.examples import get_toy_container_path
+
+    # Mirror the toy container under a fake warehouse layout.
+    toy = get_toy_container_path()
+    base_dir = tmp_path / "warehouse"
+    entry_dir = base_dir / "toy" / "uuid-toy"
+    entry_dir.mkdir(parents=True)
+    for f in toy.iterdir():
+        (entry_dir / f.name).write_bytes(f.read_bytes())
+
+    coll = DatasetCollection.from_relative_paths(
+        name="local-coll",
+        description="x",
+        relative_paths=["toy/uuid-toy"],
+        source=LocalWarehouseSource(base_dir=base_dir),
+    )
+    container = coll.get_dataset("toy")
+    assert container.dataset is not None

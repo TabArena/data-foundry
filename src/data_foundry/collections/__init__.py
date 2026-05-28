@@ -14,6 +14,7 @@ from data_foundry.collections._sources import (
     DEFAULT_CACHE_DIR,
     DataSource,
     HuggingFaceSource,
+    LocalWarehouseSource,
     clear_cache,
     resolve_cache_dir,
 )
@@ -26,6 +27,7 @@ __all__ = [
     "DataSource",
     "DatasetCollection",
     "HuggingFaceSource",
+    "LocalWarehouseSource",
     "clear_cache",
     "get_collection",
     "list_collections",
