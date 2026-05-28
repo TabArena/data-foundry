@@ -85,7 +85,10 @@ fi
 
 # 3. Commit + tag.
 git add pyproject.toml
-[[ -f uv.lock ]] && git add uv.lock
+# Only stage uv.lock if it's already tracked (it's gitignored in this repo).
+if git ls-files --error-unmatch uv.lock >/dev/null 2>&1; then
+    git add uv.lock
+fi
 git commit -m "release: $new_version"
 git tag -a "$tag" -m "data-foundry $new_version"
 
