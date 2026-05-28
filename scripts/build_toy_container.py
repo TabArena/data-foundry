@@ -29,6 +29,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 TOY_BASE_DIR = REPO_ROOT / "src" / "data_foundry" / "examples" / "toy_container"
 
 
+TOY_EXTRA_FILENAME: str = "toy_extra.parquet"
+"""File name of the toy extra-artifact shipped next to the toy container."""
+
+
 def make_toy_dataframe(n_rows: int = 200, rng_seed: int = 0) -> pd.DataFrame:
     """Tiny synthetic binary-classification dataset with a few dtype flavours."""
     rng = np.random.default_rng(rng_seed)
@@ -44,6 +48,19 @@ def make_toy_dataframe(n_rows: int = 200, rng_seed: int = 0) -> pd.DataFrame:
             "feat_cat": x_cat,
             "target": target,
         },
+    )
+
+
+def make_toy_extra(n_rows: int = 8, n_cols: int = 4, rng_seed: int = 1) -> pd.DataFrame:
+    """Toy extra-artifact parquet — random floats with an arbitrary ``key`` index.
+
+    Stands in for any producer-defined sidecar (e.g. an embedding cache) shipped
+    alongside the six core container files.
+    """
+    rng = np.random.default_rng(rng_seed)
+    return pd.DataFrame(
+        rng.normal(size=(n_rows, n_cols)).astype("float32"),
+        index=pd.Index([f"row_{i}" for i in range(n_rows)], name="key"),
     )
 
 
@@ -104,6 +121,10 @@ def main() -> None:
         version_comment="v1 — initial toy container.",
     )
     save_path = container.save(save_dir=TOY_BASE_DIR)
+
+    extra = make_toy_extra()
+    extra.to_parquet(save_path / TOY_EXTRA_FILENAME)
+
     print(f"Toy container saved to {save_path}")
 
 

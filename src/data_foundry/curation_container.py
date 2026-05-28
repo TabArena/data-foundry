@@ -5,6 +5,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import ClassVar
 
 import pandas as pd
 from pydantic import TypeAdapter
@@ -34,6 +35,16 @@ NoIndentMetadata = [
 @dataclass
 class CuratedContainer:
     """Schema for a collection of curated items, ready to be used by others."""
+
+    _RESERVED_EXTRA_FILENAMES: ClassVar[frozenset[str]] = frozenset(
+        {
+            "dataset.parquet",
+            "dtypes.json",
+            "test_dataset.parquet",
+            "test_dtypes.json",
+            "container_metadata.json",
+        }
+    )
 
     dataset: pd.DataFrame
     """The curated dataset as a pandas DataFrame."""
@@ -134,10 +145,7 @@ class CuratedContainer:
         numeric_cols = feature_df.select_dtypes(include=["number"], exclude=["bool"]).columns
         categorical_cols = feature_df.select_dtypes(include=["category", "bool"]).columns
         datetime_cols = list(feature_df.select_dtypes(include=["datetime", "datetimetz"]).columns)
-        datetime_cols += [
-            c for c in feature_df.columns
-            if isinstance(feature_df[c].dtype, pd.PeriodDtype)
-        ]
+        datetime_cols += [c for c in feature_df.columns if isinstance(feature_df[c].dtype, pd.PeriodDtype)]
         text_cols = feature_df.select_dtypes(include=["string"]).columns
 
         return {
@@ -160,12 +168,14 @@ class CuratedContainer:
         checksum_short = (
             (self.checksum or "")[:16] + "…" if self.checksum and len(self.checksum) > 16 else self.checksum
         )
-        return "\n".join([
-            "CuratedContainer:",
-            f"  unique_name:   {self.dataset_metadata.unique_name}",
-            f"  uuid:          {uuid_short}",
-            f"  checksum:      {checksum_short}",
-        ])
+        return "\n".join(
+            [
+                "CuratedContainer:",
+                f"  unique_name:   {self.dataset_metadata.unique_name}",
+                f"  uuid:          {uuid_short}",
+                f"  checksum:      {checksum_short}",
+            ]
+        )
 
     def describe_dataset(self) -> str:
         """Return the DataFrame summary: shape and feature-dtype counts.
@@ -179,16 +189,18 @@ class CuratedContainer:
 
         counts = self._feature_dtype_counts()
         target = self.task_metadata.target_column_name
-        return "\n".join([
-            "Dataset:",
-            f"  shape:         {self.dataset.shape}",
-            f"  feature dtypes ({counts['n_features']} features, excluding target `{target}`):",
-            f"    numeric:     {counts['numeric']}",
-            f"    categorical: {counts['categorical']}",
-            f"    datetime:    {counts['datetime']}",
-            f"    text:        {counts['text']}",
-            f"    binary:      {counts['binary']}",
-        ])
+        return "\n".join(
+            [
+                "Dataset:",
+                f"  shape:         {self.dataset.shape}",
+                f"  feature dtypes ({counts['n_features']} features, excluding target `{target}`):",
+                f"    numeric:     {counts['numeric']}",
+                f"    categorical: {counts['categorical']}",
+                f"    datetime:    {counts['datetime']}",
+                f"    text:        {counts['text']}",
+                f"    binary:      {counts['binary']}",
+            ]
+        )
 
     def describe(self) -> str:
         """Return a high-level summary of the container.
@@ -197,17 +209,19 @@ class CuratedContainer:
         (shape + dtype counts), and the per-section :meth:`describe` outputs
         of the dataset, task, and experiment metadata objects.
         """
-        return "\n".join([
-            self.describe_container(),
-            "",
-            self.describe_dataset(),
-            "",
-            self.dataset_metadata.describe(),
-            "",
-            self.task_metadata.describe(),
-            "",
-            self.experiment_metadata.describe(),
-        ])
+        return "\n".join(
+            [
+                self.describe_container(),
+                "",
+                self.describe_dataset(),
+                "",
+                self.dataset_metadata.describe(),
+                "",
+                self.task_metadata.describe(),
+                "",
+                self.experiment_metadata.describe(),
+            ]
+        )
 
     @staticmethod
     def _save_dtypes(df: pd.DataFrame, path: Path) -> None:
@@ -366,3 +380,71 @@ class CuratedContainer:
             loaded_from_path=path,
             **container_metadata,
         )
+
+
+    # --- Extra (non-core) artifacts ---------------------------------------------------
+    def _resolve_extras_dir(self, path: Path | str | None) -> Path:
+        """Return the directory to look for extra artifacts in.
+
+        Falls back to ``loaded_from_path`` if ``path`` is omitted.
+        """
+        if path is not None:
+            return Path(path)
+        if self.loaded_from_path is not None:
+            return self.loaded_from_path
+        raise ValueError(
+            "Container has no `loaded_from_path` — pass `path=...` to locate extra files.",
+        )
+
+    def extra_file_path(self, filename: str, *, path: Path | str | None = None) -> Path:
+        """Resolve the path of an extra artifact alongside the container.
+
+        Extra artifacts are any files a producer ships in the container directory beyond
+        the six core files (``dataset.parquet``, ``dtypes.json``, ``container_metadata.json``
+        and the three ``*.{type_id}.json`` metadata files) and the optional test-dataset pair.
+        Data Foundry does not interpret their contents — it only resolves the path so callers
+        can load them however they need (e.g. ``pd.read_parquet``, ``json.load``, ``np.load``).
+
+        The returned path is not guaranteed to exist — use :meth:`has_extra_file` first.
+        ``filename`` must be a bare file name (no directory separators).
+        """
+        if not filename or "/" in filename or "\\" in filename or filename in {".", ".."}:
+            raise ValueError(f"Extra filename must be a bare file name, got {filename!r}.")
+        if filename in self._RESERVED_EXTRA_FILENAMES:
+            raise ValueError(
+                f"{filename!r} is a core container file; use the dedicated load API instead "
+                "(e.g. `CuratedContainer.load(...)` or `load_test_dataset()`).",
+            )
+        return self._resolve_extras_dir(path) / filename
+
+    def has_extra_file(self, filename: str, *, path: Path | str | None = None) -> bool:
+        """Return whether an extra artifact named ``filename`` exists next to the container."""
+        try:
+            return self.extra_file_path(filename, path=path).is_file()
+        except ValueError:
+            return False
+
+    def list_extra_files(self, *, path: Path | str | None = None) -> list[str]:
+        """Return the sorted list of extra-artifact file names present next to the container.
+
+        Excludes the core six files and the optional test-dataset pair. Metadata JSON files
+        (``<name>.<type_id>.json`` — two dots before ``.json``) are also excluded.
+        Returns ``[]`` if the directory does not exist or holds no extras.
+        """
+        try:
+            base = self._resolve_extras_dir(path)
+        except ValueError:
+            return []
+        if not base.is_dir():
+            return []
+        extras: list[str] = []
+        for entry in sorted(base.iterdir()):
+            if not entry.is_file():
+                continue
+            name = entry.name
+            if name in self._RESERVED_EXTRA_FILENAMES:
+                continue
+            if name.endswith(".json") and name.count(".") >= 2:
+                continue
+            extras.append(name)
+        return extras

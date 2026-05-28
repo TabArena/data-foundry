@@ -26,3 +26,12 @@ def test_load_toy_container_round_trip():
     assert container.task_metadata.target_column_name in container.dataset.columns
     # Checksum must be stable after a load.
     assert container.checksum == container._create_checksum()
+
+
+def test_toy_container_ships_extra_file():
+    container = load_toy_container()
+    extras = container.list_extra_files()
+    assert "toy_extra.parquet" in extras
+    assert container.has_extra_file("toy_extra.parquet") is True
+    resolved = container.extra_file_path("toy_extra.parquet")
+    assert resolved.is_file()

@@ -16,9 +16,7 @@ from data_foundry.schema import (
 @pytest.fixture
 def make_toy_objects(
     tmp_path,
-) -> tuple[
-    pd.DataFrame, DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata
-]:
+) -> tuple[pd.DataFrame, DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata]:
     df = pd.DataFrame(
         {
             "customer_ID": [1, 2, 3, 4],
@@ -362,6 +360,120 @@ def test_version_comment_saved_and_loaded(make_toy_objects, tmp_path):
     save_path = curated.save(save_dir=tmp_path)
     loaded = CuratedContainer.load(save_path)
     assert loaded.version_comment == "First stable release"
+
+
+# --- Extra (non-core) artifacts ---
+def _save_curated(make_toy_objects, tmp_path):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    return curated.save(save_dir=tmp_path)
+
+
+def test_extra_file_path_resolves_against_loaded_from_path(make_toy_objects, tmp_path):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    (save_path / "sidecar.bin").write_bytes(b"hello")
+
+    loaded = CuratedContainer.load(save_path)
+    resolved = loaded.extra_file_path("sidecar.bin")
+    assert resolved == save_path / "sidecar.bin"
+    assert resolved.read_bytes() == b"hello"
+
+
+def test_extra_file_path_accepts_explicit_path(make_toy_objects, tmp_path):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    (save_path / "doc.txt").write_text("readme")
+    loaded = CuratedContainer.load(save_path)
+
+    other_dir = tmp_path / "other"
+    other_dir.mkdir()
+    (other_dir / "doc.txt").write_text("other-readme")
+    assert loaded.extra_file_path("doc.txt", path=other_dir).read_text() == "other-readme"
+
+
+def test_extra_file_path_requires_path_when_unbound(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    with pytest.raises(ValueError, match="loaded_from_path"):
+        curated.extra_file_path("anything.bin")
+
+
+@pytest.mark.parametrize("bad", ["", ".", "..", "sub/dir.bin", "back\\slash.bin"])
+def test_extra_file_path_rejects_non_bare_names(make_toy_objects, tmp_path, bad):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    loaded = CuratedContainer.load(save_path)
+    with pytest.raises(ValueError, match="bare file name"):
+        loaded.extra_file_path(bad)
+
+
+@pytest.mark.parametrize(
+    "reserved",
+    [
+        "dataset.parquet",
+        "dtypes.json",
+        "test_dataset.parquet",
+        "test_dtypes.json",
+        "container_metadata.json",
+    ],
+)
+def test_extra_file_path_rejects_reserved_names(make_toy_objects, tmp_path, reserved):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    loaded = CuratedContainer.load(save_path)
+    with pytest.raises(ValueError, match="core container file"):
+        loaded.extra_file_path(reserved)
+
+
+def test_has_extra_file_true_only_when_present(make_toy_objects, tmp_path):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    loaded = CuratedContainer.load(save_path)
+    assert loaded.has_extra_file("absent.bin") is False
+    (save_path / "absent.bin").write_bytes(b"x")
+    assert loaded.has_extra_file("absent.bin") is True
+
+
+def test_has_extra_file_returns_false_for_invalid_names(make_toy_objects, tmp_path):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    loaded = CuratedContainer.load(save_path)
+    assert loaded.has_extra_file("") is False
+    assert loaded.has_extra_file("sub/dir.bin") is False
+    assert loaded.has_extra_file("dataset.parquet") is False
+
+
+def test_list_extra_files_excludes_core_and_metadata(make_toy_objects, tmp_path):
+    save_path = _save_curated(make_toy_objects, tmp_path)
+    (save_path / "extra_a.parquet").write_bytes(b"")
+    (save_path / "extra_b.txt").write_text("hi")
+    loaded = CuratedContainer.load(save_path)
+
+    extras = loaded.list_extra_files()
+    assert extras == ["extra_a.parquet", "extra_b.txt"]
+    for core in [
+        "dataset.parquet",
+        "dtypes.json",
+        "container_metadata.json",
+    ]:
+        assert core not in extras
+    assert not any(name.endswith(".json") and name.count(".") >= 2 for name in extras)
+
+
+def test_list_extra_files_empty_when_no_path(make_toy_objects):
+    df, dataset_metadata, task_metadata, splits_metadata = make_toy_objects
+    curated = CuratedContainer(
+        dataset=df,
+        dataset_metadata=dataset_metadata,
+        task_metadata=task_metadata,
+        experiment_metadata=splits_metadata,
+    )
+    assert curated.list_extra_files() == []
 
 
 def test_versioned_save_path(tmp_path):
