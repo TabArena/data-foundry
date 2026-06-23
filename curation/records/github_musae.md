@@ -16,11 +16,6 @@ domain: Multimedia (from non-tabular modalities)
 required_split:
 - Random (IID)
 problem_type: Binary Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 source_links:
 - https://archive.ics.uci.edu/dataset/588/github+musae
 - 10.24432/C5Z02B

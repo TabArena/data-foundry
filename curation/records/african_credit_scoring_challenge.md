@@ -10,11 +10,10 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: Zindi
+original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/african-credit-scoring-challenge/data
 source_row: 879
-needs_review:
-- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -16,11 +16,6 @@ domain: education
 required_split:
 - Temporal (NON-IID)
 problem_type: TBD
-usable_task_type: '?'
-given_task_type:
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/datasets/ramazanizci/turkish-university-admissions

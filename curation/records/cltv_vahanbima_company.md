@@ -16,11 +16,6 @@ domain: insurance
 required_split:
 - Random (IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/shibumohapatra/customer-life-time-value?utm_source=chatgpt.com&select=train_BRCpofr.csv

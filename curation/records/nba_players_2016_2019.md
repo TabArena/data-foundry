@@ -14,12 +14,6 @@ domain: Other
 required_split:
 - '?'
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/davra98/nba-players-20162019

@@ -10,179 +10,593 @@
   :root { --bg:#f7f7f8; --bar:#202b3b; --accent:#2d6cdf; }
   * { box-sizing: border-box; }
   body { margin:0; font:13px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:#1c2433; }
-  #bar { background:var(--bar); color:#fff; padding:8px 12px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  #bar b { font-size:14px; }
-  #bar .stat { opacity:.85; font-size:12px; }
-  #bar input[type=text] { padding:5px 8px; border:0; border-radius:5px; min-width:240px; }
-  #bar label { font-size:12px; opacity:.9; display:flex; align-items:center; gap:5px; cursor:pointer; }
-  #bar button { background:var(--accent); color:#fff; border:0; padding:5px 10px; border-radius:5px; cursor:pointer; }
+  #bar { background:linear-gradient(90deg,#1b2738,#26374f); color:#fff; padding:9px 16px; display:flex; align-items:center; gap:16px; }
+  #bar .brand { display:flex; align-items:center; gap:10px; }
+  #bar .brand .logo { background:#3b6fe0; color:#fff; font-weight:800; font-size:13px; border-radius:7px; padding:5px 7px; letter-spacing:.5px; }
+  #bar .brand .t { font-weight:700; font-size:15px; }
+  #bar .brand .s { font-size:10.5px; opacity:.6; margin-top:-1px; text-transform:uppercase; letter-spacing:.06em; }
+  #bar .guide-btn { color:#fff; text-decoration:none; font-size:13px; border:1px solid #ffffff2e; background:#ffffff12; padding:6px 11px; border-radius:8px; white-space:nowrap; }
+  #bar .guide-btn:hover { border-color:#ffffff70; }
+  #bar .search-wrap { flex:1; max-width:520px; }
+  #bar .search-wrap input { width:100%; padding:7px 11px; border:1px solid #ffffff26; border-radius:8px; background:#ffffff14; color:#fff; font-size:13px; }
+  #bar .search-wrap input::placeholder { color:#ffffff80; }
+  #bar .hint { font-size:11px; opacity:.55; white-space:nowrap; }
+  /* status filter menu (opened from the leftmost column header) */
+  .stmenu { color:#7e8794; font-size:11px; cursor:pointer; }
+  #statusMenu { position:fixed; display:none; background:#fff; border:1px solid #d6dbe2; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.18); z-index:130; padding:5px; min-width:210px; }
+  #statusMenu.show { display:block; }
+  #statusMenu .smi { display:flex; align-items:center; gap:9px; padding:6px 9px; border-radius:6px; cursor:pointer; font-size:13px; color:#27313f; }
+  #statusMenu .smi:hover { background:#eef4ff; }
+  #statusMenu .smi.active { background:#e0e7ff; font-weight:600; }
+  #statusMenu .smk { width:22px; height:20px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex:none; }
+  #bar .pills { margin-left:auto; display:flex; gap:10px; }
+  .pill { display:flex; align-items:baseline; gap:7px; border:1px solid #ffffff2e; background:#ffffff12; color:#fff; border-radius:9px; padding:6px 13px; cursor:pointer; transition:background .12s,border-color .12s; }
+  .pill .n { font-size:16px; font-weight:800; }
+  .pill .l { font-size:10.5px; opacity:.8; text-transform:uppercase; letter-spacing:.05em; }
+  .pill:hover { border-color:#ffffff70; }
+  .pill.df.active { background:#15803d; border-color:#22c55e; }
+  .pill.rev.active { background:#b91c1c; border-color:#ef4444; }
+  /* disagreement: always purple-filled so it stands out as a flag */
+  .pill.dis { background:#7c3aed; border-color:#a78bfa; padding:6px 16px; }
+  .pill.dis .n { font-size:17px; }
+  .pill.dis:hover { border-color:#ede9fe; }
+  .pill.dis.active { background:#6d28d9; box-shadow:0 0 0 2px rgba(167,139,250,.5); }
   #toast { position:fixed; bottom:14px; right:14px; background:#143; color:#fff; padding:8px 12px; border-radius:6px;
-           opacity:0; transition:opacity .25s; pointer-events:none; z-index:50; }
+           opacity:0; transition:opacity .25s; pointer-events:none; z-index:120; }
   #toast.err { background:#922; }
   #toast.show { opacity:.97; }
-  .chip { display:inline-block; background:#e6edff; color:#23408e; border-radius:10px; padding:1px 7px; margin:1px 2px; font-size:11px; }
-  .chip.warn { background:#ffe3e3; color:#9a2121; }
+  .chip { display:inline-block; border-radius:10px; padding:1px 8px; margin:1px 2px; font-size:11px; white-space:nowrap; }
+  .opt-sw { display:inline-block; width:11px; height:11px; border-radius:3px; border:1px solid; margin-right:7px; vertical-align:-1px; }
+  .tabulator-edit-list-item.active { background:#2d6cdf !important; color:#fff !important; font-weight:600; }
+  /* obvious "add option" button in dropdown headers */
+  .addopt { cursor:pointer; display:inline-block; color:#fff; background:#3b6fe0; font-weight:800;
+            font-size:13px; line-height:17px; min-width:18px; height:18px; text-align:center; padding:0 4px;
+            border-radius:5px; margin-left:5px; box-shadow:0 1px 2px rgba(0,0,0,.2); vertical-align:middle; }
+  .addopt:hover { background:#234fb0; transform:translateY(-1px); }
+  .more-cell { cursor:pointer; }
+  .more-empty { color:#aaadb5; font-style:italic; }
   a.src { color:var(--accent); text-decoration:none; }
-  .tabulator-row.tabulator-row-even { background:#fff; }
-  .row-yes { background:#eafaef !important; }
-  .row-suspended { background:#fff5e6 !important; }
-  .row-wip { background:#eef3ff !important; }
-  .tabulator-cell { white-space:pre-wrap; }
+  /* table polish: light header, zebra rows, thin borders, generous padding */
+  .tabulator { border:1px solid #e2e6ec; background:#fff; }
+  .tabulator .tabulator-header { background:#eef1f5; border-bottom:1px solid #d6dbe2; }
+  .tabulator .tabulator-header .tabulator-col { background:transparent; border-right:1px solid #e1e5eb; }
+  .tabulator .tabulator-header .tabulator-col .tabulator-col-title { font-weight:600; color:#39424f; white-space:normal; line-height:1.2; }
+  /* dropdown affordance: a faint ▾ that appears on cell hover (empty cells still look empty) */
+  .tabulator-cell.dd-cell { position:relative; }
+  .tabulator-cell.dd-cell::after { content:"▾"; position:absolute; right:5px; top:50%; transform:translateY(-50%); color:#98a2b3; font-size:11px; opacity:0; transition:opacity .12s; pointer-events:none; }
+  .tabulator-cell.dd-cell:hover::after { opacity:.85; }
+  .tabulator-row { background:#fff; border-bottom:1px solid #eef1f4; }
+  .tabulator-row.r-even { background:#f6f8fb; }
+  .tabulator-row:hover { background:#eaf1ff; }
+  /* non-frozen cells are transparent (show row bg); frozen cells use the theme's
+     background-color:inherit, so they pick up zebra + hover from the row automatically. */
+  .tabulator-cell { white-space:pre-wrap; background-color:transparent; border-right:1px solid #eef1f4; padding:5px 9px; color:#27313f; }
+  .st { font-weight:800; font-size:13px; line-height:1; }
+  .pin { cursor:pointer; opacity:.2; transition:opacity .12s; }
+  .tabulator-row:hover .pin { opacity:.55; }
+  .pin.on { opacity:1; }
+  .tabulator-row.pinned .tabulator-cell.pincol { box-shadow: inset 3px 0 0 #f59e0b; }
+  .tabulator-cell.single-line { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tabulator-cell.wrap-cell { white-space:normal !important; height:auto; line-height:1.7; }
+  /* modal */
+  #overlay { position:fixed; inset:0; background:rgba(20,26,38,.45); display:none; z-index:100; }
+  #overlay.show { display:block; }
+  #modal { position:absolute; top:0; right:0; height:100%; width:520px; max-width:92vw; background:#fff;
+           box-shadow:-4px 0 18px rgba(0,0,0,.2); display:flex; flex-direction:column; }
+  #modal header { padding:12px 16px; background:var(--bar); color:#fff; display:flex; justify-content:space-between; align-items:center; }
+  #modal header .sub { font-size:12px; opacity:.8; }
+  #modal .body { padding:12px 16px; overflow:auto; }
+  #modal .field { margin-bottom:16px; }
+  #modal .field h4 { margin:0 0 6px; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#555; }
+  #modal .opts { display:flex; flex-wrap:wrap; gap:4px; }
+  .opt { cursor:pointer; border-radius:11px; padding:2px 9px; font-size:12px; border:2px solid transparent; opacity:.55; user-select:none; }
+  .opt.sel { opacity:1; border-color:#33415580; font-weight:600; }
+  .addrow { margin-top:6px; display:flex; gap:5px; }
+  .addrow input { flex:1; padding:4px 7px; border:1px solid #ccd; border-radius:5px; font-size:12px; }
+  .addrow button { border:0; background:#e6edff; color:#23408e; border-radius:5px; padding:3px 9px; cursor:pointer; font-size:12px; }
+  #modal button.close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
 </style>
 </head>
 <body>
 <div id="bar">
-  <b>Data Foundry · Curation</b>
-  <span class="stat" id="count"></span>
-  <input type="text" id="search" placeholder="Search name / comments / links …" />
-  <label><input type="checkbox" id="reviewOnly" /> needs review only</label>
-  <label><input type="checkbox" id="dfOnly" /> Data Foundry only</label>
-  <button id="dl">Export CSV</button>
-  <span class="stat">edits autosave to <code>curation/records/&lt;name&gt;.md</code></span>
+  <div class="brand"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></div>
+  <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
+  <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
+  <span class="hint" id="count"></span>
+  <div class="pills">
+    <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
+    <button class="pill rev" id="pillRev" title="Filter: datasets needing review"><span class="n" id="revN">0</span><span class="l">Review needed</span></button>
+    <button class="pill dis" id="pillDis" title="Filter: disagreements to resolve"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
+  </div>
 </div>
 <div id="grid"></div>
 <div id="toast"></div>
+<div id="statusMenu"></div>
+
+<div id="overlay">
+  <div id="modal">
+    <header>
+      <div><div id="m-title"></div><div class="sub" id="m-sub"></div></div>
+      <button class="close" id="m-close" title="Close">×</button>
+    </header>
+    <div class="body" id="m-body"></div>
+  </div>
+</div>
 
 <script>
-let SCHEMA, VOCAB, FIELDS, BY_NAME, table;
+// ----------------------------------------------------------------------------
+// Mode. The same page powers the live local dashboard (read/write against the
+// Python server) and the public, read-only static build for GitHub Pages. The
+// static build injects `window.DF_STATIC = true` ahead of this script; in that
+// mode the two reads come from sibling JSON files and every write path / editing
+// affordance is dropped (view, search, sort, filter, pin still work entirely
+// client-side).
+const STATIC = !!window.DF_STATIC;
+const SCHEMA_URL = STATIC ? "./schema.json" : "/api/schema";
+const RECORDS_URL = STATIC ? "./records.json" : "/api/records";
+
+// ----------------------------------------------------------------------------
+// Layout config — tweak freely.
+const PRIMARY = [
+  "checked_by", "unique_name", "data_foundry_status", "suggestion", "decision_markers", "tags",
+  "name", "source_links", "comments", "year", "domain", "reference",
+];
+const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
+const HIDDEN = new Set(["data_modality", "usable_task_type", "given_task_type"]);
+const FROZEN = new Set(["_status", "checked_by", "unique_name"]);
+const YEARS = Array.from({ length: 2027 - 1950 + 1 }, (_, i) => String(2027 - i));  // recent first; also free-text
+
+// ----------------------------------------------------------------------------
+// Colors. Each option gets a deterministic color from its text; a few fields
+// are coloured semantically instead (good=green, bad=red, warn=amber, neutral=grey).
+const SEM = {
+  good: { bg: "#d6f5dd", fg: "#14692f" },
+  bad:  { bg: "#ffd7d7", fg: "#911c1c" },
+  warn: { bg: "#fde68a", fg: "#7d5310" },
+  pink: { bg: "#fbcfe8", fg: "#9d174d" },
+  neutral: { bg: "#e4e4ea", fg: "#4a4a55" },
+};
+// Prominent, fixed colors for the most important New Tag values (stand out vs. the auto palette).
+const CUSTOM = {
+  tags: {
+    "Non-IID (Temporal)": { bg: "#f9a8d4", fg: "#831843" },             // rose
+    "Non-IID (Grouped)":  { bg: "#d8b4fe", fg: "#5b21b6" },             // lila
+    "New IID":            { bg: "#86efac", fg: "#14532d" },             // green
+    "Larger IID Data":    { bg: "#1e3a8a", fg: "#ffffff" },             // dark blue
+    "2nd Tier / Scientfic Discovery": { bg: "#fde047", fg: "#713f12" }, // yellow
+    "?":                  { bg: "#fdba74", fg: "#9a3412" },             // yellow/red (alert)
+  },
+};
+const SEMANTIC = {
+  data_foundry_status: { "Yes": "good", "Suspended": "warn", "WIP": "warn", "Much work": "warn" },
+  suggestion: { "Yes": "good", "No": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
+  decision_markers: {
+    // bad / disqualifying -> red
+    "Wrong Domain / Source Modality": "bad", "AHDS (Artifical/Handmade/Deterministic/Simulated)": "bad",
+    "Duplicate": "bad", "Missing source information": "bad", "Outdated": "bad", "Data Quality Issue": "bad",
+    "Trivial": "bad", "Ethical Issue": "bad", "Too Small": "bad", "Not Representative": "bad",
+    "Not Available (from Paper))": "bad", "Out-of-scope Task (CTR/RecSys/Ranking)": "bad",
+    "No Good Target (yet)": "bad", "No Good Target  / Scientific Discovery": "bad",
+    // in progress / fixable -> amber
+    "Needs extensive data wrangling": "warn", "TBD": "warn",
+    // requested -> pink
+    "Data Requested": "pink",
+    // descriptive / neutral -> grey
+    "Time-series (Classification)": "neutral", "Time-series (Forecasting)": "neutral",
+    "Time-series (Regression)": "neutral", "Image": "neutral", "NLP (Text)": "neutral", "Robotics (RL)": "neutral",
+  },
+};
+const PEOPLE_COLORED = new Set(["Lennart", "Andrej"]);  // everyone else in checked_by -> grey
+function hashHue(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % 360; }
+// Distinct hue per option spread by the golden angle, so options within a field never collide.
+function autoColor(field, value) {
+  const list = VOCAB[field] || [];
+  const i = list.indexOf(value);
+  const hue = Math.round((i >= 0 ? i * 137.508 : hashHue(String(value))) % 360);
+  return { bg: `hsl(${hue} 65% 89%)`, fg: `hsl(${hue} 55% 30%)` };
+}
+function colorFor(field, value) {
+  if (CUSTOM[field] && CUSTOM[field][value]) return CUSTOM[field][value];
+  if (field === "checked_by" && !PEOPLE_COLORED.has(value)) return SEM.neutral;
+  const sem = SEMANTIC[field] && SEMANTIC[field][value];
+  if (sem) return SEM[sem];
+  return autoColor(field, value);
+}
+function chipHtml(field, value) {
+  const c = colorFor(field, value);
+  return `<span class="chip" style="background:${c.bg};color:${c.fg}">${escapeHtml(value)}</span>`;
+}
+// Colors each option inside the inline list-editor popup with its chip color.
+// Per-cell editor params: reads the cell's current value so already-selected
+// options are marked (✓ + bold) in the popup, each with its color swatch.
+function listEditorParams(field, multi) {
+  return (cell) => {
+    const selected = new Set(asArray(cell.getValue()));
+    return {
+      values: VOCAB[field] || [], multiselect: multi, allowEmpty: true,
+      itemFormatter: (label, value) => {
+        const c = colorFor(field, value);
+        const sw = `<span class="opt-sw" style="background:${c.bg};border-color:${c.fg}"></span>`;
+        const sel = selected.has(value);
+        return `${sw}${sel ? "✓ " : ""}<span${sel ? ' style="font-weight:700"' : ""}>${escapeHtml(label)}</span>`;
+      },
+    };
+  };
+}
+
+// ----------------------------------------------------------------------------
+let SCHEMA, VOCAB, BY_NAME, table;
 const LINK_FIELDS = new Set();
 
-function toast(msg, err=false){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'show' + (err?' err':'');
-  clearTimeout(t._h); t._h = setTimeout(()=> t.className = err?'err':'', 1600);
+function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function asArray(v) { return Array.isArray(v) ? v : (v ? [v] : []); }
+function splitLines(v) { return String(v || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean); }
+function toast(msg, err = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "show" + (err ? " err" : "");
+  clearTimeout(t._h); t._h = setTimeout(() => t.className = err ? "err" : "", 1600);
 }
 
-function chips(cell){
-  const v = cell.getValue() || [];
-  if(!v.length) return '';
-  return v.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('');
+// formatters
+function multiChips(field) { return cell => (cell.getValue() || []).map(v => chipHtml(field, v)).join(""); }
+function selectChip(field) { return cell => { const v = cell.getValue(); return v ? chipHtml(field, v) : ""; }; }
+function linksFmt(cell) {
+  return splitLines(cell.getValue()).map(u =>
+    /^https?:\/\//.test(u) ? `<a class="src" href="${escapeHtml(u)}" target="_blank" rel="noopener">${escapeHtml(u)}</a>` : escapeHtml(u)
+  ).join("<br>");
 }
-function linksFmt(cell){
-  return String(cell.getValue()||'').split(/\r?\n/).filter(Boolean)
-    .map(u => /^https?:\/\//.test(u) ? `<a class="src" href="${escapeHtml(u)}" target="_blank" rel="noopener">${escapeHtml(u)}</a>` : escapeHtml(u))
-    .join('<br>');
+// Single source of truth for a row's status marker + color (first match wins).
+function rowStatus(d) {
+  const sugg = d.suggestion, df = d.data_foundry_status, rev = (d.needs_review || []).length;
+  if (sugg === "Disagreement") return { m: "⚡", bg: "#7c3aed", fg: "#fff", t: "Disagreement — needs resolution" };
+  if (df === "Yes")            return { m: "✓", bg: "#16a34a", fg: "#fff", t: "In Data Foundry" };
+  if (sugg === "No")           return { m: "✗", bg: "#dc2626", fg: "#fff", t: "Suggestion: No" };
+  if (sugg === "Yes")          return { m: "★", bg: "#2563eb", fg: "#fff", t: "Accepted — not yet in Data Foundry" };
+  if (rev)                     return { m: "⚠", bg: "#f97316", fg: "#fff", t: "Needs review: " + (d.needs_review || []).join(", ") };
+  return { m: "•", bg: "#facc15", fg: "#6b4e00", t: "Pending / other" };
 }
-function reviewFmt(cell){
-  const n = (cell.getRow().getData().needs_review||[]).length;
-  return n ? `<span class="chip warn" title="unmapped: ${(cell.getRow().getData().needs_review||[]).join(', ')}">⚠ ${n}</span>` : '';
+function statusFmt(cell) {
+  const st = rowStatus(cell.getRow().getData());
+  const el = cell.getElement();
+  el.style.background = st.bg; el.style.color = st.fg; el.title = st.t;
+  return `<span class="st">${st.m}</span>`;
 }
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+// Pinned rows stay visible through any filter/search (session-scoped).
+const pinned = new Set();
+function pinFmt(cell) {
+  const id = cell.getRow().getData().unique_name;
+  return `<span class="pin${pinned.has(id) ? " on" : ""}" title="Pin this row to keep it visible through filters">📌</span>`;
+}
+function togglePin(row) {
+  const id = row.getData().unique_name;
+  if (pinned.has(id)) { pinned.delete(id); try { row.unfreeze(); } catch (e) { /* not frozen */ } }
+  else { pinned.add(id); try { row.freeze(); } catch (e) { /* freeze unsupported */ } }
+  row.reformat();
+  applyFilters();
+}
 
-function toRow(rec){
-  const r = Object.assign({}, rec);
-  for(const f of LINK_FIELDS) r[f] = (rec[f]||[]).join('\n');
-  return r;
+// Status filter menu, opened by clicking the leftmost column header.
+const STATUS_OPTS = [
+  { m: "", label: "All datasets", bg: "#e4e4ea", fg: "#444" },
+  { m: "⚡", label: "Disagreement", bg: "#7c3aed", fg: "#fff" },
+  { m: "✓", label: "In Data Foundry", bg: "#16a34a", fg: "#fff" },
+  { m: "✗", label: "Suggestion: No", bg: "#dc2626", fg: "#fff" },
+  { m: "★", label: "Accepted (not in DF)", bg: "#2563eb", fg: "#fff" },
+  { m: "⚠", label: "Needs review", bg: "#f97316", fg: "#fff" },
+  { m: "•", label: "Pending / other", bg: "#facc15", fg: "#6b4e00" },
+];
+let fStatus = "";
+function buildStatusMenu() {
+  const menu = document.getElementById("statusMenu");
+  menu.innerHTML = "";
+  // The public build hides the disagreement / needs-review workflow states.
+  const opts = STATIC ? STATUS_OPTS.filter(o => o.m !== "⚡" && o.m !== "⚠") : STATUS_OPTS;
+  for (const o of opts) {
+    const item = document.createElement("div");
+    item.className = "smi" + (fStatus === o.m ? " active" : "");
+    item.innerHTML = `<span class="smk" style="background:${o.bg};color:${o.fg}">${o.m || "∗"}</span>${o.label}`;
+    item.addEventListener("click", () => {
+      resetAllFilters();
+      fStatus = o.m;
+      menu.classList.remove("show");
+      applyFilters();
+    });
+    menu.appendChild(item);
+  }
+}
+function openStatusMenu(e) {
+  buildStatusMenu();
+  const menu = document.getElementById("statusMenu");
+  const rect = (e.target.closest(".tabulator-col") || e.target).getBoundingClientRect();
+  menu.style.left = rect.left + "px";
+  menu.style.top = rect.bottom + "px";
+  menu.classList.add("show");
+}
+function moreFmt(cell) {
+  const d = cell.getRow().getData();
+  const html = EXTRA.flatMap(f => asArray(d[f]).map(v => chipHtml(f, v))).join("");
+  return html || `<span class="more-empty">＋ tags…</span>`;
 }
 
-function columnDefs(){
+function toRow(rec) { const r = { ...rec }; for (const f of LINK_FIELDS) r[f] = (rec[f] || []).join("\n"); return r; }
+
+// ----------------------------------------------------------------------------
+async function putRecord(id, patch) {
+  const res = await fetch("/api/records/" + encodeURIComponent(id), {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+async function registerNew(vocabKey, values) {
+  if (!vocabKey) return;
+  const known = new Set(VOCAB[vocabKey] || []);
+  for (const v of values) {
+    if (v && !known.has(v)) {
+      const out = await (await fetch("/api/vocab", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ field: vocabKey, value: v }),
+      })).json();
+      if (out.values) VOCAB[vocabKey] = out.values;  // editor params read VOCAB live on open
+    }
+  }
+}
+
+// Header title with a "＋" to add a new option to this dropdown's vocabulary.
+function addBtnTitle(label, field) {
+  return () => {
+    const wrap = document.createElement("span");
+    wrap.innerHTML = `${escapeHtml(label)} <span class="addopt" title="Add a new option to this dropdown">＋</span>`;
+    wrap.querySelector(".addopt").addEventListener("click", async ev => {
+      ev.stopPropagation();
+      const v = (prompt(`New option for “${label}”:`) || "").trim();
+      if (v) { await registerNew(field, [v]); toast(`Added option “${v}”`); }
+    });
+    return wrap;
+  };
+}
+
+function columnDefs() {
   const cols = [
-    { title:'⚠', field:'_review', frozen:true, width:46, headerSort:false, formatter:reviewFmt, headerFilter:false },
-    { title:'unique_name', field:'unique_name', frozen:true, width:180, editor:false, headerFilter:'input' },
+    { title: "", field: "_pin", frozen: true, width: 30, headerSort: false, headerFilter: false, download: false, hozAlign: "center", cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => togglePin(cell.getRow()), headerTooltip: "Pin rows to keep them visible through any filter" },
+    { title: "", field: "_status", frozen: true, width: 40, headerSort: false, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click to filter by status", titleFormatter: () => '<span class="stmenu">▾</span>', headerClick: (e) => openStatusMenu(e) },
   ];
-  for(const f of FIELDS){
-    const c = { title:f.label, field:f.name, headerTooltip:f.help, resizable:true, headerFilter:'input', width:160 };
-    if(f.name === 'name'){ c.frozen = true; c.width = 200; c.editor = 'input'; }
-    else if(f.kind === 'text'){ c.editor = 'input'; if(f.name==='year') c.width = 80; }
-    else if(f.kind === 'select'){
-      c.editor = 'list';
-      c.editorParams = { values: VOCAB[f.vocab]||[], autocomplete:true, freetext:true, allowEmpty:true, listOnEmpty:true };
-      c.headerFilter = 'list'; c.headerFilterParams = { values: ['', ...(VOCAB[f.vocab]||[])], clearable:true };
+  for (const name of PRIMARY) {
+    if (name === "unique_name") {
+      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, headerFilter: "input" });
+      continue;
     }
-    else if(f.kind === 'multiselect'){
-      c.editor = 'list';
-      c.editorParams = { values: VOCAB[f.vocab]||[], multiselect:true, autocomplete:true, freetext:true, allowEmpty:true, listOnEmpty:true };
-      c.formatter = chips; c.width = 200;
-      c.headerFilter = 'input';
-      c.headerFilterFunc = (term, _v, data) => (data[f.name]||[]).join(' ').toLowerCase().includes(term.toLowerCase());
+    const f = BY_NAME[name];
+    const c = { title: f.label, field: name, headerTooltip: f.help, resizable: true, headerFilter: "input", width: 150 };
+    if (FROZEN.has(name)) c.frozen = true;
+    if (f.kind === "text") {
+      if (name === "year") {
+        c.editor = "list"; c.width = 92; c.cssClass = "dd-cell";
+        c.editorParams = { values: YEARS, autocomplete: true, freetext: true, allowEmpty: true, listOnEmpty: true };
+      } else {
+        c.editor = "input"; if (name === "name") c.width = 200;
+      }
     }
-    else if(f.kind === 'links'){ c.editor = 'textarea'; c.formatter = linksFmt; c.width = 280; c.variableHeight = true; }
-    else if(f.kind === 'body'){ c.editor = 'textarea'; c.width = 320; c.variableHeight = true;
-      c.formatter = cell => escapeHtml(String(cell.getValue()||'')); }
+    else if (f.kind === "select") {
+      c.editor = "list"; c.cssClass = "dd-cell"; c.titleFormatter = addBtnTitle(f.label, name);
+      c.editorParams = listEditorParams(name, false);
+      c.formatter = selectChip(name);
+    }
+    else if (f.kind === "multiselect") {
+      c.editor = "list"; c.titleFormatter = addBtnTitle(f.label, name);
+      c.editorParams = listEditorParams(name, true);
+      c.formatter = multiChips(name); c.width = 190; c.variableHeight = true; c.cssClass = "wrap-cell dd-cell";
+      c.headerFilterFunc = (term, _v, data) => (data[name] || []).join(" ").toLowerCase().includes(term.toLowerCase());
+    }
+    else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
+    else if (f.kind === "body") {
+      c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true };
+      if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = "textarea"; }
+      else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
+    }
+    if (name === "data_foundry_status") c.width = 80;
     cols.push(c);
+  }
+  cols.push({
+    title: "Optional Tags", field: "_more", headerSort: false, headerFilter: false, download: false, width: 280, variableHeight: true,
+    headerTooltip: "Original source, source benchmark/collection, required split, problem type, data state — click to edit.",
+    cssClass: "more-cell wrap-cell", formatter: moreFmt, cellClick: (e, cell) => openModal(cell.getRow().getData().unique_name),
+  });
+  // Read-only build: strip every editing affordance from editable columns, but
+  // leave the view-only columns (pin, status filter, "more" modal) untouched.
+  if (STATIC) {
+    for (const c of cols) {
+      if (!c.editor) continue;
+      c.editor = false;
+      delete c.editorParams;
+      delete c.titleFormatter;  // removes the "＋ add option" header button
+      if (c.cssClass) c.cssClass = c.cssClass.replace(/\bdd-cell\b/g, "").trim() || undefined;
+    }
   }
   return cols;
 }
 
-async function registerNew(spec, values){
-  if(!spec.vocab) return;
-  const known = new Set(VOCAB[spec.vocab]||[]);
-  for(const v of values){
-    if(v && !known.has(v)){
-      const res = await fetch('/api/vocab', {method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({field: spec.vocab, value: v})});
-      const out = await res.json();
-      if(out.values){ VOCAB[spec.vocab] = out.values;
-        table.updateColumnDefinition(spec.name, {editorParams: Object.assign({}, BY_NAME[spec.name]._ep, {values: out.values})}); }
-    }
-  }
-}
-
-async function onEdit(cell){
+async function onEdit(cell) {
   const f = cell.getField();
   const spec = BY_NAME[f];
-  if(!spec) return;
+  if (!spec) return;
   let value = cell.getValue();
-  if(spec.kind === 'links'){ value = String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
-  else if(spec.kind === 'multiselect'){ value = Array.isArray(value) ? value : (value ? [value] : []); }
-  else { if(value === '') value = null; }
-  await registerNew(spec, Array.isArray(value) ? value : (value ? [value] : []));
-  const id = cell.getRow().getData().unique_name;
-  try{
-    const res = await fetch('/api/records/' + encodeURIComponent(id), {method:'PUT',
-      headers:{'Content-Type':'application/json'}, body: JSON.stringify({[f]: value})});
-    const updated = await res.json();
-    if(updated.error){ throw new Error(updated.error); }
+  if (spec.kind === "links") value = splitLines(value);
+  else if (spec.kind === "multiselect") value = asArray(value);
+  else if (value === "") value = null;
+  try {
+    await registerNew(spec.vocab, asArray(value));
+    const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
     cell.getRow().update({ needs_review: updated.needs_review });
-    toast('Saved ' + id);
-  }catch(e){ toast('Save failed: ' + e.message, true); cell.restoreOldValue(); }
+    cell.getRow().reformat();
+    updateCount();
+    toast("Saved");
+  } catch (e) { toast("Save failed: " + e.message, true); cell.restoreOldValue(); }
 }
 
-function applyFilters(){
-  const term = document.getElementById('search').value.trim().toLowerCase();
-  const reviewOnly = document.getElementById('reviewOnly').checked;
-  const dfOnly = document.getElementById('dfOnly').checked;
-  table.setFilter(d => {
-    if(reviewOnly && !(d.needs_review||[]).length) return false;
-    if(dfOnly && !d.data_foundry_status) return false;
-    if(term){
-      const hay = [d.unique_name, d.name, d.comments, d.reference, (d.source_links||[]).join(' ')].join(' ').toLowerCase();
-      if(!hay.includes(term)) return false;
+// ---- modal (extra fields) --------------------------------------------------
+let modalId = null;
+function openModal(id) {
+  modalId = id;
+  const d = table.getRow(id).getData();
+  document.getElementById("m-title").textContent = d.unique_name;
+  document.getElementById("m-sub").textContent = d.name || "";
+  renderModalBody();
+  document.getElementById("overlay").classList.add("show");
+}
+function closeModal() { document.getElementById("overlay").classList.remove("show"); modalId = null; }
+function renderModalBody() {
+  const d = table.getRow(modalId).getData();
+  const body = document.getElementById("m-body");
+  body.innerHTML = "";
+  if (STATIC) {  // read-only: show the selected values as chips, no toggles / add-row
+    for (const field of EXTRA) {
+      const chips = asArray(d[field]).map(v => chipHtml(field, v)).join("") || '<span class="more-empty">—</span>';
+      body.insertAdjacentHTML("beforeend",
+        `<div class="field"><h4>${escapeHtml(BY_NAME[field].label)}</h4><div class="opts">${chips}</div></div>`);
     }
+    return;
+  }
+  for (const field of EXTRA) {
+    const spec = BY_NAME[field];
+    const cur = new Set(asArray(d[field]));
+    const opts = (VOCAB[spec.vocab] || []).map(opt => {
+      const col = colorFor(field, opt);
+      const sel = cur.has(opt) ? " sel" : "";
+      return `<span class="opt${sel}" style="background:${col.bg};color:${col.fg}" onclick="toggleExtra('${field}', this.dataset.v)" data-v="${escapeHtml(opt)}">${escapeHtml(opt)}</span>`;
+    }).join("");
+    const multi = spec.kind === "multiselect";
+    body.insertAdjacentHTML("beforeend", `
+      <div class="field">
+        <h4>${escapeHtml(spec.label)} ${multi ? "(multi)" : "(single)"}</h4>
+        <div class="opts">${opts}</div>
+        <div class="addrow">
+          <input type="text" placeholder="add new option…" id="add-${field}" onkeydown="if(event.key==='Enter')addExtraOption('${field}')" />
+          <button onclick="addExtraOption('${field}')">+ add</button>
+        </div>
+      </div>`);
+  }
+}
+async function toggleExtra(field, optionValue) {
+  const spec = BY_NAME[field];
+  const row = table.getRow(modalId);
+  const cur = asArray(row.getData()[field]);
+  let value;
+  if (spec.kind === "multiselect") {
+    const set = new Set(cur);
+    set.has(optionValue) ? set.delete(optionValue) : set.add(optionValue);
+    value = [...set];
+  } else {
+    value = cur[0] === optionValue ? null : optionValue;
+  }
+  try {
+    const updated = await putRecord(modalId, { [field]: value });
+    row.update({ [field]: value, needs_review: updated.needs_review });
+    row.reformat();
+    renderModalBody();
+    updateCount();
+    toast("Saved");
+  } catch (e) { toast("Save failed: " + e.message, true); }
+}
+async function addExtraOption(field) {
+  const input = document.getElementById("add-" + field);
+  const v = input.value.trim();
+  if (!v) return;
+  await registerNew(BY_NAME[field].vocab, [v]);
+  input.value = "";
+  await toggleExtra(field, v);  // re-renders modal with the new option selected
+}
+window.toggleExtra = toggleExtra;
+window.addExtraOption = addExtraOption;
+
+// ---- filters ---------------------------------------------------------------
+let fDf = false, fRev = false, fDis = false;
+function applyFilters() {
+  const term = document.getElementById("search").value.trim().toLowerCase();
+  table.setFilter(d => {
+    if (pinned.has(d.unique_name)) return true;  // pinned rows never vanish
+    if (term) {
+      // A search always spans ALL datasets, ignoring the active pill/status filters.
+      const hay = Object.values(d)
+        .map(v => (Array.isArray(v) ? v.join(" ") : v == null ? "" : v))
+        .join(" ").toLowerCase();
+      return hay.includes(term);
+    }
+    if (fStatus && rowStatus(d).m !== fStatus) return false;
+    if (fRev && !(d.needs_review || []).length) return false;
+    if (fDf && !d.data_foundry_status) return false;
+    if (fDis && d.suggestion !== "Disagreement") return false;
     return true;
   });
-  document.getElementById('count').textContent =
-    `${table.getDataCount('active')} / ${table.getDataCount()} shown`;
+}
+function syncPillClasses() {
+  document.getElementById("pillDf").classList.toggle("active", fDf);
+  document.getElementById("pillRev").classList.toggle("active", fRev);
+  document.getElementById("pillDis").classList.toggle("active", fDis);
+}
+// Clear every filter (search box, status menu, all pills) — pins are untouched.
+function resetAllFilters() {
+  fDf = fRev = fDis = false; fStatus = "";
+  document.getElementById("search").value = "";
+  syncPillClasses();
+}
+function updateCount() {
+  const all = table.getData();
+  document.getElementById("dfN").textContent = all.filter(d => d.data_foundry_status).length;
+  document.getElementById("revN").textContent = all.filter(d => (d.needs_review || []).length).length;
+  document.getElementById("disN").textContent = all.filter(d => d.suggestion === "Disagreement").length;
+  document.getElementById("count").textContent = `${table.getDataCount("active")} / ${table.getDataCount()} shown`;
 }
 
-async function boot(){
-  SCHEMA = await (await fetch('/api/schema')).json();
-  VOCAB = SCHEMA.vocabularies; FIELDS = SCHEMA.fields;
-  BY_NAME = {}; for(const f of FIELDS){ BY_NAME[f.name] = f; if(f.kind==='links') LINK_FIELDS.add(f.name); }
-  const recs = (await (await fetch('/api/records')).json()).map(toRow);
+async function boot() {
+  SCHEMA = await (await fetch(SCHEMA_URL)).json();
+  VOCAB = SCHEMA.vocabularies;
+  BY_NAME = {};
+  for (const f of SCHEMA.fields) { BY_NAME[f.name] = f; if (f.kind === "links") LINK_FIELDS.add(f.name); }
+  const recs = (await (await fetch(RECORDS_URL)).json()).map(toRow);
   const cols = columnDefs();
-  for(const c of cols) if(c.editorParams) BY_NAME[c.field] && (BY_NAME[c.field]._ep = c.editorParams);
 
-  table = new Tabulator('#grid', {
-    data: recs, columns: cols, layout:'fitData', height:'calc(100vh - 46px)',
-    movableColumns:true, reactiveData:false, index:'unique_name',
+  table = new Tabulator("#grid", {
+    data: recs, columns: cols, layout: "fitData", height: "calc(100vh - 46px)",
+    movableColumns: true, index: "unique_name",
     rowFormatter: row => {
-      const s = (row.getData().data_foundry_status||'').toLowerCase();
-      row.getElement().classList.toggle('row-yes', s==='yes');
-      row.getElement().classList.toggle('row-suspended', s==='suspended');
-      row.getElement().classList.toggle('row-wip', s==='wip' || s==='much work');
+      const p = row.getPosition(true);
+      const el = row.getElement();
+      el.classList.toggle("r-even", p % 2 === 0);
+      el.classList.toggle("r-odd", p % 2 === 1);
+      el.classList.toggle("pinned", pinned.has(row.getData().unique_name));
     },
   });
-  table.on('cellEdited', onEdit);
-  table.on('dataFiltered', () => {
-    document.getElementById('count').textContent = `${table.getDataCount('active')} / ${table.getDataCount()} shown`;
-  });
-  table.on('tableBuilt', applyFilters);
+  if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
+  table.on("dataFiltered", updateCount);
+  table.on("tableBuilt", () => { applyFilters(); updateCount(); });
 
-  document.getElementById('search').addEventListener('input', applyFilters);
-  document.getElementById('reviewOnly').addEventListener('change', applyFilters);
-  document.getElementById('dfOnly').addEventListener('change', applyFilters);
-  document.getElementById('dl').addEventListener('click', () => table.download('csv', 'curation.csv'));
+  document.getElementById("search").addEventListener("input", applyFilters);
+  document.addEventListener("click", e => {
+    const m = document.getElementById("statusMenu");
+    if (m.classList.contains("show") && !m.contains(e.target) && !e.target.closest(".tabulator-col")) m.classList.remove("show");
+  });
+  // Each pill is an exclusive view: clicking resets every other filter, then
+  // applies just this one (clicking an active pill turns it off -> show all).
+  const pillToggle = key => () => {
+    const was = key === "df" ? fDf : key === "rev" ? fRev : fDis;
+    resetAllFilters();
+    if (!was) { if (key === "df") fDf = true; else if (key === "rev") fRev = true; else fDis = true; }
+    syncPillClasses();
+    applyFilters();
+  };
+  document.getElementById("pillDf").addEventListener("click", pillToggle("df"));
+  // The public build keeps only the "Data Foundry" pill; the review / disagreement
+  // workflow pills are hidden (and left unwired).
+  if (STATIC) {
+    document.getElementById("pillRev").style.display = "none";
+    document.getElementById("pillDis").style.display = "none";
+  } else {
+    document.getElementById("pillRev").addEventListener("click", pillToggle("rev"));
+    document.getElementById("pillDis").addEventListener("click", pillToggle("dis"));
+  }
+  document.getElementById("m-close").addEventListener("click", closeModal);
+  document.getElementById("overlay").addEventListener("click", e => { if (e.target.id === "overlay") closeModal(); });
 }
 boot();
 </script>

@@ -18,11 +18,6 @@ domain: medical & healthcare
 required_split:
 - Random (IID)
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/new_thyroid/metadata.yaml

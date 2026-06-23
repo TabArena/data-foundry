@@ -17,11 +17,6 @@ domain: biology & life sciences
 required_split:
 - Random (IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://archive.ics.uci.edu/dataset/90/soybean+large

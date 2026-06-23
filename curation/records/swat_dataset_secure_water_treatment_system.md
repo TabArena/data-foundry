@@ -17,12 +17,6 @@ domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
-- Forecasting
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/vishala28/swat-dataset-secure-water-treatment-system?select=merged.csv

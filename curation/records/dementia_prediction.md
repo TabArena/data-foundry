@@ -19,11 +19,6 @@ domain: medical & healthcare
 required_split:
 - '?'
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset/data

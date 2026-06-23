@@ -17,11 +17,6 @@ domain: technology & internet
 required_split:
 - Random (IID)
 problem_type: TBD
-usable_task_type: '?'
-given_task_type:
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/dhanushbommavaram/laptop-dataset

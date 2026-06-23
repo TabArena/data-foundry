@@ -16,13 +16,6 @@ domain: medical & healthcare
 required_split:
 - Random (IID)
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
-- Forecasting
-- Image
 original_data_state: Other
 source_links:
 - https://tadpole.grand-challenge.org/Data/

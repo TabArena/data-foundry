@@ -108,18 +108,6 @@ problem_type:
 - Multiclass Classification
 - TBD
 - Other
-usable_task_type:
-- Predictive ML
-- '?'
-- Unreasonable as Predictive ML Task
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-- Information Retrieval
-data_modality:
-- Tabular
-- Forecasting
-- Image
 original_data_state:
 - One Table
 - Database (or multiple to-be-joined tables)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 
 import pytest
 from data_foundry.curation import exporter
@@ -17,6 +18,7 @@ from data_foundry.curation.record import (
     load_vocabularies,
     save_vocabularies,
 )
+from data_foundry.curation.site import build_site
 from data_foundry.curation.store import (
     load_all,
     load_record,
@@ -87,6 +89,27 @@ def test_save_and_load(tmp_path, sample_record: CurationRecord) -> None:
     assert path.name == "musk.md"
     assert load_record(path) == sample_record
     assert [r.unique_name for r in load_all(tmp_path)] == ["musk"]
+
+
+def test_build_site(tmp_path, sample_record: CurationRecord) -> None:
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+    out = build_site(tmp_path / "site", records)
+
+    # Read-only flag is injected; the live API endpoints are not hit by the build.
+    index = (out / "index.html").read_text(encoding="utf-8")
+    assert "window.DF_STATIC = true" in index
+
+    # The two frozen read endpoints become sibling JSON files.
+    schema = json.loads((out / "schema.json").read_text(encoding="utf-8"))
+    assert set(schema) == {"fields", "vocabularies"}
+    assert schema["fields"], "schema should list fields"
+
+    records_json = json.loads((out / "records.json").read_text(encoding="utf-8"))
+    assert [r["unique_name"] for r in records_json] == ["musk"]
+
+    # Auxiliary static pages (e.g. guidelines.html) are copied alongside the grid.
+    assert (out / "guidelines.html").exists()
 
 
 def test_missing_front_matter_raises() -> None:

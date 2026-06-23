@@ -3,6 +3,7 @@
 Subcommands::
 
     data-foundry-curation serve                         # local editing dashboard
+    data-foundry-curation build-site OUT_DIR            # read-only static site (GitHub Pages)
     data-foundry-curation import-sheet SHEET.csv        # migrate the Google Sheet export
     data-foundry-curation validate                      # check records against the vocab
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|parquet)
@@ -21,11 +22,18 @@ from data_foundry.curation._paths import records_dir
 from data_foundry.curation.app import serve
 from data_foundry.curation.importer import import_sheet
 from data_foundry.curation.record import load_vocabularies
+from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
     serve(host=args.host, port=args.port, directory=args.records_dir)
+    return 0
+
+
+def _cmd_build_site(args: argparse.Namespace) -> int:
+    out = build_site(args.output, args.records_dir)
+    print(f"Built read-only static site in {out}/ (index.html, schema.json, records.json).")
     return 0
 
 
@@ -85,6 +93,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8765)
     p_serve.set_defaults(func=_cmd_serve)
+
+    p_site = sub.add_parser("build-site", help="Compile a read-only static site (for GitHub Pages).")
+    p_site.add_argument("output", help="Output directory (e.g. _site); created if missing.")
+    p_site.set_defaults(func=_cmd_build_site)
 
     p_import = sub.add_parser("import-sheet", help="Migrate a Google Sheet CSV export into records.")
     p_import.add_argument("sheet", help="Path to the exported CSV.")

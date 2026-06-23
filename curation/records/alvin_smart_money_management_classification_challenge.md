@@ -14,11 +14,6 @@ domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/alvin-smart-money-management-classification-challenge/data

@@ -87,6 +87,8 @@ class CurationHandler(BaseHTTPRequestHandler):
         try:
             if route in ("/", "/index.html"):
                 self._send_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
+            elif route == "/guidelines.html":
+                self._send_file(STATIC_DIR / "guidelines.html", "text/html; charset=utf-8")
             elif route == "/api/schema":
                 self._send_json(_schema_payload())
             elif route == "/api/records":
@@ -131,7 +133,7 @@ class CurationHandler(BaseHTTPRequestHandler):
         merged.pop("unique_name", None)  # renaming is out of scope for the grid
         merged["unique_name"] = unique_name
         record = record_from_dict(merged)
-        record.needs_review = sorted(record.unknown_vocab_values(load_vocabularies()))
+        record.needs_review = record.review_reasons(load_vocabularies())
         save_record(record, self._records_dir)
         self._send_json(record_to_dict(record))
 

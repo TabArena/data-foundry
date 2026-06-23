@@ -26,12 +26,18 @@ Data Foundry is the data-layer toolkit behind
   Face mirror, with cache + force-download semantics (`collections/`);
 * helpers used by curation notebooks — sanity checks (`dataset_checks.py`)
   and recommended outer-CV split builders (`curation_recommendations.py`);
-* a git-native **curation backlog** (`src/data_foundry/curation/`) — one
-  markdown record per candidate dataset under `curation/records/`, with a
-  local editing dashboard, a sheet importer, and a one-way CSV/Sheet exporter.
-  This replaces the legacy curation Google Sheet; `data-foundry-curation -h`
-  lists the CLI (`serve`, `import-sheet`, `validate`, `export`). The editable
-  dropdown vocabularies live in `curation/vocabularies.yaml`.
+* a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
+  the legacy curation Google Sheet. The source of truth is **one markdown record
+  per candidate dataset** (YAML front-matter for the structured/dropdown fields +
+  a free-text body for `## Comments` / `## Reference`) under `curation/records/`.
+  Add or triage a dataset by creating/editing its `<unique_name>.md` file — by
+  hand, with an agent, or via the dashboard. A local **Sheets-like dashboard**
+  (`data-foundry-curation serve` → http://127.0.0.1:8765) edits those records in
+  place and ships a built-in **Guidelines** tab (the curation criteria, from the
+  paper). The per-record schema is `CurationRecord` (`curation/record.py`); the
+  editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
+  (`data-foundry-curation -h`) also covers `import-sheet`, `validate`, `export`,
+  and `build-site` (a read-only static site).
 
 The actual curation work happens in `datasets/`, which is mostly Jupyter
 notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
@@ -58,7 +64,29 @@ The skill writes a 17-cell notebook based on
 `datasets/_template/_template.ipynb`. Read the template before writing so
 the JSON structure is exact.
 
-### 2. Extending the package (schema, container, collections, examples)
+### 2. Helping a curator triage the backlog (curation dashboard + guidelines)
+
+The backlog is **one markdown record per candidate dataset** in `curation/records/`
+(`<unique_name>.md`: YAML front-matter for structured/dropdown fields + a body with
+`## Comments` / `## Reference`).
+
+To assist, run the **`/curate`** slash command
+([`.claude/commands/curate.md`](.claude/commands/curate.md)). It starts the local
+dashboard (`data-foundry-curation serve` → http://127.0.0.1:8765) and, importantly,
+**loads the curation guidelines** — the IID/non-IID background, the dataset
+*selection criteria*, and the *processing* conventions. **Read those guidelines
+before advising** whether a dataset belongs in the benchmark or how to process it;
+they encode decisions (IID vs temporal vs grouped, the selection criteria, the
+processing conventions) you would otherwise guess at. The guidelines are summarized
+in the skill and rendered in full in the dashboard's **Guidelines** tab
+(`src/data_foundry/curation/static/guidelines.html`).
+
+Add or triage a dataset by creating/editing its `<unique_name>.md` record (by hand,
+with an agent, or in the dashboard); the dashboard and the `build-site` export both
+read these files. The per-record schema is `CurationRecord` (`curation/record.py`);
+dropdown options live in `curation/vocabularies.yaml`.
+
+### 3. Extending the package (schema, container, collections, examples)
 
 When changing core code:
 
@@ -74,7 +102,7 @@ When changing core code:
   `PredictiveMLSplitsMetadata`, and `CuratedContainer` are the human-facing
   surface — keep them in sync if you add or rename schema fields.
 
-### 3. Curation tooling work (checks, recommended splits, helpers)
+### 4. Curation tooling work (checks, recommended splits, helpers)
 
 * `dataset_checks.run_all_checks(...)` returns five DataFrames — see
   `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
@@ -84,7 +112,7 @@ When changing core code:
   IID and grouped have automated helpers; temporal splits are still
   manual.
 
-### 4. Repo plumbing (CI, packaging, release)
+### 5. Repo plumbing (CI, packaging, release)
 
 `pyproject.toml` carries PyPI metadata. The release flow is documented in
 `README.md` under "Releasing to PyPI" — `uv build` + `uv publish`. Don't
@@ -135,6 +163,8 @@ bump versions or publish without explicit human authorization.
 | Schema definitions | [`src/data_foundry/schema.py`](src/data_foundry/schema.py) |
 | Curation backlog (records, dashboard, import/export) | [`src/data_foundry/curation/`](src/data_foundry/curation/) |
 | Curation records + dropdown vocab (data) | [`curation/`](curation) |
+| Start the dashboard + load curation context | [`.claude/commands/curate.md`](.claude/commands/curate.md) |
+| Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
 | Notebook scaffolding skill | [`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md) |

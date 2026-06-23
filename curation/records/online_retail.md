@@ -16,11 +16,6 @@ domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: TBD
-usable_task_type: '?'
-given_task_type:
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/352/online+retail

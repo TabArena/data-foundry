@@ -14,11 +14,6 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling

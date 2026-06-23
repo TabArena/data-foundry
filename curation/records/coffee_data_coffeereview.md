@@ -18,12 +18,6 @@ domain: business & marketing
 required_split:
 - '?'
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Scientific Discovery
-- Information Retrieval
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview

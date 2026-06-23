@@ -27,7 +27,6 @@ SINGLE_MAP: dict[str, str] = {
     "Year": "year",
     "Context Domain": "domain",
     "Problem Type": "problem_type",
-    "Usable Task Type": "usable_task_type",
     "Original Data State": "original_data_state",
 }
 # Multi-value (comma-combined) sheet columns -> record field.
@@ -37,8 +36,6 @@ MULTI_MAP: dict[str, str] = {
     "New Tag": "tags",
     "Source (Benchmark / Collection)": "collections",
     "Required split": "required_split",
-    "Given Task Type": "given_task_type",
-    "Data Domain": "data_modality",
 }
 NAME_COL = "Name"
 LINKS_COL = "Source (and Link to download)"
@@ -141,7 +138,7 @@ def _build_record(
     kwargs["reference"] = (row.get(REFERENCE_COL) or "").strip() or None
 
     record = CurationRecord(**kwargs)
-    record.needs_review = sorted(record.unknown_vocab_values(vocab))
+    record.needs_review = record.review_reasons(vocab)
     return record
 
 

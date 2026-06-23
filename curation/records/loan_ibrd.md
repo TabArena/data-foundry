@@ -17,12 +17,6 @@ domain: finance
 required_split:
 - Temporal (NON-IID)
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=46467

@@ -16,11 +16,6 @@ domain: finance
 required_split:
 - Random (IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/santander-value-prediction-challenge

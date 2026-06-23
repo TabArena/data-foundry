@@ -16,11 +16,6 @@ domain: business & marketing
 required_split:
 - Random (IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=43342&sort=runs&status=active

@@ -15,11 +15,6 @@ domain: chemistry & material science
 required_split:
 - Random (IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - 10.24432/C56S46

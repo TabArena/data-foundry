@@ -18,12 +18,6 @@ domain: industry & manufacturing
 required_split:
 - '?'
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5002N

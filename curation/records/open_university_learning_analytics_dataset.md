@@ -17,12 +17,6 @@ domain: education
 required_split:
 - '?'
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - 10.24432/C5KK69

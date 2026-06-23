@@ -17,11 +17,6 @@ domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Forecasting
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/ziya07/air-quality-dataset

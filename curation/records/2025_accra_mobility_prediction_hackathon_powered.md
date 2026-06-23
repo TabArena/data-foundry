@@ -7,6 +7,8 @@ original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/2025-accra-mobility-prediction-hackathon-powered/data
 source_row: 946
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -18,11 +18,6 @@ domain: biology & life sciences
 required_split:
 - Random (IID)
 problem_type: TBD
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/horse_colic_lesion_type/metadata.yaml

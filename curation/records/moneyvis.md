@@ -16,11 +16,6 @@ domain: finance
 required_split:
 - Temporal (NON-IID)
 problem_type: Other
-usable_task_type: Unreasonable as Predictive ML Task
-given_task_type:
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://people.cs.nott.ac.uk/blaramee/research/financeVis/firat23moneyVis.pdf

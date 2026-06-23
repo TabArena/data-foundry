@@ -8,6 +8,8 @@ source_links:
 - https://zindi.africa/competitions/practice-challenge-lusaka/data
 - https://zindi.africa/competitions/2024-lusaka-mobility-prediction-hackathon/data
 source_row: 934
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

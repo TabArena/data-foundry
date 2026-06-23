@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TabArena — Curation Guidelines</title>
+<style>
+  :root { --bar:#202b3b; --accent:#2d6cdf; --ink:#27313f; --muted:#5b6573; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#27313f; background:#f4f6f9; }
+  header { background:linear-gradient(90deg,#1b2738,#26374f); color:#fff; padding:12px 22px; position:sticky; top:0; z-index:5;
+           display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  header .logo { background:#3b6fe0; font-weight:800; border-radius:7px; padding:5px 7px; letter-spacing:.5px; }
+  header .t { font-weight:700; font-size:16px; }
+  header .s { font-size:11px; opacity:.6; text-transform:uppercase; letter-spacing:.06em; }
+  header .back { margin-left:auto; color:#cfe0ff; text-decoration:none; font-size:13px; border:1px solid #ffffff30; padding:6px 12px; border-radius:7px; }
+  header .back:hover { background:#ffffff14; }
+  .tabs { display:flex; gap:6px; background:#fff; padding:0 22px; border-bottom:1px solid #dfe4ea; position:sticky; top:54px; z-index:4; }
+  .tabs button { border:0; background:transparent; padding:13px 16px; font-size:14px; font-weight:600; color:#5b6573; cursor:pointer;
+                 border-bottom:3px solid transparent; }
+  .tabs button.active { color:var(--accent); border-bottom-color:var(--accent); }
+  main { max-width:880px; margin:0 auto; padding:28px 24px 80px; }
+  h1 { font-size:26px; margin:.2em 0 .1em; }
+  h2 { font-size:20px; margin:1.6em 0 .4em; padding-top:.3em; border-top:1px solid #e6eaef; }
+  h2:first-of-type { border-top:0; }
+  h3 { font-size:15px; margin:1.2em 0 .3em; color:#1f3b78; }
+  p, li { color:#2b3543; }
+  ul, ol { padding-left:22px; }
+  li { margin:.25em 0; }
+  .lede { color:#55606e; font-size:15px; }
+  .callout { background:#eef4ff; border:1px solid #d3e1ff; border-radius:10px; padding:14px 18px; margin:16px 0; }
+  .callout h3 { margin-top:0; color:#23408e; }
+  .crit { background:#fff; border:1px solid #e3e8ee; border-radius:10px; padding:6px 18px; margin:14px 0; }
+  .tag { display:inline-block; background:#e6edff; color:#23408e; border-radius:9px; padding:1px 8px; font-size:12px; font-weight:600; }
+  code { background:#eef1f5; padding:1px 5px; border-radius:4px; font-size:13px; }
+  .src { color:#7a828f; font-size:12.5px; margin-top:30px; border-top:1px solid #e6eaef; padding-top:12px; }
+  section[hidden] { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">DF</span>
+  <div><div class="t">TabArena — Curation Guidelines</div><div class="s">how to decide &amp; curate datasets</div></div>
+  <a class="back" href="index.html">← Back to curation</a>
+</header>
+<div class="tabs">
+  <button id="tab-btn-main" class="active" onclick="showTab('main')">Guidelines</button>
+  <button id="tab-btn-proc" onclick="showTab('proc')">Dataset Processing (extended)</button>
+</div>
+
+<main>
+<section id="tab-main">
+  <h1>Curation Guidelines</h1>
+  <p class="lede">How we decide whether a dataset belongs in TabArena, and how we curate the ones we keep.
+  This is the working reference for the curation log on the previous page.</p>
+
+  <h2>1 · Background: IID and non-IID tabular data</h2>
+  <p>We use an <strong>application-dependent</strong> definition of IID and non-IID data. Whether a dataset is
+  IID or non-IID is decided by the <strong>appropriate train–test split</strong> — the split that most closely
+  mirrors the original real-world application.</p>
+
+  <div class="callout">
+    <h3>Illustration — the same data, two applications</h3>
+    <p>Two practitioners use the same transaction data for fundamentally different goals. <strong>Alice</strong>
+    predicts whether <em>past</em> transactions were fraudulent for follow-up investigations — a <strong>random
+    (IID)</strong> split is appropriate. <strong>Bob</strong> predicts whether <em>new</em> transactions are
+    fraudulent to prevent fraud in real time — a <strong>temporal (non-IID)</strong> split is appropriate, to
+    simulate the distribution of unseen future transactions.</p>
+    <p>If Bob used a random split, he would <em>overestimate</em> models that exploit temporal leakage. If Alice
+    used a temporal split, she would <em>underestimate</em> such models. The appropriate split depends on the
+    application — TabArena extends this thinking from practitioners to data curation and benchmarking.</p>
+  </div>
+
+  <h3>IID tabular data</h3>
+  <p>Data is <strong>IID</strong> if the test samples in the associated application do not follow a particular
+  structure, so a random hold-out is appropriate.</p>
+
+  <h3>Non-IID tabular data</h3>
+  <p>Data is <strong>non-IID</strong> when the application requires a temporal or grouped split:</p>
+  <ul>
+    <li><strong>Temporal split</strong> — a time index is required; test samples occur strictly <em>after</em>
+    the training data, reflecting prediction of future observations (e.g., future transactions).</li>
+    <li><strong>Grouped split</strong> — a group index is required; all samples with the same index stay together,
+    so no group appears in both train and test. The aim is to generalize to <em>unseen entities (groups)</em>.
+    Grouped tasks come in two flavors:
+      <ul>
+        <li><em>label-per-group</em> — all samples in a group share one label; predict a group-level label
+        (e.g., is a customer fraudulent, based on a collection of their transactions).</li>
+        <li><em>label-per-sample</em> — each sample has its own label; predict individual labels for sources
+        unseen during training (e.g., a new country or hospital).</li>
+      </ul>
+    </li>
+  </ul>
+  <p>For some datasets, either a temporal or a grouped split is plausible. A temporal split does not remove group
+  structure, and a grouped split does not make the task time-invariant — the split only determines which dependency
+  matters, it does not remove it.</p>
+  <p>TabArena <strong>excludes time-series forecasting</strong> data: although tabular-like and non-IID,
+  forecasting has fundamentally different assumptions and needs a different validation protocol. During curation we
+  carefully distinguish <em>temporal tabular regression</em> from <em>time-series forecasting</em>.</p>
+
+  <h2>2 · Dataset curation, in brief</h2>
+  <p>The curation process extends tabular benchmarking to better represent challenging real-world predictive ML
+  applications. To keep selected datasets high-quality and representative, curation is <strong>manual and human-verified</strong>.
+  This is labor-intensive, but crucial to scientific rigor — data quality directly affects the correctness of the
+  benchmark's conclusions.</p>
+  <p>Datasets are gathered from prior tabular benchmark studies (re-evaluating accepted datasets and those
+  previously rejected for being non-IID, too small, or for data issues) and from non-IID/multimodal benchmarks,
+  plus new datasets found by browsing public repositories and competition sites (UCI, OpenML, Hugging Face, Kaggle,
+  Zindi, ASlib) and government data portals. Search is guided by popularity, task, and application domain, while
+  avoiding obvious duplicates.</p>
+
+  <h2>3 · Dataset selection criteria (summary)</h2>
+  <p>A dataset must satisfy <strong>all</strong> of the following to enter TabArena:</p>
+  <ol>
+    <li><strong>Unique</strong> — the dataset and its predictive ML task are unique within the benchmark.</li>
+    <li><strong>IID or non-IID tabular task</strong> — a random, temporal, or grouped split is the appropriate
+    validation protocol.</li>
+    <li><strong>Published for a predictive task</strong> — explicitly published for classification or regression.</li>
+    <li><strong>Representative of a real application</strong> — stems from a real random distribution (not generated
+    by a deterministic function), and tabular models are a suitable, competitive choice (e.g., not a vectorized
+    version of ImageNet).</li>
+    <li><strong>No ethical concerns</strong> — the dataset and task raise no (obvious) ethical concerns.</li>
+  </ol>
+
+  <h2>4 · Selection criteria in detail</h2>
+  <p class="lede">These criteria involve subjective human interpretation; when in doubt, discuss and record the
+  decision in the curation log.</p>
+
+  <div class="crit">
+    <h3>Unique dataset</h3>
+    <p>Ensure each dataset has a <strong>unique original data source</strong>. Many datasets are re-uploaded to
+    OpenML/Kaggle under different names without attribution; gamified incentives can even push users to make data
+    look non-duplicate. So the first priority for any candidate is to determine its original source (or confirm it
+    is an original contribution). Sometimes trivial; sometimes it requires prolonged investigation — comparing data
+    statistics and comparing against popular datasets from the same domain. When the source stays unclear after a
+    thorough check, the curator team uses subjective judgment to assess authenticity and uniqueness.</p>
+  </div>
+  <div class="crit">
+    <h3>IID and non-IID tabular datasets</h3>
+    <p>Include any tabular dataset whose original task requires a random, temporal, or grouped split. Exclude
+    <strong>time-series forecasting</strong> tasks — representing them faithfully needs a different protocol than
+    temporal tabular tasks, and they have their own benchmarking community.</p>
+  </div>
+  <div class="crit">
+    <h3>Predictive classification or regression tasks</h3>
+    <p>Exclude datasets that do not originally stem from a predictive classification/regression task. In particular,
+    exclude <strong>scientific-discovery</strong> tasks (e.g., survey data or non-predictive tables), and
+    tabular-adjacent tasks such as <strong>click-through-rate</strong> prediction and <strong>ranking /
+    information-retrieval</strong> (recommender) tasks — these need specific validation and have their own
+    communities.</p>
+  </div>
+  <div class="crit">
+    <h3>Representative of real-world tabular ML</h3>
+    <p>Exclude datasets representing tasks for which tabular ML models would not be used, that do not represent a
+    real-world application, or that cannot be preprocessed to be representative. Concretely, exclude datasets that:</p>
+    <ul>
+      <li><strong>(A) Non-tabular modality</strong> — where modality-specific models are clearly superior. This is
+      judged <em>per dataset</em> (not by blanket modality exclusion): vectorized image, text, audio, or time-series
+      data is allowed if tabular models are competitive with modality-specific solutions. Consult recent benchmarks
+      / the introductory paper for the dataset's application.</li>
+      <li><strong>(B) Not a real random distribution</strong> — exclude artificial data and data generated by a
+      deterministic function. Simulated data from real applications (e.g., Higgs bosons) represents a real
+      distribution but is still excluded here, as such tasks have dedicated domain-specific benchmarks.</li>
+      <li><strong>(C) Trivial</strong> — practitioners would not use ML for it. A dataset is trivial if all models,
+      without tuning, reach the same better-than-random score (no variance) or solve it perfectly (error 0).</li>
+      <li><strong>(D) Irreversible data quality issues</strong> — exclude datasets where irreversible preprocessing
+      leaks the target or the test feature distribution (e.g., PCA-transformed data).</li>
+      <li><strong>(E) Insufficient information</strong> — when a prolonged investigation fails to find source
+      information needed to judge the criteria, it is the curation team's call whether to use it.</li>
+    </ul>
+  </div>
+  <div class="crit">
+    <h3>Ethically unambiguous tasks</h3>
+    <p>Exclude datasets whose tasks pose ethical concerns. This is extended to include cases where data subjects or
+    creators request that the data not be used for ML research (e.g., the Pima Indian Diabetes Dataset).</p>
+  </div>
+
+  <p class="src">Adapted from the TabArena paper — Section 2 (background), Section 4 (curation &amp; selection
+  criteria), and Appendix B.2 (detailed criteria). Citations omitted. See the <strong>Dataset Processing
+  (extended)</strong> tab for processing conventions.</p>
+</section>
+
+<section id="tab-proc" hidden>
+  <h1>Dataset Processing <span class="tag">extended</span></h1>
+  <p class="lede">All datasets undergo a processing procedure for consistency and reproducibility. Below are the
+  recurring patterns; case-by-case details and comments for each dataset live in Data Foundry's notebooks.</p>
+
+  <h2>General</h2>
+  <ul>
+    <li><strong>Sample identifiers</strong> — drop uninformative ones (often just storage artifacts). Keep
+    informative identifiers (e.g., a time index) and process them to represent their original meaning.</li>
+    <li><strong>Missing values</strong> — convert proxy missing values (e.g., <code>999</code>, <code>-1</code>) to
+    explicit <code>NA</code> whenever the encoding can be reliably inferred from the data description and task
+    context.</li>
+    <li><strong>Skewed targets</strong> — for numerical targets with strong skew / heavy tails (e.g., housing
+    prices), consider logarithmic scaling on a case-by-case basis.</li>
+    <li><strong>Naming</strong> — standardize dataset names with <code>snake_case</code>.</li>
+    <li><strong>Sample order</strong> — always <strong>shuffle</strong> IID and grouped data to prevent methods from
+    exploiting implicit order leakage. For <strong>temporal</strong> data, sort chronologically by the time index.</li>
+  </ul>
+
+  <h2>Feature types (dtypes)</h2>
+  <ul>
+    <li>Transform object/string features to <strong>categorical</strong> (a fixed, finite set of values, inferred
+    from the description/context) or <strong>string</strong> (otherwise).</li>
+    <li>Convert <strong>date</strong> features to standardized <code>YYYY-MM-DD</code> datetime where possible; for
+    numerically-encoded dates, reconstruct as much of the date information as possible.</li>
+    <li>Encode all other features as <strong>numerical</strong> types.</li>
+  </ul>
+
+  <h2>Creating temporal tasks and splits</h2>
+  <ul>
+    <li>Manually define the <strong>prediction horizon</strong> and the associated test time points.</li>
+    <li>Verify every feature would have been <strong>available at prediction time</strong> (no target leakage from
+    future information); filter samples and features as needed.</li>
+    <li>Analyze for <strong>grouped-temporal structure</strong> — repeated observations from the same entity over
+    time (e.g., multiple transactions from one customer); carefully consider a grouped split during construction.</li>
+    <li>The <strong>first split</strong> of a temporal task is always the one with the <strong>most recent</strong>
+    test time point — it also has the most training data and is deemed the most representative. Order all other
+    splits by descending test time point.</li>
+  </ul>
+
+  <p class="src">Adapted from the TabArena paper — Appendix B.3 (details on dataset processing). Citations omitted.</p>
+</section>
+</main>
+
+<script>
+function showTab(which) {
+  document.getElementById("tab-main").hidden = which !== "main";
+  document.getElementById("tab-proc").hidden = which !== "proc";
+  document.getElementById("tab-btn-main").classList.toggle("active", which === "main");
+  document.getElementById("tab-btn-proc").classList.toggle("active", which === "proc");
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

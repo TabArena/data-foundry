@@ -12,6 +12,10 @@ gotchas that look like blockers but aren't — lives in
 * **Repo:** [Data Foundry](README.md) — schema and curation toolkit for
   tabular datasets behind BeyondArena / TabArena.
 * **You touch code mainly to:**
+  * triage the dataset backlog — the **curation log** of one markdown record per
+    candidate dataset under `curation/records/`; the `/curate` slash command
+    ([`.claude/commands/curate.md`](.claude/commands/curate.md)) starts the local
+    dashboard (`data-foundry-curation serve`) and loads the curation guidelines,
   * scaffold a new curation notebook via the `/new-dataset` slash command
     ([`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md)),
   * extend the package (`src/data_foundry/`),

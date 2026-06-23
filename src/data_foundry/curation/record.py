@@ -64,23 +64,20 @@ class FieldSpec:
 # The curation fields, in display / front-matter order. ``unique_name`` is the
 # stable id (file stem) and is handled separately from this list.
 FIELDS: tuple[FieldSpec, ...] = (
-    FieldSpec("name", "Name", "text", help="Human-readable dataset name."),
+    FieldSpec("name", "Source Name", "text", help="Names this dataset has been published under across its sources and collections."),
     FieldSpec("checked_by", "Checked by", "multiselect", help="People who reviewed the dataset."),
     FieldSpec("data_foundry_status", "Data Foundry", "select", help="Integration status into Data Foundry."),
     FieldSpec("suggestion", "Suggestion", "select", help="Whether we suggest including the dataset."),
     FieldSpec("decision_markers", "Decision Markers", "multiselect", help="Reasons / decision flags."),
-    FieldSpec("tags", "New Tag", "multiselect", help="Data characteristic / usage tags."),
+    FieldSpec("tags", "Prio Tag", "multiselect", help="Tags to determine the priority of investigating the dataset."),
     FieldSpec("collections", "Source (Benchmark / Collection)", "multiselect", help="Source benchmarks/collections."),
     FieldSpec("original_source", "Original Source (Website)", "select", help="Where the data was first shared."),
     FieldSpec("year", "Year", "text", help="Publication / collection year."),
     FieldSpec("domain", "Context Domain", "select", help="Real-world application domain."),
     FieldSpec("required_split", "Required split", "multiselect", help="Evaluation split regime."),
     FieldSpec("problem_type", "Problem Type", "select", help="Predictive ML problem type."),
-    FieldSpec("usable_task_type", "Usable Task Type", "select", help="Whether it is usable as a predictive ML task."),
-    FieldSpec("given_task_type", "Given Task Type", "multiselect", help="Task type(s) as originally framed."),
-    FieldSpec("data_modality", "Data Domain", "multiselect", help="Data modality (tabular, forecasting, ...)."),
     FieldSpec("original_data_state", "Original Data State", "select", help="Shape of the raw data."),
-    FieldSpec("source_links", "Source (and Link to download)", "links", help="Download links / DOIs (one per line)."),
+    FieldSpec("source_links", "Source Links", "links", help="Download links / DOIs (one per line)."),
     FieldSpec("comments", "Free Comments", "body", help="Free-text curation discussion."),
     FieldSpec("reference", "Reference", "body", help="Academic reference / citation (often BibTeX)."),
 )
@@ -89,6 +86,10 @@ FIELDS_BY_NAME: dict[str, FieldSpec] = {f.name: f for f in FIELDS}
 BODY_FIELDS: tuple[str, ...] = tuple(f.name for f in FIELDS if f.kind == "body")
 LIST_FIELDS: tuple[str, ...] = tuple(f.name for f in FIELDS if f.is_list)
 VOCAB_FIELDS: dict[str, str] = {f.name: f.vocab_key for f in FIELDS if f.vocab_key}  # type: ignore[misc]
+
+# Fields that must be filled in for a candidate to be considered triaged. Left
+# empty, they flag the record for review (see CurationRecord.review_reasons).
+REQUIRED_FIELDS: tuple[str, ...] = ("suggestion",)
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -116,9 +117,6 @@ class CurationRecord:
     domain: str | None = None
     required_split: list[str] = pydantic.Field(default_factory=list)
     problem_type: str | None = None
-    usable_task_type: str | None = None
-    given_task_type: list[str] = pydantic.Field(default_factory=list)
-    data_modality: list[str] = pydantic.Field(default_factory=list)
     original_data_state: str | None = None
     source_links: list[str] = pydantic.Field(default_factory=list)
 
@@ -148,6 +146,19 @@ class CurationRecord:
             if unknown:
                 out[field] = unknown
         return out
+
+    def review_reasons(self, vocab: dict[str, list[str]]) -> list[str]:
+        """Field names needing attention, used to populate :attr:`needs_review`.
+
+        Combines fields whose dropdown value is not in ``vocab`` with
+        :data:`REQUIRED_FIELDS` that are still empty (e.g. a candidate with no
+        ``suggestion`` yet). Returned sorted for stable serialization.
+        """
+        reasons = set(self.unknown_vocab_values(vocab))
+        for field in REQUIRED_FIELDS:
+            if not getattr(self, field):
+                reasons.add(field)
+        return sorted(reasons)
 
     def describe(self) -> str:
         """Return a compact, human-readable one-record summary."""

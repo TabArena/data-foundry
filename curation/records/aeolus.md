@@ -16,12 +16,6 @@ domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
-- Forecasting
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/datasets/flnny123/mfddmulti-modal-flight-delay-dataset

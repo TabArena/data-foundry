@@ -18,12 +18,6 @@ domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
-- Forecasting
 original_data_state: One Table
 source_links:
 - https://community.amstat.org/jointscsg-section/dataexpo/dataexpo2009

@@ -17,11 +17,6 @@ domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/vbinh002/fraud-ecommerce

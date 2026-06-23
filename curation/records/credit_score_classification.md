@@ -20,11 +20,6 @@ required_split:
 - Grouped (NON-IID)
 - Temporal (NON-IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/parisrohan/credit-score-classification

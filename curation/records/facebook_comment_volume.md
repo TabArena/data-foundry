@@ -16,11 +16,6 @@ year: '2015'
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5Q886

@@ -15,12 +15,6 @@ domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
 problem_type: Multiclass Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - 10.24432/C50S3Z

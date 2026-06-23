@@ -18,11 +18,6 @@ required_split:
 - '?'
 - Random (IID)
 problem_type: Regression
-usable_task_type: '?'
-given_task_type:
-- Scientific Discovery
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/thedevastator/analyzing-customer-spending-habits-to-improve-sa

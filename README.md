@@ -12,6 +12,7 @@
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
 - A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact in one notebook.
 - A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena).
+- A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab. It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
 
 ## ⚡ Quickstart
 
@@ -212,6 +213,36 @@ For the contributor flow (where to put the notebook, how to open the PR, the `/n
 
 </details>
 
+<details>
+<summary><b>🗂️ Triage the dataset backlog</b> — the curation log + local dashboard</summary>
+
+Before a dataset becomes a notebook, it lives in the **curation log**: one markdown record
+per candidate dataset under [`curation/records/`](curation/records). Each `<unique_name>.md`
+has YAML front-matter (the structured / dropdown fields) plus a free-text body
+(`## Comments`, `## Reference`). Add or triage a dataset by creating/editing its file — by
+hand, with an agent, or through the dashboard.
+
+```bash
+pip install "data-foundry[curation]"   # or the editable dev install
+data-foundry-curation serve            # → http://127.0.0.1:8765
+```
+
+The local, Sheets-like **dashboard** edits those records in place (filter by status, pin a
+working row, add dropdown options, …) and ships a built-in **Guidelines** tab describing the
+selection criteria and processing conventions. Other CLI subcommands:
+
+```bash
+data-foundry-curation validate                 # check records against the dropdown vocab
+data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
+data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
+data-foundry-curation import-sheet sheet.csv    # one-time migration from the old Google Sheet
+```
+
+Working with Claude Code? The **`/curate`** slash command starts the dashboard and loads the
+curation guidelines into context so the agent can help you decide and process datasets.
+
+</details>
+
 ## 🪄 Installation
 
 > [!IMPORTANT]
@@ -262,7 +293,9 @@ data-foundry/
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
 │   ├── curation_recommendations.py  # recommended split helpers (IID, grouped, temporal)
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats for the curation notebook
+│   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
+├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
 ├── datasets/                 # curation notebooks
 │   ├── _template/            # canonical notebook skeleton
 │   ├── _dev/                 # contributions land here first

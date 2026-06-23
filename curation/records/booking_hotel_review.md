@@ -18,12 +18,6 @@ domain: business & marketing
 required_split:
 - '?'
 problem_type: Regression
-usable_task_type: '?'
-given_task_type:
-- Scientific Discovery
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=43712

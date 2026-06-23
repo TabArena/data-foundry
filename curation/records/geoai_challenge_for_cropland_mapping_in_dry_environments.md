@@ -16,11 +16,6 @@ domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/geoai-challenge-for-cropland-mapping-in-dry-environments/data

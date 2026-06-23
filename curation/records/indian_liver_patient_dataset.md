@@ -17,11 +17,6 @@ domain: medical & healthcare
 required_split:
 - Random (IID)
 problem_type: Binary Classification
-usable_task_type: Predictive ML
-given_task_type:
-- Predictive ML
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5D02C

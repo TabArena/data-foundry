@@ -1,0 +1,64 @@
+name: Pages
+
+# Publish a public, READ-ONLY copy of the curation log to GitHub Pages.
+#
+# The site is regenerated from curation/records (the source of truth) on every
+# push to main that touches the backlog or the viewer, then deployed. Nothing
+# generated is committed back to the repo.
+#
+# One-time setup: Settings -> Pages -> "Build and deployment" -> Source =
+# "GitHub Actions". The repository must be public (or on a plan that allows
+# private Pages). Note this publishes every record's comments, reviewer names,
+# and decision notes publicly.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "curation/records/**"
+      - "curation/vocabularies.yaml"
+      - "src/data_foundry/curation/**"
+      - ".github/workflows/pages.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; let an in-progress run finish rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install package
+        run: uv sync
+
+      - name: Build read-only static site
+        env:
+          DATA_FOUNDRY_CURATION_DIR: ${{ github.workspace }}/curation
+        run: uv run data-foundry-curation build-site _site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

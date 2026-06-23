@@ -18,12 +18,6 @@ domain: business & marketing
 required_split:
 - '?'
 problem_type: Other
-usable_task_type: Unreasonable as Predictive ML Task
-given_task_type:
-- Scientific Discovery
-- Information Retrieval
-data_modality:
-- Tabular
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/rajchinagundi/mydramalist-complete-dataset
