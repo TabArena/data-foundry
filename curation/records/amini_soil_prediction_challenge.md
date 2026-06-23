@@ -4,11 +4,13 @@ name: amini-soil-prediction-challenge
 decision_markers:
 - Needs extensive data wrangling
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/amini-soil-prediction-challenge/data
 source_row: 882
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://doi.org/10.24432/C5DP5D
 source_row: 129

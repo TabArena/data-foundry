@@ -4,10 +4,12 @@ name: Spanish Wine Quality Dataset
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/spanish-wine-quality-dataset/data
 source_row: 833
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

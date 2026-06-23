@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 original_source: UCI
 year: '2024'
 domain: handcrafted/toy

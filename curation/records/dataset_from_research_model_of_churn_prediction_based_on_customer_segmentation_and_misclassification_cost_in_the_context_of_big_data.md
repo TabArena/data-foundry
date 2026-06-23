@@ -6,10 +6,12 @@ decision_markers:
 tags:
 - '?'
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - http://dx.doi.org/10.4236/jcc.2015.36009
 source_row: 796
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/brsahan/genomic-data-for-cancer/data
 source_row: 135

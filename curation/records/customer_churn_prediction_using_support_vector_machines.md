@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://github.com/etemesijacktone/Customer-Churn-Prediction-Using-Support-Vector-Machines/tree/main
 source_row: 144

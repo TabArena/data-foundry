@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/ethon0426/lending-club-20072020q1?select=Loan_status_2007-2020Q3.gzip
 - (IID fallback https://www.kaggle.com/datasets/itssuru/loan-data)

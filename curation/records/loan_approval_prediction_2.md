@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/competitions/playground-series-s4e10/data?select=train.csv
 source_row: 149

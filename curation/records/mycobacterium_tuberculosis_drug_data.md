@@ -8,7 +8,7 @@ decision_markers:
 - Missing source information
 - No Good Target  / Scientific Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/ruanrodriguez/drug-discovery-data/data
 source_row: 131

@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New
+- New (BeyondArena)
 original_source: Kaggle
 year: '2025'
 domain: education

@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 source_links:
 - 10.24432/C5SC7G

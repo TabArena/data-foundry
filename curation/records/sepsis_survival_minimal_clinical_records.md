@@ -9,7 +9,7 @@ tags:
 - Larger IID Data
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '2020'
 domain: medical & healthcare

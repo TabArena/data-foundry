@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/amirmotefaker/customer-acquisition-data
 source_row: 64

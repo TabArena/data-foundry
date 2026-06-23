@@ -10,7 +10,7 @@ tags:
 - New IID
 - Multi-target
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Other
 year: '1994'
 domain: medical & healthcare

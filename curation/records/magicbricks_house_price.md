@@ -13,7 +13,7 @@ tags:
 - Free Text (Sentences)
 - Larger IID Data
 collections:
-- New
+- New (BeyondArena)
 original_source: Kaggle
 year: '2023'
 domain: business & marketing

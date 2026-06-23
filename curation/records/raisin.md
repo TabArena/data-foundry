@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Image
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - 10.24432/C5660T
 source_row: 134

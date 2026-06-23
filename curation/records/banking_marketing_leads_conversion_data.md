@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Website
 year: '2016'
 domain: finance

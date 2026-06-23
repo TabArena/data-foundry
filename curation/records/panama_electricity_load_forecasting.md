@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/pateljay731/panama-electricity-load-forecasting?select=Test_Jan.csv
 source_row: 183

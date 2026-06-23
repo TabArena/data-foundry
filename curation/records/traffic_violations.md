@@ -13,6 +13,8 @@ source_links:
 - https://catalog.data.gov/dataset/traffic-violations
 - https://www.kaggle.com/datasets/nikhil1e9/traffic-violations
 source_row: 846
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Free Text (Sentences)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - 10.24432/C5X623
 - https://www.kaggle.com/datasets/adithyaawati/apartments-for-rent-classified

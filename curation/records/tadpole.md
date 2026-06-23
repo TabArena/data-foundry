@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 original_source: Website
 year: '2019'
 domain: medical & healthcare

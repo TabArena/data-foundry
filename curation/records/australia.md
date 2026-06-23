@@ -4,8 +4,10 @@ name: australia
 tags:
 - Many features
 collections:
-- New
+- New (BeyondArena)
 source_row: 857
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

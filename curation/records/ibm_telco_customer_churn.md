@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 - TabArena Reject
 source_links:

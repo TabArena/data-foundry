@@ -4,8 +4,10 @@ name: atl_ocean_transect
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 source_row: 873
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

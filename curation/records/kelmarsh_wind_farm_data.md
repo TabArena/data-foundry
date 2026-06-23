@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/competitions/predict-the-wind-speed-at-a-wind-turbine
 - https://zenodo.org/records/5841834

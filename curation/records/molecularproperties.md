@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/competitions/champs-scalar-coupling/data?select=train.csv
 source_row: 534

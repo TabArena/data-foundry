@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/competitions/Raising-Money-to-Fund-an-Organizational-Mission/data?select=kaggle_training_dataset_formatted2.zip
 source_row: 626

@@ -12,6 +12,8 @@ source_links:
 - 'One of the original sources is Eaton & Haas (1994) Titanic: Triumph and Tragedy, Patrick Stephens Ltd, which includes a passenger list created by many researchers and edited by Michael A. Findlay.'
 - https://www.openml.org/search?type=data&id=40945
 source_row: 806
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

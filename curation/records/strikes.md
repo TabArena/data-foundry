@@ -12,6 +12,8 @@ source_links:
 - https://lib.stat.cmu.edu/datasets/
 - openml 549
 source_row: 800
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

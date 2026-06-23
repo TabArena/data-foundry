@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://catalog.data.gov/dataset/nyc-building-energy-and-water-data-disclosure-for-local-law-84-2023-present
 source_row: 313

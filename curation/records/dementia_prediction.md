@@ -12,7 +12,7 @@ tags:
 - Tiny Data
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Other
 year: '2010'
 domain: medical & healthcare

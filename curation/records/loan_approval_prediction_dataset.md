@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/architsharma01/loan-approval-prediction-dataset
 source_row: 529

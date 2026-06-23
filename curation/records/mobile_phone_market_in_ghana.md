@@ -9,6 +9,8 @@ year: '2024'
 source_links:
 - https://www.kaggle.com/datasets/redpen12/mobile-phone-market-in-ghana
 source_row: 816
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -5,8 +5,10 @@ data_foundry_status: Suspended
 tags:
 - '?'
 collections:
-- New
+- New (BeyondArena)
 source_row: 793
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

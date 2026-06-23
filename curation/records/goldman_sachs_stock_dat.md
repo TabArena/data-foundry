@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/varpit94/goldman-sachs-stock-data-updated-till-1jul2021
 source_row: 294

@@ -12,6 +12,8 @@ source_links:
 - https://www.openml.org/search?type=data&id=46664&sort=runs&status=active
 - https://machinehack.com/hackathons/predict_the_data_scientists_salary_in_india_hackathon / openml_id=46664
 source_row: 856
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

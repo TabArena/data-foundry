@@ -12,6 +12,8 @@ source_links:
 - openml 40536
 - Columbia Business School  -> https://sites.stat.columbia.edu/gelman/arm/examples/speed.dating/  -> https://statmodeling.stat.columbia.edu/2008/01/21/the_speeddating_1/ -> ?
 source_row: 842
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

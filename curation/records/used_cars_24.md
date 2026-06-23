@@ -14,6 +14,8 @@ source_links:
 - https://www.kaggle.com/datasets/avikasliwal/used-cars-price-prediction
 - (unsure) https://www.cars24.com/
 source_row: 866
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

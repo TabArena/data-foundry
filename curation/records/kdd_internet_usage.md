@@ -12,6 +12,8 @@ source_links:
 - https://www.openml.org/search?type=data&id=372&sort=runs&status=active
 - https://sites.cc.gatech.edu/gvu/user_surveys/survey-1997-10/datasets/
 source_row: 801
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

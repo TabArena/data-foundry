@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://aistudio.baidu.com/competition/detail/152/0/task-definition
 source_row: 316

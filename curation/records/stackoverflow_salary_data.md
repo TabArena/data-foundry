@@ -19,7 +19,7 @@ domain: business & marketing
 required_split:
 - Random (IID)
 problem_type: TBD
-usable_task_type: Unreaonsable as Predictive ML Task
+usable_task_type: Unreasonable as Predictive ML Task
 given_task_type:
 - Scientific Discovery
 data_modality:

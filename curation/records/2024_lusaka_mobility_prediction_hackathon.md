@@ -2,7 +2,7 @@
 unique_name: 2024_lusaka_mobility_prediction_hackathon
 name: 2024-lusaka-mobility-prediction-hackathon
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/practice-challenge-lusaka/data

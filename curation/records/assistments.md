@@ -12,6 +12,8 @@ source_links:
 - https://new.assistments.org/
 - https://tableshift.org/datasets.html#assistments
 source_row: 853
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

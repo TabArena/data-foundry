@@ -6,10 +6,12 @@ decision_markers:
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis
 source_row: 838
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

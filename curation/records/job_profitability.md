@@ -9,6 +9,8 @@ year: '2022'
 source_links:
 - https://www.kaggle.com/datasets/ulrikthygepedersen/job-profitability/data
 source_row: 814
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

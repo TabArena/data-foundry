@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Forecasting)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/chayanroy3/customer-churn-analysis-dataset
 - https://www.theforage.com/simulations/bcg/data-science-ccdz

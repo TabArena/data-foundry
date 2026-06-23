@@ -7,7 +7,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 original_source: Website
 year: '2016'
 domain: finance

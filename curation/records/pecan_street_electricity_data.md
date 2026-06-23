@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/zhitingzheng/pecan-street-electricity-data
 source_row: 305

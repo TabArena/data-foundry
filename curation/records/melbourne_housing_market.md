@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market
 - https://www.kaggle.com/datasets/tylerx/melbourne-airbnb-open-data

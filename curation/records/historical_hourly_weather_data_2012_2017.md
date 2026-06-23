@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/selfishgene/historical-hourly-weather-data?select=wind_speed.csv
 source_row: 623

@@ -7,12 +7,14 @@ decision_markers:
 tags:
 - '?'
 collections:
-- New
+- New (BeyondArena)
 - TabSTAR
 source_links:
 - https://link.springer.com/article/10.1007/s10115-013-0722-y
 - https://www.openml.org/search?type=data&id=46444
 source_row: 797
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 source_links:
 - https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset

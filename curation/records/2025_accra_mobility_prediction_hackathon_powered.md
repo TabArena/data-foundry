@@ -2,7 +2,7 @@
 unique_name: 2025_accra_mobility_prediction_hackathon_powered
 name: 2025-accra-mobility-prediction-hackathon-powered
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/2025-accra-mobility-prediction-hackathon-powered/data

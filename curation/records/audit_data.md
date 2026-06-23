@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '2018'

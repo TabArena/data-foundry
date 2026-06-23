@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Free Text (Short)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/budnyak/wine-rating-and-price
 source_row: 495

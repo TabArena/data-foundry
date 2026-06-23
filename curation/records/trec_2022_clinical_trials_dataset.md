@@ -4,10 +4,12 @@ name: TREC 2022 Clinical Trials Dataset
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://catalog.data.gov/dataset/trec-2022-clinical-trials-dataset
 source_row: 837
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

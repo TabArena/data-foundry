@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/code/shivashi11/ad-click-prediction
 source_row: 328

@@ -11,6 +11,8 @@ collections:
 source_links:
 - https://www.kaggle.com/datasets/bogdansorin/second-hand-mercedes-benz-registered-2000-2023-ita
 source_row: 867
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -7,7 +7,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/sasol-customer-retention-recruitment-competition/data

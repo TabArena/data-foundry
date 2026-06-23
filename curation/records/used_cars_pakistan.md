@@ -10,6 +10,8 @@ source_links:
 - https://www.kaggle.com/datasets/mustafaimam/used-car-prices-in-pakistan-2021
 - http://www.pakwheels.com/
 source_row: 854
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

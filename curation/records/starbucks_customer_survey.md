@@ -10,7 +10,7 @@ tags:
 - Tiny Data
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2020'
 domain: business & marketing

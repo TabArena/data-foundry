@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 - TabSTAR
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset

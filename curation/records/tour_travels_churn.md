@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2021'

@@ -11,6 +11,8 @@ source_links:
 - https://www.kaggle.com/datasets/alessandrolobello/the-ultimate-earthquake-dataset-from-1990-2023
 - http://www.stern.nyu.edu/SOR/SmoothMeth
 source_row: 803
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

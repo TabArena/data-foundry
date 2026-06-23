@@ -10,7 +10,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - NLP (Text)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/vivekgediya/ecommerce-product-review-data?select=Flipkart_Reviews+-+Electronics.csv
 source_row: 198

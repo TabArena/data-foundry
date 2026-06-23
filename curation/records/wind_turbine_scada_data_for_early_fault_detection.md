@@ -12,7 +12,7 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://zenodo.org/records/15846963
 source_row: 556

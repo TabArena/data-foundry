@@ -10,6 +10,8 @@ year: '2012'
 source_links:
 - https://github.com/rudeboybert/JSE_OkCupid
 source_row: 805
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

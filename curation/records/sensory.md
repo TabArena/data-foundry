@@ -11,6 +11,8 @@ year: '1996'
 source_links:
 - openml 546
 source_row: 843
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

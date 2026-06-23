@@ -9,6 +9,8 @@ year: '2021'
 source_links:
 - https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis/data
 source_row: 812
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

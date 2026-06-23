@@ -17,7 +17,7 @@ tags:
 - Many class
 - Free Text (Sentences)
 collections:
-- New
+- New (BeyondArena)
 - TexTabBench
 - CARTE/TARTE
 original_source: Kaggle

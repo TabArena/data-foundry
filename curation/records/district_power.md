@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://github.com/yuruotao/District-power
 source_row: 307

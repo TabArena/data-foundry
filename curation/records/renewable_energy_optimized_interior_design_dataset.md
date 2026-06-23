@@ -8,7 +8,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/ziya07/renewable-energy-optimized-interior-design-dataset
 source_row: 179

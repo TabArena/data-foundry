@@ -8,7 +8,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/datasetengineer/ev-charging-station-data-california-region
 source_row: 184

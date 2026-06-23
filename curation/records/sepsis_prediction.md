@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2019'

@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://proceedings.mlr.press/v14/chapelle11a.html
 source_row: 326

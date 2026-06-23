@@ -7,7 +7,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 year: '2025'
 domain: business & marketing

@@ -4,10 +4,12 @@ name: Human genome annotation
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/alfrandom/human-genome-annotation
 source_row: 834
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

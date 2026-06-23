@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/ziya07/personalized-energy-marketing-analytics-dataset
 source_row: 180

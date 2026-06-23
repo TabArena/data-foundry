@@ -2,7 +2,7 @@
 unique_name: financial_inclusion_in_africa_for_botswana
 name: financial-inclusion-in-africa-for-botswana
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/financial-inclusion-in-africa-for-botswana/data
@@ -15,6 +15,8 @@ source_links:
 - https://zindi.africa/competitions/pyladies-financial-inclusion-in-africa
 - https://zindi.africa/competitions/dsea-financial-inclusion-in-africa
 source_row: 986
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

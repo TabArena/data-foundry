@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://archive.ics.uci.edu/dataset/45/heart-disease
 source_row: 113

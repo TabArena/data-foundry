@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/airfoil-selfnoise-dataset
 - 10.24432/C5VW2C

@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 suggestion: 'No'
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/landslide-prevention-and-innovation-challenge/data

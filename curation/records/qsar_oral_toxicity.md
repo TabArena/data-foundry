@@ -8,7 +8,7 @@ tags:
 - New IID
 - Many features
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '2019'
 domain: chemistry & material science

@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/muhammadshahidazeem/customer-churn-dataset
 source_row: 30

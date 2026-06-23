@@ -12,7 +12,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 original_source: UCI
 domain: medical & healthcare
 required_split:

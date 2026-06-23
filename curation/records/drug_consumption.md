@@ -9,6 +9,8 @@ year: '2015'
 source_links:
 - 10.24432/C5TC7S
 source_row: 819
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

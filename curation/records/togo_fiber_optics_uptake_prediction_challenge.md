@@ -7,7 +7,7 @@ suggestion: 'No'
 tags:
 - Many features
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/togo-fiber-optics-uptake-prediction-challenge/data

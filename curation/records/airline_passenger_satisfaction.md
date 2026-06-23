@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/teejmahal20/airline-passenger-satisfaction?select=train.csv
 source_row: 26

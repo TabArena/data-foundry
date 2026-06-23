@@ -9,14 +9,14 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: UCI
 year: '2019'
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
 problem_type: TBD
-usable_task_type: Unreaonsable as Predictive ML Task
+usable_task_type: Unreasonable as Predictive ML Task
 given_task_type:
 - Scientific Discovery
 data_modality:

@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - 10.24432/C51307
 source_row: 168

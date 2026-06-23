@@ -10,6 +10,8 @@ source_links:
 - openml 42130
 - openml 44146
 source_row: 824
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

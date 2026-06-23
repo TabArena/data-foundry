@@ -8,7 +8,7 @@ decision_markers:
 - Missing source information
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/ziya07/microgrid-pv-ev-charging-dataset/data
 source_row: 173

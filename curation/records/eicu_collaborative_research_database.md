@@ -5,10 +5,12 @@ tags:
 - 2nd Tier / Scientfic Discovery
 - '?'
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://physionet.org/content/eicu-crd/2.0/
 source_row: 841
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

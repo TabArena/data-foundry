@@ -9,6 +9,8 @@ source_links:
 - https://www.kaggle.com/datasets/arjunbhasin2013/ccdata
 - https://www.openml.org/search?type=data&id=43618&sort=runs&status=active
 source_row: 840
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

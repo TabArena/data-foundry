@@ -6,10 +6,12 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/diishasiing/revenue-for-cab-drivers
 source_row: 852
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -12,7 +12,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '1992'

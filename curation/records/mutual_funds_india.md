@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2023'
 domain: finance

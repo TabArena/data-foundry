@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 original_source: Github
 year: '2025'
 domain: medical & healthcare

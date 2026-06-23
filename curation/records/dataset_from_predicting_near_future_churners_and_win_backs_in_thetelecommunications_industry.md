@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://arxiv.org/pdf/1210.6891
 source_row: 220

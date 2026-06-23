@@ -4,6 +4,8 @@ name: freMTPL2
 source_links:
 - https://www.kaggle.com/datasets/karansarpal/fremtpl2-french-motor-tpl-insurance-claims
 source_row: 1044
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

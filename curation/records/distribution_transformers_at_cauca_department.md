@@ -8,7 +8,7 @@ tags:
 - Non-IID (Temporal)
 - New IID
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - 'data proof: https://ieee-dataport.org/documents/data-driven-predictive-maintenance-distribution-transformers'
 - 'download link (down for me): https://data.mendeley.com/datasets/yzyj46xpmy/4'

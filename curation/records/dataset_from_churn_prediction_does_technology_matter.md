@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.researchgate.net/publication/283992554_Churn_Prediction_Does_Technology_Matter
 source_row: 217

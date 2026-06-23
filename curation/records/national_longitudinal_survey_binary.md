@@ -10,6 +10,8 @@ source_links:
 - https://www.nlsinfo.org/
 - openml 43892
 source_row: 821
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

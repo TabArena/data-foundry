@@ -9,6 +9,8 @@ year: '2021'
 source_links:
 - https://www.kaggle.com/datasets/jealousleopard/goodreadsbooks
 source_row: 813
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

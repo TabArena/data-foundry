@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2022'
 domain: finance

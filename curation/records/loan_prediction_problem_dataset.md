@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/altruistdelhite04/loan-prediction-problem-dataset/data
 - https://www.analyticsvidhya.com/datahack/contest/practice-problem-loan-prediction-iii/

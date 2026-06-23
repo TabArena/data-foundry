@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/akashnath29/lung-cancer-dataset/data
 source_row: 62

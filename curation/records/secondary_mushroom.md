@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '2023'
 domain: biology & life sciences

@@ -5,10 +5,12 @@ tags:
 - 2nd Tier / Scientfic Discovery
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/anshtanwar/global-data-on-sustainable-energy
 source_row: 851
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

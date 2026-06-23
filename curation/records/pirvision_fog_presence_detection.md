@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - 10.24432/C56W5M
 source_row: 621

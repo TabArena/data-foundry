@@ -10,7 +10,7 @@ tags:
 - Non-IID (Grouped)
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2017'
 domain: medical & healthcare

@@ -7,7 +7,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/inIT-OWL/high-storage-system-data-for-energy-optimization/
 source_row: 728

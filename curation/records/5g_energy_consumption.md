@@ -11,7 +11,7 @@ tags:
 - Non-IID (Grouped)
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 problem_type: Regression
 usable_task_type: Predictive ML

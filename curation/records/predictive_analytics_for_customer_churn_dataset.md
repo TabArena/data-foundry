@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/safrin03/predictive-analytics-for-customer-churn-dataset?select=train.csv
 source_row: 27

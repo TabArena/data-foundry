@@ -2,7 +2,7 @@
 unique_name: autoinland_vehicle_insurance_claim_challenge
 name: autoinland-vehicle-insurance-claim-challenge
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/autoinland-vehicle-insurance-claim-challenge
@@ -11,6 +11,8 @@ source_links:
 - https://zindi.africa/competitions/indabax-ghana-autoinland-vehicle-insurance-claim
 - https://zindi.africa/competitions/vehicle-insurance-claim-hackathon
 source_row: 908
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

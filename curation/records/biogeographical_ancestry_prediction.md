@@ -9,7 +9,7 @@ tags:
 - Tiny Data
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Github
 year: '2025'
 domain: biology & life sciences

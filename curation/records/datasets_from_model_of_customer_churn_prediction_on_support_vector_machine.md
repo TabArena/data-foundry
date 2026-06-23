@@ -8,7 +8,7 @@ decision_markers:
 - Duplicate
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://cmapspublic2.ihmc.us/rid=1MYWPTHQ5-1BKQZGF-30S8/Xia_Costomer_churn_Prediction_SVM.pdf
 source_row: 215

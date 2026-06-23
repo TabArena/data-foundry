@@ -10,6 +10,8 @@ source_links:
 - Openml 4535
 - http://www.census.gov/
 source_row: 823
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

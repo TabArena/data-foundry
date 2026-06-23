@@ -7,7 +7,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2025'
 domain: medical & healthcare

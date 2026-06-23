@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://dl.acm.org/doi/10.1016/j.eswa.2009.06.076
 source_row: 218

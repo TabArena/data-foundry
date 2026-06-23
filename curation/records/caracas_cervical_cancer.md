@@ -8,7 +8,7 @@ tags:
 - New IID
 - Multi-target
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '2017'

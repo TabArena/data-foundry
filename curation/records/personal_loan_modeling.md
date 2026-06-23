@@ -11,7 +11,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 source_links:
 - https://www.kaggle.com/datasets/teertha/personal-loan-modeling

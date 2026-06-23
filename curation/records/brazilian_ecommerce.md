@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Kaggle
 year: '2019'
 domain: business & marketing

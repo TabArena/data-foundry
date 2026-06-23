@@ -9,6 +9,8 @@ collections:
 source_links:
 - https://www.kaggle.com/datasets/samybaladram/golf-play-extended
 source_row: 847
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

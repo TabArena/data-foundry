@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - http://dx.doi.org/10.1155/2015/473283
 source_row: 221

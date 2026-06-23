@@ -11,7 +11,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '1987'
 domain: medical & healthcare

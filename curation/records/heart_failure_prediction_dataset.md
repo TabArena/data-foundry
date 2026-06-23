@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
 source_row: 35

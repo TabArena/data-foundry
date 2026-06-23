@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/adrianvinueza/gym-customers-features-and-churn/data
 - https://www.kaggle.com/datasets/ellanihill/model-fitness-customer-churn

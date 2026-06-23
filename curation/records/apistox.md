@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: UCI
 year: '2024'
 domain: biology & life sciences

@@ -4,6 +4,8 @@ name: awesome-public-datasets
 source_links:
 - https://github.com/awesomedata/awesome-public-datasets
 source_row: 1028
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

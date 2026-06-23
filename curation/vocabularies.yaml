@@ -1,12 +1,3 @@
-# Editable dropdown vocabularies for curation records.
-#
-# Each key is a record field; the list is the set of allowed dropdown values.
-# Add new options here (or via the dashboard) — this file is git-tracked, so
-# changes are reviewable and apply globally. Records may still carry a value
-# not listed here; the importer/validator flags those via `needs_review`.
-#
-# Initial order is by frequency in the original Google Sheet at migration time.
-
 checked_by:
 - Lennart
 - Andrej
@@ -47,7 +38,6 @@ decision_markers:
 - Data Requested
 - Time-series (Regression)
 - Robotics (RL)
-- Requires split-specific preprocessing
 - TBD
 tags:
 - Non-IID (Temporal)
@@ -63,10 +53,9 @@ tags:
 - Multi-target
 - Many class
 collections:
+- New (BeyondArena)
 - TabArena Reject
 - TabSTAR
-- New
-- New - IST
 - CARTE/TARTE
 - TableShift
 - TexTabBench
@@ -76,6 +65,7 @@ collections:
 - TexTabBench Extra
 - Vectorizing Strings
 - TabArena Submission
+- New
 original_source:
 - Zindi
 - UCI
@@ -121,7 +111,7 @@ problem_type:
 usable_task_type:
 - Predictive ML
 - '?'
-- Unreaonsable as Predictive ML Task
+- Unreasonable as Predictive ML Task
 given_task_type:
 - Predictive ML
 - Scientific Discovery

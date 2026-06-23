@@ -4,6 +4,8 @@ name: beMTPL97
 source_links:
 - https://dutangc.github.io/CASdatasets/reference/beMTPL97.html
 source_row: 1045
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

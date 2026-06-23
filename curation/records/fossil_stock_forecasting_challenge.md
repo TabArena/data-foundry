@@ -4,12 +4,14 @@ name: fossil-stock-forecasting-challenge
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/fossil-stock-forecasting-challenge/data
 - https://zindi.africa/competitions/fossil-top-5-challenge/data
 source_row: 894
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2018'

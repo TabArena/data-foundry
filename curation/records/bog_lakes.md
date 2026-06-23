@@ -4,8 +4,10 @@ name: bog_lakes
 tags:
 - Many features
 collections:
-- New
+- New (BeyondArena)
 source_row: 858
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

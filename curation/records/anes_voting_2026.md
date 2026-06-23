@@ -7,7 +7,6 @@ data_foundry_status: 'Yes'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
-- Requires split-specific preprocessing
 tags:
 - Non-IID (Grouped)
 - Non-IID (Temporal)

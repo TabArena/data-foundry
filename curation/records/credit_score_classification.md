@@ -11,7 +11,7 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: '?'
 year: '2022'

@@ -10,7 +10,7 @@ tags:
 - Many features
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - 10.24432/C5702T
 source_row: 516

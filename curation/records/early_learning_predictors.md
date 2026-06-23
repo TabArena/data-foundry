@@ -11,7 +11,7 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
-- New
+- New (BeyondArena)
 original_source: Website
 year: '2023'
 domain: education

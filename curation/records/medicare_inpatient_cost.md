@@ -6,10 +6,12 @@ decision_markers:
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://data.cms.gov/provider-summary-by-type-of-service/medicare-inpatient-hospitals/medicare-inpatient-hospitals-by-provider-and-service
 source_row: 829
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -4,8 +4,10 @@ name: wastewater_treatment
 tags:
 - Many features
 collections:
-- New
+- New (BeyondArena)
 source_row: 864
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

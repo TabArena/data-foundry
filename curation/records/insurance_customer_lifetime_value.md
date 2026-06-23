@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://gomask.ai/marketplace/datasets/insurance-customer-lifetime-value?utm_source=chatgpt.com
 source_row: 160

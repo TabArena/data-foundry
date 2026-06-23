@@ -4,12 +4,14 @@ name: ai4d-lab-tanzania-tourism-classification-challenge
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge/data
 - https://zindi.africa/competitions/tanzania-tourism-prediction-challenge
 source_row: 901
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

@@ -2,7 +2,7 @@
 unique_name: indabax_hackathons
 name: indabax-hackathons
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/indabax-benin-republic-hackathon/data
@@ -18,6 +18,8 @@ source_links:
 - https://zindi.africa/competitions/indabax-kenya-pwani-ai-summit-challenge-2024
 - https://zindi.africa/competitions/indabax-togo-2022/data
 source_row: 936
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

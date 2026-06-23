@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://ieeexplore.ieee.org/abstract/document/846740
 source_row: 222

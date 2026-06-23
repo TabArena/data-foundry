@@ -11,7 +11,7 @@ tags:
 - Larger IID Data
 - '?'
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/rikdifos/credit-card-approval-prediction/data
 source_row: 60

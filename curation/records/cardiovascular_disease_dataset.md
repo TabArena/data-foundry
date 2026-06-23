@@ -7,13 +7,15 @@ decision_markers:
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 - TabArena Reject
 source_links:
 - https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset
 - https://www.openml.org/search?type=data&id=45547&sort=runs&status=active
 source_row: 828
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

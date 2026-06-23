@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/competitions/avazu-ctr-prediction
 source_row: 329

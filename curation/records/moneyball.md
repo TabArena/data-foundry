@@ -11,6 +11,8 @@ source_links:
 - https://www.kaggle.com/datasets/wduckett/moneyball-mlb-stats-19622012/data
 - https://www.openml.org/search?type=data&id=41021
 source_row: 802
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

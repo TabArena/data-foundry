@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Too Small
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - 10.24432/C5DG6Q
 source_row: 125

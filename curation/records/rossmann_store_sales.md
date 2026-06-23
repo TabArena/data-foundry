@@ -5,8 +5,6 @@ checked_by:
 - Andrej
 data_foundry_status: 'Yes'
 suggestion: 'Yes'
-decision_markers:
-- Requires split-specific preprocessing
 tags:
 - Non-IID (Temporal)
 collections:

@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 - TabSTAR
 original_source: Website
 year: '2016'

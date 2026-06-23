@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/nikhil1e9/loan-default
 source_row: 29

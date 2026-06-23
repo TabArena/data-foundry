@@ -11,7 +11,7 @@ tags:
 - Non-IID (Temporal)
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/abdulqaderasiirii/hospital-patient-data
 - https://www.kaggle.com/code/abdulqaderasiirii/hospital-wait-time

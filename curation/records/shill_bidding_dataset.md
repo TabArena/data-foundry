@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 collections:
-- New
+- New (BeyondArena)
 original_source: UCI
 year: '2020'
 domain: business & marketing

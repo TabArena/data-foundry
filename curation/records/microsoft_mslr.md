@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.microsoft.com/en-us/research/project/mslr/
 source_row: 325

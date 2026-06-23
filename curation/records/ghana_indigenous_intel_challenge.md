@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 year: '2025'
 domain: environmental science & climate

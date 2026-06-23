@@ -9,6 +9,8 @@ year: '2023'
 source_links:
 - https://www.kaggle.com/datasets/datascientistanna/customers-dataset
 source_row: 818
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

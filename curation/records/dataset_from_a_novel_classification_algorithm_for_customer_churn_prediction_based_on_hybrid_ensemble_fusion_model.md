@@ -4,10 +4,12 @@ name: Dataset from A novel classification algorithm for customer churn predictio
 decision_markers:
 - Data Requested
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.nature.com/articles/s41598-024-71168-x
 source_row: 877
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

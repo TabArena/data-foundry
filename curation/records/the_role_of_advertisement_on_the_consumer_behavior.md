@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/abdelrahmanosheba/the-role-of-advertisement-on-the-consumer-behavior
 source_row: 63

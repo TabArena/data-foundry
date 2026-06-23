@@ -6,13 +6,15 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 year: '2025'
 domain: business & marketing
 source_links:
 - https://zindi.africa/competitions/agribora-commodity-price-forecasting-challenge/data
 source_row: 869
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

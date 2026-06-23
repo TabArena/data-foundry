@@ -2,11 +2,13 @@
 unique_name: dsn_ai_bootcamp_qualification_hackathon_by_data_science_nigeria
 name: DSN AI Bootcamp Qualification Hackathon by Data Science Nigeria
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/dsn-ai-bootcamp-qualification-hackathon/data
 source_row: 1017
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

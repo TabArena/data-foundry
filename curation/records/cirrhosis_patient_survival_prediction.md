@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 original_source: Other
 year: '1991'
 domain: medical & healthcare

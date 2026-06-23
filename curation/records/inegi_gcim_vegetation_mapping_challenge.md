@@ -2,11 +2,13 @@
 unique_name: inegi_gcim_vegetation_mapping_challenge
 name: inegi-gcim-vegetation-mapping-challenge
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/inegi-gcim-vegetation-mapping-challenge/data
 source_row: 885
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

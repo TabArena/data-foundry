@@ -11,7 +11,7 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/bcccdatasets/large-scale-ids-dataset-bccc-cse-cic-ids2018/
 - https://www.kaggle.com/datasets/solarmainframe/ids-intrusion-csv

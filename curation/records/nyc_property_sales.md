@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Free Text (Short)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/new-york-city/nyc-property-sales
 - https://www.nyc.gov/site/finance/property/property-rolling-sales-data.page

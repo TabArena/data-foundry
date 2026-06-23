@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Website
 year: '2020'
 domain: insurance

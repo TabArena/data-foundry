@@ -6,10 +6,12 @@ decision_markers:
 tags:
 - New IID
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - https://arxiv.org/abs/2510.02476
 source_row: 865
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

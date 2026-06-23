@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '2020'

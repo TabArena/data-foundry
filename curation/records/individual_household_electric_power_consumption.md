@@ -8,7 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Forecasting)
 collections:
-- New
+- New (BeyondArena)
 source_links:
 - 10.24432/C58K54
 source_row: 289

@@ -4,6 +4,8 @@ name: pnwflights14
 source_links:
 - https://github.com/ismayc/pnwflights14
 source_row: 1027
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

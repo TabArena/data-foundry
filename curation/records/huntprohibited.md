@@ -11,7 +11,7 @@ tags:
 - Non-IID (Temporal)
 - Larger IID Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2014'
 domain: business & marketing

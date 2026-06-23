@@ -12,6 +12,8 @@ source_links:
 - openml 42732
 - The dataset was downloaded on 05.11.2018. from  https://data.sfgov.org/Public-Safety/Police-Department-Incident-Reports-Historical-2003/tmnf-yvry
 source_row: 845
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

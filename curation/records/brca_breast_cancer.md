@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 collections:
-- New
+- New (BeyondArena)
 original_source: Website
 year: '2018'
 domain: medical & healthcare

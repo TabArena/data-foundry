@@ -10,7 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 collections:
-- New
+- New (BeyondArena)
 original_source: Zindi
 source_links:
 - https://zindi.africa/competitions/network-traffic-scenario-prediction-challenge/data

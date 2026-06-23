@@ -8,7 +8,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/programmer3/multi-source-renewable-energy-distribution-dataset
 source_row: 182

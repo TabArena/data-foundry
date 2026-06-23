@@ -11,7 +11,7 @@ tags:
 - Many features
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/chiragtagadiya/genesdata/data
 source_row: 34

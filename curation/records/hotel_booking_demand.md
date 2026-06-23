@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 collections:
-- New
+- New (BeyondArena)
 original_source: Other
 year: '2019'
 domain: business & marketing

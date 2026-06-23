@@ -4,10 +4,12 @@ name: Valuation
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://catalog.data.gov/dataset/property-valuation-and-assessment-data-db7c2
 source_row: 830
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

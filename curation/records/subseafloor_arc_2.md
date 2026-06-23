@@ -4,8 +4,10 @@ name: subseafloor_arc
 tags:
 - Many features
 collections:
-- New
+- New (BeyondArena)
 source_row: 862
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

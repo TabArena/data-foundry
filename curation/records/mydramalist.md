@@ -18,7 +18,7 @@ domain: business & marketing
 required_split:
 - '?'
 problem_type: Other
-usable_task_type: Unreaonsable as Predictive ML Task
+usable_task_type: Unreasonable as Predictive ML Task
 given_task_type:
 - Scientific Discovery
 - Information Retrieval

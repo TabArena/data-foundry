@@ -9,6 +9,8 @@ year: '2023'
 source_links:
 - https://www.kaggle.com/datasets/talhabarkaatahmad/laptop-prices-dataset-october-2023
 source_row: 815
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 

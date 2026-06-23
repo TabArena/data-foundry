@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - No Good Target  / Scientific Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/divyansh22/drug-discovery-data/data
 source_row: 133

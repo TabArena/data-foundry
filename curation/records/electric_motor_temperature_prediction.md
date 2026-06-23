@@ -12,7 +12,7 @@ tags:
 - Non-IID (Grouped)
 - Multi-target
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: Kaggle
 year: '2021'
 domain: industry & manufacturing

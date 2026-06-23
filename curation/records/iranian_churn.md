@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '2020'
 domain: business & marketing

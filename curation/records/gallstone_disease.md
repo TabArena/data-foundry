@@ -8,7 +8,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 collections:
-- New - IST
+- New (BeyondArena)
 original_source: UCI
 year: '2024'
 domain: medical & healthcare

@@ -6,12 +6,14 @@ decision_markers:
 tags:
 - 2nd Tier / Scientfic Discovery
 collections:
-- New - IST
+- New (BeyondArena)
 required_split:
 - '?'
 source_links:
 - https://www.kaggle.com/datasets/aayushchou/hospital-length-of-stay-dataset-microsoft
 source_row: 826
+needs_review:
+- suggestion
 type_adapter_id: curation-record-v1
 ---
 
