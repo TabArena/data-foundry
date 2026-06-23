@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- openml 4135
+- https://www.openml.org/d/4135
 - https://www.kaggle.com/c/amazon-employee-access-challenge
 source_row: 431
 type_adapter_id: curation-record-v1

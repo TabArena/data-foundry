@@ -28,11 +28,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Survey data from a google form
+Survey data from a Google form
 
-Might be usable for predictice ML, but not first class
+Might be usable for predictive ML, but not first class
 
-timestamp can be ignored but needs to be checked for duplicates/ grouping?
+Timestamp can be ignored but needs to be checked for duplicates/grouping?
 
 ## Reference
 

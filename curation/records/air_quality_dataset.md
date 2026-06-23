@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-hourly time-series measurements. Target is classification, but might have been binarized from an originally regression features.
+Hourly time-series measurements. Target is classification, but might have been binarized from an originally regression feature.
 
 ## Reference
 

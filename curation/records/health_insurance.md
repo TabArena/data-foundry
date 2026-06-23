@@ -8,7 +8,7 @@ collections:
 - TabSTAR
 year: '1993'
 source_links:
-- openml 44993
+- https://www.openml.org/d/44993
 - March 1993 CPS
 source_row: 808
 needs_review:

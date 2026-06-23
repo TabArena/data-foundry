@@ -32,7 +32,7 @@ Was downsampled/filtered by TabRed via preprocessing. Need to see what we want t
 
 TabRed uses 1 week refit horizon. 36 days in train data
 
-Tasks look reasonable even if missing all semantic information. Given that the data is from various restaurants and that it is unclear which restaurant this is from there might be group-based leakage.
+Tasks look reasonable even if missing all semantic information. Given that the data is from various restaurants and that it is unclear which restaurant this is from, there might be group-based leakage.
 
 Note: numerical features are normalized with a noisy-quantile transform QuantileTransformer(X_num + 1e-5 * randn)
 

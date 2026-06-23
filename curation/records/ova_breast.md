@@ -15,7 +15,9 @@ collections:
 - TabSTAR
 year: '2010'
 source_links:
-- openml 1128, 1166, 1140
+- https://www.openml.org/d/1128
+- https://www.openml.org/d/1166
+- https://www.openml.org/d/1140
 - GEMLeR (down http://gemler.fzv.uni-mb.si/, paper https://pmc.ncbi.nlm.nih.gov/articles/PMC2896709/)
 - https://euhubs4data.eu/datasets/know-center-gmbh-gemler/
 - AP_Colon_Kidney, AP_Breast_Kidney, AP_Breast_Ovary
@@ -28,17 +30,17 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Need to inspect relation to other OVA datasets. >10K features Not in TabRepo, No, if truly consitsing of 4 datasets. Moreover preprocessing unclear; generally misisng inforamtion; not matching description from paper; domain expert needed"
+CC: "Need to inspect relation to other OVA datasets. >10K features Not in TabRepo, No, if truly consisting of 4 datasets. Moreover preprocessing unclear; generally missing information; not matching description from paper; domain expert needed"
 
 
 "GEMLeR datasets are divided in two sections - "one-versus-all" (OVA) and "all-paired" (AP) benchmarking datasets."
 Unclear why OVA and not just multiclass prediction task, sounds like a better idea?
-Needs manual work to undon OVA problems and recover original samples, but not that much
+Needs manual work to undo OVA problems and recover original samples, but not that much
 
 Can we get all 9 original classes/datasets labels back from OpenML backup: 
  OVA_Breast: 1128, OVA_Colon 1161, OVA_Endometrium 1142, OVA_Kidney 1134, OVA_Lung 1130, OVA_Omentum 1139, OVA_Ovary 1166, OVA_Prostate 1146, OVA_Uterus 1138
 
-We only have the "small" data with 10k features after unsuperivsed feature selection from the original 50k. original source is lost and 10k makes sense to use in the application as far as I would say.
+We only have the "small" data with 10k features after unsupervised feature selection from the original 50k. Original source is lost and 10k makes sense to use in the application as far as I would say.
 
 ## Reference
 

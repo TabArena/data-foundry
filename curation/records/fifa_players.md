@@ -25,6 +25,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-stats about fifa players across different versions
+Stats about FIFA players across different versions
 
-includes images in theory of the logos etc
+Includes images in theory of the logos etc

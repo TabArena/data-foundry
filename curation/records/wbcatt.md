@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-All features from the tabular OpenML version are TARGETS of the images 
+All features from the tabular OpenML version are TARGETS of the images
 
 "we have identified 11 morphological attributes associated with the cell and its components (nucleus, cytoplasm, and granules). We then annotated ten thousand WBC images with these attributes, resulting in 113k labels (11 attributes x 10.3k images)"
 

@@ -29,11 +29,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks good albeit some information are missing, scrapped from somewhere. The data comes with 3 target columns (more or less) about the revenue of the customer
+Looks good albeit some information is missing, scraped from somewhere. The data comes with 3 target columns (more or less) about the revenue of the customer
 
-Looking closer at the data, the distribution seems fake, the date seem fine but all other columns might be weird (also check the gender ration)
+Looking closer at the data, the distribution seems fake, the dates seem fine but all other columns might be weird (also check the gender ratio)
 
-We cannot re-identify customers as they are not detectable from just the given features. so there might be one customer purchasing multiple things. The task would be to go from age, country, gender to what the value of the customer purchases
+We cannot re-identify customers as they are not detectable from just the given features, so there might be one customer purchasing multiple things. The task would be to go from age, country, gender to what the value of the customer purchases
 
 ## Reference
 

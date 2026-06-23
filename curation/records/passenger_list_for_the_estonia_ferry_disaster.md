@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Like Titanic, a scientific discover task
+Like Titanic, a scientific discovery task

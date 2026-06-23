@@ -17,7 +17,7 @@ required_split:
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C56S46
+- https://doi.org/10.24432/C56S46
 - https://www.kaggle.com/datasets/ishandutta/qsar-bioconcentration-classes-data-set
 - https://michem.unimib.it/download/data/
 source_row: 683
@@ -30,11 +30,11 @@ type_adapter_id: curation-record-v1
 
 Need to understand if class or regression target should be used and how they differ
 
-Contains SMILES string that might need preprocessing in some epxert way, or we drop as done by prior work
+Contains SMILES string that might need preprocessing in some expert way, or we drop as done by prior work
 
-Data in paper sounds very different to data we have from Kaggle/UCI. We only have the version after feature selection>
+Data in paper sounds very different to data we have from Kaggle/UCI. We only have the version after feature selection
 
-Super hard to parse if the dataset could be used but I thin kwe can train a model to do so. Might still have problem and result in leaks but worth a including for now
+Super hard to parse if the dataset could be used but I think we can train a model to do so. Might still have problems and result in leaks but worth including for now
 
 ## Reference
 

@@ -18,7 +18,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5332M
+- https://doi.org/10.24432/C5332M
 source_row: 773
 type_adapter_id: curation-record-v1
 ---
@@ -29,10 +29,10 @@ type_adapter_id: curation-record-v1
 
 "This dataset comprises molecular descriptors generated using RDKit," -> to ChatGPT's domain understanding, this means it collected/curated it and did not create fake data
 
-Based on github and the descriptions, it looks like real data https://github.com/Huangxiaojie2024/InterDIA
+Based on GitHub and the descriptions, it looks like real data https://github.com/Huangxiaojie2024/InterDIA
 
 
-need to check smiles ID
+need to check SMILES ID
 
 ## Reference
 

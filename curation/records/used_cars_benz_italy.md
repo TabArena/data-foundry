@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 used mercedes data
 
-Maybe duplicate with other mecedes benz datasets? likely scraped from some website from italy. Otherwise a valid task
+Maybe duplicate with other Mercedes Benz datasets? Likely scraped from some website from Italy. Otherwise a valid task

@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict weather temperature at any location given by its X and Y coordinates
+Predict weather temperature at any location given by its X and Y coordinates

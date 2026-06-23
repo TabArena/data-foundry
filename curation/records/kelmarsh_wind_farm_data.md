@@ -25,5 +25,5 @@ type_adapter_id: curation-record-v1
 Unclear if the task is reasonable, need to take a closer look
 
 Kaggle: Predicting from one turbine to another (so more or less grouped but also temporal, as we predict in the future?)
-"The data is split between train and test datasets by weeks: 2-weeks are assigned to the training dataset, which includes the target_feature, then 1-week is assigned to the test dataset, which exludes it, and this is repeated for the full dataset."
-Kaggle task is from same person that uplodaed the kaggle competition, so it seem reasoanble to do? unclear how real of a task it is....
+"The data is split between train and test datasets by weeks: 2-weeks are assigned to the training dataset, which includes the target_feature, then 1-week is assigned to the test dataset, which excludes it, and this is repeated for the full dataset."
+Kaggle task is from same person that uploaded the Kaggle competition, so it seems reasonable to do? Unclear how real of a task it is....

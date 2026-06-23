@@ -15,7 +15,7 @@ collections:
 - TabSTAR
 year: '1991'
 source_links:
-- openml 188
+- https://www.openml.org/d/188
 - https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html -> WEKA Dataset Collection  original links dead (https://tunedit.org/repo/Data/Agricultural/eucalyptus.arff, https://www.cs.waikato.ac.nz/ml/weka/datasets.html) -> cannot find this in the new collections
 source_row: 611
 type_adapter_id: curation-record-v1

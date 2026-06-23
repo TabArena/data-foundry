@@ -19,7 +19,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/460/pandor
-- 10.24432/C5Q025
+- https://doi.org/10.24432/C5Q025
 source_row: 44
 type_adapter_id: curation-record-v1
 ---

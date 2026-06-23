@@ -20,7 +20,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/glass2/metadata.yaml
-- 10.24432/C5WW2P
+- https://doi.org/10.24432/C5WW2P
 source_row: 755
 type_adapter_id: curation-record-v1
 ---
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-PMLB version has less samples and less classes, so likely filtered (?) 
+PMLB version has less samples and less classes, so likely filtered (?)
 
 Generally a valid potential task, might be outdated but still valid for the task?
 

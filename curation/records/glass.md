@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Likley a duplicate from glass2 (above) and its openml versioN!
+Likely a duplicate from glass2 (above) and its OpenML version!

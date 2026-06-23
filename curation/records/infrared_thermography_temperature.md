@@ -19,7 +19,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.13026/9ay4-2c37
+- https://doi.org/10.13026/9ay4-2c37
 - https://physionet.org/content/face-oral-temp-data/1.0.0/
 source_row: 665
 type_adapter_id: curation-record-v1
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Two targets. Need to carefully check which features make sense to include in the predictive task. Some might be unreasonable. Some features where extracted from infrared images, but those are not given
+Two targets. Need to carefully check which features make sense to include in the predictive task. Some might be unreasonable. Some features were extracted from infrared images, but those are not given
 
 Discussion: I think this is grouped, subject ID is not unique but counts up with -1,-2,...
 

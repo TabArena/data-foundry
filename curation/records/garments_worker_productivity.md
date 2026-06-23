@@ -17,7 +17,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.24432/C51S6D
+- https://doi.org/10.24432/C51S6D
 source_row: 716
 type_adapter_id: curation-record-v1
 ---
@@ -31,7 +31,7 @@ CC: "predict the productivity performance of the working teams in garment produc
 Ethical problems?
 AT: Productivity is measured at team level, not individually, so there shouldn't be ethical concerns
 
-The paper transforms it to a classification task, although regression is possible. Also, they apply models without consideration of time, after the target would already be collected. This makes sense for interpretable ML, to analyze drivers of lower productivity. However, to conceptualize the task for benchmarkling predictive performance, we need to define at which point in time we want to predict and how far into the future we watn to predict.
+The paper transforms it to a classification task, although regression is possible. Also, they apply models without consideration of time, after the target would already be collected. This makes sense for interpretable ML, to analyze drivers of lower productivity. However, to conceptualize the task for benchmarking predictive performance, we need to define at which point in time we want to predict and how far into the future we want to predict.
 
 ## Reference
 

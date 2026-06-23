@@ -11,6 +11,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
+- Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
 source_links:
@@ -23,6 +24,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Unclear task, but seems like it oculd be used
+Unclear task, but seems like it could be used
 
-Has "datasets" per turbine which sounds like multivarite forecasting / time series classification in the case of a fault
+Has "datasets" per turbine which sounds like multivariate forecasting / time series classification in the case of a fault

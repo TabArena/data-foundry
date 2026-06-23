@@ -18,7 +18,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/508/qsar+oral+toxicity
-- 10.24432/C5PS4J
+- https://doi.org/10.24432/C5PS4J
 - http://www.michem.unimib.it/download/data/
 source_row: 685
 type_adapter_id: curation-record-v1

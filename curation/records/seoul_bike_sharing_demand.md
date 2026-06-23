@@ -20,7 +20,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.24432/C5F62R
+- https://doi.org/10.24432/C5F62R
 - https://www.openml.org/search?type=data&id=46328&sort=runs&status=active
 source_row: 46
 type_adapter_id: curation-record-v1

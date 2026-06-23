@@ -20,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Preprocessed target,  some kind of sepcial stratification towards mailingID, again very highly cardinal features for different groups
+CC: ""Preprocessed target, some kind of special stratification towards mailingID, again very highly cardinal features for different groups
 
 Has a lot of geospatial information and needs to merge all columns somehow""
 

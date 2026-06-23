@@ -22,9 +22,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-One of many https://insideairbnb.com/ datasets
+One of many https://insideairbnb.com/ datasets.
 
-Similar to GOV data, not predictive task connected so far.
+Similar to GOV data, no predictive task connected so far.
 
 ## Reference
 

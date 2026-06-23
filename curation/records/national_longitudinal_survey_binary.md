@@ -8,7 +8,7 @@ collections:
 year: '2022'
 source_links:
 - https://www.nlsinfo.org/
-- openml 43892
+- https://www.openml.org/d/43892
 source_row: 821
 needs_review:
 - suggestion

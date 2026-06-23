@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 42733
+- https://www.openml.org/d/42733
 - KDD Cup - 2012, Kaggle, missing links https://www.kdd.org/kdd-cup/view/kdd-cup-2012-track-2
 source_row: 322
 type_adapter_id: curation-record-v1

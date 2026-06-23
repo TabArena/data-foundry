@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict the percentage of female-headed households
+Predict the percentage of female-headed households

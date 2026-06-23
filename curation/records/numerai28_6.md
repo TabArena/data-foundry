@@ -24,9 +24,9 @@ type_adapter_id: curation-record-v1
 CC: ""I heard there are many people interested in this dataset. Also, I think there are newer more extensive versions available. However stock market predictions might also be seen as time-series; 
 We have roughly 1k unique values per ""numeric"" attribute across the 100k samples. Some weird preprocessing or lag-based behavior might have happened here""
 
-It is stock data, but the decision function we are predicting is indepdent of the features and thus it is a valid non-iid temporal task
+It is stock data, but the decision function we are predicting is independent of the features and thus it is a valid non-iid temporal task
 
-We need to find a verison with a timestamp (or treat it as forced IID), but official data or test data from somewhere should be in the future
+We need to find a version with a timestamp (or treat it as forced IID), but official data or test data from somewhere should be in the future
 
 ## Reference
 

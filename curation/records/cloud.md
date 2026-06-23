@@ -12,7 +12,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 210
+- https://www.openml.org/d/210
 source_row: 74
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Forecasting task to the best of my judgement
+Forecasting task to the best of my judgement.

@@ -10,7 +10,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 529 871
+- https://www.openml.org/d/529
+- https://www.openml.org/d/871
 source_row: 396
 type_adapter_id: curation-record-v1
 ---
@@ -19,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC:" Regression. Data generated based on a procedure described on the OpenML page; data generation process creates groups / leakage?"
+CC: "Regression. Data generated based on a procedure described on the OpenML page; data generation process creates groups / leakage?"
 
 ## Reference
 

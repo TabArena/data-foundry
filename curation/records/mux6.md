@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Likely a 6-bit multiplexer problem with bits, likely simulated, no realistic or useful for current task I would say
+Likely a 6-bit multiplexer problem with bits, likely simulated, not realistic or useful for current task I would say

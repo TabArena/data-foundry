@@ -19,7 +19,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C59313
+- https://doi.org/10.24432/C59313
 - https://www.openml.org/d/46855
 source_row: 1031
 type_adapter_id: curation-record-v1
@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 
 Same source as clock_protein_period
 
-The original paper even comes with feature selection. Have to use data.csv file
+The original paper even comes with feature selection. Have to use data.csv file.
 
 ## Reference
 

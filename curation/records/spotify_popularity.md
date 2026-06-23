@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Duplicate of spotiy tracks dataset with different target column
+Duplicate of spotify tracks dataset with different target column

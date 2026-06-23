@@ -28,9 +28,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-tasting reviews of different beer types from different breweries createad by combining two datasets(in refrences)
+tasting reviews of different beer types from different breweries created by combining two datasets (in references)
 
-Is the mix of two datasets? Unclear origin. Unclear if the task is useful or even needed. Need to think if this can be made into a task someone would care about in reality 
+Is the mix of two datasets? Unclear origin. Unclear if the task is useful or even needed. Need to think if this can be made into a task someone would care about in reality.
 
 Preprocessed text data as word counts, should likely be removed for our application. Then we almost only have reviews as tabular data.
 

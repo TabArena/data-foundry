@@ -11,7 +11,7 @@ collections:
 - TabSTAR
 - TabArena Reject
 source_links:
-- 10.24432/C52C8B
+- https://doi.org/10.24432/C52C8B
 source_row: 336
 type_adapter_id: curation-record-v1
 ---

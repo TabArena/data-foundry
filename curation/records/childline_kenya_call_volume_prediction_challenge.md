@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-forecast how many calls a child protection hotline will receive each hour each day
+Forecast how many calls a child protection hotline will receive each hour each day.

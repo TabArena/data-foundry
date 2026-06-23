@@ -9,7 +9,7 @@ collections:
 - TabSTAR
 year: '2004'
 source_links:
-- openml 40536
+- https://www.openml.org/d/40536
 - Columbia Business School  -> https://sites.stat.columbia.edu/gelman/arm/examples/speed.dating/  -> https://statmodeling.stat.columbia.edu/2008/01/21/the_speeddating_1/ -> ?
 source_row: 842
 needs_review:
@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Data was collected in multiple waves with a predefined study design influencing the target. Likely this is rather an interpretability task. If not accounting for the special data collection process, tree-based models are superior to other approaches; some questionable preprocssed features ("samerace"); "met" feature has time realtionship due to multiple waves "
+CC: "Data was collected in multiple waves with a predefined study design influencing the target. Likely this is rather an interpretability task. If not accounting for the special data collection process, tree-based models are superior to other approaches; some questionable preprocessed features ("samerace"); "met" feature has time relationship due to multiple waves "
 
 ## Reference
 

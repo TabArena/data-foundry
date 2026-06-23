@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict the estimated time of arrival for Algerian ride hailing business Yassir
+Predict the estimated time of arrival for Algerian ride-hailing business Yassir

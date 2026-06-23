@@ -10,7 +10,7 @@ collections:
 - TabSTAR
 source_links:
 - https://archive.ics.uci.edu/dataset/139/synthetic+control+chart+time+series
-- 10.24432/C59G75
+- https://doi.org/10.24432/C59G75
 source_row: 235
 type_adapter_id: curation-record-v1
 ---

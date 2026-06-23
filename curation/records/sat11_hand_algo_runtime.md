@@ -20,7 +20,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.cs.ubc.ca/labs/algorithms/Projects/SATzilla/
-- openml 41980
+- https://www.openml.org/d/41980
 - https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO
 source_row: 694
 type_adapter_id: curation-record-v1
@@ -34,7 +34,7 @@ CC: "Some code runtime prediction challenge; see https://arxiv.org/pdf/1506.0246
 
 Good to have some datasets from this kind of literature as well, maybe checkout if any newer cases exist we can add to the benchmark
 
-For 41980, we can parse the row ID to get a grouped algorithm selection task. This would be great to cover as well! Otherwise ue https://github.com/coseal/aslib_data/tree/master/SAT11-HAND
+For 41980, we can parse the row ID to get a grouped algorithm selection task. This would be great to cover as well! Otherwise use https://github.com/coseal/aslib_data/tree/master/SAT11-HAND
 
 
 I would focus on including such datasets for SAT solving, as this seems a "realer" use case than for ML algorithm selection which is usually Pareto, dominated by other methods. 

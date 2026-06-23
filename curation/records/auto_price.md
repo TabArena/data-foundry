@@ -11,7 +11,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 195
+- https://www.openml.org/d/195
 source_row: 112
 type_adapter_id: curation-record-v1
 ---

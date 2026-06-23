@@ -12,7 +12,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 source_links:
-- 10.24432/C5SC7G
+- https://doi.org/10.24432/C5SC7G
 source_row: 571
 type_adapter_id: curation-record-v1
 ---
@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 "built with the simulated performance data set "
 
-Generally sounds like a valida task and usage for stock tasks, so we keep it for 2nd tier but it is not real to be used in first tier
+Generally sounds like a valid task and usage for stock tasks, so we keep it for 2nd tier but it is not real to be used in first tier

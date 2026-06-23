@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 Their data could be used; it is from another work and has been preprocessed.
 
-Lennart: requested their versions of the dataset for benchmarking on 14/03/2026. But we could also likely reproduce one/some their data state manually
+Lennart: requested their versions of the dataset for benchmarking on 14/03/2026. But we could also likely reproduce one/some of their data state manually

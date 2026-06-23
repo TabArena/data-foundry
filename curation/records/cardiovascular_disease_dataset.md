@@ -27,8 +27,8 @@ CC: ""Source of data is missing. Unclear if real data or not
 
 it is used a lot, also in papers
 
-Various concerns about data qualit issues: https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset/discussion/451915
+Various concerns about data quality issues: https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset/discussion/451915
 Also see TabArena comments on it""
-CC: ""Uploaded by Maththias feurer - not much information; from Kaggle, seems like areal task without much more information
+CC: ""Uploaded by Matthias Feurer - not much information; from Kaggle, seems like a real task without much more information
 
-At the same time see the Kaggle discussions no one knowns the source and it might be syntehthic data due to outliers. Remove due to missing source information"
+At the same time see the Kaggle discussions no one knows the source and it might be synthetic data due to outliers. Remove due to missing source information""

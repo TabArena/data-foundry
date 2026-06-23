@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Hard to say which version of the data one should use how it works. CAn get data from source and build one proper dataset for it
+Hard to say which version of the data one should use or how it works. Can get data from source and build one proper dataset for it
 
 Very large data, unclear what the predictive task could be that represents a real-world use case. Otherwise could be used.

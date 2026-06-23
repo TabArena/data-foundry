@@ -30,9 +30,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Workplace Accidents 2015-2017; could get newer version of data;  unclear what might be a good traget given the domain
+Workplace Accidents 2015-2017; could get newer version of data; unclear what might be a good target given the domain
 
-sometimes contains very specific info that might be deemed PII; has many multi-categorical columns for event data; text seems to follow a standard formatting that we could also engineer to be more free text
+Sometimes contains very specific info that might be deemed PII; has many multi-categorical columns for event data; text seems to follow a standard formatting that we could also engineer to be more free text
 
 ## Reference
 

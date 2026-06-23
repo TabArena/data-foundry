@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict whether loan is payed back, needs to be shuffled, TextTabBench drops ['id', 'member_id', 'issue_d', 'url', 'last_pymnt_d', 'last_credit_pull_d'], we will have to make sure that there is no leakage
+Predict whether loan is paid back, needs to be shuffled, TextTabBench drops ['id', 'member_id', 'issue_d', 'url', 'last_pymnt_d', 'last_credit_pull_d'], we will have to make sure that there is no leakage
 
-Text has prefix for date and html artifacts
-Data might has spatial components
+Text has prefix for date and HTML artifacts
+Data might have spatial components

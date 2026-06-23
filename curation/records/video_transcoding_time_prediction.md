@@ -20,8 +20,8 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.24432/C58C9K
-- openml 44974
+- https://doi.org/10.24432/C58C9K
+- https://www.openml.org/d/44974
 source_row: 698
 type_adapter_id: curation-record-v1
 ---
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Real data, preprocssed, information about decoding videos, the same video appears several times/ If the task is to predict new videos, either group split is required, or we need to make sure that random split does not introduce unwanted behaviour of models learning distribution shifts between videos"
+CC: "Real data, preprocessed, information about decoding videos, the same video appears several times. If the task is to predict new videos, either group split is required, or we need to make sure that random split does not introduce unwanted behaviour of models learning distribution shifts between videos"
 
 "transcoding time prediction model"
 

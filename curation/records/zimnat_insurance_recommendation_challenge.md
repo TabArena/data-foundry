@@ -17,4 +17,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict which insurance a client wants next
+Predict which insurance a client wants next

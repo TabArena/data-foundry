@@ -19,6 +19,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Predict faculty salary from 7800 US colleges. Not whole information displayed on OpenML. Lat long features included so spatial patterns may be relevant. Would actually require temporal split? Duplicate with prior colleges version? cannot find origin "
+CC: "Predict faculty salary from 7800 US colleges. Not whole information displayed on OpenML. Lat long features included so spatial patterns may be relevant. Would actually require temporal split? Duplicate with prior colleges version? cannot find origin"
 
-Was used in the AutoML benchmark
+Was used in the AutoML benchmark.

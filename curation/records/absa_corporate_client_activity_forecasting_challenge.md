@@ -18,6 +18,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict if a user performs a specific action (such as making a purchase) in a 6-hour period over the course of a day, based on previous event data for seven weeks.
+Predict if a user performs a specific action (such as making a purchase) in a 6-hour period over the course of a day, based on previous event data for seven weeks.
 
 Winning solution used LSTM - likely time-series

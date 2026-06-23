@@ -8,6 +8,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Non-IID (Temporal)
+- Review Prio 1 (Atlas)
 collections:
 - TabSTAR
 source_links:
@@ -22,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Could be used to forecast flights/seats/passsengers (just one, all other would be leaking)
+Could be used to forecast flights/seats/passengers (just one, all other would be leaking)
 
-But might also just be a forecasting tasks without tabular... unsure
+But might also just be a forecasting task without tabular... unsure

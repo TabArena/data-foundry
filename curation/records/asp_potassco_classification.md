@@ -17,7 +17,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 41705
+- https://www.openml.org/d/41705
 - https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO
 source_row: 695
 type_adapter_id: curation-record-v1
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 CC: ""Algorithm selection task. samples are per instance_id - unique algorithms. Task is to predict algorithm - not sure whether this makes sense
 
-After post-hoc analysis: Requires group split. We assumed that it doesnt because the instance IDs were unique, however, they are only unique because they represent directories for repeated evaluations of the same task, i.e.: FolioSuite/ASP-Comp-2011-Lparse/26-Solitaire/1-solitaire-20-0.asp.gz - there are multiple solitaire instances and if we use random splits there is a leak.""
+After post-hoc analysis: Requires group split. We assumed that it doesn't because the instance IDs were unique, however, they are only unique because they represent directories for repeated evaluations of the same task, i.e.: FolioSuite/ASP-Comp-2011-Lparse/26-Solitaire/1-solitaire-20-0.asp.gz - there are multiple solitaire instances and if we use random splits there is a leak.""
 
 ## Reference
 

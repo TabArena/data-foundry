@@ -12,7 +12,7 @@ collections:
 - TabSTAR
 source_links:
 - https://www.openml.org/search?type=data&id=6&sort=runs&status=active
-- 10.24432/C5ZP40
+- https://doi.org/10.24432/C5ZP40
 source_row: 444
 type_adapter_id: curation-record-v1
 ---

@@ -15,7 +15,7 @@ collections:
 original_source: OpenML
 year: '1995'
 source_links:
-- openml 201
+- https://www.openml.org/d/201
 source_row: 515
 type_adapter_id: curation-record-v1
 ---
@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Telecommunication problem from a certain paper. Anonymized. Not much is known. original split was 5k training 10k test"
+CC: "Telecommunication problem from a certain paper. Anonymized. Not much is known. Original split was 5k training 10k test"
 
 ## Reference
 

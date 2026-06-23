@@ -33,32 +33,32 @@ type_adapter_id: curation-record-v1
 
 Data might be trivial, could be good to investigate all the data in this collection and add all the useful cases
 
-checkout all the data and add the datasets as we see valid
+Checkout all the data and add the datasets as we see valid
 
 Insights from the reference:
 1. Hypothyroid -> main dataset
-2. dis -> version / same data as Hypothyroid 
+2. dis -> version / same data as Hypothyroid
 
-Based on this, we strongly believe that all other cases that have the same sample and feature count as listed below are just different versions/ duplicates of Hypothyroid! Thus, for now, we only take Hypothyroid and ignore the other faulty entries. We might come back to this if Hypothyroid is too simple. 
-After a simple test, we saw that Hypothyroid  is trivial to solve (almost 100 ROC AUC). Hence, we use dis isntead. It still seems trivial. We can will likely filter this later.
+Based on this, we strongly believe that all other cases that have the same sample and feature count as listed below are just different versions/duplicates of Hypothyroid! Thus, for now, we only take Hypothyroid and ignore the other faulty entries. We might come back to this if Hypothyroid is too simple.
+After a simple test, we saw that Hypothyroid is trivial to solve (almost 100 ROC AUC). Hence, we use dis instead. It still seems trivial. We will likely filter this later.
 
 
 Patient ID at the end of the line does not matter.
 
 
-A lot of weird data but a lot of okay ones that are super similar, so likley not use multiple?  Read paper and make judgement call
+A lot of weird data but a lot of okay ones that are super similar, so likely not use multiple? Read paper and make judgement call
 
 Data in the repo:
-1. thyroid0387 - Thyroid disease, Garavan Institute -> does not have a real target but just various diganosis, seems like a scientific discovery task without a good target
+1. thyroid0387 - Thyroid disease, Garavan Institute -> does not have a real target but just various diagnosis, seems like a scientific discovery task without a good target
 2. sick-euthyroid.data -> according to UCI it might be corrupted, the .names file does not include any more information, missing more source information this is quite risky to use
-3. sick -> has a clear class, but is missing any source information (first entry in the UCI description), likely  a real predictive task
+3. sick -> has a clear class, but is missing any source information (first entry in the UCI description), likely a real predictive task
 4. new-thyroid -> data from Stefan Aeberhard, seems good and has more source information
 5. Hypothyroid -> same as sick-euthyroid
-6. dis -> same sick, looks good
+6. dis -> same as sick, looks good
 7. ann-thyroid -> same as above, good
 8. allrep -> same as above, good
-9. allhypo -> same as above 
-10. allhyoer -> same as above
+9. allhypo -> same as above
+10. allhyper -> same as above
 11. allbp -> same as above
 
 ## Reference

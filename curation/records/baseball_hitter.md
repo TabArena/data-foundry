@@ -22,6 +22,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-IID-made data given the features, could be used for predicting only if feature targets are known....
+IID-made data given the features, could be used for predicting only if feature targets are known.
 
 Very old and likely outdated task, not sure if we want to add it.

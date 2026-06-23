@@ -18,7 +18,7 @@ required_split:
 problem_type: TBD
 original_data_state: One Table
 source_links:
-- 10.24432/C5Z310
+- https://doi.org/10.24432/C5Z310
 - https://www.openml.org/search?type=data&id=46592
 - http://vcmi.inescporto.pt/reproducible research/ibpria2017/CervicalCancer/
 source_row: 688
@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Some features are multi-categoricals as one-hot encoding.  Might want to reverse this
+Some features are multi-categoricals as one-hot encoding. Might want to reverse this.
 
-Has 4 target variables, unsure which one to use. Likely want to use Biopsy as the real ground turth (not just an indicator)
+Has 4 target variables, unsure which one to use. Likely want to use Biopsy as the real ground truth (not just an indicator).
 
 ## Reference
 

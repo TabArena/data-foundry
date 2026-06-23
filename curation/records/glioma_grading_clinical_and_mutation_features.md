@@ -18,7 +18,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=46604
 - https://www.kaggle.com/datasets/vinayjose/glioma-grading-clinical-and-mutation-features
-- 10.24432/C5R62J
+- https://doi.org/10.24432/C5R62J
 source_row: 678
 type_adapter_id: curation-record-v1
 ---

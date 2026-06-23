@@ -16,7 +16,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C53P5M
+- https://doi.org/10.24432/C53P5M
 source_row: 668
 type_adapter_id: curation-record-v1
 ---
@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 Has multiple datasets / outcomes in one. Take one at most. Moreover, clearly describes which time points we could simulate with the data.
 
-hard to decide for one target. All of them have some merit. According to Dr. ChatGPT, it is better to model some of the Arrhythmias related cases and avoid the leathal outcome. Make judgement call based on data
+Hard to decide for one target. All of them have some merit. According to Dr. ChatGPT, it is better to model some of the Arrhythmias related cases and avoid the lethal outcome. Make judgement call based on data
 
 ## Reference
 

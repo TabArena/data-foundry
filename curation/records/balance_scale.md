@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- 10.24432/C5488X
+- https://doi.org/10.24432/C5488X
 - https://www.openml.org/search?type=data&id=11
 source_row: 394
 type_adapter_id: curation-record-v1
@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "generated data to model a pyschological experiment"
+CC: "generated data to model a psychological experiment"

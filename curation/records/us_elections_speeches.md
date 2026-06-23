@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-NLP task  / data
+NLP task / data

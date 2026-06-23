@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-scraped from refrence
+Scraped from reference
 
 RecSys task, not clear predictive ML
 

@@ -21,10 +21,10 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The distribution of the data looks very fae (50/50 for a binary column)
+The distribution of the data looks very fake (50/50 for a binary column)
 
 I cannot determine if it is fake or not. It is used a lot.
 
-Rel “Data Mining for Business Intelligence” by Galit Shmueli et al.?
+Rel "Data Mining for Business Intelligence" by Galit Shmueli et al.?
 
-Based on the available information, this does not look like a good task. Filtert it for now
+Based on the available information, this does not look like a good task. Filter it for now

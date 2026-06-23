@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict cardiac arrhythmias from sleep data
+Predict cardiac arrhythmias from sleep data.

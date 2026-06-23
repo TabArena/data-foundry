@@ -34,9 +34,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-original source website seems down, dataset is very imbalanced, but seems like a good fit at first glance; multiple versions on Kaggle; paper describes some specific preprocessing and data filters, need to check if data is already preprocessed or if we need to do the same; very imbalanced
+Original source website seems down, dataset is very imbalanced, but seems like a good fit at first glance; multiple versions on Kaggle; paper describes some specific preprocessing and data filters, need to check if data is already preprocessed or if we need to do the same; very imbalanced
 
-also contains non-english text (at least german, didn't check yet for more); title contains a lot of information as well
+Also contains non-English text (at least German, didn't check yet for more); title contains a lot of information as well
 
 ## Reference
 

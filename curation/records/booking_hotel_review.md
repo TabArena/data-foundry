@@ -34,4 +34,4 @@ Booking.com Hotel Reviews in Europe
 
 Reviews of place task again. No real task and likely no meaningful relationships in the data
 
-Descriptions are not shared features but either positve/negative, not both.
+Descriptions are not shared features but either positive/negative, not both.

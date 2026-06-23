@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- openml 43588
+- https://www.openml.org/d/43588
 - https://www.kaggle.com/datasets/gireeshs/household-monthly-electricity-bill
 source_row: 421
 type_adapter_id: curation-record-v1
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 "This dataset was prepared as a mock up dataset for practice use"
 
-Distribution look very fake. Likely hand made
+Distributions look very fake. Likely hand made

@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-wine in spain
+Wine in Spain

@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The data is described in limited detail and might contain some real features but other features are clearly made up (the weather is pefectly uniformly distributed in California!), thus iI judge it as fake data
+The data is described in limited detail and might contain some real features but other features are clearly made up (the weather is perfectly uniformly distributed in California!), thus I judge it as fake data

@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Loan default prediction; 
+Loan default prediction;
 
 data from  http://www.creditriskanalytics.net/datasets-private.html?  (https://www.kaggle.com/datasets/ajay1735/hmeq-data/discussion/59708)
 From http://www.creditriskanalytics.net/datasets-private2.html

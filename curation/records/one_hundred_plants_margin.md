@@ -11,8 +11,9 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- 10.24432/C5RG76
-- openml 1491, 1493
+- https://doi.org/10.24432/C5RG76
+- https://www.openml.org/d/1491
+- https://www.openml.org/d/1493
 source_row: 381
 type_adapter_id: curation-record-v1
 ---

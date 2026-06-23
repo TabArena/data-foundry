@@ -7,7 +7,7 @@ collections:
 - TabArena Reject
 year: '2015'
 source_links:
-- 10.24432/C5TC7S
+- https://doi.org/10.24432/C5TC7S
 source_row: 819
 needs_review:
 - suggestion

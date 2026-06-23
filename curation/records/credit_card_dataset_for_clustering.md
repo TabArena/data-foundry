@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Not a predictice task, unclear if real data
+Not a predictive task, unclear if real data

@@ -4,6 +4,7 @@ checked_by:
 - Mustafa
 - Alex
 - Gioia
+- AI (UNVERIFIED)
 data_foundry_status:
 - 'Yes'
 - Suspended
@@ -40,6 +41,8 @@ decision_markers:
 - Robotics (RL)
 - TBD
 tags:
+- Review Prio 1 (Atlas)
+- AI-Filled (Verify)
 - Non-IID (Temporal)
 - Tiny Data
 - 2nd Tier / Scientfic Discovery

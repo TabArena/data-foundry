@@ -28,12 +28,12 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data from housing.com website. This website does not have any of the properties but is only for inda. When looking on other websites (like Zillow), it seems the numbers are correct.
-But all the entries that are missing information also seem to not match the data from zillow.  
+Data from housing.com website. This website does not have any of the properties but is only for India. When looking on other websites (like Zillow), it seems the numbers are correct.
+But all the entries that are missing information also seem to not match the data from Zillow.
 
-Only a few features, a lot of strings that need very slighly string to number preprocessing 
+Only a few features, a lot of strings that need very slight string-to-number preprocessing
 
-In general, this dataset seems very uninformative and if we add any datasets from the text benchmarks, we will have 4 to 10 better house price prediction datasets. Let us think about this later again but for no this seems to not pass the quality bar and the task also is not that relevant to real practioners
+In general, this dataset seems very uninformative and if we add any datasets from the text benchmarks, we will have 4 to 10 better house price prediction datasets. Let us think about this later again but for now this seems to not pass the quality bar and the task also is not that relevant to real practitioners
 
 ## Reference
 

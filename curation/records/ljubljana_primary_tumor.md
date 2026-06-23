@@ -17,7 +17,7 @@ required_split:
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5WK5Q
+- https://doi.org/10.24432/C5WK5Q
 source_row: 770
 type_adapter_id: curation-record-v1
 ---
@@ -26,9 +26,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Need to resolve ordinal encoding, otherwise, looks good!
+Need to resolve ordinal encoding, otherwise looks good!
 
-has a lot of classes, need to see there are enough labels per class or if I need to group some cases / remove some samples
+Has a lot of classes, need to see there are enough labels per class or if I need to group some cases / remove some samples
 
 ## Reference
 

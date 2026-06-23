@@ -10,7 +10,7 @@ collections:
 - TabSTAR
 source_links:
 - https://www.openml.org/search?type=data&id=4541
-- 10.24432/C5230J
+- https://doi.org/10.24432/C5230J
 source_row: 383
 type_adapter_id: curation-record-v1
 ---

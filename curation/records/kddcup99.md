@@ -13,6 +13,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - '?'
+- Review Prio 1 (Atlas)
 collections:
 - TabArena Reject
 - TabSTAR
@@ -24,7 +25,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
-- openml 42746
+- https://www.openml.org/d/42746
 - https://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html
 source_row: 629
 type_adapter_id: curation-record-v1
@@ -38,14 +39,14 @@ CC: "Subsampled dataset. Detect intrusions. Might be outdated, but might as well
 
 Likely outdated too
 
-"intrusions simulated in a military network environment" "They operated the LAN as if it were a true Air Force environment, but peppered it with multiple attacks."  
+"intrusions simulated in a military network environment" "They operated the LAN as if it were a true Air Force environment, but peppered it with multiple attacks."
 
 Is actually a time-series task, but was made tabular
 
 "It is important to note that the test data is not from the same probability distribution as the training data, and it includes specific attack types not in the training data.  This makes the task more realistic.  Some intrusion experts believe that most novel attacks are variants of known attacks and the "signature" of known attacks can be sufficient to catch novel variants.  The datasets contain a total of 24 training attack types, with an additional 14 types in the test data only."
 Class shift then, or need to change prediction task?
 
-Only could use the official split, otherwise no temporal informatioN?
+Only could use the official split, otherwise no temporal information?
 
 ## Reference
 

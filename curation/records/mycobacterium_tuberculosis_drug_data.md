@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Seems like a clear scientific discovery task and even then it seems hard to parse a predictive task without more information and domain knowledge. so likely skip for now even not as 2nd tier
+Seems like a clear scientific discovery task and even then it seems hard to parse a predictive task without more information and domain knowledge. So likely skip for now even not as 2nd tier

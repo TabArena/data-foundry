@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict if a loan was good or bad
+Predict if a loan was good or bad

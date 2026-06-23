@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 used cars data
 
-the task would likely need to be filitered by neogtioable or not
+the task would likely need to be filtered by negotiable or not

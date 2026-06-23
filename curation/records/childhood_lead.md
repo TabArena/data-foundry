@@ -24,9 +24,9 @@ type_adapter_id: curation-record-v1
 
 "task is to identify whether a respondents' blood level exceeds the BLRV using only questionnaire data." -> questionable setup due to having it at the same time, but fair to build as a task
 
-TableShift used 2017-2018 version. It seeums not all years have data / the same data, but we could use newer data?
+TableShift used 2017-2018 version. It seems not all years have data / the same data, but we could use newer data?
 
-again split the domain via a categorical variable for which we have samples in the real world at the same time as other samples for such task, no real selection problem. So it is again a created problem for the benchmark.
+Again split the domain via a categorical variable for which we have samples in the real world at the same time as other samples for such task, no real selection problem. So it is again a created problem for the benchmark.
 
-Could build any task from this. Unclear if any task is a real task that has been used in real-world or was made-up/desigend as in TableShift. 
-Likley we could argue for some task like TAbleShift.
+Could build any task from this. Unclear if any task is a real task that has been used in real-world or was made-up/designed as in TableShift.
+Likely we could argue for some task like TableShift.

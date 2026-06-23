@@ -19,7 +19,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- openml 665
+- https://www.openml.org/d/665
 - https://lib.stat.cmu.edu/datasets/sleuth
 source_row: 577
 type_adapter_id: curation-record-v1
@@ -32,7 +32,7 @@ type_adapter_id: curation-record-v1
 One of many datasets from the book 'The Statistical Sleuth' by Fred Ramsey and Dan Schafer; Duxbury Press, 1997. (schafer@stat.orst.edu) 
 
 The data is from a real study but for scientific discovery (https://www.bmj.com/content/297/6659/1319)
-"A 1972–1981 health survey in The Hague, Netherlands discovered an association between keeping pet birds and increased risk of lung cancer. To investigate birdkeeping as a risk factor, researchers conducted a case–control study of patients in 1985 at four hospitals in The Hague (population 450,000). They identified 49 cases of lung cancer among patients who were registered with a general practice, who were age 65 or younger, and who had resided in the city since 1965. They also selected 98 controls from a population of residents having the same general age structure. (Data based on P. A. Holst, D. Kromhout, and R. Brand, “For Debate: Pet Birds as an Independent Risk Factor for Lung Cancer,” British Journal of …)"
+"A 1972–1981 health survey in The Hague, Netherlands discovered an association between keeping pet birds and increased risk of lung cancer. To investigate birdkeeping as a risk factor, researchers conducted a case–control study of patients in 1985 at four hospitals in The Hague (population 450,000). They identified 49 cases of lung cancer among patients who were registered with a general practice, who were age 65 or younger, and who had resided in the city since 1965. They also selected 98 controls from a population of residents having the same general age structure. (Data based on P. A. Holst, D. Kromhout, and R. Brand, "For Debate: Pet Birds as an Independent Risk Factor for Lung Cancer," British Journal of …)"
 
 ## Reference
 

@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 216
+- https://www.openml.org/d/216
 - https://mldata-static.ml.tu-berlin.de/repository/data/viewslug/uci-20070111-delta_elevators/1.html
 - https://sci2s.ugr.es/keel/dataset.php?cod=1257
 source_row: 371

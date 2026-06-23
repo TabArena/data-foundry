@@ -8,7 +8,7 @@ collections:
 - TabSTAR
 year: '1988'
 source_links:
-- openml 44984
+- https://www.openml.org/d/44984
 - unclear maybe https://www.icpsr.umich.edu/web/ICPSR/studies/4377
 source_row: 807
 needs_review:
@@ -20,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "predict wage based on census/survey data. again census data that is outdated, unclear if the task of predicting the wage based on the seleccted senestive features makes sense "
+CC: "predict wage based on census/survey data. again census data that is outdated, unclear if the task of predicting the wage based on the selected sensitive features makes sense"
 
 ## Reference
 

@@ -13,8 +13,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 23
-- 10.24432/C59W2D
+- https://www.openml.org/d/23
+- https://doi.org/10.24432/C59W2D
 source_row: 526
 type_adapter_id: curation-record-v1
 ---
@@ -25,4 +25,4 @@ type_adapter_id: curation-record-v1
 
 CC: "Predict whether women use contraceptive methods based on demographic data. Unsure whether this is a reasonable task (ethically and from an ML perspective)"
 
-Still very likely ethical issues, but need to evaluate again
+Still very likely ethical issues, but need to evaluate again.

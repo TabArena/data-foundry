@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C50C7B
+- https://doi.org/10.24432/C50C7B
 source_row: 559
 type_adapter_id: curation-record-v1
 ---
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Process delay data. Might require time splits or even group splits. Unclear what the exat measurements are and how they relate. Most likely this task is not representative anymore. Trees dominate on TabRepo - indicates that something is off. Maybe group leak, i.e. due to job_number? Or feature types may be defined wrongly; also has temporal connections"
+CC: "Process delay data. Might require time splits or even group splits. Unclear what the exact measurements are and how they relate. Most likely this task is not representative anymore. Trees dominate on TabRepo - indicates that something is off. Maybe group leak, i.e. due to job_number? Or feature types may be defined wrongly; also has temporal connections"
 
 Check for group or temporal split
 

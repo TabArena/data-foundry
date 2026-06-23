@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 year: '2019'
 source_links:
-- openml 42183
+- https://www.openml.org/d/42183
 source_row: 540
 type_adapter_id: curation-record-v1
 ---
@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Not much information given, datetime available. Task seems to be to predict sales mostly based on whether and datetime - requires temporal split"
+CC: "Not much information given, datetime available. Task seems to be to predict sales mostly based on weather and datetime - requires temporal split"
 
-Unable to find any more information. Could be used for validaiton set, but not more
+Unable to find any more information. Could be used for validation set, but not more

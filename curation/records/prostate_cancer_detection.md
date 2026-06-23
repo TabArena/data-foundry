@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC" Link provided in the survey are outdated, I think I found another version. D: Downloadable under low resolution seldi-tof dataests. The number of csv files matches the number of samples so we just need to merge everything into one table. Clasees are given in folder names"
+CC: "Link provided in the survey are outdated, I think I found another version. D: Downloadable under low resolution seldi-tof datasets. The number of csv files matches the number of samples so we just need to merge everything into one table. Classes are given in folder names"
 
 ## Reference
 

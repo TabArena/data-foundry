@@ -11,8 +11,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- 10.24432/C57G7J
-- openml 1471
+- https://doi.org/10.24432/C57G7J
+- https://www.openml.org/d/1471
 source_row: 257
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Not a meaningful task anymore, also I believe there were leak issues pointe out somewhere; likely has groups, spatial, and temporal relations as it is EEG"
+CC: "Not a meaningful task anymore, also I believe there were leak issues pointed out somewhere; likely has groups, spatial, and temporal relations as it is EEG"

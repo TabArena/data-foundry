@@ -22,7 +22,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/lymphography/metadata.yaml
-- 10.24432/C54598
+- https://doi.org/10.24432/C54598
 - https://www.openml.org/search?type=data&id=10&sort=runs&status=active
 source_row: 762
 type_adapter_id: curation-record-v1
@@ -32,9 +32,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks like a good, but old, dataset that can be used. NEed to resolve semantics again
+Looks like a good, but old, dataset that can be used. Need to resolve semantics again.
 
-Too small after CV -> few shot
+Too small after CV -> few shot.
 
 ## Reference
 

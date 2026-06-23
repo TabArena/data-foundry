@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks good to use. Scraped from the internet, not temporal information, but likely still a valid task given the features
+Looks good to use. Scraped from the internet, no temporal information, but likely still a valid task given the features
 
-Contains several groups of data, so we could merge it to one task and try to learn to predict, but likely one model per task is okay. Notebook from creator did create one dataset by merging all of them. I think we can do the same and it is still a good task (even if sub-splitting might give better perofrmance)
+Contains several groups of data, so we could merge it to one task and try to learn to predict, but likely one model per task is okay. Notebook from creator did create one dataset by merging all of them. I think we can do the same and it is still a good task (even if sub-splitting might give better performance)
 
 Bangalore.csv
 Chennai.csv
@@ -40,7 +40,7 @@ Hyderabad.csv
 Kolkata.csv
 Mumbai.csv
 
-Because we are missing temporal information, this could be seen as a scientifc discovery task. I see it as a gap-filling task (predict prices of houses sold for which we dont know the price for the sake of using it)
+Because we are missing temporal information, this could be seen as a scientific discovery task. I see it as a gap-filling task (predict prices of houses sold for which we don't know the price for the sake of using it)
 
 But it really should not be seen as such. The data contains duplicates (likely prices from the same house, almost 50% of the data). So it really needs the missing temporal information to be a valid task. Thus this cannot be used.
 

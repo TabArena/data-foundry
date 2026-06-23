@@ -10,7 +10,7 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- openml 41187
+- https://www.openml.org/d/41187
 source_row: 286
 type_adapter_id: curation-record-v1
 ---
@@ -19,9 +19,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Only one feature wirth 7 unique values besides the datetime. Clearly time-series
+CC: "Only one feature with 7 unique values besides the datetime. Clearly time-series.
 
-""weekly averages are ultimately based on measurements of 4 air samples per hour taken"""
+"weekly averages are ultimately based on measurements of 4 air samples per hour taken""
 
 ## Reference
 

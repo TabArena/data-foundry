@@ -29,10 +29,10 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-This could be the version without preprocessing and collasping the groups as done for amex!
+This could be the version without preprocessing and collapsing the groups as done for amex!
 
 
-Follow tabred preprocessing and how tables were merged. Investigate test.csv time range to see if it is relevant. Check if customers are unique or reocuring across time and if we would need to filter customers. 
+Follow TabRed preprocessing and how tables were merged. Investigate test.csv time range to see if it is relevant. Check if customers are unique or recurring across time and if we would need to filter customers.
 
 TabRed uses 4 days as time horizon
 

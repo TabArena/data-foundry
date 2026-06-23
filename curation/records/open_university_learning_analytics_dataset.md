@@ -19,7 +19,7 @@ required_split:
 problem_type: TBD
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
-- 10.24432/C5KK69
+- https://doi.org/10.24432/C5KK69
 - https://analyse.kmi.open.ac.uk/
 - https://analyse.kmi.open.ac.uk/open-dataset
 source_row: 738
@@ -39,7 +39,7 @@ https://dl.acm.org/doi/10.1145/3576050.3576061
 
 https://www.sciencedirect.com/science/article/pii/S2666920X22000637?via%3Dihub (explains how to do feature selection for the task?)
 
-We might follow the Kaggle notebook as it seems to know more of the data and use case. Seems reasonable in most cases for the task. Could be made for several task, unclear which one would be best
+We might follow the Kaggle notebook as it seems to know more of the data and use case. Seems reasonable in most cases for the task. Could be made for several tasks, unclear which one would be best
 
 ## Reference
 

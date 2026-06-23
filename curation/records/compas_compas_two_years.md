@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Ethical concerning task. We still rule it out!
+Ethically concerning task. We still rule it out!
 
-CC: "Duplicate data leakage (but might be resolvable). Already preprocessed. also ethical concerning task in general... with real names in the original data"
+CC: "Duplicate data leakage (but might be resolvable). Already preprocessed. Also ethically concerning task in general... with real names in the original data"

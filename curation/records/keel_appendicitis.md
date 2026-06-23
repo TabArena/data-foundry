@@ -36,7 +36,7 @@ Seems like a real task, even if old
 
 Data from book again. Cannot find book anymore that contains information but ChatGPT says the data is real enough
 
-Too few rows after cross-validation -> few shot
+Too few rows after cross-validation -> few-shot
 
 ## Reference
 

@@ -13,7 +13,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 299
+- https://www.openml.org/d/299
 source_row: 84
 type_adapter_id: curation-record-v1
 ---
@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Hand movement dataset (LIBRAS Movement Database). So not tabular task anymore, would now be solved via vision models
+Hand movement dataset (LIBRAS Movement Database). So not a tabular task anymore, would now be solved via vision models

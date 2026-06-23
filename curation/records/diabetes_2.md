@@ -10,6 +10,7 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 - 2nd Tier / Scientfic Discovery
+- Review Prio 1 (Atlas)
 collections:
 - TableShift
 original_source: GOV Website
@@ -34,10 +35,10 @@ type_adapter_id: curation-record-v1
 
 CC: "Used to benchmark distribution shifts between ethnicities, but could also be used with random splits. But would need to clarify license. Source: Centers for Disease Control/BRFSS"
 
-need to check for duplicates, also likely on kaggle in some form. 
+need to check for duplicates, also likely on kaggle in some form.
 Plus, maybe not a real predictive task
 
-Get newest data from webiste
+Get newest data from website
 
 ## Reference
 

@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 
 JC Penney Product Prices in Retailer Website
 
-repeated text, often null, and likely some default statements for gorups of products
+Repeated text, often null, and likely some default statements for groups of products
 
 Has descriptions and reviews as text but is very unclear what kind of task one could make out of this and how these texts would relate
 

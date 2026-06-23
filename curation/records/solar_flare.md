@@ -14,7 +14,7 @@ collections:
 - TabSTAR
 year: '1989'
 source_links:
-- 10.24432/C5530G
+- https://doi.org/10.24432/C5530G
 - https://www.openml.org/search?type=data&id=44966
 source_row: 547
 type_adapter_id: curation-record-v1

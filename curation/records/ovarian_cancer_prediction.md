@@ -31,9 +31,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Link provided in the survey are outdated, I think I found another version, shapes of OpenML dataset match the shapes given in the paper. D: this is data used for ARCENE in NIPS 2003. Downloadable under low resolution seldi-tof dataests"
+CC: "Link provided in the survey are outdated, I think I found another version, shapes of OpenML dataset match the shapes given in the paper. D: this is data used for ARCENE in NIPS 2003. Downloadable under low resolution seldi-tof datasets"
 
-Model achieve perfect score, likely trivial dataset due to unknow leakage in the data
+Model achieves perfect score, likely trivial dataset due to unknown leakage in the data
 
 ## Reference
 

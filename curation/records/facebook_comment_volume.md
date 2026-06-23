@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""TabM: time-split and leak neeeded
+CC: ""TabM: time-split and leak needed
 
 Predict how many comments a post will get based on features from the post; with custom feature engineering and temporal information""
 
@@ -38,7 +38,7 @@ next H hrs. For this, we crawled the Facebook pages for raw
 data, pre-processed it, and made a temporal split of the data
 to prepare the training and testing set."
 
-Page Features, Essential features are related to time intervals before the base time and are already aggreagted (so grouped data no more), Weekday features (no timestamp?)
+Page Features, Essential features are related to time intervals before the base time and are already aggregated (so grouped data no more), Weekday features (no timestamp?)
 
 
 dataset comes in several forms with different base times selected
@@ -52,11 +52,11 @@ selecting different base date/time for same post at
 random and process them individually as described in
 Figure 2. Variant - X, defines that, X instances are derived form single training instance"
 
-Features are missing metadata details...hard to tell if we can reconsutrct a dataset with our own splits
+Features are missing metadata details...hard to tell if we can reconstruct a dataset with our own splits
 
 check for feature names: https://github.com/AmishaMurarka/Facebook-Comment-Volume-Prediction/blob/main/Facebook%20Comment%20Volume%20Prediction.ipynb
 
-we could still use it with there official test splits and different training sets (with the augmentations). It has multiple test cases as well...
+we could still use it with their official test splits and different training sets (with the augmentations). It has multiple test cases as well...
 
 "base time" is only related to the delta from when the post was made, not the overall time.
 

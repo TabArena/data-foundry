@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 505
+- https://www.openml.org/d/505
 - https://lib.stat.cmu.edu/datasets/tecator
 source_row: 449
 type_adapter_id: curation-record-v1

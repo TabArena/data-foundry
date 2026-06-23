@@ -18,7 +18,7 @@ required_split:
 problem_type: Binary Classification
 source_links:
 - https://archive.ics.uci.edu/dataset/588/github+musae
-- 10.24432/C5Z02B
+- https://doi.org/10.24432/C5Z02B
 source_row: 522
 type_adapter_id: curation-record-v1
 ---

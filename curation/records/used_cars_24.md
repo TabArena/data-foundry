@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-used cars data; many columns that could benefit from string preprocessing.; likely syntehthic data given the missing source and data state
+used cars data; many columns that could benefit from string preprocessing; likely synthetic data given the missing source and data state

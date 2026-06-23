@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 building permits
-AP: migh need spatial/temporal split
+AP: might need spatial/temporal split
 
 Likely preprocess and filter on permit type, and status. Revised cost and some other features might be leaking if the permit was granted or not and if it was granted might leak time to grant. A lot of spatial features, record id is also time informative
 

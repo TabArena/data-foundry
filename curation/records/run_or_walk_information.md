@@ -12,7 +12,7 @@ collections:
 - TabSTAR
 source_links:
 - https://www.kaggle.com/datasets/vmalyi/run-or-walk
-- openml 40922
+- https://www.openml.org/d/40922
 source_row: 259
 type_adapter_id: curation-record-v1
 ---

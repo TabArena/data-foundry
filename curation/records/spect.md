@@ -14,7 +14,7 @@ collections:
 original_source: UCI
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/spect/metadata.yaml
-- 10.24432/C5N015
+- https://doi.org/10.24432/C5N015
 - https://www.kaggle.com/datasets/sugataghosh/spect-heart-dataset
 source_row: 69
 type_adapter_id: curation-record-v1
@@ -24,4 +24,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-image data made tabular from 2001, likely not used this was anymore today.
+image data made tabular from 2001, likely not used this way anymore today.

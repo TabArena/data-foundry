@@ -7,7 +7,7 @@ collections:
 - TabArena Reject
 year: '2013'
 source_links:
-- 10.24432/C5BS66
+- https://doi.org/10.24432/C5BS66
 source_row: 817
 needs_review:
 - suggestion
@@ -20,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 CC: "No (after preprocessing)"
 
-CC: "dataset was created to assess the health and nutritional status of adults and children in the United States.Task might be to predict the actual age? There is a full dataset version available: https://wwwn.cdc.gov/nchs/nhanes/search/DataPage.aspx?Component=Questionnaire&CycleBeginYear=2013 and a 2019 paper. Need to remove age_group as leak otherwise; also the real task needs to be checked"
+CC: "dataset was created to assess the health and nutritional status of adults and children in the United States. Task might be to predict the actual age? There is a full dataset version available: https://wwwn.cdc.gov/nchs/nhanes/search/DataPage.aspx?Component=Questionnaire&CycleBeginYear=2013 and a 2019 paper. Need to remove age_group as leak otherwise; also the real task needs to be checked"
 
 ## Reference
 

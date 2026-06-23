@@ -19,8 +19,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Predict if a room is occupied based on environmental features and date; might be temporal as we would like to forecast the future; 
-date is just a number"
+Duplicate of occupancy_detection_2
 
 ## Reference
 

@@ -17,7 +17,7 @@ required_split:
 - Temporal (NON-IID)
 problem_type: Regression
 source_links:
-- 10.24432/C59K76
+- https://doi.org/10.24432/C59K76
 source_row: 739
 type_adapter_id: curation-record-v1
 ---
@@ -26,9 +26,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "2 targets. Target is to predict the The next-day minimum/maximum air temperature for bias correction. Needs temporal split - although the features themselves are time-invariant, the samples are non-iid"
+CC: "2 targets. Target is to predict the next-day minimum/maximum air temperature for bias correction. Needs temporal split - although the features themselves are time-invariant, the samples are non-iid"
 
-bias correction in numerical weather prediction (NWP) seems to be a whole research field. Therefore, this is a valid task. 
+bias correction in numerical weather prediction (NWP) seems to be a whole research field. Therefore, this is a valid task.
 
 Has two targets: predict min and max temperature of a day. Not sure if it makes sense to use only one
 

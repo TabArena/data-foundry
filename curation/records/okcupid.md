@@ -26,9 +26,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict sexual orienten based on dating profile info
+predict sexual orientation based on dating profile info
 
-Many categoricals are stacked and contain several one (like "A", and :A but serious about it")
+Many categoricals are stacked and contain several ones (like "A", and "A but serious about it")
 
 All choices of a target are not great and in most cases ethically problematic
 

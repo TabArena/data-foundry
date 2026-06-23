@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Might be transfromed into a non-iid predictive task instead of forecasting
+Might be transformed into a non-iid predictive task instead of forecasting
 
 Unclear what to do with in the end but seems like it would be useable. Not an original real task, but just collected data for the sake of some data analysis

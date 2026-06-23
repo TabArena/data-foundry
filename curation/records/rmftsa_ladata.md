@@ -20,9 +20,9 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml.org/d/717
+- https://www.openml.org/d/717
 - http://lib.stat.cmu.edu/datasets/
-- openml 666
+- https://www.openml.org/d/666
 source_row: 615
 type_adapter_id: curation-record-v1
 ---

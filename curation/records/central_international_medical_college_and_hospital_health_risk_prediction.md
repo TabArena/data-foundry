@@ -25,9 +25,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-even if some information are missing, this looks like very real data from https://dcimch.com/
+Even if some information are missing, this looks like very real data from https://dcimch.com/
 
-Target variable might be nosiy/fake and thus the task might be trivial. We will see post hoc
+Target variable might be noisy/fake and thus the task might be trivial. We will see post hoc.
 
 ## Reference
 

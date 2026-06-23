@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Duplicate of  Ljubljana Primary Tumor
+Duplicate of Ljubljana Primary Tumor

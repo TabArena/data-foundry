@@ -28,6 +28,6 @@ American Eagle Retailer Price Prediction
 
 Unclear if more NLP or enough tabular task
 
-Contains images as well. Most of the text is a blurb but not lanugage sentences and most of the work would seem to relate to parsing the strings and sizes into features. It is more a blurb containing some information than a real sentence
+Contains images as well. Most of the text is a blurb but not language sentences and most of the work would seem to relate to parsing the strings and sizes into features. It is more a blurb containing some information than a real sentence
 
 Data from https://www.kaggle.com/datasets/PromptCloudHQ/innerwear-data-from-victorias-secret-and-others

@@ -33,9 +33,9 @@ type_adapter_id: curation-record-v1
 
 need to figure out how to use the data, source seems likely image data?
 
-the version of this dataset is created fro the study and taken from another one
+the version of this dataset is created from the study and taken from another one
 
-Grouped data 
+Grouped data
 
 AT: No objection, but we need to quickly talk about how we proceed with medical image data
 

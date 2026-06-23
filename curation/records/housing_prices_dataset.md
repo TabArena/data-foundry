@@ -20,8 +20,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Given the references, this seems to be from a book or an older paper, needs more investigation 
+Given the references, this seems to be from a book or an older paper, needs more investigation
 
-Distribution of data look artifical again 
+Distribution of data looks artificial again
 
 Duplicate of "housing_price_prediction" above

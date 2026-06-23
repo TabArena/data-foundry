@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Panel data from www.internationalfinancialresearch.org, maybe we can find the source and get more as it i just a " randomized selection"
+Panel data from www.internationalfinancialresearch.org, maybe we can find the source and get more as it is just a " randomized selection"
 
 Determine how to make it a target, as it is not just one target per group
 

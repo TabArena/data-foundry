@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Another SQL Dump that requires expert FE to get to a final CSV; russian text; liklely overlapping iwth other avito data
+Another SQL dump that requires expert FE to get to a final CSV; Russian text; likely overlapping with other avito data

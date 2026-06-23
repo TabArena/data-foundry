@@ -21,7 +21,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/75/musk+version+2
 - https://www.openml.org/search?type=data&sort=runs&id=1116&status=active
-- 10.24432/C51608
+- https://doi.org/10.24432/C51608
 - https://doi.org/10.24432/C5ZK5B
 source_row: 5
 type_adapter_id: curation-record-v1
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 CC: "multiple instance problem - multiple instances of the same molecule are in the data. The classifier should classify as 1 if any of the instances is 1 (0 if none). Leak if used with random splits. Classic Physics/Chemistry application, definitely worth including. Not in TabRepo, but likely due to leak; Could be used after preprocessing to reduce to the original (very small) dataset of 102 molecules. When done, the dataset is however too small for our selection size"
 
-We use msuk verison 2 as a starting point and treat it as a grouped prediction task
+We use musk version 2 as a starting point and treat it as a grouped prediction task
 
 AT: No disagreement, but we should discuss how to treat the multi-instance problem
 

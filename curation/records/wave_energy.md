@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 44975
+- https://www.openml.org/d/44975
 source_row: 410
 type_adapter_id: curation-record-v1
 ---
@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Simulated data, "The data is obtained from an optimization method (blackbox optimization) with the goal of finding the optimal buoys placement."; missing source information and lables on UCI? groupe data if used from all sides at once. Also temporal aspects might be important, as this seems to be a time-sensitive task"
+CC: "Simulated data, "The data is obtained from an optimization method (blackbox optimization) with the goal of finding the optimal buoys placement."; missing source information and labels on UCI? Group data if used from all sides at once. Also temporal aspects might be important, as this seems to be a time-sensitive task"

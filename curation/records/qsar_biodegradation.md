@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- 10.24432/C5H60M
+- https://doi.org/10.24432/C5H60M
 source_row: 385
 type_adapter_id: curation-record-v1
 ---

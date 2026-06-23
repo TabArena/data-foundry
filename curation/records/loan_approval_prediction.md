@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-I feel I have seen this data before and it is a duplicate to one of the above 
+I feel I have seen this data before and it is a duplicate to one of the above
 
-Duplica of https://www.kaggle.com/datasets/laotse/credit-risk-dataset
+Duplicate of https://www.kaggle.com/datasets/laotse/credit-risk-dataset

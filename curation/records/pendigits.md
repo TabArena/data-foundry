@@ -13,7 +13,7 @@ collections:
 source_links:
 - https://www.openml.org/search?type=data&id=32
 - https://archive.ics.uci.edu/dataset/81/pen+based+recognition+of+handwritten+digits
-- 10.24432/C5MG6K
+- https://doi.org/10.24432/C5MG6K
 source_row: 243
 type_adapter_id: curation-record-v1
 ---

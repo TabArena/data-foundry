@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: " Hourly data of traffic volumne 2012 - 2018"
+CC: "Hourly data of traffic volume 2012 - 2018"

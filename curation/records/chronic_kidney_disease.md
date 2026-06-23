@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5G020
+- https://doi.org/10.24432/C5G020
 source_row: 767
 type_adapter_id: curation-record-v1
 ---
@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks good
+Looks good.
 
-ALl models achieve perfect score. Likely some grouped data leakage that is not visible in the data itself
+All models achieve perfect score. Likely some grouped data leakage that is not visible in the data itself.
 
 ## Reference
 

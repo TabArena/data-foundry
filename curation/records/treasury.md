@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 year: '2000'
 source_links:
-- openml 42367
+- https://www.openml.org/d/42367
 - keel https://sci2s.ugr.es/keel/dataset.php?cod=42 -> http://funapp.cs.bilkent.edu.tr/DataSets/
 source_row: 541
 type_adapter_id: curation-record-v1

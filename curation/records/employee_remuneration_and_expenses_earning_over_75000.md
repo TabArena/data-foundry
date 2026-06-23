@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predicts remunerations of employees (earnings)
+Predicts remunerations of employees (earnings)
 
 Contains PII, temporal and grouped data (repeated entries per year, across years). No target or features for a target at all

@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Same source as Parkinsons and saved in the same repo under telemonitoring/, but here we only have data from cases that already have parkinsons. The task is to predict the progression of a patient at the next time interval (so non-iid grouped), that is we have a different target per time point per patient. 
+Same source as Parkinsons and saved in the same repo under telemonitoring/, but here we only have data from cases that already have Parkinson's. The task is to predict the progression of a patient at the next time interval (so non-iid grouped), that is we have a different target per time point per patient. 
 
 It was used to monitor the progression. 
 

@@ -19,7 +19,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- openml.org/d/1498
+- https://www.openml.org/d/1498
 - https://www.kaggle.com/datasets/waalbannyantudre/south-african-heart-disease-dataset
 source_row: 749
 type_adapter_id: curation-record-v1

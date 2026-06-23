@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 source_links:
 - https://catalog.data.gov/dataset/phm-2008-challenge-d1f2b
-- openml 42821
+- https://www.openml.org/d/42821
 source_row: 284
 type_adapter_id: curation-record-v1
 ---

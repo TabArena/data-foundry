@@ -12,7 +12,7 @@ tags:
 collections:
 - New (BeyondArena)
 source_links:
-- 10.24432/C5702T
+- https://doi.org/10.24432/C5702T
 source_row: 516
 type_adapter_id: curation-record-v1
 ---
@@ -21,10 +21,10 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Not super sure this counts as full tabular task. Needs more time 
+Not super sure this counts as a full tabular task. Needs more time 
 
-A lot of features! Might need some basic unsupervised feature selection first>
+A lot of features! Might need some basic unsupervised feature selection first
 
 Link to the website is broken. Cannot find the exact csv with the number of instances as on UCI website
 
-Very unclear how to go from gov website to a usable merged dataset, as it seems to be merged from various cases. I am missing the domain knoweldge to figure out what to do witth the data
+Very unclear how to go from gov website to a usable merged dataset, as it seems to be merged from various cases. I am missing the domain knowledge to figure out what to do with the data

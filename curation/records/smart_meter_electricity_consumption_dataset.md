@@ -19,6 +19,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-anomaliy dections, could be used; looks very fake based on the distributions plus no source information
+anomaly detection, could be used; looks very fake based on the distributions plus no source information
 
 Note the user is ziya07 as for other fake datasets

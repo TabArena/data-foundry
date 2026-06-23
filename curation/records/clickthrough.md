@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Temporal by days, potentially grouped by websites which we have data for given the last day! IP, website, and domains have high many high cardinal features, requires group-aware preprocessing or other clever tricks, otherwise rather weird data. Again CTR which makes it questionable
+Temporal by days, potentially grouped by websites which we have data for given the last day! IP, website, and domains have many high-cardinality features, requires group-aware preprocessing or other clever tricks, otherwise rather weird data. Again CTR which makes it questionable.

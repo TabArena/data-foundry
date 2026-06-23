@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 41161
+- https://www.openml.org/d/41161
 source_row: 367
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "From AutoML challenge. prediction task consists of determining whether a pair of image- text is related"
+CC: "From AutoML challenge. prediction task consists of determining whether a pair of image-text is related"

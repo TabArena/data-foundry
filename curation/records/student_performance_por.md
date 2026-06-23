@@ -13,7 +13,7 @@ collections:
 - TabArena Reject
 year: '2008'
 source_links:
-- 10.24432/C5TG7T
+- https://doi.org/10.24432/C5TG7T
 source_row: 119
 type_adapter_id: curation-record-v1
 ---

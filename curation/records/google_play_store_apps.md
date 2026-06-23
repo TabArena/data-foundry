@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-A lot of minor problems with the scarpping data (see discussions); no clear target or setup to use
+A lot of minor problems with the scraping data (see discussions); no clear target or setup to use

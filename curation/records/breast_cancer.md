@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/breast_cancer/metadata.yaml
-- 10.24432/C51P4M
+- https://doi.org/10.24432/C51P4M
 source_row: 72
 type_adapter_id: curation-record-v1
 ---

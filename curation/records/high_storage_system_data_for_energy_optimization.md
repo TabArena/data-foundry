@@ -18,7 +18,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Anomali detection task, could be framd as classification, unsure
+Anomaly detection task, could be framed as classification, unsure
 
 Preprocessing rel: https://www.kaggle.com/code/horikitasaku/pr-auc-0-9054-catboost-baseline
 

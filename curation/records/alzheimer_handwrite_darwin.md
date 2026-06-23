@@ -12,7 +12,7 @@ collections:
 - TabSTAR
 source_links:
 - https://www.openml.org/search?type=data&id=46606
-- 10.24432/C55D0K
+- https://doi.org/10.24432/C55D0K
 source_row: 581
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Handwriting motor data, likely time series but made to tabular. Need to check if yes.
+Handwriting motor data, likely time series but made tabular. Need to check if yes.

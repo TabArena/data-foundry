@@ -10,7 +10,7 @@ collections:
 - New (BeyondArena)
 - TabSTAR
 source_links:
-- 10.24432/C59012
+- https://doi.org/10.24432/C59012
 source_row: 140
 type_adapter_id: curation-record-v1
 ---

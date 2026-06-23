@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - New (BeyondArena)
 source_links:
-- 10.24432/C5X89F
+- https://doi.org/10.24432/C5X89F
 source_row: 151
 type_adapter_id: curation-record-v1
 ---
@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-updated version of credit-g, still a lot of duplicate and already includes oversampling
+updated version of credit-g, still a lot of duplicates and already includes oversampling

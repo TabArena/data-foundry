@@ -28,12 +28,12 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-OpenML version uses the test data with all churn for all customers? that is just a placeholder? in the notebook it was used as test data, so maybe we can combine it and treat it as such? otherwise, just stick to train data to avoid problems
+OpenML version uses the test data with all churn for all customers? That is just a placeholder? In the notebook it was used as test data, so maybe we can combine it and treat it as such? Otherwise, just stick to train data to avoid problems.
 
 https://www.kaggle.com/code/raumonsa11/churn-telco-europa-spa-eng/notebook
-Uploader says it is real data
+Uploader says it is real data.
 
-Even with missing source information, this might be a good dataset
+Even with missing source information, this might be a good dataset.
 
 ## Reference
 

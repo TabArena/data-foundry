@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 Returns prediction, sounds reasonable, need to pick one target and go for it
 
-Have to remove columns that leak target, we use  3 years return as target
+Have to remove columns that leak target, we use 3 years return as target
 
 ## Reference
 

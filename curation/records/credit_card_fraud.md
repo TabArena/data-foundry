@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Going from the Kaggle discussions, the missing source information, and the distribution of the data, we judge this to be simualted mosty likely
+Going from the Kaggle discussions, the missing source information, and the distribution of the data, we judge this to be simulated mostly likely

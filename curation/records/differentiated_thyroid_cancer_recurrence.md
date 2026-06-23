@@ -18,7 +18,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5632J
+- https://doi.org/10.24432/C5632J
 - https://www.openml.org/search?type=data&id=46605&sort=runs&status=active
 source_row: 788
 type_adapter_id: curation-record-v1
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 Might be panel / longitudinal data, but is already made to be IID
 
-Otherwises, look reasonable and might be a valid task
+Otherwise, looks reasonable and might be a valid task
 
 Performance in paper is already very high, likely trivial
 

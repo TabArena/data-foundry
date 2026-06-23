@@ -11,7 +11,7 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- openml  41839
+- https://www.openml.org/d/41839
 - https://www.dukascopy.com/swiss/english/marketwatch/historical/
 source_row: 281
 type_adapter_id: curation-record-v1

@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Meterologicla Data from several cities, time period 2010 to 2015; likely forecasting task"
+CC: "Meteorological data from several cities, time period 2010 to 2015; likely forecasting task"

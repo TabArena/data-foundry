@@ -18,7 +18,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.5281/zenodo.11062076
+- https://doi.org/10.5281/zenodo.11062076
 source_row: 717
 type_adapter_id: curation-record-v1
 ---
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 Contains SMILES. Authors provide custom splits: maximum diversity (MaxMin) split and a novel approximation of time split using PubChem literature data
 
-Unclear what to do with SMILES. To corectly use this dataset, we would need to better understand the domain
+Unclear what to do with SMILES. To correctly use this dataset, we would need to better understand the domain
 
 ## Reference
 

@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Scraped korean drama data
+Scraped Korean drama data
 
 Has temporal (year of drama) and group (drama series/seasons) leakage depending on the target
 

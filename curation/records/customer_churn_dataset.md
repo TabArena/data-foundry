@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks super artifical again, from educationhub.pk
+Looks super artificial again, from educationhub.pk
 
 
 Source looks like it does not contain the dataset and is for education purposes

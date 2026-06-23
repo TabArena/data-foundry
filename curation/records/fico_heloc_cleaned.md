@@ -12,7 +12,7 @@ collections:
 source_links:
 - https://www.openml.org/search?type=data&id=45554
 - https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc
-- openml 45553
+- https://www.openml.org/d/45553
 source_row: 426
 type_adapter_id: curation-record-v1
 ---

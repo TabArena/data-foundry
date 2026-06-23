@@ -15,7 +15,7 @@ collections:
 - TabSTAR
 year: '2003'
 source_links:
-- openml 41157
+- https://www.openml.org/d/41157
 source_row: 38
 type_adapter_id: curation-record-v1
 ---

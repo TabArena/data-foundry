@@ -23,8 +23,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-some columns have a lot of missing entries
+Some columns have a lot of missing entries
 
-has a lot three datasets in total, all similar in parsing, very hard to say what a task might be
+Has a lot — three datasets in total, all similar in parsing, very hard to say what a task might be
 
-yet another dataset about predicting prices of alcholo, this does not seem to be a real task either as price is not defined this way. Plus, we already tolerate the wine dataset which has less errors in price target
+Yet another dataset about predicting prices of alcohol, this does not seem to be a real task either as price is not defined this way. Plus, we already tolerate the wine dataset which has less errors in price target

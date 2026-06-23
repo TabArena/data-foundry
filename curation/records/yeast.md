@@ -11,7 +11,7 @@ collections:
 - TabSTAR
 source_links:
 - https://www.openml.org/search?type=data&id=181
-- 10.24432/C5KG68
+- https://doi.org/10.24432/C5KG68
 source_row: 347
 type_adapter_id: curation-record-v1
 ---

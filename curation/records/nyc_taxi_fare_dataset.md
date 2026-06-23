@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 CC: ""Temporal preprocessing needed, geospatial leakage, grouped data;
 
-Need to preprocess dates, need to resolve location ID, need to remove features that leak the target if we predict price or if we predict time; almost not predictive signal in original features""
+Need to preprocess dates, need to resolve location ID, need to remove features that leak the target if we predict price or if we predict time; almost no predictive signal in original features""

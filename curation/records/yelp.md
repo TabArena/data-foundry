@@ -8,6 +8,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Free Text (Short)
+- Review Prio 1 (Atlas)
 collections:
 - CARTE/TARTE
 source_links:
@@ -20,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-A bunch of data from yelp, no real information/features besides entity matching again
+A bunch of data from Yelp, no real information/features besides entity matching again

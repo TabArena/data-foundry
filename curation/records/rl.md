@@ -9,8 +9,8 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- openml 41160
-- 10.24432/C50K61
+- https://www.openml.org/d/41160
+- https://doi.org/10.24432/C50K61
 - https://competitions.codalab.org/competitions/2321
 - https://automl.chalearn.org/data
 source_row: 323

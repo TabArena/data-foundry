@@ -12,7 +12,7 @@ collections:
 source_links:
 - https://www.openml.org/search?type=data&id=344&sort=runs&status=active
 - http://www.dcc.fc.up.pt/~ltorgo/Regression/DataSets.html
-- openml 881
+- https://www.openml.org/d/881
 source_row: 395
 type_adapter_id: curation-record-v1
 ---

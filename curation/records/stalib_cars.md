@@ -25,6 +25,6 @@ Unclear if outdated or not, but different cars version
 
 Might be a scientific discovery task
 
-(mis-labeled as duplicat by TabArena-v0.1 (?), I remeber curating it before but cannot find it anymore...)
+(mis-labeled as duplicate by TabArena-v0.1 (?), I remember curating it before but cannot find it anymore...)
 
 "Your objective should be to achieve graphical displays which will be meaningful to the viewers and highlight relevant aspects of the data."

@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Real world complaints about financial products and services; data might contain sub-cohorts based on reporting category; we might want to filter to only a subset of cohorts; many missing values; data might have temporal drift; contains zip code to get more tabukar features; temporal; we could get a new version of the data from the website 
+Real world complaints about financial products and services; data might contain sub-cohorts based on reporting category; we might want to filter to only a subset of cohorts; many missing values; data might have temporal drift; contains zip code to get more tabular features; temporal; we could get a new version of the data from the website
 
-Needs a lot of preprocessing / feature engineering to become a usable task 
+Needs a lot of preprocessing / feature engineering to become a usable task
 
 We got the newer version from here: https://www.consumerfinance.gov/data-research/consumer-complaints/
 

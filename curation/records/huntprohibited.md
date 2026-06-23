@@ -10,6 +10,7 @@ tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
 - Larger IID Data
+- Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
 original_source: Kaggle
@@ -30,9 +31,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Russian text; text to features script exists; free-text categorical in json format, extra leaking column, that could be used to sub-filter data; close_hours leaking test data; some count features from text; likely some problem with malicous users, who one should detect instead of the ads itself"
+CC: "Russian text; text to features script exists; free-text categorical in json format, extra leaking column, that could be used to sub-filter data; close_hours leaking test data; some count features from text; likely some problem with malicious users, who one should detect instead of the ads itself"
 
-needs some basic preprocessing as shown by the hosts; non english language might be a problem for downstream models
+needs some basic preprocessing as shown by the hosts; non-English language might be a problem for downstream models
 
 ## Reference
 

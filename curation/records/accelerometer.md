@@ -10,7 +10,7 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- 10.24432/C5Q61V
+- https://doi.org/10.24432/C5Q61V
 source_row: 285
 type_adapter_id: curation-record-v1
 ---

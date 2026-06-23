@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 Distributions look a bit too fake
 
-"It is simulated on the basis of demographic statistics from the US Census Bureau, according to the book from which it is from." from a Kaggle user. 
+"It is simulated on the basis of demographic statistics from the US Census Bureau, according to the book from which it is from." from a Kaggle user.
 
 I agree, remove now

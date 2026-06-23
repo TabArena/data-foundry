@@ -19,6 +19,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Some kind of openML meta task; unclear source datae and information; some kind of algorithm selection task; time/interval featuires?"
+CC: "Some kind of OpenML meta task; unclear source data and information; some kind of algorithm selection task; time/interval features?"
 
-Rejected because of missing source, could use as 2nd tier
+Rejected because of missing source, could use as 2nd tier.

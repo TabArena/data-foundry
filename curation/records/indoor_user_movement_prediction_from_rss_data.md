@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "temporal data, time-seires data from sensors, grouped settings"
+CC: "temporal data, time-series data from sensors, grouped settings"

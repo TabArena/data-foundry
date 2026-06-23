@@ -19,7 +19,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 44992
+- https://www.openml.org/d/44992
 - https://github.com/svpeeters/performance_prediction
 source_row: 699
 type_adapter_id: curation-record-v1
@@ -29,13 +29,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "data of FPS from games with CPU and GPU and Game groups, data from fpsbenchmark.com (unreliable and fake info know to exist for some of the entires), mean of distribution is target.Might be a look-up task - need to define that term somewhere, I like it. if this is a real task, it might require group split by hardware or game. the grouping of CPUs and GPUs and Games might lead to some leak and do not show a real-world task"
+CC: "data of FPS from games with CPU and GPU and Game groups, data from fpsbenchmark.com (unreliable and fake info known to exist for some of the entries), mean of distribution is target. Might be a look-up task - need to define that term somewhere, I like it. If this is a real task, it might require group split by hardware or game. The grouping of CPUs and GPUs and Games might lead to some leak and do not show a real-world task"
 
-Game groups also depend on setting, so we predict the FPS for a one game across hardware and settings at once (as we have no such info beforehand?)
+Game groups also depend on setting, so we predict the FPS for one game across hardware and settings at once (as we have no such info beforehand?)
 
-Need to check if we have the same CPUnames / GPUnames for all games or if there is such drift, otherwise need to remove it as well? 
+Need to check if we have the same CPUnames / GPUnames for all games or if there is such drift, otherwise need to remove it as well?
 
-Two game settings (4 in the original data) that could be seen as a multi-target task, same for predicting it across games. But this also hopes to see generalization. hard to tell what is better without more experiments
+Two game settings (4 in the original data) that could be seen as a multi-target task, same for predicting it across games. But this also hopes to see generalization. Hard to tell what is better without more experiments
 
 This could be treated as an IID task as well IMO, see long comment in data foundry about it.
 

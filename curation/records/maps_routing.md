@@ -28,11 +28,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Was downsampled/filtered by TabRed via preprocessing
+Was downsampled/filtered by TabRed via preprocessing.
 
-TabRed, 1 week horizon
+TabRed, 1 week horizon.
 
-Not much more, need to follow preprocessing from TabRed mosty likely
+Not much more, need to follow preprocessing from TabRed most likely.
 
 ## Reference
 

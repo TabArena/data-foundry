@@ -21,8 +21,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-unclear data source and state
+Unclear data source and state.
 
-Not enough information and data looks quite fake. moreover it says practice task
+Not enough information and data looks quite fake. Moreover it says practice task.
 
-Given that we are missing these information, we exclude it.
+Given that we are missing this information, we exclude it.

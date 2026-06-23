@@ -18,7 +18,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/dermatology/metadata.yaml
-- 10.24432/C5FK5P
+- https://doi.org/10.24432/C5FK5P
 source_row: 753
 type_adapter_id: curation-record-v1
 ---
@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks like an old but reasonable task 
+Looks like an old but reasonable task
 
 If we use the Histopathological, this means we assume the patient may or may not be given a biopsy
 

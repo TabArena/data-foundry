@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Likley use data from Kaggle
+Likely use data from Kaggle
 
-A bit hard to parse what the origin is and wher ethe Kaggle data was downloaded from, but we can use it
+A bit hard to parse what the origin is and where the Kaggle data was downloaded from, but we can use it
 
 ## Reference
 

@@ -20,8 +20,8 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/faysalmiah1721758/breast-cancer-data
 - https://github.com/jbrownlee/Datasets/blob/master/breast-cancer.names
-- 10.24432/C51P4M
-- openml 13
+- https://doi.org/10.24432/C51P4M
+- https://www.openml.org/d/13
 source_row: 769
 type_adapter_id: curation-record-v1
 ---

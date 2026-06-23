@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5B31D
+- https://doi.org/10.24432/C5B31D
 source_row: 1030
 type_adapter_id: curation-record-v1
 ---
@@ -32,8 +32,8 @@ type_adapter_id: curation-record-v1
 Same source as clock_protein_toxicity
 
 
-Onlyt has 90 samples, not enough for us here.
-Plus, it is the same sourec data (not target) as Toxicity. So we keep only Toxicity
+Only has 90 samples, not enough for us here.
+Plus, it is the same source data (not target) as Toxicity. So we keep only Toxicity.
 
 ## Reference
 

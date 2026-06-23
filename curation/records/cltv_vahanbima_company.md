@@ -29,11 +29,11 @@ type_adapter_id: curation-record-v1
 
 "Data was collected from VahanBima Insurance company"
 
-Unclear if real dataset, need to find source
+Unclear if real dataset, need to find source.
 
-the company seems real 
+The company seems real.
 
-" provided with the sample dataset of the company holding the information of customers"
+"provided with the sample dataset of the company holding the information of customers"
 
 ## Reference
 

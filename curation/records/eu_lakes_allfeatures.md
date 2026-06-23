@@ -16,7 +16,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Sampling of European lakes in August 2012; metadata source: dx.doi.org/10.1111/mec.15872; otu table source:from J. Boenigk
+Sampling of European lakes in August 2012; metadata source: dx.doi.org/10.1111/mec.15872; otu table source: from J. Boenigk
 
 ## Reference
 

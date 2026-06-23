@@ -18,7 +18,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 44223
+- https://www.openml.org/d/44223
 - https://www4.stat.ncsu.edu/~boos/var.select/diabetes.html
 source_row: 785
 type_adapter_id: curation-record-v1
@@ -32,7 +32,7 @@ scikit-learn toy dataset
 
 Unclear if too trivial?
 
-Let us sue the version of the data without normalization and the correct headers. 
+Let us use the version of the data without normalization and the correct headers.
 
 The original source of the data is supposedly from the same group as the referenced paper. Unclear in general, but should be fine as it is used so much
 

@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/flags/metadata.yaml
-- 10.24432/C52C7Z
+- https://doi.org/10.24432/C52C7Z
 source_row: 96
 type_adapter_id: curation-record-v1
 ---
@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 No real task, just data about flags with metadata about their origin and setup
 
-this does not count as a useful task and is jsut a look-up or wikipedia table task. Moreover, there are no real predictive relationships
+This does not count as a useful task and is just a look-up or Wikipedia table task. Moreover, there are no real predictive relationships
 
-ALso old flags more or less.
+Also old flags more or less.

@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-A lot of context for the features and list. It is just a list of information, not full connected among itself.
+A lot of context for the features and list. It is just a list of information, not fully connected among itself.

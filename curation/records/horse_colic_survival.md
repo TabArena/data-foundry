@@ -22,7 +22,7 @@ original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/horse_colic_lesion_type/metadata.yaml
 - https://www.openml.org/search?type=data&id=25
-- 10.24432/C58W23
+- https://doi.org/10.24432/C58W23
 source_row: 761
 type_adapter_id: curation-record-v1
 ---
@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Has multiple possible classes (lesion or others). decide for one that is reasonable
+Has multiple possible classes (lesion or others). Decide for one that is reasonable
 
 ## Reference
 

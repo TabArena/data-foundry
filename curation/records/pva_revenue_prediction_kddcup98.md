@@ -18,7 +18,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 42343
+- https://www.openml.org/d/42343
 - https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html
 source_row: 647
 type_adapter_id: curation-record-v1
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 CC: "Predict whether there was a response to mailing. Side story: A friend of mine used to work for a company whose customers were mainly old people still ordering stuff from physical catalogues. Predicting the response to direct mailing was one the tasks he worked on. So this good old task is still relevant :) ... In Germany? :D"
 
-This could also be used as classificaiton task given the first dependent variable
+This could also be used as a classification task given the first dependent variable
 
 ## Reference
 

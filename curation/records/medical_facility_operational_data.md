@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Unsure what the task/target could be, is one excel sheet with a bunch of data
+Unsure what the task/target could be, is one Excel sheet with a bunch of data.

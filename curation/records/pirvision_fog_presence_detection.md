@@ -12,7 +12,7 @@ tags:
 collections:
 - New (BeyondArena)
 source_links:
-- 10.24432/C56W5M
+- https://doi.org/10.24432/C56W5M
 source_row: 621
 type_adapter_id: curation-record-v1
 ---
@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 might be solved via tabular models? paper uses knn....
 
-Tasks looks reasonable transformed, could be solved with tabular as in paper. Unsure how good of a task
+Task looks reasonable transformed, could be solved with tabular as in paper. Unsure how good of a task

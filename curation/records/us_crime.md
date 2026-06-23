@@ -22,10 +22,10 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Ethical problematic task. At most consider as 2nd tier, if at all.
+Ethically problematic task. At most consider as 2nd tier, if at all.
 
 US Census Crime Data per County
 
-Data contains ordinal encoded names os tates and locations, it also includes a fold, it has string/entity columns but no free text or sentences 
+Data contains ordinal encoded names of states and locations, it also includes a fold, it has string/entity columns but no free text or sentences
 
 Has fold column

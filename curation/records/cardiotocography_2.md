@@ -21,7 +21,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/193/cardiotocography
-- 10.24432/C51S4N
+- https://doi.org/10.24432/C51S4N
 source_row: 693
 type_adapter_id: curation-record-v1
 ---
@@ -30,9 +30,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The label is the consensus of three experts (so likely nosiy). 
+The label is the consensus of three experts (so likely noisy).
 
-Can be either 10 or 3 class problem
+Can be either 10 or 3 class problem.
 Raw data has dates!
 
 

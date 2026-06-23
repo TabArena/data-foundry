@@ -8,9 +8,9 @@ collections:
 - TabSTAR
 year: '1999'
 source_links:
-- openml.org/d/770
+- https://www.openml.org/d/770
 - https://lib.stat.cmu.edu/datasets/
-- openml 549
+- https://www.openml.org/d/549
 source_row: 800
 needs_review:
 - suggestion

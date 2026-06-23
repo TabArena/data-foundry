@@ -39,7 +39,7 @@ type_adapter_id: curation-record-v1
 
 This data does not include any original audio data but already gives preprocessed features, which is problematic, but we can work with it.
 
-Also note that the track IDs appear multiple times, need to check what kind of duplicate this are.
+Also note that the track IDs appear multiple times, need to check what kind of duplicates these are.
 
 The task of predicting the genre is closer to training an embedding model than a real classifier, but given the high-level features, it could be seen as the prediction head on top of such an embedding model that also includes artist metadata.
 Also note that the genre is not really the real genre of the track (based on some real-world tag or human expertise), and instead an artifact from the scraping of the data https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/discussion/374642#2222338 

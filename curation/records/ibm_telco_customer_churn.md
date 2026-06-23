@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Sample data set, not real 
+Sample data set, not real
 From https://community.ibm.com/community/user/blogs/steven-macko/2019/07/11/telco-customer-churn-1113
 https://www.kaggle.com/datasets/yeanzc/telco-customer-churn-ibm-dataset

@@ -22,7 +22,7 @@ type_adapter_id: curation-record-v1
 
 Data looks real, way back machine shows this was once a real website. Should be usable for some sort of house price prediction task
 
-Data looks good to use; again, house prices... 
+Data looks good to use; again, house prices...
 But otherwise great features and setup for one of these tasks
 
-Some scrapping and minor issues: https://www.kaggle.com/datasets/syuzai/perth-house-prices/discussion/383033
+Some scraping and minor issues: https://www.kaggle.com/datasets/syuzai/perth-house-prices/discussion/383033

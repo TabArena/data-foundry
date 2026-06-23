@@ -22,7 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/cirrhosis-prediction-dataset
 - https://www.mayo.edu/research/documents/pbchtml/doc-10027635
-- 10.24432/C5R02G
+- https://doi.org/10.24432/C5R02G
 source_row: 772
 type_adapter_id: curation-record-v1
 ---
@@ -31,14 +31,14 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-need to check for duplicate... and original source
+Need to check for duplicates and original source.
 
 Might be RCT data, not sure what the target might become?
 
-status contains censored data, need to figure out how to use and work with this
-clearly a survival task as it seems
+Status contains censored data, need to figure out how to use and work with this.
+Clearly a survival task as it seems.
 
-we treat it as a un-censored time to death prediction task or similar as we do not score original survival prediction tasks so far
+We treat it as an uncensored time to death prediction task or similar as we do not score original survival prediction tasks so far.
 
 ## Reference
 

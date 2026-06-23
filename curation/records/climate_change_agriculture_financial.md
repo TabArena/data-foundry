@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-"This dataset has been synthetically generate"
+"This dataset has been synthetically generated"

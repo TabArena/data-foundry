@@ -20,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The data contains new prescription drugs introduced to market in California with a Wholesale Acquisition Cost (WAC) that exceeding Medicare Part D.
+The data contains new prescription drugs introduced to market in California with a Wholesale Acquisition Cost (WAC) that exceeds Medicare Part D.
 
 The descriptions are very quite different, about different topics and quite unspecific to any task one could build in the data. Some other text contains repeated formulations and for drugs of the same company the text repeats as well
 

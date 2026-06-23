@@ -20,7 +20,7 @@ problem_type: Multiclass Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://archive.ics.uci.edu/dataset/90/soybean+large
-- 10.24432/C5JG6Z
+- https://doi.org/10.24432/C5JG6Z
 - https://www.openml.org/search?type=data&id=42&sort=runs&status=active
 source_row: 558
 type_adapter_id: curation-record-v1
@@ -32,7 +32,7 @@ type_adapter_id: curation-record-v1
 
 CC: "Some infrequent classes should not be used for prediction, may be outdated, maybe also rather an interpretability task, might require time split as date is available; categorical and nan values already preprocessed"
 
-When looking more into the data there seems to be a major problem with the state of the data and which state we might want to use. Originally, there were 2 dataset a train and a test split. The UCI data contains both, so in total 600ish samples. Moreover, there was a third small dataset.  Some of these datasets have wrong values as explained in the metadata in the UCI files that were found but not resolved version was ever uploaded as far as I can tell. It further seems that some of the train data features come from being fit on this data. The original data only has 5 features. 
+When looking more into the data there seems to be a major problem with the state of the data and which state we might want to use. Originally, there were 2 datasets, a train and a test split. The UCI data contains both, so in total 600ish samples. Moreover, there was a third small dataset. Some of these datasets have wrong values as explained in the metadata in the UCI files that were found, but no resolved version was ever uploaded as far as I can tell. It further seems that some of the train data features come from being fit on this data. The original data only has 5 features. 
 
 In general, this is a large confusion and so far not worth integrating given the risk of using bad/wrong data.
 

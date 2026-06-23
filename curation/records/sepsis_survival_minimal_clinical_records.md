@@ -19,7 +19,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/827/sepsis+survival+minimal+clinical+records
-- 10.24432/C53C8N
+- https://doi.org/10.24432/C53C8N
 source_row: 662
 type_adapter_id: curation-record-v1
 ---
@@ -28,11 +28,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "It has three features, which sound hard to be fully meaningfull. But it is a real task"
+CC: "It has three features, which sound hard to be fully meaningful. But it is a real task"
 
 3 Features, unsure how trivial the dataset is
 
-The dataset is full of "real" duplicates and is technically just a small or tiny dataset. We keep it as is to see how method can handle it, but this is not really large data...
+The dataset is full of "real" duplicates and is technically just a small or tiny dataset. We keep it as is to see how methods can handle it, but this is not really large data...
 
 ## Reference
 

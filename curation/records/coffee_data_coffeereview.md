@@ -30,13 +30,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-just coffee reviews and features; est price needs adjustment and preprocessing, might have temporal drift due to review time; multiple descrptions, of which some are duplicated? All text as well which was used for parsing; kind of a well defined task 
+Just coffee reviews and features; est price needs adjustment and preprocessing, might have temporal drift due to review time; multiple descriptions, of which some are duplicated? All text as well which was used for parsing; kind of a well-defined task.
 
 It seems the categories at the end make up the rating in total!
 
-Could still be used for some kind of task, although it is unlikely it is close to any real tasks
+Could still be used for some kind of task, although it is unlikely it is close to any real tasks.
 
-Maybe we could frame it as rating prediction only based on text, but this is closer to NLP than tabular based on the small amount of other information -> then it is a regression task, we could make it binary but that is wrong too
+Maybe we could frame it as rating prediction only based on text, but this is closer to NLP than tabular based on the small amount of other information -> then it is a regression task, we could make it binary but that is wrong too.
 
 ## Reference
 

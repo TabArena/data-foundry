@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 40672
+- https://www.openml.org/d/40672
 - https://github.com/EpistasisLab/pmlb/tree/master/datasets/fars (other link https://data.world/nhtsa/fars-data is dead)
 source_row: 460
 type_adapter_id: curation-record-v1

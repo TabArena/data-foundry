@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Weird task, likely not predictice, given number of hospitals that have a certain combination of expected deths, transplates, and number of real deatsh. This seems not reasonable for ML system or is outdated, thus we exclude it
+Weird task, likely not predictive, given number of hospitals that have a certain combination of expected deaths, transplants, and number of real deaths. This seems not reasonable for an ML system or is outdated, thus we exclude it

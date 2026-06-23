@@ -20,7 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/hepatitis/metadata.yaml
-- 10.24432/C5Q59J
+- https://doi.org/10.24432/C5Q59J
 - https://www.kaggle.com/datasets/abdelazizsami/hepatitis
 source_row: 760
 type_adapter_id: curation-record-v1
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Already preprocssed data but otherwise looks like a good task, need to check group and cost files but would add!
+Already preprocessed data but otherwise looks like a good task, need to check group and cost files but would add!
 
 ## Reference
 

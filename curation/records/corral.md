@@ -23,5 +23,5 @@ type_adapter_id: curation-record-v1
 Handmade toy task from Wrappers For Performance Enhancement And Oblivious Decision Graphs
 June 1999
 
-"The corral dataset, which is an arti cial dataset we invented, gives a p ossible scenario,
-where lter-approaches fail miserably."
+"The corral dataset, which is an artificial dataset we invented, gives a possible scenario,
+where filter-approaches fail miserably."

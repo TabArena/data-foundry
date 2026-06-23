@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 CC: ""The genes chosen are the 2,000 genes with highest minimal intensity across the samples."- openml publishes the already filtered out data. It's unsupervised filtering so should be fine."
 
-only 62 samples, too small to be a reasonable non-few shot tasks with cross-validation
+Only 62 samples, too small to be a reasonable non-few-shot task with cross-validation.
 
 ## Reference
 

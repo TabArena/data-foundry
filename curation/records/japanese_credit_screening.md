@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
-- 10.24432/C5FS30
+- https://doi.org/10.24432/C5FS30
 - https://doi.org/10.24432/C5259N
 source_row: 774
 type_adapter_id: curation-record-v1
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The UCI source contains two datasets, this is the creidt dataset in LISP Format
+The UCI source contains two datasets, this is the credit dataset in LISP Format
 
 This is the Credit Screening (150 rows) version
 

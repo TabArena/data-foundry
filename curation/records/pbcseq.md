@@ -13,7 +13,7 @@ collections:
 - TabSTAR
 year: '1991'
 source_links:
-- openml.org/d/516
+- https://www.openml.org/d/516
 - 'Statlib (mirror: https://mldata-static.ml.tu-berlin.de/repository/data/viewslug/statlib-20050214-pbcseq/index.html)'
 source_row: 616
 type_adapter_id: curation-record-v1
@@ -27,11 +27,11 @@ CC: "Survival analysis task, likely better data exists nowadays, data collected 
 
 Duplicate / version of 10.24432/C5R02G, need to determine which one to use!
 
-"The F&H data set contains only baseline measurements of the laboratory paramters. This data set contains multiple laboratory results, but only on the first 312 patients. Some baseline data values in this file differ from the original PBC file, for instance, the data errors in prothrombin time and age which were discovered after the orignal analysis, during research work on dfbeta residuals. (These two data points are discussed in F&H, figure 4.6.7). Another major difference is that there was significantly more follow-up for many of the patients at the time this data set was assembled."
+"The F&H data set contains only baseline measurements of the laboratory parameters. This data set contains multiple laboratory results, but only on the first 312 patients. Some baseline data values in this file differ from the original PBC file, for instance, the data errors in prothrombin time and age which were discovered after the original analysis, during research work on dfbeta residuals. (These two data points are discussed in F&H, figure 4.6.7). Another major difference is that there was significantly more follow-up for many of the patients at the time this data set was assembled."
 
 Can only use 312 cases most likely? 
 
-Also more clearly a strick survival task, so maybe out of scope task?
+Also more clearly a strict survival task, so maybe out of scope task?
 
 ## Reference
 

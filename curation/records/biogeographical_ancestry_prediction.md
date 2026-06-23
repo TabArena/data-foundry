@@ -30,13 +30,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The Kaggle version already did PCA. 
+The Kaggle version already did PCA.
 
-This dataset is very close to the data from one of my collaborations (https://www.sciencedirect.com/science/article/pii/S1872497325000705,https://www.biorxiv.org/content/10.1101/2025.11.08.687358v1.abstract) and we could easily find more similar data / create a real task from it. It comes with different kinds of marker sets. Moreover, some of the default task are trivial to solve.
+This dataset is very close to the data from one of my collaborations (https://www.sciencedirect.com/science/article/pii/S1872497325000705,https://www.biorxiv.org/content/10.1101/2025.11.08.687358v1.abstract) and we could easily find more similar data / create a real task from it. It comes with different kinds of marker sets. Moreover, some of the default tasks are trivial to solve.
 
-This could give us a "real" dataset with a lot a lot of features
+This could give us a "real" dataset with a lot of features.
 
-From going through the project, let us try to use the version from my collaboration. We use the Inter European version as the continental task is the "simpler" task. Moreover, note that these datasets come with expert-based feature selection. 
+From going through the project, let us try to use the version from my collaboration. We use the Inter European version as the continental task is the "simpler" task. Moreover, note that these datasets come with expert-based feature selection.
 
 Basic preprocessing: https://github.com/CarolaHeinzel/BGA-Classification/blob/main/CrossValidation_Code/run_convert_excel_data.py, All data is categorical, target Population
 

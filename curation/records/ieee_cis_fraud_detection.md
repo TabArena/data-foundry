@@ -33,7 +33,7 @@ CC: "Very nice fraud detection dataset (the best one I know). Requires temporal 
 
 "The TransactionDT feature is a timedelta from a given reference datetime (not an actual timestamp)."
 
-" discussed the benefits of classifying clients (credit cards) instead of transactions in Kaggle's Fraud competition" -> need to make groupe structure part of the dat by finding UIDs as well
+" discussed the benefits of classifying clients (credit cards) instead of transactions in Kaggle's Fraud competition" -> need to make group structure part of the data by finding UIDs as well
 
 Note: Possible data quality issue: The data is also grouped, but the group identifier is not explicitly given
 

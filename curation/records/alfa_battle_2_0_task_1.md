@@ -9,6 +9,7 @@ decision_markers:
 tags:
 - Larger IID Data
 - Non-IID (Grouped)
+- Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -29,8 +30,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-"olve two problems predicting customer behavior in a mobile app"
-"The dataset consists of user events in the mobile app (balance views, payments, transfers, chat requests, etc.) over 270 days. The output is to build a predictive model of the client's most likely action upon launching the app. " 
+"Solve two problems predicting customer behavior in a mobile app"
+"The dataset consists of user events in the mobile app (balance views, payments, transfers, chat requests, etc.) over 270 days. The output is to build a predictive model of the client's most likely action upon launching the app."
 F1 score
 
 ## Reference

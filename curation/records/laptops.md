@@ -31,11 +31,11 @@ type_adapter_id: curation-record-v1
 
 Laptop listings on some website;
 
-Raw data, reuqires a lot of preprocessing to figure out a task
+Raw data, requires a lot of preprocessing to figure out a task
 
 "name: could be preprocessed?
 
-No sentences, just tiltes/names is not enough for free text for us"
+No sentences, just titles/names is not enough for free text for us"
 
 ## Reference
 

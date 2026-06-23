@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 Forecasting task, just 3 features, time series classification?
 
-Unclear as what this counts. It goes from 2 IID variable to a state. So maybe this is valid
+Unclear as what this counts. It goes from 2 IID variables to a state. So maybe this is valid
 
 ## Reference
 

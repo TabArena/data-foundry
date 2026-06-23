@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Unsure if the same problem as Higgs (or Higgs like datasets)
+Unsure if the same problem as Higgs (or Higgs-like datasets).

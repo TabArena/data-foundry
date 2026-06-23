@@ -7,6 +7,7 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Non-IID (Grouped)
+- Review Prio 1 (Atlas)
 collections:
 - TabArena Submission
 original_source: Github
@@ -32,12 +33,12 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data based on images or other data is made tabular. But competitions used tabular models? 
+Data based on images or other data is made tabular. But competitions used tabular models?
 
-Need to double-check. Also, once checked, update github issue! "
+Need to double-check. Also, once checked, update GitHub issue! "
 
 "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants."
-"10 random wells from the train data set were used in preparing a validation set. Two validation sets were made from each train set prepared. ""
+"10 random wells from the train data set were used in preparing a validation set. Two validation sets were made from each train set prepared. "
 
 ## Reference
 

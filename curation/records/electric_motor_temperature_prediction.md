@@ -30,16 +30,16 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Signal/time-stream data with groups of sessions, likely needs a grouped-based splist based on `profile_id`; unsure about temporal splits as it would be all from the same time at once, or one needs to set time dff per session
+CC: ""Signal/time-stream data with groups of sessions, likely needs a group-based split based on `profile_id`; unsure about temporal splits as it would be all from the same time at once, or one needs to set time diff per session
 
-add coloant tempearture outlier feature, u_d, motor speed; reoslve qd coordinates?
-could create three datasets from the three targets; need to remove other target to avoid leakage otherwise (likely tourge bad, others two okay, pm best)""
+add coolant temperature outlier feature, u_d, motor speed; resolve qd coordinates?
+could create three datasets from the three targets; need to remove other target to avoid leakage otherwise (likely torque bad, others two okay, pm best)""
 
 Related link: https://www.kaggle.com/datasets/graxlmaxl/identifying-the-physics-behind-an-electric-motor
 
 
 
-See Table 2 in paper for hwat is measured input and what is meaured target (https://ieeexplore.ieee.org/abstract/document/9296842)
+See Table 2 in paper for what is measured input and what is measured target (https://ieeexplore.ieee.org/abstract/document/9296842)
 
 Text says 4 target temperatures? are 4 PM, ST, SW, SY, we select PM
 

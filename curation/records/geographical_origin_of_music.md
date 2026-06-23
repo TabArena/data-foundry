@@ -11,8 +11,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 44965
-- 10.24432/C5VK5D
+- https://www.openml.org/d/44965
+- https://doi.org/10.24432/C5VK5D
 source_row: 417
 type_adapter_id: curation-record-v1
 ---
@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Wave data transfromed to tabular data
+CC: "Wave data transformed to tabular data
 
 Also on PMLB without source info https://github.com/EpistasisLab/pmlb/blob/master/datasets/4544_GeographicalOriginalofMusic/metadata.yaml"
 

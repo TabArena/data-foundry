@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5K89B
+- https://doi.org/10.24432/C5K89B
 - https://www.kaggle.com/datasets/sammy123/lower-back-pain-symptoms-dataset/
 - https://www.kaggle.com/datasets/simaeel/vertebral-column
 source_row: 776
@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Weka dataset, unclear source or ciation
+Weka dataset, unclear source or citation
 
 Discussion: Data uses extracted features, while for the actual task one would nowadays use MRI image data and likely many other clinical decision markers like symptoms. So this is more useful as toy data rather than for a real value-generating task.
 

@@ -32,14 +32,14 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Dataset is preprocessed version already https://www.kaggle.com/code/alexteboul/diabetes-health-indicators-dataset-notebook
-The selection looks very reasonable and well motivated, I would keep it
+The selection looks very reasonable and well motivated, I would keep it.
 Biggest problem: it drops rows with na...
 
-It makes sense to filter to only cases that answer the questions truthfully and fully for a less-biased predictive model  in the medical domain. Moreover, given the larget amount of data, this seems okay do it. I would use it the way it is for now and only fix / add new version of it if we get a domain expert to make the decisions. 
+It makes sense to filter to only cases that answer the questions truthfully and fully for a less-biased predictive model in the medical domain. Moreover, given the large amount of data, this seems okay to do it. I would use it the way it is for now and only fix / add new version of it if we get a domain expert to make the decisions.
 
 Goes from 441,456 records and 330 -> 253,680, 21
 
-Need to decide which version to take for the label: 
+Need to decide which version to take for the label:
 0 = no diabetes 1 = prediabetes 2 = diabetes
 0 = no diabetes 1 = prediabetes &  diabetes
 

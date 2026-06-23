@@ -25,11 +25,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-"I got this dataset from a website with the URL as https://leaps.analyttica.com/home" -> was a course website 
+"I got this dataset from a website with the URL as https://leaps.analyttica.com/home" -> was a course website
 
 Link above is down
 
-Unsure if it can be recovered as a non-iid task
+Unsure if it can be recovered as a non-IID task
 
 Used in this paper (but not the source https://www.sciencedirect.com/org/science/article/pii/S1526149223004460)
 

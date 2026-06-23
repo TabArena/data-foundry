@@ -22,7 +22,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Dataset (1) is a duplicate from the chrun dataset in TabARena. 
+Dataset (1) is a duplicate from the churn dataset in TabArena.
 
 "China-Churn" Data Requested on 07/03/2026 by Lennart
 

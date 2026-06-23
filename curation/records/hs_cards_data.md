@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Card Data Extracted from the Hearstone game, so actual original source is the game. Mapping card text and stats to player class
+Card data extracted from the Hearthstone game, so actual original source is the game. Mapping card text and stats to player class

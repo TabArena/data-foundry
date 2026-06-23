@@ -15,7 +15,7 @@ collections:
 - TabSTAR
 year: '1978'
 source_links:
-- openml.org/d/847
+- https://www.openml.org/d/847
 - https://lib.stat.cmu.edu/datasets/wind.desc
 - https://www.openml.org/search?type=data&id=503
 - https://r-spatial.github.io/gstat/reference/wind.html
@@ -31,7 +31,7 @@ CC: "Regression. Data collected in 1961-78 - outdated. Also not a meaningful pre
 
 In TabSTAR WIND_SPEED_IRELAND
 
-On OpenML, it has the same prediction task as stock: predict at time point t some forecast for something else at time point t which you could just read off at time point t. Also also clearly forecasting data!
+On OpenML, it has the same prediction task as stock: predict at time point t some forecast for something else at time point t which you could just read off at time point t. Also clearly forecasting data!
 
 ## Reference
 

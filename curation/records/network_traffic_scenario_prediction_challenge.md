@@ -22,6 +22,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict when a network fault will occure
+predict when a network fault will occur
 
 2nd place solution used 1D CNN network for segmentation, therefore rather a time-series task.

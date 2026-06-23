@@ -14,7 +14,7 @@ collections:
 - TabSTAR
 year: '2006'
 source_links:
-- openml.org/d/1046
+- https://www.openml.org/d/1046
 source_row: 536
 type_adapter_id: curation-record-v1
 ---
@@ -28,7 +28,7 @@ CC: "Might be clustered by id. Might need some special preprocessing. Event migh
 Seems to be a software code defect prediction akin to pc1 (etc) datasets.
 These are very outdated.
 
-Data is also modeled as a survival task. Moreover, features seem to be repeated entries with some conditional logic for the features based on time passing 
+Data is also modeled as a survival task. Moreover, features seem to be repeated entries with some conditional logic for the features based on time passing.
 
 Data use case too special, and wrong task (survival), and too old to use for now
 

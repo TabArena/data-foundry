@@ -95,6 +95,31 @@
   .addrow input { flex:1; padding:4px 7px; border:1px solid #ccd; border-radius:5px; font-size:12px; }
   .addrow button { border:0; background:#e6edff; color:#23408e; border-radius:5px; padding:3px 9px; cursor:pointer; font-size:12px; }
   #modal button.close { background:transparent; color:#fff; border:0; font-size:20px; cursor:pointer; }
+  /* dropdown / list popups (cell editors + header-filter selects): keep them above
+     everything and scrollable, so a long option list is never clipped off-screen or
+     hidden behind frozen columns. */
+  .tabulator-edit-list, .tabulator-edit-select-list {
+    z-index: 10050 !important;
+    max-height: 50vh; overflow-y: auto;
+    box-shadow: 0 10px 28px rgba(0,0,0,.24);
+    border:1px solid #cfd6df; border-radius:8px; background:#fff;
+  }
+  /* active-filter cues: highlight any column whose header filter is set and the
+     global search box, so it is obvious data is being filtered (not "missing"). */
+  .tabulator .tabulator-col { position:relative; }
+  .tabulator .tabulator-col.hf-active { background:#fff3d6 !important; }
+  .tabulator .tabulator-col.hf-active .tabulator-col-title { color:#9a3412; }
+  .tabulator .tabulator-col.hf-active::after {
+    content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:#f59e0b; z-index:2;
+  }
+  #bar .search-wrap input.active { background:#ffffff26; box-shadow:0 0 0 2px #f59e0b inset; }
+  #clearFilters { display:none; align-items:center; gap:6px; cursor:pointer; white-space:nowrap;
+    border:1px solid #f59e0b; background:#f59e0b26; color:#ffe6b0; border-radius:8px; padding:6px 11px; font-size:12px; }
+  #clearFilters.show { display:inline-flex; }
+  #clearFilters:hover { background:#f59e0b40; }
+  #count.filtered { color:#fbbf24; font-weight:700; }
+  /* leftmost status column: now click-to-sort (▾ still opens the filter menu) */
+  .tabulator .tabulator-col[tabulator-field="_status"]:not(.hf-active) { cursor:pointer; }
 </style>
 </head>
 <body>
@@ -103,6 +128,7 @@
   <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
   <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
   <span class="hint" id="count"></span>
+  <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
     <button class="pill rev" id="pillRev" title="Filter: datasets needing review"><span class="n" id="revN">0</span><span class="l">Review needed</span></button>
@@ -224,6 +250,11 @@ function listEditorParams(field, multi) {
   };
 }
 
+// Params for a column's header-filter dropdown (pick one vocabulary value to filter by).
+function listFilterParams(field) {
+  return { values: VOCAB[field] || [], clearable: true, autocomplete: true, listOnEmpty: true };
+}
+
 // ----------------------------------------------------------------------------
 let SCHEMA, VOCAB, BY_NAME, table;
 const LINK_FIELDS = new Set();
@@ -289,6 +320,15 @@ let fStatus = "";
 function buildStatusMenu() {
   const menu = document.getElementById("statusMenu");
   menu.innerHTML = "";
+  // Sort-by-status entry (groups disagreements / in-DF / rejected together).
+  const sortItem = document.createElement("div");
+  sortItem.className = "smi";
+  sortItem.innerHTML = `<span class="smk" style="background:#334155;color:#fff">↕</span>Sort rows by status`;
+  sortItem.addEventListener("click", () => { table.setSort("_status", "asc"); menu.classList.remove("show"); });
+  menu.appendChild(sortItem);
+  const divider = document.createElement("div");
+  divider.style.cssText = "height:1px;background:#e5e8ee;margin:4px 4px 5px;";
+  menu.appendChild(divider);
   // The public build hides the disagreement / needs-review workflow states.
   const opts = STATIC ? STATUS_OPTS.filter(o => o.m !== "⚡" && o.m !== "⚠") : STATUS_OPTS;
   for (const o of opts) {
@@ -311,6 +351,20 @@ function openStatusMenu(e) {
   menu.style.left = rect.left + "px";
   menu.style.top = rect.bottom + "px";
   menu.classList.add("show");
+}
+// Sort order for the leftmost status column: action-needed states first, rejected
+// last (Tabulator reverses this for the descending click).
+const STATUS_RANK = ["⚡", "⚠", "★", "•", "✓", "✗"];
+function statusSorter(_a, _b, aRow, bRow) {
+  return STATUS_RANK.indexOf(rowStatus(aRow.getData()).m) - STATUS_RANK.indexOf(rowStatus(bRow.getData()).m);
+}
+// Status header: the column itself sorts (headerSort); the ▾ opens the filter menu
+// without triggering a sort (stopPropagation).
+function statusTitleFormatter() {
+  const wrap = document.createElement("span");
+  wrap.innerHTML = '<span class="stmenu" title="Filter by status">▾</span>';
+  wrap.querySelector(".stmenu").addEventListener("click", e => { e.stopPropagation(); openStatusMenu(e); });
+  return wrap;
 }
 function moreFmt(cell) {
   const d = cell.getRow().getData();
@@ -359,7 +413,7 @@ function addBtnTitle(label, field) {
 function columnDefs() {
   const cols = [
     { title: "", field: "_pin", frozen: true, width: 30, headerSort: false, headerFilter: false, download: false, hozAlign: "center", cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => togglePin(cell.getRow()), headerTooltip: "Pin rows to keep them visible through any filter" },
-    { title: "", field: "_status", frozen: true, width: 40, headerSort: false, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click to filter by status", titleFormatter: () => '<span class="stmenu">▾</span>', headerClick: (e) => openStatusMenu(e) },
+    { title: "", field: "_status", frozen: true, width: 46, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click to sort by status (groups disagreements, in-DF, etc.) · ▾ to filter by status", titleFormatter: statusTitleFormatter },
   ];
   for (const name of PRIMARY) {
     if (name === "unique_name") {
@@ -381,12 +435,19 @@ function columnDefs() {
       c.editor = "list"; c.cssClass = "dd-cell"; c.titleFormatter = addBtnTitle(f.label, name);
       c.editorParams = listEditorParams(name, false);
       c.formatter = selectChip(name);
+      // pick a value from the dropdown to filter to rows with exactly that value
+      // (pinned rows stay visible through column filters too)
+      c.headerFilter = "list"; c.headerFilterParams = listFilterParams(name);
+      c.headerFilterFunc = (sel, rowVal, data) => pinned.has(data.unique_name) || rowVal === sel;
     }
     else if (f.kind === "multiselect") {
       c.editor = "list"; c.titleFormatter = addBtnTitle(f.label, name);
       c.editorParams = listEditorParams(name, true);
       c.formatter = multiChips(name); c.width = 190; c.variableHeight = true; c.cssClass = "wrap-cell dd-cell";
-      c.headerFilterFunc = (term, _v, data) => (data[name] || []).join(" ").toLowerCase().includes(term.toLowerCase());
+      // pick a value from the dropdown to filter to all rows that carry that value
+      // (pinned rows stay visible through column filters too)
+      c.headerFilter = "list"; c.headerFilterParams = listFilterParams(name);
+      c.headerFilterFunc = (sel, _rowVal, data) => pinned.has(data.unique_name) || asArray(data[name]).includes(sel);
     }
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
@@ -546,6 +607,24 @@ function updateCount() {
   document.getElementById("revN").textContent = all.filter(d => (d.needs_review || []).length).length;
   document.getElementById("disN").textContent = all.filter(d => d.suggestion === "Disagreement").length;
   document.getElementById("count").textContent = `${table.getDataCount("active")} / ${table.getDataCount()} shown`;
+  markActiveFilters();
+}
+// Highlight every active filter (column header dropdowns + global search) and show the
+// "Clear filters" button, so it is always obvious when the view is being filtered.
+function markActiveFilters() {
+  let activeFields = new Set();
+  try { activeFields = new Set((table.getHeaderFilters() || []).map(f => f.field)); } catch (e) { /* pre-build */ }
+  table.getColumns().forEach(col => {
+    const el = col.getElement();
+    if (el) el.classList.toggle("hf-active", activeFields.has(col.getField()));
+  });
+  const search = document.getElementById("search");
+  const hasSearch = !!search.value.trim();
+  search.classList.toggle("active", hasSearch);
+  const any = activeFields.size > 0 || hasSearch || fDf || fRev || fDis || !!fStatus;
+  document.getElementById("clearFilters").classList.toggle("show", any);
+  const cnt = document.getElementById("count");
+  cnt.classList.toggle("filtered", table.getDataCount("active") < table.getDataCount());
 }
 
 async function boot() {
@@ -559,6 +638,7 @@ async function boot() {
   table = new Tabulator("#grid", {
     data: recs, columns: cols, layout: "fitData", height: "calc(100vh - 46px)",
     movableColumns: true, index: "unique_name",
+    initialSort: [{ column: "_status", dir: "asc" }],  // group by status on load (disagreements first)
     rowFormatter: row => {
       const p = row.getPosition(true);
       const el = row.getElement();
@@ -572,6 +652,11 @@ async function boot() {
   table.on("tableBuilt", () => { applyFilters(); updateCount(); });
 
   document.getElementById("search").addEventListener("input", applyFilters);
+  document.getElementById("clearFilters").addEventListener("click", () => {
+    try { table.clearHeaderFilter(); } catch (e) { /* none set */ }
+    resetAllFilters();
+    applyFilters();
+  });
   document.addEventListener("click", e => {
     const m = document.getElementById("statusMenu");
     if (m.classList.contains("show") && !m.contains(e.target) && !e.target.closest(".tabulator-col")) m.classList.remove("show");

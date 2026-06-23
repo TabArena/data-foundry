@@ -13,7 +13,7 @@ collections:
 - TabSTAR
 source_links:
 - https://archive.ics.uci.edu/dataset/589/anticancer+peptides
-- 10.24432/C5T90F
+- https://doi.org/10.24432/C5T90F
 source_row: 533
 type_adapter_id: curation-record-v1
 ---
@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Deterministic classes, features are just a text string from sequence and should likely be encoded bu something first
+Deterministic classes, features are just a text string from sequence and should likely be encoded by something first

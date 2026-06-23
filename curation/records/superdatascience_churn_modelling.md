@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 from https://www.superdatascience.com/deep-learning
 
-Dupliacte with Bank_Customer_Churn_Dataset https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset) as we found for TabArena as well
+Duplicate with Bank_Customer_Churn_Dataset https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset) as we found for TabArena as well

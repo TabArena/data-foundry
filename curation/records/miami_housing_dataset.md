@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Kaggle says source is OpenML;
+Kaggle says source is OpenML.
 
 Is in TabArena (miami_housing)

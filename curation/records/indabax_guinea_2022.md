@@ -17,4 +17,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-a structured dataset pull from the sapa.com database with a few important features that can be used to predict customer response to marketing campaigns
+a structured dataset pulled from the sapa.com database with a few important features that can be used to predict customer response to marketing campaigns

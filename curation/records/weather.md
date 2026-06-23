@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 Was downsampled/filtered by TabRed via preprocessing
 
-Maybe not a super relevant task for tabular models.... need to make a judgment call. Give it was used in TabRed, I would say we can go for it now but might need to remove it later
+Maybe not a super relevant task for tabular models.... need to make a judgment call. Given it was used in TabRed, I would say we can go for it now but might need to remove it later
 
 TabRed uses 1 month refit horizon. For weather this is a bit much. I would argue for one or two weeks at most?
 

@@ -24,4 +24,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict whether a person has a bank account
+Predict whether a person has a bank account

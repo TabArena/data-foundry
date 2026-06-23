@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Might be usable as a tabular task, butrargher
+Might be usable as a tabular task, but rather
 
 ## Reference
 

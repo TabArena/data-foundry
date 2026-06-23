@@ -10,7 +10,7 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- 10.24432/C5MK6M
+- https://doi.org/10.24432/C5MK6M
 source_row: 260
 type_adapter_id: curation-record-v1
 ---
@@ -19,7 +19,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "measruemtns of 16 sensor for 6 gases (sounds like groups), 2008 to 2011 data, measurements are time-series data "
+CC: "measurements of 16 sensors for 6 gases (sounds like groups), 2008 to 2011 data, measurements are time-series data "
 
 ## Reference
 

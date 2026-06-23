@@ -12,7 +12,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 source_links:
-- 10.24432/C5NP6Z
+- https://doi.org/10.24432/C5NP6Z
 - https://www.openml.org/search?type=data&id=46610&sort=runs&status=active
 source_row: 572
 type_adapter_id: curation-record-v1
@@ -24,6 +24,6 @@ type_adapter_id: curation-record-v1
 
 Also survival task as it seems. Plus a scientific discovery task, so likely no good predictive task
 
-keep as 2nd tier for the future investigation
+keep as 2nd tier for future investigation
 
 In TabSTAR BONE_MARROW_TRANSPLANT_CHILDREN

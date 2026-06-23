@@ -20,7 +20,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.24432/C5H31Z
+- https://doi.org/10.24432/C5H31Z
 - https://www.openml.org/search?type=data&id=46597&sort=runs&status=active
 - https://www.kaggle.com/datasets/fatemehmehrparvar/obesity-levels
 source_row: 673
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 "77% of the data was generated synthetically using the Weka tool and the SMOTE filter, 23% of the data was collected directly from users through a web platform."
 
-No problem! We can filter the SMOTE data as they are clearly differencet (float instead of int) values and later in the file. Filter them and then use, might become trivial
+No problem! We can filter the SMOTE data as they are clearly different (float instead of int) values and later in the file. Filter them and then use, might become trivial
 
 Maybe need to transform labels (bins) back to Mass body index regression value instead?...
 Need to recompute the body index, remove weight and height which give the target

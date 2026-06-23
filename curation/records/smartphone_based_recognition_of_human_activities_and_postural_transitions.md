@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Human regocnition, 30 subjects"
+CC: "Human recognition, 30 subjects"

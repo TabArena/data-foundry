@@ -9,7 +9,7 @@ collections:
 - TabSTAR
 year: '1996'
 source_links:
-- openml 546
+- https://www.openml.org/d/546
 source_row: 843
 needs_review:
 - suggestion

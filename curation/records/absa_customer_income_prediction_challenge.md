@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict a customer’s income based on their transaction history
+predict a customer's income based on their transaction history

@@ -9,8 +9,8 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- openml 44959
-- 10.24432/C5PK67
+- https://www.openml.org/d/44959
+- https://doi.org/10.24432/C5PK67
 source_row: 447
 type_adapter_id: curation-record-v1
 ---

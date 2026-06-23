@@ -19,7 +19,7 @@ problem_type: TBD
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/585/stock+keeping+units
-- 10.24432/C5G03C
+- https://doi.org/10.24432/C5G03C
 source_row: 45
 type_adapter_id: curation-record-v1
 ---

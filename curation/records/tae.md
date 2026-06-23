@@ -21,7 +21,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/tae/metadata.yaml
-- 10.24432/C55P6M
+- https://doi.org/10.24432/C55P6M
 - https://www.openml.org/search?type=data&id=48&sort=runs&status=active
 source_row: 68
 type_adapter_id: curation-record-v1
@@ -33,6 +33,6 @@ type_adapter_id: curation-record-v1
 
 The task is to predict the evaluation of an instructor x course based on semester, class size, and native language. This does not seem to represent a meaningful task IMO
 
-Also it would need to have a temporal (on semester) split, which then it way too little data for a meaingful evaluation
+Also it would need to have a temporal (on semester) split, which then is way too little data for a meaningful evaluation
 
-moreover, the dataset is super old. I vote to exclude the dataset due to the age and quesitnalbe real-world nature right away (https://www.nature.com/articles/s41598-024-64445-2)
+Moreover, the dataset is super old. I vote to exclude the dataset due to the age and questionable real-world nature right away (https://www.nature.com/articles/s41598-024-64445-2)

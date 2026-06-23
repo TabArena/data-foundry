@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 43672
+- https://www.openml.org/d/43672
 source_row: 377
 type_adapter_id: curation-record-v1
 ---
@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Duplicate containing many opf the other heart disease datasets (cleveland, hungarian, ....) "
+CC: "Duplicate containing many of the other heart disease datasets (cleveland, hungarian, ....) "

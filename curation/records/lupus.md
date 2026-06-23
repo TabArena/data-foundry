@@ -19,7 +19,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- openml 472
+- https://www.openml.org/d/472
 source_row: 117
 type_adapter_id: curation-record-v1
 ---
@@ -28,13 +28,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-looks like a reasonable task for small data, unclear source of the data description but clear paper found
+Looks like a reasonable task for small data, unclear source of the data description but clear paper found.
 
-Original data source might be weka again
+Original data source might be Weka again.
 
-Original data had 40 more variables as features instead of just time and duration which should not be super preditcive. If we can find this original version of the dataset, we can use it. Otehrwise I am not sure
+Original data had 40 more variables as features instead of just time and duration, which should not be super predictive. If we can find this original version of the dataset, we can use it. Otherwise I am not sure.
 
-Less than 96 samples
+Less than 96 samples.
 
 ## Reference
 

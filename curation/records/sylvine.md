@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 41146
+- https://www.openml.org/d/41146
 source_row: 430
 type_adapter_id: curation-record-v1
 ---

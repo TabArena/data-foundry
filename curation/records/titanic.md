@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Not sure, but isnt the taks trivial? Not a meaningful task, rather toy example; also rather an interpretability task to determine if there were correlations in the data, it would be hard to deploy such a model in the real world when a boat sinks... Don't know which of our criteria applies, but this is clearly a toy dataset and I don't see why it should be included. not a real predictive task"
+CC: "Not sure, but isn't the task trivial? Not a meaningful task, rather toy example; also rather an interpretability task to determine if there were correlations in the data, it would be hard to deploy such a model in the real world when a boat sinks... Don't know which of our criteria applies, but this is clearly a toy dataset and I don't see why it should be included. Not a real predictive task"
 
 ## Reference
 

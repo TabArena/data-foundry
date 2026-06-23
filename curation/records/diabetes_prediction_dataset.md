@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Very simplistic dataset, missing source information and they way it is shared is questionable
+CC: ""Very simplistic dataset, missing source information and the way it is shared is questionable
 
 Likely, the data is wrong / fake: see https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset/discussion/588830""

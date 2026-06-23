@@ -18,7 +18,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5VG8H
+- https://doi.org/10.24432/C5VG8H
 - https://www.openml.org/search?type=data&id=43643&sort=runs&status=active
 - https://www.kaggle.com/datasets/ishandutta/early-stage-diabetes-risk-prediction-dataset
 source_row: 765

@@ -31,13 +31,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-stackoverlflow survey
+stackoverflow survey
 
 Survey data would need work to make it a predictive task
 
-Perfect example of a scientific discovery task. There is no relation in the collected data that we would want to predict in a real-world system. All of this is just gather insights, not to learn something for new users. Moreover, there is no data task that could be forced to make sense somehow. THere are simply no meaningful predictive relationships in the data
+Perfect example of a scientific discovery task. There is no relation in the collected data that we would want to predict in a real-world system. All of this is just to gather insights, not to learn something for new users. Moreover, there is no data task that could be forced to make sense somehow. There are simply no meaningful predictive relationships in the data
 
-AP: all seem (multi-)categorical, but if there are so manu categories we might consider going free text maybe?; 
+AP: all seem (multi-)categorical, but if there are so many categories we might consider going free text maybe?; 
 
 LP: some of the features could be treated as free text most likely after adding some extra preprocessing
 

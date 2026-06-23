@@ -29,4 +29,4 @@ type_adapter_id: curation-record-v1
 
 CC: "missing source information, maybe from a kaggle data that was removed later (https://www.kaggle.com/competitions/sleepapneadetection/overview)"
 
-I cannot find the source; the data is not small. all i kind find are other datasets that contain patient records related to sleep (so more time series than anything else)
+I cannot find the source; the data is not small. all I can find are other datasets that contain patient records related to sleep (so more time series than anything else)

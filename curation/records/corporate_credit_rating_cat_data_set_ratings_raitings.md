@@ -29,14 +29,14 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 "This dataset is derived from the Credit Risk Analytics book by Harald, Daniel, and Bart, as described in the Medium article by Roi Polanitzer"
-From teh book:
+From the book:
 "The ratings data set is an anonymized data set with corporate ratings where the ratings
 have been numerically encoded"?
 
-Version from openml has 5k samples (so likely modifed). Original has 198
-It was likely modifed by the Medium author (without saying it anyhwere, wow!)
+Version from OpenML has 5k samples (so likely modified). Original has 198
+It was likely modified by the Medium author (without saying it anywhere, wow!)
 
-unclear if a regression or classification task, likely classification (even if it is ordinal classification) due to ratings being categories officially
+Unclear if a regression or classification task, likely classification (even if it is ordinal classification) due to ratings being categories officially
 
 ## Reference
 

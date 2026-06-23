@@ -25,17 +25,17 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Scraped and curated Michelin restaurants data
+Scraped and curated Michelin restaurants data.
 
-still gets updated!
+Still gets updated!
 
-Any predictive task related to the starts is super random as the process of getting starts is quite complicated with and has a lot of edge cases not related to features
+Any predictive task related to the stars is super random as the process of getting stars is quite complicated and has a lot of edge cases not related to features.
 
-Has spatial information, but likely not leakage (but requires preprocessing)
+Has spatial information, but likely not leakage (but requires preprocessing).
 
-Could try to get more data from websites etc
+Could try to get more data from websites etc.
 
-There is no way we can construct a task from this data that does make any sense
+There is no way we can construct a task from this data that makes any sense.
 
 ## Reference
 

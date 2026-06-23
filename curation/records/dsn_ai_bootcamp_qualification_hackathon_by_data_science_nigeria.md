@@ -18,4 +18,4 @@ type_adapter_id: curation-record-v1
 
 Predict customers who will default on a loan
 
-data is a structure dataset pull from the Kowope Mart’s database
+data is a structured dataset pulled from the Kowope Mart's database

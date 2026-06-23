@@ -7,6 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
+- Duplicate
 collections:
 - TabArena Reject
 source_links:
@@ -19,9 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC"Sounds like a cool application TBH, predict characteristics of a star
-
-Features excluded from time-series. Might be a valid task. Could argue that if we benchmark this dataset, we should also compare against time-series approaches"
+Duplicate of htru2_2
 
 ## Reference
 

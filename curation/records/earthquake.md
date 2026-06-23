@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Unsure ifa real task, or how it could be used. However, we can still take a look at it
+Unsure if a real task, or how it could be used. However, we can still take a look at it
 
 Related/based on openml.org/d/550

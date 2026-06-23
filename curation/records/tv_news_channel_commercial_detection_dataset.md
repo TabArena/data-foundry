@@ -10,7 +10,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- 10.24432/C5990S
+- https://doi.org/10.24432/C5990S
 source_row: 333
 type_adapter_id: curation-record-v1
 ---
@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-TV Commercials data set consists of standard audio-visual features of video shots extracted from 150 hours of TV news broadcast of 3 Indian and 2 international news channels ( 30 Hours each).
+TV Commercials data set consists of standard audio-visual features of video shots extracted from 150 hours of TV news broadcast of 3 Indian and 2 international news channels (30 hours each).

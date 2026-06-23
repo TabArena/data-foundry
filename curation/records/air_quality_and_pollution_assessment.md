@@ -26,4 +26,4 @@ type_adapter_id: curation-record-v1
 
 Deterministic target based on forecasting features? Unclear if this is not just forecasting data
 
-Data quality issues (see kagllge discussions)
+Data quality issues (see Kaggle discussions)

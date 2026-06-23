@@ -18,7 +18,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- 10.24432/C5D88D
+- https://doi.org/10.24432/C5D88D
 - https://www.kaggle.com/datasets/elikplim/forest-fires-data-set
 - https://www.openml.org/search?type=data&id=44962
 source_row: 748
@@ -31,11 +31,11 @@ type_adapter_id: curation-record-v1
 
 CC: "Data from forest fires, used ln(x+1) target scaling; time invariant features,"
 
-has spatial data (x,y) and temporal (month/day). Need to see how to split the data for a real task. spatial data represents a square on a map
+Has spatial data (x,y) and temporal (month/day). Need to see how to split the data for a real task. Spatial data represents a square on a map
 
-paper used default cross-validation, which makes not a lot of sense given the data/task but given their setup and goal it makes snese
+Paper used default cross-validation, which makes not a lot of sense given the data/task but given their setup and goal it makes sense
 
-"further research is need to confirm if
+"further research is needed to confirm if
 direct weather conditions are preferable than accumulated values, as suggested by this
 study"
 

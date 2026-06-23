@@ -12,7 +12,7 @@ collections:
 - TabArena Reject
 source_links:
 - https://archive.ics.uci.edu/dataset/51/internet+advertisements
-- 10.24432/C5V011
+- https://doi.org/10.24432/C5V011
 source_row: 230
 type_adapter_id: curation-record-v1
 ---

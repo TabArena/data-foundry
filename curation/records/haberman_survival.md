@@ -24,7 +24,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/haberman/metadata.yaml
-- 10.24432/C5XK51
+- https://doi.org/10.24432/C5XK51
 source_row: 120
 type_adapter_id: curation-record-v1
 ---
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Might be a trivial dataset, only really 2 features and a temporal component 
+Might be a trivial dataset, only really 2 features and a temporal component
 
 But otherwise seems valid enough, we could add it and later remove if needed
 

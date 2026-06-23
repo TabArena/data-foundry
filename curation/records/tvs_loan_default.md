@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Might be simulated data. TSV is a real bank or so? Features seem reasonable?
+Might be simulated data. TVS is a real bank or so? Features seem reasonable?
 
 related? https://www.scribd.com/document/480057068/5e633dbae3086-Anlaytics-Case-Study-APOGEE-2020-Final-1

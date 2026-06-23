@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 40996
+- https://www.openml.org/d/40996
 - https://github.com/zalandoresearch/fashion-mnist
 source_row: 445
 type_adapter_id: curation-record-v1

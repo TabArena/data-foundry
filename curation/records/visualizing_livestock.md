@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Visualization dataset, clearly no predictive task, not even for scientific discovery tasks 
+Visualization dataset, clearly no predictive task, not even for scientific discovery tasks
 
 Visualizing Data published by Hobart Press

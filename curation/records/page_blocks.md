@@ -11,8 +11,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 30
-- 10.24432/C5J590
+- https://www.openml.org/d/30
+- https://doi.org/10.24432/C5J590
 source_row: 438
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Grouped data, random splits may be inappropriate; meta-features extract from images rely on the original image algorithm, and RLSA "
+CC: "Grouped data, random splits may be inappropriate; meta-features extracted from images rely on the original image algorithm, and RLSA"

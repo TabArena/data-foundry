@@ -20,7 +20,7 @@ problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
-- 10.24432/C52P4X
+- https://doi.org/10.24432/C52P4X
 source_row: 757
 type_adapter_id: curation-record-v1
 ---
@@ -29,9 +29,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Consists of 4 datasets with similar features and low value counts depending on how it is used. Need to figure how to use it. Otherwise, nothing speaks against using them in the benchmark
+Consists of 4 datasets with similar features and low value counts depending on how it is used. Need to figure out how to use it. Otherwise, nothing speaks against using them in the benchmark
 
-We take all datasets from this repo as they all represent real tasks. We use the binary classification version of the datasets and the procssed files.
+We take all datasets from this repo as they all represent real tasks. We use the binary classification version of the datasets and the processed files.
 
 ## Reference
 

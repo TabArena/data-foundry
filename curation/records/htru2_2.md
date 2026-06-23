@@ -30,15 +30,15 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Sounds like a cool application TBH, predict characteristics of a star
+CC: "Sounds like a cool application TBH, predict characteristics of a star
 
-Features excluded from time-series. Might be a valid task. Could argue that if we benchmark this dataset, we should also compare against time-series approaches""
+Features excluded from time-series. Might be a valid task. Could argue that if we benchmark this dataset, we should also compare against time-series approaches"
 
 Data has no timestamp
 
 Data stream task... (because they dont see the value of refitting in the paper, or cannot refit fast enough)
 
-Paper used random splits. It seems all features are time invariate as well, if not averages over time points of the observed element (?). Unclear what kind of shift they mean in the paper as it does not seem like a shifting task. Could be usedas IID
+Paper used random splits. It seems all features are time invariant as well, if not averages over time points of the observed element (?). Unclear what kind of shift they mean in the paper as it does not seem like a shifting task. Could be used as IID
 
 ## Reference
 

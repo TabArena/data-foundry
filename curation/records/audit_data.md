@@ -20,7 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/475/audit+data
-- 10.24432/C5930Q
+- https://doi.org/10.24432/C5930Q
 - https://www.openml.org/search?type=data&id=42931
 source_row: 521
 type_adapter_id: curation-record-v1

@@ -10,7 +10,7 @@ collections:
 - New (BeyondArena)
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/airfoil-selfnoise-dataset
-- 10.24432/C5VW2C
+- https://doi.org/10.24432/C5VW2C
 source_row: 127
 type_adapter_id: curation-record-v1
 ---

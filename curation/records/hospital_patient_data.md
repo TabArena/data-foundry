@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Unclear where the data comes from and the feature do not seem to allow for a good target/use case
+Unclear where the data comes from and the features do not seem to allow for a good target/use case
 
 Could be transformed into a non-IID prediction task I would say. But it was mostly used for scientific discovery. Unclear how to handle, mark as TBD for now

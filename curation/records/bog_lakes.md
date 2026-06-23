@@ -15,7 +15,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Eight bog lakes, multiyear time series of 16s sequences near Minocqua, northern Wisconsin; metadata source: R package "OTUtable", data(metadata); otu table source:https://github.com/McMahonLab/North_Temperate_Lakes-Microbial_Observatory
+Eight bog lakes, multiyear time series of 16s sequences near Minocqua, northern Wisconsin; metadata source: R package "OTUtable", data(metadata); otu table source: https://github.com/McMahonLab/North_Temperate_Lakes-Microbial_Observatory
 
 ## Reference
 

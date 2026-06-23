@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-nowcast South Africa’s July CPI. Could use multiple historical months to create new splits
+nowcast South Africa's July CPI. Could use multiple historical months to create new splits

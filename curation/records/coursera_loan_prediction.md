@@ -24,4 +24,4 @@ from https://www.coursera.org/projects/data-science-coding-challenge-loan-defaul
 
 Unclear if it is real data
 
-Data has super 50% cat and uniform distributed other rations. Clearly this is not real data.
+Data has super 50% cat and uniformly distributed other ratios. Clearly this is not real data.

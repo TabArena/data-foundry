@@ -22,8 +22,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Markedt as an IRIS alternative 
+Marked as an IRIS alternative
 
-Thus also very simple but otherwise cute. 
+Thus also very simple but otherwise cute.
 
-merged data from several studies
+Merged data from several studies

@@ -21,11 +21,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Contain information on movies that can be found in Rotten Tomatoes movie rating website
+Contains information on movies that can be found on the Rotten Tomatoes movie rating website
 
-Again, predicting rating might not translate / be usable with such features in the real-world. So very artificial / not a real dataset. Furthermore, mostly an entity matching problem. Also again collected by thest students via web scraping
+Again, predicting rating might not translate / be usable with such features in the real world. So very artificial / not a real dataset. Furthermore, mostly an entity matching problem. Also again collected by these students via web scraping
 
-name, directors, actors, creators and description. for directores actors and creators makes sense to swap with stats, as for the name not sure how informative it's, what's left is description
+name, directors, actors, creators and description. For directors, actors and creators it makes sense to swap with stats; as for the name, not sure how informative it is — what's left is description
 
 The description is mostly a blurb and not much more.
 

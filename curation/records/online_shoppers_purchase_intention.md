@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- 10.24432/C5F88Q
+- https://doi.org/10.24432/C5F88Q
 - https://www.openml.org/search?type=data&id=45560&sort=runs&status=active
 source_row: 428
 type_adapter_id: curation-record-v1

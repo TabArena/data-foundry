@@ -22,8 +22,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-No source information. Might be fake
+No source information. Might be fake.
 
-Likely Analytics Vidhya competition data. Likely fake>?
+Likely Analytics Vidhya competition data. Likely fake?
 
-From all the sources and info, the data is most likely generated/fake just for the learning problem. Thus, it would be hard to argue to use it
+From all the sources and info, the data is most likely generated/fake just for the learning problem. Thus, it would be hard to argue to use it.

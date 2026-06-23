@@ -22,8 +22,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-try to predict readability of a passage based on stats and info
+Try to predict readability of a passage based on stats and info.
 
-Last changed row might leak. Authors and similar might creates grouped data. Original kaggle competition (https://www.kaggle.com/competitions/commonlitreadabilityprize/data?select=test.csv) is almost just an NLP task. The data on the webiste contains a bunch of additonal features and ratings of externals. The extra data also includes some kind of model and algo predictions from Kaggle that are not super clear to me
+Last changed row might leak. Authors and similar might create grouped data. Original Kaggle competition (https://www.kaggle.com/competitions/commonlitreadabilityprize/data?select=test.csv) is almost just an NLP task. The data on the website contains a bunch of additional features and ratings of externals. The extra data also includes some kind of model and algo predictions from Kaggle that are not super clear to me.
 
-Really seems to be just an NLP, top solutions used LLM and LMs
+Really seems to be just an NLP; top solutions used LLM and LMs.

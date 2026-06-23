@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-unclear how real the data is, but it was a paid competition 
+Unclear how real the data is, but it was a paid competition.
 
 Still looks real and could be used...

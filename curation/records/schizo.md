@@ -23,9 +23,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data has an ID column, which likely amkes it grouped?
+Data has an ID column, which likely makes it grouped?
 
-Very likely based on eye tracking data to predicting something related to schizoprhenia
+Very likely based on eye tracking data to predicting something related to schizophrenia
 
 ## Reference
 

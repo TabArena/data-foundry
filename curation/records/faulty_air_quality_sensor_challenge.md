@@ -16,4 +16,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-classify if a device is faulty based on its output data
+Classify if a device is faulty based on its output data

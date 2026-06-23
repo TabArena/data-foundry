@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-From some comapny from the us, data looks super fake (see age distribution)
+From some company from the US, data looks super fake (see age distribution)
 
-given 50% churn rate, we made the judgment call that it is fake data again
+Given 50% churn rate, we made the judgment call that it is fake data again

@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Census data. mostly counts cumulated at different survey levels. Already preprocessed. potential predictive task without temporal conneciton as it is a snapshot of a year and the median price, use case could be filling missing values or estimating it for non-valued houses. The available data was already preprocessed and it is not possible to restore the original values nor to determine the column names to verify whether the task makes sense"
+CC: "Census data. mostly counts cumulated at different survey levels. Already preprocessed. potential predictive task without temporal connection as it is a snapshot of a year and the median price, use case could be filling missing values or estimating it for non-valued houses. The available data was already preprocessed and it is not possible to restore the original values nor to determine the column names to verify whether the task makes sense"
 
 Given the missing source information and that the temporal indicator is missing. We reject this dataset version.
 We can always get more housing data (and have enough in other datasets already)

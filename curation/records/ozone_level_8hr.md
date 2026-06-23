@@ -13,7 +13,7 @@ collections:
 - TabSTAR
 year: '2008'
 source_links:
-- 10.24432/C5NG6W
+- https://doi.org/10.24432/C5NG6W
 - https://www.kaggle.com/datasets/prashant111/ozone-level-detection
 source_row: 625
 type_adapter_id: curation-record-v1
@@ -23,9 +23,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Likely requires temporal split; also temporal features sampled at certain intervals, also spatial domain "
+CC: "Likely requires temporal split; also temporal features sampled at certain intervals, also spatial domain"
 
-Use one of the datasets; 1h seems to be the harder task based on paper results. Unclear what class labels are in data on UCI, I guess 1 is ozone day and 0 is a normal day, check the distribution. Targetr seems to be just a forecasting task mapped to a binary
+Use one of the datasets; 1h seems to be the harder task based on paper results. Unclear what class labels are in data on UCI, I guess 1 is ozone day and 0 is a normal day, check the distribution. Target seems to be just a forecasting task mapped to a binary
 
 Needs more thought and time to read the paper to understand how to model this correctly and if it is not just a forecasting dataset
 

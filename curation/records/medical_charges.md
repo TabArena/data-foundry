@@ -7,8 +7,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 42130
-- openml 44146
+- https://www.openml.org/d/42130
+- https://www.openml.org/d/44146
 source_row: 824
 needs_review:
 - suggestion

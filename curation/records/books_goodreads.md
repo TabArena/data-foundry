@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 Books ratings
 
-Another dataset from the collection of datasets that are all crawled' unable to find a target for any real tasks.
+Another dataset from the collection of datasets that are all crawled; unable to find a target for any real tasks.
 
 ## Reference
 

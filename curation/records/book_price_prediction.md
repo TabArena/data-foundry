@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 Book Price Prediction
 
-Unclear how much price can be predict and depends on the features, needs to be investigated. Plus unclear if text helps. Maybe price needs inflanation adjustment? could get more data from the internet for this? unclear if it is a real task but was used as such in a competition. 
+Unclear how much price can be predicted and depends on the features, needs to be investigated. Plus unclear if text helps. Maybe price needs inflation adjustment? Could get more data from the internet for this? Unclear if it is a real task but was used as such in a competition.
 
 has titles, authors, edition, genre, and category as entities but synopsis as sentences of free text
 

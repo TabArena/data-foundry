@@ -14,8 +14,8 @@ collections:
 - TabSTAR
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/congressional_voting_records/metadata.yaml
-- 10.24432/C5C01P
-- openml 56
+- https://doi.org/10.24432/C5C01P
+- https://www.openml.org/d/56
 source_row: 567
 type_adapter_id: curation-record-v1
 ---

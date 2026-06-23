@@ -20,6 +20,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Dataset from "Anna Wiewer" without more source information. Started a process to inquire more about the source. 
+Dataset from "Anna Wiewer" without more source information. Started a process to inquire more about the source.
 
 Likely a version of this dataset: https://www.kaggle.com/datasets/kartik2112/fraud-detection?

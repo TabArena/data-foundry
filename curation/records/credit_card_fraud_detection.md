@@ -22,6 +22,6 @@ type_adapter_id: curation-record-v1
 
 "result of a PCA transformation. Unfortunately, due to confidentiality issues, we cannot provide the original features and more background information about the data. Features V1, V2, … V28 are the principal components obtained with PCA"
 
-Thus, we know that any train test split would simulate transductive learning. This kind of transductive learning would be impossible for some the test splits 
+Thus, we know that any train test split would simulate transductive learning. This kind of transductive learning would be impossible for some the test splits
 
 Domain expert: "Given the PCA transformation applied across the full time horizon, it is not an ideal setup for benchmarking"

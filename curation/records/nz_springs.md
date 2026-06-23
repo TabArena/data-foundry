@@ -15,7 +15,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Sampling of NZ geothermal springs with lots of metadata and a good range (13.9–100.6 °C and pH < 1–9.7); metadata source: via email from Matthew Stott; otu table source:from Matthew Stott
+Sampling of NZ geothermal springs with lots of metadata and a good range (13.9–100.6 °C and pH < 1–9.7); metadata source: via email from Matthew Stott; otu table source: from Matthew Stott
 
 ## Reference
 

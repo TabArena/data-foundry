@@ -22,6 +22,6 @@ type_adapter_id: curation-record-v1
 
 predict diabetes based on demographic and health-related features
 
-High risk of being synthethic data, very likely clinical notes based on codes or standard template (not real text)
+High risk of being synthetic data, very likely clinical notes based on codes or standard template (not real text)
 
 We know it is synthetic based on the user, which is known to upload such data!

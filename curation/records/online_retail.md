@@ -19,7 +19,7 @@ problem_type: TBD
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/352/online+retail
-- 10.24432/C5BW33
+- https://doi.org/10.24432/C5BW33
 - https://www.kaggle.com/datasets/shahnawaj9/online-retail
 source_row: 612
 type_adapter_id: curation-record-v1

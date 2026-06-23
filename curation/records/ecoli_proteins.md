@@ -18,7 +18,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/ecoli/metadata.yaml
-- 10.24432/C5388M
+- https://doi.org/10.24432/C5388M
 source_row: 754
 type_adapter_id: curation-record-v1
 ---

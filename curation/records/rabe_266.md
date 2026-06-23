@@ -13,7 +13,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 663
+- https://www.openml.org/d/663
 source_row: 79
 type_adapter_id: curation-record-v1
 ---
@@ -22,6 +22,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data from 1991, some regression analysis example. 2 features, 1 numeric featres. Data from some book 
+Data from 1991, some regression analysis example. 2 features, 1 numeric feature. Data from some book
 
 Likely trivial / outdated data and fake data.

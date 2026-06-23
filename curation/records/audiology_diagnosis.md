@@ -23,7 +23,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/8/audiology+standardized
-- 10.24432/C5TP4R
+- https://doi.org/10.24432/C5TP4R
 source_row: 764
 type_adapter_id: curation-record-v1
 ---
@@ -36,7 +36,7 @@ Feel like this is a duplicate, but I cannot find it.
 
 Otherwise, many classes and need to check there is enough samples per class for a task, otherwise remove some
 
-need to check if some rules/cases come from the system in the paper or from the database
+Need to check if some rules/cases come from the system in the paper or from the database
 
 Discussion: Not a meaningful predictive task. The available data sample is highly selective and not representative. The target is to predict what kind of ear disease a person has, if any, but there are only 9% normal samples which is unrealistic in a diagnostic task.
 

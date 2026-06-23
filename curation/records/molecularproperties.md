@@ -9,6 +9,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 tags:
 - Non-IID (Grouped)
+- Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
 source_links:
@@ -24,4 +25,4 @@ type_adapter_id: curation-record-v1
 CC: "Can pre-filter data according to existing molecules, requires expert feature engineering to even find predictive signal from molecular structures but has some un-engineered data we could use/join; target is made up of combination of targets"
 
 
-Solutions were very custom NN models, not tabular. Might be sovlable by tabular, but requires custom preprocessing and is unclear
+Solutions were very custom NN models, not tabular. Might be solvable by tabular, but requires custom preprocessing and is unclear

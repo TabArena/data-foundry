@@ -11,9 +11,9 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml.org/d/29
+- https://www.openml.org/d/29
 - https://archive.ics.uci.edu/dataset/27/credit+approval
-- 10.24432/C5FS30
+- https://doi.org/10.24432/C5FS30
 source_row: 65
 type_adapter_id: curation-record-v1
 ---

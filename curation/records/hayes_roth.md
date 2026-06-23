@@ -14,7 +14,7 @@ collections:
 - TabArena Reject
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/hayes_roth/metadata.yaml
-- 10.24432/C5501T
+- https://doi.org/10.24432/C5501T
 source_row: 97
 type_adapter_id: curation-record-v1
 ---
@@ -23,9 +23,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Seems to have a lot of details regarding the data state and how it was created and how categoires were assigned
+Seems to have a lot of details regarding the data state and how it was created and how categories were assigned
 
-Deterministc rules for the class:
+Deterministic rules for the class:
 
      -- only attributes C-E are diagnostic; values for A and B are ignored
      -- Class Neither: if a 4 occurs for any attribute C-E

@@ -24,6 +24,6 @@ type_adapter_id: curation-record-v1
 Duplicate data source as lending_club
 
 
-LendingClub.com /  https://www.lendingclub.com/personal-banking (likely better to use data from the source) -> no, source is down / data closed off 
+LendingClub.com / https://www.lendingclub.com/personal-banking (likely better to use data from the source) -> no, source is down / data closed off
 
 The older version is without a timestamp. Need to investigate newer version

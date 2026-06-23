@@ -20,7 +20,7 @@ problem_type: TBD
 original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/auto_insurance_losses/metadata.yaml
-- 10.24432/C5B01C
+- https://doi.org/10.24432/C5B01C
 source_row: 564
 type_adapter_id: curation-record-v1
 ---

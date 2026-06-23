@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 Human Choice Prediction in Language-based Games
 
-Datasets contain samples for a very specific prediction task. The real tasks come just from text (so likely just NLP), but the investigation/later task seems to include more tabular features. This needs more thought and a closer look! It is also from the TabStar co-author. So I am somewhat certain it is NLP but might be usablel 
+Datasets contain samples for a very specific prediction task. The real tasks come just from text (so likely just NLP), but the investigation/later task seems to include more tabular features. This needs more thought and a closer look! It is also from the TabStar co-author. So I am somewhat certain it is NLP but might be usable.
 
-From reading the paper, the baseliens were all non-tabular custom models for the task and mostly NLP-based. so I think it is not tabular
+From reading the paper, the baselines were all non-tabular custom models for the task and mostly NLP-based. So I think it is not tabular.

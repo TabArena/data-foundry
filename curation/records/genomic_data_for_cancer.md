@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 "Data collected from simulated genomic experiments."
 
-Only has two features for gene expressions. Could be a real task but I assume the way it was simualte it is not real
+Only has two features for gene expressions. Could be a real task but I assume the way it was simulated it is not real

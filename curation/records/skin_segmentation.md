@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 1502
+- https://www.openml.org/d/1502
 source_row: 413
 type_adapter_id: curation-record-v1
 ---
@@ -20,7 +20,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "RBG images from different people (therefore group split required). Features are channels"
+CC: "RGB images from different people (therefore group split required). Features are channels"
 
 ## Reference
 

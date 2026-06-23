@@ -15,7 +15,7 @@ collections:
 - TabSTAR
 source_links:
 - '? from https://github.com/EpistasisLab/pmlb/blob/master/datasets'
-- 10.24432/C5BS32
+- https://doi.org/10.24432/C5BS32
 source_row: 111
 type_adapter_id: curation-record-v1
 ---

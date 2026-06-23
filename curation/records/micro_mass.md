@@ -23,7 +23,7 @@ required_split:
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5T61S
+- https://doi.org/10.24432/C5T61S
 source_row: 792
 type_adapter_id: curation-record-v1
 ---
@@ -36,9 +36,9 @@ CC: "spectral data. Clustered data. Need to check more carefully, but might be n
 
 Need to really understand the data and how we can use it, but otherwise sounds good to use!
 
-From looking at the paper, data, and asking chatgpt, I think we need to gorup by strain and holdout all repliactions 
+From looking at the paper, data, and asking ChatGPT, I think we need to group by strain and hold out all replications.
 
-20 classes
+20 classes.
 
 ## Reference
 

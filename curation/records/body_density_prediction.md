@@ -22,7 +22,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 560
+- https://www.openml.org/d/560
 - https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset
 source_row: 750
 type_adapter_id: curation-record-v1
@@ -34,15 +34,15 @@ type_adapter_id: curation-record-v1
 
 Looking good, might be trivial or easy
 
-original source is UCI, now gone. Found on OpenML and ion Kaggle
+original source is UCI, now gone. Found on OpenML and on Kaggle
 
-Data looks good but is a bit old. There should be more/newer data with the same task as this is still done by models in machines in Gyms
+Data looks good but is a bit old. There should be more/newer data with the same task as this is still done by models in machines in gyms.
 
-Note, the task is not about bodyfat prediction as this is determined by a deterministc formula. Instead, the task is to estimate the density (which can be used to get the body fat via the deterministic formula). However, denisty requires a test. So we aim to predict from data the desnity such that we can skip this test.
+Note, the task is not about bodyfat prediction as this is determined by a deterministic formula. Instead, the task is to estimate the density (which can be used to get the body fat via the deterministic formula). However, density requires a test. So we aim to predict from data the density such that we can skip this test.
 
 Discussion: In general a valid task, but if someone would actually want to build a serious predictive model for that it would be possible to collect a lot more data.
 
-Also, I think that the use from this is limited unless we actually embed the density prediction into the body fat formula and evaluate on that.Better alternatives for this task (ChatGPT):
+Also, I think that the use from this is limited unless we actually embed the density prediction into the body fat formula and evaluate on that. Better alternatives for this task (ChatGPT):
 1) NHANES https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2021/DataFiles/BMX_L.htm
 2) UK Biobank (restricted access): https://www.ukbiobank.ac.uk/about-our-data/types-of-data/physical-measurements/
 

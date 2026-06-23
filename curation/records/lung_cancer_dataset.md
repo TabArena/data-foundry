@@ -21,5 +21,5 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Dataset looks very much simulated or handmade. 
-Moreover, we are missing any other source information
+Dataset looks very much simulated or handmade.
+Moreover, we are missing any other source information.

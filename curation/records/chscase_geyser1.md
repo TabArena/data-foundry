@@ -12,7 +12,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 712
+- https://www.openml.org/d/712
 source_row: 83
 type_adapter_id: curation-record-v1
 ---
@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data from the book: "A Casebook for a First Course in Statistics and Data Analysis," by Samprit Chatterjee, Mark S. Handcock and Jeffrey S. Simonoff, John Wiley and Sons, New York, 1995. 
+Data from the book: "A Casebook for a First Course in Statistics and Data Analysis," by Samprit Chatterjee, Mark S. Handcock and Jeffrey S. Simonoff, John Wiley and Sons, New York, 1995.
 
-Looks again quite outdated, trrivial and not useful for our puprose.
+Looks again quite outdated, trivial and not useful for our purpose.

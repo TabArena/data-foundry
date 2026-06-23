@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Duplicate of heart dieseas from PMLB above
+Duplicate of heart disease from PMLB above

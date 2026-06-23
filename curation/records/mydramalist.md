@@ -32,7 +32,7 @@ type_adapter_id: curation-record-v1
 
 Complete list of all the top asian series and movies
 
-RecSys task, at best a rating prediction task but it would not be used like this in reality (but instead user-item paris)
+RecSys task, at best a rating prediction task but it would not be used like this in reality (but instead user-item pairs)
 
 Unnamed columns artifact
 

@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-EDA task. less than 96 samples
+EDA task. Less than 96 samples

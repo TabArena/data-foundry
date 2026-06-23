@@ -28,9 +28,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-100% accraucy possible? 50/50 churn rate
+100% accuracy possible? 50/50 churn rate.
 
-The discussion and state of the competition is a bit hard to parse. I would say yes for now and we can test if the train data is trivial later
+The discussion and state of the competition is a bit hard to parse. I would say yes for now and we can test if the train data is trivial later.
 
 ## Reference
 

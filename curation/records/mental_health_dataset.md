@@ -22,8 +22,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""This is a dataset for scientific discovery that was generated from parsing text. It is unclear how to select a good target for this dataset
+CC: "This is a dataset for scientific discovery that was generated from parsing text. It is unclear how to select a good target for this dataset.
 
-It is not a real predictive ML task, but might be a good proxy. At the same time, all the features are two-step, and it is unclear how this relates to a real use case
+It is not a real predictive ML task, but might be a good proxy. At the same time, all the features are two-step, and it is unclear how this relates to a real use case.
 
-""I collected this dataset from the internet."" -> https://ourworldindata.org/mental-health""
+"I collected this dataset from the internet." -> https://ourworldindata.org/mental-health"

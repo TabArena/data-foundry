@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Might be transformable into a tabular task, buto therwise forecasting for sure (just 24 h)
+Might be transformable into a tabular task, but otherwise forecasting for sure (just 24 h)

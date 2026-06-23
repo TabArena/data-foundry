@@ -21,4 +21,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Found new source from hackathon website. Unclear if this the original source.
+Found new source from hackathon website. Unclear if this is the original source.

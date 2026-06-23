@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-polish wine data
+Polish wine data

@@ -29,11 +29,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Try to add / use it, contains text as well so unclear how to intergreate here or move to text benchmark
+Try to add / use it, contains text as well so unclear how to integrate here or move to text benchmark
 
-Seems to not include a temporal information, plus all from one year so it might be reasonable to use as one task
+Seems to not include temporal information, plus all from one year so it might be reasonable to use as one task
 
-keep as 2nd tier for now due to text and temporal uncertanity
+Keep as 2nd tier for now due to text and temporal uncertainty
 
 ## Reference
 

@@ -24,6 +24,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The data contains only 7 observations (patients), and the rest is grouped per patient. It is a very weird use case as it was used for visualization rather than a predictive task. 
+The data contains only 7 observations (patients), and the rest is grouped per patient. It is a very weird use case as it was used for visualization rather than a predictive task.
 
 This might be usable in some way, but it is super unclear how it should be used. We keep it as TBD for now

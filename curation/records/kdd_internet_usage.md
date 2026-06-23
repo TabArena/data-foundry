@@ -8,7 +8,7 @@ collections:
 - TabSTAR
 year: '1997'
 source_links:
-- openml.org/d/981
+- https://www.openml.org/d/981
 - https://www.openml.org/search?type=data&id=372&sort=runs&status=active
 - https://sites.cc.gatech.edu/gvu/user_surveys/survey-1997-10/datasets/
 source_row: 801
@@ -21,7 +21,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Multiclass. Might be survey data. Might actually be an interpretabilitiy task. Also might be clustered data; unique users ("who" features); some other questionable features like race"
+CC: "Multiclass. Might be survey data. Might actually be an interpretability task. Also might be clustered data; unique users ("who" features); some other questionable features like race"
 
 ## Reference
 

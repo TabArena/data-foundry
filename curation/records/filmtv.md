@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-scraped film data
+Scraped film data
 
 If votes are used, it is again a total-votes-related value that needs to be used for normalization and we have two vote sources
 

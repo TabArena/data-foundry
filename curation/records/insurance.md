@@ -13,7 +13,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 45064
+- https://www.openml.org/d/45064
 - https://www.kaggle.com/datasets/sureshmecad/health-insurance-lead-prediction
 - https://www.analyticsvidhya.com/datahack/contest/job-a-thon/#ProblemStatement
 - https://github.com/Sattusss/Health_Insurance_Lead_Prediction
@@ -30,8 +30,8 @@ type_adapter_id: curation-record-v1
 
 CC: "Not much task info given."
 
-Found new Kaggle Source, which is from hackathon website with more data point as well
+Found new Kaggle source, which is from a hackathon website with more data points as well
 
-"This is dataset is released as a part of hackathon conducted by Analytics vidhya"
+"This is dataset is released as a part of hackathon conducted by Analytics Vidhya"
 
 Most likely anonymized or generated.

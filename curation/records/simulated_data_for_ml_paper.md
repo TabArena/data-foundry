@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - TabSTAR
 source_links:
-- openml 43551
+- https://www.openml.org/d/43551
 - https://www.kaggle.com/datasets/ryanthomasallen/simulated-data-for-ml-paper
 source_row: 593
 type_adapter_id: curation-record-v1

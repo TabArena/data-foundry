@@ -13,7 +13,7 @@ collections:
 - TabArena Reject
 year: '2017'
 source_links:
-- openml 41267
+- https://www.openml.org/d/41267
 - UK AIR homepage
 - https://uk-air.defra.gov.uk/data/
 source_row: 53
@@ -24,6 +24,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Benchmark excludes latitude and longitude. Has datetime features and two alternative targets. requires temporal split"
+CC: "Benchmark excludes latitude and longitude. Has datetime features and two alternative targets. Requires temporal split"
 
 From what I can gather from the website, this is close to a multivariate forecasting task (forecasting the PM value per site); all "features" are just site/location information and the target is the PM value

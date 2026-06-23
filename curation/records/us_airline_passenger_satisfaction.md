@@ -33,7 +33,7 @@ Survey data, but prediction task seems very reasonable
 
 Without source information the data might be fake
 
-The data looks real, but then also a bit too equal distributed everything. Moreover source from excel so less likely generated
+The data looks real, but then also a bit too equally distributed everything. Moreover source from Excel so less likely generated
 
 ## Reference
 

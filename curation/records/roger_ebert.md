@@ -20,11 +20,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-The dataset contains movies ratings by famous critic Rogert Ebert
+The dataset contains movie ratings by famous critic Roger Ebert
 
-Very specific use case, real prediction task but likely more scientific discovery. Also far from anything used in the real world by practitioners. Otherwise a well motivated custom project
+Very specific use case, real prediction task but likely more scientific discovery. Also far from anything used in the real world by practitioners. Otherwise a well-motivated custom project
 
-One could maybe gather more data from this the websites with text etc
+One could maybe gather more data from the websites with text etc
 
 "name and director and actors, name doesn't seem to be informative as for director and actors I guess replacing by stats would be the way to go (could do top 5 actors for example when too many)
 

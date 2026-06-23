@@ -10,7 +10,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 41144
+- https://www.openml.org/d/41144
 source_row: 349
 type_adapter_id: curation-record-v1
 ---
@@ -19,4 +19,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "From AutoML challenge.  artificial dataset containing data points grouped in 32 clusters placed on the vertices of a ve dimensional hypercube"
+CC: "From AutoML challenge. Artificial dataset containing data points grouped in 32 clusters placed on the vertices of a five-dimensional hypercube"

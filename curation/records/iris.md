@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Well known and infamous IRIS dataset. 
+Well known and infamous IRIS dataset.
 
 IMO, a toy task that is not realistic anyhow. I would not add it to the collection.

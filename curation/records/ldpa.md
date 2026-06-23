@@ -10,8 +10,8 @@ decision_markers:
 collections:
 - TabArena Reject
 source_links:
-- openml 1483
-- 10.24432/C57G8X
+- https://www.openml.org/d/1483
+- https://doi.org/10.24432/C57G8X
 source_row: 255
 type_adapter_id: curation-record-v1
 ---

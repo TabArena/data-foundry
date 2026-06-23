@@ -23,8 +23,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Similar to GOV data, not predictive task connected so far. 
+Similar to GOV data, no predictive task connected so far.
 
-Unclear which version to use, scrapped data in many cases. 
+Unclear which version to use, scraped data in many cases.
 
-Otherwise okay and another price prediction task for some cases
+Otherwise okay and another price prediction task for some cases.

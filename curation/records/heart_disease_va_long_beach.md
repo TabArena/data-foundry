@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Version of  heart_disease_*
+Version of heart_disease_*

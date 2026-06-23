@@ -10,6 +10,7 @@ tags:
 - 2nd Tier / Scientfic Discovery
 - Non-IID (Temporal)
 - Free Text (Short)
+- Review Prio 1 (Atlas)
 collections:
 - CARTE/TARTE
 source_links:
@@ -22,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Minimal LinkedIN Data from a bunch of comapnies
+Minimal LinkedIn data from a bunch of companies

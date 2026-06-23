@@ -16,7 +16,7 @@ domain: biology & life sciences
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5SG7H
+- https://doi.org/10.24432/C5SG7H
 source_row: 3
 type_adapter_id: curation-record-v1
 ---

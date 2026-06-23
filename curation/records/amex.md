@@ -26,11 +26,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Target is binary classification from a survival prediction task (thus some noise); mostly anonymized data, some categorical data; dataset made imbalanced by default and scoring is affected by this; 
+CC: ""Target is binary classification from a survival prediction task (thus some noise); mostly anonymized data, some categorical data; dataset made imbalanced by default and scoring is affected by this;
 
 Temporal split needed, see train/test shift; likely also grouped-based splits (same customers in the data);
 
-Manye weird features, likely lagged-data from temporal original data; unsure how to treat re-ocuring users""
+Many weird features, likely lagged-data from temporal original data; unsure how to treat recurring users""
 
 Can be used as IID and non-iid. Several final versions of kaggle made the task iid. Moreover, you could use the non-iid version as well
 

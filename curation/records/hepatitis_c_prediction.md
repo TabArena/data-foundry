@@ -17,7 +17,7 @@ required_split:
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5D612
+- https://doi.org/10.24432/C5D612
 - https://www.kaggle.com/datasets/fedesoriano/hepatitis-c-dataset
 source_row: 771
 type_adapter_id: curation-record-v1
@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Need to check label distribution of class and if multiple entires per patient ID
+Need to check label distribution of class and if multiple entries per patient ID
 
 ## Reference
 

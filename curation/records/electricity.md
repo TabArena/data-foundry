@@ -20,7 +20,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- openml.org/d/151
+- https://www.openml.org/d/151
 - https://www.kaggle.com/datasets/yashsharan/the-elec2-dataset
 - https://www.openml.org/search?type=data&id=44156
 - https://search.r-project.org/CRAN/refmans/dynaTree/html/elec2.html
@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 
 CC: "leak if not temporal split; manually normalized but unclear how; day-wise and week-wise temporal connections"
 
-Seems like valid/borderline forecasting as classification task with more side information 
+Seems like valid/borderline forecasting as classification task with more side information
 
 Paper talks a lot about the data https://cgi.cse.unsw.edu.au/~reports/papers/9905.pdf
 

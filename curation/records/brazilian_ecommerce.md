@@ -27,9 +27,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Data seems to be from a real company (Olist), a previous version even was classified.  Possible tasks: predict future sales, optimize delivery times.  
+Data seems to be from a real company (Olist), a previous version even was classified. Possible tasks: predict future sales, optimize delivery times.
 Multiple tables, requires feature engineering.
-Uploaders commit to answering questiones (awsome!)
+Uploaders commit to answering questions (awesome!)
 Contains text fields (reviews)
 
 ## Reference

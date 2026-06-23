@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Again, the data was in theory grouped but never solved as such, we could again try yo get a model for it! 
+Again, the data was in theory grouped but never solved as such, we could again try to get a model for it!
 
 Follow the preprocessing from TabRed as well. Verify that TabRed preprocessing gets similar feature sets to top solutions
 

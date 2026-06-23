@@ -29,13 +29,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Some minor problems in the data that need to be checked (https://www.kaggle.com/datasets/joniarroba/noshowappointments/discussion/202717)
+CC: "Some minor problems in the data that need to be checked (https://www.kaggle.com/datasets/joniarroba/noshowappointments/discussion/202717)
 
-Data needs to do some kind of grouping feature engi and splitting 
+Data needs to do some kind of grouping feature engineering and splitting.
 
-it seems to be used a lot and has rather reasonable data. Unclear source still. but clear enough the author is the source 
+It seems to be used a lot and has rather reasonable data. Unclear source still, but clear enough the author is the source.
 
-This might be a better version of the data with a source and real: https://data.mendeley.com/datasets/wm6w2fvkfj/1? ""
+This might be a better version of the data with a source and real: https://data.mendeley.com/datasets/wm6w2fvkfj/1?"
 
 ## Reference
 

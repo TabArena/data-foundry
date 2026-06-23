@@ -11,7 +11,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 458
+- https://www.openml.org/d/458
 source_row: 372
 type_adapter_id: curation-record-v1
 ---
@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Not much information, but clearly data represents text; looks like TF-IDF preprocesisng; data from several books (groups) of several authors (target)"
+CC: "Not much information, but clearly data represents text; looks like TF-IDF preprocessing; data from several books (groups) of several authors (target)"

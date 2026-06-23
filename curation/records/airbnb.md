@@ -28,4 +28,4 @@ Airbnb listings in Seattle (more to get from the reference)
 
 There is also https://www.kaggle.com/datasets/airbnb/boston
 
-I thought about predicting superhost but it seems to be a very clearly defined set of rules how to get, so very deterministic?
+I thought about predicting superhost but it seems to be a very clearly defined set of rules how to get it, so very deterministic?

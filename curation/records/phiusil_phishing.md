@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Recent dataset for phishing website detection, best I know so far (AT). features extracted from website source code. Might also be approached with LLMs, but since the paper is recent thats not a concern. Might need to double check that the feature extraction doesnt introduce leaks
+Recent dataset for phishing website detection, best I know so far (AT). Features extracted from website source code. Might also be approached with LLMs, but since the paper is recent that's not a concern. Might need to double check that the feature extraction doesn't introduce leaks
 
 Discussion: unclear if this is grouped data or not!
 

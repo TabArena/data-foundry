@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Competition used temporal split. 
+Competition used temporal split.
 
 Multi-target task: Predict whether purchase happens along with quantity. Performance was measured using AUC (50%) and MAE (50%)
 

@@ -13,7 +13,7 @@ collections:
 - TabArena Reject
 year: '1995'
 source_links:
-- openml.org/d/930
+- https://www.openml.org/d/930
 - Statlib dataset
 source_row: 470
 type_adapter_id: curation-record-v1
@@ -25,9 +25,9 @@ type_adapter_id: curation-record-v1
 
 CC: "Regression. Rather interpretability than predictive task. Data grouped by colleges; copy-right problems"
 
-Same creator, different magazine than colleges_aaup
+Same creator, different magazine than colleges_aaup.
 
-We have data per state. All from the same year. seems more like scientific discovery task and likely IID: we could hold out some colleges? But that is identical to a random split...
+We have data per state. All from the same year. Seems more like a scientific discovery task and likely IID: we could hold out some colleges? But that is identical to a random split...
 
 ## Reference
 

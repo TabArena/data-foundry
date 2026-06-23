@@ -36,9 +36,9 @@ California Houses 2020 Prices (Duplicate with calif_houses below).
 
 Timestamp is missing! ....
 
-Unclear if summary has an impact on predictions. A lot of spatial features, likely require spatial splits. 
+Unclear if summary has an impact on predictions. A lot of spatial features, likely require spatial splits.
 
-Very likely scrapped from https://www.redfin.com/CA/Los-Altos/540-Pine-Ln-94022/home/1137626 / https://www.redfin.com/news/data-center/
+Very likely scraped from https://www.redfin.com/CA/Los-Altos/540-Pine-Ln-94022/home/1137626 / https://www.redfin.com/news/data-center/
 
 Only data from redfin looks like this: https://www.kaggle.com/datasets/thuynyle/redfin-housing-market-data?select=neighborhood_market_tracker.tsv000
 One could buy a scraped version: https://crawlfeeds.com/datasets/redfin-usa-properties-dataset
@@ -47,7 +47,7 @@ Summary contains free text that might not be super useful but still very much co
 
 ---
 
-Sold Price is target from the kaggle competition, the TextTabBench Paper considers Total interior livable area and Listed Price instead, data might be spatial and temportal. How do we deal with multi-categorical columns like Heating/Cooling/Parking? Also the Bedroom column is sometimes integer sometimes Text (multi-categorical), I feel like it could take a lot of preprocessing  depending on what we do with columns like Heaitng/Cooling/Parking and similar
+Sold Price is target from the kaggle competition, the TextTabBench Paper considers Total interior livable area and Listed Price instead, data might be spatial and temporal. How do we deal with multi-categorical columns like Heating/Cooling/Parking? Also the Bedroom column is sometimes integer sometimes Text (multi-categorical), I feel like it could take a lot of preprocessing depending on what we do with columns like Heating/Cooling/Parking and similar
 
 Unclear source of data, likely copied from somewhere with modifications. Used for teaching maybe? Data looks scraped
 

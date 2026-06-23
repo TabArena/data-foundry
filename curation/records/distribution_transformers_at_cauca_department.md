@@ -22,11 +22,11 @@ type_adapter_id: curation-record-v1
 
 paper: https://www.researchgate.net/publication/355264319_Dataset_of_Distribution_Transformers_for_Predictive_Maintenance
 
-used svms
+used SVMs
 
-No time stamp, might be able to do only one split. Unclear if it would have a temporal impact, data seems very time-independent. Features are average across year
+No time stamp, might be able to do only one split. Unclear if it would have a temporal impact, data seems very time-independent. Features are averages across year
 
-15.869 transformers -> might have grouped/temporal leakage if we split take data from both years at once? need to check. For just one year, it is IID, for two years it is not.
+15,869 transformers -> might have grouped/temporal leakage if we split and take data from both years at once? need to check. For just one year, it is IID, for two years it is not.
 
 ## Reference
 

@@ -6,7 +6,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 43889
+- https://www.openml.org/d/43889
 source_row: 820
 needs_review:
 - suggestion

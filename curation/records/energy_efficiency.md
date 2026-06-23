@@ -9,7 +9,7 @@ decision_markers:
 collections:
 - New (BeyondArena)
 source_links:
-- 10.24432/C51307
+- https://doi.org/10.24432/C51307
 source_row: 168
 type_adapter_id: curation-record-v1
 ---

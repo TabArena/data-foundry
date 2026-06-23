@@ -18,6 +18,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Distribution version of Orange  Telecom's Churn Dataset
+Distribution version of Orange Telecom's Churn Dataset
 
 Version of the CrowdAnalytix dataset (https://www.kaggle.com/datasets/mnassrib/telecom-churn-datasets/discussion/235070)

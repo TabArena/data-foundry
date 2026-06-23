@@ -17,7 +17,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C5Z89R
+- https://doi.org/10.24432/C5Z89R
 source_row: 766
 type_adapter_id: curation-record-v1
 ---

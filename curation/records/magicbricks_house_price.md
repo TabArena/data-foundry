@@ -33,9 +33,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Looks reasonable but yet another house price dataset
+Looks reasonable but yet another house price dataset.
 
-Missing time information.... so can only treat as IID althought it is non-iId
+Missing time information... so can only treat as IID although it is non-IID.
 
 ## Reference
 

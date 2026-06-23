@@ -11,8 +11,8 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- 10.24432/C5Q60G
-- openml 372
+- https://doi.org/10.24432/C5Q60G
+- https://www.openml.org/d/372
 source_row: 512
 type_adapter_id: curation-record-v1
 ---

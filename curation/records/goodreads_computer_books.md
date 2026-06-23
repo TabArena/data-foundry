@@ -18,7 +18,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Book recommendation task based on metdata (no user-id, so not personalizable). Is rather a toy task using crawled data, but might still be usable; unclear predictive task, what to predict here?"
+CC: "Book recommendation task based on metadata (no user-id, so not personalizable). Is rather a toy task using crawled data, but might still be usable; unclear predictive task, what to predict here?"
 
 ## Reference
 

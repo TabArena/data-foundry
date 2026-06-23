@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Generated data (for privacy reasons) but given the large number of samples likely up-generated and thus super much noisy.
+Generated data (for privacy reasons) but given the large number of samples likely up-generated and thus super noisy.

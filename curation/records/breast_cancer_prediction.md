@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Cancer type and Is_Binary_Indicator_Of_Cancer_Diagnosis and Radiologists_Assessment might be target cols 
+Cancer type and Is_Binary_Indicator_Of_Cancer_Diagnosis and Radiologists_Assessment might be target cols
 
 "Some women contribute multiple examinations to the dataset." -> some leakage / problems
 

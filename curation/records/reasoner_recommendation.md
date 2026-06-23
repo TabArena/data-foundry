@@ -22,4 +22,4 @@ type_adapter_id: curation-record-v1
 
 REASONER Recommendation Dataset
 
-RecSys task, clearly not tabular predictive ML. And only sentences are in the reviews that might not be used for the RecSys task. Could be usesd somehow but I would rather not touch this until you touch RecSys problems
+RecSys task, clearly not tabular predictive ML. And only sentences are in the reviews that might not be used for the RecSys task. Could be used somehow but I would rather not touch this until you touch RecSys problems

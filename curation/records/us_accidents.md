@@ -8,6 +8,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Free Text (Short)
+- Review Prio 1 (Atlas)
 collections:
 - CARTE/TARTE
 - TabSTAR
@@ -22,12 +23,12 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-nformation of accidents in US cities between 2016 and 2023. From this dataset, two tasks are conducted: (1) the range of accident counts for the US cities (2) the severity of the reported accidents
+Information of accidents in US cities between 2016 and 2023. From this dataset, two tasks are conducted: (1) the range of accident counts for the US cities (2) the severity of the reported accidents
 
-Just survey data for insights, not predictive task or features that would be collected like in a predictive task
+Just survey data for insights, not a predictive task or features that would be collected like in a predictive task
 
-Kaggle-spotted-problems: timestamps are wrong, a few other problems
+Kaggle-spotted problems: timestamps are wrong, a few other problems
 
-Might need to filter by source of accident, has spatial components"Description
+Might need to filter by source of accident, has spatial components
 
 Descriptions are short blurbs containing mostly geolocation and no other meaning, so it is closer to a string than a real-world sentence. It is also a very clear format for the text, which could be solved via FE.

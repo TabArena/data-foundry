@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Missing date column, but as it represents a snapshot of data at a certain time point (when scrapped) it represents live data and could be used to fit a model for other houses at the same time
+Missing date column, but as it represents a snapshot of data at a certain time point (when scraped) it represents live data and could be used to fit a model for other houses at the same time
 
 Moreover, this is not sold prices (as immoscout shows only prices you can ask to buy it for and how much it was sold for AFAIK), so the snapshot here represents a task where someone would want to predict the price I should offer for my house given other houses that are currently offered. Thus, it seems like a real task where someone would want to build a model to know how much they should offer the houses at in the current market (with the limitation that past trends are ignored)
 

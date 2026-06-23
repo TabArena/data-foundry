@@ -12,8 +12,8 @@ collections:
 source_links:
 - https://www.openml.org/search?type=data&id=43622
 - https://www.kaggle.com/datasets/sagarbanik/phishing-url-binary-datatset
-- openml 4534
-- 10.24432/C51W2X?
+- https://www.openml.org/d/4534
+- https://doi.org/10.24432/C51W2X?
 source_row: 586
 type_adapter_id: curation-record-v1
 ---

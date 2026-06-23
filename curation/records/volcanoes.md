@@ -11,8 +11,17 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- 10.24432/C5SW34
-- openml 1542 1538 1541 1528 1529 1530 1531 1532 1535 1536
+- https://doi.org/10.24432/C5SW34
+- https://www.openml.org/d/1542
+- https://www.openml.org/d/1538
+- https://www.openml.org/d/1541
+- https://www.openml.org/d/1528
+- https://www.openml.org/d/1529
+- https://www.openml.org/d/1530
+- https://www.openml.org/d/1531
+- https://www.openml.org/d/1532
+- https://www.openml.org/d/1535
+- https://www.openml.org/d/1536
 source_row: 440
 type_adapter_id: curation-record-v1
 ---
@@ -21,4 +30,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Volcano files might be concatenable. Unclear what the exact features are.; minor temporal dependencies due to the collection time frame, spatial impact, and noisy ground truth as no one has been to Venus. "
+CC: "Volcano files might be concatenable. Unclear what the exact features are; minor temporal dependencies due to the collection time frame, spatial impact, and noisy ground truth as no one has been to Venus."

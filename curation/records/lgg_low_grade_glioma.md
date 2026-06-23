@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-used in the TabPFN-Wide paper. Run download.sh in the git repo to get the data
+Used in the TabPFN-Wide paper. Run download.sh in the git repo to get the data
 
 ## Reference
 

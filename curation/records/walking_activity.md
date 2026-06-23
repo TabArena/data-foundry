@@ -11,9 +11,9 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- openml 1509
+- https://www.openml.org/d/1509
 - https://archive.ics.uci.edu/dataset/286/user+identification+from+walking+activity
-- 10.24432/C5WC8S
+- https://doi.org/10.24432/C5WC8S
 source_row: 254
 type_adapter_id: curation-record-v1
 ---
@@ -22,7 +22,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Task is to identify a walking Smartphone user from accelerometer data. Human Activity tasks are solved differently nowadays. In general, this is a time-series task; grouped data"
+CC: "Task is to identify a walking smartphone user from accelerometer data. Human Activity tasks are solved differently nowadays. In general, this is a time-series task; grouped data"
 
 ## Reference
 

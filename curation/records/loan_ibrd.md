@@ -31,11 +31,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Check if we can get newer version of data from source, yes we can and should take the newest data! 
+Check if we can get newer version of data from source, yes we can and should take the newest data!
 
 Unsure if this is a reasonable task or not and if one can predict it, needs to see once we look into the data
 
-The data as is might be missing a lot of features that acutally drive the predictions. So making this a real task is a lot of work
+The data as is might be missing a lot of features that actually drive the predictions. So making this a real task is a lot of work
 
 ## Reference
 

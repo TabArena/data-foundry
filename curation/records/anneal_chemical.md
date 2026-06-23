@@ -11,7 +11,7 @@ collections:
 source_links:
 - https://www.openml.org/search?type=data&id=2
 - https://archive.ics.uci.edu/dataset/3/annealing
-- 10.24432/C5RW2F
+- https://doi.org/10.24432/C5RW2F
 source_row: 242
 type_adapter_id: curation-record-v1
 ---

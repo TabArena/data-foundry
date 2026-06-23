@@ -13,7 +13,7 @@ collections:
 - TabSTAR
 year: '1995'
 source_links:
-- openml 23380
+- https://www.openml.org/d/23380
 source_row: 606
 type_adapter_id: curation-record-v1
 ---
@@ -22,9 +22,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Several samples come from one tree/injection (see tree id), so likely grouped based splits needed and otherwise leakage, some samples are missing the group association "
+CC: "Several samples come from one tree/injection (see tree id), so likely grouped-based splits needed and otherwise leakage, some samples are missing the group association"
 
-Looks like a task mostly for the sake of scientific discovery, but might still be a valid task to use. Otherwise, this would not represent a real-world prediction task. CLoser to a causal case.
+Looks like a task mostly for the sake of scientific discovery, but might still be a valid task to use. Otherwise, this would not represent a real-world prediction task. Closer to a causal case.
 
 ## Reference
 

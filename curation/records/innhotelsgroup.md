@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 CC: "Predict whether a booking will be canceled. Nice dataset; maybe temporal data due to arrival year?"
 
-We don't know the source. This is problematic as we don't know the period of time used for registering cancelations
+We don't know the source. This is problematic as we don't know the period of time used for registering cancellations
 
 After some digging, found an earlier reference: https://www.kaggle.com/datasets/ahsan81/hotel-reservations-classification-dataset/discussion/383267
 

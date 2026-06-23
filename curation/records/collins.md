@@ -13,7 +13,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 40971
+- https://www.openml.org/d/40971
 - The source of the corpora was the ICAME CD-ROM (get info at <http>).", https://lib.stat.cmu.edu/datasets/collins.txt
 source_row: 513
 type_adapter_id: curation-record-v1
@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Outdated task, unsure if it is a useful proxy for a real tabular task. Might be trivial to solve already
+Outdated task, unsure if it is a useful proxy for a real tabular task. Might be trivial to solve already.
 
 ## Reference
 

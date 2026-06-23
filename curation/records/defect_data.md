@@ -23,7 +23,8 @@ original_data_state: One Table
 source_links:
 - https://openscience.us/repo/defect/
 - pc1,pc2,pc3,pc4,mc1,kc1,kc2,kc3,jm1
-- openml 1049 1067
+- https://www.openml.org/d/1049
+- https://www.openml.org/d/1067
 source_row: 576
 type_adapter_id: curation-record-v1
 ---
@@ -32,25 +33,25 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Look into this collection again and take one or two represenativ cases but not all of them and only if they make sense
+Look into this collection again and take one or two representative cases but not all of them and only if they make sense
 
-The task type is outdated and might be solver very differently nowadays. Unclear if there are newer tasks like this. 
+The task type is outdated and might be solved very differently nowadays. Unclear if there are newer tasks like this.
 
-If we go for this data, it is unclear which dataset to use, if any of them. In generall, it is weird/old data.
+If we go for this data, it is unclear which dataset to use, if any of them. In general, it is weird/old data.
 
-The task is usually an defect module prediction based on static code features. 
+The task is usually a defect module prediction based on static code features.
 
-CM1: C, NASA spacecraft instrument 
-JM1: C++, simulated real-time predicitve ground system 
-KC1: C==, storage manamgnet and preprocessing ground data
+CM1: C, NASA spacecraft instrument
+JM1: C++, simulated real-time predictive ground system
+KC1: C++, storage management and preprocessing ground data
 KC2: science data processing (overlap with KC1 in terms of team and tools but not in terms of code)
 PC1: flight software for earth orbiting satellite
-(PC2, PC3, PC4, PC5 links to the same paper that introduces PC1 but it is never mentioend)
+(PC2, PC3, PC4, PC5 links to the same paper that introduces PC1 but it is never mentioned)
 (Mc1, Mc2, kc3 missing any source; likely details were on the now gone NASA web page)
-The last paper also points out various issue in the dataset and cleaned the data but finding the cleaned data is also hard
+The last paper also points out various issues in the dataset and cleaned the data but finding the cleaned data is also hard
 
 
-The authors and curators of these datasets also claim not to use learning methods as they severely limit applicability across datasets and management options (?): "Therefore, we recommendagainst using LSR or Model Trees as a basis for locating and choosing detectors." Therefore, we recommend against using J4.8 as a basis for locating and choosing detector"
+The authors and curators of these datasets also claim not to use learning methods as they severely limit applicability across datasets and management options (?): "Therefore, we recommend against using LSR or Model Trees as a basis for locating and choosing detectors." Therefore, we recommend against using J4.8 as a basis for locating and choosing detector"
 
 https://openscience.us/repo/defect/mccabehalsted/
 
@@ -58,7 +59,7 @@ In general, these are all datasets of the same type of features and task
 
 Sometimes, the datasets are also merged: https://www.kaggle.com/datasets/ziya07/software-defect-prediction-dataset (which is not recommended from a task POV)
 
-Finally, there is so much data on these kind of task (as they are somewhat easy to get?) that it is unclear if this should be part of our benchmark or its own thing (see https://arxiv.org/pdf/2504.17977)
+Finally, there is so much data on these kinds of tasks (as they are somewhat easy to get?) that it is unclear if this should be part of our benchmark or its own thing (see https://arxiv.org/pdf/2504.17977)
 
 ## Reference
 

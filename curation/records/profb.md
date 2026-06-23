@@ -8,7 +8,7 @@ collections:
 - TabSTAR
 year: '1992'
 source_links:
-- openml.org/d/470
+- https://www.openml.org/d/470
 - https://lib.stat.cmu.edu/datasets/profb
 source_row: 799
 needs_review:

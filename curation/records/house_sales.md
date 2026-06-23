@@ -18,7 +18,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/harlfoxem/housesalesprediction
-- openml 42731
+- https://www.openml.org/d/42731
 source_row: 721
 type_adapter_id: curation-record-v1
 ---

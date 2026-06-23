@@ -21,10 +21,10 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: ""Data from https://microsoft.github.io/r-server-hospital-length-of-stay/input_data.html
+CC: "Data from https://microsoft.github.io/r-server-hospital-length-of-stay/input_data.html
 
-The original data is likely simulated or created (“synthetic data modeled after real world hospital inpatient records”): https://microsoft.github.io/r-server-hospital-length-of-stay/contents.html?utm_source=chatgpt.com
+The original data is likely simulated or created ("synthetic data modeled after real world hospital inpatient records"): https://microsoft.github.io/r-server-hospital-length-of-stay/contents.html?utm_source=chatgpt.com
 
-Data looks good to use. Good some feature engineering in this version. 
+Data looks good to use. Has some feature engineering in this version.
 
-Unclear how to split, need to check but random might work. Furthermore, the target is kind of weird and might be treated as a different task  or needs scaling""
+Unclear how to split, need to check but random might work. Furthermore, the target is kind of weird and might be treated as a different task or needs scaling"

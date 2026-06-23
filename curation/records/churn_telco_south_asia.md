@@ -26,11 +26,11 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-"operator, with13 features and 2000 records, collected between Aug 2015 to Sep 2015"
+"operator, with 13 features and 2000 records, collected between Aug 2015 to Sep 2015"
 
 "To overcome the class imbalance problem in
 churn data sets, an equal amount of churners and active
-subscribers were collected from the carrier. So the data has50% churner’s information."
+subscribers were collected from the carrier. So the data has 50% churner's information."
 
 ## Reference
 

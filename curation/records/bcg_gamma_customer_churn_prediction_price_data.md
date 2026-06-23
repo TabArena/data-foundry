@@ -23,4 +23,4 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Price data seems to be a forecasting task / scientific discovery task that is independet of the churn data
+Price data seems to be a forecasting task / scientific discovery task that is independent of the churn data

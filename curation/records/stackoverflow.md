@@ -20,4 +20,4 @@ type_adapter_id: curation-record-v1
 
 CC: "A lot of text data; requires heavy feature engineering from user IDs and post ID to useful signal; tags require special preprocessing"
 
-Just a collection of data, not purpose.
+Just a collection of data, no purpose.

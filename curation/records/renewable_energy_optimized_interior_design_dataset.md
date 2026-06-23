@@ -19,6 +19,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Has no source information, otherwise looks slighly fake 
+Has no source information, otherwise looks slightly fake
 
 Note the user is ziya07 as for other fake datasets

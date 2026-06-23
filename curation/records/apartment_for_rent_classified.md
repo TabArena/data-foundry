@@ -12,7 +12,7 @@ tags:
 collections:
 - New (BeyondArena)
 source_links:
-- 10.24432/C5X623
+- https://doi.org/10.24432/C5X623
 - https://www.kaggle.com/datasets/adithyaawati/apartments-for-rent-classified
 source_row: 475
 type_adapter_id: curation-record-v1

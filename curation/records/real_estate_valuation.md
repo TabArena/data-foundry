@@ -20,7 +20,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/477/real+estate+valuation+data+set
-- 10.24432/C5J30W
+- https://doi.org/10.24432/C5J30W
 source_row: 6
 type_adapter_id: curation-record-v1
 ---
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Small data, unsure time horizont, need to get squre foot book to the model
+Small data, unsure time horizon, need to get square foot book to the model
 
 AT: Only 8 time stamps. Also target does not meaningfully vary over time. Rather an IID task. But most importantly, a small dataset like this does not represent real estate prediction
 

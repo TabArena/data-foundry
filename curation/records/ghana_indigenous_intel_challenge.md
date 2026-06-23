@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Need to be african cizizen to accept terms, but license is CC-BY SA 4.0. So technically it would be legal if an african citizen accepts the terms and shares the data with us...
+Need to be African citizen to accept terms, but license is CC-BY SA 4.0. So technically it would be legal if an African citizen accepts the terms and shares the data with us...
 
 10K samples are available, but for this kind of task a lot more data would be beneficial. Nevertheless, the data is still usable
 

@@ -30,13 +30,13 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Solutions used IID version of the data, unclear if this is still the case but this is a forecasting-as-tabular task 
+Solutions used IID version of the data, unclear if this is still the case but this is a forecasting-as-tabular task
 
-But alll solutions also used additonal data that had a leak. Leak should not be a problem for our benchmarking efforts
+But all solutions also used additional data that had a leak. Leak should not be a problem for our benchmarking efforts
 
 I think we can make this a nice split / use it for our setting
 
-a lot of notes on this data....see data foundry. Split must be temporal/grouped. But also we only have 1 year but data was used to forecast 2 years....
+A lot of notes on this data....see data foundry. Split must be temporal/grouped. But also we only have 1 year but data was used to forecast 2 years....
 
 ## Reference
 

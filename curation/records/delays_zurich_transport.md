@@ -21,7 +21,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- openml 40753
+- https://www.openml.org/d/40753
 source_row: 620
 type_adapter_id: curation-record-v1
 ---
@@ -32,11 +32,11 @@ type_adapter_id: curation-record-v1
 
 CC: ">5M samples delay data. Requires temporal split and/or time-invariant feature engineering."
 
-Seems like the data originates from a project from a 2016 Open Data Day Zurich project: https://github.com/OpenDataDayZurich2016/ODDPredictDelays?tab=readme-ov-file
+Seems like the data originates from a 2016 Open Data Day Zurich project: https://github.com/OpenDataDayZurich2016/ODDPredictDelays?tab=readme-ov-file
 
-Could likely get much more data like this by crawling the zurich data website (https://www.stadt-zuerich.ch/opendata)
+Could likely get much more data like this by crawling the Zurich data website (https://www.stadt-zuerich.ch/opendata)
 
-Contains whether features which leak. The sample rate is minutes, but the weather data is aggregated over days
+Contains weather features which leak. The sample rate is minutes, but the weather data is aggregated over days
 
 Could certainly be framed as a tabular data task, but requires work
 

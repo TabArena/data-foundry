@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 created by combining reviews dataset and movie data from an api
 
-Quite the famous RecSys dataset. Not predictive ML task for most parts. Could get more data about moives but would not make the task better?
+Quite the famous RecSys dataset. Not predictive ML task for most parts. Could get more data about movies but would not make the task better?
 
 MovieLens data again, no clear target with predictive relevance outside of weird use cases
 

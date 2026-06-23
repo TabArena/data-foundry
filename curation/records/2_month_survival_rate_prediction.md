@@ -20,7 +20,7 @@ problem_type: TBD
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/880/support2
-- 10.3886/ICPSR02957.v2
+- https://doi.org/10.3886/ICPSR02957.v2
 - https://hbiostat.org/data/
 - https://hbiostat.org/data/repo/supportdesc
 source_row: 687

@@ -13,8 +13,8 @@ collections:
 - TabArena Reject
 - TabSTAR
 source_links:
-- 10.24432/C5WS31
-- openml 40685
+- https://doi.org/10.24432/C5WS31
+- https://www.openml.org/d/40685
 source_row: 543
 type_adapter_id: curation-record-v1
 ---
@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 CC: "UCI says "The examples in the original dataset were in time order, and this time order could presumably be relevant in classification.   However, this was not deemed relevant for StatLog purposes, so the order of the examples in the original dataset was randomised, and a portion of the original dataset removed for validation purposes." Need to check whether there is temporal leakage - Yes there is - clearly trees almost perfectly predict the data"
 
-We dont have temporal indicators, and thus cannot use it for benchmarking?
+We don't have temporal indicators, and thus cannot use it for benchmarking?
 
 Need to see if we can find the original order again
 

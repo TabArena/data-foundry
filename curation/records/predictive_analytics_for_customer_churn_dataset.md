@@ -23,6 +23,6 @@ type_adapter_id: curation-record-v1
 
 " from Data Science Challenge on Coursera"
 
-Data looks fake again, unclear without more informaiton
+Data looks fake again, unclear without more information
 
 Also see discussions on Kaggle. We can assume the data is not real for now

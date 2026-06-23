@@ -34,7 +34,7 @@ task: predict voting participation from a detailed questionnaire.
 
 Data: pre-election interview (features) and a post-election interview (target)
 
-This entry refers to the  February 5, 2026 version.
+This entry refers to the February 5, 2026 version.
 
 ## Reference
 

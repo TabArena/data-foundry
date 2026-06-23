@@ -8,6 +8,7 @@ decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
 - Non-IID (Temporal)
+- Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
 original_source: UCI
@@ -19,7 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/385/kasandr
-- 10.24432/C5PK7M
+- https://doi.org/10.24432/C5PK7M
 source_row: 539
 type_adapter_id: curation-record-v1
 ---

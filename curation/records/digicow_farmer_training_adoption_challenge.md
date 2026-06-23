@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 
 Domain: agriculture
 
-Discussion on possibly leaking features: 
+Discussion on possibly leaking features:
 https://zindi.africa/competitions/digicow-farmer-training-adoption-challenge/discussions/30808
 
 three classification tasks for 7, 90, and 120-day adoption windows. Competition used weighted average of logloss (25%) and ROC-AUC (75%)

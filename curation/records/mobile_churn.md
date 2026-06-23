@@ -28,9 +28,9 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Another case of missing data but data looking very good and real
+Another case of missing data but data looking very good and real.
 
-check year /month and user account id column if temporal or grouped splits are needed
+Check year/month and user account id column if temporal or grouped splits are needed.
 
 ## Reference
 

@@ -24,4 +24,4 @@ type_adapter_id: curation-record-v1
 
 NLP task / data
 
-comment toxicity classification
+Comment toxicity classification

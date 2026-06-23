@@ -21,7 +21,7 @@ required_split:
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
-- 10.24432/C56W3V
+- https://doi.org/10.24432/C56W3V
 - https://www.openml.org/search?type=data&id=23381
 source_row: 560
 type_adapter_id: curation-record-v1
@@ -33,9 +33,9 @@ type_adapter_id: curation-record-v1
 
 CC: "Only 500 instances; Corresponds to a relevant task, but recommendation data used in production is typically much more complex; not a recommender system as no users - only item specific predictions"
 
-This dataset is missing any source information and looking for it, I can also not find more. 
+This dataset is missing any source information and looking for it, I can also not find more.
 
-Moreover, the task seems to be to predict ratings for one user? In general It is a weird data setup and not having the data source makes this even harder to parse
+Moreover, the task seems to be to predict ratings for one user? In general it is a weird data setup and not having the data source makes this even harder to parse
 
 ## Reference
 

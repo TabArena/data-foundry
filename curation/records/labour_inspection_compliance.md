@@ -34,20 +34,20 @@ Labor Rights and Corporate Governance - LICD
 
 Depending on the task, we might not be able to use the free text feature as it is leaking or the target.
 
-Has two targets, need to find original data source; many missing values among some columns, 
+Has two targets, need to find original data source; many missing values among some columns.
 
 "The first case is selecting a relevant labour inspection checklist for
 a given organization. The second case is to predict whether an organization is non-compliant to
 working environment regulations, where selected checklists can be used as independent features"
 
-either many class classificaiton problem (for checklist ID) or compliance prediction problem (binary). Either case, the text cannot be used as it leaking the label>
+Either many-class classification problem (for checklist ID) or compliance prediction problem (binary). Either case, the text cannot be used as it is leaking the label.
 
-You are allowed to use it: "The Non-compliance Classification Problem (NCP): Given a checklist y and a target organisationx, classify the target organisation’s compliance l to any of the regulations given by the content
+You are allowed to use it: "The Non-compliance Classification Problem (NCP): Given a checklist y and a target organisation x, classify the target organisation's compliance l to any of the regulations given by the content
 of y. The value of l is unknown until the completion of the inspection and belongs to a Bernoulli
 distribution where l = 1 means that the target organisation is non-compliant and l = 0 means that
 the organisation is compliant." from https://papers.nips.cc/paper_files/paper/2022/file/93e4d161bdd93d1dc0202b4044159edb-Paper-Datasets_and_Benchmarks.pdf
 
-data is missing timestamps, so it is forced IID task
+Data is missing timestamps, so it is a forced IID task
 
 ## Reference
 

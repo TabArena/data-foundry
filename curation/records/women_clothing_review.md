@@ -23,17 +23,17 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-e-commerce reviews, some anonymization was applied, the company names have been replaced by "retailer"
+E-commerce reviews, some anonymization was applied, the company names have been replaced by "retailer"
 
-Unclear how much NLP vs tabular, very much on the NLP side given its current set of features. 
+Unclear how much NLP vs tabular, very much on the NLP side given its current set of features.
 
-Might need to filter by clothing ID / subgroup of the rating and filter rating of other people. Also weird task to check if the task was recommened as this would have been written in the text most likely and could be parsed, no need to learn across samples. 
+Might need to filter by clothing ID / subgroup of the rating and filter rating of other people. Also weird task to check if the task was recommended as this would have been written in the text most likely and could be parsed, no need to learn across samples.
 
-It seems much closer to a sentiment classification task than something predictive ML. Needs some thought to see if we want to support more. 
+It seems much closer to a sentiment classification task than something predictive ML. Needs some thought to see if we want to support more.
 
-In the paper, they either try to predict the sentiment classification created automatically by another toolkit (thus a bad target). 
+In the paper, they either try to predict the sentiment classification created automatically by another toolkit (thus a bad target).
 
-Or they try to predict review text is a recommendation or not just on the text (no other tabular features, moreover most other tabular features would clearly leak the recommendation) 
-This removes the only potental good targets, and we are left with nothing, so it is an NLP task clearly
+Or they try to predict whether review text is a recommendation or not just on the text (no other tabular features, moreover most other tabular features would clearly leak the recommendation)
+This removes the only potential good targets, and we are left with nothing, so it is an NLP task clearly
 
-review text is long free text, but we might also want to count title as free text, data has been anonymized, references to company have been renamed to "retailer"
+Review text is long free text, but we might also want to count title as free text, data has been anonymized, references to company have been renamed to "retailer"

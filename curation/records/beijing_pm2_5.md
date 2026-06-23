@@ -19,7 +19,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC: "Meterological data from embassy and airport from 2010 to 2014"
+CC: "Meteorological data from embassy and airport from 2010 to 2014"
 
 ## Reference
 

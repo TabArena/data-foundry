@@ -32,9 +32,9 @@ CC: "Dominika: gene-expression profiles from Affymetrix HG-U133A microarrays. Ne
 
 OpenML Rel: https://arxiv.org/abs/2311.12879
 
-Use NCBI source
+Use NCBI source.
 
-Version from NCBI has more columns than on OpenML
+Version from NCBI has more columns than on OpenML.
 
 ## Reference
 

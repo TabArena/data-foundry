@@ -12,7 +12,7 @@ tags:
 collections:
 - TabArena Reject
 source_links:
-- openml 678
+- https://www.openml.org/d/678
 source_row: 80
 type_adapter_id: curation-record-v1
 ---
@@ -21,6 +21,6 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-Visualization dataset, clearly no predictive task, not even for scientific discovery tasks 
+Visualization dataset, clearly no predictive task, not even for scientific discovery tasks
 
-From a book for visualiations, also unclear if predictive task
+From a book for visualizations, also unclear if predictive task

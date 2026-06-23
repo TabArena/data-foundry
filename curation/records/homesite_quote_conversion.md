@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 CC: "Split seems to be random per QuoteNumber sample; feature engineered geographic information as it seems"
 
-This data was used as non-IID by TabRed! IT was non-iid by https://arxiv.org/abs/2407.02112
+This data was used as non-IID by TabRed! It was non-iid by https://arxiv.org/abs/2407.02112
 
 LP: I vote for IID based on the Kaggle discussions on how to do cross-validation, my understanding of the prediction task, and that the test data contains timestamps from the same period as the train. At the same time, the date seems to be a real-world factor that we could introduce for splits and use in such a way. Likely we want to treat it as non-IID
 
