@@ -1,0 +1,136 @@
+# Editable dropdown vocabularies for curation records.
+#
+# Each key is a record field; the list is the set of allowed dropdown values.
+# Add new options here (or via the dashboard) — this file is git-tracked, so
+# changes are reviewable and apply globally. Records may still carry a value
+# not listed here; the importer/validator flags those via `needs_review`.
+#
+# Initial order is by frequency in the original Google Sheet at migration time.
+
+checked_by:
+- Lennart
+- Andrej
+- Mustafa
+- Alex
+- Gioia
+data_foundry_status:
+- 'Yes'
+- Suspended
+- WIP
+- Much work
+suggestion:
+- 'No'
+- TBD -> 2nd Tier
+- 'Yes'
+- TBD -> Yes
+- Disagreement
+decision_markers:
+- Wrong Domain / Source Modality
+- AHDS (Artifical/Handmade/Deterministic/Simulated)
+- Duplicate
+- Missing source information
+- Time-series (Classification)
+- Outdated
+- No Good Target (yet)
+- No Good Target  / Scientific Discovery
+- Data Quality Issue
+- Trivial
+- Image
+- Time-series (Forecasting)
+- NLP (Text)
+- Needs extensive data wrangling
+- Out-of-scope Task (CTR/RecSys/Ranking)
+- Ethical Issue
+- Too Small
+- Not Representative
+- Not Available (from Paper))
+- Data Requested
+- Time-series (Regression)
+- Robotics (RL)
+- Requires split-specific preprocessing
+- TBD
+tags:
+- Non-IID (Temporal)
+- Tiny Data
+- 2nd Tier / Scientfic Discovery
+- New IID
+- Non-IID (Grouped)
+- Larger IID Data
+- Free Text (Short)
+- Free Text (Sentences)
+- Many features
+- '?'
+- Multi-target
+- Many class
+collections:
+- TabArena Reject
+- TabSTAR
+- New
+- New - IST
+- CARTE/TARTE
+- TableShift
+- TexTabBench
+- TabRed
+- FS Benchmark
+- AutoML_MM
+- TexTabBench Extra
+- Vectorizing Strings
+- TabArena Submission
+original_source:
+- Zindi
+- UCI
+- Kaggle
+- Website
+- Other
+- OpenML
+- GOV Website
+- Github
+- Company
+- '?'
+- ASlib
+domain:
+- medical & healthcare
+- business & marketing
+- finance
+- environmental science & climate
+- industry & manufacturing
+- technology & internet
+- biology & life sciences
+- chemistry & material science
+- insurance
+- education
+- social science
+- Other
+- Multimedia (from non-tabular modalities)
+- handcrafted/toy
+- physics & astronomy
+- handcrafted
+- multimedia
+required_split:
+- Random (IID)
+- Temporal (NON-IID)
+- '?'
+- Grouped (NON-IID)
+- Custom
+problem_type:
+- Binary Classification
+- Regression
+- Multiclass Classification
+- TBD
+- Other
+usable_task_type:
+- Predictive ML
+- '?'
+- Unreaonsable as Predictive ML Task
+given_task_type:
+- Predictive ML
+- Scientific Discovery
+- Information Retrieval
+data_modality:
+- Tabular
+- Forecasting
+- Image
+original_data_state:
+- One Table
+- Database (or multiple to-be-joined tables)
+- Other

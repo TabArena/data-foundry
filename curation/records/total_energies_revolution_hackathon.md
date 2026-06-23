@@ -1,0 +1,16 @@
+---
+unique_name: total_energies_revolution_hackathon
+name: total-energies-revolution-hackathon
+tags:
+- Non-IID (Temporal)
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/total-energies-revolution-hackathon/data
+- https://zindi.africa/competitions/total-energies-revolution-hackathon-finals
+source_row: 872
+type_adapter_id: curation-record-v1
+---
+
+# total-energies-revolution-hackathon

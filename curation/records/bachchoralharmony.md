@@ -1,0 +1,19 @@
+---
+unique_name: bachchoralharmony
+name: BachChoralHarmony
+checked_by:
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Wrong Domain / Source Modality
+- Time-series (Classification)
+collections:
+- New
+- TabSTAR
+source_links:
+- 10.24432/C5B61F
+source_row: 319
+type_adapter_id: curation-record-v1
+---
+
+# BachChoralHarmony

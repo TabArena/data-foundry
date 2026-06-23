@@ -1,0 +1,40 @@
+---
+unique_name: mercari_price_suggestion
+name: mercari_price
+checked_by:
+- Lennart
+- Alex
+- Mustafa
+data_foundry_status: 'Yes'
+suggestion: 'Yes'
+tags:
+- Larger IID Data
+- Free Text (Sentences)
+collections:
+- TexTabBench
+- TabSTAR
+original_source: Kaggle
+year: '2017'
+domain: business & marketing
+required_split:
+- Random (IID)
+problem_type: Regression
+usable_task_type: Predictive ML
+given_task_type:
+- Predictive ML
+data_modality:
+- Tabular
+original_data_state: One Table
+source_links:
+- https://www.kaggle.com/datasets/elizabethsam/mercari-price-suggestion-challenge https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/overview
+source_row: 658
+type_adapter_id: curation-record-v1
+---
+
+# mercari_price
+
+## Comments
+
+Mercari(japanese shopping app); a lot of signal from text preprocessing (plus be aware of censoring), maybe create a version after text embeddings to use for benchmarking; likely temporal but all features are IID, so we can use as is; likely many categoricals 
+
+not sure how useful the name is given the existence of the description, also not sure about category it could be split into cateorical columns but would maybe have way too many?

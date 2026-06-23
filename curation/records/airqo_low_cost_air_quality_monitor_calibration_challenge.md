@@ -1,0 +1,13 @@
+---
+unique_name: airqo_low_cost_air_quality_monitor_calibration_challenge
+name: airqo-low-cost-air-quality-monitor-calibration-challenge
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge/data
+source_row: 906
+type_adapter_id: curation-record-v1
+---
+
+# airqo-low-cost-air-quality-monitor-calibration-challenge

@@ -1,0 +1,13 @@
+---
+unique_name: ai_invasion_hackathon_2023
+name: ai-invasion-hackathon-2023
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/ai-invasion-hackathon-2023/data
+source_row: 975
+type_adapter_id: curation-record-v1
+---
+
+# ai-invasion-hackathon-2023

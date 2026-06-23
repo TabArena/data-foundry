@@ -38,10 +38,14 @@ dependencies = [
     "pandas",
     "numpy",
     "pydantic",
+    "pyyaml",
     "uuid6",
     "pyarrow",
     "huggingface_hub",
 ]
+
+[project.scripts]
+data-foundry-curation = "data_foundry.curation.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/TabArena/data-foundry"
@@ -71,6 +75,11 @@ dev = [
 tests = [
     "pytest",
     "scikit-learn",
+]
+curation = [
+    # Optional: publish the flat snapshot to a read-only Google Sheet.
+    # The editing dashboard itself needs no extra dependencies (stdlib server).
+    "gspread",
 ]
 
 [tool.ruff]

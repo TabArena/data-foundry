@@ -1,0 +1,20 @@
+---
+unique_name: womens_mentorship_hackathon
+name: womens-mentorship-hackathon
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/womens-mentorship-hackathon
+- https://zindi.africa/competitions/womens-hackathon
+- https://zindi.africa/competitions/she-solves-hackathon-womens-hack-for-safety
+- https://zindi.africa/competitions/womens-hackathon
+source_row: 1003
+type_adapter_id: curation-record-v1
+---
+
+# womens-mentorship-hackathon
+
+## Comments
+
+predict which women are at highest risk of being made a victim of a crime in South Africa

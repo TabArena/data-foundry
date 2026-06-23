@@ -1,0 +1,23 @@
+---
+unique_name: wikipedia_talk_labels_attacks
+name: WIKIPEDIA_TALK_LABELS_ATTACKS
+checked_by:
+- Lennart
+- Mustafa
+suggestion: 'No'
+decision_markers:
+- Wrong Domain / Source Modality
+- NLP (Text)
+collections:
+- TabSTAR
+source_links:
+- https://www.openml.org/search?type=data&id=46708
+source_row: 247
+type_adapter_id: curation-record-v1
+---
+
+# WIKIPEDIA_TALK_LABELS_ATTACKS
+
+## Comments
+
+NLP task / data

@@ -1,0 +1,13 @@
+---
+unique_name: atf_2023_hackathon
+name: atf-2023-hackathon
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/atf-2023-hackathon/data
+source_row: 955
+type_adapter_id: curation-record-v1
+---
+
+# atf-2023-hackathon

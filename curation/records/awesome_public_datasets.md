@@ -1,0 +1,14 @@
+---
+unique_name: awesome_public_datasets
+name: awesome-public-datasets
+source_links:
+- https://github.com/awesomedata/awesome-public-datasets
+source_row: 1028
+type_adapter_id: curation-record-v1
+---
+
+# awesome-public-datasets
+
+## Comments
+
+List of many datasets and data sources in general

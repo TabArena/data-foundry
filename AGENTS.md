@@ -25,7 +25,13 @@ Data Foundry is the data-layer toolkit behind
   and resolves them against a local warehouse or the BeyondArena Hugging
   Face mirror, with cache + force-download semantics (`collections/`);
 * helpers used by curation notebooks — sanity checks (`dataset_checks.py`)
-  and recommended outer-CV split builders (`curation_recommendations.py`).
+  and recommended outer-CV split builders (`curation_recommendations.py`);
+* a git-native **curation backlog** (`src/data_foundry/curation/`) — one
+  markdown record per candidate dataset under `curation/records/`, with a
+  local editing dashboard, a sheet importer, and a one-way CSV/Sheet exporter.
+  This replaces the legacy curation Google Sheet; `data-foundry-curation -h`
+  lists the CLI (`serve`, `import-sheet`, `validate`, `export`). The editable
+  dropdown vocabularies live in `curation/vocabularies.yaml`.
 
 The actual curation work happens in `datasets/`, which is mostly Jupyter
 notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
@@ -127,6 +133,8 @@ bump versions or publish without explicit human authorization.
 | Repo overview, install, quickstart | [`README.md`](README.md) |
 | Curation contribution flow | [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md) |
 | Schema definitions | [`src/data_foundry/schema.py`](src/data_foundry/schema.py) |
+| Curation backlog (records, dashboard, import/export) | [`src/data_foundry/curation/`](src/data_foundry/curation/) |
+| Curation records + dropdown vocab (data) | [`curation/`](curation) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
 | Notebook scaffolding skill | [`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md) |

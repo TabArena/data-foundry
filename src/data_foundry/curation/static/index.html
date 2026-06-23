@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Data Foundry — Curation</title>
+<link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator_simple.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+<style>
+  :root { --bg:#f7f7f8; --bar:#202b3b; --accent:#2d6cdf; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:13px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:#1c2433; }
+  #bar { background:var(--bar); color:#fff; padding:8px 12px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  #bar b { font-size:14px; }
+  #bar .stat { opacity:.85; font-size:12px; }
+  #bar input[type=text] { padding:5px 8px; border:0; border-radius:5px; min-width:240px; }
+  #bar label { font-size:12px; opacity:.9; display:flex; align-items:center; gap:5px; cursor:pointer; }
+  #bar button { background:var(--accent); color:#fff; border:0; padding:5px 10px; border-radius:5px; cursor:pointer; }
+  #toast { position:fixed; bottom:14px; right:14px; background:#143; color:#fff; padding:8px 12px; border-radius:6px;
+           opacity:0; transition:opacity .25s; pointer-events:none; z-index:50; }
+  #toast.err { background:#922; }
+  #toast.show { opacity:.97; }
+  .chip { display:inline-block; background:#e6edff; color:#23408e; border-radius:10px; padding:1px 7px; margin:1px 2px; font-size:11px; }
+  .chip.warn { background:#ffe3e3; color:#9a2121; }
+  a.src { color:var(--accent); text-decoration:none; }
+  .tabulator-row.tabulator-row-even { background:#fff; }
+  .row-yes { background:#eafaef !important; }
+  .row-suspended { background:#fff5e6 !important; }
+  .row-wip { background:#eef3ff !important; }
+  .tabulator-cell { white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <b>Data Foundry · Curation</b>
+  <span class="stat" id="count"></span>
+  <input type="text" id="search" placeholder="Search name / comments / links …" />
+  <label><input type="checkbox" id="reviewOnly" /> needs review only</label>
+  <label><input type="checkbox" id="dfOnly" /> Data Foundry only</label>
+  <button id="dl">Export CSV</button>
+  <span class="stat">edits autosave to <code>curation/records/&lt;name&gt;.md</code></span>
+</div>
+<div id="grid"></div>
+<div id="toast"></div>
+
+<script>
+let SCHEMA, VOCAB, FIELDS, BY_NAME, table;
+const LINK_FIELDS = new Set();
+
+function toast(msg, err=false){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show' + (err?' err':'');
+  clearTimeout(t._h); t._h = setTimeout(()=> t.className = err?'err':'', 1600);
+}
+
+function chips(cell){
+  const v = cell.getValue() || [];
+  if(!v.length) return '';
+  return v.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('');
+}
+function linksFmt(cell){
+  return String(cell.getValue()||'').split(/\r?\n/).filter(Boolean)
+    .map(u => /^https?:\/\//.test(u) ? `<a class="src" href="${escapeHtml(u)}" target="_blank" rel="noopener">${escapeHtml(u)}</a>` : escapeHtml(u))
+    .join('<br>');
+}
+function reviewFmt(cell){
+  const n = (cell.getRow().getData().needs_review||[]).length;
+  return n ? `<span class="chip warn" title="unmapped: ${(cell.getRow().getData().needs_review||[]).join(', ')}">⚠ ${n}</span>` : '';
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function toRow(rec){
+  const r = Object.assign({}, rec);
+  for(const f of LINK_FIELDS) r[f] = (rec[f]||[]).join('\n');
+  return r;
+}
+
+function columnDefs(){
+  const cols = [
+    { title:'⚠', field:'_review', frozen:true, width:46, headerSort:false, formatter:reviewFmt, headerFilter:false },
+    { title:'unique_name', field:'unique_name', frozen:true, width:180, editor:false, headerFilter:'input' },
+  ];
+  for(const f of FIELDS){
+    const c = { title:f.label, field:f.name, headerTooltip:f.help, resizable:true, headerFilter:'input', width:160 };
+    if(f.name === 'name'){ c.frozen = true; c.width = 200; c.editor = 'input'; }
+    else if(f.kind === 'text'){ c.editor = 'input'; if(f.name==='year') c.width = 80; }
+    else if(f.kind === 'select'){
+      c.editor = 'list';
+      c.editorParams = { values: VOCAB[f.vocab]||[], autocomplete:true, freetext:true, allowEmpty:true, listOnEmpty:true };
+      c.headerFilter = 'list'; c.headerFilterParams = { values: ['', ...(VOCAB[f.vocab]||[])], clearable:true };
+    }
+    else if(f.kind === 'multiselect'){
+      c.editor = 'list';
+      c.editorParams = { values: VOCAB[f.vocab]||[], multiselect:true, autocomplete:true, freetext:true, allowEmpty:true, listOnEmpty:true };
+      c.formatter = chips; c.width = 200;
+      c.headerFilter = 'input';
+      c.headerFilterFunc = (term, _v, data) => (data[f.name]||[]).join(' ').toLowerCase().includes(term.toLowerCase());
+    }
+    else if(f.kind === 'links'){ c.editor = 'textarea'; c.formatter = linksFmt; c.width = 280; c.variableHeight = true; }
+    else if(f.kind === 'body'){ c.editor = 'textarea'; c.width = 320; c.variableHeight = true;
+      c.formatter = cell => escapeHtml(String(cell.getValue()||'')); }
+    cols.push(c);
+  }
+  return cols;
+}
+
+async function registerNew(spec, values){
+  if(!spec.vocab) return;
+  const known = new Set(VOCAB[spec.vocab]||[]);
+  for(const v of values){
+    if(v && !known.has(v)){
+      const res = await fetch('/api/vocab', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({field: spec.vocab, value: v})});
+      const out = await res.json();
+      if(out.values){ VOCAB[spec.vocab] = out.values;
+        table.updateColumnDefinition(spec.name, {editorParams: Object.assign({}, BY_NAME[spec.name]._ep, {values: out.values})}); }
+    }
+  }
+}
+
+async function onEdit(cell){
+  const f = cell.getField();
+  const spec = BY_NAME[f];
+  if(!spec) return;
+  let value = cell.getValue();
+  if(spec.kind === 'links'){ value = String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
+  else if(spec.kind === 'multiselect'){ value = Array.isArray(value) ? value : (value ? [value] : []); }
+  else { if(value === '') value = null; }
+  await registerNew(spec, Array.isArray(value) ? value : (value ? [value] : []));
+  const id = cell.getRow().getData().unique_name;
+  try{
+    const res = await fetch('/api/records/' + encodeURIComponent(id), {method:'PUT',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify({[f]: value})});
+    const updated = await res.json();
+    if(updated.error){ throw new Error(updated.error); }
+    cell.getRow().update({ needs_review: updated.needs_review });
+    toast('Saved ' + id);
+  }catch(e){ toast('Save failed: ' + e.message, true); cell.restoreOldValue(); }
+}
+
+function applyFilters(){
+  const term = document.getElementById('search').value.trim().toLowerCase();
+  const reviewOnly = document.getElementById('reviewOnly').checked;
+  const dfOnly = document.getElementById('dfOnly').checked;
+  table.setFilter(d => {
+    if(reviewOnly && !(d.needs_review||[]).length) return false;
+    if(dfOnly && !d.data_foundry_status) return false;
+    if(term){
+      const hay = [d.unique_name, d.name, d.comments, d.reference, (d.source_links||[]).join(' ')].join(' ').toLowerCase();
+      if(!hay.includes(term)) return false;
+    }
+    return true;
+  });
+  document.getElementById('count').textContent =
+    `${table.getDataCount('active')} / ${table.getDataCount()} shown`;
+}
+
+async function boot(){
+  SCHEMA = await (await fetch('/api/schema')).json();
+  VOCAB = SCHEMA.vocabularies; FIELDS = SCHEMA.fields;
+  BY_NAME = {}; for(const f of FIELDS){ BY_NAME[f.name] = f; if(f.kind==='links') LINK_FIELDS.add(f.name); }
+  const recs = (await (await fetch('/api/records')).json()).map(toRow);
+  const cols = columnDefs();
+  for(const c of cols) if(c.editorParams) BY_NAME[c.field] && (BY_NAME[c.field]._ep = c.editorParams);
+
+  table = new Tabulator('#grid', {
+    data: recs, columns: cols, layout:'fitData', height:'calc(100vh - 46px)',
+    movableColumns:true, reactiveData:false, index:'unique_name',
+    rowFormatter: row => {
+      const s = (row.getData().data_foundry_status||'').toLowerCase();
+      row.getElement().classList.toggle('row-yes', s==='yes');
+      row.getElement().classList.toggle('row-suspended', s==='suspended');
+      row.getElement().classList.toggle('row-wip', s==='wip' || s==='much work');
+    },
+  });
+  table.on('cellEdited', onEdit);
+  table.on('dataFiltered', () => {
+    document.getElementById('count').textContent = `${table.getDataCount('active')} / ${table.getDataCount()} shown`;
+  });
+  table.on('tableBuilt', applyFilters);
+
+  document.getElementById('search').addEventListener('input', applyFilters);
+  document.getElementById('reviewOnly').addEventListener('change', applyFilters);
+  document.getElementById('dfOnly').addEventListener('change', applyFilters);
+  document.getElementById('dl').addEventListener('click', () => table.download('csv', 'curation.csv'));
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+---
+unique_name: ensi_junior_entreprise
+name: ensi-junior-entreprise
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/ensi-junior-entreprise
+source_row: 1002
+type_adapter_id: curation-record-v1
+---
+
+# ensi-junior-entreprise
+
+## Comments
+
+predict weather temperature at any location given by its X and Y coordinates

@@ -1,0 +1,24 @@
+---
+unique_name: first_order_theorem_proving
+name: first-order-theorem-proving
+checked_by:
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Wrong Domain / Source Modality
+- Robotics (RL)
+collections:
+- TabArena Reject
+- TabSTAR
+source_links:
+- openml 1475
+- 10.24432/C5RC9X
+source_row: 425
+type_adapter_id: curation-record-v1
+---
+
+# first-order-theorem-proving
+
+## Comments
+
+CC: "Likely done with something like reinforcement learning or LLMs nowadays, but clearly an unsolved problem. Would need to read the paper; sounds like an algorithm selection problem too"

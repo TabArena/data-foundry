@@ -1,0 +1,17 @@
+---
+unique_name: yassir_eta_prediction_challenge
+name: Yassir ETA Prediction Challenge
+collections:
+- New
+original_source: Zindi
+source_links:
+- https://zindi.africa/competitions/umojahack-south-africa-yassir-eta-prediction-challenge
+source_row: 1026
+type_adapter_id: curation-record-v1
+---
+
+# Yassir ETA Prediction Challenge
+
+## Comments
+
+predict the estimated time of arrival for Algerian ride hailing business Yassir
