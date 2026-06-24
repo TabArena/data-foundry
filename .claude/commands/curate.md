@@ -130,6 +130,18 @@ the dataset **name** alone (e.g. `*-recommendation-challenge`, `*-forecasting-*`
 * **Pure non-tabular modality** where modality models clearly dominate (raw images / audio /
   text) → `Image` / `NLP (Text)` / `Wrong Domain / Source Modality` → usually **No**; vectorized
   features where tabular models are competitive can be in-scope (judge per dataset, crit. 4A).
+  * **Recognition tasks are the leading exception — exclude even when vectorized.** For
+    **image/character/object recognition** problems (handwritten digit/letter recognition, traffic-sign /
+    face / leaf / texture recognition, …) the vision model is the only reasonable choice, so they are
+    correctly `Image` / `Wrong Domain / Source Modality` → **No** *even when the dataset ships as a
+    pre-extracted / vectorized feature table* — the feature vector does **not** make it a tabular task.
+    This family (e.g. `letter`, the `mfeat_*` digit sets, `gina`/`gina_agnostic`, `gtsrb_*`, `optdigits`,
+    `pendigits`, `usps`, `semeion`, `texture`, `one_hundred_plants_*`) has been deliberately and
+    consistently excluded, and those calls are correct. Still a **case-by-case** decision: engineered
+    morphological/spectral/sensor descriptors of a *physical object or process* where tabular models
+    genuinely compete (the kept `wbcatt` is the precedent) stay in-scope — so don't auto-flag every
+    "features extracted from images" record as wrongly rejected; for digit/character-and-similar
+    *recognition*, the answer is almost always exclude.
 * **Re-upload / processed copy of a known dataset** → `Duplicate`. If it is the version we keep,
   it can still be `Yes` (the marker is provenance); if it is redundant, **No** and name it
   `<canonical>_duplicate` (see the `_duplicate` convention enforced in tests).
@@ -210,6 +222,25 @@ auditing, do **not** flag these:
 * **`problem_type`, `required_split`, `original_data_state`, `domain`, `year` are optional metadata**
   (the dashboard's "Optional Tags"). Nice to fill, but their absence — even on an accepted
   dataset — is **not** a problem to flag. Only `suggestion` is required for triage.
+
+### Push back on weak reasoning (you may second-guess a decision)
+
+You are a curator, not a rubber stamp. A decision being *documented* — in a record's `## Comments`,
+a verifier's note, or even the user's stated call — does **not** make it *correct*. When the
+evidence contradicts the stated reasoning, **say so and argue your case** rather than deferring.
+
+* **Argue from what the data *is*** — feature composition, true source, size, the actual target —
+  **not** from how someone might re-solve the broader problem today. (E.g. a task whose features are
+  mostly URL/text tokens + a few geometry numbers is not an "image-recognition" dataset just because
+  the objects pictured were ads; a vision model couldn't even see the dominant features.)
+* **Steelman the existing decision first**, then give a concrete, falsifiable counter-argument
+  (numbers, feature breakdown, what a model can/can't access). Vague disagreement isn't useful;
+  evidence is.
+* **Surface, don't override.** Don't silently flip a human's verdict. Record your counter-argument
+  in the record's `## Comments` under a clear heading (e.g. `**Counter-argument (AI):** …`),
+  leaving the human the final call. If you change a field, follow the `AI (UNVERIFIED)` convention.
+* This cuts both ways: if pushing back means *keeping* an exclusion the user is inclined to overturn,
+  argue that too. The goal is the right call, with the reasoning preserved — not agreement.
 
 ### AI-assisted triage (the `AI (UNVERIFIED)` convention)
 
