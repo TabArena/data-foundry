@@ -3,7 +3,9 @@ unique_name: forensic_glass_identification
 name: glass2
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Outdated

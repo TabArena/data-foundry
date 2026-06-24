@@ -41,6 +41,22 @@ guidelines summarized below.
   `comments`, `reference`, `needs_review`).
 * Editable dropdown options live in `curation/vocabularies.yaml` (add new options
   there, via the dashboard's ＋ header buttons, or with `save_vocabularies`).
+* **The `data_foundry_status` field is a merged multi-tag field** ("Data Foundry" column):
+  it holds the *integration state* (`DF: Yes`, `DF: WIP`, `DF: Much work`, `DF: Suspended`)
+  **and** *benchmark-collection membership* (`TabArena (v0.1)`, `BeyondArena`). Every dataset
+  shipped in a collection (`datasets/_maintenance/_old_collections/tabarena-v0pt1`,
+  `datasets/beyond_iid`) carries its collection tag(s) **plus `DF: Yes`**; there are 51
+  TabArena and 142 BeyondArena (union 144). The `collections` field is now only for *external*
+  benchmarks/collections (TabSTAR, TabRed, CARTE/TARTE, …), not our own.
+* **`DF: Yes` (or any `DF: …`) with NO collection tag is a valid, intentional state**: the dataset
+  is in Data Foundry but **not in a shipped collection** — it lives under `datasets/_maintenance/`
+  (`_deprecated`, `_suspended`, `_out_of_scope/*`) or `datasets/_dev/`. Do **not** "fix" these by
+  adding `BeyondArena`/`TabArena (v0.1)`. Only datasets under `datasets/beyond_iid/` (and the v0.1
+  set) carry a collection tag. See `datasets/_maintenance/_deprecated/README.md`.
+* The records are now the source of truth — the one-off migrations that built them from the
+  legacy sheet / shipped collections (`import-sheet`, `reconcile-tabarena`) have been removed.
+* `curation/_template.md` is a copy-me reference documenting how to fill every field
+  (files starting with `_` in `records/` are skipped by the loader, so it never counts as a dataset).
 * After editing records, sanity-check with `data-foundry-curation validate`.
 
 ## Curation guidelines — read before advising
@@ -110,8 +126,11 @@ record the reasoning in the record's `## Comments` and the `decision_markers`.
 * Leftmost **status** cell encodes priority (⚡ disagreement = purple, ✓ in Data Foundry
   = green, ✗ suggestion No = red, ★ accepted-not-yet-in-DF = blue, ⚠ needs review =
   orange, • other = yellow). Click its header **▾** to filter by status.
-* Top **pills** (Data Foundry / Review needed / Disagreement) are exclusive filters
-  (clicking one resets the others). The **search** box always spans all datasets.
+* Top **pills** (Data Foundry / TabArena / BeyondArena / Review needed / Disagreement)
+  are exclusive filters (clicking one resets the others). All three of **Data Foundry** /
+  **TabArena** / **BeyondArena** read the merged `data_foundry_status` field: **Data Foundry**
+  counts collection membership (TabArena ∪ BeyondArena = 144 shipped datasets), **TabArena** /
+  **BeyondArena** the respective tag. The **search** box always spans all datasets.
 * **📌 pin** (far-left column) keeps a row visible through any filter and sticks it to
   the top while scrolling.
 * Dropdown columns show a **▾** on hover and a **＋** in the header to add a new option;

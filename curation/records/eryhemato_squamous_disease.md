@@ -3,7 +3,9 @@ unique_name: eryhemato_squamous_disease
 name: dermatology
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data

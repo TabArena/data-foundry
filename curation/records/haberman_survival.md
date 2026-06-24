@@ -4,7 +4,8 @@ name: haberman
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Trivial

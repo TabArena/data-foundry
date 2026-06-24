@@ -3,7 +3,8 @@ unique_name: glioblastoma
 name: GBM
 checked_by:
 - Andrej
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: 'Yes'
 tags:
 - Tiny Data

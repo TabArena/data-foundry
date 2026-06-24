@@ -1,9 +1,11 @@
 ---
-unique_name: ghana_indigenous_intel_challenge
+unique_name: ghanas_indigenous_intel
 name: ghana-indigenous-intel-challenge
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Too Small

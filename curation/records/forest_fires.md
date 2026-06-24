@@ -3,7 +3,9 @@ unique_name: forest_fires
 name: forest_fires
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data

@@ -1,28 +1,51 @@
 ---
 unique_name: cardiotocography
-name: cardiotocography
+name: Cardiotocography
 checked_by:
 - Lennart
-suggestion: 'No'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
+suggestion: 'Yes'
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
+tags:
+- Non-IID (Grouped)
 collections:
 - TabArena Reject
-- TabSTAR
+original_source: UCI
+year: '2010'
+domain: medical & healthcare
+required_split:
+- Grouped (NON-IID)
+problem_type: Multiclass Classification
+original_data_state: One Table
 source_links:
-- https://www.openml.org/d/1466
+- https://archive.ics.uci.edu/dataset/193/cardiotocography
 - https://doi.org/10.24432/C51S4N
-source_row: 256
+source_row: 693
 type_adapter_id: curation-record-v1
 ---
 
-# cardiotocography
+# Cardiotocography
 
 ## Comments
 
-CC: "Features extracted from cardiotocograms. Might be done differently nowadays; outdated features"
+The label is the consensus of three experts (so likely noisy).
+
+Can be either 10 or 3 class problem.
+Raw data has dates!
+
+
+From going through the raw data description, it seems one had one or multiple measurements per patient and split it into multiple rows or segments and then created tabular features. Targets can be different per instance. Need to take raw data to get the group IDs.
 
 ## Reference
 
-Ayres de Campos et al. (2000) SisPorto 2.0 A Program for Automated Analysis of Cardiotocograms. J Matern Fetal Med 5:311-318
+@misc{cardiotocography_193,
+  author       = {Campos, D. and Bernardes, J.},
+  title        = {{Cardiotocography}},
+  year         = {2000},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C51S4N}
+}
