@@ -130,18 +130,25 @@ the dataset **name** alone (e.g. `*-recommendation-challenge`, `*-forecasting-*`
 * **Pure non-tabular modality** where modality models clearly dominate (raw images / audio /
   text) → `Image` / `NLP (Text)` / `Wrong Domain / Source Modality` → usually **No**; vectorized
   features where tabular models are competitive can be in-scope (judge per dataset, crit. 4A).
-  * **Recognition tasks are the leading exception — exclude even when vectorized.** For
-    **image/character/object recognition** problems (handwritten digit/letter recognition, traffic-sign /
-    face / leaf / texture recognition, …) the vision model is the only reasonable choice, so they are
-    correctly `Image` / `Wrong Domain / Source Modality` → **No** *even when the dataset ships as a
-    pre-extracted / vectorized feature table* — the feature vector does **not** make it a tabular task.
-    This family (e.g. `letter`, the `mfeat_*` digit sets, `gina`/`gina_agnostic`, `gtsrb_*`, `optdigits`,
-    `pendigits`, `usps`, `semeion`, `texture`, `one_hundred_plants_*`) has been deliberately and
-    consistently excluded, and those calls are correct. Still a **case-by-case** decision: engineered
-    morphological/spectral/sensor descriptors of a *physical object or process* where tabular models
-    genuinely compete (the kept `wbcatt` is the precedent) stay in-scope — so don't auto-flag every
-    "features extracted from images" record as wrongly rejected; for digit/character-and-similar
-    *recognition*, the answer is almost always exclude.
+  * **Features that are an algorithmic vectorization of image/video content → exclude even when the
+    columns are numeric.** If the features are *computed from an image/video to describe its content* —
+    raw pixels, HOG, colour/texture histograms, **or** morphological / geometric / spectral descriptors
+    extracted by a CV / image-analysis pipeline, video-derived kinematics, remote-sensing spectra — then
+    the underlying task is a vision task and a vision model is the natural tool, so it is correctly
+    `Image` / `Wrong Domain / Source Modality` → **No**. The pre-extracted feature vector does **not**
+    make it tabular. This covers both recognition sets (`letter`, `mfeat_*`, `gina`/`gina_agnostic`,
+    `gtsrb_*`, `optdigits`, `pendigits`, `usps`, `semeion`, `texture`, `one_hundred_plants_*`) **and**
+    measured-from-image tables (`magic_gamma_telescope` shower geometry, `wdbc` Xcyt nuclei descriptors,
+    `image_gesture_phase_segmentation` video kinematics, `dry_bean`/`raisin`/`pumpkin_seeds`/`rice`
+    seed-photo morphology, `satimage`/`wilt` remote sensing, `banknote_authentication` wavelet stats).
+  * **Narrow carve-in (stay in-scope):** features that are *not* a vectorization of image content —
+    non-visual metadata (e.g. `internet_advertisements`: URL / anchor / alt-text term tokens) **or
+    human-assigned** semantic/clinical attributes that are themselves the instrument (the kept `wbcatt`;
+    `breast_w`'s 1–10 cytology grades a pathologist assigned by eye). Signals (audio/sonar) are the same
+    call case-by-case: interpretable engineered acoustic *measures* the field uses as the instrument
+    (jitter/shimmer in the shipped Parkinsons voice data) can be in-scope; raw-signal spectral bins lean
+    out. **Decide on the data's actual columns, not the dataset's fame** — "features extracted from
+    images" is the exclude signal, not a thing to auto-flag as wrongly rejected.
 * **Re-upload / processed copy of a known dataset** → `Duplicate`. If it is the version we keep,
   it can still be `Yes` (the marker is provenance); if it is redundant, **No** and name it
   `<canonical>_duplicate` (see the `_duplicate` convention enforced in tests).

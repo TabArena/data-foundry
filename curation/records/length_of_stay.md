@@ -2,13 +2,12 @@
 unique_name: length_of_stay
 name: Length of Stay
 checked_by:
-- AI (UNVERIFIED)
-suggestion: 'No'
+- Lennart
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - 2nd Tier / Scientfic Discovery
-- AI-Filled (Verify)
 collections:
 - New (BeyondArena)
 domain: medical & healthcare
@@ -19,14 +18,10 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/aayushchou/hospital-length-of-stay-dataset-microsoft
 source_row: 826
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
-
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 Microsoft's hospital length-of-stay sample dataset, explicitly described by Microsoft as synthetic data modeled after real-world inpatient records. The record already carries the AHDS decision marker and the curator confirms the source is simulated. Per the selection criteria, artificial/simulated data is excluded as not representative of real tabular ML. The data is clean and the LOS target is reasonable, but its simulated origin is disqualifying. A human could reconsider if a real-data provenance is found, but on current evidence this is a No.
 

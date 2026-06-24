@@ -3,7 +3,7 @@ unique_name: uscrime1978
 name: USCrime1978
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Too Small
 tags:
@@ -26,6 +26,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 The classic US crime dataset (OpenML id 1089) with only 47 samples. Both the TabArena curation verdict and reviewers (Lennart, Andrej) mark it as too small, which is too few for reliable 3-fold CV evaluation. It fails the adequate-size criterion and should be rejected as Too Small; no further verification needed.
+
+**Update (policy):** "Too Small" is no longer a rejection reason — dataset size is assessed *after* Data Foundry processing. Re-classified off No to TBD -> 2nd Tier pending that post-DF size check.
 
 ---
 

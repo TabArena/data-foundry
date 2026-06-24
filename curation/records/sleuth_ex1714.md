@@ -3,7 +3,7 @@ unique_name: sleuth_ex1714
 name: sleuth_ex1714
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Too Small
 tags:
@@ -26,6 +26,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 OpenML 659, a Sleuth statistics-textbook dataset with only 47 samples, far too small for the benchmark's 3-fold CV protocol. The TabArena curation verdict and two reviewers (Lennart, Andrej) already agree it is too small. It is excluded on size; it is one of a family of tiny Sleuth textbook tables.
+
+**Update (policy):** "Too Small" is no longer a rejection reason — dataset size is assessed *after* Data Foundry processing. Re-classified off No to TBD -> 2nd Tier pending that post-DF size check.
 
 ---
 

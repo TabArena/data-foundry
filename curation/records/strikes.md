@@ -5,7 +5,6 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- Too Small
 - No Good Target  / Scientific Discovery
 tags:
 - 2nd Tier / Scientfic Discovery
@@ -34,6 +33,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 The OpenML 'strikes' regression dataset (volume of strikes by country/year, 1951-1985) from a macrosociology study. It is already in the TabArena Reject collection; the curator notes it is an interpretability rather than predictive task, is small, and needs group/time-based splits. The dataset is tiny and tied to a sociological modeling exercise, not representative real-world tabular prediction. Recommend reject, consistent with prior curation.
+
+**Update (policy):** removed the "Too Small" marker — size is not a rejection reason (decided post-Data Foundry); this record stays No on its other ground(s).
 
 ---
 

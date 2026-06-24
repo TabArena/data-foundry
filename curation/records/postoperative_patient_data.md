@@ -3,7 +3,7 @@ unique_name: postoperative_patient_data
 name: postoperative_patient_data
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Too Small
 tags:
@@ -27,6 +27,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 The UCI/PMLB post-operative patient dataset (predicting discharge decision) has only 88 samples. Prior TabArena verdict and both Lennart and Andrej flagged it as too small for the 3-fold CV protocol. With under 90 rows it is unsuitable for reliable benchmarking. Suggest No on size grounds.
+
+**Update (policy):** "Too Small" is no longer a rejection reason — dataset size is assessed *after* Data Foundry processing. Re-classified off No to TBD -> 2nd Tier pending that post-DF size check.
 
 ---
 

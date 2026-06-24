@@ -3,7 +3,7 @@ unique_name: confidence
 name: confidence
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Too Small
 tags:
@@ -27,6 +27,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 PMLB 'confidence' dataset with only 72 samples. Both the prior TabArena verdict and the two named reviewers (Lennart, Andrej) flagged it as too small, and 72 rows is far below what the benchmark's CV protocol can support. There is no path to making this representative at that size. Reject on size; no further verification needed.
+
+**Update (policy):** "Too Small" is no longer a rejection reason — dataset size is assessed *after* Data Foundry processing. Re-classified off No to TBD -> 2nd Tier pending that post-DF size check.
 
 ---
 

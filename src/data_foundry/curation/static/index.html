@@ -205,7 +205,8 @@
     <div class="vrow">Reviewer: <select id="vCurator"></select></div>
     <label class="vagree"><input type="checkbox" id="vAgree" />
       <span>I carefully read this dataset's info (comments, links, AI assessment) and confirm this decision.
-      This removes the &ldquo;AI&nbsp;(UNVERIFIED)&rdquo; flag and records me as the reviewer.</span></label>
+      This removes the &ldquo;AI&nbsp;(UNVERIFIED)&rdquo; flag, records me as the reviewer, and relabels the
+      AI disclaimer as a plain &ldquo;AI summary&rdquo;.</span></label>
     <div class="vactions">
       <button id="vCancel" type="button">Cancel</button>
       <button id="vConfirm" type="button" disabled>✓ Verify</button>
@@ -516,8 +517,18 @@ function openVerifyDialog(row) {
   document.getElementById("verifyOverlay").classList.add("show");
 }
 function closeVerifyDialog() { document.getElementById("verifyOverlay").classList.remove("show"); verifyId = null; }
-// Confirm: drop AI (UNVERIFIED) + the AI-Filled tag, stamp the chosen reviewer. The server
-// recomputes needs_review, so the row leaves the Review queue. (Edit the suggestion first to disagree.)
+// Once a human signs off, the "⚠️ AI-FILLED — UNVERIFIED" disclaimer at the top of the comments is
+// no longer true, so verify relabels just that leading bold block as a plain "**AI summary:**"
+// heading — the AI's assessment and everything below the `---` (human notes) are left untouched.
+const AI_DISCLAIMER_RE = /\*\*[^*]*?AI-FILLED[\s\S]*?\*\*/;
+function relabelAiComments(comments) {
+  return (comments && AI_DISCLAIMER_RE.test(comments))
+    ? comments.replace(AI_DISCLAIMER_RE, "**AI summary:**")
+    : comments;
+}
+// Confirm: drop AI (UNVERIFIED) + the AI-Filled tag, relabel the disclaimer as an AI summary, and
+// stamp the chosen reviewer. The server recomputes needs_review, so the row leaves the Review queue.
+// (Edit the suggestion first to disagree.)
 async function confirmVerify() {
   if (!verifyId) return;
   const me = document.getElementById("vCurator").value;
@@ -527,9 +538,14 @@ async function confirmVerify() {
   const checked_by = (d.checked_by || []).filter(x => x !== "AI (UNVERIFIED)");
   if (!checked_by.includes(me)) checked_by.push(me);
   const tags = (d.tags || []).filter(x => x !== "AI-Filled (Verify)");
+  const comments = relabelAiComments(d.comments);
+  const patch = { checked_by, tags };
+  if (comments !== d.comments) patch.comments = comments;
   try {
-    const updated = await putRecord(verifyId, { checked_by, tags });
-    row.update({ checked_by, tags, needs_review: updated.needs_review });
+    const updated = await putRecord(verifyId, patch);
+    const rowPatch = { checked_by, tags, needs_review: updated.needs_review };
+    if (comments !== d.comments) rowPatch.comments = comments;
+    row.update(rowPatch);
     row.reformat();
     localStorage.setItem("df_curator", me);
     updateCount(); applyFilters();

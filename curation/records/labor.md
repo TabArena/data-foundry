@@ -3,7 +3,7 @@ unique_name: labor
 name: labor
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Too Small
 tags:
@@ -27,6 +27,8 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 The PMLB 'labor' dataset (labor-negotiation contract acceptability) has only 57 rows, which two TabArena curators (Lennart, Andrej) already flagged as too small, especially under 3-fold CV. While it is a genuine real-world tabular classification, it is far below any usable size threshold for the benchmark. Recommend No on size grounds; no further verification needed beyond confirming the 57-row count.
+
+**Update (policy):** "Too Small" is no longer a rejection reason — dataset size is assessed *after* Data Foundry processing. Re-classified off No to TBD -> 2nd Tier pending that post-DF size check.
 
 ---
 
