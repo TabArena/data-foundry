@@ -195,6 +195,22 @@ untriaged → Review queue):
 *accepted* verdict — `Yes` or `Yes (Disagreement)`. Anything else on a shipped record is a
 `ship_conflict` (flagged in the Review queue and asserted in `tests/test_records_integrity.py`).
 
+### Reading markers & optional fields (don't over-flag)
+
+Records are deliberately sparse; a *missing* field is usually fine, not a gap. When reviewing or
+auditing, do **not** flag these:
+
+* **`decision_markers` are issue flags — a clean, good dataset has *none*.** No marker is the
+  expected default and a *positive* signal (a clean, includable dataset); never treat a missing
+  marker as incomplete. A `No` with no marker, or a `Yes` with no marker, can be perfectly correct.
+* **A marker can be a *provisional best-guess* of a potential issue, not a settled verdict.** It's
+  fine for an accepted (`Yes`) dataset to carry e.g. `Trivial` as a "watch out for this"
+  hypothesis; if later evidence shows it isn't actually trivial we rule it out and note that in
+  `## Comments`. So `Yes` + a concern marker is **not** a contradiction — read the comments.
+* **`problem_type`, `required_split`, `original_data_state`, `domain`, `year` are optional metadata**
+  (the dashboard's "Optional Tags"). Nice to fill, but their absence — even on an accepted
+  dataset — is **not** a problem to flag. Only `suggestion` is required for triage.
+
 ### AI-assisted triage (the `AI (UNVERIFIED)` convention)
 
 The AI may draft a *provisional* triage for untriaged records, but it must be **honestly

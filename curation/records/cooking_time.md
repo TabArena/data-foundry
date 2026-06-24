@@ -21,7 +21,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/pcovkrd84mejm/cooking-time
-- https://github.com/yandex-research/tabred/tree/main/preprocessing#delivery-eta
+- https://github.com/yandex-research/tabred/tree/main/preprocessing#cooking-time
 source_row: 712
 type_adapter_id: curation-record-v1
 ---
