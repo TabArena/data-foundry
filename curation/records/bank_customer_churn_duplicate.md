@@ -6,6 +6,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
+- Duplicate
 collections:
 - New (BeyondArena)
 source_links:

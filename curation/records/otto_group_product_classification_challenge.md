@@ -3,7 +3,9 @@ unique_name: otto_group_product_classification_challenge
 name: Otto-Group-Product-Classification-Challenge
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data

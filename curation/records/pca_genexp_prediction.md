@@ -3,7 +3,8 @@ unique_name: pca_genexp_prediction
 name: Prostate
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Too Small

@@ -3,7 +3,9 @@ unique_name: mercedes_benz_greener_manufacturing
 name: Mercedes_Benz_Greener_Manufacturing
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

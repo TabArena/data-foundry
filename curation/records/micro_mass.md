@@ -4,7 +4,9 @@ name: micro-mass
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data

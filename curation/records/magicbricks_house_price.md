@@ -5,7 +5,8 @@ checked_by:
 - Lennart
 - Mustafa
 - Gioia
-data_foundry_status: WIP
+data_foundry_status:
+- 'DF: WIP'
 suggestion: TBD -> Yes
 decision_markers:
 - Data Quality Issue

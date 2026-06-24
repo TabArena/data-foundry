@@ -1,23 +1,37 @@
 ---
 unique_name: give_me_some_credit
-name: Give Me Some Credit
-checked_by:
-- Lennart
-suggestion: 'No'
-decision_markers:
-- Duplicate
-collections:
-- New (BeyondArena)
-- TabSTAR
+name: Give Me Some Credit / credit
+data_foundry_status:
+- 'DF: Yes'
+- TabArena (v0.1)
+- BeyondArena
+suggestion: 'Yes'
+original_source: Kaggle
+year: '2011'
+required_split:
+- Random (IID)
 source_links:
-- https://www.kaggle.com/competitions/GiveMeSomeCredit
-- https://www.openml.org/search?type=data&id=45577
-source_row: 150
+- https://www.openml.org/search?type=data&id=44089
+- https://www.kaggle.com/competitions/GiveMeSomeCredit/overview
 type_adapter_id: curation-record-v1
 ---
 
-# Give Me Some Credit
+# Give Me Some Credit / credit
 
 ## Comments
 
-in TabArena (credit)
+Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.
+
+TabArena curation verdict: Tabular.
+
+Predict credit delay.
+
+Potential issue: -
+
+Lennart: No objection
+
+Andrej: Time-invariant features, may not be representative anymore, but still valid
+
+## Reference
+
+https://www.kaggle.com/competitions/GiveMeSomeCredit/overview

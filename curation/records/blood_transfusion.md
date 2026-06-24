@@ -1,6 +1,6 @@
 ---
 unique_name: blood_transfusion
-name: blood-transfusion-service-center
+name: blood-transfusion-service-center / blood_transfusion
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -17,7 +17,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# blood-transfusion-service-center
+# blood-transfusion-service-center / blood_transfusion
 
 ## Comments
 

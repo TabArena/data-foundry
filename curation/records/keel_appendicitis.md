@@ -3,7 +3,8 @@ unique_name: keel_appendicitis
 name: appendicitis
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Outdated

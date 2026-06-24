@@ -3,7 +3,9 @@ unique_name: rossmann_store_sales
 name: Rossmann Store Sales
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

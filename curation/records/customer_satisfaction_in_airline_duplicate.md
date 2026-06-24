@@ -1,7 +1,9 @@
 ---
 unique_name: customer_satisfaction_in_airline_duplicate
 name: customer_satisfaction_in_airline
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- Duplicate
 original_source: Kaggle
 year: '2023'
 required_split:

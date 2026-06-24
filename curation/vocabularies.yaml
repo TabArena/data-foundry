@@ -6,10 +6,12 @@ checked_by:
 - Gioia
 - AI (UNVERIFIED)
 data_foundry_status:
-- 'Yes'
-- Suspended
-- WIP
-- Much work
+- 'DF: Yes'
+- 'DF: WIP'
+- 'DF: Much work'
+- 'DF: Suspended'
+- TabArena (v0.1)
+- BeyondArena
 suggestion:
 - 'No'
 - TBD -> 2nd Tier

@@ -3,7 +3,8 @@ unique_name: phiusil_phishing
 name: PhiUSIIL Phishing URL (Website)
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: Disagreement
 tags:
 - Larger IID Data

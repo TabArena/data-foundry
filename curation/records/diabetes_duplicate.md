@@ -8,6 +8,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
+- Duplicate
 collections:
 - TexTabBench Extra
 source_links:

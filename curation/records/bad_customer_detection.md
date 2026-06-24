@@ -1,6 +1,6 @@
 ---
 unique_name: bad_customer_detection
-name: Is-this-a-good-customer
+name: Is-this-a-good-customer / bad_customer_detection
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -16,7 +16,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Is-this-a-good-customer
+# Is-this-a-good-customer / bad_customer_detection
 
 ## Comments
 

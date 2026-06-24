@@ -3,7 +3,9 @@ unique_name: santander_customer_transaction_prediction
 name: Santander Customer Transaction Prediction
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data

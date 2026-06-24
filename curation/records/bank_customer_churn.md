@@ -1,6 +1,6 @@
 ---
 unique_name: bank_customer_churn
-name: Bank_Customer_Churn_Dataset
+name: Bank_Customer_Churn_Dataset / bank_customer_churn
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -15,7 +15,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Bank_Customer_Churn_Dataset
+# Bank_Customer_Churn_Dataset / bank_customer_churn
 
 ## Comments
 

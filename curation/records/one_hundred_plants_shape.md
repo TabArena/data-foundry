@@ -1,0 +1,25 @@
+---
+unique_name: one_hundred_plants_shape
+name: one-hundred-plants-shape
+suggestion: 'No'
+decision_markers:
+- Image
+year: '?'
+required_split:
+- '?'
+type_adapter_id: curation-record-v1
+---
+
+# one-hundred-plants-shape
+
+## Comments
+
+Imported from the TabArena curation workbook.
+
+TabArena curation verdict: Image.
+
+Image
+
+Lennart: Image
+
+Andrej: Image

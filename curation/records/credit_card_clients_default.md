@@ -1,6 +1,6 @@
 ---
 unique_name: credit_card_clients_default
-name: Default of Credit Card Clients
+name: Default of Credit Card Clients / credit_card_clients_default
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -15,7 +15,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Default of Credit Card Clients
+# Default of Credit Card Clients / credit_card_clients_default
 
 ## Comments
 

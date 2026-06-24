@@ -4,7 +4,9 @@ name: LICD_LABOR_RIGHTS
 checked_by:
 - Lennart
 - Mustafa
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data

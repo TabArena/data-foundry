@@ -3,7 +3,8 @@ unique_name: ov_ovarian_cancer
 name: OV (ovarian cancer)
 checked_by:
 - Andrej
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: 'Yes'
 tags:
 - Tiny Data

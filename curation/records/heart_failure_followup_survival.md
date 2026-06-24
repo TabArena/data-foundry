@@ -3,7 +3,9 @@ unique_name: heart_failure_followup_survival
 name: Heart Failure Clinical Records
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data

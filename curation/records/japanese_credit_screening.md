@@ -3,7 +3,8 @@ unique_name: japanese_credit_screening
 name: Japanese Credit Screening
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Outdated

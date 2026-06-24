@@ -3,7 +3,9 @@ unique_name: heart_disease_va_long_beach_2
 name: heart_disease_va_long_beach
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Outdated

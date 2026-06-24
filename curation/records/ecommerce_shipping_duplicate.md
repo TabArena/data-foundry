@@ -1,7 +1,9 @@
 ---
 unique_name: ecommerce_shipping_duplicate
 name: E-CommereShippingData
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- Duplicate
 original_source: Kaggle
 year: '2021'
 required_split:

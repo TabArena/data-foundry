@@ -1,7 +1,9 @@
 ---
 unique_name: bad_customer_detection_duplicate
 name: Is-this-a-good-customer
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- Duplicate
 original_source: Kaggle
 year: '2020'
 required_split:

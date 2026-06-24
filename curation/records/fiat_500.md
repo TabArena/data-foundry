@@ -1,6 +1,6 @@
 ---
 unique_name: fiat_500
-name: Another-Dataset-on-used-Fiat-500-(1538-rows)
+name: Another-Dataset-on-used-Fiat-500-(1538-rows) / fiat_500
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -16,7 +16,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Another-Dataset-on-used-Fiat-500-(1538-rows)
+# Another-Dataset-on-used-Fiat-500-(1538-rows) / fiat_500
 
 ## Comments
 

@@ -1,6 +1,6 @@
 ---
 unique_name: ecommerce_shipping
-name: E-CommereShippingData
+name: E-CommereShippingData / ecommerce_shipping
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
@@ -15,7 +15,7 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# E-CommereShippingData
+# E-CommereShippingData / ecommerce_shipping
 
 ## Comments
 

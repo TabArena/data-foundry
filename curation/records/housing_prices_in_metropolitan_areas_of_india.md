@@ -3,7 +3,8 @@ unique_name: housing_prices_in_metropolitan_areas_of_india
 name: Housing Prices in Metropolitan Areas of India
 checked_by:
 - Lennart
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target  / Scientific Discovery

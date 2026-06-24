@@ -3,7 +3,9 @@ unique_name: iranian_churn
 name: Iranian Churn
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - New IID

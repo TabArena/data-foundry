@@ -3,7 +3,9 @@ unique_name: lung_cancer_epithelial_genexp
 name: SMK_CAN_187
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - New IID

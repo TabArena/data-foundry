@@ -3,7 +3,9 @@ unique_name: musk
 name: musk
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: Disagreement
 tags:
 - Tiny Data

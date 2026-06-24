@@ -3,7 +3,9 @@ unique_name: homesite_quote_conversion
 name: Homesite_Quote_Conversion
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data

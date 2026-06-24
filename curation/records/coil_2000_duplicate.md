@@ -1,7 +1,9 @@
 ---
 unique_name: coil_2000_duplicate
 name: Insurance Company Benchmark (COIL 2000)
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- Duplicate
 original_source: UCI
 year: '2000'
 required_split:

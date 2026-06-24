@@ -3,7 +3,8 @@ unique_name: heart_disease_switzerland
 name: heart_disease_switzerland
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Outdated

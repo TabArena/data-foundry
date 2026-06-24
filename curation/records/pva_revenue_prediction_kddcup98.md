@@ -3,7 +3,9 @@ unique_name: pva_revenue_prediction_kddcup98
 name: KDD98
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data
