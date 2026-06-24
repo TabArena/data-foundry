@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>TabArena — Curation Guidelines</title>
 <style>
-  :root { --bar:#202b3b; --accent:#2d6cdf; --ink:#27313f; --muted:#5b6573; }
+  :root { --bar:#1e1b4b; --accent:#4f46e5; --ink:#27313f; --muted:#5b6573; }
   * { box-sizing: border-box; }
   body { margin:0; font:15px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#27313f; background:#f4f6f9; }
-  header { background:linear-gradient(90deg,#1b2738,#26374f); color:#fff; padding:12px 22px; position:sticky; top:0; z-index:5;
-           display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
-  header .logo { background:#3b6fe0; font-weight:800; border-radius:7px; padding:5px 7px; letter-spacing:.5px; }
+  header { background:linear-gradient(110deg,#1a1452 0%,#2b2f96 38%,#1d4ed8 100%); color:#fff; padding:12px 22px; position:sticky; top:0; z-index:5;
+           display:flex; align-items:center; gap:18px; flex-wrap:wrap; border-bottom:1px solid #ffffff22; box-shadow:0 4px 18px -8px rgba(37,99,235,.5); }
+  header .logo { background:linear-gradient(135deg,#7c3aed,#2563eb); font-weight:800; border-radius:7px; padding:5px 7px; letter-spacing:.5px; box-shadow:0 2px 6px rgba(124,58,237,.45); }
   header .t { font-weight:700; font-size:16px; }
   header .s { font-size:11px; opacity:.6; text-transform:uppercase; letter-spacing:.06em; }
   header .back { margin-left:auto; color:#cfe0ff; text-decoration:none; font-size:13px; border:1px solid #ffffff30; padding:6px 12px; border-radius:7px; }
@@ -23,7 +23,7 @@
   h1 { font-size:26px; margin:.2em 0 .1em; }
   h2 { font-size:20px; margin:1.6em 0 .4em; padding-top:.3em; border-top:1px solid #e6eaef; }
   h2:first-of-type { border-top:0; }
-  h3 { font-size:15px; margin:1.2em 0 .3em; color:#1f3b78; }
+  h3 { font-size:15px; margin:1.2em 0 .3em; color:#3730a3; }
   p, li { color:#2b3543; }
   ul, ol { padding-left:22px; }
   li { margin:.25em 0; }
@@ -46,6 +46,7 @@
 <div class="tabs">
   <button id="tab-btn-main" class="active" onclick="showTab('main')">Guidelines</button>
   <button id="tab-btn-proc" onclick="showTab('proc')">Dataset Processing (extended)</button>
+  <button id="tab-btn-flow" onclick="showTab('flow')">Curation log &amp; workflow</button>
 </div>
 
 <main>
@@ -53,6 +54,24 @@
   <h1>Curation Guidelines</h1>
   <p class="lede">How we decide whether a dataset belongs in TabArena, and how we curate the ones we keep.
   This is the working reference for the curation log on the previous page.</p>
+
+  <div class="callout">
+    <h3>Scope at a glance</h3>
+    <p><strong>We include</strong> real-world <strong>tabular</strong> datasets published for a
+    <strong>predictive</strong> classification or regression task, where a random (IID), temporal, or
+    grouped split is the appropriate protocol and tabular models are competitive.</p>
+    <p><strong>We exclude</strong>:</p>
+    <ul>
+      <li>time-series <em>forecasting</em>;</li>
+      <li>recommendation / ranking / click-through-rate / information-retrieval tasks;</li>
+      <li>non-predictive scientific-discovery or survey tables;</li>
+      <li>non-tabular modality data (image / text / audio) where modality-specific models clearly win;</li>
+      <li>artificial / deterministic / simulated data;</li>
+      <li>trivial tasks, irreversible data-quality issues or target leakage, and duplicates / re-uploads;</li>
+      <li>anything with ethical concerns.</li>
+    </ul>
+    <p style="margin-bottom:0"><em>The sections below give the full criteria and the reasoning behind each call.</em></p>
+  </div>
 
   <h2>1 · Background: IID and non-IID tabular data</h2>
   <p>We use an <strong>application-dependent</strong> definition of IID and non-IID data. Whether a dataset is
@@ -134,6 +153,22 @@
     is an original contribution). Sometimes trivial; sometimes it requires prolonged investigation — comparing data
     statistics and comparing against popular datasets from the same domain. When the source stays unclear after a
     thorough check, the curator team uses subjective judgment to assess authenticity and uniqueness.</p>
+    <p><strong>How to check for duplicates (recommended).</strong> The reliable signal is the
+    <em>original source</em>, not the data layout — two uploads can have different column names, dtypes,
+    row counts, or preprocessing and still be the same dataset. So:</p>
+    <ul>
+      <li>compare the <strong>versions and all links</strong> of the candidates (OpenML ids, Kaggle,
+      UCI/DOI, GitHub, the originating paper) — overlap in any canonical link is a strong signal;</li>
+      <li><strong>follow each link to its origin</strong> — a Kaggle/OpenML page usually references an
+      upstream source; two records that bottom out at the same source are duplicates even when their
+      direct links differ;</li>
+      <li><strong>spot-check by name and rough field structure</strong> against datasets you already
+      know, to recognise a re-upload under a new name (and rule out false matches).</li>
+    </ul>
+    <p>Rule of thumb: duplicates almost always <strong>share the same source</strong> even if the data
+    structure differs — shared provenance is strong evidence, a structural diff is weak. Conversely,
+    two records that merely share a source can be <em>legitimately distinct</em> tasks (e.g. a dataset
+    and its telemonitoring/temporal variant) — the record's comments are authoritative.</p>
   </div>
   <div class="crit">
     <h3>IID and non-IID tabular datasets</h3>
@@ -222,14 +257,58 @@
 
   <p class="src">Adapted from the TabArena paper — Appendix B.3 (details on dataset processing). Citations omitted.</p>
 </section>
+
+<section id="tab-flow" hidden>
+  <h1>Curation log &amp; workflow</h1>
+  <p class="lede">How the curation log on the previous page works — the states, the AI-assisted triage,
+  and the human verification step.</p>
+
+  <h2>One record per dataset</h2>
+  <p>Each candidate dataset is a single markdown record (structured front-matter + free-text comments)
+  under <code>curation/records/</code>, edited by hand or in the dashboard. Curators triage the backlog,
+  commit, and open a PR; the dashboard edits the same files in place, so every change is a reviewable diff.</p>
+
+  <h2>Suggestion states</h2>
+  <ul>
+    <li><code>Yes</code> — include; <code>TBD -&gt; Yes</code> — likely include, pending verification.</li>
+    <li><code>TBD -&gt; 2nd Tier</code> — plausible but secondary; <code>No</code> — exclude.</li>
+    <li><code>Disagreement</code> — curators genuinely disagree; not yet shipped, needs resolution.</li>
+    <li><code>Yes (Disagreement)</code> — <strong>shipped on purpose, but with an open disagreement to
+    re-evaluate</strong>; counts as accepted, but stays visible under the ⚡ Disagreement filter.</li>
+  </ul>
+
+  <h2>Decision markers</h2>
+  <p><code>decision_markers</code> flag <em>issues</em> (duplicate, trivial, leakage, out-of-scope, …).
+  A clean, includable dataset usually has <strong>none</strong> — their absence is the normal, good
+  state. A marker can also be a <em>provisional best-guess</em> of a concern, to confirm or rule out
+  later (recorded in the comments), so an accepted dataset may still carry a watch-item marker.</p>
+
+  <h2>AI-assisted triage &amp; verification</h2>
+  <p>An AI assistant can draft a provisional triage for untriaged datasets — a suggestion, justified
+  markers, and a written assessment — labelled <code>AI (UNVERIFIED)</code> and shown with a 🤖 status.
+  These stay in the <strong>Review</strong> queue until a human reads the record and verifies it (the
+  ✓ action), which records the curator as reviewer and clears the unverified flag. The AI never has the
+  final say; every decision is human-verified.</p>
+
+  <div class="callout">
+    <h3>For AI / agent contributors</h3>
+    <p>The full agentic curation brief — how an assistant should triage, the decision patterns, and the
+    duplicate-checking method — lives in the repo as a skill:
+    <a href="https://github.com/TabArena/data-foundry/blob/main/.claude/commands/curate.md" target="_blank" rel="noopener"><code>.claude/commands/curate.md</code></a>
+    (the <code>/curate</code> slash command).</p>
+  </div>
+
+  <p class="src">Operational reference for the curation dashboard; see the <strong>Guidelines</strong>
+  tab for the selection criteria.</p>
+</section>
 </main>
 
 <script>
 function showTab(which) {
-  document.getElementById("tab-main").hidden = which !== "main";
-  document.getElementById("tab-proc").hidden = which !== "proc";
-  document.getElementById("tab-btn-main").classList.toggle("active", which === "main");
-  document.getElementById("tab-btn-proc").classList.toggle("active", which === "proc");
+  for (const t of ["main", "proc", "flow"]) {
+    document.getElementById("tab-" + t).hidden = which !== t;
+    document.getElementById("tab-btn-" + t).classList.toggle("active", which === t);
+  }
   window.scrollTo(0, 0);
 }
 </script>

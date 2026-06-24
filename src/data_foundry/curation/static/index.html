@@ -7,18 +7,23 @@
 <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator_simple.min.css" rel="stylesheet" />
 <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
 <style>
-  :root { --bg:#f7f7f8; --bar:#202b3b; --accent:#2d6cdf; }
+  :root { --bg:#f5f6fb; --bar:#1e1b4b; --accent:#4f46e5; }
   * { box-sizing: border-box; }
   body { margin:0; font:13px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:#1c2433; }
-  #bar { background:linear-gradient(90deg,#1b2738,#26374f); color:#fff; padding:9px 16px; display:flex; align-items:center; gap:16px; }
+  #bar { background:linear-gradient(110deg,#1a1452 0%,#2b2f96 38%,#1d4ed8 100%); color:#fff; padding:9px 16px; display:flex; align-items:center; gap:16px; border-bottom:1px solid #ffffff22; box-shadow:0 4px 18px -8px rgba(37,99,235,.5); }
   #bar .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; cursor:pointer; }
-  #bar .brand:hover .logo { background:#5b86ea; }
+  #bar .brand:hover .logo { filter:brightness(1.14); }
   #bar .brand:hover .t { text-decoration:underline; }
-  #bar .brand .logo { background:#3b6fe0; color:#fff; font-weight:800; font-size:13px; border-radius:7px; padding:5px 7px; letter-spacing:.5px; }
+  #bar .brand .logo { background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; font-weight:800; font-size:13px; border-radius:7px; padding:5px 7px; letter-spacing:.5px; box-shadow:0 2px 6px rgba(124,58,237,.45); }
   #bar .brand .t { font-weight:700; font-size:15px; }
   #bar .brand .s { font-size:10.5px; opacity:.6; margin-top:-1px; text-transform:uppercase; letter-spacing:.06em; }
   #bar .guide-btn { color:#fff; text-decoration:none; font-size:13px; border:1px solid #ffffff2e; background:#ffffff12; padding:6px 11px; border-radius:8px; white-space:nowrap; }
   #bar .guide-btn:hover { border-color:#ffffff70; }
+  #bar button.guide-btn { font:inherit; cursor:pointer; }
+  .vdialog p { font-size:13px; color:#27313f; margin:8px 0; }
+  .vdialog ul { font-size:13px; padding-left:20px; margin:6px 0; }
+  .vdialog li { margin:3px 0; }
+  .vdialog a { color:#2d6cdf; }
   #bar .search-wrap { flex:0 1 300px; }
   #bar .search-wrap input { width:100%; padding:7px 11px; border:1px solid #ffffff26; border-radius:8px; background:#ffffff14; color:#fff; font-size:13px; }
   #bar .search-wrap input::placeholder { color:#ffffff80; }
@@ -165,6 +170,7 @@
 <div id="bar">
   <a class="brand" href="https://github.com/TabArena/data-foundry" target="_blank" rel="noopener" title="Open the Data Foundry repository on GitHub"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></a>
   <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
+  <button class="guide-btn" id="aboutBtn" type="button" title="About this page — context, goals, and links">ℹ About</button>
   <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
   <span class="hint" id="count"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
@@ -204,6 +210,28 @@
       <button id="vCancel" type="button">Cancel</button>
       <button id="vConfirm" type="button" disabled>✓ Verify</button>
     </div>
+  </div>
+</div>
+
+<div id="aboutOverlay" class="voverlay">
+  <div class="vdialog">
+    <h3>About — Data Foundry curation</h3>
+    <p>This page is the <strong>curation log</strong> behind <strong>TabArena</strong> and
+    <strong>BeyondArena</strong>: one record per candidate tabular dataset, tracking whether it
+    belongs in the benchmark, why, how it should be split, and how it is processed. Curators triage
+    the backlog here (edit → commit → PR); an AI assistant can draft a <em>provisional</em> triage
+    (🤖) that a human then verifies.</p>
+    <p><strong>Goal:</strong> assemble a high-quality, representative collection of real-world tabular
+    ML tasks for an open, living benchmark — and keep the curation reasoning transparent and reproducible.</p>
+    <p><strong>Links</strong></p>
+    <ul>
+      <li><a href="https://tabarena.ai" target="_blank" rel="noopener">tabarena.ai</a> — the living benchmark &amp; leaderboard</li>
+      <li><a href="https://github.com/TabArena/data-foundry" target="_blank" rel="noopener">github.com/TabArena/data-foundry</a> — this curation toolkit</li>
+      <li><a href="https://github.com/TabArena" target="_blank" rel="noopener">github.com/TabArena</a> — our broader efforts</li>
+      <li><a href="guidelines.html" target="_blank" rel="noopener">Curation guidelines</a> ·
+          <a href="https://github.com/TabArena/data-foundry/blob/main/.claude/commands/curate.md" target="_blank" rel="noopener">agentic curation skill</a> (the <code>/curate</code> command)</li>
+    </ul>
+    <div class="vactions"><button id="aboutClose" type="button">Close</button></div>
   </div>
 </div>
 
@@ -432,9 +460,10 @@ function openStatusMenu(e) {
   menu.style.top = rect.bottom + "px";
   menu.classList.add("show");
 }
-// Sort order for the leftmost status column: action-needed states first, rejected
-// last (Tabulator reverses this for the descending click).
-const STATUS_RANK = ["⚡", "🤖", "⚠", "★", "•", "✓", "✗"];
+// Default sort order for the leftmost status column: accepted / in-Data-Foundry first, then the
+// attention states (AI-reviewed, disagreement, needs-review), then other, with rejected last
+// (Tabulator reverses this for the descending click).
+const STATUS_RANK = ["✓", "★", "🤖", "⚡", "⚠", "•", "✗"];
 function statusSorter(_a, _b, aRow, bRow) {
   return STATUS_RANK.indexOf(rowStatus(aRow.getData()).m) - STATUS_RANK.indexOf(rowStatus(bRow.getData()).m);
 }
@@ -814,7 +843,7 @@ async function boot() {
     // of screens). Raise it for smoother scroll at the cost of startup, lower it for faster start.
     renderVerticalBuffer: 3000,
     movableColumns: true, index: "unique_name",
-    initialSort: [{ column: "_status", dir: "asc" }],  // group by status on load (disagreements first)
+    initialSort: [{ column: "_status", dir: "asc" }],  // group by status on load (accepted / in Data Foundry first)
     rowFormatter: row => {
       const p = row.getPosition(true);
       const el = row.getElement();
@@ -865,6 +894,10 @@ async function boot() {
   document.getElementById("vCurator").addEventListener("change", syncVConfirm);
   document.getElementById("vAgree").addEventListener("change", syncVConfirm);
   document.getElementById("verifyOverlay").addEventListener("click", e => { if (e.target.id === "verifyOverlay") closeVerifyDialog(); });
+  // about dialog
+  document.getElementById("aboutBtn").addEventListener("click", () => document.getElementById("aboutOverlay").classList.add("show"));
+  document.getElementById("aboutClose").addEventListener("click", () => document.getElementById("aboutOverlay").classList.remove("show"));
+  document.getElementById("aboutOverlay").addEventListener("click", e => { if (e.target.id === "aboutOverlay") document.getElementById("aboutOverlay").classList.remove("show"); });
 }
 boot();
 </script>
