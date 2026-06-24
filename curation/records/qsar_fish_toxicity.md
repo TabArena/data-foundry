@@ -1,6 +1,9 @@
 ---
 unique_name: qsar_fish_toxicity
 name: QSAR_fish_toxicity
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

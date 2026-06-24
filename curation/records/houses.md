@@ -1,6 +1,9 @@
 ---
 unique_name: houses
 name: houses
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

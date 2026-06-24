@@ -1,6 +1,9 @@
 ---
 unique_name: bad_customer_detection
 name: Is-this-a-good-customer / bad_customer_detection
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

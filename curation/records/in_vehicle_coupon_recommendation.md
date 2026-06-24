@@ -1,6 +1,9 @@
 ---
 unique_name: in_vehicle_coupon_recommendation
 name: in_vehicle_coupon_recommendation
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

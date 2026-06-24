@@ -1,6 +1,9 @@
 ---
 unique_name: predict_students_dropout_and_academic_success
 name: predict_students_dropout_and_academic_success
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

@@ -1,6 +1,9 @@
 ---
 unique_name: concrete_compressive_strength
 name: concrete_compressive_strength
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

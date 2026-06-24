@@ -1,6 +1,9 @@
 ---
 unique_name: customer_satisfaction_in_airline
 name: customer_satisfaction_in_airline
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

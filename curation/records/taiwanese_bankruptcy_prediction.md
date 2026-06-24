@@ -1,6 +1,9 @@
 ---
 unique_name: taiwanese_bankruptcy_prediction
 name: company_bankruptcy_prediction / taiwanese_bankruptcy_prediction
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

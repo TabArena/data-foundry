@@ -1,6 +1,9 @@
 ---
 unique_name: jm1
 name: jm1
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

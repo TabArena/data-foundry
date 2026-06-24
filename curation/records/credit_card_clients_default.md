@@ -1,6 +1,9 @@
 ---
 unique_name: credit_card_clients_default
 name: Default of Credit Card Clients / credit_card_clients_default
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

@@ -1,6 +1,9 @@
 ---
 unique_name: kdd_cup_09_appetency
 name: KDDCup09_appetency
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

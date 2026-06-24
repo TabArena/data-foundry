@@ -1,6 +1,9 @@
 ---
 unique_name: hr_analytics
 name: HR_Analytics_Job_Change_of_Data_Scientists / hr_analytics
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

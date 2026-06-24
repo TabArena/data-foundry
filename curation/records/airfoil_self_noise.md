@@ -1,6 +1,9 @@
 ---
 unique_name: airfoil_self_noise
 name: airfoil_self_noise
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

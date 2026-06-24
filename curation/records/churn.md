@@ -1,6 +1,9 @@
 ---
 unique_name: churn
 name: churn
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

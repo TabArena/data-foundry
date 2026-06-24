@@ -1,6 +1,9 @@
 ---
 unique_name: fitness_club
 name: Fitness_Club_c / fitness_club
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

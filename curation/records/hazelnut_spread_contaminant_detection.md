@@ -1,6 +1,9 @@
 ---
 unique_name: hazelnut_spread_contaminant_detection
 name: Contaminant-detection-in-packaged-cocoa-hazelnut-spread-jars-using-Microwaves-Sensing-and-Machine-Learning-10.0GHz(Urbinati) / hazelnut_spread_contaminant_detection
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

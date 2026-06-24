@@ -1,6 +1,9 @@
 ---
 unique_name: qsar_tid_11
 name: QSAR-TID-11
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

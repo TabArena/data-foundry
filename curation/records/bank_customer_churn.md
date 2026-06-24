@@ -1,6 +1,9 @@
 ---
 unique_name: bank_customer_churn
 name: Bank_Customer_Churn_Dataset / bank_customer_churn
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

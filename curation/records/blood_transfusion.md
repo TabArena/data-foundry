@@ -1,6 +1,9 @@
 ---
 unique_name: blood_transfusion
 name: blood-transfusion-service-center / blood_transfusion
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

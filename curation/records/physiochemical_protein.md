@@ -1,6 +1,9 @@
 ---
 unique_name: physiochemical_protein
 name: physiochemical_protein
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

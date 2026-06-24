@@ -1,6 +1,9 @@
 ---
 unique_name: give_me_some_credit
 name: Give Me Some Credit / credit
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

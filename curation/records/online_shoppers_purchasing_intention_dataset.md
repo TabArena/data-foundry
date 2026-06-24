@@ -1,6 +1,9 @@
 ---
 unique_name: online_shoppers_purchasing_intention_dataset
 name: Online Shoppers Purchasing Intention Dataset
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

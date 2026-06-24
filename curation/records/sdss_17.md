@@ -1,6 +1,9 @@
 ---
 unique_name: sdss_17
 name: SDSS17
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

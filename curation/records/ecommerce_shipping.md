@@ -1,6 +1,9 @@
 ---
 unique_name: ecommerce_shipping
 name: E-CommereShippingData / ecommerce_shipping
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

@@ -1,6 +1,9 @@
 ---
 unique_name: healthcare_insurance_expenses
 name: healthcare_insurance_expenses
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

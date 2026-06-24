@@ -1,6 +1,9 @@
 ---
 unique_name: miami_housing
 name: miami_housing
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

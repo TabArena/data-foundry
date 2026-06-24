@@ -1,6 +1,9 @@
 ---
 unique_name: naticusdroid_android_permissions_dataset
 name: naticusdroid+android+permissions+dataset
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

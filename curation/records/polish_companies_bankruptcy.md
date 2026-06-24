@@ -1,6 +1,9 @@
 ---
 unique_name: polish_companies_bankruptcy
 name: Polish Companies Bankruptcy
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

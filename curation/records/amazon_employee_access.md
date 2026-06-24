@@ -1,6 +1,9 @@
 ---
 unique_name: amazon_employee_access
 name: Amazon_employee_access
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

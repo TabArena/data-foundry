@@ -1,6 +1,9 @@
 ---
 unique_name: diabetes_130_us
 name: Diabetes130US
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

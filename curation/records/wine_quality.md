@@ -1,6 +1,9 @@
 ---
 unique_name: wine_quality
 name: wine_quality
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

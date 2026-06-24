@@ -1,6 +1,9 @@
 ---
 unique_name: fiat_500
 name: Another-Dataset-on-used-Fiat-500-(1538-rows) / fiat_500
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)

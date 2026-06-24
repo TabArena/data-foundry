@@ -1,6 +1,9 @@
 ---
 unique_name: credit_g
 name: credit-g
+checked_by:
+- Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
