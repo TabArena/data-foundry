@@ -29,8 +29,6 @@ source_row: 481
 type_adapter_id: curation-record-v1
 ---
 
-# Coffee_Data_CoffeeReview
-
 ## Comments
 
 Just coffee reviews and features; est price needs adjustment and preprocessing, might have temporal drift due to review time; multiple descriptions, of which some are duplicated? All text as well which was used for parsing; kind of a well-defined task.

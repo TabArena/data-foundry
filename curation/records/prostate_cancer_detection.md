@@ -25,8 +25,6 @@ source_row: 1036
 type_adapter_id: curation-record-v1
 ---
 
-# NCI prostate cancer data
-
 ## Comments
 
 CC: "Link provided in the survey are outdated, I think I found another version. D: Downloadable under low resolution seldi-tof datasets. The number of csv files matches the number of samples so we just need to merge everything into one table. Classes are given in folder names"

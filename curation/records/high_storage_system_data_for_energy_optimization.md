@@ -14,8 +14,6 @@ source_row: 728
 type_adapter_id: curation-record-v1
 ---
 
-# High Storage System Data for Energy Optimization
-
 ## Comments
 
 Anomaly detection task, could be framed as classification, unsure

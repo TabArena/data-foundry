@@ -17,8 +17,6 @@ source_row: 640
 type_adapter_id: curation-record-v1
 ---
 
-# WBCAtt
-
 ## Comments
 
 All features from the tabular OpenML version are TARGETS of the images

@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Customer Segmentation Data
-
 ## Comments
 
 Unclear if data is real, distributions seem very weird and too equal

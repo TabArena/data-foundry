@@ -24,8 +24,6 @@ source_row: 650
 type_adapter_id: curation-record-v1
 ---
 
-# Santander Customer Transaction Prediction
-
 ## Comments
 
 CC: "Interesting dataset, but not on OpenML. License allows to use the data for research, but not distribute it - so we have an API issue."

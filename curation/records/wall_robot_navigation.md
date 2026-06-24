@@ -16,8 +16,6 @@ source_row: 361
 type_adapter_id: curation-record-v1
 ---
 
-# wall-robot-navigation
-
 ## Comments
 
 CC: "Solved differently nowadays, spatial, temporal problems. RL problem and not tabular"

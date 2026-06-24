@@ -18,8 +18,6 @@ source_row: 627
 type_adapter_id: curation-record-v1
 ---
 
-# Childhood Lead
-
 ## Comments
 
 "task is to identify whether a respondents' blood level exceeds the BLRV using only questionnaire data." -> questionable setup due to having it at the same time, but fair to build as a task

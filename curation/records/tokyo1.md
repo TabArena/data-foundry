@@ -22,8 +22,6 @@ source_row: 548
 type_adapter_id: curation-record-v1
 ---
 
-# tokyo1
-
 ## Comments
 
 CC: "Server performance data. Temporal data. Would require time split; weirdly little amount of samples for data from every 5 secs"

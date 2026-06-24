@@ -14,8 +14,6 @@ source_row: 128
 type_adapter_id: curation-record-v1
 ---
 
-# Stellar Classification Dataset - SDSS17
-
 ## Comments
 
 In TabArena ("SDSS17")

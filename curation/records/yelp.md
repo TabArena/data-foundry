@@ -17,8 +17,6 @@ source_row: 492
 type_adapter_id: curation-record-v1
 ---
 
-# Yelp
-
 ## Comments
 
 A bunch of data from Yelp, no real information/features besides entity matching again

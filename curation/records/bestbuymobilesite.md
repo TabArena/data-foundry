@@ -14,8 +14,6 @@ source_row: 327
 type_adapter_id: curation-record-v1
 ---
 
-# bestbuymobilesite
-
 ## Comments
 
 Again RecSys task with high-categorical, almost no other features with predictive signal but interactions

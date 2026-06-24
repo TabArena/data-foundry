@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# InstaDeep Kinase Classification Challenge
-
 ## Comments
 
 Predict the class of a protein kinase enzyme using only its amino acid sequence

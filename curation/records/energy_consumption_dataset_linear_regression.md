@@ -14,8 +14,6 @@ source_row: 169
 type_adapter_id: curation-record-v1
 ---
 
-# Energy Consumption Dataset - Linear Regression
-
 ## Comments
 
 "This dataset was synthetically generated to simulate "

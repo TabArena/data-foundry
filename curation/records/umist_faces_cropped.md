@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# UMIST_Faces_Cropped
-
 ## Comments
 
 Imported from the TabArena curation workbook.

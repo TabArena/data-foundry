@@ -14,5 +14,3 @@ source_links:
 source_row: 308
 type_adapter_id: curation-record-v1
 ---
-
-# Open Power System Data (OPSD)

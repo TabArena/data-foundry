@@ -17,8 +17,6 @@ source_row: 142
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Risk Dataset
-
 ## Comments
 
 "This dataset contains columns simulating credit bureau data"

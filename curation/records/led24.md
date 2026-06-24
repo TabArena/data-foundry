@@ -15,8 +15,6 @@ source_row: 227
 type_adapter_id: curation-record-v1
 ---
 
-# LED24
-
 ## Comments
 
 Clear TabArena Reject

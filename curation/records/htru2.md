@@ -16,8 +16,6 @@ source_row: 261
 type_adapter_id: curation-record-v1
 ---
 
-# HTRU2
-
 ## Comments
 
 Duplicate of htru2_2

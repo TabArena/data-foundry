@@ -20,8 +20,6 @@ source_row: 528
 type_adapter_id: curation-record-v1
 ---
 
-# Personal Loan Modeling
-
 ## Comments
 
 Data from here https://www.mygreatlearning.com/pg-program-online-artificial-intelligence-machine-learning

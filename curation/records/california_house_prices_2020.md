@@ -30,8 +30,6 @@ source_row: 734
 type_adapter_id: curation-record-v1
 ---
 
-# CALIFORNIA_PRICES_2020
-
 ## Comments
 
 California Houses 2020 Prices (Duplicate with calif_houses below).

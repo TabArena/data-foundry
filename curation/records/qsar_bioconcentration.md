@@ -24,8 +24,6 @@ source_row: 683
 type_adapter_id: curation-record-v1
 ---
 
-# QSAR_BIOCONCENTRATION
-
 ## Comments
 
 Need to understand if class or regression target should be used and how they differ

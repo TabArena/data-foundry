@@ -17,8 +17,6 @@ source_row: 471
 type_adapter_id: curation-record-v1
 ---
 
-# NBA_SHOTS
-
 ## Comments
 
 Seems like it has enough to be used to predict something for future games etc

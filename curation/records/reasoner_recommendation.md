@@ -16,8 +16,6 @@ source_row: 195
 type_adapter_id: curation-record-v1
 ---
 
-# REASONER_RECOMMENDATION
-
 ## Comments
 
 REASONER Recommendation Dataset

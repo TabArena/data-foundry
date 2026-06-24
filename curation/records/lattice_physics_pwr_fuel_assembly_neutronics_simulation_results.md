@@ -23,8 +23,6 @@ source_row: 524
 type_adapter_id: curation-record-v1
 ---
 
-# Lattice-physics (PWR fuel assembly neutronics simulation results)
-
 ## Comments
 
 Simulated dataset, but seems like a task that could be reasonable

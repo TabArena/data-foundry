@@ -27,8 +27,6 @@ source_row: 595
 type_adapter_id: curation-record-v1
 ---
 
-# BOOK_PRICE_PREDICTION
-
 ## Comments
 
 Book Price Prediction

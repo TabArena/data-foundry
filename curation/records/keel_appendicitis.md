@@ -29,8 +29,6 @@ source_row: 752
 type_adapter_id: curation-record-v1
 ---
 
-# appendicitis
-
 ## Comments
 
 Seems like a real task, even if old

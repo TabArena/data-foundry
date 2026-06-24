@@ -16,8 +16,6 @@ source_row: 32
 type_adapter_id: curation-record-v1
 ---
 
-# telecom churn
-
 ## Comments
 
 "Teradata center for customer relationship management at Duke University."

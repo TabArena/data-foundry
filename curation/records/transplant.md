@@ -17,8 +17,6 @@ source_row: 109
 type_adapter_id: curation-record-v1
 ---
 
-# transplant
-
 ## Comments
 
 Weird task, likely not predictive, given number of hospitals that have a certain combination of expected deaths, transplants, and number of real deaths. This seems not reasonable for an ML system or is outdated, thus we exclude it

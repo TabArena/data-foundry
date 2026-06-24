@@ -17,8 +17,6 @@ source_row: 365
 type_adapter_id: curation-record-v1
 ---
 
-# banknote-authentication
-
 ## Comments
 
 CC: ""wavelet transform features from images

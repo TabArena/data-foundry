@@ -25,8 +25,6 @@ source_row: 651
 type_adapter_id: curation-record-v1
 ---
 
-# Homesite_Quote_Conversion
-
 ## Comments
 
 CC: "Split seems to be random per QuoteNumber sample; feature engineered geographic information as it seems"

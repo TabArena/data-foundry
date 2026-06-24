@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# chscase_foot
-
 ## Comments
 
 Imported from the TabArena curation workbook.

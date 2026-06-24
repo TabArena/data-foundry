@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Moneyball
-
 ## Comments
 
 CC: "Baseball dataset that estimates the runs scored. Might be relevant task. Might require temporal split, but need to understand the task better. In general this is clearly not a predictive performance task but an analytics task. Linear model best in TabRepo. Could include to also cover this bias"

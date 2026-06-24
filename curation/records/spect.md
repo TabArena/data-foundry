@@ -20,8 +20,6 @@ source_row: 69
 type_adapter_id: curation-record-v1
 ---
 
-# spect
-
 ## Comments
 
 image data made tabular from 2001, likely not used this way anymore today.

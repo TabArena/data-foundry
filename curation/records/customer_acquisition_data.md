@@ -16,8 +16,6 @@ source_row: 64
 type_adapter_id: curation-record-v1
 ---
 
-# Customer Acquisition data
-
 ## Comments
 
 Data too tiny and too much missing information to include

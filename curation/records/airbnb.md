@@ -20,8 +20,6 @@ source_row: 15
 type_adapter_id: curation-record-v1
 ---
 
-# airbnb
-
 ## Comments
 
 Airbnb listings in Seattle (more to get from the reference)

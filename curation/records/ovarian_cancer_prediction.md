@@ -28,8 +28,6 @@ source_row: 1034
 type_adapter_id: curation-record-v1
 ---
 
-# NCI ovarian data
-
 ## Comments
 
 CC: "Link provided in the survey are outdated, I think I found another version, shapes of OpenML dataset match the shapes given in the paper. D: this is data used for ARCENE in NIPS 2003. Downloadable under low resolution seldi-tof datasets"

@@ -14,8 +14,6 @@ source_row: 145
 type_adapter_id: curation-record-v1
 ---
 
-# House Price Prediction Dataset
-
 ## Comments
 
 "Synthetic multi-feature housing dataset for regression tasks"

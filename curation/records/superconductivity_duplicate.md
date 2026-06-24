@@ -14,8 +14,6 @@ source_row: 369
 type_adapter_id: curation-record-v1
 ---
 
-# SUPERCONDUCTIVITY
-
 ## Comments
 
 In TabArena

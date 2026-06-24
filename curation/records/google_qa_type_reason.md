@@ -18,8 +18,6 @@ source_row: 251
 type_adapter_id: curation-record-v1
 ---
 
-# GOOGLE_QA_TYPE_REASON
-
 ## Comments
 
 NLP task / data

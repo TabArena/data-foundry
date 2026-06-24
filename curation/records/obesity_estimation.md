@@ -29,8 +29,6 @@ source_row: 673
 type_adapter_id: curation-record-v1
 ---
 
-# Estimation of Obesity Levels Based On Eating Habits and Physical Condition
-
 ## Comments
 
 "77% of the data was generated synthetically using the Weka tool and the SMOTE filter, 23% of the data was collected directly from users through a web platform."

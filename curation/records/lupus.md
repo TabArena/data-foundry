@@ -24,8 +24,6 @@ source_row: 117
 type_adapter_id: curation-record-v1
 ---
 
-# lupus
-
 ## Comments
 
 Looks like a reasonable task for small data, unclear source of the data description but clear paper found.

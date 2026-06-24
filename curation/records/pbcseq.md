@@ -19,8 +19,6 @@ source_row: 616
 type_adapter_id: curation-record-v1
 ---
 
-# pbcseq
-
 ## Comments
 
 CC: "Survival analysis task, likely better data exists nowadays, data collected from different sites, might require special preprocessing, might also require custom split; also temporal"

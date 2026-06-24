@@ -18,8 +18,6 @@ source_row: 381
 type_adapter_id: curation-record-v1
 ---
 
-# one-hundred-plants-margin
-
 ## Comments
 
 CC: "Histogram data extracted from images"

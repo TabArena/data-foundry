@@ -17,8 +17,6 @@ source_row: 346
 type_adapter_id: curation-record-v1
 ---
 
-# sarcos
-
 ## Comments
 
 Robotics task

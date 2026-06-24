@@ -16,8 +16,6 @@ source_row: 266
 type_adapter_id: curation-record-v1
 ---
 
-# Appliances Energy Prediction
-
 ## Comments
 
 CC: "data from 10 mins for about 4.5 months, extra random variables"

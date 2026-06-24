@@ -19,8 +19,6 @@ source_row: 472
 type_adapter_id: curation-record-v1
 ---
 
-# Company Employees
-
 ## Comments
 
 Minimal LinkedIn data from a bunch of companies

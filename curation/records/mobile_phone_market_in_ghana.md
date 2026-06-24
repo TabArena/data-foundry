@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Mobile_Phone_Market_in_Ghana
-
 ## Comments
 
 CC: "Data about phone models in Ghana. Simply scraped from a website. Predict the price - more for analysis and insights than for predictive performance; again a task where one might not be able to predict the price or the price is defined when the other variables are observed"

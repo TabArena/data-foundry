@@ -19,8 +19,6 @@ source_row: 467
 type_adapter_id: curation-record-v1
 ---
 
-# Videogame sales
-
 ## Comments
 
 video games sales

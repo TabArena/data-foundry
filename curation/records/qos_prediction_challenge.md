@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# qos-prediction-challenge
-
 ## Comments
 
 predict quality-of-service for a wireless vehicle network

@@ -29,8 +29,6 @@ source_row: 742
 type_adapter_id: curation-record-v1
 ---
 
-# early_learning_predictors
-
 ## Comments
 
 Very nice dataset. It was used in a Zindi challenge, where an additional focus next to predictive performance was on interpretability. I think they used random splits, but it should be either temporal or group based (by school). Needs some preprocessing since it doesn't make sense to use all ~1200 features. But we can follow the Zindi challenge, where a subset of features was provided

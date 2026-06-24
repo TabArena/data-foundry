@@ -18,8 +18,6 @@ source_row: 563
 type_adapter_id: curation-record-v1
 ---
 
-# molecular-biology_promoters
-
 ## Comments
 
 Very old data about genes and sequences, maybe partially handmade or rule-based. The original paper had 260 cases, but this data has fewer. In general, not enough information and too old to judge if we really want to benchmark for this.

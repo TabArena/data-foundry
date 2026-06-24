@@ -26,8 +26,6 @@ source_row: 480
 type_adapter_id: curation-record-v1
 ---
 
-# BOOKING_HOTEL_REVIEW
-
 ## Comments
 
 Booking.com Hotel Reviews in Europe

@@ -14,8 +14,6 @@ source_row: 328
 type_adapter_id: curation-record-v1
 ---
 
-# kddtrack2
-
 ## Comments
 
 CTR task, must be low latency; technically a bad task for typical predictive ML as a result; very different baselines to normal ML models (not even Catboost etc)

@@ -15,8 +15,6 @@ source_row: 286
 type_adapter_id: curation-record-v1
 ---
 
-# mauna-loa-atmospheric-co2
-
 ## Comments
 
 CC: "Only one feature with 7 unique values besides the datetime. Clearly time-series.

@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# credrails-banking-transaction-categoriser-challenge
-
 ## Comments
 
 categorise banking transactions for the Credrails API

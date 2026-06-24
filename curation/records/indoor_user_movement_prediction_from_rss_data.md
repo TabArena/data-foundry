@@ -15,8 +15,6 @@ source_row: 262
 type_adapter_id: curation-record-v1
 ---
 
-# Indoor User Movement Prediction from RSS data
-
 ## Comments
 
 CC: "temporal data, time-series data from sensors, grouped settings"

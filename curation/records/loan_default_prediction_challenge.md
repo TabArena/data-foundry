@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# loan-default-prediction-challenge
-
 ## Comments
 
 Predict if a loan was good or bad

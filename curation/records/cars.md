@@ -15,8 +15,6 @@ source_row: 379
 type_adapter_id: curation-record-v1
 ---
 
-# cars
-
 ## Comments
 
 CC: ""predict car price as listed from tables in a book, only a specific brand, only from one year.

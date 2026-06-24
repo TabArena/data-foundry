@@ -14,8 +14,6 @@ source_row: 326
 type_adapter_id: curation-record-v1
 ---
 
-# Yahoo learning to rank challenge data
-
 ## Comments
 
 Learning to rank

@@ -16,8 +16,6 @@ source_row: 359
 type_adapter_id: curation-record-v1
 ---
 
-# climate-model-simulation-crashes
-
 ## Comments
 
 CC: "Might require group split as data is from different studies"

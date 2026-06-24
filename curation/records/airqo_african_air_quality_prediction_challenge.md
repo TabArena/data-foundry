@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# airqo-african-air-quality-prediction-challenge
-
 ## Comments
 
 estimate PM2.5 levels from satellite observations

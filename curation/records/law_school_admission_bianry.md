@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# law-school-admission-bianry
-
 ## Comments
 
 CC: "Survey among students attending law school in the U.S. in 1991. Race as feature. Not a predictive task."

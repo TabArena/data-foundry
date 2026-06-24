@@ -14,8 +14,6 @@ source_row: 121
 type_adapter_id: curation-record-v1
 ---
 
-# Sepsis
-
 ## Comments
 
 Duplicate of the Sepsis Dataset from Kaggle

@@ -17,8 +17,6 @@ source_row: 31
 type_adapter_id: curation-record-v1
 ---
 
-# Sunborn - customer churn
-
 ## Comments
 
 From some company from the US, data looks super fake (see age distribution)

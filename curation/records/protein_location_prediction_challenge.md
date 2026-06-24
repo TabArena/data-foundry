@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# protein-location-prediction-challenge
-
 ## Comments
 
 predict the location in the cell where this protein is likely to be located

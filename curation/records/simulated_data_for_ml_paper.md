@@ -15,8 +15,6 @@ source_row: 593
 type_adapter_id: curation-record-v1
 ---
 
-# simulated-data-for-ml-paper
-
 ## Comments
 
 "These are simulated data based on employee turnover data in a real technology company in India"

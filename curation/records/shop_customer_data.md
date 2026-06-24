@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Shop_Customer_Data
-
 ## Comments
 
 CC: "Shop Customer Data is a detailed analysis of an imaginative shop's ideal customers. It helps a business to better understand its customers. Might be artificial data. Not uploaded as a predictive task. Some use the data to predict spending score"

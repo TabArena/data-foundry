@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# SFC PAYGo Solar Credit Repayment Hackathon
-
 ## Comments
 
 predict PAYGo solar customer payments

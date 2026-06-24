@@ -16,8 +16,6 @@ source_row: 100
 type_adapter_id: curation-record-v1
 ---
 
-# heart_disease_zurich
-
 ## Comments
 
 Version of heart_disease_*

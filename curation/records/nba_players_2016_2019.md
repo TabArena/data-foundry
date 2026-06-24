@@ -22,8 +22,6 @@ source_row: 789
 type_adapter_id: curation-record-v1
 ---
 
-# NBA PLAYERS 2016-2019
-
 ## Comments
 
 Contains: https://www.kaggle.com/datasets/noahgift/social-power-nba

@@ -24,8 +24,6 @@ source_row: 648
 type_adapter_id: curation-record-v1
 ---
 
-# Otto-Group-Product-Classification-Challenge
-
 ## Comments
 
 CC: "Distinguish products in 10 groups based on 93 features. Competition not won through leaks, but test-time adaptation helped. In general seems like a good tabular data task for random splits. Kaggle licence forbids distribution, but as the data is on OpenML with 'Unknown' license. Although this is one of the best datasets we might not be able to use it."

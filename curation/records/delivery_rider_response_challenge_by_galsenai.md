@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Delivery Rider Response Challenge by GalsenAI
-
 ## Comments
 
 predict who is the best delivery rider for an order placed via logistics company Sendy

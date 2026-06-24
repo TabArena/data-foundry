@@ -24,8 +24,6 @@ source_row: 635
 type_adapter_id: curation-record-v1
 ---
 
-# Homecredit Default (Groped Version)
-
 ## Comments
 
 Again, the data was in theory grouped but never solved as such, we could again try to get a model for it!

@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Research Model of Churn Prediction Based on Customer Segmentation and Misclassification Cost in the Context of Big Data
-
 ## Comments
 
 Data Requested on 07/03/2026 by Lennart

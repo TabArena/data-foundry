@@ -27,8 +27,6 @@ source_row: 774
 type_adapter_id: curation-record-v1
 ---
 
-# Japanese Credit Screening
-
 ## Comments
 
 The UCI source contains two datasets, this is the credit dataset in LISP Format

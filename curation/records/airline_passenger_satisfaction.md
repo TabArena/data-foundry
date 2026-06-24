@@ -16,8 +16,6 @@ source_row: 26
 type_adapter_id: curation-record-v1
 ---
 
-# Airline Passenger Satisfaction
-
 ## Comments
 
 Survey data, but prediction task seems very reasonable

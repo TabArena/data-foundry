@@ -20,8 +20,6 @@ source_row: 597
 type_adapter_id: curation-record-v1
 ---
 
-# AMERICAN_EAGLE_PRICES
-
 ## Comments
 
 American Eagle Retailer Price Prediction

@@ -19,8 +19,6 @@ source_row: 17
 type_adapter_id: curation-record-v1
 ---
 
-# HARRY_POTTER_FAN_FICTION
-
 ## Comments
 
 Harry Potter Fan Fiction Story

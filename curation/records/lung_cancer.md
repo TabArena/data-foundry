@@ -28,8 +28,6 @@ source_row: 1033
 type_adapter_id: curation-record-v1
 ---
 
-# Lung
-
 ## Comments
 
 CC: "No raw data available, using OpenML (shapes match). Original 6 classes were merged into 5 (adenocarcinomas). "

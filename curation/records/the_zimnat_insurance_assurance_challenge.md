@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# The Zimnat Insurance Assurance Challenge
-
 ## Comments
 
 predict when an insurance policy will lapse in Zimbabwe

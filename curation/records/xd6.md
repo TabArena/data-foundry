@@ -15,8 +15,6 @@ source_row: 433
 type_adapter_id: curation-record-v1
 ---
 
-# XD6
-
 ## Comments
 
 CC: "target is a disjunctive normal form formula over the nine other attributes"

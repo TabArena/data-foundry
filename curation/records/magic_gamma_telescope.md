@@ -16,8 +16,6 @@ source_row: 336
 type_adapter_id: curation-record-v1
 ---
 
-# MAGIC Gamma Telescope
-
 ## Comments
 
 Image Data

@@ -25,8 +25,6 @@ source_row: 667
 type_adapter_id: curation-record-v1
 ---
 
-# Framingham Heart Study (FHS)
-
 ## Comments
 
 Likely use data from Kaggle

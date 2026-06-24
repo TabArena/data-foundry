@@ -14,8 +14,6 @@ source_row: 153
 type_adapter_id: curation-record-v1
 ---
 
-# Wrong Orange Telecom's Churn Dataset
-
 ## Comments
 
 Distribution version of Orange Telecom's Churn Dataset

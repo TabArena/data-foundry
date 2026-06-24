@@ -11,8 +11,6 @@ File layout (``<unique_name>.md``)::
     type_adapter_id: curation-record-v1
     ---
 
-    # PhiUSIIL Phishing URL
-
     ## Comments
 
     Recent dataset for phishing website detection ...
@@ -22,9 +20,10 @@ File layout (``<unique_name>.md``)::
     @article{...}
 
 Structured fields live in the YAML front-matter (empty / null fields are omitted
-to keep diffs clean). The two free-text fields — ``comments`` and ``reference`` —
-live in the markdown body under fixed ``## Comments`` / ``## Reference`` headers,
-so they read and diff naturally. Round-trips through :func:`markdown_to_record`.
+to keep diffs clean) — ``name`` is the single source of truth for the dataset name.
+The two free-text fields — ``comments`` and ``reference`` — live in the markdown body
+under fixed ``## Comments`` / ``## Reference`` headers, so they read and diff naturally.
+Round-trips through :func:`markdown_to_record`.
 """
 
 from __future__ import annotations
@@ -60,13 +59,16 @@ def record_to_markdown(record: CurationRecord) -> str:
 
     front_text = yaml.safe_dump(front, sort_keys=False, allow_unicode=True, default_flow_style=False, width=4096)
 
-    body_parts = [f"# {record.name}".rstrip()]
+    # The dataset name lives only in the front-matter (`name:`); the body holds just the
+    # free-text sections, so there is a single source of truth for the name.
+    body_parts = []
     for field in BODY_FIELDS:
         value = getattr(record, field)
         if value and value.strip():
             body_parts.append(f"## {BODY_SECTION_TITLES[field]}\n\n{value.strip()}")
+    body = "\n\n".join(body_parts)
 
-    return f"---\n{front_text}---\n\n" + "\n\n".join(body_parts) + "\n"
+    return f"---\n{front_text}---\n" + (f"\n{body}\n" if body else "")
 
 
 def _parse_body_sections(body: str) -> dict[str, str | None]:

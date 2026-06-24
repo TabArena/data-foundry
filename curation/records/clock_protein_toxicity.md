@@ -27,8 +27,6 @@ source_row: 1031
 type_adapter_id: curation-record-v1
 ---
 
-# Toxicity
-
 ## Comments
 
 Same source as clock_protein_period

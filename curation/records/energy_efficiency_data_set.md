@@ -14,8 +14,6 @@ source_row: 170
 type_adapter_id: curation-record-v1
 ---
 
-# Energy Efficiency Data Set
-
 ## Comments
 
 Duplicate of 10.24432/C51307

@@ -11,5 +11,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# microsoft-x-data-science-nigeria-2024-ai-bootcamp-qualification-hackathon

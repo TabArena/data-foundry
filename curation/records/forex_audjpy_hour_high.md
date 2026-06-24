@@ -17,8 +17,6 @@ source_row: 278
 type_adapter_id: curation-record-v1
 ---
 
-# FOREX_audjpy-hour-High
-
 ## Comments
 
 CC: "Description says "hypothetical task, meant for scientific purposes only". Also a time-series task actually"

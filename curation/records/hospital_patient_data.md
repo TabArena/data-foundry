@@ -19,8 +19,6 @@ source_row: 552
 type_adapter_id: curation-record-v1
 ---
 
-# Hospital patient data
-
 ## Comments
 
 Unclear where the data comes from and the features do not seem to allow for a good target/use case

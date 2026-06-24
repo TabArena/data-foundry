@@ -15,8 +15,6 @@ source_row: 420
 type_adapter_id: curation-record-v1
 ---
 
-# physiochemical_protein
-
 ## Comments
 
 In TabArena

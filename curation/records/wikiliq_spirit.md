@@ -17,8 +17,6 @@ source_row: 191
 type_adapter_id: curation-record-v1
 ---
 
-# Wikiliq Spirit
-
 ## Comments
 
 More or less a duplicate/version of Wikiliq Beer data

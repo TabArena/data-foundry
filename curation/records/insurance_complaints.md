@@ -18,8 +18,6 @@ source_row: 503
 type_adapter_id: curation-record-v1
 ---
 
-# insurance_complaints
-
 ## Comments
 
 Insurance claims data from website, mostly just reports without clear target and ground truth. Needs some thought if it could be made a real task

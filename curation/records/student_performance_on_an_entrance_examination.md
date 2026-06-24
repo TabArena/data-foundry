@@ -27,8 +27,6 @@ source_row: 787
 type_adapter_id: curation-record-v1
 ---
 
-# Student Performance on an Entrance Examination
-
 ## Comments
 
 Data from one year, maybe not real task

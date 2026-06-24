@@ -13,5 +13,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# geoai-ground-level-no2-estimation-challenge

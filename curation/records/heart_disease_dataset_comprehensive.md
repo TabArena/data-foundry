@@ -15,8 +15,6 @@ source_row: 377
 type_adapter_id: curation-record-v1
 ---
 
-# Heart-Disease-Dataset-(Comprehensive)
-
 ## Comments
 
 CC: "Duplicate containing many of the other heart disease datasets (cleveland, hungarian, ....) "

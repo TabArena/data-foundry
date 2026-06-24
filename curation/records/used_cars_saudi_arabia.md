@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Used Cars Saudi Arabia
-
 ## Comments
 
 used cars data

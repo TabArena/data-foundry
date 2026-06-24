@@ -8,8 +8,6 @@ year: '2008'
 type_adapter_id: curation-record-v1
 ---
 
-# Epsilon
-
 ## Comments
 
 Imported from the TabArena curation workbook.

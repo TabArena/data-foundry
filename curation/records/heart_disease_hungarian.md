@@ -16,8 +16,6 @@ source_row: 98
 type_adapter_id: curation-record-v1
 ---
 
-# heart_disease_hungarian
-
 ## Comments
 
 Version of heart_disease_*

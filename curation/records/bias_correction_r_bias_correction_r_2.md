@@ -23,8 +23,6 @@ source_row: 739
 type_adapter_id: curation-record-v1
 ---
 
-# Bias_correction_r/Bias_correction_r_2
-
 ## Comments
 
 CC: "2 targets. Target is to predict the next-day minimum/maximum air temperature for bias correction. Needs temporal split - although the features themselves are time-invariant, the samples are non-iid"

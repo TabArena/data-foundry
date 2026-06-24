@@ -29,8 +29,6 @@ source_row: 761
 type_adapter_id: curation-record-v1
 ---
 
-# horse_colic_*
-
 ## Comments
 
 Has multiple possible classes (lesion or others). Decide for one that is reasonable

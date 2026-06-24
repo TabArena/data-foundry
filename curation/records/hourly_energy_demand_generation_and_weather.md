@@ -15,8 +15,6 @@ source_row: 302
 type_adapter_id: curation-record-v1
 ---
 
-# Hourly energy demand generation and weather
-
 ## Comments
 
 Might be transformable into a tabular task, but otherwise forecasting for sure (just 24 h)

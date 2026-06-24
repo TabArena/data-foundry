@@ -25,8 +25,6 @@ source_row: 754
 type_adapter_id: curation-record-v1
 ---
 
-# ecoli
-
 ## Comments
 
 Has some minor classes that might not be dropped for proper validation setup. Might be outdated, otherwise seems to be still an okay task from the time

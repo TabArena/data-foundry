@@ -14,8 +14,6 @@ source_row: 332
 type_adapter_id: curation-record-v1
 ---
 
-# SPOTIFY_POPULARITY
-
 ## Comments
 
 Duplicate of spotify tracks dataset with different target column

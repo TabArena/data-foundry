@@ -17,8 +17,6 @@ source_row: 391
 type_adapter_id: curation-record-v1
 ---
 
-# Spambase
-
 ## Comments
 
 CC: "Text formatted as table, outdated task / solution, not meta-features but text-features, clear indicators of non-spam due to dataset collection method"

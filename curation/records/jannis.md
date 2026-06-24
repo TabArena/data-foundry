@@ -16,8 +16,6 @@ source_row: 364
 type_adapter_id: curation-record-v1
 ---
 
-# JANNIS
-
 ## Comments
 
 Image data

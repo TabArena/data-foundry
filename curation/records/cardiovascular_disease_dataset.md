@@ -19,8 +19,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Cardiovascular-Disease-dataset
-
 ## Comments
 
 CC: ""Source of data is missing. Unclear if real data or not

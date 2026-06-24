@@ -25,8 +25,6 @@ source_row: 773
 type_adapter_id: curation-record-v1
 ---
 
-# Drug Induced Autoimmunity Prediction
-
 ## Comments
 
 "This dataset comprises molecular descriptors generated using RDKit," -> to ChatGPT's domain understanding, this means it collected/curated it and did not create fake data

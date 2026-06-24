@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Water Potability Classification Hackathon by IndabaX Nigeria 2021
-
 ## Comments
 
 predict if water is potable or not

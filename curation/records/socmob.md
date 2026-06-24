@@ -18,8 +18,6 @@ source_row: 459
 type_adapter_id: curation-record-v1
 ---
 
-# socmob
-
 ## Comments
 
 CC: "Not a meaningful predictive task, only a few features from a social science study. Also, in TabZilla many models perform similarly on this data - same for TabRepo"

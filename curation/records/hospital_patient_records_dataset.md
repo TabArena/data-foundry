@@ -24,8 +24,6 @@ source_row: 518
 type_adapter_id: curation-record-v1
 ---
 
-# Hospital Patient Records Dataset
-
 ## Comments
 
 Duplicate or fake? Very unclear.

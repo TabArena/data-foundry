@@ -23,8 +23,6 @@ source_row: 678
 type_adapter_id: curation-record-v1
 ---
 
-# Glioma Grading Clinical and Mutation Features
-
 ## Comments
 
 "The main objective is to find the optimal subset of mutation genes and clinical features for the glioma grading process to improve performance and reduce costs." -> mostly a feature selection task?

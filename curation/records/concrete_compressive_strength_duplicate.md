@@ -15,8 +15,6 @@ source_row: 447
 type_adapter_id: curation-record-v1
 ---
 
-# concrete_compressive_strength
-
 ## Comments
 
 In TabArena-v0.1

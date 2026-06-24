@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Medical Facility Operational Data
-
 ## Comments
 
 Unsure what the task/target could be, is one Excel sheet with a bunch of data.

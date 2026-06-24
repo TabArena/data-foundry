@@ -24,8 +24,6 @@ source_row: 579
 type_adapter_id: curation-record-v1
 ---
 
-# Pipeline dataset in oil and gas sector/fertilizer
-
 ## Comments
 
 Seems like generated data like (https://www.kaggle.com/datasets/muhammadwaqas023/predictive-maintenance-oil-and-gas-pipeline-data) but according to description, this is scraped from (American petroleum institute) and ASME (American society of mechanical engineering). Distribution seems more real

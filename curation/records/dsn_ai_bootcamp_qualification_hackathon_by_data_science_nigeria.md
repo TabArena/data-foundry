@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# DSN AI Bootcamp Qualification Hackathon by Data Science Nigeria
-
 ## Comments
 
 Predict customers who will default on a loan

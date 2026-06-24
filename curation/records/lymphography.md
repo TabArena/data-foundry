@@ -29,8 +29,6 @@ source_row: 762
 type_adapter_id: curation-record-v1
 ---
 
-# lymphography
-
 ## Comments
 
 Looks like a good, but old, dataset that can be used. Need to resolve semantics again.

@@ -25,8 +25,6 @@ source_row: 577
 type_adapter_id: curation-record-v1
 ---
 
-# sleuth_case2002
-
 ## Comments
 
 One of many datasets from the book 'The Statistical Sleuth' by Fred Ramsey and Dan Schafer; Duxbury Press, 1997. (schafer@stat.orst.edu) 

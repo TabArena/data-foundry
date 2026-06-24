@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# grocery-store-product-forecasting-challenge
-
 ## Comments
 
 forecast the number of products sold per store per week for a local grocery store

@@ -17,8 +17,6 @@ source_row: 516
 type_adapter_id: curation-record-v1
 ---
 
-# TCGA Kidney Cancers
-
 ## Comments
 
 Not super sure this counts as a full tabular task. Needs more time 

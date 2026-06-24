@@ -20,8 +20,6 @@ source_row: 499
 type_adapter_id: curation-record-v1
 ---
 
-# Museums
-
 ## Comments
 
 details and stats about museums

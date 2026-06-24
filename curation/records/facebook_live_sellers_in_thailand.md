@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Facebook Live Sellers in Thailand
-
 ## Comments
 
 CC: "Posts of facebook pages (video, photos, statuses, or links); status published is temporal; used for scientific discovery and not predictive task (only real task would be to map for status type and date to any of the reaction features)"

@@ -17,8 +17,6 @@ source_row: 435
 type_adapter_id: curation-record-v1
 ---
 
-# spoken-arabic-digit
-
 ## Comments
 
 CC: "time series of mel-frequency cepstrum coefficients (MFCCs) corresponding to spoken Arabic digits; likely also grouped data"

@@ -17,8 +17,6 @@ source_row: 509
 type_adapter_id: curation-record-v1
 ---
 
-# TVS_Loan_Default
-
 ## Comments
 
 Might be simulated data. TVS is a real bank or so? Features seem reasonable?

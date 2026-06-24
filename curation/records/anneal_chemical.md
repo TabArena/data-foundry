@@ -16,8 +16,6 @@ source_row: 242
 type_adapter_id: curation-record-v1
 ---
 
-# ANNEAL_CHEMICAL
-
 ## Comments
 
 In TabArena (anneal) already

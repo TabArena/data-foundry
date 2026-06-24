@@ -23,8 +23,6 @@ source_row: 41
 type_adapter_id: curation-record-v1
 ---
 
-# MoneyVis
-
 ## Comments
 
 there is a URL with read access

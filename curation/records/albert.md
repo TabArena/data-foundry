@@ -17,8 +17,6 @@ source_row: 321
 type_adapter_id: curation-record-v1
 ---
 
-# albert
-
 ## Comments
 
 CC: "From AutoML challenge. Is actually the famous Criteo dataset and a click prediction task. Likely a recommender system task / CTR task"

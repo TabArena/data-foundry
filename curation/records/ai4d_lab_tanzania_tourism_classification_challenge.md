@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# ai4d-lab-tanzania-tourism-classification-challenge
-
 ## Comments
 
 predict the range of expenditures a tourist spends in Tanzania

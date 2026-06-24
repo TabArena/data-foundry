@@ -24,8 +24,6 @@ source_row: 25
 type_adapter_id: curation-record-v1
 ---
 
-# Secondary Mushroom
-
 ## Comments
 
 Likely also trivial? Contains families or species that might be grouped?

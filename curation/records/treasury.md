@@ -18,8 +18,6 @@ source_row: 541
 type_adapter_id: curation-record-v1
 ---
 
-# treasury
-
 ## Comments
 
 CC: "Temporal component, but unclear whether task is time-invariant"

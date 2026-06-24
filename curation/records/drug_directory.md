@@ -14,8 +14,6 @@ source_row: 456
 type_adapter_id: curation-record-v1
 ---
 
-# drug-directory
-
 ## Comments
 
 Just a list of drug listings, not a real predictive task

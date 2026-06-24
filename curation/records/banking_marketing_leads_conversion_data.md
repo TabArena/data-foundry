@@ -23,8 +23,6 @@ source_row: 538
 type_adapter_id: curation-record-v1
 ---
 
-# Banking | Marketing | Leads Conversion Data
-
 ## Comments
 
 from "datahack.analyticsvidhya.com/contest/mckinsey-analytics-online-hackathon-ii/True/#ProblemStatement" again unsure if it is real data or not

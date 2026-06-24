@@ -16,8 +16,6 @@ source_row: 9
 type_adapter_id: curation-record-v1
 ---
 
-# Income
-
 ## Comments
 
 Same data as Food Stamps task

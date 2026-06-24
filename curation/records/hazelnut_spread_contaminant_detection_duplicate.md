@@ -14,8 +14,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Contaminant-detection-in-packaged-cocoa-hazelnut-spread-jars-using-Microwaves-Sensing-and-Machine-Learning-10.0GHz(Urbinati)
-
 ## Comments
 
 Shipped in the BeyondArena / TabArena (v0.1) collection(s).

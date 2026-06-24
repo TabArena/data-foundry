@@ -14,5 +14,3 @@ source_links:
 source_row: 295
 type_adapter_id: curation-record-v1
 ---
-
-# Yahoo Finance Dataset (2018-2023)

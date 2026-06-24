@@ -14,8 +14,6 @@ source_row: 220
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Predicting Near-Future Churners and Win-Backs in theTelecommunications Industry
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

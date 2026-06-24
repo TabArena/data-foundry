@@ -16,8 +16,6 @@ source_row: 106
 type_adapter_id: curation-record-v1
 ---
 
-# prnn_synth
-
 ## Comments
 
 synthetic two-class problem

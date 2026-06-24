@@ -18,8 +18,6 @@ source_row: 371
 type_adapter_id: curation-record-v1
 ---
 
-# elevators
-
 ## Comments
 
 CC: "task of controlling a F16 aircraft"

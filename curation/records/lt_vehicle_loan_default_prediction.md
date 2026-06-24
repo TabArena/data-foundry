@@ -16,8 +16,6 @@ source_row: 624
 type_adapter_id: curation-record-v1
 ---
 
-# LT-Vehicle-Loan-Default-Prediction
-
 ## Comments
 
 Unclear how real the data is, but it was a paid competition.

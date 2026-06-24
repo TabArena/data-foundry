@@ -15,8 +15,6 @@ source_row: 155
 type_adapter_id: curation-record-v1
 ---
 
-# CrowdAnalytix Community
-
 ## Comments
 
 Duplicate of "churn" in TabArena

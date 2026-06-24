@@ -16,8 +16,6 @@ source_row: 491
 type_adapter_id: curation-record-v1
 ---
 
-# Whisky
-
 ## Comments
 
 A lot of context for the features and list. It is just a list of information, not fully connected among itself.

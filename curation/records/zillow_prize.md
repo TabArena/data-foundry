@@ -17,8 +17,6 @@ source_row: 727
 type_adapter_id: curation-record-v1
 ---
 
-# Zillow Prize
-
 ## Comments
 
 Looks like a good temporal dataset

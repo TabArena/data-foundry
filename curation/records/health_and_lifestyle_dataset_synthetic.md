@@ -13,5 +13,3 @@ source_links:
 source_row: 137
 type_adapter_id: curation-record-v1
 ---
-
-# Health and Lifestyle Dataset (Synthetic)

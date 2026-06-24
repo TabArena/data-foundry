@@ -14,8 +14,6 @@ source_row: 151
 type_adapter_id: curation-record-v1
 ---
 
-# South German Credit
-
 ## Comments
 
 updated version of credit-g, still a lot of duplicates and already includes oversampling

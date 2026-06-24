@@ -25,8 +25,6 @@ source_row: 564
 type_adapter_id: curation-record-v1
 ---
 
-# auto
-
 ## Comments
 
 Data from 1985 book with weird targets and setup. This seems clearly outdated given the task description

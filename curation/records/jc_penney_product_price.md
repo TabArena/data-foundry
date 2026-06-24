@@ -28,8 +28,6 @@ source_row: 477
 type_adapter_id: curation-record-v1
 ---
 
-# JC_PENNEY_PRODUCT_PRICE
-
 ## Comments
 
 JC Penney Product Prices in Retailer Website

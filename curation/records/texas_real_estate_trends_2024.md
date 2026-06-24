@@ -25,8 +25,6 @@ source_row: 583
 type_adapter_id: curation-record-v1
 ---
 
-# Texas Real Estate Trends 2024
-
 ## Comments
 
 Try to add / use it, contains text as well so unclear how to integrate here or move to text benchmark

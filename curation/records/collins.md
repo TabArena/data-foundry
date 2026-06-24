@@ -19,8 +19,6 @@ source_row: 513
 type_adapter_id: curation-record-v1
 ---
 
-# collins
-
 ## Comments
 
 Outdated task, unsure if it is a useful proxy for a real tabular task. Might be trivial to solve already.

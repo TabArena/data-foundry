@@ -16,8 +16,6 @@ source_row: 338
 type_adapter_id: curation-record-v1
 ---
 
-# Indian_pines
-
 ## Comments
 
 Image data

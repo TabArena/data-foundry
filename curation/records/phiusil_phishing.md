@@ -24,8 +24,6 @@ source_row: 2
 type_adapter_id: curation-record-v1
 ---
 
-# PhiUSIIL Phishing URL (Website)
-
 ## Comments
 
 Recent dataset for phishing website detection, best I know so far (AT). Features extracted from website source code. Might also be approached with LLMs, but since the paper is recent that's not a concern. Might need to double check that the feature extraction doesn't introduce leaks

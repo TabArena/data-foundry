@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# NHANES_age_prediction
-
 ## Comments
 
 CC: "No (after preprocessing)"

@@ -16,8 +16,6 @@ source_row: 344
 type_adapter_id: curation-record-v1
 ---
 
-# compas / compas-two-years
-
 ## Comments
 
 Ethically concerning task. We still rule it out!

@@ -19,8 +19,6 @@ source_row: 561
 type_adapter_id: curation-record-v1
 ---
 
-# schizo
-
 ## Comments
 
 Data has an ID column, which likely makes it grouped?

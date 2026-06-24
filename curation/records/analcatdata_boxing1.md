@@ -19,8 +19,6 @@ source_row: 85
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_boxing1
-
 ## Comments
 
 No, see analcatdata_* entry for more information

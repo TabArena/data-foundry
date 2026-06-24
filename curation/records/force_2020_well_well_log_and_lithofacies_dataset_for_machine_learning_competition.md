@@ -29,8 +29,6 @@ source_row: 660
 type_adapter_id: curation-record-v1
 ---
 
-# FORCE 2020 Well well log and lithofacies dataset for machine learning competition
-
 ## Comments
 
 Data based on images or other data is made tabular. But competitions used tabular models?

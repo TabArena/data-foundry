@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# medical_charges
-
 ## Comments
 
 CC: "grinsztajn uses trivial preprocessed version. Some features should not be used for prediction. Seems to be crawled data. Most available features would not be available at inference time in a real task. Remaining features mostly strings. Likely grouped data from hospitals and providers as well. Many string features like street names requiring special preprocessing."

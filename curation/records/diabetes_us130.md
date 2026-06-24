@@ -15,8 +15,6 @@ source_row: 383
 type_adapter_id: curation-record-v1
 ---
 
-# DIABETES_US130
-
 ## Comments
 
 In TabArena

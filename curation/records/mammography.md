@@ -16,8 +16,6 @@ source_row: 403
 type_adapter_id: curation-record-v1
 ---
 
-# mammography
-
 ## Comments
 
 CC: "From https://ui.adsabs.harvard.edu/abs/1993SPIE.1905..841W/abstract; unclear feature names and missing meta-information"

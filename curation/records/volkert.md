@@ -16,8 +16,6 @@ source_row: 342
 type_adapter_id: curation-record-v1
 ---
 
-# volkert
-
 ## Comments
 
 Image data

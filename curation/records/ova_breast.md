@@ -26,8 +26,6 @@ source_row: 602
 type_adapter_id: curation-record-v1
 ---
 
-# OVA_Breast
-
 ## Comments
 
 CC: "Need to inspect relation to other OVA datasets. >10K features Not in TabRepo, No, if truly consisting of 4 datasets. Moreover preprocessing unclear; generally missing information; not matching description from paper; domain expert needed"

@@ -16,8 +16,6 @@ source_row: 448
 type_adapter_id: curation-record-v1
 ---
 
-# nursery
-
 ## Comments
 
 CC: "Data was derived from a hierarchical decision model, likely trivial as samples cover all possible values; also originally a regression task; no ground truth that the label is truly correct and that it would have been a bad idea to admit an applicant"

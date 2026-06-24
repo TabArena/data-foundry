@@ -26,8 +26,6 @@ source_row: 714
 type_adapter_id: curation-record-v1
 ---
 
-# Maps Routing
-
 ## Comments
 
 Was downsampled/filtered by TabRed via preprocessing.

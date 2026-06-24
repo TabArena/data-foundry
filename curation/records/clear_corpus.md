@@ -18,8 +18,6 @@ source_row: 192
 type_adapter_id: curation-record-v1
 ---
 
-# Clear Corpus
-
 ## Comments
 
 Try to predict readability of a passage based on stats and info.

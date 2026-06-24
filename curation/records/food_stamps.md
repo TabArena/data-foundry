@@ -18,8 +18,6 @@ source_row: 609
 type_adapter_id: curation-record-v1
 ---
 
-# Food Stamps
-
 ## Comments
 
 Holdout one region to get grouped data, unclear if real task would not also fit on some data from the same region (given that it is temporal). Consider, why would "a localized study that draws participants or respondents from some geographic areas, but excludes other areas" do for this kind of task?

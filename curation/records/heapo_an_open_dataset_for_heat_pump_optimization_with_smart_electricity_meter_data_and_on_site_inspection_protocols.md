@@ -14,5 +14,3 @@ source_links:
 source_row: 315
 type_adapter_id: curation-record-v1
 ---
-
-# HEAPO – An Open Dataset for Heat Pump Optimization with Smart Electricity Meter Data and On-Site Inspection Protocols

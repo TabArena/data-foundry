@@ -26,8 +26,6 @@ source_row: 630
 type_adapter_id: curation-record-v1
 ---
 
-# HTRU2
-
 ## Comments
 
 CC: "Sounds like a cool application TBH, predict characteristics of a star

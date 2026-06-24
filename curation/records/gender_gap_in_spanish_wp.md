@@ -15,8 +15,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Gender_Gap_in_Spanish_WP
-
 ## Comments
 
 Imported from the TabArena curation workbook.

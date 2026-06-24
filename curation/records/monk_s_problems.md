@@ -18,8 +18,6 @@ source_row: 419
 type_adapter_id: curation-record-v1
 ---
 
-# MONK's Problems
-
 ## Comments
 
 (a1 == a2) or (a5 == 1)

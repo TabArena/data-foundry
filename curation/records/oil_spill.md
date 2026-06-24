@@ -16,8 +16,6 @@ source_row: 384
 type_adapter_id: curation-record-v1
 ---
 
-# oil_spill
-
 ## Comments
 
 CC: "Data extracted from satellite images"

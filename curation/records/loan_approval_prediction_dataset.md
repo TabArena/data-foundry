@@ -17,8 +17,6 @@ source_row: 529
 type_adapter_id: curation-record-v1
 ---
 
-# Loan-Approval-Prediction-Dataset
-
 ## Comments
 
 The distribution of the data looks very fake (50/50 for a binary column)

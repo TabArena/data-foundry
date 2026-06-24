@@ -15,8 +15,6 @@ source_row: 246
 type_adapter_id: curation-record-v1
 ---
 
-# NBA-2k20-player-dataset
-
 ## Comments
 
 Data from a game, not real but based on reality.

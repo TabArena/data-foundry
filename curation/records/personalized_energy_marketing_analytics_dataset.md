@@ -14,8 +14,6 @@ source_row: 180
 type_adapter_id: curation-record-v1
 ---
 
-# Personalized Energy Marketing Analytics Dataset
-
 ## Comments
 
 "user records designed to simulate electricity consumption behaviors" also ziya07

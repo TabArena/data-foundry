@@ -15,8 +15,6 @@ source_row: 134
 type_adapter_id: curation-record-v1
 ---
 
-# Raisin
-
 ## Comments
 
 Image dataset / task

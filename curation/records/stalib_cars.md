@@ -17,8 +17,6 @@ source_row: 462
 type_adapter_id: curation-record-v1
 ---
 
-# StaLib Cars
-
 ## Comments
 
 Unclear if outdated or not, but different cars version

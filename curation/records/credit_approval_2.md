@@ -18,8 +18,6 @@ source_row: 65
 type_adapter_id: curation-record-v1
 ---
 
-# credit-approval
-
 ## Comments
 
 Duplicate of 10.24432/C5FS30

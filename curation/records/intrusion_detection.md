@@ -20,8 +20,6 @@ source_row: 636
 type_adapter_id: curation-record-v1
 ---
 
-# intrusion-detection
-
 ## Comments
 
 A data dump from a network profile that requires much preprocessing to make it a dataset. Otherwise, it seems to be a task; need to check the paper

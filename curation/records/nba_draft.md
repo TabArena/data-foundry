@@ -19,8 +19,6 @@ source_row: 500
 type_adapter_id: curation-record-v1
 ---
 
-# NBA Draft
-
 ## Comments
 
 nba players stats and info

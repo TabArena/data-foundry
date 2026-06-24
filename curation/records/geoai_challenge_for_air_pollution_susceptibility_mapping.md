@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# geoai-challenge-for-air-pollution-susceptibility-mapping
-
 ## Comments
 
 predict the pollution levels (AQI) of the city of Milan during 202

@@ -26,8 +26,6 @@ source_row: 671
 type_adapter_id: curation-record-v1
 ---
 
-# Housing Prices in Metropolitan Areas of India
-
 ## Comments
 
 Looks good to use. Scraped from the internet, no temporal information, but likely still a valid task given the features

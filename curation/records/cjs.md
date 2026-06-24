@@ -18,8 +18,6 @@ source_row: 606
 type_adapter_id: curation-record-v1
 ---
 
-# cjs
-
 ## Comments
 
 CC: "Several samples come from one tree/injection (see tree id), so likely grouped-based splits needed and otherwise leakage, some samples are missing the group association"

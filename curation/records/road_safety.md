@@ -12,8 +12,6 @@ required_split:
 type_adapter_id: curation-record-v1
 ---
 
-# road-safety
-
 ## Comments
 
 Imported from the TabArena curation workbook.

@@ -19,8 +19,6 @@ source_row: 66
 type_adapter_id: curation-record-v1
 ---
 
-# wine_recognition
-
 ## Comments
 
 No information at all from PMLB. Likely not a real task and thus hard to say if we care about it

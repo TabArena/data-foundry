@@ -26,8 +26,6 @@ source_row: 1038
 type_adapter_id: curation-record-v1
 ---
 
-# SMK_CAN_187
-
 ## Comments
 
 CC: "Dominika: gene-expression profiles from Affymetrix HG-U133A microarrays. Need to check whether it's different from the Lung dataset."

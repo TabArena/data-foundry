@@ -20,8 +20,6 @@ source_row: 71
 type_adapter_id: curation-record-v1
 ---
 
-# sonar
-
 ## Comments
 
 The data comes from an old experiment where the feature describes a sound and the label describes the origin of the sound. This is clearly outdated and would be solved with time-series models today. Given this, I vote to exclude it and hope for real, new small data that is not from time-series data

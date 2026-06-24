@@ -19,8 +19,6 @@ source_row: 543
 type_adapter_id: curation-record-v1
 ---
 
-# Statlog (Shuttle)
-
 ## Comments
 
 CC: "UCI says "The examples in the original dataset were in time order, and this time order could presumably be relevant in classification.   However, this was not deemed relevant for StatLog purposes, so the order of the examples in the original dataset was randomised, and a portion of the original dataset removed for validation purposes." Need to check whether there is temporal leakage - Yes there is - clearly trees almost perfectly predict the data"

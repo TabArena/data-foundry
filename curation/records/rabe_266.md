@@ -18,8 +18,6 @@ source_row: 79
 type_adapter_id: curation-record-v1
 ---
 
-# rabe_266
-
 ## Comments
 
 Data from 1991, some regression analysis example. 2 features, 1 numeric feature. Data from some book

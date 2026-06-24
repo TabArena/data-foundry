@@ -15,8 +15,6 @@ source_row: 730
 type_adapter_id: curation-record-v1
 ---
 
-# corporate-credit-rating
-
 ## Comments
 
 Data and sources look good, could be a cool task, need to figure out which ratings to predict as it has minor ones

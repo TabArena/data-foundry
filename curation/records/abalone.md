@@ -16,8 +16,6 @@ source_row: 387
 type_adapter_id: curation-record-v1
 ---
 
-# abalone
-
 ## Comments
 
 CC: "Task might include arithmetic combinations of the inputs. Might have been preprocessed already (numerical values scaled). NNs perform best; missing values removed (sometimes for good reason)

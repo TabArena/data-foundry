@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# digital-green-crop-yield-estimate-challenge
-
 ## Comments
 
 predict the crop yield per acre of rice or wheat crops in India

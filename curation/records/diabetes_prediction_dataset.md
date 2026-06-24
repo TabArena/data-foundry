@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Diabetes Prediction Dataset
-
 ## Comments
 
 CC: ""Very simplistic dataset, missing source information and the way it is shared is questionable

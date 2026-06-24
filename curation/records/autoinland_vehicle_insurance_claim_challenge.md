@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# autoinland-vehicle-insurance-claim-challenge
-
 ## Comments
 
 predict if a customer will submit a claim within next 3 months

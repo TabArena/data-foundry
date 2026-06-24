@@ -18,8 +18,6 @@ source_row: 580
 type_adapter_id: curation-record-v1
 ---
 
-# baseball-hitter
-
 ## Comments
 
 IID-made data given the features, could be used for predicting only if feature targets are known.

@@ -31,8 +31,6 @@ source_row: 629
 type_adapter_id: curation-record-v1
 ---
 
-# KDDCup99
-
 ## Comments
 
 CC: "Subsampled dataset. Detect intrusions. Might be outdated, but might as well be still representative; original data had 7 weeks of training and 2 weeks of test data so this implies a temporal connection"

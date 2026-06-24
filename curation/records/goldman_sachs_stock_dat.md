@@ -14,5 +14,3 @@ source_links:
 source_row: 294
 type_adapter_id: curation-record-v1
 ---
-
-# Goldman Sachs Stock Dat

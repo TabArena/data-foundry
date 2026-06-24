@@ -15,8 +15,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# sports_articles_for_objectivity_analysis
-
 ## Comments
 
 Imported from the TabArena curation workbook.

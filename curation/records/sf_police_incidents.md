@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# sf-police-incidents
-
 ## Comments
 
 CC: "Interesting task, but actually requires temporal split. Could also argue that with the given features random is fine, but I believe that violent crimes may also be clustered around certain dates (i.e. due to demonstrations); moreover, the data might be biased during collection" 

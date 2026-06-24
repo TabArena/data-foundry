@@ -26,8 +26,6 @@ source_row: 868
 type_adapter_id: curation-record-v1
 ---
 
-# ghana-indigenous-intel-challenge
-
 ## Comments
 
 Need to be African citizen to accept terms, but license is CC-BY SA 4.0. So technically it would be legal if an African citizen accepts the terms and shares the data with us...

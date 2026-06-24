@@ -23,8 +23,6 @@ source_row: 525
 type_adapter_id: curation-record-v1
 ---
 
-# tadpole
-
 ## Comments
 
 Multimodal data, but the main challenge combines extracted features from multiple clinical modalities into one tabular dataset. If we could get the data and invest some time in understanding the task, we would likely obtain an awesome dataset. But there are license concerns, access is not easy and it might be hard to really do everything right with this complex data. Challenge has multiple tasks

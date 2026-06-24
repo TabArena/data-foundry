@@ -29,8 +29,6 @@ source_row: 772
 type_adapter_id: curation-record-v1
 ---
 
-# Cirrhosis Prediction Dataset
-
 ## Comments
 
 Need to check for duplicates and original source.

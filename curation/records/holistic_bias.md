@@ -17,8 +17,6 @@ source_row: 210
 type_adapter_id: curation-record-v1
 ---
 
-# HOLISTIC_BIAS
-
 ## Comments
 
 NLP task / data

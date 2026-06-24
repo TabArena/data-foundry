@@ -17,8 +17,6 @@ source_row: 411
 type_adapter_id: curation-record-v1
 ---
 
-# optdigits
-
 ## Comments
 
 CC: "Yet another handwritten digits dataset…"

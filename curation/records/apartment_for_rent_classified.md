@@ -18,8 +18,6 @@ source_row: 475
 type_adapter_id: curation-record-v1
 ---
 
-# Apartment for Rent Classified
-
 ## Comments
 
 Classified seems to have no meaning. Another house price prediction dataset, also text is boilerplate with text starting with the location and sometimes showing the real description. Moreover, text clearly contains the prices almost always. Unclear source

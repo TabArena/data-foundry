@@ -15,8 +15,6 @@ source_row: 349
 type_adapter_id: curation-record-v1
 ---
 
-# madeline
-
 ## Comments
 
 CC: "From AutoML challenge. Artificial dataset containing data points grouped in 32 clusters placed on the vertices of a five-dimensional hypercube"

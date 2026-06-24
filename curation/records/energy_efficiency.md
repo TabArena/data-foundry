@@ -14,8 +14,6 @@ source_row: 168
 type_adapter_id: curation-record-v1
 ---
 
-# Energy Efficiency
-
 ## Comments
 
 Simulated data, see TabArena judgment

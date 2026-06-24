@@ -28,8 +28,6 @@ source_row: 693
 type_adapter_id: curation-record-v1
 ---
 
-# Cardiotocography
-
 ## Comments
 
 The label is the consensus of three experts (so likely noisy).

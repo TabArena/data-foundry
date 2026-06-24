@@ -20,8 +20,6 @@ source_row: 78
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_*
-
 ## Comments
 
 https://pages.stern.nyu.edu/~jsimonof/AnalCatData/Data/Comma_separated/

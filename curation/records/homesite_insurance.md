@@ -17,8 +17,6 @@ source_row: 40
 type_adapter_id: curation-record-v1
 ---
 
-# Homesite Insurance
-
 ## Comments
 
 Duplicate of another entry in this list, which was marked as IID. Investigating and looking at the other entry more!

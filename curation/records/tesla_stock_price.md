@@ -14,5 +14,3 @@ source_links:
 source_row: 292
 type_adapter_id: curation-record-v1
 ---
-
-# TESLA Stock Price

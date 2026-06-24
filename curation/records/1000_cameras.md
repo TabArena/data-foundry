@@ -18,8 +18,6 @@ source_row: 551
 type_adapter_id: curation-record-v1
 ---
 
-# 1000-cameras
-
 ## Comments
 
 CC: "Probably not a predictive task, but if yes, then with temporal split"

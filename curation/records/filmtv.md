@@ -21,8 +21,6 @@ source_row: 24
 type_adapter_id: curation-record-v1
 ---
 
-# FilmTV
-
 ## Comments
 
 Scraped film data

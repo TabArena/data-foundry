@@ -14,8 +14,6 @@ source_row: 159
 type_adapter_id: curation-record-v1
 ---
 
-# Insurance Dataset Based on Real-World Statistics
-
 ## Comments
 
 "This dataset is a synthetic"

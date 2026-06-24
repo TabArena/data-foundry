@@ -28,8 +28,6 @@ source_row: 791
 type_adapter_id: curation-record-v1
 ---
 
-# Parkinsons
-
 ## Comments
 
 Voice recordings turned tabular (unclear if real task otherwise). Grouped data / 6 recordings per patient. Only 23 real samples, so tiny grouped data, likely not tabular

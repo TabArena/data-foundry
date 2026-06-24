@@ -10,8 +10,6 @@ required_split:
 type_adapter_id: curation-record-v1
 ---
 
-# scene
-
 ## Comments
 
 Imported from the TabArena curation workbook.

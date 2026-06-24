@@ -28,8 +28,6 @@ source_row: 691
 type_adapter_id: curation-record-v1
 ---
 
-# covertype
-
 ## Comments
 
 CC: ""The original study used random splits and it also makes sense to do so. In a real application one would collect samples randomly across the studied area, and afterwards try to fill the gaps to predict unseen areas to save collection time.

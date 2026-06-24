@@ -18,8 +18,6 @@ source_row: 203
 type_adapter_id: curation-record-v1
 ---
 
-# BROWN_FROWN_CORPORA_COLLINS
-
 ## Comments
 
 NLP task / data

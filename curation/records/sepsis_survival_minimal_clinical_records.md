@@ -26,8 +26,6 @@ source_row: 662
 type_adapter_id: curation-record-v1
 ---
 
-# Sepsis Survival Minimal Clinical Records
-
 ## Comments
 
 CC: "It has three features, which sound hard to be fully meaningful. But it is a real task"

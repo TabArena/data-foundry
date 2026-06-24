@@ -14,8 +14,6 @@ source_row: 239
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card Fraud Detection
-
 ## Comments
 
 Duplicate of https://www.kaggle.com/competitions/home-credit-default-risk/overview

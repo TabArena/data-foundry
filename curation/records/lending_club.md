@@ -31,8 +31,6 @@ source_row: 641
 type_adapter_id: curation-record-v1
 ---
 
-# lending_club
-
 ## Comments
 
 Predict whether loan is paid back, needs to be shuffled, TextTabBench drops ['id', 'member_id', 'issue_d', 'url', 'last_pymnt_d', 'last_credit_pull_d'], we will have to make sure that there is no leakage

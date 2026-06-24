@@ -24,8 +24,6 @@ source_row: 50
 type_adapter_id: curation-record-v1
 ---
 
-# INNHotelsGroup
-
 ## Comments
 
 CC: "Predict whether a booking will be canceled. Nice dataset; maybe temporal data due to arrival year?"

@@ -15,8 +15,6 @@ source_row: 589
 type_adapter_id: curation-record-v1
 ---
 
-# meta_stream_intervals.arff
-
 ## Comments
 
 CC: "Some kind of OpenML meta task; unclear source data and information; some kind of algorithm selection task; time/interval features?"

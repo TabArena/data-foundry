@@ -16,8 +16,6 @@ source_row: 337
 type_adapter_id: curation-record-v1
 ---
 
-# splice
-
 ## Comments
 
 In TabArena ("splice")

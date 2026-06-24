@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# NYC Taxi Fare Dataset
-
 ## Comments
 
 CC: ""Temporal preprocessing needed, geospatial leakage, grouped data;

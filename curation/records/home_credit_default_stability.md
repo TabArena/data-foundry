@@ -26,8 +26,6 @@ source_row: 710
 type_adapter_id: curation-record-v1
 ---
 
-# Homecredit Default
-
 ## Comments
 
 Follow the preprocessing from TabRed as well. Verify that TabRed preprocessing gets similar feature sets to top solutions

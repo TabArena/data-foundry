@@ -24,8 +24,6 @@ source_row: 675
 type_adapter_id: curation-record-v1
 ---
 
-# CHURN_TELCO_NIGERIA
-
 ## Comments
 
 100% accuracy possible? 50/50 churn rate.

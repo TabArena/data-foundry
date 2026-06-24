@@ -16,8 +16,6 @@ source_row: 362
 type_adapter_id: curation-record-v1
 ---
 
-# Miami Housing Dataset
-
 ## Comments
 
 Kaggle says source is OpenML.

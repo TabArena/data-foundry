@@ -28,8 +28,6 @@ source_row: 1029
 type_adapter_id: curation-record-v1
 ---
 
-# anes_voting_2026
-
 ## Comments
 
 task: predict voting participation from a detailed questionnaire.

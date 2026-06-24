@@ -17,8 +17,6 @@ source_row: 70
 type_adapter_id: curation-record-v1
 ---
 
-# spectf
-
 ## Comments
 
 Seems to be some kind of derivative or related data to spect, so we mark it as duplicate. Otherwise missing source information.

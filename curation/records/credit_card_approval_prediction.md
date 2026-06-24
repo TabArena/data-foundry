@@ -18,8 +18,6 @@ source_row: 60
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card Approval Prediction
-
 ## Comments
 
 Looks real and cool! Preprocessing seems to make data IID

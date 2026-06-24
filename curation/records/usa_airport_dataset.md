@@ -19,8 +19,6 @@ source_row: 613
 type_adapter_id: curation-record-v1
 ---
 
-# USA Airport Dataset
-
 ## Comments
 
 Could be used to forecast flights/seats/passengers (just one, all other would be leaking)

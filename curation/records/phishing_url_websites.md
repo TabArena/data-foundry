@@ -18,8 +18,6 @@ source_row: 586
 type_adapter_id: curation-record-v1
 ---
 
-# PHISHING_URL_WEBSITES
-
 ## Comments
 
 Maybe two datasets, maybe two duplicates

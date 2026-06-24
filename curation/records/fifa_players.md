@@ -21,8 +21,6 @@ source_row: 190
 type_adapter_id: curation-record-v1
 ---
 
-# FIFA players
-
 ## Comments
 
 Stats about FIFA players across different versions

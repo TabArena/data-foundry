@@ -17,8 +17,6 @@ source_row: 124
 type_adapter_id: curation-record-v1
 ---
 
-# Pima Indians Diabetes Database
-
 ## Comments
 
 In TabArena ("diabetes")

@@ -18,8 +18,6 @@ source_row: 534
 type_adapter_id: curation-record-v1
 ---
 
-# molecularproperties
-
 ## Comments
 
 CC: "Can pre-filter data according to existing molecules, requires expert feature engineering to even find predictive signal from molecular structures but has some un-engineered data we could use/join; target is made up of combination of targets"

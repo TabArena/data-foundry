@@ -14,8 +14,6 @@ source_row: 166
 type_adapter_id: curation-record-v1
 ---
 
-# 🛒 E-commerce Customer Data For Behavior Analysis
-
 ## Comments
 
 "is a synthetic dataset generated using"

@@ -15,8 +15,6 @@ source_row: 607
 type_adapter_id: curation-record-v1
 ---
 
-# internet_firewall
-
 ## Comments
 
 CC: "rejected after post-hoc analysis due to groups"

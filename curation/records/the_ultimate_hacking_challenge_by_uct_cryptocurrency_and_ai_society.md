@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# The Ultimate Hacking Challenge by UCT Cryptocurrency and AI Society
-
 ## Comments
 
 predict if a building will have an insurance claim

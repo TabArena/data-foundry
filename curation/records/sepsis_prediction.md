@@ -25,8 +25,6 @@ source_row: 689
 type_adapter_id: curation-record-v1
 ---
 
-# SepsisPrediction
-
 ## Comments
 
 CC: "Highly imbalanced, high missing values, requires some feature preprocessing, unclear if patient duplicates; potential data leakage for unit 1 and unit 2 or group-based data; survival prediction task transformed into binary classification (creates some problems)"

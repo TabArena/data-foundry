@@ -14,5 +14,3 @@ source_links:
 source_row: 314
 type_adapter_id: curation-record-v1
 ---
-
-# Wind Power Dataset (4 Seconds Observations)

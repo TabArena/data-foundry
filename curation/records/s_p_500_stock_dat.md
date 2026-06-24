@@ -14,5 +14,3 @@ source_links:
 source_row: 293
 type_adapter_id: curation-record-v1
 ---
-
-# S&P 500 Stock dat

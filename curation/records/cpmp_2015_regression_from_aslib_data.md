@@ -16,8 +16,6 @@ source_row: 697
 type_adapter_id: curation-record-v1
 ---
 
-# CPMP-2015-regression from aslib_data
-
 ## Comments
 
 CC: "Algorithm selection task. Runtime prediction. Had custom train/test split. Likely requires grouped split; otherwise leakage"

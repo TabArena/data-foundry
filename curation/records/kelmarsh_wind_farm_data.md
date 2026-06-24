@@ -18,8 +18,6 @@ source_row: 622
 type_adapter_id: curation-record-v1
 ---
 
-# Kelmarsh wind farm data
-
 ## Comments
 
 Unclear if the task is reasonable, need to take a closer look

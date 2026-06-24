@@ -26,8 +26,6 @@ source_row: 647
 type_adapter_id: curation-record-v1
 ---
 
-# KDD98
-
 ## Comments
 
 CC: "Predict whether there was a response to mailing. Side story: A friend of mine used to work for a company whose customers were mainly old people still ordering stuff from physical catalogues. Predicting the response to direct mailing was one the tasks he worked on. So this good old task is still relevant :) ... In Germany? :D"

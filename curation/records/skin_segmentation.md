@@ -16,8 +16,6 @@ source_row: 413
 type_adapter_id: curation-record-v1
 ---
 
-# skin-segmentation
-
 ## Comments
 
 CC: "RGB images from different people (therefore group split required). Features are channels"

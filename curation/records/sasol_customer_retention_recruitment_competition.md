@@ -16,8 +16,6 @@ source_row: 892
 type_adapter_id: curation-record-v1
 ---
 
-# sasol-customer-retention-recruitment-competition
-
 ## Comments
 
 forecast the probability of each customer becoming inactive and refraining from making any transactions for a period of 90 days (1.5 million clients in train)

@@ -16,8 +16,6 @@ source_row: 565
 type_adapter_id: curation-record-v1
 ---
 
-# backache
-
 ## Comments
 
 Unable to find the source of this dataset and too much missing information. Thus dropping it

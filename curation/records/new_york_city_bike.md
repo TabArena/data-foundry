@@ -19,8 +19,6 @@ source_row: 545
 type_adapter_id: curation-record-v1
 ---
 
-# New York City Bike
-
 ## Comments
 
 Hard to say which version of the data one should use or how it works. Can get data from source and build one proper dataset for it

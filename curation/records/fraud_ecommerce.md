@@ -24,8 +24,6 @@ source_row: 42
 type_adapter_id: curation-record-v1
 ---
 
-# Fraud ecommerce
-
 ## Comments
 
 Absolutely no information about the data given.

@@ -14,8 +14,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# SGEMM_GPU_kernel_performance
-
 ## Comments
 
 Imported from the TabArena curation workbook.

@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# data_scientist_salary
-
 ## Comments
 
 Text descriptions are cut off after the first blurb! No full sentences? Salary prediction as a classification instead of a regression task. Otherwise seems like a real-ish task but mostly for string preprocessing

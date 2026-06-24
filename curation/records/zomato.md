@@ -18,8 +18,6 @@ source_row: 494
 type_adapter_id: curation-record-v1
 ---
 
-# Zomato
-
 ## Comments
 
 "Data has been taken from different sources from databases, websites, and credential data was generated itself"

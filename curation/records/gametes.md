@@ -20,8 +20,6 @@ source_row: 422
 type_adapter_id: curation-record-v1
 ---
 
-# GAMETES
-
 ## Comments
 
 CC: ""Generated data with a specific algorithm! ""llows us to rapidly generate complex biallelic single nucleotide polymorphism (SNP) disease models and associated simulated datasets."" 

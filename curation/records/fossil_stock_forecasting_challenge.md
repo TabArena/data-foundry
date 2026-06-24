@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# fossil-stock-forecasting-challenge
-
 ## Comments
 
 predict demand for each individual product, four months into the future

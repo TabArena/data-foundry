@@ -27,8 +27,6 @@ source_row: 615
 type_adapter_id: curation-record-v1
 ---
 
-# rmftsa_ladata
-
 ## Comments
 
 CC: "Actual task is regression, data apparently was collected between 1970-79. As the data is 6-day spacing, temporal correlations might be not too strong. To be sure, we would need to verify experimentally that results with temporal split are not too different from random split. However as all models have a very low error, temporal data leakage seems likely"

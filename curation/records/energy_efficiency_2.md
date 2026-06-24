@@ -15,8 +15,6 @@ source_row: 393
 type_adapter_id: curation-record-v1
 ---
 
-# energy_efficiency
-
 ## Comments
 
 CC: "Seems to be more of a scientific discovery task than a predictive task; simulated data and repeated shapes"

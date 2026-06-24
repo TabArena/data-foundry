@@ -18,8 +18,6 @@ source_row: 568
 type_adapter_id: curation-record-v1
 ---
 
-# ionosphere
-
 ## Comments
 
 Does not sound like a relevant predictive task but like a scientific discovery task. Plus likely very outdated

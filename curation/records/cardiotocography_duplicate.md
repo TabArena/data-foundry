@@ -18,8 +18,6 @@ source_row: 256
 type_adapter_id: curation-record-v1
 ---
 
-# cardiotocography
-
 ## Comments
 
 CC: "Features extracted from cardiotocograms. Might be done differently nowadays; outdated features"

@@ -14,8 +14,6 @@ source_row: 163
 type_adapter_id: curation-record-v1
 ---
 
-# Airlines Customer satisfaction
-
 ## Comments
 
 Duplicate of https://www.kaggle.com/datasets/teejmahal20/airline-passenger-satisfaction?select=train.csv

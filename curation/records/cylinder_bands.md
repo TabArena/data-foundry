@@ -25,8 +25,6 @@ source_row: 559
 type_adapter_id: curation-record-v1
 ---
 
-# cylinder-bands
-
 ## Comments
 
 CC: "Process delay data. Might require time splits or even group splits. Unclear what the exact measurements are and how they relate. Most likely this task is not representative anymore. Trees dominate on TabRepo - indicates that something is off. Maybe group leak, i.e. due to job_number? Or feature types may be defined wrongly; also has temporal connections"

@@ -25,8 +25,6 @@ source_row: 688
 type_adapter_id: curation-record-v1
 ---
 
-# Caracas Cervical Cancer
-
 ## Comments
 
 Some features are multi-categoricals as one-hot encoding. Might want to reverse this.

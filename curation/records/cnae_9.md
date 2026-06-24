@@ -18,8 +18,6 @@ source_row: 357
 type_adapter_id: curation-record-v1
 ---
 
-# cnae-9
-
 ## Comments
 
 CC: "1080 documents of free text business descriptions of Brazilian companies categorized into a subset of 9 categories; which got one-hot encoded?"

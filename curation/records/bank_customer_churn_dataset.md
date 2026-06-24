@@ -14,8 +14,6 @@ source_row: 143
 type_adapter_id: curation-record-v1
 ---
 
-# Bank Customer Churn Dataset
-
 ## Comments
 
 In TabArena ("Bank_Customer_Churn")

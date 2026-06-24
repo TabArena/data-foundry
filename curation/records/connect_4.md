@@ -16,8 +16,6 @@ source_row: 443
 type_adapter_id: curation-record-v1
 ---
 
-# connect-4
-
 ## Comments
 
 CC: "Favorite game of my mum-in-law, but certainly not suitable for TabArena :)  - LP: No exceptions! but we should play it at the next conference  "

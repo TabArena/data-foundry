@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Mobile_Price_Classification
-
 ## Comments
 
 Imported from the TabArena curation workbook.

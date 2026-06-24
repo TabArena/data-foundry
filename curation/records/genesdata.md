@@ -18,8 +18,6 @@ source_row: 34
 type_adapter_id: curation-record-v1
 ---
 
-# GenesData
-
 ## Comments
 
 "This Dataset was part of Assignment of MITx 6.419x Data Analysis: Statistical Modeling and Computation in Applications Course. This dataset was compiled by Allen Institute."

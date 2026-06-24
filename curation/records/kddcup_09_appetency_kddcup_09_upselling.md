@@ -15,8 +15,6 @@ source_row: 352
 type_adapter_id: curation-record-v1
 ---
 
-# KDDCUP_09_APPETENCY / KDDCUP_09_UPSELLING
-
 ## Comments
 
 In TabArena (KDDCup09_appetency)

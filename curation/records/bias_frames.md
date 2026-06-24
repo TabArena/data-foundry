@@ -15,8 +15,6 @@ source_row: 209
 type_adapter_id: curation-record-v1
 ---
 
-# BIAS_FRAMES
-
 ## Comments
 
 NLP task / data

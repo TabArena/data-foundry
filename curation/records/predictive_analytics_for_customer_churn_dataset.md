@@ -17,8 +17,6 @@ source_row: 27
 type_adapter_id: curation-record-v1
 ---
 
-# Predictive Analytics for Customer Churn: Dataset
-
 ## Comments
 
 " from Data Science Challenge on Coursera"

@@ -27,8 +27,6 @@ source_row: 778
 type_adapter_id: curation-record-v1
 ---
 
-# Tour & Travels Customer Churn Prediction
-
 ## Comments
 
 We can add it for now. We are missing some information, but it seems reasonable. It might be trivial after we test it for the first time.

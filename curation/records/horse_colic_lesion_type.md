@@ -15,8 +15,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# horse_colic_lesion_type
-
 ## Comments
 
 Imported from the TabArena curation workbook.

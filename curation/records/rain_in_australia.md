@@ -21,8 +21,6 @@ source_row: 724
 type_adapter_id: curation-record-v1
 ---
 
-# Rain_in_Australia
-
 ## Comments
 
 Predict whether it will rain tomorrow. Time-series data, but target is lagged. Might work as a task.

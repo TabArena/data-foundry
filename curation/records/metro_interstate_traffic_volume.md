@@ -15,8 +15,6 @@ source_row: 272
 type_adapter_id: curation-record-v1
 ---
 
-# Metro Interstate Traffic Volume
-
 ## Comments
 
 CC: "Hourly data of traffic volume 2012 - 2018"

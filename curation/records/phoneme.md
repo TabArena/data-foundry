@@ -17,8 +17,6 @@ source_row: 353
 type_adapter_id: curation-record-v1
 ---
 
-# phoneme
-
 ## Comments
 
 CC: "Extracted from audio: amplitudes of the five first harmonics AHi, normalised by the total energy Ene. Likely requires group split as different speakers"

@@ -29,8 +29,6 @@ source_row: 776
 type_adapter_id: curation-record-v1
 ---
 
-# Vertebral Column
-
 ## Comments
 
 Weka dataset, unclear source or citation

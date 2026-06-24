@@ -25,8 +25,6 @@ source_row: 722
 type_adapter_id: curation-record-v1
 ---
 
-# house_prices_nominal
-
 ## Comments
 
 CC: "Ames, Iowa house prices. 1460 samples, many arbitrary features. year and month when houses were sold is given, thus is a temporal problem as well; HOWEVER, the original kaggle split is not even temporal which makes this a "gap-filling" problem of questional relevance in reality"

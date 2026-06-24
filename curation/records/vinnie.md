@@ -17,8 +17,6 @@ source_row: 77
 type_adapter_id: curation-record-v1
 ---
 
-# vinnie
-
 ## Comments
 
 1 feature is timestamp, 1 is attempts, and one is goals. This seems like a trivial fit function. Moreover, the task is for a basketball player from the 80s/90s

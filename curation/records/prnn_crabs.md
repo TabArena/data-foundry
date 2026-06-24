@@ -16,8 +16,6 @@ source_row: 570
 type_adapter_id: curation-record-v1
 ---
 
-# prnn_crabs
-
 ## Comments
 
 From: Datasets for `Pattern Recognition and Neural Networks' by B.D. Ripley

@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# womens-mentorship-hackathon
-
 ## Comments
 
 Predict which women are at highest risk of being made a victim of a crime in South Africa

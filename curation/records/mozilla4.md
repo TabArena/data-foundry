@@ -19,8 +19,6 @@ source_row: 536
 type_adapter_id: curation-record-v1
 ---
 
-# mozilla4
-
 ## Comments
 
 CC: "Might be clustered by id. Might need some special preprocessing. Event might leak the state? TabRepo error pretty low - makes a leak more likely. Task has a temporal component, but it seems as if features were designed to be time-invariant. Nevertheless, for each class future time steps cannot appear before later ones - a good task definition requires a custom split; also multiple ID groups where the class depends on a "trigger" to stay the same (i.e. state tracking)"

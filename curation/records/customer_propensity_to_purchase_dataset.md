@@ -14,8 +14,6 @@ source_row: 165
 type_adapter_id: curation-record-v1
 ---
 
-# Customer propensity to purchase dataset
-
 ## Comments
 
 " visit to a fictional website"

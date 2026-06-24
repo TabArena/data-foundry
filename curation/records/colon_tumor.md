@@ -24,8 +24,6 @@ source_row: 1032
 type_adapter_id: curation-record-v1
 ---
 
-# Colon
-
 ## Comments
 
 CC: ""The genes chosen are the 2,000 genes with highest minimal intensity across the samples."- openml publishes the already filtered out data. It's unsupervised filtering so should be fine."

@@ -14,8 +14,6 @@ source_row: 324
 type_adapter_id: curation-record-v1
 ---
 
-# CookbookReviews
-
 ## Comments
 
 CC: "recipe recommendation task (ranks as target), required temporal split"

@@ -28,8 +28,6 @@ source_row: 686
 type_adapter_id: curation-record-v1
 ---
 
-# Human Genome data
-
 ## Comments
 
 The Kaggle version already did PCA.

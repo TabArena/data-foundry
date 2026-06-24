@@ -16,8 +16,6 @@ source_row: 10
 type_adapter_id: curation-record-v1
 ---
 
-# Public Health Ins.
-
 ## Comments
 
 Same data as Food Stamps task

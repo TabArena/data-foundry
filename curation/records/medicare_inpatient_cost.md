@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Medicare Inpatient Cost
-
 ## Comments
 
 CC: "Has some cool data but is just a listing of data without a real task. So it might not be useful for a benchmark or tell us much. It could still be used but maybe is not a great signal.

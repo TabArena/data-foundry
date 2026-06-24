@@ -16,8 +16,6 @@ source_row: 392
 type_adapter_id: curation-record-v1
 ---
 
-# autoUniv-au1-1000
-
 ## Comments
 
 CC: "Generated using some tool that is likely outdated"

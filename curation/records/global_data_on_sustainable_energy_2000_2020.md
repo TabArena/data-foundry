@@ -13,5 +13,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# Global Data on Sustainable Energy (2000-2020)

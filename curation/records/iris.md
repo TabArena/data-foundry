@@ -17,8 +17,6 @@ source_row: 562
 type_adapter_id: curation-record-v1
 ---
 
-# iris
-
 ## Comments
 
 Well known and infamous IRIS dataset.

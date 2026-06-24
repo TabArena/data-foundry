@@ -29,8 +29,6 @@ source_row: 775
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Approval
-
 ## Comments
 
 The UCI source contains two datasets, this is the crx dataset in the data

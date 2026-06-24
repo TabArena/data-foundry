@@ -25,8 +25,6 @@ source_row: 695
 type_adapter_id: curation-record-v1
 ---
 
-# ASP-POTASSCO-classification from aslib_data
-
 ## Comments
 
 CC: ""Algorithm selection task. samples are per instance_id - unique algorithms. Task is to predict algorithm - not sure whether this makes sense

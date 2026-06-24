@@ -19,8 +19,6 @@ source_row: 90
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_lawsuit
-
 ## Comments
 
 No, see analcatdata_* entry for more information

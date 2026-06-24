@@ -13,8 +13,6 @@ source_row: 639
 type_adapter_id: curation-record-v1
 ---
 
-# QSAR-TID-10980
-
 ## Comments
 
 CC: "Same as above, but different drug target. Should only include one of these datasets"

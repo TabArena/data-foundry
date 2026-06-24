@@ -28,8 +28,6 @@ source_row: 555
 type_adapter_id: curation-record-v1
 ---
 
-# Credit score classification
-
 ## Comments
 
 Used a lot, seems very simulated again (https://www.kaggle.com/datasets/parisrohan/credit-score-classification/discussion/456153)

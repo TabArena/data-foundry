@@ -17,8 +17,6 @@ source_row: 367
 type_adapter_id: curation-record-v1
 ---
 
-# riccardo
-
 ## Comments
 
 CC: "From AutoML challenge. prediction task consists of determining whether a pair of image-text is related"

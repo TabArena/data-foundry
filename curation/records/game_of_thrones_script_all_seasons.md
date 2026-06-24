@@ -14,8 +14,6 @@ source_row: 334
 type_adapter_id: curation-record-v1
 ---
 
-# Game of Thrones Script All Seasons
-
 ## Comments
 
 Just a data dump, no predictive task or content.

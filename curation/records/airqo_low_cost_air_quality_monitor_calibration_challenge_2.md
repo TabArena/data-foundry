@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# AirQo Low-Cost Air Quality Monitor Calibration Challenge
-
 ## Comments
 
 predict pm2_5

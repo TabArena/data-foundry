@@ -14,8 +14,6 @@ source_row: 135
 type_adapter_id: curation-record-v1
 ---
 
-# Genomic Data for Cancer
-
 ## Comments
 
 "Data collected from simulated genomic experiments."

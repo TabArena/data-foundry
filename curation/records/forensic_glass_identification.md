@@ -27,8 +27,6 @@ source_row: 755
 type_adapter_id: curation-record-v1
 ---
 
-# glass2
-
 ## Comments
 
 PMLB version has less samples and less classes, so likely filtered (?)

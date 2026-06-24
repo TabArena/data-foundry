@@ -21,8 +21,6 @@ source_row: 14
 type_adapter_id: curation-record-v1
 ---
 
-# covid_trials
-
 ## Comments
 
 there is a CSV and multiple XML files, the XML files are supposed to contain more data, am looking at the csv here, which is also what the TextTabBench code used, could be worth it to maybe look into the specific XMLs and check whether the csv is essentially the sum of the XMLs

@@ -26,8 +26,6 @@ source_row: 1035
 type_adapter_id: curation-record-v1
 ---
 
-# NCI Pancreatic
-
 ## Comments
 
 Original data is multiple serums collected per mouse

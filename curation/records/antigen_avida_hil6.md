@@ -18,8 +18,6 @@ source_row: 204
 type_adapter_id: curation-record-v1
 ---
 
-# ANTIGEN_AVIDA_HIL6
-
 ## Comments
 
 NLP task / data

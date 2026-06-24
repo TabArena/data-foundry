@@ -16,8 +16,6 @@ source_row: 56
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card Fraud Detection
-
 ## Comments
 
 "result of a PCA transformation. Unfortunately, due to confidentiality issues, we cannot provide the original features and more background information about the data. Features V1, V2, … V28 are the principal components obtained with PCA"

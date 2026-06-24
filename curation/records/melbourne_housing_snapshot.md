@@ -15,5 +15,3 @@ source_links:
 source_row: 497
 type_adapter_id: curation-record-v1
 ---
-
-# Melbourne Housing Snapshot

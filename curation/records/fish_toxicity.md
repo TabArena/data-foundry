@@ -14,8 +14,6 @@ source_row: 382
 type_adapter_id: curation-record-v1
 ---
 
-# FISH_TOXICITY
-
 ## Comments
 
 In TabArena

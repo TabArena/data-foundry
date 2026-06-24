@@ -24,8 +24,6 @@ source_row: 643
 type_adapter_id: curation-record-v1
 ---
 
-# rosbank1
-
 ## Comments
 
 "predict customer churn after a card is used for a discounted rate, and predict the spending volume over the next three months for customers who continue to use the card." ROC AUC / RMSE

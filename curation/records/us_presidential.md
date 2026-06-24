@@ -16,8 +16,6 @@ source_row: 490
 type_adapter_id: curation-record-v1
 ---
 
-# US Presidential
-
 ## Comments
 
 data used as an example for feature enriching via graphs, so kind of biased in that direction and focused on entities

@@ -27,8 +27,6 @@ source_row: 765
 type_adapter_id: curation-record-v1
 ---
 
-# Early Stage Diabetes Risk Prediction
-
 ## Comments
 
 Looks good

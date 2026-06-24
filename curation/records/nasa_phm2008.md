@@ -16,8 +16,6 @@ source_row: 284
 type_adapter_id: curation-record-v1
 ---
 
-# NASA_PHM2008
-
 ## Comments
 
 CC: sensor data, but almost no information given. Sensor data is very likely time-series.

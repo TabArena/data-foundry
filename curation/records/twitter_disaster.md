@@ -15,8 +15,6 @@ source_row: 212
 type_adapter_id: curation-record-v1
 ---
 
-# TWITTER_DISASTER
-
 ## Comments
 
 NLP task / data

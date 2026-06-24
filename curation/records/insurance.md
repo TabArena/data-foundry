@@ -24,8 +24,6 @@ source_row: 527
 type_adapter_id: curation-record-v1
 ---
 
-# Insurance
-
 ## Comments
 
 CC: "Not much task info given."

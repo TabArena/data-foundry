@@ -18,8 +18,6 @@ source_row: 202
 type_adapter_id: curation-record-v1
 ---
 
-# SOCC_OPINION_COMMENTS_CORPUS_TOXICITY
-
 ## Comments
 
 NLP task / data

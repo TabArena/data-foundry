@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# cryptocurrency-closing-price-prediction
-
 ## Comments
 
 predict the closing price for a cryptocurrency

@@ -22,8 +22,6 @@ source_row: 13
 type_adapter_id: curation-record-v1
 ---
 
-# okcupid
-
 ## Comments
 
 predict sexual orientation based on dating profile info

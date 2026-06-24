@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# income-prediction-challenge-for-azubian
-
 ## Comments
 
 predict if an individual earns above or below an income threshold

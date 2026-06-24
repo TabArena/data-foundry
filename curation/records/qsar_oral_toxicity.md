@@ -24,8 +24,6 @@ source_row: 685
 type_adapter_id: curation-record-v1
 ---
 
-# QSAR oral toxicity
-
 ## Comments
 
 Rel: https://www.centro3r.it/sites/default/files/Ballabio_et_al-2019-Molecular_Informatics.pdf

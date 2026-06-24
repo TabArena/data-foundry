@@ -17,8 +17,6 @@ source_row: 96
 type_adapter_id: curation-record-v1
 ---
 
-# flags
-
 ## Comments
 
 No real task, just data about flags with metadata about their origin and setup

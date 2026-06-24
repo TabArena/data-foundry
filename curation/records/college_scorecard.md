@@ -19,8 +19,6 @@ source_row: 704
 type_adapter_id: curation-record-v1
 ---
 
-# College scorecard
-
 ## Comments
 
 Need to figure out real task/target. Binarized version of regression by TableShift.

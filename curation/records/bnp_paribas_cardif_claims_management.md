@@ -27,8 +27,6 @@ source_row: 744
 type_adapter_id: curation-record-v1
 ---
 
-# BNP_Paribas_Cardif_Claims_Management
-
 ## Comments
 
 CC: "Competition was won through deanonymizing the features and analyzing them. In doing so the participants were able to find that the data is panel data structured and the target is very dependent on the level. Hence, the task actually requires a temporal (maybe also grouped) split. The leak can be exploited through feature engineering, which CatBoost does automatically. Hence, this dataset has still value for benchmarking as it covers an interesting bias. More information on the winning solution: https://www.kaggle.com/competitions/bnp-paribas-cardif-claims-management/discussion/20247"

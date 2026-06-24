@@ -23,8 +23,6 @@ source_row: 632
 type_adapter_id: curation-record-v1
 ---
 
-# open-soil-data
-
 ## Comments
 
 Also hosted as a zindi competition: https://zindi.africa/competitions/rhea-soil-nutrient-prediction-challenge/data

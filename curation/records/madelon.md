@@ -15,8 +15,6 @@ source_row: 348
 type_adapter_id: curation-record-v1
 ---
 
-# madelon
-
 ## Comments
 
 CC: "Data is clustered and includes uninformative features. Originally introduced for a feature selection challenge"

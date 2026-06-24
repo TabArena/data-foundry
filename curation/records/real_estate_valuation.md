@@ -26,8 +26,6 @@ source_row: 6
 type_adapter_id: curation-record-v1
 ---
 
-# Real Estate Valuation
-
 ## Comments
 
 Small data, unsure time horizon, need to get square foot book to the model

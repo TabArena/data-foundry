@@ -17,8 +17,6 @@ source_row: 405
 type_adapter_id: curation-record-v1
 ---
 
-# Pollen Luxembourg 1992 2018
-
 ## Comments
 
 Forecasting data

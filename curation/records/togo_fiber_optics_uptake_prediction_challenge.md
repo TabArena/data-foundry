@@ -15,8 +15,6 @@ source_row: 33
 type_adapter_id: curation-record-v1
 ---
 
-# togo-fiber-optics-uptake-prediction-challenge
-
 ## Comments
 
 Data distribution explicitly not allowed

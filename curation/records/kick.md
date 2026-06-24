@@ -27,8 +27,6 @@ source_row: 723
 type_adapter_id: curation-record-v1
 ---
 
-# kick / CAR_BAD_BUY_KICK
-
 ## Comments
 
 CC: "Is from a competition, nice tabular data task. Might require temporal split or some time-invariant feature engineering; original data has more features that are interesting (like KickDate) but unclear if this makes it temporal; kickdate only in description in data. Need to check original data for more, but likely we could ignore time and group-based problems after preprocessing the original data; likely we can ignore temporal impact. No (after preprocessing)."

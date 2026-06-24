@@ -17,8 +17,6 @@ source_row: 482
 type_adapter_id: curation-record-v1
 ---
 
-# Employee remuneration and expenses earning over 75000
-
 ## Comments
 
 Predicts remunerations of employees (earnings)

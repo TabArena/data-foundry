@@ -24,8 +24,6 @@ source_row: 777
 type_adapter_id: curation-record-v1
 ---
 
-# Mutual Funds India - Detailed
-
 ## Comments
 
 Returns prediction, sounds reasonable, need to pick one target and go for it

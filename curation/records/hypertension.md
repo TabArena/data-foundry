@@ -16,8 +16,6 @@ source_row: 7
 type_adapter_id: curation-record-v1
 ---
 
-# Hypertension
-
 ## Comments
 
 "We collect all survey questions related to these risk factors and use them as the predictors for this task, along with a shared set of demographic indicators (race, sex, state, survey year, and a question related to income level)."

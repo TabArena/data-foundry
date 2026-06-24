@@ -22,8 +22,6 @@ source_row: 550
 type_adapter_id: curation-record-v1
 ---
 
-# Used Cars Dataset (CarDekho)
-
 ## Comments
 
 Used cars offer info scraped

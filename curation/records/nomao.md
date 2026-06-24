@@ -17,8 +17,6 @@ source_row: 591
 type_adapter_id: curation-record-v1
 ---
 
-# nomao
-
 ## Comments
 
 CC: ""UPDATE: The data was actually extracted from a table with text columns [Name, Phone, Address, GPS], i.e.: [La poste, 3631, 13 Rue De La Clef 59000 Lille France, (50.64, 3.04)]. The available samples are bivariate comparisons, but likely already filtered for obvious cases. Most features are extracted from text.

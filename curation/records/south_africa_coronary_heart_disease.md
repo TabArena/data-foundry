@@ -27,8 +27,6 @@ source_row: 749
 type_adapter_id: curation-record-v1
 ---
 
-# sa-heart
-
 ## Comments
 
 Kaggle version is much better described, wow!, well done

@@ -15,8 +15,6 @@ source_row: 214
 type_adapter_id: curation-record-v1
 ---
 
-# AIRLINES_TWITTER_SENTIMENT
-
 ## Comments
 
 NLP task / data

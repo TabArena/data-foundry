@@ -30,8 +30,6 @@ source_row: 594
 type_adapter_id: curation-record-v1
 ---
 
-# Magicbricks House Price
-
 ## Comments
 
 Looks reasonable but yet another house price dataset.

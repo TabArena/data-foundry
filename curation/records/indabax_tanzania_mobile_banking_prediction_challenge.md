@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# indabax-tanzania-mobile-banking-prediction-challenge
-
 ## Comments
 
 predict who uses mobile banking

@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# MIMIC-IV
-
 ## Comments
 
 Another MIMIC dataset. Need to figure out which version(s) to use and how, or if even possible.

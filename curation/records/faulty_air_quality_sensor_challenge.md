@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Faulty Air Quality Sensor Challenge
-
 ## Comments
 
 Classify if a device is faulty based on its output data

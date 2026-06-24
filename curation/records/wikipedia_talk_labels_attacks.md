@@ -16,8 +16,6 @@ source_row: 247
 type_adapter_id: curation-record-v1
 ---
 
-# WIKIPEDIA_TALK_LABELS_ATTACKS
-
 ## Comments
 
 NLP task / data

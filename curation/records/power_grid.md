@@ -14,8 +14,6 @@ source_row: 174
 type_adapter_id: curation-record-v1
 ---
 
-# Power-Grid
-
 ## Comments
 
 "The dataset includes synthetic data related to power grid systems, such as"

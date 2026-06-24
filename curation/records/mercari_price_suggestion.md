@@ -28,8 +28,6 @@ source_row: 658
 type_adapter_id: curation-record-v1
 ---
 
-# mercari_price
-
 ## Comments
 
 Mercari (Japanese shopping app); a lot of signal from text preprocessing (plus be aware of censoring), maybe create a version after text embeddings to use for benchmarking; likely temporal but all features are IID, so we can use as is; likely many categoricals.

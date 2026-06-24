@@ -20,8 +20,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# african-credit-scoring-challenge
-
 ## Comments
 
 predict loan default

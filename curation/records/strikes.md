@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# strikes
-
 ## Comments
 
 CC: "Regression. Rather interpretability than predictive task. temporal (collection 1951-1985); requires group-based or time-based splits"

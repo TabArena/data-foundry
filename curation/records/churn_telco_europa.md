@@ -24,8 +24,6 @@ source_row: 654
 type_adapter_id: curation-record-v1
 ---
 
-# Churn_Telco_Europa
-
 ## Comments
 
 OpenML version uses the test data with all churn for all customers? That is just a placeholder? In the notebook it was used as test data, so maybe we can combine it and treat it as such? Otherwise, just stick to train data to avoid problems.

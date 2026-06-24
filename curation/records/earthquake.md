@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# earthquake
-
 ## Comments
 
 Unsure if a real task, or how it could be used. However, we can still take a look at it

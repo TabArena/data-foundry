@@ -17,8 +17,6 @@ source_row: 423
 type_adapter_id: curation-record-v1
 ---
 
-# JapaneseVowels
-
 ## Comments
 
 CC: "640 time series of 12 LPC cepstrum coefficients taken from nine male speakers."

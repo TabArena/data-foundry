@@ -16,8 +16,6 @@ source_row: 388
 type_adapter_id: curation-record-v1
 ---
 
-# bank32nh
-
 ## Comments
 
 CC: "Regression. Variant of bank8FM"

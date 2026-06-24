@@ -23,8 +23,6 @@ source_row: 628
 type_adapter_id: curation-record-v1
 ---
 
-# geoai-challenge-for-cropland-mapping-in-dry-environments
-
 ## Comments
 
 Winning solution: https://zindi.africa/learn/winning-solution-to-the-geoai-cropland-mapping-

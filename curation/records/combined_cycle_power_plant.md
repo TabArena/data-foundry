@@ -25,8 +25,6 @@ source_row: 49
 type_adapter_id: curation-record-v1
 ---
 
-# Combined Cycle Power Plant
-
 ## Comments
 
 CC: ""Data points collected over 6 years; time invariant features, unclear target and prediction goal

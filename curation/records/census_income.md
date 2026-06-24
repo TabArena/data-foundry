@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Census-Income
-
 ## Comments
 
 CC: "weighted census data extracted from the 1994 and 1995 Current Population Surveys conducted by the U.S. Census Bureau. The data contains 41 demographic and employment related variables. 300k samples. Attention: One of the features is instance weight for stratified sampling - should not be used in prediction. Task is as in adult - this can be seen as a larger version of adult"

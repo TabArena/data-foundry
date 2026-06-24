@@ -19,8 +19,6 @@ source_row: 618
 type_adapter_id: curation-record-v1
 ---
 
-# Occupancy Detection
-
 ## Comments
 
 CC: "Predict if a room is occupied based on environmental features and date; 

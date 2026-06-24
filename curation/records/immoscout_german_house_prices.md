@@ -27,8 +27,6 @@ source_row: 684
 type_adapter_id: curation-record-v1
 ---
 
-# ImmoScout24 German-House-Prices
-
 ## Comments
 
 Missing date column, but as it represents a snapshot of data at a certain time point (when scraped) it represents live data and could be used to fit a model for other houses at the same time

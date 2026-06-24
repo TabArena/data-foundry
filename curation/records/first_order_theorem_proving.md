@@ -17,8 +17,6 @@ source_row: 425
 type_adapter_id: curation-record-v1
 ---
 
-# first-order-theorem-proving
-
 ## Comments
 
 CC: "Likely done with something like reinforcement learning or LLMs nowadays, but clearly an unsolved problem. Would need to read the paper; sounds like an algorithm selection problem too"

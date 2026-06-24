@@ -15,8 +15,6 @@ source_row: 215
 type_adapter_id: curation-record-v1
 ---
 
-# Datasets from Model of Customer Churn Prediction on Support Vector Machine
-
 ## Comments
 
 Dataset (1): churn dataset from UCI that is already in TabArena ("churn")

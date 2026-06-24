@@ -18,8 +18,6 @@ source_row: 200
 type_adapter_id: curation-record-v1
 ---
 
-# STACKOVERFLOW_POLARITY
-
 ## Comments
 
 NLP Task / data

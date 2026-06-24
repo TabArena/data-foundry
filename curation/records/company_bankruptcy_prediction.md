@@ -14,8 +14,6 @@ source_row: 126
 type_adapter_id: curation-record-v1
 ---
 
-# Company Bankruptcy Prediction
-
 ## Comments
 
 In TabArena ("company_bankruptcy_prediction")

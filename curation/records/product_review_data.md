@@ -17,8 +17,6 @@ source_row: 198
 type_adapter_id: curation-record-v1
 ---
 
-# Product Review Data
-
 ## Comments
 
 NLP task

@@ -28,8 +28,6 @@ source_row: 769
 type_adapter_id: curation-record-v1
 ---
 
-# Ljubljana Breast Cancer \
-
 ## Comments
 
 looks good

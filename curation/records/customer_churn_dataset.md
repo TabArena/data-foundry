@@ -17,8 +17,6 @@ source_row: 30
 type_adapter_id: curation-record-v1
 ---
 
-# Customer Churn Dataset
-
 ## Comments
 
 Looks super artificial again, from educationhub.pk

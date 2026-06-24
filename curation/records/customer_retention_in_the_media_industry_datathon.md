@@ -9,5 +9,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# customer-retention-in-the-media-industry-datathon

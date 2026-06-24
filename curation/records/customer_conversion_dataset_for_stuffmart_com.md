@@ -14,8 +14,6 @@ source_row: 167
 type_adapter_id: curation-record-v1
 ---
 
-# Customer Conversion Dataset for stuffmart.com
-
 ## Comments
 
 Data distributions look fake again; "file contains dataset created for simulating a customer conversion prediction"

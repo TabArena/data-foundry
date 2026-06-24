@@ -30,8 +30,6 @@ source_row: 750
 type_adapter_id: curation-record-v1
 ---
 
-# bodyfat
-
 ## Comments
 
 Looking good, might be trivial or easy

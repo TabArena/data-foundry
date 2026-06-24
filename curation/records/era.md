@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# ERA
-
 ## Comments
 
 CC: "academic decision-making experiment was collected during MBA course, again grouped judgement data where it is unclear in how far judges appear multiple times"

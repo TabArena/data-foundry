@@ -14,8 +14,6 @@ source_row: 211
 type_adapter_id: curation-record-v1
 ---
 
-# FOOTBALL_MANAGER_IMPORTANT_MATCHES
-
 ## Comments
 
 Football Manager Stats: Important Matches

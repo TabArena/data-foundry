@@ -27,8 +27,6 @@ source_row: 478
 type_adapter_id: curation-record-v1
 ---
 
-# WHISKY_SCOTCH_REVIEWS
-
 ## Comments
 
 Scotch Whiskey Reviews 2020

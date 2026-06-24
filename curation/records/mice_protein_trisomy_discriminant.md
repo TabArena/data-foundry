@@ -24,8 +24,6 @@ source_row: 692
 type_adapter_id: curation-record-v1
 ---
 
-# MiceProtein
-
 ## Comments
 
 CC: "Data clustered by 77 proteins and 72 mice. Each protein contains 1080 measurements which are recommended to be seen as separate mice. Therefore a group-based split based on proteins makes sense. Unsure whether predictive performance is the goal or rather interpretation. Also unsure whether the 8 classes given should also be used as they are for classification, might also be framed as a multi-task problem."

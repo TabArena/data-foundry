@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# kdd_internet_usage
-
 ## Comments
 
 CC: "Multiclass. Might be survey data. Might actually be an interpretability task. Also might be clustered data; unique users ("who" features); some other questionable features like race"

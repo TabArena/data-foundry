@@ -21,8 +21,6 @@ source_row: 902
 type_adapter_id: curation-record-v1
 ---
 
-# alvin-smart-money-management-classification-challenge
-
 ## Comments
 
 classify purchases into 13 different categories

@@ -29,8 +29,6 @@ source_row: 790
 type_adapter_id: curation-record-v1
 ---
 
-# Thyroid Disease
-
 ## Comments
 
 Data might be trivial, could be good to investigate all the data in this collection and add all the useful cases

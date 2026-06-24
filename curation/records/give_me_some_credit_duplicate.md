@@ -16,8 +16,6 @@ source_row: 150
 type_adapter_id: curation-record-v1
 ---
 
-# Give Me Some Credit
-
 ## Comments
 
 in TabArena (credit)

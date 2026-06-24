@@ -25,8 +25,6 @@ source_row: 753
 type_adapter_id: curation-record-v1
 ---
 
-# dermatology
-
 ## Comments
 
 Looks like an old but reasonable task

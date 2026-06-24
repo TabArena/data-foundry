@@ -15,8 +15,6 @@ source_row: 285
 type_adapter_id: curation-record-v1
 ---
 
-# accelerometer
-
 ## Comments
 
 CC: "Accelerometer data from vibrations of a cooler fan with weights on its blades. Unclear whether the task makes sense and how exactly data was collected, but likely is time-series data without timestamps available"

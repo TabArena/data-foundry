@@ -16,8 +16,6 @@ source_row: 729
 type_adapter_id: curation-record-v1
 ---
 
-# Perth-House-Prices
-
 ## Comments
 
 Data looks real, way back machine shows this was once a real website. Should be usable for some sort of house price prediction task

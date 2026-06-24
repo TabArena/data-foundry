@@ -14,8 +14,6 @@ source_row: 148
 type_adapter_id: curation-record-v1
 ---
 
-# Polish Companies Bankruptcy
-
 ## Comments
 
 in TabArena (polish_companies_bankruptcy)

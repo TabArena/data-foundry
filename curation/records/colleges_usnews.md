@@ -19,8 +19,6 @@ source_row: 470
 type_adapter_id: curation-record-v1
 ---
 
-# colleges_usnews
-
 ## Comments
 
 CC: "Regression. Rather interpretability than predictive task. Data grouped by colleges; copy-right problems"

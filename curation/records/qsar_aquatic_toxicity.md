@@ -23,8 +23,6 @@ source_row: 3
 type_adapter_id: curation-record-v1
 ---
 
-# qsar_aquatic_toxicity
-
 ## Comments
 
 CC: "546 samples, too small for 3-fold CV. 

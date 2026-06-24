@@ -24,8 +24,6 @@ source_row: 766
 type_adapter_id: curation-record-v1
 ---
 
-# Heart Failure Clinical Records
-
 ## Comments
 
 Looks good

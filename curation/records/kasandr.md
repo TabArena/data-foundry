@@ -25,8 +25,6 @@ source_row: 539
 type_adapter_id: curation-record-v1
 ---
 
-# KASANDR
-
 ## Comments
 
 17M samples

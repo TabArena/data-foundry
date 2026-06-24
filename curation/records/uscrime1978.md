@@ -11,8 +11,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# USCrime1978
-
 ## Comments
 
 Imported from the TabArena curation workbook.

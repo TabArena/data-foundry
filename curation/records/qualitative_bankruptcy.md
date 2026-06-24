@@ -25,8 +25,6 @@ source_row: 118
 type_adapter_id: curation-record-v1
 ---
 
-# Qualitative_Bankruptcy
-
 ## Comments
 
 Might be trivial, only categorical

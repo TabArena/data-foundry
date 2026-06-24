@@ -14,8 +14,6 @@ source_row: 133
 type_adapter_id: curation-record-v1
 ---
 
-# COVID-19 Drug Discovery Data
-
 ## Comments
 
 clear scientific discovery task

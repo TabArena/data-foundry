@@ -26,8 +26,6 @@ source_row: 653
 type_adapter_id: curation-record-v1
 ---
 
-# Home Credit Default Risk
-
 ## Comments
 
 Kaggle solutions used IID splits

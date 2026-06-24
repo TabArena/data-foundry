@@ -15,8 +15,6 @@ source_row: 237
 type_adapter_id: curation-record-v1
 ---
 
-# DILBERT
-
 ## Comments
 
 Image Dataset

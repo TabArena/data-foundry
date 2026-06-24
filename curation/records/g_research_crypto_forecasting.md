@@ -25,8 +25,6 @@ source_row: 707
 type_adapter_id: curation-record-v1
 ---
 
-# G-Research Crypto Forecasting
-
 ## Comments
 
 CC: "Stock data could be used, requires very specific splits and a lot of preprocessing, given its raw form, could try as is but will likely mostly be noise "

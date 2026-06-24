@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# womxn-in-big-data-south-africa-female-headed-households-in-south-africa
-
 ## Comments
 
 Predict the percentage of female-headed households

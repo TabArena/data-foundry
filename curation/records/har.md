@@ -16,8 +16,6 @@ source_row: 258
 type_adapter_id: curation-record-v1
 ---
 
-# har
-
 ## Comments
 
 CC: "Human activity recognition - outdated"

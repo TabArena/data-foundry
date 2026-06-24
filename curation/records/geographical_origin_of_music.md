@@ -17,8 +17,6 @@ source_row: 417
 type_adapter_id: curation-record-v1
 ---
 
-# geographical_origin_of_music
-
 ## Comments
 
 CC: "Wave data transformed to tabular data

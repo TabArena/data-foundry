@@ -18,8 +18,6 @@ source_row: 450
 type_adapter_id: curation-record-v1
 ---
 
-# GTSRB-HueHist
-
 ## Comments
 
 CC: "traffic sign classification"

@@ -18,8 +18,6 @@ source_row: 57
 type_adapter_id: curation-record-v1
 ---
 
-# Myanmar Air Quality(2019 to 2020 Oct)
-
 ## Comments
 
 Need to figure out if forecasting or not

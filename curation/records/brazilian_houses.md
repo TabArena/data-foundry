@@ -21,8 +21,6 @@ source_row: 546
 type_adapter_id: curation-record-v1
 ---
 
-# Brazilian_houses
-
 ## Comments
 
 CC: "need to be careful: don't use leaking features and log-transform target (if you don't want severe validation overfitting issues). Also there might be better house price datasets. Also would actually require temporal split. TabRepo version biased due to leak"

@@ -15,8 +15,6 @@ source_row: 363
 type_adapter_id: curation-record-v1
 ---
 
-# churn / CHURN_TELEPHONY
-
 ## Comments
 
 In TabArena (churn)

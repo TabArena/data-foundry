@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# ibm-skillsbuild-hydropower-climate-optimisation-challenge
-
 ## Comments
 
 time-series, but the 1st place solution is tabular

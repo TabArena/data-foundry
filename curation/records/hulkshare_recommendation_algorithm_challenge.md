@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# hulkshare-recommendation-algorithm-challenge
-
 ## Comments
 
 predict if a song on a streaming platform is liked by looking at viewing patterns

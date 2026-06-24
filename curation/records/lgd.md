@@ -21,8 +21,6 @@ source_row: 666
 type_adapter_id: curation-record-v1
 ---
 
-# LGD
-
 ## Comments
 
 "provided by a European bank"

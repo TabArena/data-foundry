@@ -26,8 +26,6 @@ source_row: 665
 type_adapter_id: curation-record-v1
 ---
 
-# Infrared Thermography Temperature
-
 ## Comments
 
 Two targets. Need to carefully check which features make sense to include in the predictive task. Some might be unreasonable. Some features were extracted from infrared images, but those are not given

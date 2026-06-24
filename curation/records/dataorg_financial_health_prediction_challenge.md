@@ -21,8 +21,6 @@ source_row: 680
 type_adapter_id: curation-record-v1
 ---
 
-# dataorg-financial-health-prediction-challenge
-
 ## Comments
 
 Evaluation: F1

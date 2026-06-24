@@ -27,8 +27,6 @@ source_row: 709
 type_adapter_id: curation-record-v1
 ---
 
-# Ecom Offers
-
 ## Comments
 
 Follow TabRed preprocessing and how tables were merged. Investigate test.csv time range to see if it is relevant. Check if customers are unique or recurring across time and if we would need to filter customers.

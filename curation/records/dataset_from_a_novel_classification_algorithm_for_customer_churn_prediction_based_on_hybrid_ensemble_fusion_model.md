@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from A novel classification algorithm for customer churn prediction based on hybrid Ensemble-Fusion model
-
 ## Comments
 
 Data Requested on 07/03/2026 by Lennart

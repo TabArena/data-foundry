@@ -20,8 +20,6 @@ source_row: 19
 type_adapter_id: curation-record-v1
 ---
 
-# imdb_genre_prediction
-
 ## Comments
 
 genre is multi-categorical, the openml version of this data converts this into binary Genre_is_Drama

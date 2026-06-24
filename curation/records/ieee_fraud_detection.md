@@ -27,8 +27,6 @@ source_row: 745
 type_adapter_id: curation-record-v1
 ---
 
-# IEEE-CIS_Fraud_Detection
-
 ## Comments
 
 CC: "Very nice fraud detection dataset (the best one I know). Requires temporal split - although the competition winners used grouped split (by month)"

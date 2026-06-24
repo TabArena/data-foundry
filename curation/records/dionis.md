@@ -16,8 +16,6 @@ source_row: 341
 type_adapter_id: curation-record-v1
 ---
 
-# dionis
-
 ## Comments
 
 Image data

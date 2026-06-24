@@ -18,8 +18,6 @@ source_row: 501
 type_adapter_id: curation-record-v1
 ---
 
-# US_CRIME
-
 ## Comments
 
 Ethically problematic task. At most consider as 2nd tier, if at all.

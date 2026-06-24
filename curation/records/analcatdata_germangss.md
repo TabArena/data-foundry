@@ -19,8 +19,6 @@ source_row: 89
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_germangss
-
 ## Comments
 
 No, see analcatdata_* entry for more information

@@ -23,8 +23,6 @@ source_row: 522
 type_adapter_id: curation-record-v1
 ---
 
-# GitHub MUSAE
-
 ## Comments
 
 predict whether the GitHub user is a web or a machine learning developer. This target feature was derived from the job title of each user.

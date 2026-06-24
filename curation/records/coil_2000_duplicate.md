@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Insurance Company Benchmark (COIL 2000)
-
 ## Comments
 
 Shipped in the BeyondArena / TabArena (v0.1) collection(s).

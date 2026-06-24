@@ -20,8 +20,6 @@ source_row: 53
 type_adapter_id: curation-record-v1
 ---
 
-# particulate-matter-ukair-2017
-
 ## Comments
 
 CC: "Benchmark excludes latitude and longitude. Has datetime features and two alternative targets. Requires temporal split"

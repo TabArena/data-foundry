@@ -17,8 +17,6 @@ source_row: 484
 type_adapter_id: curation-record-v1
 ---
 
-# Journal Score JCR
-
 ## Comments
 
 Scientific journals and their descriptive features from Journal Citation Reports

@@ -16,8 +16,6 @@ source_row: 249
 type_adapter_id: curation-record-v1
 ---
 
-# HOTEL_REVIEW
-
 ## Comments
 
 NLP task / data

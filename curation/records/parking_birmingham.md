@@ -15,8 +15,6 @@ source_row: 270
 type_adapter_id: curation-record-v1
 ---
 
-# Parking Birmingham
-
 ## Comments
 
 CC: ""Parking data from Gov website, ""Occupancy rates (8:00 to 16:30) from 2016/10/04 to 2016/12/19

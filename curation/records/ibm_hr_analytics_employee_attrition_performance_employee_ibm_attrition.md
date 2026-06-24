@@ -17,8 +17,6 @@ source_row: 157
 type_adapter_id: curation-record-v1
 ---
 
-# IBM HR Analytics Employee Attrition & Performance EMPLOYEE_IBM_ATTRITION
-
 ## Comments
 
 "This is a fictional data set created by IBM data scientists."

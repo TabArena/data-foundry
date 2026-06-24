@@ -20,8 +20,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# financial-inclusion-in-africa-for-botswana
-
 ## Comments
 
 Predict whether a person has a bank account

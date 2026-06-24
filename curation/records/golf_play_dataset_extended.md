@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# golf_play_dataset_extended
-
 ## Comments
 
 CC: ""This dataset is especially useful for teaching because it offers many small datasets within it, each one created for a different learning purpose." - not an actual predictive task. But still predicting whether on a certain day golf was played could be done. Likely not a predictive task. And if yes, temporal split would be required"

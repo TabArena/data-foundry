@@ -23,8 +23,6 @@ source_row: 514
 type_adapter_id: curation-record-v1
 ---
 
-# WineEnthusiasts
-
 ## Comments
 
 A dataset that is based on another dataset, contains description and sentences, but also contains names and Twitter handles of reviewers (so PII and thus an ethical problem). Could likely be fixed. Still unclear if this is a real predictive task (more so causal inference)

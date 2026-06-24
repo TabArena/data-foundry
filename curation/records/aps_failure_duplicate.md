@@ -15,8 +15,6 @@ source_row: 228
 type_adapter_id: curation-record-v1
 ---
 
-# APS_FAILURE
-
 ## Comments
 
 In TabArena as "APSFailure"

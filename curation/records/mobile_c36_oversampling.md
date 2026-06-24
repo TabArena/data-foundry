@@ -15,8 +15,6 @@ source_row: 287
 type_adapter_id: curation-record-v1
 ---
 
-# mobile_c36_oversampling
-
 ## Comments
 
 Activity recognition

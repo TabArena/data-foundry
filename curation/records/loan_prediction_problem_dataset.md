@@ -17,8 +17,6 @@ source_row: 116
 type_adapter_id: curation-record-v1
 ---
 
-# Loan Prediction Problem Dataset
-
 ## Comments
 
 Unclear data source and state.

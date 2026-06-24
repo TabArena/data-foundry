@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# waveform_database_generator_version_1
-
 ## Comments
 
 Imported from the TabArena curation workbook.

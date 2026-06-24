@@ -21,8 +21,6 @@ source_row: 535
 type_adapter_id: curation-record-v1
 ---
 
-# eye_movements
-
 ## Comments
 
 CC: "Unresolvable leak, groups"

@@ -32,8 +32,6 @@ source_row: 681
 type_adapter_id: curation-record-v1
 ---
 
-# fraud_detec
-
 ## Comments
 
 Original source website seems down, dataset is very imbalanced, but seems like a good fit at first glance; multiple versions on Kaggle; paper describes some specific preprocessing and data filters, need to check if data is already preprocessed or if we need to do the same; very imbalanced

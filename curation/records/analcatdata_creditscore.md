@@ -19,8 +19,6 @@ source_row: 87
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_creditscore
-
 ## Comments
 
 No, see analcatdata_* entry for more information

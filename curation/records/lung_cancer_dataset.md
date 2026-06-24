@@ -17,8 +17,6 @@ source_row: 62
 type_adapter_id: curation-record-v1
 ---
 
-# Lung Cancer Dataset
-
 ## Comments
 
 Dataset looks very much simulated or handmade.

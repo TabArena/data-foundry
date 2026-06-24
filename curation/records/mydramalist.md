@@ -26,8 +26,6 @@ source_row: 11
 type_adapter_id: curation-record-v1
 ---
 
-# Mydramalist
-
 ## Comments
 
 Complete list of all the top asian series and movies

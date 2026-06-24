@@ -15,8 +15,6 @@ source_row: 164
 type_adapter_id: curation-record-v1
 ---
 
-# Bank Customer Churn
-
 ## Comments
 
 "This synthetic dataset simulates"

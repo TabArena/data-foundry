@@ -18,8 +18,6 @@ source_row: 82
 type_adapter_id: curation-record-v1
 ---
 
-# chatfield_4
-
 ## Comments
 
 Time series data from a book, sunspots from 1749 to 1983?

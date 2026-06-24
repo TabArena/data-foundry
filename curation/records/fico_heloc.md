@@ -14,8 +14,6 @@ source_row: 122
 type_adapter_id: curation-record-v1
 ---
 
-# FICO HELOC
-
 ## Comments
 
 Duplicate of HELOC dataset inside of TabArena

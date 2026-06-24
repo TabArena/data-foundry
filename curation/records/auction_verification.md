@@ -17,8 +17,6 @@ source_row: 335
 type_adapter_id: curation-record-v1
 ---
 
-# auction_verification
-
 ## Comments
 
 Simulated data

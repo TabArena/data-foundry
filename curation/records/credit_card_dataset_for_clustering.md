@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card Dataset for Clustering
-
 ## Comments
 
 Not a predictive task, unclear if real data

@@ -20,8 +20,6 @@ source_row: 38
 type_adapter_id: curation-record-v1
 ---
 
-# arcene
-
 ## Comments
 
 CC: "Part of the NIPS 2003 feature selection challenge. Original task was changed by adding irrelevant features. 10K features in total, so might rather not use this dataset. Only 200 instances; several data sources / groups" - The data consists of 7000 real features and

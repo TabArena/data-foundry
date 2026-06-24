@@ -19,8 +19,6 @@ source_row: 526
 type_adapter_id: curation-record-v1
 ---
 
-# cmc
-
 ## Comments
 
 CC: "Predict whether women use contraceptive methods based on demographic data. Unsure whether this is a reasonable task (ethically and from an ML perspective)"

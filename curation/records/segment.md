@@ -17,8 +17,6 @@ source_row: 360
 type_adapter_id: curation-record-v1
 ---
 
-# segment
-
 ## Comments
 
 Image data

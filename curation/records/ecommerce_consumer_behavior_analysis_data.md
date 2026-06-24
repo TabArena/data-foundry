@@ -14,8 +14,6 @@ source_row: 158
 type_adapter_id: curation-record-v1
 ---
 
-# Ecommerce Consumer Behavior Analysis Data
-
 ## Comments
 
 "The dataset "Ecommerce Consumer Behavior Analysis Data" is a fictitious dataset generated using a random data generator. It does not represent real consumer transactions but is designed to simulate realistic patterns in e-commerce consumer behavior."

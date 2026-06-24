@@ -18,8 +18,6 @@ source_row: 205
 type_adapter_id: curation-record-v1
 ---
 
-# FUNPEDIA
-
 ## Comments
 
 NLP task / data

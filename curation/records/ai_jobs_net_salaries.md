@@ -17,8 +17,6 @@ source_row: 486
 type_adapter_id: curation-record-v1
 ---
 
-# ai-jobs-net-salaries
-
 ## Comments
 
 Salary and basic information of workers in the machine learning and data science industry. The task is to predict the salary of workers. Unclear if this would be used for predictions or just insights

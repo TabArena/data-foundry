@@ -17,8 +17,6 @@ source_row: 445
 type_adapter_id: curation-record-v1
 ---
 
-# Fashion-MNIST
-
 ## Comments
 
 CC: "classify Zalando articles like for MNIST"

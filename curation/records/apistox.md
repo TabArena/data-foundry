@@ -24,8 +24,6 @@ source_row: 717
 type_adapter_id: curation-record-v1
 ---
 
-# ApisTox
-
 ## Comments
 
 Contains SMILES. Authors provide custom splits: maximum diversity (MaxMin) split and a novel approximation of time split using PubChem literature data

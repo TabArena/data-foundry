@@ -16,8 +16,6 @@ source_row: 35
 type_adapter_id: curation-record-v1
 ---
 
-# Heart Failure Prediction Dataset
-
 ## Comments
 
 Super set of several heart prediction datasets, unsure if we should use this or take the original datasets (to avoid shift) or use this as grouped data?

@@ -17,8 +17,6 @@ source_row: 323
 type_adapter_id: curation-record-v1
 ---
 
-# rl
-
 ## Comments
 
 CC: "From AutoML challenge - but corresponds to an anonymized real world recommendation task"

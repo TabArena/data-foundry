@@ -17,8 +17,6 @@ source_row: 455
 type_adapter_id: curation-record-v1
 ---
 
-# Online_Retail_II
-
 ## Comments
 
 RFM data, no predictive task in sight, hard to see as a predictive task

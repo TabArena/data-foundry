@@ -16,8 +16,6 @@ source_row: 248
 type_adapter_id: curation-record-v1
 ---
 
-# DPBEDIA
-
 ## Comments
 
 NLP task / data

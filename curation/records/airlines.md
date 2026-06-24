@@ -26,8 +26,6 @@ source_row: 617
 type_adapter_id: curation-record-v1
 ---
 
-# airlines
-
 ## Comments
 
 CC: "Requires temporal split. Also better datasets for this task might be available as only 7 features are given; has noisy duplicates; original data has 120 million rows?; used not as a predictive task according to the website? original question was only about if the weather can predict the delays?"

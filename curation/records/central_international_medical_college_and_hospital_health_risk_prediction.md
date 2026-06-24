@@ -21,8 +21,6 @@ source_row: 670
 type_adapter_id: curation-record-v1
 ---
 
-# Central International Medical College and Hospital Health Risk Prediction
-
 ## Comments
 
 Even if some information are missing, this looks like very real data from https://dcimch.com/

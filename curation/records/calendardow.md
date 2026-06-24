@@ -16,8 +16,6 @@ source_row: 93
 type_adapter_id: curation-record-v1
 ---
 
-# calendarDOW
-
 ## Comments
 
 Missing any information and further searches could not find the source

@@ -33,8 +33,6 @@ source_row: 736
 type_adapter_id: curation-record-v1
 ---
 
-# kickstarter
-
 ## Comments
 
 Scraped Kickstarter results, 2014–Feb 2019, needs to be shuffled since all successful campaigns come first; we should get the newest data from the website; likely need to adjust currency for inflation and time drift and currency; we could try to make the data time-independent by some slight preprocessing to create an IID task; might need to remove length-columns?; might need to change date preprocessing and use proper date preprocessing/encoding from skrub; TODO check raw data again

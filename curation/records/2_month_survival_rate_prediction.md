@@ -27,8 +27,6 @@ source_row: 687
 type_adapter_id: curation-record-v1
 ---
 
-# 2 Month survival rate prediction
-
 ## Comments
 
 Multi-target task?

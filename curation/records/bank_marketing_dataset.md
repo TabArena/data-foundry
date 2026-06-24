@@ -17,8 +17,6 @@ source_row: 152
 type_adapter_id: curation-record-v1
 ---
 
-# Bank Marketing Dataset
-
 ## Comments
 
 In TabArena (bank-marketing)

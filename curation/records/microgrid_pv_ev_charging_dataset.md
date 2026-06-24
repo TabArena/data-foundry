@@ -15,8 +15,6 @@ source_row: 173
 type_adapter_id: curation-record-v1
 ---
 
-# Microgrid PV-EV Charging Dataset
-
 ## Comments
 
 Has no source information, otherwise looks slightly fake.

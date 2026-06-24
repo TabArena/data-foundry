@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# predict-fire-extent
-
 ## Comments
 
 predict the burned area of wildfires in Zimbabwe

@@ -16,8 +16,6 @@ source_row: 741
 type_adapter_id: curation-record-v1
 ---
 
-# Distribution Transformers at Cauca Department
-
 ## Comments
 
 paper: https://www.researchgate.net/publication/355264319_Dataset_of_Distribution_Transformers_for_Predictive_Maintenance

@@ -27,8 +27,6 @@ source_row: 642
 type_adapter_id: curation-record-v1
 ---
 
-# huntprohibited
-
 ## Comments
 
 CC: "Russian text; text to features script exists; free-text categorical in json format, extra leaking column, that could be used to sub-filter data; close_hours leaking test data; some count features from text; likely some problem with malicious users, who one should detect instead of the ads itself"

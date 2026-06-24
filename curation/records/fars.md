@@ -18,8 +18,6 @@ source_row: 460
 type_adapter_id: curation-record-v1
 ---
 
-# fars
-
 ## Comments
 
 CC: "traffic accident data. Not much information given. Need to validate. likely from here https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars"

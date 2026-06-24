@@ -16,8 +16,6 @@ source_row: 207
 type_adapter_id: curation-record-v1
 ---
 
-# google_qa_question_type_reason_explanation
-
 ## Comments
 
 NLP task / data

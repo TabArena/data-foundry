@@ -24,8 +24,6 @@ source_row: 732
 type_adapter_id: curation-record-v1
 ---
 
-# Hotel booking demand
-
 ## Comments
 
 Data from two hotels - can likely be concatenated.

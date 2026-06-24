@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# rmb-monthly-mini-challenge-4-nowcast-july
-
 ## Comments
 
 nowcast South Africa's July CPI. Could use multiple historical months to create new splits

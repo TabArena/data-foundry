@@ -25,8 +25,6 @@ source_row: 703
 type_adapter_id: curation-record-v1
 ---
 
-# Voting
-
 ## Comments
 
 task: predict voting participation from a detailed questionnaire.

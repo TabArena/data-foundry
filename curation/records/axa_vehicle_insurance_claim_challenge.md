@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# AXA Vehicle Insurance Claim Challenge
-
 ## Comments
 
 predict if a client will submit a vehicle insurance claim in the next 3 months

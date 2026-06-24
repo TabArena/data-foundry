@@ -17,8 +17,6 @@ source_links: []
 type_adapter_id: curation-record-v1
 ---
 
-# TEMPLATE — copy this file to <unique_name>.md and fill it in
-
 ## Comments
 
 How to fill a curation record. Copy this file to `curation/records/<unique_name>.md`
@@ -34,6 +32,7 @@ Field-by-field:
 - **unique_name** — stable id and file stem; `snake_case`, globally unique. This is the
   dataset's canonical name (prefer the shipped dataset/notebook name where one exists).
 - **name** — human-readable name(s) the dataset is published under (join aliases with ` / `).
+  This is the *single source of truth* for the name; the body has no `# title` heading.
 - **checked_by** — people who reviewed it: `Lennart`, `Andrej`, `Mustafa`, `Alex`, `Gioia`,
   `AI (UNVERIFIED)`.
 - **data_foundry_status** — the merged Data Foundry field. A multi-tag list combining

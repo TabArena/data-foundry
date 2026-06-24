@@ -22,8 +22,6 @@ source_row: 51
 type_adapter_id: curation-record-v1
 ---
 
-# avocado_sales
-
 ## Comments
 
 CC: "They use a version with date dropped and month & day kept - but requires temporal split anyway"

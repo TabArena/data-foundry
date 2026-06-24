@@ -18,8 +18,6 @@ source_row: 84
 type_adapter_id: curation-record-v1
 ---
 
-# libras_move
-
 ## Comments
 
 Hand movement dataset (LIBRAS Movement Database). So not a tabular task anymore, would now be solved via vision models

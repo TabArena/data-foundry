@@ -16,8 +16,6 @@ source_row: 240
 type_adapter_id: curation-record-v1
 ---
 
-# ROAD_SAFETY_GENDER
-
 ## Comments
 
 CC: "Predict sex of drivers in accidents - ethical issues; also contains data from 1979 to 2015 with temporal split; also not a predictive task (but survey data) and thus likely gender was picked as random target?"

@@ -23,8 +23,6 @@ source_row: 59
 type_adapter_id: curation-record-v1
 ---
 
-# wind
-
 ## Comments
 
 CC: "Regression. Data collected in 1961-78 - outdated. Also not a meaningful prediction task due to the same reasons as stock data"

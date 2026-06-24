@@ -17,8 +17,6 @@ source_row: 238
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card Fraud
-
 ## Comments
 
 Going from the Kaggle discussions, the missing source information, and the distribution of the data, we judge this to be simulated mostly likely

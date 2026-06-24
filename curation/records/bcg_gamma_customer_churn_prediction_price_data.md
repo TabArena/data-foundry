@@ -19,8 +19,6 @@ source_row: 451
 type_adapter_id: curation-record-v1
 ---
 
-# BCG Gamma Customer Churn Prediction price_data
-
 ## Comments
 
 Price data seems to be a forecasting task / scientific discovery task that is independent of the churn data

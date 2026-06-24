@@ -21,8 +21,6 @@ source_row: 22
 type_adapter_id: curation-record-v1
 ---
 
-# Michelin
-
 ## Comments
 
 Scraped and curated Michelin restaurants data.

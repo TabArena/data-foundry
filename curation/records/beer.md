@@ -24,8 +24,6 @@ source_row: 474
 type_adapter_id: curation-record-v1
 ---
 
-# beer
-
 ## Comments
 
 tasting reviews of different beer types from different breweries created by combining two datasets (in references)

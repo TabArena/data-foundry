@@ -18,8 +18,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Traffic_violations
-
 ## Comments
 
 CC: "Large scale, spatial, and temporal. Need to think about split. Also unsure whether this data was simply crawled because it's available but does not correspond to a meaningful task. Not much information is given on OpenML. 1.5M samples originally; now has 2M"

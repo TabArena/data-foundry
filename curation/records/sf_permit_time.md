@@ -28,8 +28,6 @@ source_row: 737
 type_adapter_id: curation-record-v1
 ---
 
-# sf_permit_time
-
 ## Comments
 
 building permits

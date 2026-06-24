@@ -30,8 +30,6 @@ source_row: 792
 type_adapter_id: curation-record-v1
 ---
 
-# micro-mass
-
 ## Comments
 
 CC: "spectral data. Clustered data. Need to check more carefully, but might be nice to include as an example for n<<d datasets"

@@ -16,8 +16,6 @@ source_row: 343
 type_adapter_id: curation-record-v1
 ---
 
-# helena
-
 ## Comments
 
 Image data

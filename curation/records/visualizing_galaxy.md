@@ -17,8 +17,6 @@ source_row: 81
 type_adapter_id: curation-record-v1
 ---
 
-# visualizing_galaxy
-
 ## Comments
 
 Visualization dataset, clearly no predictive task, not even for scientific discovery tasks

@@ -12,5 +12,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# ai-national-summit-2024-competition

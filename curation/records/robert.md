@@ -16,8 +16,6 @@ source_row: 241
 type_adapter_id: curation-record-v1
 ---
 
-# ROBERT
-
 ## Comments
 
 From AutoML challenge. Image data

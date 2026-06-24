@@ -15,8 +15,6 @@ source_row: 429
 type_adapter_id: curation-record-v1
 ---
 
-# diamonds
-
 ## Comments
 
 In TabArena

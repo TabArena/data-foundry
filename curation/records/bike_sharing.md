@@ -17,8 +17,6 @@ source_row: 273
 type_adapter_id: curation-record-v1
 ---
 
-# Bike Sharing
-
 ## Comments
 
 CC: "Daily count of rental bikes from 2011 and 2012"

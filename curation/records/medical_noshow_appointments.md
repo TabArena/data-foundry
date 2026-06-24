@@ -25,8 +25,6 @@ source_row: 608
 type_adapter_id: curation-record-v1
 ---
 
-# Medical Noshow Appointments
-
 ## Comments
 
 CC: "Some minor problems in the data that need to be checked (https://www.kaggle.com/datasets/joniarroba/noshowappointments/discussion/202717)

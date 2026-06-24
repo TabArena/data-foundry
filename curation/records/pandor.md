@@ -24,8 +24,6 @@ source_row: 44
 type_adapter_id: curation-record-v1
 ---
 
-# PANDOR
-
 ## Comments
 
 48M transactions from purch.com

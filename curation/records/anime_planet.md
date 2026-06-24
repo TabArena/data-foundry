@@ -17,8 +17,6 @@ source_row: 188
 type_adapter_id: curation-record-v1
 ---
 
-# Anime Planet
-
 ## Comments
 
 Scraped from reference

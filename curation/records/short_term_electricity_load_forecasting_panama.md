@@ -14,5 +14,3 @@ source_links:
 source_row: 304
 type_adapter_id: curation-record-v1
 ---
-
-# Short-term electricity load forecasting (Panama)

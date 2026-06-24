@@ -23,8 +23,6 @@ source_row: 506
 type_adapter_id: curation-record-v1
 ---
 
-# cross-sell-insurances
-
 ## Comments
 
 "Collection Methodology Previous hackathons (Internet)"

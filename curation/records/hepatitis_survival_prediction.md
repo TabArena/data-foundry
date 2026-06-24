@@ -28,8 +28,6 @@ source_row: 760
 type_adapter_id: curation-record-v1
 ---
 
-# hepatitis
-
 ## Comments
 
 Already preprocessed data but otherwise looks like a good task, need to check group and cost files but would add!

@@ -26,8 +26,6 @@ source_row: 738
 type_adapter_id: curation-record-v1
 ---
 
-# Open University Learning Analytics dataset
-
 ## Comments
 
 Could be transformed into a prediction task https://www.kaggle.com/code/devassaxd/student-performance-prediction-complete-analysis#Part-3:-Modeling

@@ -16,8 +16,6 @@ source_row: 265
 type_adapter_id: curation-record-v1
 ---
 
-# Air Quality
-
 ## Comments
 
 CC: "Gas multisensor in an Italian city over one year"

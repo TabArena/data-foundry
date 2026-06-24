@@ -19,8 +19,6 @@ source_row: 625
 type_adapter_id: curation-record-v1
 ---
 
-# ozone-level-8hr
-
 ## Comments
 
 CC: "Likely requires temporal split; also temporal features sampled at certain intervals, also spatial domain"

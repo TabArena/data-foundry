@@ -26,8 +26,6 @@ source_row: 890
 type_adapter_id: curation-record-v1
 ---
 
-# aiml-for-5g-energy-consumption-modelling
-
 ## Comments
 
 Would require grouped-temporal split, but not possible due to data size

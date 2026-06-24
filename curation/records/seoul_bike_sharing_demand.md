@@ -27,8 +27,6 @@ source_row: 46
 type_adapter_id: curation-record-v1
 ---
 
-# Seoul Bike Sharing Demand
-
 ## Comments
 
 Data for one year (2017 December to November 2018) is downloaded from the Seoul Public Data Park website of South Korea, where the hourly public rental history of Seoul bikes is available

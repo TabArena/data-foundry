@@ -14,8 +14,6 @@ source_row: 154
 type_adapter_id: curation-record-v1
 ---
 
-# Orange Telecom's Churn Dataset
-
 ## Comments
 
 In TabArena (KDDCup09_appetency)

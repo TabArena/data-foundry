@@ -17,8 +17,6 @@ source_row: 252
 type_adapter_id: curation-record-v1
 ---
 
-# tamilnadu-electricity
-
 ## Comments
 
 Time series forecasting data

@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# ASSISTments
-
 ## Comments
 
 CC: ""Unsure, but might be this dataset: https://www.kaggle.com/datasets/nicolaswattiez/skillbuilder-data-2009-2010. Gardner uses grouped split - unsure whether that was right for the task as temporal or custom with a few new groups might be required.

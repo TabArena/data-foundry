@@ -14,8 +14,6 @@ source_row: 199
 type_adapter_id: curation-record-v1
 ---
 
-# Beer Reviews from Beer Advocate
-
 ## Comments
 
 Input to the "beer" dataset, so a duplicate or at least large overlap

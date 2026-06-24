@@ -23,8 +23,6 @@ source_row: 731
 type_adapter_id: curation-record-v1
 ---
 
-# DigiCow Farmer Training Adoption Challenge
-
 ## Comments
 
 "You are allowed to access and, use and share challenge data for the competition. for any commercial, non-commercial, research or education purposes, by open source."

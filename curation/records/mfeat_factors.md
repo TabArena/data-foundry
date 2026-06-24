@@ -19,8 +19,6 @@ source_row: 340
 type_adapter_id: curation-record-v1
 ---
 
-# mfeat-factors
-
 ## Comments
 
 Image data

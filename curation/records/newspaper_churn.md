@@ -17,8 +17,6 @@ source_row: 600
 type_adapter_id: curation-record-v1
 ---
 
-# Newspaper churn
-
 ## Comments
 
 Data looks real and good, but we have no source information. Unclear if we want to use it.

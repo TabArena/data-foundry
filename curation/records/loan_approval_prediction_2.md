@@ -14,8 +14,6 @@ source_row: 149
 type_adapter_id: curation-record-v1
 ---
 
-# Loan Approval Prediction
-
 ## Comments
 
 Simulated version of https://www.kaggle.com/datasets/chilledwanker/loan-approval-prediction/data

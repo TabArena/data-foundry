@@ -27,8 +27,6 @@ source_row: 603
 type_adapter_id: curation-record-v1
 ---
 
-# LOAN_IBRD
-
 ## Comments
 
 Check if we can get newer version of data from source, yes we can and should take the newest data!

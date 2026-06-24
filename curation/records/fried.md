@@ -16,8 +16,6 @@ source_row: 386
 type_adapter_id: curation-record-v1
 ---
 
-# fried
-
 ## Comments
 
 artificial data set used in Friedman (1991)

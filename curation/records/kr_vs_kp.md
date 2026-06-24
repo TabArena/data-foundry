@@ -16,8 +16,6 @@ source_row: 412
 type_adapter_id: curation-record-v1
 ---
 
-# kr-vs-kp
-
 ## Comments
 
 CC: "Chess game"

@@ -15,8 +15,6 @@ source_row: 127
 type_adapter_id: curation-record-v1
 ---
 
-# airfoil_self_noise
-
 ## Comments
 
 In TabArena ("airfoil_self_noise")

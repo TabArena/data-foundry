@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# first_principles_supernovae_zr
-
 ## Comments
 
 Imported from the TabArena curation workbook.

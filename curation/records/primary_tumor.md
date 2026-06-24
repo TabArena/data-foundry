@@ -16,8 +16,6 @@ source_row: 110
 type_adapter_id: curation-record-v1
 ---
 
-# primary-tumor
-
 ## Comments
 
 Duplicate of Ljubljana Primary Tumor

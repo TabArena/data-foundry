@@ -15,8 +15,6 @@ source_row: 427
 type_adapter_id: curation-record-v1
 ---
 
-# california_housing
-
 ## Comments
 
 Duplicate of houses in TabArena

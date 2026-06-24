@@ -16,8 +16,6 @@ source_row: 67
 type_adapter_id: curation-record-v1
 ---
 
-# threeOf9
-
 ## Comments
 
 Likely a deterministic function to be true if three of 9 features are true

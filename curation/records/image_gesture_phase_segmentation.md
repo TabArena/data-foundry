@@ -17,8 +17,6 @@ source_row: 232
 type_adapter_id: curation-record-v1
 ---
 
-# IMAGE_GESTURE_PHASE_SEGMENTATION
-
 ## Comments
 
 Image Dataset

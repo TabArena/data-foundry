@@ -18,8 +18,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Mental Health Dataset
-
 ## Comments
 
 CC: "This is a dataset for scientific discovery that was generated from parsing text. It is unclear how to select a good target for this dataset.

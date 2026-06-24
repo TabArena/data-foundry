@@ -15,8 +15,6 @@ source_row: 380
 type_adapter_id: curation-record-v1
 ---
 
-# BIORESPONSE
-
 ## Comments
 
 In TabArena (bioresponse)

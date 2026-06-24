@@ -19,8 +19,6 @@ source_row: 463
 type_adapter_id: curation-record-v1
 ---
 
-# it_salary
-
 ## Comments
 
 survey about IT jobs (2020), participants often had categories to pick from but could also provide the other category to provide free text, similar survey exists for previous years, 2018&2019 on kaggle, newer ones here https://docs.google.com/spreadsheets/d/1DjPgQeBu53I0Dws4YMbXyyQdWDLpMtkSu4FhGux0epY/edit?gid=1483964364#gid=1483964364 columns are different across different years

@@ -26,8 +26,6 @@ source_row: 767
 type_adapter_id: curation-record-v1
 ---
 
-# Chronic Kidney Disease
-
 ## Comments
 
 Looks good.

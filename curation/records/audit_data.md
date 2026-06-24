@@ -25,5 +25,3 @@ source_links:
 source_row: 521
 type_adapter_id: curation-record-v1
 ---
-
-# audit_data

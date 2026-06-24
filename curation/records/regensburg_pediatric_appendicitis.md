@@ -27,8 +27,6 @@ source_row: 746
 type_adapter_id: curation-record-v1
 ---
 
-# Regensburg Pediatric Appendicitis
-
 ## Comments
 
 Has three target variables as it seems, we likely want to use Diagnosis

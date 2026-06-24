@@ -9,8 +9,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# 3D_Estimation_using_RSSI_of_WLAN_dataset_complete_1_target
-
 ## Comments
 
 Imported from the TabArena curation workbook.

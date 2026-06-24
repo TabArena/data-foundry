@@ -15,8 +15,6 @@ source_row: 415
 type_adapter_id: curation-record-v1
 ---
 
-# pumadyn32nh
-
 ## Comments
 
 Duplicate of puma32H (openml 752), which is a no too

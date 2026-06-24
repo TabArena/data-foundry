@@ -11,5 +11,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# traffic-jam-predicting-peoples-movement-into-nairobi

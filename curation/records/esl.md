@@ -18,8 +18,6 @@ source_row: 73
 type_adapter_id: curation-record-v1
 ---
 
-# ESL
-
 ## Comments
 
 Dataset from weka repo

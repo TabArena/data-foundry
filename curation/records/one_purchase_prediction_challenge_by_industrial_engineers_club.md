@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# One Purchase Prediction Challenge by Industrial Engineers Club
-
 ## Comments
 
 predict which customer will purchase again

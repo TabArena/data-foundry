@@ -14,8 +14,6 @@ source_row: 186
 type_adapter_id: curation-record-v1
 ---
 
-# Exam Score Prediction Dataset
-
 ## Comments
 
 "This dataset is entirely synthetically generated using statistical modeling and rule-based logic "

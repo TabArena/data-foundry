@@ -15,8 +15,6 @@ source_row: 350
 type_adapter_id: curation-record-v1
 ---
 
-# boston
-
 ## Comments
 
 Any of the boston housing datasets

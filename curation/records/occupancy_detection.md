@@ -15,8 +15,6 @@ source_row: 263
 type_adapter_id: curation-record-v1
 ---
 
-# Occupancy Detection
-
 ## Comments
 
 Duplicate of occupancy_detection_2

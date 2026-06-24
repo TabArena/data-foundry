@@ -23,8 +23,6 @@ source_row: 599
 type_adapter_id: curation-record-v1
 ---
 
-# melting-point
-
 ## Comments
 
 Contains SMILES, so likely requires domain-specific solutions. Could also be seen as a kind of text. Don't know whether a custom split is needed, but assume IID for now. Competition was leaky, because test data was partially online.

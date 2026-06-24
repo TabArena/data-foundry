@@ -24,8 +24,6 @@ source_row: 508
 type_adapter_id: curation-record-v1
 ---
 
-# Real Estate Analysis Dataset
-
 ## Comments
 
 Data from housing.com website. This website does not have any of the properties but is only for India. When looking on other websites (like Zillow), it seems the numbers are correct.

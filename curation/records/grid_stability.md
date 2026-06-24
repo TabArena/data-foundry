@@ -16,8 +16,6 @@ source_row: 374
 type_adapter_id: curation-record-v1
 ---
 
-# grid_stability
-
 ## Comments
 
 CC: "Simulated data, used for scientific discovery."

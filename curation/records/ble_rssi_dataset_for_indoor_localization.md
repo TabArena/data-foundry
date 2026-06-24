@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# BLE_RSSI_dataset_for_Indoor_localization
-
 ## Comments
 
 Imported from the TabArena curation workbook.

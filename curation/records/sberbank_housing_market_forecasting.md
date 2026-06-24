@@ -26,8 +26,6 @@ source_row: 711
 type_adapter_id: curation-record-v1
 ---
 
-# Sberbank Housing
-
 ## Comments
 
 Use TabRed preprocessing (verify it)

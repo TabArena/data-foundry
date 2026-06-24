@@ -25,8 +25,6 @@ source_row: 537
 type_adapter_id: curation-record-v1
 ---
 
-# Analyzing Customer Spending Habits
-
 ## Comments
 
 Looks good albeit some information is missing, scraped from somewhere. The data comes with 3 target columns (more or less) about the revenue of the customer

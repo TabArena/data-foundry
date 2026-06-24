@@ -16,8 +16,6 @@ source_row: 250
 type_adapter_id: curation-record-v1
 ---
 
-# PRODUCT_SENTIMENT
-
 ## Comments
 
 NLP task / data

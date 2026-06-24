@@ -19,8 +19,6 @@ source_row: 476
 type_adapter_id: curation-record-v1
 ---
 
-# HS_cards_data
-
 ## Comments
 
 Card data extracted from the Hearthstone game, so actual original source is the game. Mapping card text and stats to player class

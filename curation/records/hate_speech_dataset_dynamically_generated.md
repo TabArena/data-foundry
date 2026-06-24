@@ -15,8 +15,6 @@ source_row: 213
 type_adapter_id: curation-record-v1
 ---
 
-# HATE_SPEECH_DATASET_DYNAMICALLY_GENERATED
-
 ## Comments
 
 NLP task / data

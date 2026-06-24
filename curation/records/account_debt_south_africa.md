@@ -22,8 +22,6 @@ source_row: 655
 type_adapter_id: curation-record-v1
 ---
 
-# ACCOUNT_DEBT_SOUTH_AFRICA
-
 ## Comments
 
 Looks real enough and good

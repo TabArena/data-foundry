@@ -17,8 +17,6 @@ source_row: 230
 type_adapter_id: curation-record-v1
 ---
 
-# INTERNET_ADVERTISEMENTS
-
 ## Comments
 
 Image Dataset

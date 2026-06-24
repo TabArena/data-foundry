@@ -23,8 +23,6 @@ source_row: 61
 type_adapter_id: curation-record-v1
 ---
 
-# El Nino Dataset
-
 ## Comments
 
 CC: "Regression. Temporal and spatial data. Measurements start in 1980 - might be outdated, especially as more sophisticated approaches for weather prediction should exist nowadays"

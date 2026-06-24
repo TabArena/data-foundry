@@ -16,8 +16,6 @@ source_row: 394
 type_adapter_id: curation-record-v1
 ---
 
-# balance-scale
-
 ## Comments
 
 CC: "generated data to model a psychological experiment"

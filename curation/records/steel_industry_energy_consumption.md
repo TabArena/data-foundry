@@ -15,8 +15,6 @@ source_row: 288
 type_adapter_id: curation-record-v1
 ---
 
-# steel_industry_energy_consumption
-
 ## Comments
 
 15min time frames

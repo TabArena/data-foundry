@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Spanish Wine Quality Dataset
-
 ## Comments
 
 Likely a duplicate with other wine datasets and anyhow not a real predictive task?

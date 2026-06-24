@@ -11,8 +11,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# subseafloor_arc
-
 ## Comments
 
 Subseafloor microbiome project, Bacteria; metadata source: SI Table 1&2 (PDF); otu table source:

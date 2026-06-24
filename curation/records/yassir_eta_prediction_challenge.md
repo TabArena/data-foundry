@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Yassir ETA Prediction Challenge
-
 ## Comments
 
 Predict the estimated time of arrival for Algerian ride-hailing business Yassir

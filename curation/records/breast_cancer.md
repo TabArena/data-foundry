@@ -17,8 +17,6 @@ source_row: 72
 type_adapter_id: curation-record-v1
 ---
 
-# breast_cancer
-
 ## Comments
 
 Duplicate of Ljubljana Breast Cancer

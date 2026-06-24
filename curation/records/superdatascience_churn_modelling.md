@@ -16,8 +16,6 @@ source_row: 162
 type_adapter_id: curation-record-v1
 ---
 
-# SuperDataScience Churn Modelling
-
 ## Comments
 
 from https://www.superdatascience.com/deep-learning

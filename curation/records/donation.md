@@ -16,8 +16,6 @@ source_row: 626
 type_adapter_id: curation-record-v1
 ---
 
-# donation
-
 ## Comments
 
 CC: ""Preprocessed target, some kind of special stratification towards mailingID, again very highly cardinal features for different groups

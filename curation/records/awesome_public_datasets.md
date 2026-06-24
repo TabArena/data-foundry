@@ -9,8 +9,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# awesome-public-datasets
-
 ## Comments
 
 List of many datasets and data sources in general

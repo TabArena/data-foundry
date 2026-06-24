@@ -17,8 +17,6 @@ source_row: 621
 type_adapter_id: curation-record-v1
 ---
 
-# PIRvision_FoG_presence_detection
-
 ## Comments
 
 might be solved via tabular models? paper uses knn....

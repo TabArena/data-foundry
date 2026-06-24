@@ -15,8 +15,6 @@ source_row: 590
 type_adapter_id: curation-record-v1
 ---
 
-# baseball
-
 ## Comments
 
 CC: "Baseball player statistics with hall of fame as nominal target, very imbalanced! Also potential omitted variable bias as date information could also be relevant, also task might be trivial or better modeled by deterministic rules; unclear source data"

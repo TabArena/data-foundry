@@ -15,8 +15,6 @@ source_row: 260
 type_adapter_id: curation-record-v1
 ---
 
-# Gas Sensor Array Drift at Different Concentrations
-
 ## Comments
 
 CC: "measurements of 16 sensors for 6 gases (sounds like groups), 2008 to 2011 data, measurements are time-series data "

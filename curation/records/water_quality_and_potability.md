@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Water_Quality_and_Potability
-
 ## Comments
 
 Imported from the TabArena curation workbook.

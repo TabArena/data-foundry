@@ -15,8 +15,6 @@ source_row: 431
 type_adapter_id: curation-record-v1
 ---
 
-# Amazon_employee_access
-
 ## Comments
 
 In TabArena

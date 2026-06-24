@@ -7,8 +7,6 @@ decision_markers:
 type_adapter_id: curation-record-v1
 ---
 
-# strogatz_lv2
-
 ## Comments
 
 Imported from the TabArena curation workbook.

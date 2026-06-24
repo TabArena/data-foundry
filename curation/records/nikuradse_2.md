@@ -16,8 +16,6 @@ source_row: 105
 type_adapter_id: curation-record-v1
 ---
 
-# nikuradse_2
-
 ## Comments
 
 Duplicate from nikuradse_1

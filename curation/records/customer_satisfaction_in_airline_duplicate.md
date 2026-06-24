@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# customer_satisfaction_in_airline
-
 ## Comments
 
 Shipped in the BeyondArena / TabArena (v0.1) collection(s).

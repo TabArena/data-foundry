@@ -27,8 +27,6 @@ source_row: 701
 type_adapter_id: curation-record-v1
 ---
 
-# ASHRAE - Great Energy Predictor III
-
 ## Comments
 
 Solutions used IID version of the data, unclear if this is still the case but this is a forecasting-as-tabular task

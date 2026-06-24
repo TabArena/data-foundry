@@ -16,8 +16,6 @@ source_row: 8
 type_adapter_id: curation-record-v1
 ---
 
-# Unemployment
-
 ## Comments
 
 Same data as Food Stamps task

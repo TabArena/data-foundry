@@ -16,8 +16,6 @@ source_row: 108
 type_adapter_id: curation-record-v1
 ---
 
-# glass
-
 ## Comments
 
 Likely a duplicate from glass2 (above) and its OpenML version!

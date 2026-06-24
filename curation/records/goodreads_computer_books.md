@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Goodreads-Computer-Books
-
 ## Comments
 
 CC: "Book recommendation task based on metadata (no user-id, so not personalizable). Is rather a toy task using crawled data, but might still be usable; unclear predictive task, what to predict here?"

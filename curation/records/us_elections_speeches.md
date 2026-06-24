@@ -17,8 +17,6 @@ source_row: 201
 type_adapter_id: curation-record-v1
 ---
 
-# US_ELECTIONS_SPEECHES
-
 ## Comments
 
 NLP task / data

@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Autonomous Shopper Prediction by Cape AI
-
 ## Comments
 
 predict if a customer has taken a product from the shelf

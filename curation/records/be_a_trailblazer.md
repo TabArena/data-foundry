@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# be-a-trailblazer
-
 ## Comments
 
 predict percentage of households per ward that are female-headed and living below a particular income threshold

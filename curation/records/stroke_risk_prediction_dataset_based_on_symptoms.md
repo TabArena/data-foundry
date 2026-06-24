@@ -14,8 +14,6 @@ source_row: 320
 type_adapter_id: curation-record-v1
 ---
 
-# Stroke Risk Prediction Dataset Based on Symptoms
-
 ## Comments
 
 "The dataset was constructed based on medical literature, expert consultations, and statistical modeling. The feature distributions and relationships were inspired by real-world clinical observations, ensuring medical validity."

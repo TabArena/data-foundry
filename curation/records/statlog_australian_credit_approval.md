@@ -15,8 +15,6 @@ source_row: 140
 type_adapter_id: curation-record-v1
 ---
 
-# Statlog (Australian Credit Approval)
-
 ## Comments
 
 No, for the same reasons as in TabArena (see "Australian" entry) that it is a duplicate of another version of credit approval

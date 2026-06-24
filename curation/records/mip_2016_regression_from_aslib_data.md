@@ -17,8 +17,6 @@ source_row: 696
 type_adapter_id: curation-record-v1
 ---
 
-# MIP-2016-regression from aslib_data
-
 ## Comments
 
 CC: "algorithm runtime performance data. Was part of a challenge. Sounds good. But it seems as if there were repeated evaluations of the same algorithm, so might require a group split. Algorithm selection data generally requires / assumes a group-based split w.r.t. to the instances"

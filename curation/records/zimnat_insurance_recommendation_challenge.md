@@ -13,8 +13,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# zimnat-insurance-recommendation-challenge
-
 ## Comments
 
 Predict which insurance a client wants next

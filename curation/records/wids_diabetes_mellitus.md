@@ -24,8 +24,6 @@ source_row: 652
 type_adapter_id: curation-record-v1
 ---
 
-# Diabetes Mellitus
-
 ## Comments
 
 CC: "Good dataset with many features, can checkout leaderboard and code for some examples of preprocessing and data cleaning"

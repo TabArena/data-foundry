@@ -14,8 +14,6 @@ source_row: 436
 type_adapter_id: curation-record-v1
 ---
 
-# HIV_QSAR
-
 ## Comments
 
 In TabArena

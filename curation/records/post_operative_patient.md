@@ -14,8 +14,6 @@ source_row: 125
 type_adapter_id: curation-record-v1
 ---
 
-# Post-Operative Patient
-
 ## Comments
 
 Too small data (less than 96)

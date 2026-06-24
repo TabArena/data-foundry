@@ -14,5 +14,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# Customer Personality Analysis

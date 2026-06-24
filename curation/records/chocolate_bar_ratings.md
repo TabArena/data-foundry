@@ -19,8 +19,6 @@ source_row: 553
 type_adapter_id: curation-record-v1
 ---
 
-# Chocolate Bar Ratings
-
 ## Comments
 
 Chocolate ratings; contains duplicated entries for review (version history).

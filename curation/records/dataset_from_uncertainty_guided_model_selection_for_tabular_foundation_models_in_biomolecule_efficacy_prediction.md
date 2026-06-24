@@ -15,8 +15,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Uncertainty-Guided Model Selection for Tabular Foundation Models in Biomolecule Efficacy Prediction
-
 ## Comments
 
 Their data could be used; it is from another work and has been preprocessed.

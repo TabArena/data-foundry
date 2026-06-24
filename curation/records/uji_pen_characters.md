@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# UJI_Pen_Characters
-
 ## Comments
 
 Imported from the TabArena curation workbook.

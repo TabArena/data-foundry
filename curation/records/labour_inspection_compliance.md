@@ -28,8 +28,6 @@ source_row: 659
 type_adapter_id: curation-record-v1
 ---
 
-# LICD_LABOR_RIGHTS
-
 ## Comments
 
 Labor Rights and Corporate Governance - LICD

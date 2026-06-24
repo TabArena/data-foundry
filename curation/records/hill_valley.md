@@ -16,8 +16,6 @@ source_row: 404
 type_adapter_id: curation-record-v1
 ---
 
-# hill-valley
-
 ## Comments
 
 CC: "Each record represents 100 points on a two-dimensional graph. When plotted in order (from 1 through 100) as the Y coordinate, the points will create either a Hill or a Valley, which is the target of this task. Custom split was given"

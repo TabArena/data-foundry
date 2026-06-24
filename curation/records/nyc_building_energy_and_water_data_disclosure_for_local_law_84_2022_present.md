@@ -14,5 +14,3 @@ source_links:
 source_row: 313
 type_adapter_id: curation-record-v1
 ---
-
-# NYC Building Energy and Water Data Disclosure for Local Law 84 (2022-Present)

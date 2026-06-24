@@ -21,8 +21,6 @@ source_row: 598
 type_adapter_id: curation-record-v1
 ---
 
-# Large-scale Wave Energy Farm
-
 ## Comments
 
 CC: "The dataset includes 4 CSV files for 49 and 100 wave energy converters based on Perth and Sydney wave scenarios. The main goal is predicting the total power output of the wave farm based on the coordination of WECs (X1, Y1, X2, Y2,..., Xn, Yn). Unclear whether this is a tabular task or time-series and whether it is better to use all data together or as single tasks; used for optimization and not a predictive task for any kind of model (if shall be usable as surrogate)"

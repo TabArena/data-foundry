@@ -24,8 +24,6 @@ source_row: 725
 type_adapter_id: curation-record-v1
 ---
 
-# Rossmann Store Sales
-
 ## Comments
 
 Awesome dataset, even the forecast horizon is given.

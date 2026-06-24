@@ -24,8 +24,6 @@ source_row: 504
 type_adapter_id: curation-record-v1
 ---
 
-# Medical Provider Fraud Detection
-
 ## Comments
 
 Preprocessing: https://www.kaggle.com/code/rohitrox/medical-provider-fraud-detection

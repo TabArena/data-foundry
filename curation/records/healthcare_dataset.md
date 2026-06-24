@@ -14,8 +14,6 @@ source_row: 130
 type_adapter_id: curation-record-v1
 ---
 
-# Healthcare Dataset
-
 ## Comments
 
 "leveraged Python's Faker library to generate a dataset"

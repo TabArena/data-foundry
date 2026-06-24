@@ -30,8 +30,6 @@ source_row: 120
 type_adapter_id: curation-record-v1
 ---
 
-# haberman
-
 ## Comments
 
 Might be a trivial dataset, only really 2 features and a temporal component

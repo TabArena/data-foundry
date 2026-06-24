@@ -27,8 +27,6 @@ source_row: 735
 type_adapter_id: curation-record-v1
 ---
 
-# Consumer Complaint Database
-
 ## Comments
 
 Real world complaints about financial products and services; data might contain sub-cohorts based on reporting category; we might want to filter to only a subset of cohorts; many missing values; data might have temporal drift; contains zip code to get more tabular features; temporal; we could get a new version of the data from the website

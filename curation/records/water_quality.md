@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# water_quality
-
 ## Comments
 
 CC: "created from imaginary data of water quality in an urban environment, recommended using this dataset for educational purposes"

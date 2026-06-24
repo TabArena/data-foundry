@@ -17,8 +17,6 @@ source_row: 571
 type_adapter_id: curation-record-v1
 ---
 
-# Stock Portfolio Performance
-
 ## Comments
 
 "built with the simulated performance data set "

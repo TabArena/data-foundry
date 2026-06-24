@@ -24,8 +24,6 @@ source_row: 676
 type_adapter_id: curation-record-v1
 ---
 
-# HEPATITIS_C_EGYPT
-
 ## Comments
 
 Paper reports pretty good performance, need to pay attention to target leaks. Unclear when the target was collected. Was it really after the features or can features leak the target?

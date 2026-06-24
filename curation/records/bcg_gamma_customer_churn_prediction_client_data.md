@@ -25,8 +25,6 @@ source_row: 633
 type_adapter_id: curation-record-v1
 ---
 
-# BCG Gamma Customer Churn Prediction client_data
-
 ## Comments
 
 from: derived from the BCG Gamma Customer Churn Simulation on Forage,

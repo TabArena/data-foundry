@@ -16,8 +16,6 @@ source_row: 347
 type_adapter_id: curation-record-v1
 ---
 
-# yeast
-
 ## Comments
 
 CC: "Data already preprocessed (discriminant analysis). This likely introduced data leaks"

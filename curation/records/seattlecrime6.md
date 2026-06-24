@@ -20,8 +20,6 @@ source_row: 542
 type_adapter_id: curation-record-v1
 ---
 
-# seattlecrime6
-
 ## Comments
 
 CC: "Might require temporal split, 144 classes as target. Note that grinsztajn uses wrong target from another study. Might require preprocessing and leaving out some features which would not be available at inference time in the real task. also in reality more features might be available; predicting crime type based on time and location might be a weird task "

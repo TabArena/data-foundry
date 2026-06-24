@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# predictive-insights-youth-income-prediction-challenge
-
 ## Comments
 
 predict if a young person in South Africa is employed

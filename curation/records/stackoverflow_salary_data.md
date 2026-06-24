@@ -27,8 +27,6 @@ source_row: 21
 type_adapter_id: curation-record-v1
 ---
 
-# stackoverflow_salary_data
-
 ## Comments
 
 stackoverflow survey

@@ -17,8 +17,6 @@ source_row: 401
 type_adapter_id: curation-record-v1
 ---
 
-# philippine
-
 ## Comments
 
 CC: "From AutoML challenge. features extracted from video data; https://www.causality.inf.ethz.ch/al_data/ZEBRA.html;"

@@ -16,8 +16,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# new_thyroid
-
 ## Comments
 
 Imported from the TabArena curation workbook.

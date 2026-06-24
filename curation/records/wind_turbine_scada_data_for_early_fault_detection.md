@@ -20,8 +20,6 @@ source_row: 556
 type_adapter_id: curation-record-v1
 ---
 
-# Wind Turbine SCADA Data For Early Fault Detection
-
 ## Comments
 
 Unclear task, but seems like it could be used

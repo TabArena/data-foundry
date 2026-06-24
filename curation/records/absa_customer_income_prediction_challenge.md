@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# absa-customer-income-prediction-challenge
-
 ## Comments
 
 predict a customer's income based on their transaction history

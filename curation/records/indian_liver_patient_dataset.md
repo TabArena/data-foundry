@@ -26,8 +26,6 @@ source_row: 747
 type_adapter_id: curation-record-v1
 ---
 
-# ilpd
-
 ## Comments
 
 CC: "There was a custom train/test split. Task might be rather a toy task and not of practical use. Unclear current SOTA for the domain but in itself fine and not too old"

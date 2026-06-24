@@ -18,8 +18,6 @@ source_row: 390
 type_adapter_id: curation-record-v1
 ---
 
-# Yolanda
-
 ## Comments
 
 CC: "From AutoML challenge. Actually is the year prediction dataset - see Tabred: Not a relevant problem. Also corresponds to features extracted from audio"

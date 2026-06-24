@@ -14,8 +14,6 @@ source_row: 222
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Predicting subscriber dissatisfaction and improving retention in the wireless telecommunications industry
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

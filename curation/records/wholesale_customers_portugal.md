@@ -15,5 +15,3 @@ source_links:
 source_row: 473
 type_adapter_id: curation-record-v1
 ---
-
-# WHOLESALE_CUSTOMERS_PORTUGAL

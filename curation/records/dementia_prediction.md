@@ -29,8 +29,6 @@ source_row: 4
 type_adapter_id: curation-record-v1
 ---
 
-# Dementia Prediction Dataset
-
 ## Comments
 
 need to figure out how to use the data, source seems likely image data?

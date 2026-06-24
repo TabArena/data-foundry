@@ -16,8 +16,6 @@ source_row: 113
 type_adapter_id: curation-record-v1
 ---
 
-# Heart Disease
-
 ## Comments
 
 Duplicate of heart disease from PMLB above

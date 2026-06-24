@@ -24,8 +24,6 @@ source_row: 664
 type_adapter_id: curation-record-v1
 ---
 
-# Iranian Churn
-
 ## Comments
 
 UCI says: "All of the attributes except for attribute churn is the aggregated data of the first 9 months. The churn labels are the state of the customers at the end of 12 months. The three months is the designated planning gap." But the paper says: "The end of the observation period for each customer is the month in which the customer churns."

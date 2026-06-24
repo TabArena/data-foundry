@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# ensi-junior-entreprise
-
 ## Comments
 
 Predict weather temperature at any location given by its X and Y coordinates

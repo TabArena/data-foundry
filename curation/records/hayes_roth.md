@@ -19,8 +19,6 @@ source_row: 97
 type_adapter_id: curation-record-v1
 ---
 
-# hayes_roth
-
 ## Comments
 
 Seems to have a lot of details regarding the data state and how it was created and how categories were assigned

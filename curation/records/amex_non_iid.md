@@ -24,8 +24,6 @@ source_row: 690
 type_adapter_id: curation-record-v1
 ---
 
-# amex
-
 ## Comments
 
 CC: ""Target is binary classification from a survival prediction task (thus some noise); mostly anonymized data, some categorical data; dataset made imbalanced by default and scoring is affected by this;

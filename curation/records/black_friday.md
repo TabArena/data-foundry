@@ -17,8 +17,6 @@ source_row: 585
 type_adapter_id: curation-record-v1
 ---
 
-# BLACK_FRIDAY
-
 ## Comments
 
 Found new source from hackathon website. Unclear if this is the original source.

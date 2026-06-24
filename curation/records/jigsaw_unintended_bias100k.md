@@ -18,8 +18,6 @@ source_row: 208
 type_adapter_id: curation-record-v1
 ---
 
-# jigsaw_unintended_bias100K
-
 ## Comments
 
 NLP task / data

@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Urban Air Pollution Challenge
-
 ## Comments
 
 predict air quality in cities around the world using satellite data

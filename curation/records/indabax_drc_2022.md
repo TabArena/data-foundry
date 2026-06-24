@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# indabax-drc-2022
-
 ## Comments
 
 Fraud Detection in Electricity and Gas Consumption

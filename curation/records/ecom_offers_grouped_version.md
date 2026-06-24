@@ -25,8 +25,6 @@ source_row: 634
 type_adapter_id: curation-record-v1
 ---
 
-# Ecom Offers (Grouped-Version)
-
 ## Comments
 
 This could be the version without preprocessing and collapsing the groups as done for amex!

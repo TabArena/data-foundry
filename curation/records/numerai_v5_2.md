@@ -24,8 +24,6 @@ source_row: 706
 type_adapter_id: curation-record-v1
 ---
 
-# numerai v5.2
-
 ## Comments
 
 temporal split on era, likely need to add feature neutralization: https://github.com/numerai/example-scripts/blob/master/numerai/feature_neutralization.ipynb?

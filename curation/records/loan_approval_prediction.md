@@ -17,8 +17,6 @@ source_row: 28
 type_adapter_id: curation-record-v1
 ---
 
-# Loan Approval Prediction
-
 ## Comments
 
 I feel I have seen this data before and it is a duplicate to one of the above

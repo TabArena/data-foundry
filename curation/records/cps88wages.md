@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# cps88wages
-
 ## Comments
 
 CC: "predict wage based on census/survey data. again census data that is outdated, unclear if the task of predicting the wage based on the selected sensitive features makes sense"

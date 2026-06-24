@@ -29,8 +29,6 @@ source_row: 557
 type_adapter_id: curation-record-v1
 ---
 
-# Diabetes
-
 ## Comments
 
 CC: "Used to benchmark distribution shifts between ethnicities, but could also be used with random splits. But would need to clarify license. Source: Centers for Disease Control/BRFSS"

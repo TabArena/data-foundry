@@ -23,8 +23,6 @@ source_row: 505
 type_adapter_id: curation-record-v1
 ---
 
-# US Airline Passenger Satisfaction
-
 ## Comments
 
 Cleaned version: https://www.kaggle.com/datasets/teejmahal20/airline-passenger-satisfaction?select=train.csv

@@ -17,8 +17,6 @@ source_row: 454
 type_adapter_id: curation-record-v1
 ---
 
-# Google Play Store Apps
-
 ## Comments
 
 A lot of minor problems with the scraping data (see discussions); no clear target or setup to use

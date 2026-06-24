@@ -14,8 +14,6 @@ source_row: 147
 type_adapter_id: curation-record-v1
 ---
 
-# California Housing Prices
-
 ## Comments
 
 Duplicate of "houses" in TabArena

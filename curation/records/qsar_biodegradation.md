@@ -14,8 +14,6 @@ source_row: 385
 type_adapter_id: curation-record-v1
 ---
 
-# QSAR biodegradation
-
 ## Comments
 
 In TabArena

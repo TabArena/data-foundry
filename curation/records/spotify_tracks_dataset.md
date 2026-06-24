@@ -34,8 +34,6 @@ source_row: 511
 type_adapter_id: curation-record-v1
 ---
 
-# Spotify Tracks Dataset
-
 ## Comments
 
 This data does not include any original audio data but already gives preprocessed features, which is problematic, but we can work with it.

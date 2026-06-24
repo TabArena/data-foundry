@@ -25,8 +25,6 @@ source_row: 612
 type_adapter_id: curation-record-v1
 ---
 
-# online_retail
-
 ## Comments
 
 transactions occurring between 01/12/2010 and 09/12/2011 for a UK-based and registered non-store online retail. Same uploader as for "Online_Retail_II" dataset. Could try to predict cancellations, but unclear whether that makes sense

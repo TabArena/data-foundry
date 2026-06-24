@@ -22,8 +22,6 @@ source_row: 740
 type_adapter_id: curation-record-v1
 ---
 
-# farm-to-feed-shopping-basket-recommendation-challenge
-
 ## Comments
 
 Competition used temporal split.

@@ -10,8 +10,6 @@ required_split:
 type_adapter_id: curation-record-v1
 ---
 
-# gina_agnostic
-
 ## Comments
 
 Imported from the TabArena curation workbook.

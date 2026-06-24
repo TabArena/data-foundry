@@ -14,8 +14,6 @@ source_row: 146
 type_adapter_id: curation-record-v1
 ---
 
-# Ames Housing Dataset
-
 ## Comments
 
 Version of https://www.kaggle.com/c/house-prices-advanced-regression-techniques

@@ -20,8 +20,6 @@ source_row: 111
 type_adapter_id: curation-record-v1
 ---
 
-# arrhythmia
-
 ## Comments
 
 Outdated to use as tabular, and source domain is time-series not tabular

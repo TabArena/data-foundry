@@ -25,8 +25,6 @@ source_row: 520
 type_adapter_id: curation-record-v1
 ---
 
-# laptops
-
 ## Comments
 
 Laptop listings on some website;

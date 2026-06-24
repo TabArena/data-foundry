@@ -17,8 +17,6 @@ source_row: 351
 type_adapter_id: curation-record-v1
 ---
 
-# vehicle
-
 ## Comments
 
 CC: "set of features extracted from the silhouette of car images"

@@ -17,8 +17,6 @@ source_row: 104
 type_adapter_id: curation-record-v1
 ---
 
-# nikuradse_1
-
 ## Comments
 
 Control / physics / Symbolic regression task or similar, not predictive, also unsupervised task in nature. Likely a mismatch for us. Moreover, very old data from some very old experiment. We skip this for now

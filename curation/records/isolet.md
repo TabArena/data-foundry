@@ -17,8 +17,6 @@ source_row: 356
 type_adapter_id: curation-record-v1
 ---
 
-# isolet
-
 ## Comments
 
 CC: "Features extracted from speech data"

@@ -22,8 +22,6 @@ source_row: 554
 type_adapter_id: curation-record-v1
 ---
 
-# cpu_act
-
 ## Comments
 
 CC: "Actually regression, Data collected on two separate occasions - likely need custom split, also everything related to CPU performance may be outdated, depending on how old the data is; includes different user behavior as well; cpu activity is also related to outside temperatures and usage that depend on time"

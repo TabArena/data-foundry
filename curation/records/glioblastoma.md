@@ -23,8 +23,6 @@ source_row: 784
 type_adapter_id: curation-record-v1
 ---
 
-# GBM
-
 ## Comments
 
 used in the TabPFN-Wide paper. From their download instructions: to map the methylation probe IDs to gene symbols, download the file from `https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv`

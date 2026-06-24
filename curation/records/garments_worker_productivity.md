@@ -24,8 +24,6 @@ source_row: 716
 type_adapter_id: curation-record-v1
 ---
 
-# garments_worker_productivity
-
 ## Comments
 
 CC: "predict the productivity performance of the working teams in garment production. Date available, requires temporal split"

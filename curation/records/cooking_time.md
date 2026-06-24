@@ -26,8 +26,6 @@ source_row: 712
 type_adapter_id: curation-record-v1
 ---
 
-# Cooking Time
-
 ## Comments
 
 Was downsampled/filtered by TabRed via preprocessing. Need to see what we want to resample

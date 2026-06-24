@@ -16,8 +16,6 @@ source_row: 623
 type_adapter_id: curation-record-v1
 ---
 
-# Historical Hourly Weather Data 2012-2017
-
 ## Comments
 
 Might be transformed into a non-iid predictive task instead of forecasting

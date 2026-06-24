@@ -17,8 +17,6 @@ source_row: 372
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_authorship
-
 ## Comments
 
 CC: "Not much information, but clearly data represents text; looks like TF-IDF preprocessing; data from several books (groups) of several authors (target)"

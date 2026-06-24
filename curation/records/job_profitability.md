@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Job_Profitability
-
 ## Comments
 
 CC: "Not much information given, but task seems interesting; used for feature selection / scientific discovery"

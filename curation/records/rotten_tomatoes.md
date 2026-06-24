@@ -17,8 +17,6 @@ source_row: 489
 type_adapter_id: curation-record-v1
 ---
 
-# Rotten Tomatoes
-
 ## Comments
 
 Contains information on movies that can be found on the Rotten Tomatoes movie rating website

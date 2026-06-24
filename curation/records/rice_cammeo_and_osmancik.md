@@ -13,8 +13,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# rice_cammeo_and_osmancik
-
 ## Comments
 
 Imported from the TabArena curation workbook.

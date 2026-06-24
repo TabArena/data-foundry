@@ -23,8 +23,6 @@ source_row: 718
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_supreme
-
 ## Comments
 
 CC: ""Actual task is regression; ""1[data from] between 1953 and 1988 that fell under Judiciary Committee jurisdiction during the 96th through 101st

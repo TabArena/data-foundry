@@ -17,8 +17,6 @@ source_row: 197
 type_adapter_id: curation-record-v1
 ---
 
-# diabetes
-
 ## Comments
 
 predict diabetes based on demographic and health-related features

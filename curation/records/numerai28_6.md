@@ -17,8 +17,6 @@ source_row: 719
 type_adapter_id: curation-record-v1
 ---
 
-# numerai28.6
-
 ## Comments
 
 CC: ""I heard there are many people interested in this dataset. Also, I think there are newer more extensive versions available. However stock market predictions might also be seen as time-series; 

@@ -27,8 +27,6 @@ source_row: 68
 type_adapter_id: curation-record-v1
 ---
 
-# tae
-
 ## Comments
 
 The task is to predict the evaluation of an instructor x course based on semester, class size, and native language. This does not seem to represent a meaningful task IMO

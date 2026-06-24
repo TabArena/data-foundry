@@ -23,8 +23,6 @@ source_row: 705
 type_adapter_id: curation-record-v1
 ---
 
-# brazilian-ecommerce/
-
 ## Comments
 
 Data seems to be from a real company (Olist), a previous version even was classified. Possible tasks: predict future sales, optimize delivery times.

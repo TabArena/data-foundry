@@ -19,8 +19,6 @@ source_row: 16
 type_adapter_id: curation-record-v1
 ---
 
-# BOOKS_GOODREADS
-
 ## Comments
 
 Books ratings

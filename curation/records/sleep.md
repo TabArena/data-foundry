@@ -23,8 +23,6 @@ source_row: 519
 type_adapter_id: curation-record-v1
 ---
 
-# sleep
-
 ## Comments
 
 CC: "missing source information, maybe from a kaggle data that was removed later (https://www.kaggle.com/competitions/sleepapneadetection/overview)"

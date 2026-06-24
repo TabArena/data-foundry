@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# confidence
-
 ## Comments
 
 Imported from the TabArena curation workbook.

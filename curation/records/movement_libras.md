@@ -9,8 +9,6 @@ tags:
 type_adapter_id: curation-record-v1
 ---
 
-# movement_libras
-
 ## Comments
 
 Imported from the TabArena curation workbook.

@@ -25,8 +25,6 @@ source_row: 574
 type_adapter_id: curation-record-v1
 ---
 
-# acute-inflammations
-
 ## Comments
 
 Data has two targets, maybe we can merge into 4 classes or go with just predicting one of them; need to check distributions

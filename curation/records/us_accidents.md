@@ -19,8 +19,6 @@ source_row: 493
 type_adapter_id: curation-record-v1
 ---
 
-# US Accidents
-
 ## Comments
 
 Information of accidents in US cities between 2016 and 2023. From this dataset, two tasks are conducted: (1) the range of accident counts for the US cities (2) the severity of the reported accidents

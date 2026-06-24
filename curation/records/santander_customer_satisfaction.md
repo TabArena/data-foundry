@@ -24,8 +24,6 @@ source_row: 649
 type_adapter_id: curation-record-v1
 ---
 
-# SantanderCustomerSatisfaction
-
 ## Comments
 
 CC: "work with hundreds of anonymized features to predict if a customer is satisfied or dissatisfied with their banking experience. Very nice dataset. Data was uploaded to OpenML with Public license, but the actual license might be more prohibitive. Unsure how to deal with that. also, we don't know the split, but as competition winners used random, this should be fine."

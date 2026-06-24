@@ -18,8 +18,6 @@ source_row: 114
 type_adapter_id: curation-record-v1
 ---
 
-# Body Fat Prediction Dataset
-
 ## Comments
 
 Duplicate of bodyfat above

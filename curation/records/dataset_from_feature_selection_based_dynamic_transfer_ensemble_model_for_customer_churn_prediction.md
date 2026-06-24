@@ -18,8 +18,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Feature-selection-based dynamic transfer ensemble model for customer churn prediction
-
 ## Comments
 
 Dataset (1) is a duplicate from the churn dataset in TabArena.

@@ -16,8 +16,6 @@ source_row: 442
 type_adapter_id: curation-record-v1
 ---
 
-# waveform-5000
-
 ## Comments
 
 CC: "19/40 features are pure noise, data describes waves and was simulated; data from a book"

@@ -20,8 +20,6 @@ source_row: 432
 type_adapter_id: curation-record-v1
 ---
 
-# Air Quality and Pollution Assessment
-
 ## Comments
 
 Deterministic target based on forecasting features? Unclear if this is not just forecasting data

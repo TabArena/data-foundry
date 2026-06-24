@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Used Cars Benz Italy
-
 ## Comments
 
 used mercedes data

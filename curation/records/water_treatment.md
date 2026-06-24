@@ -17,8 +17,6 @@ source_row: 253
 type_adapter_id: curation-record-v1
 ---
 
-# water-treatment
-
 ## Comments
 
 CC: "Regression. Already preprocessed, really is sensor data, temporal. - Creators: Manel Poch (igte2@cc.uab.es) Unitat d'Enginyeria Quimica Universitat Autonoma de Barcelona. Bellaterra. Barcelona; Spain -- Donor: Javier Bejar and Ulises Cortes (bejar@lsi.upc.es) Dept. Llenguatges i Sistemes Informatics; Universitat Politecnica de Catalunya. Barcelona; Spain"

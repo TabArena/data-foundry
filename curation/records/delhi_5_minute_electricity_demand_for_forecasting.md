@@ -14,5 +14,3 @@ source_links:
 source_row: 303
 type_adapter_id: curation-record-v1
 ---
-
-# Delhi 5-Minute Electricity Demand for Forecasting

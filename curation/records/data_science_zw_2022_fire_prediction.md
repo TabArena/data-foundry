@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# data-science-zw-2022-fire-prediction
-
 ## Comments
 
 predict burned area in Zimbabwe

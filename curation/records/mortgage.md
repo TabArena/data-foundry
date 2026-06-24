@@ -23,8 +23,6 @@ source_row: 702
 type_adapter_id: curation-record-v1
 ---
 
-# Mortgage
-
 ## Comments
 
 Panel data from www.internationalfinancialresearch.org, maybe we can find the source and get more as it is just a " randomized selection"

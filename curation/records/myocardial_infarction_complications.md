@@ -21,8 +21,6 @@ source_row: 668
 type_adapter_id: curation-record-v1
 ---
 
-# Myocardial infarction complications
-
 ## Comments
 
 Has multiple datasets / outcomes in one. Take one at most. Moreover, clearly describes which time points we could simulate with the data.

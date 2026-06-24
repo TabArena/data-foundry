@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# StackOverflow
-
 ## Comments
 
 CC: "A lot of text data; requires heavy feature engineering from user IDs and post ID to useful signal; tags require special preprocessing"

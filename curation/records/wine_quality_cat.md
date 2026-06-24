@@ -15,8 +15,6 @@ source_row: 402
 type_adapter_id: curation-record-v1
 ---
 
-# WINE_QUALITY_CAT
-
 ## Comments
 
 CC: "subset of wine-quality"

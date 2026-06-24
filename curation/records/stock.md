@@ -21,8 +21,6 @@ source_row: 58
 type_adapter_id: curation-record-v1
 ---
 
-# stock
-
 ## Comments
 
 CC: "Regression. Not a meaningful prediction task, rather interpretability as the task should be framed very differently to make sense for prediction. Daily stock prices from January 1988 through October 1991, for ten aerospace companies - clearly we have much more data for such tasks nowadays"

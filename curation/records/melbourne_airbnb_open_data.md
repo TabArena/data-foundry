@@ -18,8 +18,6 @@ source_row: 18
 type_adapter_id: curation-record-v1
 ---
 
-# Melbourne Airbnb Open Data
-
 ## Comments
 
 One of many https://insideairbnb.com/ datasets.

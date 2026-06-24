@@ -26,8 +26,6 @@ source_row: 1037
 type_adapter_id: curation-record-v1
 ---
 
-# Prostate
-
 ## Comments
 
 OpenML Source Rel: https://arxiv.org/abs/2311.12879

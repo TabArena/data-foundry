@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# absa-corporate-client-activity-forecasting-challenge
-
 ## Comments
 
 Predict if a user performs a specific action (such as making a purchase) in a 6-hour period over the course of a day, based on previous event data for seven weeks.

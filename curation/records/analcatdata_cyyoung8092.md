@@ -19,8 +19,6 @@ source_row: 88
 type_adapter_id: curation-record-v1
 ---
 
-# analcatdata_cyyoung8092
-
 ## Comments
 
 No, see analcatdata_* entry for more information

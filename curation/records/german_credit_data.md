@@ -15,8 +15,6 @@ source_row: 139
 type_adapter_id: curation-record-v1
 ---
 
-# german-credit-data
-
 ## Comments
 
 In TabArena "credit-g"

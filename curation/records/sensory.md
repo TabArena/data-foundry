@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# sensory
-
 ## Comments
 
 CC: "Not sure if this is a real predictive task.. Apparently only control variables of a wine tasting experiment are given; sounds like a simulation; includes groups and splits of the data. Very weird task and constructed experiment, I would almost say that this is a simulation!"

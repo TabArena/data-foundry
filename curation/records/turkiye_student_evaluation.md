@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Turkiye Student Evaluation
-
 ## Comments
 
 CC: "Scores from 5000 students related to courses; contains multiple instructors and courses and thus is clustered data

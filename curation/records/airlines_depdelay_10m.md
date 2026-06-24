@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Airlines_DepDelay_10M
-
 ## Comments
 
 Imported from the TabArena curation workbook.

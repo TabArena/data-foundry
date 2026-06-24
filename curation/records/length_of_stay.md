@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Length of Stay
-
 ## Comments
 
 CC: "Data from https://microsoft.github.io/r-server-hospital-length-of-stay/input_data.html

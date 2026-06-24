@@ -20,8 +20,6 @@ source_row: 502
 type_adapter_id: curation-record-v1
 ---
 
-# Babies R us
-
 ## Comments
 
 [NOTE] Data from entity matching project, collected by student teams by scraping websites for entities. Not a usual predictive ML task.

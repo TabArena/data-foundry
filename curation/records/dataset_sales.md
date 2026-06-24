@@ -17,8 +17,6 @@ source_row: 540
 type_adapter_id: curation-record-v1
 ---
 
-# dataset_sales
-
 ## Comments
 
 CC: "Not much information given, datetime available. Task seems to be to predict sales mostly based on weather and datetime - requires temporal split"

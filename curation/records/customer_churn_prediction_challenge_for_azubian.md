@@ -22,8 +22,6 @@ source_row: 961
 type_adapter_id: curation-record-v1
 ---
 
-# customer-churn-prediction-challenge-for-azubian
-
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**

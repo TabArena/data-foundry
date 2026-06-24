@@ -17,8 +17,6 @@ source_row: 438
 type_adapter_id: curation-record-v1
 ---
 
-# page-blocks
-
 ## Comments
 
 CC: "Grouped data, random splits may be inappropriate; meta-features extracted from images rely on the original image algorithm, and RLSA"

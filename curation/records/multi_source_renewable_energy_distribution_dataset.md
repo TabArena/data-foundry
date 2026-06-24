@@ -15,8 +15,6 @@ source_row: 182
 type_adapter_id: curation-record-v1
 ---
 
-# Multi-Source Renewable Energy Distribution Dataset
-
 ## Comments
 
 Data looks super fake and we have no info again

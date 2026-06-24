@@ -28,8 +28,6 @@ source_row: 694
 type_adapter_id: curation-record-v1
 ---
 
-# SAT11-HAND-ALGO runtime-regression from aslib_data
-
 ## Comments
 
 CC: "Some code runtime prediction challenge; see https://arxiv.org/pdf/1506.02465 and https://arxiv.org/pdf/1111.2249  and https://github.com/coseal/aslib_data/tree/master/SAT11-HAND; on openml the instance ID is missing, so in its current state this would create a leak (we have information about the to-be-solved SAT instance). Leak without instance ID, could get real data from other sources but this would then require grouped splits as normally done in AS literature"  

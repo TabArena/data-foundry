@@ -18,8 +18,6 @@ source_row: 510
 type_adapter_id: curation-record-v1
 ---
 
-# Bank Account Fraud
-
 ## Comments
 
 Generated data (for privacy reasons) but given the large number of samples likely up-generated and thus super noisy.

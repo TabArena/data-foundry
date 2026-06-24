@@ -23,8 +23,6 @@ source_row: 669
 type_adapter_id: curation-record-v1
 ---
 
-# Stroke Prediction
-
 ## Comments
 
 Unclear if data is fake (https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset/discussion/218525)

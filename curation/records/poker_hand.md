@@ -17,8 +17,6 @@ source_row: 226
 type_adapter_id: curation-record-v1
 ---
 
-# POKER_HAND
-
 ## Comments
 
 Clear TabArena Reject

@@ -16,8 +16,6 @@ source_row: 370
 type_adapter_id: curation-record-v1
 ---
 
-# MiniBooNE
-
 ## Comments
 
 CC: "Used in many benchmarks, simulated with MC methods but relevant task"

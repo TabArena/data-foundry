@@ -15,8 +15,6 @@ source_row: 179
 type_adapter_id: curation-record-v1
 ---
 
-# Renewable Energy-Optimized Interior Design Dataset
-
 ## Comments
 
 Has no source information, otherwise looks slightly fake

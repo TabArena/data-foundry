@@ -18,8 +18,6 @@ source_row: 533
 type_adapter_id: curation-record-v1
 ---
 
-# ACP_BREAST_CANCER
-
 ## Comments
 
 Deterministic classes, features are just a text string from sequence and should likely be encoded by something first

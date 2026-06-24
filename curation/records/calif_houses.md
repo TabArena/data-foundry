@@ -16,8 +16,6 @@ source_row: 196
 type_adapter_id: curation-record-v1
 ---
 
-# calif_houses
-
 ## Comments
 
 DUPLICATE OF CALIFORNIA_PRICES_2020

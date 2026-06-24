@@ -16,8 +16,6 @@ source_row: 92
 type_adapter_id: curation-record-v1
 ---
 
-# auto_insurance_symboling
-
 ## Comments
 
 Version of auto 10.24432/C5B01C

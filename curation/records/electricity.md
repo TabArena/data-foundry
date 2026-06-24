@@ -28,8 +28,6 @@ source_row: 614
 type_adapter_id: curation-record-v1
 ---
 
-# electricity
-
 ## Comments
 
 CC: "leak if not temporal split; manually normalized but unclear how; day-wise and week-wise temporal connections"

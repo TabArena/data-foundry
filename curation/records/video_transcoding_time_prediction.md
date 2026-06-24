@@ -28,8 +28,6 @@ source_row: 698
 type_adapter_id: curation-record-v1
 ---
 
-# video_transcoding
-
 ## Comments
 
 CC: "Real data, preprocessed, information about decoding videos, the same video appears several times. If the task is to predict new videos, either group split is required, or we need to make sure that random split does not introduce unwanted behaviour of models learning distribution shifts between videos"

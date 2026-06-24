@@ -25,8 +25,6 @@ source_row: 1039
 type_adapter_id: curation-record-v1
 ---
 
-# SRBCT
-
 ## Comments
 
 CC: "No original deposition of the dataset, many R packages include it (in the same shape) but no better source than OpenML. Round blue cell tumors (SRBCT) dataset. From this paper: we used gene-expression data from cDNA microarrays containing 6567 genes. "

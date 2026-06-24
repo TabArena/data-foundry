@@ -20,8 +20,6 @@ source_row: 54
 type_adapter_id: curation-record-v1
 ---
 
-# YearPrediction The Million Song Dataset
-
 ## Comments
 
 From Million Song Dataset Challenge. Song recommendation task. Clearly requires time split as songs & users change over time

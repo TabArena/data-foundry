@@ -27,8 +27,6 @@ source_row: 596
 type_adapter_id: curation-record-v1
 ---
 
-# drugs_rating
-
 ## Comments
 
 web scraped info about drugs, predict the rating;

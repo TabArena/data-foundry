@@ -18,8 +18,6 @@ source_row: 575
 type_adapter_id: curation-record-v1
 ---
 
-# Loan-Predication
-
 ## Comments
 
 No source information. Might be fake.

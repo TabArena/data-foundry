@@ -17,8 +17,6 @@ source_row: 426
 type_adapter_id: curation-record-v1
 ---
 
-# FICO-HELOC-cleaned
-
 ## Comments
 
 CC: "Kaggle dataset. Loan default prediction. Talent uses a preprocessed version, but also the original heloc dataset; data from a challenge used for explainable AI"

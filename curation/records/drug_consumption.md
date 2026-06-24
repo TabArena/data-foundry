@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# drug_consumption
-
 ## Comments
 
 CC: ""Predict using demographic and psychological data whether a person uses drugs. 18 Different targets available. Unclear which one used in Talent. Scientific discovery task.

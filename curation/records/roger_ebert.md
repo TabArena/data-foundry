@@ -16,8 +16,6 @@ source_row: 488
 type_adapter_id: curation-record-v1
 ---
 
-# Roger Ebert
-
 ## Comments
 
 The dataset contains movie ratings by famous critic Roger Ebert

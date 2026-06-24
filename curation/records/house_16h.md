@@ -17,8 +17,6 @@ source_row: 229
 type_adapter_id: curation-record-v1
 ---
 
-# HOUSE_16H
-
 ## Comments
 
 CC: "Census data. mostly counts cumulated at different survey levels. Already preprocessed. potential predictive task without temporal connection as it is a snapshot of a year and the median price, use case could be filling missing values or estimating it for non-valued houses. The available data was already preprocessed and it is not possible to restore the original values nor to determine the column names to verify whether the task makes sense"

@@ -20,8 +20,6 @@ source_row: 515
 type_adapter_id: curation-record-v1
 ---
 
-# pol
-
 ## Comments
 
 CC: "Telecommunication problem from a certain paper. Anonymized. Not much is known. Original split was 5k training 10k test"

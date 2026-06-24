@@ -26,8 +26,6 @@ source_row: 573
 type_adapter_id: curation-record-v1
 ---
 
-# housing_price_prediction
-
 ## Comments
 
 The data looks reasonably real, and the data is supposedly from websites (in India). It still is missing source information and could be fake or trivial

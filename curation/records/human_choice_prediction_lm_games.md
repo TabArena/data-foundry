@@ -17,8 +17,6 @@ source_row: 194
 type_adapter_id: curation-record-v1
 ---
 
-# HUMAN_CHOICE_PREDICTION_LM_GAMES
-
 ## Comments
 
 Human Choice Prediction in Language-based Games

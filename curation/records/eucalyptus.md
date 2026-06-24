@@ -21,8 +21,6 @@ source_row: 611
 type_adapter_id: curation-record-v1
 ---
 
-# eucalyptus
-
 ## Comments
 
 CC: "Clustered data per site. May require group split, description mentions that trials changed over time so likely shifts. Also spatial data. Might be a nice dataset, although likely outdated. 736 samples"

@@ -17,8 +17,6 @@ source_row: 458
 type_adapter_id: curation-record-v1
 ---
 
-# passenger-list-for-the-estonia-ferry-disaster
-
 ## Comments
 
 Like Titanic, a scientific discovery task

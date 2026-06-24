@@ -18,8 +18,6 @@ source_row: 572
 type_adapter_id: curation-record-v1
 ---
 
-# Bone marrow transplant: children
-
 ## Comments
 
 Also survival task as it seems. Plus a scientific discovery task, so likely no good predictive task

@@ -14,5 +14,3 @@ source_links:
 source_row: 298
 type_adapter_id: curation-record-v1
 ---
-
-# UK Domestic Appliance-Level Electricity (UK-DALE) dataset

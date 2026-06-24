@@ -15,8 +15,6 @@ source_row: 397
 type_adapter_id: curation-record-v1
 ---
 
-# ada
-
 ## Comments
 
 CC: "From AutoML challenge. A version of the adult dataset"

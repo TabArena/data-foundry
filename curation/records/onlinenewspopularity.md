@@ -23,8 +23,6 @@ source_row: 720
 type_adapter_id: curation-record-v1
 ---
 
-# OnlineNewsPopularity
-
 ## Comments
 
 CC: "Predict how often news were shared from statistics. Actually might be an NLP task, but could as well be still solved as a tabular data task; temporal impact as platform might grow over time. Some features are from LDA which likely introduced leaks making the dataset be unusable with random splits"

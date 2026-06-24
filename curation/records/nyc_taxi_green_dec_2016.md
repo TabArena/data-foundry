@@ -22,8 +22,6 @@ source_row: 631
 type_adapter_id: curation-record-v1
 ---
 
-# nyc-taxi-green-dec-2016
-
 ## Comments
 
 CC: "Various issues: Preprocessing required, time features, specific split, task is also conceptualized in a weird way - there is a Kaggle competition with a different target"

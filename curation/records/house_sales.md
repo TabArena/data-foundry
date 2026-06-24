@@ -23,8 +23,6 @@ source_row: 721
 type_adapter_id: curation-record-v1
 ---
 
-# house_sales
-
 ## Comments
 
 CC: "Time split required. Also spatial data. Time impact not ignorable as collection and prediction was not at one time point"

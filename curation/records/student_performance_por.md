@@ -18,8 +18,6 @@ source_row: 119
 type_adapter_id: curation-record-v1
 ---
 
-# student_performance_por
-
 ## Comments
 
 CC: "student data, but newer than irish"

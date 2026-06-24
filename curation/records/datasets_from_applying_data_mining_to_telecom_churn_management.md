@@ -14,8 +14,6 @@ source_row: 216
 type_adapter_id: curation-record-v1
 ---
 
-# Datasets from Applying Data Mining to Telecom Churn Management
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

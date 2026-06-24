@@ -26,8 +26,6 @@ source_row: 661
 type_adapter_id: curation-record-v1
 ---
 
-# Alfa Battle 2.0 ( Task 1)
-
 ## Comments
 
 "Solve two problems predicting customer behavior in a mobile app"

@@ -20,8 +20,6 @@ source_row: 610
 type_adapter_id: curation-record-v1
 ---
 
-# ICU Length of Stay ICU Mortality
-
 ## Comments
 
 Data from MIMIC likely duplicated with data from sepsis_prediction task. Unclear how to handle such duplicates with very different data. This data only uses 24k patients and from/with a different feature set and subset

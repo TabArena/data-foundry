@@ -23,8 +23,6 @@ source_row: 781
 type_adapter_id: curation-record-v1
 ---
 
-# COAD (colon adenocarcinoma)
-
 ## Comments
 
 Used in the TabPFN-Wide paper. Run download.sh in the git repo to get the data.

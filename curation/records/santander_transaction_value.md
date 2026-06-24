@@ -25,8 +25,6 @@ source_row: 663
 type_adapter_id: curation-record-v1
 ---
 
-# Santander_transaction_value
-
 ## Comments
 
 CC: "From Kaggle competition. Original task was rather time-series & some weird feature engineering was applied in the competition. It is very likely that there are leaks. Might rather use the preprocessed version of Tschalzev et al. Not included in TabRepo. Various issues in the dataset, but with the right preprocessing might be usable"

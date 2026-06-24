@@ -16,8 +16,6 @@ source_row: 322
 type_adapter_id: curation-record-v1
 ---
 
-# Click_prediction_small
-
 ## Comments
 
 CC: "Data was subsampled. Click prediction is actually a quite large own research field. A good tabular data benchmark should definitely have some of these tasks, but this dataset may not be representative as the original tasks have millions of rows. Original version has above 1M samples and even that version is subsampled"

@@ -17,8 +17,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# SpeedDating
-
 ## Comments
 
 CC: "Data was collected in multiple waves with a predefined study design influencing the target. Likely this is rather an interpretability task. If not accounting for the special data collection process, tree-based models are superior to other approaches; some questionable preprocessed features ("samerace"); "met" feature has time relationship due to multiple waves "

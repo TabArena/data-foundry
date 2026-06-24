@@ -24,8 +24,6 @@ source_row: 457
 type_adapter_id: curation-record-v1
 ---
 
-# turkish-university-admissions
-
 ## Comments
 
 Looks like good data, but predictive task is not obvious

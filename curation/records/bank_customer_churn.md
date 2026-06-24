@@ -18,8 +18,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# Bank_Customer_Churn_Dataset / bank_customer_churn
-
 ## Comments
 
 Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.

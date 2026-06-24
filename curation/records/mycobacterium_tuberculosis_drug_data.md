@@ -15,8 +15,6 @@ source_row: 131
 type_adapter_id: curation-record-v1
 ---
 
-# Mycobacterium Tuberculosis drug data
-
 ## Comments
 
 Seems like a clear scientific discovery task and even then it seems hard to parse a predictive task without more information and domain knowledge. So likely skip for now even not as 2nd tier

@@ -18,8 +18,6 @@ source_links:
 type_adapter_id: curation-record-v1
 ---
 
-# healthcare_insurance_expenses
-
 ## Comments
 
 Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.

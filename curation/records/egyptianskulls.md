@@ -20,8 +20,6 @@ source_row: 582
 type_adapter_id: curation-record-v1
 ---
 
-# EgyptianSkulls
-
 ## Comments
 
 The task feels really weird. Also weird grouped-temporal task setup. Furthermore, likely scientific discovery?

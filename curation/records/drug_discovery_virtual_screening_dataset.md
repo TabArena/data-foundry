@@ -14,8 +14,6 @@ source_row: 132
 type_adapter_id: curation-record-v1
 ---
 
-# Drug Discovery Virtual Screening Dataset
-
 ## Comments
 
 "This dataset is synthetically generated to simulate biological screening experiments commonly used in drug discovery."

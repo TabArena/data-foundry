@@ -14,8 +14,6 @@ source_row: 129
 type_adapter_id: curation-record-v1
 ---
 
-# Maternal Health Risk
-
 ## Comments
 
 In TabArena ("maternal_health_risk")

@@ -27,8 +27,6 @@ source_row: 682
 type_adapter_id: curation-record-v1
 ---
 
-# wine_cost
-
 ## Comments
 
 Need to check description for leakage; need to preprocess price; need to preprocess capacity; make secondary grape a description?; fix/normalize by unit; think about multi-cat column like characteristics; filter to per bottle price, make percentage a percentage, handle double year and parse to be number/date

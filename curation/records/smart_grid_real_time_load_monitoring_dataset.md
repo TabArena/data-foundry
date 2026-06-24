@@ -14,8 +14,6 @@ source_row: 185
 type_adapter_id: curation-record-v1
 ---
 
-# Smart Grid Real-Time Load Monitoring Dataset
-
 ## Comments
 
 Has no source information, otherwise looks slightly fake 

@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# spatio-temporal-beam-level-traffic-forecasting-challenge
-
 ## Comments
 
 time-series, but 1st place solution uses tree-based models

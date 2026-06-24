@@ -27,8 +27,6 @@ source_row: 560
 type_adapter_id: curation-record-v1
 ---
 
-# dresses-sales
-
 ## Comments
 
 CC: "Only 500 instances; Corresponds to a relevant task, but recommendation data used in production is typically much more complex; not a recommender system as no users - only item specific predictions"

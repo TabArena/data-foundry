@@ -14,8 +14,6 @@ source_row: 234
 type_adapter_id: curation-record-v1
 ---
 
-# HEART_FAILURE
-
 ## Comments
 
 Duplicate or upsampled version of 10.24432/C5Z89R

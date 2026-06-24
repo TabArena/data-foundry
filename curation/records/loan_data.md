@@ -17,8 +17,6 @@ source_row: 55
 type_adapter_id: curation-record-v1
 ---
 
-# Loan Data
-
 ## Comments
 
 Duplicate data source as lending_club

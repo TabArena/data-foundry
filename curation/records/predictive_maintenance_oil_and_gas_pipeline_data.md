@@ -14,8 +14,6 @@ source_row: 181
 type_adapter_id: curation-record-v1
 ---
 
-# Predictive maintenance oil and gas pipeline data
-
 ## Comments
 
 "This is synthetic data generated to reflect"

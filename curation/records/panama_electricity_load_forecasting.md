@@ -14,8 +14,6 @@ source_row: 183
 type_adapter_id: curation-record-v1
 ---
 
-# Panama Electricity Load Forecasting
-
 ## Comments
 
 Version of https://www.kaggle.com/datasets/ernestojaguilar/shortterm-electricity-load-forecasting-panama?select=continuous+dataset.csv

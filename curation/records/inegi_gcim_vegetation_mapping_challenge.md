@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# inegi-gcim-vegetation-mapping-challenge
-
 ## Comments
 
 propose and develop a robust and accurate machine learning model that can help to clean and improve training data, either identifying outliers (wrong or suspicious labels), or even suggesting a more plausible label in the given test data

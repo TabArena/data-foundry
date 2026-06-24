@@ -26,8 +26,6 @@ source_row: 479
 type_adapter_id: curation-record-v1
 ---
 
-# OSHA_accidents_data
-
 ## Comments
 
 Workplace Accidents 2015-2017; could get newer version of data; unclear what might be a good target given the domain

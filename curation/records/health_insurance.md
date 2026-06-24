@@ -16,8 +16,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# health_insurance
-
 ## Comments
 
 CC: "predicting the work hours from health insurance data? very weird task; Outdated, as predicting work hours of married wifes from 1993 is not representative. Also not a predictive task. not a predictive task as far as I can tell, also the study sounds confounded by income"

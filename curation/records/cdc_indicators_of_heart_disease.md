@@ -27,8 +27,6 @@ source_row: 657
 type_adapter_id: curation-record-v1
 ---
 
-# CDC Indicators of Heart Disease
-
 ## Comments
 
 Dataset is preprocessed version already https://www.kaggle.com/code/alexteboul/diabetes-health-indicators-dataset-notebook

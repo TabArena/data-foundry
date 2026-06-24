@@ -14,8 +14,6 @@ source_row: 178
 type_adapter_id: curation-record-v1
 ---
 
-# Smart Grid Stability and Reliability Dataset
-
 ## Comments
 
 "This file contains a synthetic dataset "

@@ -14,8 +14,6 @@ source_row: 375
 type_adapter_id: curation-record-v1
 ---
 
-# P2P_LOAN
-
 ## Comments
 
 Duplicate of lending_club / same lending club data

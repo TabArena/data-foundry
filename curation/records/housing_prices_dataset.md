@@ -16,8 +16,6 @@ source_row: 115
 type_adapter_id: curation-record-v1
 ---
 
-# Housing Prices Dataset
-
 ## Comments
 
 Given the references, this seems to be from a book or an older paper, needs more investigation

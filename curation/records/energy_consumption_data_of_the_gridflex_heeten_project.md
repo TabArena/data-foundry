@@ -14,5 +14,3 @@ source_links:
 source_row: 300
 type_adapter_id: curation-record-v1
 ---
-
-# Energy consumption data of the GridFlex Heeten project

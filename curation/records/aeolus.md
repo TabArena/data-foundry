@@ -24,8 +24,6 @@ source_row: 733
 type_adapter_id: curation-record-v1
 ---
 
-# Aeolus
-
 ## Comments
 
 Quite extensive. Could be the best flight data there is

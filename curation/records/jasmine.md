@@ -16,8 +16,6 @@ source_row: 584
 type_adapter_id: curation-record-v1
 ---
 
-# JASMINE
-
 ## Comments
 
 Text data transformed to tabular from AutoML challenge (see TabArena curation notes)

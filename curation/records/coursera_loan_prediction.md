@@ -16,8 +16,6 @@ source_row: 29
 type_adapter_id: curation-record-v1
 ---
 
-# Coursera Loan Prediction
-
 ## Comments
 
 from https://www.coursera.org/projects/data-science-coding-challenge-loan-default-prediction

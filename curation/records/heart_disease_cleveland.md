@@ -27,8 +27,6 @@ source_row: 756
 type_adapter_id: curation-record-v1
 ---
 
-# heart_disease_cleveland
-
 ## Comments
 
 Consists of 4 datasets with similar features and low value counts depending on how it is used. Need to figure out how to use it. Otherwise, nothing speaks against using them in the benchmark

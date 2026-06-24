@@ -17,8 +17,6 @@ source_row: 103
 type_adapter_id: curation-record-v1
 ---
 
-# mux6
-
 ## Comments
 
 Likely a 6-bit multiplexer problem with bits, likely simulated, not realistic or useful for current task I would say

@@ -23,8 +23,6 @@ source_row: 507
 type_adapter_id: curation-record-v1
 ---
 
-# CLTV VahanBima company
-
 ## Comments
 
 "Data was collected from VahanBima Insurance company"

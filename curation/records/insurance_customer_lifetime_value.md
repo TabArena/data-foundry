@@ -14,8 +14,6 @@ source_row: 160
 type_adapter_id: curation-record-v1
 ---
 
-# Insurance customer lifetime value
-
 ## Comments
 
 Samples from a locked website, also synthetic according to the claim on the homepage

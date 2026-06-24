@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# CERN Electron Collision Data
-
 ## Comments
 
 Unsure if the same problem as Higgs (or Higgs-like datasets).

@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Laptop_Prices_Dataset
-
 ## Comments
 
 CC: "4.5k Amazon laptop listings. Crawled data. Predict price. Likely many duplicate listings and other weird stuff. Also not necessarily a meaningful task - maybe for finding outliers/unreasonable prices?"

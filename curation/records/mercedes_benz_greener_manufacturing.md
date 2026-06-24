@@ -26,8 +26,6 @@ source_row: 708
 type_adapter_id: curation-record-v1
 ---
 
-# Mercedes_Benz_Greener_Manufacturing
-
 ## Comments
 
 CC: "Using the index as a feature was predictive in the competition, might require a temporal split. But in general an interesting dataset, likely has groups of cars as multiple configurations could include the same car? Need to assess the impact of index as feature"

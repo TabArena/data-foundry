@@ -17,8 +17,6 @@ source_row: 358
 type_adapter_id: curation-record-v1
 ---
 
-# wdbc
-
 ## Comments
 
 CC: "Similar to breast-w. Random thought: If we would have the original image and some patient data, this could also be a nice application for multimodal tabular ML; features extracted from images; some kind of grouping "

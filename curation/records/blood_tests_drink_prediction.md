@@ -31,8 +31,6 @@ source_row: 751
 type_adapter_id: curation-record-v1
 ---
 
-# liver-disorders
-
 ## Comments
 
 need to create the drinks column as a target, need to see if it is still a good task then. (drinks>5) otherwise, we can just treat it as a regression task...

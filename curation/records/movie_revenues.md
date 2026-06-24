@@ -21,8 +21,6 @@ source_row: 12
 type_adapter_id: curation-record-v1
 ---
 
-# Movie Revenues
-
 ## Comments
 
 created by combining reviews dataset and movie data from an api

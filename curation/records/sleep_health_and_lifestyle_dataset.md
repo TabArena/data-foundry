@@ -14,8 +14,6 @@ source_row: 187
 type_adapter_id: curation-record-v1
 ---
 
-# Sleep Health and Lifestyle Dataset
-
 ## Comments
 
 "I would like to clarify that the data I am presenting is synthetic and created by me for illustrative purposes."

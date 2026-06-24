@@ -17,8 +17,6 @@ source_row: 83
 type_adapter_id: curation-record-v1
 ---
 
-# chscase_geyser1
-
 ## Comments
 
 Data from the book: "A Casebook for a First Course in Statistics and Data Analysis," by Samprit Chatterjee, Mark S. Handcock and Jeffrey S. Simonoff, John Wiley and Sons, New York, 1995.

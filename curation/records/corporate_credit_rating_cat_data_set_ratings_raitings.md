@@ -24,8 +24,6 @@ source_row: 786
 type_adapter_id: curation-record-v1
 ---
 
-# CORPORATE_CREDIT_RATING_CAT Data Set Ratings Raitings
-
 ## Comments
 
 "This dataset is derived from the Credit Risk Analytics book by Harald, Daniel, and Bart, as described in the Medium article by Roi Polanitzer"

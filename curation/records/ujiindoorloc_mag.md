@@ -16,8 +16,6 @@ source_row: 269
 type_adapter_id: curation-record-v1
 ---
 
-# UJIIndoorLoc-Mag
-
 ## Comments
 
 CC: "indoor localization database, temporal localization information, has a clear train test split defined in the data"

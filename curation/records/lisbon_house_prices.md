@@ -18,8 +18,6 @@ source_row: 637
 type_adapter_id: curation-record-v1
 ---
 
-# Lisbon House Prices
-
 ## Comments
 
 We are missing where it is coming from, but the data looks reasonably real. Is an IID task where we try to figure out prices from the same year (ignoring leakage)

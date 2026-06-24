@@ -24,8 +24,6 @@ source_row: 39
 type_adapter_id: curation-record-v1
 ---
 
-# Air Quality Dataset
-
 ## Comments
 
 Hourly time-series measurements. Target is classification, but might have been binarized from an originally regression feature.

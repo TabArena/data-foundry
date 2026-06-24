@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Monthly Insurance Claim Prediction Challenge
-
 ## Comments
 
 predict how much will be claimed per month

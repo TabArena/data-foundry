@@ -14,5 +14,3 @@ source_links:
 source_row: 305
 type_adapter_id: curation-record-v1
 ---
-
-# Pecan Street Electricity Data

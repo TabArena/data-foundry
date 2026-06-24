@@ -26,8 +26,6 @@ source_row: 440
 type_adapter_id: curation-record-v1
 ---
 
-# volcanoes
-
 ## Comments
 
 CC: "Volcano files might be concatenable. Unclear what the exact features are; minor temporal dependencies due to the collection time frame, spatial impact, and noisy ground truth as no one has been to Venus."

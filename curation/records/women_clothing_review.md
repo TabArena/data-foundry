@@ -19,8 +19,6 @@ source_row: 193
 type_adapter_id: curation-record-v1
 ---
 
-# women_clothing_review
-
 ## Comments
 
 E-commerce reviews, some anonymization was applied, the company names have been replaced by "retailer"

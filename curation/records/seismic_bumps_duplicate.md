@@ -17,8 +17,6 @@ source_row: 48
 type_adapter_id: curation-record-v1
 ---
 
-# seismic-bumps
-
 ## Comments
 
 Already in TabArena

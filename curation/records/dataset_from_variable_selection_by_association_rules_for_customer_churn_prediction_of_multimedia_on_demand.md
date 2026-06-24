@@ -14,8 +14,6 @@ source_row: 218
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Variable selection by association rules for customer churn prediction of multimedia on demand
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

@@ -15,8 +15,6 @@ source_row: 224
 type_adapter_id: curation-record-v1
 ---
 
-# CLIMATE_CHANGE_AGRICULTURE_FINANCIAL
-
 ## Comments
 
 "This dataset has been synthetically generated"

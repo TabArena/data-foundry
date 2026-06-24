@@ -17,8 +17,6 @@ source_row: 581
 type_adapter_id: curation-record-v1
 ---
 
-# ALZHEIMER_HANDWRITE_DARWIN
-
 ## Comments
 
 Handwriting motor data, likely time series but made tabular. Need to check if yes.

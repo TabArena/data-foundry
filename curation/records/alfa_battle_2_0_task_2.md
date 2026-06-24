@@ -28,8 +28,6 @@ source_row: 743
 type_adapter_id: curation-record-v1
 ---
 
-# Alfa Battle 2.0 (Task 2)
-
 ## Comments
 
 "A key component of our work is responsible lending, based on a model-based assessment of the likelihood of a borrower defaulting on their obligations."

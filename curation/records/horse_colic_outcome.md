@@ -16,8 +16,6 @@ source_row: 101
 type_adapter_id: curation-record-v1
 ---
 
-# horse_colic_outcome
-
 ## Comments
 
 version of horse_colic_*

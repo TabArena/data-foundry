@@ -28,8 +28,6 @@ source_row: 700
 type_adapter_id: curation-record-v1
 ---
 
-# ElectricMotorTemperature
-
 ## Comments
 
 CC: ""Signal/time-stream data with groups of sessions, likely needs a group-based split based on `profile_id`; unsure about temporal splits as it would be all from the same time at once, or one needs to set time diff per session

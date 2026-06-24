@@ -14,8 +14,6 @@ source_row: 331
 type_adapter_id: curation-record-v1
 ---
 
-# Avito Context Ad Clicks
-
 ## Comments
 
 Another SQL dump that requires expert FE to get to a final CSV; Russian text; likely overlapping with other avito data

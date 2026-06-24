@@ -26,8 +26,6 @@ source_row: 715
 type_adapter_id: curation-record-v1
 ---
 
-# Weather
-
 ## Comments
 
 Was downsampled/filtered by TabRed via preprocessing

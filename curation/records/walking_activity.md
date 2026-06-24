@@ -18,8 +18,6 @@ source_row: 254
 type_adapter_id: curation-record-v1
 ---
 
-# walking-activity
-
 ## Comments
 
 CC: "Task is to identify a walking smartphone user from accelerometer data. Human Activity tasks are solved differently nowadays. In general, this is a time-series task; grouped data"

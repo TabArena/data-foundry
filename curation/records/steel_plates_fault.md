@@ -16,8 +16,6 @@ source_row: 231
 type_adapter_id: curation-record-v1
 ---
 
-# STEEL_PLATES_FAULT
-
 ## Comments
 
 Image Dataset

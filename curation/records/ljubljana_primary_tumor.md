@@ -24,8 +24,6 @@ source_row: 770
 type_adapter_id: curation-record-v1
 ---
 
-# Ljubljana Primary Tumor
-
 ## Comments
 
 Need to resolve ordinal encoding, otherwise looks good!

@@ -17,8 +17,6 @@ source_row: 156
 type_adapter_id: curation-record-v1
 ---
 
-# IBM Telco Customer Churn
-
 ## Comments
 
 Sample data set, not real

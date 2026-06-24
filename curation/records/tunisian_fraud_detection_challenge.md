@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Tunisian Fraud Detection Challenge
-
 ## Comments
 
 Detect tax fraud using the Ministry of Finance of Tunisia's data

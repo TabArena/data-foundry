@@ -16,8 +16,6 @@ source_row: 99
 type_adapter_id: curation-record-v1
 ---
 
-# heart_disease_va_long_beach
-
 ## Comments
 
 Version of heart_disease_*

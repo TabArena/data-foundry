@@ -24,8 +24,6 @@ source_row: 785
 type_adapter_id: curation-record-v1
 ---
 
-# Diabetes
-
 ## Comments
 
 scikit-learn toy dataset

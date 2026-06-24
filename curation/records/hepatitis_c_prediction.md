@@ -25,8 +25,6 @@ source_row: 771
 type_adapter_id: curation-record-v1
 ---
 
-# Hepatitis C Prediction Dataset
-
 ## Comments
 
 Need to check label distribution of class and if multiple entries per patient ID

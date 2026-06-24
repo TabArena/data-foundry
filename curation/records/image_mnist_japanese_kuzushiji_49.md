@@ -15,8 +15,6 @@ source_row: 236
 type_adapter_id: curation-record-v1
 ---
 
-# IMAGE_MNIST_JAPANESE_KUZUSHIJI_49
-
 ## Comments
 
 Image Dataset

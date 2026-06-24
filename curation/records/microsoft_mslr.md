@@ -14,8 +14,6 @@ source_row: 325
 type_adapter_id: curation-record-v1
 ---
 
-# Microsoft (MSLR)
-
 ## Comments
 
 Learning to rank

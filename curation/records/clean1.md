@@ -17,8 +17,6 @@ source_row: 94
 type_adapter_id: curation-record-v1
 ---
 
-# clean1
-
 ## Comments
 
 Version/duplicate of musk (10.24432/C51608) as noted here https://www.openml.org/search?type=data&status=active&id=40665

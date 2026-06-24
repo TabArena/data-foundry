@@ -17,8 +17,6 @@ source_row: 257
 type_adapter_id: curation-record-v1
 ---
 
-# eeg-eye-state
-
 ## Comments
 
 CC: "Not a meaningful task anymore, also I believe there were leak issues pointed out somewhere; likely has groups, spatial, and temporal relations as it is EEG"

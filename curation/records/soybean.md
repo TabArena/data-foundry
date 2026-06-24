@@ -26,8 +26,6 @@ source_row: 558
 type_adapter_id: curation-record-v1
 ---
 
-# soybean
-
 ## Comments
 
 CC: "Some infrequent classes should not be used for prediction, may be outdated, maybe also rather an interpretability task, might require time split as date is available; categorical and nan values already preprocessed"

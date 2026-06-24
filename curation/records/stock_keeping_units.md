@@ -24,8 +24,6 @@ source_row: 45
 type_adapter_id: curation-record-v1
 ---
 
-# Stock keeping units
-
 ## Comments
 
 No predictive task

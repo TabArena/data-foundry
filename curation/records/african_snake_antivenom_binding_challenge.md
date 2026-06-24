@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# African Snake Antivenom Binding Challenge
-
 ## Comments
 
 predict how well eight different commercial antivenoms work against African snake toxins

@@ -16,8 +16,6 @@ source_row: 112
 type_adapter_id: curation-record-v1
 ---
 
-# auto_price
-
 ## Comments
 
 Duplicate of 

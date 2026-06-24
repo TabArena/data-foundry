@@ -17,8 +17,6 @@ source_row: 512
 type_adapter_id: curation-record-v1
 ---
 
-# internet_usage
-
 ## Comments
 
 Predicting time? Maybe a duplicate. Unclear task.

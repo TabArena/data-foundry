@@ -17,8 +17,6 @@ source_row: 416
 type_adapter_id: curation-record-v1
 ---
 
-# amazon-commerce-reviews
-
 ## Comments
 
 CC: "authorship identification task with 50 review authors, with 30 comments per author"

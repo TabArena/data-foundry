@@ -16,8 +16,6 @@ source_row: 485
 type_adapter_id: curation-record-v1
 ---
 
-# Journal Score SJR
-
 ## Comments
 
 Scientific journals and their descriptive features from Scimago journal rank.

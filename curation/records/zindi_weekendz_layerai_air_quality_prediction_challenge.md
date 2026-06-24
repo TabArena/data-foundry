@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# zindi-weekendz-layerai-air-quality-prediction-challenge
-
 ## Comments
 
 pm2,5 air quality prediction

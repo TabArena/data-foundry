@@ -7,8 +7,6 @@ decision_markers:
 type_adapter_id: curation-record-v1
 ---
 
-# crx
-
 ## Comments
 
 Imported from the TabArena curation workbook.

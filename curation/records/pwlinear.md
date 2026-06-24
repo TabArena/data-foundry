@@ -17,8 +17,6 @@ source_row: 75
 type_adapter_id: curation-record-v1
 ---
 
-# pwLinear
-
 ## Comments
 
 Paper PDF seems gone, cannot find it on the internet

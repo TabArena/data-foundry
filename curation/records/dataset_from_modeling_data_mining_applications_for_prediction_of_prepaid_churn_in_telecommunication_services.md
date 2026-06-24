@@ -14,8 +14,6 @@ source_row: 219
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Modeling Data Mining Applications for Prediction of Prepaid Churn in Telecommunication Services
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

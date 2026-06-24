@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Xente Purchase Prediction Challenge
-
 ## Comments
 
 Predict when and what a customer will purchase on the Xente app

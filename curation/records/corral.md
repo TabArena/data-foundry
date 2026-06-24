@@ -16,8 +16,6 @@ source_row: 95
 type_adapter_id: curation-record-v1
 ---
 
-# corral
-
 ## Comments
 
 Handmade toy task from Wrappers For Performance Enhancement And Oblivious Decision Graphs

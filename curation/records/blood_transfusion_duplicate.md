@@ -14,8 +14,6 @@ source_row: 376
 type_adapter_id: curation-record-v1
 ---
 
-# BLOOD_TRANSFUSION
-
 ## Comments
 
 In TabArena (blood-transfusion-service-center)

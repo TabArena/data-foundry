@@ -25,8 +25,6 @@ source_row: 1030
 type_adapter_id: curation-record-v1
 ---
 
-# Period Changer
-
 ## Comments
 
 Same source as clock_protein_toxicity

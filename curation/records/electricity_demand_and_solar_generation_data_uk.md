@@ -14,5 +14,3 @@ source_links:
 source_row: 312
 type_adapter_id: curation-record-v1
 ---
-
-# Electricity demand and solar generation data UK

@@ -26,8 +26,6 @@ source_row: 645
 type_adapter_id: curation-record-v1
 ---
 
-# Allstate_Claims_Severity
-
 ## Comments
 
 CC: "Predict amount of insurance claims. Data anonymized. Unclear whether date is given or temporal split is required. Kaggle challenge; data does not allow us to remove/avoid temporal split or detect it from meta-data"

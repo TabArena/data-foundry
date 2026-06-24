@@ -14,8 +14,6 @@ source_row: 217
 type_adapter_id: curation-record-v1
 ---
 
-# Dataset from Churn Prediction: Does Technology Matter?
-
 ## Comments
 
 Data missing / not public; too old to request / no request form

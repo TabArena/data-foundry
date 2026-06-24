@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# Childline Kenya Call Volume Prediction Challenge
-
 ## Comments
 
 Forecast how many calls a child protection hotline will receive each hour each day.

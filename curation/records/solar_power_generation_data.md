@@ -14,5 +14,3 @@ source_links:
 source_row: 309
 type_adapter_id: curation-record-v1
 ---
-
-# Solar Power Generation Data

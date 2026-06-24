@@ -27,8 +27,6 @@ source_row: 699
 type_adapter_id: curation-record-v1
 ---
 
-# fps_benchmark
-
 ## Comments
 
 CC: "data of FPS from games with CPU and GPU and Game groups, data from fpsbenchmark.com (unreliable and fake info known to exist for some of the entries), mean of distribution is target. Might be a look-up task - need to define that term somewhere, I like it. If this is a real task, it might require group split by hardware or game. The grouping of CPUs and GPUs and Games might lead to some leak and do not show a real-world task"

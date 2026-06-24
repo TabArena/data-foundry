@@ -25,8 +25,6 @@ source_row: 43
 type_adapter_id: curation-record-v1
 ---
 
-# swat-dataset-secure-water-treatment-system
-
 ## Comments
 
 Might be usable as a tabular task, but rather

@@ -18,8 +18,6 @@ source_row: 483
 type_adapter_id: curation-record-v1
 ---
 
-# Employee Salaries
-
 ## Comments
 
 Annual salary information including gross pay and overtime pay for all active, permanent employees of Montgomery County, MD paid in calendar year 2016

@@ -15,8 +15,6 @@ source_row: 176
 type_adapter_id: curation-record-v1
 ---
 
-# EV Charging Grid Optimization Dataset
-
 ## Comments
 
 Missing source information, data looks more fake than real again. We suspect it is fake given the general pattern

@@ -15,8 +15,6 @@ source_row: 428
 type_adapter_id: curation-record-v1
 ---
 
-# ONLINE_SHOPPERS_PURCHASE_INTENTION
-
 ## Comments
 
 In TabArena (Online Shoppers Purchasing Intention Dataset)

@@ -17,8 +17,6 @@ source_row: 74
 type_adapter_id: curation-record-v1
 ---
 
-# cloud
-
 ## Comments
 
 Forecasting task to the best of my judgement.

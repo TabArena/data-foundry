@@ -24,8 +24,6 @@ source_row: 656
 type_adapter_id: curation-record-v1
 ---
 
-# mobile_churn
-
 ## Comments
 
 Another case of missing data but data looking very good and real.

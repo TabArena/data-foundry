@@ -15,8 +15,6 @@ source_row: 283
 type_adapter_id: curation-record-v1
 ---
 
-# Long
-
 ## Comments
 
 CC: "Data for a long stock position, missing source information"

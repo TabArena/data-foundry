@@ -20,8 +20,6 @@ source_row: 547
 type_adapter_id: curation-record-v1
 ---
 
-# solar_flare
-
 ## Comments
 
 CC: "No (after post-hoc analysis)" -> needs a non-random split

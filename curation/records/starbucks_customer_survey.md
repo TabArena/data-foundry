@@ -24,8 +24,6 @@ source_row: 578
 type_adapter_id: curation-record-v1
 ---
 
-# Starbucks Customer Survey
-
 ## Comments
 
 Survey data from a Google form

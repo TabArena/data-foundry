@@ -16,8 +16,6 @@ source_row: 233
 type_adapter_id: curation-record-v1
 ---
 
-# GINA
-
 ## Comments
 
 Image Dataset

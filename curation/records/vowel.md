@@ -16,8 +16,6 @@ source_row: 355
 type_adapter_id: curation-record-v1
 ---
 
-# vowel
-
 ## Comments
 
 CC: "Features extracted from speech data; strange data source and preprocessing"

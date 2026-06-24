@@ -15,8 +15,6 @@ source_row: 268
 type_adapter_id: curation-record-v1
 ---
 
-# Beijing PM2.5
-
 ## Comments
 
 CC: "Meteorological data from embassy and airport from 2010 to 2014"

@@ -16,5 +16,3 @@ source_links:
 source_row: 439
 type_adapter_id: curation-record-v1
 ---
-
-# CIFAR_10

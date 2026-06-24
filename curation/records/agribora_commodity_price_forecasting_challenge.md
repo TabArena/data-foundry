@@ -18,8 +18,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# agribora-commodity-price-forecasting-challenge
-
 ## Comments
 
 predict the amount of rainfall in the next 12/24 hours

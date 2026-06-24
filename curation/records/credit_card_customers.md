@@ -21,8 +21,6 @@ source_row: 672
 type_adapter_id: curation-record-v1
 ---
 
-# Credit Card customers
-
 ## Comments
 
 "I got this dataset from a website with the URL as https://leaps.analyttica.com/home" -> was a course website

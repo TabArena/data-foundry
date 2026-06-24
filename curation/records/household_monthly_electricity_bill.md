@@ -15,8 +15,6 @@ source_row: 421
 type_adapter_id: curation-record-v1
 ---
 
-# Household monthly electricity bill
-
 ## Comments
 
 "This dataset was prepared as a mock up dataset for practice use"

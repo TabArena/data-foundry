@@ -17,8 +17,6 @@ source_row: 36
 type_adapter_id: curation-record-v1
 ---
 
-# insurance_dataset
-
 ## Comments
 
 "The second experiment used data generated from a network for car insurance risk estimation (Figure 4)."

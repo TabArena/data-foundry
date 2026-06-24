@@ -18,8 +18,6 @@ source_row: 532
 type_adapter_id: curation-record-v1
 ---
 
-# MENTAL_HEALTH_TECH
-
 ## Comments
 
 Contains one comment column that is empty 87% of the time. Most of the comments are not super relevant compared to the rest of the survey. If we filter to those with good comments, we end up with almost no data. So we can skip this data for now.

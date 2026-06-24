@@ -18,8 +18,6 @@ source_row: 601
 type_adapter_id: curation-record-v1
 ---
 
-# League of Legends Diamond Games (First 15 Minutes)
-
 ## Comments
 
 Data from the game League of Legends. Technically real data, but not a real predictive task. From the game POV, it also makes sense to want to predict this (akin to predicting NFL or other sport game things)

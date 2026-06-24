@@ -18,8 +18,6 @@ source_row: 888
 type_adapter_id: curation-record-v1
 ---
 
-# network-traffic-scenario-prediction-challenge
-
 ## Comments
 
 predict when a network fault will occur

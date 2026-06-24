@@ -17,8 +17,6 @@ source_row: 37
 type_adapter_id: curation-record-v1
 ---
 
-# Meta-data
-
 ## Comments
 
 Old algorithm selection task.

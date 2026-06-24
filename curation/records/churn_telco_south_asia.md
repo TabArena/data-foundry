@@ -22,8 +22,6 @@ source_row: 674
 type_adapter_id: curation-record-v1
 ---
 
-# CHURN_TELCO_SOUTH_ASIA
-
 ## Comments
 
 "operator, with 13 features and 2000 records, collected between Aug 2015 to Sep 2015"

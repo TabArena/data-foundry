@@ -17,8 +17,6 @@ source_row: 530
 type_adapter_id: curation-record-v1
 ---
 
-# Gym customers features and churn
-
 ## Comments
 
 Feature distributions look super fake again; cannot determine if real or not

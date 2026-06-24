@@ -29,8 +29,6 @@ source_row: 5
 type_adapter_id: curation-record-v1
 ---
 
-# musk
-
 ## Comments
 
 CC: "multiple instance problem - multiple instances of the same molecule are in the data. The classifier should classify as 1 if any of the instances is 1 (0 if none). Leak if used with random splits. Classic Physics/Chemistry application, definitely worth including. Not in TabRepo, but likely due to leak; Could be used after preprocessing to reduce to the original (very small) dataset of 102 molecules. When done, the dataset is however too small for our selection size"

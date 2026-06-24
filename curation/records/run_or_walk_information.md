@@ -17,8 +17,6 @@ source_row: 259
 type_adapter_id: curation-record-v1
 ---
 
-# Run_or_walk_information
-
 ## Comments
 
 CC: "Activity recognition, not a tabular data task"

@@ -16,8 +16,6 @@ source_row: 189
 type_adapter_id: curation-record-v1
 ---
 
-# Japanese anime
-
 ## Comments
 
 Scraped anime and user ratings data

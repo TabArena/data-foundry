@@ -20,8 +20,6 @@ source_row: 604
 type_adapter_id: curation-record-v1
 ---
 
-# SULFUR / debutanizer
-
 ## Comments
 
 Time series dataset, both from the same source. Check if duplicate or unique datasets

@@ -11,5 +11,3 @@ needs_review:
 - suggestion
 type_adapter_id: curation-record-v1
 ---
-
-# mobile-money-and-financial-inclusion-in-tanzania-challenge

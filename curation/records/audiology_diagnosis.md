@@ -30,8 +30,6 @@ source_row: 764
 type_adapter_id: curation-record-v1
 ---
 
-# Audiology
-
 ## Comments
 
 Feel like this is a duplicate, but I cannot find it.

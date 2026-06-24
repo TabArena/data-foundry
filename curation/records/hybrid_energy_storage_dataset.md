@@ -14,8 +14,6 @@ source_row: 177
 type_adapter_id: curation-record-v1
 ---
 
-# Hybrid Energy Storage Dataset
-
 ## Comments
 
 "This file contains synthetic data for"

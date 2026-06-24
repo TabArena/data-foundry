@@ -16,8 +16,6 @@ source_row: 63
 type_adapter_id: curation-record-v1
 ---
 
-# The role of advertisement on the consumer behavior
-
 ## Comments
 
 EDA task. Less than 96 samples

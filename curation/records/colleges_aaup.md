@@ -19,8 +19,6 @@ source_row: 469
 type_adapter_id: curation-record-v1
 ---
 
-# colleges_aaup
-
 ## Comments
 
 CC: "Regression. Clustered data by colleges. Might not be an actual predictive task; contains information from groups of colleges that are in different areas"

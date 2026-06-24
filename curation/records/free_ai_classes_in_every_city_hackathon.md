@@ -12,8 +12,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# free-ai-classes-in-every-city-hackathon
-
 ## Comments
 
 predict car selling price

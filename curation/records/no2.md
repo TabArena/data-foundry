@@ -17,8 +17,6 @@ source_row: 418
 type_adapter_id: curation-record-v1
 ---
 
-# no2
-
 ## Comments
 
 CC: "Regression. Same as pm10 with alternative target - could use as a multi-task dataset. Data was already preprocessed. sub-sampled, time-series"

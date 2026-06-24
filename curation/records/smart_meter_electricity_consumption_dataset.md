@@ -15,8 +15,6 @@ source_row: 172
 type_adapter_id: curation-record-v1
 ---
 
-# Smart Meter Electricity Consumption Dataset
-
 ## Comments
 
 anomaly detection, could be used; looks very fake based on the distributions plus no source information

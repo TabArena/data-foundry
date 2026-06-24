@@ -19,8 +19,6 @@ source_row: 20
 type_adapter_id: curation-record-v1
 ---
 
-# Wikiliq Beer
-
 ## Comments
 
 Some columns have a lot of missing entries

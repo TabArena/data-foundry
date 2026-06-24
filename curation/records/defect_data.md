@@ -29,8 +29,6 @@ source_row: 576
 type_adapter_id: curation-record-v1
 ---
 
-# defect data
-
 ## Comments
 
 Look into this collection again and take one or two representative cases but not all of them and only if they make sense

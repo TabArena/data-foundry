@@ -18,8 +18,6 @@ source_row: 434
 type_adapter_id: curation-record-v1
 ---
 
-# artificial-characters
-
 ## Comments
 
 CC: "TabRed found unresolvable leaks"

@@ -17,8 +17,6 @@ source_row: 141
 type_adapter_id: curation-record-v1
 ---
 
-# Default of Credit Card Clients
-
 ## Comments
 
 In TabArena "credit_card_clients_default"

@@ -17,8 +17,6 @@ source_row: 453
 type_adapter_id: curation-record-v1
 ---
 
-# BABY_SLEEP_STATE
-
 ## Comments
 
 Forecasting task, just 3 features, time series classification?

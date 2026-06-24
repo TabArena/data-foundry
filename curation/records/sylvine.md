@@ -15,8 +15,6 @@ source_row: 430
 type_adapter_id: curation-record-v1
 ---
 
-# sylvine
-
 ## Comments
 
 CC: "From AutoML challenge. cover type dataset"

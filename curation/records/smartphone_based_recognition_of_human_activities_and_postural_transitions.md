@@ -15,8 +15,6 @@ source_row: 264
 type_adapter_id: curation-record-v1
 ---
 
-# Smartphone-Based Recognition of Human Activities and Postural Transitions
-
 ## Comments
 
 CC: "Human recognition, 30 subjects"

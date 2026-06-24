@@ -14,8 +14,6 @@ source_row: 144
 type_adapter_id: curation-record-v1
 ---
 
-# Customer Churn Prediction using Support Vector Machines
-
 ## Comments
 
 In TabArena ("Bank_Customer_Churn")

@@ -23,8 +23,6 @@ source_row: 677
 type_adapter_id: curation-record-v1
 ---
 
-# Breast cancer prediction
-
 ## Comments
 
 Cancer type and Is_Binary_Indicator_Of_Cancer_Diagnosis and Radiologists_Assessment might be target cols

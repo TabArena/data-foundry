@@ -17,8 +17,6 @@ source_row: 225
 type_adapter_id: curation-record-v1
 ---
 
-# irish / EDUCATIONAL_TRANSITIONS_IRISH
-
 ## Comments
 
 CC: "educational transitions for a sample of 500 Irish schoolchildren in 1967, nowadays better predictive features would be available, task might be trivial, but might also be rather an interpretability than a predictive task"

@@ -27,8 +27,6 @@ source_row: 748
 type_adapter_id: curation-record-v1
 ---
 
-# forest_fires
-
 ## Comments
 
 CC: "Data from forest fires, used ln(x+1) target scaling; time invariant features,"

@@ -23,8 +23,6 @@ source_row: 619
 type_adapter_id: curation-record-v1
 ---
 
-# Facebook Comment Volume
-
 ## Comments
 
 CC: ""TabM: time-split and leak needed

@@ -17,8 +17,6 @@ source_row: 223
 type_adapter_id: curation-record-v1
 ---
 
-# INSURANCE_PREMIUM_DATA / Medical Cost Personal Datasets
-
 ## Comments
 
 Distributions look a bit too fake

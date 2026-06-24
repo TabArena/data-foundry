@@ -14,8 +14,6 @@ needs_review:
 type_adapter_id: curation-record-v1
 ---
 
-# indabax-eswatini-2022
-
 ## Comments
 
 predict when an airtime customer will move to another provider

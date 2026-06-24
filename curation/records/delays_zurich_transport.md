@@ -27,8 +27,6 @@ source_row: 620
 type_adapter_id: curation-record-v1
 ---
 
-# delays_zurich_transport
-
 ## Comments
 
 CC: ">5M samples delay data. Requires temporal split and/or time-invariant feature engineering."

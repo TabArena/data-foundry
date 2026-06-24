@@ -29,8 +29,6 @@ source_row: 763
 type_adapter_id: curation-record-v1
 ---
 
-# archive_r56_Portuguese
-
 ## Comments
 
 CC: "Cortez and Silva, 2008. Students from two schools - predict student performance. Would require temporal split or time-invariant features. The latter can be assumed to be true. If the features would have been created at a similar time as the target this would be a scientific discovery task more than a predictive performance task. But most features seem time-invariant. need to select a target as there are multiple possible, also might need to exclude some features as intermediate grades or non-time-invariant features. No objection if G features/targets are handled"

@@ -14,8 +14,6 @@ source_row: 171
 type_adapter_id: curation-record-v1
 ---
 
-# Energy-consumption-prediction
-
 ## Comments
 
 "This dataset, generated using NumPy and Python,"

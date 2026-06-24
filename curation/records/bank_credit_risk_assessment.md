@@ -24,8 +24,6 @@ source_row: 517
 type_adapter_id: curation-record-v1
 ---
 
-# bank-credit-risk-assessment
-
 ## Comments
 
 No information on the data source, but uploaded by a Kaggle GM so we can ask.
