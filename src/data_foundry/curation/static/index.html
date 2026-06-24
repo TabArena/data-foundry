@@ -11,13 +11,15 @@
   * { box-sizing: border-box; }
   body { margin:0; font:13px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:#1c2433; }
   #bar { background:linear-gradient(90deg,#1b2738,#26374f); color:#fff; padding:9px 16px; display:flex; align-items:center; gap:16px; }
-  #bar .brand { display:flex; align-items:center; gap:10px; }
+  #bar .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; cursor:pointer; }
+  #bar .brand:hover .logo { background:#5b86ea; }
+  #bar .brand:hover .t { text-decoration:underline; }
   #bar .brand .logo { background:#3b6fe0; color:#fff; font-weight:800; font-size:13px; border-radius:7px; padding:5px 7px; letter-spacing:.5px; }
   #bar .brand .t { font-weight:700; font-size:15px; }
   #bar .brand .s { font-size:10.5px; opacity:.6; margin-top:-1px; text-transform:uppercase; letter-spacing:.06em; }
   #bar .guide-btn { color:#fff; text-decoration:none; font-size:13px; border:1px solid #ffffff2e; background:#ffffff12; padding:6px 11px; border-radius:8px; white-space:nowrap; }
   #bar .guide-btn:hover { border-color:#ffffff70; }
-  #bar .search-wrap { flex:1; max-width:520px; }
+  #bar .search-wrap { flex:0 1 300px; }
   #bar .search-wrap input { width:100%; padding:7px 11px; border:1px solid #ffffff26; border-radius:8px; background:#ffffff14; color:#fff; font-size:13px; }
   #bar .search-wrap input::placeholder { color:#ffffff80; }
   #bar .hint { font-size:11px; opacity:.55; white-space:nowrap; }
@@ -126,10 +128,11 @@
   #clearFilters.show { display:inline-flex; }
   #clearFilters:hover { background:#f59e0b40; }
   #count.filtered { color:#fbbf24; font-weight:700; }
-  /* ⓘ next to the shown-count: the record count under-counts the datasets actually examined
-     (a record can cite several source links); the tooltip gives a rough total. */
-  .info-hint { cursor:help; opacity:.6; margin-left:4px; font-size:13px; user-select:none; }
-  .info-hint:hover { opacity:1; }
+  /* the shown-count's total (Y) under-counts datasets actually examined (a record can cite several
+     source links); a dotted underline marks it as carrying a hover tooltip with a rough total. */
+  .hasinfo { text-decoration:underline dotted; text-underline-offset:2px; cursor:help; }
+  /* leftmost column stacks the 📌 pin and (on 🤖 rows) the ✓ verify action vertically */
+  .pincell { display:flex; flex-direction:column; align-items:center; gap:4px; }
   /* thin divider grouping the collection pills from the workflow-flag pills */
   .pill-sep { width:1px; align-self:stretch; margin:2px 3px; background:#ffffff33; }
   /* compact verify action: a small ✓ icon next to the pin, shown only on AI-reviewed (🤖) rows */
@@ -160,10 +163,10 @@
 </head>
 <body>
 <div id="bar">
-  <div class="brand"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></div>
+  <a class="brand" href="https://github.com/TabArena/data-foundry" target="_blank" rel="noopener" title="Open the Data Foundry repository on GitHub"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></a>
   <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
   <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
-  <span class="hint" id="count"></span><span class="info-hint" id="countInfo" title="">&#9432;</span>
+  <span class="hint" id="count"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
@@ -318,7 +321,7 @@ function listFilterParams(field) {
 }
 
 // ----------------------------------------------------------------------------
-let SCHEMA, VOCAB, BY_NAME, table;
+let SCHEMA, VOCAB, BY_NAME, table, EXAMINED_TITLE = "";
 const LINK_FIELDS = new Set();
 
 function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
@@ -365,8 +368,14 @@ function statusFmt(cell) {
 // Pinned rows stay visible through any filter/search (session-scoped).
 const pinned = new Set();
 function pinFmt(cell) {
-  const id = cell.getRow().getData().unique_name;
-  return `<span class="pin${pinned.has(id) ? " on" : ""}" title="Pin this row to keep it visible through filters">📌</span>`;
+  const d = cell.getRow().getData();
+  const id = d.unique_name;
+  const pin = `<span class="pin${pinned.has(id) ? " on" : ""}" title="Pin this row to keep it visible through filters">📌</span>`;
+  // On AI-reviewed (🤖) rows, the ✓ verify action sits just below the pin.
+  const verify = (!STATIC && (d.needs_review || []).includes("ai_unverified"))
+    ? `<span class="vmark" title="Verify this AI-reviewed dataset — opens a confirm dialog (pick your name, agree you read it)">✓</span>`
+    : "";
+  return `<span class="pincell">${pin}${verify}</span>`;
 }
 function togglePin(row) {
   const id = row.getData().unique_name;
@@ -453,11 +462,6 @@ function toRow(rec) { const r = { ...rec }; for (const f of LINK_FIELDS) r[f] = 
 // A compact ✓ on AI-reviewed (🤖) rows opens a confirm dialog: pick your name + affirm you
 // read the info, then it stamps you, drops AI (UNVERIFIED) + the AI-Filled tag, and the server
 // recomputes needs_review (the row leaves the Review queue).
-function verifyFmt(cell) {
-  const d = cell.getRow().getData();
-  if (!(d.needs_review || []).includes("ai_unverified")) return "";
-  return `<span class="vmark" title="Verify this AI-reviewed dataset (opens a confirm dialog)">✓</span>`;
-}
 let verifyId = null;
 function lastCurator() { return localStorage.getItem("df_curator") || ""; }
 function fillCuratorSelect(sel, selected) {
@@ -542,24 +546,17 @@ function addBtnTitle(label, field) {
 
 function columnDefs() {
   const cols = [
-    { title: "", field: "_pin", frozen: true, width: 30, headerSort: false, headerFilter: false, download: false, hozAlign: "center", cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => togglePin(cell.getRow()), headerTooltip: "Pin rows to keep them visible through any filter" },
+    { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌); on AI-reviewed rows, verify it (✓ below the pin)" },
     { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter },
   ];
-  // Compact "verify" action (live build only): a ✓ icon next to the pin on AI-reviewed (🤖)
-  // rows opens the confirm dialog (pick name + read-and-agree) — no space-hungry column.
-  if (!STATIC) cols.splice(1, 0, {
-    title: "", field: "_verify", frozen: true, width: 30, headerSort: false, headerFilter: false,
-    download: false, hozAlign: "center", cssClass: "verifycol", formatter: verifyFmt,
-    cellClick: (e, cell) => { if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); },
-    headerTooltip: "Verify an AI-reviewed (🤖) row",
-  });
+  // (The ✓ verify action lives in the leftmost pin column, stacked under 📌 on AI-reviewed rows.)
   for (const name of PRIMARY) {
     if (name === "unique_name") {
-      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, headerFilter: "input" });
+      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, headerFilter: "input", headerFilterPlaceholder: "filter…" });
       continue;
     }
     const f = BY_NAME[name];
-    const c = { title: f.label, field: name, headerTooltip: f.help, resizable: true, headerFilter: "input", width: 150 };
+    const c = { title: f.label, field: name, headerTooltip: f.help, resizable: true, headerFilter: "input", headerFilterPlaceholder: "filter…", width: 150 };
     if (FROZEN.has(name)) c.frozen = true;
     if (f.kind === "text") {
       if (name === "year") {
@@ -759,7 +756,8 @@ function updateCount(activeRows) {
   const all = table.getData();
   for (const p of Object.values(PILLS)) document.getElementById(p.count).textContent = all.filter(p.test).length;
   const active = Array.isArray(activeRows) ? activeRows.length : table.getDataCount("active");
-  document.getElementById("count").textContent = `${active} / ${table.getDataCount()} shown`;
+  document.getElementById("count").innerHTML =
+    `${active} / <span class="hasinfo" title="${escapeHtml(EXAMINED_TITLE)}">${table.getDataCount()}</span> shown`;
   markActiveFilters(active);
 }
 // Highlight every active filter (column header dropdowns + global search) and show the
@@ -785,14 +783,15 @@ function markActiveFilters(active) {
 }
 
 // The "N / M shown" count counts curation records, which under-counts the datasets actually
-// examined: a record often cites several source links (versions / mirrors / related sets). Use
-// the avg links-per-record × records as a rough total, surfaced via the ⓘ tooltip next to the count.
+// examined: a record often cites several source links (versions / mirrors / related sets). We stash
+// an avg-links-per-record × records estimate in EXAMINED_TITLE; updateCount() shows it as the hover
+// tooltip on the dotted-underlined total (Y).
 function setExaminedHint(rawRecords) {
   const total = rawRecords.length;
   const links = rawRecords.reduce((s, r) => s + ((r.source_links || []).length), 0);
   const avg = total ? links / total : 0;
-  document.getElementById("countInfo").title =
-    `${total} curation records — but many more datasets were examined.\n`
+  EXAMINED_TITLE =
+    `${total} curation records shown here — but many more datasets were examined. `
     + `Records cite ~${avg.toFixed(1)} source links each on average → ≈ ${links} datasets/links looked at in total `
     + `(a record often bundles several versions / sources of a dataset).`;
 }
