@@ -3,7 +3,8 @@ unique_name: amex_iid
 name: amex_iid
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - Larger IID Data

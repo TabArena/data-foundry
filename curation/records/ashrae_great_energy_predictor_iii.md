@@ -3,7 +3,8 @@ unique_name: ashrae_great_energy_predictor_iii
 name: ASHRAE - Great Energy Predictor III
 checked_by:
 - Lennart
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

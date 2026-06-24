@@ -3,7 +3,9 @@ unique_name: anes_voting_2026
 name: anes_voting_2026
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

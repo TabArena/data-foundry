@@ -3,7 +3,9 @@ unique_name: asp_potassco_classification
 name: ASP-POTASSCO-classification from aslib_data
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)

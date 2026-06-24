@@ -3,7 +3,8 @@ unique_name: apistox
 name: ApisTox
 checked_by:
 - Andrej
-data_foundry_status: Much work
+data_foundry_status:
+- 'DF: Much work'
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

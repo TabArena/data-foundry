@@ -4,7 +4,9 @@ name: Audiology
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: Disagreement
 decision_markers:
 - Outdated

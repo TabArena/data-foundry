@@ -3,7 +3,9 @@ unique_name: 5g_energy_consumption
 name: aiml-for-5g-energy-consumption-modelling
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: TBD -> Yes
 decision_markers:
 - Data Quality Issue
