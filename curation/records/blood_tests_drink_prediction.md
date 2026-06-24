@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: Disagreement
+suggestion: Yes (Disagreement)
 decision_markers:
 - Outdated
 - Trivial

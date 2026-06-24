@@ -45,7 +45,10 @@ Field-by-field:
     suspended / out-of-scope — or `datasets/_dev/`). Don't add a collection tag to "fix" it.
     See `datasets/_maintenance/_deprecated/README.md`.
 - **suggestion** — whether we'd include it: `Yes`, `No`, `TBD -> Yes`, `TBD -> 2nd Tier`,
-  `Disagreement`. (This is the one field that, left empty, flags the record for review.)
+  `Disagreement`, `Yes (Disagreement)`. (This is the one field that, left empty, flags the record
+  for review.) `Yes (Disagreement)` = *shipped on purpose, but with an unresolved disagreement to
+  re-evaluate* — it counts as accepted but shows under the ⚡ Disagreement filter. A dataset shipped
+  in a collection must be `Yes` or `Yes (Disagreement)` (anything else is a `ship_conflict`).
 - **decision_markers** — why / decision flags, e.g. `Duplicate`, `Trivial`, `Image`,
   `NLP (Text)`, `Out-of-scope Task (CTR/RecSys/Ranking)`, `Ethical Issue`, `Too Small`,
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).

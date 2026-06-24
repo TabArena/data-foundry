@@ -1,19 +1,34 @@
 ---
 unique_name: chscase_foot
 name: chscase_foot
+checked_by:
+- AI (UNVERIFIED)
+suggestion: 'No'
 decision_markers:
 - Too Small
 tags:
 - Tiny Data
+- AI-Filled (Verify)
 year: '1995'
+domain: Other
+required_split:
+- Random (IID)
+problem_type: Regression
+original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=703
 needs_review:
-- suggestion
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
+
+Small statistics-textbook casebook dataset ('chscase_foot') with only 526 samples and limited task information. The prior TabArena curation verdict was 'Tiny data, too small for 3-fold CV', and multiple reviewers (Lennart, Andrej) flagged it as too small or insufficiently informative. 526 rows is below the practical threshold for the benchmark's CV protocol. Reject; the size and existing verdicts are clear.
+
+---
 
 Imported from the TabArena curation workbook.
 

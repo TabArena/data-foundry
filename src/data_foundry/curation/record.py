@@ -101,6 +101,23 @@ VOCAB_FIELDS: dict[str, str] = {f.name: f.vocab_key for f in FIELDS if f.vocab_k
 # empty, they flag the record for review (see CurationRecord.review_reasons).
 REQUIRED_FIELDS: tuple[str, ...] = ("suggestion",)
 
+# Curation-workflow marker values (kept here so tooling, tests and the AI-review
+# pass all agree on the exact strings).
+AI_REVIEWER: str = "AI (UNVERIFIED)"
+"""``checked_by`` value meaning "an AI triaged this; a human still must verify it"."""
+AI_FILLED_TAG: str = "AI-Filled (Verify)"
+"""``tags`` value flagging records whose fields were populated by the AI-review pass."""
+COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
+"""``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
+ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
+"""``suggestion`` values that count as "accepted for inclusion".
+
+A dataset shipped in a collection must carry one of these. ``"Yes (Disagreement)"`` means
+*shipped on purpose, but with an unresolved disagreement to re-evaluate later* — it still counts
+as accepted (so it is not a ``ship_conflict``), but surfaces under the dashboard's Disagreement
+filter rather than as a settled ``"Yes"``.
+"""
+
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class CurationRecord:
@@ -158,16 +175,32 @@ class CurationRecord:
         return out
 
     def review_reasons(self, vocab: dict[str, list[str]]) -> list[str]:
-        """Field names needing attention, used to populate :attr:`needs_review`.
+        """Reasons a curator still needs to act on this record (-> :attr:`needs_review`).
 
-        Combines fields whose dropdown value is not in ``vocab`` with
-        :data:`REQUIRED_FIELDS` that are still empty (e.g. a candidate with no
-        ``suggestion`` yet). Returned sorted for stable serialization.
+        This is the single source of truth for the dashboard's **Review** queue
+        (the ⚠ / 🤖 status markers and the *Review* pill all read it). It combines:
+
+        * field names whose dropdown value is not in ``vocab`` (typos / stray values);
+        * :data:`REQUIRED_FIELDS` still empty — e.g. an untriaged candidate with no
+          ``suggestion`` yet (``"suggestion"``);
+        * ``"ai_unverified"`` — the record was triaged by the AI pass
+          (:data:`AI_REVIEWER` in ``checked_by``) but **no human has verified it**, so it
+          stays in the queue until a curator signs off (removes the AI reviewer);
+        * ``"ship_conflict"`` — a contradiction: the dataset is shipped in one of our
+          collections (:data:`COLLECTION_TAGS`) yet its ``suggestion`` is set to something
+          other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`).
+
+        Returned sorted for stable serialization.
         """
         reasons = set(self.unknown_vocab_values(vocab))
         for field in REQUIRED_FIELDS:
             if not getattr(self, field):
                 reasons.add(field)
+        if AI_REVIEWER in (self.checked_by or []):
+            reasons.add("ai_unverified")
+        shipped = any(t in (self.data_foundry_status or []) for t in COLLECTION_TAGS)
+        if shipped and self.suggestion and self.suggestion not in ACCEPTED_SUGGESTIONS:
+            reasons.add("ship_conflict")
         return sorted(reasons)
 
     def describe(self) -> str:

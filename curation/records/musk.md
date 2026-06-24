@@ -6,7 +6,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: Disagreement
+suggestion: Yes (Disagreement)
 tags:
 - Tiny Data
 - Non-IID (Grouped)

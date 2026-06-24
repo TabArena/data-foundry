@@ -1,22 +1,41 @@
 ---
 unique_name: adult
 name: adult
+checked_by:
+- AI (UNVERIFIED)
+suggestion: 'No'
+decision_markers:
+- Duplicate
+- No Good Target  / Scientific Discovery
+- Outdated
 tags:
 - 2nd Tier / Scientfic Discovery
+- AI-Filled (Verify)
 collections:
 - TabArena Reject
 - TabSTAR
 year: '1996'
+domain: social science
+required_split:
+- Random (IID)
+problem_type: Binary Classification
+original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5XW20
 - https://www.openml.org/search?type=data&id=1590
 source_row: 804
 needs_review:
-- suggestion
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
+
+The classic 1996 UCI/Census 'Adult' income (>50K) dataset, already tagged 'TabArena Reject' and '2nd Tier / Scientific Discovery'. It is hugely overused/duplicated across benchmarks, derived from a 1994 census extract, and curators note the >50K target was never a real operational task (ethical concerns around race as a feature). While it is representative tabular data, it is not a meaningful real predictive task and is explicitly a prior reject. No additional verification is needed to keep it out.
+
+---
 
 CC: "determine whether a person makes over 50K a year from Census data. Not a meaningful task. Potential ethical issues from including race as a feature. Can be understood as a real gap-filling task or from the IRS to detect if someone entered fraudulent information? Is representative of tabular data in general, but does not represent a meaningful task. One can think of a meaningful task with this, but it was not originally used or collected for such a task; but label is wrong, higher/lower 50k is not relevant in such settings"
 

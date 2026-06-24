@@ -1,5 +1,5 @@
 ---
-unique_name: cardiotocography
+unique_name: cardiotocography_duplicate
 name: cardiotocography
 checked_by:
 - Lennart

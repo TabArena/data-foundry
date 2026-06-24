@@ -6,7 +6,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)

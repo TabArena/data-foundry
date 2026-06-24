@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: TBD -> 2nd Tier
+suggestion: 'Yes'
 decision_markers:
 - No Good Target (yet)
 tags:

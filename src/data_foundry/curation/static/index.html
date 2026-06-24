@@ -34,18 +34,19 @@
   #statusMenu .smi:hover { background:#eef4ff; }
   #statusMenu .smi.active { background:#e0e7ff; font-weight:600; }
   #statusMenu .smk { width:22px; height:20px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex:none; }
-  #bar .pills { margin-left:auto; display:flex; gap:10px; }
-  .pill { display:flex; align-items:baseline; gap:7px; border:1px solid #ffffff2e; background:#ffffff12; color:#fff; border-radius:9px; padding:6px 13px; cursor:pointer; transition:background .12s,border-color .12s; }
-  .pill .n { font-size:16px; font-weight:800; }
-  .pill .l { font-size:10.5px; opacity:.8; text-transform:uppercase; letter-spacing:.05em; }
+  /* compact filter pills: a colored count badge + short label, wrap-friendly so more
+     toggles can be added without crowding the bar. Active state fills with the pill color. */
+  #bar .pills { margin-left:auto; display:flex; flex-wrap:wrap; gap:5px; justify-content:flex-end; align-items:center; }
+  .pill { display:inline-flex; align-items:center; gap:6px; border:1px solid #ffffff2e; background:#ffffff12; color:#fff; border-radius:7px; padding:3px 8px; cursor:pointer; transition:background .12s,border-color .12s; line-height:1; }
+  .pill .n { font-size:11.5px; font-weight:800; background:#ffffff2b; border-radius:5px; padding:1px 5px; min-width:14px; text-align:center; }
+  .pill .l { font-size:11px; opacity:.9; white-space:nowrap; }
   .pill:hover { border-color:#ffffff70; }
   .pill.df.active { background:#15803d; border-color:#22c55e; }
   .pill.tab.active { background:#1d4ed8; border-color:#3b82f6; }
   .pill.bey.active { background:#0f766e; border-color:#14b8a6; }
   .pill.rev.active { background:#b91c1c; border-color:#ef4444; }
   /* disagreement: always purple-filled so it stands out as a flag */
-  .pill.dis { background:#7c3aed; border-color:#a78bfa; padding:6px 16px; }
-  .pill.dis .n { font-size:17px; }
+  .pill.dis { background:#7c3aed; border-color:#a78bfa; }
   .pill.dis:hover { border-color:#ede9fe; }
   .pill.dis.active { background:#6d28d9; box-shadow:0 0 0 2px rgba(167,139,250,.5); }
   #toast { position:fixed; bottom:14px; right:14px; background:#143; color:#fff; padding:8px 12px; border-radius:6px;
@@ -125,6 +126,34 @@
   #clearFilters.show { display:inline-flex; }
   #clearFilters:hover { background:#f59e0b40; }
   #count.filtered { color:#fbbf24; font-weight:700; }
+  /* ⓘ next to the shown-count: the record count under-counts the datasets actually examined
+     (a record can cite several source links); the tooltip gives a rough total. */
+  .info-hint { cursor:help; opacity:.6; margin-left:4px; font-size:13px; user-select:none; }
+  .info-hint:hover { opacity:1; }
+  /* thin divider grouping the collection pills from the workflow-flag pills */
+  .pill-sep { width:1px; align-self:stretch; margin:2px 3px; background:#ffffff33; }
+  /* compact verify action: a small ✓ icon next to the pin, shown only on AI-reviewed (🤖) rows */
+  .vmark { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;
+           border-radius:5px; background:#0891b2; color:#fff; font-size:12px; font-weight:800; line-height:1;
+           border:1px solid #0e7490; box-shadow:0 1px 2px rgba(0,0,0,.18); }
+  .vmark:hover { background:#0e7490; transform:translateY(-1px); }
+  /* verify confirmation dialog (pick name + read-and-agree gate, replaces the top-bar selector) */
+  .voverlay { position:fixed; inset:0; background:rgba(20,26,38,.5); display:none; z-index:140; align-items:center; justify-content:center; }
+  .voverlay.show { display:flex; }
+  .vdialog { background:#fff; border-radius:12px; width:430px; max-width:92vw; box-shadow:0 16px 48px rgba(0,0,0,.3); padding:18px 20px; }
+  .vdialog h3 { margin:0 0 2px; font-size:16px; color:#15303f; }
+  .vdialog .vsub { font-size:12px; color:#6b7686; margin-bottom:12px; word-break:break-all; }
+  .vdialog .vrow { margin:10px 0; font-size:13px; color:#27313f; }
+  .vdialog .vrow.sugg { background:#ecfeff; border:1px solid #a5f3fc; color:#155e75; border-radius:8px; padding:7px 10px; }
+  .vdialog select { font-size:13px; padding:4px 7px; border:1px solid #ccd; border-radius:6px; }
+  .vagree { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#3a3a3a; background:#fff7ed;
+            border:1px solid #fed7aa; border-radius:8px; padding:9px 11px; cursor:pointer; }
+  .vagree input { margin-top:2px; }
+  .vactions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+  .vactions button { border:0; border-radius:7px; padding:7px 14px; font-size:13px; cursor:pointer; }
+  #vCancel { background:#eef1f5; color:#333; }
+  #vConfirm { background:#0891b2; color:#fff; font-weight:700; }
+  #vConfirm:disabled { opacity:.45; cursor:not-allowed; }
   /* leftmost status column: now click-to-sort (▾ still opens the filter menu) */
   .tabulator .tabulator-col[tabulator-field="_status"]:not(.hf-active) { cursor:pointer; }
 </style>
@@ -134,14 +163,15 @@
   <div class="brand"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></div>
   <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
   <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
-  <span class="hint" id="count"></span>
+  <span class="hint" id="count"></span><span class="info-hint" id="countInfo" title="">&#9432;</span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
-    <button class="pill tab" id="pillTab" title="Filter: datasets shipped in TabArena v0.1"><span class="n" id="tabN">0</span><span class="l">TabArena</span></button>
+    <button class="pill tab" id="pillTab" title="Filter: datasets shipped in TabArena v0.1"><span class="n" id="tabN">0</span><span class="l">TabArena v0.1</span></button>
     <button class="pill bey" id="pillBey" title="Filter: datasets shipped in BeyondArena"><span class="n" id="beyN">0</span><span class="l">BeyondArena</span></button>
-    <button class="pill rev" id="pillRev" title="Filter: datasets needing review"><span class="n" id="revN">0</span><span class="l">Review needed</span></button>
-    <button class="pill dis" id="pillDis" title="Filter: disagreements to resolve"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
+    <span class="pill-sep"></span>
+    <button class="pill rev" id="pillRev" title="Filter: datasets to review — untriaged (⚠) plus AI-reviewed but unverified (🤖). Use the status funnel to see one group at a time."><span class="n" id="revN">0</span><span class="l">Review</span></button>
+    <button class="pill dis" id="pillDis" title="Filter: open disagreements — unresolved ones, plus shipped-but-disputed (Yes (Disagreement)) to re-evaluate"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
   </div>
 </div>
 <div id="grid"></div>
@@ -155,6 +185,22 @@
       <button class="close" id="m-close" title="Close">×</button>
     </header>
     <div class="body" id="m-body"></div>
+  </div>
+</div>
+
+<div id="verifyOverlay" class="voverlay">
+  <div class="vdialog">
+    <h3>Verify dataset</h3>
+    <div class="vsub" id="vName"></div>
+    <div class="vrow sugg" id="vSugg"></div>
+    <div class="vrow">Reviewer: <select id="vCurator"></select></div>
+    <label class="vagree"><input type="checkbox" id="vAgree" />
+      <span>I carefully read this dataset's info (comments, links, AI assessment) and confirm this decision.
+      This removes the &ldquo;AI&nbsp;(UNVERIFIED)&rdquo; flag and records me as the reviewer.</span></label>
+    <div class="vactions">
+      <button id="vCancel" type="button">Cancel</button>
+      <button id="vConfirm" type="button" disabled>✓ Verify</button>
+    </div>
   </div>
 </div>
 
@@ -211,7 +257,7 @@ const CUSTOM = {
 };
 const SEMANTIC = {
   data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "DF: WIP": "warn", "DF: Much work": "warn" },
-  suggestion: { "Yes": "good", "No": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
+  suggestion: { "Yes": "good", "Yes (Disagreement)": "warn", "No": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
   decision_markers: {
     // bad / disqualifying -> red
     "Wrong Domain / Source Modality": "bad", "AHDS (Artifical/Handmade/Deterministic/Simulated)": "bad",
@@ -293,13 +339,21 @@ function linksFmt(cell) {
   ).join("<br>");
 }
 // Single source of truth for a row's status marker + color (first match wins).
+// 🤖 (AI-reviewed, unverified) ranks above a plain Yes/No: the AI's verdict is
+// provisional, so a human must still verify it — that takes precedence over showing
+// the (AI-supplied) suggestion as if it were settled.
 function rowStatus(d) {
-  const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []).length;
-  if (sugg === "Disagreement") return { m: "⚡", bg: "#7c3aed", fg: "#fff", t: "Disagreement — needs resolution" };
+  const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []);
+  if (sugg === "Disagreement" || sugg === "Yes (Disagreement)")
+    return { m: "⚡", bg: "#7c3aed", fg: "#fff",
+             t: sugg === "Yes (Disagreement)" ? "Shipped, but with an open disagreement — to re-evaluate" : "Disagreement — needs resolution" };
   if (df.includes("DF: Yes"))  return { m: "✓", bg: "#16a34a", fg: "#fff", t: "In Data Foundry" };
+  if (rev.includes("ai_unverified"))
+    return { m: "🤖", bg: "#0891b2", fg: "#fff",
+             t: "AI-reviewed (UNVERIFIED) — a human must verify" + (sugg ? " · AI suggests: " + sugg : "") };
   if (sugg === "No")           return { m: "✗", bg: "#dc2626", fg: "#fff", t: "Suggestion: No" };
   if (sugg === "Yes")          return { m: "★", bg: "#2563eb", fg: "#fff", t: "Accepted — not yet in Data Foundry" };
-  if (rev)                     return { m: "⚠", bg: "#f97316", fg: "#fff", t: "Needs review: " + (d.needs_review || []).join(", ") };
+  if (rev.length)              return { m: "⚠", bg: "#f97316", fg: "#fff", t: "Needs review: " + rev.join(", ") };
   return { m: "•", bg: "#facc15", fg: "#6b4e00", t: "Pending / other" };
 }
 function statusFmt(cell) {
@@ -326,10 +380,11 @@ function togglePin(row) {
 const STATUS_OPTS = [
   { m: "", label: "All datasets", bg: "#e4e4ea", fg: "#444" },
   { m: "⚡", label: "Disagreement", bg: "#7c3aed", fg: "#fff" },
+  { m: "🤖", label: "AI-reviewed (verify)", bg: "#0891b2", fg: "#fff" },
   { m: "✓", label: "In Data Foundry", bg: "#16a34a", fg: "#fff" },
   { m: "✗", label: "Suggestion: No", bg: "#dc2626", fg: "#fff" },
   { m: "★", label: "Accepted (not in DF)", bg: "#2563eb", fg: "#fff" },
-  { m: "⚠", label: "Needs review", bg: "#f97316", fg: "#fff" },
+  { m: "⚠", label: "Needs review (untriaged)", bg: "#f97316", fg: "#fff" },
   { m: "•", label: "Pending / other", bg: "#facc15", fg: "#6b4e00" },
 ];
 let fStatus = "";
@@ -345,8 +400,8 @@ function buildStatusMenu() {
   const divider = document.createElement("div");
   divider.style.cssText = "height:1px;background:#e5e8ee;margin:4px 4px 5px;";
   menu.appendChild(divider);
-  // The public build hides the disagreement / needs-review workflow states.
-  const opts = STATIC ? STATUS_OPTS.filter(o => o.m !== "⚡" && o.m !== "⚠") : STATUS_OPTS;
+  // The public build hides the disagreement / needs-review / AI-review workflow states.
+  const opts = STATIC ? STATUS_OPTS.filter(o => !["⚡", "⚠", "🤖"].includes(o.m)) : STATUS_OPTS;
   for (const o of opts) {
     const item = document.createElement("div");
     item.className = "smi" + (fStatus === o.m ? " active" : "");
@@ -370,7 +425,7 @@ function openStatusMenu(e) {
 }
 // Sort order for the leftmost status column: action-needed states first, rejected
 // last (Tabulator reverses this for the descending click).
-const STATUS_RANK = ["⚡", "⚠", "★", "•", "✓", "✗"];
+const STATUS_RANK = ["⚡", "🤖", "⚠", "★", "•", "✓", "✗"];
 function statusSorter(_a, _b, aRow, bRow) {
   return STATUS_RANK.indexOf(rowStatus(aRow.getData()).m) - STATUS_RANK.indexOf(rowStatus(bRow.getData()).m);
 }
@@ -394,6 +449,62 @@ function moreFmt(cell) {
 function toRow(rec) { const r = { ...rec }; for (const f of LINK_FIELDS) r[f] = (rec[f] || []).join("\n"); return r; }
 
 // ----------------------------------------------------------------------------
+// ---- AI-review verify workflow ---------------------------------------------
+// A compact ✓ on AI-reviewed (🤖) rows opens a confirm dialog: pick your name + affirm you
+// read the info, then it stamps you, drops AI (UNVERIFIED) + the AI-Filled tag, and the server
+// recomputes needs_review (the row leaves the Review queue).
+function verifyFmt(cell) {
+  const d = cell.getRow().getData();
+  if (!(d.needs_review || []).includes("ai_unverified")) return "";
+  return `<span class="vmark" title="Verify this AI-reviewed dataset (opens a confirm dialog)">✓</span>`;
+}
+let verifyId = null;
+function lastCurator() { return localStorage.getItem("df_curator") || ""; }
+function fillCuratorSelect(sel, selected) {
+  const people = (VOCAB.checked_by || []).filter(p => p !== "AI (UNVERIFIED)");
+  sel.innerHTML = '<option value="">— select your name —</option>'
+    + people.map(p => `<option${p === selected ? " selected" : ""}>${escapeHtml(p)}</option>`).join("");
+}
+function syncVConfirm() {
+  const ok = document.getElementById("vCurator").value && document.getElementById("vAgree").checked;
+  document.getElementById("vConfirm").disabled = !ok;
+}
+// Open the confirm dialog for an AI-reviewed row.
+function openVerifyDialog(row) {
+  const d = row.getData();
+  if (!(d.needs_review || []).includes("ai_unverified")) return;
+  verifyId = d.unique_name;
+  document.getElementById("vName").textContent = d.unique_name + (d.name && d.name !== d.unique_name ? " — " + d.name : "");
+  document.getElementById("vSugg").textContent =
+    `Decision to record: ${d.suggestion || "(none)"} — edit the suggestion cell first if you disagree, then verify.`;
+  fillCuratorSelect(document.getElementById("vCurator"), lastCurator());
+  document.getElementById("vAgree").checked = false;
+  syncVConfirm();
+  document.getElementById("verifyOverlay").classList.add("show");
+}
+function closeVerifyDialog() { document.getElementById("verifyOverlay").classList.remove("show"); verifyId = null; }
+// Confirm: drop AI (UNVERIFIED) + the AI-Filled tag, stamp the chosen reviewer. The server
+// recomputes needs_review, so the row leaves the Review queue. (Edit the suggestion first to disagree.)
+async function confirmVerify() {
+  if (!verifyId) return;
+  const me = document.getElementById("vCurator").value;
+  if (!me || !document.getElementById("vAgree").checked) return;
+  const row = table.getRow(verifyId);
+  const d = row.getData();
+  const checked_by = (d.checked_by || []).filter(x => x !== "AI (UNVERIFIED)");
+  if (!checked_by.includes(me)) checked_by.push(me);
+  const tags = (d.tags || []).filter(x => x !== "AI-Filled (Verify)");
+  try {
+    const updated = await putRecord(verifyId, { checked_by, tags });
+    row.update({ checked_by, tags, needs_review: updated.needs_review });
+    row.reformat();
+    localStorage.setItem("df_curator", me);
+    updateCount(); applyFilters();
+    toast(`Verified by ${me} — ${d.suggestion || "no suggestion"}`);
+    closeVerifyDialog();
+  } catch (e) { toast("Verify failed: " + e.message, true); }
+}
+
 async function putRecord(id, patch) {
   const res = await fetch("/api/records/" + encodeURIComponent(id), {
     method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
@@ -434,6 +545,14 @@ function columnDefs() {
     { title: "", field: "_pin", frozen: true, width: 30, headerSort: false, headerFilter: false, download: false, hozAlign: "center", cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => togglePin(cell.getRow()), headerTooltip: "Pin rows to keep them visible through any filter" },
     { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter },
   ];
+  // Compact "verify" action (live build only): a ✓ icon next to the pin on AI-reviewed (🤖)
+  // rows opens the confirm dialog (pick name + read-and-agree) — no space-hungry column.
+  if (!STATIC) cols.splice(1, 0, {
+    title: "", field: "_verify", frozen: true, width: 30, headerSort: false, headerFilter: false,
+    download: false, hozAlign: "center", cssClass: "verifycol", formatter: verifyFmt,
+    cellClick: (e, cell) => { if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); },
+    headerTooltip: "Verify an AI-reviewed (🤖) row",
+  });
   for (const name of PRIMARY) {
     if (name === "unique_name") {
       cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, headerFilter: "input" });
@@ -600,8 +719,11 @@ const PILLS = {
   df:  { active: false, el: "pillDf",  count: "dfN",  test: inBenchmark },
   tab: { active: false, el: "pillTab", count: "tabN", test: d => (d.data_foundry_status || []).includes("TabArena (v0.1)") },
   bey: { active: false, el: "pillBey", count: "beyN", test: d => (d.data_foundry_status || []).includes("BeyondArena") },
+  // Review = anything still needing a curator: untriaged (no suggestion), out-of-vocab
+  // values, ship conflicts, and AI-reviewed-but-unverified rows (needs_review carries
+  // "ai_unverified"). So the AI-review pass stays visible here until a human signs off.
   rev: { active: false, el: "pillRev", count: "revN", test: d => (d.needs_review || []).length > 0 },
-  dis: { active: false, el: "pillDis", count: "disN", test: d => d.suggestion === "Disagreement" },
+  dis: { active: false, el: "pillDis", count: "disN", test: d => d.suggestion === "Disagreement" || d.suggestion === "Yes (Disagreement)" },
 };
 function anyPill() { return Object.values(PILLS).some(p => p.active); }
 function applyFilters() {
@@ -662,12 +784,27 @@ function markActiveFilters(active) {
   cnt.classList.toggle("filtered", activeCount < table.getDataCount());
 }
 
+// The "N / M shown" count counts curation records, which under-counts the datasets actually
+// examined: a record often cites several source links (versions / mirrors / related sets). Use
+// the avg links-per-record × records as a rough total, surfaced via the ⓘ tooltip next to the count.
+function setExaminedHint(rawRecords) {
+  const total = rawRecords.length;
+  const links = rawRecords.reduce((s, r) => s + ((r.source_links || []).length), 0);
+  const avg = total ? links / total : 0;
+  document.getElementById("countInfo").title =
+    `${total} curation records — but many more datasets were examined.\n`
+    + `Records cite ~${avg.toFixed(1)} source links each on average → ≈ ${links} datasets/links looked at in total `
+    + `(a record often bundles several versions / sources of a dataset).`;
+}
+
 async function boot() {
   SCHEMA = await (await fetch(SCHEMA_URL)).json();
   VOCAB = SCHEMA.vocabularies;
   BY_NAME = {};
   for (const f of SCHEMA.fields) { BY_NAME[f.name] = f; if (f.kind === "links") LINK_FIELDS.add(f.name); }
-  const recs = (await (await fetch(RECORDS_URL)).json()).map(toRow);
+  const raw = await (await fetch(RECORDS_URL)).json();
+  setExaminedHint(raw);
+  const recs = raw.map(toRow);
   const cols = columnDefs();
 
   table = new Tabulator("#grid", {
@@ -723,6 +860,12 @@ async function boot() {
   }
   document.getElementById("m-close").addEventListener("click", closeModal);
   document.getElementById("overlay").addEventListener("click", e => { if (e.target.id === "overlay") closeModal(); });
+  // verify confirmation dialog
+  document.getElementById("vCancel").addEventListener("click", closeVerifyDialog);
+  document.getElementById("vConfirm").addEventListener("click", confirmVerify);
+  document.getElementById("vCurator").addEventListener("change", syncVConfirm);
+  document.getElementById("vAgree").addEventListener("change", syncVConfirm);
+  document.getElementById("verifyOverlay").addEventListener("click", e => { if (e.target.id === "verifyOverlay") closeVerifyDialog(); });
 }
 boot();
 </script>

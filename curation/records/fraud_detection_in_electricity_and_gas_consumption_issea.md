@@ -19,6 +19,8 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-issea/data
 source_row: 988
+needs_review:
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 

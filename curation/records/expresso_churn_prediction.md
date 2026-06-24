@@ -23,6 +23,8 @@ source_links:
 - https://zindi.africa/competitions/expresso-churn-prediction-challenge
 - https://zindi.africa/competitions/microsoft-x-dsn-free-ai-classes-in-every-city-hackathon-expresso-churn-prediction/data
 source_row: 912
+needs_review:
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 

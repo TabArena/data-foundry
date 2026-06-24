@@ -18,6 +18,8 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/c/nyc-taxi-trip-duration
+needs_review:
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
