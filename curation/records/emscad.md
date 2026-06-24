@@ -5,7 +5,9 @@ checked_by:
 - Lennart
 - Alex
 - Mustafa
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - New IID

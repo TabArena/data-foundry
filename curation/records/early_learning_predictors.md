@@ -3,7 +3,9 @@ unique_name: early_learning_predictors
 name: early_learning_predictors
 checked_by:
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

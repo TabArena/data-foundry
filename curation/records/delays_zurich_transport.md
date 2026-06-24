@@ -3,7 +3,8 @@ unique_name: delays_zurich_transport
 name: delays_zurich_transport
 checked_by:
 - Andrej
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
 decision_markers:
 - Time-series (Regression)

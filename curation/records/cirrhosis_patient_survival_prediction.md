@@ -3,7 +3,9 @@ unique_name: cirrhosis_patient_survival_prediction
 name: Cirrhosis Prediction Dataset
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - No Good Target (yet)

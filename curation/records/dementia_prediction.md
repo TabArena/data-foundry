@@ -3,7 +3,9 @@ unique_name: dementia_prediction
 name: Dementia Prediction Dataset
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: Disagreement
 decision_markers:
 - Wrong Domain / Source Modality

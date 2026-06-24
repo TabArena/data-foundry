@@ -1,25 +1,51 @@
 ---
 unique_name: credit_approval
-name: credit-approval
+name: Credit Approval
 checked_by:
 - Lennart
-suggestion: 'No'
+- Andrej
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
+suggestion: Disagreement
 decision_markers:
-- Duplicate
+- Outdated
+- Not Representative
 tags:
 - Tiny Data
 collections:
-- TabArena Reject
+- New (BeyondArena)
+original_source: UCI
+year: '1987'
+domain: medical & healthcare
+required_split:
+- Random (IID)
+problem_type: Binary Classification
+original_data_state: Database (or multiple to-be-joined tables)
 source_links:
-- https://www.openml.org/d/29
-- https://archive.ics.uci.edu/dataset/27/credit+approval
 - https://doi.org/10.24432/C5FS30
-source_row: 65
+- https://doi.org/10.24432/C5259N
+source_row: 775
 type_adapter_id: curation-record-v1
 ---
 
-# credit-approval
+# Credit Approval
 
 ## Comments
 
-Duplicate of 10.24432/C5FS30
+The UCI source contains two datasets, this is the crx dataset in the data
+
+Credit Approval (690 rows), From a Japanese
+
+## Reference
+
+@article{quinlan1987simplifying,
+  title={Simplifying decision trees},
+  author={Quinlan, J. Ross},
+  journal={International journal of man-machine studies},
+  volume={27},
+  number={3},
+  pages={221--234},
+  year={1987},
+  publisher={Elsevier}
+}

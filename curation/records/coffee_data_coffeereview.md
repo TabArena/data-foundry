@@ -4,6 +4,9 @@ name: Coffee_Data_CoffeeReview
 checked_by:
 - Lennart
 - Mustafa
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target (yet)

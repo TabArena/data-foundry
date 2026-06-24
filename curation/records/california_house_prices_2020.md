@@ -4,7 +4,9 @@ name: CALIFORNIA_PRICES_2020
 checked_by:
 - Lennart
 - Mustafa
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Missing source information

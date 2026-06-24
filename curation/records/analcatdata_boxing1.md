@@ -8,6 +8,7 @@ decision_markers:
 - Trivial
 - Outdated
 - Missing source information
+- Duplicate
 tags:
 - Tiny Data
 collections:
@@ -23,3 +24,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 No, see analcatdata_* entry for more information
+
+Duplicate / part of the `analcatdata_*` family — see the `analcatdata` record for the shared assessment and source (Simonoff, *Analyzing Categorical Data*).

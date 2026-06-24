@@ -1,21 +1,38 @@
 ---
 unique_name: blood_transfusion
-name: BLOOD_TRANSFUSION
-checked_by:
-- Lennart
-suggestion: 'No'
-decision_markers:
-- Duplicate
-collections:
-- TabSTAR
+name: blood-transfusion-service-center
+data_foundry_status:
+- 'DF: Yes'
+- TabArena (v0.1)
+- BeyondArena
+suggestion: 'Yes'
+original_source: UCI
+year: '2008'
+required_split:
+- Random (IID)
+problem_type: Binary Classification
 source_links:
+- https://www.openml.org/search?type=data&id=1464
 - https://doi.org/10.24432/C5GS39
-source_row: 376
 type_adapter_id: curation-record-v1
 ---
 
-# BLOOD_TRANSFUSION
+# blood-transfusion-service-center
 
 ## Comments
 
-In TabArena (blood-transfusion-service-center)
+Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.
+
+TabArena curation verdict: Tabular.
+
+Nice task with time-invariant features to predict a future event, so already framed so it can be used with random splits. NNs outperform trees & linear performs similar to trees, so likely pretty simple task; known to make models overfit quickly
+
+Potential issue: maybe trivial
+
+Lennart: no objection
+
+Andrej: Matches criteria
+
+## Reference
+
+Yeh, I-Cheng, Yang, King-Jang, and Ting, Tao-Ming, "Knowledge discovery on RFM model using Bernoulli sequence", Expert Systems with Applications, 2008.

@@ -3,7 +3,8 @@ unique_name: chronic_kidney_disease
 name: Chronic Kidney Disease
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
 suggestion: 'No'
 decision_markers:
 - Trivial

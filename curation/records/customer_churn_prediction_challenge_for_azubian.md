@@ -19,8 +19,6 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/customer-churn-prediction-challenge-for-azubian
 source_row: 961
-needs_review:
-- suggestion
 type_adapter_id: curation-record-v1
 ---
 

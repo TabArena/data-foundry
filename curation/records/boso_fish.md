@@ -1,7 +1,8 @@
 ---
 unique_name: boso_fish
 name: boso_fish
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 tags:
 - '?'
 collections:

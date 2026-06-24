@@ -1,18 +1,18 @@
 ---
 unique_name: diabetes
 name: diabetes
-checked_by:
-- Lennart
-- Alex
-- Mustafa
-suggestion: 'No'
-decision_markers:
-- AHDS (Artifical/Handmade/Deterministic/Simulated)
-collections:
-- TexTabBench Extra
+data_foundry_status:
+- 'DF: Yes'
+- TabArena (v0.1)
+suggestion: 'Yes'
+original_source: Kaggle
+year: '1988'
+required_split:
+- Random (IID)
+problem_type: Binary Classification
 source_links:
-- https://www.kaggle.com/datasets/ziya07/diabetes-clinical-dataset100k-rows
-source_row: 197
+- https://www.openml.org/search?type=data&id=37
+- https://doi.org/10.24432/C5T59G
 type_adapter_id: curation-record-v1
 ---
 
@@ -20,8 +20,18 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-predict diabetes based on demographic and health-related features
+Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1).
 
-High risk of being synthetic data, very likely clinical notes based on codes or standard template (not real text)
+TabArena curation verdict: Tabular.
 
-We know it is synthetic based on the user, which is known to upload such data!
+Rather interpretability than predictive performance task, nowadays done differently
+
+Potential issue: Outdated
+
+Lennart: No objection
+
+Andrej: Fits our criteria, but TabRepo resutls for this dataset are pretty random as there are only 768 samples
+
+## Reference
+
+Smith, J.W., Everhart, J.E., Dickson, W.C., Knowler, W.C., & Johannes, R.S. (1988). Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. In Proceedings of the Symposium on Computer Applications and Medical Care (pp. 261--265). IEEE Computer Society Press.

@@ -3,7 +3,8 @@ unique_name: bias_correction_r_bias_correction_r_2
 name: Bias_correction_r/Bias_correction_r_2
 checked_by:
 - Andrej
-data_foundry_status: WIP
+data_foundry_status:
+- 'DF: WIP'
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

@@ -1,7 +1,8 @@
 ---
 unique_name: bedford_basin_v6v8
 name: bedford_basin_V6V8
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 tags:
 - '?'
 collections:

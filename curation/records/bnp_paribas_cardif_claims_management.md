@@ -4,7 +4,8 @@ name: BNP_Paribas_Cardif_Claims_Management
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status: Much work
+data_foundry_status:
+- 'DF: Much work'
 suggestion: TBD -> Yes
 decision_markers:
 - Needs extensive data wrangling

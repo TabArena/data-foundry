@@ -3,7 +3,9 @@ unique_name: drug_induced_autoimmunity_prediction
 name: Drug Induced Autoimmunity Prediction
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data
