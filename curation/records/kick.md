@@ -1,10 +1,12 @@
 ---
-unique_name: kick_car_bad_buy_kick
+unique_name: kick
 name: kick / CAR_BAD_BUY_KICK
 checked_by:
 - Andrej
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

@@ -3,7 +3,8 @@ unique_name: telangana_crop_health_challenge
 name: telangana-crop-health-challenge
 checked_by:
 - Andrej
-data_foundry_status: WIP
+data_foundry_status:
+- 'DF: WIP'
 tags:
 - Non-IID (Grouped)
 collections:

@@ -156,7 +156,7 @@ def serve(host: str = "127.0.0.1", port: int = 8765, directory: str | Path | Non
     target = Path(directory) if directory is not None else records_dir()
     handler = partial(CurationHandler, directory=target)
     httpd = ThreadingHTTPServer((host, port), handler)
-    n = len(list(target.glob("*.md"))) if target.exists() else 0
+    n = len([p for p in target.glob("*.md") if not p.name.startswith("_")]) if target.exists() else 0
     print(f"Curation dashboard: http://{host}:{port}  ({n} records in {target})")
     print("Press Ctrl+C to stop.")
     try:

@@ -5,7 +5,6 @@ git-trackable representation:
 
 * :class:`~data_foundry.curation.record.CurationRecord` — the per-dataset schema;
 * :mod:`~data_foundry.curation.store` — one markdown file per record;
-* :mod:`~data_foundry.curation.importer` — one-time migration from the sheet CSV;
 * :mod:`~data_foundry.curation.exporter` — one-way compile to CSV/Parquet/Sheet;
 * the local dashboard + CLI (``data_foundry.curation.app`` / ``cli``).
 """

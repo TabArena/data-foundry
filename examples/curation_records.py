@@ -31,8 +31,8 @@ def main() -> None:
     print(f"Loaded {len(records)} curation records.")
 
     # Filter: datasets already integrated into Data Foundry.
-    integrated = [r for r in records if r.data_foundry_status == "Yes"]
-    print(f"  {len(integrated)} marked 'Data Foundry: Yes'.")
+    integrated = [r for r in records if "DF: Yes" in r.data_foundry_status]
+    print(f"  {len(integrated)} marked 'DF: Yes'.")
 
     # Filter: records carrying dropdown values not in the vocabulary (need cleanup).
     vocab = load_vocabularies()
@@ -50,7 +50,7 @@ def main() -> None:
             unique_name="example_dataset",
             name="Example Dataset",
             checked_by=["Lennart"],
-            data_foundry_status="WIP",
+            data_foundry_status=["DF: WIP"],
             tags=["New IID"],
             problem_type="Regression",
             comments="A scratch record created by the example.",

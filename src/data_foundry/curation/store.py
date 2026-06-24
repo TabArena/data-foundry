@@ -6,7 +6,7 @@ File layout (``<unique_name>.md``)::
     unique_name: phiusiil_phishing
     name: PhiUSIIL Phishing URL
     checked_by: [Andrej]
-    data_foundry_status: "Yes"
+    data_foundry_status: [DF: Yes, BeyondArena]
     ...
     type_adapter_id: curation-record-v1
     ---
@@ -108,11 +108,16 @@ def load_record(path: str | Path) -> CurationRecord:
 
 
 def load_all(directory: str | Path | None = None) -> list[CurationRecord]:
-    """Load every ``*.md`` record from ``directory`` (sorted by file name)."""
+    """Load every ``*.md`` record from ``directory`` (sorted by file name).
+
+    Files whose name starts with ``_`` (e.g. ``_template.md``) are skipped: they are
+    documentation/scaffolding, not real candidate datasets, mirroring the ``datasets/``
+    tree convention where ``_template`` / ``_maintenance`` are not datasets.
+    """
     target_dir = Path(directory) if directory is not None else records_dir()
     if not target_dir.exists():
         return []
-    return [load_record(p) for p in sorted(target_dir.glob("*.md"))]
+    return [load_record(p) for p in sorted(target_dir.glob("*.md")) if not p.name.startswith("_")]
 
 
 def load_index(directory: str | Path | None = None) -> dict[str, CurationRecord]:

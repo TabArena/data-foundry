@@ -1,23 +1,38 @@
 ---
 unique_name: splice
-name: splice
-checked_by:
-- Lennart
-suggestion: 'No'
+name: dna / splice
+data_foundry_status:
+- 'DF: Yes'
+- TabArena (v0.1)
+- BeyondArena
+suggestion: 'Yes'
 decision_markers:
 - Duplicate
-collections:
-- TabSTAR
+original_source: UCI
+year: '1991'
+problem_type: Multiclass Classification
 source_links:
-- https://archive.ics.uci.edu/dataset/69/molecular+biology+splice+junction+gene+sequences
+- https://www.openml.org/search?type=data&id=40670
 - https://doi.org/10.24432/C5M888
-- https://www.openml.org/search?type=data&id=46&sort=runs&status=active
-source_row: 337
 type_adapter_id: curation-record-v1
 ---
 
-# splice
+# dna / splice
 
 ## Comments
 
-In TabArena ("splice")
+Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.
+
+TabArena curation verdict: Duplicate.
+
+Many Binary features, which originally were 4 class categoricals. Description says "Hint: Much better performance is generally observed if attributes closest to the junction are used. In the StatLog version, this means using attributes A61 to A120 only." Is a processedversion of the splice dataset
+
+Potential issue: duplicate
+
+Lennart: preprocssed duplicate
+
+Andrej: Duplicate
+
+## Reference
+
+10.24432/C5M888; Originally from the StatLog project.; https://www.rdocumentation.org/packages/mlbench/versions/2.1-1/topics/DNA

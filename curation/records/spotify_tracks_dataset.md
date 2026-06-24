@@ -5,7 +5,8 @@ checked_by:
 - Lennart
 - Mustafa
 - Alex
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Wrong Domain / Source Modality

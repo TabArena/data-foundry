@@ -64,9 +64,19 @@ class FieldSpec:
 # The curation fields, in display / front-matter order. ``unique_name`` is the
 # stable id (file stem) and is handled separately from this list.
 FIELDS: tuple[FieldSpec, ...] = (
-    FieldSpec("name", "Source Name", "text", help="Names this dataset has been published under across its sources and collections."),
+    FieldSpec(
+        "name",
+        "Source Name",
+        "text",
+        help="Names this dataset has been published under across its sources and collections.",
+    ),
     FieldSpec("checked_by", "Checked by", "multiselect", help="People who reviewed the dataset."),
-    FieldSpec("data_foundry_status", "Data Foundry", "select", help="Integration status into Data Foundry."),
+    FieldSpec(
+        "data_foundry_status",
+        "Data Foundry",
+        "multiselect",
+        help="Integration state (DF: …) and benchmark membership (TabArena (v0.1) / BeyondArena).",
+    ),
     FieldSpec("suggestion", "Suggestion", "select", help="Whether we suggest including the dataset."),
     FieldSpec("decision_markers", "Decision Markers", "multiselect", help="Reasons / decision flags."),
     FieldSpec("tags", "Prio Tag", "multiselect", help="Tags to determine the priority of investigating the dataset."),
@@ -107,7 +117,7 @@ class CurationRecord:
     """Human-readable dataset name."""
 
     checked_by: list[str] = pydantic.Field(default_factory=list)
-    data_foundry_status: str | None = None
+    data_foundry_status: list[str] = pydantic.Field(default_factory=list)
     suggestion: str | None = None
     decision_markers: list[str] = pydantic.Field(default_factory=list)
     tags: list[str] = pydantic.Field(default_factory=list)

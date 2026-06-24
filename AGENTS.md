@@ -84,7 +84,18 @@ in the skill and rendered in full in the dashboard's **Guidelines** tab
 Add or triage a dataset by creating/editing its `<unique_name>.md` record (by hand,
 with an agent, or in the dashboard); the dashboard and the `build-site` export both
 read these files. The per-record schema is `CurationRecord` (`curation/record.py`);
-dropdown options live in `curation/vocabularies.yaml`.
+dropdown options live in `curation/vocabularies.yaml`. `curation/_template.md` is a
+copy-me, field-by-field guide.
+
+**`data_foundry_status` is a merged multi-tag field** holding both integration state
+(`DF: Yes` / `DF: WIP` / `DF: Much work` / `DF: Suspended`) and shipped-collection
+membership (`TabArena (v0.1)`, `BeyondArena`). Only datasets under `datasets/beyond_iid/`
+(and the v0.1 set) carry a collection tag. **`DF: …` with no collection tag is a valid,
+intentional state** — the dataset is in Data Foundry but not in a shipped collection
+(it lives under `datasets/_maintenance/` — deprecated / suspended / out-of-scope — or
+`datasets/_dev/`); do not "fix" it by adding a collection tag. See
+`datasets/_maintenance/_deprecated/README.md`. (The separate `collections` field is only
+for *external* benchmarks the dataset also appears in: TabSTAR, TabRed, CARTE/TARTE, ….)
 
 ### 3. Extending the package (schema, container, collections, examples)
 

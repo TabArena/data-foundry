@@ -3,7 +3,9 @@ unique_name: sepsis_prediction
 name: SepsisPrediction
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)

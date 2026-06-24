@@ -1,9 +1,11 @@
 ---
-unique_name: homecredit_default
+unique_name: home_credit_default_stability
 name: Homecredit Default
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

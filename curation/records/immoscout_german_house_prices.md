@@ -1,9 +1,11 @@
 ---
-unique_name: immoscout24_german_house_prices
+unique_name: immoscout_german_house_prices
 name: ImmoScout24 German-House-Prices
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - New IID

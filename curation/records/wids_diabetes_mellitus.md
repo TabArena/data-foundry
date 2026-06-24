@@ -3,7 +3,9 @@ unique_name: wids_diabetes_mellitus
 name: Diabetes Mellitus
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 tags:
 - Larger IID Data

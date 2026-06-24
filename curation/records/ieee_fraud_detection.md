@@ -1,10 +1,12 @@
 ---
-unique_name: ieee_cis_fraud_detection
+unique_name: ieee_fraud_detection
 name: IEEE-CIS_Fraud_Detection
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue

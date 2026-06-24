@@ -3,7 +3,8 @@ unique_name: seoul_bike_sharing_demand
 name: Seoul Bike Sharing Demand
 checked_by:
 - Andrej
-data_foundry_status: Suspended
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: 'No'
 decision_markers:
 - Time-series (Regression)

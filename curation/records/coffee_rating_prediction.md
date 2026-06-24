@@ -1,5 +1,5 @@
 ---
-unique_name: coffee_data_coffeereview
+unique_name: coffee_rating_prediction
 name: Coffee_Data_CoffeeReview
 checked_by:
 - Lennart

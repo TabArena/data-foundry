@@ -22,7 +22,12 @@
   #bar .search-wrap input::placeholder { color:#ffffff80; }
   #bar .hint { font-size:11px; opacity:.55; white-space:nowrap; }
   /* status filter menu (opened from the leftmost column header) */
-  .stmenu { color:#7e8794; font-size:11px; cursor:pointer; }
+  /* status-column header: an obvious "filter by status" button (funnel) next to the sort area */
+  .stmenu { display:inline-flex; align-items:center; justify-content:center; width:26px; height:22px;
+    border:1px solid #c2cbd6; border-radius:6px; background:#eef2f7; color:#374151; cursor:pointer;
+    box-shadow:0 1px 1px rgba(0,0,0,.04); }
+  .stmenu:hover { background:#dbe7fb; border-color:#7ea2dd; color:#1e3a8a; }
+  .stmenu svg { width:15px; height:15px; fill:currentColor; pointer-events:none; }
   #statusMenu { position:fixed; display:none; background:#fff; border:1px solid #d6dbe2; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.18); z-index:130; padding:5px; min-width:210px; }
   #statusMenu.show { display:block; }
   #statusMenu .smi { display:flex; align-items:center; gap:9px; padding:6px 9px; border-radius:6px; cursor:pointer; font-size:13px; color:#27313f; }
@@ -35,6 +40,8 @@
   .pill .l { font-size:10.5px; opacity:.8; text-transform:uppercase; letter-spacing:.05em; }
   .pill:hover { border-color:#ffffff70; }
   .pill.df.active { background:#15803d; border-color:#22c55e; }
+  .pill.tab.active { background:#1d4ed8; border-color:#3b82f6; }
+  .pill.bey.active { background:#0f766e; border-color:#14b8a6; }
   .pill.rev.active { background:#b91c1c; border-color:#ef4444; }
   /* disagreement: always purple-filled so it stands out as a flag */
   .pill.dis { background:#7c3aed; border-color:#a78bfa; padding:6px 16px; }
@@ -131,6 +138,8 @@
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
+    <button class="pill tab" id="pillTab" title="Filter: datasets shipped in TabArena v0.1"><span class="n" id="tabN">0</span><span class="l">TabArena</span></button>
+    <button class="pill bey" id="pillBey" title="Filter: datasets shipped in BeyondArena"><span class="n" id="beyN">0</span><span class="l">BeyondArena</span></button>
     <button class="pill rev" id="pillRev" title="Filter: datasets needing review"><span class="n" id="revN">0</span><span class="l">Review needed</span></button>
     <button class="pill dis" id="pillDis" title="Filter: disagreements to resolve"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
   </div>
@@ -184,6 +193,13 @@ const SEM = {
 };
 // Prominent, fixed colors for the most important New Tag values (stand out vs. the auto palette).
 const CUSTOM = {
+  // The merged "Data Foundry" field mixes integration-status tags (DF: …, coloured
+  // semantically below) with benchmark-collection membership (coloured here so the two
+  // kinds of value are visually distinct in the same cell).
+  data_foundry_status: {
+    "TabArena (v0.1)": { bg: "#1e3a8a", fg: "#ffffff" },  // dark blue
+    "BeyondArena":     { bg: "#0e7490", fg: "#ffffff" },  // teal
+  },
   tags: {
     "Non-IID (Temporal)": { bg: "#f9a8d4", fg: "#831843" },             // rose
     "Non-IID (Grouped)":  { bg: "#d8b4fe", fg: "#5b21b6" },             // lila
@@ -194,7 +210,7 @@ const CUSTOM = {
   },
 };
 const SEMANTIC = {
-  data_foundry_status: { "Yes": "good", "Suspended": "warn", "WIP": "warn", "Much work": "warn" },
+  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "DF: WIP": "warn", "DF: Much work": "warn" },
   suggestion: { "Yes": "good", "No": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
   decision_markers: {
     // bad / disqualifying -> red
@@ -278,9 +294,9 @@ function linksFmt(cell) {
 }
 // Single source of truth for a row's status marker + color (first match wins).
 function rowStatus(d) {
-  const sugg = d.suggestion, df = d.data_foundry_status, rev = (d.needs_review || []).length;
+  const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []).length;
   if (sugg === "Disagreement") return { m: "⚡", bg: "#7c3aed", fg: "#fff", t: "Disagreement — needs resolution" };
-  if (df === "Yes")            return { m: "✓", bg: "#16a34a", fg: "#fff", t: "In Data Foundry" };
+  if (df.includes("DF: Yes"))  return { m: "✓", bg: "#16a34a", fg: "#fff", t: "In Data Foundry" };
   if (sugg === "No")           return { m: "✗", bg: "#dc2626", fg: "#fff", t: "Suggestion: No" };
   if (sugg === "Yes")          return { m: "★", bg: "#2563eb", fg: "#fff", t: "Accepted — not yet in Data Foundry" };
   if (rev)                     return { m: "⚠", bg: "#f97316", fg: "#fff", t: "Needs review: " + (d.needs_review || []).join(", ") };
@@ -336,7 +352,7 @@ function buildStatusMenu() {
     item.className = "smi" + (fStatus === o.m ? " active" : "");
     item.innerHTML = `<span class="smk" style="background:${o.bg};color:${o.fg}">${o.m || "∗"}</span>${o.label}`;
     item.addEventListener("click", () => {
-      resetAllFilters();
+      // Layer the status filter on top of any active pill (pick "All datasets" to clear it).
       fStatus = o.m;
       menu.classList.remove("show");
       applyFilters();
@@ -362,7 +378,10 @@ function statusSorter(_a, _b, aRow, bRow) {
 // without triggering a sort (stopPropagation).
 function statusTitleFormatter() {
   const wrap = document.createElement("span");
-  wrap.innerHTML = '<span class="stmenu" title="Filter by status">▾</span>';
+  // funnel icon = "filter by status"; sits beside Tabulator's sort arrow on the header.
+  wrap.innerHTML = '<span class="stmenu" title="Filter by status">'
+    + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a1 1 0 0 1 .78 1.63L15 14.2V19a1 1 0 0 1-1.45.9l-3-1.5A1 1 0 0 1 10 17.5v-3.3L2.22 6.63A1 1 0 0 1 3 5z"/></svg>'
+    + '</span>';
   wrap.querySelector(".stmenu").addEventListener("click", e => { e.stopPropagation(); openStatusMenu(e); });
   return wrap;
 }
@@ -413,7 +432,7 @@ function addBtnTitle(label, field) {
 function columnDefs() {
   const cols = [
     { title: "", field: "_pin", frozen: true, width: 30, headerSort: false, headerFilter: false, download: false, hozAlign: "center", cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => togglePin(cell.getRow()), headerTooltip: "Pin rows to keep them visible through any filter" },
-    { title: "", field: "_status", frozen: true, width: 46, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click to sort by status (groups disagreements, in-DF, etc.) · ▾ to filter by status", titleFormatter: statusTitleFormatter },
+    { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter },
   ];
   for (const name of PRIMARY) {
     if (name === "unique_name") {
@@ -455,7 +474,7 @@ function columnDefs() {
       if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = "textarea"; }
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }
-    if (name === "data_foundry_status") c.width = 80;
+    if (name === "data_foundry_status") c.width = 170;  // multiselect: DF state + benchmark tags
     cols.push(c);
   }
   cols.push({
@@ -571,7 +590,20 @@ window.toggleExtra = toggleExtra;
 window.addExtraOption = addExtraOption;
 
 // ---- filters ---------------------------------------------------------------
-let fDf = false, fRev = false, fDis = false;
+// Each pill is an exclusive view with a row-test and a header count element.
+// DF / TabArena / BeyondArena all read the merged `data_foundry_status` field (and work
+// in the read-only static build too); rev/dis are live-only workflow states. The Data
+// Foundry pill counts collection membership (TabArena ∪ BeyondArena) — the datasets
+// actually shipped — not every record carrying a "DF: …" integration tag.
+const inBenchmark = d => (d.data_foundry_status || []).some(v => v === "TabArena (v0.1)" || v === "BeyondArena");
+const PILLS = {
+  df:  { active: false, el: "pillDf",  count: "dfN",  test: inBenchmark },
+  tab: { active: false, el: "pillTab", count: "tabN", test: d => (d.data_foundry_status || []).includes("TabArena (v0.1)") },
+  bey: { active: false, el: "pillBey", count: "beyN", test: d => (d.data_foundry_status || []).includes("BeyondArena") },
+  rev: { active: false, el: "pillRev", count: "revN", test: d => (d.needs_review || []).length > 0 },
+  dis: { active: false, el: "pillDis", count: "disN", test: d => d.suggestion === "Disagreement" },
+};
+function anyPill() { return Object.values(PILLS).some(p => p.active); }
 function applyFilters() {
   const term = document.getElementById("search").value.trim().toLowerCase();
   table.setFilter(d => {
@@ -584,47 +616,50 @@ function applyFilters() {
       return hay.includes(term);
     }
     if (fStatus && rowStatus(d).m !== fStatus) return false;
-    if (fRev && !(d.needs_review || []).length) return false;
-    if (fDf && !d.data_foundry_status) return false;
-    if (fDis && d.suggestion !== "Disagreement") return false;
+    for (const p of Object.values(PILLS)) if (p.active && !p.test(d)) return false;
     return true;
   });
 }
 function syncPillClasses() {
-  document.getElementById("pillDf").classList.toggle("active", fDf);
-  document.getElementById("pillRev").classList.toggle("active", fRev);
-  document.getElementById("pillDis").classList.toggle("active", fDis);
+  for (const p of Object.values(PILLS)) document.getElementById(p.el).classList.toggle("active", p.active);
 }
 // Clear every filter (search box, status menu, all pills) — pins are untouched.
 function resetAllFilters() {
-  fDf = fRev = fDis = false; fStatus = "";
+  for (const p of Object.values(PILLS)) p.active = false;
+  fStatus = "";
   document.getElementById("search").value = "";
   syncPillClasses();
 }
-function updateCount() {
+// `activeRows` is the filtered row set Tabulator hands to the `dataFiltered` event.
+// Prefer it: `getDataCount("active")` is stale when read synchronously inside that
+// handler (it lags one filter behind), which made the "N / M shown" indicator wrong.
+function updateCount(activeRows) {
   const all = table.getData();
-  document.getElementById("dfN").textContent = all.filter(d => d.data_foundry_status).length;
-  document.getElementById("revN").textContent = all.filter(d => (d.needs_review || []).length).length;
-  document.getElementById("disN").textContent = all.filter(d => d.suggestion === "Disagreement").length;
-  document.getElementById("count").textContent = `${table.getDataCount("active")} / ${table.getDataCount()} shown`;
-  markActiveFilters();
+  for (const p of Object.values(PILLS)) document.getElementById(p.count).textContent = all.filter(p.test).length;
+  const active = Array.isArray(activeRows) ? activeRows.length : table.getDataCount("active");
+  document.getElementById("count").textContent = `${active} / ${table.getDataCount()} shown`;
+  markActiveFilters(active);
 }
 // Highlight every active filter (column header dropdowns + global search) and show the
 // "Clear filters" button, so it is always obvious when the view is being filtered.
-function markActiveFilters() {
+function markActiveFilters(active) {
   let activeFields = new Set();
   try { activeFields = new Set((table.getHeaderFilters() || []).map(f => f.field)); } catch (e) { /* pre-build */ }
   table.getColumns().forEach(col => {
     const el = col.getElement();
-    if (el) el.classList.toggle("hf-active", activeFields.has(col.getField()));
+    // also flag the leftmost status column when a status filter is active (it is not a
+    // Tabulator header filter, so it would otherwise show no active-cue)
+    const on = activeFields.has(col.getField()) || (col.getField() === "_status" && !!fStatus);
+    if (el) el.classList.toggle("hf-active", on);
   });
   const search = document.getElementById("search");
   const hasSearch = !!search.value.trim();
   search.classList.toggle("active", hasSearch);
-  const any = activeFields.size > 0 || hasSearch || fDf || fRev || fDis || !!fStatus;
+  const any = activeFields.size > 0 || hasSearch || anyPill() || !!fStatus;
   document.getElementById("clearFilters").classList.toggle("show", any);
   const cnt = document.getElementById("count");
-  cnt.classList.toggle("filtered", table.getDataCount("active") < table.getDataCount());
+  const activeCount = (active == null) ? table.getDataCount("active") : active;
+  cnt.classList.toggle("filtered", activeCount < table.getDataCount());
 }
 
 async function boot() {
@@ -637,6 +672,11 @@ async function boot() {
 
   table = new Tabulator("#grid", {
     data: recs, columns: cols, layout: "fitData", height: "calc(100vh - 46px)",
+    // Keep the virtual DOM (rendering all ~1200 variable-height rows at once freezes startup),
+    // with a moderate render buffer as the trade-off: large enough that normal scrolling rarely
+    // shows a render gap, small enough to start fast. Buffer is px beyond the viewport (~a couple
+    // of screens). Raise it for smoother scroll at the cost of startup, lower it for faster start.
+    renderVerticalBuffer: 3000,
     movableColumns: true, index: "unique_name",
     initialSort: [{ column: "_status", dir: "asc" }],  // group by status on load (disagreements first)
     rowFormatter: row => {
@@ -648,7 +688,7 @@ async function boot() {
     },
   });
   if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
-  table.on("dataFiltered", updateCount);
+  table.on("dataFiltered", (filters, rows) => updateCount(rows));
   table.on("tableBuilt", () => { applyFilters(); updateCount(); });
 
   document.getElementById("search").addEventListener("input", applyFilters);
@@ -661,18 +701,19 @@ async function boot() {
     const m = document.getElementById("statusMenu");
     if (m.classList.contains("show") && !m.contains(e.target) && !e.target.closest(".tabulator-col")) m.classList.remove("show");
   });
-  // Each pill is an exclusive view: clicking resets every other filter, then
-  // applies just this one (clicking an active pill turns it off -> show all).
+  // Pills are exclusive among THEMSELVES (only one collection view at a time), but they
+  // layer with the status filter — pick a pill (e.g. BeyondArena), then narrow by status.
+  // Clicking an active pill turns it off. The status filter is left untouched.
   const pillToggle = key => () => {
-    const was = key === "df" ? fDf : key === "rev" ? fRev : fDis;
-    resetAllFilters();
-    if (!was) { if (key === "df") fDf = true; else if (key === "rev") fRev = true; else fDis = true; }
+    const was = PILLS[key].active;
+    for (const p of Object.values(PILLS)) p.active = false;
+    PILLS[key].active = !was;
     syncPillClasses();
     applyFilters();
   };
-  document.getElementById("pillDf").addEventListener("click", pillToggle("df"));
-  // The public build keeps only the "Data Foundry" pill; the review / disagreement
-  // workflow pills are hidden (and left unwired).
+  for (const key of ["df", "tab", "bey"]) document.getElementById(PILLS[key].el).addEventListener("click", pillToggle(key));
+  // The public build keeps the Data Foundry / collection view pills; the review /
+  // disagreement workflow pills are hidden (and left unwired).
   if (STATIC) {
     document.getElementById("pillRev").style.display = "none";
     document.getElementById("pillDis").style.display = "none";

@@ -1,9 +1,11 @@
 ---
-unique_name: estimation_of_obesity_levels_based_on_eating_habits_and_physical_condition
+unique_name: obesity_estimation
 name: Estimation of Obesity Levels Based On Eating Habits and Physical Condition
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue

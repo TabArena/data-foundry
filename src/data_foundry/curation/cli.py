@@ -4,7 +4,6 @@ Subcommands::
 
     data-foundry-curation serve                         # local editing dashboard
     data-foundry-curation build-site OUT_DIR            # read-only static site (GitHub Pages)
-    data-foundry-curation import-sheet SHEET.csv        # migrate the Google Sheet export
     data-foundry-curation validate                      # check records against the vocab
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|parquet)
     data-foundry-curation export --format gsheet --spreadsheet <id-or-url>
@@ -20,7 +19,6 @@ import sys
 from data_foundry.curation import exporter
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.app import serve
-from data_foundry.curation.importer import import_sheet
 from data_foundry.curation.record import load_vocabularies
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all
@@ -34,14 +32,6 @@ def _cmd_serve(args: argparse.Namespace) -> int:
 def _cmd_build_site(args: argparse.Namespace) -> int:
     out = build_site(args.output, args.records_dir)
     print(f"Built read-only static site in {out}/ (index.html, schema.json, records.json).")
-    return 0
-
-
-def _cmd_import(args: argparse.Namespace) -> int:
-    _, report = import_sheet(args.sheet, args.out, write=not args.dry_run)
-    print(report.summary())
-    if args.dry_run:
-        print("(dry run — no files written)")
     return 0
 
 
@@ -97,12 +87,6 @@ def build_parser() -> argparse.ArgumentParser:
     p_site = sub.add_parser("build-site", help="Compile a read-only static site (for GitHub Pages).")
     p_site.add_argument("output", help="Output directory (e.g. _site); created if missing.")
     p_site.set_defaults(func=_cmd_build_site)
-
-    p_import = sub.add_parser("import-sheet", help="Migrate a Google Sheet CSV export into records.")
-    p_import.add_argument("sheet", help="Path to the exported CSV.")
-    p_import.add_argument("--out", default=None, help="Output records directory (defaults to the standard one).")
-    p_import.add_argument("--dry-run", action="store_true", help="Parse and report without writing files.")
-    p_import.set_defaults(func=_cmd_import)
 
     p_validate = sub.add_parser("validate", help="Check records against the vocabulary.")
     p_validate.add_argument("--strict", action="store_true", help="Exit non-zero if any value is unmapped.")

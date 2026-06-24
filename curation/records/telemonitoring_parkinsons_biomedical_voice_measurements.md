@@ -3,7 +3,9 @@ unique_name: telemonitoring_parkinsons_biomedical_voice_measurements
 name: Parkinsons
 checked_by:
 - Lennart
-data_foundry_status: 'Yes'
+data_foundry_status:
+- 'DF: Yes'
+- BeyondArena
 suggestion: TBD -> Yes
 decision_markers:
 - Wrong Domain / Source Modality
