@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from data_foundry.curation_container import CuratedContainer
+from data_foundry.dataset_checks import run_all_checks
 from data_foundry.examples import (
     TOY_CONTAINER_UNIQUE_NAME,
     TOY_CONTAINER_UUID,
@@ -35,3 +36,19 @@ def test_toy_container_ships_extra_file():
     assert container.has_extra_file("toy_extra.parquet") is True
     resolved = container.extra_file_path("toy_extra.parquet")
     assert resolved.is_file()
+
+
+def test_toy_container_satisfies_curation_contract():
+    """The shipped toy container must pass the curation checks for its declared problem type.
+
+    Regression guard for the classification-target contract (a classification target must be
+    ``category`` dtype) that downstream consumers rely on — e.g. TabArena's
+    ``convert_curated_container_to_user_task``. ``run_all_checks`` raises if it is violated.
+    """
+    container = load_toy_container()
+    run_all_checks(
+        data=container.dataset,
+        problem_type=container.task_metadata.problem_type,
+        target_feature=container.task_metadata.target_column_name,
+        print_report=False,
+    )
