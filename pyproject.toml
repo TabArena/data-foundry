@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "data-foundry"
-version = "0.0.4"
+version = "0.0.5"
 description = "A schema and toolkit for curating tabular datasets and benchmarking tasks (the data layer behind TabArena)."
 readme = "README.md"
 requires-python = ">=3.10"
