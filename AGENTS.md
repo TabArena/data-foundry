@@ -37,7 +37,10 @@ Data Foundry is the data-layer toolkit behind
   paper). The per-record schema is `CurationRecord` (`curation/record.py`); the
   editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
   (`data-foundry-curation -h`) also covers `import-sheet`, `validate`, `export`,
-  and `build-site` (a read-only static site).
+  and `build-site` (a read-only static site). That static site is published to
+  GitHub Pages at https://tabarena.github.io/data-foundry/ — regenerated from
+  `curation/records/` on every push to `main` by `.github/workflows/pages.yaml`,
+  so editing a record and merging to `main` is what updates the public site.
 
 The actual curation work happens in `datasets/`, which is mostly Jupyter
 notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
@@ -174,6 +177,7 @@ bump versions or publish without explicit human authorization.
 | Schema definitions | [`src/data_foundry/schema.py`](src/data_foundry/schema.py) |
 | Curation backlog (records, dashboard, import/export) | [`src/data_foundry/curation/`](src/data_foundry/curation/) |
 | Curation records + dropdown vocab (data) | [`curation/`](curation) |
+| Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
 | Start the dashboard + load curation context | [`.claude/commands/curate.md`](.claude/commands/curate.md) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |

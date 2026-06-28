@@ -12,7 +12,7 @@
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
 - A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact in one notebook.
 - A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena).
-- A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab. It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
+- A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab, and published as a read-only public site on [GitHub Pages](https://tabarena.github.io/data-foundry/). It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
 
 ## ⚡ Quickstart
 
@@ -237,6 +237,12 @@ data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parqu
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
 data-foundry-curation import-sheet sheet.csv    # one-time migration from the old Google Sheet
 ```
+
+**Browse it online.** A read-only copy of the backlog is published to GitHub Pages —
+[**tabarena.github.io/data-foundry**](https://tabarena.github.io/data-foundry/) — and
+regenerated automatically from `curation/records/` on every push to `main` (no install, no
+network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
+Note this makes every record's comments, reviewer names, and decision notes public.
 
 Working with Claude Code? The **`/curate`** slash command starts the dashboard and loads the
 curation guidelines into context so the agent can help you decide and process datasets.
