@@ -2,8 +2,8 @@
 
 ---
 
-| 📂 [Examples](examples) | 🧑‍🔬 [Contribute a Dataset](CONTRIBUTING_DATASETS.md) | 📄 [Paper (placeholder — coming soon)](#-citation) |
-|:---:|:---:|:---:|
+| 📂 [Examples](examples) | 🗂️ [Curation Log](https://tabarena.github.io/data-foundry/) | 🧑‍🔬 [Contribute a Dataset](CONTRIBUTING_DATASETS.md) | 📄 [Paper (placeholder — coming soon)](#-citation) |
+|:---:|:---:|:---:|:---:|
 
 ---
 
