@@ -75,6 +75,12 @@
   .tabulator { border:1px solid #e2e6ec; background:#fff; }
   .tabulator .tabulator-header { background:#eef1f5; border-bottom:1px solid #d6dbe2; }
   .tabulator .tabulator-header .tabulator-col { background:transparent; border-right:1px solid #e1e5eb; }
+  /* Frozen header columns sit above the scrolling ones (sticky, z-index:11), but a
+     transparent fill let the columns scrolling beneath them show through — which reads
+     as the scrolling header overlapping the fixed columns. Give them the header's
+     opaque background so scrolling content is hidden behind them. (Body frozen cells
+     already inherit an opaque row background, so only the header needed this.) */
+  .tabulator .tabulator-header .tabulator-col.tabulator-frozen { background:#eef1f5; }
   .tabulator .tabulator-header .tabulator-col .tabulator-col-title { font-weight:600; color:#39424f; white-space:normal; line-height:1.2; }
   /* dropdown affordance: a faint ▾ that appears on cell hover (empty cells still look empty) */
   .tabulator-cell.dd-cell { position:relative; }
@@ -87,6 +93,14 @@
      background-color:inherit, so they pick up zebra + hover from the row automatically. */
   .tabulator-cell { white-space:pre-wrap; background-color:transparent; border-right:1px solid #eef1f4; padding:5px 9px; color:#27313f; }
   .st { font-weight:800; font-size:13px; line-height:1; }
+  /* Fast, full-cell tooltip for the status marker. The native `title` had a ~½s browser
+     delay we can't tune; this custom tip is triggered anywhere in the cell (via the
+     column's cellMouse* events), shows in ~130ms, and is fixed-positioned on the body so
+     the frozen column's overflow never clips it. */
+  #cellTip { position:fixed; z-index:200; max-width:300px; pointer-events:none;
+    background:#1f2533; color:#fff; font-size:12px; line-height:1.4; padding:6px 9px;
+    border-radius:6px; box-shadow:0 6px 20px rgba(0,0,0,.3); opacity:0; transition:opacity .1s; }
+  #cellTip.show { opacity:.97; }
   .pin { cursor:pointer; opacity:.2; transition:opacity .12s; }
   .tabulator-row:hover .pin { opacity:.55; }
   .pin.on { opacity:1; }
@@ -185,6 +199,7 @@
 </div>
 <div id="grid"></div>
 <div id="toast"></div>
+<div id="cellTip"></div>
 <div id="statusMenu"></div>
 
 <div id="overlay">
@@ -361,6 +376,25 @@ function toast(msg, err = false) {
   t.textContent = msg; t.className = "show" + (err ? " err" : "");
   clearTimeout(t._h); t._h = setTimeout(() => t.className = err ? "err" : "", 1600);
 }
+// Shared fast tooltip (used by the status column). One element, positioned near the
+// cursor, ~130ms show delay vs. the browser's slow native `title`.
+let _tipTimer = null;
+function showTip(e, text) {
+  clearTimeout(_tipTimer);
+  const el = document.getElementById("cellTip");
+  if (!text) { el.classList.remove("show"); return; }
+  _tipTimer = setTimeout(() => { el.textContent = text; el.classList.add("show"); moveTip(e); }, 130);
+}
+function moveTip(e) {
+  const el = document.getElementById("cellTip");
+  if (!el.classList.contains("show")) return;  // still in the show delay → nothing to move yet
+  const pad = 14, r = el.getBoundingClientRect();
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + r.width > innerWidth)  x = e.clientX - r.width - pad;
+  if (y + r.height > innerHeight) y = e.clientY - r.height - pad;
+  el.style.left = Math.max(4, x) + "px"; el.style.top = Math.max(4, y) + "px";
+}
+function hideTip() { clearTimeout(_tipTimer); document.getElementById("cellTip").classList.remove("show"); }
 
 // formatters
 function multiChips(field) { return cell => (cell.getValue() || []).map(v => chipHtml(field, v)).join(""); }
@@ -391,7 +425,9 @@ function rowStatus(d) {
 function statusFmt(cell) {
   const st = rowStatus(cell.getRow().getData());
   const el = cell.getElement();
-  el.style.background = st.bg; el.style.color = st.fg; el.title = st.t;
+  // Tooltip is shown via the column's cellMouse* handlers (fast, full-cell) — not a
+  // native `title`, which is slow and felt anchored to the glyph.
+  el.style.background = st.bg; el.style.color = st.fg;
   return `<span class="st">${st.m}</span>`;
 }
 // Pinned rows stay visible through any filter/search (session-scoped).
@@ -592,7 +628,8 @@ function addBtnTitle(label, field) {
 function columnDefs() {
   const cols = [
     { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌); on AI-reviewed rows, verify it (✓ below the pin)" },
-    { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter },
+    { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter,
+      cellMouseEnter: (e, cell) => showTip(e, rowStatus(cell.getRow().getData()).t), cellMouseMove: e => moveTip(e), cellMouseLeave: () => hideTip() },
   ];
   // (The ✓ verify action lives in the leftmost pin column, stacked under 📌 on AI-reviewed rows.)
   for (const name of PRIMARY) {
