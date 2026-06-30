@@ -53,6 +53,7 @@ Repository = "https://github.com/TabArena/data-foundry"
 Issues = "https://github.com/TabArena/data-foundry/issues"
 "BeyondArena Datasets" = "https://huggingface.co/datasets/TabArena/BeyondArena"
 "TabArena" = "https://tabarena.ai/"
+"Paper" = "https://arxiv.org/abs/2606.30410"
 
 [project.optional-dependencies]
 dev = [

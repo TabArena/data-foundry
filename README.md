@@ -2,7 +2,7 @@
 
 ---
 
-| 📂 [Examples](examples) | 🗂️ [Curation Log](https://tabarena.github.io/data-foundry/) | 🧑‍🔬 [Contribute a Dataset](CONTRIBUTING_DATASETS.md) | 📄 [Paper (placeholder — coming soon)](#-citation) |
+| 📂 [Examples](examples) | 🗂️ [Curation Log](https://tabarena.github.io/data-foundry/) | 🧑‍🔬 [Contribute a Dataset](CONTRIBUTING_DATASETS.md) | 📄 [Paper](https://arxiv.org/abs/2606.30410) |
 |:---:|:---:|:---:|:---:|
 
 ---
@@ -332,8 +332,21 @@ gotchas, the `/new-dataset` Claude Code scaffolding skill): see
 
 ## 📄 Citation
 
-**PLACEHOLDER**
+If you use Data Foundry or the BeyondArena datasets, please cite:
+
+> **Beyond IID: How General Are Tabular Foundation Models, Really?**
+> Lennart Purucker, Andrej Tschalzev, Nick Erickson, Gioia Blayer, David Holzmüller,
+> Alan Arazi, Alexander Pfefferle, Mustafa Tajjar, Gaël Varoquaux, Frank Hutter.
+> arXiv:2606.30410, 2026. <https://arxiv.org/abs/2606.30410>
 
 ```bibtex
-PLACEHOLDER
+@misc{purucker2026iidgeneraltabularfoundation,
+      title={Beyond IID: How General Are Tabular Foundation Models, Really?},
+      author={Lennart Purucker and Andrej Tschalzev and Nick Erickson and Gioia Blayer and David Holzmüller and Alan Arazi and Alexander Pfefferle and Mustafa Tajjar and Gaël Varoquaux and Frank Hutter},
+      year={2026},
+      eprint={2606.30410},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2606.30410},
+}
 ```

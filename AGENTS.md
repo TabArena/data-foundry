@@ -13,7 +13,9 @@ information an agent needs in order to act safely.
 
 Data Foundry is the data-layer toolkit behind
 [BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena) and
-[TabArena](https://tabarena.ai/). The Python package
+[TabArena](https://tabarena.ai/), introduced in the paper
+[*Beyond IID: How General Are Tabular Foundation Models, Really?*](https://arxiv.org/abs/2606.30410)
+(arXiv:2606.30410). The Python package
 (`src/data_foundry/`) defines:
 
 * a pydantic-dataclass **schema** for tabular datasets, predictive ML tasks,
