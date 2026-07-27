@@ -9,10 +9,12 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Temporal)
 original_source: Kaggle
 year: '2023'
 required_split:
-- Random (IID)
+- Temporal (NON-IID)
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
 type_adapter_id: curation-record-v1

@@ -104,6 +104,10 @@
   .pin { cursor:pointer; opacity:.2; transition:opacity .12s; }
   .tabulator-row:hover .pin { opacity:.55; }
   .pin.on { opacity:1; }
+  /* 📓 opens the dataset's curation notebook on GitHub (main); shown only when a notebook exists */
+  .nblink { cursor:pointer; opacity:.35; text-decoration:none; font-size:13px; line-height:1; transition:opacity .12s; }
+  .tabulator-row:hover .nblink { opacity:.75; }
+  .nblink:hover { opacity:1; }
   .tabulator-row.pinned .tabulator-cell.pincol { box-shadow: inset 3px 0 0 #f59e0b; }
   .tabulator-cell.single-line { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .tabulator-cell.wrap-cell { white-space:normal !important; height:auto; line-height:1.7; }
@@ -440,7 +444,13 @@ function pinFmt(cell) {
   const verify = (!STATIC && (d.needs_review || []).includes("ai_unverified"))
     ? `<span class="vmark" title="Verify this AI-reviewed dataset — opens a confirm dialog (pick your name, agree you read it)">✓</span>`
     : "";
-  return `<span class="pincell">${pin}${verify}</span>`;
+  // 📓 links to the dataset's curation notebook on GitHub (main). Present only for datasets we
+  // have curated (a canonical datasets/**/<name>/<name>.ipynb exists), so it doubles as a
+  // "this is in Data Foundry" affordance. Opens in a new tab; the click is ignored by the pin handler.
+  const nb = d.notebook_url
+    ? `<a class="nblink" href="${d.notebook_url}" target="_blank" rel="noopener" title="Open the curation notebook on GitHub (main): ${d.notebook_path}">📓</a>`
+    : "";
+  return `<span class="pincell">${pin}${nb}${verify}</span>`;
 }
 function togglePin(row) {
   const id = row.getData().unique_name;
@@ -627,7 +637,7 @@ function addBtnTitle(label, field) {
 
 function columnDefs() {
   const cols = [
-    { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌); on AI-reviewed rows, verify it (✓ below the pin)" },
+    { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".nblink")) return; if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌) · open its curation notebook on GitHub (📓, if curated) · verify AI-reviewed rows (✓)" },
     { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter,
       cellMouseEnter: (e, cell) => showTip(e, rowStatus(cell.getRow().getData()).t), cellMouseMove: e => moveTip(e), cellMouseLeave: () => hideTip() },
   ];

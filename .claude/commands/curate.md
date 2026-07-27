@@ -119,12 +119,47 @@ Recurring signals → the usual `decision_markers` + `suggestion`. These are heu
 *speed triage*, not hard rules; the dataset still wins over the pattern. A signal is often in
 the dataset **name** alone (e.g. `*-recommendation-challenge`, `*-forecasting-*`).
 
+**Always read the record's `## Comments` and understand what they *mean* before triaging or overturning —
+they usually already contain the decisive fact** (the true source, a leak mechanism, the experimental
+setup, the provenance). Many datasets that look "unknown" are decidable from the comment alone: e.g.
+`jannis` looks like anonymised numeric columns, but its comment ("From AutoML challenge … SAIAPR-TC12")
+identifies it as **image-derived** → `Image` → **No**; `sonar`'s comment shows it is an outdated,
+handcrafted sonar-return toy experiment → out on its **setup**, not merely its acoustic features.
+
+* **Scope by the *original* task, not the first source's framing.** A re-upload frequently relabels a
+  dataset into a different task — e.g. an OpenML page presenting a recommendation dataset as a plain
+  regression, or a Kaggle mirror renaming it. Do **not** accept the first source you land on at face
+  value: trace what the data was *originally collected and used for* (the same original-source tracing
+  used for duplicates) and let that decide scope. `yearprediction_the_million_song_dataset` is the
+  canonical trap: OpenML id 4352 serves it as YearPredictionMSD *regression*, but it is the Million Song
+  Dataset Challenge — a **song-recommendation** task — repackaged, so it is correctly
+  `Out-of-scope Task (CTR/RecSys/Ranking)` → **No**, and the regression re-framings are fake / duplicates.
 * **Recommendation / ranking / CTR / "recommendation"/"recommender" task** → `Out-of-scope Task
-  (CTR/RecSys/Ranking)` → **No** (criterion 3).
+  (CTR/RecSys/Ranking)` → **No** (criterion 3). Applies even when a mirror re-serves it as
+  classification/regression (see the "original task" note above, e.g. `yearprediction_the_million_song_dataset`).
 * **Time-series *forecasting*** (predict future values of a series: demand/sales/price over a
   horizon) → `Time-series (Forecasting)` → **No** (excluded). *Distinguish* from a fixed
   predictive task that merely needs a **temporal split** (e.g. delay/price regression) — that is
   in-scope; tag `Non-IID (Temporal)` + `Temporal (NON-IID)`, not Forecasting.
+  * **A missing or hidden timestamp does NOT make a task IID — check the task *design*, not just the
+    columns.** The time index is often absent: dropped by an uploader, never shipped, or only implied by
+    how the data was collected (samples logged sequentially over months/years; every feature and the
+    target are *contemporaneous* readings that would all be known at prediction time `t`). Do not take
+    "no timestamp column" as evidence of IID and rubber-stamp a random split — that silently leaks
+    temporal structure. If the underlying setup is "values unfolding over time from a stream of
+    signals", it is temporal / forecasting regardless of whether a literal date column survived; treat
+    it as such (or reject as `Time-series (Forecasting)`), and note that the timestamp must be recovered.
+    `combined_cycle_power_plant` is the trap: no timestamp column, so it *looks* like IID sensor
+    regression, but it is a 6-year hourly sensor stream predicting the plant's hourly output — a
+    (multivariate) forecasting setup a random split corrupts → correctly `Time-series (Forecasting)` → **No**.
+  * **Don't trust the split the paper / source prescribes — verify it against the task design.** The
+    original authors (or the dataset page) can choose a *leaking* evaluation split — most commonly a
+    random split on data that is really temporal — and papers get this wrong often. A prescribed "random
+    split" is **not** evidence the task is IID; treat the documented protocol as a claim to check, not a
+    fact. `appliances_energy_prediction` is the example: it *has* a date column (10-min readings over
+    ~4.5 months) and is a forecasting task, but was evaluated with a leaking random split, so it is
+    correctly `Time-series (Forecasting)` → **No**, not the in-scope temporal regression an uncritical
+    reading of the paper suggests.
 * **Artificial / handmade / deterministic / simulated** (synthetic, toy, simulated physics with
   dedicated benchmarks) → `AHDS (Artifical/Handmade/Deterministic/Simulated)` → **No** (crit. 4B).
 * **Pure non-tabular modality** where modality models clearly dominate (raw images / audio /
@@ -141,17 +176,40 @@ the dataset **name** alone (e.g. `*-recommendation-challenge`, `*-forecasting-*`
     measured-from-image tables (`magic_gamma_telescope` shower geometry, `wdbc` Xcyt nuclei descriptors,
     `image_gesture_phase_segmentation` video kinematics, `dry_bean`/`raisin`/`pumpkin_seeds`/`rice`
     seed-photo morphology, `satimage`/`wilt` remote sensing, `banknote_authentication` wavelet stats).
-  * **Narrow carve-in (stay in-scope):** features that are *not* a vectorization of image content —
-    non-visual metadata (e.g. `internet_advertisements`: URL / anchor / alt-text term tokens) **or
-    human-assigned** semantic/clinical attributes that are themselves the instrument (the kept `wbcatt`;
-    `breast_w`'s 1–10 cytology grades a pathologist assigned by eye). Signals (audio/sonar) are the same
-    call case-by-case: interpretable engineered acoustic *measures* the field uses as the instrument
-    (jitter/shimmer in the shipped Parkinsons voice data) can be in-scope; raw-signal spectral bins lean
-    out. **Decide on the data's actual columns, not the dataset's fame** — "features extracted from
-    images" is the exclude signal, not a thing to auto-flag as wrongly rejected.
+  * **"One more layer of abstraction" is still image-derived — a non-pixel or human-in-the-loop feature
+    does not escape the Image exclusion.** Two traps that look like carve-ins but are **not**:
+    * **Descriptors / encodings *of* an image** (its geometry, shape, layout) stay image-derived even when
+      mixed with a few genuinely non-visual columns. `internet_advertisements` is the canonical case:
+      per UCI its features "encode the geometry of the image (if available) as well as phrases occurring
+      in the URL, the image's URL and alt text" — the task is *is this on-page object an ad image?*, a
+      vision task with some text metadata bolted on, so it is correctly `Image` → **No**. The URL /
+      alt-text tokens do **not** turn it into a carve-in.
+    * **A human *scoring what they see in an image* is still an image feature.** When a person grades the
+      content of a photo / microscope slide / scan, the value measures the image, not an independent
+      instrument. `breast_w`'s 1–10 cytology grades (clump thickness, cell-size uniformity, …) are a
+      pathologist's scoring of cell morphology seen under a microscope → image-derived → **No**. "A human
+      assigned it by eye" does **not** rescue it when *the thing being scored is an image*.
+  * **Narrow carve-in (stay in-scope):** attributes that are *not* a description / scoring of image (or
+    other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
+    entity directly (lab values, sensor readings, questionnaire responses, transaction fields), **not**
+    read off a photo / scan of it. Signals (audio/sonar) are the same call case-by-case: interpretable
+    engineered acoustic *measures* the field uses as the instrument (jitter/shimmer in the shipped
+    Parkinsons voice data) can be in-scope; raw-signal spectral bins lean out. (`wbcatt` — expert-annotated
+    white-blood-cell morphology attributes — sits on the same boundary as `breast_w` and is only kept
+    **provisionally** for a possible causal/counterfactual framing; treat it as borderline, not a clean
+    in-scope precedent.) **Decide on the data's actual columns, not the dataset's fame** — "features
+    extracted from / describing an image" is the exclude signal, not a thing to auto-flag as wrongly rejected.
 * **Re-upload / processed copy of a known dataset** → `Duplicate`. If it is the version we keep,
   it can still be `Yes` (the marker is provenance); if it is redundant, **No** and name it
   `<canonical>_duplicate` (see the `_duplicate` convention enforced in tests).
+  * **Different versions / cuts of one underlying dataset are duplicates too — "duplicate" is not only an
+    *exact* re-upload.** Two records built from the *same underlying data* with only a minor variation — a
+    swapped target / outcome column, a different slice of the same cohort, added or dropped rows / features —
+    are duplicates when neither adds a genuinely distinct task. E.g. `arsenic_male_lung` is the
+    lung-cancer-outcome version of the *same* arsenic-exposure data as `arsenic_male_bladder` (bladder
+    outcome) → `Duplicate` → **No**. This is the flip side of the next bullet: reach for `Duplicate` when it
+    is the *same data wearing a new target / slice*, and for the "Shared source ≠ duplicate" carve-out only
+    when the shared source genuinely yields *different tasks*.
   * **Shared source ≠ duplicate.** Two records citing the same UCI/OpenML page or DOI — or even
     the same display `name` — can be *legitimately distinct* datasets/tasks. E.g.
     `parkinsons_biomedical_voice_measurements` (Little 2007, voice-disorder **detection**) and
@@ -163,15 +221,30 @@ the dataset **name** alone (e.g. `*-recommendation-challenge`, `*-forecasting-*`
 * **Survey / scientific-discovery / non-predictive table** (no genuine predictive target) →
   `No Good Target / Scientific Discovery` → **No** or `TBD -> 2nd Tier`.
 * **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C).
-* **Target leakage / irreversible damage** (PCA-transformed, anonymized leaking features) →
-  `Data Quality Issue` → **No** (crit. 4D).
+* **Target leakage / irreversible damage** (PCA-transformed, anonymized leaking features, **or a feature
+  that is itself the output of a supervised transform fit on the whole dataset** — a discriminant-analysis
+  score, target / mean encoding, a model's own prediction) → `Data Quality Issue` → **No** (crit. 4D).
+  Such a feature bakes label / whole-set information into every row and cannot be recomputed per
+  train/test split, so it leaks the test distribution irreversibly. E.g. `yeast` ships a column *"Score of
+  discriminant analysis of the amino acid content of vacuolar and extracellular proteins"* — a DA fit on
+  the full dataset, already baked in and unfixable → leak → **No**.
 * **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`.
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Genuine real-world tabular classification/regression, clear target, adequate size** →
   **Yes** (well-known/strong) or **TBD -> Yes** (plausible, unverified).
-* **Too little information in our record to decide** (bare link, no description) → do **not**
-  reject for that alone: use **TBD -> Yes** / **TBD -> 2nd Tier** and note in `## Comments`
-  exactly what must be inspected (size after cleaning, the real target, the split regime).
+* **Source / provenance unknown even with a working link** → `Missing source information` → **No**.
+  A live download link is **not** a known source: if following it bottoms out at an anonymous
+  Kaggle / OpenML / PMLB re-upload with no documentation and no traceable upstream (paper, competition,
+  institution, an identifiable original uploader), the origin is unknown and criterion 1 (unique
+  original source) is not met. Do **not** treat "the link still resolves" or "the data looks fine" as
+  grounds to recover it — **clear provenance / documentation is itself a strong positive indicator of a
+  good dataset, and its absence is a real negative signal.** (e.g. `water_quality_and_potability`,
+  `3d_estimation_using_rssi_of_wlan_dataset_complete_1_target`, `calendardow`.)
+* **Too little information *in our record* to decide** (bare link, no description, but the dataset's
+  *origin is otherwise known / traceable*) → do **not** reject for that alone: use **TBD -> Yes** /
+  **TBD -> 2nd Tier** and note in `## Comments` exactly what must be inspected (size after cleaning, the
+  real target, the split regime). This is a sparse *record*, not an unknowable *source* — contrast the
+  bullet above, where the dataset's provenance itself cannot be established.
 
 ### Checking for duplicates (recommended method)
 
@@ -199,8 +272,10 @@ When they merely *share a source but are distinct*, record *why* in `## Comments
 
 ### Suggestion values
 
-`suggestion` is the include/exclude verdict (and the one field that, left empty, marks a record
-untriaged → Review queue):
+`suggestion` is the include/exclude verdict **as of now** — it is what we suggest for the dataset
+*right now*, and an earlier verdict can change over time (a shipped dataset can later be excluded; see
+the `Retired (was shipped)` tag below). It is also the one field that, left empty, marks a record
+untriaged → Review queue:
 
 * `Yes` — include. `TBD -> Yes` — likely include, pending verification.
 * `TBD -> 2nd Tier` — plausible but secondary. `No` — exclude.
@@ -210,9 +285,16 @@ untriaged → Review queue):
   `ship_conflict`), but it surfaces under the dashboard's **⚡ Disagreement** filter (status ⚡),
   not as a settled `Yes`. Use it for datasets already in a collection whose verdict is still open.
 
+**Verdicts change over time — the `Retired (was shipped)` tag.** When a dataset that *did* ship in a
+collection is later judged excludable (e.g. found trivial, or an ethical concern surfaces), set its
+`suggestion` to the honest current verdict (`No`) **and** add the `Retired (was shipped)` **tag**. Keep
+the collection tag (`TabArena (v0.1)` / `BeyondArena`) — it really did ship — and record *why* it was
+retired in `## Comments`.
+
 **Invariant:** a dataset shipped in a collection (`TabArena (v0.1)` / `BeyondArena`) must carry an
-*accepted* verdict — `Yes` or `Yes (Disagreement)`. Anything else on a shipped record is a
-`ship_conflict` (flagged in the Review queue and asserted in `tests/test_records_integrity.py`).
+*accepted* verdict — `Yes` or `Yes (Disagreement)` — **or** the `Retired (was shipped)` tag. Anything
+else on a shipped record is a `ship_conflict` (flagged in the Review queue and asserted in
+`tests/test_records_integrity.py`).
 
 ### Reading markers & optional fields (don't over-flag)
 

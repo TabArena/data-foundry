@@ -36,6 +36,11 @@ Might be a trivial dataset, only really 2 features and a temporal component
 
 But otherwise seems valid enough, we could add it and later remove if needed
 
+CC (2026-07-27, Lennart): Kept **No** / removed. Beyond the tiny size (~306 rows), it no longer
+represents a real-world problem and the setup is very simplistic and weird (essentially two features
+plus a temporal component) — hence `Trivial` / `Outdated` / `Not Representative`. The "could add it and
+later remove" note above is superseded.
+
 ## Reference
 
 UCI

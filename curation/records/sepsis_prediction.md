@@ -16,7 +16,7 @@ original_source: Kaggle
 year: '2019'
 domain: medical & healthcare
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:

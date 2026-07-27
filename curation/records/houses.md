@@ -12,7 +12,7 @@ suggestion: 'Yes'
 year: '1990'
 required_split:
 - Random (IID)
-problem_type: Binary Classification
+problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=823
 - http://lib.stat.cmu.edu/datasets/

@@ -18,6 +18,7 @@ from data_foundry.curation.record import (
     AI_FILLED_TAG,
     AI_REVIEWER,
     COLLECTION_TAGS,
+    RETIRED_TAG,
     load_vocabularies,
 )
 from data_foundry.curation.store import load_all, markdown_to_record
@@ -141,11 +142,13 @@ def test_duplicate_records_follow_convention(records):
 
 
 def test_no_ship_conflict(records):
-    """A dataset shipped in a collection must carry an accepted verdict.
+    """A dataset shipped in a collection must carry an accepted verdict — or be marked retired.
 
     Accepted = ``Yes`` or ``Yes (Disagreement)`` (the latter = shipped on purpose but with an
     open disagreement to re-evaluate). ``No`` / ``TBD`` / plain ``Disagreement`` on a shipped
-    dataset is a contradiction.
+    dataset is a contradiction — **unless** it carries the ``Retired (was shipped)`` tag, which
+    records that the verdict changed *after* the dataset shipped (e.g. later found trivial or
+    ethically problematic); those keep their collection tag but are legitimately non-accepted.
     """
     bad = [
         (r.unique_name, r.suggestion)
@@ -153,8 +156,9 @@ def test_no_ship_conflict(records):
         if any(t in (r.data_foundry_status or []) for t in COLLECTION_TAGS)
         and r.suggestion
         and r.suggestion not in ACCEPTED_SUGGESTIONS
+        and RETIRED_TAG not in (r.tags or [])
     ]
-    assert not bad, f"shipped in a collection but suggestion not accepted: {bad}"
+    assert not bad, f"shipped in a collection but suggestion not accepted (and not retired): {bad}"
 
 
 def test_collection_records_have_a_suggestion(records):

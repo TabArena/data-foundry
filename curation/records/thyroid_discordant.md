@@ -19,7 +19,7 @@ original_source: UCI
 domain: medical & healthcare
 required_split:
 - Random (IID)
-problem_type: TBD
+problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/new_thyroid/metadata.yaml

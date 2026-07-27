@@ -116,6 +116,22 @@
   <p>TabArena <strong>excludes time-series forecasting</strong> data: although tabular-like and non-IID,
   forecasting has fundamentally different assumptions and needs a different validation protocol. During curation we
   carefully distinguish <em>temporal tabular regression</em> from <em>time-series forecasting</em>.</p>
+  <p><strong>A missing or hidden timestamp does not make a task IID — check the task design, not just the columns.</strong>
+  The time index is frequently absent: dropped by an uploader, never shipped, or only implied by how the data was
+  collected (samples logged sequentially over months/years; every feature and the target are <em>contemporaneous</em>
+  readings all known at prediction time <code>t</code>). Do not read "no timestamp column" as evidence of IID and wave
+  through a random split — that silently leaks temporal structure. If the underlying setup is "values unfolding over
+  time from a stream of signals", it is temporal / forecasting regardless of whether a literal date column survived.
+  Example: <code>combined_cycle_power_plant</code> ships with no timestamp, so it looks like IID sensor regression, but
+  it is a six-year hourly sensor stream predicting the plant's hourly output — a (multivariate) forecasting setup a
+  random split corrupts — and is correctly excluded as <em>time-series forecasting</em>.</p>
+  <p><strong>Do not trust the split the paper or source prescribes — verify it against the task design.</strong> The
+  original authors (or the dataset page) can pick a <em>leaking</em> evaluation split — most commonly a random split on
+  data that is really temporal — and papers get this wrong often. A prescribed "random split" is not evidence the task
+  is IID; treat the documented protocol as a claim to check, not a fact. Example:
+  <code>appliances_energy_prediction</code> ships with a date column (10-minute readings over ~4.5 months) and is a
+  forecasting task, yet was evaluated with a leaking random split; it is correctly excluded as time-series forecasting,
+  not the in-scope temporal regression an uncritical reading of the paper suggests.</p>
 
   <h2>2 · Dataset curation, in brief</h2>
   <p>The curation process extends tabular benchmarking to better represent challenging real-world predictive ML
@@ -153,6 +169,13 @@
     is an original contribution). Sometimes trivial; sometimes it requires prolonged investigation — comparing data
     statistics and comparing against popular datasets from the same domain. When the source stays unclear after a
     thorough check, the curator team uses subjective judgment to assess authenticity and uniqueness.</p>
+    <p><strong>A working download link is not a known source.</strong> A live Kaggle / OpenML / PMLB page that is
+    itself an anonymous re-upload — no documentation, no traceable upstream (paper, competition, institution, or an
+    identifiable original uploader) — leaves the origin <em>unknown</em>, which fails this criterion and is a valid
+    exclusion (<code>Missing source information</code>). "The link still resolves" and "the data looks fine" are not
+    substitutes for provenance. Clear provenance and documentation are themselves an important <em>positive</em>
+    indicator of dataset quality; their absence is a real negative signal. This is distinct from a merely sparse
+    <em>record</em> for a dataset whose source <em>is</em> traceable — that alone is not grounds to reject.</p>
     <p><strong>How to check for duplicates (recommended).</strong> The reliable signal is the
     <em>original source</em>, not the data layout — two uploads can have different column names, dtypes,
     row counts, or preprocessing and still be the same dataset. So:</p>
@@ -169,6 +192,12 @@
     structure differs — shared provenance is strong evidence, a structural diff is weak. Conversely,
     two records that merely share a source can be <em>legitimately distinct</em> tasks (e.g. a dataset
     and its telemonitoring/temporal variant) — the record's comments are authoritative.</p>
+    <p>"Duplicate" is <strong>not</strong> limited to an <em>exact</em> re-upload: different versions / cuts of one
+    underlying dataset — a swapped target/outcome column, a different slice of the same cohort, added or dropped
+    rows/features — are duplicates too when neither adds a genuinely distinct task (e.g.
+    <code>arsenic_male_lung</code> is the lung-cancer-outcome version of the same arsenic-exposure data as
+    <code>arsenic_male_bladder</code>). Reach for the "legitimately distinct" carve-out only when the shared source
+    genuinely yields <em>different tasks</em>, not for mere version variants.</p>
   </div>
   <div class="crit">
     <h3>IID and non-IID tabular datasets</h3>
@@ -183,6 +212,13 @@
     tabular-adjacent tasks such as <strong>click-through-rate</strong> prediction and <strong>ranking /
     information-retrieval</strong> (recommender) tasks — these need specific validation and have their own
     communities.</p>
+    <p><strong>Scope by the original task, not the first source's framing.</strong> A re-upload often relabels a dataset
+    into a different task — e.g. an OpenML page serving a recommendation dataset as plain regression. Trace what the data
+    was <em>originally collected and used for</em> (the same original-source tracing used for duplicates) before
+    assigning scope. Example: <code>yearprediction_the_million_song_dataset</code> is served on OpenML as
+    YearPredictionMSD <em>regression</em>, but it is the Million Song Dataset Challenge — a song-<strong>recommendation</strong>
+    task — repackaged, so it is correctly excluded as recommender / out-of-scope, and the regression re-framings are
+    fake / duplicates.</p>
   </div>
   <div class="crit">
     <h3>Representative of real-world tabular ML</h3>
@@ -205,19 +241,36 @@
       measured-from-image tables (<code>magic_gamma_telescope</code>, <code>wdbc</code>,
       <code>image_gesture_phase_segmentation</code>, <code>dry_bean</code>/<code>raisin</code>/<code>pumpkin_seeds</code>,
       <code>satimage</code>/<code>wilt</code>, <code>banknote_authentication</code>).
-      <em>Narrow carve-in (stays in-scope):</em> features that are <strong>not</strong> a vectorization of image content
-      — non-visual metadata (e.g. <code>internet_advertisements</code>: URL/anchor/alt-text tokens) or
-      <strong>human-assigned</strong> semantic/clinical attributes that are themselves the instrument (the kept
-      <code>wbcatt</code>; <code>breast_w</code>'s 1–10 cytology grades a pathologist assigned). Audio/sonar follow the
-      same case-by-case logic (interpretable engineered measures like jitter/shimmer can be in; raw spectral bins lean
-      out). Decide on the data's actual columns, not the dataset's fame.</li>
+      <em>"One more layer of abstraction" is still image-derived — a non-pixel or human-in-the-loop feature does not
+      escape this exclusion.</em> Two traps that look like carve-ins but are not: (1) <strong>descriptors / encodings
+      <em>of</em> an image</strong> (its geometry, shape, layout) stay image-derived even when mixed with a few
+      genuinely non-visual columns — <code>internet_advertisements</code> is the canonical case: per UCI its features
+      "encode the geometry of the image (if available) as well as phrases occurring in the URL, the image's URL and alt
+      text", i.e. an <em>is-this-an-ad-image?</em> vision task with text metadata bolted on → <code>Image</code>, and
+      the URL/alt-text tokens do <strong>not</strong> make it a carve-in; (2) <strong>a human <em>scoring what they see
+      in an image</em></strong> is still an image feature — <code>breast_w</code>'s 1–10 cytology grades are a
+      pathologist's scoring of cell morphology under a microscope → image-derived, and "assigned by eye" does not rescue
+      it when the thing being scored is an image.
+      <br><em>Narrow carve-in (stays in-scope):</em> attributes that are <strong>not</strong> a description / scoring of
+      image (or other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
+      entity directly (lab values, sensor readings, questionnaire responses, transaction fields), not read off a photo /
+      scan of it. Audio/sonar follow the same case-by-case logic (interpretable engineered measures like jitter/shimmer
+      can be in; raw spectral bins lean out). <code>wbcatt</code> (expert-annotated white-blood-cell morphology) sits on
+      the <code>breast_w</code> boundary and is kept only <strong>provisionally</strong> for a possible
+      causal/counterfactual framing — borderline, not a clean precedent. Decide on the data's actual columns, not the
+      dataset's fame.</li>
       <li><strong>(B) Not a real random distribution</strong> — exclude artificial data and data generated by a
       deterministic function. Simulated data from real applications (e.g., Higgs bosons) represents a real
       distribution but is still excluded here, as such tasks have dedicated domain-specific benchmarks.</li>
       <li><strong>(C) Trivial</strong> — practitioners would not use ML for it. A dataset is trivial if all models,
       without tuning, reach the same better-than-random score (no variance) or solve it perfectly (error 0).</li>
       <li><strong>(D) Irreversible data quality issues</strong> — exclude datasets where irreversible preprocessing
-      leaks the target or the test feature distribution (e.g., PCA-transformed data).</li>
+      leaks the target or the test feature distribution (e.g., PCA-transformed data, or a feature that is itself the
+      output of a <em>supervised</em> transform fit on the whole dataset — a discriminant-analysis score, target / mean
+      encoding, or a model's own prediction). Such a feature bakes label / whole-set information into every row and
+      cannot be recomputed per train/test split, so the leak is irreversible. Example: <code>yeast</code> ships a
+      "Score of discriminant analysis of the amino acid content of vacuolar and extracellular proteins" column — a DA
+      fit on the full dataset, baked in and unfixable.</li>
       <li><strong>(E) Insufficient information</strong> — when a prolonged investigation fails to find source
       information needed to judge the criteria, it is the curation team's call whether to use it.</li>
     </ul>
@@ -287,6 +340,8 @@
   commit, and open a PR; the dashboard edits the same files in place, so every change is a reviewable diff.</p>
 
   <h2>Suggestion states</h2>
+  <p>The suggestion is our verdict <strong>right now</strong>; an earlier verdict can change over time
+  (a dataset that shipped can later be excluded — see <code>Retired (was shipped)</code> below).</p>
   <ul>
     <li><code>Yes</code> — include; <code>TBD -&gt; Yes</code> — likely include, pending verification.</li>
     <li><code>TBD -&gt; 2nd Tier</code> — plausible but secondary; <code>No</code> — exclude.</li>
@@ -294,6 +349,12 @@
     <li><code>Yes (Disagreement)</code> — <strong>shipped on purpose, but with an open disagreement to
     re-evaluate</strong>; counts as accepted, but stays visible under the ⚡ Disagreement filter.</li>
   </ul>
+  <p><strong>Invariant.</strong> A dataset shipped in a collection (<code>TabArena (v0.1)</code> /
+  <code>BeyondArena</code>) must carry an accepted verdict (<code>Yes</code> / <code>Yes (Disagreement)</code>)
+  <strong>or</strong> the <code>Retired (was shipped)</code> tag. The retired tag is for a dataset that did
+  ship but has since been judged excludable (e.g. found trivial, or an ethical concern surfaced): set
+  <code>suggestion</code> to the honest current verdict (<code>No</code>), add the tag, keep the collection
+  tag, and record why in the comments. Anything else on a shipped record is a <code>ship_conflict</code>.</p>
 
   <h2>Decision markers</h2>
   <p><code>decision_markers</code> flag <em>issues</em> (duplicate, trivial, leakage, out-of-scope, …).

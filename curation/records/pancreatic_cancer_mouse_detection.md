@@ -16,7 +16,7 @@ original_source: Other
 year: '2003'
 domain: medical & healthcare
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:

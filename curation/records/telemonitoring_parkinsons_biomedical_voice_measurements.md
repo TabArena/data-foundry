@@ -9,7 +9,6 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Wrong Domain / Source Modality
-- Time-series (Classification)
 tags:
 - Tiny Data
 - Non-IID (Grouped)
@@ -20,8 +19,7 @@ year: '2009'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
-- Temporal (NON-IID)
-problem_type: Binary Classification
+problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5ZS3N

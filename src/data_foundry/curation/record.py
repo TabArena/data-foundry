@@ -77,7 +77,12 @@ FIELDS: tuple[FieldSpec, ...] = (
         "multiselect",
         help="Integration state (DF: …) and benchmark membership (TabArena (v0.1) / BeyondArena).",
     ),
-    FieldSpec("suggestion", "Suggestion", "select", help="Whether we suggest including the dataset."),
+    FieldSpec(
+        "suggestion",
+        "Suggestion",
+        "select",
+        help="What we suggest for the dataset right now; earlier verdicts can change over time.",
+    ),
     FieldSpec("decision_markers", "Decision Markers", "multiselect", help="Reasons / decision flags."),
     FieldSpec("tags", "Prio Tag", "multiselect", help="Tags to determine the priority of investigating the dataset."),
     FieldSpec("collections", "Source (Benchmark / Collection)", "multiselect", help="Source benchmarks/collections."),
@@ -112,10 +117,20 @@ COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
 """``suggestion`` values that count as "accepted for inclusion".
 
-A dataset shipped in a collection must carry one of these. ``"Yes (Disagreement)"`` means
-*shipped on purpose, but with an unresolved disagreement to re-evaluate later* — it still counts
-as accepted (so it is not a ``ship_conflict``), but surfaces under the dashboard's Disagreement
-filter rather than as a settled ``"Yes"``.
+A dataset shipped in a collection must carry one of these (or :data:`RETIRED_TAG`).
+``"Yes (Disagreement)"`` means *shipped on purpose, but with an unresolved disagreement to
+re-evaluate later* — it still counts as accepted (so it is not a ``ship_conflict``), but surfaces
+under the dashboard's Disagreement filter rather than as a settled ``"Yes"``.
+"""
+RETIRED_TAG: str = "Retired (was shipped)"
+"""``tags`` value: shipped in a collection as accepted, but the *current* ``suggestion`` has since
+changed to a non-accepted verdict (usually ``No``) for a documented reason (e.g. found trivial or
+ethically problematic).
+
+A shipped record (:data:`COLLECTION_TAGS`) may carry a non-accepted ``suggestion`` **only** when it
+also carries this tag: it records that the verdict changed *after* shipping rather than being a
+contradiction, so it is not a ``ship_conflict``. The collection tag is kept (the dataset really did
+ship); this tag marks that it would no longer be included.
 """
 
 
@@ -188,7 +203,8 @@ class CurationRecord:
           stays in the queue until a curator signs off (removes the AI reviewer);
         * ``"ship_conflict"`` — a contradiction: the dataset is shipped in one of our
           collections (:data:`COLLECTION_TAGS`) yet its ``suggestion`` is set to something
-          other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`).
+          other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`) **and** it does not
+          carry :data:`RETIRED_TAG` (which explicitly records a post-shipping change of verdict).
 
         Returned sorted for stable serialization.
         """
@@ -199,7 +215,8 @@ class CurationRecord:
         if AI_REVIEWER in (self.checked_by or []):
             reasons.add("ai_unverified")
         shipped = any(t in (self.data_foundry_status or []) for t in COLLECTION_TAGS)
-        if shipped and self.suggestion and self.suggestion not in ACCEPTED_SUGGESTIONS:
+        retired = RETIRED_TAG in (self.tags or [])
+        if shipped and self.suggestion and self.suggestion not in ACCEPTED_SUGGESTIONS and not retired:
             reasons.add("ship_conflict")
         return sorted(reasons)
 

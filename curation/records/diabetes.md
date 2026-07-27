@@ -7,7 +7,11 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- Ethical Issue
+tags:
+- Retired (was shipped)
 original_source: Kaggle
 year: '1988'
 required_split:
@@ -32,6 +36,8 @@ Potential issue: Outdated
 Lennart: No objection
 
 Andrej: Fits our criteria, but TabRepo resutls for this dataset are pretty random as there are only 768 samples
+
+CC (2026-07-27, Lennart): **Removed from TabArena (v0.1) on ethical grounds -> suggestion No.** This is the Pima (Akimel O'odham) Indians Diabetes data; its reuse raises ethical concerns about the politics of reusing indigenous / medical data, raised by Radin (2017), "'Digital natives': how medical and indigenous histories matter for big data", Osiris. Kept the `TabArena (v0.1)` tag (it did ship) and added `Retired (was shipped)`.
 
 ## Reference
 

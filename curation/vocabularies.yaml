@@ -46,6 +46,7 @@ decision_markers:
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
+- Retired (was shipped)
 - Non-IID (Temporal)
 - Tiny Data
 - 2nd Tier / Scientfic Discovery

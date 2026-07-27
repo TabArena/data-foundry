@@ -16,12 +16,13 @@ not hardened for multi-user or public exposure.
 from __future__ import annotations
 
 import json
-from functools import partial
+import os
+from functools import lru_cache, partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from data_foundry.curation._paths import records_dir, vocabularies_path
+from data_foundry.curation._paths import records_dir, resolve_curation_root, vocabularies_path
 from data_foundry.curation.record import FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
     load_all,
@@ -31,6 +32,30 @@ from data_foundry.curation.store import (
 )
 
 STATIC_DIR = Path(__file__).parent / "static"
+
+# Base URL for linking a dataset's curation notebook on GitHub (overridable for forks/branches).
+GITHUB_BLOB_BASE: str = os.environ.get(
+    "DATA_FOUNDRY_GITHUB_BLOB_BASE", "https://github.com/TabArena/data-foundry/blob/main"
+).rstrip("/")
+
+
+@lru_cache(maxsize=8)
+def _notebook_index(datasets_dir: str) -> dict[str, str]:
+    """Map a dataset ``unique_name`` -> its repo-relative curation-notebook path.
+
+    Only the canonical per-dataset notebook counts: ``datasets/**/<name>/<name>.ipynb``
+    (the layout ``/new-dataset`` scaffolds). Cached because the datasets tree is large and
+    static for the lifetime of a serve/build.
+    """
+    base = Path(datasets_dir)
+    if not base.exists():
+        return {}
+    repo_root = base.parent
+    index: dict[str, str] = {}
+    for nb in base.rglob("*.ipynb"):
+        if nb.parent.name == nb.stem:  # canonical <name>/<name>.ipynb only
+            index[nb.stem] = nb.relative_to(repo_root).as_posix()
+    return index
 
 
 def _schema_payload() -> dict[str, object]:
@@ -43,7 +68,22 @@ def _schema_payload() -> dict[str, object]:
 
 
 def _records_payload(directory: Path | None) -> list[dict[str, object]]:
-    return [record_to_dict(r) for r in load_all(directory)]
+    """Serialise every record, augmenting datasets that have a curation notebook with a
+    ``notebook_path`` (repo-relative) and ``notebook_url`` (GitHub main link).
+
+    These are read-only *derived* fields — not part of the record schema and never written
+    back — used by the dashboard's per-row "open notebook" button (live and on the static site).
+    """
+    notebooks = _notebook_index(str(resolve_curation_root().parent / "datasets"))
+    payload: list[dict[str, object]] = []
+    for r in load_all(directory):
+        d = record_to_dict(r)
+        rel = notebooks.get(r.unique_name)
+        if rel:
+            d["notebook_path"] = rel
+            d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
+        payload.append(d)
+    return payload
 
 
 class CurationHandler(BaseHTTPRequestHandler):
