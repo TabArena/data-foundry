@@ -381,7 +381,14 @@ still need to check". The convention is enforced by `test_ai_reviewed_records_fo
   **and** AI-reviewed-but-unverified rows (🤖); use the status funnel to see one group at a time.
   The **search** box always spans all datasets.
 * **📌 pin** (far-left column) keeps a row visible through any filter and sticks it to
-  the top while scrolling.
+  the top while scrolling. The same column links every row's **curation record (📄)** —
+  its `curation/records/<name>.md` on GitHub — and, for curated datasets, the
+  **curation notebook (📓)**; on 🤖 rows it also holds the ✓ verify action.
+* **🔗 Copy link** (appears next to **✕ Clear filters** whenever the view is filtered)
+  copies a URL that reopens the exact current view — active pill, status filter, search
+  term, and column filters are encoded in the hash (`#pill=bey&status=in-df&…`). Opening
+  such a link restores the view; this works on the live dashboard and the static
+  GitHub Pages build alike (live-only states like the Review pill are ignored there).
 * Dropdown columns show a **▾** on hover and a **＋** in the header to add a new option;
   the **Optional Tags** column opens a panel for the less-common fields.
 

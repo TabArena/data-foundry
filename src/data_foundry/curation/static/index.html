@@ -146,10 +146,13 @@
     content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:#f59e0b; z-index:2;
   }
   #bar .search-wrap input.active { background:#ffffff26; box-shadow:0 0 0 2px #f59e0b inset; }
-  #clearFilters { display:none; align-items:center; gap:6px; cursor:pointer; white-space:nowrap;
+  #clearFilters, #shareLink { display:none; align-items:center; gap:6px; cursor:pointer; white-space:nowrap;
     border:1px solid #f59e0b; background:#f59e0b26; color:#ffe6b0; border-radius:8px; padding:6px 11px; font-size:12px; }
-  #clearFilters.show { display:inline-flex; }
+  #clearFilters.show, #shareLink.show { display:inline-flex; }
   #clearFilters:hover { background:#f59e0b40; }
+  /* 🔗 share button appears together with "Clear filters" (i.e. whenever a view is filtered) */
+  #shareLink { border-color:#38bdf8; background:#38bdf826; color:#cdeeff; }
+  #shareLink:hover { background:#38bdf840; }
   #count.filtered { color:#fbbf24; font-weight:700; }
   /* the shown-count's total (Y) under-counts datasets actually examined (a record can cite several
      source links); a dotted underline marks it as carrying a hover tooltip with a rough total. */
@@ -192,6 +195,7 @@
   <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
   <span class="hint" id="count"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
+  <span id="shareLink" title="Copy a link that reopens this exact filtered view (pill, status, search, column filters)">🔗 Copy link</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
     <button class="pill tab" id="pillTab" title="Filter: datasets shipped in TabArena v0.1"><span class="n" id="tabN">0</span><span class="l">TabArena v0.1</span></button>
@@ -450,7 +454,12 @@ function pinFmt(cell) {
   const nb = d.notebook_url
     ? `<a class="nblink" href="${d.notebook_url}" target="_blank" rel="noopener" title="Open the curation notebook on GitHub (main): ${d.notebook_path}">📓</a>`
     : "";
-  return `<span class="pincell">${pin}${nb}${verify}</span>`;
+  // 📄 links to this record's own markdown file on GitHub (main) — present on every row, so a
+  // record can be referenced/shared directly from the UI (live and static build alike).
+  const rec = d.record_url
+    ? `<a class="nblink" href="${d.record_url}" target="_blank" rel="noopener" title="Open this curation record (markdown) on GitHub (main): ${d.record_path}">📄</a>`
+    : "";
+  return `<span class="pincell">${pin}${rec}${nb}${verify}</span>`;
 }
 function togglePin(row) {
   const id = row.getData().unique_name;
@@ -461,15 +470,17 @@ function togglePin(row) {
 }
 
 // Status filter menu, opened by clicking the leftmost column header.
+// `slug` is the value used in shareable-link URLs (#status=…) — stable ASCII names
+// instead of percent-encoded emoji markers.
 const STATUS_OPTS = [
-  { m: "", label: "All datasets", bg: "#e4e4ea", fg: "#444" },
-  { m: "⚡", label: "Disagreement", bg: "#7c3aed", fg: "#fff" },
-  { m: "🤖", label: "AI-reviewed (verify)", bg: "#0891b2", fg: "#fff" },
-  { m: "✓", label: "In Data Foundry", bg: "#16a34a", fg: "#fff" },
-  { m: "✗", label: "Suggestion: No", bg: "#dc2626", fg: "#fff" },
-  { m: "★", label: "Accepted (not in DF)", bg: "#2563eb", fg: "#fff" },
-  { m: "⚠", label: "Needs review (untriaged)", bg: "#f97316", fg: "#fff" },
-  { m: "•", label: "Pending / other", bg: "#facc15", fg: "#6b4e00" },
+  { m: "", slug: "", label: "All datasets", bg: "#e4e4ea", fg: "#444" },
+  { m: "⚡", slug: "disagreement", label: "Disagreement", bg: "#7c3aed", fg: "#fff" },
+  { m: "🤖", slug: "ai-review", label: "AI-reviewed (verify)", bg: "#0891b2", fg: "#fff" },
+  { m: "✓", slug: "in-df", label: "In Data Foundry", bg: "#16a34a", fg: "#fff" },
+  { m: "✗", slug: "no", label: "Suggestion: No", bg: "#dc2626", fg: "#fff" },
+  { m: "★", slug: "accepted", label: "Accepted (not in DF)", bg: "#2563eb", fg: "#fff" },
+  { m: "⚠", slug: "untriaged", label: "Needs review (untriaged)", bg: "#f97316", fg: "#fff" },
+  { m: "•", slug: "other", label: "Pending / other", bg: "#facc15", fg: "#6b4e00" },
 ];
 let fStatus = "";
 function buildStatusMenu() {
@@ -637,7 +648,7 @@ function addBtnTitle(label, field) {
 
 function columnDefs() {
   const cols = [
-    { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".nblink")) return; if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌) · open its curation notebook on GitHub (📓, if curated) · verify AI-reviewed rows (✓)" },
+    { title: "", field: "_pin", frozen: true, width: 32, headerSort: false, headerFilter: false, download: false, hozAlign: "center", variableHeight: true, cssClass: "pincol", formatter: pinFmt, cellClick: (e, cell) => { if (e.target.closest(".nblink")) return; if (e.target.closest(".vmark")) openVerifyDialog(cell.getRow()); else togglePin(cell.getRow()); }, headerTooltip: "Pin a row (📌) · open its curation record on GitHub (📄) · open its curation notebook (📓, if curated) · verify AI-reviewed rows (✓)" },
     { title: "", field: "_status", frozen: true, width: 64, headerSort: true, sorter: statusSorter, headerFilter: false, download: false, hozAlign: "center", formatter: statusFmt, headerTooltip: "Click the column to sort by status · click the funnel to filter by status", titleFormatter: statusTitleFormatter,
       cellMouseEnter: (e, cell) => showTip(e, rowStatus(cell.getRow().getData()).t), cellMouseMove: e => moveTip(e), cellMouseLeave: () => hideTip() },
   ];
@@ -869,9 +880,55 @@ function markActiveFilters(active) {
   search.classList.toggle("active", hasSearch);
   const any = activeFields.size > 0 || hasSearch || anyPill() || !!fStatus;
   document.getElementById("clearFilters").classList.toggle("show", any);
+  document.getElementById("shareLink").classList.toggle("show", any);
   const cnt = document.getElementById("count");
   const activeCount = (active == null) ? table.getDataCount("active") : active;
   cnt.classList.toggle("filtered", activeCount < table.getDataCount());
+}
+
+// ---- shareable filter links -------------------------------------------------
+// The 🔗 button (shown next to ✕ Clear filters whenever the view is filtered) encodes
+// the current view — active pill, status filter, search term, column header filters —
+// into the URL hash (#pill=bey&status=in-df&q=…&hf.<field>=…) and copies the link.
+// boot() re-applies the hash on load, so such links deep-link into the live dashboard
+// AND the read-only GitHub Pages build (view state is fully client-side in both).
+function filterStateToHash() {
+  const p = new URLSearchParams();
+  for (const [key, pill] of Object.entries(PILLS)) if (pill.active) p.set("pill", key);
+  const st = STATUS_OPTS.find(o => o.m === fStatus);
+  if (st && st.slug) p.set("status", st.slug);
+  const term = document.getElementById("search").value.trim();
+  if (term) p.set("q", term);
+  try {
+    for (const f of table.getHeaderFilters() || []) {
+      if (f.field && f.value != null && f.value !== "") p.set("hf." + f.field, f.value);
+    }
+  } catch (e) { /* pre-build */ }
+  return p.toString();
+}
+// Restore a shared view from the URL hash. Unknown pills / statuses / columns are ignored,
+// so stale or hand-edited links degrade gracefully; the live-only workflow states (rev/dis
+// pills, ⚡/⚠/🤖 statuses) stay off in the static build, matching the hidden UI there.
+function applyFiltersFromHash() {
+  const raw = location.hash.replace(/^#/, "");
+  if (!raw) return;
+  const p = new URLSearchParams(raw);
+  const pill = p.get("pill");
+  if (pill && PILLS[pill] && !(STATIC && ["rev", "dis"].includes(pill))) PILLS[pill].active = true;
+  const st = STATUS_OPTS.find(o => (o.slug && o.slug === p.get("status")) || (o.m && o.m === p.get("status")));
+  if (st && !(STATIC && ["⚡", "⚠", "🤖"].includes(st.m))) fStatus = st.m;
+  if (p.get("q")) document.getElementById("search").value = p.get("q");
+  syncPillClasses();
+  for (const [k, v] of p.entries()) {
+    if (k.startsWith("hf.")) try { table.setHeaderFilterValue(k.slice(3), v); } catch (e) { /* unknown column */ }
+  }
+}
+async function copyShareLink() {
+  const hash = filterStateToHash();
+  const url = location.href.split("#")[0] + (hash ? "#" + hash : "");
+  history.replaceState(null, "", url);  // also show the link in the address bar
+  try { await navigator.clipboard.writeText(url); toast("Link to this view copied"); }
+  catch (e) { prompt("Copy this link:", url); }  // clipboard API needs a secure context / permission
 }
 
 // The "N / M shown" count counts curation records, which under-counts the datasets actually
@@ -917,14 +974,16 @@ async function boot() {
   });
   if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
   table.on("dataFiltered", (filters, rows) => updateCount(rows));
-  table.on("tableBuilt", () => { applyFilters(); updateCount(); });
+  table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); });
 
   document.getElementById("search").addEventListener("input", applyFilters);
   document.getElementById("clearFilters").addEventListener("click", () => {
     try { table.clearHeaderFilter(); } catch (e) { /* none set */ }
     resetAllFilters();
     applyFilters();
+    history.replaceState(null, "", location.href.split("#")[0]);  // a cleared view carries no share hash
   });
+  document.getElementById("shareLink").addEventListener("click", copyShareLink);
   document.addEventListener("click", e => {
     const m = document.getElementById("statusMenu");
     if (m.classList.contains("show") && !m.contains(e.target) && !e.target.closest(".tabulator-col")) m.classList.remove("show");

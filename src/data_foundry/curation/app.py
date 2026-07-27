@@ -68,12 +68,17 @@ def _schema_payload() -> dict[str, object]:
 
 
 def _records_payload(directory: Path | None) -> list[dict[str, object]]:
-    """Serialise every record, augmenting datasets that have a curation notebook with a
-    ``notebook_path`` (repo-relative) and ``notebook_url`` (GitHub main link).
+    """Serialise every record, augmented with read-only *derived* link fields.
 
-    These are read-only *derived* fields — not part of the record schema and never written
-    back — used by the dashboard's per-row "open notebook" button (live and on the static site).
+    Datasets with a curation notebook get ``notebook_path`` (repo-relative) and
+    ``notebook_url`` (GitHub main link); every record additionally gets ``record_path`` /
+    ``record_url`` pointing at its own markdown file (``curation/records/<name>.md``),
+    so a record can be referenced directly from the UI. None of these are part of the
+    record schema and they are never written back — the dashboard's per-row 📓 / 📄
+    buttons read them (live and on the static site).
     """
+    repo_root = resolve_curation_root().parent.resolve()
+    records_root = (Path(directory) if directory is not None else records_dir()).resolve()
     notebooks = _notebook_index(str(resolve_curation_root().parent / "datasets"))
     payload: list[dict[str, object]] = []
     for r in load_all(directory):
@@ -82,6 +87,13 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
         if rel:
             d["notebook_path"] = rel
             d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
+        try:
+            rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
+        except ValueError:  # custom records dir outside the repo: no stable GitHub link
+            rec_rel = None
+        if rec_rel:
+            d["record_path"] = rec_rel
+            d["record_url"] = f"{GITHUB_BLOB_BASE}/{rec_rel}"
         payload.append(d)
     return payload
 
