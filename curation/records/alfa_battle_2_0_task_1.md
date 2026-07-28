@@ -3,6 +3,8 @@ unique_name: alfa_battle_2_0_task_1
 name: Alfa Battle 2.0 ( Task 1)
 checked_by:
 - Lennart
+data_foundry_status:
+- 'DF: WIP'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

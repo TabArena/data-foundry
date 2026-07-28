@@ -3,11 +3,14 @@ unique_name: open_soil_data
 name: open-soil-data
 checked_by:
 - Andrej
+data_foundry_status:
+- 'DF: WIP'
 suggestion: TBD -> Yes
 tags:
 - Non-IID (Temporal)
 - Multi-target
 - Review Prio 1 (Atlas)
+- WIP (Triage)
 collections:
 - New (BeyondArena)
 original_source: Github

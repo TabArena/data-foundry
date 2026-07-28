@@ -3,10 +3,13 @@ unique_name: nyc_taxi_trip_duration
 name: NYC Taxi Trip Duration
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- 'DF: WIP'
 suggestion: TBD -> Yes
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
+- WIP (Triage)
 collections:
 - New (BeyondArena)
 original_source: Kaggle

@@ -113,6 +113,13 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
 Curation is **manual and human-verified**; criteria involve subjective judgment, so
 record the reasoning in the record's `## Comments` and the `decision_markers`.
 
+**`## Comments` hold substance, not a change log.** Write down the details we care about —
+provenance, leak mechanisms, the real target/split, why a verdict was reached, what still
+needs checking. Do **not** append entries that merely restate a field edit ("marked WIP",
+"set suggestion to No", "added tag X"): git history already records who changed what and
+when, so such notes are pure noise. A dated `CC (YYYY-MM-DD, Name):` comment is for *new
+reasoning or facts* accompanying a change, not for the change itself.
+
 ### Quick decision patterns (generalized — apply, then verify per-dataset)
 
 Recurring signals → the usual `decision_markers` + `suggestion`. These are heuristics to

@@ -3,6 +3,8 @@ unique_name: g_research_crypto_forecasting
 name: G-Research Crypto Forecasting
 checked_by:
 - Lennart
+data_foundry_status:
+- 'DF: WIP'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

@@ -338,6 +338,12 @@
   <p>Each candidate dataset is a single markdown record (structured front-matter + free-text comments)
   under <code>curation/records/</code>, edited by hand or in the dashboard. Curators triage the backlog,
   commit, and open a PR; the dashboard edits the same files in place, so every change is a reviewable diff.</p>
+  <p><strong>Comments hold substance, not a change log.</strong> Record the details we care about —
+  provenance, leak mechanisms, the real target/split, why a verdict was reached, what still needs
+  checking. Do <em>not</em> append notes that merely restate a field edit ("marked WIP", "set
+  suggestion to No"): git history already records who changed what and when. A dated
+  <code>CC (YYYY-MM-DD, Name):</code> comment is for new reasoning or facts accompanying a change,
+  not for the change itself.</p>
 
   <h2>Suggestion states</h2>
   <p>The suggestion is our verdict <strong>right now</strong>; an earlier verdict can change over time

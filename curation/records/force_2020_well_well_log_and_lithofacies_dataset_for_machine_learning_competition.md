@@ -3,6 +3,8 @@ unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learni
 name: FORCE 2020 Well well log and lithofacies dataset for machine learning competition
 checked_by:
 - Lennart
+data_foundry_status:
+- 'DF: WIP'
 suggestion: 'Yes'
 tags:
 - Larger IID Data

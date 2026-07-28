@@ -3,6 +3,8 @@ unique_name: huntprohibited
 name: huntprohibited
 checked_by:
 - Lennart
+data_foundry_status:
+- 'DF: WIP'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

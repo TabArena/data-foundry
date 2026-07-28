@@ -3,6 +3,8 @@ unique_name: molecularproperties
 name: molecularproperties
 checked_by:
 - Lennart
+data_foundry_status:
+- 'DF: WIP'
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Needs extensive data wrangling
@@ -10,6 +12,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Review Prio 1 (Atlas)
+- WIP (Triage)
 collections:
 - New (BeyondArena)
 source_links:

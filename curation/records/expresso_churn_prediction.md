@@ -3,10 +3,13 @@ unique_name: expresso_churn_prediction
 name: expresso-churn-prediction
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- 'DF: WIP'
 suggestion: TBD -> Yes
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
+- WIP (Triage)
 collections:
 - New (BeyondArena)
 original_source: Zindi
