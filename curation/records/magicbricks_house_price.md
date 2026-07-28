@@ -6,7 +6,7 @@ checked_by:
 - Mustafa
 - Gioia
 data_foundry_status:
-- 'DF: WIP'
+- WIP (Triage)
 suggestion: TBD -> Yes
 decision_markers:
 - Data Quality Issue

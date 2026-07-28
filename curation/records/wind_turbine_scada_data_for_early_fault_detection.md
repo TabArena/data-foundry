@@ -4,7 +4,7 @@ name: Wind Turbine SCADA Data For Early Fault Detection
 checked_by:
 - Lennart
 data_foundry_status:
-- 'DF: WIP'
+- WIP (Triage)
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Missing source information
@@ -14,7 +14,6 @@ tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 - Review Prio 1 (Atlas)
-- WIP (Triage)
 collections:
 - New (BeyondArena)
 source_links:

@@ -7,13 +7,15 @@ checked_by:
 - AI (UNVERIFIED)
 data_foundry_status:
 - 'DF: Yes'
-- 'DF: WIP'
+- WIP (DF)
+- WIP (Triage)
 - 'DF: Much work'
 - 'DF: Suspended'
 - TabArena (v0.1)
 - BeyondArena
 suggestion:
 - 'No'
+- No (Retired)
 - TBD -> 2nd Tier
 - 'Yes'
 - Yes (Disagreement)
@@ -46,7 +48,6 @@ decision_markers:
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
-- Retired (was shipped)
 - Non-IID (Temporal)
 - Tiny Data
 - 2nd Tier / Scientfic Discovery
@@ -59,7 +60,6 @@ tags:
 - '?'
 - Multi-target
 - Many class
-- WIP (Triage)
 collections:
 - New (BeyondArena)
 - TabArena Reject

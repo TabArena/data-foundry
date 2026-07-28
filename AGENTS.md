@@ -92,8 +92,8 @@ read these files. The per-record schema is `CurationRecord` (`curation/record.py
 dropdown options live in `curation/vocabularies.yaml`. `curation/_template.md` is a
 copy-me, field-by-field guide.
 
-**`data_foundry_status` is a merged multi-tag field** holding both integration state
-(`DF: Yes` / `DF: WIP` / `DF: Much work` / `DF: Suspended`) and shipped-collection
+**`data_foundry_status` is a merged multi-tag field** holding both work state
+(`DF: Yes` / `WIP (DF)` / `WIP (Triage)` / `DF: Much work` / `DF: Suspended`) and shipped-collection
 membership (`TabArena (v0.1)`, `BeyondArena`). Only datasets under `datasets/beyond_iid/`
 (and the v0.1 set) carry a collection tag. **`DF: …` with no collection tag is a valid,
 intentional state** — the dataset is in Data Foundry but not in a shipped collection

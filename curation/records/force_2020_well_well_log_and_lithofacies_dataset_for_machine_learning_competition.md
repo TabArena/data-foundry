@@ -4,7 +4,7 @@ name: FORCE 2020 Well well log and lithofacies dataset for machine learning comp
 checked_by:
 - Lennart
 data_foundry_status:
-- 'DF: WIP'
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Larger IID Data

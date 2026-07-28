@@ -4,7 +4,7 @@ name: rosbank1
 checked_by:
 - Lennart
 data_foundry_status:
-- 'DF: WIP'
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Free Text (Short)

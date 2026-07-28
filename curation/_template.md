@@ -36,19 +36,23 @@ Field-by-field:
 - **checked_by** — people who reviewed it: `Lennart`, `Andrej`, `Mustafa`, `Alex`, `Gioia`,
   `AI (UNVERIFIED)`.
 - **data_foundry_status** — the merged Data Foundry field. A multi-tag list combining
-  *integration status* and *benchmark-collection membership*:
-  - integration: `DF: Yes` (in Data Foundry), `DF: WIP`, `DF: Much work`, `DF: Suspended`.
+  *work state* and *benchmark-collection membership*:
+  - work state: `DF: Yes` (in Data Foundry), `WIP (Triage)` (verdict still open, being settled),
+    `WIP (DF)` (verdict is a final `Yes`, integration in progress — never valid without one),
+    `DF: Much work`, `DF: Suspended`.
   - collection: `TabArena (v0.1)`, `BeyondArena` — every shipped dataset carries its
     collection tag(s) **and** `DF: Yes`. Example: `[DF: Yes, BeyondArena]`.
   - `DF: …` with **no** collection tag is valid and intentional: the dataset is in Data Foundry
     but not in a shipped collection (it lives under `datasets/_maintenance/` — deprecated /
     suspended / out-of-scope — or `datasets/_dev/`). Don't add a collection tag to "fix" it.
     See `datasets/_maintenance/_deprecated/README.md`.
-- **suggestion** — whether we'd include it: `Yes`, `No`, `TBD -> Yes`, `TBD -> 2nd Tier`,
-  `Disagreement`, `Yes (Disagreement)`. (This is the one field that, left empty, flags the record
-  for review.) `Yes (Disagreement)` = *shipped on purpose, but with an unresolved disagreement to
-  re-evaluate* — it counts as accepted but shows under the ⚡ Disagreement filter. A dataset shipped
-  in a collection must be `Yes` or `Yes (Disagreement)` (anything else is a `ship_conflict`).
+- **suggestion** — whether we'd include it: `Yes`, `No`, `No (Retired)`, `TBD -> Yes`,
+  `TBD -> 2nd Tier`, `Disagreement`, `Yes (Disagreement)`. (This is the one field that, left empty,
+  flags the record for review.) `Yes (Disagreement)` = *shipped on purpose, but with an unresolved
+  disagreement to re-evaluate* — it counts as accepted but shows under the ⚡ Disagreement filter.
+  `No (Retired)` = *excluded now, but it shipped in a collection before the verdict changed* — keep
+  the collection tag and record why in the comments. A dataset shipped in a collection must be
+  `Yes`, `Yes (Disagreement)`, or `No (Retired)` (anything else is a `ship_conflict`).
 - **decision_markers** — why / decision flags, e.g. `Duplicate`, `Trivial`, `Image`,
   `NLP (Text)`, `Out-of-scope Task (CTR/RecSys/Ranking)`, `Ethical Issue`, `Too Small`,
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).

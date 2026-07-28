@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 - AI (UNVERIFIED)
 data_foundry_status:
-- 'DF: WIP'
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)

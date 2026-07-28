@@ -42,8 +42,13 @@ guidelines summarized below.
 * Editable dropdown options live in `curation/vocabularies.yaml` (add new options
   there, via the dashboard's ＋ header buttons, or with `save_vocabularies`).
 * **The `data_foundry_status` field is a merged multi-tag field** ("Data Foundry" column):
-  it holds the *integration state* (`DF: Yes`, `DF: WIP`, `DF: Much work`, `DF: Suspended`)
-  **and** *benchmark-collection membership* (`TabArena (v0.1)`, `BeyondArena`). Every dataset
+  it holds the *work state* (`DF: Yes`, `WIP (DF)`, `WIP (Triage)`, `DF: Much work`,
+  `DF: Suspended`) **and** *benchmark-collection membership* (`TabArena (v0.1)`, `BeyondArena`).
+  The two WIP values are mutually exclusive by meaning: `WIP (Triage)` = the verdict is still
+  open (a `TBD -> …` / disputed suggestion) and someone is working on settling it;
+  `WIP (DF)` = the verdict is a final `Yes` and the Data Foundry integration (notebook) is in
+  progress. A record whose suggestion is not yet a final `Yes` must **not** carry `WIP (DF)`.
+  Every dataset
   shipped in a collection (`datasets/_maintenance/_old_collections/tabarena-v0pt1`,
   `datasets/beyond_iid`) carries its collection tag(s) **plus `DF: Yes`**; there are 51
   TabArena and 142 BeyondArena (union 144). The `collections` field is now only for *external*
@@ -63,7 +68,7 @@ guidelines summarized below.
   anything; today that means: an empty **required** field (`suggestion` → untriaged), a dropdown
   value not in `vocabularies.yaml`, `ai_unverified` (an AI triaged it, no human has verified —
   see below), or `ship_conflict` (carries a `TabArena (v0.1)`/`BeyondArena` tag but `suggestion`
-  is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`). To add a new automated check,
+  is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`/`No (Retired)`). To add a new automated check,
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
 * After editing records, sanity-check with `data-foundry-curation validate`.
@@ -281,25 +286,23 @@ When they merely *share a source but are distinct*, record *why* in `## Comments
 
 `suggestion` is the include/exclude verdict **as of now** — it is what we suggest for the dataset
 *right now*, and an earlier verdict can change over time (a shipped dataset can later be excluded; see
-the `Retired (was shipped)` tag below). It is also the one field that, left empty, marks a record
+`No (Retired)` below). It is also the one field that, left empty, marks a record
 untriaged → Review queue:
 
 * `Yes` — include. `TBD -> Yes` — likely include, pending verification.
 * `TBD -> 2nd Tier` — plausible but secondary. `No` — exclude.
+* `No (Retired)` — exclude, **but it did ship in a collection before the verdict changed**
+  (e.g. later found trivial, or an ethical concern surfaced). Keep the collection tag
+  (`TabArena (v0.1)` / `BeyondArena`) — it really did ship — and record *why* it was retired
+  in `## Comments`. On a never-shipped record, plain `No` is the right value.
 * `Disagreement` — curators genuinely disagree; **not yet shipped**, needs resolution.
 * `Yes (Disagreement)` — **shipped on purpose, but with an unresolved disagreement to
   re-evaluate**. It counts as *accepted* (so a shipped dataset carrying it is not a
   `ship_conflict`), but it surfaces under the dashboard's **⚡ Disagreement** filter (status ⚡),
   not as a settled `Yes`. Use it for datasets already in a collection whose verdict is still open.
 
-**Verdicts change over time — the `Retired (was shipped)` tag.** When a dataset that *did* ship in a
-collection is later judged excludable (e.g. found trivial, or an ethical concern surfaces), set its
-`suggestion` to the honest current verdict (`No`) **and** add the `Retired (was shipped)` **tag**. Keep
-the collection tag (`TabArena (v0.1)` / `BeyondArena`) — it really did ship — and record *why* it was
-retired in `## Comments`.
-
 **Invariant:** a dataset shipped in a collection (`TabArena (v0.1)` / `BeyondArena`) must carry an
-*accepted* verdict — `Yes` or `Yes (Disagreement)` — **or** the `Retired (was shipped)` tag. Anything
+*accepted* verdict — `Yes` or `Yes (Disagreement)` — **or** `No (Retired)`. Anything
 else on a shipped record is a `ship_conflict` (flagged in the Review queue and asserted in
 `tests/test_records_integrity.py`).
 
@@ -377,8 +380,22 @@ still need to check". The convention is enforced by `test_ai_reviewed_records_fo
 * Leftmost **status** cell encodes priority (⚡ disagreement = purple, ✓ in Data Foundry
   = green, 🤖 AI-reviewed-but-unverified = cyan, ✗ suggestion No = red, ★ accepted-not-yet-in-DF
   = blue, ⚠ needs review / untriaged = orange, • other = yellow; first match wins, so 🤖 shows
-  even when the AI already filled a Yes/No suggestion). Click the funnel in its header to filter
-  by status, or click the column to sort by it.
+  even when the AI already filled a Yes/No suggestion, and a `DF: Yes` row shows ✓ whatever its
+  verdict). Click the column to sort by it, or the funnel in its header to filter: each status
+  cycles **✓ require → ✕ exclude → off**, so "hide everything rejected" is one click.
+* **Column filters combine with AND and NOT.** Every dropdown column's header has a filter
+  button opening a popover that lists all its values (vocabulary ∪ values actually present ∪
+  **(empty)**, each with a count; ⚠ marks a value missing from `vocabularies.yaml`). Clicking a
+  value cycles **✓ require → ✕ exclude → off**. Multi-value columns carry a **match ALL ✓ /
+  match ANY ✓** switch at the top of the popover — set it before (or after) ticking values, it
+  persists per column for the session; ALL is the default, so `tags` ✓Non-IID (Temporal)
+  ✓Review Prio 1 means both. On single-value columns ✓ values read as "any of". Different
+  columns always AND together, so e.g. `BeyondArena` ✓ + `DF: Yes` ✕ is expressible.
+  Free-text column filters and the top **search** box take the same query syntax: several
+  terms must all match, `!word` excludes, `"quoted phrase"` keeps spaces.
+* An amber **filter strip** under the top bar spells out every constraint in effect in words
+  (`Tags: A AND B · NOT C`), with a ✕ per constraint and a ✕ Clear-all — read it instead of
+  guessing why rows are missing.
 * Top **pills** (Data Foundry / TabArena v0.1 / BeyondArena | Review / ⚡ Disagreement) are
   exclusive filters (clicking one resets the others) but layer on top of the status funnel —
   pick a pill, then narrow by status. All three of **Data Foundry** / **TabArena v0.1** /
@@ -386,16 +403,19 @@ still need to check". The convention is enforced by `test_ai_reviewed_records_fo
   membership (TabArena ∪ BeyondArena = 144 shipped datasets), **TabArena v0.1** / **BeyondArena**
   the respective tag. **Review** surfaces *everything a curator still owns* — untriaged rows (⚠)
   **and** AI-reviewed-but-unverified rows (🤖); use the status funnel to see one group at a time.
-  The **search** box always spans all datasets.
+  The **search** box deliberately spans all datasets, overriding the pills / status / column
+  filters while a term is present (the filter strip labels it *(all datasets)*).
 * **📌 pin** (far-left column) keeps a row visible through any filter and sticks it to
   the top while scrolling. The same column links every row's **curation record (📄)** —
   its `curation/records/<name>.md` on GitHub — and, for curated datasets, the
   **curation notebook (📓)**; on 🤖 rows it also holds the ✓ verify action.
 * **🔗 Copy link** (appears next to **✕ Clear filters** whenever the view is filtered)
-  copies a URL that reopens the exact current view — active pill, status filter, search
-  term, and column filters are encoded in the hash (`#pill=bey&status=in-df&…`). Opening
-  such a link restores the view; this works on the live dashboard and the static
-  GitHub Pages build alike (live-only states like the Review pill are ignored there).
+  copies a URL that reopens the exact current view — active pill, status constraints, search
+  term, and every column filter are encoded in the hash
+  (`#pill=bey&status=+in-df|-no&hf.tags=mode=any|+New IID|-Tiny Data`). Opening such a link
+  restores the view; this works on the live dashboard and the static GitHub Pages build alike
+  (live-only states like the Review pill are ignored there), and links made before
+  include/exclude existed still work (a bare value means "require").
 * Dropdown columns show a **▾** on hover and a **＋** in the header to add a new option;
   the **Optional Tags** column opens a panel for the less-common fields.
 

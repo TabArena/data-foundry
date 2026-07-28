@@ -117,20 +117,19 @@ COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
 """``suggestion`` values that count as "accepted for inclusion".
 
-A dataset shipped in a collection must carry one of these (or :data:`RETIRED_TAG`).
+A dataset shipped in a collection must carry one of these (or :data:`RETIRED_SUGGESTION`).
 ``"Yes (Disagreement)"`` means *shipped on purpose, but with an unresolved disagreement to
 re-evaluate later* — it still counts as accepted (so it is not a ``ship_conflict``), but surfaces
 under the dashboard's Disagreement filter rather than as a settled ``"Yes"``.
 """
-RETIRED_TAG: str = "Retired (was shipped)"
-"""``tags`` value: shipped in a collection as accepted, but the *current* ``suggestion`` has since
-changed to a non-accepted verdict (usually ``No``) for a documented reason (e.g. found trivial or
-ethically problematic).
+RETIRED_SUGGESTION: str = "No (Retired)"
+"""``suggestion`` value: shipped in a collection as accepted, but the verdict has since changed
+to exclusion for a documented reason (e.g. found trivial or ethically problematic).
 
-A shipped record (:data:`COLLECTION_TAGS`) may carry a non-accepted ``suggestion`` **only** when it
-also carries this tag: it records that the verdict changed *after* shipping rather than being a
-contradiction, so it is not a ``ship_conflict``. The collection tag is kept (the dataset really did
-ship); this tag marks that it would no longer be included.
+A shipped record (:data:`COLLECTION_TAGS`) may carry a non-accepted ``suggestion`` **only** if it
+is this value: it records that the verdict changed *after* shipping rather than being a
+contradiction, so it is not a ``ship_conflict``. The collection tag is kept (the dataset really
+did ship); this verdict marks that it would no longer be included.
 """
 
 
@@ -203,8 +202,8 @@ class CurationRecord:
           stays in the queue until a curator signs off (removes the AI reviewer);
         * ``"ship_conflict"`` — a contradiction: the dataset is shipped in one of our
           collections (:data:`COLLECTION_TAGS`) yet its ``suggestion`` is set to something
-          other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`) **and** it does not
-          carry :data:`RETIRED_TAG` (which explicitly records a post-shipping change of verdict).
+          other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`) or
+          :data:`RETIRED_SUGGESTION` (which explicitly records a post-shipping change of verdict).
 
         Returned sorted for stable serialization.
         """
@@ -215,8 +214,8 @@ class CurationRecord:
         if AI_REVIEWER in (self.checked_by or []):
             reasons.add("ai_unverified")
         shipped = any(t in (self.data_foundry_status or []) for t in COLLECTION_TAGS)
-        retired = RETIRED_TAG in (self.tags or [])
-        if shipped and self.suggestion and self.suggestion not in ACCEPTED_SUGGESTIONS and not retired:
+        acceptable = (*ACCEPTED_SUGGESTIONS, RETIRED_SUGGESTION)
+        if shipped and self.suggestion and self.suggestion not in acceptable:
             reasons.add("ship_conflict")
         return sorted(reasons)
 

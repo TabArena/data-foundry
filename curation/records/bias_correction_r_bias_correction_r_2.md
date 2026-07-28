@@ -4,7 +4,7 @@ name: Bias_correction_r/Bias_correction_r_2
 checked_by:
 - Andrej
 data_foundry_status:
-- 'DF: WIP'
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

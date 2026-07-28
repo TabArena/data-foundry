@@ -4,12 +4,11 @@ name: expresso-churn-prediction
 checked_by:
 - AI (UNVERIFIED)
 data_foundry_status:
-- 'DF: WIP'
+- WIP (Triage)
 suggestion: TBD -> Yes
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
-- WIP (Triage)
 collections:
 - New (BeyondArena)
 original_source: Zindi

@@ -7,7 +7,9 @@
 <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator_simple.min.css" rel="stylesheet" />
 <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
 <style>
-  :root { --bg:#f5f6fb; --bar:#1e1b4b; --accent:#4f46e5; }
+  /* --chrome = measured height of the top bar (+ the filter strip when shown); the table's
+     height is calc(100vh - var(--chrome)). syncChrome() keeps it in sync. */
+  :root { --bg:#f5f6fb; --bar:#1e1b4b; --accent:#4f46e5; --chrome:46px; }
   * { box-sizing: border-box; }
   body { margin:0; font:13px/1.4 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:#1c2433; }
   #bar { background:linear-gradient(110deg,#1a1452 0%,#2b2f96 38%,#1d4ed8 100%); color:#fff; padding:9px 16px; display:flex; align-items:center; gap:16px; border-bottom:1px solid #ffffff22; box-shadow:0 4px 18px -8px rgba(37,99,235,.5); }
@@ -185,6 +187,94 @@
   #vConfirm:disabled { opacity:.45; cursor:not-allowed; }
   /* leftmost status column: now click-to-sort (▾ still opens the filter menu) */
   .tabulator .tabulator-col[tabulator-field="_status"]:not(.hf-active) { cursor:pointer; }
+  /* tri-state status entries (include / exclude), matching the column popover's language */
+  #statusMenu .smi .smlbl { flex:1; }
+  #statusMenu .smi.inc { background:#eafaef; font-weight:600; }
+  #statusMenu .smi.exc { background:#fdeded; }
+  #statusMenu .smi.exc .smlbl { text-decoration:line-through; color:#8a5050; }
+  #statusMenu .smi .smst { font-size:11px; font-weight:800; }
+  #statusMenu .smi.inc .smst { color:#15803d; }
+  #statusMenu .smi.exc .smst { color:#b91c1c; }
+  #statusMenu .smhint { padding:5px 9px 3px; font-size:10.5px; color:#7b8492; line-height:1.35; }
+
+  /* ---- active-filter summary strip -----------------------------------------
+     One always-readable line spelling out every constraint in effect (view pill,
+     status, column include/exclude sets, text queries, search) with a ✕ per chip,
+     so "why am I seeing these rows" never requires scanning column headers. */
+  #fbar { display:none; align-items:center; flex-wrap:wrap; gap:6px; padding:6px 16px;
+          background:#fffbeb; border-bottom:1px solid #fcd34d; }
+  #fbar.show { display:flex; }
+  #fbar .fb-lead { font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:#92400e; }
+  .fchip { display:inline-flex; align-items:center; gap:7px; background:#fff; border:1px solid #e7cd93;
+           border-radius:999px; padding:3px 4px 3px 10px; font-size:12px; color:#3f3320; max-width:min(520px,58vw); }
+  .fchip .ftxt { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fchip b { font-weight:700; color:#7c2d12; }
+  .fchip .neg { color:#b91c1c; font-weight:600; }
+  .fchip .op { color:#6b7280; font-size:10.5px; font-weight:700; letter-spacing:.03em; }
+  .fchip .fx { cursor:pointer; width:17px; height:17px; border-radius:50%; display:inline-flex; align-items:center;
+               justify-content:center; background:#f5e7c8; color:#7c2d12; font-size:11px; font-weight:800; flex:none; }
+  .fchip .fx:hover { background:#e0a92c; color:#fff; }
+  #fbar .fb-clear { margin-left:auto; cursor:pointer; border:1px solid #b45309; background:#fef3c7; color:#7c2d12;
+                    border-radius:7px; padding:4px 10px; font-size:12px; font-weight:600; white-space:nowrap; }
+  #fbar .fb-clear:hover { background:#fde68a; }
+
+  /* ---- tri-state column filter: header button + popover --------------------- */
+  .hfbtn { display:flex; align-items:center; gap:5px; width:100%; cursor:pointer; border:1px solid #c8d0da;
+           border-radius:6px; background:#fff; padding:3px 6px; font:inherit; font-size:11.5px; color:#7b8492;
+           min-height:24px; text-align:left; overflow:hidden; }
+  .hfbtn:hover { border-color:#7ea2dd; background:#f2f7ff; color:#1e3a8a; }
+  .hfbtn.on { border-color:#d97706; background:#fffbeb; color:#7c2d12; }
+  .hfbtn .hfsum { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+  .hfbtn .hfn { font-weight:800; }
+  .hfbtn .hfn.inc { color:#15803d; }
+  .hfbtn .hfn.exc { color:#b91c1c; }
+  #filterPop { position:fixed; display:none; z-index:135; width:300px; background:#fff; border:1px solid #cfd6df;
+               border-radius:10px; box-shadow:0 14px 40px rgba(0,0,0,.24); overflow:hidden; }
+  #filterPop.show { display:block; }
+  #filterPop .fp-head { display:flex; align-items:center; gap:8px; padding:8px 10px; background:#eef1f5;
+                        border-bottom:1px solid #dfe4ea; }
+  #filterPop .fp-title { font-weight:700; font-size:12.5px; color:#27313f; flex:1; }
+  #filterPop .fp-x { cursor:pointer; font-size:16px; color:#6b7280; line-height:1; padding:0 2px; }
+  #filterPop .fp-x:hover { color:#111827; }
+  #filterPop .fp-mode { display:flex; margin:9px 10px 0; border:1px solid #cfd6df; border-radius:7px; overflow:hidden; }
+  #filterPop .fp-mode button { flex:1; border:0; background:#fff; padding:5px 6px; font:inherit; font-size:11.5px;
+                               cursor:pointer; color:#4b5563; }
+  #filterPop .fp-mode button + button { border-left:1px solid #cfd6df; }
+  #filterPop .fp-mode button.on { background:#1d4ed8; color:#fff; font-weight:700; }
+  #filterPop .fp-hint { padding:7px 10px 0; font-size:10.5px; color:#7b8492; line-height:1.4; }
+  #filterPop .fp-search { margin:8px 10px 0; }
+  #filterPop .fp-search input { width:100%; padding:5px 8px; border:1px solid #cfd6df; border-radius:6px;
+                                font:inherit; font-size:12px; }
+  #filterPop .fp-list { max-height:44vh; overflow:auto; padding:6px; margin-top:4px; }
+  #filterPop .fp-o { display:flex; align-items:center; gap:7px; padding:4px 6px; border-radius:6px; cursor:pointer;
+                     font-size:12px; color:#27313f; }
+  #filterPop .fp-o:hover { background:#eef4ff; }
+  #filterPop .fp-o .mk { width:17px; height:17px; border-radius:5px; border:1px solid #cbd2dc; background:#fff;
+                         color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px;
+                         font-weight:800; flex:none; }
+  #filterPop .fp-o .lbl { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #filterPop .fp-o .n { font-size:10.5px; color:#98a2b3; font-variant-numeric:tabular-nums; flex:none; }
+  #filterPop .fp-o.inc { background:#eafaef; }
+  #filterPop .fp-o.inc .mk { background:#16a34a; border-color:#15803d; }
+  #filterPop .fp-o.exc { background:#fdeded; }
+  #filterPop .fp-o.exc .mk { background:#dc2626; border-color:#b91c1c; }
+  #filterPop .fp-o.exc .lbl { text-decoration:line-through; color:#8a5050; }
+  #filterPop .fp-o .warn { color:#b45309; flex:none; font-size:11px; }
+  #filterPop .fp-none { padding:8px 10px; font-size:11.5px; color:#8a93a0; font-style:italic; }
+  #filterPop .fp-foot { display:flex; align-items:center; gap:8px; padding:7px 10px; border-top:1px solid #e5e8ee;
+                        background:#fafbfc; }
+  #filterPop .fp-sum { flex:1; font-size:11px; color:#4b5563; line-height:1.35; }
+  #filterPop .fp-clear { cursor:pointer; border:1px solid #cfd6df; background:#fff; border-radius:6px; padding:3px 8px;
+                         font:inherit; font-size:11.5px; color:#374151; white-space:nowrap; }
+  #filterPop .fp-clear:hover { background:#f1f5f9; }
+  /* filters apply live, so this only closes the popover — "Done", not "Apply". */
+  #filterPop .fp-done { cursor:pointer; border:0; background:#1d4ed8; color:#fff; border-radius:6px; padding:4px 13px;
+                        font:inherit; font-size:11.5px; font-weight:700; white-space:nowrap; }
+  #filterPop .fp-done:hover { background:#1e40af; }
+  #statusMenu .smdone { display:block; width:calc(100% - 8px); margin:6px 4px 2px; cursor:pointer; border:0;
+                        background:#1d4ed8; color:#fff; border-radius:6px; padding:6px 10px; font:inherit;
+                        font-size:12px; font-weight:700; }
+  #statusMenu .smdone:hover { background:#1e40af; }
 </style>
 </head>
 <body>
@@ -192,7 +282,8 @@
   <a class="brand" href="https://github.com/TabArena/data-foundry" target="_blank" rel="noopener" title="Open the Data Foundry repository on GitHub"><span class="logo">DF</span><div><div class="t">Data Foundry</div><div class="s">curation log</div></div></a>
   <a class="guide-btn" href="guidelines.html" target="_blank" rel="noopener" title="Read the curation guidelines / tutorial">📖 Guidelines</a>
   <button class="guide-btn" id="aboutBtn" type="button" title="About this page — context, goals, and links">ℹ About</button>
-  <div class="search-wrap"><input type="text" id="search" placeholder="Search name, comments, links, tags…" /></div>
+  <div class="search-wrap"><input type="text" id="search" placeholder="Search… (all terms must match · !word excludes)"
+    title="Searches every field of every dataset. Several words = ALL must match (AND); !word excludes; &quot;quote&quot; for a phrase. A search deliberately spans all datasets, ignoring the pills / status / column filters." /></div>
   <span class="hint" id="count"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <span id="shareLink" title="Copy a link that reopens this exact filtered view (pill, status, search, column filters)">🔗 Copy link</span>
@@ -205,10 +296,12 @@
     <button class="pill dis" id="pillDis" title="Filter: open disagreements — unresolved ones, plus shipped-but-disputed (Yes (Disagreement)) to re-evaluate"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
   </div>
 </div>
+<div id="fbar"></div>
 <div id="grid"></div>
 <div id="toast"></div>
 <div id="cellTip"></div>
 <div id="statusMenu"></div>
+<div id="filterPop"></div>
 
 <div id="overlay">
   <div id="modal">
@@ -311,8 +404,8 @@ const CUSTOM = {
   },
 };
 const SEMANTIC = {
-  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "DF: WIP": "warn", "DF: Much work": "warn" },
-  suggestion: { "Yes": "good", "Yes (Disagreement)": "warn", "No": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
+  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "WIP (DF)": "warn", "WIP (Triage)": "warn", "DF: Much work": "warn" },
+  suggestion: { "Yes": "good", "Yes (Disagreement)": "warn", "No": "bad", "No (Retired)": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
   decision_markers: {
     // bad / disqualifying -> red
     "Wrong Domain / Source Modality": "bad", "AHDS (Artifical/Handmade/Deterministic/Simulated)": "bad",
@@ -367,10 +460,126 @@ function listEditorParams(field, multi) {
   };
 }
 
-// Params for a column's header-filter dropdown (pick one vocabulary value to filter by).
-function listFilterParams(field) {
-  return { values: VOCAB[field] || [], clearable: true, autocomplete: true, listOnEmpty: true };
+// ---- column filters: tri-state (neutral / include / exclude) ---------------
+// Dropdown columns do NOT use Tabulator's own header filters: a Tabulator header filter
+// holds a single value matched one way, which cannot express "has A AND B" or "not C".
+// Instead each such column owns an entry here and the whole set is evaluated inside the
+// one global filter predicate (see applyFilters), which keeps AND/NOT semantics, the
+// summary strip, and shareable links reading from a single source of truth.
+//   colFilters[field] = { inc: [...], exc: [...] }
+//   colModes[field]   = "all" | "any"
+// The picked values and the how-to-combine mode are stored separately on purpose: the mode is a
+// *setting you choose first* ("show rows with ANY of these") and must therefore survive while the
+// column has no picks yet, whereas colFilters only holds columns that actually constrain the view.
+// `mode` applies to `inc` on multiselect columns ("all" = every value must be present); a select
+// column holds one value per row, so its includes are always matched as "any of" (see effMode).
+const colFilters = {};
+const colModes = {};
+const hfButtons = {};                 // field -> the header button element (re-registered on redraw)
+const EMPTY_TOKEN = "∅";         // pseudo-option matching rows with no value in the column
+const EMPTY_LABEL = "(empty)";
+function isDropdownField(name) { const f = BY_NAME[name]; return !!f && (f.kind === "select" || f.kind === "multiselect"); }
+function colMode(field) { return colModes[field] === "any" ? "any" : "all"; }
+function colState(field) {
+  const s = colFilters[field];
+  return { inc: s ? s.inc : [], exc: s ? s.exc : [], mode: colMode(field) };
 }
+// Effective include-combination for a column: single-value columns can only ever match one
+// of the picked values, so "all" would be unsatisfiable — report/behave as "any" there.
+function effMode(field, st) { return BY_NAME[field] && BY_NAME[field].kind === "select" ? "any" : st.mode; }
+function setColState(field, st) {
+  if (st && st.mode) colModes[field] = st.mode;
+  if (st && (st.inc.length || st.exc.length)) colFilters[field] = { inc: st.inc, exc: st.exc };
+  else delete colFilters[field];
+  refreshHfButton(field);
+  applyFilters();
+}
+// Pick the mode on its own, before (or after) choosing any values.
+function setColMode(field, mode) {
+  colModes[field] = mode === "any" ? "any" : "all";
+  applyFilters();
+}
+function optLabel(v) { return v === EMPTY_TOKEN ? EMPTY_LABEL : v; }
+function rowHasValue(field, d, token) {
+  const vals = asArray(d[field]);
+  return token === EMPTY_TOKEN ? vals.length === 0 : vals.includes(token);
+}
+function colFiltersPass(d) {
+  for (const field of Object.keys(colFilters)) {
+    const st = colState(field);
+    if (st.exc.some(v => rowHasValue(field, d, v))) return false;
+    if (st.inc.length) {
+      const ok = effMode(field, st) === "all"
+        ? st.inc.every(v => rowHasValue(field, d, v))
+        : st.inc.some(v => rowHasValue(field, d, v));
+      if (!ok) return false;
+    }
+  }
+  return true;
+}
+// Compact, URL-safe encoding for shareable links: "mode=any|+Yes|-No (Retired)".
+// A bare value (no +/-) is read as an include, so links from before tri-state filters
+// existed (#hf.suggestion=Yes) still restore correctly.
+function encodeColState(st) {
+  const parts = [];
+  if (st.mode === "any") parts.push("mode=any");
+  for (const v of st.inc) parts.push("+" + v);
+  for (const v of st.exc) parts.push("-" + v);
+  return parts.join("|");
+}
+function decodeColState(raw) {
+  const st = { inc: [], exc: [], mode: "all" };
+  for (const part of String(raw || "").split("|")) {
+    if (!part) continue;
+    if (part === "mode=any" || part === "mode=all") { st.mode = part.slice(5); continue; }
+    if (part[0] === "+") st.inc.push(part.slice(1));
+    else if (part[0] === "-") st.exc.push(part.slice(1));
+    else st.inc.push(part);
+  }
+  return st;
+}
+
+// ---- text queries (column text filters + the global search) ------------------
+// Several whitespace-separated terms must ALL match (AND); `!term` must NOT match;
+// "quoted phrase" keeps spaces. This is what gives the text columns and the search box
+// the same AND/NOT power the dropdown columns get from tri-state options.
+function parseQuery(raw) {
+  const pos = [], neg = [];
+  const re = /(!?)(?:"([^"]*)"|(\S+))/g;
+  let m;
+  while ((m = re.exec(String(raw || "")))) {
+    const term = (m[2] != null ? m[2] : m[3] || "").trim().toLowerCase();
+    if (term) (m[1] ? neg : pos).push(term);
+  }
+  return { pos, neg };
+}
+function queryIsEmpty(q) { return !q.pos.length && !q.neg.length; }
+function queryMatches(q, haystack) {
+  const hay = String(haystack || "").toLowerCase();
+  return q.pos.every(t => hay.includes(t)) && !q.neg.some(t => hay.includes(t));
+}
+function describeQuery(raw) {
+  const q = parseQuery(raw);
+  const bits = [];
+  if (q.pos.length) bits.push(q.pos.map(t => `“${escapeHtml(t)}”`).join(' <span class="op">AND</span> '));
+  if (q.neg.length) bits.push(`<span class="neg">NOT ${q.neg.map(t => `“${escapeHtml(t)}”`).join(", ")}</span>`);
+  return bits.join(' <span class="op">AND</span> ');
+}
+// Everything a row's text is searched against (all fields, arrays flattened).
+function rowHaystack(d) {
+  return Object.values(d).map(v => (Array.isArray(v) ? v.join(" ") : v == null ? "" : v)).join(" ");
+}
+// Shared config for the free-text column filters (name, comments, links, year, …):
+// Tabulator's own input header filter, but matched with the AND / NOT query syntax.
+const TEXT_FILTER = {
+  headerFilter: "input",
+  headerFilterPlaceholder: "a b · !not",
+  headerFilterFunc: (headerValue, rowValue, rowData) => {
+    if (pinned.has(rowData.unique_name)) return true;   // pinned rows survive every filter
+    const q = parseQuery(headerValue);
+    return queryIsEmpty(q) || queryMatches(q, Array.isArray(rowValue) ? rowValue.join(" ") : rowValue);
+  },
+};
 
 // ----------------------------------------------------------------------------
 let SCHEMA, VOCAB, BY_NAME, table, EXAMINED_TITLE = "";
@@ -425,7 +634,8 @@ function rowStatus(d) {
   if (rev.includes("ai_unverified"))
     return { m: "🤖", bg: "#0891b2", fg: "#fff",
              t: "AI-reviewed (UNVERIFIED) — a human must verify" + (sugg ? " · AI suggests: " + sugg : "") };
-  if (sugg === "No")           return { m: "✗", bg: "#dc2626", fg: "#fff", t: "Suggestion: No" };
+  if (sugg === "No" || sugg === "No (Retired)")
+    return { m: "✗", bg: "#dc2626", fg: "#fff", t: "Suggestion: " + sugg };
   if (sugg === "Yes")          return { m: "★", bg: "#2563eb", fg: "#fff", t: "Accepted — not yet in Data Foundry" };
   if (rev.length)              return { m: "⚠", bg: "#f97316", fg: "#fff", t: "Needs review: " + rev.join(", ") };
   return { m: "•", bg: "#facc15", fg: "#6b4e00", t: "Pending / other" };
@@ -469,6 +679,280 @@ function togglePin(row) {
   applyFilters();
 }
 
+// ---- column filter: header button + tri-state popover ----------------------
+// The button sits in Tabulator's header-filter slot and only opens the popover; the
+// popover lists every value of the column (vocabulary ∪ values actually present ∪
+// "(empty)") and cycles each one neutral → include (✓) → exclude (✕) → neutral.
+let popField = null;
+function plainColSummary(field, st) {
+  const parts = [];
+  if (st.inc.length) {
+    parts.push((effMode(field, st) === "all" ? "all of: " : "any of: ") + st.inc.map(optLabel).join(", "));
+  }
+  if (st.exc.length) parts.push("none of: " + st.exc.map(optLabel).join(", "));
+  return `${BY_NAME[field].label} — ${parts.join(" · ")}`;
+}
+function htmlColSummary(field, st) {
+  const parts = [];
+  if (st.inc.length) {
+    const joiner = effMode(field, st) === "all" ? ' <span class="op">AND</span> ' : ' <span class="op">OR</span> ';
+    parts.push(st.inc.map(v => escapeHtml(optLabel(v))).join(joiner));
+  }
+  if (st.exc.length) {
+    parts.push(`<span class="neg">NOT ${st.exc.map(v => escapeHtml(optLabel(v))).join(", ")}</span>`);
+  }
+  return parts.join(' <span class="op">AND</span> ');
+}
+function hfButtonInner(field, st) {
+  if (!st.inc.length && !st.exc.length) return '<span class="hfsum">filter…</span>';
+  const marks = [];
+  if (st.inc.length) marks.push(`<span class="hfn inc">✓${st.inc.length}</span>`);
+  if (st.exc.length) marks.push(`<span class="hfn exc">✕${st.exc.length}</span>`);
+  // With a single constraint there is room to name it; otherwise the counts carry the summary.
+  const only = (st.inc.length + st.exc.length) === 1 ? optLabel(st.inc[0] != null ? st.inc[0] : st.exc[0]) : "";
+  return `${marks.join(" ")}<span class="hfsum">${escapeHtml(only)}</span>`;
+}
+function refreshHfButton(field) {
+  const btn = hfButtons[field];
+  if (!btn) return;
+  const st = colState(field);
+  const on = !!(st.inc.length || st.exc.length);
+  btn.className = "hfbtn" + (on ? " on" : "");
+  btn.innerHTML = hfButtonInner(field, st);
+  btn.title = on
+    ? plainColSummary(field, st) + "  —  click to change"
+    : "Filter this column: click a value to require it (✓), click again to exclude it (✕). Several values combine with AND / NOT.";
+}
+function refreshHfButtons() { for (const f of Object.keys(hfButtons)) refreshHfButton(f); }
+// Custom header-filter "editor": really just a button. It never calls success(), so
+// Tabulator holds no value for the column and colFilters stays the single source of truth.
+function triStateHeaderFilter(field) {
+  return function (cell, onRendered) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    hfButtons[field] = btn;
+    btn.addEventListener("click", e => { e.stopPropagation(); openFilterPop(field, btn); });
+    if (typeof onRendered === "function") onRendered(() => refreshHfButton(field));
+    refreshHfButton(field);
+    return btn;
+  };
+}
+// Every option offered for a column: the vocabulary, plus any stray value present in the
+// data but missing from vocabularies.yaml (⚠ — those are exactly what the Review queue is
+// about), plus "(empty)" for rows with no value. Counts are over all records, not the
+// current view, so they stay stable while you build up a filter.
+function popOptions(field) {
+  const spec = BY_NAME[field] || {};
+  const vocabList = VOCAB[spec.vocab || field] || [];
+  const known = new Set(vocabList);
+  const counts = new Map();
+  let emptyCount = 0;
+  for (const d of table.getData()) {
+    const vals = asArray(d[field]);
+    if (!vals.length) { emptyCount++; continue; }
+    for (const v of vals) counts.set(v, (counts.get(v) || 0) + 1);
+  }
+  const strays = [...counts.keys()].filter(v => !known.has(v)).sort();
+  return [
+    ...vocabList.map(v => ({ v, n: counts.get(v) || 0 })),
+    ...strays.map(v => ({ v, n: counts.get(v) || 0, stray: true })),
+    { v: EMPTY_TOKEN, n: emptyCount },
+  ];
+}
+function popSearchTerm() {
+  const el = document.querySelector("#filterPop .fp-search input");
+  return el ? el.value : "";
+}
+// Re-rendering replaces the popover's contents, which detaches whatever was clicked — so every
+// interactive handler in here must stopPropagation(), or the outside-click listener would see a
+// node that is no longer inside #filterPop and close the popover after a single click. The point
+// of the popover is building up several constraints, so it must survive clicks.
+function renderFilterPop(keepSearch, focusSearch) {
+  const field = popField;
+  if (!field) return;
+  const pop = document.getElementById("filterPop");
+  const active = document.activeElement;
+  const keepFocus = focusSearch || !!(active && active.closest && active.closest("#filterPop .fp-search"));
+  const st = colState(field), spec = BY_NAME[field];
+  const inc = new Set(st.inc), exc = new Set(st.exc);
+  const all = popOptions(field);
+  const term = String(keepSearch || "").trim().toLowerCase();
+  const shown = term ? all.filter(o => optLabel(o.v).toLowerCase().includes(term)) : all;
+  const multi = spec.kind === "multiselect";
+  const rows = shown.map(o => {
+    const cls = inc.has(o.v) ? " inc" : exc.has(o.v) ? " exc" : "";
+    const mark = inc.has(o.v) ? "✓" : exc.has(o.v) ? "✕" : "";
+    const c = o.v === EMPTY_TOKEN ? { bg: "#f1f2f6", fg: "#8a93a0" } : colorFor(field, o.v);
+    const sw = `<span class="opt-sw" style="background:${c.bg};border-color:${c.fg}"></span>`;
+    const warn = o.stray ? '<span class="warn" title="This value is not in vocabularies.yaml">⚠</span>' : "";
+    return `<div class="fp-o${cls}" data-v="${escapeHtml(o.v)}" title="${escapeHtml(optLabel(o.v))}">`
+      + `<span class="mk">${mark}</span>${sw}<span class="lbl">${escapeHtml(optLabel(o.v))}</span>${warn}`
+      + `<span class="n" title="datasets with this value (of all records)">${o.n}</span></div>`;
+  }).join("") || '<div class="fp-none">No option matches.</div>';
+  const summary = (st.inc.length || st.exc.length)
+    ? htmlColSummary(field, st)
+    : '<span style="color:#8a93a0">No constraint — click values below.</span>';
+  pop.innerHTML =
+    `<div class="fp-head"><span class="fp-title">${escapeHtml(spec.label)}</span><span class="fp-x" title="Close">×</span></div>`
+    + (multi
+      ? `<div class="fp-mode" title="Choose how the values you tick with ✓ combine. Set this first, then tick values.">
+           <button type="button" data-mode="all" class="${st.mode === "all" ? "on" : ""}">match ALL ✓</button>
+           <button type="button" data-mode="any" class="${st.mode === "any" ? "on" : ""}">match ANY ✓</button>
+         </div>`
+      : "")
+    + `<div class="fp-hint">`
+    + (multi
+      ? `Rows must have <b>${st.mode === "all" ? "every" : "at least one"}</b> ✓ value — change that above at any time.<br>`
+      : "✓ values match as “any of” (a row has one value).<br>")
+    + `Click a value: <b>✓ require</b> → <b>✕ exclude</b> → off.</div>`
+    + (all.length > 8 ? `<div class="fp-search"><input type="text" placeholder="find a value…" value="${escapeHtml(keepSearch || "")}" /></div>` : "")
+    + `<div class="fp-list">${rows}</div>`
+    + `<div class="fp-foot"><span class="fp-sum">${summary}</span>`
+    + `<button type="button" class="fp-clear">✕ clear</button>`
+    + `<button type="button" class="fp-done" title="Close this popover (Esc also works) — filters are already applied">Done</button></div>`;
+  pop.querySelector(".fp-x").addEventListener("click", e => { e.stopPropagation(); closeFilterPop(); });
+  pop.querySelector(".fp-done").addEventListener("click", e => { e.stopPropagation(); closeFilterPop(); });
+  pop.querySelector(".fp-clear").addEventListener("click", e => {
+    e.stopPropagation();
+    setColState(field, null);
+    renderFilterPop(keepSearch);
+  });
+  pop.querySelectorAll(".fp-o[data-v]").forEach(el => {
+    el.addEventListener("click", e => { e.stopPropagation(); cycleOption(field, el.dataset.v, keepSearch); });
+  });
+  pop.querySelectorAll(".fp-mode button[data-mode]").forEach(el => {
+    el.addEventListener("click", e => {
+      e.stopPropagation();
+      setColMode(field, el.dataset.mode);   // settable before any value is ticked
+      renderFilterPop(keepSearch);
+    });
+  });
+  // Clicks that land on the popover's own chrome (padding, header, footer) must not bubble
+  // out to the document listener either — only a click truly outside should close it.
+  pop.onclick = e => e.stopPropagation();
+  const search = pop.querySelector(".fp-search input");
+  if (search) {
+    search.addEventListener("input", () => renderFilterPop(search.value, true));
+    if (keepFocus) { search.focus(); search.setSelectionRange(search.value.length, search.value.length); }
+  }
+}
+function cycleOption(field, value, keepSearch) {
+  const st = colState(field);
+  const inc = st.inc.filter(v => v !== value), exc = st.exc.filter(v => v !== value);
+  let next;
+  if (st.inc.includes(value)) next = { inc, exc: [...exc, value], mode: st.mode };   // require → exclude
+  else if (st.exc.includes(value)) next = { inc, exc, mode: st.mode };               // exclude → off
+  else next = { inc: [...inc, value], exc, mode: st.mode };                          // off → require
+  setColState(field, next);
+  renderFilterPop(keepSearch);
+}
+function openFilterPop(field, anchor) {
+  popField = field;
+  const pop = document.getElementById("filterPop");
+  document.getElementById("statusMenu").classList.remove("show");
+  renderFilterPop("");
+  pop.style.visibility = "hidden";
+  pop.classList.add("show");
+  const r = anchor.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+  let top = r.bottom + 4;
+  if (top + pr.height > innerHeight) top = Math.max(8, innerHeight - pr.height - 8);
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pr.width - 8)) + "px";
+  pop.style.top = top + "px";
+  pop.style.visibility = "";
+}
+function closeFilterPop() {
+  popField = null;
+  document.getElementById("filterPop").classList.remove("show");
+}
+
+// ---- active-filter summary strip -------------------------------------------
+// Spells out every constraint currently in effect as a removable chip. This is the
+// readable counterpart to the header highlights: AND / OR / NOT are named in words,
+// and each ✕ drops exactly one constraint.
+function filterChips() {
+  const chips = [];
+  for (const [key, p] of Object.entries(PILLS)) {
+    if (!p.active) continue;
+    const el = document.querySelector("#" + p.el + " .l");
+    chips.push({
+      html: `<b>View:</b> ${escapeHtml(el ? el.textContent : key)}`,
+      clear: () => { p.active = false; syncPillClasses(); },
+    });
+  }
+  if (fStat.inc.length || fStat.exc.length) {
+    const nameOf = m => { const o = STATUS_OPTS.find(x => x.m === m); return (o ? o.label : m); };
+    const parts = [];
+    if (fStat.inc.length) parts.push(fStat.inc.map(m => `${m} ${escapeHtml(nameOf(m))}`).join(' <span class="op">OR</span> '));
+    if (fStat.exc.length) parts.push(`<span class="neg">NOT ${fStat.exc.map(m => `${m} ${escapeHtml(nameOf(m))}`).join(", ")}</span>`);
+    chips.push({ html: `<b>Status:</b> ${parts.join(' <span class="op">AND</span> ')}`, clear: () => { fStat = { inc: [], exc: [] }; } });
+  }
+  for (const field of Object.keys(colFilters)) {
+    chips.push({
+      html: `<b>${escapeHtml(BY_NAME[field].label)}:</b> ${htmlColSummary(field, colState(field))}`,
+      clear: () => { delete colFilters[field]; refreshHfButton(field); },
+    });
+  }
+  let textFilters = [];
+  try { textFilters = table.getHeaderFilters() || []; } catch (e) { /* pre-build */ }
+  for (const f of textFilters) {
+    if (!f.field || f.value == null || f.value === "") continue;
+    const spec = BY_NAME[f.field];
+    chips.push({
+      html: `<b>${escapeHtml(spec ? spec.label : f.field)}:</b> ${describeQuery(f.value)}`,
+      clear: () => { try { table.setHeaderFilterValue(f.field, ""); } catch (e) { /* gone */ } },
+    });
+  }
+  const term = document.getElementById("search").value.trim();
+  if (term) {
+    chips.push({
+      html: `<b>Search:</b> ${describeQuery(term)} <span class="op">(all datasets)</span>`,
+      clear: () => { document.getElementById("search").value = ""; },
+    });
+  }
+  return chips;
+}
+function renderFilterBar() {
+  const bar = document.getElementById("fbar");
+  const chips = filterChips();
+  bar.innerHTML = "";
+  if (!chips.length) { bar.classList.remove("show"); syncChrome(); return; }
+  bar.insertAdjacentHTML("beforeend", '<span class="fb-lead">Filtering</span>');
+  chips.forEach((c, i) => {
+    const el = document.createElement("span");
+    el.className = "fchip";
+    el.innerHTML = `<span class="ftxt">${c.html}</span><span class="fx" title="Remove this filter">✕</span>`;
+    el.querySelector(".fx").addEventListener("click", () => { c.clear(); applyFilters(); });
+    bar.appendChild(el);
+    if (i === chips.length - 1) {
+      const clr = document.createElement("button");
+      clr.type = "button"; clr.className = "fb-clear"; clr.textContent = "✕ Clear all filters";
+      clr.addEventListener("click", clearEverything);
+      bar.appendChild(clr);
+    }
+  });
+  bar.classList.add("show");
+  syncChrome();
+}
+// The table height is `calc(100vh - var(--chrome))`, so it has to be told how tall the
+// header chrome (top bar + filter strip) currently is; the strip appears/disappears and can
+// wrap to a second line. Setting the CSS variable is ALL this does on purpose:
+//
+// Do NOT call table.redraw() here. renderFilterBar() runs inside Tabulator's `dataFiltered`
+// event, i.e. while the table is still mid-render; redrawing from there re-measures the
+// `variableHeight` columns (chips / comments / links) against a half-rendered DOM and caches
+// wrong row heights — which showed up as randomly squashed rows after a second filter.
+// Tabulator's own `autoResize` (on by default) has a ResizeObserver on the table element, so
+// the height change from --chrome is picked up and redrawn by Tabulator itself, after its
+// current render cycle has finished.
+let _chrome = 0;
+function syncChrome() {
+  const bar = document.getElementById("bar"), fbar = document.getElementById("fbar");
+  const h = bar.offsetHeight + (fbar.classList.contains("show") ? fbar.offsetHeight : 0);
+  if (h === _chrome) return;
+  _chrome = h;
+  document.documentElement.style.setProperty("--chrome", h + "px");
+}
+
 // Status filter menu, opened by clicking the leftmost column header.
 // `slug` is the value used in shareable-link URLs (#status=…) — stable ASCII names
 // instead of percent-encoded emoji markers.
@@ -482,7 +966,24 @@ const STATUS_OPTS = [
   { m: "⚠", slug: "untriaged", label: "Needs review (untriaged)", bg: "#f97316", fg: "#fff" },
   { m: "•", slug: "other", label: "Pending / other", bg: "#facc15", fg: "#6b4e00" },
 ];
-let fStatus = "";
+// Status constraints use the same tri-state language as the column popovers: each status
+// can be required (✓) or excluded (✕). A row carries exactly one marker, so several
+// required statuses mean "any of them"; excludes are the useful case ("hide all ✗").
+let fStat = { inc: [], exc: [] };
+function statusActive() { return fStat.inc.length > 0 || fStat.exc.length > 0; }
+function statusPass(d) {
+  const m = rowStatus(d).m;
+  if (fStat.exc.includes(m)) return false;
+  return !fStat.inc.length || fStat.inc.includes(m);
+}
+function cycleStatus(m) {
+  const inc = fStat.inc.filter(x => x !== m), exc = fStat.exc.filter(x => x !== m);
+  if (fStat.inc.includes(m)) fStat = { inc, exc: [...exc, m] };        // require → exclude
+  else if (fStat.exc.includes(m)) fStat = { inc, exc };                // exclude → off
+  else fStat = { inc: [...inc, m], exc };                              // off → require
+  buildStatusMenu();
+  applyFilters();
+}
 function buildStatusMenu() {
   const menu = document.getElementById("statusMenu");
   menu.innerHTML = "";
@@ -495,20 +996,37 @@ function buildStatusMenu() {
   const divider = document.createElement("div");
   divider.style.cssText = "height:1px;background:#e5e8ee;margin:4px 4px 5px;";
   menu.appendChild(divider);
+  menu.insertAdjacentHTML("beforeend",
+    '<div class="smhint">Click a status: <b>✓ require</b> → <b>✕ exclude</b> → off.</div>');
   // The public build hides the disagreement / needs-review / AI-review workflow states.
   const opts = STATIC ? STATUS_OPTS.filter(o => !["⚡", "⚠", "🤖"].includes(o.m)) : STATUS_OPTS;
   for (const o of opts) {
     const item = document.createElement("div");
-    item.className = "smi" + (fStatus === o.m ? " active" : "");
-    item.innerHTML = `<span class="smk" style="background:${o.bg};color:${o.fg}">${o.m || "∗"}</span>${o.label}`;
-    item.addEventListener("click", () => {
-      // Layer the status filter on top of any active pill (pick "All datasets" to clear it).
-      fStatus = o.m;
-      menu.classList.remove("show");
-      applyFilters();
+    const state = fStat.inc.includes(o.m) ? "inc" : fStat.exc.includes(o.m) ? "exc" : "";
+    // The "All datasets" row (no marker) clears the status constraint entirely.
+    item.className = "smi" + (o.m ? " " + state : (statusActive() ? "" : " active"));
+    item.innerHTML = `<span class="smk" style="background:${o.bg};color:${o.fg}">${o.m || "∗"}</span>`
+      + `<span class="smlbl">${o.label}</span>`
+      + `<span class="smst">${state === "inc" ? "✓" : state === "exc" ? "✕" : ""}</span>`;
+    item.addEventListener("click", e => {
+      // Status constraints layer on top of any active pill. cycleStatus() rebuilds this menu,
+      // detaching the clicked row, so the click must not reach the outside-click listener —
+      // it would treat the detached node as "outside" and close the menu after one pick.
+      e.stopPropagation();
+      if (!o.m) { fStat = { inc: [], exc: [] }; menu.classList.remove("show"); applyFilters(); return; }
+      cycleStatus(o.m);
     });
     menu.appendChild(item);
   }
+  // The menu stays open so several statuses can be picked in one visit; give that an
+  // obvious exit (Esc and a click outside work too).
+  const done = document.createElement("button");
+  done.type = "button";
+  done.className = "smdone";
+  done.textContent = "Done";
+  done.title = "Close this menu (Esc also works) — the filter is already applied";
+  done.addEventListener("click", e => { e.stopPropagation(); menu.classList.remove("show"); });
+  menu.appendChild(done);
 }
 function openStatusMenu(e) {
   buildStatusMenu();
@@ -655,11 +1173,11 @@ function columnDefs() {
   // (The ✓ verify action lives in the leftmost pin column, stacked under 📌 on AI-reviewed rows.)
   for (const name of PRIMARY) {
     if (name === "unique_name") {
-      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, headerFilter: "input", headerFilterPlaceholder: "filter…" });
+      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, ...TEXT_FILTER });
       continue;
     }
     const f = BY_NAME[name];
-    const c = { title: f.label, field: name, headerTooltip: f.help, resizable: true, headerFilter: "input", headerFilterPlaceholder: "filter…", width: 150 };
+    const c = { title: f.label, field: name, headerTooltip: f.help, resizable: true, width: 150, ...TEXT_FILTER };
     if (FROZEN.has(name)) c.frozen = true;
     if (f.kind === "text") {
       if (name === "year") {
@@ -673,19 +1191,16 @@ function columnDefs() {
       c.editor = "list"; c.cssClass = "dd-cell"; c.titleFormatter = addBtnTitle(f.label, name);
       c.editorParams = listEditorParams(name, false);
       c.formatter = selectChip(name);
-      // pick a value from the dropdown to filter to rows with exactly that value
-      // (pinned rows stay visible through column filters too)
-      c.headerFilter = "list"; c.headerFilterParams = listFilterParams(name);
-      c.headerFilterFunc = (sel, rowVal, data) => pinned.has(data.unique_name) || rowVal === sel;
+      // Tri-state popover: require (✓) / exclude (✕) any number of values. The state lives
+      // in colFilters and is applied by the global predicate (pinned rows always survive).
+      c.headerFilter = triStateHeaderFilter(name);
     }
     else if (f.kind === "multiselect") {
       c.editor = "list"; c.titleFormatter = addBtnTitle(f.label, name);
       c.editorParams = listEditorParams(name, true);
       c.formatter = multiChips(name); c.width = 190; c.variableHeight = true; c.cssClass = "wrap-cell dd-cell";
-      // pick a value from the dropdown to filter to all rows that carry that value
-      // (pinned rows stay visible through column filters too)
-      c.headerFilter = "list"; c.headerFilterParams = listFilterParams(name);
-      c.headerFilterFunc = (sel, _rowVal, data) => pinned.has(data.unique_name) || asArray(data[name]).includes(sel);
+      // Same popover; here several required values combine with AND by default ("has A and B").
+      c.headerFilter = triStateHeaderFilter(name);
     }
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
@@ -827,30 +1342,39 @@ const PILLS = {
 };
 function anyPill() { return Object.values(PILLS).some(p => p.active); }
 function applyFilters() {
-  const term = document.getElementById("search").value.trim().toLowerCase();
+  const q = parseQuery(document.getElementById("search").value);
   table.setFilter(d => {
     if (pinned.has(d.unique_name)) return true;  // pinned rows never vanish
-    if (term) {
-      // A search always spans ALL datasets, ignoring the active pill/status filters.
-      const hay = Object.values(d)
-        .map(v => (Array.isArray(v) ? v.join(" ") : v == null ? "" : v))
-        .join(" ").toLowerCase();
-      return hay.includes(term);
+    if (!queryIsEmpty(q)) {
+      // A search always spans ALL datasets, ignoring the pills / status / column filters.
+      // The filter strip labels it "(all datasets)" so this override is visible, not silent.
+      return queryMatches(q, rowHaystack(d));
     }
-    if (fStatus && rowStatus(d).m !== fStatus) return false;
+    if (!statusPass(d)) return false;
     for (const p of Object.values(PILLS)) if (p.active && !p.test(d)) return false;
-    return true;
+    return colFiltersPass(d);
   });
 }
 function syncPillClasses() {
   for (const p of Object.values(PILLS)) document.getElementById(p.el).classList.toggle("active", p.active);
 }
-// Clear every filter (search box, status menu, all pills) — pins are untouched.
+// Clear every filter (search box, status constraints, pills, column popovers) — pins are untouched.
 function resetAllFilters() {
   for (const p of Object.values(PILLS)) p.active = false;
-  fStatus = "";
+  fStat = { inc: [], exc: [] };
+  for (const field of Object.keys(colFilters)) delete colFilters[field];
+  for (const field of Object.keys(colModes)) delete colModes[field];   // also drop ALL/ANY preferences
   document.getElementById("search").value = "";
   syncPillClasses();
+  refreshHfButtons();
+}
+// Full reset used by both "✕ Clear filters" (top bar) and "✕ Clear all filters" (strip).
+function clearEverything() {
+  closeFilterPop();
+  try { table.clearHeaderFilter(); } catch (e) { /* none set */ }
+  resetAllFilters();
+  applyFilters();
+  history.replaceState(null, "", location.href.split("#")[0]);  // a cleared view carries no share hash
 }
 // `activeRows` is the filtered row set Tabulator hands to the `dataFiltered` event.
 // Prefer it: `getDataCount("active")` is stale when read synchronously inside that
@@ -863,42 +1387,50 @@ function updateCount(activeRows) {
     `${active} / <span class="hasinfo" title="${escapeHtml(EXAMINED_TITLE)}">${table.getDataCount()}</span> shown`;
   markActiveFilters(active);
 }
-// Highlight every active filter (column header dropdowns + global search) and show the
-// "Clear filters" button, so it is always obvious when the view is being filtered.
+// Highlight every active filter (text header filters, tri-state column popovers, status,
+// global search), render the summary strip, and show the "Clear filters" / share buttons —
+// so it is always obvious when and how the view is being filtered.
 function markActiveFilters(active) {
   let activeFields = new Set();
   try { activeFields = new Set((table.getHeaderFilters() || []).map(f => f.field)); } catch (e) { /* pre-build */ }
   table.getColumns().forEach(col => {
     const el = col.getElement();
-    // also flag the leftmost status column when a status filter is active (it is not a
+    const field = col.getField();
+    // also flag the leftmost status column when a status constraint is active (it is not a
     // Tabulator header filter, so it would otherwise show no active-cue)
-    const on = activeFields.has(col.getField()) || (col.getField() === "_status" && !!fStatus);
+    const on = activeFields.has(field) || !!colFilters[field] || (field === "_status" && statusActive());
     if (el) el.classList.toggle("hf-active", on);
   });
   const search = document.getElementById("search");
   const hasSearch = !!search.value.trim();
   search.classList.toggle("active", hasSearch);
-  const any = activeFields.size > 0 || hasSearch || anyPill() || !!fStatus;
+  const any = activeFields.size > 0 || Object.keys(colFilters).length > 0 || hasSearch || anyPill() || statusActive();
   document.getElementById("clearFilters").classList.toggle("show", any);
   document.getElementById("shareLink").classList.toggle("show", any);
   const cnt = document.getElementById("count");
   const activeCount = (active == null) ? table.getDataCount("active") : active;
   cnt.classList.toggle("filtered", activeCount < table.getDataCount());
+  renderFilterBar();
 }
 
 // ---- shareable filter links -------------------------------------------------
 // The 🔗 button (shown next to ✕ Clear filters whenever the view is filtered) encodes
-// the current view — active pill, status filter, search term, column header filters —
-// into the URL hash (#pill=bey&status=in-df&q=…&hf.<field>=…) and copies the link.
-// boot() re-applies the hash on load, so such links deep-link into the live dashboard
-// AND the read-only GitHub Pages build (view state is fully client-side in both).
+// the current view — active pill, status constraints, search term, and every column
+// filter — into the URL hash (#pill=bey&status=+in-df|-no&q=…&hf.<field>=+A|-B) and
+// copies the link. boot() re-applies the hash on load, so such links deep-link into the
+// live dashboard AND the read-only GitHub Pages build (view state is fully client-side).
+// Links made before include/exclude filters existed (bare `status=in-df`, `hf.tags=New IID`)
+// still restore: a value with no +/- prefix is read as a single "require".
 function filterStateToHash() {
   const p = new URLSearchParams();
   for (const [key, pill] of Object.entries(PILLS)) if (pill.active) p.set("pill", key);
-  const st = STATUS_OPTS.find(o => o.m === fStatus);
-  if (st && st.slug) p.set("status", st.slug);
+  if (statusActive()) {
+    const slug = m => { const o = STATUS_OPTS.find(x => x.m === m); return o && o.slug ? o.slug : m; };
+    p.set("status", [...fStat.inc.map(m => "+" + slug(m)), ...fStat.exc.map(m => "-" + slug(m))].join("|"));
+  }
   const term = document.getElementById("search").value.trim();
   if (term) p.set("q", term);
+  for (const field of Object.keys(colFilters)) p.set("hf." + field, encodeColState(colState(field)));
   try {
     for (const f of table.getHeaderFilters() || []) {
       if (f.field && f.value != null && f.value !== "") p.set("hf." + f.field, f.value);
@@ -915,13 +1447,31 @@ function applyFiltersFromHash() {
   const p = new URLSearchParams(raw);
   const pill = p.get("pill");
   if (pill && PILLS[pill] && !(STATIC && ["rev", "dis"].includes(pill))) PILLS[pill].active = true;
-  const st = STATUS_OPTS.find(o => (o.slug && o.slug === p.get("status")) || (o.m && o.m === p.get("status")));
-  if (st && !(STATIC && ["⚡", "⚠", "🤖"].includes(st.m))) fStatus = st.m;
+  // status=+in-df|-no  (a bare slug / marker, as older links carry, means "require")
+  const hidden = m => STATIC && ["⚡", "⚠", "🤖"].includes(m);
+  for (const part of String(p.get("status") || "").split("|")) {
+    if (!part) continue;
+    const sign = part[0] === "-" ? "exc" : "inc";
+    const key = part[0] === "+" || part[0] === "-" ? part.slice(1) : part;
+    const opt = STATUS_OPTS.find(o => o.m && (o.slug === key || o.m === key));
+    if (opt && !hidden(opt.m) && !fStat[sign].includes(opt.m)) fStat[sign].push(opt.m);
+  }
   if (p.get("q")) document.getElementById("search").value = p.get("q");
   syncPillClasses();
   for (const [k, v] of p.entries()) {
-    if (k.startsWith("hf.")) try { table.setHeaderFilterValue(k.slice(3), v); } catch (e) { /* unknown column */ }
+    if (!k.startsWith("hf.")) continue;
+    const field = k.slice(3);
+    // Dropdown columns carry their include/exclude sets here; text columns keep using
+    // Tabulator's own header filter value.
+    if (isDropdownField(field)) {
+      const st = decodeColState(v);
+      colModes[field] = st.mode;
+      if (st.inc.length || st.exc.length) colFilters[field] = { inc: st.inc, exc: st.exc };
+    } else {
+      try { table.setHeaderFilterValue(field, v); } catch (e) { /* unknown column */ }
+    }
   }
+  refreshHfButtons();
 }
 async function copyShareLink() {
   const hash = filterStateToHash();
@@ -956,7 +1506,9 @@ async function boot() {
   const cols = columnDefs();
 
   table = new Tabulator("#grid", {
-    data: recs, columns: cols, layout: "fitData", height: "calc(100vh - 46px)",
+    // Height leaves room for the header chrome; --chrome grows when the filter strip appears
+    // (syncChrome measures the bar + strip and redraws the table).
+    data: recs, columns: cols, layout: "fitData", height: "calc(100vh - var(--chrome, 46px))",
     // Keep the virtual DOM (rendering all ~1200 variable-height rows at once freezes startup),
     // with a moderate render buffer as the trade-off: large enough that normal scrolling rarely
     // shows a render gap, small enough to start fast. Buffer is px beyond the viewport (~a couple
@@ -977,17 +1529,22 @@ async function boot() {
   table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); });
 
   document.getElementById("search").addEventListener("input", applyFilters);
-  document.getElementById("clearFilters").addEventListener("click", () => {
-    try { table.clearHeaderFilter(); } catch (e) { /* none set */ }
-    resetAllFilters();
-    applyFilters();
-    history.replaceState(null, "", location.href.split("#")[0]);  // a cleared view carries no share hash
-  });
+  document.getElementById("clearFilters").addEventListener("click", clearEverything);
   document.getElementById("shareLink").addEventListener("click", copyShareLink);
   document.addEventListener("click", e => {
     const m = document.getElementById("statusMenu");
     if (m.classList.contains("show") && !m.contains(e.target) && !e.target.closest(".tabulator-col")) m.classList.remove("show");
+    // The column-filter popover lives on <body>, so close it on any click outside it that
+    // is not on a header filter button (those toggle it themselves).
+    const pop = document.getElementById("filterPop");
+    if (pop.classList.contains("show") && !pop.contains(e.target) && !e.target.closest(".hfbtn")) closeFilterPop();
   });
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    closeFilterPop();
+    document.getElementById("statusMenu").classList.remove("show");
+  });
+  addEventListener("resize", syncChrome);
   // Pills are exclusive among THEMSELVES (only one collection view at a time), but they
   // layer with the status filter — pick a pill (e.g. BeyondArena), then narrow by status.
   // Clicking an active pill turns it off. The status filter is left untouched.

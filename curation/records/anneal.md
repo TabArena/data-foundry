@@ -7,11 +7,9 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
-suggestion: 'No'
+suggestion: No (Retired)
 decision_markers:
 - Trivial
-tags:
-- Retired (was shipped)
 original_source: UCI
 year: '1990'
 required_split:
@@ -37,7 +35,7 @@ Lennart: As long as it is not trivial, this seems to be a legit dataset.
 
 Andrej: Not in TabRepo, so likely trivial
 
-CC (2026-07-27, Lennart): **Removed from TabArena (v0.1) as trivial -> suggestion No.** All models achieved perfect accuracy (trivial), so it was dropped from the benchmark. Kept the `TabArena (v0.1)` tag (it really did ship) and added `Retired (was shipped)` to mark the post-shipping change of verdict.
+CC (2026-07-27, Lennart): **Removed from TabArena (v0.1) as trivial -> suggestion No.** All models achieved perfect accuracy (trivial), so it was dropped from the benchmark. Kept the `TabArena (v0.1)` tag (it really did ship); the `No (Retired)` verdict marks the post-shipping change of verdict.
 
 ## Reference
 

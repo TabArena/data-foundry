@@ -4,7 +4,7 @@ name: sasol-customer-retention-recruitment-competition
 checked_by:
 - Andrej
 data_foundry_status:
-- 'DF: WIP'
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

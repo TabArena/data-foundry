@@ -347,26 +347,56 @@
 
   <h2>Suggestion states</h2>
   <p>The suggestion is our verdict <strong>right now</strong>; an earlier verdict can change over time
-  (a dataset that shipped can later be excluded — see <code>Retired (was shipped)</code> below).</p>
+  (a dataset that shipped can later be excluded — see <code>No (Retired)</code> below).</p>
   <ul>
     <li><code>Yes</code> — include; <code>TBD -&gt; Yes</code> — likely include, pending verification.</li>
     <li><code>TBD -&gt; 2nd Tier</code> — plausible but secondary; <code>No</code> — exclude.</li>
+    <li><code>No (Retired)</code> — exclude, <strong>but it shipped in a collection before the verdict
+    changed</strong> (e.g. later found trivial, or an ethical concern surfaced); keep the collection tag
+    and record why in the comments. A never-shipped exclusion is a plain <code>No</code>.</li>
     <li><code>Disagreement</code> — curators genuinely disagree; not yet shipped, needs resolution.</li>
     <li><code>Yes (Disagreement)</code> — <strong>shipped on purpose, but with an open disagreement to
     re-evaluate</strong>; counts as accepted, but stays visible under the ⚡ Disagreement filter.</li>
   </ul>
   <p><strong>Invariant.</strong> A dataset shipped in a collection (<code>TabArena (v0.1)</code> /
   <code>BeyondArena</code>) must carry an accepted verdict (<code>Yes</code> / <code>Yes (Disagreement)</code>)
-  <strong>or</strong> the <code>Retired (was shipped)</code> tag. The retired tag is for a dataset that did
-  ship but has since been judged excludable (e.g. found trivial, or an ethical concern surfaced): set
-  <code>suggestion</code> to the honest current verdict (<code>No</code>), add the tag, keep the collection
-  tag, and record why in the comments. Anything else on a shipped record is a <code>ship_conflict</code>.</p>
+  <strong>or</strong> <code>No (Retired)</code>. Anything else on a shipped record is a
+  <code>ship_conflict</code>.</p>
+  <h2>Work-in-progress states</h2>
+  <p>The Data Foundry column holds two mutually exclusive WIP values: <code>WIP (Triage)</code> — the
+  verdict is still open (<code>TBD -&gt; …</code> / disputed) and someone is settling it — and
+  <code>WIP (DF)</code> — the verdict is a final <code>Yes</code> and the Data Foundry integration
+  (notebook) is in progress. A record without a final <code>Yes</code> must not carry
+  <code>WIP (DF)</code>.</p>
 
   <h2>Decision markers</h2>
   <p><code>decision_markers</code> flag <em>issues</em> (duplicate, trivial, leakage, out-of-scope, …).
   A clean, includable dataset usually has <strong>none</strong> — their absence is the normal, good
   state. A marker can also be a <em>provisional best-guess</em> of a concern, to confirm or rule out
   later (recorded in the comments), so an accepted dataset may still carry a watch-item marker.</p>
+
+  <h2>Filtering the log</h2>
+  <p>Every filter speaks the same tri-state language: clicking a value cycles
+  <strong>✓ require → ✕ exclude → off</strong>. That holds for the status funnel in the leftmost
+  column and for the filter button in each dropdown column's header, whose popover lists all of
+  that column's values — the vocabulary, any value present in the data but missing from the
+  vocabulary (⚠), and <code>(empty)</code> — each with a count.</p>
+  <ul>
+    <li><strong>AND within a multi-value column:</strong> several ✓ values must <em>all</em> be
+    present (e.g. Tags ✓ Non-IID (Temporal) ✓ Review Prio 1). The
+    <em>match ALL ✓ / match ANY ✓</em> switch at the top of the popover changes that to
+    "either of" — set it before or after ticking values; it sticks for that column. On
+    single-value columns ✓ values read as "any of", since a row holds one value.</li>
+    <li><strong>AND across columns:</strong> different columns always combine, so
+    "in BeyondArena but not yet <code>DF: Yes</code>" is expressible.</li>
+    <li><strong>NOT:</strong> ✕ on any value or status excludes it.</li>
+    <li><strong>Text columns and the search box:</strong> several terms must all match,
+    <code>!word</code> excludes, <code>"quoted phrase"</code> keeps spaces. A search
+    deliberately spans all datasets, overriding the other filters while a term is present.</li>
+  </ul>
+  <p>The amber <strong>filter strip</strong> under the top bar states every active constraint in
+  words, with a ✕ to drop one and a ✕ to clear all — and <strong>🔗 Copy link</strong> encodes the
+  whole view (pill, statuses, column constraints, search) into the URL so it can be shared.</p>
 
   <h2>AI-assisted triage &amp; verification</h2>
   <p>An AI assistant can draft a provisional triage for untriaged datasets — a suggestion, justified
