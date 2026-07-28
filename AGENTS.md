@@ -70,6 +70,17 @@ The skill writes a 21-cell notebook based on
 `datasets/_template/_template.ipynb`. Read the template before writing so
 the JSON structure is exact.
 
+Its reference sections (§B–§E) are the **distilled conventions of the ~155 shipped
+notebooks**: the ordered preprocessing recipe, the per-regime split recipes (including
+the temporal loop, which the template only stubs), the recurring traps worth flagging,
+and a table mapping every `bundle_checks` slug to the scaffold action that pre-empts it.
+Keep them in sync when the collection's practice changes — the check-side evidence comes
+from `scripts/beyond_arena/check_collection_bundles.py`, the practice-side evidence from
+re-reading the notebooks' preprocessing / task-curation cells and `curation_comments`.
+The governing rule for scaffolding is **pre-fill structure, never facts**: anything that
+needs a look at the data becomes a `# TODO(verify): …` marker, which the notebook's
+Bundle Checks cell then refuses to export (`meta_placeholder_left`).
+
 ### 2. Verifying a filled-in notebook before it ships
 
 Once the curator has filled in and run the notebook, the `/verify-dataset` slash
