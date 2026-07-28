@@ -10,7 +10,8 @@ so you can advise on selection and processing decisions the way a human curator 
 * The user wants to **add, edit, or triage** a candidate dataset record.
 
 If the user instead wants to scaffold a *curation notebook* for an already-decided
-dataset, use `/new-dataset`.
+dataset, use `/new-dataset`; to check a filled-in notebook / saved bundle before it
+ships, use `/verify-dataset`.
 
 ## Step 1 — Start the dashboard
 

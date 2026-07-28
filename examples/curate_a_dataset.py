@@ -11,9 +11,11 @@ The pipeline:
 2. Load the raw data and apply minimal **preprocessing**.
 3. Run the **dataset checks** (sanity statistics, head, target distribution).
 4. Generate **outer CV splits** using the curation recommendations.
-5. Bundle everything into a :class:`CuratedContainer` and persist it under
-   the local data warehouse (round-trips via
-   :meth:`CuratedContainer.save` / :meth:`CuratedContainer.load`).
+5. Bundle everything into a :class:`CuratedContainer`.
+6. Run the **bundle checks** (:func:`data_foundry.bundle_checks.run_bundle_checks`) —
+   the cross-referential integrity checks that need the whole bundle at once.
+7. Persist it under the local data warehouse and **verify the export** round-tripped
+   (:func:`data_foundry.bundle_checks.verify_saved_container`).
 
 In the end, we run this inside a notebook under
 ``datasets/_dev/<topic>/<unique_name>/<unique_name>.ipynb`` so the curator
@@ -34,6 +36,7 @@ from __future__ import annotations
 import pandas as pd
 
 from data_foundry import dataset_checks
+from data_foundry.bundle_checks import run_bundle_checks, verify_saved_container
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import (
     get_recommended_iid_splits,
@@ -137,13 +140,36 @@ splits_mold = PredictiveMLSplitsMetadata(
     splits=splits,
 )
 
-# --- 5. Bundle + persist ------------------------------------------------------
+# --- 5. Bundle ----------------------------------------------------------------
 curated_data = CuratedContainer(
     dataset=df,
     dataset_metadata=dataset_mold,
     task_metadata=task_mold,
     experiment_metadata=splits_mold,
 )
-curated_data.save()
+print(curated_data.describe())
+
+# --- 6. Bundle checks ---------------------------------------------------------
+# Cross-referential integrity checks over the assembled bundle: do the metadata
+# columns exist, are the split indices positional and leak-free, does every fold's
+# train set cover its test classes, do the `data_tags` match the split regime.
+# Errors must be fixed; a warning you accept on purpose goes into `ignore=[...]`.
+report = run_bundle_checks(
+    curated_data,
+    ignore=[
+        # Known and documented in `curation_comments`: this dataset really does
+        # contain ~29% duplicated rows, including some with conflicting targets.
+        "dataset_duplicate_rows",
+        "dataset_conflicting_duplicate_rows",
+    ],
+)
+report.raise_if_errors()
+
+# --- 7. Persist + verify the export -------------------------------------------
+save_path = curated_data.save()
 print(curated_data.uuid)
 print(curated_data.checksum)
+
+# The one check that can only run after export: reload from disk and compare the
+# file inventory, checksum, dtypes, values, and metadata against what we saved.
+verify_saved_container(save_path, container=curated_data).raise_if_errors()

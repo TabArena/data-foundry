@@ -205,8 +205,14 @@ curated_data = CuratedContainer(
     task_metadata=task_mold,
     experiment_metadata=splits_mold,
 )
-curated_data.save()
+
+# --- Bundle checks, then save + verify the export
+from data_foundry.bundle_checks import run_bundle_checks, verify_saved_container
+
+run_bundle_checks(curated_data).raise_if_errors()
+save_path = curated_data.save()
 print(curated_data.uuid, curated_data.checksum)
+verify_saved_container(save_path, container=curated_data).raise_if_errors()
 ```
 
 For the contributor flow (where to put the notebook, how to open the PR, the `/new-dataset` Claude Code skill, best practices around versioning, anomaly tracking, and dtype handling), see [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
@@ -299,6 +305,7 @@ data-foundry/
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
 │   ├── curation_recommendations.py  # recommended split helpers (IID, grouped, temporal)
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats for the curation notebook
+│   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml

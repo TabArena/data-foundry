@@ -491,6 +491,7 @@ def test_versioned_save_path(tmp_path):
         data_tags=["IID"],
         curation_comments=None,
         version_from_unique_name="toy_base",
+        version_comment="Subsampled to 2 rows.",
     )
     task_metadata = PredictiveMLTaskMetadata(
         target_column_name="target",

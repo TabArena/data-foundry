@@ -87,7 +87,9 @@ $ARGUMENTS
 
 **Map task metadata fields** based on split type:
 - IID: `stratify_on="TODO"` if classification else `None`; `time_on=None`; `group_on=None`
-- Temporal: `time_on="TODO"`; `group_on=None`
+- Temporal: `time_on="TODO"`; `group_on=None`; and set `time_horizon` / `time_horizon_unit`
+  on the `PredictiveMLSplitsMetadata` — a temporal task without a declared horizon is a
+  bundle-check error
 - Grouped: `group_on="TODO"`; `group_labels="per_group"`
 
 ### Step 2: Create the folder
@@ -139,14 +141,24 @@ The notebook MUST be valid JSON with this exact structure. Use the template at `
 - For Grouped: only the `get_recommended_grouped_splits` call, with `show_splits=True` and `target_on=task_mold.target_column_name`, with `splits_comment="Default splits for grouped data."`
 - For Temporal: only the manual splits dict placeholder with TODO comment, with `splits_comment="Default splits for temporal data."`
 
-**Cell 16** (markdown): `## Export`
+**Cell 16** (markdown): `## Bundle` (identical to template)
 
-**Cell 17** (code): `CuratedContainer` save (identical to template)
+**Cell 17** (code): `CuratedContainer` construction + `describe()` (identical to template — do **not** save here)
 
-### Step 4: Verify
+**Cell 18** (markdown): `## Bundle Checks` (identical to template)
+
+**Cell 19** (code): `run_bundle_checks(...)` + `report.raise_if_errors()` (identical to template).
+Leave `ignore=[]` empty — the curator fills it in, with a reason per entry, once they have
+seen which warnings apply.
+
+**Cell 20** (markdown): `## Export` (identical to template)
+
+**Cell 21** (code): `save()` + `verify_saved_container(...)` (identical to template)
+
+### Step 4: Verify the scaffold
 
 After writing the notebook, read it back and verify it is valid JSON by checking:
-- All required cells are present (17 cells)
+- All required cells are present (21 cells)
 - The metadata fields are populated correctly
 - The file path is correct
 
@@ -155,3 +167,18 @@ Report to the user:
 - A summary of the populated metadata fields
 - Any fields left as TODO that the user needs to fill in manually
 - Any mapping decisions that were ambiguous
+
+### Step 5: Hand off to `/verify-dataset`
+
+Close the report by telling the user what happens next, in this order:
+
+1. fill in the TODOs and run the notebook — the **Bundle Checks** cell fails loudly on any
+   mechanical problem (missing columns, non-positional split indices, temporal leakage, a
+   temporal task without a `time_horizon`, unparseable BibTeX, …);
+2. once it runs clean, **run `/verify-dataset <path-to-notebook>`** for the second pass — the
+   provenance / scope / split-regime / leakage-by-semantics judgment that the automated checks
+   cannot make.
+
+Say this explicitly, with the notebook path filled in, so the user can copy the command. Do **not**
+run `/verify-dataset` yourself right after scaffolding: at that point the notebook is still full of
+TODOs and there is no bundle to check. Its input is a *filled-in, executed* notebook.

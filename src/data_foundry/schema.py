@@ -1,12 +1,24 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Annotated, Literal
 
 import pydantic
 
 MultilineStr = Annotated[str, "multiline"]
+
+SNAKE_CASE_PATTERN = re.compile(r"[a-z0-9]+(_[a-z0-9]+)*")
+"""Naming convention for ``unique_name`` (curation guidelines: standardize to snake_case)."""
+
+
+def as_column_list(value: str | list[str] | None) -> list[str]:
+    """Normalize a metadata field that holds one column name, several, or none."""
+    if value is None:
+        return []
+    return list(value) if isinstance(value, list) else [value]
+
 
 DEFAULT_LOCAL_DATA_DIR = str(Path(__file__).parent.parent.parent / "local-data-warehouse")
 """Default local data warehouse directory (used when no env var override is set).
@@ -179,6 +191,27 @@ class DatasetMetadata:
     type_adapter_id: str = "dataset-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
+    def __post_init__(self):
+        """Validate what is checkable from this object alone.
+
+        Cross-object and data-dependent checks (does the BibTeX compile, do the tags
+        match the split regime, ...) live in :mod:`data_foundry.bundle_checks`.
+        """
+        if not SNAKE_CASE_PATTERN.fullmatch(self.unique_name or ""):
+            raise ValueError(
+                f"unique_name must be non-empty snake_case ([a-z0-9_]), got {self.unique_name!r}.",
+            )
+        if self.version_from_unique_name is not None:
+            if self.version_from_unique_name == self.unique_name:
+                raise ValueError(
+                    f"version_from_unique_name equals unique_name ({self.unique_name!r}); a dataset cannot be a "
+                    "version of itself. Give the version a distinct unique_name (e.g. `<name>_1m`).",
+                )
+            if not (self.version_comment or "").strip():
+                raise ValueError(
+                    "version_comment must describe how this version differs when version_from_unique_name is set.",
+                )
+
     @property
     def path(self) -> Path:
         """Local directory where this dataset's raw downloads live.
@@ -290,6 +323,15 @@ class PredictiveMLTaskMetadata:
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
     def __post_init__(self):
+        """Validate that the split configuration is internally coherent.
+
+        Only checks that need no dataset and no other metadata object — whether the
+        columns named here exist, have the right dtype, or match the splits is checked
+        by :mod:`data_foundry.bundle_checks` once the bundle is assembled.
+        """
+        if not (self.target_column_name or "").strip():
+            raise ValueError("target_column_name must name the target column.")
+
         # either group_on or time_on can be set, but not both
         if (self.group_on is not None) and (self.time_on is not None):
             raise ValueError(
@@ -299,6 +341,37 @@ class PredictiveMLTaskMetadata:
             raise ValueError(
                 "If group_on is set, then group_labels must also be set to indicate whether "
                 "the group labels are per group or per sample."
+            )
+        if (self.group_on is None) and (self.group_labels is not None):
+            raise ValueError(
+                f"group_labels={self.group_labels!r} is set but group_on is None; group labels only describe a "
+                "grouped task.",
+            )
+        if (self.group_on is None) and (self.group_time_on is not None):
+            raise ValueError(
+                f"group_time_on={self.group_time_on!r} is set but group_on is None. Use `time_on` for the time "
+                "column of a temporal split; `group_time_on` only records the time ordering *within* groups.",
+            )
+
+        group_columns = as_column_list(self.group_on)
+        if len(set(group_columns)) != len(group_columns):
+            raise ValueError(f"group_on contains duplicate column names: {self.group_on!r}.")
+
+        for field_name in ("time_on", "group_time_on"):
+            if getattr(self, field_name) == self.target_column_name:
+                raise ValueError(
+                    f"{field_name} cannot be the target column ({self.target_column_name!r}).",
+                )
+        if self.target_column_name in group_columns:
+            raise ValueError(
+                f"group_on cannot contain the target column ({self.target_column_name!r}).",
+            )
+
+        if (self.target_column_name in as_column_list(self.stratify_on)) and not self.is_classification:
+            raise ValueError(
+                f"stratify_on names the target column ({self.target_column_name!r}) but problem_type is "
+                f"{self.problem_type!r}. A continuous target cannot be stratified on — drop stratify_on, or "
+                "stratify on a discrete feature instead.",
             )
 
     @property
@@ -410,6 +483,47 @@ class PredictiveMLSplitsMetadata:
 
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    def __post_init__(self):
+        """Validate the shape of the splits container and the horizon fields.
+
+        Deliberately cheap: only checks that need neither the dataset nor the task
+        metadata, so loading a container stays O(#folds) here. Everything that needs
+        the data (index bounds, train/test overlap, leakage, coverage) is checked by
+        :mod:`data_foundry.bundle_checks`.
+        """
+        if not self.splits:
+            raise ValueError("splits must contain at least one repeat with one train/test split.")
+
+        folds_per_repeat = {repeat_id: len(folds) for repeat_id, folds in self.splits.items()}
+        empty_repeats = [repeat_id for repeat_id, n_folds in folds_per_repeat.items() if n_folds == 0]
+        if empty_repeats:
+            raise ValueError(f"Repeats {empty_repeats} contain no splits.")
+        if len(set(folds_per_repeat.values())) > 1:
+            raise ValueError(
+                f"Every repeat must hold the same number of splits, got {folds_per_repeat}. Consumers assume a "
+                "rectangular (repeat x fold) grid.",
+            )
+        for repeat_id, folds in self.splits.items():
+            for fold_id, (train_indices, test_indices) in folds.items():
+                if not train_indices or not test_indices:
+                    raise ValueError(
+                        f"Split (repeat={repeat_id}, fold={fold_id}) has an empty "
+                        f"{'train' if not train_indices else 'test'} set.",
+                    )
+
+        if (self.time_horizon is None) != (self.time_horizon_unit is None):
+            raise ValueError(
+                f"time_horizon ({self.time_horizon!r}) and time_horizon_unit ({self.time_horizon_unit!r}) must be "
+                "set together — a horizon without a unit is ambiguous.",
+            )
+        if self.time_horizon is not None:
+            try:
+                horizon = float(self.time_horizon)
+            except (TypeError, ValueError):
+                horizon = None
+            if horizon is not None and horizon <= 0:
+                raise ValueError(f"time_horizon must be positive, got {self.time_horizon!r}.")
 
     def describe(self) -> str:
         """Return a human-readable summary of the outer splits and split metadata.

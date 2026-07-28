@@ -246,6 +246,73 @@ def test_predictive_task_invalid_problem_type_raises():
         )
 
 
+@pytest.mark.parametrize(
+    ("task_kwargs", "match"),
+    [
+        ({"target_column_name": " "}, "target_column_name"),
+        ({"group_labels": "per_group"}, "group_labels"),
+        ({"group_time_on": "ts"}, "group_time_on"),
+        ({"time_on": "y"}, "time_on cannot be the target"),
+        ({"group_on": ["y", "g"], "group_labels": "per_sample"}, "group_on cannot contain the target"),
+        ({"group_on": ["g", "g"], "group_labels": "per_sample"}, "duplicate column names"),
+    ],
+)
+def test_predictive_task_incoherent_split_config_raises(task_kwargs, match):
+    kwargs = {
+        "target_column_name": "y",
+        "problem_type": "regression",
+        "objective_metric_name": "rmse",
+        **task_kwargs,
+    }
+    with pytest.raises(pydantic.ValidationError, match=match):
+        PredictiveMLTaskMetadata(**kwargs)
+
+
+def test_predictive_task_stratify_on_target_requires_classification():
+    with pytest.raises(pydantic.ValidationError, match="stratify_on names the target column"):
+        PredictiveMLTaskMetadata(
+            target_column_name="y",
+            problem_type="regression",
+            objective_metric_name="rmse",
+            stratify_on="y",
+        )
+
+
+def test_predictive_task_stratify_on_feature_is_allowed_for_regression():
+    tm = PredictiveMLTaskMetadata(
+        target_column_name="y",
+        problem_type="regression",
+        objective_metric_name="rmse",
+        stratify_on="region",
+    )
+    assert tm.stratify_on == "region"
+
+
+@pytest.mark.parametrize(
+    "unique_name",
+    ["", "Toy", "toy-ds", "toy ds", "_toy", "toy__ds"],
+)
+def test_dataset_metadata_rejects_non_snake_case_names(base_dataset_metadata_kwargs, unique_name):
+    kwargs = dict(base_dataset_metadata_kwargs)
+    kwargs["unique_name"] = unique_name
+    with pytest.raises(pydantic.ValidationError, match="snake_case"):
+        DatasetMetadata(**kwargs)
+
+
+def test_dataset_metadata_version_requires_comment(base_dataset_metadata_kwargs):
+    with pytest.raises(pydantic.ValidationError, match="version_comment"):
+        DatasetMetadata(**base_dataset_metadata_kwargs, version_from_unique_name="other_ds")
+
+
+def test_dataset_metadata_version_of_itself_raises(base_dataset_metadata_kwargs):
+    with pytest.raises(pydantic.ValidationError, match="version of itself"):
+        DatasetMetadata(
+            **base_dataset_metadata_kwargs,
+            version_from_unique_name=base_dataset_metadata_kwargs["unique_name"],
+            version_comment="c",
+        )
+
+
 # --- PredictiveMLSplitsMetadata ---
 
 
@@ -295,6 +362,34 @@ def test_predictive_splits_metadata_defaults_are_none():
     sm = PredictiveMLSplitsMetadata(splits_comment="x", splits={0: {0: ([0], [1])}})
     assert sm.time_horizon is None
     assert sm.time_horizon_unit is None
+
+
+@pytest.mark.parametrize(
+    ("splits_kwargs", "match"),
+    [
+        ({"splits": {}}, "at least one repeat"),
+        ({"splits": {0: {}}}, "no splits"),
+        ({"splits": {0: {0: ([0], [1])}, 1: {0: ([0], [1]), 1: ([1], [0])}}}, "same number of splits"),
+        ({"splits": {0: {0: ([], [1])}}}, "empty train"),
+        ({"splits": {0: {0: ([0], [])}}}, "empty test"),
+        ({"splits": {0: {0: ([0], [1])}}, "time_horizon": 6}, "must be set together"),
+        ({"splits": {0: {0: ([0], [1])}}, "time_horizon_unit": "days"}, "must be set together"),
+        ({"splits": {0: {0: ([0], [1])}}, "time_horizon": 0, "time_horizon_unit": "days"}, "must be positive"),
+    ],
+)
+def test_predictive_splits_metadata_invalid_shapes_raise(splits_kwargs, match):
+    with pytest.raises(pydantic.ValidationError, match=match):
+        PredictiveMLSplitsMetadata(splits_comment="x", **splits_kwargs)
+
+
+def test_predictive_splits_metadata_accepts_string_time_horizon():
+    sm = PredictiveMLSplitsMetadata(
+        splits_comment="x",
+        splits={0: {0: ([0], [1])}},
+        time_horizon="one growing season",
+        time_horizon_unit="custom",
+    )
+    assert sm.time_horizon == "one growing season"
 
 
 # --- DatasetMetadata.path / warehouse resolution ---

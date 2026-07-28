@@ -26,7 +26,8 @@ Data Foundry is the data-layer toolkit behind
 * a **collections API** that pins immutable `(unique_name, uuid)` pointers
   and resolves them against a local warehouse or the BeyondArena Hugging
   Face mirror, with cache + force-download semantics (`collections/`);
-* helpers used by curation notebooks — sanity checks (`dataset_checks.py`)
+* helpers used by curation notebooks — exploratory data checks
+  (`dataset_checks.py`), post-hoc bundle integrity checks (`bundle_checks.py`)
   and recommended outer-CV split builders (`curation_recommendations.py`);
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
@@ -65,11 +66,22 @@ subfolder picking, BibTeX templates, and which split helper to call for
 which regime. **Always read that file before scaffolding.** It encodes
 decisions you would otherwise have to guess at.
 
-The skill writes a 17-cell notebook based on
+The skill writes a 21-cell notebook based on
 `datasets/_template/_template.ipynb`. Read the template before writing so
 the JSON structure is exact.
 
-### 2. Helping a curator triage the backlog (curation dashboard + guidelines)
+### 2. Verifying a filled-in notebook before it ships
+
+Once the curator has filled in and run the notebook, the `/verify-dataset` slash
+command ([`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md))
+is the second pass: it runs `bundle_checks` for the mechanical invariants and then
+works a 13-item **judgment rubric** for what code cannot settle — is the link really
+the original source, does the split regime match the real application, would every
+feature have been known at prediction time, do the `curation_comments` describe what
+the code actually does, does the BibTeX cite the right work. Verdicts are advisory;
+`cannot-verify` is a valid outcome and must never be reported as `pass`.
+
+### 3. Helping a curator triage the backlog (curation dashboard + guidelines)
 
 The backlog is **one markdown record per candidate dataset** in `curation/records/`
 (`<unique_name>.md`: YAML front-matter for structured/dropdown fields + a body with
@@ -102,7 +114,7 @@ intentional state** — the dataset is in Data Foundry but not in a shipped coll
 `datasets/_maintenance/_deprecated/README.md`. (The separate `collections` field is only
 for *external* benchmarks the dataset also appears in: TabSTAR, TabRed, CARTE/TARTE, ….)
 
-### 3. Extending the package (schema, container, collections, examples)
+### 4. Extending the package (schema, container, collections, examples)
 
 When changing core code:
 
@@ -118,8 +130,25 @@ When changing core code:
   `PredictiveMLSplitsMetadata`, and `CuratedContainer` are the human-facing
   surface — keep them in sync if you add or rename schema fields.
 
-### 4. Curation tooling work (checks, recommended splits, helpers)
+### 5. Curation tooling work (checks, recommended splits, helpers)
 
+**There are three check layers; put a new check in the right one.**
+
+| Layer | Where | Scope |
+|---|---|---|
+| creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
+| exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames whose rendered output is committed in the notebooks — don't change its output shape lightly. |
+| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. This is the default home for anything new. |
+
+* `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
+  (errors / warnings / infos, each with a stable `slug`); the notebook calls
+  `report.raise_if_errors()` before `save()`, and
+  `verify_saved_container(save_path, container=...)` after it. A check that
+  fires on a legitimately unusual dataset is accepted via `ignore=[slug]` in
+  the notebook, with a reason.
+* When adding a check, calibrate it against the shipped collection before
+  choosing its severity (`error` only for "no consumer can use this"), and
+  keep O(rows x cols) work behind the `heavy_cell_budget` guard.
 * `dataset_checks.run_all_checks(...)` returns five DataFrames — see
   `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
   the warehouse-wide stats are computed; that file's dtype categorization
@@ -128,7 +157,7 @@ When changing core code:
   IID and grouped have automated helpers; temporal splits are still
   manual.
 
-### 5. Repo plumbing (CI, packaging, release)
+### 6. Repo plumbing (CI, packaging, release)
 
 `pyproject.toml` carries PyPI metadata. The release flow is documented in
 `README.md` under "Releasing to PyPI" — `uv build` + `uv publish`. Don't
@@ -183,8 +212,10 @@ bump versions or publish without explicit human authorization.
 | Start the dashboard + load curation context | [`.claude/commands/curate.md`](.claude/commands/curate.md) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
+| Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
 | Notebook scaffolding skill | [`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md) |
+| Verify a filled-in notebook / bundle (checks + judgment rubric) | [`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md) |
 | Browse / prefetch a collection | [`.claude/commands/browse-collection.md`](.claude/commands/browse-collection.md) |
 | Load a single dataset | [`.claude/commands/get-dataset.md`](.claude/commands/get-dataset.md) |
 | Fit + score a model on a dataset | [`.claude/commands/benchmark-dataset.md`](.claude/commands/benchmark-dataset.md) |
