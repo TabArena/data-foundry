@@ -113,6 +113,16 @@
   .tabulator-row.pinned .tabulator-cell.pincol { box-shadow: inset 3px 0 0 #f59e0b; }
   .tabulator-cell.single-line { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .tabulator-cell.wrap-cell { white-space:normal !important; height:auto; line-height:1.7; }
+  /* Long comments are collapsed to CMT_CLAMP_LINES lines with a "▾ more" toggle. This is not
+     only cosmetic: a full comment can make a row taller than the window, and Tabulator anchors
+     a cell's editor list to the BOTTOM of the cell — on a window-tall row that lands the list
+     off-screen (see clampEditList). Capping the row height keeps every editor reachable. */
+  .tabulator-cell .cmt { white-space:pre-wrap; }
+  .tabulator-cell .cmt.clamped { display:-webkit-box; -webkit-line-clamp:var(--cmt-lines,4);
+    -webkit-box-orient:vertical; overflow:hidden; }
+  .cmt-more { display:block; margin-top:2px; border:0; background:transparent; cursor:pointer;
+    padding:0; font:inherit; font-size:11.5px; color:#2d6cdf; opacity:.85; }
+  .cmt-more:hover { opacity:1; text-decoration:underline; }
   /* modal */
   #overlay { position:fixed; inset:0; background:rgba(20,26,38,.45); display:none; z-index:100; }
   #overlay.show { display:block; }
@@ -671,6 +681,81 @@ function pinFmt(cell) {
     : "";
   return `<span class="pincell">${pin}${rec}${nb}${verify}</span>`;
 }
+// ---- comments: collapsed by default, click "▾ more" to expand ----------------
+// Records carry multi-paragraph comments, and an unclamped `comments` cell drives the whole
+// row's height (the column is variableHeight). Besides the scrolling cost, a row taller than
+// the window makes every editor on that row unusable — Tabulator positions a cell editor's
+// option list below the cell, so a window-tall cell puts the list off-screen. Clamping the
+// cell to a few lines fixes both, and `clampEditList` covers whatever still overflows.
+const CMT_CLAMP_LINES = 4;
+const CMT_CHARS_PER_LINE = 52;    // ~340px of 13px text; only used to decide "is this long?"
+const cmtExpanded = new Set();    // unique_names whose comment cell is currently expanded
+
+// Cheap line estimate — a real measurement would need a layout pass per cell on every redraw.
+function estLines(text) {
+  return text.split("\n").reduce((n, ln) => n + Math.max(1, Math.ceil(ln.length / CMT_CHARS_PER_LINE)), 0);
+}
+// Returns an element (not an HTML string) so the toggle can own its listeners and stop the
+// click from reaching the cell — otherwise Tabulator would open the textarea editor instead.
+function commentsFmt(cell) {
+  const raw = String(cell.getValue() || "");
+  const wrap = document.createElement("div");
+  if (!raw) return wrap;
+  const id = cell.getRow().getData().unique_name;
+  const long = estLines(raw) > CMT_CLAMP_LINES;
+  const open = cmtExpanded.has(id);
+  const body = document.createElement("div");
+  body.className = "cmt" + (long && !open ? " clamped" : "");
+  body.style.setProperty("--cmt-lines", CMT_CLAMP_LINES);
+  body.textContent = raw;
+  wrap.appendChild(body);
+  if (!long) return wrap;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "cmt-more";
+  btn.textContent = open ? "▴ less" : "▾ more";
+  btn.title = open ? "Collapse this comment" : "Show the full comment (the cell stays editable — click the text)";
+  // Both events must be stopped: Tabulator binds the edit trigger to the cell element, so an
+  // un-stopped click on the toggle would expand the comment *and* drop into the editor.
+  btn.addEventListener("mousedown", e => { e.stopPropagation(); e.preventDefault(); });
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    if (cmtExpanded.has(id)) cmtExpanded.delete(id); else cmtExpanded.add(id);
+    cell.getRow().reformat();
+  });
+  wrap.appendChild(btn);
+  return wrap;
+}
+
+// Tabulator anchors a cell editor's option list to the BOTTOM of the cell element and, when that
+// overflows the window, flips it up by the cell's own height (Popup._fitToScreen). Both rules
+// assume a normal-height cell: on a variableHeight row taller than the window the list ends up
+// entirely above the viewport, invisible and unclickable — and because any stray click then
+// blurs the editor, it reads as "it saved and closed the list on its own". Nudge it back into
+// view once Tabulator has positioned and measured it.
+function clampEditList(el) {
+  const h = el.offsetHeight;
+  const lo = window.scrollY + 8;
+  const hi = window.scrollY + window.innerHeight - h - 8;
+  const top = parseFloat(el.style.top);
+  if (!Number.isFinite(top)) return;
+  const want = Math.max(lo, Math.min(top, Math.max(lo, hi)));
+  if (Math.abs(want - top) > 1) el.style.top = want + "px";
+}
+function watchEditLists() {
+  const obs = new MutationObserver(muts => {
+    for (const m of muts) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.classList.contains("tabulator-edit-list") || n.classList.contains("tabulator-edit-select-list")) {
+          requestAnimationFrame(() => clampEditList(n));
+        }
+      }
+    }
+  });
+  obs.observe(document.body, { childList: true });
+}
+
 function togglePin(row) {
   const id = row.getData().unique_name;
   if (pinned.has(id)) { pinned.delete(id); try { row.unfreeze(); } catch (e) { /* not frozen */ } }
@@ -1205,7 +1290,7 @@ function columnDefs() {
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
       c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true };
-      if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = "textarea"; }
+      if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = commentsFmt; }
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }
     if (name === "data_foundry_status") c.width = 170;  // multiselect: DF state + benchmark tags
@@ -1238,6 +1323,22 @@ async function onEdit(cell) {
   if (spec.kind === "links") value = splitLines(value);
   else if (spec.kind === "multiselect") value = asArray(value);
   else if (value === "") value = null;
+  // Tabulator commits a cell editor on blur, so merely opening a dropdown and clicking away
+  // fires cellEdited with an untouched value. Don't PUT (or toast "Saved") for a no-op: the
+  // spurious confirmation reads as "I just saved something I didn't mean to change".
+  let old = cell.getOldValue();
+  if (spec.kind === "links") old = splitLines(old);
+  else if (spec.kind === "multiselect") old = asArray(old);
+  else if (old === "") old = null;
+  if (JSON.stringify(value) === JSON.stringify(old)) return;
+  // The list editor rebuilds a multiselect's value in vocabulary order, so re-opening a dropdown
+  // and clicking away can come back with the same tags in a different order. That is still a
+  // no-op record-wise; put the stored order back so the cell keeps matching the file on disk.
+  if (spec.kind === "multiselect" && value.length === old.length
+      && [...value].sort().join(" ") === [...old].sort().join(" ")) {
+    cell.restoreOldValue();
+    return;
+  }
   try {
     await registerNew(spec.vocab, asArray(value));
     const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
@@ -1528,6 +1629,7 @@ async function boot() {
   table.on("dataFiltered", (filters, rows) => updateCount(rows));
   table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); });
 
+  watchEditLists();
   document.getElementById("search").addEventListener("input", applyFilters);
   document.getElementById("clearFilters").addEventListener("click", clearEverything);
   document.getElementById("shareLink").addEventListener("click", copyShareLink);

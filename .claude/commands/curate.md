@@ -126,6 +126,14 @@ needs checking. Do **not** append entries that merely restate a field edit ("mar
 when, so such notes are pure noise. A dated `CC (YYYY-MM-DD, Name):` comment is for *new
 reasoning or facts* accompanying a change, not for the change itself.
 
+**Keep comments minimal — substance is not volume.** Record only the key information a curator
+needs to act: what the dataset really is, the decisive reason for the verdict, where the data can
+be obtained, what still needs checking. A few sentences is normal; a screenful is almost always too
+much. Do **not** dump everything you learned while investigating — per-column missingness, byte
+sizes, checksums, download-endpoint mechanics, side observations, or restatements of front-matter
+fields. Those belong in the curation notebook, not the record. If you were asked for one thing (a
+download link, a duplicate check), write *that* down, not a report of the whole investigation.
+
 ### Quick decision patterns (generalized — apply, then verify per-dataset)
 
 Recurring signals → the usual `decision_markers` + `suggestion`. These are heuristics to
