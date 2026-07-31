@@ -24,5 +24,7 @@ gotchas that look like blockers but aren't — lives in
 * **Conventions:** `from __future__ import annotations` is mandatory; lines
   ≤120 chars; Google-style docstrings; no commits/pushes without explicit
   human ask.
+* **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it
+  applies to docstrings, markdown, commit messages, and chat replies.
 
 See [AGENTS.md](AGENTS.md) for the long form.
