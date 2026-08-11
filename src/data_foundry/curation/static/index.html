@@ -622,6 +622,13 @@ function moveTip(e) {
   el.style.left = Math.max(4, x) + "px"; el.style.top = Math.max(4, y) + "px";
 }
 function hideTip() { clearTimeout(_tipTimer); document.getElementById("cellTip").classList.remove("show"); }
+// Tip text for a cell whose value is cut off by the column width — "" (no tip) when it
+// fits. Used for `unique_name`: it is one unbreakable token, so a long one is simply
+// clipped, and a hover is the only way to read the rest of it.
+function clippedValueTip(cell) {
+  const el = cell.getElement();
+  return el.scrollWidth > el.clientWidth + 1 ? String(cell.getValue() || "") : "";
+}
 
 // formatters
 function multiChips(field) { return cell => (cell.getValue() || []).map(v => chipHtml(field, v)).join(""); }
@@ -762,6 +769,26 @@ function togglePin(row) {
   else { pinned.add(id); try { row.freeze(); } catch (e) { /* freeze unsupported */ } }
   row.reformat();
   applyFilters();
+}
+
+// A pinned row is a Tabulator *frozen row*, and Tabulator renders those in
+// `.tabulator-frozen-rows-holder` — which it inserts into the HEADER area, outside the
+// scrollable `.tabulator-tableholder`. So a wheel event over a pinned row has no scrollable
+// ancestor and the grid does not move, which reads as the mouse being stuck on that row.
+// Forward the wheel to the body scroller by hand. (The holder exists from table build on,
+// empty until something is pinned, so this is wired once.)
+function forwardFrozenRowScroll() {
+  const grid = document.getElementById("grid");
+  const holder = grid.querySelector(".tabulator-frozen-rows-holder");
+  const scroller = grid.querySelector(".tabulator-tableholder");
+  if (!holder || !scroller) return;
+  holder.addEventListener("wheel", e => {
+    // deltaMode: 0 = pixels, 1 = lines, 2 = pages — normalise to pixels before scrolling.
+    const px = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? scroller.clientHeight : 1;
+    scroller.scrollTop += e.deltaY * px;
+    scroller.scrollLeft += e.deltaX * px;
+    e.preventDefault();  // without this the page, not the grid, would swallow the scroll
+  }, { passive: false });
 }
 
 // ---- column filter: header button + tri-state popover ----------------------
@@ -1258,7 +1285,11 @@ function columnDefs() {
   // (The ✓ verify action lives in the leftmost pin column, stacked under 📌 on AI-reviewed rows.)
   for (const name of PRIMARY) {
     if (name === "unique_name") {
-      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false, ...TEXT_FILTER });
+      // 180px clips the longer names; hovering the cell shows the full value (see clippedValueTip).
+      cols.push({ title: "unique_name", field: "unique_name", frozen: true, width: 180, editor: false,
+        cssClass: "single-line", headerTooltip: "Hover a clipped name to read it in full",
+        cellMouseEnter: (e, cell) => showTip(e, clippedValueTip(cell)),
+        cellMouseMove: e => moveTip(e), cellMouseLeave: () => hideTip(), ...TEXT_FILTER });
       continue;
     }
     const f = BY_NAME[name];
@@ -1627,7 +1658,7 @@ async function boot() {
   });
   if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
   table.on("dataFiltered", (filters, rows) => updateCount(rows));
-  table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); });
+  table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); forwardFrozenRowScroll(); });
 
   watchEditLists();
   document.getElementById("search").addEventListener("input", applyFilters);
