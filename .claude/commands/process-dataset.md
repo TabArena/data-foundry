@@ -1,4 +1,8 @@
-Create a new dataset curation notebook for the data-foundry project in the `datasets/beyond_iid/` folder.
+Process a decided candidate into a curated dataset: scaffold its curation notebook for the
+data-foundry project in the `datasets/beyond_iid/` folder.
+
+The dataset should already have been triaged (`/triage-candidates`) and come out a `Yes`; to check
+the notebook once it is filled in and run, use `/verify-dataset`.
 
 ## Input
 

@@ -103,10 +103,10 @@ write your reasoning into `## Comments`.
 The recommended way to work is Claude-assisted: open Claude Code in the repo and run
 
 ```
-/curate
+/triage-candidates
 ```
 
-The command ([`.claude/commands/curate.md`](../../../.claude/commands/curate.md))
+The command ([`.claude/commands/triage-candidates.md`](../../../.claude/commands/triage-candidates.md))
 starts the local dashboard for you **and** loads the curation guidelines into
 context — so Claude can research candidates, draft provisional triages (honestly
 labelled `AI (UNVERIFIED)` for you to verify), and answer "does this belong in
@@ -149,8 +149,8 @@ documented in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTING_DATASETS.md); t
 skeleton to copy is [`datasets/_template/_template.ipynb`](../../_template/_template.ipynb),
 and for Atlas the notebook goes to `datasets/_dev/atlas/<unique_name>/<unique_name>.ipynb`.
 
-**The fast way:** inside Claude Code, run the **`/new-dataset`** slash command
-([`.claude/commands/new-dataset.md`](../../../.claude/commands/new-dataset.md)) and
+**The fast way:** inside Claude Code, run the **`/process-dataset`** slash command
+([`.claude/commands/process-dataset.md`](../../../.claude/commands/process-dataset.md)) and
 **link the dataset's curation record from the prior step**
 (`curation/records/<unique_name>.md`) as the metadata source — it scaffolds the
 notebook with the metadata, BibTeX, and the right split helper pre-filled, and the

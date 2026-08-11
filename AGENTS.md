@@ -54,13 +54,13 @@ notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
 
 Roughly ordered by how often agents are useful here:
 
-### 1. Scaffolding a new curation notebook from spreadsheet metadata
+### 1. Processing a dataset — scaffolding its curation notebook from spreadsheet metadata
 
 Highest-value: the curator has tab-separated metadata from a spreadsheet
 and wants a populated notebook under `datasets/_dev/<topic>/<unique_name>/`.
 
-The `/new-dataset` slash command at
-[`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md) is the
+The `/process-dataset` slash command at
+[`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md) is the
 canonical procedure — column mappings, snake-case conversion, target
 subfolder picking, BibTeX templates, and which split helper to call for
 which regime. **Always read that file before scaffolding.** It encodes
@@ -92,15 +92,16 @@ feature have been known at prediction time, do the `curation_comments` describe 
 the code actually does, does the BibTeX cite the right work. Verdicts are advisory;
 `cannot-verify` is a valid outcome and must never be reported as `pass`.
 
-### 3. Helping a curator triage the backlog (curation dashboard + guidelines)
+### 3. Triaging candidate datasets (curation dashboard + guidelines)
 
 The backlog is **one markdown record per candidate dataset** in `curation/records/`
 (`<unique_name>.md`: YAML front-matter for structured/dropdown fields + a body with
 `## Comments` / `## Reference`).
 
-To assist, run the **`/curate`** slash command
-([`.claude/commands/curate.md`](.claude/commands/curate.md)). It starts the local
-dashboard (`data-foundry-curation serve` → http://127.0.0.1:8765) and, importantly,
+To assist, run the **`/triage-candidates`** slash command
+([`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md)).
+It starts the local dashboard
+(`data-foundry-curation serve` → http://127.0.0.1:8765) and, importantly,
 **loads the curation guidelines** — the IID/non-IID background, the dataset
 *selection criteria*, and the *processing* conventions. **Read those guidelines
 before advising** whether a dataset belongs in the benchmark or how to process it;
@@ -223,12 +224,12 @@ bump versions or publish without explicit human authorization.
 | Curation backlog (records, dashboard, import/export) | [`src/data_foundry/curation/`](src/data_foundry/curation/) |
 | Curation records + dropdown vocab (data) | [`curation/`](curation) |
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
-| Start the dashboard + load curation context | [`.claude/commands/curate.md`](.claude/commands/curate.md) |
+| Triage candidates — dashboard + curation guidelines | [`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
-| Notebook scaffolding skill | [`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md) |
+| Process a dataset — scaffold its curation notebook | [`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md) |
 | Verify a filled-in notebook / bundle (checks + judgment rubric) | [`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md) |
 | Browse / prefetch a collection | [`.claude/commands/browse-collection.md`](.claude/commands/browse-collection.md) |
 | Load a single dataset | [`.claude/commands/get-dataset.md`](.claude/commands/get-dataset.md) |

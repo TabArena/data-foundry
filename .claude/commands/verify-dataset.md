@@ -8,11 +8,11 @@ $ARGUMENTS
 ## When to invoke
 
 * A curation notebook has been filled in and the curator wants a second pass before the PR.
-* `/new-dataset` scaffolded a notebook, the curator has since run it, and it is time to check.
+* `/process-dataset` scaffolded a notebook, the curator has since run it, and it is time to check.
 * A shipped dataset is suspected of a problem (leakage, wrong split, wrong provenance).
 * The curator asks "is this dataset ready / correct / leaky / really original?"
 
-Related: `/curate` for the backlog record and the selection criteria; `/new-dataset` to scaffold
+Related: `/triage-candidates` for the backlog record and the selection criteria; `/process-dataset` to scaffold
 a notebook; `/get-dataset` to load a shipped container.
 
 ## What this is, and what it is not
@@ -27,7 +27,7 @@ There are two halves to verification and they must not be confused:
   does. Code cannot settle these. This is what you are for.
 
 Your verdict is **advisory**. A human curator has the final say (same contract as the
-`AI (UNVERIFIED)` convention in `/curate`).
+`AI (UNVERIFIED)` convention in `/triage-candidates`).
 
 ## Step 0 — Locate the inputs
 
@@ -76,7 +76,7 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | # | Item | What to actually check |
 |---|---|---|
 | 1 | **Original source** | Does the link bottom out at the *original* publication (paper, competition, institution), not an anonymous re-upload? A working Kaggle/OpenML link is not provenance. Does `dataset_source` name where the data first appeared? |
-| 2 | **Uniqueness** | Is this the same underlying data as another dataset in the collection under a different name — including a different target/slice/version of one cohort? Compare canonical links and follow each to its origin (see `/curate` for the method). |
+| 2 | **Uniqueness** | Is this the same underlying data as another dataset in the collection under a different name — including a different target/slice/version of one cohort? Compare canonical links and follow each to its origin (see `/triage-candidates` for the method). |
 | 3 | **Scope** | Was it *published for* a predictive classification/regression task? Exclude time-series forecasting, CTR, ranking/recsys, non-predictive survey/discovery tables. Scope by the **original** task, not the re-upload's framing. |
 | 4 | **Split regime** | Does `time_on`/`group_on`/neither match the real application? Read the source description; a prescribed random split is a *claim*, not evidence. A missing timestamp does not make a stream of contemporaneous readings IID. Check for grouped structure inside a temporal task (repeated entities over time) and vice versa. |
 | 5 | **Availability at prediction time** | Would every feature have been known at time *t*? Aggregates computed over the full dataset, post-outcome fields, or anything the source computed after the label are leaks. Temporal tasks: is the planning gap real? |
@@ -86,10 +86,10 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | 9 | **Target & metric** | Is the target the original task's target, and is `objective_metric_name` the metric the original task/competition scored? If the checks flagged `task_metric_unknown`, confirm the custom metric is intended and registered downstream. |
 | 10 | **License & citation** | Is the license what the source actually states (the checks only see whether the field is filled)? Does the BibTeX cite the *right* work — the paper/competition that published this data, not a paper that merely used it? Syntax being valid says nothing about correctness. |
 | 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
-| 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in `/curate`. |
+| 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in `/triage-candidates`. |
 | 13 | **Trivial** | Do the committed check outputs suggest every model would score identically or solve it perfectly? If so, flag it — a trivial task is an exclusion. |
 
-Load the selection criteria and processing conventions from `/curate` before judging items 1–4 and
+Load the selection criteria and processing conventions from `/triage-candidates` before judging items 1–4 and
 12–13; they encode decisions you would otherwise guess at.
 
 ## Step 3 — Report
@@ -109,6 +109,6 @@ Load the selection criteria and processing conventions from `/curate` before jud
   let the curator do it.
 * **Do not edit committed notebook outputs.** They are the evidence trail.
 * If you record findings in the backlog record (`curation/records/<unique_name>.md`), follow the
-  `AI (UNVERIFIED)` convention from `/curate` and preserve existing human `CC (…)` notes.
+  `AI (UNVERIFIED)` convention from `/triage-candidates` and preserve existing human `CC (…)` notes.
 * Substance over volume: a short report with three real concerns beats thirteen paragraphs of
   "verified, looks good".

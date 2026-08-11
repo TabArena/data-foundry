@@ -44,7 +44,7 @@ def _notebook_index(datasets_dir: str) -> dict[str, str]:
     """Map a dataset ``unique_name`` -> its repo-relative curation-notebook path.
 
     Only the canonical per-dataset notebook counts: ``datasets/**/<name>/<name>.ipynb``
-    (the layout ``/new-dataset`` scaffolds). Cached because the datasets tree is large and
+    (the layout ``/process-dataset`` scaffolds). Cached because the datasets tree is large and
     static for the lifetime of a serve/build.
     """
     base = Path(datasets_dir)

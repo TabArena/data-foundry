@@ -215,7 +215,7 @@ print(curated_data.uuid, curated_data.checksum)
 verify_saved_container(save_path, container=curated_data).raise_if_errors()
 ```
 
-For the contributor flow (where to put the notebook, how to open the PR, the `/new-dataset` Claude Code skill, best practices around versioning, anomaly tracking, and dtype handling), see [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
+For the contributor flow (where to put the notebook, how to open the PR, the `/process-dataset` Claude Code skill, best practices around versioning, anomaly tracking, and dtype handling), see [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
 
 </details>
 
@@ -250,8 +250,8 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The **`/curate`** slash command starts the dashboard and loads the
-curation guidelines into context so the agent can help you decide and process datasets.
+Working with Claude Code? The **`/triage-candidates`** slash command starts the dashboard and
+loads the curation guidelines into context so the agent can help you decide and process datasets.
 
 </details>
 
@@ -334,7 +334,7 @@ The short version:
    [`datasets/beyond_iid/final_uuid_list.py`](datasets/beyond_iid/final_uuid_list.py).
 
 The long version (field-by-field walkthrough, split-helper choice, dtype
-gotchas, the `/new-dataset` Claude Code scaffolding skill): see
+gotchas, the `/process-dataset` Claude Code scaffolding skill): see
 [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
 
 ## 📄 Citation

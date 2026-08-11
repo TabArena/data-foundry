@@ -1,6 +1,7 @@
-Start the local curation dashboard and help the user triage / curate the dataset
-backlog. Invoking this skill loads the **curation guidelines** (below) into context
-so you can advise on selection and processing decisions the way a human curator would.
+Triage candidate datasets in the curation backlog: start the local dashboard and help the
+user decide which candidates belong in the benchmark. Invoking this skill loads the
+**curation guidelines** (below) into context so you can advise on selection and processing
+decisions the way a human curator would.
 
 ## When to invoke
 
@@ -10,7 +11,7 @@ so you can advise on selection and processing decisions the way a human curator 
 * The user wants to **add, edit, or triage** a candidate dataset record.
 
 If the user instead wants to scaffold a *curation notebook* for an already-decided
-dataset, use `/new-dataset`; to check a filled-in notebook / saved bundle before it
+dataset, use `/process-dataset`; to check a filled-in notebook / saved bundle before it
 ships, use `/verify-dataset`.
 
 ## Step 1 — Start the dashboard

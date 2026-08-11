@@ -38,8 +38,8 @@ datasets/
 * Don't open a PR that edits `beyond_iid/` directly unless you are
   re-curating a released dataset (in which case use `_maintenance/`).
 
-> **Want a head start?** Run `/new-dataset` inside Claude Code from this repo
-> (slash command defined in `.claude/commands/new-dataset.md`). Paste
+> **Want a head start?** Run `/process-dataset` inside Claude Code from this repo
+> (slash command defined in `.claude/commands/process-dataset.md`). Paste
 > tab-separated metadata from the curation spreadsheet and it scaffolds a
 > notebook in the right `_dev/` subfolder with most fields pre-filled.
 
@@ -256,5 +256,5 @@ When a PR merges:
 * Split helpers — [`src/data_foundry/curation_recommendations.py`](src/data_foundry/curation_recommendations.py)
 * Dataset checks — [`src/data_foundry/dataset_checks.py`](src/data_foundry/dataset_checks.py)
 * Worked example — [`examples/curate_a_dataset.py`](examples/curate_a_dataset.py)
-* Claude Code scaffolding — [`.claude/commands/new-dataset.md`](.claude/commands/new-dataset.md)
+* Claude Code processing / scaffolding — [`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md)
 * Claude Code verification pass — [`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md)
