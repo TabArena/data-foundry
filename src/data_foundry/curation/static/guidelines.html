@@ -350,6 +350,25 @@
   Do <em>not</em> dump everything learned while investigating — per-column missingness, byte sizes,
   checksums, download-endpoint mechanics, side observations, or restatements of front-matter fields. Those
   belong in the curation notebook, not the record.</p>
+  <p><strong>Cite papers by location in the text, never from memory.</strong> A dataset's paper is often the
+  decisive evidence, so any claim attributed to one needs a <em>text reference</em> — the section, table or
+  page, plus the load-bearing sentence quoted — from text you actually read, not from the title, the abstract
+  or recollection. Write it as <code>Sec. 6.1, p. 12: "…"</code> so the next curator can check it in one step.
+  Two traps this prevents, both real:</p>
+  <ul>
+    <li><strong>A paper can refute the claim you were about to make.</strong> For <code>kddcup99</code>, the
+    simulation-artifact critique (Mahoney &amp; Chan, RAID 2003) looks damning, but Tavallaee et al. (CISDA
+    2009, Sec. III) state the artifacts "do not affect the KDD data set since the 41 features used in KDD are
+    not related to any of the weaknesses mentioned" — they are packet-header fields absent from KDD's
+    features.</li>
+    <li><strong>A paper's own framing can decide the verdict.</strong> For <code>intrusion_detection</code>,
+    the BCCC/NTLFlowLyzer paper (Shafi et al., Computers &amp; Security 148:104160, 2025) says in Sec. 6.1
+    "our focus is on developing a profiling system, not a detection system", so its headline ">99.8%" is
+    profile coverage rather than predictive accuracy and the release ships no target, split or baseline —
+    that quote is why the record is <code>No</code> + <code>No Good Target / Scientific Discovery</code>.</li>
+  </ul>
+  <p>If a paper is paywalled and the passage could not be read, say so and mark the claim unverified instead
+  of paraphrasing the abstract as if it were the text.</p>
 
   <h2>Suggestion states</h2>
   <p>The suggestion is our verdict <strong>right now</strong>; an earlier verdict can change over time
