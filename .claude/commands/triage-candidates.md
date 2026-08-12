@@ -135,6 +135,26 @@ sizes, checksums, download-endpoint mechanics, side observations, or restatement
 fields. Those belong in the curation notebook, not the record. If you were asked for one thing (a
 download link, a duplicate check), write *that* down, not a report of the whole investigation.
 
+**Cite papers by location in the text, never from memory.** A dataset's paper is often the decisive
+evidence, so any claim you attribute to one must come with a *text reference* — the section, table or
+page, and the load-bearing sentence quoted — and you must have read that text, not the title,
+abstract or your recollection of the field. State it in the form "Sec. 6.1, p. 12: \"…\"" so the next
+curator can check it in one step. Two traps this prevents, both real:
+
+* **A paper can refute the claim you were about to make.** `kddcup99`: the simulation-artifact
+  critique (Mahoney & Chan, RAID 2003) looks like it condemns KDD, but Tavallaee et al. (CISDA 2009,
+  Sec. III) state the artifacts "do not affect the KDD data set since the 41 features used in KDD are
+  not related to any of the weaknesses mentioned" — the artifacts are packet-header fields absent from
+  KDD's features. Cite the section and the contradiction surfaces; cite from memory and it doesn't.
+* **A paper's own framing can decide the verdict.** `intrusion_detection`: the BCCC/NTLFlowLyzer paper
+  (Shafi et al., Computers & Security 148:104160, 2025) says in Sec. 6.1 "our focus is on developing a
+  profiling system, not a detection system", so its headline ">99.8%" is profile-coverage, not
+  predictive accuracy, and the release ships no target/split/baseline — that quote is the reason the
+  record is `No` + `No Good Target / Scientific Discovery`.
+
+If a paper is paywalled and you could not read the passage, say so explicitly and mark the claim as
+unverified rather than paraphrasing the abstract as if it were the text.
+
 ### Quick decision patterns (generalized — apply, then verify per-dataset)
 
 Recurring signals → the usual `decision_markers` + `suggestion`. These are heuristics to
