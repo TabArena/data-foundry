@@ -111,6 +111,11 @@
   .tabulator-row:hover .nblink { opacity:.75; }
   .nblink:hover { opacity:1; }
   .tabulator-row.pinned .tabulator-cell.pincol { box-shadow: inset 3px 0 0 #f59e0b; }
+  /* A pinned row is a Tabulator frozen row, rendered inside `.tabulator-header` (see
+     forwardFrozenRowScroll), and the theme turns text selection off there for the column titles.
+     Inherited, that left a pinned row's text unselectable: double-clicking a cell to select and
+     copy it (unique_name above all) did nothing, while the same cell worked unpinned. */
+  .tabulator .tabulator-frozen-rows-holder { -webkit-user-select:text; user-select:text; }
   .tabulator-cell.single-line { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .tabulator-cell.wrap-cell { white-space:normal !important; height:auto; line-height:1.7; }
   /* Long comments are collapsed to CMT_CLAMP_LINES lines with a "▾ more" toggle. This is not
