@@ -4,6 +4,8 @@ import json
 
 import pytest
 from data_foundry.curation import exporter
+from data_foundry.curation._paths import resolve_curation_root
+from data_foundry.curation.app import _notebook_index
 from data_foundry.curation.record import (
     FIELDS,
     CurationRecord,
@@ -113,6 +115,34 @@ def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
     assert df.shape[0] == 1
     assert df.loc[0, "Checked by"] == "Lennart | Andrej"
     assert df.loc[0, "unique_name"] == "musk"
+
+
+def test_notebook_index_prefers_shipped_over_scratch_copies(tmp_path) -> None:
+    datasets = tmp_path / "datasets"
+    for parent in [
+        datasets / "beyond_iid" / "new_iid" / "musk",
+        datasets / "_dev" / "feature_selection" / "musk",
+        datasets / "_maintenance" / "_old_collections" / "v0" / "musk",
+        datasets / "_dev" / "feature_selection" / "only_in_dev",
+    ]:
+        parent.mkdir(parents=True)
+        (parent / f"{parent.name}.ipynb").write_text("{}", encoding="utf-8")
+    # Not canonical (<name>/<name>.ipynb): a sibling variant next to the shipped notebook.
+    (datasets / "beyond_iid" / "new_iid" / "musk" / "musk_clf.ipynb").write_text("{}", encoding="utf-8")
+
+    index = _notebook_index(str(datasets))
+    assert index["musk"] == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
+    # A dataset that only ever lived in a scratch tree still links to the copy that exists.
+    assert index["only_in_dev"] == "datasets/_dev/feature_selection/only_in_dev/only_in_dev.ipynb"
+    assert "musk_clf" not in index
+
+
+def test_repo_notebook_links_point_at_the_shipped_collection() -> None:
+    index = _notebook_index(str(resolve_curation_root().parent / "datasets"))
+    shipped = {p.name for p in (resolve_curation_root().parent / "datasets" / "beyond_iid").rglob("*/*.ipynb")}
+    for name, rel in index.items():
+        if f"{name}.ipynb" in shipped:
+            assert rel.startswith("datasets/beyond_iid/"), f"{name} links outside the shipped collection: {rel}"
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:

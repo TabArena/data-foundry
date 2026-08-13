@@ -39,23 +39,41 @@ GITHUB_BLOB_BASE: str = os.environ.get(
 ).rstrip("/")
 
 
+def _notebook_rank(rel: Path) -> tuple[int, str]:
+    """Sort key that prefers a shipped dataset's notebook over its scratch copies.
+
+    The same ``<name>/<name>.ipynb`` often exists several times: once in the shipped
+    collection (``datasets/beyond_iid/...``) and once more in a working or retired tree
+    (``datasets/_dev/...``, ``datasets/_maintenance/...``). Underscore-prefixed directories
+    mark those non-shipped trees, so fewer of them wins; the path itself breaks ties so the
+    index does not depend on filesystem walk order.
+    """
+    parts = rel.parts[:-1]
+    return (sum(p.startswith("_") for p in parts), rel.as_posix())
+
+
 @lru_cache(maxsize=8)
 def _notebook_index(datasets_dir: str) -> dict[str, str]:
     """Map a dataset ``unique_name`` -> its repo-relative curation-notebook path.
 
     Only the canonical per-dataset notebook counts: ``datasets/**/<name>/<name>.ipynb``
-    (the layout ``/process-dataset`` scaffolds). Cached because the datasets tree is large and
-    static for the lifetime of a serve/build.
+    (the layout ``/process-dataset`` scaffolds). Where a name has more than one such
+    notebook, :func:`_notebook_rank` picks the shipped one. Cached because the datasets tree
+    is large and static for the lifetime of a serve/build.
     """
     base = Path(datasets_dir)
     if not base.exists():
         return {}
     repo_root = base.parent
-    index: dict[str, str] = {}
+    candidates: dict[str, Path] = {}
     for nb in base.rglob("*.ipynb"):
-        if nb.parent.name == nb.stem:  # canonical <name>/<name>.ipynb only
-            index[nb.stem] = nb.relative_to(repo_root).as_posix()
-    return index
+        if nb.parent.name != nb.stem:  # canonical <name>/<name>.ipynb only
+            continue
+        rel = nb.relative_to(repo_root)
+        best = candidates.get(nb.stem)
+        if best is None or _notebook_rank(rel) < _notebook_rank(best):
+            candidates[nb.stem] = rel
+    return {name: rel.as_posix() for name, rel in candidates.items()}
 
 
 def _schema_payload() -> dict[str, object]:

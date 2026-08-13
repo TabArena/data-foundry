@@ -32,6 +32,10 @@ CC: "Predict whether there was a response to mailing. Side story: A friend of mi
 
 This could also be used as a classification task given the first dependent variable
 
+After investigation we shipped the classification version: the curated dataset comes from
+`pva_revenue_prediction_kddcup98_clf.ipynb` (binary classification on the mailing response),
+not from the regression notebook next to it.
+
 ## Reference
 
 Website / readme
