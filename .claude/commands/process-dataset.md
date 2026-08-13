@@ -83,12 +83,14 @@ bundle check `meta_tags_*` fires:
 - "Multiclass Classification" or "Classification" → `"multiclass_classification"`
 
 Some candidates carry *two possible* problem types — the same table supports either a
-regression target or a classification one (e.g. `pva_revenue_prediction_kddcup98`: donation
-amount vs. whether the mailing got a response). The problem type is then a property of the
-task we choose, not of the dataset, so the record's `problem_type` cannot be read off the row:
-pick one target per notebook, and make the record match whichever run ends up shipping. This
-is **not** `Multi-target` — that tag is for predicting several targets at once. Step 3 covers
-how to name the second notebook.
+regression target or a classification one, and taking one means dropping the other as a
+leaking feature. `pva_revenue_prediction_kddcup98` is the example: `TARGET_D` (donation
+amount) and `TARGET_B` (did they donate at all) are two framings of one signal, so the
+regression run drops `TARGET_B` and the classification run drops `TARGET_D`. The problem type
+is then a property of the task we choose, not of the dataset, so the record's `problem_type`
+cannot be read off the row: pick one target per notebook, and make the record match whichever
+run ends up shipping. This is **not** `Multi-target` — that tag is for targets predicted at
+once (distinct quantities modelled jointly). Step 3 covers how to name the second notebook.
 
 **Map `objective_metric_name`** from problem_type (these are the three the collection uses;
 anything else is a deliberate custom metric that must be registered downstream):

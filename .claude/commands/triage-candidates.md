@@ -352,12 +352,16 @@ auditing, do **not** flag these:
   (the dashboard's "Optional Tags"). Nice to fill, but their absence — even on an accepted
   dataset — is **not** a problem to flag. Only `suggestion` is required for triage.
 * **`problem_type` is not always a property of the dataset.** Some tables support *either* a
-  regression target *or* a classification one (`pva_revenue_prediction_kddcup98`: donation
-  amount vs. whether the mailing got a response) — one target or the other, never both at once.
-  There the field records the task *we* decided on, so it follows whichever run we ship, and the
-  alternative belongs in `## Comments`. Do **not** reach for the `Multi-target` tag here:
-  `Multi-target` means several targets predicted **at once** (multi-output), which is a
-  different thing and changes what the task is.
+  regression target *or* a classification one, where taking one means dropping the other:
+  `pva_revenue_prediction_kddcup98` has the donation amount (`TARGET_D`) and the response flag
+  (`TARGET_B` = did they donate at all), so each is a framing of the same signal and keeping
+  both would leak. There the field records the task *we* decided on — it follows whichever run
+  we ship — and the alternative belongs in `## Comments`.
+  This is the one case `Multi-target` does **not** cover: that tag is for several targets
+  predicted **at once** (multi-output), which is the right call whenever the targets are
+  distinct quantities that could be modelled jointly (next-day min *and* max temperature,
+  several soil nutrients). Both patterns are legitimate — read the record's comments before
+  deciding which one you are looking at, and don't strip a `Multi-target` tag a curator set.
 
 ### Push back on weak reasoning (you may second-guess a decision)
 

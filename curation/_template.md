@@ -58,9 +58,11 @@ Field-by-field:
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).
 - **tags** — priority / shape tags, e.g. `New IID`, `Non-IID (Temporal)`,
   `Non-IID (Grouped)`, `Larger IID Data`, `Tiny Data`, `Many features`, `Multi-target`.
-  `Multi-target` means *several targets predicted at once* (multi-output). A dataset that
-  merely offers a *choice* of target — predict one or the other, never both — is **not**
-  `Multi-target`; see `problem_type` below.
+  `Multi-target` means *several targets predicted at once* (multi-output) — right whenever the
+  targets are distinct quantities that could be modelled jointly (next-day min *and* max
+  temperature, several soil nutrients). It does **not** cover targets that are alternative
+  framings of the *same* signal, where taking one means dropping the other to avoid leakage;
+  that is a choice of task, see `problem_type` below.
 - **collections** — *external* benchmarks/collections the dataset appears in (NOT our own):
   `TabSTAR`, `CARTE/TARTE`, `TabRed`, `TableShift`, `TexTabBench`, `New (BeyondArena)`,
   `TabArena Reject`, … (our own membership lives in `data_foundry_status`).
