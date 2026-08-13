@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- Multi-target
 collections:
 - TabArena Reject
 - TabSTAR
@@ -17,7 +18,7 @@ year: '1998'
 domain: business & marketing
 required_split:
 - Random (IID)
-problem_type: Regression
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/42343
@@ -32,9 +33,11 @@ CC: "Predict whether there was a response to mailing. Side story: A friend of mi
 
 This could also be used as a classification task given the first dependent variable
 
-After investigation we shipped the classification version: the curated dataset comes from
-`pva_revenue_prediction_kddcup98_clf.ipynb` (binary classification on the mailing response),
-not from the regression notebook next to it.
+Both targets exist, hence `Multi-target`: regression on the donation amount and binary
+classification on whether the mailing got a response. After investigation we shipped the
+classification version — the curated dataset comes from
+`pva_revenue_prediction_kddcup98_clf.ipynb`, not from the regression notebook next to it —
+so `problem_type` records `Binary Classification`.
 
 ## Reference
 

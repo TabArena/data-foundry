@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from data_foundry.curation import exporter
+from data_foundry.curation import app, exporter
 from data_foundry.curation._paths import resolve_curation_root
 from data_foundry.curation.app import _notebook_index
 from data_foundry.curation.record import (
@@ -127,7 +127,8 @@ def test_notebook_index_prefers_shipped_over_scratch_copies(tmp_path) -> None:
     ]:
         parent.mkdir(parents=True)
         (parent / f"{parent.name}.ipynb").write_text("{}", encoding="utf-8")
-    # Not canonical (<name>/<name>.ipynb): a sibling variant next to the shipped notebook.
+    # A variant next to the shipped notebook loses to the plain name while nothing marks it
+    # as the run that shipped, and never becomes an index key of its own.
     (datasets / "beyond_iid" / "new_iid" / "musk" / "musk_clf.ipynb").write_text("{}", encoding="utf-8")
 
     index = _notebook_index(str(datasets))
@@ -137,12 +138,42 @@ def test_notebook_index_prefers_shipped_over_scratch_copies(tmp_path) -> None:
     assert "musk_clf" not in index
 
 
+def test_notebook_index_picks_the_variant_that_shipped(tmp_path, monkeypatch) -> None:
+    uuid = "019d736f-26fd-73bd-8853-dc219e5f4ed5"
+    dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
+    dataset_dir.mkdir(parents=True)
+    (dataset_dir / "musk.ipynb").write_text("{}", encoding="utf-8")  # full-size run
+    (dataset_dir / "musk_1m.ipynb").write_text(f'{{"out": "{uuid}"}}', encoding="utf-8")  # sub-sampled run
+    monkeypatch.setattr(app, "_shipped_uuids", lambda: {"musk": uuid})
+
+    index = _notebook_index(str(tmp_path / "datasets"))
+    assert index["musk"] == "datasets/beyond_iid/new_iid/musk/musk_1m.ipynb"
+
+
 def test_repo_notebook_links_point_at_the_shipped_collection() -> None:
     index = _notebook_index(str(resolve_curation_root().parent / "datasets"))
     shipped = {p.name for p in (resolve_curation_root().parent / "datasets" / "beyond_iid").rglob("*/*.ipynb")}
     for name, rel in index.items():
         if f"{name}.ipynb" in shipped:
             assert rel.startswith("datasets/beyond_iid/"), f"{name} links outside the shipped collection: {rel}"
+
+
+def test_repo_notebook_links_resolve_variants_to_the_shipped_run() -> None:
+    """Where a dataset ships a sub-sampled (``_1m``) or alternative-target (``_clf``) run,
+    the link must be that notebook -- not whichever sibling matches the directory name.
+    """
+    repo_root = resolve_curation_root().parent
+    index = _notebook_index(str(repo_root / "datasets"))
+    checked = 0
+    for name, uuid in app._shipped_uuids().items():
+        linked = repo_root / index[name]
+        if len(list(linked.parent.glob(f"{name}*.ipynb"))) < 2:  # nothing to disambiguate
+            continue
+        checked += 1
+        assert uuid in linked.read_text(encoding="utf-8"), f"{name} links to a run that did not ship: {index[name]}"
+    # 10 datasets ship a _1m sub-sample, pva_revenue_prediction_kddcup98 ships _clf; guards
+    # against the check going vacuous if the layout changes.
+    assert checked >= 11, f"expected at least 11 datasets with sibling notebooks, found {checked}"
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:
