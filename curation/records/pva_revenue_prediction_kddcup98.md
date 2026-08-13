@@ -9,7 +9,6 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
-- Multi-target
 collections:
 - TabArena Reject
 - TabSTAR
@@ -33,11 +32,11 @@ CC: "Predict whether there was a response to mailing. Side story: A friend of mi
 
 This could also be used as a classification task given the first dependent variable
 
-Both targets exist, hence `Multi-target`: regression on the donation amount and binary
-classification on whether the mailing got a response. After investigation we shipped the
-classification version — the curated dataset comes from
-`pva_revenue_prediction_kddcup98_clf.ipynb`, not from the regression notebook next to it —
-so `problem_type` records `Binary Classification`.
+The problem type is not a property of this dataset: it is *either* regression on the donation
+amount *or* binary classification on whether the mailing got a response — one target or the
+other, never both at once. After investigation we shipped the classification version, so
+`problem_type` records `Binary Classification` and the curated dataset comes from
+`pva_revenue_prediction_kddcup98_clf.ipynb`, not from the regression notebook next to it.
 
 ## Reference
 

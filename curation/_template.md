@@ -58,6 +58,9 @@ Field-by-field:
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).
 - **tags** — priority / shape tags, e.g. `New IID`, `Non-IID (Temporal)`,
   `Non-IID (Grouped)`, `Larger IID Data`, `Tiny Data`, `Many features`, `Multi-target`.
+  `Multi-target` means *several targets predicted at once* (multi-output). A dataset that
+  merely offers a *choice* of target — predict one or the other, never both — is **not**
+  `Multi-target`; see `problem_type` below.
 - **collections** — *external* benchmarks/collections the dataset appears in (NOT our own):
   `TabSTAR`, `CARTE/TARTE`, `TabRed`, `TableShift`, `TexTabBench`, `New (BeyondArena)`,
   `TabArena Reject`, … (our own membership lives in `data_foundry_status`).

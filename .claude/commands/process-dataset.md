@@ -82,6 +82,14 @@ bundle check `meta_tags_*` fires:
 - "Binary Classification" → `"binary_classification"`
 - "Multiclass Classification" or "Classification" → `"multiclass_classification"`
 
+Some candidates carry *two possible* problem types — the same table supports either a
+regression target or a classification one (e.g. `pva_revenue_prediction_kddcup98`: donation
+amount vs. whether the mailing got a response). The problem type is then a property of the
+task we choose, not of the dataset, so the record's `problem_type` cannot be read off the row:
+pick one target per notebook, and make the record match whichever run ends up shipping. This
+is **not** `Multi-target` — that tag is for predicting several targets at once. Step 3 covers
+how to name the second notebook.
+
 **Map `objective_metric_name`** from problem_type (these are the three the collection uses;
 anything else is a deliberate custom metric that must be registered downstream):
 - `"regression"` → `"rmse"`
@@ -152,6 +160,16 @@ Create directory: `datasets/beyond_iid/<subfolder>/<unique_name>/`
 ### Step 3: Write the notebook
 
 Write a valid Jupyter notebook (nbformat 4, nbformat_minor 5) as `<unique_name>.ipynb` in the folder created above.
+
+**Variant notebooks.** A dataset directory may end up holding a second run next to
+`<unique_name>.ipynb`, and the suffix carries meaning: `<unique_name>_1m.ipynb` is the
+sub-sampled (1M-row) run — the one that ships for the large datasets — and
+`<unique_name>_clf.ipynb` is the same table curated for a different target, e.g. the
+classification alternative to a regression run. Keep both in the dataset's own directory and
+keep the `<unique_name>` prefix: the curation dashboard collects every `<unique_name>*.ipynb`
+there and links the one whose saved output carries the UUID the collection registry ships, so
+a run under any other name is invisible to it. Only one run per dataset ends up in a
+collection — the record's `problem_type` (and its `## Comments`) must describe that one.
 
 The notebook MUST be valid JSON with this exact structure. Use the template at `datasets/_template/_template.ipynb` as the base — read it first to get the exact JSON structure.
 

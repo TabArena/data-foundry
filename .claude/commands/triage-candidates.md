@@ -351,6 +351,13 @@ auditing, do **not** flag these:
 * **`problem_type`, `required_split`, `original_data_state`, `domain`, `year` are optional metadata**
   (the dashboard's "Optional Tags"). Nice to fill, but their absence — even on an accepted
   dataset — is **not** a problem to flag. Only `suggestion` is required for triage.
+* **`problem_type` is not always a property of the dataset.** Some tables support *either* a
+  regression target *or* a classification one (`pva_revenue_prediction_kddcup98`: donation
+  amount vs. whether the mailing got a response) — one target or the other, never both at once.
+  There the field records the task *we* decided on, so it follows whichever run we ship, and the
+  alternative belongs in `## Comments`. Do **not** reach for the `Multi-target` tag here:
+  `Multi-target` means several targets predicted **at once** (multi-output), which is a
+  different thing and changes what the task is.
 
 ### Push back on weak reasoning (you may second-guess a decision)
 
