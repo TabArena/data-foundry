@@ -85,8 +85,13 @@ Field-by-field:
   the pointer lives here so the record names its notebook on its own and keeps doing so if the
   `datasets/` tree is reorganised. Where a dataset has sibling runs, point at the one that
   shipped (`<name>_1m.ipynb` for the sub-sampled run, `<name>_clf.ipynb` for an alternative
-  target). Set it when the notebook is created, or refresh every record at once with
-  `data-foundry-curation sync-notebooks` (`--check` reports drift without writing).
+  target). A **shipped** dataset is curated in its collection's tree, so its pointer stays there
+  — `datasets/beyond_iid/` for `BeyondArena`, `datasets/_maintenance/_old_collections/` for
+  TabArena v0.1, and never `datasets/_dev/` (work in progress, plus superseded copies of
+  notebooks that have since shipped). An unshipped candidate is the opposite: `datasets/_dev/`
+  or `datasets/_maintenance/` is exactly right. Set it when the notebook is created, or refresh
+  every record at once with `data-foundry-curation sync-notebooks` (`--check` reports drift
+  without writing).
 
 Replace this section with the actual curation discussion: the reasoning behind the
 suggestion and decision markers (curation is manual and human-verified).

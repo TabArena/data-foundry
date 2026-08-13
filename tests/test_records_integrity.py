@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 from data_foundry.curation._paths import records_dir, resolve_curation_root
-from data_foundry.curation.notebooks import shipped_uuids, sync_notebook_paths
+from data_foundry.curation.notebooks import required_tree, shipped_uuids, sync_notebook_paths
 from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
     AI_FILLED_TAG,
@@ -261,6 +261,24 @@ def test_notebook_path_points_at_an_existing_notebook(records):
         elif path.parent.name != r.unique_name:
             problems.append((r.unique_name, f"notebook outside the dataset's directory: {r.notebook_path}"))
     assert not problems, f"broken notebook_path pointers (run sync-notebooks): {problems}"
+
+
+@_needs_datasets
+def test_shipped_notebook_paths_live_in_their_collection_tree(records):
+    """A shipped dataset's notebook comes from its collection's tree, never from ``_dev``.
+
+    ``datasets/_dev/`` is work in progress — including older copies of notebooks that have since
+    shipped from ``datasets/beyond_iid/`` — so a shipped dataset pointing there sends readers to
+    preprocessing that produced no released data. Unshipped candidates are the other way round:
+    ``_dev`` (in progress) and ``_maintenance`` (deprecated / suspended / out of scope) are
+    exactly where their notebooks belong.
+    """
+    problems = [
+        (r.unique_name, r.notebook_path, tree)
+        for r in records
+        if r.notebook_path and (tree := required_tree(r)) and not r.notebook_path.startswith(tree)
+    ]
+    assert not problems, f"shipped dataset curated outside its collection tree (name, path, expected): {problems}"
 
 
 @_needs_datasets

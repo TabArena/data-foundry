@@ -380,6 +380,24 @@ reorganisation of `datasets/` is a path edit instead of a change to resolution r
 dashboard's 📓 button reads it directly, and only falls back to searching the tree for a record
 that has no pointer yet.
 
+**Which tree it must point into.** A dataset we *ship* is curated in its collection's tree, and
+its pointer has to name that copy:
+
+| The record ships in | Its notebook lives under |
+|---|---|
+| `BeyondArena` | `datasets/beyond_iid/{new_iid,old_iid,temporal,grouped}/` |
+| `TabArena (v0.1)` only | `datasets/_maintenance/_old_collections/tabarena-v0pt1/` |
+| nothing (a candidate) | `datasets/_dev/` while in progress, or `datasets/_maintenance/` once deprecated / suspended / out of scope |
+
+**`datasets/_dev/` never backs a shipped dataset.** It holds work in progress *and* older copies of
+notebooks that have since shipped from `beyond_iid` — most `_dev/feature_selection/<name>.ipynb`
+files are exactly that. Pointing a shipped record there sends every reader to preprocessing that
+produced no released data. For an unshipped candidate the reverse holds: `_dev` or `_maintenance` is
+the right and only answer (`datasets/_maintenance/_deprecated/chronic_kidney_disease/…` is a correct
+pointer). `sync-notebooks` enforces this — it resolves a shipped dataset only within its collection
+tree, and leaves the pointer empty rather than naming a `_dev` copy, which the integrity tests then
+report as a shipped record missing its notebook.
+
 **Set it when:**
 
 * a notebook is created — `/process-dataset` does this as its own step;

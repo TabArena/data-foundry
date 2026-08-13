@@ -159,6 +159,12 @@ and every bullet needs code.** `/verify-dataset` checks exactly that corresponde
 
 Create directory: `datasets/beyond_iid/<subfolder>/<unique_name>/`
 
+This is where a dataset headed for BeyondArena is curated — **not** `datasets/_dev/`. `_dev` is
+work in progress and old copies of notebooks that shipped long ago; a dataset that ships is curated
+under `datasets/beyond_iid/` and nowhere else. If a `_dev/**/<unique_name>/<unique_name>.ipynb`
+already exists (a `feature_selection` run, say), treat it as prior art to read, not as the file to
+edit or move: write the shipping notebook here.
+
 ### Step 3: Write the notebook
 
 Write a valid Jupyter notebook (nbformat 4, nbformat_minor 5) as `<unique_name>.ipynb` in the folder created above.
@@ -239,8 +245,13 @@ the dashboard and keeps doing so if `datasets/` is ever reorganised. If the reco
 points somewhere else — say the previous run, and this is the `_1m` or `_clf` variant that will
 ship instead — update it to the run that ships, and say so in `## Comments`.
 
+If the record's pointer still names a `datasets/_dev/` copy, this step is what retires it: the
+shipped notebook is the one under `datasets/beyond_iid/`, and `sync-notebooks` will not point a
+dataset tagged `BeyondArena` anywhere else.
+
 `data-foundry-curation sync-notebooks --check` reports drift without writing;
-`tests/test_records_integrity.py` fails on a stale or missing pointer.
+`tests/test_records_integrity.py` fails on a stale or missing pointer, and on a shipped dataset
+curated outside its collection tree.
 
 ### Step 5: Verify the scaffold
 
