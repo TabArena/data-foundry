@@ -20,6 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.sciencedirect.com/science/article/pii/S2352340918315191#s0005
+notebook_path: datasets/beyond_iid/temporal/hotel_booking_demand/hotel_booking_demand.ipynb
 source_row: 732
 type_adapter_id: curation-record-v1
 ---

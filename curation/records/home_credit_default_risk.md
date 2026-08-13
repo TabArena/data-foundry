@@ -22,6 +22,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/c/home-credit-default-risk/data?select=application_train.csv
 - https://www.openml.org/search?type=data&id=45567
+notebook_path: datasets/beyond_iid/new_iid/home_credit_default_risk/home_credit_default_risk.ipynb
 source_row: 653
 type_adapter_id: curation-record-v1
 ---

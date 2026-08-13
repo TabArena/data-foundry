@@ -21,6 +21,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://home.ccr.cancer.gov/ncifdaproteomics/ppatterns.asp
+notebook_path: datasets/beyond_iid/new_iid/prostate_cancer_detection/prostate_cancer_detection.ipynb
 source_row: 1036
 type_adapter_id: curation-record-v1
 ---

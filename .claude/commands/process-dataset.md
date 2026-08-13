@@ -229,7 +229,20 @@ seen which warnings apply.
 
 **Cell 21** (code): `save()` + `verify_saved_container(...)` (identical to template)
 
-### Step 4: Verify the scaffold
+### Step 4: Point the curation record at the notebook
+
+Set `notebook_path` in `curation/records/<unique_name>.md` to the repo-relative path you just
+wrote (e.g. `datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb`), or run
+`data-foundry-curation sync-notebooks` to fill it from the tree. A dataset maps to exactly one
+notebook and the record stores that pointer itself, so the record names its notebook without
+the dashboard and keeps doing so if `datasets/` is ever reorganised. If the record already
+points somewhere else — say the previous run, and this is the `_1m` or `_clf` variant that will
+ship instead — update it to the run that ships, and say so in `## Comments`.
+
+`data-foundry-curation sync-notebooks --check` reports drift without writing;
+`tests/test_records_integrity.py` fails on a stale or missing pointer.
+
+### Step 5: Verify the scaffold
 
 After writing the notebook, read it back and verify it is valid JSON by checking:
 - All required cells are present (21 cells)
@@ -243,7 +256,7 @@ Report to the user:
 - Any mapping decisions that were ambiguous
 - Which §D traps you flagged as plausible for *this* dataset, and why
 
-### Step 5: Hand off to `/verify-dataset`
+### Step 6: Hand off to `/verify-dataset`
 
 Close the report by telling the user what happens next, in this order:
 

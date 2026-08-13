@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/31/covertype
 - https://doi.org/10.24432/C50K5N
+notebook_path: datasets/beyond_iid/grouped/covertype/covertype.ipynb
 source_row: 691
 type_adapter_id: curation-record-v1
 ---

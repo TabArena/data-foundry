@@ -23,6 +23,7 @@ source_links:
 - https://doi.org/10.24432/C5D88D
 - https://www.kaggle.com/datasets/elikplim/forest-fires-data-set
 - https://www.openml.org/search?type=data&id=44962
+notebook_path: datasets/beyond_iid/new_iid/forest_fires/forest_fires.ipynb
 source_row: 748
 type_adapter_id: curation-record-v1
 ---

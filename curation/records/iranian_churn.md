@@ -20,6 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5JW3Z
+notebook_path: datasets/beyond_iid/new_iid/iranian_churn/iranian_churn.ipynb
 source_row: 664
 type_adapter_id: curation-record-v1
 ---

@@ -25,6 +25,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/lymphography/metadata.yaml
 - https://doi.org/10.24432/C54598
 - https://www.openml.org/search?type=data&id=10&sort=runs&status=active
+notebook_path: datasets/_dev/feature_selection/lymphography/lymphography.ipynb
 source_row: 762
 type_adapter_id: curation-record-v1
 ---

@@ -39,8 +39,14 @@ guidelines summarized below.
   [`src/data_foundry/curation/record.py`](../../src/data_foundry/curation/record.py)
   (fields: `unique_name`, `name`, `checked_by`, `data_foundry_status`, `suggestion`,
   `decision_markers`, `tags`, `collections`, `original_source`, `year`, `domain`,
-  `required_split`, `problem_type`, `original_data_state`, `source_links`,
+  `required_split`, `problem_type`, `original_data_state`, `source_links`, `notebook_path`,
   `comments`, `reference`, `needs_review`).
+* **`notebook_path` is the record's own pointer to its curation notebook** — one dataset, one
+  notebook, stored in the record so it reads on its own and survives the `datasets/` tree being
+  reorganised. Where a dataset has sibling runs it names the one that shipped (`<name>_1m.ipynb`
+  sub-sample, `<name>_clf.ipynb` alternative target). `data-foundry-curation sync-notebooks`
+  refreshes it from the tree (`--check` reports drift); the dashboard's 📓 button reads it, and
+  falls back to resolving the tree only for a record that has none yet.
 * Editable dropdown options live in `curation/vocabularies.yaml` (add new options
   there, via the dashboard's ＋ header buttons, or with `save_vocabularies`).
 * **The `data_foundry_status` field is a merged multi-tag field** ("Data Foundry" column):

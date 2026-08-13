@@ -21,6 +21,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/homesite-quote-conversion/data?select=train.csv.zip
+notebook_path: datasets/beyond_iid/new_iid/homesite_quote_conversion/homesite_quote_conversion.ipynb
 source_row: 651
 type_adapter_id: curation-record-v1
 ---

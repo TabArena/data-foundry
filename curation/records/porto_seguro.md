@@ -21,6 +21,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/c/porto-seguro-safe-driver-prediction
+notebook_path: datasets/beyond_iid/new_iid/porto_seguro/porto_seguro.ipynb
 source_row: 646
 type_adapter_id: curation-record-v1
 ---

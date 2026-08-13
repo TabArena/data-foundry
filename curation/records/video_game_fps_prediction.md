@@ -23,6 +23,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/44992
 - https://github.com/svpeeters/performance_prediction
+notebook_path: datasets/beyond_iid/grouped/video_game_fps_prediction/video_game_fps_prediction.ipynb
 source_row: 699
 type_adapter_id: curation-record-v1
 ---

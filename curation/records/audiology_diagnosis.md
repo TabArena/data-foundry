@@ -26,6 +26,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/8/audiology+standardized
 - https://doi.org/10.24432/C5TP4R
+notebook_path: datasets/beyond_iid/new_iid/audiology_diagnosis/audiology_diagnosis.ipynb
 source_row: 764
 type_adapter_id: curation-record-v1
 ---

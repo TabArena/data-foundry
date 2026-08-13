@@ -17,6 +17,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=4134
 - https://www.kaggle.com/c/bioresponse
+notebook_path: datasets/beyond_iid/old_iid/bioresponse/bioresponse.ipynb
 type_adapter_id: curation-record-v1
 ---
 

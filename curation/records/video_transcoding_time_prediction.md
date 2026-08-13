@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C58C9K
 - https://www.openml.org/d/44974
+notebook_path: datasets/beyond_iid/grouped/video_transcoding_time_prediction/video_transcoding_time_prediction.ipynb
 source_row: 698
 type_adapter_id: curation-record-v1
 ---

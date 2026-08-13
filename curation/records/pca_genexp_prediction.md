@@ -22,6 +22,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/45099
+notebook_path: datasets/_maintenance/_out_of_scope/_too_small_to_add/pca_genexp_prediction/pca_genexp_prediction.ipynb
 source_row: 1037
 type_adapter_id: curation-record-v1
 ---

@@ -17,6 +17,7 @@ problem_type: Multiclass Classification
 source_links:
 - https://www.openml.org/search?type=data&id=4541
 - https://doi.org/10.24432/C5230J
+notebook_path: datasets/beyond_iid/old_iid/diabetes_130_us/diabetes_130_us.ipynb
 type_adapter_id: curation-record-v1
 ---
 

@@ -18,6 +18,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=31
 - https://doi.org/10.24432/C5NC77
+notebook_path: datasets/beyond_iid/old_iid/credit_g/credit_g.ipynb
 type_adapter_id: curation-record-v1
 ---
 

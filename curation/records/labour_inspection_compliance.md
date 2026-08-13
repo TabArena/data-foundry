@@ -24,6 +24,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=46640
 - https://dataverse.no/dataset.xhtml?persistentId=doi:10.18710/7U6TZP
 - https://dataverse.no/dataset.xhtml;jsessionid=aa0a848e0e843de40284e7be94a9?persistentId=doi%3A10.18710%2F7U6TZP&version=&q=&fileTypeGroupFacet=&fileAccess=&fileSortField=date&tagPresort=false
+notebook_path: datasets/beyond_iid/new_iid/labour_inspection_compliance/labour_inspection_compliance.ipynb
 source_row: 659
 type_adapter_id: curation-record-v1
 ---

@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/1150/gallstone-1
 - https://doi.org/10.1097/md.0000000000037258
+notebook_path: datasets/beyond_iid/new_iid/gallstone_disease/gallstone_disease.ipynb
 source_row: 768
 type_adapter_id: curation-record-v1
 ---

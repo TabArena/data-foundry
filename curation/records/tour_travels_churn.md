@@ -23,6 +23,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction/data
+notebook_path: datasets/beyond_iid/new_iid/tour_travels_churn/tour_travels_churn.ipynb
 source_row: 778
 type_adapter_id: curation-record-v1
 ---

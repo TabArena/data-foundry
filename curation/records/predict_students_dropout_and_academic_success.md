@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://doi.org/10.24432/C5MC89
+notebook_path: datasets/beyond_iid/old_iid/predict_students_dropout_and_academic_success/predict_students_dropout_and_academic_success.ipynb
 type_adapter_id: curation-record-v1
 ---
 

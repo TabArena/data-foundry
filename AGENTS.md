@@ -39,7 +39,9 @@ Data Foundry is the data-layer toolkit behind
   place and ships a built-in **Guidelines** tab (the curation criteria, from the
   paper). The per-record schema is `CurationRecord` (`curation/record.py`); the
   editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
-  (`data-foundry-curation -h`) also covers `import-sheet`, `validate`, `export`,
+  (`data-foundry-curation -h`) also covers `sync-notebooks` (refreshes each
+  record's `notebook_path`, the stored pointer to its curation notebook),
+  `import-sheet`, `validate`, `export`,
   and `build-site` (a read-only static site). That static site is published to
   GitHub Pages at https://tabarena.github.io/data-foundry/ — regenerated from
   `curation/records/` on every push to `main` by `.github/workflows/pages.yaml`,

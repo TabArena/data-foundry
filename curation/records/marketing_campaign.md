@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign
+notebook_path: datasets/beyond_iid/old_iid/marketing_campaign/marketing_campaign.ipynb
 type_adapter_id: curation-record-v1
 ---
 

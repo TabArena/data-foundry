@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/42343
 - https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html
+notebook_path: datasets/beyond_iid/new_iid/pva_revenue_prediction_kddcup98/pva_revenue_prediction_kddcup98_clf.ipynb
 source_row: 647
 type_adapter_id: curation-record-v1
 ---

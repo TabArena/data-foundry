@@ -20,6 +20,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/ravibarnawal/mutual-funds-india-detailed
+notebook_path: datasets/beyond_iid/new_iid/mutual_funds_india/mutual_funds_india.ipynb
 source_row: 777
 type_adapter_id: curation-record-v1
 ---

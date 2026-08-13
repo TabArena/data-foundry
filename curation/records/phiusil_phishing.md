@@ -20,6 +20,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/967/phiusiil+phishing+url+dataset
 - https://doi.org/10.1016/j.cose.2023.103545
+notebook_path: datasets/_maintenance/_out_of_scope/_too_late_to_add/phiusil_phishing/phiusil_phishing.ipynb
 source_row: 2
 type_adapter_id: curation-record-v1
 ---

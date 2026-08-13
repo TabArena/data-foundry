@@ -17,6 +17,7 @@ problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=42225
 - https://ggplot2.tidyverse.org
+notebook_path: datasets/beyond_iid/old_iid/diamonds/diamonds.ipynb
 type_adapter_id: curation-record-v1
 ---
 

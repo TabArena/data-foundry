@@ -25,6 +25,7 @@ source_links:
 - https://www.openml.org/search?type=data&sort=runs&id=1116&status=active
 - https://doi.org/10.24432/C51608
 - https://doi.org/10.24432/C5ZK5B
+notebook_path: datasets/beyond_iid/grouped/musk/musk.ipynb
 source_row: 5
 type_adapter_id: curation-record-v1
 ---

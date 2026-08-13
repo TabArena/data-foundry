@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=45538
 - https://www.openml.org/search?type=data&status=active&id=45538&sort=runs
+notebook_path: datasets/beyond_iid/old_iid/hazelnut_spread_contaminant_detection/hazelnut_spread_contaminant_detection.ipynb
 type_adapter_id: curation-record-v1
 ---
 

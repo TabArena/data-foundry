@@ -26,6 +26,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/560
 - https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset
+notebook_path: datasets/beyond_iid/new_iid/body_density_prediction/body_density_prediction.ipynb
 source_row: 750
 type_adapter_id: curation-record-v1
 ---

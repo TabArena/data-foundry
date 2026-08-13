@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/ecoli/metadata.yaml
 - https://doi.org/10.24432/C5388M
+notebook_path: datasets/beyond_iid/new_iid/ecoli_proteins/ecoli_proteins.ipynb
 source_row: 754
 type_adapter_id: curation-record-v1
 ---

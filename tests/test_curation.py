@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 
 import pytest
-from data_foundry.curation import app, exporter
+from data_foundry.curation import exporter, notebooks
 from data_foundry.curation._paths import resolve_curation_root
-from data_foundry.curation.app import _notebook_index
+from data_foundry.curation.app import _records_payload
+from data_foundry.curation.notebooks import notebook_index, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
     CurationRecord,
@@ -131,7 +132,7 @@ def test_notebook_index_prefers_shipped_over_scratch_copies(tmp_path) -> None:
     # as the run that shipped, and never becomes an index key of its own.
     (datasets / "beyond_iid" / "new_iid" / "musk" / "musk_clf.ipynb").write_text("{}", encoding="utf-8")
 
-    index = _notebook_index(str(datasets))
+    index = notebook_index(str(datasets))
     assert index["musk"] == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
     # A dataset that only ever lived in a scratch tree still links to the copy that exists.
     assert index["only_in_dev"] == "datasets/_dev/feature_selection/only_in_dev/only_in_dev.ipynb"
@@ -144,36 +145,38 @@ def test_notebook_index_picks_the_variant_that_shipped(tmp_path, monkeypatch) ->
     dataset_dir.mkdir(parents=True)
     (dataset_dir / "musk.ipynb").write_text("{}", encoding="utf-8")  # full-size run
     (dataset_dir / "musk_1m.ipynb").write_text(f'{{"out": "{uuid}"}}', encoding="utf-8")  # sub-sampled run
-    monkeypatch.setattr(app, "_shipped_uuids", lambda: {"musk": uuid})
+    monkeypatch.setattr(notebooks, "shipped_uuids", lambda: {"musk": uuid})
 
-    index = _notebook_index(str(tmp_path / "datasets"))
+    index = notebook_index(str(tmp_path / "datasets"))
     assert index["musk"] == "datasets/beyond_iid/new_iid/musk/musk_1m.ipynb"
 
 
-def test_repo_notebook_links_point_at_the_shipped_collection() -> None:
-    index = _notebook_index(str(resolve_curation_root().parent / "datasets"))
-    shipped = {p.name for p in (resolve_curation_root().parent / "datasets" / "beyond_iid").rglob("*/*.ipynb")}
-    for name, rel in index.items():
-        if f"{name}.ipynb" in shipped:
-            assert rel.startswith("datasets/beyond_iid/"), f"{name} links outside the shipped collection: {rel}"
+def test_sync_notebook_paths_writes_the_pointer_into_the_record(tmp_path, sample_record: CurationRecord) -> None:
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+    dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
+    dataset_dir.mkdir(parents=True)
+    (dataset_dir / "musk.ipynb").write_text("{}", encoding="utf-8")
+    datasets = tmp_path / "datasets"
+
+    changed = sync_notebook_paths(records, datasets, check=True)
+    assert changed == {"musk": (None, "datasets/beyond_iid/new_iid/musk/musk.ipynb")}
+    assert load_record(records / "musk.md").notebook_path is None, "--check must not write"
+
+    assert sync_notebook_paths(records, datasets) == changed
+    assert load_record(records / "musk.md").notebook_path == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
+    assert sync_notebook_paths(records, datasets, check=True) == {}, "second run is a no-op"
 
 
-def test_repo_notebook_links_resolve_variants_to_the_shipped_run() -> None:
-    """Where a dataset ships a sub-sampled (``_1m``) or alternative-target (``_clf``) run,
-    the link must be that notebook -- not whichever sibling matches the directory name.
-    """
-    repo_root = resolve_curation_root().parent
-    index = _notebook_index(str(repo_root / "datasets"))
-    checked = 0
-    for name, uuid in app._shipped_uuids().items():
-        linked = repo_root / index[name]
-        if len(list(linked.parent.glob(f"{name}*.ipynb"))) < 2:  # nothing to disambiguate
-            continue
-        checked += 1
-        assert uuid in linked.read_text(encoding="utf-8"), f"{name} links to a run that did not ship: {index[name]}"
-    # 10 datasets ship a _1m sub-sample, pva_revenue_prediction_kddcup98 ships _clf; guards
-    # against the check going vacuous if the layout changes.
-    assert checked >= 11, f"expected at least 11 datasets with sibling notebooks, found {checked}"
+def test_records_payload_links_the_recorded_notebook(tmp_path, sample_record: CurationRecord) -> None:
+    """The stored pointer is what gets linked -- no lookup in the datasets tree."""
+    sample_record.notebook_path = "datasets/beyond_iid/new_iid/musk/musk_clf.ipynb"
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+
+    (row,) = _records_payload(records)
+    assert row["notebook_path"] == "datasets/beyond_iid/new_iid/musk/musk_clf.ipynb"
+    assert row["notebook_url"].endswith("/datasets/beyond_iid/new_iid/musk/musk_clf.ipynb")
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:

@@ -15,6 +15,7 @@ required_split:
 - '?'
 source_links:
 - https://doi.org/10.24432/C5F600
+notebook_path: datasets/beyond_iid/old_iid/polish_companies_bankruptcy/polish_companies_bankruptcy.ipynb
 type_adapter_id: curation-record-v1
 ---
 

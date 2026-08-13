@@ -25,6 +25,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/horse_colic_lesion_type/metadata.yaml
 - https://www.openml.org/search?type=data&id=25
 - https://doi.org/10.24432/C58W23
+notebook_path: datasets/beyond_iid/new_iid/horse_colic_survival/horse_colic_survival.ipynb
 source_row: 761
 type_adapter_id: curation-record-v1
 ---

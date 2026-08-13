@@ -22,6 +22,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/competitions/sberbank-russian-housing-market
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting
+notebook_path: datasets/beyond_iid/temporal/sberbank_housing_market_forecasting/sberbank_housing_market_forecasting.ipynb
 source_row: 711
 type_adapter_id: curation-record-v1
 ---

@@ -24,6 +24,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/hepatitis/metadata.yaml
 - https://doi.org/10.24432/C5Q59J
 - https://www.kaggle.com/datasets/abdelazizsami/hepatitis
+notebook_path: datasets/beyond_iid/new_iid/hepatitis_survival_prediction/hepatitis_survival_prediction.ipynb
 source_row: 760
 type_adapter_id: curation-record-v1
 ---

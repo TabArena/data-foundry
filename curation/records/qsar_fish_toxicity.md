@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=44970
 - https://doi.org/10.24432/C5JG7B
+notebook_path: datasets/beyond_iid/old_iid/qsar_fish_toxicity/qsar_fish_toxicity.ipynb
 type_adapter_id: curation-record-v1
 ---
 

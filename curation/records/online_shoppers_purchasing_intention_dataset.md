@@ -15,6 +15,7 @@ required_split:
 - '?'
 source_links:
 - https://doi.org/10.24432/C5F88Q
+notebook_path: datasets/beyond_iid/old_iid/online_shoppers_purchasing_intention_dataset/online_shoppers_purchasing_intention_dataset.ipynb
 type_adapter_id: curation-record-v1
 ---
 

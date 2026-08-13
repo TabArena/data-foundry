@@ -25,6 +25,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/appendicitis/metadata.yaml
 - https://www.kaggle.com/datasets/timrie/appendicitis
 - https://sci2s.ugr.es/keel/dataset.php?cod=183
+notebook_path: datasets/_maintenance/_out_of_scope/_too_small_to_add/keel_appendicitis/keel_appendicitis.ipynb
 source_row: 752
 type_adapter_id: curation-record-v1
 ---

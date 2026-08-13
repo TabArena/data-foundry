@@ -25,6 +25,7 @@ source_links:
 - https://www.kaggle.com/datasets/fedesoriano/cirrhosis-prediction-dataset
 - https://www.mayo.edu/research/documents/pbchtml/doc-10027635
 - https://doi.org/10.24432/C5R02G
+notebook_path: datasets/beyond_iid/new_iid/cirrhosis_patient_survival_prediction/cirrhosis_patient_survival_prediction.ipynb
 source_row: 772
 type_adapter_id: curation-record-v1
 ---

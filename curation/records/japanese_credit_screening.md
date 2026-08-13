@@ -23,6 +23,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://doi.org/10.24432/C5FS30
 - https://doi.org/10.24432/C5259N
+notebook_path: datasets/_dev/feature_selection/japanese_credit_screening/japanese_credit_screening.ipynb
 source_row: 774
 type_adapter_id: curation-record-v1
 ---

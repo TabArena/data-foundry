@@ -18,6 +18,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=37
 - https://doi.org/10.24432/C5T59G
+notebook_path: datasets/_maintenance/_old_collections/tabarena-v0pt1/diabetes/diabetes.ipynb
 type_adapter_id: curation-record-v1
 ---
 

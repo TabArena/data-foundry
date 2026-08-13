@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=43442
 - https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer
+notebook_path: datasets/beyond_iid/old_iid/bad_customer_detection/bad_customer_detection.ipynb
 type_adapter_id: curation-record-v1
 ---
 

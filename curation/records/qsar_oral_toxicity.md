@@ -20,6 +20,7 @@ source_links:
 - https://archive.ics.uci.edu/dataset/508/qsar+oral+toxicity
 - https://doi.org/10.24432/C5PS4J
 - http://www.michem.unimib.it/download/data/
+notebook_path: datasets/_dev/feature_selection/qsar_oral_toxicity/qsar_oral_toxicity.ipynb
 source_row: 685
 type_adapter_id: curation-record-v1
 ---

@@ -15,6 +15,7 @@ required_split:
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=40701
+notebook_path: datasets/beyond_iid/old_iid/churn/churn.ipynb
 type_adapter_id: curation-record-v1
 ---
 

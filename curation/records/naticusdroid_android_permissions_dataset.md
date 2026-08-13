@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://doi.org/10.24432/C5FS64
+notebook_path: datasets/beyond_iid/old_iid/naticusdroid_android_permissions_dataset/naticusdroid_android_permissions_dataset.ipynb
 type_adapter_id: curation-record-v1
 ---
 

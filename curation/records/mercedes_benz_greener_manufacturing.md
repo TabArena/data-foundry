@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing
 - https://www.openml.org/search?type=data&id=42570
+notebook_path: datasets/beyond_iid/temporal/mercedes_benz_greener_manufacturing/mercedes_benz_greener_manufacturing.ipynb
 source_row: 708
 type_adapter_id: curation-record-v1
 ---

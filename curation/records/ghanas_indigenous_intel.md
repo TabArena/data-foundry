@@ -22,6 +22,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/ghana-indigenous-intel-challenge/data
+notebook_path: datasets/beyond_iid/temporal/ghanas_indigenous_intel/ghanas_indigenous_intel.ipynb
 source_row: 868
 type_adapter_id: curation-record-v1
 ---

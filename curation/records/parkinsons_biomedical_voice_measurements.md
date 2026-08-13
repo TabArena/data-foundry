@@ -24,6 +24,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C59C74
+notebook_path: datasets/beyond_iid/grouped/parkinsons_biomedical_voice_measurements/parkinsons_biomedical_voice_measurements.ipynb
 source_row: 791
 type_adapter_id: curation-record-v1
 ---

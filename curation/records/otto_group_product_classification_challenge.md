@@ -20,6 +20,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/otto-group-product-classification-challenge/overview
+notebook_path: datasets/beyond_iid/new_iid/otto_group_product_classification_challenge/otto_group_product_classification_challenge.ipynb
 source_row: 648
 type_adapter_id: curation-record-v1
 ---

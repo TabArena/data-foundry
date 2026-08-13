@@ -23,6 +23,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
 - https://doi.org/10.24432/C52P4X
+notebook_path: datasets/beyond_iid/new_iid/heart_disease_va_long_beach/heart_disease_va_long_beach.ipynb
 source_row: 759
 type_adapter_id: curation-record-v1
 ---

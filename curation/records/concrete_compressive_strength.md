@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=44959
 - https://doi.org/10.24432/C5PK67
+notebook_path: datasets/beyond_iid/old_iid/concrete_compressive_strength/concrete_compressive_strength.ipynb
 type_adapter_id: curation-record-v1
 ---
 

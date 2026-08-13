@@ -22,6 +22,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5D02C
+notebook_path: datasets/beyond_iid/new_iid/indian_liver_patient_dataset/indian_liver_patient_dataset.ipynb
 source_row: 747
 type_adapter_id: curation-record-v1
 ---

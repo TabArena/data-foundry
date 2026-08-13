@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=44957
 - https://doi.org/10.24432/C5VW2C
+notebook_path: datasets/beyond_iid/old_iid/airfoil_self_noise/airfoil_self_noise.ipynb
 type_adapter_id: curation-record-v1
 ---
 

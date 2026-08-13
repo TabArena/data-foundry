@@ -23,6 +23,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/c/acquire-valued-shoppers-challenge
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave
+notebook_path: datasets/beyond_iid/temporal/acquire_valued_shoppers_challenge/acquire_valued_shoppers_challenge.ipynb
 source_row: 709
 type_adapter_id: curation-record-v1
 ---

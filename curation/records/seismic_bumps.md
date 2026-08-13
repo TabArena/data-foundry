@@ -17,6 +17,7 @@ required_split:
 - Temporal (NON-IID)
 source_links:
 - https://doi.org/10.24432/C5W902
+notebook_path: datasets/beyond_iid/old_iid/seismic_bumps/seismic_bumps.ipynb
 type_adapter_id: curation-record-v1
 ---
 

@@ -23,6 +23,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C59313
 - https://www.openml.org/d/46855
+notebook_path: datasets/beyond_iid/new_iid/clock_protein_toxicity/clock_protein_toxicity.ipynb
 source_row: 1031
 type_adapter_id: curation-record-v1
 ---

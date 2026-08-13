@@ -20,6 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&sort=runs&id=45087&status=active
+notebook_path: datasets/_dev/feature_selection/colon_tumor/colon_tumor.ipynb
 source_row: 1032
 type_adapter_id: curation-record-v1
 ---

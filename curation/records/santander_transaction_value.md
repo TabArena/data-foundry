@@ -21,6 +21,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/santander-value-prediction-challenge
+notebook_path: datasets/beyond_iid/new_iid/santander_transaction_value/santander_transaction_value.ipynb
 source_row: 663
 type_adapter_id: curation-record-v1
 ---

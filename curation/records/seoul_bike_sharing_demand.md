@@ -23,6 +23,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5F62R
 - https://www.openml.org/search?type=data&id=46328&sort=runs&status=active
+notebook_path: datasets/_maintenance/_suspended/seoul_bike_sharing_demand/seoul_bike_sharing_demand.ipynb
 source_row: 46
 type_adapter_id: curation-record-v1
 ---

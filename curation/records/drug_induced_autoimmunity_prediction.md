@@ -21,6 +21,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5332M
+notebook_path: datasets/beyond_iid/new_iid/drug_induced_autoimmunity_prediction/drug_induced_autoimmunity_prediction.ipynb
 source_row: 773
 type_adapter_id: curation-record-v1
 ---

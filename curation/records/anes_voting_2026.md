@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://electionstudies.org/data-center/anes-time-series-cumulative-data-file/
 - https://tableshift.org/datasets.html#voting
+notebook_path: datasets/beyond_iid/temporal/anes_voting_2026/anes_voting_2026.ipynb
 source_row: 1029
 type_adapter_id: curation-record-v1
 ---

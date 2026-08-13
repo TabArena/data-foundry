@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/193/cardiotocography
 - https://doi.org/10.24432/C51S4N
+notebook_path: datasets/beyond_iid/grouped/cardiotocography/cardiotocography.ipynb
 source_row: 693
 type_adapter_id: curation-record-v1
 ---

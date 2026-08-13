@@ -17,14 +17,13 @@ from __future__ import annotations
 
 import json
 import os
-from collections import defaultdict
-from functools import lru_cache, partial
+from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from data_foundry.collections import get_collection, list_collections
 from data_foundry.curation._paths import records_dir, resolve_curation_root, vocabularies_path
+from data_foundry.curation.notebooks import notebook_index
 from data_foundry.curation.record import FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
     load_all,
@@ -41,70 +40,6 @@ GITHUB_BLOB_BASE: str = os.environ.get(
 ).rstrip("/")
 
 
-@lru_cache(maxsize=1)
-def _shipped_uuids() -> dict[str, str]:
-    """Map a dataset ``unique_name`` -> the UUID of the curated container that shipped."""
-    return {e.unique_name: e.uuid for c in list_collections() for e in get_collection(c).entries}
-
-
-def _tree_rank(rel: Path) -> int:
-    """How far a notebook sits from the shipped collection (lower is closer).
-
-    The same ``<name>/<name>.ipynb`` often exists several times: once in the shipped
-    collection (``datasets/beyond_iid/...``) and once more in a working or retired tree
-    (``datasets/_dev/...``, ``datasets/_maintenance/...``). Underscore-prefixed directories
-    mark those non-shipped trees, so counting them separates the two.
-    """
-    return sum(p.startswith("_") for p in rel.parts[:-1])
-
-
-def _pick_notebook(repo_root: Path, unique_name: str, candidates: list[Path]) -> Path:
-    """Choose the notebook that produced this dataset's shipped container.
-
-    A dataset directory can hold more than one notebook: a sub-sampled ``<name>_1m.ipynb``
-    next to the full-size run, or an alternative target such as ``<name>_clf.ipynb``. The
-    notebook that shipped is the one whose saved output carries the UUID the collection
-    registry points at, so that decides it — falling back to the plain ``<name>.ipynb`` for
-    datasets that never shipped. Ties break on the path so the index does not depend on
-    filesystem walk order.
-    """
-    best_tree = min(_tree_rank(c) for c in candidates)
-    shortlist = sorted(c for c in candidates if _tree_rank(c) == best_tree)
-    if len(shortlist) == 1:  # the common case: no notebook to read
-        return shortlist[0]
-    uuid = _shipped_uuids().get(unique_name)
-    return min(
-        shortlist,
-        key=lambda c: (
-            not (uuid and uuid in (repo_root / c).read_text(encoding="utf-8")),
-            c.stem != unique_name,
-            c.as_posix(),
-        ),
-    )
-
-
-@lru_cache(maxsize=8)
-def _notebook_index(datasets_dir: str) -> dict[str, str]:
-    """Map a dataset ``unique_name`` -> its repo-relative curation-notebook path.
-
-    A notebook counts when it sits in the dataset's own directory and is named after it:
-    ``datasets/**/<name>/<name>.ipynb`` (the layout ``/process-dataset`` scaffolds) or a
-    variant of it such as ``<name>_1m.ipynb`` / ``<name>_clf.ipynb``. Where a name has more
-    than one, :func:`_pick_notebook` resolves which one shipped. Cached because the datasets
-    tree is large and static for the lifetime of a serve/build.
-    """
-    base = Path(datasets_dir)
-    if not base.exists():
-        return {}
-    repo_root = base.parent
-    candidates: dict[str, list[Path]] = defaultdict(list)
-    for nb in base.rglob("*.ipynb"):
-        name = nb.parent.name
-        if nb.stem == name or nb.stem.startswith(f"{name}_"):
-            candidates[name].append(nb.relative_to(repo_root))
-    return {name: _pick_notebook(repo_root, name, rels).as_posix() for name, rels in candidates.items()}
-
-
 def _schema_payload() -> dict[str, object]:
     return {
         "fields": [
@@ -117,20 +52,22 @@ def _schema_payload() -> dict[str, object]:
 def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     """Serialise every record, augmented with read-only *derived* link fields.
 
-    Datasets with a curation notebook get ``notebook_path`` (repo-relative) and
-    ``notebook_url`` (GitHub main link); every record additionally gets ``record_path`` /
-    ``record_url`` pointing at its own markdown file (``curation/records/<name>.md``),
-    so a record can be referenced directly from the UI. None of these are part of the
-    record schema and they are never written back — the dashboard's per-row 📓 / 📄
-    buttons read them (live and on the static site).
+    ``notebook_path`` is a real record field, so the pointer a record carries is used as-is;
+    only records that have none fall back to :func:`~data_foundry.curation.notebooks.notebook_index`
+    (a dataset curated but not
+    yet synced). Either way the dataset's notebook gets a ``notebook_url`` (GitHub main link),
+    and every record gets ``record_path`` / ``record_url`` pointing at its own markdown file
+    (``curation/records/<name>.md``), so a record can be referenced directly from the UI. The
+    ``*_url`` keys are not part of the record schema and are never written back — the
+    dashboard's per-row 📓 / 📄 buttons read them (live and on the static site).
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
-    notebooks = _notebook_index(str(resolve_curation_root().parent / "datasets"))
+    notebooks = notebook_index(str(resolve_curation_root().parent / "datasets"))
     payload: list[dict[str, object]] = []
     for r in load_all(directory):
         d = record_to_dict(r)
-        rel = notebooks.get(r.unique_name)
+        rel = r.notebook_path or notebooks.get(r.unique_name)
         if rel:
             d["notebook_path"] = rel
             d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"

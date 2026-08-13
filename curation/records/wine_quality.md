@@ -18,6 +18,7 @@ problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=287
 - https://doi.org/10.24432/C56S3T
+notebook_path: datasets/beyond_iid/old_iid/wine_quality/wine_quality.ipynb
 type_adapter_id: curation-record-v1
 ---
 

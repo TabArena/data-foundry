@@ -25,6 +25,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/new_thyroid/metadata.yaml
 - https://www.kaggle.com/datasets/juliusgonsior/uci-new-thyroid
 - (10.24432/C5D010)
+notebook_path: datasets/beyond_iid/new_iid/thyroid_discordant/thyroid_discordant.ipynb
 source_row: 790
 type_adapter_id: curation-record-v1
 ---

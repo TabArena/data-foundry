@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=44983
 - https://www.openml.org/search?type=data&id=43093&sort=runs&status=active
+notebook_path: datasets/beyond_iid/old_iid/miami_housing/miami_housing.ipynb
 type_adapter_id: curation-record-v1
 ---
 
