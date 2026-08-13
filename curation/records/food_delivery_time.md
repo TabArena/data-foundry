@@ -19,6 +19,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
+notebook_path: datasets/beyond_iid/old_iid/food_delivery_time/food_delivery_time.ipynb
 type_adapter_id: curation-record-v1
 ---
 

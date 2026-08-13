@@ -93,6 +93,12 @@ FIELDS: tuple[FieldSpec, ...] = (
     FieldSpec("problem_type", "Problem Type", "select", help="Predictive ML problem type."),
     FieldSpec("original_data_state", "Original Data State", "select", help="Shape of the raw data."),
     FieldSpec("source_links", "Source Links", "links", help="Download links / DOIs (one per line)."),
+    FieldSpec(
+        "notebook_path",
+        "Curation Notebook",
+        "text",
+        help="Repo-relative path of the curation notebook that produced this dataset (one per record).",
+    ),
     FieldSpec("comments", "Free Comments", "body", help="Free-text curation discussion."),
     FieldSpec("reference", "Reference", "body", help="Academic reference / citation (often BibTeX)."),
 )
@@ -160,6 +166,17 @@ class CurationRecord:
     problem_type: str | None = None
     original_data_state: str | None = None
     source_links: list[str] = pydantic.Field(default_factory=list)
+    notebook_path: str | None = None
+    """Repo-relative path of this dataset's curation notebook, e.g.
+    ``datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb``.
+
+    A dataset maps to exactly one notebook, so the pointer is recorded here rather than
+    rediscovered from the tree: it survives the ``datasets/`` layout being reorganised, and it
+    makes the record readable on its own (no dashboard needed). Where a dataset has sibling runs
+    the pointer names the one that shipped — the sub-sampled ``<name>_1m.ipynb`` or an
+    alternative target such as ``<name>_clf.ipynb``. Keep it in sync with
+    ``data-foundry-curation sync-notebooks``.
+    """
 
     comments: MultilineStr | None = None
     reference: MultilineStr | None = None

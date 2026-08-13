@@ -50,17 +50,11 @@ def entry_to_notebook_path(entry: str, category: str) -> Path:
     is_versioned = "/versions/" in entry
     nb_name = f"{name}_1m.ipynb" if is_versioned else f"{name}.ipynb"
 
-    # Normal path
     nb_path = BEYOND_IID / category / name / nb_name
     if nb_path.exists():
         return nb_path
 
-    # Handle the student_portuguese_performance.ipynb directory edge case
-    alt_path = BEYOND_IID / category / f"{name}.ipynb" / nb_name
-    if alt_path.exists():
-        return alt_path
-
-    raise FileNotFoundError(f"Notebook not found for {entry} in {category}: tried {nb_path} and {alt_path}")
+    raise FileNotFoundError(f"Notebook not found for {entry} in {category}: tried {nb_path}")
 
 
 def execute_notebook(nb_path: Path, timeout_seconds: int = 3600) -> None:

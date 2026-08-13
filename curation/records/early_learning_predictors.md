@@ -25,6 +25,7 @@ original_data_state: One Table
 source_links:
 - https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962
 - https://zindi.africa/competitions/datadrive2030-early-learning-predictors-challenge
+notebook_path: datasets/beyond_iid/grouped/early_learning_predictors/early_learning_predictors.ipynb
 source_row: 742
 type_adapter_id: curation-record-v1
 ---

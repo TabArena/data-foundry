@@ -23,6 +23,7 @@ original_data_state: One Table
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/glass2/metadata.yaml
 - https://doi.org/10.24432/C5WW2P
+notebook_path: datasets/beyond_iid/new_iid/forensic_glass_identification/forensic_glass_identification.ipynb
 source_row: 755
 type_adapter_id: curation-record-v1
 ---

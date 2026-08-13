@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://doi.org/10.24432/C55S3H
+notebook_path: datasets/beyond_iid/old_iid/credit_card_clients_default/credit_card_clients_default.ipynb
 type_adapter_id: curation-record-v1
 ---
 

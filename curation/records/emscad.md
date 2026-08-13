@@ -28,6 +28,7 @@ source_links:
 - Original website is down
 - http://emscad.samos.aegean.gr/
 - https://www.openml.org/search?type=data&id=46655&sort=runs&status=active
+notebook_path: datasets/beyond_iid/new_iid/emscad/emscad.ipynb
 source_row: 681
 type_adapter_id: curation-record-v1
 ---

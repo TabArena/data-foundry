@@ -25,6 +25,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset/data
 - https://data.mendeley.com/datasets/tsy6rbc5d4/1
+notebook_path: datasets/beyond_iid/grouped/dementia_prediction/dementia_prediction.ipynb
 source_row: 4
 type_adapter_id: curation-record-v1
 ---

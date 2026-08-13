@@ -14,6 +14,7 @@ required_split: []
 problem_type:
 original_data_state:
 source_links: []
+notebook_path:
 type_adapter_id: curation-record-v1
 ---
 
@@ -58,6 +59,11 @@ Field-by-field:
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).
 - **tags** — priority / shape tags, e.g. `New IID`, `Non-IID (Temporal)`,
   `Non-IID (Grouped)`, `Larger IID Data`, `Tiny Data`, `Many features`, `Multi-target`.
+  `Multi-target` means *several targets predicted at once* (multi-output) — right whenever the
+  targets are distinct quantities that could be modelled jointly (next-day min *and* max
+  temperature, several soil nutrients). It does **not** cover targets that are alternative
+  framings of the *same* signal, where taking one means dropping the other to avoid leakage;
+  that is a choice of task, see `problem_type` below.
 - **collections** — *external* benchmarks/collections the dataset appears in (NOT our own):
   `TabSTAR`, `CARTE/TARTE`, `TabRed`, `TableShift`, `TexTabBench`, `New (BeyondArena)`,
   `TabArena Reject`, … (our own membership lives in `data_foundry_status`).
@@ -74,6 +80,18 @@ Field-by-field:
   `Database (or multiple to-be-joined tables)`, `Other`.
 - **source_links** — download links / DOIs, one per line (OpenML id URL, Kaggle, DOI, UCI…).
   These double as the dataset's identity for de-duplication, so include the canonical ones.
+- **notebook_path** — repo-relative path of *the* curation notebook behind this dataset, e.g.
+  `datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb`. One dataset, one notebook:
+  the pointer lives here so the record names its notebook on its own and keeps doing so if the
+  `datasets/` tree is reorganised. Where a dataset has sibling runs, point at the one that
+  shipped (`<name>_1m.ipynb` for the sub-sampled run, `<name>_clf.ipynb` for an alternative
+  target). A **shipped** dataset is curated in its collection's tree, so its pointer stays there
+  — `datasets/beyond_iid/` for `BeyondArena`, `datasets/_maintenance/_old_collections/` for
+  TabArena v0.1, and never `datasets/_dev/` (work in progress, plus superseded copies of
+  notebooks that have since shipped). An unshipped candidate is the opposite: `datasets/_dev/`
+  or `datasets/_maintenance/` is exactly right. Set it when the notebook is created, or refresh
+  every record at once with `data-foundry-curation sync-notebooks` (`--check` reports drift
+  without writing).
 
 Replace this section with the actual curation discussion: the reasoning behind the
 suggestion and decision markers (curation is manual and human-verified).

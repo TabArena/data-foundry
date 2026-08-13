@@ -20,6 +20,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C50S3Z
+notebook_path: datasets/beyond_iid/grouped/mice_protein_trisomy_discriminant/mice_protein_trisomy_discriminant.ipynb
 source_row: 692
 type_adapter_id: curation-record-v1
 ---

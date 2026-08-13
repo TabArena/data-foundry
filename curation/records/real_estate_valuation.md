@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/477/real+estate+valuation+data+set
 - https://doi.org/10.24432/C5J30W
+notebook_path: datasets/_maintenance/_deprecated/real_estate_valuation/real_estate_valuation.ipynb
 source_row: 6
 type_adapter_id: curation-record-v1
 ---

@@ -22,6 +22,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5G020
+notebook_path: datasets/_maintenance/_deprecated/chronic_kidney_disease/chronic_kidney_disease.ipynb
 source_row: 767
 type_adapter_id: curation-record-v1
 ---

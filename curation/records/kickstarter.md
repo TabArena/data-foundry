@@ -29,6 +29,7 @@ source_links:
 - https://webrobots.io/kickstarter-datasets/
 - https://www.kaggle.com/datasets/codename007/funding-successful-projects
 - https://www.openml.org/search?type=data&id=46668
+notebook_path: datasets/beyond_iid/temporal/kickstarter/kickstarter.ipynb
 source_row: 736
 type_adapter_id: curation-record-v1
 ---

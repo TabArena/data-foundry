@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset
+notebook_path: datasets/beyond_iid/old_iid/bank_customer_churn/bank_customer_churn.ipynb
 type_adapter_id: curation-record-v1
 ---
 

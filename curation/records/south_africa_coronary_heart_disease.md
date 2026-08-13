@@ -23,6 +23,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/1498
 - https://www.kaggle.com/datasets/waalbannyantudre/south-african-heart-disease-dataset
+notebook_path: datasets/beyond_iid/new_iid/south_africa_coronary_heart_disease/south_africa_coronary_heart_disease.ipynb
 source_row: 749
 type_adapter_id: curation-record-v1
 ---

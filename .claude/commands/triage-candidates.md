@@ -39,8 +39,11 @@ guidelines summarized below.
   [`src/data_foundry/curation/record.py`](../../src/data_foundry/curation/record.py)
   (fields: `unique_name`, `name`, `checked_by`, `data_foundry_status`, `suggestion`,
   `decision_markers`, `tags`, `collections`, `original_source`, `year`, `domain`,
-  `required_split`, `problem_type`, `original_data_state`, `source_links`,
+  `required_split`, `problem_type`, `original_data_state`, `source_links`, `notebook_path`,
   `comments`, `reference`, `needs_review`).
+* **`notebook_path` is the record's own pointer to its curation notebook** — one dataset, one
+  notebook, stored in the record rather than resolved from the tree. See *The notebook pointer*
+  below for when to set it and how to check it.
 * Editable dropdown options live in `curation/vocabularies.yaml` (add new options
   there, via the dashboard's ＋ header buttons, or with `save_vocabularies`).
 * **The `data_foundry_status` field is a merged multi-tag field** ("Data Foundry" column):
@@ -351,6 +354,76 @@ auditing, do **not** flag these:
 * **`problem_type`, `required_split`, `original_data_state`, `domain`, `year` are optional metadata**
   (the dashboard's "Optional Tags"). Nice to fill, but their absence — even on an accepted
   dataset — is **not** a problem to flag. Only `suggestion` is required for triage.
+* **`problem_type` is not always a property of the dataset.** Some tables support *either* a
+  regression target *or* a classification one, where taking one means dropping the other:
+  `pva_revenue_prediction_kddcup98` has the donation amount (`TARGET_D`) and the response flag
+  (`TARGET_B` = did they donate at all), so each is a framing of the same signal and keeping
+  both would leak. There the field records the task *we* decided on — it follows whichever run
+  we ship — and the alternative belongs in `## Comments`.
+  This is the one case `Multi-target` does **not** cover: that tag is for several targets
+  predicted **at once** (multi-output), which is the right call whenever the targets are
+  distinct quantities that could be modelled jointly (next-day min *and* max temperature,
+  several soil nutrients). Both patterns are legitimate — read the record's comments before
+  deciding which one you are looking at, and don't strip a `Multi-target` tag a curator set.
+
+### The notebook pointer (`notebook_path`)
+
+A curated dataset comes from exactly one notebook, and the record stores which one:
+
+```yaml
+notebook_path: datasets/beyond_iid/new_iid/student_portuguese_performance/student_portuguese_performance.ipynb
+```
+
+It lives in the record, not in a lookup, so the record names its notebook on its own — readable in
+the file, in a PR diff, and by anything that never runs the dashboard — and so a later
+reorganisation of `datasets/` is a path edit instead of a change to resolution rules. The
+dashboard's 📓 button reads it directly, and only falls back to searching the tree for a record
+that has no pointer yet.
+
+**Which tree it must point into.** A dataset we *ship* is curated in its collection's tree, and
+its pointer has to name that copy:
+
+| The record ships in | Its notebook lives under |
+|---|---|
+| `BeyondArena` | `datasets/beyond_iid/{new_iid,old_iid,temporal,grouped}/` |
+| `TabArena (v0.1)` only | `datasets/_maintenance/_old_collections/tabarena-v0pt1/` |
+| nothing (a candidate) | `datasets/_dev/` while in progress, or `datasets/_maintenance/` once deprecated / suspended / out of scope |
+
+**`datasets/_dev/` never backs a shipped dataset.** It holds work in progress *and* older copies of
+notebooks that have since shipped from `beyond_iid` — most `_dev/feature_selection/<name>.ipynb`
+files are exactly that. Pointing a shipped record there sends every reader to preprocessing that
+produced no released data. For an unshipped candidate the reverse holds: `_dev` or `_maintenance` is
+the right and only answer (`datasets/_maintenance/_deprecated/chronic_kidney_disease/…` is a correct
+pointer). `sync-notebooks` enforces this — it resolves a shipped dataset only within its collection
+tree, and leaves the pointer empty rather than naming a `_dev` copy, which the integrity tests then
+report as a shipped record missing its notebook.
+
+**Set it when:**
+
+* a notebook is created — `/process-dataset` does this as its own step;
+* a notebook is renamed, moved between trees (`_dev/` → `beyond_iid/`, or into `_maintenance/`
+  when a dataset is retired), or a dataset directory is renamed;
+* the run that ships changes — a `<name>_1m.ipynb` sub-sample or a `<name>_clf.ipynb` alternative
+  target supersedes the full-size run. Point at the run that shipped and say why in `## Comments`;
+  a reader following the wrong sibling reads preprocessing that produced no shipped data.
+
+**Check it when:**
+
+* you are about to open a PR that touches `datasets/` or the records — `data-foundry-curation
+  sync-notebooks --check` prints every drifted record and exits non-zero, and plain
+  `sync-notebooks` writes the fixes;
+* a 📓 link opens something unexpected (the wrong tree, the wrong variant, a 404);
+* you are verifying a dataset — `/verify-dataset` carries this as a rubric item: the pointer must
+  name the notebook whose output holds the UUID the collection pins.
+
+`tests/test_records_integrity.py` fails on a pointer that is missing on a shipped dataset, does not
+exist, is not a `.ipynb`, sits outside its dataset's directory, has drifted from the tree, or names
+a sibling run that did not ship. So it is enforced, not merely conventional — but the enforcement
+compares against the tree, so a *deliberate* pointer to something the resolver would not pick needs
+its reason in `## Comments` (and will still fail the sync check).
+
+**Do not** hand-write a pointer you have not verified exists, and do not point a shipped dataset at
+a working copy under `datasets/_dev/`: the shipped notebook is the one that produced the data.
 
 ### Push back on weak reasoning (you may second-guess a decision)
 
@@ -438,7 +511,8 @@ still need to check". The convention is enforced by `test_ai_reviewed_records_fo
 * **📌 pin** (far-left column) keeps a row visible through any filter and sticks it to
   the top while scrolling. The same column links every row's **curation record (📄)** —
   its `curation/records/<name>.md` on GitHub — and, for curated datasets, the
-  **curation notebook (📓)**; on 🤖 rows it also holds the ✓ verify action.
+  **curation notebook (📓)**, read straight from the record's `notebook_path`; on 🤖 rows it also
+  holds the ✓ verify action.
 * **🔗 Copy link** (appears next to **✕ Clear filters** whenever the view is filtered)
   copies a URL that reopens the exact current view — active pill, status constraints, search
   term, and every column filter are encoded in the hash

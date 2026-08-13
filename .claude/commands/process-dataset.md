@@ -82,6 +82,16 @@ bundle check `meta_tags_*` fires:
 - "Binary Classification" → `"binary_classification"`
 - "Multiclass Classification" or "Classification" → `"multiclass_classification"`
 
+Some candidates carry *two possible* problem types — the same table supports either a
+regression target or a classification one, and taking one means dropping the other as a
+leaking feature. `pva_revenue_prediction_kddcup98` is the example: `TARGET_D` (donation
+amount) and `TARGET_B` (did they donate at all) are two framings of one signal, so the
+regression run drops `TARGET_B` and the classification run drops `TARGET_D`. The problem type
+is then a property of the task we choose, not of the dataset, so the record's `problem_type`
+cannot be read off the row: pick one target per notebook, and make the record match whichever
+run ends up shipping. This is **not** `Multi-target` — that tag is for targets predicted at
+once (distinct quantities modelled jointly). Step 3 covers how to name the second notebook.
+
 **Map `objective_metric_name`** from problem_type (these are the three the collection uses;
 anything else is a deliberate custom metric that must be registered downstream):
 - `"regression"` → `"rmse"`
@@ -149,9 +159,25 @@ and every bullet needs code.** `/verify-dataset` checks exactly that corresponde
 
 Create directory: `datasets/beyond_iid/<subfolder>/<unique_name>/`
 
+This is where a dataset headed for BeyondArena is curated — **not** `datasets/_dev/`. `_dev` is
+work in progress and old copies of notebooks that shipped long ago; a dataset that ships is curated
+under `datasets/beyond_iid/` and nowhere else. If a `_dev/**/<unique_name>/<unique_name>.ipynb`
+already exists (a `feature_selection` run, say), treat it as prior art to read, not as the file to
+edit or move: write the shipping notebook here.
+
 ### Step 3: Write the notebook
 
 Write a valid Jupyter notebook (nbformat 4, nbformat_minor 5) as `<unique_name>.ipynb` in the folder created above.
+
+**Variant notebooks.** A dataset directory may end up holding a second run next to
+`<unique_name>.ipynb`, and the suffix carries meaning: `<unique_name>_1m.ipynb` is the
+sub-sampled (1M-row) run — the one that ships for the large datasets — and
+`<unique_name>_clf.ipynb` is the same table curated for a different target, e.g. the
+classification alternative to a regression run. Keep both in the dataset's own directory and
+keep the `<unique_name>` prefix: the curation dashboard collects every `<unique_name>*.ipynb`
+there and links the one whose saved output carries the UUID the collection registry ships, so
+a run under any other name is invisible to it. Only one run per dataset ends up in a
+collection — the record's `problem_type` (and its `## Comments`) must describe that one.
 
 The notebook MUST be valid JSON with this exact structure. Use the template at `datasets/_template/_template.ipynb` as the base — read it first to get the exact JSON structure.
 
@@ -209,7 +235,25 @@ seen which warnings apply.
 
 **Cell 21** (code): `save()` + `verify_saved_container(...)` (identical to template)
 
-### Step 4: Verify the scaffold
+### Step 4: Point the curation record at the notebook
+
+Set `notebook_path` in `curation/records/<unique_name>.md` to the repo-relative path you just
+wrote (e.g. `datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb`), or run
+`data-foundry-curation sync-notebooks` to fill it from the tree. A dataset maps to exactly one
+notebook and the record stores that pointer itself, so the record names its notebook without
+the dashboard and keeps doing so if `datasets/` is ever reorganised. If the record already
+points somewhere else — say the previous run, and this is the `_1m` or `_clf` variant that will
+ship instead — update it to the run that ships, and say so in `## Comments`.
+
+If the record's pointer still names a `datasets/_dev/` copy, this step is what retires it: the
+shipped notebook is the one under `datasets/beyond_iid/`, and `sync-notebooks` will not point a
+dataset tagged `BeyondArena` anywhere else.
+
+`data-foundry-curation sync-notebooks --check` reports drift without writing;
+`tests/test_records_integrity.py` fails on a stale or missing pointer, and on a shipped dataset
+curated outside its collection tree.
+
+### Step 5: Verify the scaffold
 
 After writing the notebook, read it back and verify it is valid JSON by checking:
 - All required cells are present (21 cells)
@@ -223,7 +267,7 @@ Report to the user:
 - Any mapping decisions that were ambiguous
 - Which §D traps you flagged as plausible for *this* dataset, and why
 
-### Step 5: Hand off to `/verify-dataset`
+### Step 6: Hand off to `/verify-dataset`
 
 Close the report by telling the user what happens next, in this order:
 

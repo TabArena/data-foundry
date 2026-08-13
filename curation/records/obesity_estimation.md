@@ -25,6 +25,7 @@ source_links:
 - https://doi.org/10.24432/C5H31Z
 - https://www.openml.org/search?type=data&id=46597&sort=runs&status=active
 - https://www.kaggle.com/datasets/fatemehmehrparvar/obesity-levels
+notebook_path: datasets/beyond_iid/new_iid/obesity_estimation/obesity_estimation.ipynb
 source_row: 673
 type_adapter_id: curation-record-v1
 ---

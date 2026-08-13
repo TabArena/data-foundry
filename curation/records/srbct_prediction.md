@@ -21,6 +21,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/45101
+notebook_path: datasets/_dev/feature_selection/srbct_prediction/srbct_prediction.ipynb
 source_row: 1039
 type_adapter_id: curation-record-v1
 ---

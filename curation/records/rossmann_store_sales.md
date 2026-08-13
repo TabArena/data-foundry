@@ -20,6 +20,7 @@ problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/c/rossmann-store-sales
+notebook_path: datasets/beyond_iid/temporal/rossmann_store_sales/rossmann_store_sales.ipynb
 source_row: 725
 type_adapter_id: curation-record-v1
 ---

@@ -20,6 +20,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5WK5Q
+notebook_path: datasets/beyond_iid/new_iid/ljubljana_primary_tumor/ljubljana_primary_tumor.ipynb
 source_row: 770
 type_adapter_id: curation-record-v1
 ---

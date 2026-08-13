@@ -239,6 +239,7 @@ selection criteria and processing conventions. Other CLI subcommands:
 
 ```bash
 data-foundry-curation validate                 # check records against the dropdown vocab
+data-foundry-curation sync-notebooks           # refresh each record's notebook_path (--check to dry-run)
 data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
 data-foundry-curation import-sheet sheet.csv    # one-time migration from the old Google Sheet

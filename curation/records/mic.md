@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.openml.org/search?type=data&id=45648
 - https://doi.org/10.24432/C53P5M
+notebook_path: datasets/beyond_iid/old_iid/mic/mic.ipynb
 type_adapter_id: curation-record-v1
 ---
 

@@ -22,6 +22,7 @@ source_links:
 - https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption
 - https://challenge.aiforgood.itu.int/match/matchitem/83
 - https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main
+notebook_path: datasets/beyond_iid/grouped/5g_energy_consumption/5g_energy_consumption.ipynb
 source_row: 890
 type_adapter_id: curation-record-v1
 ---

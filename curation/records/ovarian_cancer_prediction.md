@@ -24,6 +24,7 @@ source_links:
 - https://www.openml.org/d/45098
 - https://home.ccr.cancer.gov/ncifdaproteomics/ppatterns.asp
 - Rel? https://github.com/chenzRG/Cancer-Multi-Omics-Benchmark.git
+notebook_path: datasets/_maintenance/_deprecated/ovarian_cancer_prediction/ovarian_cancer_prediction.ipynb
 source_row: 1034
 type_adapter_id: curation-record-v1
 ---

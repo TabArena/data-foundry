@@ -25,6 +25,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview
 - https://www.coffeereview.com/
+notebook_path: datasets/beyond_iid/temporal/coffee_rating_prediction/coffee_rating_prediction.ipynb
 source_row: 481
 type_adapter_id: curation-record-v1
 ---

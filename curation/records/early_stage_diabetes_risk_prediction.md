@@ -23,6 +23,7 @@ source_links:
 - https://doi.org/10.24432/C5VG8H
 - https://www.openml.org/search?type=data&id=43643&sort=runs&status=active
 - https://www.kaggle.com/datasets/ishandutta/early-stage-diabetes-risk-prediction-dataset
+notebook_path: datasets/beyond_iid/new_iid/early_stage_diabetes_risk_prediction/early_stage_diabetes_risk_prediction.ipynb
 source_row: 765
 type_adapter_id: curation-record-v1
 ---

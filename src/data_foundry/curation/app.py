@@ -17,12 +17,13 @@ from __future__ import annotations
 
 import json
 import os
-from functools import lru_cache, partial
+from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root, vocabularies_path
+from data_foundry.curation.notebooks import resolve_notebook
 from data_foundry.curation.record import FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
     load_all,
@@ -39,25 +40,6 @@ GITHUB_BLOB_BASE: str = os.environ.get(
 ).rstrip("/")
 
 
-@lru_cache(maxsize=8)
-def _notebook_index(datasets_dir: str) -> dict[str, str]:
-    """Map a dataset ``unique_name`` -> its repo-relative curation-notebook path.
-
-    Only the canonical per-dataset notebook counts: ``datasets/**/<name>/<name>.ipynb``
-    (the layout ``/process-dataset`` scaffolds). Cached because the datasets tree is large and
-    static for the lifetime of a serve/build.
-    """
-    base = Path(datasets_dir)
-    if not base.exists():
-        return {}
-    repo_root = base.parent
-    index: dict[str, str] = {}
-    for nb in base.rglob("*.ipynb"):
-        if nb.parent.name == nb.stem:  # canonical <name>/<name>.ipynb only
-            index[nb.stem] = nb.relative_to(repo_root).as_posix()
-    return index
-
-
 def _schema_payload() -> dict[str, object]:
     return {
         "fields": [
@@ -70,20 +52,21 @@ def _schema_payload() -> dict[str, object]:
 def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     """Serialise every record, augmented with read-only *derived* link fields.
 
-    Datasets with a curation notebook get ``notebook_path`` (repo-relative) and
-    ``notebook_url`` (GitHub main link); every record additionally gets ``record_path`` /
-    ``record_url`` pointing at its own markdown file (``curation/records/<name>.md``),
-    so a record can be referenced directly from the UI. None of these are part of the
-    record schema and they are never written back — the dashboard's per-row 📓 / 📄
-    buttons read them (live and on the static site).
+    ``notebook_path`` is a real record field, so the pointer a record carries is used as-is; only
+    records that have none fall back to :func:`~data_foundry.curation.notebooks.resolve_notebook`
+    (a dataset curated but not yet synced). Either way the dataset's notebook gets a
+    ``notebook_url`` (GitHub main link), and every record gets ``record_path`` / ``record_url``
+    pointing at its own markdown file
+    (``curation/records/<name>.md``), so a record can be referenced directly from the UI. The
+    ``*_url`` keys are not part of the record schema and are never written back — the
+    dashboard's per-row 📓 / 📄 buttons read them (live and on the static site).
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
-    notebooks = _notebook_index(str(resolve_curation_root().parent / "datasets"))
     payload: list[dict[str, object]] = []
     for r in load_all(directory):
         d = record_to_dict(r)
-        rel = notebooks.get(r.unique_name)
+        rel = r.notebook_path or resolve_notebook(r)
         if rel:
             d["notebook_path"] = rel
             d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"

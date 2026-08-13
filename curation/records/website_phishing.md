@@ -15,6 +15,7 @@ required_split:
 - '?'
 source_links:
 - https://doi.org/10.24432/C5B301
+notebook_path: datasets/beyond_iid/old_iid/website_phishing/website_phishing.ipynb
 type_adapter_id: curation-record-v1
 ---
 

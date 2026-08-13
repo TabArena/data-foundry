@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc
+notebook_path: datasets/beyond_iid/old_iid/heloc/heloc.ipynb
 type_adapter_id: curation-record-v1
 ---
 

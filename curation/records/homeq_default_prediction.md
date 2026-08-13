@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/ajay1735/hmeq-data
 - http://www.creditriskanalytics.net/datasets-private2.html
+notebook_path: datasets/beyond_iid/new_iid/homeq_default_prediction/homeq_default_prediction.ipynb
 source_row: 679
 type_adapter_id: curation-record-v1
 ---

@@ -25,6 +25,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://doi.org/10.24432/C5FS30
 - https://doi.org/10.24432/C5259N
+notebook_path: datasets/beyond_iid/new_iid/credit_approval/credit_approval.ipynb
 source_row: 775
 type_adapter_id: curation-record-v1
 ---

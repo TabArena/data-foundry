@@ -17,6 +17,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1464
 - https://doi.org/10.24432/C5GS39
+notebook_path: datasets/beyond_iid/old_iid/blood_transfusion/blood_transfusion.ipynb
 type_adapter_id: curation-record-v1
 ---
 

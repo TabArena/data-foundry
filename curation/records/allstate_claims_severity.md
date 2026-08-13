@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/allstate-claims-severity
 - https://www.openml.org/search?type=data&id=42571
+notebook_path: datasets/beyond_iid/new_iid/allstate_claims_severity/allstate_claims_severity.ipynb
 source_row: 645
 type_adapter_id: curation-record-v1
 ---

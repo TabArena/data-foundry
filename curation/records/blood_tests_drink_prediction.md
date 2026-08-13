@@ -27,6 +27,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/8
 - https://doi.org/10.24432/C54G67
+notebook_path: datasets/beyond_iid/new_iid/blood_tests_drink_prediction/blood_tests_drink_prediction.ipynb
 source_row: 751
 type_adapter_id: curation-record-v1
 ---

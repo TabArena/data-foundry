@@ -28,6 +28,11 @@ If the user wants to fit a model on a dataset, use `/benchmark-dataset`.
   whole `~/.cache/data_foundry/`.
 * `container.describe()`, `task.split_regime` ∈ {`"iid"`,
   `"temporal_non_iid"`, `"grouped_non_iid"`}.
+* `curation/records/<unique_name>.md` — each member's curation record;
+  its `notebook_path` points at the notebook that produced that
+  container (the shipped run, where a dataset has `_1m` / `_clf`
+  siblings), which is the fastest route from a collection entry to how it
+  was built.
 
 ## Canonical examples to read or run
 

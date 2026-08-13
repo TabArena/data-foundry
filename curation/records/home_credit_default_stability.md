@@ -22,6 +22,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20
+notebook_path: datasets/beyond_iid/temporal/home_credit_default_stability/home_credit_default_stability_1m.ipynb
 source_row: 710
 type_adapter_id: curation-record-v1
 ---

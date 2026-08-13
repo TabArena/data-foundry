@@ -21,6 +21,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5B31D
+notebook_path: datasets/_dev/feature_selection/clock_protein_period/clock_protein_period.ipynb
 source_row: 1030
 type_adapter_id: curation-record-v1
 ---

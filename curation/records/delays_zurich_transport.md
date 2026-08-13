@@ -23,6 +23,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/40753
+notebook_path: datasets/_maintenance/_suspended/delays_zurich_transport/delays_zurich_transport.ipynb
 source_row: 620
 type_adapter_id: curation-record-v1
 ---

@@ -24,6 +24,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
 - https://doi.org/10.24432/C52P4X
+notebook_path: datasets/_dev/feature_selection/heart_disease_switzerland/heart_disease_switzerland.ipynb
 source_row: 758
 type_adapter_id: curation-record-v1
 ---

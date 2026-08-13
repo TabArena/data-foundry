@@ -15,6 +15,7 @@ required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/yakhyojon/customer-satisfaction-in-airline
+notebook_path: datasets/beyond_iid/old_iid/customer_satisfaction_in_airline/customer_satisfaction_in_airline.ipynb
 type_adapter_id: curation-record-v1
 ---
 

@@ -26,6 +26,7 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5T61S
+notebook_path: datasets/beyond_iid/grouped/micro_mass/micro_mass.ipynb
 source_row: 792
 type_adapter_id: curation-record-v1
 ---

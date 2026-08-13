@@ -27,6 +27,7 @@ source_links:
 - https://zenodo.org/records/11295916
 - https://www.kaggle.com/datasets/adarshsng/lending-club-loan-data-csv
 - https://www.lendingclub.com/
+notebook_path: datasets/beyond_iid/temporal/lending_club/lending_club_1m.ipynb
 source_row: 641
 type_adapter_id: curation-record-v1
 ---

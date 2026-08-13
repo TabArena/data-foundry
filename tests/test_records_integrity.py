@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 from data_foundry.curation._paths import records_dir, resolve_curation_root
+from data_foundry.curation.notebooks import required_tree, shipped_uuids, sync_notebook_paths
 from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
     AI_FILLED_TAG,
@@ -241,3 +242,83 @@ def test_collection_members_align_with_shipped_folders(records):
         if any(b in (r.data_foundry_status or []) for b in (TAB_LABEL, BEY_LABEL)) and r.unique_name not in shipped
     ]
     assert not extra, f"records carry a benchmark tag but are not a shipped folder: {extra}"
+
+
+# ------------------------------------------------------------------- notebook pointers
+@_needs_datasets
+def test_notebook_path_points_at_an_existing_notebook(records):
+    """Every recorded ``notebook_path`` resolves to a notebook in the dataset's own directory."""
+    repo_root = resolve_curation_root().parent
+    problems = []
+    for r in records:
+        if not r.notebook_path:
+            continue
+        path = repo_root / r.notebook_path
+        if not path.is_file():
+            problems.append((r.unique_name, f"missing file: {r.notebook_path}"))
+        elif path.suffix != ".ipynb":
+            problems.append((r.unique_name, f"not a notebook: {r.notebook_path}"))
+        elif path.parent.name != r.unique_name:
+            problems.append((r.unique_name, f"notebook outside the dataset's directory: {r.notebook_path}"))
+    assert not problems, f"broken notebook_path pointers (run sync-notebooks): {problems}"
+
+
+@_needs_datasets
+def test_shipped_notebook_paths_live_in_their_collection_tree(records):
+    """A shipped dataset's notebook comes from its collection's tree, never from ``_dev``.
+
+    ``datasets/_dev/`` is work in progress — including older copies of notebooks that have since
+    shipped from ``datasets/beyond_iid/`` — so a shipped dataset pointing there sends readers to
+    preprocessing that produced no released data. Unshipped candidates are the other way round:
+    ``_dev`` (in progress) and ``_maintenance`` (deprecated / suspended / out of scope) are
+    exactly where their notebooks belong.
+    """
+    problems = [
+        (r.unique_name, r.notebook_path, tree)
+        for r in records
+        if r.notebook_path and (tree := required_tree(r)) and not r.notebook_path.startswith(tree)
+    ]
+    assert not problems, f"shipped dataset curated outside its collection tree (name, path, expected): {problems}"
+
+
+@_needs_datasets
+def test_curated_records_have_a_notebook_path(records):
+    """Every dataset shipped in a collection names the notebook it came from."""
+    missing = [
+        r.unique_name
+        for r in records
+        if any(t in (r.data_foundry_status or []) for t in COLLECTION_TAGS) and not r.notebook_path
+    ]
+    assert not missing, f"shipped in a collection but no notebook_path: {missing}"
+
+
+@_needs_datasets
+def test_notebook_paths_are_in_sync_with_the_datasets_tree():
+    """The recorded pointers match what the tree holds — nothing moved or was re-run since."""
+    drift = sync_notebook_paths(RECDIR, DATASETS, check=True)
+    assert not drift, f"notebook_path drift (run `data-foundry-curation sync-notebooks`): {drift}"
+
+
+@_needs_datasets
+def test_notebook_path_names_the_run_that_shipped(records):
+    """Where a dataset has sibling runs, the pointer is the one whose output carries the
+    shipped container's UUID -- a ``_1m`` sub-sample or a ``_clf`` alternative target, not
+    whichever notebook happens to match the directory name.
+    """
+    repo_root = resolve_curation_root().parent
+    uuids = shipped_uuids()
+    problems, checked = [], 0
+    for r in records:
+        uuid = uuids.get(r.unique_name)
+        if not (uuid and r.notebook_path):
+            continue
+        notebook = repo_root / r.notebook_path
+        if len(list(notebook.parent.glob(f"{r.unique_name}*.ipynb"))) < 2:  # nothing to disambiguate
+            continue
+        checked += 1
+        if uuid not in notebook.read_text(encoding="utf-8"):
+            problems.append((r.unique_name, r.notebook_path))
+    assert not problems, f"notebook_path names a run that did not ship: {problems}"
+    # 10 datasets ship a _1m sub-sample, pva_revenue_prediction_kddcup98 ships _clf; guards
+    # against this check going vacuous if the layout changes.
+    assert checked >= 11, f"expected at least 11 datasets with sibling notebooks, found {checked}"

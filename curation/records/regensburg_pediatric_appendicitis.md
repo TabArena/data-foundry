@@ -23,6 +23,7 @@ source_links:
 - https://archive.ics.uci.edu/dataset/938/toxicity
 - https://doi.org/10.5281/zenodo.7669442
 - (https://www.openml.org/search?type=data&id=46603&sort=runs&status=active)
+notebook_path: datasets/beyond_iid/new_iid/regensburg_pediatric_appendicitis/regensburg_pediatric_appendicitis.ipynb
 source_row: 746
 type_adapter_id: curation-record-v1
 ---

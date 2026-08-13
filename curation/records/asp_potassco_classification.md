@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/d/41705
 - https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO
+notebook_path: datasets/beyond_iid/grouped/asp_potassco_classification/asp_potassco_classification.ipynb
 source_row: 695
 type_adapter_id: curation-record-v1
 ---

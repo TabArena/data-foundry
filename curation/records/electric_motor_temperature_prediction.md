@@ -24,6 +24,7 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature
+notebook_path: datasets/beyond_iid/grouped/electric_motor_temperature_prediction/electric_motor_temperature_prediction.ipynb
 source_row: 700
 type_adapter_id: curation-record-v1
 ---

@@ -18,6 +18,7 @@ problem_type: Multiclass Classification
 source_links:
 - https://www.openml.org/search?type=data&id=2
 - https://doi.org/10.24432/C5RW2F
+notebook_path: datasets/_maintenance/_old_collections/tabarena-v0pt1/anneal/anneal.ipynb
 type_adapter_id: curation-record-v1
 ---
 

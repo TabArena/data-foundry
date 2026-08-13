@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5D612
 - https://www.kaggle.com/datasets/fedesoriano/hepatitis-c-dataset
+notebook_path: datasets/beyond_iid/new_iid/hepatitis_c_prediction/hepatitis_c_prediction.ipynb
 source_row: 771
 type_adapter_id: curation-record-v1
 ---

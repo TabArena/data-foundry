@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import json
+from functools import partial
+from pathlib import Path
 
 import pytest
-from data_foundry.curation import exporter
+from data_foundry.curation import exporter, notebooks
+from data_foundry.curation.app import _records_payload
+from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
     CurationRecord,
@@ -19,6 +23,11 @@ from data_foundry.curation.store import (
     record_to_markdown,
     save_record,
 )
+
+
+def _record(unique_name: str, **fields: object) -> CurationRecord:
+    """A minimal record; ``fields`` sets whatever the test actually cares about."""
+    return CurationRecord(unique_name=unique_name, name=unique_name, **fields)
 
 
 @pytest.fixture
@@ -113,6 +122,101 @@ def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
     assert df.shape[0] == 1
     assert df.loc[0, "Checked by"] == "Lennart | Andrej"
     assert df.loc[0, "unique_name"] == "musk"
+
+
+def _notebooks(*paths: Path) -> None:
+    """Create each ``<dir>/<name>.ipynb`` (empty JSON) for a synthetic datasets tree."""
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+
+
+def test_resolve_notebook_prefers_the_shipped_tree_over_scratch_copies(tmp_path) -> None:
+    datasets = tmp_path / "datasets"
+    _notebooks(
+        datasets / "beyond_iid" / "new_iid" / "musk" / "musk.ipynb",
+        datasets / "_dev" / "feature_selection" / "musk" / "musk.ipynb",
+        datasets / "_maintenance" / "_old_collections" / "v0" / "musk" / "musk.ipynb",
+        datasets / "_dev" / "feature_selection" / "only_in_dev" / "only_in_dev.ipynb",
+        # A variant beside the shipped notebook loses to the plain name while nothing marks it
+        # as the run that shipped -- and is never a dataset of its own.
+        datasets / "beyond_iid" / "new_iid" / "musk" / "musk_clf.ipynb",
+    )
+    resolve = partial(resolve_notebook, datasets_dir=datasets)
+
+    assert resolve(_record("musk")) == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
+    # A dataset that only ever lived in a scratch tree points at the copy that exists.
+    assert resolve(_record("only_in_dev")) == "datasets/_dev/feature_selection/only_in_dev/only_in_dev.ipynb"
+    assert resolve(_record("musk_clf")) is None
+
+
+def test_resolve_notebook_keeps_a_shipped_dataset_out_of_dev(tmp_path) -> None:
+    """``datasets/_dev/`` holds work in progress, so it never backs a shipped dataset."""
+    # One tree per case: notebook_candidates() caches per datasets dir (the tree is static for
+    # the lifetime of a serve/build), so a case must not mutate the tree another case resolved.
+    dev_only = tmp_path / "dev-only" / "datasets"
+    _notebooks(dev_only / "_dev" / "feature_selection" / "musk" / "musk.ipynb")
+    shipped = _record("musk", data_foundry_status=["DF: Yes", "BeyondArena"])
+    # Only a dev copy exists: better no pointer than one into the wrong tree (the integrity
+    # tests then flag the shipped record as missing its notebook).
+    assert resolve_notebook(shipped, dev_only) is None
+    assert resolve_notebook(_record("musk"), dev_only) == "datasets/_dev/feature_selection/musk/musk.ipynb"
+
+    both = tmp_path / "both" / "datasets"
+    _notebooks(
+        both / "_dev" / "feature_selection" / "musk" / "musk.ipynb",
+        both / "beyond_iid" / "new_iid" / "musk" / "musk.ipynb",
+    )
+    assert resolve_notebook(shipped, both) == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
+
+    # TabArena v0.1 shipped from the archived tree, so that is where its notebook lives.
+    archived = tmp_path / "archived" / "datasets"
+    _notebooks(
+        archived / "_dev" / "feature_selection" / "anneal" / "anneal.ipynb",
+        archived / "_maintenance" / "_old_collections" / "tabarena-v0pt1" / "anneal" / "anneal.ipynb",
+    )
+    anneal = _record("anneal", data_foundry_status=["DF: Yes", "TabArena (v0.1)"])
+    expected = "datasets/_maintenance/_old_collections/tabarena-v0pt1/anneal/anneal.ipynb"
+    assert resolve_notebook(anneal, archived) == expected
+
+
+def test_resolve_notebook_picks_the_variant_that_shipped(tmp_path, monkeypatch) -> None:
+    uuid = "019d736f-26fd-73bd-8853-dc219e5f4ed5"
+    dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
+    _notebooks(dataset_dir / "musk.ipynb")  # full-size run
+    (dataset_dir / "musk_1m.ipynb").write_text(f'{{"out": "{uuid}"}}', encoding="utf-8")  # sub-sampled run
+    monkeypatch.setattr(notebooks, "shipped_uuids", lambda: {"musk": uuid})
+
+    resolved = resolve_notebook(_record("musk"), tmp_path / "datasets")
+    assert resolved == "datasets/beyond_iid/new_iid/musk/musk_1m.ipynb"
+
+
+def test_sync_notebook_paths_writes_the_pointer_into_the_record(tmp_path, sample_record: CurationRecord) -> None:
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+    dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
+    dataset_dir.mkdir(parents=True)
+    (dataset_dir / "musk.ipynb").write_text("{}", encoding="utf-8")
+    datasets = tmp_path / "datasets"
+
+    changed = sync_notebook_paths(records, datasets, check=True)
+    assert changed == {"musk": (None, "datasets/beyond_iid/new_iid/musk/musk.ipynb")}
+    assert load_record(records / "musk.md").notebook_path is None, "--check must not write"
+
+    assert sync_notebook_paths(records, datasets) == changed
+    assert load_record(records / "musk.md").notebook_path == "datasets/beyond_iid/new_iid/musk/musk.ipynb"
+    assert sync_notebook_paths(records, datasets, check=True) == {}, "second run is a no-op"
+
+
+def test_records_payload_links_the_recorded_notebook(tmp_path, sample_record: CurationRecord) -> None:
+    """The stored pointer is what gets linked -- no lookup in the datasets tree."""
+    sample_record.notebook_path = "datasets/beyond_iid/new_iid/musk/musk_clf.ipynb"
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+
+    (row,) = _records_payload(records)
+    assert row["notebook_path"] == "datasets/beyond_iid/new_iid/musk/musk_clf.ipynb"
+    assert row["notebook_url"].endswith("/datasets/beyond_iid/new_iid/musk/musk_clf.ipynb")
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:

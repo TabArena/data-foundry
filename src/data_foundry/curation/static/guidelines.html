@@ -219,6 +219,14 @@
     YearPredictionMSD <em>regression</em>, but it is the Million Song Dataset Challenge — a song-<strong>recommendation</strong>
     task — repackaged, so it is correctly excluded as recommender / out-of-scope, and the regression re-framings are
     fake / duplicates.</p>
+    <p><strong>One task per curated dataset when the targets exclude each other.</strong> Some sources carry two
+    usable targets where taking one means dropping the other: <code>pva_revenue_prediction_kddcup98</code> has the
+    donation amount (<code>TARGET_D</code>) and the response flag (<code>TARGET_B</code> — did they donate at all), two
+    framings of one signal, so keeping both would leak. The problem type is then a property of the task we choose, not
+    of the dataset: curate one target per notebook, set <code>problem_type</code> to the task that ships, and note the
+    alternative in the record's comments. This is the case <code>Multi-target</code> does <em>not</em> cover — that tag
+    is for several targets predicted <strong>at once</strong>, which is the right call when they are distinct
+    quantities that could be modelled jointly (next-day min <em>and</em> max temperature, several soil nutrients).</p>
   </div>
   <div class="crit">
     <h3>Representative of real-world tabular ML</h3>

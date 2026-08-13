@@ -19,6 +19,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/amex-default-prediction/data?select=train_data.csv
+notebook_path: datasets/_maintenance/_out_of_scope/_iid_version_of_non_iid/amex_iid/amex_iid.ipynb
 source_row: 644
 type_adapter_id: curation-record-v1
 ---

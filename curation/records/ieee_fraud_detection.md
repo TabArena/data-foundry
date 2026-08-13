@@ -23,6 +23,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/ieee-fraud-detection
+notebook_path: datasets/beyond_iid/temporal/ieee_fraud_detection/ieee_fraud_detection.ipynb
 source_row: 745
 type_adapter_id: curation-record-v1
 ---

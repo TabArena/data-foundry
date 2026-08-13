@@ -20,6 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/widsdatathon2021/data?select=TrainingWiDS2021.csv
+notebook_path: datasets/beyond_iid/new_iid/wids_diabetes_mellitus/wids_diabetes_mellitus.ipynb
 source_row: 652
 type_adapter_id: curation-record-v1
 ---

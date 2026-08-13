@@ -16,6 +16,7 @@ required_split:
 - Temporal (NON-IID)
 source_links:
 - https://doi.org/10.24432/C5004D
+notebook_path: datasets/beyond_iid/old_iid/taiwanese_bankruptcy_prediction/taiwanese_bankruptcy_prediction.ipynb
 type_adapter_id: curation-record-v1
 ---
 

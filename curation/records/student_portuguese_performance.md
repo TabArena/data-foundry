@@ -25,6 +25,7 @@ source_links:
 - https://www.kaggle.com/datasets/whenamancodes/student-performance/data
 - https://doi.org/10.24432/C5TG7T
 - https://www.openml.org/d/44967
+notebook_path: datasets/beyond_iid/new_iid/student_portuguese_performance/student_portuguese_performance.ipynb
 source_row: 763
 type_adapter_id: curation-record-v1
 ---

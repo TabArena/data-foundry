@@ -20,6 +20,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/santander-customer-transaction-prediction
+notebook_path: datasets/beyond_iid/new_iid/santander_customer_transaction_prediction/santander_customer_transaction_prediction.ipynb
 source_row: 650
 type_adapter_id: curation-record-v1
 ---
