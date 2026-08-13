@@ -27,6 +27,10 @@ If the user wants to *fit a model* on the dataset, use `/benchmark-dataset`
   views.
 * `container.checksum == container._create_checksum()` — sanity check that
   on-disk bytes are intact (the existing examples assert this).
+* `curation/records/<unique_name>.md` — the curation record. Its
+  `notebook_path` names the notebook that produced this container, so
+  "how was this preprocessed / why this target / why this split" is one
+  file away; `## Comments` holds the triage reasoning.
 
 ## Canonical examples to read or run
 

@@ -31,9 +31,15 @@ Your verdict is **advisory**. A human curator has the final say (same contract a
 
 ## Step 0 — Locate the inputs
 
-1. **The notebook** — `datasets/**/<unique_name>/<unique_name>.ipynb`. Read it in full: the metadata
-   cell, every preprocessing step, the split construction, and the committed cell *outputs* (the
-   `run_all_checks` tables are evidence you should use, not re-run).
+1. **The notebook** — read `notebook_path` from the backlog record; it is the record's own pointer
+   to the one notebook behind this dataset, so use it rather than assuming
+   `datasets/**/<unique_name>/<unique_name>.ipynb`. That matters where a dataset has sibling runs:
+   a sub-sampled `<unique_name>_1m.ipynb` or an alternative target `<unique_name>_clf.ipynb` may be
+   the run that shipped, and verifying the other one verifies a dataset nobody uses. If the record
+   has no pointer yet, resolve it with `data-foundry-curation sync-notebooks` (or list
+   `<unique_name>*.ipynb` in the dataset directory and match the UUID as in item 14). Read it in
+   full: the metadata cell, every preprocessing step, the split construction, and the committed cell
+   *outputs* (the `run_all_checks` tables are evidence you should use, not re-run).
 2. **The container** — the saved bundle. Either `local-data-warehouse/<unique_name>/<uuid>/` or, for
    a shipped dataset, `BEYOND_ARENA.get_dataset("<unique_name>")`.
 3. **The backlog record** — `curation/records/<unique_name>.md`, if it exists. Its `## Comments` hold
@@ -88,6 +94,7 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
 | 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in `/triage-candidates`. |
 | 13 | **Trivial** | Do the committed check outputs suggest every model would score identically or solve it perfectly? If so, flag it — a trivial task is an exclusion. |
+| 14 | **Record pointer** | Does the record's `notebook_path` name *this* notebook, and does this notebook's saved output carry the UUID the collection pins (`BEYOND_ARENA` entry / `datasets/beyond_iid/final_uuid_list.py`)? A mismatch means the record points at the wrong run, or the notebook was re-run after the collection was pinned — say which. `data-foundry-curation sync-notebooks --check` must be clean; evidence is the UUID string itself. |
 
 Load the selection criteria and processing conventions from `/triage-candidates` before judging items 1–4 and
 12–13; they encode decisions you would otherwise guess at.
@@ -96,7 +103,7 @@ Load the selection criteria and processing conventions from `/triage-candidates`
 
 1. **Verdict** — one of: *ready*, *ready with noted concerns*, *needs changes*, *should not ship*.
 2. **Automated** — error/warning counts, each error, and the per-warning call from Step 1.
-3. **Rubric** — a compact table of the 13 items with verdict + evidence. Put `concern` and
+3. **Rubric** — a compact table of the 14 items with verdict + evidence. Put `concern` and
    `cannot-verify` rows first; the passes can be one line each.
 4. **Proposed fixes** — concrete edits (notebook cell, metadata field, `ignore=[...]` entry with its
    reason). Apply them only if the user asks.
@@ -108,6 +115,11 @@ Load the selection criteria and processing conventions from `/triage-candidates`
 * **Do not silently re-save the container.** New UUID = broken pin. Say what needs re-running and
   let the curator do it.
 * **Do not edit committed notebook outputs.** They are the evidence trail.
+* **A notebook that moves or gets superseded needs its record updated.** If the run that ships
+  changes — a `_1m` sub-sample replaces the full-size run, a notebook is renamed or relocated — set
+  the record's `notebook_path` to the new one (or run `data-foundry-curation sync-notebooks`) in the
+  same change. A stale pointer sends every reader to a notebook that did not produce the data, and
+  `tests/test_records_integrity.py` fails on it.
 * If you record findings in the backlog record (`curation/records/<unique_name>.md`), follow the
   `AI (UNVERIFIED)` convention from `/triage-candidates` and preserve existing human `CC (…)` notes.
 * Substance over volume: a short report with three real concerns beats thirteen paragraphs of
