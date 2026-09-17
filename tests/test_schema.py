@@ -426,6 +426,7 @@ def test_dataset_metadata_path_not_created(base_dataset_metadata_kwargs, tmp_pat
 
 
 def test_predictive_splits_metadata_split_random_state_round_trips():
+    """``split_random_state`` survives a JSON dump and reload and defaults to ``None``."""
     adapter = pydantic.TypeAdapter(PredictiveMLSplitsMetadata)
     splits = {0: {0: ([0, 1], [2])}}
     without = PredictiveMLSplitsMetadata(splits_comment="old", splits=splits)

@@ -436,10 +436,12 @@ def _flat(splits):
 
 
 def test_split_random_state_is_the_default_seed():
+    """The module-level seed keeps the value the splitters used before it was exposed."""
     assert SPLIT_RANDOM_STATE == 4267
 
 
 def test_iid_default_seed_equals_explicit_split_random_state(make_dataset):
+    """Omitting ``random_state`` yields the same IID folds as passing the module constant."""
     df = make_dataset(60, classification=True)
     kwargs = dict(dataset=df, n_repeats=2, n_splits=3, test_size=None, stratify_on="target")
     assert _flat(get_recommended_iid_splits(**kwargs)) == _flat(
@@ -448,6 +450,7 @@ def test_iid_default_seed_equals_explicit_split_random_state(make_dataset):
 
 
 def test_iid_random_state_changes_the_folds(make_dataset):
+    """A different ``random_state`` produces different IID folds."""
     df = make_dataset(60)
     kwargs = dict(dataset=df, n_repeats=1, n_splits=3, test_size=None, stratify_on=None)
     assert _flat(get_recommended_iid_splits(**kwargs)) != _flat(get_recommended_iid_splits(**kwargs, random_state=1))
@@ -455,6 +458,7 @@ def test_iid_random_state_changes_the_folds(make_dataset):
 
 @pytest.mark.parametrize("group_labels", ["per_group", "per_sample"])
 def test_grouped_random_state_is_forwarded(grouped_dataset_per_group, grouped_dataset_per_sample, group_labels):
+    """``random_state`` reaches both grouped splitting paths and defaults to the module constant."""
     df = grouped_dataset_per_group if group_labels == "per_group" else grouped_dataset_per_sample
     kwargs = dict(
         dataset=df,
