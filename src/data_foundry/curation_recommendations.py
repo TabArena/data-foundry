@@ -9,6 +9,13 @@ if TYPE_CHECKING:
     from data_foundry.schema import GroupLabelTypes
 
 
+#: The seed every k-fold and grouped k-fold split in this module is built with unless a caller passes
+#: ``random_state``. Exposed so downstream code that wants to reproduce or align with these splits (for
+#: example an inner validation split seeded like the outer one) can refer to it by name instead of copying
+#: the number. Written into :attr:`PredictiveMLSplitsMetadata.split_random_state` when splits are recorded.
+SPLIT_RANDOM_STATE = 4267
+
+
 def get_recommended_splits_dimensions(
     *,
     dataset: pd.DataFrame,
@@ -74,6 +81,7 @@ def get_recommended_iid_splits(
     n_splits: int,
     test_size: int | None,
     stratify_on: str | None,
+    random_state: int = SPLIT_RANDOM_STATE,
 ):
     """Generates recommended IID splits for the dataset.
 
@@ -85,6 +93,8 @@ def get_recommended_iid_splits(
             If None, cross-validation is performed.
         stratify_on (str | None): Column name to use for stratification. If None,
             no stratification is applied.
+        random_state (int): Seed of the repeated (stratified) k-fold splitter.
+            Defaults to :data:`SPLIT_RANDOM_STATE`.
 
     Returns:
         dict[int, dict[int, tuple[list[int], list[int]]]]: A dictionary of
@@ -107,7 +117,6 @@ def get_recommended_iid_splits(
     y = dataset[stratify_on] if stratify_on is not None else None
 
     splits = {}
-    SPLIT_RANDOM_STATE = 4267
 
     # Single train-test split
     if n_repeats == 1 and n_splits == 1:
@@ -122,9 +131,9 @@ def get_recommended_iid_splits(
 
     # Repeated (Stratified) K-Fold Cross-Validation
     if stratify_on is not None:
-        rkf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE)
+        rkf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
     else:
-        rkf = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=SPLIT_RANDOM_STATE)
+        rkf = RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
     sklearn_splits = rkf.split(
         X=X,
         y=y,
@@ -151,6 +160,7 @@ def get_recommended_grouped_splits(
     stratify_on: str | None,
     show_splits: bool = False,
     target_on: str | None = None,
+    random_state: int = SPLIT_RANDOM_STATE,
 ):
     """Generates recommended grouped splits for the dataset.
 
@@ -174,6 +184,8 @@ def get_recommended_grouped_splits(
         show_splits: Whether to print out the distribution of target and group labels in
             the generated splits for sanity checking.
         target_on: only needed for show_splits to give an overview of the target distribution.
+        random_state (int): Seed of the splitter (repeat ``i`` of the per-sample path uses
+            ``random_state + i``). Defaults to :data:`SPLIT_RANDOM_STATE`.
 
     Returns:
         dict[int, dict[int, tuple[list[int], list[int]]]]: A dictionary of
@@ -206,6 +218,7 @@ def get_recommended_grouped_splits(
             group_on=group_on,
             test_size=test_size,
             stratify_on=stratify_on,
+            random_state=random_state,
         )
     else:
         print("Using label-per-group grouped splits.")
@@ -216,6 +229,7 @@ def get_recommended_grouped_splits(
             group_on=group_on,
             test_size=test_size,
             stratify_on=stratify_on,
+            random_state=random_state,
         )
     if show_splits:
         _show_grouped_splits(
@@ -235,6 +249,7 @@ def _get_grouped_splits_via_index_split(
     group_on: str,
     test_size: int | None,
     stratify_on: str | None,
+    random_state: int = SPLIT_RANDOM_STATE,
 ) -> dict[int, dict[int, tuple[list[int], list[int]]]]:
     """Create grouped splits by performing normal IID splits on the group indices.
     This logic ignores the impact of group sizes!
@@ -274,6 +289,7 @@ def _get_grouped_splits_via_index_split(
         n_splits=n_splits,
         test_size=test_size,
         stratify_on=stratify_on,
+        random_state=random_state,
     )
 
     def map_group_indices(indices: list[int]) -> list[int]:
@@ -314,6 +330,7 @@ def _get_grouped_splits_via_groupkfold(
     group_on: str,
     test_size: int | None,
     stratify_on: str | None,
+    random_state: int = SPLIT_RANDOM_STATE,
 ) -> dict[int, dict[int, tuple[list[int], list[int]]]]:
     """Fallback for grouped splits."""
     from sklearn.model_selection import GroupKFold, StratifiedGroupKFold
@@ -323,7 +340,6 @@ def _get_grouped_splits_via_groupkfold(
     y = dataset[stratify_on] if stratify_on is not None else None
     group = dataset[group_on]
     splits: dict[int, dict[int, tuple[list[int], list[int]]]] = {}
-    SPLIT_RANDOM_STATE = 4267
     splitter_cls = StratifiedGroupKFold if stratify_on is not None else GroupKFold
 
     if stratify_on:
@@ -344,7 +360,7 @@ def _get_grouped_splits_via_groupkfold(
         approximate_splits = round(n_groups / group_test_size)
         approximate_splits = int(max(2, min(n_groups, approximate_splits)))
 
-        splitter_inst = splitter_cls(n_splits=approximate_splits, shuffle=True, random_state=SPLIT_RANDOM_STATE)
+        splitter_inst = splitter_cls(n_splits=approximate_splits, shuffle=True, random_state=random_state)
         train_index, test_index = next(splitter_inst.split(X=X, y=y, groups=group))
         return {0: {0: (train_index.tolist(), test_index.tolist())}}
 
@@ -352,7 +368,7 @@ def _get_grouped_splits_via_groupkfold(
         splits[repeat_i] = {}
         splitter_inst = splitter_cls(
             n_splits=n_splits,
-            random_state=SPLIT_RANDOM_STATE + repeat_i,
+            random_state=random_state + repeat_i,
             shuffle=True,
         )
         sklearn_splits = splitter_inst.split(X=X, y=y, groups=group)

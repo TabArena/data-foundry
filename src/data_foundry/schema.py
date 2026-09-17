@@ -481,6 +481,14 @@ class PredictiveMLSplitsMetadata:
         - If "days" or "weeks", then the time_horizon is interpreted as unit of 1 or 7 days, respectively.
     """
 
+    split_random_state: int | None = None
+    """The seed the splits were generated with (``random_state`` of the split builders in
+    ``curation_recommendations``, :data:`~data_foundry.curation_recommendations.SPLIT_RANDOM_STATE` unless a
+    caller chose another). Lets downstream code seed an aligned split, e.g. an inner validation split, without
+    copying the number. ``None`` for splits recorded before this field existed (those k-fold and grouped k-fold
+    splits were built with the default seed) and for splits not produced by those builders.
+    """
+
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
