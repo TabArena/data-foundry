@@ -423,3 +423,19 @@ def test_dataset_metadata_path_not_created(base_dataset_metadata_kwargs, tmp_pat
     dsm = DatasetMetadata(**base_dataset_metadata_kwargs)
     _ = dsm.path
     assert not (tmp_path / "wh").exists()
+
+
+def test_predictive_splits_metadata_split_random_state_round_trips():
+    """``split_random_state`` survives a JSON dump and reload and defaults to ``None``."""
+    adapter = pydantic.TypeAdapter(PredictiveMLSplitsMetadata)
+    splits = {0: {0: ([0, 1], [2])}}
+    without = PredictiveMLSplitsMetadata(splits_comment="old", splits=splits)
+    assert without.split_random_state is None
+    with_seed = PredictiveMLSplitsMetadata(splits_comment="new", splits=splits, split_random_state=4267)
+    dumped = adapter.dump_python(with_seed, mode="json")
+    assert dumped["split_random_state"] == 4267
+    assert adapter.validate_python(dumped).split_random_state == 4267
+    # files written before the field existed carry no key and still load
+    legacy = adapter.dump_python(without, mode="json")
+    del legacy["split_random_state"]
+    assert adapter.validate_python(legacy).split_random_state is None

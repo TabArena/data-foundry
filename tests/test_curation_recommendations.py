@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.curation_recommendations import (
+    SPLIT_RANDOM_STATE,
     _get_grouped_splits_via_groupkfold,
     _get_grouped_splits_via_index_split,
     get_recommended_grouped_splits,
@@ -425,3 +426,49 @@ def test_subsample_temporal_uses_iloc_positions_for_non_range_index():
     assert df_reduced.index.tolist() == [0, 1, 2, 3]
     assert new_train_idx == [0, 1]
     assert new_test_idx == [2, 3]
+
+
+# --- random_state ---
+
+
+def _flat(splits):
+    return [(tuple(tr), tuple(te)) for folds in splits.values() for tr, te in folds.values()]
+
+
+def test_split_random_state_is_the_default_seed():
+    """The module-level seed keeps the value the splitters used before it was exposed."""
+    assert SPLIT_RANDOM_STATE == 4267
+
+
+def test_iid_default_seed_equals_explicit_split_random_state(make_dataset):
+    """Omitting ``random_state`` yields the same IID folds as passing the module constant."""
+    df = make_dataset(60, classification=True)
+    kwargs = dict(dataset=df, n_repeats=2, n_splits=3, test_size=None, stratify_on="target")
+    assert _flat(get_recommended_iid_splits(**kwargs)) == _flat(
+        get_recommended_iid_splits(**kwargs, random_state=SPLIT_RANDOM_STATE)
+    )
+
+
+def test_iid_random_state_changes_the_folds(make_dataset):
+    """A different ``random_state`` produces different IID folds."""
+    df = make_dataset(60)
+    kwargs = dict(dataset=df, n_repeats=1, n_splits=3, test_size=None, stratify_on=None)
+    assert _flat(get_recommended_iid_splits(**kwargs)) != _flat(get_recommended_iid_splits(**kwargs, random_state=1))
+
+
+@pytest.mark.parametrize("group_labels", ["per_group", "per_sample"])
+def test_grouped_random_state_is_forwarded(grouped_dataset_per_group, grouped_dataset_per_sample, group_labels):
+    """``random_state`` reaches both grouped splitting paths and defaults to the module constant."""
+    df = grouped_dataset_per_group if group_labels == "per_group" else grouped_dataset_per_sample
+    kwargs = dict(
+        dataset=df,
+        n_repeats=2,
+        n_splits=3,
+        group_on="group",
+        group_labels=group_labels,
+        test_size=None,
+        stratify_on="strat_group" if group_labels == "per_group" else "target",
+    )
+    default = _flat(get_recommended_grouped_splits(**kwargs))
+    assert default == _flat(get_recommended_grouped_splits(**kwargs, random_state=SPLIT_RANDOM_STATE))
+    assert default != _flat(get_recommended_grouped_splits(**kwargs, random_state=SPLIT_RANDOM_STATE + 1))
