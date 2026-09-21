@@ -23,7 +23,9 @@ data-foundry-curation serve            # → http://127.0.0.1:8765
 # (equivalently: python -m data_foundry.curation.cli serve)
 ```
 
-Tell the user to open **http://127.0.0.1:8765** and hard-refresh. The dashboard
+Tell the user to open **http://127.0.0.1:8765** (hard-refresh once if the tab was already open). The page
+polls the server's change token every 2 s and patches its table in place, so records you save from the
+CLI / store API show up in the open tab within seconds, without losing scroll, filters or pins. The dashboard
 edits the markdown records in place; the **📖 Guidelines** button opens the same
 guidelines summarized below.
 
@@ -77,6 +79,13 @@ guidelines summarized below.
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
 * After editing records, sanity-check with `data-foundry-curation validate`.
+* **Always reload a record from disk immediately before editing it.** The human edits the same
+  files in the dashboard while you are thinking, so a record loaded earlier in the session, or the text you
+  remember from reading it, is stale. Do the edit as one short step — `load_record` → change fields →
+  recompute `needs_review` → `save_record` — and never write a record from a copy held across several
+  turns. This applies to `vocabularies.yaml` and to every other file under `curation/` as well. If you
+  notice the file changed between your read and your write, re-read it and redo the edit on the new
+  content rather than overwriting.
 
 ## Curation guidelines — read before advising
 
@@ -314,6 +323,29 @@ When two records really are the same data, keep the canonical one (`Yes` / shipp
 other `No` + `Duplicate`, named `<canonical>_duplicate` (the `_duplicate` convention is tested).
 When they merely *share a source but are distinct*, record *why* in `## Comments` (see the
 "Shared source ≠ duplicate" note above).
+
+### Kaggle sources: read the discussions and notebooks, not just the data card
+
+A Kaggle competition or dataset page is a *claim* about the data; the **Discussion** tab and the public
+**Code** notebooks are where the problems surface. Before triaging anything sourced from Kaggle, skim both
+(discussions sorted by votes, notebooks by votes) and look for: leak threads and "hack" baselines (a
+trivial rule that scores near the top), disputes about the test set (random vs temporal, ground truth
+recoverable from a public upstream), duplicated or mislabelled rows, a column that is the target in
+disguise, and uploader answers about where the data really came from. Write what you find in
+`## Comments` with the thread / notebook link, and let it feed the verdict and the `decision_markers`.
+
+* `pkdd-15-taxi-trip-time-prediction-ii` (Porto, ECML/PKDD 2015): a public snippet predicting
+  `max((len(POLYLINE) - 1) * 15, 660)` reportedly scores well. That is not test data leaking from
+  elsewhere: the test polylines are *truncated prefixes* of the trips (de Brébisson et al. 2015: "The
+  testing dataset is composed of 320 partial trajectories, which were created from five snapshots taken at
+  different timestamps"), so the elapsed time is a lower bound on the target. The competition is "remaining
+  travel time from a partial GPS trajectory" — a trajectory task, not a tabular ETA regression — and only
+  the notebooks make that visible from the outside. Whether a tabular reframing survives is then a curation
+  question the data card cannot answer (the record stays an open candidate).
+
+Kaggle pages do not render for a plain fetch (JS-only, reCAPTCHA), so an agent cannot read the tabs
+directly: use the `kaggle` CLI for metadata and files, and ask the human to open or paste the relevant
+discussion / notebook when the page itself is needed. Say explicitly when this check was skipped.
 
 ### Suggestion values
 
