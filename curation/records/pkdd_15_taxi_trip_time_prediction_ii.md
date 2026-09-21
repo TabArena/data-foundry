@@ -3,7 +3,7 @@ unique_name: pkdd_15_taxi_trip_time_prediction_ii
 name: 'ECML/PKDD 15: Taxi Trip Time Prediction (II)'
 checked_by:
 - Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
 tags:
