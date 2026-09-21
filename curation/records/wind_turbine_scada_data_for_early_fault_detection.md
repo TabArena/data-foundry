@@ -3,8 +3,6 @@ unique_name: wind_turbine_scada_data_for_early_fault_detection
 name: Wind Turbine SCADA Data For Early Fault Detection
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Missing source information

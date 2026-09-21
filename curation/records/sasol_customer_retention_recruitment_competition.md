@@ -3,8 +3,6 @@ unique_name: sasol_customer_retention_recruitment_competition
 name: sasol-customer-retention-recruitment-competition
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

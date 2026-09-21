@@ -3,8 +3,6 @@ unique_name: usa_airport_dataset
 name: USA Airport Dataset
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> Yes
 decision_markers:
 - No Good Target (yet)

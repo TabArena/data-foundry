@@ -3,8 +3,6 @@ unique_name: open_soil_data
 name: open-soil-data
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> Yes
 tags:
 - Non-IID (Temporal)

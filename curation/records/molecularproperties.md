@@ -3,8 +3,6 @@ unique_name: molecularproperties
 name: molecularproperties
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Needs extensive data wrangling

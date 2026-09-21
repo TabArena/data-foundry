@@ -3,8 +3,6 @@ unique_name: numerai_v5_2
 name: numerai v5.2
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling

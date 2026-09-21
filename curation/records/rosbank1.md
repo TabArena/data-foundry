@@ -3,8 +3,6 @@ unique_name: rosbank1
 name: rosbank1
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Free Text (Short)
