@@ -81,6 +81,29 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     return payload
 
 
+def _version_payload(directory: Path | None) -> dict[str, object]:
+    """Cheap change token for the records on disk, polled by the dashboard to refresh itself.
+
+    The newest ``mtime_ns`` over the record files and ``vocabularies.yaml``, joined with the
+    record count (so a deleted file moves the token even when nothing newer was written). Every
+    write path moves it: a dashboard edit from another tab, an agent's ``save_record``, a
+    ``git pull``, or a hand edit. One ``scandir`` pass over ~1,300 files, cheap enough to poll.
+    """
+    target = Path(directory) if directory is not None else records_dir()
+    newest = 0
+    count = 0
+    if target.exists():
+        with os.scandir(target) as entries:
+            for entry in entries:
+                if entry.name.endswith(".md") and not entry.name.startswith("_") and entry.is_file():
+                    count += 1
+                    newest = max(newest, entry.stat().st_mtime_ns)
+    vocab = Path(vocabularies_path())
+    if vocab.exists():
+        newest = max(newest, vocab.stat().st_mtime_ns)
+    return {"version": f"{newest}-{count}", "records": count}
+
+
 class CurationHandler(BaseHTTPRequestHandler):
     """Serves the dashboard SPA and a small JSON API over the records directory."""
 
@@ -117,7 +140,7 @@ class CurationHandler(BaseHTTPRequestHandler):
 
     # -- routing ---------------------------------------------------------
     def do_GET(self) -> None:
-        """Serve the SPA, the schema, or the records list."""
+        """Serve the SPA, the schema, the records list, or the on-disk change token."""
         route = urlparse(self.path).path
         try:
             if route in ("/", "/index.html"):
@@ -128,6 +151,8 @@ class CurationHandler(BaseHTTPRequestHandler):
                 self._send_json(_schema_payload())
             elif route == "/api/records":
                 self._send_json(_records_payload(self._records_dir))
+            elif route == "/api/version":
+                self._send_json(_version_payload(self._records_dir))
             else:
                 self._send_json({"error": "not found"}, status=404)
         except Exception as exc:  # noqa: BLE001 - surface any error to the client

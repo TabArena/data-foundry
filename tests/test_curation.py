@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from functools import partial
 from pathlib import Path
 
 import pytest
 from data_foundry.curation import exporter, notebooks
-from data_foundry.curation.app import _records_payload
+from data_foundry.curation.app import _records_payload, _version_payload
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
@@ -217,6 +218,24 @@ def test_records_payload_links_the_recorded_notebook(tmp_path, sample_record: Cu
     (row,) = _records_payload(records)
     assert row["notebook_path"] == "datasets/beyond_iid/new_iid/musk/musk_clf.ipynb"
     assert row["notebook_url"].endswith("/datasets/beyond_iid/new_iid/musk/musk_clf.ipynb")
+
+
+def test_version_payload_moves_when_a_record_is_written(tmp_path, sample_record: CurationRecord) -> None:
+    """The dashboard polls this token to refresh itself: any write or delete must move it."""
+    records = tmp_path / "records"
+    path = save_record(sample_record, records)
+    (records / "_template.md").write_text("scaffolding, not a record", encoding="utf-8")
+    first = _version_payload(records)
+    assert first["records"] == 1, "files starting with '_' are not records"
+
+    os.utime(path, ns=(path.stat().st_atime_ns, path.stat().st_mtime_ns + 1_000_000))  # a later write
+    second = _version_payload(records)
+    assert second["version"] != first["version"]
+
+    path.unlink()
+    third = _version_payload(records)
+    assert third["records"] == 0
+    assert third["version"] != second["version"], "a deletion moves the token even with nothing newer"
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:

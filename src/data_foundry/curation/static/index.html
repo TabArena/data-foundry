@@ -1252,6 +1252,7 @@ async function putRecord(id, patch) {
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
+  syncVersion();  // our own write moves the change token; don't reload for it
   return data;
 }
 async function registerNew(vocabKey, values) {
@@ -1265,6 +1266,71 @@ async function registerNew(vocabKey, values) {
       if (out.values) VOCAB[vocabKey] = out.values;  // editor params read VOCAB live on open
     }
   }
+}
+
+// ---- live refresh (records changed on disk) ----------------------------------
+// The server re-reads the markdown files on every /api/records call, so only this tab goes
+// stale when a record is written from outside it: an agent's save_record, a dashboard edit in
+// another tab, a `git pull`, a hand edit. Poll the cheap change token (/api/version = newest
+// record mtime + count) and, when it moves, refetch the records and patch the table IN PLACE:
+// updateOrAddData keeps scroll position, sort, column filters, the URL-hash view and the pins,
+// all of which a page reload would drop. A refresh never lands while a cell editor, the extra-
+// fields modal or the verify dialog is open — it waits for the next tick instead. Live build only.
+const REFRESH_MS = 2000;
+let lastVersion = null;      // token of the records this tab currently shows
+let refreshPending = false;  // the token moved while the UI was busy
+let refreshInFlight = false;
+let editing = false;         // a Tabulator cell editor is open
+function uiBusy() {
+  return editing || verifyId !== null || modalId !== null || !!document.querySelector(".tabulator-editing");
+}
+async function fetchVersion() {
+  return (await (await fetch("/api/version", { cache: "no-store" })).json()).version;
+}
+async function syncVersion() {
+  try { lastVersion = await fetchVersion(); } catch (e) { /* server unreachable: the poll retries */ }
+}
+function rowChanged(current, incoming) {
+  if (!current) return true;
+  return Object.keys(incoming).some(k => JSON.stringify(current[k]) !== JSON.stringify(incoming[k]));
+}
+async function refreshRecords() {
+  if (refreshInFlight) return;
+  refreshInFlight = true;
+  try {
+    const schema = await (await fetch(SCHEMA_URL, { cache: "no-store" })).json();
+    VOCAB = schema.vocabularies;  // editors and popovers read VOCAB live on open
+    const raw = await (await fetch(RECORDS_URL, { cache: "no-store" })).json();
+    const rows = raw.map(toRow);
+    const current = new Map(table.getData().map(d => [d.unique_name, d]));
+    const changed = rows.filter(r => rowChanged(current.get(r.unique_name), r)).map(r => r.unique_name);
+    const seen = new Set(rows.map(r => r.unique_name));
+    const gone = [...current.keys()].filter(id => !seen.has(id));
+    if (!changed.length && !gone.length) return;
+    await table.updateOrAddData(rows);
+    for (const id of gone) { pinned.delete(id); table.deleteRow(id); }
+    for (const id of changed) { const row = table.getRow(id); if (row) row.reformat(); }
+    setExaminedHint(raw);
+    applyFilters();
+    updateCount();
+    toast(`Reloaded from disk: ${changed.length + gone.length} record(s) changed`);
+  } finally { refreshInFlight = false; }
+}
+async function pollVersion() {
+  try {
+    const v = await fetchVersion();
+    if (lastVersion === null) lastVersion = v;
+    else if (v !== lastVersion) { lastVersion = v; refreshPending = true; }
+    if (refreshPending && !uiBusy()) { refreshPending = false; await refreshRecords(); }
+  } catch (e) { /* server unreachable (e.g. restarting): keep polling quietly */ }
+}
+function startLiveRefresh() {
+  if (STATIC) return;  // the GitHub Pages build has no server to ask
+  table.on("cellEditing", () => { editing = true; });
+  table.on("cellEdited", () => { editing = false; });
+  table.on("cellEditCancelled", () => { editing = false; });
+  syncVersion();
+  setInterval(pollVersion, REFRESH_MS);
 }
 
 // Header title with a "＋" to add a new option to this dropdown's vocabulary.
@@ -1664,6 +1730,7 @@ async function boot() {
   if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
   table.on("dataFiltered", (filters, rows) => updateCount(rows));
   table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); forwardFrozenRowScroll(); });
+  startLiveRefresh();  // pick up records written outside this tab (agent, other tab, git pull)
 
   watchEditLists();
   document.getElementById("search").addEventListener("input", applyFilters);
