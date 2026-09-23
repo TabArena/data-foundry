@@ -3,6 +3,7 @@ unique_name: biogeographical_ancestry_prediction
 name: Human Genome data
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena

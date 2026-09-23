@@ -39,8 +39,13 @@ need to create the drinks column as a target, need to see if it is still a good 
 Unclear if the target makes for a relevant, real-world dataset but for now we can add it and filter later again (which might happen)
 
 Discussion: Task is to predict no. of drinks a person consumes as a proxy for liver diseases based on blood tests. This is not a meaningful task, e.g., what kind of decision would it motivate? If a doctor has the time to collect blood samples, asking for drinking behavior is simple.
-Also, there is selection bias as only drinking people are in the sample.
+Also, there is selection bias as almost only drinking people (336/345) and only males are in the sample.
 
 ## Reference
 
-? (should be older than 1990 due being used before 1990....)
+@book{forsyth1986machine,
+  title={Machine learning: applications in expert systems and information retrieval},
+  author={Forsyth, Richard and Rada, Roy},
+  year={1986},
+  publisher={Halsted Press}
+}

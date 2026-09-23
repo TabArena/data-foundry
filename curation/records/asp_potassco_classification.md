@@ -3,6 +3,7 @@ unique_name: asp_potassco_classification
 name: ASP-POTASSCO-classification from aslib_data
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -16,7 +17,7 @@ year: '2014'
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)
-problem_type: Regression
+problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/41705
