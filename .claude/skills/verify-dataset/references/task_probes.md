@@ -1,6 +1,6 @@
 # Reading the task probes
 
-How to answer the flags of [`scripts/task_probes.py`](../scripts/task_probes.py) (rubric item 13): whether a
+How to answer the flags of [`scripts/task_probes.py`](../scripts/task_probes.py) (rubric item 14): whether a
 dataset is empty, trivial, too small, or worth benchmarking. The rules below come from the review of the 24 datasets
 the probes flagged in the TabArena v0.2 build (5-6 October 2026; the evidence is in each record's dated comment and
 on <https://claude.ai/artifact/APTR4PUmbUn2d133mcFgXf>).
