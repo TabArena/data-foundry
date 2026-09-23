@@ -79,6 +79,12 @@ guidelines summarized below.
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
 * After editing records, sanity-check with `data-foundry-curation validate`.
+* **Every new curation file goes into git.** A record you create under `curation/records/`, a
+  changed `vocabularies.yaml`, or any other new file under `curation/` must be staged (`git add`)
+  as soon as it exists — an untracked record is invisible to PRs, to the GitHub 📄 links and to
+  other curators, and it is easy to forget. Staging is not committing: commits and pushes still
+  need the human's explicit ask (CLAUDE.md), so before the session ends run `git status`, name
+  every uncommitted curation change, and offer the commit.
 * **Always reload a record from disk immediately before editing it.** The human edits the same
   files in the dashboard while you are thinking, so a record loaded earlier in the session, or the text you
   remember from reading it, is stale. Do the edit as one short step — `load_record` → change fields →
