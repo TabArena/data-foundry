@@ -227,6 +227,7 @@ bump versions or publish without explicit human authorization.
 | Curation records + dropdown vocab (data) | [`curation/`](curation) |
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
 | Triage candidates — dashboard + curation guidelines | [`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md) |
+| Check one candidate — second opinion with citations | [`.claude/commands/check-candidate.md`](.claude/commands/check-candidate.md) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |

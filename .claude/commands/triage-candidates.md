@@ -10,6 +10,8 @@ decisions the way a human curator would.
   or how to **process** it — answer using the guidelines below.
 * The user wants to **add, edit, or triage** a candidate dataset record.
 
+For an independent deep-dive on one record the curator is looking at ("check X", "what did I miss"),
+use `/check-candidate <unique_name>`: it runs the source-tracing protocol against these guidelines.
 If the user instead wants to scaffold a *curation notebook* for an already-decided
 dataset, use `/process-dataset`; to check a filled-in notebook / saved bundle before it
 ships, use `/verify-dataset`.
@@ -134,6 +136,12 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
    (e.g. PCA-transformed); (E) lack enough information to make an informed decision.
 5. **Ethically unambiguous** — exclude tasks with ethical concerns, including data whose
    subjects/creators ask that it not be used for ML.
+
+**Licence and redistribution terms are not a selection criterion at this stage** (Lennart, 2026-09-23).
+A non-commercial clause, a request-only download, or a no-redistribution rule is *noted* in
+`## Comments` (one line: what the terms are and where they are stated) and is never the reason for
+a `No`, a `TBD -> 2nd Tier`, or a marker. Decide on the data. `lucas_topsoil` is the example: JRC's
+terms forbid redistribution, and the record still gets triaged on what the survey measures.
 
 Curation is **manual and human-verified**; criteria involve subjective judgment, so
 record the reasoning in the record's `## Comments` and the `decision_markers`.
@@ -290,6 +298,8 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   the full dataset, already baked in and unfixable → leak → **No**.
 * **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`.
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
+* **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a
+  reason** and no marker: write it down as a note in `## Comments` and triage the data on its merits.
 * **Genuine real-world tabular classification/regression, clear target, adequate size** →
   **Yes** (well-known/strong) or **TBD -> Yes** (plausible, unverified).
 * **Source / provenance unknown even with a working link** → `Missing source information` → **No**.

@@ -22,7 +22,7 @@ type_adapter_id: curation-record-v1
 
 Split on category again, not a real grouped task. We would have data for sure for overweight or obese patients as well.
 
-Is highly related or even a copy of CDC Indicators of Heart Disease
+Is highly related to or even a copy of the BRFSS health-indicators data (`cdc_diabetes_health_indicators`, the record then named CDC Indicators of Heart Disease)
 
 Given the large overlap in features and task with other (older than TableShift) tasks for brfss data, we judge this to be a "duplicate" in that it is a different version of the same data.
 Also note that it counts as IID task in other settings

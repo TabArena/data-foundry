@@ -17,6 +17,9 @@ gotchas that look like blockers but aren't — lives in
     ([`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md))
     starts the local dashboard (`data-foundry-curation serve`) and loads the
     curation guidelines,
+  * check one candidate the curator is looking at — the `/check-candidate <unique_name>` slash
+    command ([`.claude/commands/check-candidate.md`](.claude/commands/check-candidate.md))
+    traces the source and writes a cited second opinion into the record,
   * process a decided candidate — scaffold its curation notebook via the
     `/process-dataset` slash command
     ([`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md)),

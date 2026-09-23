@@ -3,7 +3,8 @@ unique_name: kasandr
 name: KASANDR
 checked_by:
 - Andrej
-suggestion: TBD -> 2nd Tier
+- Lennart
+suggestion: 'No'
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
