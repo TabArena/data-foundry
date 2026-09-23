@@ -271,7 +271,7 @@
       deterministic function. Simulated data from real applications (e.g., Higgs bosons) represents a real
       distribution but is still excluded here, as such tasks have dedicated domain-specific benchmarks.</li>
       <li><strong>(C) Trivial</strong> — practitioners would not use ML for it. A dataset is trivial if all models,
-      without tuning, reach the same better-than-random score (no variance) or solve it perfectly (error 0).</li>
+      without tuning, reach the same better-than-random score (no variance) or solve it perfectly (error 0). Under class imbalance, accuracy compared with the majority class is not evidence in either direction: judge learnability with ROC AUC or log loss against the class prior, ideally from a quick gradient-boosting fit on the features known at prediction time.</li>
       <li><strong>(D) Irreversible data quality issues</strong> — exclude datasets where irreversible preprocessing
       leaks the target or the test feature distribution (e.g., PCA-transformed data, or a feature that is itself the
       output of a <em>supervised</em> transform fit on the whole dataset — a discriminant-analysis score, target / mean

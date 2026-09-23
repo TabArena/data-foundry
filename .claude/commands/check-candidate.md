@@ -36,7 +36,9 @@ Do every step; skip only when an earlier step settles the verdict and say so.
 4. **Answer the criteria with evidence.** What the data physically is (measured, computed, simulated,
    derived from an image or a signal); the original task and what solved it (the model families at the
    top of the leaderboard are a modality signal, and a strong gradient-boosting baseline's rank is the
-   tabular-competitiveness number); the split the task design requires, not the one the paper used;
+   tabular-competitiveness number; under class imbalance never cite accuracy against the majority class as
+   evidence, use ROC AUC / log loss against the class prior, and fit a quick LightGBM on prediction-time
+   features yourself when the data can be loaded); the split the task design requires, not the one the paper used;
    size after cleaning; how the target was constructed (composite, computed, a supervised transform);
    ethics; duplicates by provenance, not by table shape. Licence and redistribution terms are recorded
    as a one-line note and never used as the reason for a verdict or a marker.

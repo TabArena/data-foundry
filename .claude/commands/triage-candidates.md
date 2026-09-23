@@ -289,6 +289,13 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
 * **Survey / scientific-discovery / non-predictive table** (no genuine predictive target) →
   `No Good Target / Scientific Discovery` → **No** or `TBD -> 2nd Tier`.
 * **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C).
+  * **Under class imbalance, accuracy against the majority class is not evidence** of anything, in either
+    direction (Lennart, 2026-09-23). "78% accuracy on an 80% majority class" does not show a task is
+    unlearnable, and a high accuracy does not show it is trivial. Judge learnability with ROC AUC (per class
+    or one-vs-rest macro), log loss against the class-prior baseline, or another proper score, and when the
+    data can be loaded, fit a quick gradient-boosting model on the features known at prediction time and
+    report those numbers. `us_accidents` is the example: the published "78% accuracy" was quoted as if it
+    settled the matter; only an AUC check does.
 * **Target leakage / irreversible damage** (PCA-transformed, anonymized leaking features, **or a feature
   that is itself the output of a supervised transform fit on the whole dataset** — a discriminant-analysis
   score, target / mean encoding, a model's own prediction) → `Data Quality Issue` → **No** (crit. 4D).
