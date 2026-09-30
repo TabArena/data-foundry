@@ -23,6 +23,7 @@ source_links:
 - https://challenge.aiforgood.itu.int/match/matchitem/83
 - https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main
 notebook_path: datasets/beyond_iid/grouped/5g_energy_consumption/5g_energy_consumption.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/5g_energy_consumption/dataset.py
 source_row: 890
 type_adapter_id: curation-record-v1
 ---

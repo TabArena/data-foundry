@@ -21,6 +21,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/c/rossmann-store-sales
 notebook_path: datasets/beyond_iid/temporal/rossmann_store_sales/rossmann_store_sales.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/rossmann_store_sales/dataset.py
 source_row: 725
 type_adapter_id: curation-record-v1
 ---

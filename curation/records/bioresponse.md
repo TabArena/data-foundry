@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=4134
 - https://www.kaggle.com/c/bioresponse
 notebook_path: datasets/beyond_iid/old_iid/bioresponse/bioresponse.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/bioresponse/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

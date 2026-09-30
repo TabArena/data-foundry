@@ -16,6 +16,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=1461
 - https://doi.org/10.24432/C5K306
 notebook_path: datasets/beyond_iid/old_iid/bank_marketing/bank_marketing.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/bank_marketing/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

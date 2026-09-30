@@ -24,6 +24,7 @@ source_links:
 - https://www.kaggle.com/datasets/selener/consumer-complaint-database
 - https://catalog.data.gov/dataset/consumer-complaint-database
 notebook_path: datasets/beyond_iid/temporal/consumer_complaints/consumer_complaints_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/consumer_complaints_1m/dataset.py
 source_row: 735
 type_adapter_id: curation-record-v1
 ---

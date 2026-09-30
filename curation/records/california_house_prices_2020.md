@@ -27,6 +27,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=46669
 - https://www.kaggle.com/c/california-house-prices
 notebook_path: datasets/beyond_iid/temporal/california_house_prices_2020/california_house_prices_2020.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/california_house_prices_2020/dataset.py
 source_row: 734
 type_adapter_id: curation-record-v1
 ---

@@ -19,6 +19,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=287
 - https://doi.org/10.24432/C56S3T
 notebook_path: datasets/beyond_iid/old_iid/wine_quality/wine_quality.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/wine_quality/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

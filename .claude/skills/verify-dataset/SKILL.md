@@ -1,0 +1,151 @@
+---
+name: verify-dataset
+description: Verify a curated dataset before it ships. Runs the automated bundle checks (`dataset check` for a v2 `dataset.py`, `run_bundle_checks` for a v1 notebook or saved container), then works a 15-item judgment rubric (original source, uniqueness, scope, split regime, prediction-time availability, leakage, comments vs code, dtypes, metric, citation, record pointers) and reports pass / concern / cannot-verify with evidence. Use when a definition is filled in and checks run clean, before a PR, or when a shipped dataset is suspected of leakage, a wrong split or wrong provenance ("is X ready / correct / leaky?").
+argument-hint: <unique_name | dataset folder | notebook>
+user-invocable: true
+---
+
+# Verify a dataset
+
+Verify a curated dataset before it ships: run the automated bundle checks, then work the
+judgment rubric that no code can check, and report both with evidence.
+
+**Input (optional):** a v2 dataset folder (holding `dataset.py`), a notebook path, a `unique_name`, or a container path.
+
+$ARGUMENTS
+
+## When to invoke
+
+* A curation notebook has been filled in and the curator wants a second pass before the PR.
+* `/add-dataset` scaffolded a v2 dataset folder, the curator has filled it in and `dataset check` runs clean, and
+  it is time to check.
+* A shipped dataset is suspected of a problem (leakage, wrong split, wrong provenance).
+* The curator asks "is this dataset ready / correct / leaky / really original?"
+
+Related: `/triage-candidates` for the backlog record and the selection criteria; `/add-dataset` to scaffold
+a v2 dataset folder; `BEYOND_ARENA.get_dataset(name)` (CLAUDE.md) to load a shipped container.
+
+**Two formats.** New datasets are v2 folders: `dataset.py` (one `AbstractCuratedDataset` subclass, the only
+definition), `explore.ipynb` (workbench) and a generated `report.md` (evidence; frontmatter is machine-readable).
+Shipped datasets are still v1 notebooks. Where the steps below say "notebook", read `dataset.py` for a v2
+dataset, and read `report.md` where they say "committed cell outputs".
+
+## What this is, and what it is not
+
+There are two halves to verification and they must not be confused:
+
+* **Automated** — `data_foundry.bundle_checks` proves the *mechanical* invariants (split indices,
+  leakage across fold boundaries, dtypes, class coverage, the per-split row budget of at most 1M
+  train and 250k test rows, BibTeX syntax, export round-trip). Cheap, exhaustive, and already
+  deterministic. **Run it; never re-derive its findings by eye.**
+* **Judgment** — provenance, scope, whether the split matches the real application, whether a
+  feature would have been available at prediction time, whether the comments describe what the code
+  does. Code cannot settle these. This is what you are for.
+
+Your verdict is **advisory**. A human curator has the final say (same contract as the
+`AI (UNVERIFIED)` convention in `/triage-candidates`).
+
+## Step 0 — Locate the inputs
+
+1. **The definition** — the record carries two pointers: `v2_path`, the `dataset.py` in the TabArena v0.2
+   working copy (verify this one for anything that will ship in v0.2), and `notebook_path`, the BeyondArena
+   notebook that produced the shipped container. For the notebook: it is the record's own pointer
+   to the one notebook behind this dataset, so use it rather than assuming
+   `datasets/**/<unique_name>/<unique_name>.ipynb`. That matters where a dataset has sibling runs:
+   a sub-sampled `<unique_name>_1m.ipynb` or an alternative target `<unique_name>_clf.ipynb` may be
+   the run that shipped, and verifying the other one verifies a dataset nobody uses. If the record
+   has no pointer yet, resolve it with `data-foundry-curation sync-notebooks` (or list
+   `<unique_name>*.ipynb` in the dataset directory and match the UUID as in item 14). Read it in
+   full: the metadata cell, every preprocessing step, the split construction, and the committed cell
+   *outputs* (the `run_all_checks` tables are evidence you should use, not re-run).
+2. **The container** — the saved bundle. Either `local-data-warehouse/<unique_name>/<uuid>/` or, for
+   a shipped dataset, `BEYOND_ARENA.get_dataset("<unique_name>")`.
+3. **The backlog record** — `curation/records/<unique_name>.md`, if it exists. Its `## Comments` hold
+   the provenance and duplicate-check reasoning already done; do not redo settled work, and do not
+   contradict it without new evidence.
+4. **The upstream source** — follow `original_dataset_source_download_link`. Fetch the dataset page /
+   paper / competition description. Most rubric items below are unanswerable without it.
+
+If the container has not been saved yet, run the notebook's Bundle + Bundle Checks cells' logic
+yourself (construct the container in a scratch script) — **do not re-run the notebook end to end and
+re-save**: `save()` mints a new UUID, and for a shipped dataset that breaks the collection pin.
+
+## Step 1 — Run the automated checks
+
+**v2 dataset:** `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` runs the whole pipeline and
+the bundle checks without saving (no UUID) and rewrites `report.md`. Compare it with the committed `report.md`: an
+unexpected diff (checksum, split sizes, new findings) means the definition drifted from its evidence. Accepted
+warnings are the class attribute `accepted_check_warnings` (slug → reason). For a v1 notebook or a shipped
+container:
+
+```python
+from data_foundry.bundle_checks import run_bundle_checks
+from data_foundry.collections import BEYOND_ARENA          # or CuratedContainer.load(path)
+
+container = BEYOND_ARENA.get_dataset("<unique_name>")
+report = run_bundle_checks(container)                       # prints the report
+```
+
+For a whole collection: `python scripts/beyond_arena/check_collection_bundles.py --examples 5`.
+
+Then, in your own report:
+
+* list every **error** — these block the PR;
+* for every **warning**, say whether it is a real problem *for this dataset* or is correct as-is.
+  A warning the curator accepts belongs in `accepted_check_warnings` (v2) or the notebook's `ignore=[...]`
+  (v1) **with the reason** — propose the exact edit, including the reason;
+* do not re-state passing checks one by one. "Bundle checks: 0 errors, 3 warnings (2 accepted,
+  see below)" is the right level.
+
+## Step 2 — Work the judgment rubric
+
+For each item: **pass / concern / cannot-verify**, plus one line of *evidence* (a quote from the
+source page, a notebook line, a number from the check output). "Looks fine" is not evidence.
+`cannot-verify` is a legitimate and useful verdict — never upgrade it to `pass`.
+
+| # | Item | What to actually check |
+|---|---|---|
+| 1 | **Original source** | Does the link bottom out at the *original* publication (paper, competition, institution), not an anonymous re-upload? A working Kaggle/OpenML link is not provenance. Does `dataset_source` name where the data first appeared? |
+| 2 | **Uniqueness** | Is this the same underlying data as another dataset in the collection under a different name — including a different target/slice/version of one cohort? Compare canonical links and follow each to its origin (see *Checking for duplicates* in the curation guidelines). |
+| 3 | **Scope** | Was it *published for* a predictive classification/regression task? Exclude time-series forecasting, CTR, ranking/recsys, non-predictive survey/discovery tables. Scope by the **original** task, not the re-upload's framing. |
+| 4 | **Split regime** | Does `time_on`/`group_on`/neither match the real application? Read the source description; a prescribed random split is a *claim*, not evidence. A missing timestamp does not make a stream of contemporaneous readings IID. Check for grouped structure inside a temporal task (repeated entities over time) and vice versa. |
+| 5 | **Availability at prediction time** | Would every feature have been known at time *t*? Aggregates computed over the full dataset, post-outcome fields, or anything the source computed after the label are leaks. Temporal tasks: is the planning gap real? |
+| 6 | **Irreversible leakage** | Any feature that is itself the output of a supervised transform fit on the whole dataset (discriminant score, target/mean encoding, a model's prediction, PCA of the full set)? That cannot be recomputed per split and is an exclusion, not a warning. |
+| 7 | **Comments vs code** | Is every claim in `curation_comments` actually implemented in the notebook, and is every non-obvious code step documented? Silent drops, filters, and casts are the ones that bite. |
+| 8 | **dtype semantics** | Are `category` / `string` / numeric / datetime chosen by *meaning* (finite value set vs. free text), proxy missing values converted to `NA`, uninformative identifiers dropped, informative ones kept and processed? Use the `dataset_missing_value_*` / `dataset_identifier_column` warnings as leads. |
+| 9 | **Target & metric** | Is the target the original task's target, and is `objective_metric_name` the metric the original task/competition scored? If the checks flagged `task_metric_unknown`, confirm the custom metric is intended and registered downstream. |
+| 10 | **License & citation** | Is the license what the source actually states (the checks only see whether the field is filled)? Does the BibTeX cite the *right* work — the paper/competition that published this data, not a paper that merely used it? Syntax being valid says nothing about correctness. |
+| 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
+| 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in the curation guidelines. |
+| 13 | **Trivial** | Do the committed check outputs suggest every model would score identically or solve it perfectly? If so, flag it — a trivial task is an exclusion. |
+| 14 | **Record pointer** | Does the record's `notebook_path` name *this* notebook, is it under the tree the dataset ships from (`datasets/beyond_iid/` for BeyondArena — never `datasets/_dev/`, which holds work in progress and superseded copies), and does this notebook's saved output carry the UUID the collection pins (`BEYOND_ARENA` entry / `datasets/beyond_iid/final_uuid_list.py`)? Does `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `report.md` carry the UUID once built? A mismatch means the record points at the wrong run, or the notebook was re-run after the collection was pinned — say which. `data-foundry-curation sync-notebooks --check` must be clean; evidence is the UUID string itself. |
+| 15 | **Template conformance** | *v2:* the class validates on import (`dataset list` shows it), follows the current [`datasets/_template/v2/dataset.py`](../../../datasets/_template/v2/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `report.md` was regenerated after the last edit (`build_stale` is false when built). *v1:* does the notebook follow the *current* [`datasets/_template/_template.ipynb`](../../../datasets/_template/_template.ipynb)? Open the template and compare section by section, not from memory, since it changes. Today that means the headings *Dataset and Task Metadata → Preprocessing → Data Checks → Task Curation → Bundle → Bundle Checks → Export* in that order; `run_all_checks(..., problem_type=task_mold.problem_type)` (not the old `classification=`); a *Bundle Checks* cell with `run_bundle_checks(curated_data, ignore=[...]).raise_if_errors()` before `save()`, where every `ignore` entry carries its reason; and `verify_saved_container(...)` after `save()`. Any other deviation from the template needs a reason in `curation_comments` or a cell comment. Report each drift as a concrete edit; restructuring an old notebook must not change its preprocessing or split logic. |
+
+Read the selection criteria and processing conventions in [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md) before judging items 1–4 and
+12–13; they encode decisions you would otherwise guess at.
+
+## Step 3 — Report
+
+1. **Verdict** — one of: *ready*, *ready with noted concerns*, *needs changes*, *should not ship*.
+2. **Automated** — error/warning counts, each error, and the per-warning call from Step 1.
+3. **Rubric** — a compact table of the 15 items with verdict + evidence. Put `concern` and
+   `cannot-verify` rows first; the passes can be one line each.
+4. **Proposed fixes** — concrete edits (`dataset.py` attribute or hook, notebook cell, accepted-warning entry with its
+   reason). Apply them only if the user asks.
+5. **What a human must still check** — every `cannot-verify`, spelled out so it can be picked up.
+
+## Rules
+
+* **Never claim verification you did not perform.** If you could not reach the source page, say so.
+* **Do not silently re-save the container.** New UUID = broken pin. Say what needs re-running and
+  let the curator do it.
+* **Do not edit committed notebook outputs.** They are the evidence trail.
+* **A notebook that moves or gets superseded needs its record updated.** If the run that ships
+  changes — a `_1m` sub-sample replaces the full-size run, a notebook is renamed or relocated — set
+  the record's `notebook_path` / `v2_path` to the new one (or run `data-foundry-curation sync-notebooks`) in the
+  same change. A stale pointer sends every reader to a notebook that did not produce the data, and
+  `tests/test_records_integrity.py` fails on it.
+* If you record findings in the backlog record (`curation/records/<unique_name>.md`), follow the
+  `AI (UNVERIFIED)` convention from `/triage-candidates` and preserve existing human `CC (…)` notes.
+* Substance over volume: a short report with three real concerns beats thirteen paragraphs of
+  "verified, looks good".

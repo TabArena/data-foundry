@@ -18,6 +18,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5W902
 notebook_path: datasets/beyond_iid/old_iid/seismic_bumps/seismic_bumps.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/seismic_bumps/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

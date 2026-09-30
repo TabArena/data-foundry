@@ -24,6 +24,7 @@ source_links:
 - https://www.kaggle.com/code/shritech1404/german-housing-price-prediction
 - Original source is a deleted dataset from Kaggle
 notebook_path: datasets/beyond_iid/new_iid/immoscout_german_house_prices/immoscout_german_house_prices.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/immoscout_german_house_prices/dataset.py
 source_row: 684
 type_adapter_id: curation-record-v1
 ---

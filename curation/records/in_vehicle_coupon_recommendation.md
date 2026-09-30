@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5GS4P
 notebook_path: datasets/beyond_iid/old_iid/in_vehicle_coupon_recommendation/in_vehicle_coupon_recommendation.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/in_vehicle_coupon_recommendation/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

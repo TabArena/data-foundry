@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign
 notebook_path: datasets/beyond_iid/old_iid/marketing_campaign/marketing_campaign.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/marketing_campaign/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

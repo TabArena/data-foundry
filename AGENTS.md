@@ -40,15 +40,18 @@ Data Foundry is the data-layer toolkit behind
   paper). The per-record schema is `CurationRecord` (`curation/record.py`); the
   editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
   (`data-foundry-curation -h`) also covers `sync-notebooks` (refreshes each
-  record's `notebook_path`, the stored pointer to its curation notebook),
-  `import-sheet`, `validate`, `export`,
+  record's two stored pointers: `notebook_path`, its BeyondArena notebook, and
+  `v2_path`, its `dataset.py` in the TabArena v0.2 working copy), `validate`,
+  `export`, `dataset` (list / check / build / new for v2 folders)
   and `build-site` (a read-only static site). That static site is published to
   GitHub Pages at https://tabarena.github.io/data-foundry/ — regenerated from
   `curation/records/` on every push to `main` by `.github/workflows/pages.yaml`,
   so editing a record and merging to `main` is what updates the public site.
 
-The actual curation work happens in `datasets/`, which is mostly Jupyter
-notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
+The actual curation work happens in `datasets/`: the shipped BeyondArena datasets are Jupyter
+notebooks under `datasets/beyond_iid/`, and new and v0.2 datasets are v2 folders (`dataset.py` +
+`explore.ipynb` + `report.md`) under `datasets/_dev/tabarena-v0pt2/` — see
+[`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
 
 ---
 
@@ -56,23 +59,22 @@ notebooks — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
 
 Roughly ordered by how often agents are useful here:
 
-### 1. Processing a dataset — scaffolding its curation notebook from spreadsheet metadata
+### 1. Processing a dataset — scaffolding its v2 dataset folder from the curation record
 
-Highest-value: the curator has tab-separated metadata from a spreadsheet
-and wants a populated notebook under `datasets/_dev/<topic>/<unique_name>/`.
+Highest-value: a triaged candidate came out `Yes` and the curator wants it processed. New datasets
+are v2 folders, not notebooks: one `dataset.py` holding an `AbstractCuratedDataset` subclass
+(metadata, task and preprocessing as flat class attributes, reading in `_load_raw`, the rest in `_clean`), a free-form
+`explore.ipynb`, and a `report.md` that `data-foundry-curation dataset check` generates. See
+[`src/data_foundry/v2/`](src/data_foundry/v2/).
 
-The `/process-dataset` slash command at
-[`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md) is the
-canonical procedure — column mappings, snake-case conversion, target
-subfolder picking, BibTeX templates, and which split helper to call for
-which regime. **Always read that file before scaffolding.** It encodes
+The `/add-dataset` skill at
+[`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) is the
+canonical procedure — field mappings, BibTeX templates, which reference dataset to read per
+regime, and the check loop. **Always read it before scaffolding.** It encodes
 decisions you would otherwise have to guess at.
 
-The skill writes a 21-cell notebook based on
-`datasets/_template/_template.ipynb`. Read the template before writing so
-the JSON structure is exact.
-
-Its reference sections (§B–§E) are the **distilled conventions of the ~155 shipped
+Its reference, [`references/dataset_patterns.md`](.claude/skills/add-dataset/references/dataset_patterns.md)
+(§A–§E), holds the **distilled conventions of the ~155 shipped
 notebooks**: the ordered preprocessing recipe, the per-regime split recipes (including
 the temporal loop, which the template only stubs), the recurring traps worth flagging,
 and a table mapping every `bundle_checks` slug to the scaffold action that pre-empts it.
@@ -80,15 +82,15 @@ Keep them in sync when the collection's practice changes — the check-side evid
 from `scripts/beyond_arena/check_collection_bundles.py`, the practice-side evidence from
 re-reading the notebooks' preprocessing / task-curation cells and `curation_comments`.
 The governing rule for scaffolding is **pre-fill structure, never facts**: anything that
-needs a look at the data becomes a `# TODO(verify): …` marker, which the notebook's
-Bundle Checks cell then refuses to export (`meta_placeholder_left`).
+needs a look at the data becomes a `# TODO(verify): …` marker, which `dataset check` reports
+(`meta_placeholder_left`, `definition_todo_left`) and `dataset build` refuses to save.
 
-### 2. Verifying a filled-in notebook before it ships
+### 2. Verifying a dataset before it ships
 
-Once the curator has filled in and run the notebook, the `/verify-dataset` slash
-command ([`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md))
+Once the curator has filled in the definition and `dataset check` runs clean (or, for a v1 dataset, run the notebook), the `/verify-dataset`
+skill ([`.claude/skills/verify-dataset/SKILL.md`](.claude/skills/verify-dataset/SKILL.md))
 is the second pass: it runs `bundle_checks` for the mechanical invariants and then
-works a 13-item **judgment rubric** for what code cannot settle — is the link really
+works a 15-item **judgment rubric** for what code cannot settle — is the link really
 the original source, does the split regime match the real application, would every
 feature have been known at prediction time, do the `curation_comments` describe what
 the code actually does, does the BibTeX cite the right work. Verdicts are advisory;
@@ -100,16 +102,17 @@ The backlog is **one markdown record per candidate dataset** in `curation/record
 (`<unique_name>.md`: YAML front-matter for structured/dropdown fields + a body with
 `## Comments` / `## Reference`).
 
-To assist, run the **`/triage-candidates`** slash command
-([`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md)).
+To assist, run the **`/triage-candidates`** skill
+([`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md)).
 It starts the local dashboard
 (`data-foundry-curation serve` → http://127.0.0.1:8765) and, importantly,
 **loads the curation guidelines** — the IID/non-IID background, the dataset
 *selection criteria*, and the *processing* conventions. **Read those guidelines
 before advising** whether a dataset belongs in the benchmark or how to process it;
 they encode decisions (IID vs temporal vs grouped, the selection criteria, the
-processing conventions) you would otherwise guess at. The guidelines are summarized
-in the skill and rendered in full in the dashboard's **Guidelines** tab
+processing conventions) you would otherwise guess at. The guidelines live in
+[`references/curation_guidelines.md`](.claude/skills/triage-candidates/references/curation_guidelines.md)
+(also the rubric for `/check-candidate` and `/verify-dataset`) and are rendered in the dashboard's **Guidelines** tab
 (`src/data_foundry/curation/static/guidelines.html`).
 
 Add or triage a dataset by creating/editing its `<unique_name>.md` record (by hand,
@@ -226,18 +229,16 @@ bump versions or publish without explicit human authorization.
 | Curation backlog (records, dashboard, import/export) | [`src/data_foundry/curation/`](src/data_foundry/curation/) |
 | Curation records + dropdown vocab (data) | [`curation/`](curation) |
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
-| Triage candidates — dashboard + curation guidelines | [`.claude/commands/triage-candidates.md`](.claude/commands/triage-candidates.md) |
-| Check one candidate — second opinion with citations | [`.claude/commands/check-candidate.md`](.claude/commands/check-candidate.md) |
+| Triage candidates — dashboard + curation guidelines | [`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md) |
+| Check one candidate — second opinion with citations | [`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
-| Process a dataset — scaffold its curation notebook | [`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md) |
-| Verify a filled-in notebook / bundle (checks + judgment rubric) | [`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md) |
-| Browse / prefetch a collection | [`.claude/commands/browse-collection.md`](.claude/commands/browse-collection.md) |
-| Load a single dataset | [`.claude/commands/get-dataset.md`](.claude/commands/get-dataset.md) |
-| Fit + score a model on a dataset | [`.claude/commands/benchmark-dataset.md`](.claude/commands/benchmark-dataset.md) |
-| Notebook template | [`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb) |
+| Process a dataset — scaffold its v2 dataset folder | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
+| Verify a dataset / bundle (checks + judgment rubric) | [`.claude/skills/verify-dataset/SKILL.md`](.claude/skills/verify-dataset/SKILL.md) |
+| Load / browse / benchmark shipped datasets | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) |
+| Dataset templates (v2 / v1 notebook) | [`datasets/_template/v2/`](datasets/_template/v2/) · [`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb) |
 | Examples (use-case anchors) | [`examples/`](examples) |
 
 ---

@@ -17,6 +17,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=823
 - http://lib.stat.cmu.edu/datasets/
 notebook_path: datasets/beyond_iid/old_iid/houses/houses.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/houses/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

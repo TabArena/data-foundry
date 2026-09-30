@@ -95,6 +95,8 @@ src = ["examples", "tabflow_slurm"]
 # better practices. Would be dangerous if using for first
 # time on established project.
 extend-safe-fixes = ["ALL"]
+# `== False` / `== None` on a pandas object is element-wise; the fix to `not x` / `is None` changes its meaning.
+unfixable = ["E711", "E712"]
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -192,6 +194,29 @@ exclude = [
     "node_modules",
     "venv",
     "docs",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# v2 dataset definitions (`datasets/**/dataset.py`): one class of declarations and a few hooks. Metadata text
+# and column lists are long, commented-out columns document decisions, and optional dependencies (polars,
+# matplotlib) are imported inside the hook that needs them.
+"datasets/**/dataset.py" = [
+    "D100", "D101", "D102",  # the class attributes are documented in AbstractCuratedDataset
+    "E501",  # long metadata text
+    "ERA001",  # commented-out columns record what was left out and why
+    "INP001",  # dataset folders are not packages
+    "PLC0415",  # optional dependencies are imported inside the hook
+    "RUF012",  # declarations are plain class attributes (the base class declares them ClassVar)
+    "ARG002",  # hooks keep the base-class signature
+    "RET504",  # `df = ...; return df` reads better in preprocessing
+    "E101",  # tabs inside metadata text copied from the source
+    "RUF001",  # non-ASCII characters in metadata text and value maps
+    "PTH123",  # `open()` for ARFF readers
+    "C901",  # preprocessing is long by nature
+    "PD",  # pandas idioms kept as curated
+    "FBT002",
+    "FBT003",
+    "RUF005",
 ]
 
 [tool.ruff.lint.isort]

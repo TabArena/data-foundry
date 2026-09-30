@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis
 notebook_path: datasets/beyond_iid/grouped/sepsis_prediction/sepsis_prediction_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sepsis_prediction_1m/dataset.py
 source_row: 689
 type_adapter_id: curation-record-v1
 ---

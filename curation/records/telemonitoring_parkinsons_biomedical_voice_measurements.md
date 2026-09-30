@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5ZS3N
 notebook_path: datasets/beyond_iid/grouped/telemonitoring_parkinsons_biomedical_voice_measurements/telemonitoring_parkinsons_biomedical_voice_measurements.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/telemonitoring_parkinsons_biomedical_voice_measurements/dataset.py
 source_row: 638
 type_adapter_id: curation-record-v1
 ---

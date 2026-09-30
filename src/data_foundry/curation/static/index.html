@@ -691,7 +691,11 @@ function pinFmt(cell) {
   const rec = d.record_url
     ? `<a class="nblink" href="${d.record_url}" target="_blank" rel="noopener" title="Open this curation record (markdown) on GitHub (main): ${d.record_path}">📄</a>`
     : "";
-  return `<span class="pincell">${pin}${rec}${nb}${verify}</span>`;
+  // 🧩 links to the dataset's v2 definition (dataset.py) in the TabArena v0.2 working copy.
+  const v2 = d.v2_url
+    ? `<a class="nblink" href="${d.v2_url}" target="_blank" rel="noopener" title="Open the TabArena v0.2 definition on GitHub (main): ${d.v2_path}">🧩</a>`
+    : "";
+  return `<span class="pincell">${pin}${rec}${nb}${v2}${verify}</span>`;
 }
 // ---- comments: collapsed by default, click "▾ more" to expand ----------------
 // Records carry multi-paragraph comments, and an unclamped `comments` cell drives the whole

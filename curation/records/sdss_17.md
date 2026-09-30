@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17
 notebook_path: datasets/beyond_iid/old_iid/sdss_17/sdss_17.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sdss_17/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

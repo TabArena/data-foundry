@@ -26,6 +26,7 @@ source_links:
 - https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962
 - https://zindi.africa/competitions/datadrive2030-early-learning-predictors-challenge
 notebook_path: datasets/beyond_iid/grouped/early_learning_predictors/early_learning_predictors.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/early_learning_predictors/dataset.py
 source_row: 742
 type_adapter_id: curation-record-v1
 ---

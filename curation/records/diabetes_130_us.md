@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=4541
 - https://doi.org/10.24432/C5230J
 notebook_path: datasets/beyond_iid/old_iid/diabetes_130_us/diabetes_130_us.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/diabetes_130_us/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

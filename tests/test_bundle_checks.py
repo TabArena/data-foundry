@@ -5,8 +5,10 @@ import dataclasses
 import numpy as np
 import pandas as pd
 import pytest
+from data_foundry import bundle_checks
 from data_foundry.bundle_checks import (
     BundleCheckError,
+    canonical_metric_name,
     run_bundle_checks,
     verify_saved_container,
 )
@@ -222,6 +224,21 @@ def test_custom_metric_is_only_info():
     report = run_bundle_checks(make_container(task_metadata=task), verbose=False)
     assert "task_metric_unknown" in report.slugs
     assert report.ok
+
+
+@pytest.mark.parametrize(
+    ("metric", "canonical"), [("root_mean_squared_error", "rmse"), ("MAPE", "mape"), ("RMSE", "rmse")]
+)
+def test_non_canonical_metric_spelling_is_an_error(metric, canonical):
+    df = make_iid_frame()
+    df["target"] = df["target"].cat.codes.astype(float)
+    task = PredictiveMLTaskMetadata(
+        target_column_name="target", problem_type="regression", objective_metric_name=metric
+    )
+    report = run_bundle_checks(make_container(df, task_metadata=task), verbose=False)
+    assert "task_metric_not_canonical" in report.slugs
+    assert canonical in next(r.message for r in report.results if r.slug == "task_metric_not_canonical")
+    assert canonical_metric_name(metric) == canonical
 
 
 def test_continuous_stratify_column_is_an_error():
@@ -607,3 +624,23 @@ def test_verify_saved_container_with_test_dataset(tmp_path):
     save_path = container.save(save_dir=tmp_path)
     report = verify_saved_container(save_path, container=container, verbose=False)
     assert report.ok, report.summary()
+
+
+# --- Row budget per split -------------------------------------------------------------
+def test_splits_within_the_row_budget_pass():
+    slugs = slugs_of(make_container())
+    assert "splits_train_over_budget" not in slugs
+    assert "splits_test_over_budget" not in slugs
+
+
+def test_train_side_over_the_row_budget_is_an_error(monkeypatch):
+    monkeypatch.setattr(bundle_checks, "SPLIT_TRAIN_ROW_BUDGET", 30)  # each toy fold trains on 40 rows
+    report = run_bundle_checks(make_container(), verbose=False)
+    assert "splits_train_over_budget" in [r.slug for r in report.errors]
+
+
+def test_test_side_over_the_row_budget_is_a_warning(monkeypatch):
+    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)  # each toy fold tests on 20 rows
+    report = run_bundle_checks(make_container(), verbose=False)
+    assert "splits_test_over_budget" in [r.slug for r in report.warnings]
+    assert "splits_test_over_budget" not in [r.slug for r in report.errors]

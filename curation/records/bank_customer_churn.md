@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset
 notebook_path: datasets/beyond_iid/old_iid/bank_customer_churn/bank_customer_churn.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/bank_customer_churn/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

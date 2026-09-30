@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C55S3H
 notebook_path: datasets/beyond_iid/old_iid/credit_card_clients_default/credit_card_clients_default.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/credit_card_clients_default/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

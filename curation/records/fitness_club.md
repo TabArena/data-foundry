@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/ddosad/datacamps-data-science-associate-certification
 notebook_path: datasets/beyond_iid/old_iid/fitness_club/fitness_club.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/fitness_club/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

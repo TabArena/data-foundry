@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C51S6D
 notebook_path: datasets/beyond_iid/temporal/garments_worker_productivity/garments_worker_productivity.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/garments_worker_productivity/dataset.py
 source_row: 716
 type_adapter_id: curation-record-v1
 ---

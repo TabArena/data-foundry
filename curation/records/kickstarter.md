@@ -30,6 +30,7 @@ source_links:
 - https://www.kaggle.com/datasets/codename007/funding-successful-projects
 - https://www.openml.org/search?type=data&id=46668
 notebook_path: datasets/beyond_iid/temporal/kickstarter/kickstarter.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/kickstarter/dataset.py
 source_row: 736
 type_adapter_id: curation-record-v1
 ---

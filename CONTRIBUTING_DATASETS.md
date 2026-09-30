@@ -38,10 +38,11 @@ datasets/
 * Don't open a PR that edits `beyond_iid/` directly unless you are
   re-curating a released dataset (in which case use `_maintenance/`).
 
-> **Want a head start?** Run `/process-dataset` inside Claude Code from this repo
-> (slash command defined in `.claude/commands/process-dataset.md`). Paste
-> tab-separated metadata from the curation spreadsheet and it scaffolds a
-> notebook in the right `_dev/` subfolder with most fields pre-filled.
+> **Want a head start?** Run `/add-dataset <unique_name>` inside Claude Code from this repo
+> (skill defined in `.claude/skills/add-dataset/SKILL.md`). It reads the curation record and
+> scaffolds a v2 dataset folder (`dataset.py` + `explore.ipynb`) with most fields pre-filled; see
+> [`data_foundry.v2`](src/data_foundry/v2/dataset.py) for the interface. New datasets use this
+> format; the notebook pipeline below still describes the shipped v1 notebooks.
 
 ---
 
@@ -226,8 +227,8 @@ rather than packing them together.
    tables, the **bundle-check report**, the recommended split dimensions, and the
    final UUID + checksum in the saved notebook output. The bundle checks must show
    no errors; every accepted warning must be in `ignore=[...]` with its reason.
-2. **Run `/verify-dataset <notebook>`** (slash command in
-   `.claude/commands/verify-dataset.md`) for the second pass — the provenance,
+2. **Run `/verify-dataset <unique_name>`** (skill in
+   `.claude/skills/verify-dataset/SKILL.md`) for the second pass — the provenance,
    scope, split-regime, and leakage-by-semantics judgment the automated checks
    cannot make. Its `cannot-verify` items are exactly what a reviewer should look
    at first.
@@ -256,5 +257,6 @@ When a PR merges:
 * Split helpers — [`src/data_foundry/curation_recommendations.py`](src/data_foundry/curation_recommendations.py)
 * Dataset checks — [`src/data_foundry/dataset_checks.py`](src/data_foundry/dataset_checks.py)
 * Worked example — [`examples/curate_a_dataset.py`](examples/curate_a_dataset.py)
-* Claude Code processing / scaffolding — [`.claude/commands/process-dataset.md`](.claude/commands/process-dataset.md)
-* Claude Code verification pass — [`.claude/commands/verify-dataset.md`](.claude/commands/verify-dataset.md)
+* Claude Code processing / scaffolding — [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)
+* v2 dataset interface — [`src/data_foundry/v2/`](src/data_foundry/v2/)
+* Claude Code verification pass — [`.claude/skills/verify-dataset/SKILL.md`](.claude/skills/verify-dataset/SKILL.md)

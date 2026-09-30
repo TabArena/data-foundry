@@ -102,7 +102,7 @@ def notebook_candidates(datasets_dir: str) -> dict[str, tuple[Path, ...]]:
     """Map a dataset ``unique_name`` -> every repo-relative notebook that could be its own.
 
     A notebook counts when it sits in the dataset's own directory and is named after it:
-    ``datasets/**/<name>/<name>.ipynb`` (the layout ``/process-dataset`` scaffolds) or a
+    ``datasets/**/<name>/<name>.ipynb`` (the v1 notebook layout) or a
     variant of it such as ``<name>_1m.ipynb`` / ``<name>_clf.ipynb``. Cached because the
     datasets tree is large and static for the lifetime of a serve/build.
     """
@@ -166,5 +166,50 @@ def sync_notebook_paths(
         changed[record.unique_name] = (record.notebook_path, resolved)
         if not check:
             record.notebook_path = resolved
+            save_record(record, directory if directory is not None else records_dir())
+    return changed
+
+
+V2_TREE = "datasets/_dev/tabarena-v0pt2"
+"""Where the TabArena v0.2 working copy keeps one v2 dataset folder (``<name>/dataset.py``) per dataset."""
+
+
+def resolve_v2_definition(record: CurationRecord, datasets_dir: str | Path | None = None) -> str | None:
+    """Repo-relative path of the record's v2 definition in the TabArena v0.2 working copy, or None.
+
+    ``<name>/dataset.py`` first; otherwise the one version of it, a ``<name>_*/dataset.py`` that declares
+    ``version_of = "<name>"`` (a ``_1m`` version replaces the full-size dataset in the working copy).
+    """
+    root = resolve_curation_root().parent
+    base = (Path(datasets_dir) if datasets_dir is not None else root / "datasets").parent
+    tree = base / V2_TREE
+    exact = tree / record.unique_name / "dataset.py"
+    if exact.is_file():
+        return exact.relative_to(base).as_posix()
+    marker = f'version_of = "{record.unique_name}"'
+    variants = [p for p in sorted(tree.glob(f"{record.unique_name}_*/dataset.py")) if marker in p.read_text()]
+    if len(variants) == 1:
+        return variants[0].relative_to(base).as_posix()
+    return None
+
+
+def sync_v2_paths(
+    directory: str | Path | None = None,
+    datasets_dir: str | Path | None = None,
+    *,
+    check: bool = False,
+) -> dict[str, tuple[str | None, str | None]]:
+    """Fill (or clear) each record's ``v2_path`` from the TabArena v0.2 working copy.
+
+    Returns ``unique_name -> (stored, resolved)`` for every record whose pointer differs.
+    """
+    changed: dict[str, tuple[str | None, str | None]] = {}
+    for record in load_all(directory):
+        resolved = resolve_v2_definition(record, datasets_dir)
+        if record.v2_path == resolved:
+            continue
+        changed[record.unique_name] = (record.v2_path, resolved)
+        if not check:
+            record.v2_path = resolved
             save_record(record, directory if directory is not None else records_dir())
     return changed

@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/ravibarnawal/mutual-funds-india-detailed
 notebook_path: datasets/beyond_iid/new_iid/mutual_funds_india/mutual_funds_india.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/mutual_funds_india/dataset.py
 source_row: 777
 type_adapter_id: curation-record-v1
 ---

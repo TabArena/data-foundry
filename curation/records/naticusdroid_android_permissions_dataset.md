@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5FS64
 notebook_path: datasets/beyond_iid/old_iid/naticusdroid_android_permissions_dataset/naticusdroid_android_permissions_dataset.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/naticusdroid_android_permissions_dataset/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

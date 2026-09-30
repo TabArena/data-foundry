@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/amex-default-prediction/data?select=train_data.csv
 notebook_path: datasets/beyond_iid/grouped/amex_non_iid/amex_non_iid_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/amex_non_iid_1m/dataset.py
 source_row: 690
 type_adapter_id: curation-record-v1
 ---

@@ -28,6 +28,7 @@ source_links:
 - https://www.kaggle.com/datasets/adarshsng/lending-club-loan-data-csv
 - https://www.lendingclub.com/
 notebook_path: datasets/beyond_iid/temporal/lending_club/lending_club_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/lending_club_1m/dataset.py
 source_row: 641
 type_adapter_id: curation-record-v1
 ---

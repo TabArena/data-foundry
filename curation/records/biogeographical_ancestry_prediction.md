@@ -25,6 +25,7 @@ source_links:
 - https://www.fsigenetics.com/article/S1872-4973(25)00070-5/fulltext
 - https://github.com/CarolaHeinzel/BGA-Classification/blob/main/datat/filtered_population_eur_update.xlsx
 notebook_path: datasets/beyond_iid/new_iid/biogeographical_ancestry_prediction/biogeographical_ancestry_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/biogeographical_ancestry_prediction/dataset.py
 source_row: 686
 type_adapter_id: curation-record-v1
 ---

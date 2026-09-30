@@ -99,6 +99,12 @@ FIELDS: tuple[FieldSpec, ...] = (
         "text",
         help="Repo-relative path of the curation notebook that produced this dataset (one per record).",
     ),
+    FieldSpec(
+        "v2_path",
+        "TabArena v0.2 Definition",
+        "text",
+        help="Repo-relative path of the dataset's v2 definition (`dataset.py`) in the TabArena v0.2 working copy.",
+    ),
     FieldSpec("comments", "Free Comments", "body", help="Free-text curation discussion."),
     FieldSpec("reference", "Reference", "body", help="Academic reference / citation (often BibTeX)."),
 )
@@ -167,6 +173,10 @@ class CurationRecord:
     original_data_state: str | None = None
     source_links: list[str] = pydantic.Field(default_factory=list)
     notebook_path: str | None = None
+    v2_path: str | None = None
+    """Repo-relative path of the dataset's v2 definition in the TabArena v0.2 working copy, e.g.
+    ``datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py`` (``<unique_name>_1m/`` for a sub-sampled version).
+    ``notebook_path`` keeps pointing at the BeyondArena notebook; both are filled by ``sync-notebooks``."""
     """Repo-relative path of this dataset's curation notebook, e.g.
     ``datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb``.
 

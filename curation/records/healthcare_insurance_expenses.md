@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/arunjangir245/healthcare-insurance-expenses/
 notebook_path: datasets/beyond_iid/old_iid/healthcare_insurance_expenses/healthcare_insurance_expenses.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/healthcare_insurance_expenses/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

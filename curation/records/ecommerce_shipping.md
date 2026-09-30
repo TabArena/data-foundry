@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/prachi13/customer-analytics
 notebook_path: datasets/beyond_iid/old_iid/ecommerce_shipping/ecommerce_shipping.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/ecommerce_shipping/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

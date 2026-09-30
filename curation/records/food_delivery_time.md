@@ -20,6 +20,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
 notebook_path: datasets/beyond_iid/old_iid/food_delivery_time/food_delivery_time.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/food_delivery_time/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

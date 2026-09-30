@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5B301
 notebook_path: datasets/beyond_iid/old_iid/website_phishing/website_phishing.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/website_phishing/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

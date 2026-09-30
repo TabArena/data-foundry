@@ -17,6 +17,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=44983
 - https://www.openml.org/search?type=data&id=43093&sort=runs&status=active
 notebook_path: datasets/beyond_iid/old_iid/miami_housing/miami_housing.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/miami_housing/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

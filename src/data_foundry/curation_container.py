@@ -14,11 +14,11 @@ from uuid6 import uuid7
 logger = logging.getLogger(__name__)
 
 from data_foundry.schema import (
-    DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
     MultilineStr,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import encode_dataset, encode_pydantic_metadata
 
@@ -265,15 +265,16 @@ class CuratedContainer:
             base = base / "versions"
         return base / self.uuid
 
-    def save(self, save_dir: Path | str = DEFAULT_LOCAL_DATA_DIR) -> Path:
-        """Save the curated data collection under ``save_dir``.
+    def save(self, save_dir: Path | str | None = None) -> Path:
+        """Save the curated data collection under ``save_dir`` (default: the warehouse,
+        ``$DATA_FOUNDRY_WAREHOUSE`` or ``local-data-warehouse/``).
 
         The container is written to
         ``<save_dir>/<unique_name>/<uuid>/`` (or
         ``<save_dir>/<version_from_unique_name>/versions/<uuid>/`` for
         versioned datasets).
         """
-        save_dir = Path(save_dir)
+        save_dir = resolve_warehouse_dir() if save_dir is None else Path(save_dir)
         save_path = self._save_path(save_dir)
         save_path.mkdir(parents=True, exist_ok=True)
         warehouse_path = save_path.relative_to(save_dir)
@@ -380,7 +381,6 @@ class CuratedContainer:
             loaded_from_path=path,
             **container_metadata,
         )
-
 
     # --- Extra (non-core) artifacts ---------------------------------------------------
     def _resolve_extras_dir(self, path: Path | str | None) -> Path:

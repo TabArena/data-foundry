@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5DP5D
 notebook_path: datasets/beyond_iid/old_iid/maternal_health_risk/maternal_health_risk.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/maternal_health_risk/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

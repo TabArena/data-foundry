@@ -25,6 +25,7 @@ source_links:
 - https://archive.ics.uci.edu/dataset/31/covertype
 - https://doi.org/10.24432/C50K5N
 notebook_path: datasets/beyond_iid/grouped/covertype/covertype.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/covertype/dataset.py
 source_row: 691
 type_adapter_id: curation-record-v1
 ---

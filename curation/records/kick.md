@@ -24,6 +24,7 @@ source_links:
 - https://www.kaggle.com/c/DontGetKicked/overview
 - https://www.openml.org/search?type=data&id=41162&sort=runs&status=active
 notebook_path: datasets/beyond_iid/temporal/kick/kick.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/kick/dataset.py
 source_row: 723
 type_adapter_id: curation-record-v1
 ---

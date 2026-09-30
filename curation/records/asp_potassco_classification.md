@@ -22,6 +22,7 @@ source_links:
 - https://www.openml.org/d/41705
 - https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO
 notebook_path: datasets/beyond_iid/grouped/asp_potassco_classification/asp_potassco_classification.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/asp_potassco_classification/dataset.py
 source_row: 695
 type_adapter_id: curation-record-v1
 ---

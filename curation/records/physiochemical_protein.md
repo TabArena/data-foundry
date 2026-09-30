@@ -17,6 +17,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=44963
 - https://doi.org/10.24432/C5QW3H
 notebook_path: datasets/beyond_iid/old_iid/physiochemical_protein/physiochemical_protein.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/physiochemical_protein/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

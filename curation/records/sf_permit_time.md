@@ -25,6 +25,7 @@ source_links:
 - https://www.kaggle.com/datasets/aparnashastry/building-permit-applications-data
 - https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data
 notebook_path: datasets/beyond_iid/temporal/sf_permit_time/sf_permit_time.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sf_permit_time/dataset.py
 source_row: 737
 type_adapter_id: curation-record-v1
 ---

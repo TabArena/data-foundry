@@ -5,9 +5,10 @@ Subcommands::
     data-foundry-curation serve                         # local editing dashboard
     data-foundry-curation build-site OUT_DIR            # read-only static site (GitHub Pages)
     data-foundry-curation validate                      # check records against the vocab
-    data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path
+    data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path and v2_path
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|parquet)
     data-foundry-curation export --format gsheet --spreadsheet <id-or-url>
+    data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.v2.cli)
 
 Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
 """
@@ -20,10 +21,11 @@ import sys
 from data_foundry.curation import exporter
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.app import serve
-from data_foundry.curation.notebooks import sync_notebook_paths
+from data_foundry.curation.notebooks import sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import load_vocabularies
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all
+from data_foundry.v2.cli import add_dataset_parser
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
@@ -55,17 +57,20 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 
 
 def _cmd_sync_notebooks(args: argparse.Namespace) -> int:
-    changed = sync_notebook_paths(args.records_dir, check=args.check)
-    if not changed:
-        print("Every record's notebook_path matches the datasets tree. ✓")
-        return 0
-    verb = "would change" if args.check else "updated"
-    print(f"{len(changed)} record(s) {verb}:")
-    for name, (stored, resolved) in list(changed.items())[:40]:
-        print(f"  {name}: {stored or '(unset)'} -> {resolved}")
-    if len(changed) > 40:
-        print(f"  … and {len(changed) - 40} more")
-    return 1 if args.check else 0
+    drift = False
+    for label, sync in (("notebook_path", sync_notebook_paths), ("v2_path", sync_v2_paths)):
+        changed = sync(args.records_dir, check=args.check)
+        if not changed:
+            print(f"Every record's {label} matches the datasets tree. ✓")
+            continue
+        drift = True
+        verb = "would change" if args.check else "updated"
+        print(f"{len(changed)} record(s) {verb} ({label}):")
+        for name, (stored, resolved) in list(changed.items())[:40]:
+            print(f"  {name}: {stored or '(unset)'} -> {resolved or '(unset)'}")
+        if len(changed) > 40:
+            print(f"  … and {len(changed) - 40} more")
+    return 1 if (args.check and drift) else 0
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
@@ -108,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--strict", action="store_true", help="Exit non-zero if any value is unmapped.")
     p_validate.set_defaults(func=_cmd_validate)
 
-    p_sync = sub.add_parser("sync-notebooks", help="Refresh each record's notebook_path from the datasets tree.")
+    p_sync = sub.add_parser("sync-notebooks", help="Refresh each record's notebook_path and v2_path from the datasets tree.")
     p_sync.add_argument("--check", action="store_true", help="Report drift and exit non-zero instead of writing.")
     p_sync.set_defaults(func=_cmd_sync_notebooks)
 
@@ -119,6 +124,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("--worksheet", default="Main")
     p_export.add_argument("--service-account-file", default=None)
     p_export.set_defaults(func=_cmd_export)
+
+    add_dataset_parser(sub)
 
     return parser
 

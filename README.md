@@ -215,7 +215,7 @@ print(curated_data.uuid, curated_data.checksum)
 verify_saved_container(save_path, container=curated_data).raise_if_errors()
 ```
 
-For the contributor flow (where to put the notebook, how to open the PR, the `/process-dataset` Claude Code skill, best practices around versioning, anomaly tracking, and dtype handling), see [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
+For the contributor flow (where to put the notebook, how to open the PR, the `/add-dataset` Claude Code skill, best practices around versioning, anomaly tracking, and dtype handling), see [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
 
 </details>
 
@@ -239,10 +239,10 @@ selection criteria and processing conventions. Other CLI subcommands:
 
 ```bash
 data-foundry-curation validate                 # check records against the dropdown vocab
-data-foundry-curation sync-notebooks           # refresh each record's notebook_path (--check to dry-run)
+data-foundry-curation sync-notebooks           # refresh each record's notebook_path + v2_path (--check to dry-run)
 data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
-data-foundry-curation import-sheet sheet.csv    # one-time migration from the old Google Sheet
+data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write report.md (no save)
 ```
 
 **Browse it online.** A read-only copy of the backlog is published to GitHub Pages —
@@ -251,8 +251,16 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The **`/triage-candidates`** slash command starts the dashboard and
-loads the curation guidelines into context so the agent can help you decide and process datasets.
+Working with Claude Code? The repo ships four curation workflows (in `.claude/`):
+
+| Command | What it does |
+|---|---|
+| `/triage-candidates` | Starts the dashboard and loads the curation guidelines, so the agent can help decide which candidates belong. |
+| `/check-candidate <name>` | A cited second opinion on one record: traces the original source and writes the evidence into the record. |
+| `/add-dataset <name>` | Scaffolds the v2 dataset folder (`dataset.py` + `explore.ipynb`) for a `Yes` candidate from its record. |
+| `/verify-dataset <name>` | Runs the bundle checks plus a 15-item judgment rubric (provenance, split regime, leakage) before a dataset ships. |
+
+Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md` and `examples/` cover it.
 
 </details>
 
@@ -335,7 +343,7 @@ The short version:
    [`datasets/beyond_iid/final_uuid_list.py`](datasets/beyond_iid/final_uuid_list.py).
 
 The long version (field-by-field walkthrough, split-helper choice, dtype
-gotchas, the `/process-dataset` Claude Code scaffolding skill): see
+gotchas, the `/add-dataset` Claude Code scaffolding skill): see
 [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md).
 
 ## 📄 Citation

@@ -24,6 +24,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/elvinrustam/wine-dataset
 notebook_path: datasets/beyond_iid/new_iid/wine_world_cost/wine_world_cost.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/wine_world_cost/dataset.py
 source_row: 682
 type_adapter_id: curation-record-v1
 ---

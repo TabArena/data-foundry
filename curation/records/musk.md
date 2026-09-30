@@ -26,6 +26,7 @@ source_links:
 - https://doi.org/10.24432/C51608
 - https://doi.org/10.24432/C5ZK5B
 notebook_path: datasets/beyond_iid/grouped/musk/musk.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/musk/dataset.py
 source_row: 5
 type_adapter_id: curation-record-v1
 ---

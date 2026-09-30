@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.schema import as_column_list
 
 if TYPE_CHECKING:
@@ -84,38 +85,56 @@ KNOWN_METRICS: dict[str, set[str]] = {
     },
     "regression": {
         "rmse",
-        "root_mean_squared_error",
         "mae",
-        "mean_absolute_error",
         "mse",
-        "mean_squared_error",
         "r2",
         "rmsle",
-        "root_mean_squared_logarithmic_error",
         "mape",
-        "mean_absolute_percentage_error",
         "median_absolute_error",
         "pearsonr",
         "spearmanr",
     },
 }
-"""Metric names we recognize per problem type (sklearn / AutoGluon spelling).
+"""The canonical metric names per problem type (short, lower-case, as TabArena spells them).
 
 An unrecognized name is not an error — custom competition metrics (e.g.
 ``amex_metric``) are intentional — but it must be registered on the consumer side,
-so it is surfaced as an ``info``.
+so it is surfaced as an ``info``. A known metric spelled another way (an alias in
+:data:`METRIC_ALIASES`, or different casing) is an error: every dataset uses one name.
 """
+
+METRIC_ALIASES: dict[str, str] = {
+    "root_mean_squared_error": "rmse",
+    "mean_absolute_error": "mae",
+    "mean_squared_error": "mse",
+    "root_mean_squared_logarithmic_error": "rmsle",
+    "mean_absolute_percentage_error": "mape",
+    "auc": "roc_auc",
+    "logloss": "log_loss",
+    "cross_entropy": "log_loss",
+}
+"""Other spellings of canonical metric names, mapped to the canonical one."""
 
 TABARENA_DEFAULT_METRICS: dict[str, str] = {
     "binary_classification": "roc_auc",
     "multiclass_classification": "log_loss",
-    "regression": "root_mean_squared_error",
+    "regression": "rmse",
 }
-"""Metric TabArena falls back to when it does not accept ``objective_metric_name``.
+"""The default metric per problem type, and the one TabArena falls back to when it does not accept
+``objective_metric_name``.
 
-Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS``; only used to
-tell the curator which metric a run would *actually* optimize.
+Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS``.
 """
+
+
+def canonical_metric_name(metric: str) -> str:
+    """Map a metric name to its canonical spelling (aliases and casing); unknown names are returned stripped."""
+    name = metric.strip()
+    lowered = METRIC_ALIASES.get(name.lower(), name.lower())
+    if any(lowered in metrics for metrics in KNOWN_METRICS.values()):
+        return lowered
+    return name
+
 
 MISSING_VALUE_SENTINELS: tuple[float, ...] = (-1.0, -9.0, -99.0, -999.0, -9999.0, -99999.0, 999.0, 9999.0, 99999.0)
 """Numeric values that are commonly a proxy for "missing" rather than a real value.
@@ -717,10 +736,18 @@ def _check_metric(ctx: _Ctx) -> Iterator[CheckResult]:
         )
         return
 
+    canonical = canonical_metric_name(metric)
+    if canonical != metric:
+        yield CheckResult(
+            "task_metric_not_canonical",
+            "error",
+            f"Metric {metric!r} is spelled differently from the canonical name {canonical!r}.",
+            hint=f"Set `objective_metric_name={canonical!r}`: every dataset uses one spelling per metric.",
+        )
     known = KNOWN_METRICS[task.problem_type]
-    if metric.lower() in known:
+    if canonical in known:
         return
-    other_problem_types = [p for p, metrics in KNOWN_METRICS.items() if metric.lower() in metrics]
+    other_problem_types = [p for p, metrics in KNOWN_METRICS.items() if canonical in metrics]
     if other_problem_types:
         yield CheckResult(
             "task_metric_problem_type_mismatch",
@@ -1138,6 +1165,37 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
             + (f" (test_size={rec_test_size:,})" if rec_test_size else "")
             + ".",
             hint="Deviating is allowed when the task demands it — record why in `splits_comment`.",
+        )
+
+
+@_check
+def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
+    """No outer split may train on more than 1M rows (or test on more than 250k)."""
+    if not ctx.flat_splits:
+        return
+    train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
+    over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
+    over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
+    if over_train:
+        largest = max(n for *_, n in over_train)
+        yield CheckResult(
+            "splits_train_over_budget",
+            "error",
+            f"{len(over_train)} split(s) train on more than {train_budget:,} rows (largest: {largest:,}); "
+            f"first: {[(r, f) for r, f, _ in over_train[:5]]}.",
+            hint="Sub-sample each split's train side to the budget, e.g. with "
+            "`curation_recommendations.subsample_temporal(train_cap=1_000_000)`; for grouped splits, sample whole "
+            "groups until the train side fits.",
+        )
+    if over_test:
+        largest = max(n for *_, n in over_test)
+        yield CheckResult(
+            "splits_test_over_budget",
+            "warning",
+            f"{len(over_test)} split(s) test on more than {test_budget:,} rows (largest: {largest:,}); "
+            f"first: {[(r, f) for r, f, _ in over_test[:5]]}.",
+            hint="Cap the test side (e.g. `subsample_temporal(test_cap=250_000)`), or accept it in `ignore=[...]` "
+            "with the reason, e.g. when a grouped split cannot hit the cap without dropping whole groups.",
         )
 
 
