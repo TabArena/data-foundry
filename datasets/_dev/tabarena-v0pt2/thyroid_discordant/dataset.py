@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class ThyroidDiscordant(AbstractCuratedDataset):
@@ -88,31 +88,6 @@ class ThyroidDiscordant(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df["discordant"] = df["discordant"].str.split(".").str[0]  # remove patient ID from target column
-        as_cat_type = [
-            "discordant",
-            "sex",
-            "on_thyroxine",
-            "query_on_thyroxine",
-            "on_antithyroid_medication",
-            "thyroid_surgery",
-            "query_hypothyroid",
-            "query_hyperthyroid",
-            "pregnant",
-            "sick",
-            "tumor",
-            "lithium",
-            "goitre",
-            "TSH_measured",
-            "T3_measured",
-            "TT4_measured",
-            "T4U_measured",
-            "FTI_measured",
-            "TBG_measured",
-            "psych",
-            "I131_treatment",
-            "hypopituitary",
-        ]
-        df[as_cat_type] = df[as_cat_type].astype("category")
         df = df.drop(
             columns=[
                 "referral_source",  # irrelevant here
@@ -123,3 +98,29 @@ class ThyroidDiscordant(AbstractCuratedDataset):
         # drop duplicated rows
         df = df.drop_duplicates().reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "sex",
+                "on_thyroxine",
+                "query_on_thyroxine",
+                "on_antithyroid_medication",
+                "thyroid_surgery",
+                "query_hypothyroid",
+                "query_hyperthyroid",
+                "pregnant",
+                "sick",
+                "tumor",
+                "lithium",
+                "goitre",
+                "TSH_measured",
+                "T3_measured",
+                "TT4_measured",
+                "T4U_measured",
+                "FTI_measured",
+                "psych",
+                "I131_treatment",
+                "hypopituitary",
+            ],
+        )

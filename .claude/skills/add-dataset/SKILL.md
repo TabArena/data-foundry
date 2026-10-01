@@ -52,9 +52,10 @@ to save while either remains. Say so in your report.
   `time_on` for temporal tasks, otherwise a shuffle with seed 42 (`shuffle = False` to opt out, with a reason in
   `curation_comments`). Never shuffle, sort or `reset_index` yourself.
 * **Seeds:** one shuffle seed (42) and one split seed (4267) for the whole benchmark, fixed in the base class.
-* **Splits:** the recommended IID / grouped split with the default comment; `temporal_splits = TemporalSplits(...)`
-  for temporal tasks (the comment and, for calendar windows, the horizon are derived); `subsample_to_budget = True`
-  for a `_1m` version. `_make_splits` only for what none of these express.
+* **Splits:** the v2 split protocol (`src/data_foundry/v2/splits.py`): the recommended IID / grouped 3-fold
+  cross-validation with the default comment; `temporal_splits = TemporalSplits(...)` with at least 3 windows for
+  temporal tasks (the comment and, for calendar windows, the horizon are derived); `subsample_to_budget = True` for a
+  `_1m` version of data over the row budget (patterns §C). `_make_splits` only for what none of these express.
 
 ## Step 0: Gather inputs
 
@@ -85,7 +86,7 @@ Read the closest reference in full before writing (paths under `datasets/_dev/ta
 | IID | `airfoil_self_noise/dataset.py` | The minimal definition: attributes, `_load_raw`, a short `_clean`. |
 | Grouped | `early_learning_predictors/dataset.py` | `group_on` / `group_labels`, rule-based leak drops in `_clean`, long feature lists, a sibling file used only in `explore.ipynb`. |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
-| Sub-sampled `_1m` | `lending_club_1m/dataset.py` | `version_of`, `version_comment`, `TemporalSplits(cutoffs=...)` + `subsample_to_budget`, a two-table `_load_raw`, `string_features`, datetime formats. |
+| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `subsample_to_budget`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## Step 3: Scaffold and fill `dataset.py`

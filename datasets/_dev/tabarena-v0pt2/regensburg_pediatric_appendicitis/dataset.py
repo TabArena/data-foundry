@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
@@ -56,7 +55,6 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         df = raw
         # Drop samples w/o utrasounds
         df = df[df["US_Performed"] == "yes"]
-        as_string_type = ["Lymph_Nodes_Location", "Abscess_Location", "Gynecological_Findings"]
         df = df.drop(
             columns=[
                 # Other
@@ -69,10 +67,6 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
                 "Management",
             ]
         )
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -111,4 +105,5 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
                 "Appendicular_Abscess",
                 "Conglomerate_of_Bowel_Loops",
             ],
+            string=["Lymph_Nodes_Location", "Abscess_Location", "Gynecological_Findings"],
         )

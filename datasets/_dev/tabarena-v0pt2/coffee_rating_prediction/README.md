@@ -104,11 +104,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | review_date |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 6 string, 1 datetime</summary>
 
 - categorical (2): `roast`, `NT_price`
-- string (0): none
-- datetime (0): none
+- string (6): `roaster`, `name`, `location`, `origin`, `desc_1`, `desc_3`
+- datetime (1): `review_date (%B %Y)`
 
 </details>
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class Splice(AbstractCuratedDataset):
@@ -57,6 +57,7 @@ class Splice(AbstractCuratedDataset):
         split_data.columns = [f"position_{i}" for i in range(-30, 31) if i != 0]
         split_data[target_feature] = df[0]
         df = split_data
-        cat_features = [f"position_{i}" for i in range(-30, 31) if i != 0] + [target_feature]
-        df[cat_features] = df[cat_features].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c.startswith("position_")])

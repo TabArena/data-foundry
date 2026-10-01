@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -58,8 +58,6 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         df = raw
         df["Field10"] = df["Field10"].astype("string").str.replace(",", "").astype(int)
         df["Original_Quote_Date"] = pd.to_datetime(df["Original_Quote_Date"])
-        as_cat = df.select_dtypes(include=["object"]).columns.tolist() + ["QuoteConversion_Flag"]
-        df[as_cat] = df[as_cat].astype("category")
         ordinal_fields_with_nan_mask = [
             "CoverageField1A",
             "CoverageField1B",
@@ -216,3 +214,9 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
             ]
         )
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=df.select_dtypes(include=["object"]).columns.tolist(),
+            datetime=["Original_Quote_Date"],
+        )

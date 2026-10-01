@@ -46,5 +46,5 @@ class Bioresponse(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.rename(columns={"Activity": "MoleculeElicitsResponse"})
-        df["MoleculeElicitsResponse"] = df["MoleculeElicitsResponse"].map({0: "No", 1: "Yes"}).astype("category")
+        df["MoleculeElicitsResponse"] = df["MoleculeElicitsResponse"].map({0: "No", 1: "Yes"})
         return df

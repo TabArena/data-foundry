@@ -243,8 +243,10 @@ with minimal information loss, or for reconstructing meaning the source destroye
 ## §C Split recipes
 
 ### IID and grouped
-Keep the default: no split attributes at all. The base class calls `get_recommended_splits_dimensions` and
-`get_recommended_iid_splits` / `get_recommended_grouped_splits` with the benchmark seed, and the comment is
+Keep the default: no split attributes at all. The base class runs the v2 split protocol in
+`src/data_foundry/v2/splits.py`: always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the
+train side (`recommended_dimensions`), built by `iid_splits` / `grouped_splits` with the benchmark seed, and every
+split capped to 1M train and 500k test rows (`cap_splits`). The comment is
 "Default splits.". Set `splits_comment` only when there is something to say (a split that deliberately differs
 from the source's protocol, what a grouped test fold holds).
 
@@ -266,14 +268,15 @@ convention, which the bundle checks verify:
 |---|---|
 | The last N windows of fixed length (acquire: 5 x 5 days; rossmann: 3 x 42 days with a 1-day planning gap) | `TemporalSplits(window=5, unit="days", n_windows=5)`, `TemporalSplits(window=42, unit="days", n_windows=3, gap=1)` |
 | Calendar months or years (coffee: 5 x 6 months; ieee: 3 months, 1-month gap) | `TemporalSplits(window=6, unit="months", n_windows=5)`, `TemporalSplits(window=1, unit="months", n_windows=3, gap=1)` |
-| Explicit test periods (kickstarter, sf_permit: calendar years; lending_club: 2016) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
-| One final period to the end of the data (consumer_complaints, home_credit) | `TemporalSplits(window=None, unit="days", cutoffs=("2025-09-01",))` |
+| Explicit test periods (kickstarter, sf_permit, lending_club: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
+| Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes: `TimeSeriesSplit`) | `TemporalSplits(window=..., unit="rows", n_windows=3)` with `time_horizon_unit="steps"` |
 | Overlapping windows (ghana: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 **Number of windows.** Use as many windows as an IID or grouped task of that size would get splits
-(`get_recommended_splits_dimensions`: 20 x 3, 10 x 3 or 3 x 3), rolled back from the newest data, and never a
+(`recommended_dimensions`: 20 x 3, 10 x 3, 3 x 3 or 1 x 3), and never fewer than 3 (`splits_too_few`), rolled back
+from the newest data, and never a
 window whose train side is below 50% of the data (`min_train_fraction=0.5`). Then count the minority class (or the
 target spread) per test window; windows with a handful of positives make the task too small for a temporal split
 (see the curation guidelines, "Temporal tasks/splits"). If that leaves windows with fewer than about 50 test rows,
@@ -285,12 +288,25 @@ whose train side is smaller than that share (of the distinct values for `"unique
 `window=None` and `unit="unique"`, sizes the windows so they cover the newest `1 - min_train_fraction` of the
 values. Only a split that also filters rows by an as-of date (hotel_booking_demand) needs `_make_splits`.
 
-### Datasets above ~1.25M rows: the `_1m` version
-The sub-sampled version is its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of `<name>`.
-Set `subsample_to_budget = True`: the base class caps the single train/test split to 1M train / 250k test rows with
-`subsample_split_to_budget` (IID / grouped, whole groups kept) or `subsample_temporal` (temporal, which needs a
-single window, for example `cutoffs=("2016",)`); the sub-sampled frame is sorted by time again.
+### Larger than the row budget: the `_1m` version
+The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows.
+A dataset that does not fit gets a sub-sampled version, its own folder and class, `<unique_name>_1m/dataset.py`,
+with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of
+`<name>`. Set `subsample_to_budget = True`:
+
+* IID / grouped data: a frame of up to 1.5M rows is taken fully (3 folds of 2/3 train). A larger frame is
+  sub-sampled to 1.5M rows before splitting (`subsample_frame`: rows stratified on the target, or whole groups),
+  then the usual splits are built and each side is capped (`cap_splits`). `subsample_to_budget` on a frame that
+  already fits is an error.
+* Temporal data: the frame is not sampled. The windows (at least 3, for example `TemporalSplits(window=7,
+  unit="days", n_windows=3)`) are built on the full data, then `sample_temporal_splits` keeps at most 500k rows of
+  each test window and a random 1M of all earlier rows for each train side, drawn in one random order so the train
+  sides overlap; the frame keeps only the rows a split uses. Test windows stay dense and train covers the whole
+  history (random sub-sampling of the train data follows TabReD). A temporal `_1m` version whose windows all fit
+  is an error.
+
+A dataset that sets `splits_comment` itself states the sub-sampling there (the generated sentence is only appended
+to the default comment). v1 notebooks keep the v1 rule (one 1M / 250k split from 1.25M rows on).
 
 ## §D Recurring traps — what to pre-flag
 
@@ -445,7 +461,8 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` vs `per_sample` correctly (§C) |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first (§C) |
 | `splits_rows_unused` | IID/grouped splits must cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 250k test rows in a split: make a `_1m` version (§C) |
+| `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: for a frame above 1.5M rows make a `_1m` version (§C); otherwise narrow the windows |
+| `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 (§C) |
 | `meta_time_horizon_missing` | a calendar `temporal_splits` window, or `time_horizon` + `time_horizon_unit` |
 | `meta_tags_*` | tags must agree with the split regime (Step 1) |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`/`%`/`_` escaped |

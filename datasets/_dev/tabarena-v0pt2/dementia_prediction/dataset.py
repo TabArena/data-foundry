@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class DementiaPrediction(AbstractCuratedDataset):
@@ -70,10 +70,11 @@ class DementiaPrediction(AbstractCuratedDataset):
         # 0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD)
         df["CDR"] = df["CDR"].replace({0.5: "very_mild_AD", 1: "mild_AD", 2: "moderate_AD", 0: "no_dementia"})
         df = df[df["CDR"] != "moderate_AD"]
-        as_cat_type = ["M/F", "CDR", "Subject ID"]
-        df[as_cat_type] = df[as_cat_type].astype("category")
         df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"]).reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["M/F", "Subject ID"])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

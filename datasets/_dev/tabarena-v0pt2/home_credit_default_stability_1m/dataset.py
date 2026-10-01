@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 
 def set_table_dtypes(df):
@@ -147,7 +147,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
     unique_name = "home_credit_default_stability_1m"
     version_of = "home_credit_default_stability"
     version_comment = """
-        We randomly sub-sample the train data to 1 million rows. We follow TabReD and use random sub-sampling. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
     year = "2024"
     domain = "finance"
@@ -187,11 +187,23 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We follow TabRed and simulate a use case of a model being refit every 4 to 5 months. We create one test split using 4,5 months of data (2020-05-01 to 2020-10-05) for testing and all the previous data for training.
+        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
     """
-    time_horizon = 5
+    # 3 windows of 2 months replace TabRed's single 4.5-month test period (v2 split protocol, 2026-10), so the horizon
+    # drops from 5 to 2 months and results are not comparable with TabRed's. Before sampling the windows hold 74,687 /
+    # 79,743 / 70,497 rows (about 1.8k / 1.7k / 1.5k defaults); every train side is capped at 1M. 5-month windows
+    # (cutoffs 2019-07-01, 2019-12-01, 2020-05-01) would keep the horizon, but the oldest would train on 439k rows
+    # (Jan-Jun 2019) and test 506k pre-COVID rows, and the middle one would span the April 2020 drop in volume and
+    # default rate.
+    time_horizon = 2
     time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=None, unit="days", cutoffs=("2020-05-01",))
+    temporal_splits = TemporalSplits(window=2, unit="months", cutoffs=("2020-05-01", "2020-07-01", "2020-09-01"))
+    accepted_check_warnings = {
+        "dataset_missing_value_sentinel": "-1 is a real value: the avgdbd* columns are 'average days past or before "
+        "due of payment' (Kaggle feature_definitions.csv), negative means paid early; -1 is the mode of a smooth "
+        "distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%, down to -1220), missing values are NaN, and the default "
+        "rate rises from 2.1% (< -1) over 3.3% (-1) and 4.5% (0) to 8.6% (late).",
+    }
     subsample_to_budget = True
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once (following
@@ -294,7 +306,11 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
                 "first_employername_160M",
             ]
         )
-        df["date_decision"] = pd.to_datetime(df["date_decision"], format="%Y-%m-%d")
-        as_cat_type = ["target", *list(df.columns[(df.dtypes == "object") | (df.dtypes == "string")])]
-        df[as_cat_type] = df[as_cat_type].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        text_cols = df.columns[(df.dtypes == "object") | (df.dtypes == "string")]
+        return FeatureTypes(
+            categorical=[c for c in text_cols if c != "date_decision"],
+            datetime={"date_decision": "%Y-%m-%d"},
+        )

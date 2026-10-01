@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 
 class CookingTime1m(AbstractCuratedDataset):
@@ -14,7 +14,7 @@ class CookingTime1m(AbstractCuratedDataset):
     unique_name = "cooking_time_1m"
     version_of = "cooking_time"
     version_comment = """
-        We randomly sub-sample the train to 1 million and test data 250k rows. We follow TabReD and use random sub-sampling. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
     year = "2024"
     domain = "industry & manufacturing"
@@ -46,10 +46,14 @@ class CookingTime1m(AbstractCuratedDataset):
     time_on = "timestamp"
 
     # Splits
-    splits_comment = "We use the last week as test data and all prior data as train data."
+    splits_comment = (
+        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
+        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
+        "for all windows)."
+    )
     time_horizon = 7
     time_horizon_unit = "days"
-    temporal_splits = TemporalSplits(window=7, unit="days", n_windows=1)
+    temporal_splits = TemporalSplits(window=7, unit="days", n_windows=3)
     subsample_to_budget = True
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -58,12 +62,15 @@ class CookingTime1m(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
         # Following TabRed
         df = df[df["cooking_time_minutes"] >= 1.0]
-        # We take all bin + cat as Category
-        cat_cols = [c for c in df.columns if c.startswith(("cat", "bin"))]
-        df[cat_cols] = df[cat_cols].astype("category")
         df["cooking_time_minutes"] = np.log(df["cooking_time_minutes"])
         df = df.sort_values(by="timestamp").reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            # We take all bin + cat as Category
+            categorical=[c for c in df.columns if c.startswith(("cat", "bin"))],
+            datetime=["timestamp"],
+        )

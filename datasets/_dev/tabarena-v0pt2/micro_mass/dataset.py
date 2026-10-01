@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -57,14 +57,17 @@ class MicroMass(AbstractCuratedDataset):
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         df, metadata = raw["df"], raw["metadata"]
         df = pd.concat([metadata, df], axis=1)
-        as_cat_type = ["Strain", "Species"]
-        df[as_cat_type] = df[as_cat_type].astype("category")
+        # cast before the sort below, which orders by category
+        df["Strain"] = df["Strain"].astype("category")
         # Drop duplicate columns based on values
         df = df.loc[:, ~df.T.duplicated()]
         # DRop constant columns
         df = df.loc[:, (df != df.iloc[0]).any()]
         df = df.sample(frac=1, random_state=42).sort_values(by="Strain").reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["Strain"])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

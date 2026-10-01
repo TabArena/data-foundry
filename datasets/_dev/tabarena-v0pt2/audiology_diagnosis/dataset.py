@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class AudiologyDiagnosis(AbstractCuratedDataset):
@@ -126,8 +126,6 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        as_cat_type = list(df)
-        df[as_cat_type] = df[as_cat_type].astype("category")
         cochlear_classes = [
             "cochlear_age_and_noise",
             "cochlear_age_plus_poss_menieres",
@@ -166,7 +164,7 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
                 return "other"
             raise ValueError(f"Unknown diagnosis class: {x}")
 
-        df["diagnosis"] = df["diagnosis"].apply(map_to_diagnosis).astype("category")
+        df["diagnosis"] = df["diagnosis"].apply(map_to_diagnosis)
         df = df.drop(
             columns=[
                 "indentifier",
@@ -175,3 +173,6 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         )
         df = df.drop_duplicates()
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c != self.target])

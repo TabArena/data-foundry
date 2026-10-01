@@ -14,7 +14,7 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
     unique_name = "consumer_complaints_1m"
     version_of = "consumer_complaints"
     version_comment = """
-        We use the last 3 months (Oct-Dec 2025) as test data and randomly sub-sample the train to 1 million and test data 250k rows. We follow TabReD and use random sub-sampling. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
     year = "2025"
     domain = "finance"
@@ -92,12 +92,16 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - Thus, we instead simulate a model that is refit every three months and then deployed.
         - This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
 
-        We create one test split by using all data from 2025-10-01 to 2025-12-31 as test split. This represents a refit horizon of 3 months.
-        We use all data before as training data.
+        We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
+        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
     """
     time_horizon = 3
     time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=None, unit="days", cutoffs=("2025-10-01",))
+    # 3 quarterly windows replace the single Q4 2025 window (v2 split protocol, 2026-10) and keep the 3-month refit
+    # horizon. The labels of all three quarters are settled (the archive was exported on 2026-09-14, more than 180
+    # days after 2025-12-31). 3 monthly windows Oct-Dec 2025 would keep the old test period but shorten the horizon to
+    # 1 month.
+    temporal_splits = TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))
     subsample_to_budget = True
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation "
@@ -174,15 +178,6 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
                 "Date sent to company",  # just shows processing delay from CFPB and not related to the target. Otherwise, almost always identical to "Date received".
             ]
         )
-        as_string_type = [
-            "Company",  # categorical based on feature description but given that we can have new companies in the future, it cannot be a "normal" categorical feature
-            "Consumer complaint narrative",
-            "ZIP code",
-        ]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         df["Date received"] = pd.to_datetime(df["Date received"])
         # We drop duplicates as the data should not contain naturally occurring duplicates; copies that disagree on the
         # target are all dropped.
@@ -205,4 +200,10 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
                 "Tag: Older American",
                 "Tag: Servicemember",
             ],
+            string=[
+                "Company",  # categorical based on feature description but given that we can have new companies in the future, it cannot be a "normal" categorical feature
+                "Consumer complaint narrative",
+                "ZIP code",
+            ],
+            datetime=["Date received"],
         )

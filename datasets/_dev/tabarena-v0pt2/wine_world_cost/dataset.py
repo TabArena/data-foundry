@@ -86,20 +86,6 @@ class WineWorldCost(AbstractCuratedDataset):
                 "Vintage",
             ]
         )
-        as_string_type = [
-            "Title",
-            "Description",
-            "Grape",
-            "Secondary Grape Varieties",
-            "Country",
-            "Characteristics",
-            "Region",
-            "Appellation",
-        ]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         # Log scale target
         df["Price"] = np.log(df["Price"])
         return df
@@ -110,5 +96,15 @@ class WineWorldCost(AbstractCuratedDataset):
                 "Closure",
                 "Type",
                 "Style",
+            ],
+            string=[
+                "Title",
+                "Description",
+                "Grape",
+                "Secondary Grape Varieties",
+                "Country",
+                "Characteristics",
+                "Region",
+                "Appellation",
             ],
         )

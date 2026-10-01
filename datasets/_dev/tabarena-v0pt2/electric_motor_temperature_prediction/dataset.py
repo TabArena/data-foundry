@@ -1,4 +1,4 @@
-"""Curated dataset definition for `electric_motor_temperature_prediction_1m` (data-foundry v2). Evidence: README.md."""
+"""Curated dataset definition for `electric_motor_temperature_prediction` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
@@ -9,13 +9,9 @@ import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
-class ElectricMotorTemperaturePrediction1m(AbstractCuratedDataset):
+class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
     # Dataset
-    unique_name = "electric_motor_temperature_prediction_1m"
-    version_of = "electric_motor_temperature_prediction"
-    version_comment = """
-        We build the recommended single train/test split (250k test rows) and sub-sample it to at most 1M train and 250k test rows with `curation_recommendations.subsample_split_to_budget`, keeping whole profiles.
-    """
+    unique_name = "electric_motor_temperature_prediction"
     year = "2021"
     domain = "industry & manufacturing"
     source = "Kaggle"
@@ -43,6 +39,7 @@ class ElectricMotorTemperaturePrediction1m(AbstractCuratedDataset):
         - The original study also incorporates temporal connection within the session. We re-create a time-index (https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature/discussion/147446).
         - We also add the derived inputs used in the original study.
         - We also add the EWMA/WEMS features with window sizes of [500, 2000, 4000, 8000]. To avoid the problem of having an incorrect EWMA/WEMS state and since not all recording are warmed up (https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature/discussion/117319), we drop the first 500 samples (first span) of each profile to simulate such a warm-up.
+        - We take the full data (about 1.30M rows after the warm-up drop) with grouped 3-fold cross-validation over the 69 profiles, so every fold trains on about 860k rows. Until 2026-10 an `electric_motor_temperature_prediction_1m` version sub-sampled it to one 1M / 250k split.
     """
 
     # Task
@@ -51,9 +48,6 @@ class ElectricMotorTemperaturePrediction1m(AbstractCuratedDataset):
     group_on = "profile_id"
     group_labels = "per_sample"
     group_time_on = "profile_time_index"
-
-    # Splits
-    subsample_to_budget = True
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "measures_v2.csv")

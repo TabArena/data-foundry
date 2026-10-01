@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
@@ -47,8 +47,8 @@ class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        as_cat_type = list(df)
-        as_cat_type.remove("Age")
-        df[as_cat_type] = df[as_cat_type].astype("category")
         df = df.drop_duplicates()
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c not in ("Age", self.target)])

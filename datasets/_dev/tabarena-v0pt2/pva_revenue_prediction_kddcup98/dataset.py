@@ -6,7 +6,117 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+
+DATE_COLUMNS = [
+    "ADATE_2",
+    "ADATE_3",
+    "ADATE_4",
+    "ADATE_5",
+    "ADATE_6",
+    "ADATE_7",
+    "ADATE_8",
+    "ADATE_9",
+    "ADATE_10",
+    "ADATE_11",
+    "ADATE_12",
+    "ADATE_13",
+    "ADATE_14",
+    "ADATE_15",
+    "ADATE_16",
+    "ADATE_17",
+    "ADATE_18",
+    "ADATE_19",
+    "ADATE_20",
+    "ADATE_21",
+    "ADATE_22",
+    "ADATE_23",
+    "ADATE_24",
+    "RDATE_3",
+    "RDATE_4",
+    "RDATE_5",
+    "RDATE_6",
+    "RDATE_7",
+    "RDATE_8",
+    "RDATE_9",
+    "RDATE_10",
+    "RDATE_11",
+    "RDATE_12",
+    "RDATE_13",
+    "RDATE_14",
+    "RDATE_15",
+    "RDATE_16",
+    "RDATE_17",
+    "RDATE_18",
+    "RDATE_19",
+    "RDATE_20",
+    "RDATE_21",
+    "RDATE_22",
+    "RDATE_23",
+    "RDATE_24",
+    "MAXADATE",
+    "ODATEDW",
+    "MINRDATE",
+    "MAXRDATE",
+    "LASTDATE",
+    "FISTDATE",
+    "NEXTDATE",
+]
+"""Dates coded as YYMM numbers, parsed with a "19" century prefix."""
+
+INTEREST_COLUMNS = [
+    "COLLECT1",
+    "VETERANS",
+    "BIBLE",
+    "CATLG",
+    "HOMEE",
+    "PETS",
+    "CDPLAY",
+    "STEREO",
+    "PCOWNERS",
+    "PHOTO",
+    "CRAFTS",
+    "FISHER",
+    "GARDENIN",
+    "BOATS",
+    "WALKER",
+    "KIDSTUFF",
+    "CARDS",
+    "PLATES",
+]
+"""Interest flags: "Y" or blank in the raw data."""
+
+STRING_COLUMNS = [
+    "OSOURCE",
+    "STATE",
+    "ZIP",
+    "Title",
+    # RFA codes (not decoded as too many columns otherwise)
+    "RFA_2",
+    "RFA_3",
+    "RFA_4",
+    "RFA_5",
+    "RFA_6",
+    "RFA_7",
+    "RFA_8",
+    "RFA_9",
+    "RFA_10",
+    "RFA_11",
+    "RFA_12",
+    "RFA_13",
+    "RFA_14",
+    "RFA_15",
+    "RFA_16",
+    "RFA_17",
+    "RFA_18",
+    "RFA_19",
+    "RFA_20",
+    "RFA_21",
+    "RFA_22",
+    "RFA_23",
+    "RFA_24",
+]
+"""Free-text and high-cardinality code columns, kept as strings."""
 
 
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
@@ -204,67 +314,12 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         df.loc[dob_nan_mask, "DOB"] = 0
         df["DOB"] = df["DOB"].astype(float).astype(int).astype("string").str.zfill(4)
         df.loc[dob_nan_mask, "DOB"] = np.nan
-        df["DOB"] = pd.to_datetime("19" + df["DOB"], format="%Y%m")
-        # Make pd Dates (unclear if best preprocessing is not just int as in original data but this way we have the correct metadata of the col)
-        prom_dates = [
-            "ADATE_2",
-            "ADATE_3",
-            "ADATE_4",
-            "ADATE_5",
-            "ADATE_6",
-            "ADATE_7",
-            "ADATE_8",
-            "ADATE_9",
-            "ADATE_10",
-            "ADATE_11",
-            "ADATE_12",
-            "ADATE_13",
-            "ADATE_14",
-            "ADATE_15",
-            "ADATE_16",
-            "ADATE_17",
-            "ADATE_18",
-            "ADATE_19",
-            "ADATE_20",
-            "ADATE_21",
-            "ADATE_22",
-            "ADATE_23",
-            "ADATE_24",
-            "RDATE_3",
-            "RDATE_4",
-            "RDATE_5",
-            "RDATE_6",
-            "RDATE_7",
-            "RDATE_8",
-            "RDATE_9",
-            "RDATE_10",
-            "RDATE_11",
-            "RDATE_12",
-            "RDATE_13",
-            "RDATE_14",
-            "RDATE_15",
-            "RDATE_16",
-            "RDATE_17",
-            "RDATE_18",
-            "RDATE_19",
-            "RDATE_20",
-            "RDATE_21",
-            "RDATE_22",
-            "RDATE_23",
-            "RDATE_24",
-            "MAXADATE",
-            "ODATEDW",
-            "MINRDATE",
-            "MAXRDATE",
-            "LASTDATE",
-            "FISTDATE",
-            "NEXTDATE",
-        ]
+        df["DOB"] = "19" + df["DOB"]  # "19YYMM", parsed as a date in `_feature_types`
         df["FISTDATE"] = df["FISTDATE"].replace(0, np.nan)
-        for col in prom_dates:
+        for col in DATE_COLUMNS:
             nan_mask = df[col].isna()
             df.loc[nan_mask, col] = 1111
-            df[col] = pd.to_datetime("19" + df[col].astype(int).astype("string"), format="%Y%m")
+            df[col] = "19" + df[col].astype(int).astype("string")  # "19YYMM", parsed as a date in `_feature_types`
             df.loc[nan_mask, col] = np.nan
         # Update title map
         missing_title_in_data_dic = list(np.unique(df[~df["TCODE"].isin(title_code_map.keys())]["TCODE"]))
@@ -376,27 +431,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         df["PEPSTRFL"] = df["PEPSTRFL"].replace({" ": np.nan, "X": "Has PEP Star RFA Status"})
         df["GEOCODE2"] = df["GEOCODE2"].replace(" ", np.nan)
         # Resolve interests
-        y_n_map_list = [
-            "COLLECT1",
-            "VETERANS",
-            "BIBLE",
-            "CATLG",
-            "HOMEE",
-            "PETS",
-            "CDPLAY",
-            "STEREO",
-            "PCOWNERS",
-            "PHOTO",
-            "CRAFTS",
-            "FISHER",
-            "GARDENIN",
-            "BOATS",
-            "WALKER",
-            "KIDSTUFF",
-            "CARDS",
-            "PLATES",
-        ]
-        for col in y_n_map_list:
+        for col in INTEREST_COLUMNS:
             # Data dir says it is yes/no, but data is yes or missing, so I will go for missing as it is more general
             assert np.unique(df[col].dropna()).tolist() == [" ", "Y"]
             df[col] = df[col].replace({"Y": "Yes", " ": np.nan})
@@ -412,76 +447,48 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
                 "TARGET_D",
             ]
         )
-        # -- Dtypes
-        as_type_str = [
-            "OSOURCE",
-            "STATE",
-            "ZIP",
-            "Title",
-            # RFA codes (not decoded as too many columns otherwise)
-            "RFA_2",
-            "RFA_3",
-            "RFA_4",
-            "RFA_5",
-            "RFA_6",
-            "RFA_7",
-            "RFA_8",
-            "RFA_9",
-            "RFA_10",
-            "RFA_11",
-            "RFA_12",
-            "RFA_13",
-            "RFA_14",
-            "RFA_15",
-            "RFA_16",
-            "RFA_17",
-            "RFA_18",
-            "RFA_19",
-            "RFA_20",
-            "RFA_21",
-            "RFA_22",
-            "RFA_23",
-            "RFA_24",
-        ]
-        as_type_cat = [
-            "PVASTATE",
-            "MAILCODE",
-            "NOEXCH",
-            "RECINHSE",
-            "RECP3",
-            "RECPGVG",
-            "RECSWEEP",
-            "MDMAUD_recency",
-            "MDMAUD_frequency",
-            "MDMAUD_amount",
-            "MAJOR",
-            "DOMAIN_urbanicity",
-            "DOMAIN_ses",
-            "CLUSTER",
-            "CLUSTER2",
-            "AGEFLAG",
-            "HOMEOWNR",
-            "CHILD03",
-            "CHILD07",
-            "CHILD12",
-            "CHILD18",
-            "GENDER",
-            "DATASRCE",
-            "SOLIH",
-            "SOLP3",
-            "GEOCODE",
-            "GEOCODE2",
-            "LIFESRC",
-            "PEPSTRFL",
-            "HPHONE_D",
-            "RFA_2F",
-            "RFA_2A",
-            "TARGET_B",  # will be dropped later, but making sure it is valid
-        ] + y_n_map_list
-        for c in as_type_str:
+        for c in STRING_COLUMNS:
             df[c] = df[c].replace(" ", np.nan)
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
-        df[as_type_cat] = df[as_type_cat].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "PVASTATE",
+                "MAILCODE",
+                "NOEXCH",
+                "RECINHSE",
+                "RECP3",
+                "RECPGVG",
+                "RECSWEEP",
+                "MDMAUD_recency",
+                "MDMAUD_frequency",
+                "MDMAUD_amount",
+                "MAJOR",
+                "DOMAIN_urbanicity",
+                "DOMAIN_ses",
+                "CLUSTER",
+                "CLUSTER2",
+                "AGEFLAG",
+                "HOMEOWNR",
+                "CHILD03",
+                "CHILD07",
+                "CHILD12",
+                "CHILD18",
+                "GENDER",
+                "DATASRCE",
+                "SOLIH",
+                "SOLP3",
+                "GEOCODE",
+                "GEOCODE2",
+                "LIFESRC",
+                "PEPSTRFL",
+                "HPHONE_D",
+                "RFA_2F",
+                "RFA_2A",
+                *INTEREST_COLUMNS,
+            ],
+            string=STRING_COLUMNS,
+            # Make pd Dates (unclear if best preprocessing is not just int as in original data but this way we have the correct metadata of the col)
+            datetime=dict.fromkeys(["DOB", *DATE_COLUMNS], "%Y%m"),
+        )

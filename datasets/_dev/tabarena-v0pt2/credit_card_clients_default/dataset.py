@@ -52,7 +52,7 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         df = df.drop(columns=["ID"])
         target_feature = "DefaultOnPaymentNextMonth"
         df = df.rename(columns={"default payment next month": target_feature})
-        df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"}).astype("category")
+        df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

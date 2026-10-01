@@ -36,7 +36,11 @@ There are two halves to verification and they must not be confused:
 
 * **Automated** — `data_foundry.bundle_checks` proves the *mechanical* invariants (split indices,
   leakage across fold boundaries, dtypes, class coverage, the per-split row budget of at most 1M
-  train and 250k test rows, BibTeX syntax, export round-trip). Cheap, exhaustive, and already
+  train and 250k test rows for a v1 notebook, BibTeX syntax, export round-trip). For a v2 definition
+  `dataset check` swaps in the v2 split protocol (`src/data_foundry/v2/splits.py`): always 3 folds or at
+  least 3 temporal windows, at most 1M train and 500k test rows per split, and data over that budget only
+  as a sub-sampled `_1m` version (IID / grouped: the frame sampled to 1.5M rows; temporal: sampled per
+  window). Cheap, exhaustive, and already
   deterministic. **Run it; never re-derive its findings by eye.**
 * **Judgment** — provenance, scope, whether the split matches the real application, whether a
   feature would have been available at prediction time, whether the comments describe what the code

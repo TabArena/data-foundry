@@ -110,11 +110,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | arrival_date |
 
 <details>
-<summary>Feature types: 13 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 13 categorical, 0 string, 3 datetime</summary>
 
 - categorical (13): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `DepositType`, `Agent`, `Company`, `CustomerType`, `ReservationStatus`, `hotel`, `IsCanceled`
 - string (0): none
-- datetime (0): none
+- datetime (3): `arrival_date`, `ReservationStatusDate`, `booking_date`
 
 </details>
 

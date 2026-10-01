@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
@@ -55,9 +54,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         # dropping duplicated columns (by chance)
         duplicated = ["fr_Nhpyrrole", "MaxEStateIndex", "fr_benzene"]
         df = df.drop(columns=duplicated)
-        as_string_type = ["SMILES"]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(string=["SMILES"])

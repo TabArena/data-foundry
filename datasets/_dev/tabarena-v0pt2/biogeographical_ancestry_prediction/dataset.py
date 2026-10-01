@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
 
 
 class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
@@ -100,6 +100,7 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
         df["Population"] = df["Population"].map(column_map)
         # "NN" is a no-call (missing genotype), not a genotype
         df = df.replace("NN", np.nan)
-        for col in df.columns:
-            df[col] = df[col].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c != self.target])

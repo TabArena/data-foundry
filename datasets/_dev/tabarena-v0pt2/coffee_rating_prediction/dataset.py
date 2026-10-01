@@ -67,7 +67,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # Ensure date time
+        # Ensure date time (parsed here: the sort at the end needs the date)
         df["review_date"] = pd.to_datetime(df["review_date"], format="%B %Y")
         # Parse argton
         df[["agtron_lower", "agtron_upper"]] = df["agtron"].str.split("/", expand=True)
@@ -171,18 +171,6 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         )
         df["price_per_gram_in_usd"] = df["price_per_gram"] * df["currency_raw"].map(fx_to_usd)
         df = df.drop(columns=["unit_qty", "unit_raw", "price", "currency_raw", "price_per_gram"])
-        as_str_column = [
-            "roaster",
-            "name",
-            "location",
-            "origin",
-            "desc_1",
-            "desc_3",
-        ]
-        for c in as_str_column:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         # Drop columns
         df = df.drop(
             columns=[
@@ -210,4 +198,13 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
                 "roast",
                 "NT_price",
             ],
+            string=[
+                "roaster",
+                "name",
+                "location",
+                "origin",
+                "desc_1",
+                "desc_3",
+            ],
+            datetime={"review_date": "%B %Y"},
         )

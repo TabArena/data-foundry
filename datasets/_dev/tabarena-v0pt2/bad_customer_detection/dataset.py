@@ -46,7 +46,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
         df = raw
         target_feature = "bad_customer"
         df.rename(columns={"bad_client_target": target_feature}, inplace=True)
-        df[target_feature] = df[target_feature].map({0: "No", 1: "Yes"}).astype("category")
+        df[target_feature] = df[target_feature].map({0: "No", 1: "Yes"})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -77,10 +77,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.loc[~df["child_total_elom"].isna()]
-        date_cols = ["child_date", "child_dob", "child_enrolment_date", "obs_date", "pqa_date", "pra_date"]
-        for col in date_cols:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col], format="%d%b%Y", errors="coerce")
         leaky_cols = [col for col in df.columns if "result" in col]
         leaky_cols += [col for col in df.columns if "domain" in col]
         leaky_cols += [col for col in df.columns if "child_score" in col]
@@ -666,4 +662,5 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_selfcare_met",
                 "teacher_social_met",
             ),
+            datetime={"child_dob": "%d%b%Y"},
         )

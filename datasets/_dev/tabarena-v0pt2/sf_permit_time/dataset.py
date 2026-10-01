@@ -116,29 +116,10 @@ class SfPermitTime(AbstractCuratedDataset):
                 "Permit Number",  # meaningless ID given other info
             ]
         )
-        as_string_type = [
-            "Block",
-            "Lot",
-            "Street Number",
-            "Street Number Suffix",
-            "Street Name",
-            "Street Suffix",
-            "Unit",
-            "Unit Suffix",
-            "Description",
-            "Existing Use",
-            "Proposed Use",
-            "Existing Occupancy",
-            "Proposed Occupancy",
-            "Zipcode",
-        ]
-        as_datetime_type = ["Filed Date"]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
-        for c in as_datetime_type:
-            df[c] = pd.to_datetime(df[c])
+        # Whole numbers that pandas reads as int or as float (with missing values); as nullable integers their strings
+        # read "1625", "94116", not "1625.0", "94116.0".
+        for c in ["Street Number", "Unit", "Zipcode"]:
+            df[c] = df[c].astype("Int64")
         # Log scale the target
         df["DaysToIssue"] = np.log(df["DaysToIssue"])
         return df
@@ -161,4 +142,21 @@ class SfPermitTime(AbstractCuratedDataset):
                 "point_source",
                 "reroof",
             ],
+            string=[
+                "Block",
+                "Lot",
+                "Street Number",
+                "Street Number Suffix",
+                "Street Name",
+                "Street Suffix",
+                "Unit",
+                "Unit Suffix",
+                "Description",
+                "Existing Use",
+                "Proposed Use",
+                "Existing Occupancy",
+                "Proposed Occupancy",
+                "Zipcode",
+            ],
+            datetime=["Filed Date"],
         )

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -99,34 +99,39 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         # log scale target as in TabRed
         data = data.with_columns((pl.col("price_doc") / pl.col("full_sq")).log().alias("price_doc"))
         data = data.to_pandas()
-        cat_cols = [
-            "ID_railroad_station_walk",
-            "ID_railroad_station_avto",
-            "ID_big_road1",
-            "ID_big_road2",
-            "ID_railroad_terminal",
-            "ID_bus_terminal",
-            "ecology",
-            "material",
-            "state",
-            "sub_area",
-            "product_type",
-            "culture_objects_top_25",
-            "thermal_power_plant_raion",
-            "incineration_raion",
-            "oil_chemistry_raion",
-            "radiation_raion",
-            "railroad_terminal_raion",
-            "big_market_raion",
-            "nuclear_reactor_raion",
-            "detention_facility_raion",
-            "water_1line",
-            "big_road1_1line",
-            "railroad_1line",
-        ]
-        data[cat_cols] = data[cat_cols].astype("category")
         data = data.drop(columns=["0_6_all", "7_14_all", "id"])
         data = data[~(data["build_year"] > data["timestamp"].dt.year)]
         data = data.reset_index(drop=True)
         df = data
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                # 1-4; the one row with 33 (id 10092, likely a typo for 3) also has the range-coded build_year
+                # 20052009 and is dropped by the build-year filter
+                "state",
+                "ID_railroad_station_walk",
+                "ID_railroad_station_avto",
+                "ID_big_road1",
+                "ID_big_road2",
+                "ID_railroad_terminal",
+                "ID_bus_terminal",
+                "ecology",
+                "material",
+                "sub_area",
+                "product_type",
+                "culture_objects_top_25",
+                "thermal_power_plant_raion",
+                "incineration_raion",
+                "oil_chemistry_raion",
+                "radiation_raion",
+                "railroad_terminal_raion",
+                "big_market_raion",
+                "nuclear_reactor_raion",
+                "detention_facility_raion",
+                "water_1line",
+                "big_road1_1line",
+                "railroad_1line",
+            ],
+        )

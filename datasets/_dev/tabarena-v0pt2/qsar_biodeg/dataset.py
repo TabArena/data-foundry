@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class QsarBiodeg(AbstractCuratedDataset):
@@ -92,13 +92,15 @@ class QsarBiodeg(AbstractCuratedDataset):
             target_feature,
         ]
         df[target_feature] = df[target_feature].map({"RB": "Yes", "NRB": "No"})
-        cat_features = [
-            target_feature,
-            "Presence_CBr_At_Dist1",
-            "Presence_CCl_At_Dist3",
-            "N073_chemical_substructure",
-            "Presence_CBr_At_Dist4",
-            "C026_chemical_substructure",  # very likely categorical, but unclear
-        ]
-        df[cat_features] = df[cat_features].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "Presence_CBr_At_Dist1",
+                "Presence_CCl_At_Dist3",
+                "N073_chemical_substructure",
+                "Presence_CBr_At_Dist4",
+                "C026_chemical_substructure",  # very likely categorical, but unclear
+            ],
+        )

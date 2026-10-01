@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class AllstateClaimsSeverity(AbstractCuratedDataset):
@@ -54,14 +54,15 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        cat_features = [c for c in list(df) if c.startswith("cat")]
-        df[cat_features] = df[cat_features].astype("category")
         df = df.drop(columns=["id"])
         # Drop duplicates w/o target column
         df = df.drop_duplicates(subset=[c for c in df.columns if c != self.task_metadata.target_column_name])
         # log scale the target
         df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c.startswith("cat")])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

@@ -25,7 +25,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature
 notebook_path: datasets/beyond_iid/grouped/electric_motor_temperature_prediction/electric_motor_temperature_prediction.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/electric_motor_temperature_prediction_1m/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/electric_motor_temperature_prediction/dataset.py
 source_row: 700
 type_adapter_id: curation-record-v1
 ---

@@ -11,6 +11,18 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
 
+STRING_COLUMNS = [
+    "title",
+    "location",
+    "department",
+    "salary_range",
+    # HTML fragments
+    "company_profile",
+    "description",
+    "requirements",
+    "benefits",
+]
+
 
 def poster_groups(df: pd.DataFrame) -> pd.Series:
     """One group per poster: ads linked by the same company profile or a poster-specific masked contact.
@@ -303,21 +315,8 @@ class Emscad(AbstractCuratedDataset):
             17781,
         ]
         df = df[~df["job_id"].isin(filter_non_en_job)]
-        as_string_col = [
-            "title",
-            "location",
-            "department",
-            "salary_range",
-            # HTML fragments
-            "company_profile",
-            "description",
-            "requirements",
-            "benefits",
-        ]
-        for c in as_string_col:
-            nan_mask = df[c].isna() | (df[c].astype(str).str.strip() == "")  # " " and "\xa0" mean missing
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
+        for c in STRING_COLUMNS:
+            df[c] = df[c].mask(df[c].astype(str).str.strip() == "")  # " " and "\xa0" mean missing
         # After our preprocessing, there is just one entry without a description, so we drop it as well.
         df = df[~df["description"].isna()].reset_index(drop=True)
         # Group ads of the same poster (used for the splits only)
@@ -338,6 +337,7 @@ class Emscad(AbstractCuratedDataset):
                 "industry",
                 "function",
             ],
+            string=STRING_COLUMNS,
         )
 
 

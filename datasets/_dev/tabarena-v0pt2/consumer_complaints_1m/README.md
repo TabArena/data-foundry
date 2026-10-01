@@ -1,11 +1,11 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
-checksum: 54417f08461c3648a91c2e0662d9a95e21292b2305833b8e9242b9f4ff689b61
+checksum: 78a539e1a1f2afd3c10e385eb1873e73eb31c4e5b249dd6a410585e1e6c09c96
 build: null
 build_stale: false
 data:
-  n_rows: 1203139
+  n_rows: 1811452
   n_features: 12
   dtypes:
     category: 9
@@ -22,7 +22,7 @@ task:
   group_on: null
   group_labels: null
 splits:
-  n_repeats: 1
+  n_repeats: 3
   n_folds: 1
   random_state: 4267
   time_horizon: 3
@@ -32,7 +32,7 @@ splits:
     max: 1000000
   n_test:
     min: 203139
-    max: 203139
+    max: 307396
 bundle_checks:
   ok: true
   errors: []
@@ -49,9 +49,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,203,139 rows and 12 features. Source: GOV Website (2025).
+Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2025).
 
-Not built yet. The current definition gives checksum `54417f08461c3648a91c2e0662d9a95e21292b2305833b8e9242b9f4ff689b61`.
+Not built yet. The current definition gives checksum `78a539e1a1f2afd3c10e385eb1873e73eb31c4e5b249dd6a410585e1e6c09c96`.
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | cfpb2025ConsumerComplaintDatabase |
 | version of | consumer_complaints |
-| rows x columns | 1,203,139 x 13 |
+| rows x columns | 1,811,452 x 13 |
 | task.target | Company response to consumer |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -112,11 +112,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | Date received |
 
 <details>
-<summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 9 categorical, 3 string, 1 datetime</summary>
 
 - categorical (9): `Product`, `Sub-product`, `Issue`, `Sub-issue`, `State`, `Low population area`, `Tag: Older American`, `Tag: Servicemember`, `Company response to consumer`
-- string (0): none
-- datetime (0): none
+- string (3): `Company`, `Consumer complaint narrative`, `ZIP code`
+- datetime (1): `Date received`
 
 </details>
 
@@ -157,7 +157,7 @@ The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complain
 - We drop duplicates (2% of the data) as the data should not contain naturally occurring duplicates and this likely results from some overlap in data collection or data entry or faulty re-submissions. We investigated some of the duplicates and they appear to be identical complaints. There exist duplicates with different target labels, we also drop these as we have no way to determine what the correct label is (all copies are dropped).
 - We drop constant columns, the complaint ID, and when the complaint was send to the company (as it does not related to the target task)
 
-Version of `consumer_complaints`: We use the last 3 months (Oct-Dec 2025) as test data and randomly sub-sample the train to 1 million and test data 250k rows. We follow TabReD and use random sub-sampling. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+Version of `consumer_complaints`: We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
 
 ## Splits
 
@@ -168,14 +168,16 @@ We try to create splits that simulate a model deployed to solve the task.
         - Thus, we instead simulate a model that is refit every three months and then deployed.
         - This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
 
-        We create one test split by using all data from 2025-10-01 to 2025-12-31 as test split. This represents a refit horizon of 3 months.
-        We use all data before as training data.
+        We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
+        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
-1 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 rows. Prediction horizon: 3 months.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
 | 0 | 0 | 1000000 | 203139 | 2017-04-24 00:00:00 | 2025-09-30 00:00:00 | 2025-10-01 00:00:00 | 2025-12-31 00:00:00 |
+| 1 | 0 | 1000000 | 300917 | 2017-04-24 00:00:00 | 2025-06-30 00:00:00 | 2025-07-01 00:00:00 | 2025-09-30 00:00:00 |
+| 2 | 0 | 1000000 | 307396 | 2017-04-24 00:00:00 | 2025-03-31 00:00:00 | 2025-04-01 00:00:00 | 2025-06-30 00:00:00 |
 
 ## Bundle checks
 
@@ -195,19 +197,19 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Tag: Older American | category | 1.09685e+06 | 91.17 | 2 | False, True |
-| Tag: Servicemember | category | 1.09685e+06 | 91.17 | 2 | True, False |
-| Sub-issue | category | 77550 | 6.45 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
-| Low population area | category | 16942 | 1.41 | 2 | False, True |
+| Tag: Older American | category | 1.66225e+06 | 91.76 | 2 | False, True |
+| Tag: Servicemember | category | 1.66225e+06 | 91.76 | 2 | True, False |
+| Sub-issue | category | 104145 | 5.75 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
+| Low population area | category | 24312 | 1.34 | 2 | False, True |
 | Product | category | 0 | 0 | 14 | Credit reporting or other personal consumer reports, Credit reporting, credit r… |
-| Sub-product | category | 10 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
+| Sub-product | category | 18 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
 | Issue | category | 0 | 0 | 93 | Incorrect information on your report, Improper use of your report, Problem with… |
 | State | category | 0 | 0 | 50 | TX, FL, CA, GA, NY, IL, NC, PA, NJ, MD |
 | Company response to consumer | category | 0 | 0 | 3 | Closed with explanation, Closed with non-monetary relief, Closed with monetary … |
-| Date received | datetime64[ns] | 0 | 0 | 3169 | 2025-01-17 00:00:00, 2025-12-09 00:00:00, 2025-12-02 00:00:00, 2025-11-12 00:00… |
-| Consumer complaint narrative | string | 0 | 0 | 850707 | My credit reports are inaccurate. These inaccuracies are causing creditors to d… |
-| Company | string | 0 | 0 | 4359 | EQUIFAX, INC., TRANSUNION INTERMEDIATE HOLDINGS, INC., Experian Information Sol… |
-| ZIP code | string | 0 | 0 | 6844 | XXXXX, 770XX, 604XX, 30349, 303XX, 752XX, 331XX, 070XX, 631XX, 751XX |
+| Date received | datetime64[ns] | 0 | 0 | 3169 | 2025-01-17 00:00:00, 2025-08-14 00:00:00, 2025-08-12 00:00:00, 2025-08-06 00:00… |
+| Consumer complaint narrative | string | 0 | 0 | 1.18203e+06 | You have reported inaccurate and unauthorized accounts on my credit report, whi… |
+| Company | string | 0 | 0 | 4628 | EQUIFAX, INC., TRANSUNION INTERMEDIATE HOLDINGS, INC., Experian Information Sol… |
+| ZIP code | string | 0 | 0 | 6844 | XXXXX, 770XX, 604XX, 30349, 752XX, 331XX, 631XX, 303XX, 283XX, 30331 |
 
 </details>
 
@@ -215,9 +217,9 @@ Accepted on purpose:
 
 | Company response to consumer | count | pct |
 |---|---|---|
-| Closed with explanation | 793706 | 65.97 |
-| Closed with non-monetary relief | 382709 | 31.81 |
-| Closed with monetary relief | 26724 | 2.22 |
+| Closed with explanation | 1175533 | 64.89 |
+| Closed with non-monetary relief | 599172 | 33.08 |
+| Closed with monetary relief | 36747 | 2.03 |
 
 ### Numeric features
 
@@ -230,63 +232,63 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Company | 1 | EQUIFAX, INC. | 27092 | 22.52 |
-| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 25846 | 21.48 |
-| Company | 3 | Experian Information Solutions Inc. | 24724 | 20.55 |
-| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 2057 | 1.71 |
-| Company | 5 | JPMORGAN CHASE & CO. | 1824 | 1.52 |
-| Company response to consumer | 1 | Closed with explanation | 79358 | 65.96 |
-| Company response to consumer | 2 | Closed with non-monetary relief | 38254 | 31.8 |
-| Company response to consumer | 3 | Closed with monetary relief | 2702 | 2.25 |
-| Consumer complaint narrative | 1 | My credit reports are inaccurate. These inaccuracies are causing... | 957 | 0.8 |
-| Consumer complaint narrative | 2 | You have reported inaccurate and unauthorized accounts on my cre... | 887 | 0.74 |
-| Consumer complaint narrative | 3 | In accordance with the Fair Credit Reporting act. The List of ac... | 842 | 0.7 |
-| Consumer complaint narrative | 4 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 441 | 0.37 |
-| Consumer complaint narrative | 5 | Upon reviewing my credit report, I have identified inaccurate ac... | 436 | 0.36 |
-| Date received | 1 | 2025-01-17 00:00:00 | 553 | 0.46 |
-| Date received | 2 | 2025-12-09 00:00:00 | 443 | 0.37 |
-| Date received | 3 | 2025-12-02 00:00:00 | 407 | 0.34 |
-| Date received | 4 | 2025-11-12 00:00:00 | 391 | 0.32 |
-| Date received | 5 | 2025-01-18 00:00:00 | 384 | 0.32 |
-| Issue | 1 | Incorrect information on your report | 41243 | 34.28 |
-| Issue | 2 | Improper use of your report | 22618 | 18.8 |
-| Issue | 3 | Problem with a company's investigation into an existing problem | 11846 | 9.85 |
-| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 7486 | 6.22 |
-| Issue | 5 | Attempts to collect debt not owed | 5677 | 4.72 |
-| Low population area | 1 | False | 93963 | 78.1 |
-| Low population area | 2 | True | 24617 | 20.46 |
-| Low population area | 3 | <NA> | 1734 | 1.44 |
-| Product | 1 | Credit reporting or other personal consumer reports | 59330 | 49.31 |
-| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 24140 | 20.06 |
-| Product | 3 | Debt collection | 12325 | 10.24 |
-| Product | 4 | Checking or savings account | 5815 | 4.83 |
-| Product | 5 | Money transfer, virtual currency, or money service | 3642 | 3.03 |
-| State | 1 | TX | 15652 | 13.01 |
-| State | 2 | FL | 14397 | 11.97 |
-| State | 3 | CA | 12815 | 10.65 |
-| State | 4 | GA | 9304 | 7.73 |
-| State | 5 | NY | 6962 | 5.79 |
-| Sub-issue | 1 | Information belongs to someone else | 24005 | 19.95 |
-| Sub-issue | 2 | Reporting company used your report improperly | 17703 | 14.71 |
-| Sub-issue | 3 | Their investigation did not fix an error on your report | 12195 | 10.14 |
-| Sub-issue | 4 | <NA> | 7784 | 6.47 |
-| Sub-issue | 5 | Account status incorrect | 6508 | 5.41 |
-| Sub-product | 1 | Credit reporting | 82778 | 68.8 |
-| Sub-product | 2 | General-purpose credit card or charge card | 5489 | 4.56 |
-| Sub-product | 3 | Checking account | 4846 | 4.03 |
-| Sub-product | 4 | I do not know | 3861 | 3.21 |
-| Sub-product | 5 | Other debt | 2684 | 2.23 |
-| Tag: Older American | 1 | <NA> | 109659 | 91.14 |
-| Tag: Older American | 2 | False | 7206 | 5.99 |
-| Tag: Older American | 3 | True | 3449 | 2.87 |
-| Tag: Servicemember | 1 | <NA> | 109659 | 91.14 |
-| Tag: Servicemember | 2 | True | 8078 | 6.71 |
-| Tag: Servicemember | 3 | False | 2577 | 2.14 |
-| ZIP code | 1 | XXXXX | 1734 | 1.44 |
-| ZIP code | 2 | 770XX | 389 | 0.32 |
-| ZIP code | 3 | 604XX | 359 | 0.3 |
-| ZIP code | 4 | 30349 | 254 | 0.21 |
-| ZIP code | 5 | 303XX | 253 | 0.21 |
+| Company | 1 | EQUIFAX, INC. | 42554 | 23.49 |
+| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 40297 | 22.25 |
+| Company | 3 | Experian Information Solutions Inc. | 38431 | 21.22 |
+| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 2951 | 1.63 |
+| Company | 5 | JPMORGAN CHASE & CO. | 2564 | 1.42 |
+| Company response to consumer | 1 | Closed with explanation | 117615 | 64.93 |
+| Company response to consumer | 2 | Closed with non-monetary relief | 59925 | 33.08 |
+| Company response to consumer | 3 | Closed with monetary relief | 3605 | 1.99 |
+| Consumer complaint narrative | 1 | You have reported inaccurate and unauthorized accounts on my cre... | 1724 | 0.95 |
+| Consumer complaint narrative | 2 | My credit reports are inaccurate. These inaccuracies are causing... | 1335 | 0.74 |
+| Consumer complaint narrative | 3 | In accordance with the Fair Credit Reporting act. The List of ac... | 1322 | 0.73 |
+| Consumer complaint narrative | 4 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 932 | 0.51 |
+| Consumer complaint narrative | 5 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 871 | 0.48 |
+| Date received | 1 | 2025-01-17 00:00:00 | 667 | 0.37 |
+| Date received | 2 | 2025-08-14 00:00:00 | 571 | 0.32 |
+| Date received | 3 | 2025-08-12 00:00:00 | 553 | 0.31 |
+| Date received | 4 | 2025-08-06 00:00:00 | 539 | 0.3 |
+| Date received | 5 | 2025-08-15 00:00:00 | 539 | 0.3 |
+| Issue | 1 | Incorrect information on your report | 64471 | 35.59 |
+| Issue | 2 | Improper use of your report | 35780 | 19.75 |
+| Issue | 3 | Problem with a company's investigation into an existing problem | 18940 | 10.46 |
+| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 9391 | 5.18 |
+| Issue | 5 | Attempts to collect debt not owed | 8554 | 4.72 |
+| Low population area | 1 | False | 141847 | 78.31 |
+| Low population area | 2 | True | 36900 | 20.37 |
+| Low population area | 3 | <NA> | 2398 | 1.32 |
+| Product | 1 | Credit reporting or other personal consumer reports | 99088 | 54.7 |
+| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 30057 | 16.59 |
+| Product | 3 | Debt collection | 18347 | 10.13 |
+| Product | 4 | Checking or savings account | 8144 | 4.5 |
+| Product | 5 | Credit card | 5246 | 2.9 |
+| State | 1 | TX | 24545 | 13.55 |
+| State | 2 | FL | 21732 | 12 |
+| State | 3 | CA | 19028 | 10.5 |
+| State | 4 | GA | 14491 | 8 |
+| State | 5 | NY | 10255 | 5.66 |
+| Sub-issue | 1 | Information belongs to someone else | 38217 | 21.1 |
+| Sub-issue | 2 | Reporting company used your report improperly | 28403 | 15.68 |
+| Sub-issue | 3 | Their investigation did not fix an error on your report | 17937 | 9.9 |
+| Sub-issue | 4 | <NA> | 10271 | 5.67 |
+| Sub-issue | 5 | Account information incorrect | 10196 | 5.63 |
+| Sub-product | 1 | Credit reporting | 128115 | 70.73 |
+| Sub-product | 2 | General-purpose credit card or charge card | 7710 | 4.26 |
+| Sub-product | 3 | Checking account | 6673 | 3.68 |
+| Sub-product | 4 | I do not know | 6146 | 3.39 |
+| Sub-product | 5 | Other debt | 3858 | 2.13 |
+| Tag: Older American | 1 | <NA> | 166233 | 91.77 |
+| Tag: Older American | 2 | False | 10144 | 5.6 |
+| Tag: Older American | 3 | True | 4768 | 2.63 |
+| Tag: Servicemember | 1 | <NA> | 166233 | 91.77 |
+| Tag: Servicemember | 2 | True | 11297 | 6.24 |
+| Tag: Servicemember | 3 | False | 3615 | 2 |
+| ZIP code | 1 | XXXXX | 2398 | 1.32 |
+| ZIP code | 2 | 770XX | 630 | 0.35 |
+| ZIP code | 3 | 604XX | 600 | 0.33 |
+| ZIP code | 4 | 30349 | 415 | 0.23 |
+| ZIP code | 5 | 752XX | 355 | 0.2 |
 
 </details>
 

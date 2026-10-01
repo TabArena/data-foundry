@@ -98,10 +98,10 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 3 string, 0 datetime</summary>
 
 - categorical (2): `sub_category`, `category`
-- string (0): none
+- string (3): `scheme_name`, `amc_name`, `fund_manager`
 - datetime (0): none
 
 </details>

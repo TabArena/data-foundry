@@ -1,7 +1,7 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
-checksum: 164f19da40248076df7d67ecea02d46992ab6fc7e308d1a4744fd8565941c2e2
+checksum: dfef6e633b868d96170fdaa565f88c62b8642afe58ba485e6ae85978a085258c
 build: null
 build_stale: false
 data:
@@ -53,7 +53,7 @@ decisions: []
 
 Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2025).
 
-Not built yet. The current definition gives checksum `164f19da40248076df7d67ecea02d46992ab6fc7e308d1a4744fd8565941c2e2`.
+Not built yet. The current definition gives checksum `dfef6e633b868d96170fdaa565f88c62b8642afe58ba485e6ae85978a085258c`.
 
 ## Files in this folder
 
@@ -112,11 +112,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | Filed Date |
 
 <details>
-<summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 14 categorical, 14 string, 1 datetime</summary>
 
 - categorical (14): `Permit Type Definition`, `DescriptionIsStandardPhrase`, `Structural Notification`, `Voluntary Soft-Story Retrofit`, `Fire Only Permit`, `TIDF Compliance`, `Existing Construction Type Description`, `Proposed Construction Type Description`, `Site Permit`, `Application Submission Method`, `supervisor_district`, `neighborhoods_analysis_boundaries`, `point_source`, `reroof`
-- string (0): none
-- datetime (0): none
+- string (14): `Block`, `Lot`, `Street Number`, `Street Number Suffix`, `Street Name`, `Street Suffix`, `Unit`, `Unit Suffix`, `Description`, `Existing Use`, `Proposed Use`, `Existing Occupancy`, `Proposed Occupancy`, `Zipcode`
+- datetime (1): `Filed Date`
 
 </details>
 
@@ -213,17 +213,17 @@ Accepted on purpose:
 | Location_Latitude | float64 | 0 | 0 | 39863 | 37.794, 37.7899, 37.7285, 37.7898, 37.793, 37.7926, 37.7946, 37.7766, 37.7896, … |
 | Unit Suffix | string | 98874 | 99.03 | 117 | A, PARCEL A, B, C, BLDG 1, D, E, COMML, C102, PARCEL B |
 | Street Number Suffix | string | 98590 | 98.74 | 12 | A, B, V, C, D, E, K, P, L, G |
-| Unit | string | 86871 | 87 | 452 | 0.0, 1.0, 101.0, 2.0, 3.0, 4.0, 201.0, 534.0, 5.0, 401.0 |
+| Unit | string | 86871 | 87 | 452 | 0, 1, 101, 2, 3, 4, 201, 534, 5, 401 |
 | Proposed Use | string | 5713 | 5.72 | 93 | 1 family dwelling, apartments, office, 2 family dwelling, retail sales, food/be… |
 | Proposed Occupancy | string | 4315 | 4.32 | 1768 | R-3, R-2, B, B,M, B,M,S-2, R-2,B, B,R-2, M, R-2,M, M,B |
 | Existing Use | string | 4002 | 4.01 | 90 | 1 family dwelling, apartments, office, 2 family dwelling, retail sales, food/be… |
 | Existing Occupancy | string | 3588 | 3.59 | 1585 | R-3, R-2, B, B,M, M, B,M,S-2, R-2,B, B,R-2, M,B, R-2,M |
 | Street Suffix | string | 1844 | 1.85 | 17 | St, Av, Bl, Dr, Wy, Tr, Ct, Pl, Ln, Rd |
 | Description | string | 9 | 0.01 | 96828 | reroofing, soft story retrofit per sfebc chapter 4d engineering criteria 2016 c… |
-| Zipcode | string | 7 | 0.01 | 27 | 94110.0, 94105.0, 94103.0, 94109.0, 94114.0, 94117.0, 94107.0, 94118.0, 94115.0… |
+| Zipcode | string | 7 | 0.01 | 27 | 94110, 94105, 94103, 94109, 94114, 94117, 94107, 94118, 94115, 94123 |
 | Block | string | 0 | 0 | 4813 | 3708, 3710, 3721, 3713, 3707, 3709, 3717, 3735, 0289, 3720 |
 | Lot | string | 0 | 0 | 881 | 001, 007, 008, 009, 003, 004, 006, 002, 005, 012 |
-| Street Number | string | 0 | 0 | 4612 | 1.0, 101.0, 100.0, 50.0, 201.0, 555.0, 300.0, 2.0, 350.0, 333.0 |
+| Street Number | string | 0 | 0 | 4612 | 1, 101, 100, 50, 201, 555, 300, 2, 350, 333 |
 | Street Name | string | 0 | 0 | 1599 | Market, California, Mission, Montgomery, Geary, 03rd, Folsom, Howard, Bush, 02nd |
 
 </details>

@@ -106,11 +106,11 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | QuoteConversion_Flag |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
 
 - categorical (1): `QuoteConversion_Flag`
 - string (0): none
-- datetime (0): none
+- datetime (1): `Original_Quote_Date`
 
 </details>
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
 
 
 class Musk(AbstractCuratedDataset):
@@ -63,10 +63,13 @@ class Musk(AbstractCuratedDataset):
         df["class"] = df["class"].map({0: "non-musk", 1: "musk"})
         # stable anonymous ids (random uuid4 ids changed the data and the grouped splits on every run)
         df["molecule_name"] = anonymize_ids(df["molecule_name"])
-        as_cat_type = ["molecule_name", "class"]
-        df[as_cat_type] = df[as_cat_type].astype("category")
+        # cast before the sort below, which orders by category
+        df["molecule_name"] = df["molecule_name"].astype("category")
         df = df.sample(frac=1, random_state=42).sort_values(by="molecule_name").reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["molecule_name"])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

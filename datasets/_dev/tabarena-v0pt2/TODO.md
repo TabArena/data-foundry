@@ -2,9 +2,6 @@
 
 Open work for this folder. When an item is done, remove it here and log the change in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Needs a decision
-
-- [x] **`hotel_booking_demand`: `splits_temporal_leakage`**: resolved 2026-09-30 (training now uses only bookings arriving before each prediction point; see its record).
 
 ## Verify the migration (runs the data)
 
@@ -22,9 +19,10 @@ Open work for this folder. When an item is done, remove it here and log the chan
 - [ ] **Run `_prepare_raw_files` once from scratch** for `acquire_valued_shoppers_challenge` and
   `home_credit_default_stability_1m` (moved from `run_large_data_preprocessing.py` into the classes; checked so far
   only for acquire, against the existing `merged_input_data.parquet`).
+- [ ] **Re-check the 4 IID / grouped datasets the v2 split protocol changes** (`dataset check`, look at the new
+  splits; the 7 temporal ones are done): `mercari_price_suggestion` and `electric_motor_temperature_prediction` (now
+  taken fully; their folders still hold the old `_1m` v1 notebook, which no longer matches, so skip
+  `check_equivalence.py` and remove the notebook after the check), `amex_non_iid_1m` and `sepsis_prediction_1m`. The
+  README of `sepsis_prediction_1m` is stale until then.
 - [ ] **Build the v0.2 containers** (`dataset build`, new UUIDs) once the definitions are checked.
 
-## Clean-up after the check
-
-- [ ] **Move column drops and casts by hand** where the migrator could not lift a cast into `_feature_types`
-  (casts before code that depends on the dtype), and replace the list-and-loop string casts with `string=[...]`.

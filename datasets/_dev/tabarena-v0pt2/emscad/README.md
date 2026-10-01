@@ -109,10 +109,10 @@ Only curators run `build`, when the dataset ships.
 | task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 10 categorical, 8 string, 0 datetime</summary>
 
 - categorical (10): `poster_group`, `telecommuting`, `has_company_logo`, `has_questions`, `employment_type`, `required_experience`, `required_education`, `industry`, `function`, `fraudulent`
-- string (0): none
+- string (8): `title`, `location`, `department`, `salary_range`, `company_profile`, `description`, `requirements`, `benefits`
 - datetime (0): none
 
 </details>

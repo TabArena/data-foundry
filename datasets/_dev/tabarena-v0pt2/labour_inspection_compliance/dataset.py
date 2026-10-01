@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
@@ -98,16 +97,6 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
                 "Industry Main Area Code",
             ]
         )
-        as_string_type = [
-            "Checklist Content",
-            "Industry Main Area",
-            "Industry Sub Area",
-            "County",
-        ]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         # Drop duplicated columns
         df = df.loc[:, ~df.T.duplicated()]
         return df
@@ -120,5 +109,11 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
                 "IsRegisteredEmploymentregister",
                 "Currency code",
                 "Fiscal accounting type",
+            ],
+            string=[
+                "Checklist Content",
+                "Industry Main Area",
+                "Industry Sub Area",
+                "County",
             ],
         )

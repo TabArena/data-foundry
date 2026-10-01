@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class Diabetes130Us(AbstractCuratedDataset):
@@ -141,51 +141,50 @@ class Diabetes130Us(AbstractCuratedDataset):
         label_mask = df[target_feature] == "<30"
         df.loc[label_mask, target_feature] = "Yes"
         df.loc[~label_mask, target_feature] = "No"
-        cat_features = [
-            "race",
-            "gender",
-            "age",
-            "weight",
-            "admission_type_id",
-            "discharge_disposition_id",
-            "admission_source_id",
-            "payer_code",
-            "medical_specialty",
-            "diag_1",
-            "diag_2",
-            "diag_3",
-            "max_glu_serum",
-            "A1Cresult",
-            "metformin",
-            "repaglinide",
-            "nateglinide",
-            "chlorpropamide",
-            "glimepiride",
-            "acetohexamide",
-            "glipizide",
-            "glyburide",
-            "tolbutamide",
-            "pioglitazone",
-            "rosiglitazone",
-            "acarbose",
-            "miglitol",
-            "troglitazone",
-            "tolazamide",
-            "examide",
-            "citoglipton",
-            "insulin",
-            "glyburide-metformin",
-            "glipizide-metformin",
-            "glimepiride-pioglitazone",
-            "metformin-rosiglitazone",
-            "metformin-pioglitazone",
-            "change",
-            "diabetesMed",
-            "EarlyReadmission",
-        ]
         # "?" (race, weight, payer code, specialty, diagnoses) and "NULL" (the ID mappings) mean missing
         df = df.mask(df.isin(["?", "NULL"]))
-        df[cat_features] = df[cat_features].astype("category")
         # Drop constant features
         df = df.drop(columns=["examide", "citoglipton", "glimepiride-pioglitazone"])
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "race",
+                "gender",
+                "age",
+                "weight",
+                "admission_type_id",
+                "discharge_disposition_id",
+                "admission_source_id",
+                "payer_code",
+                "medical_specialty",
+                "diag_1",
+                "diag_2",
+                "diag_3",
+                "max_glu_serum",
+                "A1Cresult",
+                "metformin",
+                "repaglinide",
+                "nateglinide",
+                "chlorpropamide",
+                "glimepiride",
+                "acetohexamide",
+                "glipizide",
+                "glyburide",
+                "tolbutamide",
+                "pioglitazone",
+                "rosiglitazone",
+                "acarbose",
+                "miglitol",
+                "troglitazone",
+                "tolazamide",
+                "insulin",
+                "glyburide-metformin",
+                "glipizide-metformin",
+                "metformin-rosiglitazone",
+                "metformin-pioglitazone",
+                "change",
+                "diabetesMed",
+            ],
+        )

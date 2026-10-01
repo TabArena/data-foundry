@@ -105,9 +105,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | VCF0004 |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `VCF0702`
+- categorical (2): `VCF0110`, `VCF0702`
 - string (0): none
 - datetime (0): none
 

@@ -120,7 +120,7 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
             "sales_to_fixed_assets",
             target_feature,
         ]
-        df[target_feature] = df[target_feature].map({"1": "Yes", "0": "No"}).astype("category")
+        df[target_feature] = df[target_feature].map({"1": "Yes", "0": "No"})
         # conflicting duplicates drop (without target column)
         df = df.drop_duplicates(
             subset=[c for c in df.columns if c != self.task_metadata.target_column_name], keep=False

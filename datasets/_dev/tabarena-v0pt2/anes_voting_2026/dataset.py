@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -522,7 +522,7 @@ class AnesVoting2026(AbstractCuratedDataset):
             "VCF9275",
         ]
         df = df.drop(columns=post_election_missed)
-        # Assign cat features:
+        # Assign cat features (cast here: the missing-value loop below would turn the integer codes into floats):
         cat_cols = ["VCF0110"]
         for col in cat_cols:
             df[col] = df[col].astype("category")
@@ -546,8 +546,9 @@ class AnesVoting2026(AbstractCuratedDataset):
         ]
         for col in num_cols:
             df[col] = pd.to_numeric(df[col])
-        # Would actually require more careful audition
-        for col in df.select_dtypes(include="object").columns:
-            df[col] = df[col].astype("category")
         df = df.sort_values(by="VCF0004").reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # VCF0110 is cast in `_clean` already. Every text column as categorical would require more careful audition.
+        return FeatureTypes(categorical=["VCF0110", *df.select_dtypes(include="object").columns])

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
@@ -89,8 +89,9 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        as_cat_col = list(df.columns)
-        as_cat_col.remove("age")  # age is numeric, and has some missing values, so
-        df[as_cat_col] = df[as_cat_col].astype("category")
         df["age"] = df["age"].replace("?", np.nan).astype(float)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # age is numeric, and has some missing values
+        return FeatureTypes(categorical=[c for c in df.columns if c not in ("age", self.target)])

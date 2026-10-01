@@ -51,7 +51,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         df, df_y = raw["df"], raw["df_y"]
         target_feature = "Appetency"
-        df[target_feature] = df_y[0].astype("category")
+        df[target_feature] = df_y[0]
         empty_cols = [
             "Var8",
             "Var15",

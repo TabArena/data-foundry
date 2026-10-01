@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
@@ -64,8 +64,8 @@ class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset
                 "motor_UPDRS",
             ]
         )
-        as_cat_type = ["sex", "subject#"]
-        df[as_cat_type] = df[as_cat_type].astype("category")
+        # cast here: the groupby and the sort below run on the categorical subject ids
+        df["subject#"] = df["subject#"].astype("category")
 
         def select_rows(x):
             # Anchor times
@@ -85,6 +85,9 @@ class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset
         df = df.groupby("subject#", group_keys=False).apply(select_rows).reset_index(drop=True)
         df = df.sample(frac=1, random_state=42).sort_values(by=["subject#", "test_time"]).reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["sex", "subject#"])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

@@ -69,22 +69,24 @@ class RossmannStoreSales(AbstractCuratedDataset):
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         train, store = raw["train"], raw["store"]
         df = pd.merge(train, store, on="Store", how="left")
-        df["Date"] = pd.to_datetime(df["Date"])
+        df["Date"] = pd.to_datetime(df["Date"])  # parsed here: the sort below runs on the dates
         df = df[df["Open"] == 1].copy()
         df = df.drop(columns=["Open"])
-        for col in ["Store", "DayOfWeek"]:
-            df[col] = df[col].astype("category")
         # Drop customer information. TODO: Enable split-specific data storage and feature engineering to utilize this information.
         df = df.drop(columns=["Customers"])
-        df["StateHoliday"] = df["StateHoliday"].astype(str).astype("category")
+        df["StateHoliday"] = df["StateHoliday"].astype(str)
         df = df.sort_values("Date").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
+                "Store",
+                "DayOfWeek",
+                "StateHoliday",
                 "StoreType",
                 "Assortment",
                 "PromoInterval",
             ],
+            datetime=["Date"],
         )

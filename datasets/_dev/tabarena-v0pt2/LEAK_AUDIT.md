@@ -81,6 +81,12 @@ BeyondArena); BeyondArena means BeyondArena only.
   v0.2 results are not comparable with earlier results.
 - Every dataset is now a v2 definition (`dataset.py` with a generated `README.md`); see Appendix B for the other
   changes that move splits.
+- Every dataset gets several folds: 3-fold cross-validation, or at least 3 temporal windows, with at most 1M train
+  and 500k test rows per split. Only data over that budget is sub-sampled (IID and grouped frames to 1.5M rows,
+  temporal data per window), so the largest datasets now have 3 folds instead of one 1M / 250k split. `mercari_price_suggestion` and
+  `electric_motor_temperature_prediction` are taken in full. `lending_club` keeps only the 36-month loans issued up
+  to 2015, the only loans with complete labels (the source holds only loans finished by 2018Q4), and tests on the
+  quarters 2015 Q2-Q4. Not built yet.
 - New datasets get the same checks: the leak probes ([`scripts/v2/leak_probes.py`](../../../scripts/v2/leak_probes.py))
   and the audit's precedents ([`leak_checks.md`](../../../.claude/skills/check-candidate/references/leak_checks.md))
   are part of the curation skills.
@@ -107,8 +113,10 @@ BeyondArena); BeyondArena means BeyondArena only.
   `mercari_price_suggestion_1m`, `amex_non_iid_1m`, `sepsis_prediction_1m` and the 7 temporal `_1m` datasets.
 - Temporal splits follow one convention: as many splits as an IID task of that size, train ≥ 50%, at least about 50
   test rows per window, and the newest window is split 0.
-- Sub-sampled versions are their own `<name>_1m` datasets (10); the IID and grouped ones sub-sample whole groups to
-  1M train and 250k test rows.
+- Sub-sampled versions are their own `<name>_1m` datasets (8, for data over the row budget). IID and grouped frames
+  are sampled to 1.5M rows (whole groups for grouped data) before the 3 folds are built; temporal data is sampled per
+  window (each test window up to 500k rows, each train side a random 1M of all earlier rows) (v2 split protocol,
+  2026-10-01; the earlier rule was one 1M / 250k split from 1.25M rows on).
 - Stable ids: `asp_potassco_classification`, `sat11_hand_algo_runtime`, `video_game_fps_prediction`,
   `cardiotocography` and `musk` drew random ids, so their data, and the grouped splits, changed on every run. They now
   use hashed ids.

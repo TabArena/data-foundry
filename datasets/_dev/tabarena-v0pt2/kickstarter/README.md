@@ -104,11 +104,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | created_at |
 
 <details>
-<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 4 string, 3 datetime</summary>
 
 - categorical (5): `prelaunch_activated`, `main_category`, `sub_category`, `country`, `state`
-- string (0): none
-- datetime (0): none
+- string (4): `blurb`, `name`, `creator_name`, `location_displayable_name`
+- datetime (3): `created_at`, `launched_at`, `deadline`
 
 </details>
 

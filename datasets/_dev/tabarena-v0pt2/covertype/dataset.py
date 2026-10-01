@@ -58,11 +58,6 @@ class Covertype(AbstractCuratedDataset):
         We create stratified grouped 3-fold split, always leaving one area out of the training data.
     """
 
-    accepted_check_warnings = {
-        "splits_test_over_budget": "One leave-one-area-out test fold holds a whole wilderness area of 257,015 rows, "
-        "3% over the 250k budget; capping it would cut the area the fold tests on.",
-    }
-
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [
             "Elevation",

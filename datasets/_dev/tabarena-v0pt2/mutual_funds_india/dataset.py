@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
@@ -49,15 +48,6 @@ class MutualFundsIndia(AbstractCuratedDataset):
         df = raw
         df = df.drop(columns=["alpha", "beta", "sd", "sharpe", "sortino", "returns_5yr", "returns_1yr", "rating"])
         df = df[df["returns_3yr"].notna()]
-        as_string_type = [
-            "scheme_name",
-            "amc_name",
-            "fund_manager",
-        ]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -65,5 +55,10 @@ class MutualFundsIndia(AbstractCuratedDataset):
             categorical=[
                 "sub_category",
                 "category",
+            ],
+            string=[
+                "scheme_name",
+                "amc_name",
+                "fund_manager",
             ],
         )

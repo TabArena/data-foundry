@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
@@ -310,26 +310,28 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
             c.replace(" ", "_").replace(")", "").replace("(", "").replace("'", "").replace("/", "")
             for c in data.columns
         ]
-        as_cat_type = [
-            "Marital_status",
-            "Application_mode",
-            "Course",
-            "Daytimeevening_attendance",
-            "Previous_qualification",
-            "Nationality",
-            "Mothers_qualification",
-            "Fathers_qualification",
-            "Mothers_occupation",
-            "Fathers_occupation",
-            "Displaced",
-            "Educational_special_needs",
-            "Debtor",
-            "Tuition_fees_up_to_date",
-            "Gender",
-            "Scholarship_holder",
-            "International",
-            target_feature,
-        ]
-        data[as_cat_type] = data[as_cat_type].astype("category")
         df = data
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "Marital_status",
+                "Application_mode",
+                "Course",
+                "Daytimeevening_attendance",
+                "Previous_qualification",
+                "Nationality",
+                "Mothers_qualification",
+                "Fathers_qualification",
+                "Mothers_occupation",
+                "Fathers_occupation",
+                "Displaced",
+                "Educational_special_needs",
+                "Debtor",
+                "Tuition_fees_up_to_date",
+                "Gender",
+                "Scholarship_holder",
+                "International",
+            ],
+        )

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class WidsDiabetesMellitus(AbstractCuratedDataset):
@@ -83,46 +82,43 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
             "d1_diasbp_max",
             "heart_rate_apache",
         ]
-        new_clipped_features = []
         for f in clipped_features:
             min_val = df[f].min()
             max_val = df[f].max()
             clip_f = f + "_clipped"
-            new_clipped_features.append(clip_f)
             df[clip_f] = (df[f] == min_val) | (df[f] == max_val)
-        as_cat_type = [
-            "hospital_id",
-            "icu_id",
-            "elective_surgery",
-            "ethnicity",
-            "gender",
-            "hospital_admit_source",
-            "icu_admit_source",
-            "icu_stay_type",
-            "icu_type",
-            "apache_post_operative",
-            "arf_apache",
-            "intubated_apache",
-            "gcs_unable_apache",
-            # We keep medical scales as int (as they are ordinal in nature)
-            "ventilated_apache",
-            "aids",
-            "cirrhosis",
-            "hepatic_failure",
-            "immunosuppression",
-            "leukemia",
-            "lymphoma",
-            "solid_tumor_with_metastasis",
-            "diabetes_mellitus",
-        ] + new_clipped_features
-        as_string_type = [
-            # Codes for medical terms
-            "apache_2_diagnosis",
-            "apache_3j_diagnosis",
-        ]
-        for c in as_string_type:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
-        df[as_cat_type] = df[as_cat_type].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=[
+                "hospital_id",
+                "icu_id",
+                "elective_surgery",
+                "ethnicity",
+                "gender",
+                "hospital_admit_source",
+                "icu_admit_source",
+                "icu_stay_type",
+                "icu_type",
+                "apache_post_operative",
+                "arf_apache",
+                "intubated_apache",
+                "gcs_unable_apache",
+                # We keep medical scales as int (as they are ordinal in nature)
+                "ventilated_apache",
+                "aids",
+                "cirrhosis",
+                "hepatic_failure",
+                "immunosuppression",
+                "leukemia",
+                "lymphoma",
+                "solid_tumor_with_metastasis",
+                *[c for c in df.columns if c.endswith("_clipped")],
+            ],
+            string=[
+                # Codes for medical terms
+                "apache_2_diagnosis",
+                "apache_3j_diagnosis",
+            ],
+        )

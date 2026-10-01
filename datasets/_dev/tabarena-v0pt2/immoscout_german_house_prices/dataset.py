@@ -70,16 +70,6 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         df = df[df["Living_space"] >= 10]
         # Normalize target
         df["LogPrice"] = np.log(df["Price"])
-        as_string_dtype = [
-            "Energy_source",
-            "State",
-            "City",
-            "Place",
-        ]
-        for c in as_string_dtype:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         # Drop cols
         df = df.drop(
             columns=[
@@ -103,5 +93,11 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
                 "Energy_certificate_type",
                 "Energy_efficiency_class",
                 "Garagetype",
+            ],
+            string=[
+                "Energy_source",
+                "State",
+                "City",
+                "Place",
             ],
         )

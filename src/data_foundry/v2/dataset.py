@@ -44,10 +44,8 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, ClassVar
 
-import numpy as np
 import pandas as pd
 
-from data_foundry import curation_recommendations
 from data_foundry.bundle_checks import (
     SEVERITY_ORDER,
     TABARENA_DEFAULT_METRICS,
@@ -57,7 +55,6 @@ from data_foundry.bundle_checks import (
     verify_saved_container,
 )
 from data_foundry.curation_container import CuratedContainer
-from data_foundry.curation_recommendations import SPLIT_RANDOM_STATE, TemporalUnit
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     DatasetMetadata,
@@ -65,10 +62,9 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadata,
     resolve_warehouse_dir,
 )
+from data_foundry.v2 import splits as protocol
 from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, cast_dtypes, order_rows
-
-Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
-"""Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, TemporalSplits
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -138,86 +134,6 @@ class FeatureTypes:
         return dict(self.datetime) if isinstance(self.datetime, dict) else dict.fromkeys(self.datetime)
 
 
-@dataclass(frozen=True)
-class TemporalSplits:
-    """Declarative expanding-window temporal splits (see
-    :func:`~data_foundry.curation_recommendations.get_temporal_window_splits`).
-
-    Test windows walk back from the newest data, train is every earlier row, and split 0 is the newest
-    window. Examples from the collection::
-
-        TemporalSplits(window=5, unit="days", n_windows=5)                    # the last 5 x 5 days
-        TemporalSplits(window=42, unit="days", n_windows=3, gap=1)            # 6-week windows, 1-day gap
-        TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))     # one calendar year each
-        TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
-        TemporalSplits(window=1, unit="years", cutoffs=("2016",))             # one window; `_1m` caps it
-
-    With a calendar unit and no explicit ``time_horizon``, the horizon is ``window`` ``unit``.
-    """
-
-    window: int | None = 1
-    unit: TemporalUnit = "days"
-    n_windows: int | None = None
-    step: int | None = None
-    gap: int = 0
-    cutoffs: tuple | None = None
-    min_train_fraction: float | None = None
-
-    def splits(self, df: pd.DataFrame, time_on: str) -> Splits:
-        """Build the splits for ``df`` (sorted by ``time_on``)."""
-        return curation_recommendations.get_temporal_window_splits(
-            dataset=df,
-            time_on=time_on,
-            window=self.window,
-            unit=self.unit,
-            n_windows=self.n_windows,
-            step=self.step,
-            gap=self.gap,
-            cutoffs=list(self.cutoffs) if self.cutoffs is not None else None,
-            min_train_fraction=self.min_train_fraction,
-        )
-
-    def describe(self, n_built: int, *, derived_window: int | None = None) -> str:
-        """The splits comment for these windows (``derived_window``: the length ``window=None`` resolved to)."""
-        unit = {"unique": "time values", "rows": "rows"}.get(self.unit, self.unit)
-        window = self.window if self.window is not None else derived_window
-        size = f"{window} {unit}" if window is not None else "from each cutoff to the end of the data"
-        if self.cutoffs is not None:
-            where = f"starting at {', '.join(str(c) for c in sorted(self.cutoffs, reverse=True))}"
-        else:
-            where = "walking back from the newest data"
-        text = f"Expanding-window temporal splits: {n_built} test window(s) of {size}, {where}, newest first"
-        if self.step is not None and self.window is not None and self.step != self.window:
-            text += f", moving by {self.step} {unit}"
-        text += "; train is all earlier data"
-        if self.gap:
-            text += f" up to a gap of {self.gap} {unit}"
-        return text + "."
-
-    @property
-    def horizon(self) -> tuple[int, str] | None:
-        """``(time_horizon, time_horizon_unit)`` implied by a calendar window, else None."""
-        if self.window is None or self.unit not in ("days", "weeks", "months", "years"):
-            return None
-        return self.window, self.unit
-
-
-@dataclass
-class SplitPlan:
-    """What a custom :meth:`AbstractCuratedDataset._make_splits` may return instead of bare splits.
-
-    Attributes:
-        splits: The outer splits as positions in ``df`` (or in the input frame if ``df`` is None).
-        df: The frame the splits index into, when the split step reduces or reorders it (sub-sampling).
-            None keeps the input frame.
-        comment: The splits comment, for a comment computed from the data (else ``splits_comment``).
-    """
-
-    splits: Splits
-    df: pd.DataFrame | None = None
-    comment: str | None = None
-
-
 @dataclass
 class Decision:
     """One curation decision with the evidence behind it, rendered into the generated ``README.md``.
@@ -280,7 +196,7 @@ class AbstractCuratedDataset(ABC):
 
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
-    """Snake-case name; equal to the folder name. A sub-sampled version ends in ``_1m``."""
+    """Snake-case name; equal to the folder name. A version sub-sampled to the row budget ends in ``_1m``."""
     year: ClassVar[str]
     """Year the data was published."""
     domain: ClassVar[str]
@@ -303,7 +219,8 @@ class AbstractCuratedDataset(ABC):
     curation_comments: ClassVar[str] = ""
     """The audit trail: the starting artifact, then one bullet per non-obvious decision."""
     version_of: ClassVar[str | None] = None
-    """For a sub-sampled ``_1m`` version: the ``unique_name`` it was made from (its raw files are read)."""
+    """For a ``_1m`` version (a frame above 1.5M rows, sub-sampled): the ``unique_name`` it was made from (its raw
+    files are read)."""
     version_comment: ClassVar[str | None] = None
     """For a version: how it differs from the dataset it was made from."""
     raw_data_from: ClassVar[str | None] = None
@@ -342,7 +259,10 @@ class AbstractCuratedDataset(ABC):
     time_horizon_unit: ClassVar[str | None] = None
     """``days``, ``weeks``, ``months``, ``years`` or ``steps``."""
     subsample_to_budget: ClassVar[bool] = False
-    """``True`` for a ``_1m`` version: cap the single train/test split to 1M train / 250k test rows."""
+    """``True`` for a ``_1m`` version. IID / grouped: sub-sample a frame above 1.5M rows to 1.5M (whole groups,
+    stratified) before splitting, so every fold trains on at most 1M and tests on at most 500k rows. Temporal: sample
+    per window (each test window up to 500k rows, each train side a random 1M of all earlier rows) and keep only the
+    rows a split uses (:mod:`data_foundry.v2.splits`)."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -399,10 +319,10 @@ class AbstractCuratedDataset(ABC):
     def _make_splits(self, df: pd.DataFrame) -> Splits | SplitPlan:
         """Build the outer splits for ``df`` (already in its final row order).
 
-        The default covers the collection's standard cases: ``temporal_splits`` for a temporal task, else
-        the recommended IID or grouped split, capped to the row budget for a ``_1m`` version. Override it
-        only for a split none of these express, and return a :class:`SplitPlan` when the split step
-        reduces the frame or computes its comment.
+        The default is the v2 protocol (:mod:`data_foundry.v2.splits`): ``temporal_splits`` for a temporal
+        task, else the recommended IID or grouped 3-fold cross-validation, on a frame sub-sampled to 1.5M rows
+        for a ``_1m`` version. Override it only for a split none of these express, and return a
+        :class:`SplitPlan` when the split step reduces the frame or computes its comment.
         """
         return self.default_splits(df)
 
@@ -578,77 +498,104 @@ class AbstractCuratedDataset(ABC):
 
     # --- splits -------------------------------------------------------------------------------------
     def default_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """The default of :meth:`_make_splits`: declarative temporal windows or the recommended split."""
-        task = self.task_metadata
-        if task.time_on is not None:
-            if self.temporal_splits is None:
-                msg = f"{type(self).__name__}: a temporal task needs `temporal_splits` or `_make_splits`."
-                raise DatasetDefinitionError(msg)
-            splits = self.temporal_splits.splits(df, task.time_on)
-            derived = None
-            if self.temporal_splits.window is None and self.temporal_splits.cutoffs is None:
-                first_test = splits[0][0][1]
-                derived = (
-                    len(first_test)
-                    if self.temporal_splits.unit == "rows"
-                    else df[task.time_on].iloc[first_test].nunique()
-                )
-            comment = self.temporal_splits.describe(len(splits), derived_window=derived)
-            if not self.subsample_to_budget:
-                return SplitPlan(splits=splits, comment=comment)
-            train_idx, test_idx = _single_split(self, splits)
-            df, train_idx, test_idx = curation_recommendations.subsample_temporal(
-                df=df,
-                train_idx=train_idx,
-                test_idx=test_idx,
-                stratify_on=task.stratify_on,
-                seed=self.SPLIT_RANDOM_STATE,
-            )
-            comment += " The split is sub-sampled to the row budget of 1M train and 250k test rows."
-            df, train_idx, test_idx = _resort_by_time(df, task.time_on, train_idx, test_idx)
-            df = _drop_unused_categories(df)
-            return SplitPlan(splits={0: {0: (train_idx, test_idx)}}, df=df, comment=comment)
+        """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.v2.splits`).
 
-        n_repeats, n_splits, test_size = curation_recommendations.get_recommended_splits_dimensions(
-            dataset=df,
-            group_on=task.group_on,
-            group_labels=task.group_labels,
-        )
-        if task.group_on is None:
-            splits = curation_recommendations.get_recommended_iid_splits(
-                dataset=df,
-                n_repeats=n_repeats,
-                n_splits=n_splits,
-                test_size=test_size,
-                stratify_on=task.stratify_on,
-                random_state=self.SPLIT_RANDOM_STATE,
-            )
-        else:
-            with _quiet():
-                splits = curation_recommendations.get_recommended_grouped_splits(
-                    dataset=df,
-                    n_repeats=n_repeats,
-                    n_splits=n_splits,
-                    group_on=task.group_on,
-                    test_size=test_size,
-                    stratify_on=task.stratify_on,
-                    group_labels=task.group_labels,
-                    target_on=task.target_column_name,
-                    random_state=self.SPLIT_RANDOM_STATE,
+        The splits are the declarative temporal windows, or the recommended IID / grouped 3-fold cross-validation,
+        and no split trains on more than 1M or tests on more than 500k rows. A ``_1m`` version of IID or grouped
+        data first sub-samples the frame to 1.5M rows (whole groups, stratified); a temporal ``_1m`` version samples
+        per window instead (:func:`~data_foundry.v2.splits.sample_temporal_splits`) and keeps only the rows a split
+        uses.
+        """
+        task = self.task_metadata
+        temporal = task.time_on is not None
+        frame_sampled = self.subsample_to_budget and not temporal
+        if frame_sampled:
+            if len(df) <= protocol.FRAME_ROW_BUDGET:
+                msg = (
+                    f"{type(self).__name__}: the frame has {len(df):,} rows, within the "
+                    f"{protocol.FRAME_ROW_BUDGET:,}-row budget. Take the dataset fully: drop `subsample_to_budget` "
+                    "and the `_1m` version."
                 )
-        if not self.subsample_to_budget:
-            return SplitPlan(splits=splits, comment=DEFAULT_SPLITS_COMMENT)
-        train_idx, test_idx = _single_split(self, splits)
-        df, train_idx, test_idx = curation_recommendations.subsample_split_to_budget(
-            df=df,
-            train_idx=train_idx,
-            test_idx=test_idx,
+                raise DatasetDefinitionError(msg)
+            df = protocol.subsample_frame(
+                df, group_on=task.group_on, stratify_on=task.stratify_on, random_state=self.SPLIT_RANDOM_STATE
+            )
+
+        splits, comment = self._window_splits(df) if temporal else (self._cross_validation(df), DEFAULT_SPLITS_COMMENT)
+
+        train_budget, test_budget = (
+            protocol.rows_text(protocol.TRAIN_ROW_BUDGET),
+            protocol.rows_text(protocol.TEST_ROW_BUDGET),
+        )
+        if self.subsample_to_budget and temporal:
+            df, splits, trimmed = protocol.sample_temporal_splits(
+                df, splits, stratify_on=task.stratify_on, random_state=self.SPLIT_RANDOM_STATE
+            )
+            if not trimmed:
+                msg = (
+                    f"{type(self).__name__}: no split side exceeds the row budget ({train_budget} train, {test_budget} "
+                    "test rows). Take the dataset fully: drop `subsample_to_budget` and the `_1m` version."
+                )
+                raise DatasetDefinitionError(msg)
+            comment += (
+                f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
+                f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the rows "
+                "a split uses."
+            )
+            return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
+
+        splits, capped = protocol.cap_splits(
+            df,
+            splits,
             group_on=task.group_on,
             stratify_on=task.stratify_on,
             random_state=self.SPLIT_RANDOM_STATE,
         )
-        comment = "Default single train/test split, sub-sampled to the row budget of 1M train and 250k test rows."
-        return SplitPlan(splits={0: {0: (train_idx, test_idx)}}, df=_drop_unused_categories(df), comment=comment)
+        budget = f"every split trains on at most {train_budget} and tests on at most {test_budget} rows"
+        if frame_sampled:
+            whole = " (whole groups)" if task.group_on is not None else ""
+            comment += (
+                f" The frame is sub-sampled to {protocol.rows_text(protocol.FRAME_ROW_BUDGET)} rows{whole}; {budget}."
+            )
+            return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
+        if capped:
+            comment += f" Split sides over the row budget are trimmed: {budget}."
+        return SplitPlan(splits=splits, comment=comment)
+
+    def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
+        """The declarative temporal windows on ``df`` and their generated comment."""
+        if self.temporal_splits is None:
+            msg = f"{type(self).__name__}: a temporal task needs `temporal_splits` or `_make_splits`."
+            raise DatasetDefinitionError(msg)
+        time_on = self.task_metadata.time_on
+        splits = self.temporal_splits.splits(df, time_on)
+        derived = None
+        if self.temporal_splits.window is None and self.temporal_splits.cutoffs is None:
+            first_test = splits[0][0][1]
+            derived = len(first_test) if self.temporal_splits.unit == "rows" else df[time_on].iloc[first_test].nunique()
+        return splits, self.temporal_splits.describe(len(splits), derived_window=derived)
+
+    def _cross_validation(self, df: pd.DataFrame) -> Splits:
+        """The recommended IID or grouped 3-fold cross-validation on ``df``."""
+        task = self.task_metadata
+        n_repeats, n_folds = protocol.recommended_dimensions(df, group_on=task.group_on, group_labels=task.group_labels)
+        if task.group_on is None:
+            return protocol.iid_splits(
+                df,
+                n_repeats=n_repeats,
+                n_folds=n_folds,
+                stratify_on=task.stratify_on,
+                random_state=self.SPLIT_RANDOM_STATE,
+            )
+        return protocol.grouped_splits(
+            df,
+            n_repeats=n_repeats,
+            n_folds=n_folds,
+            group_on=task.group_on,
+            group_labels=task.group_labels,
+            stratify_on=task.stratify_on,
+            random_state=self.SPLIT_RANDOM_STATE,
+        )
 
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
         """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan."""
@@ -731,9 +678,12 @@ class AbstractCuratedDataset(ABC):
     def _run_bundle_checks(self, container: CuratedContainer, *, verbose: bool) -> BundleCheckReport:
         accepted = tuple(self.accepted_check_warnings)
         report = run_bundle_checks(container, ignore=accepted, verbose=False)
-        extra = [r for r in [*self._definition_checks(), *self._extra_checks(container)] if r.slug not in accepted]
-        if extra:
-            report.results = sorted([*report.results, *extra], key=lambda r: SEVERITY_ORDER[r.severity])
+        # The shared checks judge the v1 split protocol; the v2 protocol checks replace those findings.
+        kept = [r for r in report.results if r.slug not in protocol.REPLACED_V1_CHECKS]
+        own = [*self._definition_checks(), *protocol.protocol_checks(container), *self._extra_checks(container)]
+        extra = [r for r in own if r.slug not in accepted]
+        if extra or len(kept) != len(report.results):
+            report.results = sorted([*kept, *extra], key=lambda r: SEVERITY_ORDER[r.severity])
         if verbose:
             print(report.summary())
         return report
@@ -812,17 +762,6 @@ def _source(cls: type, name: str) -> str | None:
         return None
 
 
-def _resort_by_time(
-    df: pd.DataFrame, time_on: str, train_idx: list[int], test_idx: list[int]
-) -> tuple[pd.DataFrame, list[int], list[int]]:
-    """Sort a sub-sampled frame by time again and move the split positions along."""
-    order = np.argsort(df[time_on].to_numpy(), kind="stable")
-    new_position = np.empty(len(order), dtype=int)
-    new_position[order] = np.arange(len(order))
-    df = df.iloc[order].reset_index(drop=True)
-    return df, sorted(new_position[train_idx].tolist()), sorted(new_position[test_idx].tolist())
-
-
 def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
     """Drop category levels that no longer occur once a frame is sub-sampled (dtypes are set on the full data)."""
     df = df.copy()
@@ -830,16 +769,6 @@ def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
         if isinstance(df[col].dtype, pd.CategoricalDtype):
             df[col] = df[col].cat.remove_unused_categories()
     return df
-
-
-def _single_split(ds: AbstractCuratedDataset, splits: Splits) -> tuple[list[int], list[int]]:
-    if len(splits) != 1 or len(splits[0]) != 1:
-        msg = (
-            f"{type(ds).__name__}: `subsample_to_budget` needs a single train/test split, got {len(splits)} "
-            f"repeat(s) x {len(splits[0])} fold(s). Only a dataset with 1.25M rows or more is sub-sampled."
-        )
-        raise DatasetDefinitionError(msg)
-    return splits[0][0]
 
 
 def _horizon(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:

@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_recommendations import get_recommended_splits_dimensions
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan
 
 
@@ -92,7 +91,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
             + "-"
             + df["ArrivalDateDayOfMonth"].astype(str)
         )
-        df["ReservationStatusDate"] = pd.to_datetime(df["ReservationStatusDate"])
         # Drop all duplicates
         df = df.drop_duplicates().reset_index(drop=True)
         df = df.loc[df["LeadTime"] > 0].reset_index(drop=True)
@@ -121,14 +119,10 @@ class HotelBookingDemand(AbstractCuratedDataset):
                 "ReservationStatus",
                 "hotel",
             ],
+            datetime=["arrival_date", "ReservationStatusDate", "booking_date"],
         )
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        n_repeats, n_splits, none_or_test_size = get_recommended_splits_dimensions(  # if the data was IID
-            dataset=df,
-        )
-        print(f"Recommended splits: n_repeats={n_repeats}, n_splits={n_splits}, test_size={none_or_test_size}")
-
         date_col = self.task_metadata.time_on
         target_col = self.task_metadata.target_column_name
 

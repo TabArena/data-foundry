@@ -13,7 +13,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     unique_name = "sepsis_prediction_1m"
     version_of = "sepsis_prediction"
     version_comment = """
-        We build the recommended single train/test split (250k test rows) and sub-sample it to at most 1M train and 250k test rows with `curation_recommendations.subsample_split_to_budget`, keeping whole patients.
+        We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
     """
     year = "2019"
     domain = "medical & healthcare"

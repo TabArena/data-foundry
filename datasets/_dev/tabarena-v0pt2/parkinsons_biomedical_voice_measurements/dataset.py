@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class ParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
@@ -60,10 +60,13 @@ class ParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
         df[["patient_id", "session_number"]] = df["name"].str.rsplit("_", n=1, expand=True)
         df["session_number"] = df["session_number"].astype(int)
         df = df.drop(columns=["name"])
-        as_cat_type = ["status", "patient_id"]
-        df[as_cat_type] = df[as_cat_type].astype("category")
+        # cast before the sort below, which orders by category
+        df["patient_id"] = df["patient_id"].astype("category")
         df = df.sample(frac=1, random_state=42).sort_values(by=["patient_id", "session_number"]).reset_index(drop=True)
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["patient_id"])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

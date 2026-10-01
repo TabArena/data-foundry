@@ -103,11 +103,11 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | time_index |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 19 string, 3 datetime</summary>
 
-- categorical (0): none
-- string (0): none
-- datetime (0): none
+- categorical (1): `Zip Region`
+- string (19): `Summary`, `Type`, `Heating`, `Cooling`, `Parking`, `Region`, `Elementary School`, `Middle School`, `High School`, `Flooring`, `Heating features`, `Cooling features`, `Appliances included`, `Laundry features`, `Parking features`, `City`, `Address`, `Zip`, `Bedrooms_description`
+- datetime (3): `Year built`, `Listed On (%Y-%m-%d)`, `Last Sold On (%Y-%m-%d)`
 
 </details>
 

@@ -159,21 +159,11 @@ class Kickstarter(AbstractCuratedDataset):
         df["location_displayable_name"] = df["location"].apply(lambda x: json.loads(x)["displayable_name"])
         df = df.drop(columns=["location"])
         # Dtypes
-        as_string_cols = [
-            "blurb",
-            "name",
-            "creator_name",
-            "location_displayable_name",
-        ]
         as_date_cols = [
             "created_at",
             "launched_at",
             "deadline",
         ]
-        for c in as_string_cols:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         for c in as_date_cols:
             df[c] = pd.to_datetime(df[c], unit="s")
         # Drop duplicates
@@ -190,4 +180,11 @@ class Kickstarter(AbstractCuratedDataset):
                 "sub_category",
                 "country",
             ],
+            string=[
+                "blurb",
+                "name",
+                "creator_name",
+                "location_displayable_name",
+            ],
+            datetime=["created_at", "launched_at", "deadline"],
         )

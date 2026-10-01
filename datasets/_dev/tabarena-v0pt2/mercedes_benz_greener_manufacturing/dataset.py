@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
@@ -76,7 +76,8 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         df = df[df["X4"] == "d"]
         df = df.drop(columns=["X5", "X8", "X4", "X3", "X6", "X11"])
         df = df.rename(columns={"ID": "time_index"})
-        # All X features are binary/categorical
-        as_cat_type = [c for c in list(df) if c.startswith("X")]
-        df[as_cat_type] = df[as_cat_type].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # All X features are binary/categorical
+        return FeatureTypes(categorical=[c for c in df.columns if c.startswith("X")])

@@ -1,4 +1,4 @@
-"""Curated dataset definition for `lending_club_1m` (data-foundry v2). Evidence: README.md."""
+"""Curated dataset definition for `lending_club` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
@@ -8,13 +8,9 @@ import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits, drop_columns
 
 
-class LendingClub1m(AbstractCuratedDataset):
+class LendingClub(AbstractCuratedDataset):
     # Dataset
-    unique_name = "lending_club_1m"
-    version_of = "lending_club"
-    version_comment = """
-        To sub-sample this dataset, we only take the first year to obtain 814751 train and 276431.
-    """
+    unique_name = "lending_club"
     year = "2018"
     domain = "finance"
     source = "Kaggle"
@@ -55,7 +51,8 @@ class LendingClub1m(AbstractCuratedDataset):
         - We reverse the name change of "revenue" back to "annual_inc".
         - We also create a sec_app_fico_n like the fico_n from anz-Guerrero et al. (2025).
         - We drop rows where "application_type" is missing as these rows have consistent missing values across features and likely represent some data loading artifact.
-        - We drop the joint-applicant fields (sec_app_*, *_joint): they are only filled from 2017 on, and this version keeps the loans up to 2016, so they are empty here.
+        - We keep only the 36-month loans issued up to 2015, the only loans whose labels are complete. The data of Sanz-Guerrero et al. (2025) holds the loans that had finished (fully paid or charged off) by the 2018Q4 snapshot of the original data, so a loan still being repaid is missing. In accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans are finished up to 2015Q4, but only 57-93% per quarter in 2016; of the 60-month loans only 63-97% per quarter are finished from 2014 on. The missing loans are mostly good ones, so later or longer loans would leave the labels skewed towards early defaults and early payoffs (default rate among finished loans: 15-16% in 2013, 20% in 2015, 24-26% in 2016). We drop the 60-month loans (about a third of the 2014-2015 volume) and all loans issued from 2016 on. `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
+        - We drop the joint-applicant fields (sec_app_*, *_joint): they are only filled from 2017 on, so they are empty for the loans we keep.
     """
 
     # Task
@@ -67,14 +64,13 @@ class LendingClub1m(AbstractCuratedDataset):
     splits_comment = """
         We try to create splits that simulate a model deployed to solve the task.
 
-        The official data is updated monthly but has not enough data per month to create large enough test
-        splits. We opt for simulating a model that is refit every year to obtain a robust test set instead.
-        This introduces the unrealistic downside of data shift across a year that would not exist in a
-        real-world model. We create 1 test split (2016). We use all data before the test year as training
-        data. The split is sub-sampled to the row budget of 1M train and 250k test rows.
+        The official data is updated monthly, and a month of loans is a small test set. We simulate a model
+        that is refit every quarter: 3 test windows, the quarters 2015 Q2, Q3 and Q4 (newest first), each with
+        all loans issued before the quarter as training data. The outcome of a loan issued shortly before a
+        window was only known later (by 2018), so the train side holds labels a deployed model would not have
+        had yet; a gap of a full 36-month term would remove this but leave too little data.
     """
-    temporal_splits = TemporalSplits(window=1, unit="years", cutoffs=("2016",))
-    subsample_to_budget = True
+    temporal_splits = TemporalSplits(window=3, unit="months", n_windows=3)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         original_df = pd.read_csv(raw_dir / "accepted_2007_to_2018Q4.csv.gz")
@@ -93,6 +89,7 @@ class LendingClub1m(AbstractCuratedDataset):
         new_features_from_original = original_df[
             [
                 "id",
+                "term",  # only to keep the 36-month loans (see `_clean`); dropped, not a feature
                 # known when the loan is granted, so it can be used as a feature without data leakage.
                 #   This, however, would create a different task, in that we want to train a model that the company uses after their own risk assessment but before granting the loan.
                 #   Given that these values and grades are often determined by an internal model of the company, they might also introduce an unknown bias.
@@ -198,16 +195,20 @@ class LendingClub1m(AbstractCuratedDataset):
         del new_features_from_original, original_df
         # Rows with a missing application_type have consistently missing features (a loading artefact).
         df = df[~df["application_type"].isna()]
-        # The joint-applicant fields (sec_app_*, *_joint) are only filled from 2017 on, and this version keeps
-        # the loans up to 2016 (see the splits), so here they are empty.
+        # Labels are complete only for the 36-month loans issued up to 2015: the data holds the loans that had
+        # finished by the 2018Q4 snapshot, so later or longer loans are missing while they were being repaid.
         issued = pd.to_datetime(df["issue_d"], format="%b-%Y")
-        empty_before_2017 = [c for c in df.columns if df.loc[issued.dt.year < 2017, c].isna().all()]
+        df = df[(df["term"].str.strip() == "36 months") & (issued < "2016-01-01")]
+        # The joint-applicant fields (sec_app_*, *_joint) are only filled from 2017 on, so here they are empty.
+        empty = [c for c in df.columns if df[c].isna().all()]
         df = drop_columns(
             df,
             [
                 "id",  # meaningless identifier
                 "experience_c",  # constant after preprocessing
-                *empty_before_2017,
+                "term",  # used only for the selection above
+                "disbursement_method",  # a single value ("Cash") for the loans we keep
+                *empty,
             ],
         )
         return df
@@ -217,7 +218,6 @@ class LendingClub1m(AbstractCuratedDataset):
             categorical=(
                 "home_ownership_n",
                 "application_type",
-                "disbursement_method",
                 "emp_length",
                 "Default",
                 "purpose",

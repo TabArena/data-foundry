@@ -49,7 +49,6 @@ class ClockProteinToxicity(AbstractCuratedDataset):
         df = raw
         target_feature = "Toxic"
         df = df.rename(columns={"Class": target_feature})
-        df[target_feature] = df[target_feature].astype("category")
         # drop duplicated
         duplicate_columns = [
             "nT10Ring",

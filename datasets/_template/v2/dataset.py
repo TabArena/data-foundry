@@ -31,8 +31,8 @@ class ClassName(AbstractCuratedDataset):
 
         - TODO(verify): what was dropped and why (identifiers, leaking features, constant columns).
     """
-    # A sub-sampled `<name>_1m` version also sets: version_of = "<name>", version_comment = "...",
-    # subsample_to_budget = True.
+    # Data over the row budget ships as a sub-sampled `<name>_1m` version, which also sets: version_of = "<name>",
+    # version_comment = "...", subsample_to_budget = True.
 
     # Task (the metric defaults to roc_auc / log_loss / rmse; stratifying on a classification target is the default)
     target = "TODO"

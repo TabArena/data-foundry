@@ -99,9 +99,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | EarlyReadmission |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 37 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `EarlyReadmission`
+- categorical (37): `race`, `gender`, `age`, `weight`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `max_glu_serum`, `A1Cresult`, `metformin`, `repaglinide`, `nateglinide`, `chlorpropamide`, `glimepiride`, `acetohexamide`, `glipizide`, `glyburide`, `tolbutamide`, `pioglitazone`, `rosiglitazone`, `acarbose`, `miglitol`, `troglitazone`, `tolazamide`, `insulin`, `glyburide-metformin`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
 - string (0): none
 - datetime (0): none
 

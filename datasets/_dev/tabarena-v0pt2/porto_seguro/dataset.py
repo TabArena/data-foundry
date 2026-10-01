@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -61,13 +61,12 @@ class PortoSeguro(AbstractCuratedDataset):
         df = df.drop(columns=calc_features)
         # Drop index
         df = df.drop(columns=["id"])
-        # Dtypes
-        as_cat_type = [col for col in df.columns if col.endswith(("cat", "bin"))]
-        df[as_cat_type] = df[as_cat_type].astype("category")
-        df[self.task_metadata.target_column_name] = df[self.task_metadata.target_column_name].astype("category")
         # Drop duplicates w/o target
         df = df.drop_duplicates(subset=[col for col in df.columns if col != self.task_metadata.target_column_name])
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[col for col in df.columns if col.endswith(("cat", "bin"))])
 
 
 # MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

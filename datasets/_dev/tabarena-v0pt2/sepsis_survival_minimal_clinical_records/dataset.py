@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
@@ -54,9 +54,12 @@ class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         # Reverse the ordinal encoding
-        df["gender"] = df["sex_0male_1female"].replace({0: "Male", 1: "Female"}).astype("category")
-        df["sepsis_outcome_after9pt5_days_in_hospital"] = (
-            df["hospital_outcome_1alive_0dead"].replace({0: "Dead", 1: "Alive"}).astype("category")
+        df["gender"] = df["sex_0male_1female"].replace({0: "Male", 1: "Female"})
+        df["sepsis_outcome_after9pt5_days_in_hospital"] = df["hospital_outcome_1alive_0dead"].replace(
+            {0: "Dead", 1: "Alive"}
         )
         df = df.drop(columns=["sex_0male_1female", "hospital_outcome_1alive_0dead"])
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["gender"])

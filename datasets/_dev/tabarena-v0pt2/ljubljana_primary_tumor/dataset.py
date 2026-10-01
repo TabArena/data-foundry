@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 
 
 class LjubljanaPrimaryTumor(AbstractCuratedDataset):
@@ -121,6 +121,8 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
             df[col] = df[col].map({i + 1: v for i, v in enumerate(vals)})
         # We drop classes with less than 10 samples
         df = df[df["class"].isin(df["class"].value_counts()[df["class"].value_counts() >= 10].index)]
-        as_cat_type = list(domains.keys())
-        df[as_cat_type] = df[as_cat_type].astype("category")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # every attribute is categorical (decoded from its integer codes above)
+        return FeatureTypes(categorical=[c for c in df.columns if c != self.target])

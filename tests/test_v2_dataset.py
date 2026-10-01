@@ -11,7 +11,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.curation_recommendations import get_temporal_window_splits
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -23,10 +22,12 @@ from data_foundry.v2 import (
     get_dataset,
     load_definition,
     read_report,
+    splits as protocol,
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import _horizon
+from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
 from __future__ import annotations
@@ -324,7 +325,7 @@ def _daily(n_days: int = 30, per_day: int = 3) -> pd.DataFrame:
 
 def test_temporal_windows_walk_back_newest_first() -> None:
     df = _daily()
-    splits = get_temporal_window_splits(dataset=df, time_on="t", window=5, unit="days", n_windows=3)
+    splits = temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
     assert list(splits) == [0, 1, 2]
     for i, folds in splits.items():
         train, test = folds[0]
@@ -335,22 +336,20 @@ def test_temporal_windows_walk_back_newest_first() -> None:
 
 def test_temporal_windows_gap_cutoffs_and_min_train() -> None:
     df = _daily()
-    gapped = get_temporal_window_splits(dataset=df, time_on="t", window=5, unit="days", n_windows=1, gap=2)
+    gapped = temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=1, gap=2)
     train, test = gapped[0][0]
     assert (df["t"].iloc[test].min() - df["t"].iloc[train].max()).days == 3
 
-    cut = get_temporal_window_splits(dataset=df, time_on="t", window=None, unit="days", cutoffs=["2024-01-21"])
+    cut = temporal_window_splits(df, time_on="t", window=None, unit="days", cutoffs=["2024-01-21"])
     assert len(cut[0][0][1]) == 30  # 10 days to the end
 
-    many = get_temporal_window_splits(dataset=df, time_on="t", window=2, unit="unique", min_train_fraction=0.5)
+    many = temporal_window_splits(df, time_on="t", window=2, unit="unique", min_train_fraction=0.5)
     assert all(len(f[0][0]) >= len(df) / 2 for f in many.values())
 
-    calendar = get_temporal_window_splits(dataset=df, time_on="t", window=3, unit="days", min_train_fraction=0.5)
+    calendar = temporal_window_splits(df, time_on="t", window=3, unit="days", min_train_fraction=0.5)
     assert len(calendar) == 5  # windows ending on days 30, 27, ..., 18; the next would train on 14 of 30 days
 
-    derived = get_temporal_window_splits(
-        dataset=df, time_on="t", window=None, unit="unique", n_windows=3, min_train_fraction=0.5
-    )
+    derived = temporal_window_splits(df, time_on="t", window=None, unit="unique", n_windows=3, min_train_fraction=0.5)
     assert len(derived) == 3
     assert all(df["t"].iloc[f[0][1]].nunique() == 5 for f in derived.values())
 
@@ -446,3 +445,116 @@ def test_subsampled_frames_drop_unused_categories() -> None:
     out = _drop_unused_categories(df)
     assert list(out["g"].cat.categories) == ["a", "b"]
     assert list(df["g"].cat.categories) == ["a", "b", "c"]  # the input frame is left as it was
+
+
+# --- the v2 split protocol: `_1m` versions ------------------------------------------------------------------------
+def write_version(root: Path, *, extra: str = "") -> Path:
+    """A ``toy_ds_1m`` version of the toy dataset (reads the raw files of ``toy_ds``)."""
+    body = DEFINITION.format(name="toy_ds_1m", comment="Toy data.").replace(
+        '    target = "y"\n',
+        '    version_of = "toy_ds"\n'
+        '    version_comment = "Sub-sampled to the row budget."\n'
+        "    subsample_to_budget = True\n"
+        f"{extra}"
+        '    target = "y"\n',
+    )
+    return write_definition(root, "toy_ds_1m", body=body)
+
+
+@pytest.fixture
+def small_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row budget the 600-row toy data exceeds: frames of 300 rows, splits of at most 190 / 100 rows."""
+    monkeypatch.setattr(protocol, "FRAME_ROW_BUDGET", 300)
+    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # a 3-fold split of 300 rows trains on 200
+    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 100)
+
+
+def test_a_version_samples_the_frame_then_runs_three_fold_cross_validation(
+    tmp_path: Path, warehouse: Path, small_budget: None
+) -> None:
+    del warehouse, small_budget
+    write_version(tmp_path / "datasets")
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+    assert len(plan.df) == 300
+    assert {len(folds) for folds in plan.splits.values()} == {3}
+    assert all(
+        len(train) <= 190 and len(test) <= 100 for folds in plan.splits.values() for train, test in folds.values()
+    )
+    assert plan.comment.startswith("Default splits. The frame is sub-sampled to 0.3k rows")
+
+
+def test_a_version_replaces_the_v1_protocol_findings(
+    tmp_path: Path, warehouse: Path, small_budget: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse, small_budget
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TEST_ROW_BUDGET", 50)  # v1 would flag 100-row test folds
+    write_version(tmp_path / "datasets")
+    result = get_dataset(tmp_path / "datasets", "toy_ds_1m").check(write_report=False, verbose=False)
+    assert "splits_test_over_budget" not in result.bundle_report.slugs
+
+
+def test_a_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_version(tmp_path / "datasets")
+    with pytest.raises(DatasetDefinitionError, match="within the 1,500,000-row budget"):
+        get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+
+def temporal_version_body() -> str:
+    """A temporal ``toy_ds_1m``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
+    extra = '    time_on = "t"\n    temporal_splits = TemporalSplits(window=5, unit="days", n_windows=3)\n'
+    return (
+        DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
+        .replace(
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits, drop_columns",
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+        .replace(
+            '        return FeatureTypes(categorical=["colour"])',
+            '        return FeatureTypes(categorical=["colour"], datetime=["t"])',
+        )
+        .replace(
+            '    target = "y"\n',
+            '    version_of = "toy_ds"\n'
+            '    version_comment = "Sub-sampled to the row budget."\n'
+            "    subsample_to_budget = True\n"
+            f"{extra}"
+            '    target = "y"\n',
+        )
+    )
+
+
+def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # the windows' train sides hold 300 to 500 earlier rows
+    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 60)  # a 5-day window holds 100 rows
+    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+    assert len(plan.splits) == 3
+    sides = [side for folds in plan.splits.values() for pair in folds.values() for side in pair]
+    assert all(
+        len(train) == 190 and len(test) == 60 for folds in plan.splits.values() for train, test in folds.values()
+    )
+    assert set().union(*map(set, sides)) == set(range(len(plan.df)))  # every kept row is in some split
+    assert len(plan.df) < 600
+    assert plan.df["t"].is_monotonic_increasing
+    for folds in plan.splits.values():  # train is earlier than the window it predicts
+        train, test = folds[0]
+        assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
+    assert "the frame keeps only the rows a split uses" in plan.comment
+
+
+def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
+    with pytest.raises(DatasetDefinitionError, match="no split side exceeds the row budget"):
+        get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()

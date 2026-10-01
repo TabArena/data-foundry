@@ -62,7 +62,6 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
         numeric_cols = df.drop(columns=["ID", "TARGET"])
         df["zero_count"] = (numeric_cols == 0).sum(axis=1)
         df = df.drop(columns=["ID"])
-        df[self.task_metadata.target_column_name] = df[self.task_metadata.target_column_name].astype("category")
         # Drop duplicates w/o target col
         df = df.drop_duplicates(subset=df.columns.difference([self.task_metadata.target_column_name]))
         # Replace -999999 with np.nan

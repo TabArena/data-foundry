@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
 
 
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
@@ -78,27 +78,6 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
                 "Id": "time_index",
             }
         )
-        as_date_cols = ["Listed On", "Last Sold On"]
-        as_string_cols = [
-            "Summary",
-            "Type",
-            "Heating",
-            "Cooling",
-            "Parking",
-            "Region",
-            "Elementary School",
-            "Middle School",
-            "High School",
-            "Flooring",
-            "Heating features",
-            "Cooling features",
-            "Appliances included",
-            "Laundry features",
-            "Parking features",
-            "City",
-            "Address",
-            "State",
-        ]
         # Remove rows with target leakage in description
         leak_mask = ~df["Summary"].isna() & (df["Summary"].str.contains("last sold for"))
         df = df[~leak_mask]
@@ -126,31 +105,16 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         ]:
             df.loc[df["time_index"] == time_index, "Lot"] = correct_size
         assert ((df["Lot"] / 43560) > 2000).sum() == 0, "There are still wrong lot sizes > 2000 acres"
-        # Ensure dtypes
+        # Parse the year (a float with missing values) to a date here; `_feature_types` cannot express this
         c = "Year built"  # special case
         nan_mask = df[c].isna()
         df.loc[nan_mask, c] = df.loc[~df[c].isna(), c].iloc[0]
         df[c] = pd.to_datetime(df[c].astype(int).astype(str), errors="raise")
         df.loc[nan_mask, c] = pd.NaT
-        for c in as_date_cols:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = df.loc[~df[c].isna(), c].iloc[0]  # Temp fill to allow conversion
-            df[c] = pd.to_datetime(df[c], errors="raise")
-            df.loc[nan_mask, c] = pd.NaT
-        c = "Zip"  # ensure zip string is without .0 at the end.
-        nan_mask = df[c].isna()
-        df[c] = df[c].astype("string")
-        df.loc[nan_mask, c] = np.nan
-        df.loc[~nan_mask, c] = df.loc[~nan_mask, c].astype(int).astype("string")
-        for c in as_string_cols:
-            nan_mask = df[c].isna()
-            df.loc[nan_mask, c] = np.nan
-            df[c] = df[c].astype("string")
         # Extra FE for Bedrooms
         bedroom_description_mask = pd.to_numeric(df["Bedrooms"], errors="coerce").isna()
-        df["Bedrooms_description"] = df["Bedrooms"].astype("string")
+        df["Bedrooms_description"] = df["Bedrooms"]
         df.loc[(~bedroom_description_mask) | (df["Bedrooms"].isna()), "Bedrooms_description"] = np.nan
-        df["Bedrooms_description"] = df["Bedrooms_description"].astype("string")
 
         # Compute a proxy for bedrooms from the description
         # https://www.kaggle.com/code/wuwawa/automl-using-h2o
@@ -205,7 +169,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
             raise ValueError(f"Unexpected zip code: {x}")
 
-        df["Zip Region"] = df["Zip"].apply(zip_buckets).astype("category")
+        df["Zip Region"] = df["Zip"].apply(zip_buckets)
         # Only keep the newest entry for houses that appear multiple times
         n_data = len(df)
         idx = df.groupby(["Address", "Zip", "Year built"], dropna=False)["time_index"].idxmax()
@@ -219,3 +183,31 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         # Rest time_index (to avoid gaps from dropping rows)
         df = df.drop(columns=["time_index"]).reset_index().rename(columns={"index": "time_index"})
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            categorical=["Zip Region"],
+            string=[
+                "Summary",
+                "Type",
+                "Heating",
+                "Cooling",
+                "Parking",
+                "Region",
+                "Elementary School",
+                "Middle School",
+                "High School",
+                "Flooring",
+                "Heating features",
+                "Cooling features",
+                "Appliances included",
+                "Laundry features",
+                "Parking features",
+                "City",
+                "Address",
+                "Zip",  # an integer in the source, so the string has no ".0"
+                "Bedrooms_description",
+            ],
+            # "Year built" is parsed in `_clean`
+            datetime={"Year built": None, "Listed On": "%Y-%m-%d", "Last Sold On": "%Y-%m-%d"},
+        )

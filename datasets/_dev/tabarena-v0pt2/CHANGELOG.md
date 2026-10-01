@@ -4,6 +4,108 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-01 (temporal `_1m` versions sampled per window; climate and delivery column fixes)
+
+- v2 split protocol: a temporal `_1m` version no longer samples its frame to 1.5M rows. The windows are built on the
+  full data, then `v2.splits.sample_temporal_splits` keeps at most 500k rows of each test window (random within the
+  window) and a random 1M of all earlier rows for each train side, all drawn in one random order so the train sides
+  of the windows overlap; the frame keeps only the rows a split uses. Test windows stay dense, train still covers the
+  whole history (as TabReD sampled it), and no shipped row is unused. A temporal `_1m` version whose windows all fit
+  the budget is refused. IID and grouped `_1m` versions are unchanged (frame sampled to 1.5M rows).
+- Checked all 6 temporal `_1m` datasets with it (0 errors; each train side 1M rows):
+
+  | Dataset | Frame rows | Test rows per window |
+  |---|---|---|
+  | `cooking_time_1m`, `delivery_eta_1m`, `maps_router_eta_1m` | 2,500,000 each | 500,000 (capped) |
+  | `climate_model_weather_forecasting_1m` | 2,115,283 | 341,169-396,122 (all rows) |
+  | `consumer_complaints_1m` | 1,811,452 | 203,139-307,396 (all rows) |
+  | `home_credit_default_stability_1m` | 1,224,927 | 70,497-79,743 (all rows) |
+
+  Before, the test windows held only the frame sample's share of rows (climate: about 30k per week instead of
+  341-396k). The `splits_rows_unused` warnings are gone. Peak memory of a check: 182 GB for `maps_router_eta_1m`.
+- `climate_model_weather_forecasting_1m`: dropped `cmc_0_1_11_0` (0.0 or missing in every row, like the three
+  `cmc_0_1_*` columns already dropped); set -9999 to missing in `gfs_soil_temperature` (31% of rows),
+  `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%), a fill value (the other values lie in about
+  -21..52). 0 warnings.
+- `delivery_eta_1m`: dropped `num_29`, `num_36`, `num_71` (constant except the same 2 of 16.7M rows) and `num_101`
+  (one value, missing exactly where 19 other columns are missing). 0 warnings.
+- Not built.
+
+## 2026-10-01 (sf_permit_time and sberbank fixes, the two `_1m` windows settled)
+
+- `maps_router_eta_1m`: its dtype casts moved into `_feature_types` as well (the cat/bin columns, and `timestamp`,
+  which the parquet file already stores as a datetime); the processed frame is identical. Processing it peaks at
+  162 GB of RAM, so it needs a large machine (see `TODO.md`).
+- `sf_permit_time`: `Street Number`, `Unit` and `Zipcode` are now strings of whole numbers ("1625", "0", "94116"
+  instead of "1625.0", "0.0", "94116.0"); pandas read them as int or float, and the old string cast went through
+  float. Only these 3 columns change; checked: 0 errors, 0 warnings; new checksum
+  `dfef6e633b868d96170fdaa565f88c62b8642afe58ba485e6ae85978a085258c` (README regenerated). Not built.
+- `sberbank_housing_market_forecasting`: `state` is cast in `_feature_types`, after the build-year filter, so the
+  level 33.0 no longer stays as an unused category. The one row with 33 (id 10092, likely a typo for 3) also has the
+  range-coded build_year 20052009 and was already dropped by that filter. Only the category levels of `state` change.
+- `consumer_complaints_1m` and `home_credit_default_stability_1m`: the 3-window splits of the v2 protocol are settled
+  (the `TODO(verify)` markers are now plain comments). Checked, 0 errors. consumer_complaints: 3 quarters of 2025
+  (test 134,242 / 131,511 / 88,402 rows for Q2 / Q3 / Q4, train 1M each, horizon 3 months). home_credit: 3 windows of
+  2 months from 2020-05-01 (test 73,349 / 78,349 / 69,338, train 1M each, horizon 2 months). Both warn
+  `splits_rows_unused` (6.4% and 14.2%: rows that no capped train side drew); home_credit also warns
+  `dataset_missing_value_sentinel` for -1 in 3 `avgdbd*` columns, now accepted: they are "average days past or before
+  due of payment" (Kaggle `feature_definitions.csv`), negative means paid early, -1 is the mode of a smooth
+  distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%), missing values are already NaN, and the default rate rises from
+  2.1% (more than a day early) over 3.3% (-1) and 4.5% (on time) to 8.6% (late). READMEs regenerated. Not built.
+
+## 2026-10-01 (dtype casts moved into `_feature_types`)
+
+- 52 definitions: the dtype casts the migrator had left in `_clean` now live in `_feature_types`, so every dataset
+  declares its categorical, string and datetime columns in one place (and the generated `README.md` lists them).
+  List-and-loop string casts became `string=[...]`; target casts went (the base class casts a classification target);
+  casts a later step needs stay in `_clean` with a comment and are also listed (rossmann, telemonitoring,
+  micro_mass, musk, parkinsons, coffee, homesite, kickstarter, consumer_complaints, climate, anes, california).
+  Column drops stay as they are: `df.drop(columns=...)` already fails on a misspelled name.
+- Verified: the processed frame of all 52 datasets is identical before and after (values, column order, dtypes and
+  category levels per column), so the migration check against the v1 notebooks is unaffected; the 12 checked
+  datasets touched keep their checksum (their `README.md` regenerated, only the "Feature types" lines changed).
+- To keep the frames identical, two quirks stay and are listed in `TODO.md`: `sf_permit_time`'s `Street Number`
+  strings read "101.0" (the v1 cast went through float), and `sberbank_housing_market_forecasting`'s `state` keeps an
+  unused level (33.0). `early_learning_predictors`' `child_dob` now fails on a value it cannot parse instead of
+  setting it to missing (every value parses today). `maps_router_eta_1m` is not done: its frame does not fit in
+  memory (see `TODO.md`).
+
+## 2026-10-01 (v2 split protocol: always 3 folds, frames sub-sampled to 1.5M rows)
+
+- New split protocol for v2 definitions, in the new module `src/data_foundry/v2/splits.py`. Every dataset gets 3-fold
+  cross-validation (20, 10, 3 or 1 repeats by train size, as before) or at least 3 temporal windows; no split trains
+  on more than 1M or tests on more than 500k rows. Only a frame above 1.5M rows is sub-sampled, to 1.5M rows (rows
+  stratified on the target, or whole groups; the row order is kept), in its `_1m` version, which then gets the same 3
+  folds or windows. Before, a frame of 1.25M rows or more got one 1M / 250k split. `dataset check` replaces the v1
+  findings `splits_dimensions_off_protocol` and `splits_test_over_budget` with the v2 ones and adds
+  `splits_too_few` (a temporal task with fewer than 3 windows).
+- v2 no longer uses `curation_recommendations`: the IID and grouped cross-validation, the temporal windows
+  (`TemporalSplits`, moved from `curation_recommendations.get_temporal_window_splits`) and the sub-sampling live in
+  `v2/splits.py`. The v1 helpers and `bundle_checks` are unchanged, so the v1 notebooks and the shipped containers
+  keep the v1 protocol. Tests pin that the v2 cross-validation gives exactly the v1 splits, and the 27 checked
+  datasets this does not touch give the same checksum and the same findings as before.
+- Renamed (the frame fits 1.5M rows, so it is taken fully; `version_of`, `version_comment` and
+  `subsample_to_budget` removed, record `v2_path` updated): `mercari_price_suggestion_1m` -> `mercari_price_suggestion`
+  (about 1.48M rows, IID 1x3), `electric_motor_temperature_prediction_1m` -> `electric_motor_temperature_prediction`
+  (about 1.30M rows, grouped 1x3), `lending_club_1m` -> `lending_club` (see the next entry).
+- `lending_club`: only the 36-month loans issued up to 2015 (609,544 rows, before 1,310,259), tested on the quarters
+  2015 Q2-Q4 (64,222 / 73,567 / 88,667 test and 383,088 / 447,310 / 520,877 train rows, horizon 3 months). The
+  source file holds only the loans that had finished by the 2018Q4 snapshot: at least 99.8% of the 36-month loans
+  up to 2015Q4, but 57-93% per quarter in 2016, and only 63-97% of the 60-month loans from 2014 on (counts from
+  `accepted_2007_to_2018Q4.csv.gz`). The missing loans are mostly good ones, so later or longer loans skew the labels
+  (default rate among finished loans 15-16% in 2013, 24-26% in 2016). `term` is joined only for the selection and
+  dropped; `disbursement_method` is dropped (one value for these loans). The `_1m` version tested on 2016, the v1
+  notebook on 2016-2018. Checked: 0 errors, 0 warnings; default rate 13.9%; new `README.md`. Not built.
+- Still `_1m` (frame above 1.5M rows), now 3 folds or windows on the 1.5M-row sample: `amex_non_iid_1m`,
+  `sepsis_prediction_1m` (grouped 1x3); `climate_model_weather_forecasting_1m`, `cooking_time_1m`, `delivery_eta_1m`,
+  `maps_router_eta_1m` (3 windows of 7 days instead of 1); `consumer_complaints_1m` (3 quarters of 2025) and
+  `home_credit_default_stability_1m` (3 x 2 months). These two carry a `TODO(verify)` marker for the window
+  choice (see `TODO.md`).
+- `covertype`: dropped the accepted `splits_test_over_budget` (its 257k-row test fold is within the 500k budget).
+  `hotel_booking_demand`: dropped a diagnostic print of the v1 split recommendation (same checksum).
+- Not run: apart from `lending_club`, none of the 11 changed datasets has been checked or built; their splits change
+  at the rebuild.
+
 ## 2026-10-01 (dataset pages: README.md replaces report.md)
 
 - The generated `report.md` of each dataset folder is now its `README.md`, so GitHub shows it below the folder's
