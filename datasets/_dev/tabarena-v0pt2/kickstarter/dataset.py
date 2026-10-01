@@ -37,7 +37,7 @@ class Kickstarter(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully.
+        Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully. We simulate predicting at launch: only information known when the campaign starts is used.
 
         - The data we used only had 2 samples for 2026, so we stick to data until 2025.
         - The original data comes in .csv files per scrape data. We first combine all files into one file.
@@ -47,7 +47,8 @@ class Kickstarter(AbstractCuratedDataset):
         - We drop photo and video based references as we do not include these modalities.
         - We decode the category and creator name  from JSON strings into usable columns.
         - Note, the crawl does only include blurbs and not the full-text descriptions of the projects. Also some blurb repeat from similar projects or orders.
-        - We decode the profile blurb, when it exists.
+        - We drop the creator's project profile (and its profile blurb): it is only created for funded projects (0 of 69,970 failed projects have a profile blurb), so it leaks the outcome, like spotlight.
+        - We drop staff_pick: Kickstarter can award it during the campaign, so it is not known at launch (92.4% of staff picks succeed, against 57% of the other projects).
         - We decode the location display name from the location JSON string, which can include state and city name.
         - The data contains spatial information (city, state, country). We do not decode this but leave it to the pipelines.
         - We found 150 rows without location information. We drop these rows as it is unclear which issue caused this and how the rows' data might be affected by this.
@@ -108,6 +109,8 @@ class Kickstarter(AbstractCuratedDataset):
             "usd_exchange_rate",
             "state_changed_at",
             "spotlight",
+            # Mid-campaign: "Projects We Love" can be awarded while the campaign runs (92% of staff picks succeed)
+            "staff_pick",
             # Remove currency related columns not need anymore
             "currency",
             "currency_symbol",
@@ -133,27 +136,8 @@ class Kickstarter(AbstractCuratedDataset):
         df["sub_category"] = df["category"].apply(lambda x: json.loads(x).get("parent_name", np.nan))
         df = df.drop(columns=["category"])
 
-        # Decode profile blurb
-        def decode_profile(x):
-            try:
-                data = json.loads(x)
-            except json.decoder.JSONDecodeError:
-                raw_data = x.split(",")
-                raw_data = [e for e in raw_data if e.startswith('"blurb":')]
-                assert len(raw_data) == 1
-                blurb_entry = raw_data[0]
-                blurb_entry = blurb_entry.replace('"blurb":"', "").rstrip('"')
-                if "null" in blurb_entry:
-                    return np.nan
-                if blurb_entry == "":
-                    return np.nan
-                return blurb_entry
-            res = data["blurb"]
-            if res == "":
-                return np.nan
-            return res
-
-        df["profile_blurb"] = df["profile"].apply(decode_profile)
+        # The creator's project profile (its blurb, colours, links) only exists for funded projects: the profile
+        # blurb is present for 34,032 successful and 0 of 69,970 failed projects, so it leaks the outcome
         df = df.drop(columns=["profile"])
 
         # Decode creator name
@@ -179,7 +163,6 @@ class Kickstarter(AbstractCuratedDataset):
             "blurb",
             "name",
             "creator_name",
-            "profile_blurb",
             "location_displayable_name",
         ]
         as_date_cols = [
@@ -203,7 +186,6 @@ class Kickstarter(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 "prelaunch_activated",
-                "staff_pick",
                 "main_category",
                 "sub_category",
                 "country",

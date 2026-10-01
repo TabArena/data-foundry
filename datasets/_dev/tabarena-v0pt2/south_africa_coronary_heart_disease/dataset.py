@@ -37,6 +37,7 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
         We start with the data from Kaggle.
 
         - We remove the row id column.
+        - The data is a retrospective sample of males from the CORIS study (cases with coronary heart disease and controls). Hastie, Tibshirani & Friedman (The Elements of Statistical Learning, 2nd ed., Sec. 5.2.2, p. 148) note: "These measurements were made sometime after the patients suffered a heart attack, and in many cases they had already benefited from a healthier diet and lifestyle". Some risk factors of the cases (e.g. sbp, obesity) were therefore measured after the outcome. This weakens their signal rather than leaking the target (dropping sbp and obesity changes ROC AUC from 0.774 to 0.778), so we keep all features.
     """
 
     # Task

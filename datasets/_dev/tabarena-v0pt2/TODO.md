@@ -4,9 +4,7 @@ Open work for this folder. When an item is done, remove it here and log the chan
 
 ## Needs a decision
 
-- [ ] **`hotel_booking_demand`: `splits_temporal_leakage`** (bundle-check error): its custom split filters rows by
-  booking date, so train rows can postdate the test start. Decided together with the leak audit. It is the only
-  temporal dataset that keeps a hand-written `_make_splits`.
+- [x] **`hotel_booking_demand`: `splits_temporal_leakage`**: resolved 2026-09-30 (training now uses only bookings arriving before each prediction point; see its record).
 
 ## Verify the migration (runs the data)
 

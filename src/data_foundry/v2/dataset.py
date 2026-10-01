@@ -606,6 +606,7 @@ class AbstractCuratedDataset(ABC):
             )
             comment += " The split is sub-sampled to the row budget of 1M train and 250k test rows."
             df, train_idx, test_idx = _resort_by_time(df, task.time_on, train_idx, test_idx)
+            df = _drop_unused_categories(df)
             return SplitPlan(splits={0: {0: (train_idx, test_idx)}}, df=df, comment=comment)
 
         n_repeats, n_splits, test_size = curation_recommendations.get_recommended_splits_dimensions(
@@ -647,7 +648,7 @@ class AbstractCuratedDataset(ABC):
             random_state=self.SPLIT_RANDOM_STATE,
         )
         comment = "Default single train/test split, sub-sampled to the row budget of 1M train and 250k test rows."
-        return SplitPlan(splits={0: {0: (train_idx, test_idx)}}, df=df, comment=comment)
+        return SplitPlan(splits={0: {0: (train_idx, test_idx)}}, df=_drop_unused_categories(df), comment=comment)
 
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
         """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan."""
@@ -820,6 +821,15 @@ def _resort_by_time(
     new_position[order] = np.arange(len(order))
     df = df.iloc[order].reset_index(drop=True)
     return df, sorted(new_position[train_idx].tolist()), sorted(new_position[test_idx].tolist())
+
+
+def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop category levels that no longer occur once a frame is sub-sampled (dtypes are set on the full data)."""
+    df = df.copy()
+    for col in df.columns:
+        if isinstance(df[col].dtype, pd.CategoricalDtype):
+            df[col] = df[col].cat.remove_unused_categories()
+    return df
 
 
 def _single_split(ds: AbstractCuratedDataset, splits: Splits) -> tuple[list[int], list[int]]:

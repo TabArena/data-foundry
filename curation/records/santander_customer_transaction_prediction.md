@@ -28,6 +28,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-09-30, Lennart): **Leak fixed: dropped the 400 `var_i_has_one`/`has_zero` features.** They follow the Kaggle #1 solution: for each var, does this row's value occur in another class-1 / class-0 row. The encoding is leave-one-out (a row never sees its own label), but it was computed over all 200k labelled rows before splitting, so every row's features encode the labels of the other rows in its test fold, which a deployment would not have. LightGBM ROC AUC (leak audit 2026-09-24, rechecked on other folds): 0.903 shipped, 0.899 with has_* recomputed from train-fold labels, 0.900 with label-free value counts, 0.896 raw 200 vars. We now ship `target` + `var_0..var_199` (200 features). The technique itself is worth applying inside a pipeline, computed per fold (or on unlabelled rows where a method may see them); this is noted in curation_comments.
+
 CC: "Interesting dataset, but not on OpenML. License allows to use the data for research, but not distribute it - so we have an API issue."
 
 ## Reference

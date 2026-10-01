@@ -34,6 +34,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-09-30, Lennart): **Split fixed: the "temporal" split ran on alphabetical address order.** The deduplication step (`groupby([Address, Zip, Year built]).idxmax()` + `df.loc[idx]`) returned rows in address order and `time_index` was then rebuilt from it (Spearman 1.000 with address rank, 0.003 with Listed On; leak audit 2026-09-24). Fix: sort back to the Kaggle Id before rebuilding `time_index`. The Id order is the sale order (checked on redfin.com earlier; in the data the latest listing date per Id decile rises from 2020-03-02 to 2020-12-30, Spearman(Id, Listed On) 0.745), so the split stays on it, not on Listed On: a house is listed before it sells, and a listing-date split could train on houses sold after the test period starts. Now: Spearman(time_index, address) 0.006, (time_index, Listed On) 0.757; in all 3 windows every training row precedes every test row. No target leak: Listed Price alone gives R^2 0.915 (legitimate, known before the sale). Leaderboard numbers on the old container come from an effectively random split.
+
 California Houses 2020 Prices (Duplicate with calif_houses below).
 
 Timestamp is missing! ....

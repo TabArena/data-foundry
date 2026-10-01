@@ -1,7 +1,7 @@
 ---
 report_format: data-foundry-report-v1
 unique_name: kick
-checksum: 94ff849d2c2c3551dc25d1575638cbf75ded17296d4fd82c63eba9975ff269e9
+checksum: 1a93a2fffa1c4406d8ad8fbb64fdf353579717bf8720a36027ff7e01108b1a1f
 build: null
 build_stale: false
 data:
@@ -13,6 +13,29 @@ data:
     float64: 9
     int64: 5
   n_test_dataset_rows: null
+feature_types:
+  categorical:
+  - WheelTypeID
+  - BYRNO
+  - VNZIP1
+  - PRIMEUNIT
+  - AUCGUART
+  - WheelType
+  - Trim
+  - SubModel
+  - Color
+  - Transmission
+  - Nationality
+  - Size
+  - TopThreeAmericanName
+  - Auction
+  - Make
+  - Model
+  - VNST
+  - IsBadBuy
+  string: []
+  datetime:
+    PurchDate: null
 task:
   target: IsBadBuy
   problem_type: binary_classification
@@ -51,7 +74,7 @@ decisions:
 
 ## Build
 
-Not built yet. Current checksum: `94ff849d2c2c3551dc25d1575638cbf75ded17296d4fd82c63eba9975ff269e9`.
+Not built yet. Current checksum: `1a93a2fffa1c4406d8ad8fbb64fdf353579717bf8720a36027ff7e01108b1a1f`.
 
 ## Dataset
 
@@ -92,7 +115,7 @@ Expanding-window temporal splits: 9 test window(s) of 28 time values, walking ba
 
 ### 1. Temporal split, not grouped by auction location
 
-The competition grouped by auction and ZIP code, but almost every location reappears over time, so a grouped split would not match deployment; a model is deployed on future purchases.
+Auction locations (auction and ZIP code) reappear over time, so a grouped split would not match deployment; a model is deployed on future purchases.
 
 | index | value |
 |---|---|
@@ -108,7 +131,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (24 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (25 checks run, plus the dataset's own checks).
 
 
 ## Data checks

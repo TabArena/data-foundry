@@ -31,12 +31,13 @@ class Kick(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - The data is from a kaggle competition that used grouped splits based on "Auction" and "VNZIP1".
-        - The data is temporal, but also grouped by auctions. Shifts can be expected from both, but auctions reappear at later time points, so it is unclear whether a grouped split truly reflects deployment conditions. Therefore, we use temporal evaluation.
+        - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.
+        - The data is temporal and also grouped by auction location. Locations reappear over time, so a grouped split would test unseen auctions, which does not match deployment; a model is deployed on future purchases at mostly known auctions. Therefore, we use temporal evaluation.
         - The test features from the Kaggle competition are available and could be used for unsupervised approaches.
         - We transform "PurchDate" to datetime.
         - We drop the "RefId" column, as it is just an identifier and not useful for modeling.
         - We assign the categorical features "WheelTypeID", "BYRNO", and "VNZIP1" to category dtype, as they are given as numbers.
+        - Potential leak, kept on purpose: missing "WheelType" may be filled in (blanked) when a car is kicked back. It is missing for about 25% of bad buys in every month but for only 1.5% of good cars, erratically (Sep-Oct 2010: 1 good vs 218 bad cars). Dropping WheelType and WheelTypeID lowers LightGBM ROC AUC on our temporal splits from 0.757 to 0.691. We keep both because this is how the company released the data for the competition (WheelType is missing in 4.5% of the Kaggle test rows vs 4.3% of train) and the field's recording process is not documented.
     """
 
     # Task
@@ -103,8 +104,8 @@ class Kick(AbstractCuratedDataset):
         return [
             Decision(
                 "Temporal split, not grouped by auction location",
-                "The competition grouped by auction and ZIP code, but almost every location reappears over time, "
-                "so a grouped split would not match deployment; a model is deployed on future purchases.",
+                "Auction locations (auction and ZIP code) reappear over time, so a grouped split would not match "
+                "deployment; a model is deployed on future purchases.",
                 reappearing,
             ),
             Decision(

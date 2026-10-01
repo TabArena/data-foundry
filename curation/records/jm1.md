@@ -35,6 +35,8 @@ Lennart: see above
 
 Andrej: Seems fine to include, but there are many related tasks (pc1,pc2,pc3,pc4,mc1,kc1,kc2,jm1). I would suggest an additional selection step where tasks with correlated model performance results are excluded.
 
+CC (2026-10-01, Lennart): Leak audit: deduplicated to be on the safe side. 25% of rows (2,730 in 669 groups) share their code-metric vector with another row, mostly trivial modules (e.g. 173 copies of a 4-line, complexity-1 function); 88 vectors occur with both labels. A random split puts copies on both sides (LightGBM AUC 0.743 on the shipped splits vs 0.727 grouped by identical vector). The v2 definition now drops exact duplicate rows (1,973) and every copy of a vector that appears with both labels (176 rows): 10,885 -> 8,736 rows. No feature is derived from the target; the splits stay IID.
+
 ## Reference
 
 https://openscience.us/repo/defect/

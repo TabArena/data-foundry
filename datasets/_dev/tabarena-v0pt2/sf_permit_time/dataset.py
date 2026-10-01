@@ -15,12 +15,16 @@ class SfPermitTime(AbstractCuratedDataset):
     year = "2025"
     domain = "business & marketing"
     source = "GOV Website"
-    source_url = "https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9"
+    source_url = "https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9"
     license = "Open Data Commons Public Domain Dedication and License"
     download_description = """
         We re-collected the data similar to how the data from Kaggle was created.
 
-        We go to https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9, then we set the query such that we only take data from 1st of January 2015 until 31st of December of 2025, and then download the data as a CSV file. Due to API limits, this must be done manually. Here is the link to the query: https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9/explore/query/SELECT%0A%20%20%60permit_number%60%2C%0A%20%20%60permit_type%60%2C%0A%20%20%60permit_type_definition%60%2C%0A%20%20%60permit_creation_date%60%2C%0A%20%20%60block%60%2C%0A%20%20%60lot%60%2C%0A%20%20%60street_number%60%2C%0A%20%20%60street_number_suffix%60%2C%0A%20%20%60street_name%60%2C%0A%20%20%60street_suffix%60%2C%0A%20%20%60unit%60%2C%0A%20%20%60unit_suffix%60%2C%0A%20%20%60description%60%2C%0A%20%20%60status%60%2C%0A%20%20%60status_date%60%2C%0A%20%20%60filed_date%60%2C%0A%20%20%60issued_date%60%2C%0A%20%20%60completed_date%60%2C%0A%20%20%60first_construction_document_date%60%2C%0A%20%20%60approved_date%60%2C%0A%20%20%60structural_notification%60%2C%0A%20%20%60number_of_existing_stories%60%2C%0A%20%20%60number_of_proposed_stories%60%2C%0A%20%20%60voluntary_soft_story_retrofit%60%2C%0A%20%20%60fire_only_permit%60%2C%0A%20%20%60estimated_cost%60%2C%0A%20%20%60revised_cost%60%2C%0A%20%20%60existing_use%60%2C%0A%20%20%60existing_units%60%2C%0A%20%20%60proposed_use%60%2C%0A%20%20%60proposed_units%60%2C%0A%20%20%60plansets%60%2C%0A%20%20%60tidf_compliance%60%2C%0A%20%20%60existing_occupancy%60%2C%0A%20%20%60proposed_occupancy%60%2C%0A%20%20%60existing_construction_type%60%2C%0A%20%20%60existing_construction_type_description%60%2C%0A%20%20%60proposed_construction_type%60%2C%0A%20%20%60proposed_construction_type_description%60%2C%0A%20%20%60site_permit%60%2C%0A%20%20%60last_permit_activity_date%60%2C%0A%20%20%60application_submission_method%60%2C%0A%20%20%60adu%60%2C%0A%20%20%60primary_address_flag%60%2C%0A%20%20%60supervisor_district%60%2C%0A%20%20%60neighborhoods_analysis_boundaries%60%2C%0A%20%20%60zipcode%60%2C%0A%20%20%60location%60%2C%0A%20%20%60point_source%60%2C%0A%20%20%60reroof%60%2C%0A%20%20%60record_id%60%2C%0A%20%20%60data_as_of%60%2C%0A%20%20%60data_loaded_at%60%0AWHERE%0A%20%20%60approved_date%60%0A%20%20%20%20BETWEEN%20%222015-01-01T16%3A13%3A34%22%20%3A%3A%20floating_timestamp%0A%20%20%20%20AND%20%222025-12-31T16%3A13%3A34%22%20%3A%3A%20floating_timestamp%0AORDER%20BY%20%60approved_date%60%20ASC%20NULL%20LAST/page/filter
+        We download the Building Permits table from the San Francisco open data portal
+        (https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9; formerly data.sfgov.org), filtered to
+        permits filed from 1st of January 2015 until 31st of December 2025 (`filed_date`), as a CSV file. Due to API
+        limits, this must be done manually in the portal's query editor. Our copy was downloaded on 2026-02-05 (the
+        latest issued date in it is 2026-02-04); the table changes daily, so a new download gives different data.
 
         We save the file in the root dir as Building_Permits_20260205.csv
         mkdir -p local-data-warehouse/sf_permit_time && mv Building_Permits_20260205.csv local-data-warehouse/sf_permit_time
@@ -30,20 +34,20 @@ class SfPermitTime(AbstractCuratedDataset):
           author = {{City and County of San Francisco}},
           title  = {Building Permits},
           year   = {2026},
-          howpublished = {\url{https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data}},
+          howpublished = {\url{https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data}},
           note   = {DataSF Open Data Portal dataset, Accessed: 2026-02-05}
         }
     """
     curation_comments = """
         We simulate the task of predicting the days (in float) it takes to issue the permit. We add the special use case, that we assume the model is only used to predict for permits that take longer than one day to be issued. We do this, as waiting for one day seems very reasonable. Plus, the data contains several unresolvable data errors when the permit was issued on the same day it was filed.
 
-        - ALthough we donwloaded data
+        - We only keep permits filed before 2024. The data only holds permits that were issued by the download date, so recent filings miss their slowest permits: the share of permits still open is 1.8-5.3% for 2015-2021 but 10.2% for 2023, 11.1% for 2024 and 21.5% for 2025, and the p90 of the days to issue falls from about 300 days to 147 (2024) and 97 (2025). A check against the portal eight months later (October 2026) showed the 2024 and 2025 tails still growing (2025 p90: 97 -> 160 days), while 2023 had nearly settled (216 -> 222).
         - We drop miscellaneous permits (those that start with "M") as they are not of interest for our task. Compared to normal permits, these are usually automatically or very quickly approved and thus are not relevant to predict the time it takes to issue the permit. Moreover, the represent a significant distribution shift compared to the rest of the data.
         - We drop the permit type ordinal encoding and the creation date of the permit in the tracking system as other dates are more accurate.
         - A large number of descriptions are from standard phrases (they appear in the same way multiple times). so we add a new column that indicates whether the description is from a standard phrase or not through a categorical variable. We define a standard phrase as a description that appears more than 100 times in the dataset.
         - The 'Current Status' is the last status update of the permit. Note, that for miscellaneous permits, the permit is never completed. We filter to permits that have been issued for our task. Thus, we select all permits that are issued or completed.
         - There are several features that have almost no information (up to only 20 non nan values). We keep this and let the pipeline decide what to do with them.
-        - We only keep on permit per primary address (filter based on Primary Address Flag) following https://data.sfgov.org/Housing-and-Buildings/Building-Permits-Deduplicated-on-Primary-Address/f2jc-ivnc
+        - We only keep on permit per primary address (filter based on Primary Address Flag) following https://data.sf.gov/Housing-and-Buildings/Building-Permits-Deduplicated-on-Primary-Address/f2jc-ivnc
         - We drop all permits without a location, as every permit requires a location by definition, thus these are likely data errors.
     """
 
@@ -56,12 +60,15 @@ class SfPermitTime(AbstractCuratedDataset):
     splits_comment = """
         We try to create splits that simulate a model deployed to solve the task.
 
-        The official data is updated daily but has not enough data per day to create large enough test splits. We opt for simulating a model that is refit every year to obtain a robust test set instead.
-        This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 5 test splits by 2020-2025 as test year. For each test split, we use all data before the test month as training data.
+        The official data is updated daily but has not enough data per day to create large enough test splits. We simulate a model that is refit every six months and tested on the next six months, walking back from the last kept filing date (end of 2023) until the training data would fall below 50% of the rows. This gives 9 half-year test windows from the second half of 2019 to the second half of 2023. For each test split, we use all permits filed before the test window as training data.
     """
-    time_horizon = 1
-    time_horizon_unit = "years"
-    temporal_splits = TemporalSplits(window=1, unit="years", cutoffs=(2020, 2021, 2022, 2023, 2024, 2025))
+    time_horizon = 6
+    time_horizon_unit = "months"
+    temporal_splits = TemporalSplits(window=6, unit="months", min_train_fraction=0.5)
+    accepted_check_warnings = {
+        "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
+        "missing means the flag is not set, so they are not constant.",
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "Building_Permits_20260205.csv")
@@ -73,6 +80,7 @@ class SfPermitTime(AbstractCuratedDataset):
             pd.to_datetime(df["Issued Date"]) - pd.to_datetime(df["Filed Date"])
         ).dt.total_seconds() / pd.Timedelta(days=1).total_seconds()
         df = df[df["DaysToIssue"] >= 1]
+        df = df[pd.to_datetime(df["Filed Date"]) < "2024-01-01"]
         df = df[~df["Permit Number"].str.startswith("M")]
         df = df[df["Current Status"].isin(["issued", "complete"])]
         df = df[df["Primary Address Flag"] == "Y"]
@@ -80,8 +88,9 @@ class SfPermitTime(AbstractCuratedDataset):
         df["DescriptionIsStandardPhrase"] = df["Description"].isin(
             df["Description"].value_counts(dropna=False)[df["Description"].value_counts(dropna=False) > 100].index
         )
-        df["Location_Latitude"] = df["Location"].apply(lambda x: str(x).split("(")[-1].split(" ")[0]).astype(float)
-        df["Location_Longitude"] = (
+        # Location is WKT "POINT (longitude latitude)"
+        df["Location_Longitude"] = df["Location"].apply(lambda x: str(x).split("(")[-1].split(" ")[0]).astype(float)
+        df["Location_Latitude"] = (
             df["Location"].apply(lambda x: str(x).split("(")[-1].split(" ")[-1][:-1]).astype(float)
         )
         df = df.drop(

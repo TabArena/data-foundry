@@ -6,7 +6,48 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+
+CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
+"""EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
+
+
+def poster_groups(df: pd.DataFrame) -> pd.Series:
+    """One group per poster: ads linked by the same company profile or a poster-specific masked contact.
+
+    Two ads are in the same group when they share the exact (non-empty) ``company_profile``, or a masked e-mail, phone
+    or URL that occurs within at most one company profile (contacts shared across several companies are generic, e.g.
+    job-board links, and are not used). The group is named after the smallest ``job_id`` in it, hashed.
+    """
+    parent = list(range(len(df)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    def union(i: int, j: int) -> None:
+        parent[find(i)] = find(j)
+
+    profile = df["company_profile"].fillna("").astype(str).str.strip().to_numpy()
+    first: dict[str, int] = {}
+    for i, text in enumerate(profile):
+        if text:
+            union(i, first.setdefault(text, i))
+    text_cols = ["company_profile", "description", "requirements", "benefits", "title"]
+    text = df[text_cols].fillna("").astype(str).agg(" ".join, axis=1)
+    rows: dict[str, list[int]] = {}
+    for i, tokens in enumerate(text.str.findall(CONTACT_PATTERN)):
+        for token in set(tokens):
+            rows.setdefault(token, []).append(i)
+    for idx in rows.values():
+        if len(idx) > 1 and len({profile[i] for i in idx} - {""}) <= 1:
+            for j in idx[1:]:
+                union(idx[0], j)
+    roots = pd.Series([find(i) for i in range(len(df))], index=df.index)
+    first_job = df["job_id"].groupby(roots).transform("min")
+    return anonymize_ids(first_job.astype(str))
 
 
 class Emscad(AbstractCuratedDataset):
@@ -47,8 +88,10 @@ class Emscad(AbstractCuratedDataset):
         In the original paper, the authors subsampled the data to have 450 fraudulent and 450 non-fraudulent samples.
         No details are given on how the subsampling was done. Moreover, duplicates were skipped, but no details are given on how duplicates were identified.
 
-        - The dataset was collected from 2012 to 2014. But the data contains no feature to identify the time of a sample. So we can expect that some bias from temporal leakage. Moreover, the data might contain multiple job postings from the same fraudster, which would need to be grouped, but we cannot identify them from the data.
-        - Following the original paper, we drop all duplicates (when ignoring the job_id column) to avoid data leakage.
+        - The dataset was collected from 2012 to 2014. But the data contains no feature to identify the time of a sample. So we can expect that some bias from temporal leakage. Ads of the same poster are grouped (see below).
+        - Following the original paper, we drop all duplicates (when ignoring the job_id column) to avoid data leakage. We also drop reposts, which the paper describes as "fraudsters can quickly and repeatedly try to post the same job ad in identical or different locations" (Sec. 5): rows identical in every field except job_id and location (1,343 more rows, 115 of them fraudulent).
+        - The labels were assigned per client ("based on client's suspicious activity on the system, false contact or company information, candidate complaints and periodic meticulous analysis of the clientele", Sec. 5), and ads of the same client appear several times. We group them exactly, without similarity thresholds: same non-empty company_profile (the client's own company text; none of the 1,708 profiles mixes labels), or a shared masked e-mail, phone or URL that occurs within at most one company profile (contacts shared by several companies, e.g. job-board links, are generic and not used). This gives about 4,500 groups (largest 539 ads, a legitimate recruiter); ads without a profile or shared contact are their own group. Random splits scored ROC AUC 0.99 because the model recognises known clients; grouped splits score about 0.93 (leak audit 2026-09-24, re-checked 2026-09-30).
+        - Residual: about 335 ads without profile or shared contact still have a near-identical text (TF-IDF cosine >= 0.95) in another group, likely lightly edited reposts. Dropping them at thresholds 0.95 to 0.7 did not change the grouped AUC measurably, so we keep them.
         - The data has a location description, we do not resolve it lat/longitude but leave it to the pipelines.
         - The salary range has several weird quirks. It contains data either in the thousands, or is missing the "k" to denote thousands. Moreover, it contains empty or 0-0 entries. The column might contain yearly salary, hourly salary, or one-time payment. Finally, for some jobs, the column contains a date (e.g. "Oct-20"). We keep the column as complex as it is. We add one column that contains the maximum salary parsed from the text and we only keep salary values above 50k as valid values to create a numerical feature for differences in the larger ranges.
         - We removed job listings with non english texts (138 rows).
@@ -59,10 +102,20 @@ class Emscad(AbstractCuratedDataset):
     # Task
     target = "fraudulent"
     problem_type = "binary_classification"
+    group_on = "poster_group"
+    group_labels = "per_sample"
+    accepted_check_warnings = {
+        "dataset_pure_feature_value": "Large legitimate clients (e.g. one company profile with 539 ads) and their "
+        "locations, departments and industries are all legitimate at a 95% base rate; the grouped split keeps each "
+        "client on one side, so these values do not leak across the split.",
+    }
 
     # Splits
     splits_comment = """
-        In the original paper, 10-fold CV is used. We follow our default suggestions in the case of IID.
+        Grouped splits on poster_group: all ads of one poster (same company profile or poster-specific masked contact)
+        stay on one side, so the benchmark measures detecting fraud from posters not seen in training. The labels were
+        assigned per client (Vidros et al. 2017, Sec. 5), and ads of a known client share its label. The original paper
+        uses a random 10-fold CV on a balanced subset.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -73,6 +126,9 @@ class Emscad(AbstractCuratedDataset):
         df = raw
         # Drop duplicates
         df = df[~df.drop(columns=["job_id"]).duplicated(keep="last")]
+        # Drop reposts: "fraudsters can quickly and repeatedly try to post the same job ad in identical or different
+        # locations" (Vidros et al. 2017, Sec. 5), i.e. rows identical in every field except job_id and location
+        df = df[~df.drop(columns=["job_id", "location"]).duplicated(keep="last")]
         # Get max salary proxy for larger ranges
         s = df["salary_range"].astype(str).str.strip()
         invalid_mask = df["salary_range"].isna() | (s == "") | (s == "0-0")
@@ -259,17 +315,20 @@ class Emscad(AbstractCuratedDataset):
             "benefits",
         ]
         for c in as_string_col:
-            nan_mask = df[c].isna()
+            nan_mask = df[c].isna() | (df[c].astype(str).str.strip() == "")  # " " and "\xa0" mean missing
             df.loc[nan_mask, c] = np.nan
             df[c] = df[c].astype("string")
-        df = df.drop(columns=["job_id"]).reset_index(drop=True)
         # After our preprocessing, there is just one entry without a description, so we drop it as well.
         df = df[~df["description"].isna()].reset_index(drop=True)
+        # Group ads of the same poster (used for the splits only)
+        df["poster_group"] = poster_groups(df)
+        df = df.drop(columns=["job_id"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
+                "poster_group",
                 "telecommuting",
                 "has_company_logo",
                 "has_questions",

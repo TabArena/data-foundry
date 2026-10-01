@@ -34,6 +34,7 @@ class MutualFundsIndia(AbstractCuratedDataset):
 
         - We aim to predict the return over 3 years and drop all samples that do not have data for 3 year return.
         - We drop potentially leaking columns about returns (alpha, beta, sd, sharpe, sortino).
+        - We drop "rating". The data is one snapshot (scraped April 2023), so the target is the trailing 3-year return at that date. The rating comes from portals such as Value Research (uploader on Kaggle), whose star rating ranks funds within their category on risk-adjusted return, weighting the 5-year score 60% and the 3-year score 40% (https://www.valueresearchonline.com/fund-rating-methodology/). It is therefore computed partly from the target, like sharpe and alpha. In the data, the median within-category rank of returns_3yr rises from 0.18 at 1 star to 0.89 at 5 stars. Dropping it lowers R^2 from 0.811 to 0.783.
     """
 
     # Task
@@ -46,7 +47,7 @@ class MutualFundsIndia(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        df = df.drop(columns=["alpha", "beta", "sd", "sharpe", "sortino", "returns_5yr", "returns_1yr"])
+        df = df.drop(columns=["alpha", "beta", "sd", "sharpe", "sortino", "returns_5yr", "returns_1yr", "rating"])
         df = df[df["returns_3yr"].notna()]
         as_string_type = [
             "scheme_name",

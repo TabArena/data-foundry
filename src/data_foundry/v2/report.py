@@ -225,6 +225,9 @@ def render_report(  # noqa: C901, PLR0912 - one branch per report section
         table = result.data_checks.get(key)
         if table is None or len(table) == 0:
             continue
+        if isinstance(table, str):  # run_all_checks returns a message instead, e.g. "No numeric features to summarize."
+            out += [f"### {title}", "", _one_line(table), ""]
+            continue
         out += [f"### {title}", "", _table(table, index=key != "summary"), ""]
     return "\n".join(out).rstrip() + "\n"
 

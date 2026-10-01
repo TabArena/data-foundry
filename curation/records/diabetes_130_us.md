@@ -24,6 +24,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-09-30, Lennart): **Cleaned to the paper's cohort: first encounter per patient, no deaths or hospice discharges.** Strack et al. 2014 (BioMed Research International, 781670), Sec. 2.3: "we considered only the first encounter for each patient as the primary admission" and "we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", leaving 69,984 encounters. Our definition already kept the first encounter per patient (each patient's encounters appear in encounter_id order in the raw file; the sort is now explicit) but kept 1,084 "Expired" encounters (all "No": the dead cannot be readmitted; pure-value scan 2026-09-30) and 461 hospice discharges (16 readmitted). Now: discharge codes 11, 13, 14, 19, 20, 21 removed; 69,973 rows (paper: 69,984). Also "?" and "NULL" are now missing values.
+
 Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.
 
 TabArena curation verdict: Tabular.

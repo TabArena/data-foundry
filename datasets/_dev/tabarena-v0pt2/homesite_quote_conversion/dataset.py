@@ -43,6 +43,7 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         - IMPORTANT NOTE: this dataset was used as a non-IID task by TabRed. We keep it as an IID task, because: (A) the Kaggle discussions regarding validation converged on doing IID cross-validation, (B) based on our understanding of the prediction task IID seems most appropriate, and (C) the official test data on Kaggle contains timestamps from the same period as the train. Concluding from this, we think that treating the data as IID is appropriate and that potential temporal leakage is insignificant (due to A and B) or intended (due to C).
         - We drop the ID number and constant columns.
         - We replace -1 with NaN (https://www.kaggle.com/competitions/homesite-quote-conversion/discussion/17417) and keep ordinals as numeric features following TabRed's preprocessing.
+        - Potential leak, kept on purpose: "PropertyField37" x "PersonalField12" looks like a status code that may be filled after the quote. (Y, 1-4) holds 20,008 quotes of which 99.3% converted (40.6% of all conversions), while (Y, 5) holds 54,769 quotes of which 0.14% converted. Dropping both fields lowers LightGBM ROC AUC from 0.965 to 0.915. We keep them because the fields are anonymised and the meaning cannot be checked, Homesite set the competition up with them (the official test data has the same fields), and the Kaggle discussions do not flag them. Revisit if the fields are ever documented.
     """
 
     # Task

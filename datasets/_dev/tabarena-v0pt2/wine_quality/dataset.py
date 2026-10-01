@@ -35,12 +35,16 @@ class WineQuality(AbstractCuratedDataset):
     curation_comments = """
         - We combine the original datasets for red and white wine into a single dataset with an additional column indicating the type of wine (red or white).
         - We treat the task as a regression problem, following the original work and because the target is the median wine quality (of at least 3 evaluations by experts).
-        - Anomaly: the data has a high number of duplicates (18%).
+        - We drop exact duplicate rows (1,177 of 6,497, 18%): identical in all 11 physicochemical values, the colour and the median score; no identical feature vector carries two different scores. The paper builds "a distinct wine sample (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so the copies are most likely repeated records from exporting the certification system's per-test entries, and under a random split they put a row's twin in train. We keep the IID split: grouping identical rows would only reproduce this deduplication.
     """
 
     # Task
     target = "median_wine_quality"
     problem_type = "regression"
+    accepted_check_warnings = {
+        "task_target_low_cardinality": "The target is the median of at least three expert grades on a 0-10 scale "
+        "(7 values occur); the paper models it as regression (Cortez et al. 2009, Sec. 2.2).",
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df_red = pd.read_csv(raw_dir / "winequality-red.csv", sep=";")
@@ -55,6 +59,9 @@ class WineQuality(AbstractCuratedDataset):
         df.columns = df.columns.str.replace(" ", "_")
         target_feature = "median_wine_quality"
         df = df.rename(columns={"quality": target_feature})
+        # Exact copies (all 11 lab values, colour and the median score): the paper builds "a distinct wine sample
+        # (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so a repeated row adds no information
+        df = df[~df.duplicated()].reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -4,7 +4,176 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
-## 2026-09-30 (leak audit: retirements)
+## 2026-10-01 (leak audit, second pass)
+
+- Skills: the leak-audit learnings (probes, what was decided per kind of leak, where the first suggestions were
+  revised) are in `.claude/skills/check-candidate/references/leak_checks.md`, linked from `/check-candidate`,
+  `/add-dataset` (and its `dataset_patterns.md` §D), `/verify-dataset` and `/triage-candidates`. New
+  `scripts/v2/leak_probes.py <name>` runs the cheap probes on a folder (single-feature and missingness scores, scores
+  without the top features, exact copies across the split, 1-NN label agreement, nearest-neighbour distance score).
+
+- `sf_permit_time`: right-censored target fixed. Kept permits filed before 2024 (116,954 -> 99,847 rows; recent
+  filings miss their slow permits, p90 days to issue about 300 -> 97 for 2025) and switched from 6 yearly windows to
+  2025 to 9 half-year windows 2019-H2..2023-H2 (train >= 55%, horizon 6 months). Swapped the latitude/longitude names
+  (WKT is POINT (lon lat)); the download description now states the filed_date filter, the download date and the new
+  portal domain data.sf.gov. `dataset_constant_column` accepted (Y-or-missing flags). First `report.md`
+  (0 errors, 0 warnings).
+- `sepsis_prediction_1m`: comment only. The rows hold no future information; the leak risk is in the evaluation
+  (complete test records, septic records end shortly after onset), so predictions must be causal per patient and
+  scored with the PhysioNet 2019 utility per patient (planned scorer change); Patient_ID is group metadata only.
+  First `report.md` (0 errors, 2 warnings; both fixed in the library, see the next entry).
+- v2 library: sub-sampled `_1m` frames now drop category levels that no longer occur (dtypes are set on the full data;
+  `sepsis_prediction_1m` kept 7,740 unused Patient_ID levels), and `splits_dimensions_off_protocol` skips a single
+  split that fills the 1M train budget (whole groups left the sepsis frame 6 rows below 1.25M, so the check asked for
+  1x3). This changes the saved frames of all `_1m` datasets: `sepsis_prediction_1m/report.md` is regenerated
+  (0 errors, 0 warnings); the reports of consumer_complaints_1m and lending_club_1m are stale until regenerated after
+  the audit.
+- `sdss_17`: now a photometric task. Dropped `redshift` (fitted together with the class), `plate` and `fiber_ID`
+  (spectroscopic pointing and slot: they encode the targeting program and duplicate the dropped MJD; AUC 0.80 alone,
+  and they make LightGBM worse); deduplicated by sky position instead of the float-rounded `obj_ID` (which had removed
+  21,947 distinct objects; 78,053 -> 99,999 rows); -9999 set to missing. Not built; `report.md` regenerated
+  (0 errors, 0 warnings).
+- `online_shoppers_purchasing_intention_dataset`: kept only June-December sessions (12,330 -> 6,875) and dropped the
+  then-constant `SpecialDay`. In February-May every buyer has `PageValues` > 0 and it alone gives AUC 0.974 (likely
+  the session's own purchase in the page-value table); from June it behaves like the paper's historical page metric
+  (AUC 0.814). Split stays IID. TabArena v0.1 dataset. Not built; first `report.md` (0 errors, 0 warnings).
+- `mutual_funds_india`: dropped `rating`, the Value Research star rating, which ranks funds within their category on
+  60% 5-year and 40% 3-year risk-adjusted return and so is computed partly from the target (`returns_3yr` is the
+  trailing return of the April 2023 snapshot). R^2 0.811 -> 0.783. Not built; `report.md` regenerated.
+- `kick`: comments only, splits and features unchanged. The curation comment and the split decision no longer claim
+  the Kaggle split was grouped by auction location (a buggy check; 78.9% of Kaggle test rows are at a location also
+  in train); the temporal split stays. Missing `WheelType` (likely blanked on kick-back; AUC 0.757 -> 0.691 without it)
+  is noted as a potential leak kept on purpose. `report.md` regenerated (0 errors, 0 warnings).
+- Removed `iranian_churn`: retired (`No (Retired)`, Data Quality Issue). The paper's design ends each churner's
+  feature window at the churn month (Keramati & Ardabili 2011, Sec. 4.1), so the task detects customers who are
+  already leaving (AUC 0.986); there are no dates to rebuild a common prediction point.
+- `homesite_quote_conversion`: comment only. `PropertyField37` x `PersonalField12` may be a post-quote status code
+  (AUC 0.965 -> 0.915 without it), kept on purpose: anonymised fields, set up that way by the host, not flagged in the
+  Kaggle discussions; revisit if documented. First `report.md` (0 errors, 2 warnings: 13 columns constant after the
+  -1 -> NaN replacement, and a `' '` level in GeographicField63; both open).
+- `jm1`: dropped exact duplicate rows (1,973) and every copy of a code-metric vector that occurs with both labels
+  (176 rows): 10,885 -> 8,736 rows. 25% of rows shared their vector with another row, so random splits put copies on
+  both sides. TabArena v0.1 dataset. Not built; `report.md` regenerated (0 errors, 0 warnings).
+- `south_africa_coronary_heart_disease`: comment on post-outcome measurement (ESL Sec. 5.2.2: risk factors measured
+  after the heart attack), which weakens rather than leaks the signal; features unchanged. `report.md` regenerated.
+- `home_credit_default_risk`: definition restructured without changing the data (identical frame hash): all tables
+  read in `_load_raw`, one helper per kernel function, column lists as module constants, unused list removed, and
+  `_feature_types` no longer lists 25 categorical columns that the feature selection drops (the definition did not
+  build). `dataset_missing_value_sentinel` accepted (`POS_MONTHS_BALANCE_MAX = -1` is the month before the
+  application). Not built; `report.md` regenerated (0 errors, 0 warnings).
+- Removed `ghanas_indigenous_intel`: retired for now (`No (Retired)`; Too Small, Data Quality Issue; to revisit).
+  Farmers submit in single-label batches, so the 10,928 rows are 626 farmer-days, and each test window holds rain from
+  only 3-6 farmer-days; without the reporter's identity LightGBM is near always-NORAIN (macro-F1 0.261 vs 0.241). The
+  "no rain" label likely mixes no rain with no measurement (22 of 43 farmers never record rain in the rainy season).
+- Removed `customer_satisfaction_in_airline`: retired (`No (Retired)`; AHDS, Data Quality Issue, Duplicate, Missing
+  source information). The passenger ratings of the base Kaggle file are generated (rating columns copied from one
+  another within customer segments, e.g. wifi = gate location in 95% of one segment), and the shipped file is a
+  manipulated copy of it (misnamed rating columns, replaced distances, 14,659 labels flipped by a rule on the dropped
+  Gender column). TabArena v0.1 dataset; the shipped notebook and collection pin are unchanged.
+- `garments_worker_productivity`: `incentive` is now the previous working day's value (`incentive_lag_1`), like the
+  other end-of-day columns. The paper (Al Imran et al. 2021, Sec. 3.1) defines it as a structured incentive paid for
+  achieved performance, and within teams its daily changes follow the same day's productivity (Spearman 0.53) rather
+  than the previous day's (0.07). LightGBM RMSE on the 30 splits 0.134 -> 0.140 (no incentive 0.141). Not built;
+  `report.md` regenerated (0 errors, 0 warnings).
+- Removed `ecommerce_shipping`: retired (`No (Retired)`, AHDS + Missing source information). `Warehouse_block` is
+  `ID mod 6` (cycle D, F, A, B, C, F) and `Mode_of_Shipment` a 137-ID cycle, with no exception in 10,999 rows, so the
+  file is generated; the target comes in two ID blocks (IDs 1-3,135 all late, AUC 0.506 on the rest) and the source
+  cannot be traced. TabArena v0.1 dataset; the shipped notebook and collection pin are unchanged.
+- `consumer_complaints_1m`: rebuilt from the CFPB FOIA narratives archive (CCDB exports 1-14, exported 2026-09-14,
+  in `local-data-warehouse/consumer_complaints/foia_archive/`). The CFPB removed the narratives from the live download on
+  2026-09-14, so the old download description no longer reproduces the dataset. The 2026-01-23 build filtered out
+  complaints still "In progress" (7-70% of Oct-Dec 2025), which censored the test window; the archive labels are
+  settled. Data now ends 2025-12-31 (narratives after 2025 are rare and differently selected), test window
+  Oct-Dec 2025 (203,139 rows, 3-month horizon). The dispute filter became the equivalent date filter (>= 2017-04-24)
+  and the consent filter "has a narrative"; narrative line endings normalised; label-conflicting duplicates now all
+  dropped, as the comments said. `dataset_pure_feature_value` accepted (Block, Inc. company response policy).
+  Not built; `report.md` regenerated (0 errors, 0 warnings).
+- `coffee_rating_prediction`: temporal splits changed from 5 six-month windows (the oldest trained on 44% of the rows)
+  to 13 two-month windows walking back until train would fall below 50% (54-115 test rows each, horizon 2 months).
+  Monthly windows (26) would match the split-count convention but hold 2-72 reviews each. Not built; `report.md`
+  regenerated.
+- `get_temporal_window_splits`: calendar windows without `n_windows` now stop at the start of the data (they walked
+  back until the timestamp overflowed). Skills: widen temporal windows that would hold fewer than about 50 test rows.
+
+## 2026-09-30 (leak audit: retirements and fixes)
+
+- `diabetes_130_us`: follow the paper's cohort (Strack et al. 2014, Sec. 2.3): keep each patient's first encounter
+  (sorted by `encounter_id` to make it explicit; the kept encounters are unchanged) and remove encounters ending in
+  death or hospice
+  (1,084 "Expired", all not readmitted; 461 hospice). 71,518 -> 69,973 rows. "?" and "NULL" set to missing. Not built;
+  `report.md` regenerated (0 errors, 0 warnings).
+
+- `hotel_booking_demand`: training now holds only bookings arriving before each prediction point (the kept
+  future-arrival cancellations were 100% cancelled; `splits_temporal_leakage` resolved); dropped `BookingChanges`,
+  `AssignedRoomType`, `RequiredCarParkingSpaces` (recorded after the prediction point); `Agent`/`Company` "NULL" set to
+  missing; horizon 3 months. The migrated `_make_splits` dropped the outcome columns before using them (crash); they
+  are now dropped after splitting. LightGBM log loss about 1.7 -> 0.33. Not built; `report.md` regenerated.
+
+- Removed `seismic_bumps`: retired (`No (Retired)`, `Too Small`). The rows are consecutive shifts of a
+  non-stationary sequence, so the IID split is wrong; under the temporal convention (30 splits, >= 50% train) the
+  newest half holds only 49 of 170 positives, 0-5 per test window. TabArena v0.1 dataset; the shipped notebook and
+  collection pin are unchanged.
+- Skills: the temporal split convention (as many splits as an IID task of that size, >= 50% train) and a check for
+  positives per test window are now in the curation guidelines and `dataset_patterns.md`.
+
+- `california_house_prices_2020`: the deduplication reordered rows by address, so `time_index` (and the temporal
+  split) was the alphabetical address rank; rows are now sorted back to the Kaggle Id (= sale order) before
+  `time_index` is rebuilt. Splits unchanged in form (3 row windows, newest first). Not built; `report.md` regenerated.
+
+- `in_vehicle_coupon_recommendation`: grouped splits on a new `respondent` column (consecutive blocks of the same
+  first-part survey answers in the raw file, 587 groups), i.e. a cold-start task; AUC 0.83 IID -> 0.75 grouped.
+  TabArena v0.1 dataset. Not built; `report.md` regenerated (0 errors, 0 warnings).
+
+- `wine_quality`: dropped exact duplicate rows (6,497 -> 5,320; identical features and score, no conflicts) instead
+  of the audit's grouped split; the split stays IID. `task_target_low_cardinality` accepted (median expert grade,
+  modelled as regression by Cortez et al. 2009). TabArena v0.1 dataset. Not built; `report.md` regenerated.
+
+- `emscad`: dropped reposts (identical except `job_id` and `location`, per Vidros et al. 2017 Sec. 5) and switched to
+  grouped splits on a new `poster_group` (exact company profile or poster-specific masked contact hash); 17,460 ->
+  16,116 rows, 4,441 groups. LightGBM AUC about 0.99 IID -> 0.938 grouped. Blank-looking text values set to missing.
+  `dataset_pure_feature_value` accepted (large legitimate clients). Not built; `report.md` regenerated.
+
+- Removed `hazelnut_spread_contaminant_detection`: retired (`No (Retired)`, `Data Quality Issue`). The 2,400 rows are
+  repeated scans of about ten contaminant set-ups (Urbinati et al. 2020, Sec. IV.A); the set-up label was never
+  released and the file order does not reveal it, so a grouped split cannot be built. TabArena v0.1 dataset; the
+  shipped notebook and collection pin are unchanged. The outreach to the authors is noted in its record.
+
+- `biogeographical_ancestry_prediction`: dropped the Turkey class (a separately genotyped source with an assay
+  artefact at `rs3857620`: AG in 24/28 Turkey samples, GG in all others) and the two SNPs that are constant without it
+  (`rs3857620`, `rs367953206`); `NN` no-calls set to missing. 635 -> 607 rows, 10 -> 9 classes, 104 -> 102 features.
+  Not built; `report.md` regenerated (0 errors, 0 warnings).
+- `report.md` rendering: a data-check entry that is a message instead of a table (e.g. "No numeric features to
+  summarize." for an all-categorical dataset) crashed `dataset check`; it is now written as text (tested).
+
+- `santander_customer_transaction_prediction`: dropped the 400 `var_i_has_one`/`has_zero` features (Kaggle #1
+  solution), computed from the labels of all rows before splitting; 600 -> 200 features (the raw vars). LightGBM AUC
+  0.903 -> 0.896. `curation_comments` note that the value-count technique is worth doing inside a pipeline, per fold.
+  Not built; `report.md` regenerated (0 errors, 0 warnings).
+
+- Removed `maternal_health_risk`: retired (`No (Retired)`, `Data Quality Issue`). Only 416 of 1,014 feature vectors
+  are unique (the file's tail is copies of earlier rows), and the real group structure (six collection sites, IoT
+  device and web portal; Ahmed & Kashem, STI 2020) is not in the file, so no split can be trusted. TabArena v0.1
+  dataset; the shipped notebook and collection pin are unchanged. See `curation/records/maternal_health_risk.md`.
+
+- `hepatitis_c_prediction`: rounded `ALB`, `ALT`, `AST`, `BIL`, `CREA`, `GGT`, `PROT` to integers for all rows and
+  dropped `ALP`; donor and patient rows were recorded with different precision (and `ALP` is missing only for
+  patients), which separated them at AUC 0.9997. 12 -> 11 features. Not built; `report.md` regenerated by
+  `dataset check` (0 errors, 0 warnings).
+
+- `heart_failure_followup_survival`: dropped `time` (follow-up days, which end at death or censoring) instead of
+  converting it to `month_to_follow_up`; 12 -> 11 features. LightGBM AUC 0.90 -> 0.75.
+- `mic`: predict at admission; dropped the 9 ICU day-1..3 columns (`R_AB_*`, `NA_R_*`, `NOT_NA_*`), whose
+  missingness encodes death before day 2/3; 111 -> 102 features. Death AUC 0.93 -> 0.91.
+- `kickstarter`: dropped the creator's project `profile` (and `profile_blurb`), present only for funded projects;
+  and `staff_pick` (can be awarded mid-campaign); the task now simulates predicting at launch. 14 -> 12 features,
+  187,118 -> 187,117 rows (one more exact duplicate once the profile is gone). AUC 0.924 -> ~0.886 (leak audit).
+- All three: not built; `report.md` regenerated by `dataset check` (0 errors, 0 warnings). See their records.
+
+- `anes_voting_2026`: dropped 57 post-election columns, 318 -> 261 features (not built; `report.md` regenerated by
+  `dataset check`, 0 errors, 0 warnings). `VCF1005` is built from the post-election House vote (codes 1/2 exist
+  only for voters); `VCF0426`/`VCF0427` list "no Post IW" and 54 `VCF92xx` list "no post data" in the Feb 2026
+  codebook, which the "no post IW" filter missed. The 10 of them in `num_cols` were removed from it. LightGBM mean
+  AUC on the temporal splits: 0.930 -> 0.855. See `curation/records/anes_voting_2026.md`.
 
 - Removed `prostate_cancer_detection`: retired (`No (Retired)`, `Data Quality Issue`). The label is readable from
   sample-processing artefacts: the m/z < 1 Da channels give AUC 0.83, and two same-label groups (Benign vs NED)

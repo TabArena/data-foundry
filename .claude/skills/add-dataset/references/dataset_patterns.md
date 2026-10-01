@@ -188,7 +188,9 @@ We start with <file> from <source>.
 - Note: <a decision a reviewer would otherwise question>
 ```
 
-`Anomaly:` and `Note:` are established prefixes across the shipped notebooks — use them.
+`Anomaly:` and `Note:` are established prefixes across the shipped notebooks — use them. A suspected leak that stays
+in on purpose gets `Potential leak, kept on purpose:` with the mechanism, the numbers, why it stays and when to
+revisit (`homesite_quote_conversion`, `kick`).
 Comments are the audit trail: **every non-obvious line of preprocessing code needs a bullet,
 and every bullet needs code.** `/verify-dataset` checks exactly that correspondence.
 
@@ -270,6 +272,14 @@ convention, which the bundle checks verify:
 | Only a row order (california, mercedes: `TimeSeriesSplit`) | `TemporalSplits(window=..., unit="rows", n_windows=3)` with `time_horizon_unit="steps"` |
 | Overlapping windows (ghana: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
+**Number of windows.** Use as many windows as an IID or grouped task of that size would get splits
+(`get_recommended_splits_dimensions`: 20 x 3, 10 x 3 or 3 x 3), rolled back from the newest data, and never a
+window whose train side is below 50% of the data (`min_train_fraction=0.5`). Then count the minority class (or the
+target spread) per test window; windows with a handful of positives make the task too small for a temporal split
+(see the curation guidelines, "Temporal tasks/splits"). If that leaves windows with fewer than about 50 test rows,
+use wider windows and fewer splits (`coffee_rating_prediction`: `TemporalSplits(window=2, unit="months",
+min_train_fraction=0.5)`, 13 windows instead of 26 monthly ones) and say why in `splits_comment`.
+
 Calendar windows end on unit boundaries (day, month start, year start); `min_train_fraction` stops before a window
 whose train side is smaller than that share (of the distinct values for `"unique"`, of the rows otherwise) and, with
 `window=None` and `unit="unique"`, sizes the windows so they cover the newest `1 - min_train_fraction` of the
@@ -285,7 +295,8 @@ single window, for example `cutoffs=("2016",)`); the sub-sampled frame is sorted
 ## §D Recurring traps — what to pre-flag
 
 These are the mistakes the collection actually had to fix. Turn each applicable one into a
-`# TODO(verify):` marker in `dataset.py`, and a bullet in `curation_comments`.
+`# TODO(verify):` marker in `dataset.py`, and a bullet in `curation_comments`. How to detect them once the data loads,
+and what the 2026 leak audit decided for each kind: [`../../check-candidate/references/leak_checks.md`](../../check-candidate/references/leak_checks.md).
 
 **1. Target-component leakage.** A feature that is part of, derived from, or a consequence of
 the target: sub-scores that add up to the target, an alternative encoding of the outcome,
@@ -293,23 +304,50 @@ weight/height when the target is body mass, grades G1/G2 when the target is the 
 a "current status" column, award notes inside a description field. Also: a feature that is the
 output of a *supervised* transform fit on the whole dataset (discriminant score, target
 encoding, a model's own prediction) — that leak is irreversible and excludes the dataset.
+Also: a value fitted from the same measurement as the label (sdss_17 `redshift` in a photometric task), targeting or
+pointing ids that encode how objects were pre-selected (sdss_17 `plate`, `fiber_ID`), and an aggregate that may
+include the row's own outcome (online_shoppers `PageValues`, kept only for the months where it behaves like history).
 → TODO marker: *"list every feature that is a component/consequence of the target and drop it."*
 
 **2. Not available at prediction time.** Especially for temporal tasks: fields recorded after
 the prediction point (call duration, reservation status, number of customers that day, post-outcome
 scrape fields, post-election survey answers). Ask "would this value have existed at time *t*?"
-→ TODO marker per suspicious column.
+→ TODO marker per suspicious column. What the leak audit added:
+* Name the prediction point first and check every column against it. "Predict at launch" removed kickstarter's
+  `staff_pick` next to the flagged `profile_blurb`; "predict at admission" removed mic's ICU day-1..3 columns.
+* When the codebook marks one column as post-outcome, drop every column with the same marker (anes_voting_2026:
+  `VCF1005` led to 56 more "no Post IW" / "no post data" items).
+* A same-day value that depends on the day's outcome can often be lagged instead of dropped: shift it within each
+  entity in time order and drop the same-day column (garments_worker_productivity builds `incentive_lag_1` per team).
+* Missingness is a value too: fields that are blank because the outcome already happened (a patient who died before
+  day 3) are post-outcome.
+* In snapshot data, a feature computed from the window that defines the target is a leak although its value is
+  known at snapshot time (mutual_funds_india `rating`).
 
 **3. Entity duplicates across splits.** The same patient / house / molecule / object appearing
 in several rows leaks the target between train and test even when the rows differ. The shipped
 fix is either "keep the first row per entity" or "make it a grouped task".
 → TODO marker: *"check for repeated entities (patient_nbr, address, obj_ID, hospital number)."*
+Group only on a true group id, or on one constructed exactly from the data (identical profile text, a masked
+contact hash, consecutive blocks of identical answers in the raw file order: `emscad`,
+`in_vehicle_coupon_recommendation`). Never cluster by similarity or hash the feature vector to stand in for an
+unknown entity. When the real groups matter and cannot be recovered, the dataset is retired, not grouped on a guess
+(`maternal_health_risk`, `hazelnut_spread_contaminant_detection`). Parse ids as strings: `sdss_17`'s float-parsed
+`obj_ID` merged 21,947 distinct objects.
 
 **4. Duplicate rows — decide, don't ignore.** The rule the curators apply: many
 degrees of freedom + exact match → a collection artifact, drop it (and say the %); few features
 and plausible repeats → natural, keep it (and say so). Duplicates with *conflicting* targets are
 usually dropped unless they represent genuine label ambiguity. Shipped datasets range from 0% to
-98% duplicates, so this is always worth a bullet.
+98% duplicates, so this is always worth a bullet. The leak audit settled three cases:
+* exact copies with the same label: drop them rather than grouping on the duplicate key (`wine_quality`);
+* a feature vector that occurs with both labels: drop every copy (`jm1`, `consumer_complaints`):
+  ```python
+  df = raw.drop_duplicates()                                  # exact copies, label included
+  features = [c for c in df.columns if c != self.target]
+  df = df[~df.duplicated(subset=features, keep=False)]        # what is left duplicated conflicts on the label
+  ```
+* reposts identical except an id or a location: drop them as the source paper does (`emscad`).
 
 **5. Row order carries signal.** Data sorted by target, by price, by location, or by collection
 batch produces a fake distribution shift and lets models exploit position. Always shuffle IID and
@@ -318,10 +356,18 @@ forget.
 
 **6. Censored / capped targets.** A target clipped at a maximum (house price 500001, a runtime
 timeout) punishes extrapolation. Either drop the censored rows or document the censoring.
+A duration or a final status is also right-censored by the download date: the newest rows lose their slow or late
+cases (a permit approved after the download is missing, a complaint still in progress is filtered out). Look at the
+row count and the target's p90 per period, and compare two downloads if you can. Then cut the periods whose follow-up
+is not complete (`sf_permit_time`: permits filed before 2024) or take a source with settled labels
+(`consumer_complaints`: the CFPB FOIA archive).
 
 **7. Proxy missing values.** `"?"`, `" "`, `"na"`, `"NULL"`, `-1`, `-9`, `-999`, `999999`,
 `365243` and friends. Convert them when the encoding can be inferred from the data description;
-keep them (and say why) when they carry meaning, e.g. "not previously contacted".
+keep them (and say why) when they carry meaning, e.g. "not previously contacted". The leak audit also found
+impossible values standing in for missing ones (`chol == 0` and `trestbps == 0` in heart_disease_va_long_beach,
+`age = 455` in thyroid_discordant, `-9999` in sdss_17) and rows that are a sentinel in every feature (heloc: 588 rows
+of `-9`, no bureau record). A sentinel that holds one class only shows up as `dataset_pure_feature_value`.
 
 **8. Rare classes.** Classes with <10 samples get dropped in the shipped notebooks — they break
 stratification and leave folds whose test set holds an unseen class (`splits_test_class_unseen_in_train`).
@@ -331,10 +377,14 @@ Merging label groups into a coarser, meaningful taxonomy is also accepted; docum
 leaking (a random split on temporal data). Conversely, a benchmark's non-IID label may be wrong
 for our framing. Decide from the *application*, and record the argument in `curation_comments` —
 several shipped datasets deliberately diverge from TabRed/the original paper in both directions.
+Check such claims against the data before writing them down: kick's comment called the Kaggle split grouped by
+auction location, but 78.9% of its test rows are at a location also in train.
 
 **10. Copy top solutions' preprocessing, not their exploits.** Kaggle write-ups are the best
 source for what preprocessing is legitimate. Do not copy steps that exploit a test-set leak, a
-metric quirk, or competition-specific hacking.
+metric quirk, or competition-specific hacking. A feature computed over all rows with their labels before splitting
+is such a step even when it won the competition (`santander_customer_transaction_prediction`: the #1 solution's
+`has_one` / `has_zero` columns, dropped; the record suggests the value-count idea inside a per-fold pipeline).
 
 **11. Anonymized data.** When features have no semantics you cannot infer dtypes or missing-value
 encodings — keep the data as-is, tag `Anonymized`, and say what you could not determine.
@@ -342,6 +392,33 @@ encodings — keep the data as-is, tag `Anonymized`, and say what you could not 
 **12. Reconstruct destroyed meaning.** Ordinal-encoded categories, one-hot blocks, dates split
 across three columns, IDs that encode a group and a session — the shipped notebooks reverse these.
 It is the one kind of feature engineering that is always welcome.
+
+**13. Classes recorded differently.** When the classes come from different sources, sites or assays, the recording
+itself can give the label away: rounding (hepatitis_c_prediction: `ALB` and `BIL` whole numbers in ~100% of patient
+rows, ~10% of donor rows), a column only one class has, a genotyping artefact in one panel
+(biogeographical_ancestry_prediction). Harmonise the format (round every row to the shared precision; first check
+how much information that removes), drop the column or the separately sourced class, or retire the dataset when the
+artefact runs through every feature (prostate_cancer_detection).
+→ TODO marker: *"check number formats and missingness per class; do two same-label subgroups separate?"*
+
+**14. Cohort and selection.** Follow the source's cohort definition: diabetes_130_us removes encounters that ended
+in death or hospice, as Strack et al. 2014 (Sec. 2.3) do, because those patients cannot be readmitted. A selection on
+the outcome that the task states (cirrhosis_patient_survival_prediction: time to death, deaths only) stays, with a
+bullet saying it is by design.
+
+**15. Training rows whose label is not yet known.** In a temporal task, a row's label must be known at the
+prediction point to be in train. hotel_booking_demand kept bookings arriving after the prediction date that were
+already cancelled (100% positive), so the model learned "future arrival = cancelled"; its `_make_splits` filters
+training rows by arrival date. Filtering on the status date does not remove the shortcut.
+
+**16. A step that reorders rows.** `df.loc[idx]`, a merge or a groupby can sort the rows by another key; a row-order
+time index built afterwards is then that key (california_house_prices_2020's "temporal" split ran on the
+alphabetical address). Restore the source order before deriving a time index, and check it against the date.
+
+**17. Definition bugs the audit found in shipped datasets.** A numeric column listed as categorical (a 125k-level
+category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`, which logs it again
+(santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
+`license` (cirrhosis: `"IID"`). Read your class attributes once more for these before handing off.
 
 ## §E Bundle check → what to do in the scaffold
 
@@ -354,6 +431,7 @@ It is the one kind of feature engineering that is always welcome.
 | `dataset_identifier_column` | drop uninformative identifiers (§B.3) |
 | `dataset_constant_column`, `dataset_all_missing_column`, `dataset_duplicate_columns` | drop them (§B.7) |
 | `dataset_feature_equals_target` | drop target components (§D.1) |
+| `dataset_pure_feature_value` | a value (≥100 rows), or present vs missing, that holds one class only: look up the column in the source's documentation; drop it if derived from or recorded after the outcome (§D.1, §D.2), else accept with the reason. On a target with a 94-98% base rate it is usually an ordinary category effect |
 | `dataset_missing_value_sentinel`, `dataset_missing_value_label` | convert proxy missing values (§B.5) |
 | `dataset_unused_categories` | handled by the base class (the category cast removes unused categories) |
 | `dataset_row_order_leaks_target` | handled by the base class (shuffle); check `shuffle = False` is justified |
@@ -389,6 +467,7 @@ inside the hook. Typical decisions, with examples from the collection:
 |---|---|
 | A column leaks the target and is dropped (sub-scores that add up to the target, a post-outcome field) | a table of the column's correlation with / single-feature AUC for the target |
 | The split regime (kick: temporal, not grouped by auction location) | a table of how many groups recur over time; a histogram of time points per group |
+| A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column (`scripts/v2/leak_probes.py`) |
 | Duplicate rows are kept or dropped (§D.4) | the duplicate share and how many conflict in the target |
 | Rare classes are merged or dropped (§D.8) | the class counts before and after |
 | A proxy missing value is converted (§B.5) | the value counts of the sentinel |

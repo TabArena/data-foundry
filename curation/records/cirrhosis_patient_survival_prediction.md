@@ -33,6 +33,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-09-30, Lennart): **Deaths-only target is intended: a survival-time task without censoring by design.** The leak audit (2026-09-24) flagged that the target (time to death) is defined only for patients who died, so censored patients are dropped. This is on purpose: the task is to predict the survival time of patients who die, not a censored survival analysis, so no change. The 36 of 161 rows with Drug/Ascites/Hepatomegaly/Spiders/Copper/Alk_Phos/SGOT missing are the non-trial patients (a cohort signal, not a leak).
+
 Need to check for duplicates and original source.
 
 Might be RCT data, not sure what the target might become?

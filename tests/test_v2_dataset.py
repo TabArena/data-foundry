@@ -316,6 +316,9 @@ def test_temporal_windows_gap_cutoffs_and_min_train() -> None:
     many = get_temporal_window_splits(dataset=df, time_on="t", window=2, unit="unique", min_train_fraction=0.5)
     assert all(len(f[0][0]) >= len(df) / 2 for f in many.values())
 
+    calendar = get_temporal_window_splits(dataset=df, time_on="t", window=3, unit="days", min_train_fraction=0.5)
+    assert len(calendar) == 5  # windows ending on days 30, 27, ..., 18; the next would train on 14 of 30 days
+
     derived = get_temporal_window_splits(
         dataset=df, time_on="t", window=None, unit="unique", n_windows=3, min_train_fraction=0.5
     )
@@ -358,6 +361,18 @@ def test_decisions_are_rendered_into_the_report(tmp_path: Path, warehouse: Path)
     assert read_report(folder / "report.md")["decisions"] == ["Colour is kept as a category"]
 
 
+def test_report_renders_a_dataset_without_numeric_features(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return drop_columns(df, ["row_id"])',
+        'return drop_columns(df, ["row_id", "x1"])',
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    text = (folder / "report.md").read_text()
+    assert "### Numeric features\n\nNo numeric features to summarize." in text
+
+
 def test_clean_changes_never_reach_the_raw_cache(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     body = (
@@ -393,3 +408,12 @@ def test_unseeded_randomness_is_an_error(tmp_path: Path, warehouse: Path) -> Non
     write_definition(tmp_path / "datasets", body=body)
     report = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False).bundle_report
     assert "definition_nondeterministic" in report.slugs
+
+
+def test_subsampled_frames_drop_unused_categories() -> None:
+    from data_foundry.v2.dataset import _drop_unused_categories
+
+    df = pd.DataFrame({"g": pd.Categorical(["a", "b", "c"]), "x": [1, 2, 3]}).iloc[:2]
+    out = _drop_unused_categories(df)
+    assert list(out["g"].cat.categories) == ["a", "b"]
+    assert list(df["g"].cat.categories) == ["a", "b", "c"]  # the input frame is left as it was

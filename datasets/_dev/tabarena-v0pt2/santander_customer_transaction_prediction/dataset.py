@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, drop_columns
 
 
 class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
@@ -37,7 +37,8 @@ class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
 
         - The data has been anonymized, so feature meanings are unknown.
         - The data seems to be generated or created for the competition. Most features are perfectly normally distributed.
-        - Kaggle experts found various uniqueness-based features and had to filter fake samples from the test data. We apply the uniqueness-based features.
+        - Kaggle experts found various uniqueness-based features and had to filter fake samples from the test data. We do not ship them: the #1 solution's has_one/has_zero features (does this row's value occur in another class-1 / class-0 row?) are computed from the labels of all rows, so precomputed they encode the labels of the test-fold rows (about +0.004 ROC AUC). We ship the raw var_0..var_199.
+        - The feature engineering itself can be a good idea inside a pipeline: value counts / value-presence encodings of each var, computed within each fold from the training rows (and from unlabelled rows where a method is allowed to see them), add real signal (LightGBM ROC AUC 0.899 with has_one/has_zero from the training fold's labels and 0.900 with label-free value counts, against 0.896 for the raw vars and 0.903 for the shipped leaky version; leak audit 2026-09-24).
     """
 
     # Task
@@ -50,34 +51,9 @@ class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # Follow #1 solution https://www.kaggle.com/code/fl2ooo/create-data
-        # - We do not create the feature that is used for / requires test-time adaption for the fake test samples (that do not exist in the train data).
-        orig = [f"var_{i}" for i in range(200)]
-        has_one = [f"var_{i}_has_one" for i in range(200)]
-        has_zero = [f"var_{i}_has_zero" for i in range(200)]
-        target = self.task_metadata.target_column_name
-        for f in orig:
-            df[f + "_has_one"] = 0
-            df[f + "_has_zero"] = 0
-            f_1 = df.loc[df[target] == 1, f].value_counts()
-
-            f_1_1 = set(f_1.index[f_1 > 1])
-            f_0_1 = set(f_1.index[f_1 > 0])
-
-            f_0 = df.loc[df[target] == 0, f].value_counts()
-            f_0_0 = set(f_0.index[f_0 > 1])
-            f_1_0 = set(f_0.index[f_0 > 0])
-
-            df.loc[df[target] == 1, f + "_has_one"] = df.loc[df[target] == 1, f].isin(f_1_1).astype(int)
-            df.loc[df[target] == 0, f + "_has_one"] = df.loc[df[target] == 0, f].isin(f_0_1).astype(int)
-            df.loc[df[target] == 1, f + "_has_zero"] = df.loc[df[target] == 1, f].isin(f_1_0).astype(int)
-            df.loc[df[target] == 0, f + "_has_zero"] = df.loc[df[target] == 0, f].isin(f_0_0).astype(int)
-            df = df.copy()
-        df.loc[:, has_one] = 2 * df.loc[:, has_one].values + df.loc[:, has_zero].values
-        df = df.drop(columns=["ID_code"])
-        cat_cols = [self.task_metadata.target_column_name] + has_one + has_zero
-        for col in cat_cols:
-            df[col] = df[col].astype("category")
+        # Ship the raw var_0..var_199 only: the #1 solution's has_one/has_zero value-presence features are computed
+        # from the labels of all rows, test folds included, so they cannot be precomputed for a static benchmark.
+        df = drop_columns(df, ["ID_code"])
         return df
 
 

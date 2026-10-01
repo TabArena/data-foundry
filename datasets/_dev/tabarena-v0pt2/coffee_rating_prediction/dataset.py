@@ -52,11 +52,14 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We simulate a setting where we refit the model every 6 months and only test on the next 6 months. We repeat this process 9 times, going back in time. Note, our training data gets smaller step by step, down to 1k samples.
+        We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
+        from the newest review until the training data would fall below 50% of the rows (13 windows). Monthly windows
+        (26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
+        RMSE noise; 2-month windows keep at least ~50 test rows each.
     """
-    time_horizon = 6
+    time_horizon = 2
     time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=6, unit="months", n_windows=5)
+    temporal_splits = TemporalSplits(window=2, unit="months", min_train_fraction=0.5)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "coffee_clean.csv")

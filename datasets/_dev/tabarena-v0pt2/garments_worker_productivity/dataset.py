@@ -40,7 +40,8 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
         - The associated paper conceptualizes the task as an interpretable ML task without consideration of realistic predictive scenarios. Therefore, we define a new predictive ML task.
         - We define the decision point in time as the start of the day.
         - We set the target variable to "actual_productivity", and use the targeted_productivity as an input feature.
-        - We do not include all features directly for prediction, because some can't be expected to be available at the decision point in time: "smv", "wip", "over_time", "idle_time", "idle_men". To still keep as much information as possible, we impute the value of the previous recorded working day (by department and team).
+        - We do not include all features directly for prediction, because some can't be expected to be available at the decision point in time: "smv", "wip", "over_time", "idle_time", "idle_men", "incentive". To still keep as much information as possible, we impute the value of the previous recorded working day (by department and team).
+        - "incentive" is a structured incentive, i.e. "higher pay for achieving the milestone or targeted performance", which "depends on the performance, so it fluctuates with the change in performance level" (Al Imran et al. 2021, Sec. 3.1). It is paid for the day's achieved output and recorded in the end-of-day efficiency report. In sewing, day-to-day changes in the incentive follow the same day's productivity (Spearman 0.53 within teams) and not the previous day's (0.07). We therefore use the previous day's value.
         - Because the timestamps are irregularly spaced, we additionally include the days passed sind the last recording per department and team.
         - Note that we try to keep feature engineering minimalistic and only with the sole purpose to prevent leaks with minimal loss of information.
         - It can be expected that feature engineering exposing the non-iid properties of the dataset will be crucial for good predictive performance.
@@ -67,8 +68,9 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # NOTE: "date", "quarter", "department", "day", "team", "targeted_productivity", "actual_productivity" are safe to keep. For "incentive", "no_of_style_change", "no_of_workers" it's a guess.
-        lag_cols = ["smv", "wip", "over_time", "idle_time", "idle_men"]
+        # NOTE: "date", "quarter", "department", "day", "team", "targeted_productivity", "actual_productivity" are safe to keep. For "no_of_style_change", "no_of_workers" it's a guess.
+        # "incentive" is paid for the day's achieved output (paper Sec. 3.1), so it is lagged like the end-of-day columns.
+        lag_cols = ["smv", "wip", "over_time", "idle_time", "idle_men", "incentive"]
         df.department = df.department.str.strip(" ")
         df.date = pd.to_datetime(df.date)
         entity_cols = ["department", "team"]

@@ -231,6 +231,7 @@ bump versions or publish without explicit human authorization.
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
 | Triage candidates — dashboard + curation guidelines | [`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md) |
 | Check one candidate — second opinion with citations | [`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md) |
+| Leak checks — probes and the 2026 leak-audit precedents | [`.claude/skills/check-candidate/references/leak_checks.md`](.claude/skills/check-candidate/references/leak_checks.md) · [`scripts/v2/leak_probes.py`](scripts/v2/leak_probes.py) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |

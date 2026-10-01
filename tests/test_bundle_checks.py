@@ -146,6 +146,63 @@ def test_feature_identical_to_target_is_leakage():
     assert "dataset_feature_equals_target" in slugs_of(make_container(df))
 
 
+def make_pure_value_frame(n: int = 1_000, positive_share: float = 0.5, n_pure: int = 150) -> pd.DataFrame:
+    """A binary frame whose ``leak`` column is ``"only_yes"`` for ``n_pure`` rows, all of them positive."""
+    rng = np.random.default_rng(0)
+    target = np.where(rng.random(n) < positive_share, "yes", "no")
+    target[:n_pure] = "yes"
+    leak = np.where(np.arange(n) < n_pure, "only_yes", rng.choice(["a", "b"], size=n))
+    return pd.DataFrame(
+        {
+            "feat_num": rng.normal(size=n),
+            "leak": pd.Categorical(leak),
+            "target": pd.Categorical(target),
+        },
+    )
+
+
+def test_feature_value_that_determines_the_class_is_flagged():
+    report = run_bundle_checks(make_container(make_pure_value_frame()), verbose=False)
+    found = [r for r in report.results if r.slug == "dataset_pure_feature_value"]
+    assert len(found) == 1
+    assert found[0].severity == "warning"
+    assert "leak = only_yes: 150 rows" in found[0].message
+
+
+def test_pure_value_of_a_rare_class_is_not_flagged():
+    # 1% positives: a 500-row value would hold ~5 positives, so seeing none is not evidence of a leak
+    df = make_pure_value_frame(n=5_000, positive_share=0.01, n_pure=0)
+    df["mostly_no"] = pd.Categorical(np.where(np.arange(len(df)) < 500, "block", "rest"))
+    df.loc[:499, "target"] = "no"
+    assert "dataset_pure_feature_value" not in slugs_of(make_container(df))
+
+
+def test_pure_value_check_skips_regression():
+    df = make_pure_value_frame()
+    df["target"] = np.where(df["leak"] == "only_yes", 1.0, df["feat_num"])
+    task = PredictiveMLTaskMetadata(
+        target_column_name="target", problem_type="regression", objective_metric_name="rmse"
+    )
+    assert "dataset_pure_feature_value" not in slugs_of(make_container(df, task_metadata=task))
+
+
+def test_text_only_present_for_one_class_is_flagged():
+    df = make_pure_value_frame(n_pure=0)
+    positives = np.flatnonzero(df["target"] == "yes")[:200]
+    df["post_outcome_text"] = pd.array([pd.NA] * len(df), dtype="string")
+    df.loc[positives, "post_outcome_text"] = [f"unique text {i}" for i in range(len(positives))]
+    report = run_bundle_checks(make_container(df), verbose=False)
+    found = [r for r in report.results if r.slug == "dataset_pure_feature_value"]
+    assert found
+    assert "post_outcome_text = <present>: 200 rows" in found[0].message
+
+
+def test_pure_value_check_skips_continuous_features():
+    df = make_pure_value_frame(n_pure=0)
+    df["strong"] = np.where(df["target"] == "yes", 10.0, 0.0) + np.random.default_rng(1).normal(size=len(df))
+    assert "dataset_pure_feature_value" not in slugs_of(make_container(df))
+
+
 def test_unused_categories_are_flagged():
     df = make_iid_frame()
     df["feat_cat"] = df["feat_cat"].cat.add_categories(["never_used"])
@@ -644,3 +701,21 @@ def test_test_side_over_the_row_budget_is_a_warning(monkeypatch):
     report = run_bundle_checks(make_container(), verbose=False)
     assert "splits_test_over_budget" in [r.slug for r in report.warnings]
     assert "splits_test_over_budget" not in [r.slug for r in report.errors]
+
+
+def single_split_container(n_train: int = 40, n: int = 60) -> CuratedContainer:
+    positions = list(range(n))
+    splits = {0: {0: (positions[:n_train], positions[n_train:])}}
+    return make_container(
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="Single split.", splits=splits),
+    )
+
+
+def test_split_dimensions_skip_a_budget_capped_single_split(monkeypatch):
+    # A `_1m` split fills the train budget; whole groups can leave the frame just below 1.25M rows.
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 40)
+    assert "splits_dimensions_off_protocol" not in slugs_of(single_split_container())
+
+
+def test_split_dimensions_flag_an_uncapped_single_split():
+    assert "splits_dimensions_off_protocol" in slugs_of(single_split_container())

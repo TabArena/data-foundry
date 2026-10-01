@@ -35,6 +35,8 @@ Kaggle version is much better described, wow!, well done
 
 general good dataset as it seems
 
+CC (2026-10-01, Lennart): Leak audit, kept as is with a comment in the definition. The data is a retrospective CORIS case-control sample, and ESL (2nd ed., Sec. 5.2.2, p. 148) says: "These measurements were made sometime after the patients suffered a heart attack, and in many cases they had already benefited from a healthier diet and lifestyle". So some risk factors of the cases were measured after the outcome, but this weakens sbp and obesity rather than leaking the target (dropping both: ROC AUC 0.774 -> 0.778). No duplicates or near-copies; logistic regression (AUC 0.772) beats LightGBM (0.725), as expected for a weak smooth signal.
+
 ## Reference
 
 @article{rossouw1983coronary,

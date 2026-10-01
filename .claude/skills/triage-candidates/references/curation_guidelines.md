@@ -81,9 +81,15 @@ curator can check it in one step. Two traps this prevents, both real:
   predictive accuracy, and the release ships no target/split/baseline — that quote is the reason the
   record is `No` + `No Good Target / Scientific Discovery`.
 
-If a paper is paywalled or you cannot find a readable copy (Springer, IEEE, ACM and ResearchGate usually
-block a plain fetch), **ask the human for it**: they can usually get the PDF and put it in the workspace.
-Ask as soon as the paper turns out to matter rather than working around it. If you go on without it, say
+If the publisher's copy is paywalled, first spend a short search on a free copy: Unpaywall / Europe PMC, arXiv,
+Semantic Scholar, the authors' or institution's pages, and a web search for the exact title in quotes plus "pdf".
+Try it with and without the quotes, and also with the first author's name. Copies often sit on PDF mirrors such as
+ResearchGate, SciSpace (`scispace.com/pdf/<title-slug>-<id>.pdf`, formerly typeset.io), oa.mg, CORE and
+Academia.edu. Some of these block automated fetches (ResearchGate and SciSpace return 403), and the agent's
+search engine does not rank like Google. So when a mirror is listed but cannot be fetched, or nothing turns up,
+**ask the human for it** and give them the exact query: a Google search for the title plus "pdf" usually finds
+it (`garments_worker_productivity`: the Inderscience paper was on SciSpace). They can put the PDF in the workspace. Ask as soon as the paper
+turns out to matter rather than working around it. If you go on without it, say
 so explicitly and mark the claim as unverified rather than paraphrasing the abstract as if it were the text.
 
 ## Quick decision patterns (generalized — apply, then verify per-dataset)
@@ -271,9 +277,23 @@ disguise, and uploader answers about where the data really came from. Write what
   the notebooks make that visible from the outside. Whether a tabular reframing survives is then a curation
   question the data card cannot answer (the record stays an open candidate).
 
-Kaggle pages do not render for a plain fetch (JS-only, reCAPTCHA), so an agent cannot read the tabs
-directly: use the `kaggle` CLI for metadata and files, and ask the human to open or paste the relevant
-discussion / notebook when the page itself is needed. Say explicitly when this check was skipped.
+Kaggle pages do not render for a plain fetch (JS-only, reCAPTCHA), so read them through the `kaggle` CLI.
+The credentials are in `~/.kaggle/`. Use **kaggle >= 2.2.2** (run it with `uvx`, so the project venv is not
+touched): the 2.2.0 in the venv gets a 403 from the discussions API.
+
+```bash
+K="uvx --from kaggle==2.2.2 kaggle -W"
+$K datasets metadata <owner>/<slug> -p .          # data card text (description, licence) as JSON
+$K datasets files <owner>/<slug>                  # file names, sizes, upload dates
+$K datasets topics list <owner>/<slug>            # Discussion tab: id, title, author, comments, votes
+$K datasets topics show <owner>/<slug> <topic_id> # one thread with all its comments
+$K competitions topics list <competition>         # the same for a competition (and `topics show`)
+$K kernels list --dataset <owner>/<slug> --sort-by voteCount   # Code tab, by votes
+$K kernels list --user <owner>                    # the uploader's own notebooks
+$K kernels pull <owner>/<kernel> -p <dir> -m      # a notebook's source and metadata
+```
+
+Ask the human for a page only when the CLI cannot reach it, and say explicitly when this check was skipped.
 
 ## Suggestion values
 
@@ -342,4 +362,21 @@ auditing, do **not** flag these:
   verify every feature was available at prediction time (no future leakage); watch for
   grouped-temporal structure; the first split uses the most recent test point (most
   training data, most representative), then descending.
+  * **How many splits (TabArena convention):** roll the time horizon back from the newest data to create
+    several split time points. At each point, train on all data before it and test on the data after it
+    within the time horizon. Create the same number of splits as an IID or grouped task of that size would
+    get (`get_recommended_splits_dimensions`, e.g. 10 x 3 = 30 for 500-2,500 training rows), but never use a
+    split with less than 50% of the original data as training data: such a split is too unrepresentative
+    of the original application.
+  * **Check that the test windows are still meaningful.** With the 50% floor, all test windows come from the
+    newest half of the data. Count the minority-class rows (or the target's spread) per window: if the
+    windows the convention asks for hold only a handful of positives, or none, the scores are noise and the
+    dataset is too small for a temporal task (`seismic_bumps`: 49 positives in the newest half, 0-5 per
+    window for 30 windows). Do not fall back to an IID split for a non-stationary sequence; treat it as
+    `Too Small` instead.
+  * **Widen the windows when they get too small.** Finer windows do not add test rows (the 50% floor fixes
+    the test pool); they only cut it into smaller, noisier pieces. If the convention's window count leaves
+    windows with fewer than about 50 test rows, use wider windows and fewer splits instead, and say so in the
+    splits comment (`coffee_rating_prediction`: 26 monthly windows held 2-72 reviews each and doubled the
+    confidence interval of a model comparison; 13 two-month windows hold 54-115).
 

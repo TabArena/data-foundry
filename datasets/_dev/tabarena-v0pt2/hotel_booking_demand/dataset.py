@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.curation_recommendations import get_recommended_splits_dimensions
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan
@@ -60,10 +61,17 @@ class HotelBookingDemand(AbstractCuratedDataset):
         To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data. \
             To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
             To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance. \
-            Bookings that have arrival dates in the future, but were already canceled at the given prediction point are included in the train data.
+            Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the newest split, against 12.5% cancelled in the test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
+            We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
     """
-    time_horizon = 1
+    time_horizon = 3
     time_horizon_unit = "months"
+    accepted_check_warnings = {
+        "dataset_duplicate_rows": "Rows identical after dropping the post-outcome columns are separate bookings with "
+        "the same attributes (e.g. several rooms of one group); exact source duplicates were already removed.",
+        "splits_rows_unused": "By design: each prediction point uses bookings made before it; rows outside every "
+        "window (e.g. bookings cancelled more than three months ahead) are in no split.",
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         h1 = pd.read_csv(raw_dir / "H1.csv")
@@ -90,6 +98,11 @@ class HotelBookingDemand(AbstractCuratedDataset):
         df = df.loc[df["LeadTime"] > 0].reset_index(drop=True)
         # Create booking date column
         df["booking_date"] = df["arrival_date"] - pd.to_timedelta(df["LeadTime"], unit="d")
+        # Recorded after the prediction point (Antonio et al. 2019, Table 1): changes "until the moment of check-in or
+        # cancellation", the room assigned by hotel operations, and parking spaces (never > 0 for a cancelled booking)
+        df = df.drop(columns=["BookingChanges", "AssignedRoomType", "RequiredCarParkingSpaces"])
+        for col in ["Agent", "Company"]:  # "NULL" (space-padded) means no agent / no company
+            df[col] = df[col].astype(str).str.strip().replace("NULL", np.nan)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -101,7 +114,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
                 "MarketSegment",
                 "DistributionChannel",
                 "ReservedRoomType",
-                "AssignedRoomType",
                 "DepositType",
                 "Agent",
                 "Company",
@@ -116,8 +128,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
             dataset=df,
         )
         print(f"Recommended splits: n_repeats={n_repeats}, n_splits={n_splits}, test_size={none_or_test_size}")
-
-        df = df.drop(columns=["ReservationStatusDate", "ReservationStatus"])
 
         date_col = self.task_metadata.time_on
         target_col = self.task_metadata.target_column_name
@@ -173,6 +183,9 @@ class HotelBookingDemand(AbstractCuratedDataset):
             # c) Define the train set.
             # We use all remaining data as training data.
             train_df = df_use.drop(test_df.index)
+            # Only bookings whose arrival lies before the prediction point: a future booking is known to be cancelled
+            # at pred_date only if it was cancelled, so keeping them makes "future arrival = cancelled" a pure rule
+            train_df = train_df.loc[train_df["arrival_date"] < pred_date]
 
             # d) Remove all historical bookings that were canceled more than three months in advance, to reflect our forecasting horizon.
             train_df = train_df.loc[(train_df["ReservationStatusDate"] - train_df["arrival_date"]).dt.days > -90]
@@ -201,4 +214,5 @@ class HotelBookingDemand(AbstractCuratedDataset):
         print(f"{len(used_in_train) / df.shape[0]:.4f} of the samples are used in training")
         print(f"{len(used_in_test) / df.shape[0]:.4f} of the samples are used in testing.")
 
-        return SplitPlan(splits=splits, df=df)
+        # After splitting, drop the outcome columns (their date is the cancellation or check-out date)
+        return SplitPlan(splits=splits, df=df.drop(columns=["ReservationStatusDate", "ReservationStatus"]))

@@ -38,7 +38,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         - We remove all samples with missing pre-election data, missing post-election data or a missing target.
         - We drop 327 that are missing from the last 9 years, which will be used for the test splits.
         - We drop all columns with questions that appear only in one year.
-        - The question columns partially stem from post-election interviews. However, there is no simple way to tell which is post-election. We therefore drop all questions for which "no post IW" is listed as a reason for missing values. Some additional questions are dropped based on common sense.
+        - The question columns partially stem from post-election interviews. However, there is no simple way to tell which is post-election. We therefore drop all questions for which "no Post IW" or "no post data" is listed as a reason for missing values in the codebook (February 5, 2026 version), and VCF1005, which is built from the post-election House vote ("R Voted" / "R did not vote"). Some additional questions are dropped based on common sense.
         - We encode gender as a categorical variable, because Other was introduced in 2016. However there are very few of these samples. This would actually require split-specific preprocessing.
         - For all features, we assign " " as missing values. Most features have additional types of missingness with own codes. We keep them as categories. That means NA only is assigned if a question was missing in a survey.
         - We transform only high-cardinality (>10) numeric features to numeric, and leave all other ordinal features as categorical, since they all include at least one value that is out-of-order (e.g., "Don't know", "Refused", "Not applicable", "Other", etc.).
@@ -460,6 +460,68 @@ class AnesVoting2026(AbstractCuratedDataset):
             "VCF9133",
         ]
         df = df.drop(columns=no_post_election_NA_filter)
+        # Missed by the list above (Feb 2026 codebook, leak audit 2026-09-30): post-election interview items
+        post_election_missed = [
+            "VCF1005",  # "R Voted: ..." / "R did not vote": built from the post-election House vote, leaks the target
+            "VCF0426",  # thermometers, missing code "no Post IW"
+            "VCF0427",
+            # missing code "no post data" (the newer variables' wording for "no Post IW")
+            "VCF9201",
+            "VCF9202",
+            "VCF9203",
+            "VCF9204",
+            "VCF9205",
+            "VCF9206",
+            "VCF9207",
+            "VCF9208",
+            "VCF9219",
+            "VCF9221",
+            "VCF9223",
+            "VCF9227",
+            "VCF9228",
+            "VCF9229",
+            "VCF9230",
+            "VCF9231",
+            "VCF9232",
+            "VCF9233",
+            "VCF9234",
+            "VCF9235",
+            "VCF9236",
+            "VCF9237",
+            "VCF9240",
+            "VCF9241",
+            "VCF9242",
+            "VCF9245",
+            "VCF9246",
+            "VCF9247",
+            "VCF9248",
+            "VCF9249",
+            "VCF9250",
+            "VCF9251",
+            "VCF9252",
+            "VCF9253",
+            "VCF9254",
+            "VCF9255",
+            "VCF9256",
+            "VCF9257",
+            "VCF9258",
+            "VCF9259",
+            "VCF9260",
+            "VCF9261",
+            "VCF9262",
+            "VCF9263",
+            "VCF9264",
+            "VCF9267",
+            "VCF9268",
+            "VCF9269",
+            "VCF9270",
+            "VCF9271",
+            "VCF9272",
+            "VCF9273",
+            "VCF9274",
+            "VCF9275",
+        ]
+        df = df.drop(columns=post_election_missed)
         # Assign cat features:
         cat_cols = ["VCF0110"]
         for col in cat_cols:
@@ -478,19 +540,9 @@ class AnesVoting2026(AbstractCuratedDataset):
             "VCF0413",
             "VCF0414",
             "VCF0415",
-            "VCF0426",
-            "VCF0427",
             "VCF0429",
             "VCF1015",
             "VCF9123",
-            "VCF9201",
-            "VCF9202",
-            "VCF9207",
-            "VCF9208",
-            "VCF9240",
-            "VCF9267",
-            "VCF9268",
-            "VCF9269",
         ]
         for col in num_cols:
             df[col] = pd.to_numeric(df[col])

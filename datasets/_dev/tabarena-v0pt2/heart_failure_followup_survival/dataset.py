@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
 
 
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
@@ -37,7 +37,7 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
         We use the data as is from UCI.
 
         - We keep all features of the dataset. The study that introduced the dataset also curated a subset of features. We leave it to the pipeline to select the relevant features for the task.
-        - There is a "time" feature in the data which is the follow-up time in days. The authors used this in some part of the experiments and showed it improved the predictive performance. We also keep this feature and follow their preprocessing to transform it into months (from days). Note, this does not make the data temporal, as the split is across unseen patients (not across time) and we only have one entry per patient.
+        - We drop the "time" feature. It is the follow-up period in days (4-285; Chicco & Jurman 2020, Table 1: "Follow-up period"), and DEATH_EVENT is "If the patient died during the follow-up period". Follow-up ends at death or at censoring, so a short follow-up means an early death: the value is only known after the outcome (alone it gives ROC AUC 0.84). The paper's analysis that includes it is not a prediction-time setup.
     """
 
     # Task
@@ -50,9 +50,8 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # Transform time from days to months
-        df["month_to_follow_up"] = df["time"] / 30.0
-        df = df.drop(columns=["time"])
+        # Follow-up time ends at death or censoring, so it is known only after the outcome
+        df = drop_columns(df, ["time"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

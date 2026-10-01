@@ -39,7 +39,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
         - We log scale the target variable.
-        - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature.
+        - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
         - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
         - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
         - When investigating the "Lot" column we found many cases where the lot size (given in sq ft) is incorrect compared to the official lot size on the internet. The parser seems to have had an issue because the website often incorrectly showed the sq ft but gave the unit as acres. We found cases that were wrong by checking the acres size of the houses and anything with more than 2000 acres was investigated and subsequently corrected.
@@ -209,7 +209,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         # Only keep the newest entry for houses that appear multiple times
         n_data = len(df)
         idx = df.groupby(["Address", "Zip", "Year built"], dropna=False)["time_index"].idxmax()
-        df = df.loc[idx].reset_index(drop=True)
+        # groupby().idxmax() returns rows in group-key (address) order; sort back to the Kaggle Id (= sale) order
+        df = df.loc[idx].sort_values("time_index").reset_index(drop=True)
         assert (
             n_data - len(df) == 67
         )  # We have 63 houses with multiple entries (either 2 or 3) for a total of 130 entire. We keep one entry per house, thus 130 - 63 = 67

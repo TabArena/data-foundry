@@ -51,6 +51,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         - We reverse the ordinal encoding of Gender.
         - We mark features as categorical where appropriate.
         - For each patient, we predict the sepsis status over time. So it is more or less a transformed survival task (also in the original challenge).
+        - Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Predictions must be causal per patient (each hour only from that patient's earlier rows) and scored with the PhysioNet 2019 utility per patient, not as independent rows. Patient_ID is group metadata, not a model feature.
     """
 
     # Task

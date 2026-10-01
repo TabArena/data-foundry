@@ -716,6 +716,8 @@ def get_temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and
                 end = _calendar_end(times.iloc[-1], unit) - _calendar_offset(unit, step * i)
                 start = end - _calendar_offset(unit, window)
                 train_end = start - _calendar_offset(unit, gap) if gap else start
+                if train_end <= times.iloc[0]:
+                    break
             else:
                 end = axis_max - step * i
                 start = end - window

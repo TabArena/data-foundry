@@ -157,6 +157,33 @@ A handful of duplicates is normal in real-world tabular data; a large share mean
 split protocol will spread copies of the same row across train and test.
 """
 
+PURE_VALUE_MIN_ROWS = 100
+"""A feature value needs at least this many rows (and :data:`PURE_VALUE_MIN_SHARE` of the data) to be checked."""
+
+PURE_VALUE_MIN_SHARE = 0.01
+"""A feature value needs at least this share of the rows to be checked, so rare levels do not flood the report."""
+
+PURE_VALUE_MAX_OTHER_SHARE = 0.005
+"""A value is *pure* when the classes other than its majority class make up at most this share of its rows."""
+
+PURE_VALUE_MIN_EXPECTED_OTHERS = 10
+"""The other classes must be expected at least this many times in the value's rows (from their overall share).
+
+Without it, a rare class makes almost every value look pure: with 0.3% positives, a value with 1,000 rows is
+expected to hold only 3 of them, so seeing none says nothing.
+"""
+
+PURE_VALUE_MAX_NUMERIC_LEVELS = 20
+"""Numeric features with more distinct values than this are skipped as continuous.
+
+Leaks of this kind are codes (a derived status, an outcome-dependent category, a missing-value pattern). A quantile
+bin of a strong continuous feature is often pure in imbalanced data without being a leak, so bins are not checked.
+"""
+
+PURE_VALUE_MAX_LEVELS = 50
+"""Per feature, only the most frequent values (or bins) are checked."""
+
+
 PLACEHOLDER_PATTERNS: tuple[str, ...] = (r"\bTODO\b", r"\bFIXME\b", r"xxx\.csv", r"<unique_name>")
 """Scaffolding markers (regexes) that must not survive into a shipped bundle."""
 
@@ -598,6 +625,108 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
                     hint="Either the rows differ in a dropped column, or the label is noisy — this caps the "
                     "achievable score.",
                 )
+
+
+def _pure_value_keys(series: pd.Series) -> pd.Series | None:
+    """One string key per row (``<NA>`` for missing), or None for a continuous numeric feature."""
+    if (
+        pd.api.types.is_numeric_dtype(series)
+        and not pd.api.types.is_bool_dtype(series)
+        and series.nunique(dropna=True) > PURE_VALUE_MAX_NUMERIC_LEVELS
+    ):
+        return None
+    return series.astype("string").fillna("<NA>")
+
+
+def _pure_values(
+    keys: pd.Series,
+    classes: pd.DataFrame,
+    overall: pd.Series,
+    min_rows: int,
+) -> list[tuple[str, int, str, float]]:
+    """``[(value, n_rows, majority_class, majority_share), ...]`` for the pure values among ``keys``."""
+    counts = keys.value_counts()
+    candidates = counts[counts >= min_rows].head(PURE_VALUE_MAX_LEVELS)
+    if candidates.empty:
+        return []
+    rates = classes.groupby(keys.to_numpy()).mean().loc[candidates.index]
+    pure = []
+    for value, row in rates.iterrows():
+        majority = row.idxmax()
+        n_value = int(candidates[value])
+        expected_others = n_value * (1.0 - overall[majority])
+        if 1.0 - row[majority] <= PURE_VALUE_MAX_OTHER_SHARE and expected_others >= PURE_VALUE_MIN_EXPECTED_OTHERS:
+            pure.append((str(value), n_value, str(majority), float(row[majority])))
+    return pure
+
+
+@_check
+def _check_dataset_pure_feature_values(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Feature values that determine the class on their own: a typical leak (classification only).
+
+    A value is flagged when it covers at least :data:`PURE_VALUE_MIN_ROWS` rows and
+    :data:`PURE_VALUE_MIN_SHARE` of the data, one class makes up all but :data:`PURE_VALUE_MAX_OTHER_SHARE` of
+    its rows, and the other classes would be expected there at least :data:`PURE_VALUE_MIN_EXPECTED_OTHERS` times.
+    Missing values count as a value of their own, and so does "has any value" (``<present>``), which catches a
+    free-text or continuous column that is only filled for one class. Continuous numeric features (more than
+    :data:`PURE_VALUE_MAX_NUMERIC_LEVELS` distinct values) and group columns (a per-group label is pure by design)
+    are skipped.
+    """
+    df = ctx.df
+    task = ctx.task
+    if df is None or ctx.n_rows == 0 or not task.is_classification or not ctx.has_column(ctx.target):
+        return
+    if not ctx.heavy_allowed:
+        yield CheckResult(
+            "dataset_pure_feature_value_skipped",
+            "info",
+            f"Skipped the pure-feature-value check: {df.size:,} cells exceed the budget of {ctx.heavy_cell_budget:,}.",
+            hint="Raise `heavy_cell_budget=` to force it.",
+        )
+        return
+
+    labelled = df[ctx.target].notna().to_numpy()
+    target = df.loc[labelled, ctx.target].astype("string")
+    classes = pd.get_dummies(target).astype("float64")
+    if classes.shape[1] < 2:
+        return
+    overall = classes.mean()
+    min_rows = max(PURE_VALUE_MIN_ROWS, math.ceil(PURE_VALUE_MIN_SHARE * len(target)))
+    time_on = task.time_on if task.time_on and ctx.has_column(task.time_on) else None
+    skip = {ctx.target, *ctx.columns_of(task.group_on)}
+
+    findings: list[str] = []
+    for column in df.columns:
+        if column in skip:
+            continue
+        values = df.loc[labelled, column]
+        keys = _pure_value_keys(values)
+        hits = [] if keys is None else [(hit, keys) for hit in _pure_values(keys, classes, overall, min_rows)]
+        present = values.notna().to_numpy()
+        if 0 < present.sum() < len(present):  # "has a value at all" (e.g. a text only filled after the outcome)
+            presence = pd.Series(np.where(present, "<present>", "<NA>"), index=values.index)
+            seen = {hit[0] for hit, _ in hits}
+            hits += [
+                (hit, presence) for hit in _pure_values(presence, classes, overall, min_rows) if hit[0] not in seen
+            ]
+        for (value, n_value, majority, share), key_series in hits:
+            where = ""
+            if time_on is not None and column != time_on:
+                times = df.loc[labelled, time_on][(key_series == value).to_numpy()]
+                where = f", {time_on} {times.min()}-{times.max()}"
+            findings.append(
+                f"{column} = {value}: {n_value:,} rows, {share:.1%} {ctx.target}={majority} "
+                f"(overall {overall[majority]:.1%}{where})"
+            )
+    if findings:
+        shown = "; ".join(findings[:10]) + (f"; ... ({len(findings) - 10} more)" if len(findings) > 10 else "")
+        yield CheckResult(
+            "dataset_pure_feature_value",
+            "warning",
+            f"{len(findings)} feature value(s) determine the class on their own: {shown}.",
+            hint="Often a leak: a column derived from the outcome or recorded after it. Check the column's "
+            "documentation; drop it if so, otherwise accept the warning with the reason.",
+        )
 
 
 @_check
@@ -1146,6 +1275,10 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
     if len(folds_per_repeat) != 1:
         return
     n_folds = next(iter(folds_per_repeat))
+    if (n_repeats, n_folds) == (1, 1) and len(ctx.flat_splits[0][2]) >= 0.99 * SPLIT_TRAIN_ROW_BUDGET:
+        # A `_1m` split capped at the row budget: whole groups can leave it a few rows short of
+        # train + test budget, which would otherwise drop the frame into the 1x3 size band.
+        return
 
     try:
         recommended = get_recommended_splits_dimensions(

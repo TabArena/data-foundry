@@ -34,7 +34,9 @@ class Diabetes130Us(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - We drop duplicated patients based on the "patient_nbr" feature to avoid target leakage.
+        - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).
+        - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
+        - We set "?" and "NULL" to missing values.
         - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
         - We created the target from the "readmitted" column following the original task description: "<30" becomes "Yes", everything else "No".
         - We dropped "encounter_id" and "patient_nbr", which are both unique identifiers for each row.
@@ -52,8 +54,11 @@ class Diabetes130Us(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # Drop duplicate patients
-        df = df.drop_duplicates(subset="patient_nbr")
+        # One encounter per patient: the first one (Strack et al. 2014, Sec. 2.3)
+        df = df.sort_values("encounter_id", kind="stable").drop_duplicates(subset="patient_nbr", keep="first")
+        # "we removed all encounters that resulted in either discharge to a hospice or patient death" (Sec. 2.3):
+        # a patient who died cannot be readmitted (11 Expired, 19-21 Expired ... hospice; 13-14 Hospice)
+        df = df[~df["discharge_disposition_id"].isin([11, 13, 14, 19, 20, 21])]
         # Drop identifier columns
         df = df.drop(columns=["encounter_id", "patient_nbr"])
         # Reverse ordinal encoding for ID-based features
@@ -178,6 +183,8 @@ class Diabetes130Us(AbstractCuratedDataset):
             "diabetesMed",
             "EarlyReadmission",
         ]
+        # "?" (race, weight, payer code, specialty, diagnoses) and "NULL" (the ID mappings) mean missing
+        df = df.mask(df.isin(["?", "NULL"]))
         df[cat_features] = df[cat_features].astype("category")
         # Drop constant features
         df = df.drop(columns=["examide", "citoglipton", "glimepiride-pioglitazone"])

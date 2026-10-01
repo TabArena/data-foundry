@@ -25,6 +25,8 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-09-30, Lennart): **Leak fixed by deduplication, split stays IID.** 1,177 of 6,497 rows (18%) are exact copies of another row (all 11 lab values, colour and the median score; 992 sets of up to 8 copies; no set has conflicting scores), so under the random split a row's twin often sits in train. Cortez et al. 2009 (Decision Support Systems 47(4)), Sec. 2.1: the data come from the CVRVV certification system (iLab, May 2004 - February 2007), "Each entry denotes a given test (analytical or sensory)", and the database "was transformed in order to include a distinct wine sample (with all tests) per row"; duplicates are not mentioned. The copies are most likely repeated records from that export, so we drop them (6,497 -> 5,320 rows) instead of grouping, which would only reproduce the deduplication. The paper itself evaluates with 20 runs of random 5-fold CV (Sec. 3) on the data with copies. TabArena v0.1 dataset: results on the old container are not comparable with the deduplicated one.
+
 Clean canonical entry bootstrapped from the TabArena curation workbook ('Tabular' row). Shipped in TabArena (v0.1) / BeyondArena.
 
 TabArena curation verdict: Tabular.

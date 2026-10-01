@@ -117,6 +117,9 @@ Read the other references when the task needs them:
   which tree each must point into, and when to set and check them.
 * [`references/dashboard.md`](references/dashboard.md): the dashboard features (status column, filters, pills,
   pins, copy-link) to explain to a curator.
+* [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md): the leak probes
+  and what the 2026 BeyondArena leak audit decided for each kind of leak (drop, lag, re-split, keep on purpose,
+  retire). Read it before calling a column a leak or a dataset leaky, and before advising how to fix one.
 
 ## Push back on weak reasoning (you may second-guess a decision)
 

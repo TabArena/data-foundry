@@ -34,7 +34,7 @@ class Mic(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - There are 12 possible targets and four possible time moments to predict the targets for this dataset. We use the categorical target as it summarizes the other possible targets. Furthermore, we use the last possible time point for prediction to utilize all available data.
+        - There are 12 possible targets and four possible time moments to predict the targets for this dataset. We use the categorical target as it summarizes the other possible targets. We predict at the time of admission, the first of the four time points in the dataset description (Golovenkin et al., Leicester data 2020, "Problems to solve"): all inputs except columns 93-95 and 100-105, i.e. we drop the 9 day-1..3 ICU columns R_AB_{1,2,3}_n, NA_R_{1,2,3}_n and NOT_NA_{1,2,3}_n. The end of day 3, which allows all inputs, leaks the target: LET_IS counts any death in hospital, and a patient who died before day 2 or 3 has no day-2/3 records, so their missingness encodes death (91% of the 138 rows missing a day-3 field died, vs 16% overall).
         - We treat "?" as missing values.
         - We dropped the "id" column.
         - We reversed the ordinal encoding of the target feature.
@@ -190,6 +190,16 @@ class Mic(AbstractCuratedDataset):
                 "ZSN",
                 "REC_IM",
                 "P_IM_STEN",
+                # ICU day-1..3 records: missing for patients who died before that day (predict at admission)
+                "R_AB_1_n",
+                "R_AB_2_n",
+                "R_AB_3_n",
+                "NA_R_1_n",
+                "NA_R_2_n",
+                "NA_R_3_n",
+                "NOT_NA_1_n",
+                "NOT_NA_2_n",
+                "NOT_NA_3_n",
             ]
         )
         target_feature = "LET_IS"
@@ -289,14 +299,10 @@ class Mic(AbstractCuratedDataset):
                 "GIPO_K",
                 "GIPER_NA",
                 "TIME_B_S",
-                "R_AB_1_n",
-                "R_AB_2_n",
-                "R_AB_3_n",
                 "NA_KB",
                 "NOT_NA_KB",
                 "LID_KB",
                 "NITR_S",
-                "NOT_NA_1_n",
                 "LID_S_n",
                 "B_BLOK_S_n",
                 "ANT_CA_S_n",

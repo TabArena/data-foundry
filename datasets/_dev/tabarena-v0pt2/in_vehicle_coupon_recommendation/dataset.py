@@ -5,7 +5,24 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+
+RESPONDENT_COLUMNS = [
+    "gender",
+    "age",
+    "maritalStatus",
+    "has_children",
+    "education",
+    "occupation",
+    "income",
+    "car",
+    "Bar",
+    "CoffeeHouse",
+    "CarryAway",
+    "RestaurantLessThan20",
+    "Restaurant20To50",
+]
+"""Answers to the survey's first part (demographics and habits), asked once per respondent."""
 
 
 class InVehicleCouponRecommendation(AbstractCuratedDataset):
@@ -39,11 +56,21 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - We fixed a typo in the feature names.
         - Anomaly: the data has many binned numeric features that are treated as categorical features with text describing the bins.
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
+        - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
+        - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper's 5-fold results are random splits, i.e. warm start.
     """
 
     # Task
     target = "AcceptCoupon"
     problem_type = "binary_classification"
+    group_on = "respondent"
+    group_labels = "per_sample"
+
+    # Splits
+    splits_comment = """
+        Grouped splits on the survey respondent: all answers of one person stay on one side, so the task is a cold-start
+        model that predicts a new person's response from their profile, stated habits and the driving scenario.
+    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/in-vehicle-coupon-recommendation.csv")
@@ -51,6 +78,11 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # The raw file lists each respondent's answers as one consecutive block with the same first-part answers;
+        # a block is one respondent (or, rarely, two adjacent respondents with identical answers)
+        profile = df[RESPONDENT_COLUMNS].astype(str).agg("|".join, axis=1)
+        block = (profile != profile.shift()).cumsum()
+        df["respondent"] = anonymize_ids(block.astype(str))
         target_feature = "AcceptCoupon"
         df = df.rename(columns={"Y": target_feature})
         df[target_feature] = df[target_feature].map({0: "No", 1: "Yes"})
@@ -68,6 +100,7 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
+                "respondent",
                 "expiration",
                 "destination",
                 "passenger",

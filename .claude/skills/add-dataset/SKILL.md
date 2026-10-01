@@ -71,6 +71,11 @@ equal to the folder), `year`, `domain`, `source` (where the data *first appeared
 `download_description`, `bibtex` (cite the work that *published the data*), `curation_comments` (house format),
 `target`, `problem_type`, and per regime `time_on` + `temporal_splits`, or `group_on` + `group_labels`.
 
+Write down the prediction point in the first `curation_comments` bullet: when the model is used and what is known
+then (at launch, at admission, at quote time, before the stay ends). Every column, filter and split decision below
+is checked against it. In the 2026 leak audit it found columns no probe flagged (kickstarter's `staff_pick`, awarded
+mid-campaign, once the task was "predict at launch").
+
 ## Step 2: Pick the regime and read a reference dataset
 
 Read the closest reference in full before writing (paths under `datasets/_dev/tabarena-v0pt2/`):
@@ -135,6 +140,18 @@ runs the whole pipeline, the data checks, the bundle checks and `_decisions`, **
 writes `report.md`. Iterate: resolve TODOs in `dataset.py`, look at the data in `explore.ipynb` (edits are picked up
 automatically), re-run `check`, read the `report.md` diff. Stop when there are no errors and every warning is fixed
 or accepted with a reason. Use the §E table to pre-empt the checks.
+
+The bundle checks catch mechanical problems, not most leaks. Once the data loads, run the leak probes and read them
+with [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md):
+
+```bash
+.venv/bin/python scripts/v2/leak_probes.py <unique_name>
+```
+
+A single feature that comes close to the full model, a missing-value indicator that predicts the label, test rows
+copied from train, or a `dataset_pure_feature_value` warning each need a decision before the warning is accepted:
+drop, lag, filter, re-split or keep on purpose, with the numbers in a `curation_comments` bullet (or a `_decisions`
+table). The precedents for each kind of leak are in that file's §3-§5.
 
 ## Step 7: Build (curator only)
 
