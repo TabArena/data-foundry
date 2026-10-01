@@ -23,6 +23,12 @@ Usage in a curation notebook — build the container, check it, then save::
 
 Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
 finding on purpose (the notebook then documents the accepted deviation).
+
+The split protocol a bundle is judged by follows its container format
+(:attr:`~data_foundry.curation_container.CuratedContainer.format_version`): format 1 (the v1 notebooks, the shipped
+BeyondArena containers) by the v1 protocol of :mod:`data_foundry.curation_recommendations` (repeat ladder, 250k test
+rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, 500k test
+rows). Every other check is the same for both formats.
 """
 
 from __future__ import annotations
@@ -48,6 +54,7 @@ if TYPE_CHECKING:
         DatasetMetadata,
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
+        PredictiveMLTaskMetadataV2,
     )
 
 Severity = Literal["error", "warning", "info"]
@@ -334,7 +341,7 @@ class _Ctx:
         return self.container.dataset_metadata
 
     @property
-    def task(self) -> PredictiveMLTaskMetadata:
+    def task(self) -> PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2:
         return self.container.task_metadata
 
     @property
@@ -1261,11 +1268,11 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Compare the split dimensions against the recommended protocol."""
+    """Compare the split dimensions against the recommended v1 protocol (format 1 only)."""
     from data_foundry.curation_recommendations import get_recommended_splits_dimensions
 
     task = ctx.task
-    if ctx.df is None or task.time_on is not None or not ctx.flat_splits:
+    if ctx.container.format_version != 1 or ctx.df is None or task.time_on is not None or not ctx.flat_splits:
         return
     if isinstance(task.group_on, list):
         # The recommendation helper only understands a single group column.
@@ -1303,12 +1310,14 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
-    """No outer split may train on more than 1M rows (or test on more than 250k)."""
+    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k)."""
     if not ctx.flat_splits:
         return
     train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
     over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
     over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
+    if ctx.container.format_version != 1:
+        over_test = []  # format 2 has its own test budget: _check_splits_protocol_v2
     if over_train:
         largest = max(n for *_, n in over_train)
         yield CheckResult(
@@ -1330,6 +1339,16 @@ def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
             hint="Cap the test side (e.g. `subsample_temporal(test_cap=250_000)`), or accept it in `ignore=[...]` "
             "with the reason, e.g. when a grouped split cannot hit the cap without dropping whole groups.",
         )
+
+
+@_check
+def _check_splits_protocol_v2(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Format 2: the v2 split protocol (:func:`data_foundry.v2.splits.protocol_checks`)."""
+    if ctx.container.format_version < 2:
+        return
+    from data_foundry.v2.splits import protocol_checks  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    yield from protocol_checks(ctx.container)
 
 
 # --- 4. Dataset metadata coherence ---------------------------------------------------
@@ -1757,6 +1776,14 @@ def run_bundle_checks(
     return report
 
 
+def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
+    """The task metadata file a saved container must hold: the container's own format, else whichever is there."""
+    if container is not None:
+        return f"task_metadata.{container.task_metadata.type_adapter_id}.json"
+    found = sorted(f.name for f in path.glob("task_metadata.*.json"))
+    return found[0] if found else "task_metadata.predictive-ml-task-mold-v1.json"
+
+
 def verify_saved_container(
     path: Path | str,
     *,
@@ -1788,7 +1815,7 @@ def verify_saved_container(
         "dtypes.json",
         "container_metadata.json",
         "dataset_metadata.dataset-mold-v1.json",
-        "task_metadata.predictive-ml-task-mold-v1.json",
+        _task_metadata_file(path, container),
         "experiment_metadata.predictive-ml-splits-mold-v1.json",
     ]
     if container is not None and container.test_dataset is not None:

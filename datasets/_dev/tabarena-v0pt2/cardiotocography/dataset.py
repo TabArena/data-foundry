@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 
 class Cardiotocography(AbstractCuratedDataset):
@@ -32,6 +32,7 @@ class Cardiotocography(AbstractCuratedDataset):
         We use the data from UCI and the 3 class problem of predicting NSP as it is more medical relevant.
 
         - We transform the file names into patient IDs to indicate the sub-group of samples recorded from the same patient.
+        - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
         - The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
         - We drop all other columns that represent the label.
     """
@@ -39,8 +40,15 @@ class Cardiotocography(AbstractCuratedDataset):
     # Task
     target = "NSP"
     problem_type = "multiclass_classification"
-    group_on = "patient_id"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="patient_id",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a patient, as far as the file names identify one; its rows are segments of her CTG exams, each classified by three expert obstetricians (UCI). Each segment is one prediction, made from that segment alone. The segments of one exam overlap, so an exam's rows must stay together; the patient key above the exam is a heuristic on the file names (curation notes).
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # Read excel file

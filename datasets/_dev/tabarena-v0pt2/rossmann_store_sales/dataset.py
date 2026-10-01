@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class RossmannStoreSales(AbstractCuratedDataset):
@@ -47,16 +47,16 @@ class RossmannStoreSales(AbstractCuratedDataset):
     # Task
     target = "Sales"
     problem_type = "regression"
-    time_on = "Date"
 
     # Splits
-    time_horizon = 42
-    time_horizon_unit = "days"
     splits_comment = """
         The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance'.
         Therefore, we define the same horizon for our test splits and add one day between train/test as a planning gap.
     """
-    temporal_splits = TemporalSplits(window=42, unit="days", n_windows=3, gap=1)
+    temporal = Temporal(
+        on="Date",
+        splits=TemporalSplits(window=42, unit="days", n_windows=3, gap=1),
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         """NOTES:

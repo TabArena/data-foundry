@@ -8,8 +8,9 @@ that pre-empts it; §F shows how to record decisions with their evidence.
 Coming from a v1 notebook: `dataset_mold` / `task_mold` fields are flat class attributes (inside methods,
 `self.dataset_metadata` / `self.task_metadata` hold the built objects), `dataset_mold.path` is the `raw_dir`
 argument, the preprocessing cell is `_load_raw` (reading) + `_clean` (the rest, including column drops), the
-dtype casts are `_feature_types`, the final shuffle is the base class's, the split cell is `temporal_splits` or `_make_splits`, and `ignore=[...]`
-is `accepted_check_warnings`.
+dtype casts are `_feature_types`, the final shuffle is the base class's, the regime fields become one
+`grouping = Grouping(...)` or `temporal = Temporal(...)`, the split cell is `Temporal(splits=...)` or `_make_splits`,
+and `ignore=[...]` is `accepted_check_warnings`.
 
 ## The definition file
 
@@ -50,10 +51,9 @@ class MyDataset(AbstractCuratedDataset):
     # Task
     target = "y"
     problem_type = "binary_classification"   # metric -> roc_auc, stratify_on -> target by default
-    time_on = "date"                          # temporal only
 
-    # Splits (§C)
-    temporal_splits = TemporalSplits(window=7, unit="days", n_windows=3)
+    # Splits (§C): a temporal task; a grouped one declares `grouping = Grouping(...)` instead, an IID one neither
+    temporal = Temporal(on="date", splits=TemporalSplits(window=7, unit="days", n_windows=3))
     splits_comment = """
         A model refit weekly ...
     """
@@ -83,9 +83,11 @@ files into the raw directory, `_extra_checks(container)` for dataset-specific bu
 from an audit).
 
 The class is validated when `dataset.py` is imported: the required attributes are present and the metadata
-validates, `unique_name` equals the folder name, every accepted warning has a reason, a temporal task has
-`temporal_splits` or `_make_splits` and a horizon, `subsample_to_budget` needs `version_of`, a version needs a
-`version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, and the benchmark seeds are not overridden.
+validates, `unique_name` equals the folder name, every accepted warning has a reason, the regime is one
+`Grouping` or `Temporal` (the flat `time_on`, `group_on`, `group_labels`, `group_time_on`, `temporal_splits`,
+`time_horizon`, `time_horizon_unit` attributes are refused), a grouping has a `definition` and consistent fields, a
+temporal task has windows or `_make_splits` and a horizon, `subsample_to_budget` needs `version_of`, a version needs
+a `version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, and the benchmark seeds are not overridden.
 
 Keep `print` diagnostics out of the definition: `README.md` already records split sizes and time ranges, and
 `explore.ipynb` or `_decisions` is the place for evidence. Keep `assert`s that guard custom logic. Run
@@ -170,10 +172,12 @@ competition, institution), not a paper that merely used it:
 **Map the task attributes** by split type:
 - IID: nothing beyond `target` and `problem_type` (stratifying on a classification target is the default; set
   `stratify_on = None` to switch it off, with a reason).
-- Temporal: `time_on = "TODO"` and `temporal_splits` (§C). A calendar window gives the horizon; otherwise set
-  `time_horizon` / `time_horizon_unit`. A temporal task without a horizon does not import.
-- Grouped: `group_on = "TODO"`; `group_labels = "per_group"` if one label per group, `"per_sample"` if each row
-  has its own label (see §C); never both `group_on` and `time_on`.
+- Temporal: `temporal = Temporal(on="TODO", splits=TemporalSplits(...))` (§C). A calendar window gives the horizon;
+  otherwise set `horizon` / `horizon_unit`. A temporal task without a horizon does not import.
+- Grouped: `grouping = Grouping(on="TODO", labels=..., prediction_unit=..., context=..., definition=...)` (§C):
+  `labels="per_group"` if one label per group, `"per_sample"` if each row has its own label; the unit, aggregation
+  and context from the source's use case. A task is grouped or temporal, never both (an order inside groups is
+  `Grouping(time_on=...)`).
 
 **Seed `curation_comments`** in the house format — one opening line naming the exact starting
 artifact, then `-` bullets. Pre-fill the bullets you know and leave TODO bullets for the rest:
@@ -229,8 +233,8 @@ doesn't need.
 #     counts): `df[target] = np.log(df[target])` / `np.log1p(...)`. Rename the column when you
 #     do (e.g. `log_days_to_death`). Skip it if the source already log-scaled the target.
 # 11. TODO(verify): drop implausible rows (data errors) and censored/capped target values.
-# 12. The row order and the index are the base class's job: a stable sort by `time_on` for temporal
-#     tasks, else a shuffle with seed 42, then `reset_index`. Do not shuffle or sort in `_clean`.
+# 12. The row order and the index are the base class's job: a stable sort by the time column for
+#     temporal tasks, else a shuffle with seed 42, then `reset_index`. Do not shuffle or sort in `_clean`.
 ```
 
 After dropping rows, `category` columns keep their old levels — add
@@ -250,15 +254,57 @@ split capped to 1M train and 500k test rows (`cap_splits`). The comment is
 "Default splits.". Set `splits_comment` only when there is something to say (a split that deliberately differs
 from the source's protocol, what a grouped test fold holds).
 
-`group_labels`: `"per_group"` when every row of a group shares one label (one label per customer/patient/area),
-`"per_sample"` when each row has its own label (a per-timestep measurement, a per-transaction outcome). Getting this
-wrong is a bundle-check error (`task_group_labels_per_group_violated`), and it changes the recommended split sizes.
+### Grouped: `Grouping`
+A grouped split simulates prediction for groups (patients, molecules, customers) not seen in training. Declare the
+regime as one object; it is stored in the container, the only place a format-2 container records its group fields
+(`task_metadata.grouping`, read with `container.grouping`; `task_metadata.group_on` / `group_labels` /
+`group_time_on` are read-only views of it):
 
-### Temporal: `TemporalSplits`
-The horizon is a human judgment, not a row-count rule. Derive it from the source ("managers predict sales up to six
-weeks in advance", the competition's own test window, the refit cadence) and write the reasoning in
-`splits_comment`. The data arrives sorted by `time_on` (stable), and `TemporalSplits` builds the collection's
-convention, which the bundle checks verify:
+```python
+grouping = Grouping(
+    on="molecule_name",          # the group column(s): split and scoring metadata, never a model feature
+    labels="per_group",          # a property of the data
+    prediction_unit="group",     # from the use case: "row" (default) or "group"
+    aggregation="any",           # with "group" only: "mean", "any", "last", "select_min", "select_max"
+    context="all_rows",          # what a model may know about the group: "none" (default), "all_rows", "past_rows"
+    definition="""
+        One group is a molecule; ... The use case is ... (source, with the quote that says so).
+    """,
+)
+```
+
+* `labels`: `"per_group"` when every row of a group shares one label (one label per customer/patient/area),
+  `"per_sample"` when each row has its own label (a per-timestep measurement, a per-transaction outcome). Getting
+  this wrong is a bundle-check error (`task_group_labels_per_group_violated`), and it changes the recommended split
+  sizes. It does not decide the unit: micro_mass has one species per strain, yet identifies the species from one
+  spectrum.
+* `prediction_unit` and `aggregation` come from what one real-world prediction is in the source, not from the label
+  structure: `mean` for replicate measurements of one label (parkinsons: about six phonations per subject), `any` for
+  multiple-instance data (musk: a molecule is a musk if any conformation is), `last` when the latest row carries the
+  label (amex: one prediction per customer at its latest statement; needs `time_on`), `select_min` / `select_max`
+  when one row is chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest).
+  Everything else is `row`.
+* `context`: `all_rows` when all rows of a new group are known when predicting (the conformations of a molecule),
+  `past_rows` when only its earlier rows are (needs `time_on`), `none` when each row stands alone (sepsis as a
+  snapshot task: each hour from its own measurements).
+* `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
+  Say when the grouped split is stricter than the source's protocol (pancreatic: the paper split serum samples at
+  random). It is rendered in the README's "Group structure" section with the group statistics.
+* The group statistics give four findings (`data_foundry.v2.group_checks`, §E): few test groups per fold, one group
+  holding over 20% of the rows, `per_sample` labels that are nearly all one per group, and groups that are not
+  clustered. For the model-based questions (does the grouping change the score, is there signal across groups) run
+  `scripts/v2/group_probes.py <name>`: the IID vs grouped gap, several model families scored per group, and a
+  permutation test across groups. Accept `groups_test_groups_few` only with that evidence.
+
+### Temporal: `Temporal` and `TemporalSplits`
+Declare `temporal = Temporal(on="date", splits=TemporalSplits(...))`: the time column and the test windows in one
+place. The horizon is a human judgment, not a row-count rule. Derive it from the source ("managers predict sales up
+to six weeks in advance", the competition's own test window, the refit cadence), choose the window to match, and
+write the reasoning in `splits_comment`. A window of fixed length is the horizon: `window` `unit` for a calendar
+unit, `window` steps for `unit="rows"`, and declaring it again is an error. Add `horizon=..., horizon_unit=...` only
+when the windows do not fix it: `unit="unique"` (distinct values have no unit of their own: anes counts election
+years, garments days), `window=None` (california, kick), or `_make_splits` (hotel). The data arrives sorted by the time column (stable), and `TemporalSplits`
+builds the collection's convention, which the bundle checks verify:
 
 * one repeat per time window, always fold `0` (`splits_temporal_layout`);
 * split 0 is the newest window, the rest walk back in time (`splits_temporal_order`);
@@ -271,7 +317,7 @@ convention, which the bundle checks verify:
 | Explicit test periods (kickstarter, sf_permit, lending_club: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
-| Only a row order (california, mercedes: `TimeSeriesSplit`) | `TemporalSplits(window=..., unit="rows", n_windows=3)` with `time_horizon_unit="steps"` |
+| Only a row order (california, mercedes: `TimeSeriesSplit`) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | Overlapping windows (ghana: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 **Number of windows.** Use as many windows as an IID or grouped task of that size would get splits
@@ -463,7 +509,11 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `splits_rows_unused` | IID/grouped splits must cover every row |
 | `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: for a frame above 1.5M rows make a `_1m` version (§C); otherwise narrow the windows |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 (§C) |
-| `meta_time_horizon_missing` | a calendar `temporal_splits` window, or `time_horizon` + `time_horizon_unit` |
+| `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
+| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`scripts/v2/group_probes.py`), and accept with that evidence |
+| `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
+| `groups_labels_constant` | `per_sample` with at least 95% single-label groups: `per_group` if one label by construction, else accept with the count of mixed groups |
+| `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `meta_tags_*` | tags must agree with the split regime (Step 1) |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`/`%`/`_` escaped |
 | `meta_placeholder_left`, `definition_todo_left` | every TODO in the metadata and every `TODO(verify)` in `dataset.py` must be resolved before `build` |

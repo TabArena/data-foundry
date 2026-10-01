@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 
 class Musk(AbstractCuratedDataset):
@@ -36,8 +36,16 @@ class Musk(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "binary_classification"
-    group_on = "molecule_name"
-    group_labels = "per_group"
+    grouping = Grouping(
+        on="molecule_name",
+        labels="per_group",
+        prediction_unit="group",
+        aggregation="any",
+        context="all_rows",
+        definition="""
+            One group is a molecule; its rows are its low-energy conformations (102 molecules, 1 to 1,044 conformations each). The use case is to decide whether a new molecule is a musk, and "the classifier should classify a molecule as 'musk' if ANY of its conformations is classified as a musk" (UCI `clean2.info`; Dietterich et al. 1997, who score molecules in a 10-fold cross-validation over the 102 molecules). All conformations of a new molecule can be computed from its structure, so a model may use all of its rows. The row labels are copies of the molecule's label: most conformations of a musk do not bind.
+        """,
+    )
 
     # Splits
     splits_comment = """

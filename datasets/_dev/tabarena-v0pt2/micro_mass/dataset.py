@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -41,8 +41,15 @@ class MicroMass(AbstractCuratedDataset):
     # Task
     target = "Species"
     problem_type = "multiclass_classification"
-    group_on = "Strain"
-    group_labels = "per_group"
+    grouping = Grouping(
+        on="Strain",
+        labels="per_group",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a bacterial strain; its rows are technical replicate MALDI-TOF spectra (213 strains with 1 to 6 spectra, 20 species). The use case is identifying the species of an isolated colony from one spectrum (Mahé et al. 2014), so each spectrum is one prediction, made from that spectrum alone. Vervier et al. 2015 hold out one strain at a time and average the accuracy per strain, then per species.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(

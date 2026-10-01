@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -42,7 +42,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     curation_comments = """
         We start with all files from Kaggle.
 
-        The original data has one file per user that was already preprocessed to one .csv file by the competition creators. Here we start with the preprocessed single .csv file. The data is non-IID in nature based on the groups of patients from different hospitals. The data that is grouped per patient ("Patient_ID"). These groups are also temporal in nature, but this temporal dependency is irrelevant as teh task is to predicts for one full patient (i.e., no refitting given patient information).
+        The original data has one file per user that was already preprocessed to one .csv file by the competition creators. Here we start with the preprocessed single .csv file. The data is non-IID in nature based on the groups of patients from different hospitals. The data is grouped per patient ("Patient_ID"), and each patient's rows are the hours of one ICU stay. We simulate a snapshot early warning for patients not seen in training: at every hour, predict whether sepsis follows within the next 6 hours from that hour's measurements only. The model is trained once on the training patients and not refit with a new patient's data, and no prediction uses the patient's other hours. (The PhysioNet 2019 challenge also allowed the patient's earlier hours; causal history features built in `_clean` would be the upgrade to that setting.) One prediction per patient from the whole stay is not a valid alternative: all 2,932 septic records end at most 9 hours after their first positive hour, so the record length gives the outcome away.
         In the original competition, one had to predict for unseen patients from the existing hospitals and also for a new hidden hospital. In the public data, we only have two hospitals, (A) and (B). Given the limited data, we decide not to simulate a domain shift as we could not "train" for domain shift. Thus, we simulate only a normal grouped non-IID scenario. That is, we use all patients from both hospitals for training and testing, but ensure that the splits are grouped by patient ID. Thus, we simulate what would happen if someone trains a model on data from two hospitals and uses this to predict for other patients from these hospitals. This decision is also amplified by the large gap in performance for the unseen hospital in the competition (Report, Table 3), clearly pointing to a domain shift that is out-of-scope for this task. Note, we do not have temporal information of the order of patients, thus, we cannot simulate to only predict for patients "from the future". We believe this does not introduce any data leakage for this dataset.
 
         - Patients with an ID larger than 100_000 are from hospital (B), while patients with an ID smaller than 100_000 are from hospital (A). We add this indicator into our data and then reset the Patient_IDs to be continuous increasing integers.
@@ -51,16 +51,23 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         - We reverse the ordinal encoding of Gender.
         - We mark features as categorical where appropriate.
         - For each patient, we predict the sepsis status over time. So it is more or less a transformed survival task (also in the original challenge).
-        - Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Predictions must be causal per patient (each hour only from that patient's earlier rows) and scored with the PhysioNet 2019 utility per patient, not as independent rows. Patient_ID is group metadata, not a model feature.
+        - Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Each hour is predicted from its own row only: no feature may combine a patient's rows (record length, last Hour/ICULOS, aggregates over the stay). Scoring uses the PhysioNet 2019 utility per patient over its ordered hours, not independent rows. Patient_ID is group metadata, not a model feature.
     """
 
     # Task
     target = "SepsisLabel"
     problem_type = "binary_classification"
     metric = "PhysioNet2019UtilityFunction"  # https://github.com/physionetchallenges/evaluation-2019/blob/master/evaluate_sepsis_score.py
-    group_on = "Patient_ID"
-    group_labels = "per_sample"
-    group_time_on = "Hour"
+    grouping = Grouping(
+        on="Patient_ID",
+        labels="per_sample",
+        time_on="Hour",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is an ICU stay; its rows are its hourly records. The PhysioNet/Computing in Cardiology Challenge 2019 predicts sepsis 6 hours ahead "at each hour of a patient's clinical record" for unseen patients and scores a utility per patient over its ordered hours. We use the snapshot form: each hour is one prediction, made from its own row only (no feature combines a patient's rows), and the challenge utility per patient is the score. The challenge also allowed the patient's earlier hours, a possible upgrade with causal history features.
+        """,
+    )
 
     # Splits
     subsample_to_budget = True

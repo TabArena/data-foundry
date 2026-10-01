@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class GarmentsWorkerProductivity(AbstractCuratedDataset):
@@ -52,15 +52,17 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
     # Task
     target = "actual_productivity"
     problem_type = "regression"
-    time_on = "date"
 
     # Splits
     splits_comment = """
         We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split. The split with the smallest train sizes uses exactly half of the available samples.
     """
-    time_horizon = 1
-    time_horizon_unit = "days"
-    temporal_splits = TemporalSplits(window=1, unit="unique", n_windows=30)
+    temporal = Temporal(
+        on="date",
+        splits=TemporalSplits(window=1, unit="unique", n_windows=30),
+        horizon=1,
+        horizon_unit="days",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "garments_worker_productivity.csv")

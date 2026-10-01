@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, drop_columns
 
 
 class LendingClub(AbstractCuratedDataset):
@@ -58,7 +58,6 @@ class LendingClub(AbstractCuratedDataset):
     # Task
     target = "Default"
     problem_type = "binary_classification"
-    time_on = "issue_d"
 
     # Splits
     splits_comment = """
@@ -70,7 +69,10 @@ class LendingClub(AbstractCuratedDataset):
         window was only known later (by 2018), so the train side holds labels a deployed model would not have
         had yet; a gap of a full 36-month term would remove this but leave too little data.
     """
-    temporal_splits = TemporalSplits(window=3, unit="months", n_windows=3)
+    temporal = Temporal(
+        on="issue_d",
+        splits=TemporalSplits(window=3, unit="months", n_windows=3),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         original_df = pd.read_csv(raw_dir / "accepted_2007_to_2018Q4.csv.gz")

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -53,13 +53,15 @@ class AnesVoting2026(AbstractCuratedDataset):
     # Task
     target = "VCF0702"
     problem_type = "binary_classification"
-    time_on = "VCF0004"
 
     # Splits
     splits_comment = "We use each of the last 9 years once as test data, using all prior data as train data."
-    time_horizon = 1
-    time_horizon_unit = "years"
-    temporal_splits = TemporalSplits(window=1, unit="unique", n_windows=9)
+    temporal = Temporal(
+        on="VCF0004",
+        splits=TemporalSplits(window=1, unit="unique", n_windows=9),
+        horizon=1,
+        horizon_unit="years",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "anes_timeseries_cdf_csv_20260205.csv", low_memory=False)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class PancreaticCancerMouseDetection(AbstractCuratedDataset):
@@ -42,15 +42,23 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
     curation_comments = """
         The task in the original data is grouped as multiple serums per mouse were taken.
         - We merge all samples located in the .csv files into one DataFrame and recover target labels, group IDs, and feature names.
-        - We label the samples based on name of the folder they are located in: "PanINCTL" translates to healthy animals cases while "03-PanIN" to individuals with a pancreatic cancer.
-        - Anomaly: The data from the website has one more mouse than accounted for in the paper (73 vs (33 + 39))) but the same number of serums (181).
+        - We label the samples based on name of the folder they are located in: "PanINCTL" are the littermate control mice, "03-PanIN" the compound-mutant mice with pancreatic intraepithelial neoplasia (PanIN), preinvasive lesions with "no evidence of invasive or metastatic disease" (Hingorani et al. 2003). The target is therefore `HasPanIN`, not cancer.
+        - Anomaly: the download holds 181 serum spectra (80 PanIN, 101 control) from 73 mouse IDs (35 PanIN, 38 control); the paper reports 191 spectra after quality control (80 PanIN, 111 control) from 72 mice (33 compound mutants, 39 littermate controls). The 10 missing spectra are controls, and no mouse ID occurs in both classes; the difference cannot be resolved without the authors.
+        - The file names encode the class: the third token is `02` for every control file and `03` for every PanIN file, some with a `t` suffix of unknown meaning (42 of 101 control and 24 of 80 PanIN files; it is not the paper's training/blinded-test split). We take the label from the folder and the mouse ID from the second token; the class code never enters the features.
     """
 
     # Task
-    target = "HasCancer"
+    target = "HasPanIN"
     problem_type = "binary_classification"
-    group_on = "mouse_id"
-    group_labels = "per_group"
+    grouping = Grouping(
+        on="mouse_id",
+        labels="per_group",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "as independent events" at least 5 days apart (Hingorani et al. 2003). The use case is a serum test for the preinvasive state, so each sample is one prediction, made from that sample alone. The paper split the samples at random, ignoring the mice; holding out whole mice simulates testing a new patient.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         BASE_DIR = raw_dir
@@ -68,7 +76,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
 
                 row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"]))
                 row["mouse_id"] = group_id
-                row["HasCancer"] = label
+                row["HasPanIN"] = label
                 rows.append(row)
         df = pd.DataFrame(rows)
         return df

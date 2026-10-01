@@ -45,7 +45,7 @@ shipped data with a suspected fix; they are not leaderboard-grade.
 | 8 | Features in a range where no signal can exist | they predict the label | prostate m/z < 1 Da: AUC 0.81-0.85 |
 | 9 | Number formats by class (share of whole numbers, decimals, units) | formats differ by class | hepatitis_c `ALB`, `BIL` whole numbers in ~100% of patient rows, ~10% of donor rows |
 | 10 | Row order: target by position in the raw file, next-row label match; a time index against the date and against any sort key | the order is temporal or sorted by the target, or the "time" index follows another key | seismic_bumps next-row match 2,583 of 2,583; california time index Spearman 1.000 with the address rank, 0.003 with `Listed On` |
-| 11 | Entity overlap: share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; IID score vs grouped score | large overlap and a large drop | in_vehicle 0.83 → 0.75; emscad 0.99 → 0.94; video_game_fps: every test CPU and GPU in train |
+| 11 | Entity overlap: share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; IID score vs grouped score. For a v2 grouped task, read the "Group structure" section of its README (test groups per fold, label granularity, clustering against chance) and run `scripts/v2/group_probes.py <name>` (the IID vs grouped gap, several models scored per group, a permutation test across groups) | large overlap and a large drop | in_vehicle 0.83 → 0.75; emscad 0.99 → 0.94; video_game_fps: every test CPU and GPU in train |
 | 12 | Temporal: rows and minority-class rows per test window | a handful of positives, or under ~50 test rows | seismic_bumps 0-5 positives per window; ghana rain from 3-6 farmer-days per window; coffee monthly windows of 2-72 rows |
 | 13 | Target by period (rows, p50, p90, max), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
 | 14 | A simple formula or lookup for the target | R² near 1 | video_game_fps: log FPS = game + CPU + GPU, R² 0.99998 |
@@ -101,7 +101,8 @@ Reading the probes:
 * A value known at prediction time that rules the outcome out (diabetes "Expired") is a cohort question.
 * IID over related entities (amazon_employee_access, concrete_compressive_strength, bank_marketing) is optimistic but
   matches how those tasks are framed: candidates for grouped or temporal variants, not fixes.
-* Group-id columns shipped as features: set `group_on`. The TabArena harness drops `group_on` columns before fitting.
+* Group-id columns shipped as features: declare the column in `Grouping(on=...)`. It is metadata, never a feature;
+  the TabArena harness has to drop it before fitting (`BENCHMARK_CHANGES_TODO.md`: not every pipeline does yet).
 * Anonymised fields that may be post-outcome, in data a company released for its own competition: keep them, with a
   `Potential leak, kept on purpose:` bullet in `curation_comments` giving the mechanism, the numbers, why they are
   kept and when to revisit. Removing an unverified signal from host-designed data is arbitrary. homesite
@@ -122,6 +123,23 @@ Reading the probes:
   hazelnut_spread_contaminant_detection (re-scans of about ten set-ups).
 * Decide cold start or warm start from the use case before grouping (in_vehicle: cold start, a model used before the
   recommender has data on a person).
+* Judge whether a small grouped task is learnable across groups before calling it `Too Small`. Use several model
+  families (a regularised logistic regression, a random forest, gradient boosting, kNN) on the shipped grouped splits,
+  score per group (average each group's predicted probabilities) against the class-share baseline, and run a
+  permutation test that shuffles the labels across groups and repeats the whole grouped CV
+  (`scripts/v2/group_probes.py` does all of this). A regression task whose models all score below the mean predictor
+  on unseen groups has no signal across groups (telemonitoring_parkinsons, 42 subjects: R^2 -0.17 to -0.31 grouped
+  against 0.75 IID, 2026-10-01): the use case has to allow known groups (warm start), or the dataset goes. One untuned
+  gradient-boosting run, as in `leak_probes.py`, is not enough: on unseen groups its probabilities are overconfident,
+  so its log loss can be worse than the baseline while the signal is real (mice_protein: LightGBM log loss 2.53
+  against a baseline of 2.07, while a random forest reaches 1.12 and a macro AUC of 0.92 per mouse, p < 0.01; it was
+  retired anyway, because its classes are the experimental design: real signal does not make a predictive task). With
+  few groups, give the uncertainty of one split as a bootstrap over groups (parkinsons: 32 subjects, AUC 0.86 per
+  subject, 95% interval 0.69-0.99) and keep the dataset when the signal is real; the repeated splits still compare
+  models in pairs.
+* Check the benchmark's own results for a dataset before retiring it for lack of signal: the probes found only a weak
+  linear signal in pancreatic_cancer_mouse_detection (AUC 0.63 per mouse, tree models at chance), yet models do well
+  on it in BeyondArena, so it stays.
 * Check a claim about the source's split against the data: kick's comment called the Kaggle split grouped, yet 78.9%
   of its test rows are at a location also in train.
 * Ids parsed as floats collapse: deduplicating sdss_17 on its rounded `obj_ID` removed 21,947 distinct objects; it is
@@ -161,6 +179,9 @@ The audit's first suggestion was revised for most of the 38 cases. The patterns 
 * Re-check a comment's claim with data: kick's "grouped" Kaggle split came from a buggy check, and california's
   "temporal" split ran on alphabetical order.
 * Report a borderline case as "maybe leak" for the human to decide, not as "no leak".
+* Do not call a small grouped task unlearnable from one quick model. mice_protein, parkinsons and pancreatic were first
+  suggested as having no signal across groups from one untuned LightGBM run; several models and a permutation test
+  showed real signal in the first two, and the BeyondArena results kept the third (2026-10-01).
 
 ## 8. Recording
 

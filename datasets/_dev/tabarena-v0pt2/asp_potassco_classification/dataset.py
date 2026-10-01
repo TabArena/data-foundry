@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 
 class AspPotasscoClassification(AbstractCuratedDataset):
@@ -48,14 +48,21 @@ class AspPotasscoClassification(AbstractCuratedDataset):
 
         - We treat it as a multiclass classification task to solve the algorithm selection task as in the OpenML version (https://openml.org/d/41705).
         - We drop all cases where no algorithm was able to finish before the timeout as these are essentially random labels.
-        - We resole the instance ID to a task ID by mapping the instance ID back to the source task based on their naming convention. From our understanding, the data contains multiple instance from the same solver task, differing only in seed or task configurations. We want to avoid having samples from the same task in both train and test set, as this would leak what algorithms are best for this task, and since in real-world you might not have samples from your new task. Thus, we treat the data as a grouped task, where we aim to generalize the predicting the best algorithm to new tasks across a set of instances of this task.
+        - We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the best configuration for a problem class not seen in training (the `definition` of the grouping).
     """
 
     # Task
     target = "algorithm"
     problem_type = "multiclass_classification"
-    group_on = "task_id"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="task_id",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a problem class of the Potassco ASP benchmark set (96 classes with 1 to 134 instances); its rows are instances, each labelled with the fastest of 11 clasp configurations. Each instance is one selection decision, made from its own features. claspfolio 2 (Hoos et al. 2014) and ASlib split the instances at random; holding out whole problem classes is our choice and asks for a configuration on a problem class not seen in training.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         def load_arff(path) -> pd.DataFrame:

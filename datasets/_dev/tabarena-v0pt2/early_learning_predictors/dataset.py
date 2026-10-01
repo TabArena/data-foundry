@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, drop_columns
 
 
 class EarlyLearningPredictors(AbstractCuratedDataset):
@@ -67,8 +67,15 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
     # Task
     target = "child_total_elom"
     problem_type = "regression"
-    group_on = "id_facility"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="id_facility",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is an early learning facility; its rows are the children assessed there with the ELOM tool, a few per facility. The question is "which features of an early learning programme predict better learning outcomes for children" (DataDrive2030, Zindi), and the programme features are facility-level, so a random split would let a model recognise facilities. Each child is one prediction, for a facility not seen in training; the Zindi split was random by child.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "elom-tb5i-2016-2023-v1.csv", low_memory=False)

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -114,12 +114,21 @@ class Emscad(AbstractCuratedDataset):
     # Task
     target = "fraudulent"
     problem_type = "binary_classification"
-    group_on = "poster_group"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="poster_group",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a poster (an account); its rows are its job ads. The use case is a classifier that flags a fraudulent ad before it is published (Vidros et al. 2017). Known posters are judged by their account's history and fraudsters repost the same ad, so holding out whole posters tests the content model on posters not seen before. Each ad is one prediction, made from that ad alone.
+        """,
+    )
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Large legitimate clients (e.g. one company profile with 539 ads) and their "
         "locations, departments and industries are all legitimate at a 95% base rate; the grouped split keeps each "
         "client on one side, so these values do not leak across the split.",
+        "groups_labels_constant": "The labels were assigned per client (Vidros et al. 2017, Sec. 5), so 4,439 of the "
+        "4,441 posters have one label; 2 posters (34 ads) have both, so the labels are not one per group.",
     }
 
     # Splits

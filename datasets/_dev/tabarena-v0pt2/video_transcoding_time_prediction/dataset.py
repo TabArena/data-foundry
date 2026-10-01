@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class VideoTranscodingTimePrediction(AbstractCuratedDataset):
@@ -41,8 +41,15 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
     # Task
     target = "log_transcoding_time"
     problem_type = "regression"
-    group_on = "video_id"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="video_id",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a video; its rows are transcoding jobs of that video to an output setting (80 videos with the full grid of 841 settings, the rest mostly single jobs). The use case is predicting the transcoding time of new videos to balance requests across a transcoding cluster ("unseen video streams", Deneke et al. 2014), so each job is one prediction, made from its own row.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "transcoding_mesurment.tsv", sep="\t")

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class DementiaPrediction(AbstractCuratedDataset):
@@ -36,16 +36,23 @@ class DementiaPrediction(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from Mendeley.
 
-        - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. The cases for converted / changed their dementia rating over time. We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
-        - We drop the group variable and any information about the time of the scan as our goal to predict the rating from eTIV, nWBV, and ASF which are all derived from the MRI scan and independent of time.
+        - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
+        - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
         - We also drop the constant hand column.
     """
 
     # Task
     target = "CDR"
     problem_type = "multiclass_classification"
-    group_on = "Subject ID"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="Subject ID",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a subject of OASIS-2: older adults scanned on two or more visits at least a year apart, each visit with its own clinical dementia rating (Marcus et al. 2010). Each visit is one prediction, made from that visit alone, for a subject not seen in training: a first-visit framing, since a follow-up visit would know the earlier ratings. The source defines no prediction task.
+        """,
+    )
 
     # Splits
     splits_comment = """

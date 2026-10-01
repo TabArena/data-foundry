@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, drop_columns
 
 
 class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
@@ -45,10 +45,12 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
     # Task
     target = "target"
     problem_type = "binary_classification"
-    time_on = "offerdate"
 
     # Splits: a model deployed for 5 days before it is refit (the test window of TabRed), 5 windows back.
-    temporal_splits = TemporalSplits(window=5, unit="days", n_windows=5)
+    temporal = Temporal(
+        on="offerdate",
+        splits=TemporalSplits(window=5, unit="days", n_windows=5),
+    )
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once and
     # aggregates the purchase history per offer (the TabRed features); `_load_raw` starts from its output.

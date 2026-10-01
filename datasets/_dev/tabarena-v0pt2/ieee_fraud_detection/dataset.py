@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class IeeeFraudDetection(AbstractCuratedDataset):
@@ -51,15 +51,15 @@ class IeeeFraudDetection(AbstractCuratedDataset):
     # Task
     target = "isFraud"
     problem_type = "binary_classification"
-    time_on = "Transaction_date"
 
     # Splits
     splits_comment = """
         To define three train/test splits, we use the last three months as test sets, leave 1 month as the planning gap, and use the remaining training data.
     """
-    time_horizon = 1
-    time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=1, unit="months", n_windows=3, gap=1)
+    temporal = Temporal(
+        on="Transaction_date",
+        splits=TemporalSplits(window=1, unit="months", n_windows=3, gap=1),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # LOAD TRAIN

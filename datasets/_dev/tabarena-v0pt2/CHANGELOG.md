@@ -4,6 +4,151 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-01 (grouped data: the regime as one object, with the use case)
+
+- Every grouped and temporal definition declares its regime as one object (`GROUPED_DATA_PLAN.md`, section 3).
+  The 17 grouped definitions declare `grouping = Grouping(on, labels, time_on, prediction_unit, aggregation,
+  context, definition)`, stored in the container as `task_metadata.grouping`; the `definition` cites the source's use
+  case. Group unit: musk (`any`), parkinsons_biomedical_voice_measurements (`mean`), amex_non_iid_1m (`last`),
+  sat11_hand_algo_runtime (`select_min`), all with `context="all_rows"`; the other 13 predict per row with
+  `context="none"`. The 20 temporal definitions declare `temporal = Temporal(on, splits, horizon, horizon_unit)`.
+  A migration script moved the flat attributes, and a comparison over all 131 definitions shows no change in any flat
+  metadata field or temporal window: the IID and temporal checksums are unchanged, the 17 grouped ones change (the
+  new block). Not built.
+- Revised 2026-10-02, before the rebuild: a v2 definition builds a container of format 2
+  (`container.format_version == 2`, also written to `container_metadata.json`). Its task metadata
+  (`PredictiveMLTaskMetadataV2`) stores the group fields once, in `grouping`; the flat `group_on`, `group_labels` and
+  `group_time_on` are no longer written (they are read-only views of the block), and `container.grouping` raises for
+  a format-1 container. Every checksum changes (the task metadata type). A fixed-length window (a calendar unit, or
+  `unit="rows"`) is the horizon, and declaring it again is an error: 12 definitions with calendar windows and
+  `mercedes_benz_greener_manufacturing` (320 rows) dropped their `horizon` / `horizon_unit`, each equal to the window;
+  `anes_voting_2026` and `garments_worker_productivity` (`unit="unique"`), `california_house_prices_2020` and `kick`
+  (`window=None`) and `hotel_booking_demand` (`_make_splits`) keep theirs. No horizon changed.
+- Group checks in `dataset check`: the README of a grouped task gets a "Group structure" section (the fields, groups,
+  rows per group, test groups per fold, label granularity, clustering against chance) and four findings
+  (`groups_test_groups_few`, `groups_largest_share_high`, `groups_labels_constant`, `groups_not_clustered`).
+  `scripts/v2/group_probes.py` runs the model-based probes on demand. On the 17 grouped datasets the findings fire for
+  parkinsons and telemonitoring (few test groups) and emscad (labels nearly one per poster).
+- `parkinsons_biomedical_voice_measurements`: accepted `groups_test_groups_few` (per-subject ROC AUC 0.82, permutation
+  test p = 0.01) and `task_group_time_on_few_unique` (`session_number` orders the recordings).
+- `emscad`: accepted `groups_labels_constant` (2 of 4,441 posters have both labels, so `per_sample` stays).
+- `asp_potassco_classification`: the comment no longer calls the instances of a problem class "differing only in seed
+  or task configurations", and says the source split at random. `in_vehicle_coupon_recommendation`: the comment no
+  longer states that the paper's 5-fold results were random splits (the paper does not say).
+- Open: `telemonitoring_parkinsons_biomedical_voice_measurements` has no signal across subjects (R^2 below 0 for all
+  models on the grouped splits, 0.75 on random splits); retire or recast as warm-start tracking
+  (`GROUPED_DATA_PLAN.md`, section 10).
+
+## 2026-10-01 (mice_protein retired)
+
+- Removed `mice_protein_trisomy_discriminant`: retired (`No (Retired)`, No Good Target / Scientific Discovery). The 8
+  classes are the experimental design (genotype from breeding, training protocol, memantine or saline injection), all
+  known for every mouse; neither source predicts (Higuera et al. 2015 cluster with self-organising maps, Ahmed et al.
+  2015 test group differences), and the learning outcome was never measured ("sacrificed at 60 minutes post training
+  without measurement of freezing"). The protocol part is separated perfectly (per-mouse AUC 1.0, SOD1 alone),
+  genotype reaches 0.93 and treatment 0.77; the 1,080 rows are 15 dilution-series spots of 72 mice. BeyondArena
+  dataset; the shipped notebook and collection pin are unchanged. `LEAK_AUDIT.md` lists it under Removed (11; 131
+  datasets remain), and the grouped-data plan and `BENCHMARK_CHANGES_TODO.md` no longer use it as an example.
+
+## 2026-10-01 (covertype back to IID; dementia comments)
+
+- `covertype`: IID splits on the full data instead of leave-one-wilderness-area-out on a reduced frame: all 7 cover
+  types and all 4 areas, 581,012 rows instead of the 3 classes and 3 areas that a split by area allowed. The source
+  (Blackard & Dean 1999) drew its cells at random; with 3 groups the split by area was three domain-shift tests rather
+  than a grouped task, and it dropped 4 of the 7 cover types. The curation comments say why and note that IID is
+  optimistic for land far from mapped cells (one stand of 2-80 ha spans about 20-900 cells). The record's required
+  split is now IID. Checked: 0 errors, 0 warnings, IID 1x3; first `README.md`. Not built; it no longer matches its v1
+  notebook.
+- `dementia_prediction`: the curation comments list every feature the frame keeps (sex, age, education, SES, the
+  same visit's MMSE, eTIV, nWBV and ASF, which is 1755 / eTIV), where they named only the three MRI measures. The
+  record's required split is now grouped and its problem type multiclass. Metadata only, the checksum changes; not
+  checked or built.
+
+## 2026-10-01 (sat11: censored runtimes)
+
+- `sat11_hand_algo_runtime`: the 112 of 296 instances on which all 10 algorithms time out are dropped (1,120 rows,
+  2,960 -> 1,840). Every run stops at 5,000 s and a timeout is stored as that cutoff, so their labels are only lower
+  bounds, and they cannot change which algorithm a selector picks (the single-best to virtual-best PAR10 gap is the
+  same with or without them). The 666 timeouts of the remaining instances stay at the cutoff, which keeps the order
+  within an instance and is enough for PAR10. The curation comments explain the censoring and that a survival task
+  type could use every run. `source_url` now points to SAT11-HAND-ALGO, the scenario the download uses. The split
+  stays grouped by instance, still 10x3. Checked: 0 errors, 1 warning (`dataset_constant_column`, 3 columns that are
+  constant in the raw data too); first `README.md`. Not built; it no longer matches its v1 notebook.
+
+## 2026-10-01 (cardiotocography: patient key)
+
+- `cardiotocography`: a curation comment explains the grouping. The rows are overlapping segments of one exam file
+  (1,706 of 1,774 consecutive pairs overlap), so a file's rows must stay together. The patient ID above the file is
+  our guess from the file names (176 IDs for 352 files, 10 of them spanning exam dates up to 1,139 days apart), and
+  the comment says what its errors can and cannot leak. Metadata only, the checksum changes; not checked or built.
+
+## 2026-10-01 (pancreatic: target name and counts)
+
+- `pancreatic_cancer_mouse_detection`: the target is renamed `HasCancer` -> `HasPanIN`: the positive mice carry
+  pancreatic intraepithelial neoplasia, preinvasive lesions without invasive or metastatic disease (Hingorani et al.
+  2003). The curation comments now give the download's counts (181 spectra: 80 PanIN, 101 control; 73 mouse IDs: 35
+  PanIN, 38 control) against the paper's (191 spectra after quality control: 80 PanIN, 111 control; 72 mice), where
+  the old comment said the spectra counts match. A new comment notes that the third file-name token (`02` control,
+  `03` PanIN, some with a `t` suffix of unknown meaning) encodes the class and never enters the features. The record's
+  `problem_type` is now Binary Classification (was Multiclass). Checked: 0 errors, 1 warning
+  (`dataset_missing_value_sentinel`, 999 in two m/z columns, open); first `README.md`. Not built.
+
+## 2026-10-01 (telemonitoring: test days nearest the clinic assessments)
+
+- `telemonitoring_parkinsons_biomedical_voice_measurements`: UPDRS was assessed at baseline, 3 and 6 months and
+  linearly interpolated for the weekly test days in between, so the definition keeps three test days per subject. The
+  middle one is now the test day nearest the 3-month assessment, found where the subject's interpolated UPDRS bends
+  (a continuous two-piece linear fit: median day 91, 77 to 115; the kept day is 5 days before to 8 days after it).
+  Subjects 14 and 30 show no bend and get the test day nearest day 91. Before, it was the last session before day 130
+  (median day 126), whose label was interpolated a median 35 days after the assessment. Each kept test day now keeps
+  all its phonations (exact test times kept only part of a day), and the sessions are ordered by `test_time` (the
+  first and last rows in file order were not the earliest and latest for 2 and 3 subjects). 502 -> 749 rows, still
+  126 test days of 42 subjects. BibTeX: Tsanas et al. 2010 (IEEE TBME 57(4)) instead of the 2009 preprint. Checked:
+  0 errors, 0 warnings, grouped 20x3; first `README.md`. Not built; it no longer matches its v1 notebook.
+
+## 2026-10-01 (telemonitoring source link)
+
+- `telemonitoring_parkinsons_biomedical_voice_measurements`: `source_url` is now the Parkinsons Telemonitoring record
+  (UCI 189, 10.24432/C5ZS3N) instead of the Parkinsons dataset (UCI 174), the year 2009 instead of 2007, and the
+  download command fetches UCI 189's zip (its `parkinsons_updrs.data` is the same file, md5
+  4f97310e2c9fbeedb72e8a37822fee45). Metadata only, the checksum changes; not checked or built.
+
+## 2026-10-01 (parkinsons citation)
+
+- `parkinsons_biomedical_voice_measurements`: the BibTeX now cites Little et al. 2009 (IEEE TBME 56(4), the study that
+  recorded the 195 phonations; the data file asks for it) and Little et al. 2007 (BioMedical Engineering OnLine 6:23,
+  the feature methods; UCI's citation request). The 2007 entry had the wrong venue ("Nature Precedings").
+  `group_time_on = "session_number"` stays: it counts up within a subject and gives the order. Metadata only, the
+  checksum changes; not checked or built.
+
+## 2026-10-01 (sepsis use case stated)
+
+- `sepsis_prediction_1m`: the comments now state the simulated use case, a snapshot early warning for patients not seen
+  in training (every hour, sepsis within 6 hours, from that hour's measurements only; trained once, no refit with a
+  patient's data). The old first paragraph called the time order irrelevant because the task "predicts for one full
+  patient", which read as one prediction per stay; that setting leaks the outcome through the record length (septic
+  records end at most 9 hours after their first positive hour). The challenge's setting with the patient's earlier
+  hours stays a possible upgrade. Comment text only, no data change; the metadata changes, so the checksum does (its
+  README is stale until the re-check in `TODO.md`).
+
+## 2026-10-01 (grouped data: design plan)
+
+- Added `GROUPED_DATA_PLAN.md`: the use case of each of the 19 grouped datasets from its source (unit, aggregation,
+  what is known when predicting), the data findings (IID vs grouped gaps; the three small grouped tasks are learnable
+  and stay), the new metadata kept in data-foundry (`group_definition`, `prediction_unit`, `group_aggregation`,
+  `group_context`; no weighting field), the recommended scoring for TabArena, the checks, the dataset review and the
+  open decisions. Linked from `README.md` and `BENCHMARK_CHANGES_TODO.md`. Nothing implemented yet.
+- `GROUPED_DATA_PLAN.md`: one structure per regime (`Grouping`, `Temporal` with its horizon) stored as one optional
+  block, the flat fields kept for compatibility; amex's use case corrected (one prediction per customer from all its
+  statements; Kaggle's test data holds each customer's full history, about 12 statements, not only the latest).
+
+## 2026-10-01 (benchmark changes to do)
+
+- Added `BENCHMARK_CHANGES_TODO.md`: the changes the TabArena harness needs for grouped tasks (group column never a
+  feature, group-aware inner validation, scoring at the task's prediction unit, group context for aggregate features,
+  dataset-specific metrics, effective sample size) and the frame sizes of temporal `_1m` versions. Linked from
+  `README.md`.
+
 ## 2026-10-01 (temporal `_1m` versions sampled per window; climate and delivery column fixes)
 
 - v2 split protocol: a temporal `_1m` version no longer samples its frame to 1.5M rows. The windows are built on the

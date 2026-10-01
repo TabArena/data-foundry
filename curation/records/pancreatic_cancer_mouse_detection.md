@@ -17,7 +17,7 @@ year: '2003'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
-problem_type: Multiclass Classification
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://home.ccr.cancer.gov/ncifdaproteomics/CancerCellPanINDataBinned.zip

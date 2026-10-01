@@ -9,8 +9,11 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry import curation_recommendations as v1
-from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadata
+from data_foundry import (
+    bundle_checks,
+    curation_recommendations as v1,
+)
+from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
 from data_foundry.v2 import splits as protocol
 from data_foundry.v2.splits import (
     cap_splits,
@@ -217,28 +220,54 @@ def test_temporal_sampling_within_budget_changes_nothing() -> None:
 
 
 # --- protocol checks ----------------------------------------------------------------------------------------------
+V2_TASK = PredictiveMLTaskMetadataV2(
+    target_column_name="target",
+    problem_type="binary_classification",
+    objective_metric_name="roc_auc",
+    stratify_on="target",
+)
+
+
+def make_v2_container(df: pd.DataFrame, **overrides):
+    """A format-2 container (the bundle checks judge it by the v2 protocol)."""
+    return make_container(df, **{"task_metadata": V2_TASK, **overrides})
+
+
 def slugs(container) -> list[str]:
     return [r.slug for r in protocol_checks(container)]
+
+
+def test_the_bundle_checks_judge_each_format_by_its_own_protocol(monkeypatch: pytest.MonkeyPatch) -> None:
+    df = make_iid_frame(60)
+    single = PredictiveMLSplitsMetadata(splits_comment="x", splits={0: {0: (list(range(40)), list(range(40, 60)))}})
+    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)  # the v1 budget: the 20 test rows are over it
+    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 1_000)  # the v2 budget: within it
+    v1_slugs = bundle_checks.run_bundle_checks(make_container(df, experiment_metadata=single), verbose=False).slugs
+    v2_slugs = bundle_checks.run_bundle_checks(make_v2_container(df, experiment_metadata=single), verbose=False).slugs
+    assert v1_slugs.count("splits_dimensions_off_protocol") == 1
+    assert "splits_test_over_budget" in v1_slugs
+    assert v2_slugs.count("splits_dimensions_off_protocol") == 1  # from the v2 protocol checks only
+    assert "splits_test_over_budget" not in v2_slugs
 
 
 def test_protocol_checks_pass_the_recommended_splits() -> None:
     df = make_iid_frame(60)
     splits = iid_splits(df, n_repeats=20, stratify_on="target")
-    container = make_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits))
+    container = make_v2_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits))
     assert slugs(container) == []
 
 
 def test_protocol_checks_flag_a_single_split() -> None:
     df = make_iid_frame(60)
     single = {0: {0: (list(range(40)), list(range(40, 60)))}}
-    container = make_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=single))
+    container = make_v2_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=single))
     assert "splits_dimensions_off_protocol" in slugs(container)
 
 
 def test_protocol_checks_use_the_v2_test_budget(monkeypatch: pytest.MonkeyPatch) -> None:
     df = make_iid_frame(60)
     splits = iid_splits(df, n_repeats=20, stratify_on="target")
-    container = make_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits))
+    container = make_v2_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits))
     monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 10)  # each fold tests on 20 rows
     assert "splits_test_over_budget" in slugs(container)
 
@@ -247,7 +276,7 @@ def test_protocol_checks_use_the_v2_test_budget(monkeypatch: pytest.MonkeyPatch)
 def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged: bool) -> None:
     df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=n_windows)
-    task = PredictiveMLTaskMetadata(
+    task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="binary_classification", objective_metric_name="roc_auc", time_on="t"
     )
     container = make_container(

@@ -57,9 +57,6 @@ MIN_TEMPORAL_SPLITS = 3
 REPEATS_BY_TRAIN_SIZE = ((500, 20), (2_500, 10), (250_000, 3))
 """``(train-size limit, repeats)``: a train side below the limit gets that many repeats; larger ones get 1."""
 
-REPLACED_V1_CHECKS = ("splits_dimensions_off_protocol", "splits_test_over_budget")
-"""Bundle checks that judge the v1 protocol; :func:`protocol_checks` replaces them for v2 definitions."""
-
 TemporalUnit = Literal["days", "weeks", "months", "years", "unique", "rows"]
 """How :class:`TemporalSplits` measures a test window.
 
@@ -210,7 +207,8 @@ class TemporalSplits:
         TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
         TemporalSplits(window=7, unit="days", n_windows=3)                    # a `_1m` version: 3 weeks
 
-    With a calendar unit and no explicit ``time_horizon``, the horizon is ``window`` ``unit``.
+    A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a calendar unit,
+    ``window`` steps for ``unit="rows"``.
     """
 
     window: int | None = 1
@@ -254,10 +252,83 @@ class TemporalSplits:
 
     @property
     def horizon(self) -> tuple[int, str] | None:
-        """``(time_horizon, time_horizon_unit)`` implied by a calendar window, else None."""
-        if self.window is None or self.unit not in _CALENDAR_UNITS:
+        """``(time_horizon, time_horizon_unit)`` set by a fixed-length window, else None.
+
+        A calendar window gives ``(window, unit)`` and a row window ``(window, "steps")``. ``unit="unique"`` gives
+        None: a window of distinct time values has no unit (the values may be days, years or an index), and neither
+        has ``window=None`` (the windows run from each cutoff to the end of the data).
+        """
+        if self.window is None:
             return None
-        return self.window, self.unit
+        if self.unit in _CALENDAR_UNITS:
+            return self.window, self.unit
+        if self.unit == "rows":
+            return self.window, "steps"
+        return None
+
+
+HorizonUnit = Literal["steps", "days", "weeks", "months", "years"]
+
+
+@dataclass(frozen=True)
+class Temporal:
+    """The temporal regime of a v2 definition: the time column, the test windows and the prediction horizon.
+
+    Declared as ``temporal = Temporal(...)`` in ``dataset.py``. Examples from the collection::
+
+        Temporal(on="date", splits=TemporalSplits(window=1, unit="months", n_windows=3))      # horizon: 1 month
+        Temporal(on="t", splits=TemporalSplits(window=320, unit="rows", n_windows=9))         # horizon: 320 steps
+        Temporal(on="Year", splits=TemporalSplits(unit="unique", n_windows=3), horizon=1, horizon_unit="years")
+        Temporal(on="arrival_date", horizon=3, horizon_unit="months")                           # `_make_splits`
+
+    Attributes:
+        on: The time column; the frame is sorted by it and future rows never train a split.
+        splits: The declarative expanding windows; None when the definition implements ``_make_splits``.
+        horizon: How far ahead the task predicts, for windows that do not fix it (``unit="unique"``, ``window=None``,
+            or ``_make_splits``). A fixed-length window is the horizon (:attr:`TemporalSplits.horizon`), and
+            declaring it again is an error, so the two cannot disagree.
+        horizon_unit: ``steps``, ``days``, ``weeks``, ``months`` or ``years``; set together with ``horizon``.
+
+    The container stores the column as the task's ``time_on`` and the horizon as the splits' ``time_horizon`` /
+    ``time_horizon_unit``.
+    """
+
+    on: str
+    splits: TemporalSplits | None = None
+    horizon: int | None = None
+    horizon_unit: HorizonUnit | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.on, str) or not self.on.strip():
+            msg = "Temporal.on must name the time column."
+            raise ValueError(msg)
+        if self.splits is not None and not isinstance(self.splits, TemporalSplits):
+            msg = f"Temporal.splits must be a TemporalSplits, got {type(self.splits).__name__}."
+            raise ValueError(msg)
+        if (self.horizon is None) != (self.horizon_unit is None):
+            msg = "Temporal: set `horizon` and `horizon_unit` together."
+            raise ValueError(msg)
+        if self.horizon is not None and self.horizon <= 0:
+            msg = f"Temporal.horizon must be positive, got {self.horizon!r}."
+            raise ValueError(msg)
+        implied = self.splits.horizon if self.splits is not None else None
+        if self.horizon is not None and implied is not None:
+            window, unit = implied
+            msg = (
+                f"Temporal: the windows set the horizon ({window} {unit}); drop `horizon={self.horizon!r}, "
+                f"horizon_unit={self.horizon_unit!r}`. Declare a horizon only for windows that do not fix one "
+                "(unit='unique', window=None, or `_make_splits`)."
+            )
+            raise ValueError(msg)
+
+    @property
+    def resolved_horizon(self) -> tuple[int | None, str | None]:
+        """``(horizon, horizon_unit)``: set by the windows, else as declared, else ``(None, None)``."""
+        if self.horizon is not None:
+            return self.horizon, self.horizon_unit
+        if self.splits is not None and self.splits.horizon is not None:
+            return self.splits.horizon
+        return None, None
 
 
 def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and stop rule
@@ -598,7 +669,8 @@ def _sample_positions(
 
 
 def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
-    """The bundle checks of the v2 protocol, which replace :data:`REPLACED_V1_CHECKS` for v2 definitions.
+    """The split-protocol checks of a format-2 container; :func:`~data_foundry.bundle_checks.run_bundle_checks` runs
+    them in place of the v1 protocol checks.
 
     * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`.
     * ``splits_test_over_budget`` (warning): a split tests on more than :data:`TEST_ROW_BUDGET` rows.

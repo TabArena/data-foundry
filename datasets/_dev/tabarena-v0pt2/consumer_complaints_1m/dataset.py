@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class ConsumerComplaints1m(AbstractCuratedDataset):
@@ -81,7 +81,6 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
     # Task
     target = "Company response to consumer"
     problem_type = "multiclass_classification"
-    time_on = "Date received"
 
     # Splits
     splits_comment = """
@@ -95,13 +94,14 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
         We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
     """
-    time_horizon = 3
-    time_horizon_unit = "months"
     # 3 quarterly windows replace the single Q4 2025 window (v2 split protocol, 2026-10) and keep the 3-month refit
     # horizon. The labels of all three quarters are settled (the archive was exported on 2026-09-14, more than 180
     # days after 2025-12-31). 3 monthly windows Oct-Dec 2025 would keep the old test period but shorten the horizon to
     # 1 month.
-    temporal_splits = TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))
+    temporal = Temporal(
+        on="Date received",
+        splits=TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01")),
+    )
     subsample_to_budget = True
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation "

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class Dataset5gEnergyConsumption(AbstractCuratedDataset):
@@ -49,8 +49,15 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
     target = "Energy"
     problem_type = "regression"
     metric = "mape"
-    group_on = "BS"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="BS",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a base station; its rows are its hourly measurements. The ITU AI/ML in 5G Challenge asks to "estimate the energy consumption of a new base station product based on measurements collected from existing ones" and weights new stations higher in its weighted MAPE. Each station-hour is one prediction, made from its own row; holding out whole stations tests new stations of known products.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df_train = pd.read_csv(raw_dir / "ECdata.csv", parse_dates=["Time"])

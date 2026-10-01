@@ -6,8 +6,10 @@ from data_foundry.schema import (
     DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
+    Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
     resolve_warehouse_dir,
 )
 
@@ -439,3 +441,50 @@ def test_predictive_splits_metadata_split_random_state_round_trips():
     legacy = adapter.dump_python(without, mode="json")
     del legacy["split_random_state"]
     assert adapter.validate_python(legacy).split_random_state is None
+
+
+# --- Grouping ---
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"prediction_unit": "group"}, "needs an aggregation"),
+        ({"aggregation": "mean", "labels": "per_group"}, "prediction_unit is 'row'"),
+        ({"prediction_unit": "group", "aggregation": "mean"}, "labels='per_group'"),
+        ({"prediction_unit": "group", "aggregation": "select_min", "labels": "per_group"}, "labels='per_sample'"),
+        ({"prediction_unit": "group", "aggregation": "last"}, "needs time_on"),
+        ({"context": "past_rows"}, "needs time_on"),
+        ({"on": ["g", "g"]}, "duplicate"),
+        ({"time_on": "g"}, "also a group column"),
+        ({"prediction_unit": "groups"}, "prediction_unit"),
+    ],
+)
+def test_grouping_rejects_inconsistent_fields(kwargs, match):
+    fields = {"on": "g", "labels": "per_sample", **kwargs}
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        Grouping(**fields)
+
+
+def test_grouping_defaults_keep_the_row_unit():
+    grouping = Grouping(on="g", labels="per_sample")
+    assert (grouping.prediction_unit, grouping.aggregation, grouping.context) == ("row", None, "none")
+
+
+def test_format_2_task_reads_the_group_fields_from_the_grouping():
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="y",
+        problem_type="binary_classification",
+        objective_metric_name="metric",
+        grouping=Grouping(on=["a", "b"], labels="per_sample", time_on="t"),
+    )
+    assert (task.group_on, task.group_labels, task.group_time_on) == (["a", "b"], "per_sample", "t")
+    assert task.split_regime == "grouped_non_iid"
+
+
+def test_format_1_task_takes_no_grouping():
+    with pytest.raises(pydantic.ValidationError, match="grouping"):
+        PredictiveMLTaskMetadata(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric_name="metric",
+            grouping=Grouping(on="g", labels="per_sample"),
+        )

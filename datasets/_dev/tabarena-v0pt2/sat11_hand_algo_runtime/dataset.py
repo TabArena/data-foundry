@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 
 class Sat11HandAlgoRuntime(AbstractCuratedDataset):
@@ -16,7 +16,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     year = "2011"
     domain = "technology & internet"
     source = "ASlib"
-    source_url = "https://github.com/coseal/aslib_data/tree/master/SAT11-HAND"
+    source_url = "https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO"
     license = "GPLv3"
     download_description = """
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_runs.arff && mkdir -p local-data-warehouse/sat11_hand_algo_runtime && mv feature_values.arff algorithm_feature_values.arff algorithm_runs.arff local-data-warehouse/sat11_hand_algo_runtime/
@@ -51,7 +51,8 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
 
         - Algorithm selection can be solved with many methods (pairwise classification, hierarchical regression, multi-label, ...). We follow the concept from Pulatov et al. (https://proceedings.mlr.press/v188/pulatov22a.html) and learn one single, unified regression model that goes from (instance_features, algorithm_features) -> runtime.
         - The description says 'If features are "?", the instance was solved during feature computation.' but from the status file we can see that no task was presovled. So it is unclear what this is referring to. We believe that in all cases we have nan values for features, it is a case of the feature running into a memout, timeout, or crash as stated by the description.
-        - This regression task is special as it contains censored regression values (capped to some max value) and the model needs to learn this.
+        - The runtimes are right-censored: every run was stopped at the cutoff of 5,000 s, and a timeout is stored as a runtime of 5,000 s (the slowest finished run took 4,996 s, so `runtime == log(5000)` marks a timeout). A regression model and RMSE take that cutoff as the exact runtime, which biases predictions down (Hutter et al. 2014, section 9). We drop the 112 of 296 instances on which all 10 algorithms time out (1,120 rows): their labels are only lower bounds, and they cannot change which algorithm is selected (every choice costs the same; the single-best to virtual-best PAR10 gap is the same with or without them). We keep the 666 timeouts of the other 184 instances at the cutoff: selecting the fastest algorithm needs every algorithm's outcome, and the cutoff keeps the order within an instance (every finished run is faster) and is enough to compute PAR10.
+        - A survival task type (a censoring indicator, a censoring-aware loss and metric) could use every run, including the 112 dropped instances, as survival-based algorithm selectors do (for example Run2Survive, Tornede et al. 2020). The raw files keep them; TabArena has no such task type yet.
         - We log scale the target.
         - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
     """
@@ -59,8 +60,16 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     # Task
     target = "runtime"
     problem_type = "regression"
-    group_on = "instance_id"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="instance_id",
+        labels="per_sample",
+        prediction_unit="group",
+        aggregation="select_min",
+        context="all_rows",
+        definition="""
+            One group is a SAT instance; its rows are the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed). The split holds out instances as ASlib's folds do; the instances also come in families, which the split does not separate.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         def load_arff(path) -> pd.DataFrame:
@@ -78,6 +87,9 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
         df_features, df_algo_features, df_algo_runs = raw["df_features"], raw["df_algo_features"], raw["df_algo_runs"]
         # Drop algorithms that for which we do not have features
         df_algo_runs = df_algo_runs[df_algo_runs["algorithm"].isin(df_algo_features["algorithm"].unique())]
+        # Drop instances that no algorithm solves: all their runtimes are the censored cutoff
+        solved = df_algo_runs.loc[df_algo_runs["runstatus"] == "ok", "instance_id"].unique()
+        df_algo_runs = df_algo_runs[df_algo_runs["instance_id"].isin(solved)]
         # Merge
         df = df_algo_runs.merge(df_features, on="instance_id", how="left").merge(
             df_algo_features, on="algorithm", how="left"

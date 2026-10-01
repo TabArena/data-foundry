@@ -7,6 +7,7 @@ steps, :mod:`data_foundry.v2.splits` for the split protocol, :mod:`data_foundry.
 
 from __future__ import annotations
 
+from data_foundry.schema import Grouping
 from data_foundry.v2.dataset import (
     AUTO,
     AbstractCuratedDataset,
@@ -19,7 +20,7 @@ from data_foundry.v2.dataset import (
 from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, drop_columns, order_rows
 from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.v2.report import read_report
-from data_foundry.v2.splits import SplitPlan, Splits, TemporalSplits
+from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
 from data_foundry.v2.workbench import workbench
 
 __all__ = [
@@ -29,8 +30,10 @@ __all__ = [
     "DatasetDefinitionError",
     "Decision",
     "FeatureTypes",
+    "Grouping",
     "SplitPlan",
     "Splits",
+    "Temporal",
     "TemporalSplits",
     "anonymize_ids",
     "cast_dtypes",

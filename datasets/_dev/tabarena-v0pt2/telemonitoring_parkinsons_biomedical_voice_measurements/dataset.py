@@ -4,32 +4,55 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+
+THREE_MONTH_VISIT_DAY = 91
+"""Day of the 3-month clinic assessment for a subject whose interpolated UPDRS shows no bend (median of the others)."""
+
+
+def _three_month_day(days: np.ndarray, values: np.ndarray) -> float:
+    """Day of the 3-month assessment: where a continuous two-piece linear fit of the daily UPDRS bends.
+
+    The fit is a least-squares search over knots on a 0.25-day grid. When it is not at least 10 times better than a
+    straight line, the subject shows no bend (its 3-month score lies on the line) and the protocol's day is used.
+    """
+    best_knot, best_sse = THREE_MONTH_VISIT_DAY, np.inf
+    for knot in np.arange(days[1], days[-2] + 0.25, 0.25):
+        design = np.column_stack([np.ones_like(days), days, np.clip(days - knot, 0, None)])
+        coef, *_ = np.linalg.lstsq(design, values, rcond=None)
+        sse = float(((design @ coef - values) ** 2).sum())
+        if sse < best_sse:
+            best_knot, best_sse = float(knot), sse
+    line_sse = float(((np.polyval(np.polyfit(days, values, 1), days) - values) ** 2).sum())
+    return best_knot if line_sse >= 10 * best_sse else float(THREE_MONTH_VISIT_DAY)
 
 
 class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
     # Dataset
     unique_name = "telemonitoring_parkinsons_biomedical_voice_measurements"
-    year = "2007"
+    year = "2009"
     domain = "medical & healthcare"
     source = "UCI"
-    source_url = "https://doi.org/10.24432/C59C74"
+    source_url = "https://doi.org/10.24432/C5ZS3N"
     license = "CC BY 4.0"
     data_tags = ("Non-IID", "Grouped", "WrongDomain")
     download_description = """
         We get the 2009 data from the UCI repository.
 
-        wget https://archive.ics.uci.edu/static/public/174/parkinsons.zip && unzip parkinsons.zip telemonitoring/parkinsons_updrs.data && mv telemonitoring/parkinsons_updrs.data parkinsons_updrs.data && rm -rf parkinsons.zip telemonitoring && mkdir -p local-data-warehouse/telemonitoring_parkinsons_biomedical_voice_measurements && mv parkinsons_updrs.data local-data-warehouse/telemonitoring_parkinsons_biomedical_voice_measurements/
+        wget "https://archive.ics.uci.edu/static/public/189/parkinsons+telemonitoring.zip" -O parkinsons_telemonitoring.zip && unzip parkinsons_telemonitoring.zip parkinsons_updrs.data && rm parkinsons_telemonitoring.zip && mkdir -p local-data-warehouse/telemonitoring_parkinsons_biomedical_voice_measurements && mv parkinsons_updrs.data local-data-warehouse/telemonitoring_parkinsons_biomedical_voice_measurements/
     """
     bibtex = """
-        @article{tsanas2009accurate,
-          title={Accurate telemonitoring of Parkinson’s disease progression by non-invasive speech tests},
-          author={Tsanas, Athanasios and Little, Max and McSharry, Patrick and Ramig, Lorraine},
-          journal={Nature Precedings},
-          pages={1--1},
-          year={2009},
-          publisher={Nature Publishing Group UK London}
+        @article{tsanas2010accurate,
+          title={Accurate telemonitoring of {Parkinson's} disease progression by noninvasive speech tests},
+          author={Tsanas, Athanasios and Little, Max A. and McSharry, Patrick E. and Ramig, Lorraine O.},
+          journal={IEEE Transactions on Biomedical Engineering},
+          volume={57},
+          number={4},
+          pages={884--893},
+          year={2010},
+          doi={10.1109/TBME.2009.2036000}
         }
     """
     curation_comments = """
@@ -37,16 +60,23 @@ class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset
 
         We aim to simulate the task of predicting the UPDRS score of Parkinson's patients based on their voice measurements over time. This represents the task of only getting the voice measurements to judge the UPDRS. We assume we have no measurement of a patient to make this call. Thus, we have a grouped data task, where we have to holdout entire patients over time. We thus test for one patients multiple time points and repeated measurements at once.
 
-        - We use total_UPDRS as target. Note that real UPDRS values were were obtained at baseline, three-month and six-month trial period and all other weekly cases were interpolated. Thus, the ground truth is not perfect and just an estimate based on knowing the future. We reduce it to three values (first, medium <130 days, last), as we have no other ground truth.
+        - We use total_UPDRS as target. The clinicians assessed UPDRS at baseline, 3 and 6 months; every weekly test day in between got a linearly interpolated score (UCI: "Clinician's total UPDRS score, linearly interpolated"; Tsanas et al. 2010: "piecewise linear interpolation was used"), so most labels are estimates that know the next assessment. We keep the three test days nearest real assessments, each with all its phonations (about six per day, the same label up to 0.005): the first test day (median day 7 after recruitment), the test day nearest the 3-month assessment and the last test day (median day 178). The 3-month assessment is where a subject's interpolated score bends: a continuous two-piece linear fit puts it at a median of day 91 (77 to 115), and the kept test day lies within 5 days before to 8 days after it. Subjects 14 and 30 show no bend (the fit is no better than a straight line), so we take the test day nearest day 91, the 3-month visit. Until 2026-10 we kept the last session before day 130 (median day 126, a label interpolated a median 35 days after the assessment), matched exact test times (so only part of a day's phonations) and took the first and last rows in file order, which are not the earliest and latest for 2 and 3 subjects.
         - We have several measurements per day for each patient when they were measured. We have some edge cases with negative test time as they got measured before the study started.
     """
 
     # Task
     target = "total_UPDRS"
     problem_type = "regression"
-    group_on = "subject#"
-    group_labels = "per_sample"
-    group_time_on = "test_time"
+    grouping = Grouping(
+        on="subject#",
+        labels="per_sample",
+        time_on="test_time",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a subject of a six-month trial of at-home voice recordings (42 subjects); its rows are the phonations of the kept test days, about six per day. UPDRS was assessed in the clinic at baseline, 3 and 6 months and interpolated for the weekly test days (Tsanas et al. 2010), so each phonation is one prediction of its test day's UPDRS, made from that phonation alone. Tsanas et al. split the phonations at random and track enrolled patients; holding out whole subjects is stricter and predicts for a subject not seen in training.
+        """,
+    )
 
     # Splits
     splits_comment = """
@@ -68,19 +98,15 @@ class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset
         df["subject#"] = df["subject#"].astype("category")
 
         def select_rows(x):
-            # Anchor times
-            first_time = x.iloc[0]["test_time"]
-            last_time = x.iloc[-1]["test_time"]
-
-            before_130 = x[x["test_time"] < 130]
-            last_before_130_time = before_130.iloc[-1]["test_time"]
-
-            # Collect times to keep
-            times_to_keep = {first_time, last_time}
-            times_to_keep.add(last_before_130_time)
-
-            # Keep all rows with matching test_time
-            return x[x["test_time"].isin(times_to_keep)]
+            # The clinicians assessed UPDRS at baseline, 3 and 6 months; the weekly test days in between got a linearly
+            # interpolated score. Keep the three test days nearest the assessments: the first, the one nearest the
+            # 3-month assessment and the last, each with all its phonations.
+            x = x.sort_values("test_time", kind="stable")
+            day = np.floor(x["test_time"])
+            per_day = x.groupby(day)["total_UPDRS"].mean()
+            days = per_day.index.to_numpy(dtype=float)
+            middle = days[np.argmin(np.abs(days - _three_month_day(days, per_day.to_numpy())))]
+            return x[day.isin([days[0], middle, days[-1]])]
 
         df = df.groupby("subject#", group_keys=False).apply(select_rows).reset_index(drop=True)
         df = df.sample(frac=1, random_state=42).sort_values(by=["subject#", "test_time"]).reset_index(drop=True)

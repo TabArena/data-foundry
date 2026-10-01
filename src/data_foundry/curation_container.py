@@ -15,18 +15,27 @@ logger = logging.getLogger(__name__)
 
 from data_foundry.schema import (
     DatasetMetadata,
+    Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
     resolve_warehouse_dir,
 )
-from data_foundry.utils.checksum import encode_dataset, encode_pydantic_metadata
+from data_foundry.utils.checksum import encode_dataset, encode_pydantic_metadata, omit_unset_fields
 
 MetadataRegistry = {
     DatasetMetadata.type_adapter_id: DatasetMetadata,
     PredictiveMLTaskMetadata.type_adapter_id: PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2.type_adapter_id: PredictiveMLTaskMetadataV2,
     PredictiveMLSplitsMetadata.type_adapter_id: PredictiveMLSplitsMetadata,
 }
+FORMAT_VERSIONS = {
+    PredictiveMLTaskMetadata.type_adapter_id: 1,
+    PredictiveMLTaskMetadataV2.type_adapter_id: 2,
+}
+"""The container format of each task metadata class: 1 for the v1 notebooks (and the shipped BeyondArena
+containers), 2 for the v2 definitions (:mod:`data_foundry.v2`)."""
 NoIndentMetadata = [
     PredictiveMLSplitsMetadata.type_adapter_id,
 ]
@@ -50,8 +59,8 @@ class CuratedContainer:
     """The curated dataset as a pandas DataFrame."""
     dataset_metadata: DatasetMetadata
     """Metadata about the dataset."""
-    task_metadata: PredictiveMLTaskMetadata
-    """Metadata about the task for the dataset."""
+    task_metadata: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2
+    """Metadata about the task for the dataset; its class sets the container format (:attr:`format_version`)."""
     experiment_metadata: PredictiveMLSplitsMetadata
     """Metadata about the experiments for the task."""
 
@@ -85,16 +94,42 @@ class CuratedContainer:
         return f"{self.dataset_metadata.unique_name}/{self.uuid}"
 
     @property
-    def container_metadata(self) -> dict[str, str | None]:
+    def format_version(self) -> int:
+        """The container format: 1 for a v1 notebook (every shipped BeyondArena container), 2 for a v2 definition.
+
+        Set by the class of :attr:`task_metadata`; a format-2 container also writes it to ``container_metadata.json``.
+        """
+        return FORMAT_VERSIONS[self.task_metadata.type_adapter_id]
+
+    @property
+    def grouping(self) -> Grouping | None:
+        """How a grouped task is used (:class:`~data_foundry.schema.Grouping`), or None for an IID or temporal task.
+
+        Format 2 only. A format-1 container records just ``group_on`` / ``group_labels`` / ``group_time_on``, not the
+        prediction unit, the aggregation or the context, so asking it for a grouping raises.
+        """
+        if self.format_version < 2:
+            raise NotImplementedError(
+                f"{self.dataset_metadata.unique_name}: a format-{self.format_version} container has no grouping "
+                "block (only task_metadata.group_on / group_labels / group_time_on); rebuild it from its v2 "
+                "definition, or check `container.format_version >= 2` first.",
+            )
+        return self.task_metadata.grouping
+
+    @property
+    def container_metadata(self) -> dict[str, str | int | None]:
         """Return a dictionary of the container's metadata."""
         assert self.uuid is not None, "UUID must be set."
         assert self.checksum is not None, "Checksum must be set."
 
-        return {
+        metadata = {
             "uuid": self.uuid,
             "checksum": self.checksum,
             "version_comment": self.version_comment,
         }
+        if self.format_version >= 2:  # format 1 keeps the file its readers know
+            metadata["format_version"] = self.format_version
+        return metadata
 
     @staticmethod
     def _create_uuid() -> str:
@@ -103,7 +138,6 @@ class CuratedContainer:
 
     def _create_checksum(self) -> str:
         """Hex digest checksum across dataframe + all metadata, using pydantic dumping."""
-
         # Ensure container is fully loaded before calculating checksum
         if self.dataset is None:
             raise ValueError("Dataset must be loaded to calculate checksum.")
@@ -301,7 +335,7 @@ class CuratedContainer:
             meta_path = save_path / f"{meta_name}.{meta_obj.type_adapter_id}.json"
             indent = None if meta_obj.type_adapter_id in NoIndentMetadata else 2
             with meta_path.open("w") as f:
-                json.dump(adapter.dump_python(meta_obj, mode="json"), f, indent=indent)
+                json.dump(omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json")), f, indent=indent)
 
         with (save_path / "container_metadata.json").open("w") as f:
             json.dump(self.container_metadata, f, indent=2)
@@ -354,6 +388,11 @@ class CuratedContainer:
         metadata_objs = {}
         for meta_file in path.glob("*.*.json"):
             meta_name, type_adapter_id = meta_file.name.rsplit(".", 2)[:2]
+            if type_adapter_id not in MetadataRegistry:
+                raise ValueError(
+                    f"{meta_file.name}: unknown metadata type {type_adapter_id!r}; the container was probably written "
+                    "by a newer data_foundry (a newer container format). Upgrade data_foundry to read it.",
+                )
             adapter = TypeAdapter(MetadataRegistry[type_adapter_id])
             with meta_file.open("r") as f:
                 meta_data = json.load(f)
@@ -371,6 +410,13 @@ class CuratedContainer:
         container_metadata_path = path / "container_metadata.json"
         with container_metadata_path.open("r") as f:
             container_metadata = json.load(f)
+        stated_format = container_metadata.pop("format_version", 1)
+        actual_format = FORMAT_VERSIONS[metadata_objs["task_metadata"].type_adapter_id]
+        if stated_format != actual_format:
+            raise ValueError(
+                f"{container_metadata_path} states format {stated_format}, but its task metadata is format "
+                f"{actual_format} ({metadata_objs['task_metadata'].type_adapter_id}).",
+            )
 
         return CuratedContainer(
             dataset=dataset,

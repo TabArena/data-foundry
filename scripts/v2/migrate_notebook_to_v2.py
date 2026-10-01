@@ -660,12 +660,43 @@ ORDER = (
             "curation_comments",
         ),
     ),
-    (
-        "# Task",
-        ("target", "problem_type", "metric", "stratify_on", "time_on", "group_on", "group_labels", "group_time_on"),
-    ),
-    ("# Splits", ("splits_comment", "time_horizon", "time_horizon_unit", "subsample_to_budget")),
+    ("# Task", ("target", "problem_type", "metric", "stratify_on")),
+    ("# Splits", ("splits_comment", "subsample_to_budget")),
 )
+
+
+def _regime_lines(m: Migration) -> tuple[list[str], list[str]]:
+    """The ``temporal = Temporal(...)`` or ``grouping = Grouping(...)`` declaration, and the names it imports."""
+
+    def has(key: str) -> bool:
+        return key in m.attrs or key in m.raw_attrs
+
+    def value(key: str) -> str:
+        return m.raw_attrs[key] if key in m.raw_attrs else _render_value(m.attrs[key])
+
+    keys = ("time_on", "time_horizon", "time_horizon_unit", "group_on", "group_labels", "group_time_on")
+    notes = [f"    {m.comments[k].strip()}" for k in keys if has(k) and k in m.comments]
+    if has("time_on"):
+        args = [f"on={value('time_on')}"]
+        if has("time_horizon"):
+            args += [f"horizon={value('time_horizon')}", f"horizon_unit={value('time_horizon_unit')}"]
+        return [*notes, "    temporal = Temporal(", *(f"        {a}," for a in args), "    )"], ["Temporal"]
+    if has("group_on"):
+        args = [f"on={value('group_on')}", f"labels={value('group_labels')}"]
+        if has("group_time_on"):
+            args.append(f"time_on={value('group_time_on')}")
+        lines = [
+            *notes,
+            "    grouping = Grouping(",
+            *(f"        {a}," for a in args),
+            '        definition="""',
+            "            TODO(verify): what one group is, why groups are held out, and the use case with its source; "
+            "then set prediction_unit, aggregation and context.",
+            '        """,',
+            "    )",
+        ]
+        return lines, ["Grouping"]
+    return [], []
 
 
 def _function(header: str, parts: list[str], ret: str | None) -> tuple[str, list[str], list[str]]:
@@ -745,8 +776,10 @@ def render_definition(m: Migration) -> str:  # noqa: C901, PLR0912 - one branch 
             continue
         seen.add(imp)
         lines.append(imp)
+    regime, regime_names = _regime_lines(m)
     v2_names = ["AbstractCuratedDataset"]
-    v2_names += (["FeatureTypes"] if m.categorical else []) + (["SplitPlan"] if m.custom_splits else [])
+    v2_names += (["FeatureTypes"] if m.categorical else []) + regime_names
+    v2_names += ["SplitPlan"] if m.custom_splits else []
     lines += [f"from data_foundry.v2 import {', '.join(v2_names)}", "", ""]
     for helper in dict.fromkeys(helpers):
         lines += [helper, "", ""]
@@ -761,6 +794,8 @@ def render_definition(m: Migration) -> str:  # noqa: C901, PLR0912 - one branch 
             value = m.raw_attrs[key] if key in m.raw_attrs else _render_value(m.attrs[key])
             comment = f"  {m.comments[key]}" if key in m.comments else ""
             lines.append(f"    {key} = {value}{comment}")
+        if title == "# Task":
+            lines += regime
         lines.append("")
     if m.accepted:
         lines.append("    accepted_check_warnings = {")

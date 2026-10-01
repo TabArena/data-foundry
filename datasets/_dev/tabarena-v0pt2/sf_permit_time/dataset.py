@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class SfPermitTime(AbstractCuratedDataset):
@@ -54,7 +54,6 @@ class SfPermitTime(AbstractCuratedDataset):
     # Task
     target = "DaysToIssue"
     problem_type = "regression"
-    time_on = "Filed Date"
 
     # Splits
     splits_comment = """
@@ -62,9 +61,10 @@ class SfPermitTime(AbstractCuratedDataset):
 
         The official data is updated daily but has not enough data per day to create large enough test splits. We simulate a model that is refit every six months and tested on the next six months, walking back from the last kept filing date (end of 2023) until the training data would fall below 50% of the rows. This gives 9 half-year test windows from the second half of 2019 to the second half of 2023. For each test split, we use all permits filed before the test window as training data.
     """
-    time_horizon = 6
-    time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=6, unit="months", min_train_fraction=0.5)
+    temporal = Temporal(
+        on="Filed Date",
+        splits=TemporalSplits(window=6, unit="months", min_train_fraction=0.5),
+    )
     accepted_check_warnings = {
         "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
         "missing means the flag is not set, so they are not constant.",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
@@ -48,15 +48,15 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
     # Task
     target = "y"
     problem_type = "regression"
-    time_on = "time_index"
 
     # Splits
     splits_comment = """
         This is a small temporal dataset. Thus, we could refit often and we could simulate that a model was often refit, basically, if possible, after each time_index (akin to LOO). As this would create too many splits with too small test sizes for a robust signal, we opt for less splits. Moreover, as we want to have sufficient train data signal, we start with the first 1000 samples of the data as fixed train data. The rest is than gradually split to create 9 test splits using a sklearn TimeSeriesSplit.
     """
-    time_horizon = 320
-    time_horizon_unit = "steps"
-    temporal_splits = TemporalSplits(window=320, unit="rows", n_windows=9)
+    temporal = Temporal(
+        on="time_index",
+        splits=TemporalSplits(window=320, unit="rows", n_windows=9),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

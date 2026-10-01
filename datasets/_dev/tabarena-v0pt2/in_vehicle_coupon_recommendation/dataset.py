@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -57,14 +57,21 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - Anomaly: the data has many binned numeric features that are treated as categorical features with text describing the bins.
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
-        - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper's 5-fold results are random splits, i.e. warm start.
+        - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
     """
 
     # Task
     target = "AcceptCoupon"
     problem_type = "binary_classification"
-    group_on = "respondent"
-    group_labels = "per_sample"
+    grouping = Grouping(
+        on="respondent",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a survey respondent; its rows are the coupon offers in about 20 driving scenarios, answered in one sitting (Wang et al. 2017). The use case is an in-vehicle recommender for a new user (cold start), so each offer is one prediction, made from its own row; without timestamps, a warm start cannot be simulated.
+        """,
+    )
 
     # Splits
     splits_comment = """

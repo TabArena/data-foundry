@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class CoffeeRatingPrediction(AbstractCuratedDataset):
@@ -48,7 +48,6 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
     # Task
     target = "rating"
     problem_type = "regression"
-    time_on = "review_date"
 
     # Splits
     splits_comment = """
@@ -57,9 +56,10 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         (26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
         RMSE noise; 2-month windows keep at least ~50 test rows each.
     """
-    time_horizon = 2
-    time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=2, unit="months", min_train_fraction=0.5)
+    temporal = Temporal(
+        on="review_date",
+        splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "coffee_clean.csv")

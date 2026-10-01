@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class AmexNonIid1m(AbstractCuratedDataset):
@@ -48,9 +48,17 @@ class AmexNonIid1m(AbstractCuratedDataset):
     target = "target"
     problem_type = "binary_classification"
     metric = "amex_metric"
-    group_on = "customer_ID"
-    group_labels = "per_group"
-    group_time_on = "S_2"
+    grouping = Grouping(
+        on="customer_ID",
+        labels="per_group",
+        time_on="S_2",
+        prediction_unit="group",
+        aggregation="last",
+        context="all_rows",
+        definition="""
+            One group is a customer; its rows are its monthly statements (1 to 13). The task is "to predict, for each customer_ID, the probability of a future payment default", with the label "calculated by observing 18 months performance window after the latest credit card statement" (AmEx Default Prediction, Kaggle). So one prediction per customer, made at its latest statement (`S_2`) from all its statements, which are all in the past at that point; the Kaggle test customers are disjoint from the training customers. The competition scores `amex_metric` per customer.
+        """,
+    )
 
     # Splits
     subsample_to_budget = True

@@ -46,12 +46,18 @@ def main(path: Path) -> None:
 
     print("\n-- Task metadata --")
     tm = container.task_metadata
+    print(f"  container format:   {container.format_version}")  # 1: a v1 notebook, 2: a v2 definition
     print(f"  target_column_name: {tm.target_column_name}")
     print(f"  problem_type:       {tm.problem_type}")
     print(f"  objective_metric:   {tm.objective_metric_name}")
     print(f"  stratify_on:        {tm.stratify_on}")
     print(f"  group_on:           {tm.group_on}")
     print(f"  time_on:            {tm.time_on}")
+    # How a grouped task is used (prediction unit, aggregation, context): format 2 only; None for IID and temporal.
+    grouping = container.grouping if container.format_version >= 2 else None
+    if grouping is not None:
+        print(f"  prediction_unit:    {grouping.prediction_unit} (aggregation: {grouping.aggregation})")
+        print(f"  group context:      {grouping.context}")
 
     print("\n-- Experiment metadata --")
     em = container.experiment_metadata

@@ -40,7 +40,7 @@ to save while either remains. Say so in your report.
 
 ## What the base class does for you (do not re-implement it)
 
-* **Metadata:** builds `DatasetMetadata` / `PredictiveMLTaskMetadata` from the flat attributes. Multi-line text
+* **Metadata:** builds `DatasetMetadata` / `PredictiveMLTaskMetadataV2` (container format 2) from the flat attributes. Multi-line text
   (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is indented like code
   and dedented for you. The BibTeX key is parsed from `bibtex`. The regime tags (`IID`, or `Non-IID` +
   `Temporal`/`Grouped`) are added from the task; `data_tags` lists only context tags (`Spatial`, `Anonymized`, …).
@@ -49,12 +49,18 @@ to save while either remains. Say so in your report.
 * **Standard steps after `_clean`**: cast the columns `_feature_types` names (`FeatureTypes(categorical=...,
   string=..., datetime=...)`, a dict gives datetime formats; unused categories removed; a classification target
   becomes a category without being listed), then fix the row order — a stable sort by
-  `time_on` for temporal tasks, otherwise a shuffle with seed 42 (`shuffle = False` to opt out, with a reason in
+  the time column for temporal tasks, otherwise a shuffle with seed 42 (`shuffle = False` to opt out, with a reason in
   `curation_comments`). Never shuffle, sort or `reset_index` yourself.
 * **Seeds:** one shuffle seed (42) and one split seed (4267) for the whole benchmark, fixed in the base class.
+* **Regime:** one object. A grouped task declares `grouping = Grouping(on=..., labels=..., prediction_unit=...,
+  aggregation=..., context=..., definition=...)`, stored in the container; the `definition` (what a group is, why it
+  is held out, the use case with its source) is required. A temporal task declares `temporal = Temporal(on=...,
+  splits=TemporalSplits(...))`; a window of fixed length (calendar or rows) is the horizon, and only windows that do
+  not fix one (`unit="unique"`, `window=None`, `_make_splits`) add `horizon=..., horizon_unit=...`. Neither is an IID
+  task. The flat `time_on`, `group_on`, `temporal_splits`, `time_horizon` attributes no longer import (patterns §C).
 * **Splits:** the v2 split protocol (`src/data_foundry/v2/splits.py`): the recommended IID / grouped 3-fold
-  cross-validation with the default comment; `temporal_splits = TemporalSplits(...)` with at least 3 windows for
-  temporal tasks (the comment and, for calendar windows, the horizon are derived); `subsample_to_budget = True` for a
+  cross-validation with the default comment; `Temporal(splits=TemporalSplits(...))` with at least 3 windows for
+  temporal tasks (the comment and, for fixed-length windows, the horizon are derived); `subsample_to_budget = True` for a
   `_1m` version of data over the row budget (patterns §C). `_make_splits` only for what none of these express.
 
 ## Step 0: Gather inputs
@@ -70,7 +76,9 @@ Follow `source_links` to the original publication (paper, competition page, inst
 full rules are in [`references/dataset_patterns.md`](references/dataset_patterns.md) §A: `unique_name` (snake_case,
 equal to the folder), `year`, `domain`, `source` (where the data *first appeared*), `source_url`, `license`,
 `download_description`, `bibtex` (cite the work that *published the data*), `curation_comments` (house format),
-`target`, `problem_type`, and per regime `time_on` + `temporal_splits`, or `group_on` + `group_labels`.
+`target`, `problem_type`, and per regime `temporal = Temporal(...)` or `grouping = Grouping(...)`. For a grouped
+task, also write down the use case from the source: what one real-world prediction is (a row, or a whole group with
+an aggregation), and what is known about a new group when predicting (patterns §C).
 
 Write down the prediction point in the first `curation_comments` bullet: when the model is used and what is known
 then (at launch, at admission, at quote time, before the stay ends). Every column, filter and split decision below
@@ -84,7 +92,7 @@ Read the closest reference in full before writing (paths under `datasets/_dev/ta
 | Regime | Reference | What it shows |
 |---|---|---|
 | IID | `airfoil_self_noise/dataset.py` | The minimal definition: attributes, `_load_raw`, a short `_clean`. |
-| Grouped | `early_learning_predictors/dataset.py` | `group_on` / `group_labels`, rule-based leak drops in `_clean`, long feature lists, a sibling file used only in `explore.ipynb`. |
+| Grouped | `early_learning_predictors/dataset.py`, `musk/dataset.py` | `Grouping` with a `definition` citing the source (musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists, a sibling file used only in `explore.ipynb`. |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `subsample_to_budget`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
@@ -106,8 +114,9 @@ problem type from the record. Then fill in, following `references/dataset_patter
    row filters, target transforms. Sibling files are under `self.folder`.
    **`_feature_types(self, df)`:** return the `FeatureTypes` of the cleaned frame; the lists may be computed from
    `df`. Cast mid-way in `_clean` (`cast_dtypes`) only when a later step needs the dtype.
-4. **Splits:** keep the default for IID/grouped data. Temporal: `temporal_splits` from §C, with `splits_comment`
-   saying why this window; `time_horizon`/`time_horizon_unit` only when the window is not a calendar one.
+4. **Regime and splits:** IID: nothing to declare. Grouped: `grouping = Grouping(...)` from §C with the default
+   split. Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))` from §C, with `splits_comment` saying
+   why this window; `horizon`/`horizon_unit` only when the window is not a calendar one.
 5. **`accepted_check_warnings`:** leave empty. The curator fills it once they have seen which warnings apply, one
    reason per slug.
 6. **`_decisions`** (optional, §F) and **`_extra_checks`** (a dataset-specific check such as a leak test) only when
@@ -129,7 +138,7 @@ tree; `--check` must stay clean (`tests/test_records_integrity.py` checks it).
 ```
 
 `dataset list` failing means the class does not validate (missing attribute, name/folder mismatch, a temporal task
-without `temporal_splits`, …): fix it before handing off. ruff fixes the quoting and import order.
+without windows, a grouping without a `definition`, …): fix it before handing off. ruff fixes the quoting and import order.
 
 ## Step 6: The loop (curator, or you when the raw data is present)
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 def set_table_dtypes(df):
@@ -183,7 +183,6 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
     # Task
     target = "target"
     problem_type = "binary_classification"
-    time_on = "date_decision"
 
     # Splits
     splits_comment = """
@@ -195,9 +194,10 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
     # (cutoffs 2019-07-01, 2019-12-01, 2020-05-01) would keep the horizon, but the oldest would train on 439k rows
     # (Jan-Jun 2019) and test 506k pre-COVID rows, and the middle one would span the April 2020 drop in volume and
     # default rate.
-    time_horizon = 2
-    time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=2, unit="months", cutoffs=("2020-05-01", "2020-07-01", "2020-09-01"))
+    temporal = Temporal(
+        on="date_decision",
+        splits=TemporalSplits(window=2, unit="months", cutoffs=("2020-05-01", "2020-07-01", "2020-09-01")),
+    )
     accepted_check_warnings = {
         "dataset_missing_value_sentinel": "-1 is a real value: the avgdbd* columns are 'average days past or before "
         "due of payment' (Kaggle feature_definitions.csv), negative means paid early; -1 is the mode of a smooth "

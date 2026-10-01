@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
@@ -57,15 +57,17 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
     # Task
     target = "Sold Price"
     problem_type = "regression"
-    time_on = "time_index"
 
     # Splits
     splits_comment = """
         We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a separate repeat with one fold. Each fold has 25% of the original data as test set. We simulate as if we deploy a model at a time point x, for the next time period (e.g. for a whole next year like in the original competition task). As we do not know the time periods from the time_index, we split based on number of samples.
     """
-    time_horizon = 10382
-    time_horizon_unit = "steps"
-    temporal_splits = TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.25)
+    temporal = Temporal(
+        on="time_index",
+        splits=TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.25),
+        horizon=10382,
+        horizon_unit="steps",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

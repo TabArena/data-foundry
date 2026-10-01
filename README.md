@@ -85,6 +85,16 @@ Full worked example (Random Forest, RMSE per fold, full metadata via `container.
 | temporal non-IID | `time_on` set | rows ordered in time; future rows must not leak backwards |
 | grouped non-IID | `group_on` set (+ `group_labels`) | all rows of a group stay together in one fold |
 
+**Container formats.** `container.format_version` is `1` for a container built by a v1 notebook (every shipped
+BeyondArena container) and `2` for one built by a v2 definition (the TabArena v0.2 working copy); a format-2
+container also states it in `container_metadata.json`. Both read the same through `task_metadata.time_on`,
+`group_on`, `group_labels` and `group_time_on`. Format 2 stores the group fields once, in a `Grouping`
+(`data_foundry.schema.Grouping`), and `container.grouping` returns it: the prediction unit (a row, or one prediction
+per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
+definition of a group with its source. A format-1 container has no such block, so `container.grouping` raises
+there. The group column is split and scoring metadata, never a model feature. `run_bundle_checks` judges each
+format by its own split protocol (v1: the repeat ladder and 250k test rows; v2: 3 folds and 500k test rows).
+
 Side-by-side regime printout (one IID, two grouped variants — `per_group` vs `per_sample` — and one temporal): [`examples/data_foundry_data_regimes.py`](examples/data_foundry_data_regimes.py).
 
 </details>

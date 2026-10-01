@@ -108,6 +108,11 @@
         <li><em>label-per-sample</em> — each sample has its own label; predict individual labels for sources
         unseen during training (e.g., a new country or hospital).</li>
       </ul>
+    The source's use case, cited, also decides what one prediction is (a row, or a whole group: replicates
+    averaged, any instance positive, the latest row, the best of several candidates) and what is known about a new
+    group when predicting; the label structure alone does not. With only a few groups, a grouped split is a
+    domain-shift test between them rather than prediction for unseen entities; take that as its own decision
+    (covertype: 3 wilderness areas, IID instead).
     </li>
   </ul>
   <p>For some datasets, either a temporal or a grouped split is plausible. A temporal split does not remove group

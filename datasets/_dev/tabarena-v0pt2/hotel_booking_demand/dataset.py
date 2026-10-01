@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan, Temporal
 
 
 class HotelBookingDemand(AbstractCuratedDataset):
@@ -53,7 +53,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
     # Task
     target = "IsCanceled"
     problem_type = "binary_classification"
-    time_on = "arrival_date"
 
     # Splits
     splits_comment = r"""
@@ -63,8 +62,11 @@ class HotelBookingDemand(AbstractCuratedDataset):
             Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the newest split, against 12.5% cancelled in the test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
             We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
     """
-    time_horizon = 3
-    time_horizon_unit = "months"
+    temporal = Temporal(
+        on="arrival_date",
+        horizon=3,
+        horizon_unit="months",
+    )
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Rows identical after dropping the post-outcome columns are separate bookings with "
         "the same attributes (e.g. several rooms of one group); exact source duplicates were already removed.",

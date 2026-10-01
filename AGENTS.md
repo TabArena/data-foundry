@@ -144,9 +144,15 @@ When changing core code:
 * **Examples in `examples/` are part of the docs surface.** When you add a
   feature, add or update the matching example, and (only if it's a major
   use case) link it from `README.md`.
-* **`describe()` methods** on `DatasetMetadata`, `PredictiveMLTaskMetadata`,
+* **`describe()` methods** on `DatasetMetadata`, `PredictiveMLTaskMetadata`, `PredictiveMLTaskMetadataV2`,
   `PredictiveMLSplitsMetadata`, and `CuratedContainer` are the human-facing
   surface — keep them in sync if you add or rename schema fields.
+* **Two container formats, one reader.** `CuratedContainer.format_version` is 1 for a v1 notebook's container
+  (`PredictiveMLTaskMetadata`, every shipped BeyondArena container) and 2 for a v2 definition's
+  (`PredictiveMLTaskMetadataV2`: the group fields stored once, in `grouping`). Keep the format-1 classes at the shape
+  the shipped checksums encode; a new task field for v2 goes into the format-2 class. Code that reads both formats
+  uses `task_metadata.group_on` / `group_labels` / `group_time_on` (views of `grouping` in format 2);
+  `container.grouping` raises for format 1.
 
 ### 5. Curation tooling work (checks, recommended splits, helpers)
 
@@ -154,9 +160,9 @@ When changing core code:
 
 | Layer | Where | Scope |
 |---|---|---|
-| creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
+| creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
 | exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames whose rendered output is committed in the notebooks — don't change its output shape lightly. |
-| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. This is the default home for anything new. |
+| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). This is the default home for anything new. |
 
 * `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
   (errors / warnings / infos, each with a stable `slug`); the notebook calls

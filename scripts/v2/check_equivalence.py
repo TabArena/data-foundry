@@ -48,6 +48,8 @@ def _fingerprint(container) -> dict:
     for name in ("dataset_metadata", "task_metadata", "experiment_metadata"):
         obj = getattr(container, name)
         meta[name] = TypeAdapter(type(obj)).dump_python(obj, mode="json")
+    # The grouping block exists in v2 definitions only; its flat fields (group_on, ...) are compared.
+    meta["task_metadata"].pop("grouping", None)
     splits = container.experiment_metadata.splits
     meta["experiment_metadata"].pop("splits")
     hashes = pd.util.hash_pandas_object(df, index=False).to_numpy()
@@ -183,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     ds = load_definition(args.dataset.resolve())()
-    temporal = ds.time_on is not None
+    temporal = ds.task_metadata.time_on is not None
     new = _fingerprint(ds.to_container())
     del ds
     gc.collect()

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 import pydantic
 
@@ -46,6 +46,7 @@ def resolve_warehouse_dir() -> Path:
     responsible for ensuring it exists when they need to write.
     """
     return Path(os.environ.get(DATA_FOUNDRY_WAREHOUSE_ENV) or DEFAULT_LOCAL_DATA_DIR).expanduser()
+
 
 # TODO: converge on set of domains we want to check
 Domain = Literal[
@@ -101,6 +102,81 @@ ProblemTypeClassification = [
     "multiclass_classification",
 ]
 GroupLabelTypes = Literal["per_group", "per_sample"]
+PredictionUnit = Literal["row", "group"]
+GroupAggregation = Literal["mean", "any", "last", "select_min", "select_max"]
+GroupContext = Literal["none", "all_rows", "past_rows"]
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class Grouping:
+    """How a grouped task is used: what one group is, what one prediction is, and what a model may know.
+
+    Stored as :attr:`PredictiveMLTaskMetadataV2.grouping` (container format 2), the only place such a container
+    records its group fields; ``prediction_unit``, ``aggregation`` and ``context`` come from the use case of the data's
+    source. The group column is metadata for splitting and scoring, never a model feature.
+
+    How a benchmark is expected to score the fields (a recommendation; the harness decides):
+
+    * ``prediction_unit="row"``: every row is one prediction and counts once.
+    * ``prediction_unit="group"``: one prediction per group, and every group counts once. ``aggregation`` combines
+      the row predictions of a group: ``mean`` (replicate measurements, one shared label), ``any`` (multiple-instance:
+      the group is positive if any row is; the max of the rows' probabilities), ``last`` (the row latest in
+      ``time_on`` carries the label and the prediction), ``select_min`` / ``select_max`` (choose the row with the
+      lowest / highest prediction and score the true value of that row, as in algorithm selection). A method may
+      return its own group prediction instead and is scored on the same unit.
+    * ``context``: what a model may use about the group when predicting: ``none`` (the row only), ``all_rows`` (all
+      rows of the group, as for a molecule whose conformations are all known), ``past_rows`` (the rows before it in
+      ``time_on``).
+    """
+
+    on: str | list[str]
+    """The group column(s)."""
+    labels: GroupLabelTypes
+    """``per_group`` (one label per group) or ``per_sample`` (labels may differ within a group)."""
+    time_on: str | None = None
+    """The order of the rows inside a group; never used for splitting."""
+    definition: MultilineStr | None = None
+    """What one group is, why groups are held out, and the use case with its source."""
+    prediction_unit: PredictionUnit = "row"
+    """``row`` (default) or ``group``: what one real-world prediction is."""
+    aggregation: GroupAggregation | None = None
+    """How the rows' predictions become one group prediction; set exactly when ``prediction_unit`` is ``group``."""
+    context: GroupContext = "none"
+    """What a model may use about the group at prediction time: ``none`` (default), ``all_rows`` or ``past_rows``."""
+
+    def __post_init__(self):
+        """Validate the rules between the fields that need no other metadata.
+
+        The rules that need the target type are checked by :class:`PredictiveMLTaskMetadataV2`.
+        """
+        columns = as_column_list(self.on)
+        if not columns or any(not str(c).strip() for c in columns):
+            raise ValueError("Grouping.on must name the group column(s).")
+        if len(set(columns)) != len(columns):
+            raise ValueError(f"Grouping.on contains duplicate column names: {self.on!r}.")
+        if self.prediction_unit == "group" and self.aggregation is None:
+            raise ValueError(
+                "prediction_unit='group' needs an aggregation (mean, any, last, select_min or select_max): how the "
+                "rows' predictions become one prediction per group.",
+            )
+        if self.prediction_unit == "row" and self.aggregation is not None:
+            raise ValueError(
+                f"aggregation={self.aggregation!r} is set but prediction_unit is 'row'; an aggregation only applies "
+                "when one prediction is made per group.",
+            )
+        if self.aggregation == "mean" and self.labels != "per_group":
+            raise ValueError("aggregation='mean' averages replicates of one label: it needs labels='per_group'.")
+        if self.aggregation in ("select_min", "select_max") and self.labels != "per_sample":
+            raise ValueError(
+                f"aggregation={self.aggregation!r} selects one row by its prediction and scores that row's true "
+                "value: it needs labels='per_sample'.",
+            )
+        if self.aggregation == "last" and self.time_on is None:
+            raise ValueError("aggregation='last' needs time_on: the order that defines a group's latest row.")
+        if self.context == "past_rows" and self.time_on is None:
+            raise ValueError("context='past_rows' needs time_on: the order that defines a row's earlier rows.")
+        if self.time_on is not None and self.time_on in columns:
+            raise ValueError(f"Grouping.time_on={self.time_on!r} is also a group column.")
 
 
 # TODO: fields that might be cool to add in the future
@@ -248,22 +324,24 @@ class DatasetMetadata:
             first = value.strip().splitlines()[0] if value.strip() else ""
             return first if len(first) <= limit else first[: limit - 1] + "…"
 
-        return "\n".join([
-            "DatasetMetadata:",
-            f"  unique_name:                          {self.unique_name}",
-            f"  dataset_year:                         {self.dataset_year}",
-            f"  domain_str:                           {self.domain_str}",
-            f"  dataset_source:                       {self.dataset_source}",
-            f"  original_dataset_source_download_link: {self.original_dataset_source_download_link}",
-            f"  download_description:                 {_one_line(self.download_description)}",
-            f"  academic_reference_bibtex_key:        {self.academic_reference_bibtex_key}",
-            f"  academic_reference_bibtex:            {_one_line(self.academic_reference_bibtex)}",
-            f"  license:                              {self.license}",
-            f"  data_tags:                            {self.data_tags}",
-            f"  curation_comments:                    {_one_line(self.curation_comments)}",
-            f"  version_from_unique_name:             {self.version_from_unique_name}",
-            f"  version_comment:                      {_one_line(self.version_comment)}",
-        ])
+        return "\n".join(
+            [
+                "DatasetMetadata:",
+                f"  unique_name:                          {self.unique_name}",
+                f"  dataset_year:                         {self.dataset_year}",
+                f"  domain_str:                           {self.domain_str}",
+                f"  dataset_source:                       {self.dataset_source}",
+                f"  original_dataset_source_download_link: {self.original_dataset_source_download_link}",
+                f"  download_description:                 {_one_line(self.download_description)}",
+                f"  academic_reference_bibtex_key:        {self.academic_reference_bibtex_key}",
+                f"  academic_reference_bibtex:            {_one_line(self.academic_reference_bibtex)}",
+                f"  license:                              {self.license}",
+                f"  data_tags:                            {self.data_tags}",
+                f"  curation_comments:                    {_one_line(self.curation_comments)}",
+                f"  version_from_unique_name:             {self.version_from_unique_name}",
+                f"  version_comment:                      {_one_line(self.version_comment)}",
+            ]
+        )
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -413,26 +491,134 @@ class PredictiveMLTaskMetadata:
         if regime == "temporal_non_iid":
             regime_desc = f"temporal non-IID (time column: `{self.time_on}`)"
         elif regime == "grouped_non_iid":
-            regime_desc = (
-                f"grouped non-IID (group column: `{self.group_on}`, "
-                f"labels={self.group_labels})"
-            )
+            regime_desc = f"grouped non-IID (group column: `{self.group_on}`, labels={self.group_labels})"
         else:
             regime_desc = "IID"
 
-        return "\n".join([
-            "PredictiveMLTaskMetadata:",
+        return "\n".join(
+            [
+                "PredictiveMLTaskMetadata:",
+                f"  target_column_name:    {self.target_column_name}",
+                f"  problem_type:          {self.problem_type}",
+                f"  objective_metric_name: {self.objective_metric_name}",
+                f"  stratify_on:           {self.stratify_on}",
+                f"  time_on:               {self.time_on}",
+                f"  group_on:              {self.group_on}",
+                f"  group_labels:          {self.group_labels}",
+                f"  group_time_on:         {self.group_time_on}",
+                f"  is_classification:     {self.is_classification}",
+                f"  → split regime:        {regime_desc}",
+            ]
+        )
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class PredictiveMLTaskMetadataV2:
+    """The task metadata of a container built by a v2 definition (:mod:`data_foundry.v2`): container format 2.
+
+    The regime is ``time_on`` for a temporal task (its horizon is in the splits metadata), ``grouping``
+    (:class:`Grouping`) for a grouped task, and neither for an IID task. Unlike :class:`PredictiveMLTaskMetadata`
+    (format 1: the v1 notebooks and the shipped BeyondArena containers), the group fields are stored once, in
+    ``grouping``; ``group_on``, ``group_labels`` and ``group_time_on`` are read-only views of it, so code that reads
+    both formats (the bundle checks, a benchmark harness) reads them the same way. The ``type_adapter_id`` marks the
+    format (:attr:`~data_foundry.curation_container.CuratedContainer.format_version`).
+    """
+
+    target_column_name: str
+    """The name of the target column in the dataset file."""
+    problem_type: ProblemType
+    """The type of predictive problem."""
+    objective_metric_name: str
+    """The metric that scores the task: sklearn names where possible, the problem type's default otherwise."""
+    stratify_on: str | None = None
+    """The column the IID or grouped splits are stratified on (the target of a classification task by default)."""
+    time_on: str | None = None
+    """The time column of a temporal task: every test row comes after every training row."""
+    grouping: Grouping | None = None
+    """How a grouped task is used (:class:`Grouping`): the group column, the labels, the order inside a group, the
+    prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
+
+    type_adapter_id: str = "predictive-ml-task-mold-v2"
+    """Identifies container format 2."""
+
+    def __post_init__(self):
+        """Validate the regime, and the rules between the grouping and the target."""
+        if not (self.target_column_name or "").strip():
+            raise ValueError("target_column_name must name the target column.")
+        if self.time_on is not None and self.grouping is not None:
+            raise ValueError(
+                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
+                "grouping.time_on.",
+            )
+        if self.target_column_name in (self.time_on, self.group_time_on, *as_column_list(self.group_on)):
+            raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a time or group column.")
+        if self.stratify_on == self.target_column_name and not self.is_classification:
+            raise ValueError(
+                f"stratify_on names the target column ({self.target_column_name!r}) but problem_type is "
+                f"{self.problem_type!r}: a continuous target cannot be stratified on.",
+            )
+        aggregation = self.grouping.aggregation if self.grouping is not None else None
+        if aggregation == "any" and self.problem_type != "binary_classification":
+            raise ValueError(
+                f"aggregation='any' (positive if any row is) needs a binary target, got {self.problem_type!r}.",
+            )
+        if aggregation in ("select_min", "select_max") and self.problem_type != "regression":
+            raise ValueError(
+                f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
+                f"regression target, got {self.problem_type!r}.",
+            )
+
+    @property
+    def group_on(self) -> str | list[str] | None:
+        """The group column(s): ``grouping.on``."""
+        return self.grouping.on if self.grouping is not None else None
+
+    @property
+    def group_labels(self) -> GroupLabelTypes | None:
+        """``per_group`` or ``per_sample``: ``grouping.labels``."""
+        return self.grouping.labels if self.grouping is not None else None
+
+    @property
+    def group_time_on(self) -> str | None:
+        """The order of the rows inside a group: ``grouping.time_on``."""
+        return self.grouping.time_on if self.grouping is not None else None
+
+    @property
+    def is_classification(self) -> bool:
+        """Check if the task is a classification task."""
+        return self.problem_type in ProblemTypeClassification
+
+    @property
+    def split_regime(self) -> str:
+        """``temporal_non_iid`` (``time_on`` set), ``grouped_non_iid`` (``grouping`` set) or ``iid``."""
+        if self.time_on is not None:
+            return "temporal_non_iid"
+        if self.grouping is not None:
+            return "grouped_non_iid"
+        return "iid"
+
+    def describe(self) -> str:
+        """Return a human-readable summary of every field plus the split regime."""
+        lines = [
+            "PredictiveMLTaskMetadataV2:",
             f"  target_column_name:    {self.target_column_name}",
             f"  problem_type:          {self.problem_type}",
             f"  objective_metric_name: {self.objective_metric_name}",
             f"  stratify_on:           {self.stratify_on}",
             f"  time_on:               {self.time_on}",
-            f"  group_on:              {self.group_on}",
-            f"  group_labels:          {self.group_labels}",
-            f"  group_time_on:         {self.group_time_on}",
-            f"  is_classification:     {self.is_classification}",
-            f"  → split regime:        {regime_desc}",
-        ])
+        ]
+        grouping = self.grouping
+        if grouping is not None:
+            unit = grouping.prediction_unit + (f" ({grouping.aggregation})" if grouping.aggregation else "")
+            lines += [
+                f"  grouping.on:           {grouping.on}",
+                f"  grouping.labels:       {grouping.labels}",
+                f"  grouping.time_on:      {grouping.time_on}",
+                f"  grouping.unit:         {unit}",
+                f"  grouping.context:      {grouping.context}",
+            ]
+        lines += [f"  is_classification:     {self.is_classification}", f"  → split regime:        {self.split_regime}"]
+        return "\n".join(lines)
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -548,9 +734,7 @@ class PredictiveMLSplitsMetadata:
         if splits_per_repeat and len(set(splits_per_repeat.values())) == 1:
             per_repeat_desc = f"{next(iter(splits_per_repeat.values()))} per repeat"
         else:
-            per_repeat_desc = ", ".join(
-                f"r{r}={n}" for r, n in splits_per_repeat.items()
-            ) or "(no splits)"
+            per_repeat_desc = ", ".join(f"r{r}={n}" for r, n in splits_per_repeat.items()) or "(no splits)"
 
         lines = [
             "PredictiveMLSplitsMetadata:",
@@ -579,9 +763,7 @@ class PredictiveMLSplitsMetadata:
             lines.append(header)
             for repeat_id, fold_id, train_idx, test_idx in preview:
                 lines.append(
-                    f"    r{repeat_id}/f{fold_id}:  "
-                    f"train={len(train_idx):>{train_w}}  "
-                    f"test={len(test_idx):>{test_w}}",
+                    f"    r{repeat_id}/f{fold_id}:  train={len(train_idx):>{train_w}}  test={len(test_idx):>{test_w}}",
                 )
             if len(flat) > preview_limit:
                 lines.append(f"    … ({len(flat) - preview_limit} more)")

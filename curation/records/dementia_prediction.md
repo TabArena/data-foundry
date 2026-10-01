@@ -19,8 +19,8 @@ original_source: Other
 year: '2010'
 domain: medical & healthcare
 required_split:
-- '?'
-problem_type: TBD
+- Grouped (NON-IID)
+problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset/data

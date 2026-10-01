@@ -10,14 +10,14 @@ turns the raw download into the curated frame lives in a few hooks:
 * :meth:`~AbstractCuratedDataset._feature_types` (optional): the dtypes of the cleaned frame's columns
   (categorical / string / datetime), as a :class:`FeatureTypes`.
 * :meth:`~AbstractCuratedDataset._make_splits` (optional): hand-built outer splits, for what the
-  declarative ``temporal_splits`` and the recommended IID/grouped splits do not cover.
+  declarative windows of ``temporal`` and the recommended IID/grouped splits do not cover.
 * :meth:`~AbstractCuratedDataset._prepare_raw_files` (optional): a heavy one-off step that writes
   intermediate files into the raw directory (listed in ``prepared_raw_files``).
 * :meth:`~AbstractCuratedDataset._extra_checks` (optional): dataset-specific checks, such as a leak test.
 
 The base class runs the rest the same way for every dataset: after ``_clean`` it casts the columns
 ``_feature_types`` names (and a classification target to ``category``), and fixes the row order (stable sort
-by ``time_on`` for temporal tasks, else a shuffle with seed 42); then it builds the splits with the benchmark
+by the time column for temporal tasks, else a shuffle with seed 42); then it builds the splits with the benchmark
 seed, the container, the bundle checks and the report. The pattern follows
 TabArena's model interface: declarative class attributes plus a small set of hooks.
 
@@ -33,6 +33,7 @@ From a notebook next to ``dataset.py``::
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import datetime as dt
 import inspect
 import io
@@ -58,13 +59,17 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     DatasetMetadata,
+    Grouping,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
     resolve_warehouse_dir,
 )
-from data_foundry.v2 import splits as protocol
+from data_foundry.v2 import (
+    group_checks,
+    splits as protocol,
+)
 from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, cast_dtypes, order_rows
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, TemporalSplits
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -158,6 +163,8 @@ class CurationResult:
         container: The curated container (a fresh UUID unless it was saved).
         bundle_report: The bundle-check report, with the definition and extra checks merged in.
         data_checks: The tables of :func:`~data_foundry.dataset_checks.run_all_checks`, by name.
+        decisions: The curation decisions of :meth:`AbstractCuratedDataset._decisions`, with their evidence.
+        group_stats: The group statistics of a grouped task (:mod:`data_foundry.v2.group_checks`), else None.
         saved_path: Where the container was saved, or None for a check without saving.
         created_at: When the result was produced (UTC).
     """
@@ -167,6 +174,7 @@ class CurationResult:
     bundle_report: BundleCheckReport
     data_checks: dict[str, pd.DataFrame] = field(default_factory=dict)
     decisions: list[Decision] = field(default_factory=list)
+    group_stats: group_checks.GroupStats | None = None
     saved_path: Path | None = None
     created_at: dt.datetime = field(default_factory=lambda: dt.datetime.now(dt.timezone.utc))
 
@@ -236,28 +244,22 @@ class AbstractCuratedDataset(ABC):
     """The objective metric; None is the default for the problem type (roc_auc / log_loss / rmse)."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
-    time_on: ClassVar[str | None] = None
-    """The time column of a temporal task."""
-    group_on: ClassVar[str | list[str] | None] = None
-    """The group column(s) of a grouped task."""
-    group_labels: ClassVar[str | None] = None
-    """``per_group`` (one label per group) or ``per_sample`` (one label per row) for a grouped task."""
-    group_time_on: ClassVar[str | None] = None
-    """The time column inside groups, if any."""
+    grouping: ClassVar[Grouping | None] = None
+    """A grouped task: ``Grouping(on=..., labels=..., definition=..., prediction_unit=..., aggregation=...,
+    context=..., time_on=...)`` (:class:`~data_foundry.schema.Grouping`). The ``definition`` (what a group is, why
+    it is held out, the use case with its source) is required and may be indented like code. Stored in the container."""
+    temporal: ClassVar[Temporal | None] = None
+    """A temporal task: ``Temporal(on=..., splits=TemporalSplits(...))`` (:class:`~data_foundry.v2.splits.Temporal`),
+    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon. Neither ``grouping`` nor
+    ``temporal``: an IID task."""
 
     # --- row order ----------------------------------------------------------------------------------
     shuffle: ClassVar[bool] = True
     """Shuffle IID and grouped data (seed 42) as the last step. Temporal data is always sorted by time."""
 
     # --- splits -------------------------------------------------------------------------------------
-    temporal_splits: ClassVar[TemporalSplits | None] = None
-    """Declarative temporal splits; a temporal task sets this or implements `_make_splits`."""
     splits_comment: ClassVar[str | None] = None
     """What the splits simulate. None: the default comment for recommended or declarative splits."""
-    time_horizon: ClassVar[int | None] = None
-    """How far ahead a temporal task predicts (default: the window of a calendar `temporal_splits`)."""
-    time_horizon_unit: ClassVar[str | None] = None
-    """``days``, ``weeks``, ``months``, ``years`` or ``steps``."""
     subsample_to_budget: ClassVar[bool] = False
     """``True`` for a ``_1m`` version. IID / grouped: sub-sample a frame above 1.5M rows to 1.5M (whole groups,
     stratified) before splitting, so every fold trains on at most 1M and tests on at most 500k rows. Temporal: sample
@@ -276,7 +278,7 @@ class AbstractCuratedDataset(ABC):
 
     # --- built from the attributes -----------------------------------------------------------------
     dataset_metadata: ClassVar[DatasetMetadata]
-    task_metadata: ClassVar[PredictiveMLTaskMetadata]
+    task_metadata: ClassVar[PredictiveMLTaskMetadataV2]
 
     # --- hooks --------------------------------------------------------------------------------------
     @abstractmethod
@@ -319,8 +321,8 @@ class AbstractCuratedDataset(ABC):
     def _make_splits(self, df: pd.DataFrame) -> Splits | SplitPlan:
         """Build the outer splits for ``df`` (already in its final row order).
 
-        The default is the v2 protocol (:mod:`data_foundry.v2.splits`): ``temporal_splits`` for a temporal
-        task, else the recommended IID or grouped 3-fold cross-validation, on a frame sub-sampled to 1.5M rows
+        The default is the v2 protocol (:mod:`data_foundry.v2.splits`): the windows of ``temporal.splits`` for a
+        temporal task, else the recommended IID or grouped 3-fold cross-validation, on a frame sub-sampled to 1.5M rows
         for a ``_1m`` version. Override it only for a split none of these express, and return a
         :class:`SplitPlan` when the split step reduces the frame or computes its comment.
         """
@@ -447,7 +449,7 @@ class AbstractCuratedDataset(ABC):
         )
         if not order:
             return df.reset_index(drop=True)
-        return order_rows(df, time_on=self.time_on, shuffle=self.shuffle)
+        return order_rows(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
 
     def feature_types(self, df: pd.DataFrame | None = None) -> FeatureTypes:
         """:meth:`_feature_types` for ``df`` (default: the cleaned frame), with a classification target added."""
@@ -564,16 +566,17 @@ class AbstractCuratedDataset(ABC):
 
     def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
         """The declarative temporal windows on ``df`` and their generated comment."""
-        if self.temporal_splits is None:
-            msg = f"{type(self).__name__}: a temporal task needs `temporal_splits` or `_make_splits`."
+        windows = self.temporal.splits if self.temporal is not None else None
+        if windows is None:
+            msg = f"{type(self).__name__}: a temporal task needs `Temporal(splits=...)` or `_make_splits`."
             raise DatasetDefinitionError(msg)
         time_on = self.task_metadata.time_on
-        splits = self.temporal_splits.splits(df, time_on)
+        splits = windows.splits(df, time_on)
         derived = None
-        if self.temporal_splits.window is None and self.temporal_splits.cutoffs is None:
+        if windows.window is None and windows.cutoffs is None:
             first_test = splits[0][0][1]
-            derived = len(first_test) if self.temporal_splits.unit == "rows" else df[time_on].iloc[first_test].nunique()
-        return splits, self.temporal_splits.describe(len(splits), derived_window=derived)
+            derived = len(first_test) if windows.unit == "rows" else df[time_on].iloc[first_test].nunique()
+        return splits, windows.describe(len(splits), derived_window=derived)
 
     def _cross_validation(self, df: pd.DataFrame) -> Splits:
         """The recommended IID or grouped 3-fold cross-validation on ``df``."""
@@ -615,7 +618,7 @@ class AbstractCuratedDataset(ABC):
     def preview_splits(self, df: pd.DataFrame | None = None) -> pd.DataFrame:
         """One row per outer split with its train/test sizes, and time ranges for a temporal task."""
         plan = self.make_splits(df)
-        return split_summary(plan.df, plan.splits, time_on=self.time_on)
+        return split_summary(plan.df, plan.splits, time_on=self.task_metadata.time_on)
 
     # --- pipeline -----------------------------------------------------------------------------------
     def to_container(self) -> CuratedContainer:
@@ -648,12 +651,14 @@ class AbstractCuratedDataset(ABC):
         """
         self._refresh()
         container = self.to_container()
+        stats = group_checks.group_stats(container)
         result = CurationResult(
             dataset=self,
             container=container,
-            bundle_report=self._run_bundle_checks(container, verbose=verbose),
+            bundle_report=self._run_bundle_checks(container, verbose=verbose, group_stats=stats),
             data_checks=self.run_all_checks(container.dataset),
             decisions=list(self._decisions(self.raw, container.dataset)),
+            group_stats=stats,
         )
         if write_report:
             self._write_report(result)
@@ -675,15 +680,24 @@ class AbstractCuratedDataset(ABC):
         self._write_report(result)
         return result
 
-    def _run_bundle_checks(self, container: CuratedContainer, *, verbose: bool) -> BundleCheckReport:
+    def _run_bundle_checks(
+        self,
+        container: CuratedContainer,
+        *,
+        verbose: bool,
+        group_stats: group_checks.GroupStats | None = None,
+    ) -> BundleCheckReport:
         accepted = tuple(self.accepted_check_warnings)
+        # a format-2 container: run_bundle_checks judges it by the v2 split protocol
         report = run_bundle_checks(container, ignore=accepted, verbose=False)
-        # The shared checks judge the v1 split protocol; the v2 protocol checks replace those findings.
-        kept = [r for r in report.results if r.slug not in protocol.REPLACED_V1_CHECKS]
-        own = [*self._definition_checks(), *protocol.protocol_checks(container), *self._extra_checks(container)]
+        own = [
+            *self._definition_checks(),
+            *group_checks.group_findings(container, group_stats),
+            *self._extra_checks(container),
+        ]
         extra = [r for r in own if r.slug not in accepted]
-        if extra or len(kept) != len(report.results):
-            report.results = sorted([*kept, *extra], key=lambda r: SEVERITY_ORDER[r.severity])
+        if extra:
+            report.results = sorted([*report.results, *extra], key=lambda r: SEVERITY_ORDER[r.severity])
         if verbose:
             print(report.summary())
         return report
@@ -772,27 +786,23 @@ def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _horizon(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
-    if cls.time_horizon is not None or cls.time_horizon_unit is not None:
-        return cls.time_horizon, cls.time_horizon_unit
-    if cls.time_on is not None and cls.temporal_splits is not None and cls.temporal_splits.horizon:
-        return cls.temporal_splits.horizon
-    return None, None
+    return cls.temporal.resolved_horizon if cls.temporal is not None else (None, None)
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     tags = list(dict.fromkeys(cls.data_tags))
     if any(tag in REGIME_TAGS for tag in tags):
         return tags
-    if cls.time_on is not None:
+    if cls.temporal is not None:
         regime = ["Non-IID", "Temporal"]
-    elif cls.group_on is not None:
-        regime = ["Non-IID", "GroupedTemporal" if cls.group_time_on is not None else "Grouped"]
+    elif cls.grouping is not None:
+        regime = ["Non-IID", "GroupedTemporal" if cls.grouping.time_on is not None else "Grouped"]
     else:
         regime = ["IID"]
     return regime + tags
 
 
-def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata, PredictiveMLTaskMetadata]:
+def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata, PredictiveMLTaskMetadataV2]:
     bibtex = clean_text(cls.bibtex) + "\n"
     key = cls.bibtex_key or ",".join(dict.fromkeys(_BIBTEX_KEY.findall(bibtex)))
     dataset = DatasetMetadata(
@@ -812,18 +822,30 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
     )
     is_classification = cls.problem_type != "regression"
     stratify_on = (cls.target if is_classification else None) if cls.stratify_on is AUTO else cls.stratify_on
-    task = PredictiveMLTaskMetadata(
+    grouping = None
+    if cls.grouping is not None:
+        grouping = dataclasses.replace(cls.grouping, definition=clean_text(cls.grouping.definition))
+    task = PredictiveMLTaskMetadataV2(
         target_column_name=cls.target,
         problem_type=cls.problem_type,
         objective_metric_name=cls.metric or TABARENA_DEFAULT_METRICS.get(cls.problem_type, ""),
         stratify_on=stratify_on,
-        time_on=cls.time_on,
-        group_on=cls.group_on,
-        group_labels=cls.group_labels,
-        group_time_on=cls.group_time_on,
+        time_on=cls.temporal.on if cls.temporal is not None else None,
+        grouping=grouping,
     )
     return dataset, task
 
+
+_FLAT_REGIME_ATTRIBUTES = (
+    "time_on",
+    "group_on",
+    "group_labels",
+    "group_time_on",
+    "temporal_splits",
+    "time_horizon",
+    "time_horizon_unit",
+)
+"""The flat regime attributes of earlier v2 definitions, now declared as `grouping` / `temporal`."""
 
 _REQUIRED = (
     "unique_name",
@@ -865,6 +887,26 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     ]
     if moved:
         fail(f"{', '.join(moved)}: drop columns in `_clean` and name dtypes in `_feature_types`.")
+    flat = [a for a in _FLAT_REGIME_ATTRIBUTES if hasattr(cls, a)]
+    if flat:
+        fail(
+            f"{', '.join(flat)}: declare the regime as one object, `grouping = Grouping(on=..., labels=..., "
+            "definition=...)` or `temporal = Temporal(on=..., splits=TemporalSplits(...))`."
+        )
+    if cls.grouping is not None and not isinstance(cls.grouping, Grouping):
+        fail("`grouping` must be a `Grouping(...)`.")
+    if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
+        fail("`temporal` must be a `Temporal(...)`.")
+    if cls.grouping is not None and cls.temporal is not None:
+        fail(
+            "a task is grouped or temporal, not both. For grouped data ordered in time, record the order as "
+            "`Grouping(time_on=...)`; for a temporal split, the test rows are future rows whatever their group."
+        )
+    if cls.grouping is not None and not clean_text(cls.grouping.definition or ""):
+        fail(
+            "`Grouping(definition=...)` is required: what one group is, why groups are held out, and the use case "
+            "with its source."
+        )
 
     try:
         cls.dataset_metadata, cls.task_metadata = _build_metadata(cls)
@@ -880,15 +922,14 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             fail(f"accepted check warning {slug!r} needs a reason.")
 
     custom_splits = cls._make_splits is not AbstractCuratedDataset._make_splits
-    if cls.time_on is not None:
-        if not custom_splits and cls.temporal_splits is None:
-            fail("a temporal task (`time_on` set) needs `temporal_splits` or `_make_splits`.")
+    if cls.temporal is not None:
+        if not custom_splits and cls.temporal.splits is None:
+            fail("a temporal task needs `Temporal(splits=TemporalSplits(...))` or `_make_splits`.")
         if _horizon(cls) == (None, None):
-            fail("a temporal task needs `time_horizon` and `time_horizon_unit` (or a calendar `temporal_splits`).")
-    elif cls.temporal_splits is not None:
-        fail("`temporal_splits` is set but `time_on` is not.")
-    if (cls.time_horizon is None) != (cls.time_horizon_unit is None):
-        fail("set `time_horizon` and `time_horizon_unit` together.")
+            fail(
+                "these windows do not fix the prediction horizon (unit='unique', window=None, or `_make_splits`): "
+                "declare it as `Temporal(horizon=..., horizon_unit=...)`.",
+            )
     if cls.subsample_to_budget and cls.version_of is None:
         fail("`subsample_to_budget` makes a sub-sampled version: set `version_of` (and `version_comment`).")
     if cls.version_of is not None and not clean_text(cls.version_comment or ""):

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -49,15 +49,15 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     # Task
     target = "price_doc"
     problem_type = "regression"
-    time_on = "timestamp"
 
     # Splits
     splits_comment = """
         We always use 6 month of the data as test data and all prior data as training data. This simulate a model that is refit every half year. We create 5 splits going back 6 months each, starting from the newest date.
     """
-    time_horizon = 6
-    time_horizon_unit = "months"
-    temporal_splits = TemporalSplits(window=6, unit="months", n_windows=5)
+    temporal = Temporal(
+        on="timestamp",
+        splits=TemporalSplits(window=6, unit="months", n_windows=5),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # From: https://github.com/yandex-research/tabred/blob/main/preprocessing/sberbank-housing.py

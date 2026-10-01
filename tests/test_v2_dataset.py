@@ -15,6 +15,8 @@ from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
+    Grouping,
+    Temporal,
     TemporalSplits,
     cast_dtypes,
     discover_datasets,
@@ -286,14 +288,27 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
     [
         ({"domain": "not a domain"}, "invalid metadata"),
         ({"accepted_check_warnings": {"dataset_identifier_column": " "}}, "needs a reason"),
-        ({"time_on": "t"}, "needs `temporal_splits` or `_make_splits`"),
-        ({"temporal_splits": TemporalSplits(window=5)}, "`time_on` is not"),
+        ({"temporal": Temporal(on="t")}, "needs `Temporal\\(splits=TemporalSplits"),
+        (
+            {"temporal": Temporal(on="t", splits=TemporalSplits(window=None, unit="unique", n_windows=3))},
+            "do not fix the prediction horizon",
+        ),
+        ({"time_on": "t"}, "declare the regime as one object"),
+        ({"group_on": "g", "group_labels": "per_group"}, "declare the regime as one object"),
+        ({"grouping": Grouping(on="g", labels="per_group")}, "definition=...\\)` is required"),
+        ({"grouping": "g"}, "must be a `Grouping"),
+        (
+            {
+                "grouping": Grouping(on="g", labels="per_group", definition="x"),
+                "temporal": Temporal(on="t", horizon=1, horizon_unit="days"),
+            },
+            "grouped or temporal, not both",
+        ),
         ({"subsample_to_budget": True}, "version_of"),
         ({"version_of": "toy"}, "version_comment"),
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
         ({"categorical_features": ("a",)}, "`_feature_types`"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
-        ({"time_horizon": 3}, "together"),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -302,9 +317,52 @@ def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> No
 
 
 def test_temporal_task_gets_tags_and_horizon_from_its_windows() -> None:
-    cls = _define(time_on="t", temporal_splits=TemporalSplits(window=7, unit="days", n_windows=2))
+    cls = _define(temporal=Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)))
     assert cls.dataset_metadata.data_tags == ["Non-IID", "Temporal"]
+    assert cls.task_metadata.time_on == "t"
     assert _horizon(cls) == (7, "days")
+    rows = _define(temporal=Temporal(on="t", splits=TemporalSplits(window=320, unit="rows", n_windows=3)))
+    assert _horizon(rows) == (320, "steps")
+    unique = TemporalSplits(window=1, unit="unique", n_windows=3)  # distinct values: no unit of their own
+    declared = _define(temporal=Temporal(on="t", splits=unique, horizon=1, horizon_unit="years"))
+    assert _horizon(declared) == (1, "years")
+
+
+@pytest.mark.parametrize(
+    "splits",
+    [TemporalSplits(window=7, unit="days", n_windows=3), TemporalSplits(window=320, unit="rows", n_windows=3)],
+)
+def test_temporal_rejects_a_horizon_the_windows_already_set(splits: TemporalSplits) -> None:
+    with pytest.raises(ValueError, match="the windows set the horizon"):
+        Temporal(on="t", splits=splits, horizon=7, horizon_unit="days")
+
+
+def test_temporal_rejects_inconsistent_declarations() -> None:
+    with pytest.raises(ValueError, match="together"):
+        Temporal(on="t", horizon=3)
+    with pytest.raises(ValueError, match="time column"):
+        Temporal(on="")
+
+
+def test_grouping_is_stored_in_a_format_2_task() -> None:
+    grouping = Grouping(
+        on="g",
+        labels="per_group",
+        time_on="t",
+        prediction_unit="group",
+        aggregation="mean",
+        context="all_rows",
+        definition="""
+            One group is a toy.
+        """,
+    )
+    cls = _define(grouping=grouping)
+    task = cls.task_metadata
+    assert task.type_adapter_id == "predictive-ml-task-mold-v2"
+    assert (task.group_on, task.group_labels, task.group_time_on) == ("g", "per_group", "t")  # views of the grouping
+    assert task.grouping.definition == "One group is a toy."
+    assert task.grouping.aggregation == "mean"
+    assert cls.dataset_metadata.data_tags == ["Non-IID", "GroupedTemporal"]
 
 
 def test_cast_and_drop_helpers() -> None:
@@ -503,12 +561,12 @@ def test_a_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path)
 
 def temporal_version_body() -> str:
     """A temporal ``toy_ds_1m``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
-    extra = '    time_on = "t"\n    temporal_splits = TemporalSplits(window=5, unit="days", n_windows=3)\n'
+    extra = '    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3))\n'
     return (
         DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
         .replace(
             "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -558,3 +616,40 @@ def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehou
     write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
     with pytest.raises(DatasetDefinitionError, match="no split side exceeds the row budget"):
         get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+
+def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = (
+        DEFINITION.format(name="toy_ds", comment="x")
+        .replace(
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, drop_columns",
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["site"] = (df["row_id"] // 10).astype(str)\n        return drop_columns(df, ["row_id"])',
+        )
+        .replace(
+            '    problem_type = "binary_classification"\n',
+            '    problem_type = "binary_classification"\n'
+            "    grouping = Grouping(\n"
+            '        on="site",\n'
+            '        labels="per_sample",\n'
+            '        definition="""\n'
+            "            One group is a toy site.\n"
+            '        """,\n'
+            "    )\n",
+        )
+        .replace('categorical=["colour"]', 'categorical=["colour", "site"]')
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.container.grouping.definition == "One group is a toy site."
+    assert result.group_stats.n_groups == 60
+    text = (folder / "README.md").read_text()
+    assert "## Group structure" in text
+    assert "One group is a toy site." in text
+    grouping = read_report(folder / "README.md")["task"]["grouping"]
+    assert grouping["prediction_unit"] == "row"
+    assert grouping["n_groups"] == 60

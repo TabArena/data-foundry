@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class CookingTime1m(AbstractCuratedDataset):
@@ -43,7 +43,6 @@ class CookingTime1m(AbstractCuratedDataset):
     # Task
     target = "cooking_time_minutes"
     problem_type = "regression"
-    time_on = "timestamp"
 
     # Splits
     splits_comment = (
@@ -51,9 +50,10 @@ class CookingTime1m(AbstractCuratedDataset):
         "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
         "for all windows)."
     )
-    time_horizon = 7
-    time_horizon_unit = "days"
-    temporal_splits = TemporalSplits(window=7, unit="days", n_windows=3)
+    temporal = Temporal(
+        on="timestamp",
+        splits=TemporalSplits(window=7, unit="days", n_windows=3),
+    )
     subsample_to_budget = True
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

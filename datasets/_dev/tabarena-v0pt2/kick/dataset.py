@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
 
 
 class Kick(AbstractCuratedDataset):
@@ -43,13 +43,15 @@ class Kick(AbstractCuratedDataset):
     # Task
     target = "IsBadBuy"
     problem_type = "binary_classification"
-    time_on = "PurchDate"
 
     # Splits: 9 equal windows of purchase dates (the 3x3 an IID dataset of this size would get), keeping at
     # least half of all dates for training.
-    temporal_splits = TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
-    time_horizon = 28
-    time_horizon_unit = "days"
+    temporal = Temporal(
+        on="PurchDate",
+        splits=TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5),
+        horizon=28,
+        horizon_unit="days",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "training.csv")

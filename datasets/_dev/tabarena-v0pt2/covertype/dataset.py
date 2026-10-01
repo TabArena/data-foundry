@@ -37,9 +37,12 @@ class Covertype(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with the data from UCI.
+        We use the data from UCI: all 581,012 observations (30 x 30 m raster cells) of the four wilderness areas and all 7 cover types.
 
-        We create a special version of the dataset to avoid leakage. This version consists only of three 3 classes and 3 (spatial) wilderness areas. The investigation of Covertype shows that the dataset comprises multiple wilderness areas (Rawah, Comanche Peak, Neota, Cache la Poudre) that can be treated as subgroups but are not strictly IID, with wilderness area and soil type encoded as one-hot categorical features. Although TabRed argues for a time split to reflect a real task, the dataset lacks both explicit time and precise spatial (e.g., GNSS) features, leaving only area identifiers, which implicitly encode collection time and location; consequently, IID splits would introduce temporal or spatial leakage. Additional issues include transformed features in the OpenML/TALENT version that leak test distribution, incorrect column order in the UCI release, and evidence from EDA that class distributions differ across areas, confirming the dataset’s grouped nature where cover type characteristics strongly depend on area. The only robust strategy is a spatially motivated grouped split by area; however, because some classes appear only in specific areas, the dataset is restricted to classes present in the three largest areas and evaluated using leave-one-area-out grouped splits.
+        - We use IID splits, as the source does: Blackard & Dean (1999) pooled all cells of the four areas and drew the training and validation cells at random. The use case is mapping the cover type of cells inside the studied areas that have no inventory, from cartographic variables.
+        - IID is optimistic for land far from any mapped cell: the US Forest Service maps were made of homogeneous stands of 2 to 80 hectares, so one stand spans about 20 to 900 neighbouring cells that share its label and have similar features, and a random test cell usually has cells of its stand in the training data. The data has no coordinates or time to split by (TabReD argues for a time split).
+        - Until 2026-10-01 we held out one wilderness area at a time, on a frame reduced to the 3 classes and 3 areas that allow it (some cover types occur in only some areas). With 3 groups this was three domain-shift tests rather than a grouped task, and it dropped 4 of the 7 cover types, so we went back to the source's random split.
+        - The OpenML version (https://www.openml.org/d/150, used by TALENT) comes with transformed features that leak the test distribution, and the UCI release has an incorrect column order.
 
         Other steps:
         - We add the column names in the correct way.
@@ -50,13 +53,6 @@ class Covertype(AbstractCuratedDataset):
     # Task
     target = "Cover_Type"
     problem_type = "multiclass_classification"
-    group_on = "Wilderness_Area"
-    group_labels = "per_sample"
-
-    # Splits
-    splits_comment = """
-        We create stratified grouped 3-fold split, always leaving one area out of the training data.
-    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [
@@ -230,14 +226,6 @@ class Covertype(AbstractCuratedDataset):
         df = df.drop(columns=["Soil_USFS_ELU"])
         # Target -> text label
         df["Cover_Type"] = df["Cover_Type"].map(COVER_NAME)
-        # Show data distribution across wilderness areas and cover types to confirm the grouped nature of the dataset
-        df.groupby(["Wilderness_Area", "Cover_Type"]).size().unstack(fill_value=0).sort_index()
-        # Keep only data points that have the following classes and areas:
-        allowed_classes = ["Krummholz", "Lodgepole Pine", "Spruce/Fir"]
-        allowed_areas = ["Comanche Peak Wilderness Area", "Neota Wilderness Area", "Rawah Wilderness Area"]
-        df = df[df["Cover_Type"].isin(allowed_classes) & df["Wilderness_Area"].isin(allowed_areas)].reset_index(
-            drop=True
-        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

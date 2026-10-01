@@ -5,11 +5,11 @@ It is generated, never edited by hand: :meth:`~data_foundry.v2.dataset.AbstractC
 rewrites it, and only :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.build` writes a new build record.
 
 The YAML frontmatter is the machine-readable part: the build record (UUID, checksum, provenance), the data and
-split shape, and the bundle-check outcome. GitHub renders it as a table at the top of the page, so it holds
-short values only. The body explains the folder (its files, links, how to rebuild), then gives the dataset and
-task, the curation notes, the splits, the decisions with their evidence, the bundle checks, the data-check
-tables and the build record. The page has no timestamp outside the build record, so an unchanged dataset gives
-an unchanged file.
+split shape, the grouping of a grouped task, and the bundle-check outcome. GitHub renders it as a table at the top
+of the page, so it holds short values only. The body explains the folder (its files, links, how to rebuild), then
+gives the dataset and task, the curation notes, the splits, the group structure of a grouped task, the decisions with
+their evidence, the bundle checks, the data-check tables and the build record. The page has no timestamp outside the
+build record, so an unchanged dataset gives an unchanged file.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.schema import resolve_warehouse_dir
+from data_foundry.v2 import group_checks
 from data_foundry.v2.dataset import DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
 
 if TYPE_CHECKING:
@@ -104,9 +105,20 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         build = (previous or {}).get("build")
 
     sizes = split_summary(df, splits_meta.splits)
+    grouping = None
+    if task.grouping is not None:
+        grouping = {
+            "prediction_unit": task.grouping.prediction_unit,
+            "aggregation": task.grouping.aggregation,
+            "context": task.grouping.context,
+        }
+        if result.group_stats is not None:
+            low, high = result.group_stats.test_groups_per_fold
+            grouping |= {"n_groups": result.group_stats.n_groups, "test_groups_per_fold": {"min": low, "max": high}}
     return {
         "report_format": REPORT_FORMAT,
         "unique_name": container.dataset_metadata.unique_name,
+        "container_format": container.format_version,
         "checksum": container.checksum,
         "build": build,
         "build_stale": bool(build) and build.get("checksum") != container.checksum,
@@ -125,6 +137,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "time_on": task.time_on,
             "group_on": task.group_on,
             "group_labels": task.group_labels,
+            "group_time_on": task.group_time_on,
+            "grouping": grouping,
         },
         "splits": {
             "n_repeats": len(splits_meta.splits),
@@ -162,6 +176,7 @@ def render_report(
     out += _dataset_section(result, fm)
     out += _curation_notes_section(result)
     out += _splits_section(result, fm)
+    out += _group_section(result)
     out += _decisions_section(result, figures)
     out += _bundle_checks_section(result)
     out += _data_checks_section(result)
@@ -180,6 +195,9 @@ def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         "temporal_non_iid": f"temporal splits by `{task['time_on']}`",
         "grouped_non_iid": f"grouped splits by {_names(task['group_on'])}",
     }.get(task["split_regime"], "IID splits")
+    grouping = task.get("grouping") or {}
+    if grouping.get("prediction_unit") == "group":
+        regime += f", one prediction per group ({grouping['aggregation']})"
     size = f"{data['n_rows']:,} rows and {data['n_features']:,} features"
     if data["n_test_dataset_rows"]:
         size += f", plus {data['n_test_dataset_rows']:,} unlabeled test rows"
@@ -290,7 +308,7 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if meta.version_from_unique_name:
         rows.append(("version of", meta.version_from_unique_name))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
-    rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None]
+    rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k != "grouping"]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
 
     types = result.dataset.feature_types(df)
@@ -331,6 +349,57 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
     return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table))
+
+
+def _group_section(result: CurationResult) -> list[str]:
+    grouping = result.container.task_metadata.grouping
+    if grouping is None:
+        return []
+    unit = grouping.prediction_unit + (f" ({grouping.aggregation})" if grouping.aggregation else "")
+    fields = [
+        ("group column", _names(grouping.on)),
+        ("labels", grouping.labels),
+        ("order inside a group", f"`{grouping.time_on}`" if grouping.time_on else "none"),
+        ("prediction unit", unit),
+        ("known about a group when predicting", grouping.context),
+    ]
+    out = ["## Group structure", ""]
+    if grouping.definition:
+        out += [grouping.definition.strip(), ""]
+    out += [_table(pd.DataFrame(fields, columns=["field", "value"]), full=True), ""]
+    stats = result.group_stats
+    if stats is None:
+        return out
+    low, median, high = stats.rows_per_group
+    rows = [
+        ("groups", f"{stats.n_groups:,}"),
+        ("rows per group (min / median / max)", f"{low:,} / {median:,.1f} / {high:,}"),
+        ("largest group", f"{stats.largest_share:.1%} of the rows"),
+        ("test groups per fold", _range({"min": stats.test_groups_per_fold[0], "max": stats.test_groups_per_fold[1]})),
+        ("groups with a single label", f"{stats.single_label_share:.1%}"),
+    ]
+    if stats.neighbour_same_group is not None:
+        rows.append(
+            (
+                "nearest neighbour in the same group",
+                f"{stats.neighbour_same_group:.1%} of the rows (chance: {stats.neighbour_chance:.1%})",
+            )
+        )
+    if stats.label_share_by_group is not None:
+        rows.append(
+            (
+                "label variance explained by the group",
+                f"{stats.label_share_by_group:.2f} (shuffled groups: {stats.label_share_shuffled:.2f})",
+            )
+        )
+    out += [_table(pd.DataFrame(rows, columns=["statistic", "value"]), full=True), ""]
+    out += [
+        "The nearest neighbour is computed on the standardised numeric features of a sample of up to "
+        f"{group_checks.NEIGHBOUR_SAMPLE_ROWS:,} rows; chance is the share expected if the groups were unrelated to "
+        "the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.",
+        "",
+    ]
+    return out
 
 
 def _decisions_section(result: CurationResult, figures: dict[int, str]) -> list[str]:

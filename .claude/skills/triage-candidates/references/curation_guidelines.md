@@ -15,7 +15,12 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
     (predicting the future, e.g. future transactions).
   * **Grouped** — a group index exists; all samples of a group stay together so no
     group appears in both train and test (generalize to unseen entities). Either
-    *label-per-group* (one shared label per group) or *label-per-sample*.
+    *label-per-group* (one shared label per group) or *label-per-sample*. The source's use case,
+    cited, also decides what one prediction is (a row, or a whole group: replicates averaged, any
+    instance positive, the latest row, the best of several candidates) and what is known about a
+    new group when predicting; the label structure alone does not. With only a few groups, a
+    grouped split is a domain-shift test between them rather than prediction for unseen entities;
+    take that as its own decision (covertype: 3 wilderness areas, IID instead).
 * A temporal split doesn't remove group structure and vice-versa — the split only
   decides which dependency matters. **Time-series forecasting is excluded** (different
   assumptions / validation); distinguish temporal tabular regression from forecasting.

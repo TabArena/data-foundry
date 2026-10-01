@@ -37,12 +37,18 @@ class ClassName(AbstractCuratedDataset):
     # Task (the metric defaults to roc_auc / log_loss / rmse; stratifying on a classification target is the default)
     target = "TODO"
     problem_type = "TODO"
-    # time_on = "..."                             # temporal task
-    # group_on = "..."; group_labels = "..."      # grouped task: "per_group" or "per_sample"
-
-    # Splits: the recommended IID or grouped split by default. A temporal task declares its windows, e.g.
-    # temporal_splits = TemporalSplits(window=7, unit="days", n_windows=3)
-    # and says why in `splits_comment`.
+    # The regime: neither declaration is an IID task with the recommended split. A grouped task (import `Grouping`):
+    # grouping = Grouping(
+    #     on="...",                  # the group column, never a model feature
+    #     labels="...",              # "per_group" (one label per group) or "per_sample"
+    #     prediction_unit="row",     # or "group" with aggregation="mean" / "any" / "last" / "select_min" / ...
+    #     context="none",            # what a model may know about the group: "none", "all_rows", "past_rows"
+    #     definition="""
+    #         What one group is, why groups are held out, and the use case with its source.
+    #     """,
+    # )
+    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`:
+    # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # Only read here (cached across edits of `_clean`).

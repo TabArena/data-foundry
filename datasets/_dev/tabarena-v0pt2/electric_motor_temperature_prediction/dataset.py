@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
 
 
 class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
@@ -45,9 +45,16 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
     # Task
     target = "permanent_magnet_temperature"
     problem_type = "regression"
-    group_on = "profile_id"
-    group_labels = "per_sample"
-    group_time_on = "profile_time_index"
+    grouping = Grouping(
+        on="profile_id",
+        labels="per_sample",
+        time_on="profile_time_index",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a measurement session (profile) of the test bench; its rows are its samples in time order. The use case is a real-time estimate of motor temperatures that "are not reliably and economically measurable in a commercial vehicle" (Kaggle; Kirchgässner et al.), so each sample is one prediction, made from its own row; its smoothed features already use only the session's past inputs. The authors hold out whole profiles.
+        """,
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "measures_v2.csv")

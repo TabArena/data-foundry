@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
 
 
 class Kickstarter(AbstractCuratedDataset):
@@ -58,7 +58,6 @@ class Kickstarter(AbstractCuratedDataset):
     # Task
     target = "state"
     problem_type = "binary_classification"
-    time_on = "created_at"  # could also be deadline to get more realistic data with projects for which we know the lab at "real" train time. But with our time splits, created_at is fine as well.
 
     # Splits
     splits_comment = """
@@ -68,9 +67,11 @@ class Kickstarter(AbstractCuratedDataset):
 
          We could simulate a model that is refitted every month, but this would need many splits. Moreover, data from just one month is not enough to create a robust test set. We instead simulate a model that is refit every year. This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 3 test splits by 2023, 2024, and 2025 as test year. For each test split, we use all data before the test month as training data.
     """
-    time_horizon = 1
-    time_horizon_unit = "years"
-    temporal_splits = TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))
+    # `on`: could also be deadline to get more realistic data with projects for which we know the lab at "real" train time. But with our time splits, created_at is fine as well.
+    temporal = Temporal(
+        on="created_at",
+        splits=TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025)),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data_dir = raw_dir / "data_files"
