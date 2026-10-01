@@ -3,7 +3,7 @@
 ::
 
     data-foundry-curation dataset list  [--root DIR]
-    data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes report.md
+    data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes README.md
     data-foundry-curation dataset build <name-or-folder> [--root DIR]   # check + save + verify (mints the UUID)
     data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py + explore.ipynb
 
@@ -142,7 +142,7 @@ def _cmd_new(args: argparse.Namespace) -> int:
 
 def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
     """Register the ``dataset`` command group on the curation CLI."""
-    p_dataset = sub.add_parser("dataset", help="Work with v2 dataset folders (dataset.py + report.md).")
+    p_dataset = sub.add_parser("dataset", help="Work with v2 dataset folders (dataset.py + README.md).")
     dsub = p_dataset.add_subparsers(dest="dataset_command", required=True)
 
     def add(name: str, func, help_text: str, *, target: bool = True) -> None:
@@ -153,6 +153,6 @@ def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
         p.set_defaults(func=func)
 
     add("list", _cmd_list, "List the datasets under --root with their report state.", target=False)
-    add("check", _cmd_check, "Run the pipeline and bundle checks without saving; write report.md.")
-    add("build", _cmd_build, "Check, save the container (new UUID), verify it and write report.md.")
+    add("check", _cmd_check, "Run the pipeline and bundle checks without saving; write README.md.")
+    add("build", _cmd_build, "Check, save the container (new UUID), verify it and write README.md.")
     add("new", _cmd_new, "Scaffold a new dataset folder from the template and the curation record.")

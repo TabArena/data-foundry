@@ -1,4 +1,4 @@
-"""Curated dataset definition for `sepsis_survival_minimal_clinical_records` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `sepsis_survival_minimal_clinical_records` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

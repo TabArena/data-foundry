@@ -1,4 +1,4 @@
-"""Curated dataset definition for `horse_colic_survival` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `horse_colic_survival` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

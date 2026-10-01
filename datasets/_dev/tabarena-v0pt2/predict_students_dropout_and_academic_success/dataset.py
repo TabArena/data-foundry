@@ -1,4 +1,4 @@
-"""Curated dataset definition for `predict_students_dropout_and_academic_success` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `predict_students_dropout_and_academic_success` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

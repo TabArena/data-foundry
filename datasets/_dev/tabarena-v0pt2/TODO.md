@@ -10,7 +10,7 @@ Open work for this folder. When an item is done, remove it here and log the chan
 
 - [ ] **Check the 136 migrated definitions** against the v1 notebook each folder still holds:
   `scripts/v2/check_equivalence.py <folder>/<name>.ipynb <folder>` must report `SAME CHECKSUM` or `SAME CONTENT`;
-  then `data-foundry-curation dataset check <folder>` (writes `report.md`) and remove the v1 notebook. Known
+  then `data-foundry-curation dataset check <folder>` (writes `README.md`) and remove the v1 notebook. Known
   differences to expect and review:
   - datasets the v1 notebook did not shuffle (the `# MIGRATE:` note at the end of their `dataset.py`): v2
     shuffles them unless `shuffle = False` is set with a reason;

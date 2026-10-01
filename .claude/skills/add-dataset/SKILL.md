@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `report.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `data-foundry-curation dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. Replaces the old `/process-dataset` notebook scaffolder.
+description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `data-foundry-curation dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. Replaces the old `/process-dataset` notebook scaffolder.
 argument-hint: <unique_name>
 user-invocable: true
 ---
@@ -14,7 +14,7 @@ working copy):
 |---|---|---|
 | `dataset.py` | you | The **only** definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
 | `explore.ipynb` | the template, then whoever explores | The workbench: `ds = workbench()` loads this folder's dataset and picks up every edit to `dataset.py`. Outputs are committed so GitHub shows them; never needed to rebuild the dataset. |
-| `report.md` (+ `report/*.png`) | `dataset check` / `build` | The evidence: YAML frontmatter (machine-readable build record, data/split shape, bundle-check slugs, decision titles) plus the same as tables, and the decisions with their tables and figures. Never edit it by hand. |
+| `README.md` (+ `figures/*.png`) | `dataset check` / `build` | The dataset card and evidence, which GitHub shows below the folder's files: YAML frontmatter (machine-readable build record, data/split shape, bundle-check slugs, decision titles), then the files of the folder, links (record, source, collection), how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edit it by hand: it is rewritten from `dataset.py`. |
 
 The interface is `data_foundry.v2.AbstractCuratedDataset` (`src/data_foundry/v2/dataset.py`, read its class
 docstrings before writing); discovery is `data_foundry.v2.discover_datasets(root)`, and `tests/test_v2_datasets.py`
@@ -137,8 +137,8 @@ without `temporal_splits`, …): fix it before handing off. ruff fixes the quoti
 ```
 
 runs the whole pipeline, the data checks, the bundle checks and `_decisions`, **without saving** (no UUID), and
-writes `report.md`. Iterate: resolve TODOs in `dataset.py`, look at the data in `explore.ipynb` (edits are picked up
-automatically), re-run `check`, read the `report.md` diff. Stop when there are no errors and every warning is fixed
+writes `README.md`. Iterate: resolve TODOs in `dataset.py`, look at the data in `explore.ipynb` (edits are picked up
+automatically), re-run `check`, read the `README.md` diff. Stop when there are no errors and every warning is fixed
 or accepted with a reason. Use the §E table to pre-empt the checks.
 
 The bundle checks catch mechanical problems, not most leaks. Once the data loads, run the leak probes and read them
@@ -160,7 +160,7 @@ table). The precedents for each kind of leak are in that file's §3-§5.
 ```
 
 saves the container to the warehouse (new UUID), verifies the export, and records UUID, checksum and git commit in
-the `report.md` frontmatter. Only then pin the UUID in the collection registry. Never run `build` yourself unless
+the `README.md` frontmatter. Only then pin the UUID in the collection registry. Never run `build` yourself unless
 asked: a new UUID for a shipped dataset breaks the collection pin. Log the change in the working copy's
 `CHANGELOG.md`.
 

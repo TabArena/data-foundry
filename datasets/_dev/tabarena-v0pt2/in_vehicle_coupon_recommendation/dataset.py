@@ -1,4 +1,4 @@
-"""Curated dataset definition for `in_vehicle_coupon_recommendation` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `in_vehicle_coupon_recommendation` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

@@ -4,8 +4,35 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-01 (dataset pages: README.md replaces report.md)
+
+- The generated `report.md` of each dataset folder is now its `README.md`, so GitHub shows it below the folder's
+  files. It is still written by `dataset check` / `build` from `dataset.py` and never edited by hand. New on the
+  page: the files of the folder and what each is, links (curation record, original source, this collection's
+  `README.md` and `CHANGELOG.md`), how to rebuild (raw-file folder, download commands, `check` and `build`), the
+  feature types and the BibTeX (collapsed), and the curation notes. Tables longer than 10 rows are collapsed; a
+  status line at the top says whether the dataset is built, and the build record stays at the end. Frontmatter
+  format `data-foundry-report-v2`: the `feature_types` column lists moved into the body, because GitHub renders the
+  frontmatter as a table at the top of the page (up to 137 lines for `mic`); the other keys are unchanged.
+- Decision figures moved from `report/` to `figures/` (`kick`).
+- The 30 checked datasets were moved (`git mv report.md README.md`) and regenerated with `dataset check`: 0 errors in
+  all. 28 give the same checksum as before, including `consumer_complaints_1m` and `lending_club_1m`, so their
+  reports were not stale after the `_1m` library change (open item closed, removed from `LEAK_AUDIT.md`).
+  `diabetes_130_us` and `santander_customer_transaction_prediction` give a new checksum with the same data and
+  splits (identical data-check and split tables; a second run gives the same checksum): the checksum also covers
+  the metadata, and their committed reports were older than the last metadata edit in their `dataset.py`.
+- Text only: the first docstring line of every `dataset.py` and the links in every `explore.ipynb` now name
+  `README.md`; the template, the `/add-dataset` and `/verify-dataset` skills, AGENTS.md, CLAUDE.md, the repo
+  README, `TODO.md` and this folder's `README.md` too.
+- `early_learning_predictors`: removed `zindi_train.csv`, which `dataset.py` never read (the new page flagged it).
+  The one `explore.ipynb` cell that compares our columns with the Zindi train set now reads the identical copy next
+  to the shipped v1 notebook in `datasets/beyond_iid/grouped/early_learning_predictors/`. Checksum unchanged.
+
 ## 2026-10-01 (leak audit, second pass)
 
+- Added `LEAK_AUDIT.md`: the leak-audit summary for the benchmark team and the tech report (the 10 removed and
+  21 changed datasets with severity and source collection, the 3 kept datasets that affect results, small fixes
+  and open items in the appendix). Linked from `README.md`.
 - Skills: the leak-audit learnings (probes, what was decided per kind of leak, where the first suggestions were
   revised) are in `.claude/skills/check-candidate/references/leak_checks.md`, linked from `/check-candidate`,
   `/add-dataset` (and its `dataset_patterns.md` §D), `/verify-dataset` and `/triage-candidates`. New

@@ -1,4 +1,4 @@
-"""Curated dataset definition for `hepatitis_c_prediction` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `hepatitis_c_prediction` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

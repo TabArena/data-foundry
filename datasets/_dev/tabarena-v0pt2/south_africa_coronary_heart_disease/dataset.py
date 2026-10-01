@@ -1,4 +1,4 @@
-"""Curated dataset definition for `south_africa_coronary_heart_disease` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `south_africa_coronary_heart_disease` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

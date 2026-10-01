@@ -1,4 +1,4 @@
-"""Curated dataset definition for `mice_protein_trisomy_discriminant` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `mice_protein_trisomy_discriminant` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

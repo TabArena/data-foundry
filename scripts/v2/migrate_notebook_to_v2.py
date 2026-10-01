@@ -735,7 +735,7 @@ def render_definition(m: Migration) -> str:  # noqa: C901, PLR0912 - one branch 
         imports += imp
         helpers += hel
 
-    lines = [f'"""Curated dataset definition for `{m.unique_name}` (data-foundry v2). Evidence: report.md."""', ""]
+    lines = [f'"""Curated dataset definition for `{m.unique_name}` (data-foundry v2). Evidence: README.md."""', ""]
     lines += ["from __future__ import annotations", "", "from pathlib import Path", "", "import pandas as pd"]
     seen = set()
     for imp in imports:

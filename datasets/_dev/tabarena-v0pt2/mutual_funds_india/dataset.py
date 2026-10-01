@@ -1,4 +1,4 @@
-"""Curated dataset definition for `mutual_funds_india` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `mutual_funds_india` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

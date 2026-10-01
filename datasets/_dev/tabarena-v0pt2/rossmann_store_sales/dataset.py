@@ -1,4 +1,4 @@
-"""Curated dataset definition for `rossmann_store_sales` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `rossmann_store_sales` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

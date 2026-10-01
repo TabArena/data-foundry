@@ -14,7 +14,7 @@ is `accepted_check_warnings`.
 ## The definition file
 
 ```python
-"""Curated dataset definition for `<unique_name>` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `<unique_name>` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
@@ -87,7 +87,7 @@ validates, `unique_name` equals the folder name, every accepted warning has a re
 `temporal_splits` or `_make_splits` and a horizon, `subsample_to_budget` needs `version_of`, a version needs a
 `version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, and the benchmark seeds are not overridden.
 
-Keep `print` diagnostics out of the definition: `report.md` already records split sizes and time ranges, and
+Keep `print` diagnostics out of the definition: `README.md` already records split sizes and time ranges, and
 `explore.ipynb` or `_decisions` is the place for evidence. Keep `assert`s that guard custom logic. Run
 `ruff check --fix` and `ruff format` on the file: they fix quoting (always double quotes) and import order.
 
@@ -452,14 +452,14 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `meta_placeholder_left`, `definition_todo_left` | every TODO in the metadata and every `TODO(verify)` in `dataset.py` must be resolved before `build` |
 | `meta_license_unknown`, `meta_source_link`, `meta_splits_comment_empty` | fill license, a real URL/DOI, and a substantive splits comment |
 
-A warning that is correct for the dataset goes into `accepted_check_warnings` with its reason; `report.md` lists
+A warning that is correct for the dataset goes into `accepted_check_warnings` with its reason; `README.md` lists
 it under "Accepted on purpose".
 
 ## §F Decisions: evidence for the calls a reviewer would question
 
 `_decisions(self, raw, df)` returns `Decision(title, why, evidence)` objects; `dataset check` renders them into the
-"Decisions" section of `report.md` (titles also go into the frontmatter). `evidence` is a DataFrame or Series
-(rendered as a table), a matplotlib figure (saved as `report/decision_<n>_<title>.png`, linked from the report), a
+"Decisions" section of `README.md` (titles also go into the frontmatter). `evidence` is a DataFrame or Series
+(rendered as a table), a matplotlib figure (saved as `figures/decision_<n>_<title>.png`, linked from the README), a
 string, or None. Compute evidence from `raw` (do not change it) and `df`, keep it small, and import matplotlib
 inside the hook. Typical decisions, with examples from the collection:
 

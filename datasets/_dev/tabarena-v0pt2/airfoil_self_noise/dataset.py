@@ -1,4 +1,4 @@
-"""Curated dataset definition for `airfoil_self_noise` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `airfoil_self_noise` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

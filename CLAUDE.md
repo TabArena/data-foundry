@@ -21,7 +21,7 @@ gotchas that look like blockers but aren't — lives in
     skill ([`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md))
     traces the source and writes a cited second opinion into the record,
   * process a decided candidate — scaffold its v2 dataset folder (`dataset.py`
-    class + `explore.ipynb` + generated `report.md`, API in `src/data_foundry/v2/`)
+    class + `explore.ipynb` + generated `README.md`, API in `src/data_foundry/v2/`)
     via the `/add-dataset` skill
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)),
   * extend the package (`src/data_foundry/`),

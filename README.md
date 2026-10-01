@@ -242,7 +242,7 @@ data-foundry-curation validate                 # check records against the dropd
 data-foundry-curation sync-notebooks           # refresh each record's notebook_path + v2_path (--check to dry-run)
 data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
-data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write report.md (no save)
+data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write README.md (no save)
 ```
 
 **Browse it online.** A read-only copy of the backlog is published to GitHub Pages —

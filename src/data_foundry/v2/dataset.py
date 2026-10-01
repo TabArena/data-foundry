@@ -27,7 +27,7 @@ From a notebook next to ``dataset.py``::
 
     ds = workbench()      # this folder's dataset; picks up edits to dataset.py automatically
     ds.df.head()          # the curated frame
-    ds.check()            # the full pipeline and bundle checks, no save; writes report.md
+    ds.check()            # the full pipeline and bundle checks, no save; writes README.md
 """
 
 from __future__ import annotations
@@ -73,8 +73,8 @@ Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
 
-REPORT_FILENAME = "report.md"
-"""The generated report next to the definition file."""
+REPORT_FILENAME = "README.md"
+"""The generated report next to the definition file: the folder's README, which GitHub shows below its files."""
 
 DEFAULT_SPLITS_COMMENT = "Default splits."
 """The splits comment of every dataset on the recommended IID or grouped splits."""
@@ -220,7 +220,7 @@ class SplitPlan:
 
 @dataclass
 class Decision:
-    """One curation decision with the evidence behind it, rendered into ``report.md``.
+    """One curation decision with the evidence behind it, rendered into the generated ``README.md``.
 
     Attributes:
         title: The decision, as a short statement ("Temporal split, not grouped by auction").
@@ -418,8 +418,8 @@ class AbstractCuratedDataset(ABC):
         """Return the curation decisions worth showing evidence for (optional).
 
         Each :class:`Decision` pairs a statement and its reasoning with a table or a figure computed from
-        the data, and ``check`` renders them into the "Decisions" section of ``report.md`` (figures as PNGs
-        under ``report/``). Good candidates are the decisions a reviewer would question: why a column is a
+        the data, and ``check`` renders them into the "Decisions" section of ``README.md`` (figures as PNGs
+        under ``figures/``). Good candidates are the decisions a reviewer would question: why a column is a
         leak, why the split is temporal and not grouped, why duplicates are kept. ``raw`` is the cached
         output of ``_load_raw`` (do not change it), ``df`` the curated frame.
         """
@@ -456,7 +456,7 @@ class AbstractCuratedDataset(ABC):
 
     @property
     def report_path(self) -> Path:
-        """The generated ``report.md`` next to ``dataset.py``."""
+        """The generated ``README.md`` next to ``dataset.py``."""
         return self.folder / REPORT_FILENAME
 
     # --- reloading ----------------------------------------------------------------------------------
@@ -696,7 +696,7 @@ class AbstractCuratedDataset(ABC):
     def check(self, *, write_report: bool = True, verbose: bool = True) -> CurationResult:
         """Run the full pipeline and the bundle checks without saving (no UUID is kept).
 
-        Writes ``report.md`` unless ``write_report`` is False. The build record of an earlier
+        Writes ``README.md`` unless ``write_report`` is False. The build record of an earlier
         :meth:`build` in the report is kept, and marked stale when the checksum no longer matches.
         """
         self._refresh()

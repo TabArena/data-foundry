@@ -1,4 +1,4 @@
-"""Curated dataset definition for `california_house_prices_2020` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `california_house_prices_2020` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 

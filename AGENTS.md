@@ -50,7 +50,7 @@ Data Foundry is the data-layer toolkit behind
 
 The actual curation work happens in `datasets/`: the shipped BeyondArena datasets are Jupyter
 notebooks under `datasets/beyond_iid/`, and new and v0.2 datasets are v2 folders (`dataset.py` +
-`explore.ipynb` + `report.md`) under `datasets/_dev/tabarena-v0pt2/` — see
+`explore.ipynb` + a generated `README.md`) under `datasets/_dev/tabarena-v0pt2/` — see
 [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md).
 
 ---
@@ -64,7 +64,8 @@ Roughly ordered by how often agents are useful here:
 Highest-value: a triaged candidate came out `Yes` and the curator wants it processed. New datasets
 are v2 folders, not notebooks: one `dataset.py` holding an `AbstractCuratedDataset` subclass
 (metadata, task and preprocessing as flat class attributes, reading in `_load_raw`, the rest in `_clean`), a free-form
-`explore.ipynb`, and a `report.md` that `data-foundry-curation dataset check` generates. See
+`explore.ipynb`, and a `README.md` that `data-foundry-curation dataset check` generates (the folder's page on
+GitHub: its files, links, how to rebuild, the evidence and the build record). See
 [`src/data_foundry/v2/`](src/data_foundry/v2/).
 
 The `/add-dataset` skill at

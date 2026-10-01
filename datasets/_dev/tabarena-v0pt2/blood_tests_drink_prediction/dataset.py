@@ -1,4 +1,4 @@
-"""Curated dataset definition for `blood_tests_drink_prediction` (data-foundry v2). Evidence: report.md."""
+"""Curated dataset definition for `blood_tests_drink_prediction` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
