@@ -67,6 +67,7 @@ from data_foundry.schema import (
 from data_foundry.v2 import (
     group_checks,
     splits as protocol,
+    task_checks,
 )
 from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, cast_dtypes, order_rows
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
@@ -693,6 +694,7 @@ class AbstractCuratedDataset(ABC):
         own = [
             *self._definition_checks(),
             *group_checks.group_findings(container, group_stats),
+            *task_checks.task_findings(container),
             *self._extra_checks(container),
         ]
         extra = [r for r in own if r.slug not in accepted]

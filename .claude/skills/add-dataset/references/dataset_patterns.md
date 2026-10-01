@@ -514,6 +514,9 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
 | `groups_labels_constant` | `per_sample` with at least 95% single-label groups: `per_group` if one label by construction, else accept with the count of mixed groups |
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
+| `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
+| `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge rare classes, or accept with the counts |
+| `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
 | `meta_tags_*` | tags must agree with the split regime (Step 1) |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`/`%`/`_` escaped |
 | `meta_placeholder_left`, `definition_todo_left` | every TODO in the metadata and every `TODO(verify)` in `dataset.py` must be resolved before `build` |

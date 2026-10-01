@@ -4,6 +4,18 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-01 (checks that a task is worth benchmarking)
+
+- `dataset check` gets five findings that every test fold can be scored and the target varies
+  (`data_foundry.v2.task_checks`): `splits_test_single_class` and `splits_test_target_constant` (errors: the metric
+  is undefined), `splits_test_minority_few` (a binary test fold with fewer than 10 rows of its rarer class),
+  `splits_test_class_missing` (a multiclass test fold without some class) and `task_target_value_dominant` (one value
+  holds half of a regression target). They appear when the datasets are next checked; no definition changed.
+- `scripts/v2/task_probes.py`: the sweep against dummy baselines on the shipped splits (three untuned model families,
+  the best single feature, a drift baseline for temporal tasks, per-group scores for group-unit tasks), with the flags
+  `no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline` and `unstable` for the curator. The add-dataset
+  loop, the verify-dataset rubric (item 13) and the guidelines (criterion 4C) use it.
+
 ## 2026-10-01 (grouped data: the regime as one object, with the use case)
 
 - Every grouped and temporal definition declares its regime as one object (`GROUPED_DATA_PLAN.md`, section 3).

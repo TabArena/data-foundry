@@ -204,7 +204,10 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
     comments should state why they are distinct (ideally each citing its own specific DOI).
 * **Survey / scientific-discovery / non-predictive table** (no genuine predictive target) →
   `No Good Target / Scientific Discovery` → **No** or `TBD -> 2nd Tier`.
-* **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C).
+* **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C). The evidence for a
+  curated dataset is the task-probe sweep against dummy baselines on its own splits (`scripts/v2/task_probes.py`:
+  `no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`). A flag is a question for the curator, not
+  a verdict: a `solved` or `one_feature` task is first a leak suspect, and `no_spread` on a small task can be noise.
   * **Under class imbalance, accuracy against the majority class is not evidence** of anything, in either
     direction (Lennart, 2026-09-23). "78% accuracy on an 80% majority class" does not show a task is
     unlearnable, and a high accuracy does not show it is trivial. Judge learnability with ROC AUC (per class

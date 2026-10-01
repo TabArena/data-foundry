@@ -163,6 +163,18 @@ copied from train, or a `dataset_pure_feature_value` warning each need a decisio
 drop, lag, filter, re-split or keep on purpose, with the numbers in a `curation_comments` bullet (or a `_decisions`
 table). The precedents for each kind of leak are in that file's §3-§5.
 
+Then check that the task is worth benchmarking: dummy baselines against three untuned model families on the shipped
+splits, scored per group for a group-unit task, with a drift baseline for temporal regression and multiclass tasks:
+
+```bash
+.venv/bin/python scripts/v2/task_probes.py <unique_name>
+```
+
+Each flag needs a decision written down: `no_signal` (no model beats the dummy; check the features and the target),
+`solved` or `one_feature` (a leak or a lookup first: back to the leak probes), `no_spread` (all families tie; on a
+small task this may be noise), `drift_baseline` (a constant from the newest data is as good as the models),
+`unstable` (few test rows or groups). For a grouped task also run `scripts/v2/group_probes.py <unique_name>`.
+
 ## Step 7: Build (curator only)
 
 ```bash
