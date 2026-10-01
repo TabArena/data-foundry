@@ -1,8 +1,22 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: airfoil_self_noise
-checksum: 25a6d9ea6cc216aafa0e68df80b2cab011e16403afda88f7a449cb3648ddab95
-build: null
+container_format: 2
+checksum: e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722
+build:
+  uuid: 01a0fc60-90f7-740e-8e9c-3d56033ca7d3
+  checksum: e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722
+  built_at: '2026-10-02T11:29:42+00:00'
+  path: airfoil_self_noise/01a0fc60-90f7-740e-8e9c-3d56033ca7d3
+  data_foundry_version: 0.0.5
+  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  libraries:
+    python: 3.11.14
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 1503
@@ -21,6 +35,8 @@ task:
   time_on: null
   group_on: null
   group_labels: null
+  group_time_on: null
+  grouping: null
 splits:
   n_repeats: 10
   n_folds: 3
@@ -44,11 +60,11 @@ decisions: []
 
 # airfoil_self_noise
 
-> Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
 Regression of `scaled-sound-pressure`, scored with `rmse` on IID splits. 1,503 rows and 5 features. Source: UCI (2014).
 
-Not built yet. The current definition gives checksum `25a6d9ea6cc216aafa0e68df80b2cab011e16403afda88f7a449cb3648ddab95`.
+Built as `01a0fc60-90f7-740e-8e9c-3d56033ca7d3` on 2026-10-02. See [Build](#build).
 
 ## Files in this folder
 
@@ -73,8 +89,8 @@ mkdir -p local-data-warehouse/airfoil_self_noise/ && wget -P local-data-warehous
 Then, from the repository root:
 
 ```bash
-data-foundry-curation dataset check datasets/_dev/tabarena-v0pt2/airfoil_self_noise   # pipeline and checks, no UUID; rewrites this page
-data-foundry-curation dataset build datasets/_dev/tabarena-v0pt2/airfoil_self_noise   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/airfoil_self_noise   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/airfoil_self_noise   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -167,7 +183,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (25 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -211,4 +227,12 @@ Default splits.
 
 ## Build
 
-Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a0fc60-90f7-740e-8e9c-3d56033ca7d3 |
+| checksum | e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722 |
+| built_at | 2026-10-02T11:29:42+00:00 |
+| path | airfoil_self_noise/01a0fc60-90f7-740e-8e9c-3d56033ca7d3 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

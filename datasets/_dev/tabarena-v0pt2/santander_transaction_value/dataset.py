@@ -285,6 +285,3 @@ class SantanderTransactionValue(AbstractCuratedDataset):
         # Remove duplicates
         df = df.drop_duplicates(subset=[c for c in df.columns if c != self.task_metadata.target_column_name])
         return df
-
-
-# MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

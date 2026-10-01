@@ -159,6 +159,3 @@ class HivaAgnostic(AbstractCuratedDataset):
             ]
         )
         return df
-
-
-# MIGRATE: the v1 shuffle used random_state=[11]; v2 always shuffles with 42

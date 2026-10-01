@@ -31,13 +31,12 @@ gotchas that look like blockers but aren't — lives in
   ≤120 chars; Google-style docstrings; no commits/pushes without explicit
   human ask.
 * **TabArena v0.2 working copy:** `datasets/_dev/tabarena-v0pt2/` holds one
-  folder per shipped BeyondArena dataset for preparing TabArena v0.2, being
-  migrated from notebooks to v2 folders (`scripts/v2/migrate_notebook_to_v2.py`,
-  then `scripts/v2/check_equivalence.py` must report the same checksum). Every change
-  there (edited definition, notebook or helper file, added or removed dataset, a re-run
-  that makes a new container) gets a dated entry in its `CHANGELOG.md`, and a
-  new or removed dataset also updates the table in its `README.md`. A dataset
-  retired to `No (Retired)` is removed from the copy.
+  v2 folder per dataset of TabArena v0.2 (migrated from the BeyondArena notebooks
+  and rebuilt on 2026-10-01; its `README.md` has the table of datasets and UUIDs and
+  how to rebuild them). Every change there (edited definition or helper file, added or
+  removed dataset, a re-run that makes a new container) gets a dated entry in its
+  `CHANGELOG.md`, and a new, removed or rebuilt dataset also updates the table in its
+  `README.md`. A dataset retired to `No (Retired)` is removed from the copy.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it
   applies to docstrings, markdown, commit messages, and chat replies.
 

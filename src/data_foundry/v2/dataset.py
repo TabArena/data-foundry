@@ -72,7 +72,7 @@ from data_foundry.v2 import (
     splits as protocol,
     task_checks,
 )
-from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, cast_dtypes, order_rows
+from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, canonical_nans, cast_dtypes, order_rows
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
 
 DEFINITION_FILENAME = "dataset.py"
@@ -477,6 +477,7 @@ class AbstractCuratedDataset(ABC):
             string=[c for c in types.string if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
+        df = canonical_nans(df)
         if not order:
             return df.reset_index(drop=True)
         return order_rows(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)

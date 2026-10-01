@@ -52,6 +52,3 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
         df = raw
         df = df.drop(columns=["id"])
         return df
-
-
-# MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

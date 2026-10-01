@@ -1,8 +1,22 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: kick
-checksum: 1a93a2fffa1c4406d8ad8fbb64fdf353579717bf8720a36027ff7e01108b1a1f
-build: null
+container_format: 2
+checksum: f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377
+build:
+  uuid: 01a0fc60-1965-734a-954e-9bafda35dff1
+  checksum: f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377
+  built_at: '2026-10-02T11:29:14+00:00'
+  path: kick/01a0fc60-1965-734a-954e-9bafda35dff1
+  data_foundry_version: 0.0.5
+  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  libraries:
+    python: 3.11.14
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 72983
@@ -22,6 +36,8 @@ task:
   time_on: PurchDate
   group_on: null
   group_labels: null
+  group_time_on: null
+  grouping: null
 splits:
   n_repeats: 9
   n_folds: 1
@@ -47,11 +63,11 @@ decisions:
 
 # kick
 
-> Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `IsBadBuy`, scored with `roc_auc`, on temporal splits on `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
+Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
 
-Not built yet. The current definition gives checksum `1a93a2fffa1c4406d8ad8fbb64fdf353579717bf8720a36027ff7e01108b1a1f`.
+Built as `01a0fc60-1965-734a-954e-9bafda35dff1` on 2026-10-02. See [Build](#build).
 
 ## Files in this folder
 
@@ -79,8 +95,8 @@ rm local-data-warehouse/kick/dontgetkicked.zip
 Then, from the repository root:
 
 ```bash
-data-foundry-curation dataset check datasets/_dev/tabarena-v0pt2/kick   # pipeline and checks, no UUID; rewrites this page
-data-foundry-curation dataset build datasets/_dev/tabarena-v0pt2/kick   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/kick   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/kick   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -175,7 +191,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (25 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -183,7 +199,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 ### Feature summary
 
 <details>
-<summary>Feature summary: 33 rows</summary>
+<summary>Show the table (33 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -233,7 +249,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 ### Numeric features
 
 <details>
-<summary>Numeric features: 14 rows</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -257,7 +273,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 ### Categorical features
 
 <details>
-<summary>Categorical features: 84 rows</summary>
+<summary>Show the table (84 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -328,4 +344,12 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 ## Build
 
-Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a0fc60-1965-734a-954e-9bafda35dff1 |
+| checksum | f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377 |
+| built_at | 2026-10-02T11:29:14+00:00 |
+| path | kick/01a0fc60-1965-734a-954e-9bafda35dff1 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

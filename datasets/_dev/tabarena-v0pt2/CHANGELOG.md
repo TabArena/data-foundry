@@ -4,6 +4,48 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-02 (rebuild as container format 2; telemonitoring retired)
+
+- Rebuilt all 131 datasets as container format 2 (`dataset build`, new UUIDs; the table in
+  [`README.md`](README.md)). Every saved container reloads and verifies its checksum, and the rows, splits and
+  findings are the same as in the build of 2026-10-01 (0 errors, 62 open warnings in 45 datasets, none new; 61 in 44
+  after the retirement below). The build read the same raw files, and a check-only rebuild from a warehouse holding
+  only the 435 of them that the 130 remaining datasets read gives the same checksums.
+- Removed `telemonitoring_parkinsons_biomedical_voice_measurements`: retired (`No (Retired)`, No Good Target /
+  Scientific Discovery). 88% of its target's variance lies between the 42 subjects, and the voice features barely
+  track it: on unseen subjects the best model is about 2% better than the training mean (BeyondArena's best,
+  CatBoost, is no better than the mean). Recast as tracking a known patient, the baseline visit does the work
+  (RMSE 6.48 for the baseline plus the mean drift, 6.33 with voice). Evidence in the record and
+  `GROUPED_DATA_PLAN.md`, section 10. BeyondArena dataset; the shipped notebook and collection pin are unchanged.
+  `LEAK_AUDIT.md` lists it under Removed (12; 130 datasets remain).
+- `amex_non_iid_1m`: unchanged. The record now holds the comparison of the per-customer aggregations (LightGBM on
+  the grouped folds: `last` ROC AUC 0.958, `max` 0.949, `mean` 0.946), which supports `last` with
+  `context="all_rows"`.
+
+## 2026-10-01 (v0.2 rebuild of all 131 datasets)
+
+- Built all 131 datasets (`dataset build`, new UUIDs, superseded by the build of 2026-10-02). Every saved container
+  reloads and verifies its checksum. Rebuilding every dataset from a warehouse that holds only the 436 raw files the
+  build read (traced per dataset) gives the same checksums; those files and the 33 raw inputs of the two
+  `_prepare_raw_files` steps are backed up outside the repository with a manifest.
+- Removed the v1 notebooks (126 files) and the migration scripts (`scripts/v2/migrate_notebook_to_v2.py`,
+  `scripts/v2/check_equivalence.py`): the migration is finished. The `# MIGRATE:` notes are gone with them: v2
+  shuffles the 13 datasets the v1 notebooks left in file order, and `hiva_agnostic` with seed 42 instead of 11.
+- Fixed by the first build pass:
+  - `ieee_fraud_detection`: `_feature_types` named 7 of the 51 categorical columns (the list stayed in `_clean`
+    after the dtype casts moved), so 26 columns were `object`; it now names all 51, as the shipped container has.
+  - `home_credit_default_risk`: NaNs with the sign bit set (x86 gives them for `inf - inf`, in 37 ratio features)
+    did not survive the save, so the checksum did not verify. The base class now writes every float NaN as the
+    standard one (`canonical_nans`); no value changes.
+  - `coffee_rating_prediction`: categories of the `string` dtype came back as `object` after the save; `cast_dtypes`
+    now stores text categories as `object`.
+- `amex_non_iid_1m` and `sepsis_prediction_1m` accept `splits_rows_never_tested`: the 500k cap on a test fold trims
+  whole groups, so 325 (0.02%) and 3,371 (0.2%) rows are in no test fold.
+- Added `TASK_PROBES.md`: the task-probe sweep over the built containers (131 datasets, no crash; 25 flagged, listed
+  in `TODO.md` for a decision).
+- Open warnings: 62 in 45 datasets, all present in the bundle checks of the shipped containers, except
+  `groups_test_groups_few` for telemonitoring (open decision, `TODO.md`).
+
 ## 2026-10-01 (framework review before the rebuild)
 
 - Same data on every run and machine. 20 `sort_values` calls in 18 definitions now sort with `kind="stable"` (numpy's

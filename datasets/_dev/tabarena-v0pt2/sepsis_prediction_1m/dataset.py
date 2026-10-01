@@ -71,6 +71,10 @@ class SepsisPrediction1m(AbstractCuratedDataset):
 
     # Splits
     subsample_to_budget = True
+    accepted_check_warnings = {
+        "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
+        "frame overshoot by whole groups, so 3,371 rows (0.2%) are trimmed from a test fold (2026-10-01).",
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "all_files" / "Dataset.csv")

@@ -245,9 +245,7 @@ def _files_section(ds: AbstractCuratedDataset, *, has_figures: bool) -> list[str
     definition = (folder / DEFINITION_FILENAME).read_text() if DEFINITION_FILENAME in present else ""
     for name in sorted(set(present) - set(known)):
         path = present[name]
-        if path.suffix == ".ipynb":
-            what = "The v1 notebook the definition was migrated from."
-        elif name in definition:
+        if name in definition:
             what = f"Read by `{DEFINITION_FILENAME}`."
         else:
             what = f"Next to the definition, but `{DEFINITION_FILENAME}` does not name it."

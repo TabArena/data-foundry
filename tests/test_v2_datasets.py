@@ -2,8 +2,7 @@
 
 Every ``datasets/_dev/tabarena-v0pt2/<name>/dataset.py`` is discovered and checked:
 
-* always: the class imports and validates, and its ``README.md`` belongs to it (skipped while the folder still holds
-  the v1 notebook it was migrated from, i.e. before the migration was checked, and while ``dataset.py`` holds a
+* always: the class imports and validates, and its ``README.md`` belongs to it (skipped while ``dataset.py`` holds a
   ``TODO(verify)`` marker, i.e. a definition waiting for its rebuild);
 * with ``DATA_FOUNDRY_V2_DATA_CHECKS=1`` and the raw data in the warehouse: a fresh ``check()`` gives the
   checksum recorded in ``README.md`` (the definition has not drifted from its evidence). This reads the
@@ -33,12 +32,12 @@ def test_registry_is_not_empty() -> None:
 def test_definition_has_its_report(name: str) -> None:
     ds = REGISTRY[name]()
     assert ds.folder.name == name
-    if not ds.report_path.exists() and any(p.name != "explore.ipynb" for p in ds.folder.glob("*.ipynb")):
-        pytest.skip("migrated from the v1 notebook next to it; not checked yet (scripts/v2/check_equivalence.py)")
     if "TODO(verify)" in (ds.folder / "dataset.py").read_text():
         pytest.skip("dataset.py has TODO(verify) markers: pending its rebuild")
     report = read_report(ds.report_path)
-    assert report, f"{ds.report_path} is missing: run `data-foundry-curation dataset check {ds.folder}`"
+    assert report, (
+        f"{ds.report_path} is missing: run `.venv/bin/python -m data_foundry.curation.cli dataset check {ds.folder}`"
+    )
     assert report["unique_name"] == name
     assert report["task"]["target"] == ds.task_metadata.target_column_name
     assert report["bundle_checks"]["ok"], f"{name}: README.md records bundle-check errors"
@@ -52,7 +51,7 @@ def test_definition_matches_its_report(name: str) -> None:
     if not ds.raw_dir.is_dir():
         pytest.skip(f"raw data not in the warehouse: {ds.raw_dir}")
     if not read_report(ds.report_path):
-        pytest.skip("no README.md yet (migration not checked)")
+        pytest.skip("no README.md yet")
     result = ds.check(write_report=False, verbose=False)
     assert result.container.checksum == read_report(ds.report_path)["checksum"], (
         f"{name}: dataset.py no longer gives the checksum in README.md; re-run `dataset check` and review the diff"

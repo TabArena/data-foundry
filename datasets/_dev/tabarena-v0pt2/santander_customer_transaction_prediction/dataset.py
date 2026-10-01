@@ -55,6 +55,3 @@ class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
         # from the labels of all rows, test folds included, so they cannot be precomputed for a static benchmark.
         df = drop_columns(df, ["ID_code"])
         return df
-
-
-# MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

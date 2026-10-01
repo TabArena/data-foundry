@@ -1,8 +1,22 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
-checksum: cb6c69851aafeef9cb48e9a6f57ebab14697991f0e9539bfe21a09f04e8bcb6d
-build: null
+container_format: 2
+checksum: 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886
+build:
+  uuid: 01a0fc5f-f286-75ad-98a3-27aa42fd59fe
+  checksum: 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886
+  built_at: '2026-10-02T11:29:06+00:00'
+  path: early_learning_predictors/01a0fc5f-f286-75ad-98a3-27aa42fd59fe
+  data_foundry_version: 0.0.5
+  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  libraries:
+    python: 3.11.14
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 18874
@@ -21,6 +35,15 @@ task:
   time_on: null
   group_on: id_facility
   group_labels: per_sample
+  group_time_on: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 2541
+    test_groups_per_fold:
+      min: 847
+      max: 847
 splits:
   n_repeats: 3
   n_folds: 3
@@ -47,11 +70,11 @@ decisions: []
 
 # early_learning_predictors
 
-> Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 744 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `cb6c69851aafeef9cb48e9a6f57ebab14697991f0e9539bfe21a09f04e8bcb6d`.
+Built as `01a0fc5f-f286-75ad-98a3-27aa42fd59fe` on 2026-10-02. See [Build](#build).
 
 ## Files in this folder
 
@@ -84,8 +107,8 @@ unzip local-data-warehouse/early_learning_predictors/elom-tb5i-2016-2023-v1-csv.
 Then, from the repository root:
 
 ```bash
-data-foundry-curation dataset check datasets/_dev/tabarena-v0pt2/early_learning_predictors   # pipeline and checks, no UUID; rewrites this page
-data-foundry-curation dataset build datasets/_dev/tabarena-v0pt2/early_learning_predictors   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/early_learning_predictors   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/early_learning_predictors   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -178,9 +201,33 @@ Default splits.
 | 2 | 1 | 12516 | 6358 |
 | 2 | 2 | 12635 | 6239 |
 
+## Group structure
+
+One group is an early learning facility; its rows are the children assessed there with the ELOM tool, a few per facility. The question is "which features of an early learning programme predict better learning outcomes for children" (DataDrive2030, Zindi), and the programme features are facility-level, so a random split would let a model recognise facilities. Each child is one prediction, for a facility not seen in training; the Zindi split was random by child.
+
+| field | value |
+|---|---|
+| group column | `id_facility` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 2,541 |
+| rows per group (min / median / max) | 1 / 5.0 / 66 |
+| largest group | 0.3% of the rows |
+| test groups per fold | 847 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 59.3% of the rows (chance: 0.1%) |
+| label variance explained by the group | 0.40 (shuffled groups: 0.13) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (25 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_duplicate_columns`: 1 duplicated column pair(s): [('certificate_register', 'certificate_registration_npo')]. (hint: Keep one of each pair.)
 - **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
@@ -412,4 +459,12 @@ Default splits.
 
 ## Build
 
-Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a0fc5f-f286-75ad-98a3-27aa42fd59fe |
+| checksum | 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886 |
+| built_at | 2026-10-02T11:29:06+00:00 |
+| path | early_learning_predictors/01a0fc5f-f286-75ad-98a3-27aa42fd59fe |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -67,6 +67,3 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
         # Replace -999999 with np.nan
         df["var3"] = df["var3"].replace(-999999, np.nan)
         return df
-
-
-# MIGRATE: the v1 notebook did not shuffle; v2 shuffles IID/grouped data (set `shuffle = False` if the order matters)

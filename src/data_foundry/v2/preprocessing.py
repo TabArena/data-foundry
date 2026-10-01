@@ -45,7 +45,8 @@ def cast_dtypes(
 ) -> pd.DataFrame:
     """Cast columns by meaning, the same way for every dataset.
 
-    * ``categorical``: ``category`` dtype (unordered), unused categories removed.
+    * ``categorical``: ``category`` dtype (unordered), unused categories removed; text categories are stored as
+      ``object``, the dtype they come back with from parquet.
     * ``string``: pandas ``string`` dtype (free text / high-cardinality text); missing values stay ``<NA>``.
     * ``datetime``: ``pd.to_datetime``; a mapping gives a per-column ``format`` (None = inferred).
 
@@ -73,7 +74,35 @@ def cast_dtypes(
         df[col] = df[col].where(df[col].notna(), np.nan).astype("string")
     for col in categorical:
         df[col] = df[col].astype("category").cat.remove_unused_categories()
+        categories = df[col].cat.categories
+        if isinstance(categories.dtype, pd.StringDtype):  # `string` categories come back as `object` from parquet
+            df[col] = df[col].cat.rename_categories(categories.astype(object))
     return df
+
+
+def canonical_nans(df: pd.DataFrame) -> pd.DataFrame:
+    """Write every missing value of a numpy float column as the one standard NaN.
+
+    An invalid operation (``inf - inf``, ``0 / 0``) gives a NaN with the sign bit set on x86, other platforms give
+    other bit patterns, and parquet does not keep them all; the checksum hashes the bits, so a frame with such NaNs
+    would not verify after a save and load. The values and the column dtypes do not change.
+    """
+    out = df
+    for col in df.columns:
+        dtype = df[col].dtype
+        if not (isinstance(dtype, np.dtype) and dtype.kind == "f"):
+            continue
+        values = df[col].to_numpy()
+        missing = np.isnan(values)
+        if not missing.any():
+            continue
+        unsigned = f"u{dtype.itemsize}"
+        if (values[missing].view(unsigned) != np.array(np.nan, dtype=dtype).view(unsigned)).any():
+            fixed = values.copy()
+            fixed[missing] = np.nan
+            out = df.copy(deep=False) if out is df else out
+            out[col] = fixed
+    return out
 
 
 def order_rows(df: pd.DataFrame, *, time_on: str | None, shuffle: bool) -> pd.DataFrame:

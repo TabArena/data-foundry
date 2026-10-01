@@ -129,7 +129,9 @@ Reading the probes:
   permutation test that shuffles the labels across groups and repeats the whole grouped CV
   (`scripts/v2/group_probes.py` does all of this). A regression task whose models all score below the mean predictor
   on unseen groups has no signal across groups (telemonitoring_parkinsons, 42 subjects: R^2 -0.17 to -0.31 grouped
-  against 0.75 IID, 2026-10-01): the use case has to allow known groups (warm start), or the dataset goes. One untuned
+  against 0.75 IID, 2026-10-01): the use case has to allow known groups (warm start), or the dataset goes. Before
+  recasting as warm start, compare a model against the group's known value carried forward (plus the mean drift of
+  the training groups): telemonitoring scored 6.33 against 6.48 for that baseline, so it was retired (2026-10-02). One untuned
   gradient-boosting run, as in `leak_probes.py`, is not enough: on unseen groups its probabilities are overconfident,
   so its log loss can be worse than the baseline while the signal is real (mice_protein: LightGBM log loss 2.53
   against a baseline of 2.07, while a random forest reaches 1.12 and a macro AUC of 0.92 per mouse, p < 0.01; it was

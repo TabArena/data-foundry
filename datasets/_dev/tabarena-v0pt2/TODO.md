@@ -3,37 +3,15 @@
 Open work for this folder. When an item is done, remove it here and log the change in [`CHANGELOG.md`](CHANGELOG.md).
 
 
-## Verify the migration (runs the data)
-
-- [ ] **Check the 136 migrated definitions** against the v1 notebook each folder still holds:
-  `scripts/v2/check_equivalence.py <folder>/<name>.ipynb <folder>` must report `SAME CHECKSUM` or `SAME CONTENT`;
-  then `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` (writes `README.md`) and remove the v1 notebook. Known
-  differences to expect and review:
-  - datasets the v1 notebook did not shuffle (the `# MIGRATE:` note at the end of their `dataset.py`): v2
-    shuffles them unless `shuffle = False` is set with a reason;
-  - `hiva_agnostic` shuffled with seed 11; v2 uses 42;
-  - the grouped datasets that shuffled and then sorted by group (dementia, micro_mass, musk, parkinsons,
-    telemonitoring) lose that sort;
-  - unused categories are removed; the default split comment is "Default splits."; metadata text is dedented;
-  - the temporal datasets now declare `TemporalSplits` (see the changelog): compare their windows, not a checksum.
-- [ ] **Run `_prepare_raw_files` once from scratch** for `acquire_valued_shoppers_challenge` and
-  `home_credit_default_stability_1m` (moved from `run_large_data_preprocessing.py` into the classes; checked so far
-  only for acquire, against the existing `merged_input_data.parquet`).
-- [ ] **Re-check the 4 IID / grouped datasets the v2 split protocol changes** (`dataset check`, look at the new
-  splits; the 7 temporal ones are done): `mercari_price_suggestion` and `electric_motor_temperature_prediction` (now
-  taken fully; their folders still hold the old `_1m` v1 notebook, which no longer matches, so skip
-  `check_equivalence.py` and remove the notebook after the check), `amex_non_iid_1m` and `sepsis_prediction_1m`. The
-  README of `sepsis_prediction_1m` is stale until then. `telemonitoring_parkinsons_biomedical_voice_measurements` (new row
-  selection), `sat11_hand_algo_runtime` (unsolved instances dropped) and `covertype` (IID on the full data) no longer
-  match their v1 notebooks either (checked); remove those notebooks after review.
-- [ ] **Build the v0.2 containers** (`dataset build`, new UUIDs) once the definitions are checked.
-
-
 ## Decide
 
-- [ ] **`telemonitoring_parkinsons_biomedical_voice_measurements`: no signal across subjects** (R^2 below 0 for every
-  model on the grouped splits, 0.75 on random splits; `GROUPED_DATA_PLAN.md`, section 10). Retire it, or recast it as
-  warm-start tracking with a custom `_make_splits`.
+- [ ] **Resolve the task-probe flags of the v0.2 build** ([`TASK_PROBES.md`](TASK_PROBES.md), 24 open datasets;
+  telemonitoring was retired): `no_signal` for clock_protein_toxicity (ROC AUC 0.51), forest_fires (R^2 -0.04) and
+  asp_potassco_classification (macro ROC AUC 0.65, but no log-loss skill); `solved` for eryhemato_squamous_disease
+  (macro ROC AUC 0.999 with a linear model); `one_feature` for california_house_prices_2020 (`Listed Price`),
+  aps_failure (`ck_000`), fitness_club, parkinsons and sepsis_survival_minimal_clinical_records; `no_spread` for 13,
+  mostly small or text-heavy tasks (mercari's text is not probed). For each: keep with a reason in the curation
+  comments, fix, or retire.
 
 ## Later (deferred in the grouped-data revision)
 

@@ -1,8 +1,22 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: lending_club
-checksum: 58fdd525e242e87bd1c58bdf42136e793d7936a768e10343106f3411514b6dd0
-build: null
+container_format: 2
+checksum: 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217
+build:
+  uuid: 01a0fc5f-427a-7b9a-810a-0d730ffdc5cf
+  checksum: 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217
+  built_at: '2026-10-02T11:28:46+00:00'
+  path: lending_club/01a0fc5f-427a-7b9a-810a-0d730ffdc5cf
+  data_foundry_version: 0.0.5
+  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  libraries:
+    python: 3.11.14
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 609544
@@ -23,6 +37,8 @@ task:
   time_on: issue_d
   group_on: null
   group_labels: null
+  group_time_on: null
+  grouping: null
 splits:
   n_repeats: 3
   n_folds: 1
@@ -46,11 +62,11 @@ decisions: []
 
 # lending_club
 
-> Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Kaggle (2018).
 
-Not built yet. The current definition gives checksum `58fdd525e242e87bd1c58bdf42136e793d7936a768e10343106f3411514b6dd0`.
+Built as `01a0fc5f-427a-7b9a-810a-0d730ffdc5cf` on 2026-10-02. See [Build](#build).
 
 ## Files in this folder
 
@@ -87,8 +103,8 @@ kaggle datasets download wordsforthewise/lending-club -f accepted_2007_to_2018Q4
 Then, from the repository root:
 
 ```bash
-data-foundry-curation dataset check datasets/_dev/tabarena-v0pt2/lending_club   # pipeline and checks, no UUID; rewrites this page
-data-foundry-curation dataset build datasets/_dev/tabarena-v0pt2/lending_club   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/lending_club   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/lending_club   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -169,7 +185,7 @@ We try to create splits that simulate a model deployed to solve the task.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (25 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -390,4 +406,12 @@ We try to create splits that simulate a model deployed to solve the task.
 
 ## Build
 
-Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a0fc5f-427a-7b9a-810a-0d730ffdc5cf |
+| checksum | 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217 |
+| built_at | 2026-10-02T11:28:46+00:00 |
+| path | lending_club/01a0fc5f-427a-7b9a-810a-0d730ffdc5cf |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

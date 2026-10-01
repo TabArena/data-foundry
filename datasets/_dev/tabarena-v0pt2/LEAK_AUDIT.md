@@ -7,13 +7,13 @@ this file is the short version for the benchmark team and the tech report.
 
 ## Summary
 
-- 39 of the 142 datasets needed action: 11 are removed, 21 changed (features, rows or split), 7 kept as they are with
-  a documented note. The other 104 showed no leak.
-- By severity: 21 large, 8 medium, 7 small or no leak, and 3 kept although they affect results (below).
-- The working copy now holds 131 datasets, 44 of them from TabArena v0.1.
-- Nothing is built yet. The shipped containers and their UUIDs are unchanged; the v0.2 build gives each changed
-  dataset a new UUID, and results on those datasets are not comparable with earlier TabArena v0.1 or BeyondArena
-  results.
+- 40 of the 142 datasets needed action: 12 are removed, 21 changed (features, rows or split), 7 kept as they are with
+  a documented note. The other 103 showed no leak.
+- By severity: 21 large, 9 medium, 7 small or no leak, and 3 kept although they affect results (below).
+- The working copy now holds 130 datasets, 44 of them from TabArena v0.1.
+- Built on 2026-10-02 as container format 2: every dataset of the working copy has a new container and UUID (the table in
+  [`README.md`](README.md)); the shipped BeyondArena containers are unchanged. Results on the changed datasets are not
+  comparable with earlier TabArena v0.1 or BeyondArena results.
 - One scoring change is needed: `sepsis_prediction_1m` (below).
 
 Severity:
@@ -27,7 +27,7 @@ Scores are from untuned LightGBM on the shipped splits, before and after the fix
 and are not leaderboard numbers. In the "From" column, TabArena v0.1 means the dataset was in TabArena v0.1 (and in
 BeyondArena); BeyondArena means BeyondArena only.
 
-## Removed (11)
+## Removed (12)
 
 | Dataset | From | Severity | Why |
 |---|---|---|---|
@@ -41,6 +41,7 @@ BeyondArena); BeyondArena means BeyondArena only.
 | `hazelnut_spread_contaminant_detection` | TabArena v0.1 | Large | The 2,400 rows are repeated scans of about ten physical set-ups, so random splits put scans of one set-up on both sides. The set-up label was never released. |
 | `seismic_bumps` | TabArena v0.1 | Large | The rows are consecutive mining shifts, and the shipped IID split trains on every period (AUC 0.75 IID vs about 0.6 forward in time). As a temporal task each test window holds 0-5 positives. |
 | `mice_protein_trisomy_discriminant` | BeyondArena | Large | Not a leak: no predictive target. The 8 classes are the experimental design (genotype, training protocol, injection), known for every mouse; the learning outcome was never measured. The protocol part is separated perfectly (AUC 1.0 per mouse). |
+| `telemonitoring_parkinsons_biomedical_voice_measurements` | BeyondArena | Medium | Not a leak: no signal across subjects. 88% of the UPDRS variance lies between the 42 subjects and the voice features barely track it (the best model is about 2% better than the mean on unseen subjects); tracking a known patient is dominated by the baseline visit (RMSE 6.33 with voice against 6.48 for the baseline plus drift). |
 | `ghanas_indigenous_intel` | BeyondArena | Medium | Not a leak: the 10,928 rows are 626 farmer-days, each test window holds rain from 3-6 farmer-days, and "no rain" likely mixes no rain with no measurement. Retired for now. |
 
 ## Changed: large and medium issues (18)
@@ -76,7 +77,7 @@ BeyondArena); BeyondArena means BeyondArena only.
 
 ## What changes for TabArena v0.2
 
-- 131 datasets: the 142 BeyondArena datasets minus the 11 removed. 44 of the 51 TabArena v0.1 datasets remain (5
+- 130 datasets: the 142 BeyondArena datasets minus the 12 removed. 44 of the 51 TabArena v0.1 datasets remain (5
   removed, 2 never in BeyondArena).
 - 21 datasets changed through the audit, 7 of them from TabArena v0.1 (the 6 above plus `diabetes_130_us`). Their
   v0.2 results are not comparable with earlier results.

@@ -729,3 +729,21 @@ def test_an_accepted_warning_that_no_longer_fires_is_reported(tmp_path: Path, wa
     write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
     assert "accepted_check_warnings_unused" in {r.slug for r in result.bundle_report.infos}
+
+
+def test_missing_floats_are_written_as_the_standard_nan() -> None:
+    from data_foundry.v2.preprocessing import canonical_nans
+
+    values = np.array([1.0, np.inf - np.inf, -np.nan, np.nan])  # x86 gives sign-bit NaNs for invalid operations
+    df = pd.DataFrame({"a": values, "b": values.astype(np.float32), "c": ["x", "y", "z", "w"]})
+    out = canonical_nans(df)
+    standard = np.array(np.nan).view(np.uint64)
+    assert (out["a"].to_numpy()[1:].view(np.uint64) == standard).all()
+    assert out["b"].dtype == np.float32
+    assert out["c"].equals(df["c"])
+
+
+def test_text_categories_are_stored_as_objects() -> None:
+    df = pd.DataFrame({"c": pd.Series(["x", "y", None], dtype="string")})
+    out = cast_dtypes(df, categorical=["c"])
+    assert out["c"].cat.categories.dtype == object

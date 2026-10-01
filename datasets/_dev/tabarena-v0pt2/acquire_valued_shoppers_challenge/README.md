@@ -1,8 +1,22 @@
 ---
 report_format: data-foundry-report-v2
 unique_name: acquire_valued_shoppers_challenge
-checksum: 3040c8c5eba1bcae2519476f23176334557650a8a995b96fdb68178f81af2930
-build: null
+container_format: 2
+checksum: 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b
+build:
+  uuid: 01a0fc5f-fcbd-7748-869f-f93a81d661b5
+  checksum: 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b
+  built_at: '2026-10-02T11:29:10+00:00'
+  path: acquire_valued_shoppers_challenge/01a0fc5f-fcbd-7748-869f-f93a81d661b5
+  data_foundry_version: 0.0.5
+  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  libraries:
+    python: 3.11.14
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 160057
@@ -24,6 +38,8 @@ task:
   time_on: offerdate
   group_on: null
   group_labels: null
+  group_time_on: null
+  grouping: null
 splits:
   n_repeats: 5
   n_folds: 1
@@ -49,11 +65,11 @@ decisions: []
 
 # acquire_valued_shoppers_challenge
 
-> Generated from [`dataset.py`](dataset.py) by `data-foundry-curation dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `offerdate`. 160,057 rows and 111 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `3040c8c5eba1bcae2519476f23176334557650a8a995b96fdb68178f81af2930`.
+Built as `01a0fc5f-fcbd-7748-869f-f93a81d661b5` on 2026-10-02. See [Build](#build).
 
 ## Files in this folder
 
@@ -83,8 +99,8 @@ On first use, `_prepare_raw_files` writes `merged_input_data.parquet` into the s
 Then, from the repository root:
 
 ```bash
-data-foundry-curation dataset check datasets/_dev/tabarena-v0pt2/acquire_valued_shoppers_challenge   # pipeline and checks, no UUID; rewrites this page
-data-foundry-curation dataset build datasets/_dev/tabarena-v0pt2/acquire_valued_shoppers_challenge   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/acquire_valued_shoppers_challenge   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/acquire_valued_shoppers_challenge   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -153,7 +169,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (25 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 23 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 7 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -175,7 +191,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_brand_category | category | 0 | 0 | 2 | 0.0, 1.0 |
 | has_bought_brand_company | category | 0 | 0 | 2 | 0.0, 1.0 |
 | offerdate | datetime64[ns] | 0 | 0 | 56 | 2013-03-25 00:00:00, 2013-03-26 00:00:00, 2013-04-24 00:00:00, 2013-03-27 00:00… |
-| total_spend | float64 | 0 | 0 | 147140 | 712.46, 5336.51, 1372.02, 2595.74, 2253.76, 1135.9, 783.61, 4347.78, 6058.08, 1… |
+| total_spend | float64 | 0 | 0 | 147140 | 712.46, 4384.62, 2493.83, 2571.15, 3164.14, 936.96, 2324.69, 5234.29, 2974.93, … |
 | offervalue | float64 | 0 | 0 | 6 | 1.0, 0.75, 2.0, 1.5, 1.25, 3.0 |
 | has_bought_company_q | float64 | 0 | 0 | 284 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_company_a | float64 | 0 | 0 | 14128 | 0.0, 2.0, 2.99, 1.0, 3.99, 3.0, 4.0, 4.99, 5.0, 1.99 |
@@ -184,9 +200,9 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_brand_q | float64 | 0 | 0 | 227 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_brand_a | float64 | 0 | 0 | 12964 | 0.0, 3.99, 2.99, 3.49, 4.29, 3.0, 4.99, 4.5, 5.99, 5.0 |
 | has_bought_company_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 10.0 |
-| has_bought_company_a_3 | float64 | 0 | 0 | 327 | 0.0, 3.99, 4.99, 3.0, 2.99, 3.49, 4.0, 1.0, 4.49, 5.99 |
+| has_bought_company_a_3 | float64 | 0 | 0 | 327 | 0.0, 3.99, 4.99, 3.0, 2.99, 3.49, 4.0, 4.49, 1.0, 5.99 |
 | has_bought_category_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 8.0 |
-| has_bought_category_a_3 | float64 | 0 | 0 | 369 | 0.0, 2.99, 4.99, 3.99, 2.5, 3.49, 5.99, 5.0, 3.69, 1.99 |
+| has_bought_category_a_3 | float64 | 0 | 0 | 369 | 0.0, 2.99, 4.99, 3.99, 2.5, 5.99, 3.49, 5.0, 3.69, 1.99 |
 | has_bought_brand_q_3 | float64 | 0 | 0 | 23 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
 | has_bought_brand_a_3 | float64 | 0 | 0 | 279 | 0.0, 3.99, 2.99, 3.49, 5.0, 4.99, 3.0, 2.5, 4.29, 4.49 |
 | has_bought_company_q_7 | float64 | 0 | 0 | 39 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
@@ -342,4 +358,12 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 ## Build
 
-Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a0fc5f-fcbd-7748-869f-f93a81d661b5 |
+| checksum | 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b |
+| built_at | 2026-10-02T11:29:10+00:00 |
+| path | acquire_valued_shoppers_challenge/01a0fc5f-fcbd-7748-869f-f93a81d661b5 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

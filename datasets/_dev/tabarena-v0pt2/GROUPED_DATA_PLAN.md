@@ -185,7 +185,8 @@ the source, fix what the research found, and accept the findings of section 5 wh
   a grouped split simulates prediction for unseen entities; with few groups it is a domain-shift test; unit,
   aggregation and context come from the use case, with a citation.
 * `add-dataset`: how to declare `Grouping` and `Temporal`, with examples (`references/dataset_patterns.md`, the
-  template `datasets/_template/v2/dataset.py`, `scripts/v2/migrate_notebook_to_v2.py`).
+  template `datasets/_template/v2/dataset.py`; the notebook migration script did the same until it was retired with
+  the v1 notebooks on 2026-10-01).
 * `/verify-dataset` rubric item 4 and `leak_checks.md` probe 11: the "Group structure" section and
   `scripts/v2/group_probes.py`.
 * The schema docstrings and the examples (`load_curated_container.py`, `benchmark_on_beyond_arena.py`): the fields,
@@ -218,3 +219,8 @@ the source, fix what the research found, and accept the findings of section 5 wh
   as warm-start tracking (a subject's baseline visit in training, its later test days in test), which the current
   split protocol cannot express without a custom `_make_splits`. `groups_test_groups_few` (14 test subjects per fold)
   stays unaccepted until then.
+* Decided 2026-10-02: retired. A warm-start probe (each held-out subject's baseline visit in training, its 3- and
+  6-month visits predicted, 10 x 3 grouped folds) gives RMSE 6.98 for carrying the baseline forward, 6.48 for the
+  baseline plus the training subjects' mean drift, 6.33 for a ridge on voice plus the baseline and 7.32 for
+  LightGBM: the recast task is dominated by the known baseline score, as the cold-start task is by the mean. The
+  evidence is in the record.

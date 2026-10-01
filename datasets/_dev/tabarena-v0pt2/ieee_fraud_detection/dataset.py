@@ -87,24 +87,14 @@ class IeeeFraudDetection(AbstractCuratedDataset):
             self.folder / "uids_v1_no_multiuid_cleaning.csv", usecols=["TransactionID", "uid"], engine="pyarrow"
         )
         df = df.merge(uids, on="TransactionID", how="left")
-        # Obtain correct cat indices
-        cat_cols = ["ProductCD", "addr1", "addr2", "P_emaildomain", "R_emaildomain", "DeviceType", "DeviceInfo"]
-        cat_cols += [f"card{i}" for i in range(1, 7)]
-        cat_cols += [f"M{i}" for i in range(1, 10)]
-        cat_cols += [f"id_{i}" for i in range(12, 39)]
-        cat_cols += ["uid"]
         df = df.sort_values(by=["Transaction_date"], kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(
-            categorical=[
-                "ProductCD",
-                "addr1",
-                "addr2",
-                "P_emaildomain",
-                "R_emaildomain",
-                "DeviceType",
-                "DeviceInfo",
-            ],
-        )
+        # the categorical columns of the Kaggle data description (cards, address, e-mail domains, M flags, identity)
+        categorical = ["ProductCD", "addr1", "addr2", "P_emaildomain", "R_emaildomain", "DeviceType", "DeviceInfo"]
+        categorical += [f"card{i}" for i in range(1, 7)]
+        categorical += [f"M{i}" for i in range(1, 10)]
+        categorical += [f"id_{i}" for i in range(12, 39)]
+        categorical += ["uid"]
+        return FeatureTypes(categorical=categorical)
