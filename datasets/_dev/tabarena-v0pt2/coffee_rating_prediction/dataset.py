@@ -189,7 +189,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         )
         # drop the 1 duplicate row
         df = df.drop_duplicates()
-        df = df.sort_values(by="review_date").reset_index(drop=True)
+        df = df.sort_values(by="review_date", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

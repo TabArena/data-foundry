@@ -89,7 +89,11 @@ class ParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
         df = df.drop(columns=["name"])
         # cast before the sort below, which orders by category
         df["patient_id"] = df["patient_id"].astype("category")
-        df = df.sample(frac=1, random_state=42).sort_values(by=["patient_id", "session_number"]).reset_index(drop=True)
+        df = (
+            df.sample(frac=1, random_state=42)
+            .sort_values(by=["patient_id", "session_number"], kind="stable")
+            .reset_index(drop=True)
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

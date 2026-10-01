@@ -68,7 +68,7 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
         df = df.drop(columns=["cmc_0_1_66_0", "cmc_0_1_67_0", "cmc_0_1_68_0", "cmc_0_1_11_0"])
         fill_value_columns = ["gfs_soil_temperature", "cmc_0_0_0_2_grad", "gfs_temperature_sea_grad"]
         df[fill_value_columns] = df[fill_value_columns].replace(-9999, np.nan)
-        df = df.sort_values(by="fact_time").reset_index(drop=True)
+        df = df.sort_values(by="fact_time", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

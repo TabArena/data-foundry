@@ -8,7 +8,8 @@
     data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py + explore.ipynb
 
 A dataset is given either as a folder holding ``dataset.py`` or as a name under ``--root`` (default:
-``$DATA_FOUNDRY_DATASETS_ROOT``, else the current directory).
+``$DATA_FOUNDRY_DATASETS_ROOT``, else the current directory). From the repository, run the commands as
+``.venv/bin/python -m data_foundry.curation.cli dataset ...``: another install of the package may come first on PATH.
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from typing import TYPE_CHECKING
 
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.store import load_record
-from data_foundry.v2.dataset import DEFINITION_FILENAME, REPORT_FILENAME
+from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME
 from data_foundry.v2.registry import discover_datasets, load_definition
 from data_foundry.v2.report import read_report
 
@@ -68,6 +69,10 @@ def _cmd_list(args: argparse.Namespace) -> int:
             state += " (stale)"
         print(f"{name:55s} {cls.task_metadata.split_regime:18s} {state}")
     print(f"{len(registry)} dataset(s) under {_root(args)}")
+    broken = len(list(_root(args).glob(f"*/{DEFINITION_FILENAME}"))) - len(registry)
+    if broken:
+        print(f"{broken} definition(s) do not import; see the `Skipping <name>` warnings above.", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -136,7 +141,7 @@ def _cmd_new(args: argparse.Namespace) -> int:
         if extra.name not in (DEFINITION_FILENAME, "explore.ipynb") and extra.is_file():
             shutil.copy(extra, folder / extra.name)
     print(f"Scaffolded {folder}/ ({DEFINITION_FILENAME}, explore.ipynb). Fill in every TODO, then run:")
-    print(f"  data-foundry-curation dataset check {folder}")
+    print(f"  {CLI_COMMAND} dataset check {folder}")
     return 0
 
 

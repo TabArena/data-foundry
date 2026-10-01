@@ -26,7 +26,7 @@ import yaml
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.schema import resolve_warehouse_dir
 from data_foundry.v2 import group_checks
-from data_foundry.v2.dataset import DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
+from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
 
 if TYPE_CHECKING:
     from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult
@@ -208,7 +208,7 @@ def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     return [
         f"# {meta.unique_name}",
         "",
-        f"> Generated from [`{DEFINITION_FILENAME}`]({DEFINITION_FILENAME}) by `data-foundry-curation dataset check` "
+        f"> Generated from [`{DEFINITION_FILENAME}`]({DEFINITION_FILENAME}) by `dataset check` "
         f"(or `build`). Do not edit this page: change `{DEFINITION_FILENAME}` and re-run the check.",
         "",
         summary,
@@ -282,8 +282,8 @@ def _rebuild_section(ds: AbstractCuratedDataset) -> list[str]:
         "Then, from the repository root:",
         "",
         _fence(
-            f"data-foundry-curation dataset check {target}   # pipeline and checks, no UUID; rewrites this page\n"
-            f"data-foundry-curation dataset build {target}   # also saves the container and records its UUID",
+            f"{CLI_COMMAND} dataset check {target}   # pipeline and checks, no UUID; rewrites this page\n"
+            f"{CLI_COMMAND} dataset build {target}   # also saves the container and records its UUID",
             "bash",
         ),
         "",
@@ -312,10 +312,11 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
 
     types = result.dataset.feature_types(df)
+    present = set(df.columns)  # a custom split step may drop columns after `_feature_types` named them
     groups = [
-        ("categorical", list(types.categorical)),
-        ("string", list(types.string)),
-        ("datetime", [f"{c} ({f})" if f else c for c, f in types.datetime_formats.items()]),
+        ("categorical", [c for c in types.categorical if c in present]),
+        ("string", [c for c in types.string if c in present]),
+        ("datetime", [f"{c} ({f})" if f else c for c, f in types.datetime_formats.items() if c in present]),
     ]
     lines = [
         f"- {kind} ({len(cols)}): {', '.join(f'`{c}`' for c in cols) if cols else 'none'}" for kind, cols in groups
@@ -376,7 +377,7 @@ def _group_section(result: CurationResult) -> list[str]:
         ("rows per group (min / median / max)", f"{low:,} / {median:,.1f} / {high:,}"),
         ("largest group", f"{stats.largest_share:.1%} of the rows"),
         ("test groups per fold", _range({"min": stats.test_groups_per_fold[0], "max": stats.test_groups_per_fold[1]})),
-        ("groups with a single label", f"{stats.single_label_share:.1%}"),
+        ("groups of two or more rows with a single label", f"{stats.single_label_share:.1%}"),
     ]
     if stats.neighbour_same_group is not None:
         rows.append(
@@ -470,7 +471,7 @@ def _build_section(fm: dict[str, Any]) -> list[str]:
     if not build:
         return [
             *out,
-            "Not built yet. `data-foundry-curation dataset build` saves the container to the warehouse and records "
+            "Not built yet. `dataset build` saves the container to the warehouse and records "
             "its UUID, checksum and provenance here.",
             "",
         ]

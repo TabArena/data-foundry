@@ -41,13 +41,16 @@ class ClassName(AbstractCuratedDataset):
     # grouping = Grouping(
     #     on="...",                  # the group column, never a model feature
     #     labels="...",              # "per_group" (one label per group) or "per_sample"
+    #     time_on=None,              # the order inside a group, if any; needed by aggregation="last" and "past_rows"
     #     prediction_unit="row",     # or "group" with aggregation="mean" / "any" / "last" / "select_min" / ...
     #     context="none",            # what a model may know about the group: "none", "all_rows", "past_rows"
     #     definition="""
     #         What one group is, why groups are held out, and the use case with its source.
     #     """,
     # )
-    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`:
+    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`
+    # (which replaces the generated text, so restate the windows there). A calendar window gives the horizon; other
+    # windows also need `horizon=..., horizon_unit="steps"` (or days, weeks, months, years):
     # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

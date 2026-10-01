@@ -73,7 +73,7 @@ class Musk(AbstractCuratedDataset):
         df["molecule_name"] = anonymize_ids(df["molecule_name"])
         # cast before the sort below, which orders by category
         df["molecule_name"] = df["molecule_name"].astype("category")
-        df = df.sample(frac=1, random_state=42).sort_values(by="molecule_name").reset_index(drop=True)
+        df = df.sample(frac=1, random_state=42).sort_values(by="molecule_name", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

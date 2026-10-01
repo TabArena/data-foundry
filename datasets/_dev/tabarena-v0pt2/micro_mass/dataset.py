@@ -70,7 +70,7 @@ class MicroMass(AbstractCuratedDataset):
         df = df.loc[:, ~df.T.duplicated()]
         # DRop constant columns
         df = df.loc[:, (df != df.iloc[0]).any()]
-        df = df.sample(frac=1, random_state=42).sort_values(by="Strain").reset_index(drop=True)
+        df = df.sample(frac=1, random_state=42).sort_values(by="Strain", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

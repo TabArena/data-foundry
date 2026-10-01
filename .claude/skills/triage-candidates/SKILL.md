@@ -29,8 +29,8 @@ bundle before it ships, use `/verify-dataset`.
 Run the server in the background, then point the user at the URL:
 
 ```bash
-data-foundry-curation serve            # → http://127.0.0.1:8765
-# (equivalently: python -m data_foundry.curation.cli serve)
+.venv/bin/python -m data_foundry.curation.cli serve            # → http://127.0.0.1:8765
+# (equivalently: .venv/bin/python -m data_foundry.curation.cli serve)
 ```
 
 Tell the user to open **http://127.0.0.1:8765** (hard-refresh once if the tab was already open). The page
@@ -63,7 +63,7 @@ guidelines as `references/curation_guidelines.md`.
   `DF: Suspended`) **and** *benchmark-collection membership* (`TabArena (v0.1)`, `BeyondArena`).
   The two WIP values are mutually exclusive by meaning: `WIP (Triage)` = the verdict is still
   open (a `TBD -> …` / disputed suggestion) and someone is working on settling it;
-  `WIP (DF)` = the verdict is a final `Yes` and the Data Foundry integration (notebook) is in
+  `WIP (DF)` = the verdict is a final `Yes` and the Data Foundry integration (the v2 `dataset.py`) is in
   progress. A record whose suggestion is not yet a final `Yes` must **not** carry `WIP (DF)`.
   Every dataset
   shipped in a collection (`datasets/_maintenance/_old_collections/tabarena-v0pt1`,
@@ -88,7 +88,7 @@ guidelines as `references/curation_guidelines.md`.
   is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`/`No (Retired)`). To add a new automated check,
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
-* After editing records, sanity-check with `data-foundry-curation validate`.
+* After editing records, sanity-check with `.venv/bin/python -m data_foundry.curation.cli validate`.
 * **Every new curation file goes into git.** A record you create under `curation/records/`, a
   changed `vocabularies.yaml`, or any other new file under `curation/` must be staged (`git add`)
   as soon as it exists — an untracked record is invisible to PRs, to the GitHub 📄 links and to
@@ -161,5 +161,5 @@ still need to check". The convention is enforced by `test_ai_reviewed_records_fo
 
 * The dashboard runs locally per curator (edit → `git` commit → PR). It is not hardened
   for multi-user or public exposure.
-* `data-foundry-curation build-site <out>` produces a read-only static copy (e.g. for
+* `.venv/bin/python -m data_foundry.curation.cli build-site <out>` produces a read-only static copy (e.g. for
   GitHub Pages); `export` writes a flat CSV/Parquet/XLSX snapshot or pushes to a Sheet.

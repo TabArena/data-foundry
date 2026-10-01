@@ -22,7 +22,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
 
 
 class MyDataset(AbstractCuratedDataset):
@@ -102,16 +102,13 @@ Keep `print` diagnostics out of the definition: `README.md` already records spli
 
 **Map `source`** (record `original_source`) — must exactly match one of: `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`, `"Customer"`, `"Other"`, `"ASlib"`. This is where the data *first appeared*, which is often not the link you were given.
 
-**Map `data_tags`** (record `required_split` / tags) — the regime tag must agree with the task fields you set, or the
-bundle check `meta_tags_*` fires:
-- IID → `["IID"]`
-- Temporal → `["Non-IID", "Temporal"]`
-- Grouped → `["Non-IID", "Grouped"]`
+**Map `data_tags`** (record tags) — context tags only. The base class adds the regime tags from the declaration:
+`IID`, or `Non-IID` with `Temporal` (a `Temporal`), `Grouped` (a `Grouping`) or `GroupedTemporal` (a `Grouping` with a
+`time_on`). Listing a regime tag yourself switches that off, so do not.
 - Add `"Anonymized"` when feature names/values carry no semantics (common for Kaggle competition data).
 - Add `"Spatial"` when the data holds geographic information (ZIP, lat/long, region, store location).
-- Add `"ForcedIIDFromTemporal"` (with `IID`) when the task is temporal in nature but the
-  time index was never shipped — do **not** just tag `IID` and move on.
-- Only ever one of `Temporal` / `Grouped` / `GroupedTemporal`.
+- Add `"ForcedIIDFromTemporal"` when the task is temporal in nature but the time index was never shipped — do **not**
+  just leave it IID and move on.
 
 **Map `problem_type`** (record `problem_type`):
 - "Regression" → `"regression"`
@@ -211,7 +208,8 @@ doesn't need.
 #       df[target] = df[target].map({1: "Yes", 0: "No"})
 # 3. TODO(verify): drop uninformative identifiers (ID, index, row id, booking_id, …). To keep an id but hide
 #    its names (a group id), use `anonymize_ids(df[col])`, never random ids: `uuid4()` changes the data on
-#    every run (`definition_nondeterministic`).
+#    every run (`definition_nondeterministic`, which also refuses sorts without `kind="stable"` and
+#    unsorted file listings).
 #    Keep an identifier only if it carries real signal (a time index, a group id) — and then
 #    process it into that meaning.
 # 4. TODO(verify): reverse ordinal / one-hot encodings and restore the semantic labels
@@ -219,12 +217,10 @@ doesn't need.
 # 5. TODO(verify): convert proxy missing values to real NaN:
 #       df = df.replace({"?": np.nan, " ": np.nan})     # UCI style
 #       df[col] = df[col].replace(-1, np.nan)           # sentinel style (-1, -9, -999, 999999)
-# 6. Set dtypes by meaning, not by convenience:
-#       cat_features = [...]                            # fixed, finite value set
-#       df[cat_features] = df[cat_features].astype("category")
-#       df[text_features] = df[text_features].astype("string")   # free text / high cardinality
-#       df[date_col] = pd.to_datetime(df[date_col])              # YYYY-MM-DD
-#    Everything else numeric. No `object` columns may survive (bundle check + TabArena reject).
+# 6. Dtypes by meaning, not by convenience, named in `_feature_types` (not cast here): categorical for a
+#    fixed, finite value set, string for free text / high cardinality, datetime for dates. Everything else
+#    numeric; no `object` column may survive (bundle check + TabArena reject). Cast mid-way with
+#    `cast_dtypes` only when a later step in `_clean` needs the dtype.
 # 7. TODO(verify): drop constant columns, all-missing columns, and duplicated columns.
 # 8. TODO(verify): drop leaking features — see §D.1. This is the single most common
 #    preprocessing step in the collection.
@@ -236,9 +232,6 @@ doesn't need.
 # 12. The row order and the index are the base class's job: a stable sort by the time column for
 #     temporal tasks, else a shuffle with seed 42, then `reset_index`. Do not shuffle or sort in `_clean`.
 ```
-
-After dropping rows, `category` columns keep their old levels — add
-`df[col] = df[col].cat.remove_unused_categories()` (bundle check `dataset_unused_categories`).
 
 Do **not**: geocode spatial columns, hand-engineer text features, one-hot encode, impute, or
 scale features. Leave that to the pipeline. Feature engineering is only for *removing leaks*
@@ -313,12 +306,13 @@ builds the collection's convention, which the bundle checks verify:
 | Pattern in the collection | Declaration |
 |---|---|
 | The last N windows of fixed length (acquire: 5 x 5 days; rossmann: 3 x 42 days with a 1-day planning gap) | `TemporalSplits(window=5, unit="days", n_windows=5)`, `TemporalSplits(window=42, unit="days", n_windows=3, gap=1)` |
-| Calendar months or years (coffee: 5 x 6 months; ieee: 3 months, 1-month gap) | `TemporalSplits(window=6, unit="months", n_windows=5)`, `TemporalSplits(window=1, unit="months", n_windows=3, gap=1)` |
-| Explicit test periods (kickstarter, sf_permit, lending_club: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
+| Calendar months or years (sberbank: 5 x 6 months; lending_club: 3 quarters; ieee: 3 months, 1-month gap) | `TemporalSplits(window=6, unit="months", n_windows=5)`, `TemporalSplits(window=3, unit="months", n_windows=3)`, `TemporalSplits(window=1, unit="months", n_windows=3, gap=1)` |
+| Explicit test periods (kickstarter: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
+| Windows down to a train share (coffee: 2 months; sf_permit: 6 months; both keep at least half for training) | `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)` |
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes: `TimeSeriesSplit`) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
-| Overlapping windows (ghana: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
+| Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 **Number of windows.** Use as many windows as an IID or grouped task of that size would get splits
 (`recommended_dimensions`: 20 x 3, 10 x 3, 3 x 3 or 1 x 3), and never fewer than 3 (`splits_too_few`), rolled back
@@ -519,7 +513,10 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
 | `meta_tags_*` | tags must agree with the split regime (Step 1) |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`/`%`/`_` escaped |
-| `meta_placeholder_left`, `definition_todo_left` | every TODO in the metadata and every `TODO(verify)` in `dataset.py` must be resolved before `build` |
+| `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the license included) and every `TODO(verify)` in `dataset.py` must be resolved before `build` |
+| `definition_nondeterministic` | the result must not depend on the run or the machine: seed every random step, sort with `kind="stable"` (numpy's default sort breaks ties differently with and without AVX512), wrap `glob` / `iterdir` / `listdir` in `sorted(...)`, and use `maintain_order=True` in a polars `group_by` (and sort what a polars join returns before writing it) |
+| `accepted_check_warnings_unused` (info) | an accepted slug that no longer fires: remove the entry, or fix the misspelled slug |
+| `check_crashed` | a check raised; the message names it. Fix the definition or report the check |
 | `meta_license_unknown`, `meta_source_link`, `meta_splits_comment_empty` | fill license, a real URL/DOI, and a substantive splits comment |
 
 A warning that is correct for the dataset goes into `accepted_check_warnings` with its reason; `README.md` lists

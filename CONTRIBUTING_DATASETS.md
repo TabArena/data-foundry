@@ -4,11 +4,10 @@ Thanks for adding a dataset! This guide walks you through the full curation
 flow — from "I have a raw CSV" to "a `CuratedContainer` that can be used in benchmarks.
 
 > [!TIP]
-> Already in a hurry? The minimum viable contribution is a notebook under
-> `datasets/_dev/<topic>/<unique_name>/<unique_name>.ipynb` that runs cleanly
-> on the [`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb)
-> skeleton and writes a `CuratedContainer` to the local warehouse. The rest
-> of this document explains the conventions and the why.
+> Already in a hurry? New datasets are v2 folders: `dataset new <unique_name>` scaffolds `dataset.py` from
+> [`datasets/_template/v2/dataset.py`](datasets/_template/v2/dataset.py), and `dataset check` must run without
+> errors (see the README's "Contributing a Dataset"). The notebook pipeline below describes the shipped v1
+> notebooks; its conventions (sources, dtypes, leaks, splits) hold for both formats.
 
 ---
 

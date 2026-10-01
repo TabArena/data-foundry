@@ -68,7 +68,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
         df = df[df["delivery_eta_minutes"] >= 1.0]
         df["delivery_eta_minutes"] = np.log(df["delivery_eta_minutes"])
         df = df.drop(columns=["cat_2", "num_29", "num_36", "num_71", "num_101"])
-        df = df.sort_values(by="timestamp").reset_index(drop=True)
+        df = df.sort_values(by="timestamp", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

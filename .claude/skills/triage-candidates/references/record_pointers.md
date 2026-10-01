@@ -47,8 +47,8 @@ report as a shipped record missing its notebook.
 
 **Check it when:**
 
-* you are about to open a PR that touches `datasets/` or the records — `data-foundry-curation
-  sync-notebooks --check` prints every drifted record and exits non-zero, and plain
+* you are about to open a PR that touches `datasets/` or the records — `.venv/bin/python -m
+  data_foundry.curation.cli sync-notebooks --check` prints every drifted record and exits non-zero, and plain
   `sync-notebooks` writes the fixes;
 * a 📓 link opens something unexpected (the wrong tree, the wrong variant, a 404);
 * you are verifying a dataset — `/verify-dataset` carries this as a rubric item: the pointer must

@@ -109,7 +109,11 @@ class TelemonitoringParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset
             return x[day.isin([days[0], middle, days[-1]])]
 
         df = df.groupby("subject#", group_keys=False).apply(select_rows).reset_index(drop=True)
-        df = df.sample(frac=1, random_state=42).sort_values(by=["subject#", "test_time"]).reset_index(drop=True)
+        df = (
+            df.sample(frac=1, random_state=42)
+            .sort_values(by=["subject#", "test_time"], kind="stable")
+            .reset_index(drop=True)
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

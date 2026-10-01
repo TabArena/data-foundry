@@ -35,11 +35,11 @@ Data Foundry is the data-layer toolkit behind
   a free-text body for `## Comments` / `## Reference`) under `curation/records/`.
   Add or triage a dataset by creating/editing its `<unique_name>.md` file — by
   hand, with an agent, or via the dashboard. A local **Sheets-like dashboard**
-  (`data-foundry-curation serve` → http://127.0.0.1:8765) edits those records in
+  (`.venv/bin/python -m data_foundry.curation.cli serve` → http://127.0.0.1:8765) edits those records in
   place and ships a built-in **Guidelines** tab (the curation criteria, from the
   paper). The per-record schema is `CurationRecord` (`curation/record.py`); the
   editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
-  (`data-foundry-curation -h`) also covers `sync-notebooks` (refreshes each
+  (`.venv/bin/python -m data_foundry.curation.cli -h`) also covers `sync-notebooks` (refreshes each
   record's two stored pointers: `notebook_path`, its BeyondArena notebook, and
   `v2_path`, its `dataset.py` in the TabArena v0.2 working copy), `validate`,
   `export`, `dataset` (list / check / build / new for v2 folders)
@@ -63,8 +63,9 @@ Roughly ordered by how often agents are useful here:
 
 Highest-value: a triaged candidate came out `Yes` and the curator wants it processed. New datasets
 are v2 folders, not notebooks: one `dataset.py` holding an `AbstractCuratedDataset` subclass
-(metadata, task and preprocessing as flat class attributes, reading in `_load_raw`, the rest in `_clean`), a free-form
-`explore.ipynb`, and a `README.md` that `data-foundry-curation dataset check` generates (the folder's page on
+(metadata and task as flat class attributes, the regime as one `grouping = Grouping(...)` or `temporal =
+Temporal(...)`, reading in `_load_raw`, cleaning in `_clean`, dtypes in `_feature_types`), a free-form
+`explore.ipynb`, and a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates (the folder's page on
 GitHub: its files, links, how to rebuild, the evidence and the build record). See
 [`src/data_foundry/v2/`](src/data_foundry/v2/).
 
@@ -75,16 +76,17 @@ regime, and the check loop. **Always read it before scaffolding.** It encodes
 decisions you would otherwise have to guess at.
 
 Its reference, [`references/dataset_patterns.md`](.claude/skills/add-dataset/references/dataset_patterns.md)
-(§A–§E), holds the **distilled conventions of the ~155 shipped
+(§A–§F), holds the **distilled conventions of the ~155 shipped
 notebooks**: the ordered preprocessing recipe, the per-regime split recipes (including
-the temporal loop, which the template only stubs), the recurring traps worth flagging,
+the declarative `TemporalSplits` recipes and the `Grouping` fields), the recurring traps worth flagging,
 and a table mapping every `bundle_checks` slug to the scaffold action that pre-empts it.
 Keep them in sync when the collection's practice changes — the check-side evidence comes
 from `scripts/beyond_arena/check_collection_bundles.py`, the practice-side evidence from
 re-reading the notebooks' preprocessing / task-curation cells and `curation_comments`.
 The governing rule for scaffolding is **pre-fill structure, never facts**: anything that
 needs a look at the data becomes a `# TODO(verify): …` marker, which `dataset check` reports
-(`meta_placeholder_left`, `definition_todo_left`) and `dataset build` refuses to save.
+(`meta_placeholder_left`, `definition_license_placeholder`, `definition_todo_left`) and `dataset build` refuses to
+save.
 
 ### 2. Verifying a dataset before it ships
 
@@ -106,7 +108,7 @@ The backlog is **one markdown record per candidate dataset** in `curation/record
 To assist, run the **`/triage-candidates`** skill
 ([`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md)).
 It starts the local dashboard
-(`data-foundry-curation serve` → http://127.0.0.1:8765) and, importantly,
+(`.venv/bin/python -m data_foundry.curation.cli serve` → http://127.0.0.1:8765) and, importantly,
 **loads the curation guidelines** — the IID/non-IID background, the dataset
 *selection criteria*, and the *processing* conventions. **Read those guidelines
 before advising** whether a dataset belongs in the benchmark or how to process it;
@@ -156,20 +158,21 @@ When changing core code:
 
 ### 5. Curation tooling work (checks, recommended splits, helpers)
 
-**There are three check layers; put a new check in the right one.**
+**There are four check layers; put a new check in the right one.**
 
 | Layer | Where | Scope |
 |---|---|---|
 | creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
 | exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames whose rendered output is committed in the notebooks — don't change its output shape lightly. |
-| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). This is the default home for anything new. |
+| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. Shared by v1 notebooks and v2 definitions: keep its v1 behaviour unchanged. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). |
+| v2 definition | `src/data_foundry/v2/` (`_validate_definition` and `_definition_checks` in `dataset.py`, `splits.protocol_checks`, `group_checks.py`, `task_checks.py`) | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. |
 
 * `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
-  (errors / warnings / infos, each with a stable `slug`); the notebook calls
-  `report.raise_if_errors()` before `save()`, and
-  `verify_saved_container(save_path, container=...)` after it. A check that
-  fires on a legitimately unusual dataset is accepted via `ignore=[slug]` in
-  the notebook, with a reason.
+  (errors / warnings / infos, each with a stable `slug`). A v2 definition's `dataset build` raises on errors before
+  saving and runs `verify_saved_container` after it; a v1 notebook calls `report.raise_if_errors()` and
+  `verify_saved_container(save_path, container=...)` itself. A check that fires on a legitimately unusual dataset is
+  accepted with a reason: `accepted_check_warnings = {slug: reason}` in a v2 definition, `ignore=[slug]` in a v1
+  notebook.
 * When adding a check, calibrate it against the shipped collection before
   choosing its severity (`error` only for "no consumer can use this"), and
   keep O(rows x cols) work behind the `heavy_cell_budget` guard.
@@ -177,9 +180,8 @@ When changing core code:
   `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
   the warehouse-wide stats are computed; that file's dtype categorization
   is the reference for `CuratedContainer._feature_dtype_counts`.
-* `curation_recommendations.py` has three flavors — IID, grouped, temporal.
-  IID and grouped have automated helpers; temporal splits are still
-  manual.
+* Splits: `curation_recommendations.py` holds the v1 helpers (IID and grouped automated, temporal by hand) for the
+  v1 notebooks; v2 definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`).
 
 ### 6. Repo plumbing (CI, packaging, release)
 

@@ -97,7 +97,7 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
             cols: list[str],
             input_spans: list[int],
         ) -> pd.DataFrame:
-            input_df = input_df.sort_values([group_col, time_col]).copy()
+            input_df = input_df.sort_values([group_col, time_col], kind="stable").copy()
 
             for col in cols:
                 for span in input_spans:
@@ -141,7 +141,7 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
         )
         # Drop the first 500 samples of each profile to simulate warm-up and avoid incorrect EWMA/WEMS state
         df = (
-            df.sort_values(["profile_id", "profile_time_index"])
+            df.sort_values(["profile_id", "profile_time_index"], kind="stable")
             .loc[lambda d: d.groupby("profile_id").cumcount() >= 500]
             .reset_index(drop=True)
         )

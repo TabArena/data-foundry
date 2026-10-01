@@ -139,7 +139,10 @@ def aggregate_features(df):
     # Count aggregates
     exprs += [pl.col(col).max().alias(f"max_{col}") for col in cols if "num_group" in cols]
 
-    return [df.sort("num_group1").group_by("case_id").agg(exprs)]
+    # A full, stable order inside each case makes `first` / `last` and the float sums deterministic (a sort on
+    # `num_group1` alone left ties in the depth-2 tables and changed ~141k values between runs, 2026-10-01).
+    keys = [c for c in ("case_id", "num_group1", "num_group2") if c in cols]
+    return [df.sort(keys, maintain_order=True).group_by("case_id", maintain_order=True).agg(exprs)]
 
 
 class HomeCreditDefaultStability1m(AbstractCuratedDataset):
@@ -215,14 +218,14 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         import polars as pl
 
         data_path = raw_dir / "parquet_files" / "train"
-        train_basetable = read_tables(data_path.glob("train_base.parquet")).pipe(set_table_dtypes)
-        train_static = read_tables(data_path.glob("train_static_0_*.parquet")).pipe(set_table_dtypes)
-        train_static_cb = read_tables(data_path.glob("train_static_cb_0.parquet")).pipe(set_table_dtypes)
+        train_basetable = read_tables(sorted(data_path.glob("train_base.parquet"))).pipe(set_table_dtypes)
+        train_static = read_tables(sorted(data_path.glob("train_static_0_*.parquet"))).pipe(set_table_dtypes)
+        train_static_cb = read_tables(sorted(data_path.glob("train_static_cb_0.parquet"))).pipe(set_table_dtypes)
 
         train_aggregated = list(
             itertools.chain.from_iterable(
                 [
-                    aggregate_features(read_tables(data_path.glob(name)).pipe(set_table_dtypes))
+                    aggregate_features(read_tables(sorted(data_path.glob(name))).pipe(set_table_dtypes))
                     for name in [
                         "train_applprev_1_*.parquet",
                         "train_tax_registry_a_1.parquet",
@@ -284,6 +287,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
         data = data.drop(duplicates)
 
+        # the joins return the rows in any order: sort them, so a fresh run writes the same file (2026-10-01)
+        data = data.sort("case_id", maintain_order=True)
         data.write_parquet(raw_dir / "merged_input_data.parquet")
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

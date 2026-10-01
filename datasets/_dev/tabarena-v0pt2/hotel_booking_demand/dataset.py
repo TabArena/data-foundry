@@ -128,7 +128,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
         date_col = self.task_metadata.time_on
         target_col = self.task_metadata.target_column_name
 
-        df = df.sort_values(by=date_col).reset_index(drop=True)
+        df = df.sort_values(by=date_col, kind="stable").reset_index(drop=True)
 
         # New approach: We define points in time
         test_sets_year_month = [

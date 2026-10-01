@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import logging
@@ -403,6 +404,13 @@ class CuratedContainer:
 
             # backward compatibility
             meta_data.pop("local_data_directory_base", None)
+
+            # forward compatibility: a container saved by a newer version may carry fields this version lacks
+            known = {f.name for f in dataclasses.fields(MetadataRegistry[type_adapter_id])}
+            unknown = sorted(set(meta_data) - known)
+            if unknown:
+                logger.warning("%s: ignoring fields this version does not know: %s.", meta_file.name, unknown)
+                meta_data = {k: v for k, v in meta_data.items() if k in known}
 
             metadata_objs[meta_name] = adapter.validate_python(meta_data)
 

@@ -4,6 +4,27 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-01 (framework review before the rebuild)
+
+- Same data on every run and machine. 20 `sort_values` calls in 18 definitions now sort with `kind="stable"` (numpy's
+  default sort breaks ties differently with and without AVX512: anes_voting_2026 gave three checksums on three CPU
+  modes), kickstarter and home_credit_default_stability_1m sort their file listings, and the split sampler breaks
+  ties explicitly (sepsis_prediction_1m kept 1,500,000 or 1,499,998 rows depending on the CPU). A new definition check
+  refuses unstable sorts, unsorted listings, an unordered polars `group_by` and unseeded randomness. anes and sepsis
+  now give one checksum on all three CPU modes; california_house_prices_2020 still differs in the last bit of 195
+  log-scaled targets (numpy's SIMD log), with the same rows and splits.
+- `acquire_valued_shoppers_challenge` and `home_credit_default_stability_1m`: `_prepare_raw_files` gives the same file
+  on every run. acquire sorts by `id` within a date (only the row order varied); home_credit sorts each case's rows
+  fully before `first` / `last` and the sums (about 141k values of 9 `first_` / `last_` columns varied between runs)
+  and sorts its output by `case_id`. Both files were regenerated in the warehouse (the old ones are kept as
+  `merged_input_data.parquet.pre-2026-10-01`); home_credit has 718 columns instead of 719, because one `first_` /
+  `last_` pair is now identical and is dropped as a duplicate.
+- Shipped checksums: `split_random_state`, added on 2026-09-18, entered every checksum as `null`, so no shipped
+  BeyondArena container verified with the library; it is now left out while unset (all 142 verify again).
+- Group statistics: the nearest neighbour of a row is never the row itself (duplicates made it so), chance is the
+  share of other rows in the same group, and single-row groups no longer count towards `groups_labels_constant`.
+- No definition's metadata changed apart from the sorts and listings above; the containers are rebuilt next.
+
 ## 2026-10-01 (checks that a task is worth benchmarking)
 
 - `dataset check` gets five findings that every test fold can be scored and the target varies

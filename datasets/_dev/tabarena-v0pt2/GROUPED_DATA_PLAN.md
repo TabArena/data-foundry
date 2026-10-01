@@ -164,7 +164,7 @@ the source, fix what the research found, and accept the findings of section 5 wh
 
 | Dataset | Found |
 |---|---|
-| parkinsons_biomedical_voice_measurements | done 2026-10-01: BibTeX Little et al. 2009 and 2007; `group_time_on = session_number` stays (it counts up within a subject). Still open: the data has 32 subjects (24 with PD), the paper 31 (23) |
+| parkinsons_biomedical_voice_measurements | done 2026-10-01: BibTeX Little et al. 2009 and 2007; `Grouping(time_on="session_number")` stays (it counts up within a subject). Still open: the data has 32 subjects (24 with PD), the paper 31 (23) |
 | telemonitoring_parkinsons_biomedical_voice_measurements | done 2026-10-01: source link UCI 189, year 2009, the test days nearest the clinic assessments, BibTeX Tsanas et al. 2010. The definition notes that the unseen-subject split is stricter than the source's random split. Open: no signal across subjects (section 10) |
 | pancreatic_cancer_mouse_detection | done 2026-10-01: counts against the paper, target `HasPanIN`, record binary, the file-name class code. Still open: the `t` suffix, and whether 999 in two m/z columns is a cap |
 | sepsis_prediction_1m | done 2026-10-01: the snapshot use case (each hour from its own row, utility per patient) |
@@ -206,7 +206,7 @@ the source, fix what the research found, and accept the findings of section 5 wh
 * Dropped: a domain-shift check that trains a model to separate a held-out group. Its motivating case (covertype, 3
   groups) is gone, and few groups are already flagged (`task_group_count_low`, `groups_test_groups_few`).
 * Deferred to `TODO.md`: a check for hidden groups in IID tasks (id-like columns that repeat with clustered labels;
-  it needs a pass over all 114 IID datasets to calibrate and review), the 11 configuration runtimes of asp_potassco as
+  it needs a pass over all 94 IID datasets to calibrate and review), the 11 configuration runtimes of asp_potassco as
   metadata for PAR10, and splitting sat11 by instance family.
 
 ## 10. Open decision from the implementation

@@ -653,3 +653,79 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
     grouping = read_report(folder / "README.md")["task"]["grouping"]
     assert grouping["prediction_unit"] == "row"
     assert grouping["n_groups"] == 60
+
+
+def test_a_placeholder_license_is_an_error(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace('license = "CC0"', 'license = "TODO"')
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
+    assert "definition_license_placeholder" in {r.slug for r in result.bundle_report.errors}
+
+
+def test_cli_list_fails_when_a_definition_does_not_import(tmp_path: Path) -> None:
+    root = tmp_path / "datasets"
+    write_definition(root)
+    broken = root / "broken_ds"
+    broken.mkdir()
+    (broken / "dataset.py").write_text("raise RuntimeError('broken')\n")
+    parser = argparse.ArgumentParser()
+    add_dataset_parser(parser.add_subparsers(dest="command"))
+    args = parser.parse_args(["dataset", "list", "--root", str(root)])
+    assert args.func(args) == 1
+
+
+def test_nondeterministic_calls_are_found_by_the_syntax_tree() -> None:
+    import ast
+
+    from data_foundry.v2.dataset import nondeterministic_calls
+
+    code = """
+df = df.sort_values("a")
+df = df.sort_values("a", kind="stable")
+half = df.sample(n=len(df) // 2, random_state=0)
+files = [p for p in raw_dir.glob("*.csv")]
+files = sorted(raw_dir.glob("*.csv"))
+rng = np.random.default_rng()
+"""
+    found = nondeterministic_calls(ast.parse(code))
+    assert [line for line, _ in found] == [2, 5, 7]
+
+
+def test_a_missing_declared_column_names_the_attribute(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace('target = "y"', 'target = "label"')
+    write_definition(tmp_path / "datasets", body=body)
+    with pytest.raises(DatasetDefinitionError, match="`target` names"):
+        get_dataset(tmp_path / "datasets", "toy_ds").process()
+
+
+def test_editing_the_explored_frame_leaves_the_raw_cache_alone(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets")
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    before = ds.raw["x1"].copy()
+    ds.df.loc[:, "x1"] = 999.0
+    assert ds.raw["x1"].equals(before)
+
+
+def test_reload_rereads_the_raw_data_after_an_in_place_edit(tmp_path: Path, warehouse: Path) -> None:
+    folder = write_definition(tmp_path / "datasets")
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    assert len(ds.raw) == 600
+    other = warehouse / "toy_ds" / "half.csv"
+    pd.read_csv(warehouse / "toy_ds" / "toy.csv").head(300).to_csv(other, index=False)
+    path = folder / "dataset.py"
+    path.write_text(path.read_text().replace('raw_dir / "toy.csv"', 'raw_dir / "half.csv"'))  # same line count
+    assert len(ds.reload().raw) == 300
+
+
+def test_an_accepted_warning_that_no_longer_fires_is_reported(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        '    target = "y"\n',
+        '    accepted_check_warnings = {"dataset_no_such_check": "kept on purpose"}\n    target = "y"\n',
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
+    assert "accepted_check_warnings_unused" in {r.slug for r in result.bundle_report.infos}

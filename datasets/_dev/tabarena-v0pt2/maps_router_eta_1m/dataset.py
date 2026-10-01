@@ -61,7 +61,7 @@ class MapsRouterEta1m(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        df = df.sort_values(by="timestamp").reset_index(drop=True)
+        df = df.sort_values(by="timestamp", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

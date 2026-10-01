@@ -70,7 +70,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df.S_2 = pd.to_datetime(df.S_2)
-        df = df.sort_values(["customer_ID", "S_2"])
+        df = df.sort_values(["customer_ID", "S_2"], kind="stable")
         df = df.set_index("customer_ID")
         # Add labels
         targets = pd.read_csv(self.raw_dir / "train_labels.csv")

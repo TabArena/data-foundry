@@ -15,7 +15,7 @@ gotchas that look like blockers but aren't — lives in
   * triage candidate datasets — the **curation log** of one markdown record per
     candidate under `curation/records/`; the `/triage-candidates` skill
     ([`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md))
-    starts the local dashboard (`data-foundry-curation serve`) and loads the
+    starts the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) and loads the
     curation guidelines,
   * check one candidate the curator is looking at — the `/check-candidate <unique_name>`
     skill ([`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md))

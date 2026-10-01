@@ -176,7 +176,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         n_data = len(df)
         idx = df.groupby(["Address", "Zip", "Year built"], dropna=False)["time_index"].idxmax()
         # groupby().idxmax() returns rows in group-key (address) order; sort back to the Kaggle Id (= sale) order
-        df = df.loc[idx].sort_values("time_index").reset_index(drop=True)
+        df = df.loc[idx].sort_values("time_index", kind="stable").reset_index(drop=True)
         assert (
             n_data - len(df) == 67
         )  # We have 63 houses with multiple entries (either 2 or 3) for a total of 130 entire. We keep one entry per house, thus 130 - 63 = 67

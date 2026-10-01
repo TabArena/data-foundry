@@ -49,7 +49,7 @@ shipped data with a suspected fix; they are not leaderboard-grade.
 | 12 | Temporal: rows and minority-class rows per test window | a handful of positives, or under ~50 test rows | seismic_bumps 0-5 positives per window; ghana rain from 3-6 farmer-days per window; coffee monthly windows of 2-72 rows |
 | 13 | Target by period (rows, p50, p90, max), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
 | 14 | A simple formula or lookup for the target | R² near 1 | video_game_fps: log FPS = game + CPU + GPU, R² 0.99998 |
-| 15 | The tests in `SKILL.md`, "Checking whether the data is generated" | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
+| 15 | The tests in [`../SKILL.md`](../SKILL.md), "Checking whether the data is generated" | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 
 Reading the probes:
 

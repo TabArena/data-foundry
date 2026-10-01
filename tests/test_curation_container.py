@@ -515,8 +515,41 @@ def test_versioned_save_path(tmp_path):
 
 
 # --- Container formats ---
-PINNED_FORMAT_1_CHECKSUM = "80b9c92743397005a6ca2aca2aa115520fa595e20ff22b61187adc63738a6508"
-"""The toy grouped format-1 container's checksum, computed by the code before the grouping block existed (64028d5)."""
+PINNED_FORMAT_1_CHECKSUM = "a46bb98f3fe822d762e537a833691a5ca696090980b4151c3eebdb197e81c5d3"
+"""The toy grouped format-1 container's checksum, computed by release v0.0.5 (before `split_random_state` existed).
+Never regenerate it from the current code: it guards that the shipped containers keep their checksum."""
+
+V0_0_5_FIELDS = {
+    "DatasetMetadata": {
+        "academic_reference_bibtex",
+        "academic_reference_bibtex_key",
+        "curation_comments",
+        "data_tags",
+        "dataset_source",
+        "dataset_year",
+        "domain_str",
+        "download_description",
+        "license",
+        "original_dataset_source_download_link",
+        "type_adapter_id",
+        "unique_name",
+        "version_comment",
+        "version_from_unique_name",
+    },
+    "PredictiveMLTaskMetadata": {
+        "group_labels",
+        "group_on",
+        "group_time_on",
+        "objective_metric_name",
+        "problem_type",
+        "stratify_on",
+        "target_column_name",
+        "time_on",
+        "type_adapter_id",
+    },
+    "PredictiveMLSplitsMetadata": {"splits", "splits_comment", "time_horizon", "time_horizon_unit", "type_adapter_id"},
+}
+"""The metadata fields of release v0.0.5, which the shipped BeyondArena checksums encode."""
 
 
 def _grouped_toy(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2 | None = None) -> CuratedContainer:
@@ -645,3 +678,21 @@ def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
         PredictiveMLTaskMetadataV2(
             target_column_name="y", problem_type=problem_type, objective_metric_name="m", **kwargs
         )
+
+
+def test_every_field_added_after_the_release_is_omitted_while_unset():
+    """A new field must not enter the checksum of a format-1 container that does not set it (it broke them once)."""
+    import dataclasses
+
+    for cls in (DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata):
+        added = {f.name for f in dataclasses.fields(cls)} - V0_0_5_FIELDS[cls.__name__]
+        omitted = set(getattr(cls, "_OMIT_WHEN_UNSET", ()))
+        assert added <= omitted, f"{cls.__name__}: {sorted(added - omitted)} would change every older checksum"
+
+
+def test_the_packaged_toy_container_keeps_its_original_checksum():
+    from data_foundry.examples import get_toy_container_path
+
+    container = CuratedContainer.load(get_toy_container_path())
+    assert container.checksum == "5e564f4fd7095781edacc2ec95254b78b2e600c77f89169686352ad9fc24adb5"
+    assert container._create_checksum() == container.checksum

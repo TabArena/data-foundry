@@ -10,7 +10,7 @@
 **Data Foundry** is the data layer behind the next generation of [TabArena](https://tabarena.ai/) datasets. It provides:
 
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
-- A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact in one notebook.
+- A **curation toolkit** (sanity checks, recommended-split helpers, dtype-preserving save/load) so a curator turns a raw download into a reproducible artifact: one `dataset.py` definition per dataset (v2; the shipped BeyondArena datasets are v1 notebooks).
 - A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena).
 - A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab, and published as a read-only public site on [GitHub Pages](https://tabarena.github.io/data-foundry/). It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
 
@@ -319,22 +319,24 @@ The `dev` extra adds curation-time deps (`openml`, `kaggle`, `seaborn`, `polars`
 ```
 data-foundry/
 ├── src/data_foundry/         # the package — schema, container, collections, checks, splits
-│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata
+│   ├── v2/                   # v2 dataset definitions: AbstractCuratedDataset, split protocol, checks, README report
+│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (+ Grouping), PredictiveMLSplitsMetadata
 │   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
-│   ├── curation_recommendations.py  # recommended split helpers (IID, grouped, temporal)
+│   ├── curation_recommendations.py  # v1 recommended split helpers (IID, grouped, temporal)
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats for the curation notebook
 │   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
-├── datasets/                 # curation notebooks
-│   ├── _template/            # canonical notebook skeleton
-│   ├── _dev/                 # contributions land here first
+├── datasets/                 # dataset definitions (v2 folders) and curation notebooks (v1)
+│   ├── _template/            # the v1 notebook skeleton and the v2 definition template (`v2/`)
+│   ├── _dev/                 # contributions land here first; `tabarena-v0pt2/` is the TabArena v0.2 working copy
 │   ├── _maintenance/         # re-runs / fixes for already-released datasets
 │   └── beyond_iid/           # promoted datasets — pinned by `final_uuid_list.py`
 ├── examples/                 # runnable demos (covers the use-cases above)
 ├── scripts/                  # one-off tooling (toy container builder)
+│   ├── v2/                   # probes for v2 datasets: leak, group and task probes
 │   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
@@ -342,15 +344,18 @@ data-foundry/
 
 ## 🧑‍🔬 Contributing a Dataset
 
-The short version:
+The short version (v2):
 
-1. Copy [`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb)
-   to `datasets/_dev/<topic>/<unique_name>/<unique_name>.ipynb`.
-2. Run the notebook end-to-end so the saved cells contain populated check
-   tables and the final `uuid` / `checksum`.
-3. Open a PR — reviewers will move the notebook into the right
-   `beyond_iid/` subfolder and append the UUID to
-   [`datasets/beyond_iid/final_uuid_list.py`](datasets/beyond_iid/final_uuid_list.py).
+1. Scaffold the folder: `.venv/bin/python -m data_foundry.curation.cli dataset new <unique_name> --root
+   datasets/_dev/tabarena-v0pt2` (or `/add-dataset <unique_name>` in Claude Code), and fill in `dataset.py`.
+2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
+   warning is fixed or accepted with a reason; it writes the folder's `README.md`. Then run the probes in
+   `scripts/v2/` (leak, task and, for a grouped task, group probes).
+3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
+
+The shipped BeyondArena datasets are v1 notebooks built from
+[`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb) and pinned in
+[`datasets/beyond_iid/final_uuid_list.py`](datasets/beyond_iid/final_uuid_list.py).
 
 The long version (field-by-field walkthrough, split-helper choice, dtype
 gotchas, the `/add-dataset` Claude Code scaffolding skill): see

@@ -131,7 +131,8 @@ def grouped_splits(
 
     With ``group_labels="per_group"`` (one label per group) the folds are drawn over the groups, one row per
     group, as :func:`iid_splits` would draw them over rows; group sizes are ignored. Otherwise
-    ``(Stratified)GroupKFold`` balances the folds by rows, with seed ``random_state + repeat``.
+    ``(Stratified)GroupKFold`` with ``shuffle=True`` and seed ``random_state + repeat`` (shuffled groups in about equal
+    numbers per fold; the folds of the current datasets are within 5% of equal rows).
     """
     _require_range_index(df)
     if group_labels == "per_group":
@@ -218,6 +219,27 @@ class TemporalSplits:
     gap: int = 0
     cutoffs: tuple | None = None
     min_train_fraction: float | None = None
+
+    def __post_init__(self) -> None:
+        problems = []
+        if self.unit not in (*_CALENDAR_UNITS, "unique", "rows"):
+            problems.append(f"unit={self.unit!r} is not one of {(*_CALENDAR_UNITS, 'unique', 'rows')}")
+        for name in ("window", "step", "n_windows"):
+            value = getattr(self, name)
+            if value is not None and (not isinstance(value, int) or value <= 0):
+                problems.append(f"{name}={value!r} must be a positive integer")
+        if not isinstance(self.gap, int) or self.gap < 0:
+            problems.append(f"gap={self.gap!r} must be a non-negative integer")
+        if self.min_train_fraction is not None and not 0 < self.min_train_fraction < 1:
+            problems.append(f"min_train_fraction={self.min_train_fraction!r} must lie between 0 and 1")
+        if self.cutoffs is not None and (self.n_windows is not None or self.step is not None):
+            problems.append("cutoffs fix the windows, so n_windows and step would be ignored")
+        if self.cutoffs is None and self.n_windows is None and self.min_train_fraction is None:
+            problems.append(
+                "set n_windows, cutoffs or min_train_fraction: otherwise the windows walk back to the start"
+            )
+        if problems:
+            raise ValueError("TemporalSplits: " + "; ".join(problems) + ".")
 
     def splits(self, df: pd.DataFrame, time_on: str) -> Splits:
         """Build the splits for ``df`` (sorted by ``time_on``)."""
@@ -605,7 +627,8 @@ def _first_in_order(positions: np.ndarray, cap: int, rank: np.ndarray, labels: n
         classes, counts = np.unique(side_labels, return_counts=True)
         exact = counts * cap / len(positions)
         quota = np.floor(exact).astype(int)
-        quota[np.argsort(quota - exact)[: cap - quota.sum()]] += 1  # largest remainders get the leftover rows
+        # largest remainders get the leftover rows; a stable sort breaks ties the same way on every CPU
+        quota[np.argsort(quota - exact, kind="stable")[: cap - quota.sum()]] += 1
         quotas = dict(zip(classes, quota, strict=True))
         groups = {c: positions[side_labels == c] for c in classes}
     kept = [members[np.argsort(rank[members], kind="stable")[: quotas[c]]] for c, members in groups.items()]
@@ -624,9 +647,9 @@ def _sample_positions(
     """At most ``cap`` of ``positions``, sorted: sampled rows, or whole groups of ``group_on``.
 
     Rows are drawn stratified on ``stratify_on`` (when every class has two rows or more). Groups are taken in a
-    random order until the next one would overshoot the cap; with ``stratify_on`` that order interleaves the
-    groups of each stratum (a group's stratum is its most frequent value), so the kept groups keep about the class
-    balance.
+    random order, each one that still fits under the cap, until the cap is reached; with ``stratify_on`` that order
+    interleaves the groups of each stratum (a group's stratum is its most frequent value), so the kept groups keep
+    about the class balance.
     """
     if len(positions) <= cap:
         return np.sort(positions)
@@ -645,8 +668,14 @@ def _sample_positions(
     sizes = np.bincount(codes, minlength=len(uniques))
     order = rng.permutation(len(uniques))
     if stratify_on is not None:
-        counts = pd.DataFrame({"group": codes, "stratum": side[stratify_on].to_numpy()}).value_counts()
-        top = counts.reset_index().drop_duplicates("group").set_index("group")["stratum"]
+        # a group's stratum is its most frequent value; a tie goes to the value that comes first in the frame (an
+        # explicit order: `value_counts` sorts unstably, so ties fell differently on CPUs with and without AVX512)
+        stratum_codes = pd.factorize(side[stratify_on].to_numpy())[0]
+        counts = pd.DataFrame({"group": codes, "stratum": stratum_codes}).value_counts(sort=False).rename("n")
+        counts = counts.reset_index().sort_values(
+            ["group", "n", "stratum"], ascending=[True, False, True], kind="stable"
+        )
+        top = counts.drop_duplicates("group").set_index("group")["stratum"]
         strata_codes = pd.factorize(top.reindex(range(len(uniques))).to_numpy()[order])[0]
         # rank of each group inside its stratum, scaled to [0, 1): sorting on it interleaves the strata
         rank = np.zeros(len(order))

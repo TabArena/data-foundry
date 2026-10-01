@@ -65,7 +65,7 @@ class CookingTime1m(AbstractCuratedDataset):
         # Following TabRed
         df = df[df["cooking_time_minutes"] >= 1.0]
         df["cooking_time_minutes"] = np.log(df["cooking_time_minutes"])
-        df = df.sort_values(by="timestamp").reset_index(drop=True)
+        df = df.sort_values(by="timestamp", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

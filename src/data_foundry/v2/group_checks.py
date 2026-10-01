@@ -5,7 +5,7 @@ computes them for every grouped task:
 
 * the shape: groups, rows per group, the largest group's share, and the test groups per fold (the sample size of a
   score per group);
-* the label granularity: the share of groups whose rows all have one label;
+* the label granularity: the share of groups with two or more rows whose rows all have one label;
 * the clustering: how often a row's nearest neighbour (standardised numeric features, a sample of rows) is in its own
   group, against the share expected if groups were unrelated to the features; and the share of the label variance
   the group explains, against the same for shuffled group ids.
@@ -50,7 +50,10 @@ NEIGHBOUR_SAMPLE_ROWS = 20_000
 """Rows sampled for the nearest-neighbour statistic."""
 
 NEAR_CHANCE_FACTOR = 1.5
-"""A statistic within this factor of its chance level counts as "close to chance"."""
+"""A statistic within this factor of its chance level counts as "close to chance"..."""
+
+NEAR_CHANCE_MARGIN = 0.02
+"""... and so does one within this absolute margin of it (a chance level near 0 makes a factor alone noisy)."""
 
 RANDOM_STATE = 0
 """Seed of the row sample and the shuffled group ids, so the README stays the same for the same data."""
@@ -66,7 +69,12 @@ class GroupStats:
     largest_share: float
     test_groups_per_fold: tuple[int, int]
     """Min and max number of groups in a test fold."""
+    multi_row_groups: int
+    """Groups with two or more rows."""
+    mixed_label_groups: int
+    """Groups with two or more labels."""
     single_label_share: float
+    """The share of single-label groups among the groups with two or more rows."""
     neighbour_same_group: float | None
     neighbour_chance: float | None
     label_share_by_group: float | None
@@ -89,7 +97,8 @@ def group_stats(container: CuratedContainer) -> GroupStats | None:
         for folds in container.experiment_metadata.splits.values()
         for _train, test in folds.values()
     ]
-    labels_per_group = target.groupby(groups, sort=False, observed=True).nunique(dropna=True)
+    multi_row = np.flatnonzero(sizes > 1)  # a single-row group has one label by construction
+    labels_per_group = target.groupby(groups, sort=False, observed=True).nunique(dropna=True).reindex(multi_row)
     same, chance = _neighbour_share(df, groups, exclude=[*columns, target.name])
     by_group, shuffled = _label_share(target, groups, is_classification=container.task_metadata.is_classification)
     return GroupStats(
@@ -97,7 +106,9 @@ def group_stats(container: CuratedContainer) -> GroupStats | None:
         rows_per_group=(int(sizes.min()), float(np.median(sizes)), int(sizes.max())),
         largest_share=float(sizes.max() / len(df)),
         test_groups_per_fold=(min(test_groups), max(test_groups)),
-        single_label_share=float((labels_per_group <= 1).mean()),
+        multi_row_groups=len(multi_row),
+        mixed_label_groups=int((labels_per_group > 1).sum()),
+        single_label_share=float((labels_per_group <= 1).mean()) if len(multi_row) else 1.0,
         neighbour_same_group=same,
         neighbour_chance=chance,
         label_share_by_group=by_group,
@@ -138,8 +149,8 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
             CheckResult(
                 "groups_labels_constant",
                 "warning",
-                f"labels='per_sample', yet {stats.single_label_share:.1%} of the groups have a single label "
-                f"({round((1 - stats.single_label_share) * stats.n_groups):,} of {stats.n_groups:,} have several).",
+                f"labels='per_sample', yet {stats.single_label_share:.1%} of the groups with two or more rows have a "
+                f"single label ({stats.mixed_label_groups:,} of {stats.multi_row_groups:,} have several).",
                 hint="If the label is one per group by construction, declare `labels='per_group'`; otherwise say in "
                 "the definition why it may differ within a group.",
             ),
@@ -162,29 +173,37 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
 
 
 def _near_chance(value: float | None, chance: float | None) -> bool:
-    return value is not None and chance is not None and value <= NEAR_CHANCE_FACTOR * chance
+    return (
+        value is not None
+        and chance is not None
+        and value <= max(NEAR_CHANCE_FACTOR * chance, chance + NEAR_CHANCE_MARGIN)
+    )
 
 
 def _neighbour_share(df: pd.DataFrame, groups: np.ndarray, *, exclude: list[str]) -> tuple[float | None, float | None]:
     """The share of sampled rows whose nearest other row is in the same group, and that share for unrelated groups."""
     from sklearn.neighbors import NearestNeighbors  # noqa: PLC0415 - heavy import
 
-    numeric = df.drop(columns=[c for c in exclude if c in df.columns]).select_dtypes(include=["number", "bool"])
-    if numeric.shape[1] == 0 or len(df) < 3:  # a row, its neighbour and one more
+    if len(df) < 3:  # a row, its neighbour and one more
         return None, None
     rng = np.random.default_rng(RANDOM_STATE)
     sample = np.sort(rng.choice(len(df), size=min(NEIGHBOUR_SAMPLE_ROWS, len(df)), replace=False))
-    values = numeric.iloc[sample].astype(float)
+    columns = [c for c in df.select_dtypes(include=["number", "bool"]).columns if c not in exclude]
+    if not columns:
+        return None, None
+    values = df.iloc[sample][columns].astype(float)  # sample first: a copy of the full frame can be tens of GB
     spread = values.std()
     values = values.loc[:, spread > 0]
     if values.shape[1] == 0:
         return None, None
     standardised = ((values - values.mean()) / values.std()).fillna(0.0).to_numpy()
-    _, neighbours = NearestNeighbors(n_neighbors=2).fit(standardised).kneighbors(standardised)
+    # kneighbors() without X leaves each row itself out, also when the row has an exact copy
+    _, neighbours = NearestNeighbors(n_neighbors=1).fit(standardised).kneighbors()
     sampled_groups = groups[sample]
-    same = float(np.mean(sampled_groups[neighbours[:, 1]] == sampled_groups))
-    shares = np.bincount(sampled_groups) / len(sampled_groups)
-    return same, float(np.sum(shares**2))
+    same = float(np.mean(sampled_groups[neighbours[:, 0]] == sampled_groups))
+    sizes = np.bincount(sampled_groups)
+    n = len(sampled_groups)
+    return same, float(np.sum(sizes * (sizes - 1)) / (n * (n - 1)))  # chance of another row of the same group
 
 
 def _label_share(

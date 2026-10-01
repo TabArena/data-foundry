@@ -112,13 +112,13 @@ def _regression_findings(target: pd.Series, folds: list) -> list[CheckResult]:
                 hint="Check the target and the split: a fold of one repeated value cannot rank models.",
             ),
         )
-    counts = target.value_counts(dropna=True)
+    counts = target.value_counts(dropna=True, sort=False).sort_values(ascending=False, kind="stable")
     if len(counts) and counts.iloc[0] / counts.sum() >= DOMINANT_VALUE_SHARE:
         findings.append(
             CheckResult(
                 "task_target_value_dominant",
                 "warning",
-                f"The target value {counts.index[0]!r} holds {counts.iloc[0] / counts.sum():.0%} of the rows.",
+                f"The target value {float(counts.index[0]):g} holds {counts.iloc[0] / counts.sum():.0%} of the rows.",
                 hint="A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in "
                 "`curation_comments`, drop censored or placeholder rows, or accept it with the reason.",
             ),

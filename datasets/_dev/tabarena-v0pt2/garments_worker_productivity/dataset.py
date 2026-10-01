@@ -81,7 +81,7 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
         assert not df.duplicated(["department", "team", "date"]).any(), (
             "Found duplicate rows for the same department-team-date."
         )
-        df = df.sort_values(list(entity_cols) + [date_col]).reset_index(drop=True)
+        df = df.sort_values(list(entity_cols) + [date_col], kind="stable").reset_index(drop=True)
         g = df.groupby(list(entity_cols), sort=False)
         prev_date = g[date_col].shift(1)
         df["days_since_prev_obs"] = (df[date_col] - prev_date).dt.days
@@ -89,7 +89,7 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
             for lag in lags:
                 df[f"{col}_lag_{lag}"] = g[col].shift(lag)
         df = df.drop(columns=lag_cols)
-        df = df.sort_values(by=date_col).reset_index(drop=True)
+        df = df.sort_values(by=date_col, kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

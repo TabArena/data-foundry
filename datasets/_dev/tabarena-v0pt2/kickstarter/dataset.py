@@ -76,7 +76,7 @@ class Kickstarter(AbstractCuratedDataset):
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data_dir = raw_dir / "data_files"
         # Read and concatenate all CSV files
-        df = pd.concat((pd.read_csv(csv_file) for csv_file in data_dir.glob("*.csv")), ignore_index=True)
+        df = pd.concat((pd.read_csv(csv_file) for csv_file in sorted(data_dir.glob("*.csv"))), ignore_index=True)
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:

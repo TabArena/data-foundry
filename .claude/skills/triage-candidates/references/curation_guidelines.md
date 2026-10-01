@@ -373,7 +373,7 @@ auditing, do **not** flag these:
   * **How many splits (TabArena convention):** roll the time horizon back from the newest data to create
     several split time points. At each point, train on all data before it and test on the data after it
     within the time horizon. Create the same number of splits as an IID or grouped task of that size would
-    get (`get_recommended_splits_dimensions`, e.g. 10 x 3 = 30 for 500-2,500 training rows), but never use a
+    get (the v2 protocol's `recommended_dimensions`, e.g. 10 x 3 = 30 for 500-2,500 training rows), but never use a
     split with less than 50% of the original data as training data: such a split is too unrepresentative
     of the original application.
   * **Check that the test windows are still meaningful.** With the 50% floor, all test windows come from the

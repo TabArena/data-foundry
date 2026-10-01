@@ -1,10 +1,10 @@
-"""The standard last steps of every curated frame: drop columns, cast dtypes, fix the row order.
+"""The standard steps of every curated frame: drop columns, cast dtypes, fix the row order.
 
-:class:`~data_foundry.v2.dataset.AbstractCuratedDataset` applies them after ``_clean`` from its
-declarations (``drop_columns``, ``categorical_features``, ``string_features``, ``datetime_features``,
-``shuffle``), so a dataset lists column names instead of writing the same pandas idioms again. The
-functions are public so ``_clean`` can also call them mid-way, for example when a filter needs a parsed
-date.
+:class:`~data_foundry.v2.dataset.AbstractCuratedDataset` applies ``cast_dtypes`` (from the ``FeatureTypes`` that
+``_feature_types`` returns) and ``order_rows`` (a stable sort by the time column, else a shuffle unless ``shuffle =
+False``) after ``_clean``. ``drop_columns`` is for ``_clean`` (it fails on a misspelled name), and ``anonymize_ids``
+gives stable anonymous ids. The functions are public so ``_clean`` can also call them mid-way, for example when a
+filter needs a parsed date.
 """
 
 from __future__ import annotations

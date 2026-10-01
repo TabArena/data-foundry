@@ -548,7 +548,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         ]
         for col in num_cols:
             df[col] = pd.to_numeric(df[col])
-        df = df.sort_values(by="VCF0004").reset_index(drop=True)
+        df = df.sort_values(by="VCF0004", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

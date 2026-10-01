@@ -678,6 +678,10 @@ class PredictiveMLSplitsMetadata:
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state",)
+    """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
+    container saved before ``split_random_state`` existed keeps verifying."""
+
     def __post_init__(self):
         """Validate the shape of the splits container and the horizon fields.
 

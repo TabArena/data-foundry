@@ -93,7 +93,7 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         cat_cols += [f"M{i}" for i in range(1, 10)]
         cat_cols += [f"id_{i}" for i in range(12, 39)]
         cat_cols += ["uid"]
-        df = df.sort_values(by=["Transaction_date"]).reset_index(drop=True)
+        df = df.sort_values(by=["Transaction_date"], kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -44,6 +44,13 @@ side (metadata, checks, the dataset review) is tracked in [`TODO.md`](TODO.md).
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (32 patients in `parkinsons_biomedical_voice_measurements`); show it next to the results.
 
+## Library version
+
+- [ ] **Require the data-foundry release that carries the v0.2 metadata.** v0.2 containers store
+  `split_random_state` (and `grouping` for grouped tasks); releases up to v0.0.5 forbid unknown fields and cannot load
+  them. Release data-foundry before uploading the rebuilt containers and raise TabArena's `data-foundry>=0.0.3` floor.
+  From this version on, `CuratedContainer.load` ignores fields it does not know, with a warning.
+
 ## Frame sizes of the v2 split protocol
 
 - [ ] **Temporal `_1m` versions ship up to 2.5M rows** (each split still trains on at most 1M and tests on at most

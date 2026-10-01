@@ -58,12 +58,13 @@ Your verdict is **advisory**. A human curator has the final say (same contract a
    `datasets/**/<unique_name>/<unique_name>.ipynb`. That matters where a dataset has sibling runs:
    a sub-sampled `<unique_name>_1m.ipynb` or an alternative target `<unique_name>_clf.ipynb` may be
    the run that shipped, and verifying the other one verifies a dataset nobody uses. If the record
-   has no pointer yet, resolve it with `data-foundry-curation sync-notebooks` (or list
+   has no pointer yet, resolve it with `.venv/bin/python -m data_foundry.curation.cli sync-notebooks` (or list
    `<unique_name>*.ipynb` in the dataset directory and match the UUID as in item 14). Read it in
    full: the metadata cell, every preprocessing step, the split construction, and the committed cell
    *outputs* (the `run_all_checks` tables are evidence you should use, not re-run).
-2. **The container** — the saved bundle. Either `local-data-warehouse/<unique_name>/<uuid>/` or, for
-   a shipped dataset, `BEYOND_ARENA.get_dataset("<unique_name>")`.
+2. **The container** — the saved bundle: the `build.path` in the `README.md` frontmatter, under the warehouse
+   (`<unique_name>/<uuid>/`, or `<version_of>/versions/<uuid>/` for a `_1m` version), or, for a shipped dataset,
+   `BEYOND_ARENA.get_dataset("<unique_name>")`.
 3. **The backlog record** — `curation/records/<unique_name>.md`, if it exists. Its `## Comments` hold
    the provenance and duplicate-check reasoning already done; do not redo settled work, and do not
    contradict it without new evidence.
@@ -90,7 +91,7 @@ container = BEYOND_ARENA.get_dataset("<unique_name>")
 report = run_bundle_checks(container)                       # prints the report
 ```
 
-For a whole collection: `python scripts/beyond_arena/check_collection_bundles.py --examples 5`.
+For a whole collection: `.venv/bin/python scripts/beyond_arena/check_collection_bundles.py --examples 5`.
 
 Then, in your own report:
 
@@ -110,7 +111,8 @@ audit decided for each kind of leak. Their numbers are the evidence for items 4,
 Then run the task probes: `.venv/bin/python scripts/v2/task_probes.py <unique_name>` (or `--built` to read the built
 container). On the shipped splits they compare dummy baselines (the train side's class shares or mean, and for a
 temporal regression or multiclass task the same from the newest data) with a linear model, a random forest and
-LightGBM, per group for a group-unit task, plus the best single feature. Their flags are the evidence for item 13.
+LightGBM (per group for a group-unit task with `mean`, `any` or `last`; a `select_*` task is scored per row), plus
+the best single feature. Their flags are the evidence for item 13.
 For a grouped task, `scripts/v2/group_probes.py <unique_name>` gives the IID vs grouped gap and a permutation test
 across groups (item 4).
 
@@ -135,7 +137,7 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
 | 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in the curation guidelines. |
 | 13 | **Trivial or empty** | Read the task-probe flags. `no_signal`: no model beats the dummy, so the features do not carry the target (wrong target, lost columns, or a task too noisy to rank models). `solved` (ROC AUC or R^2 at least 0.995) and `one_feature` (one feature with 95% of the best skill): first a leak or a deterministic target, run the leak probes. `no_spread`: all three untuned families tie, which criterion 4C calls trivial, unless the folds are too noisy to tell (`unstable`). `drift_baseline`: a constant from the newest data predicts as well as the models, so the task is mostly drift. Each flag is a question: report the numbers and propose `Trivial` only with a reason. The cheap findings (`splits_test_single_class`, `splits_test_minority_few`, `splits_test_target_constant`, `task_target_value_dominant`) say whether every fold can be scored. |
-| 14 | **Record pointer** | Does the record's `notebook_path` name *this* notebook, is it under the tree the dataset ships from (`datasets/beyond_iid/` for BeyondArena — never `datasets/_dev/`, which holds work in progress and superseded copies), and does this notebook's saved output carry the UUID the collection pins (`BEYOND_ARENA` entry / `datasets/beyond_iid/final_uuid_list.py`)? Does `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built? A mismatch means the record points at the wrong run, or the notebook was re-run after the collection was pinned — say which. `data-foundry-curation sync-notebooks --check` must be clean; evidence is the UUID string itself. |
+| 14 | **Record pointer** | Does the record's `notebook_path` name *this* notebook, is it under the tree the dataset ships from (`datasets/beyond_iid/` for BeyondArena — never `datasets/_dev/`, which holds work in progress and superseded copies), and does this notebook's saved output carry the UUID the collection pins (`BEYOND_ARENA` entry / `datasets/beyond_iid/final_uuid_list.py`)? Does `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built? A mismatch means the record points at the wrong run, or the notebook was re-run after the collection was pinned — say which. `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` must be clean; evidence is the UUID string itself. |
 | 15 | **Template conformance** | *v2:* the class validates on import (`dataset list` shows it), follows the current [`datasets/_template/v2/dataset.py`](../../../datasets/_template/v2/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `README.md` was regenerated after the last edit (`build_stale` is false when built). *v1:* does the notebook follow the *current* [`datasets/_template/_template.ipynb`](../../../datasets/_template/_template.ipynb)? Open the template and compare section by section, not from memory, since it changes. Today that means the headings *Dataset and Task Metadata → Preprocessing → Data Checks → Task Curation → Bundle → Bundle Checks → Export* in that order; `run_all_checks(..., problem_type=task_mold.problem_type)` (not the old `classification=`); a *Bundle Checks* cell with `run_bundle_checks(curated_data, ignore=[...]).raise_if_errors()` before `save()`, where every `ignore` entry carries its reason; and `verify_saved_container(...)` after `save()`. Any other deviation from the template needs a reason in `curation_comments` or a cell comment. Report each drift as a concrete edit; restructuring an old notebook must not change its preprocessing or split logic. |
 
 Read the selection criteria and processing conventions in [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md) before judging items 1–4 and
@@ -159,7 +161,7 @@ Read the selection criteria and processing conventions in [`.claude/skills/triag
 * **Do not edit committed notebook outputs.** They are the evidence trail.
 * **A notebook that moves or gets superseded needs its record updated.** If the run that ships
   changes — a `_1m` sub-sample replaces the full-size run, a notebook is renamed or relocated — set
-  the record's `notebook_path` / `v2_path` to the new one (or run `data-foundry-curation sync-notebooks`) in the
+  the record's `notebook_path` / `v2_path` to the new one (or run `.venv/bin/python -m data_foundry.curation.cli sync-notebooks`) in the
   same change. A stale pointer sends every reader to a notebook that did not produce the data, and
   `tests/test_records_integrity.py` fails on it.
 * If you record findings in the backlog record (`curation/records/<unique_name>.md`), follow the

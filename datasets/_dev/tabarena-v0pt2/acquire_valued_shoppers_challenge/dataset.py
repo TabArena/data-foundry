@@ -125,7 +125,9 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
             ],
             [],
         )
-        data = transactions.group_by("id").agg(*exprs).sort(by="offerdate")
+        # sorted by `id` within a date: the group-by returns its rows in any order, so a sort on the date alone left
+        # the row order (and the container) different on every run (2026-10-01)
+        data = transactions.group_by("id", maintain_order=True).agg(*exprs).sort(by=["offerdate", "id"])
         data.write_parquet(raw_dir / "merged_input_data.parquet")
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

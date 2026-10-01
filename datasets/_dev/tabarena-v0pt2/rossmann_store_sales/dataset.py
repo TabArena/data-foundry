@@ -75,7 +75,7 @@ class RossmannStoreSales(AbstractCuratedDataset):
         # Drop customer information. TODO: Enable split-specific data storage and feature engineering to utilize this information.
         df = df.drop(columns=["Customers"])
         df["StateHoliday"] = df["StateHoliday"].astype(str)
-        df = df.sort_values("Date").reset_index(drop=True)
+        df = df.sort_values("Date", kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

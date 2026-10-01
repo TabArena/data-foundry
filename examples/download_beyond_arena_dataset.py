@@ -41,10 +41,10 @@ def main(cache_dir: Path | None) -> None:
     print(f"  shape:       {container.dataset.shape}")
     print(f"  target:      {container.task_metadata.target_column_name}")
     print(f"  loaded from: {container.loaded_from_path}")
-    container.dataset_metadata.local_data_directory_base = "/home/lennart_priorlabs_ai/code/large_data_ensemble/data-foundry/local-data-warehouse"
 
     # Verify that the checksum matches the on-disk data (recompute it from the files).
     assert container.checksum == container._create_checksum(), "Checksum mismatch! The on-disk data may be corrupted."
+
 
 if __name__ == "__main__":
     override = Path(sys.argv[1]) if len(sys.argv) > 1 else None

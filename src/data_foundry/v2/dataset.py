@@ -32,12 +32,14 @@ From a notebook next to ``dataset.py``::
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import dataclasses
 import datetime as dt
 import inspect
 import io
 import re
+import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -62,6 +64,7 @@ from data_foundry.schema import (
     Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
+    as_column_list,
     resolve_warehouse_dir,
 )
 from data_foundry.v2 import (
@@ -77,6 +80,10 @@ DEFINITION_FILENAME = "dataset.py"
 
 REPORT_FILENAME = "README.md"
 """The generated report next to the definition file: the folder's README, which GitHub shows below its files."""
+
+CLI_COMMAND = ".venv/bin/python -m data_foundry.curation.cli"
+"""How the generated pages and messages spell the curation CLI: the repository's own environment, never an install
+that happens to be first on PATH."""
 
 DEFAULT_SPLITS_COMMENT = "Default splits."
 """The splits comment of every dataset on the recommended IID or grouped splits."""
@@ -97,11 +104,6 @@ AUTO: Any = _Auto()
 
 REGIME_TAGS = ("IID", "Non-IID", "Temporal", "Grouped", "GroupedTemporal")
 
-_UNSEEDED = re.compile(
-    r"uuid\.uuid[14]\(|\bnp\.random\.(rand|randn|randint|choice|shuffle|permutation|random)\(|default_rng\(\)"
-    r"|\brandom\.(random|choice|shuffle|sample|randint)\(|\.sample\((?![^)]*random_state)[^)]*\)"
-)
-"""Unseeded randomness in a definition: random ids, unseeded numpy/stdlib random, `sample` without a seed."""
 
 _TEXT_FIELDS = ("download_description", "bibtex", "curation_comments", "version_comment", "splits_comment")
 _BIBTEX_KEY = re.compile(r"@\w+\s*\{\s*([^,\s}]+)\s*,")
@@ -355,6 +357,8 @@ class AbstractCuratedDataset(ABC):
         if inspect.isabstract(cls):
             return
         _validate_definition(cls)
+        # the source as loaded: `reload` compares against it (the file may already hold the edited text)
+        cls._loaded_sources = {name: _source(cls, name) for name in ("_load_raw", "_prepare_raw_files")}
 
     def __init__(self) -> None:
         """Create the dataset; nothing is read until :attr:`raw` or :attr:`df` is first used."""
@@ -399,7 +403,8 @@ class AbstractCuratedDataset(ABC):
 
         old = type(self)
         new = load_definition(inspect.getfile(old))
-        keep_raw = all(_source(old, name) == _source(new, name) for name in ("_load_raw", "_prepare_raw_files"))
+        loaded = getattr(old, "_loaded_sources", {})
+        keep_raw = all(loaded.get(name) == new._loaded_sources[name] for name in new._loaded_sources)
         self.__class__ = new
         if not keep_raw:
             self._raw_cache, self._raw_loaded = None, False
@@ -434,10 +439,34 @@ class AbstractCuratedDataset(ABC):
         with _copy_on_write():
             cleaned = self._clean(_copy(self.raw))
             df, test = cleaned if isinstance(cleaned, tuple) else (cleaned, None)
+            self._check_declared_columns(df)
             df = self._standardize(df)
             if test is not None:
                 test = self._standardize(test, order=False)
         return df, test
+
+    def _check_declared_columns(self, df: pd.DataFrame) -> None:
+        """Fail with the attribute's name when a declared column is missing, or a split key has missing values."""
+        task = self.task_metadata
+        declared = {"target": [task.target_column_name], "stratify_on": as_column_list(task.stratify_on)}
+        if self.temporal is not None:
+            declared["temporal.on"] = [self.temporal.on]
+        if self.grouping is not None:
+            declared["grouping.on"] = as_column_list(self.grouping.on)
+            declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
+        for attribute, columns in declared.items():
+            missing = [c for c in columns if c not in df.columns]
+            if missing:
+                msg = f"{type(self).__name__}: `{attribute}` names {missing}, which `_clean` does not return."
+                raise DatasetDefinitionError(msg)
+        for attribute in ("temporal.on", "grouping.on"):
+            empty = [c for c in declared.get(attribute, []) if df[c].isna().any()]
+            if empty:
+                msg = (
+                    f"{type(self).__name__}: the split key `{attribute}` = {empty} has missing values "
+                    f"({int(df[empty].isna().any(axis=1).sum()):,} rows); drop or fill them in `_clean`."
+                )
+                raise DatasetDefinitionError(msg)
 
     def _standardize(self, df: pd.DataFrame, *, order: bool = True) -> pd.DataFrame:
         types = self.feature_types(df)
@@ -473,12 +502,13 @@ class AbstractCuratedDataset(ABC):
     def df(self) -> pd.DataFrame:
         """The curated frame (after the standard steps), cached until the definition changes.
 
-        Explore it freely: :meth:`check` and :meth:`build` rebuild the frame from the raw data and never
-        use this cached copy.
+        Explore it freely: it is a copy that shares no memory with the cached raw data, and :meth:`check` and
+        :meth:`build` rebuild the frame from the raw data and never use this cached copy.
         """
         self._refresh()
         if self._df_cache is None:
-            self._df_cache = self.process()
+            df, test = self.process()
+            self._df_cache = (df.copy(deep=True), None if test is None else test.copy(deep=True))
         return self._df_cache[0]
 
     @property
@@ -490,13 +520,18 @@ class AbstractCuratedDataset(ABC):
     def run_all_checks(self, df: pd.DataFrame | None = None) -> dict[str, pd.DataFrame]:
         """Run the exploratory :func:`~data_foundry.dataset_checks.run_all_checks` tables on ``df``."""
         df = self.df if df is None else df
-        with _quiet():
-            tables = run_all_checks(
-                data=df,
-                target_feature=self.target,
-                problem_type=self.problem_type,
-                print_report=False,
-            )
+        options = ("display.max_rows", "display.max_columns", "display.width", "display.max_colwidth")
+        restore = [x for name in options for x in (name, pd.get_option(name))]
+        try:
+            with _quiet(), pd.option_context(*restore):  # run_all_checks sets the display options globally
+                tables = run_all_checks(
+                    data=df,
+                    target_feature=self.target,
+                    problem_type=self.problem_type,
+                    print_report=False,
+                )
+        except (TypeError, ValueError) as error:  # an object column or a wrong class count: the bundle checks say so
+            return {"error": pd.DataFrame({"data checks not run": [f"{type(error).__name__}: {error}"]})}
         return dict(zip(("head", "summary", "numeric_stats", "cat_stats", "target"), tables, strict=True))
 
     # --- splits -------------------------------------------------------------------------------------
@@ -609,6 +644,8 @@ class AbstractCuratedDataset(ABC):
             plan = SplitPlan(splits=plan)
         if plan.df is None:
             plan.df = df
+        elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
+            plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
         if self.splits_comment is not None:
             plan.comment = self.splits_comment
         if not plan.comment:
@@ -651,16 +688,17 @@ class AbstractCuratedDataset(ABC):
         :meth:`build` in the report is kept, and marked stale when the checksum no longer matches.
         """
         self._refresh()
-        container = self.to_container()
-        stats = group_checks.group_stats(container)
-        result = CurationResult(
-            dataset=self,
-            container=container,
-            bundle_report=self._run_bundle_checks(container, verbose=verbose, group_stats=stats),
-            data_checks=self.run_all_checks(container.dataset),
-            decisions=list(self._decisions(self.raw, container.dataset)),
-            group_stats=stats,
-        )
+        with _copy_on_write():  # a hook that writes in place must not reach the cached raw data
+            container = self.to_container()
+            stats = group_checks.group_stats(container)
+            result = CurationResult(
+                dataset=self,
+                container=container,
+                bundle_report=self._run_bundle_checks(container, verbose=verbose, group_stats=stats),
+                data_checks=self.run_all_checks(container.dataset),
+                decisions=list(self._decisions(self.raw, container.dataset)),
+                group_stats=stats,
+            )
         if write_report:
             self._write_report(result)
         return result
@@ -670,11 +708,23 @@ class AbstractCuratedDataset(ABC):
 
         This is the only step that mints a UUID. The report records the UUID, checksum and provenance.
         """
+        from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
+
         result = self.check(write_report=False, verbose=verbose)
         result.bundle_report.raise_if_errors()
+        reviewed = read_report(self.report_path).get("checksum")
+        if reviewed and reviewed != result.container.checksum:
+            print(
+                f"Note: {self.unique_name} builds checksum {result.container.checksum}, not the {reviewed} of its "
+                f"{REPORT_FILENAME}: the definition, the raw files or the library changed since the last check.",
+            )
         with _quiet():
             save_path = result.container.save(resolve_warehouse_dir())
-        verify_saved_container(save_path, container=result.container, verbose=verbose).raise_if_errors()
+        try:
+            verify_saved_container(save_path, container=result.container, verbose=verbose).raise_if_errors()
+        except Exception:
+            shutil.rmtree(save_path, ignore_errors=True)  # no container in the warehouse without its record
+            raise
         if verbose:
             print(f"Saved {self.unique_name} as {result.container.uuid} to {save_path}")
         result.saved_path = save_path
@@ -689,25 +739,42 @@ class AbstractCuratedDataset(ABC):
         group_stats: group_checks.GroupStats | None = None,
     ) -> BundleCheckReport:
         accepted = tuple(self.accepted_check_warnings)
-        # a format-2 container: run_bundle_checks judges it by the v2 split protocol
-        report = run_bundle_checks(container, ignore=accepted, verbose=False)
-        own = [
-            *self._definition_checks(),
-            *group_checks.group_findings(container, group_stats),
-            *task_checks.task_findings(container),
-            *self._extra_checks(container),
-        ]
-        extra = [r for r in own if r.slug not in accepted]
-        if extra:
-            report.results = sorted([*report.results, *extra], key=lambda r: SEVERITY_ORDER[r.severity])
+        report = run_bundle_checks(container, verbose=False)  # a format-2 container: the v2 protocol checks included
+        shared = report.results
+        own: list[CheckResult] = []
+        for name, run in (
+            ("definition", self._definition_checks),
+            ("group", lambda: group_checks.group_findings(container, group_stats)),
+            ("task", lambda: task_checks.task_findings(container)),
+            ("extra", lambda: self._extra_checks(container)),
+        ):
+            try:
+                own += run()
+            except Exception as error:  # noqa: BLE001 - a broken check is a finding, not a crash
+                own.append(
+                    CheckResult("check_crashed", "error", f"the {name} checks crashed: {type(error).__name__}: {error}")
+                )
+        found = [*shared, *own]
+        unused = [slug for slug in accepted if slug not in {r.slug for r in found}]
+        if unused:
+            found.append(
+                CheckResult(
+                    "accepted_check_warnings_unused",
+                    "info",
+                    f"Accepted on purpose but not found: {unused}.",
+                    hint="Remove the entries that no longer apply, or fix a misspelled slug.",
+                ),
+            )
+        report.results = sorted([r for r in found if r.slug not in accepted], key=lambda r: SEVERITY_ORDER[r.severity])
+        report.ignored = accepted
         if verbose:
             print(report.summary())
         return report
 
     def _definition_checks(self) -> list[CheckResult]:
-        """Findings about ``dataset.py`` itself: scaffold markers left in the code."""
-        source = Path(inspect.getfile(type(self))).read_text().splitlines()
-        code = [(i, line.split("#", 1)[0]) for i, line in enumerate(source, start=1)]
+        """Findings about ``dataset.py`` itself: scaffold markers, a placeholder license, nondeterministic code."""
+        text = Path(inspect.getfile(type(self))).read_text()
+        source = text.splitlines()
         findings = []
         todo = [i for i, line in enumerate(source, start=1) if "TODO(verify)" in line]
         if todo:
@@ -719,15 +786,27 @@ class AbstractCuratedDataset(ABC):
                     hint="Resolve each marker (check the data, then write the step or delete the stub).",
                 ),
             )
-        random = [i for i, line in code if _UNSEEDED.search(line)]
-        if random:
+        if re.search(r"\bTODO\b", str(self.license)):
+            findings.append(
+                CheckResult(
+                    "definition_license_placeholder",
+                    "error",
+                    f"`license = {self.license!r}` is a placeholder; the shared placeholder check does not scan it.",
+                    hint="Write the license the source states, or None when it states none.",
+                ),
+            )
+        unstable = nondeterministic_calls(ast.parse(text))
+        if unstable:
+            listed = "; ".join(f"line {line}: {why}" for line, why in unstable[:10])
             findings.append(
                 CheckResult(
                     "definition_nondeterministic",
                     "error",
-                    f"{DEFINITION_FILENAME} uses unseeded randomness on line(s) {random[:20]}: "
-                    "every run gives other data.",
-                    hint="Use `anonymize_ids` for anonymous ids and a fixed `random_state=` / seed for sampling.",
+                    f"{DEFINITION_FILENAME} has {len(unstable)} call(s) whose result can change between runs or "
+                    f"machines: {listed}.",
+                    hint="Seed every random step (`random_state=`, a seeded `default_rng`, `anonymize_ids` for ids), "
+                    'sort with `kind="stable"`, wrap file listings in `sorted(...)`, and use `maintain_order=True` in '
+                    "a polars `group_by`.",
                 ),
             )
         return findings
@@ -769,6 +848,56 @@ def _copy(raw: Any) -> Any:
     if isinstance(raw, tuple):
         return tuple(_copy(v) for v in raw)
     return raw
+
+
+_SORTS = ("sort_values", "sort_index", "argsort")
+_LISTINGS = ("glob", "rglob", "iterdir", "listdir", "scandir")
+_STDLIB_RANDOM = ("random", "choice", "choices", "shuffle", "sample", "randint", "uniform", "gauss")
+
+
+def nondeterministic_calls(tree: ast.AST) -> list[tuple[int, str]]:  # noqa: C901 - a flat list of rules
+    """Calls in a definition whose result can change between runs or machines, as ``(line, reason)``.
+
+    Unseeded randomness (``sample`` or ``train_test_split`` without ``random_state``, ``np.random.*``, an unseeded
+    generator, the ``random`` module, ``uuid1`` / ``uuid4``); a pandas or numpy sort without ``kind="stable"`` (the
+    default quicksort breaks ties differently with and without AVX512); a polars ``group_by`` without
+    ``maintain_order=True`` (its row order changes between runs); and a file listing not wrapped in ``sorted``.
+    """
+    parents = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
+
+    def wrapped_in_sorted(node: ast.AST) -> bool:
+        for _ in range(3):  # sorted(x.glob()), sorted(list(x.glob())), sorted(map(str, x.glob()))
+            node = parents.get(node)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "sorted":
+                return True
+        return False
+
+    def constant(value: ast.AST | None) -> object:
+        return value.value if isinstance(value, ast.Constant) else None
+
+    found = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        name = func.attr if isinstance(func, ast.Attribute) else (func.id if isinstance(func, ast.Name) else "")
+        owner = ast.unparse(func.value) if isinstance(func, ast.Attribute) else ""
+        keywords = {k.arg: k.value for k in node.keywords if k.arg}
+        if name in _SORTS and constant(keywords.get("kind")) not in ("stable", "mergesort"):
+            found.append((node.lineno, f'`{name}` without kind="stable"'))
+        elif name == "group_by" and constant(keywords.get("maintain_order")) is not True:
+            found.append((node.lineno, "`group_by` without maintain_order=True"))
+        elif name in _LISTINGS and not wrapped_in_sorted(node):
+            found.append((node.lineno, f"`{name}` not wrapped in sorted()"))
+        elif name in ("sample", "train_test_split") and owner != "random" and "random_state" not in keywords:
+            found.append((node.lineno, f"`{name}` without random_state"))
+        elif owner in ("np.random", "numpy.random") and name not in ("default_rng", "RandomState"):
+            found.append((node.lineno, f"unseeded `{owner}.{name}`"))
+        elif name in ("default_rng", "RandomState") and not node.args and "seed" not in keywords:
+            found.append((node.lineno, f"`{name}()` without a seed"))
+        elif (owner == "random" and name in _STDLIB_RANDOM) or (owner == "uuid" and name in ("uuid1", "uuid4")):
+            found.append((node.lineno, f"unseeded `{owner}.{name}`"))
+    return sorted(found)
 
 
 def _source(cls: type, name: str) -> str | None:
@@ -904,6 +1033,10 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "a task is grouped or temporal, not both. For grouped data ordered in time, record the order as "
             "`Grouping(time_on=...)`; for a temporal split, the test rows are future rows whatever their group."
         )
+    if cls.grouping is not None and len(as_column_list(cls.grouping.on)) > 1:
+        fail("the split protocol supports one group column: build a single group key in `_clean`.")
+    if isinstance(cls.stratify_on, (list, tuple)) and len(cls.stratify_on) > 1:
+        fail("`stratify_on` takes one column: build a single stratification key in `_clean`.")
     if cls.grouping is not None and not clean_text(cls.grouping.definition or ""):
         fail(
             "`Grouping(definition=...)` is required: what one group is, why groups are held out, and the use case "
@@ -932,8 +1065,14 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
                 "these windows do not fix the prediction horizon (unit='unique', window=None, or `_make_splits`): "
                 "declare it as `Temporal(horizon=..., horizon_unit=...)`.",
             )
+    if custom_splits and cls.temporal is not None and cls.temporal.splits is not None:
+        fail("`Temporal(splits=...)` is ignored when the class implements `_make_splits`; declare one of them.")
+    if custom_splits and cls.subsample_to_budget:
+        fail("`subsample_to_budget` is ignored when the class implements `_make_splits`; sample there instead.")
     if cls.subsample_to_budget and cls.version_of is None:
         fail("`subsample_to_budget` makes a sub-sampled version: set `version_of` (and `version_comment`).")
+    if cls.subsample_to_budget and not cls.unique_name.endswith("_1m"):
+        fail("a version sub-sampled to the row budget (`subsample_to_budget`) is named `<name>_1m`.")
     if cls.version_of is not None and not clean_text(cls.version_comment or ""):
         fail("a version (`version_of`) needs a `version_comment`.")
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:
@@ -978,6 +1117,22 @@ def provenance(cwd: Path) -> dict[str, str | None]:
         return out.stdout.strip()
 
     sha = git("rev-parse", "HEAD")
-    if sha is not None and git("status", "--porcelain", "--", ".") not in (None, ""):
+    root = git("rev-parse", "--show-toplevel")
+    package = Path(__file__).resolve().parents[1]  # src/data_foundry: the code that builds the container
+    paths = ["."] + ([str(package)] if root and package.is_relative_to(Path(root).resolve()) else [])
+    if sha is not None and git("status", "--porcelain", "--", *paths) not in (None, ""):
         sha += "-dirty"
-    return {"data_foundry_version": package_version, "git_sha": sha}
+    return {"data_foundry_version": package_version, "git_sha": sha, "libraries": _library_versions()}
+
+
+def _library_versions() -> dict[str, str]:
+    """The versions of the libraries the data, the splits and the checksum depend on."""
+    import platform  # noqa: PLC0415
+
+    out = {"python": platform.python_version()}
+    for name in ("pandas", "numpy", "pyarrow", "scikit-learn", "polars"):
+        try:
+            out[name] = version(name)
+        except PackageNotFoundError:
+            continue
+    return out

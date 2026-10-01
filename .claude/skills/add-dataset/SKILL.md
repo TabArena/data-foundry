@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `data-foundry-curation dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. Replaces the old `/process-dataset` notebook scaffolder.
+description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `.venv/bin/python -m data_foundry.curation.cli dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. Replaces the old `/process-dataset` notebook scaffolder.
 argument-hint: <unique_name>
 user-invocable: true
 ---
@@ -31,12 +31,14 @@ structure, never facts.**
 * Anything you can derive from the curation record or from a convention → fill it in.
 * Anything that needs a look at the data → emit it as an *ordered, commented step* with a `# TODO(verify): …`
   marker saying what to check, in the method where it belongs.
-* Never invent a column name, a class label, a leak, or a horizon. `"TODO"` as a value is correct and safe; a
-  plausible-looking guess is not.
+* Never invent a column name, a class label, a leak, or a horizon. `"TODO"` as a value is correct and safe in a
+  free-text field; a plausible-looking guess is not. `domain`, `source` and `problem_type` take one of a fixed set of
+  values, so the class does not import with `"TODO"` there: pick the closest match from §A and say so in the report.
 
 TODO markers are enforced, not decorative: `dataset check` reports `meta_placeholder_left` for any `TODO` / `FIXME`
-in the metadata and `definition_todo_left` for any `TODO(verify)` left in `dataset.py`, and `dataset build` refuses
-to save while either remains. Say so in your report.
+in the metadata, `definition_license_placeholder` for a `license` that is still `"TODO"`, and `definition_todo_left`
+for any `TODO(verify)` left in `dataset.py`; all three are errors, and `dataset build` refuses to save while any
+remains. Say so in your report.
 
 ## What the base class does for you (do not re-implement it)
 
@@ -52,12 +54,24 @@ to save while either remains. Say so in your report.
   the time column for temporal tasks, otherwise a shuffle with seed 42 (`shuffle = False` to opt out, with a reason in
   `curation_comments`). Never shuffle, sort or `reset_index` yourself.
 * **Seeds:** one shuffle seed (42) and one split seed (4267) for the whole benchmark, fixed in the base class.
+* **Same data on every run and machine:** sorts take `kind="stable"`, file listings are `sorted(...)`, a polars
+  `group_by` keeps `maintain_order=True`, and a polars join's output is sorted before it is written
+  (`definition_nondeterministic` checks the first three). The rows and splits are then the same everywhere; only the
+  last bit of a numpy log or exp can differ between CPUs, so a rebuild elsewhere may give another checksum for a
+  log-scaled target.
+* **Refused at import:** besides missing attributes, a multi-column group key or `stratify_on` (build one key in
+  `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with a custom `_make_splits` (they would be
+  ignored), `subsample_to_budget` on a name without `_1m`, and `TemporalSplits` without `n_windows`, `cutoffs` or
+  `min_train_fraction`. After `_clean`, a declared column that is missing, or a group or time column with missing
+  values, stops the run with the attribute's name.
 * **Regime:** one object. A grouped task declares `grouping = Grouping(on=..., labels=..., prediction_unit=...,
   aggregation=..., context=..., definition=...)`, stored in the container; the `definition` (what a group is, why it
   is held out, the use case with its source) is required. A temporal task declares `temporal = Temporal(on=...,
   splits=TemporalSplits(...))`; a window of fixed length (calendar or rows) is the horizon, and only windows that do
   not fix one (`unit="unique"`, `window=None`, `_make_splits`) add `horizon=..., horizon_unit=...`. Neither is an IID
-  task. The flat `time_on`, `group_on`, `temporal_splits`, `time_horizon` attributes no longer import (patterns §C).
+  task. The flat `time_on`,
+  `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon` and `time_horizon_unit` attributes no
+  longer import (patterns, "The definition file").
 * **Splits:** the v2 split protocol (`src/data_foundry/v2/splits.py`): the recommended IID / grouped 3-fold
   cross-validation with the default comment; `Temporal(splits=TemporalSplits(...))` with at least 3 windows for
   temporal tasks (the comment and, for fixed-length windows, the horizon are derived); `subsample_to_budget = True` for a
@@ -92,7 +106,7 @@ Read the closest reference in full before writing (paths under `datasets/_dev/ta
 | Regime | Reference | What it shows |
 |---|---|---|
 | IID | `airfoil_self_noise/dataset.py` | The minimal definition: attributes, `_load_raw`, a short `_clean`. |
-| Grouped | `early_learning_predictors/dataset.py`, `musk/dataset.py` | `Grouping` with a `definition` citing the source (musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists, a sibling file used only in `explore.ipynb`. |
+| Grouped | `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `subsample_to_budget`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
@@ -116,7 +130,8 @@ problem type from the record. Then fill in, following `references/dataset_patter
    `df`. Cast mid-way in `_clean` (`cast_dtypes`) only when a later step needs the dtype.
 4. **Regime and splits:** IID: nothing to declare. Grouped: `grouping = Grouping(...)` from §C with the default
    split. Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))` from §C, with `splits_comment` saying
-   why this window; `horizon`/`horizon_unit` only when the window is not a calendar one.
+   why this window; `horizon`/`horizon_unit` only when the window is not a calendar one. A `splits_comment` replaces
+   the generated text, so restate the windows (and any sub-sampling or trimming) in it.
 5. **`accepted_check_warnings`:** leave empty. The curator fills it once they have seen which warnings apply, one
    reason per slug.
 6. **`_decisions`** (optional, §F) and **`_extra_checks`** (a dataset-specific check such as a leak test) only when
@@ -127,8 +142,8 @@ Do not write `explore.ipynb` cells beyond the template; that is the curator's sp
 ## Step 4: Point the curation record at the definition
 
 A record carries two pointers: `notebook_path` (the BeyondArena notebook it shipped from) and `v2_path` (its
-`dataset.py` in the TabArena v0.2 working copy). Run `data-foundry-curation sync-notebooks` to fill both from the
-tree; `--check` must stay clean (`tests/test_records_integrity.py` checks it).
+`dataset.py` in the TabArena v0.2 working copy). Run `.venv/bin/python -m data_foundry.curation.cli sync-notebooks`
+to fill both from the tree; `--check` must stay clean (`tests/test_records_integrity.py` checks it).
 
 ## Step 5: Verify the scaffold
 
@@ -137,8 +152,9 @@ tree; `--check` must stay clean (`tests/test_records_integrity.py` checks it).
 .venv/bin/ruff check --fix datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py && .venv/bin/ruff format datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py
 ```
 
-`dataset list` failing means the class does not validate (missing attribute, name/folder mismatch, a temporal task
-without windows, a grouping without a `definition`, …): fix it before handing off. ruff fixes the quoting and import order.
+`dataset list` logs `Skipping <name>: …` and exits non-zero when a class does not import or validate (missing
+attribute, name/folder mismatch, a temporal task without windows, a grouping without a `definition`, …): fix it
+before handing off. ruff fixes the quoting and import order.
 
 ## Step 6: The loop (curator, or you when the raw data is present)
 
@@ -164,7 +180,7 @@ drop, lag, filter, re-split or keep on purpose, with the numbers in a `curation_
 table). The precedents for each kind of leak are in that file's §3-§5.
 
 Then check that the task is worth benchmarking: dummy baselines against three untuned model families on the shipped
-splits, scored per group for a group-unit task, with a drift baseline for temporal regression and multiclass tasks:
+splits, scored per group for a group-unit task with `mean`, `any` or `last` (per row for `select_*`), with a drift baseline for temporal regression and multiclass tasks:
 
 ```bash
 .venv/bin/python scripts/v2/task_probes.py <unique_name>
@@ -182,9 +198,9 @@ small task this may be noise), `drift_baseline` (a constant from the newest data
 ```
 
 saves the container to the warehouse (new UUID), verifies the export, and records UUID, checksum and git commit in
-the `README.md` frontmatter. Only then pin the UUID in the collection registry. Never run `build` yourself unless
-asked: a new UUID for a shipped dataset breaks the collection pin. Log the change in the working copy's
-`CHANGELOG.md`.
+the `README.md` frontmatter. There is no v0.2 collection in the registry yet: record the UUID in the working
+copy's `CHANGELOG.md` and its `README.md` table, and never add it to `BEYOND_ARENA_UUIDS`. Never run `build`
+yourself unless asked.
 
 ## Step 8: Report
 

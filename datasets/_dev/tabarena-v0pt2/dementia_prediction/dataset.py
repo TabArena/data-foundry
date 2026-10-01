@@ -77,7 +77,7 @@ class DementiaPrediction(AbstractCuratedDataset):
         # 0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD)
         df["CDR"] = df["CDR"].replace({0.5: "very_mild_AD", 1: "mild_AD", 2: "moderate_AD", 0: "no_dementia"})
         df = df[df["CDR"] != "moderate_AD"]
-        df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"]).reset_index(drop=True)
+        df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"], kind="stable").reset_index(drop=True)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

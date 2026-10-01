@@ -25,7 +25,7 @@ $ARGUMENTS
 * A shipped dataset is suspected of a leak, or an audit finding needs a deep dive before the curator decides.
 
 Read the curation guidelines first, [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md): they are the
-rubric. (No need to start the dashboard for this.) `/verify-dataset` is for a filled-in notebook, not for a backlog record.
+rubric. (No need to start the dashboard for this.) `/verify-dataset` is for a filled-in definition (a v2 `dataset.py`, or a v1 notebook), not for a backlog record.
 
 ## Protocol
 
@@ -71,7 +71,7 @@ Do every step; skip only when an earlier step settles the verdict and say so.
      `**Assessment (AI, YYYY-MM-DD):** recommend ...; the human has the call.` Do not use the
      `AI (UNVERIFIED)` reviewer convention here; it is for provisional triage of untriaged records.
 6. **Leave the tree clean.** `git add` any new file under `curation/`, then run
-   `data-foundry-curation validate` and `pytest -q tests/test_records_integrity.py`.
+   `.venv/bin/python -m data_foundry.curation.cli validate` and `pytest -q tests/test_records_integrity.py`.
 
 ## Checking whether the data is generated
 
