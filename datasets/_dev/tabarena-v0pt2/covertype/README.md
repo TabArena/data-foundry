@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 581,012 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+
+| Cover_Type | Elevation | Aspect | Slope | Horizontal_Distance_To_Hydrology | Vertical_Distance_To_Hydrology | Horizontal_Distance_To_Roadways | Hillshade_9am | Hillshade_Noon | Hillshade_3pm | Horizontal_Distance_To_Fire_Points | Wilderness_Area |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Spruce/Fir | 3351 | 206 | 27 | 726 | 124 | 3813 | 192 | 252 | 180 | 2271 | Rawah Wilderness Area |
+| Lodgepole Pine | 2732 | 129 | 7 | 212 | 1 | 1082 | 231 | 236 | 137 | 912 | Comanche Peak Wilderness Area |
+| Lodgepole Pine | 2572 | 24 | 9 | 201 | 25 | 957 | 216 | 222 | 142 | 2191 | Comanche Peak Wilderness Area |
+| Lodgepole Pine | 2824 | 69 | 13 | 417 | 39 | 3223 | 233 | 214 | 110 | 6478 | Rawah Wilderness Area |
+| Lodgepole Pine | 2529 | 84 | 5 | 120 | 9 | 1092 | 227 | 231 | 139 | 4983 | Rawah Wilderness Area |
+
 ## Curation notes
 
 We use the data from UCI: all 581,012 observations (30 x 30 m raster cells) of the four wilderness areas and all 7 cover types.

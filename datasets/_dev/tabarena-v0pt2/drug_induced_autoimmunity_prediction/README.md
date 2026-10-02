@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 597 rows of the final frame (random rows: the frame is shuffled); 12 of 178 columns, the target first. Cells are cut at 40 characters.
+
+| Label | SMILES | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | OCCN1CCN(CCCN2c3ccccc3Sc4ccc(Cl)cc24)CC1 | 1.41 | 779.772 | 18.64 | 15.48 | 17.053 | 13.242 | 9.64 | 10.834 | 7.094 | 8.614 |
+| 1 | NC(=O)Cc1cccc(C(=O)c2ccccc2)c1N | 2.406 | 621.298 | 13.828 | 10.297 | 10.297 | 9.092 | 5.847 | 5.847 | 4.217 | 4.217 |
+| 1 | OC(=O)[C@@H]1C[C@H](CN1C(=O)CP(=O)(O)CC… | 1.501 | 762.117 | 21.562 | 17.618 | 18.512 | 14.355 | 11.226 | 13.256 | 8.965 | 11.421 |
+| 1 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](C)C=C2C=C… | 1.74 | 666.182 | 21.129 | 18.174 | 18.174 | 13.778 | 11.259 | 11.259 | 9.355 | 9.355 |
+| 1 | CC[C@H](C)C(=O)O[C@H]1C[C@@H](C)C=C2C=C… | 1.74 | 666.182 | 21.129 | 18.174 | 18.174 | 13.778 | 11.259 | 11.259 | 9.355 | 9.355 |
+
 ## Curation notes
 
 We start with the dataset from UCI.

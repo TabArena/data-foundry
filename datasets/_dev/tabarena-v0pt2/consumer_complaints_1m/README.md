@@ -150,6 +150,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,811,452 rows of the final frame (the oldest rows: the frame is sorted by `Date received`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| Company response to consumer | Date received | Product | Sub-product | Issue | Sub-issue | Consumer complaint narrative | Company | State | ZIP code | Low population area | Tag: Older American |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Problem with a credit reporting company… | Their investigation did not fix an erro… | I requested TransUnion to verify and se… | TRANSUNION INTERMEDIATE HOLDINGS, INC. | CT | 065XX | True | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Debt collection | Federal student loan debt | False statements or representation | Attempted to collect wrong amount | Accepted a student loan for the spring … | Continental Services Group, Inc. d/b/a … | TX | 787XX | True | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Incorrect information on your report | Account status incorrect | XXXX 's client XXXX XXXX is an identity… | TD BANK US HOLDING COMPANY | IL | 604XX | True | nan |
+| Closed with non-monetary relief | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Problem with a credit reporting company… | Their investigation did not fix an erro… | I have been dealing w/ XXXX , XXXX and … | Experian Information Solutions Inc. | GA | 302XX | True | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Credit card or prepaid card | General-purpose credit card or charge c… | Advertising and marketing, including pr… | Confusing or misleading advertising abo… | XXXX XXXX card : I am putting my compla… | AMERICAN EXPRESS COMPANY | MN | 55372 | False | nan |
+
 ## Curation notes
 
 The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complaint-database) has data from up until 2019. We use the government data up to the end of 2025.

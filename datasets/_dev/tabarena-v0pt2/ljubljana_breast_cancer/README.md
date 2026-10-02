@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 286 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Class | age | menopause | tumor-size | inv-nodes | node-caps | deg-malig | breast | breast-quad | irradiat |
+|---|---|---|---|---|---|---|---|---|---|
+| no-recurrence-events | 44.5 | premeno | 22 | 1 | no | 2 | right | left_up | no |
+| recurrence-events | 64.5 | ge40 | 22 | 25 | yes | 3 | left | left_low | yes |
+| no-recurrence-events | 44.5 | premeno | 47 | 1 | no | 2 | left | left_low | yes |
+| recurrence-events | 44.5 | premeno | 32 | 1 | no | 3 | right | right_up | no |
+| recurrence-events | 54.5 | premeno | 32 | 1 | no | 3 | right | left_up | yes |
+
 ## Curation notes
 
 We start with the data from UCI.

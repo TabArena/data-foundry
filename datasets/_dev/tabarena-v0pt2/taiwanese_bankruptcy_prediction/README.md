@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 6,819 rows of the final frame (random rows: the frame is shuffled); 12 of 93 columns, the target first. Cells are cut at 40 characters.
+
+| Bankrupt | ROA_C_Before_Interest_Depreciation | ROA_A_Before_Interest_After_Tax | ROA_B_Before_Interest_Depreciation_Afte… | Operating_Gross_Margin | Realized_Sales_Gross_Margin | Operating_Profit_Rate | PreTax_Net_Interest_Rate | AfterTax_Net_Interest_Rate | NonIndustry_Income_Expenditure_Revenue | Continuous_Interest_Rate_After_Tax | Operating_Expense_Rate |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 0.434456 | 0.481247 | 0.498742 | 0.596326 | 0.596326 | 0.998791 | 0.797012 | 0.809041 | 0.303237 | 0.781291 | 0.000221791 |
+| No | 0.542534 | 0.571413 | 0.590663 | 0.603417 | 0.603417 | 0.999041 | 0.797476 | 0.809375 | 0.303526 | 0.781638 | 8.55e+09 |
+| No | 0.584897 | 0.631433 | 0.617057 | 0.610567 | 0.609954 | 0.999079 | 0.797542 | 0.809422 | 0.30356 | 0.781684 | 0.000152062 |
+| Yes | 0.436942 | 0.490951 | 0.482413 | 0.607987 | 0.607951 | 0.998921 | 0.797265 | 0.809187 | 0.303408 | 0.781435 | 0.000278568 |
+| No | 0.506898 | 0.565526 | 0.561754 | 0.608693 | 0.608693 | 0.999103 | 0.797538 | 0.809447 | 0.303503 | 0.781699 | 0.000107658 |
+
 ## Curation notes
 
 - We map binary Bankrupt column to yes/no

@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 583 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Selector | Age | Gender | TB | DB | Alkphos | Sgpt | Sgot | TP | ALB | A/G |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2 | 19 | Male | 1.4 | 0.8 | 178 | 13 | 26 | 8 | 4.6 | 1.3 |
+| 1 | 12 | Male | 1 | 0.2 | 719 | 157 | 108 | 7.2 | 3.7 | 1 |
+| 1 | 60 | Male | 5.7 | 2.8 | 214 | 412 | 850 | 7.3 | 3.2 | 0.78 |
+| 1 | 42 | Female | 0.5 | 0.1 | 162 | 155 | 108 | 8.1 | 4 | 0.9 |
+| 1 | 40 | Male | 14.5 | 6.4 | 358 | 50 | 75 | 5.7 | 2.1 | 0.5 |
+
 ## Curation notes
 
 We keep the data as is as it does not require any further cleaning.

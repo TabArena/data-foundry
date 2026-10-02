@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 4,204 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 372 columns, the target first. Cells are cut at 40 characters.
+
+| y | time_index | X0 | X1 | X2 | X10 | X12 | X13 | X14 | X15 | X16 | X17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 130.81 | 0 | k | v | at | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 88.53 | 6 | k | t | av | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 76.26 | 7 | az | w | n | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| 80.62 | 9 | az | t | n | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 78.02 | 13 | az | v | n | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

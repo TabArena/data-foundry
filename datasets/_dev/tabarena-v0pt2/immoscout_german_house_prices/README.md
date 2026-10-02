@@ -147,6 +147,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 10,317 rows of the final frame (random rows: the frame is shuffled); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+
+| LogPrice | Type | Living_space | Lot | Usable_area | Rooms | Bedrooms | Bathrooms | Floors | Year_built | Furnishing_quality | Year_renovated |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 10.7996 | Mid-terrace house | 200 | 2571 | 370 | 5 | 1 | 1 | 3 | nan | refined | nan |
+| 13.1224 | nan | 125 | 174 | 70 | 6 | 3 | 2 | 3 | 1990 | normal | 2015 |
+| 13.4981 | Residential property | 90 | 693 | 15 | 4 | 2 | 1 | nan | 1920 | refined | nan |
+| 13.1616 | Mid-terrace house | 255 | 752 | nan | 6 | 4 | 3 | 2 | 2009 | nan | 2009 |
+| 14.581 | Villa | 624 | 2288 | 150 | 14 | 4 | 5 | 5 | 1904 | nan | 2020 |
+
 ## Curation notes
 
 We treat this as an IID time-independent task, because the prices is not sold prices but instead the offer price, so the snapshot here represents a task where someone would want to predict the price they should offer for their house given other houses that are currently on the market. Thus, it seems like a real IID task where someone would want to build a model to know how much they should offer their houses at in the current market (with the limitation that past trends are ignored)

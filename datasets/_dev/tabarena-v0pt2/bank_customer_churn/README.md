@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 10,000 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| churn | credit_score | country | gender | age | tenure | balance | products_number | credit_card | active_member | estimated_salary |
+|---|---|---|---|---|---|---|---|---|---|---|
+| No | 596 | Germany | Male | 32 | 3 | 96709.1 | 2 | 0 | 0 | 41788.4 |
+| No | 623 | France | Male | 43 | 1 | 0 | 2 | 1 | 1 | 146379 |
+| No | 601 | Spain | Female | 44 | 4 | 0 | 2 | 1 | 0 | 58561.3 |
+| No | 506 | Germany | Male | 59 | 8 | 119152 | 2 | 1 | 1 | 170680 |
+| No | 560 | Spain | Female | 27 | 7 | 124996 | 1 | 1 | 1 | 114670 |
+
 ## Curation notes
 
 - We remove the customer_id column.

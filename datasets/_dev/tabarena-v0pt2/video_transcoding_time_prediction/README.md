@@ -146,6 +146,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 68,784 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+
+| log_transcoding_time | video_id | duration | codec | width | height | bitrate | framerate | i | p | b | frames |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1.00357 | 4b7b-FY4JPI | 203.198 | flv | 320 | 240 | 239336 | 29 | 104 | 5974 | 0 | 6078 |
+| 3.83227 | 2SkA-cUEaJ0 | 490.6 | h264 | 480 | 360 | 300437 | 25 | 256 | 12010 | 0 | 12266 |
+| 0.740031 | 2TXm-QHXCzU | 270.655 | vp8 | 640 | 480 | 652967 | 30.063 | 89 | 8028 | 0 | 8117 |
+| -0.345311 | 1ZzJ-T2FJAw | 250.017 | h264 | 320 | 240 | 153059 | 29 | 128 | 7366 | 0 | 7494 |
+| 0.408128 | 1WrA-SRsgEk | 384.451 | h264 | 640 | 480 | 646432 | 29 | 205 | 11318 | 0 | 11523 |
+
 ## Curation notes
 
 We use the tabular prediction task from the UCI archive, which is a video transcoding time prediction task. The data is non-IID and grouped by video, with multiple transcoding measurements per video. The target variable is the transcoding time, and the features include various characteristics of the videos and transcoding settings.

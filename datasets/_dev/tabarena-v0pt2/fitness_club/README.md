@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,500 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| attended | months_as_member | weight | days_before | day_of_week | time | category |
+|---|---|---|---|---|---|---|
+| Yes | 15 | 65.47 | 6 | Wed | AM | HIIT |
+| Yes | 18 | 77.85 | 8 | Thu | AM | Strength |
+| No | 13 | 67.26 | 10 | Fri | AM | Cycling |
+| No | 7 | 86.7 | 12 | Sat | AM | HIIT |
+| No | 5 | 135.18 | 8 | Thu | AM | HIIT |
+
 ## Curation notes
 
 - We dropped the booking_id column.

@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+
+| bad_customer | month | credit_amount | credit_term | age | sex | education | product_type | having_children_flg | region | income | family_status |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Yes | 3 | 9500 | 9 | 22 | female | Secondary special education | Computers | 0 | 2 | 19000 | Married |
+| No | 8 | 52500 | 24 | 63 | female | Higher education | Tourism | 0 | 2 | 1000 | Another |
+| No | 4 | 9500 | 3 | 32 | male | Higher education | Household appliances | 1 | 2 | 36000 | Another |
+| No | 10 | 52500 | 6 | 64 | male | Higher education | Furniture | 0 | 2 | 51000 | Another |
+| No | 5 | 8000 | 12 | 34 | female | Secondary special education | Cell phones | 1 | 2 | 21000 | Another |
+
 ## Curation notes
 
 - We renamed the values of the target variable to be more descriptive.

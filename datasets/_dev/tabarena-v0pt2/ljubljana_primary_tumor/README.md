@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 302 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+
+| class | age | sex | histologic-type | degree-of-diffe | bone | bone-marrow | lung | pleura | peritoneum | liver | brain |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| pancreas | 30-59 | male | nan | poorly | no | no | yes | no | yes | yes | no |
+| kidney | 30-59 | male | nan | nan | yes | no | no | no | no | no | no |
+| thyroid | 30-59 | female | adeno | poorly | yes | no | no | yes | no | yes | no |
+| prostate | >=60 | male | adeno | well | no | no | yes | no | no | yes | no |
+| lung | 30-59 | female | anaplastic | poorly | no | no | no | yes | no | no | yes |
+
 ## Curation notes
 
 We start with the data from UCI.

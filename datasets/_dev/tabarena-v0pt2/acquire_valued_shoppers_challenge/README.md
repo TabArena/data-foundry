@@ -147,6 +147,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 160,057 rows of the final frame (the oldest rows: the frame is sorted by `offerdate`); 12 of 112 columns, the target first. Cells are cut at 40 characters.
+
+| target | total_spend | offervalue | offerdate | day_of_week | day_of_month | day_of_year | has_bought_company | has_bought_company_q | has_bought_company_a | has_bought_category | has_bought_category_q |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2126.33 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 2 |
+| 1 | 1982.91 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
+| 0 | 2016.96 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| 1 | 705.58 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 5 | 6 |
+| 1 | 3945.34 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 1 | 1 | 2.99 | 2 | 2 |
+
 ## Curation notes
 
 We follow the preprocessing from TabRed https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave (which follows a top solution https://github.com/MLWave/kaggle_acquire-valued-shoppers-challenge).

@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,482,486 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| price | name | item_condition_id | category_name | brand_name | shipping | item_description |
+|---|---|---|---|---|---|---|
+| 2.77259 | POPULAR STYLE HEADBAND FREE SH | 1 | Women/Women's Accessories/Hair Accessor… |  | 1 | Designer style Great grip Free fast shi… |
+| 4.70048 | bundle for hollywood | 3 | Women/Other/Other |  | 0 | bundle for hollywood |
+| 2.56495 | Levi capris sz 12 | 3 | Women/Pants/Capris, Cropped | Levi's® | 0 | White Capri pants by Levi size 12. In g… |
+| 3.29584 | The trash pack - purple series | 3 | Kids/Other/Other |  | 0 | 1 large trash pack with seven character… |
+| 2.99573 | VS PINK Jacket | 3 | Women/Athletic Apparel/Jackets | PINK | 0 | pink vs pink jacket! zips and buttons. … |
+
 ## Curation notes
 
 We start from the Kaggle competition dataset.

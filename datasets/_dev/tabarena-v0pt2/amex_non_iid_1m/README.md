@@ -163,6 +163,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,500,000 rows of the final frame (random rows: the frame is shuffled); 12 of 191 columns, the target first. Cells are cut at 40 characters.
+
+| target | customer_ID | S_2 | P_2 | D_39 | B_1 | B_2 | R_1 | S_3 | D_41 | B_3 | D_42 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0b1ecd1e9fd72ebf6e3188c581e90de0210c1d3… | 2017-07-08 00:00:00 | 1.00035 | 0 | 0.00720631 | 0.814319 | 0.00319791 | nan | 0 | 0.00475611 | nan |
+| 1 | 3348d5b84899bcd7b7855e71c5fa1eaca8e8c86… | 2017-04-06 00:00:00 | 0.570044 | 0 | 0.118286 | 0.124872 | 0.00728537 | 0.463106 | 0 | 0.0692259 | nan |
+| 0 | 542d48aa58cd662a299cb73f613208072a9b765… | 2017-04-26 00:00:00 | 0.563752 | 0 | 0.00400571 | 1.00672 | 0.0015565 | nan | 0.118784 | 0.0518902 | nan |
+| 0 | c2467127435daf0eb65768e143744cc75747f93… | 2017-03-07 00:00:00 | 0.526248 | 0 | 0.073351 | 0.125622 | 0.00396888 | 0.108674 | 0 | 0.114879 | nan |
+| 1 | 224bef4f8a3a3a294785d6f6551396a702db899… | 2017-07-31 00:00:00 | 0.571854 | 0 | 0.0135641 | 1.00864 | 0.000595727 | 0.127715 | 0 | 0.00718528 | nan |
+
 ## Curation notes
 
 We start with the raw data from Kaggle and do not apply any further preprocessing to simulate a pipeline that can handle raw non-IID grouped data.

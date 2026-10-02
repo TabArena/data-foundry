@@ -144,6 +144,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 27,195 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 387 columns, the target first. Cells are cut at 40 characters.
+
+| price_doc | timestamp | full_sq | life_sq | floor | max_floor | material | build_year | num_room | kitch_sq | state | product_type |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11.8208 | 2011-08-20 00:00:00 | 43 | 27 | 4 | nan | nan | nan | nan | nan | nan | Investment |
+| 12.0809 | 2011-08-23 00:00:00 | 34 | 19 | 3 | nan | nan | nan | nan | nan | nan | Investment |
+| 11.7948 | 2011-08-27 00:00:00 | 43 | 29 | 2 | nan | nan | nan | nan | nan | nan | Investment |
+| 11.8995 | 2011-09-01 00:00:00 | 89 | 50 | 9 | nan | nan | nan | nan | nan | nan | Investment |
+| 12.2648 | 2011-09-05 00:00:00 | 77 | 77 | 4 | nan | nan | nan | nan | nan | nan | Investment |
+
 ## Curation notes
 
 We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).

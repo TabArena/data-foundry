@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 2,369 rows of the final frame (the oldest rows: the frame is sorted by `review_date`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| rating | roaster | name | location | origin | roast | review_date | desc_1 | desc_3 | agtron_lower | agtron_upper | NT_price |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 95 | Branch Street Coffee Roasters | Kenya Konyu | Youngstown, Ohio | Kirinyaga District, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | Vibrant, rich-toned, sweetly-tart. Tart… | A multi-layered Kenya coffee with a per… | 57 | 81 | nan |
+| 92 | Magnolia Coffee | Guatemala Finca San Gerardo | Charlotte, North Carolina | Lake Amatitlán area, south-central Guat… | Medium-Light | 2018-10-01 00:00:00 | Crisp, richly sweet. Magnolia, dried pe… | A friendly, floral-toned Guatemala cup … | 52 | 72 | nan |
+| 95 | Dragonfly Coffee Roasters | Hacienda La Esmeralda Cabana Geisha Nat… | Boulder, Colorado | Boquete growing region, western Panama | Medium-Light | 2018-10-01 00:00:00 | Rich, resonant, high-toned. Lychee, lil… | A complex, multi-layered, exquisitely c… | 57 | 83 | nan |
+| 96 | Dragonfly Coffee Roasters | Finca La Aurora Camilina Geisha | Boulder, Colorado | Piedra Candela, Chiriqui Province, far … | Medium-Light | 2018-10-01 00:00:00 | Crisp, elegantly sweet, rich-toned. Dri… | Tropical fruit- and spice-toned aromati… | 56 | 76 | nan |
+| 96 | Barrington Coffee Roasting | Twenty Five | Lee, Massachusetts | Ethiopia; Papua New Guinea; Guatemala | Medium-Light | 2018-10-01 00:00:00 | Evaluated as espresso. Luminous, comple… | Barrington’s anniversary blend is worth… | 50 | 74 | nan |
+
 ## Curation notes
 
 We start with the Kaggle version. Note, we acknowledge that the dataset is not of the highest quality and likely does not represent a real-world prediction task. Nevertheless, it can be used to test models.

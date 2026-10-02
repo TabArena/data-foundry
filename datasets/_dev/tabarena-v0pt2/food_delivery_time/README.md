@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 45,451 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Time_taken(min) | Delivery_person_ID | Delivery_person_Age | Delivery_person_Ratings | Restaurant_latitude | Restaurant_longitude | Delivery_location_latitude | Delivery_location_longitude | Type_of_order | Type_of_vehicle |
+|---|---|---|---|---|---|---|---|---|---|
+| 36 | AGRRES14DEL01 | 37 | 4.3 | 27.1619 | 78.0402 | 27.2019 | 78.0802 | Snack | motorcycle |
+| 24 | CHENRES13DEL03 | 29 | 5 | 13.027 | 80.2548 | 13.117 | 80.3448 | Buffet | scooter |
+| 34 | HYDRES14DEL02 | 22 | 4.1 | 17.4262 | 78.4075 | 17.5062 | 78.4875 | Meal | motorcycle |
+| 24 | COIMBRES06DEL03 | 38 | 4.6 | 11.0213 | 76.995 | 11.0513 | 77.025 | Buffet | motorcycle |
+| 28 | COIMBRES08DEL01 | 33 | 4.9 | 11.0019 | 76.9763 | 11.0119 | 76.9863 | Meal | electric_scooter |
+
 ## Curation notes
 
 - We dropped entries with a duplicated ID, keeping only the first one.

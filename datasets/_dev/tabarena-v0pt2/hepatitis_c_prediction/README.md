@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 608 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Category | Age | Sex | ALB | ALT | AST | BIL | CHE | CHOL | CREA | GGT | PROT |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0=Blood Donor | 42 | m | 44 | 24 | 19 | 7 | 10.83 | 6.28 | 95 | 20 | 73 |
+| 0=Blood Donor | 32 | m | 44 | 22 | 22 | 17 | 4.15 | 3.57 | 78 | 24 | 75 |
+| 0=Blood Donor | 48 | m | 46 | 29 | 28 | 13 | 10.07 | 8.28 | 98 | 29 | 83 |
+| 0=Blood Donor | 38 | m | 48 | 23 | 22 | 8 | 10.53 | 7.51 | 87 | 43 | 83 |
+| 1=Hepatitis | 29 | m | 49 | 53 | 39 | 15 | 8.79 | 3.6 | 79 | 37 | 90 |
+
 ## Curation notes
 
 We start with the data from UCI.

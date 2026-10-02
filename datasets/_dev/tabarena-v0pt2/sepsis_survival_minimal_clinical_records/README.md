@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 110,204 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| sepsis_outcome_after9pt5_days_in_hospit… | age_years | episode_number | gender |
+|---|---|---|---|
+| Alive | 47 | 1 | Female |
+| Alive | 64 | 1 | Female |
+| Alive | 24 | 1 | Female |
+| Alive | 77 | 1 | Male |
+| Alive | 82 | 1 | Female |
+
 ## Curation notes
 
 We use only the primary cohort from Norway and ignore the subset and the small data (137 samples) from the South Korea cohort.

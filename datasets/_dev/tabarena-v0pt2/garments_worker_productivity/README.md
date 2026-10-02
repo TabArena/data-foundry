@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,197 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 16 columns, the target first. Cells are cut at 40 characters.
+
+| actual_productivity | date | quarter | department | day | team | targeted_productivity | no_of_style_change | no_of_workers | days_since_prev_obs | smv_lag_1 | wip_lag_1 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.8865 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 1 | 0.75 | 0 | 8 | nan | nan | nan |
+| 0.755167 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 2 | 0.75 | 0 | 8 | nan | nan | nan |
+| 0.593056 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 4 | 0.75 | 0 | 18 | nan | nan | nan |
+| 0.540729 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 7 | 0.8 | 0 | 8 | nan | nan | nan |
+| 0.676667 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 8 | 0.75 | 0 | 8 | nan | nan | nan |
+
 ## Curation notes
 
 - We fix typos in data entries (e.g., "finishing " becomes "finishing").

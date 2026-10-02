@@ -147,6 +147,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 2,126 rows of the final frame (random rows: the frame is shuffled); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+
+| NSP | LB | AC | FM | UC | ASTV | MSTV | ALTV | MLTV | DL | DS | DP |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 133 | 2 | 12 | 3 | 46 | 1.1 | 0 | 15.4 | 2 | 0 | 0 |
+| 1 | 125 | 0 | 1 | 8 | 62 | 1.7 | 0 | 1.1 | 7 | 0 | 0 |
+| 1 | 131 | 5 | 3 | 5 | 60 | 2.1 | 0 | 0.9 | 6 | 0 | 1 |
+| 1 | 131 | 8 | 0 | 4 | 29 | 1.3 | 0 | 4.5 | 0 | 0 | 0 |
+| 1 | 125 | 0 | 0 | 8 | 64 | 1.3 | 0 | 2.6 | 7 | 0 | 1 |
+
 ## Curation notes
 
 We use the data from UCI and the 3 class problem of predicting NSP as it is more medical relevant.

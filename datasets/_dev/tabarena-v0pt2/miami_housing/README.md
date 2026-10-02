@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 13,776 rows of the final frame (random rows: the frame is shuffled); 12 of 16 columns, the target first. Cells are cut at 40 characters.
+
+| SALE_PRC | LATITUDE | LONGITUDE | LND_SQFOOT | TOT_LVG_AREA | SPEC_FEAT_VAL | RAIL_DIST | OCEAN_DIST | WATER_DIST | CNTR_DIST | SUBCNTR_DI | HWY_DIST |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 12.5947 | 25.9535 | -80.3431 | 4500 | 1583 | 2182 | 25820.3 | 73552.7 | 1304.1 | 81077.3 | 79137.1 | 426.6 |
+| 12.6903 | 25.5322 | -80.3798 | 5000 | 2120 | 1540 | 13638.4 | 15942.3 | 10847.7 | 108098 | 60813.3 | 497.4 |
+| 12.1007 | 25.9716 | -80.182 | 7500 | 1063 | 0 | 5077.4 | 20899.4 | 5955.9 | 55838 | 55838 | 5349 |
+| 13.3677 | 25.7407 | -80.2598 | 5000 | 1837 | 5234 | 3152.2 | 8549.3 | 4062 | 25623.7 | 3199.4 | 15719.2 |
+| 12.8347 | 25.9632 | -80.1821 | 5713 | 2140 | 16500 | 3373.8 | 20809.2 | 4580.4 | 58837.2 | 58837.2 | 3581.9 |
+
 ## Curation notes
 
 - We log scale the target.

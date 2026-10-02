@@ -146,6 +146,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 6,598 rows of the final frame (random rows: the frame is shuffled); 12 of 168 columns, the target first. Cells are cut at 40 characters.
+
+| class | molecule_name | feature_0 | feature_1 | feature_2 | feature_3 | feature_4 | feature_5 | feature_6 | feature_7 | feature_8 | feature_9 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| non-musk | 28e8ec1911ce | 35 | -196 | -129 | 11 | -91 | 85 | -46 | -2 | 11 | -158 |
+| non-musk | cad5a1263617 | 42 | -58 | 24 | 114 | -117 | 65 | -160 | 57 | -213 | 15 |
+| non-musk | 28e8ec1911ce | 43 | -179 | -39 | -109 | -117 | 32 | -164 | 50 | -232 | 144 |
+| non-musk | 70081069ef9c | 128 | -193 | -87 | 28 | -117 | 72 | 27 | -106 | -21 | -24 |
+| non-musk | cad5a1263617 | 34 | -193 | -143 | 148 | -67 | -61 | 55 | -2 | -41 | -133 |
+
 ## Curation notes
 
 - We rename the molecule IDs to remove the target leakage from the names.

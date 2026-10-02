@@ -4,6 +4,13 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-02 (README: sample rows)
+
+- Every dataset `README.md` has a "Sample rows" section after "Dataset and task": the first 5 rows of the final frame
+  (random rows after the shuffle; the oldest rows of a temporal task), the target first, at most 12 columns, cells cut
+  at 40 characters. All 130 READMEs are regenerated with `dataset check`; no container or UUID changes. The
+  `explore.ipynb` workbenches stay without outputs: the README is the evidence page, with a staleness check.
+
 ## 2026-10-02 (probe scripts moved into the verify-dataset skill)
 
 - The leak, task and group probes and the collection bundle check moved from `scripts/v2/` and

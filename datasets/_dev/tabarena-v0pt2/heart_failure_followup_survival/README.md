@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 299 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| DEATH_EVENT | age | anaemia | creatinine_phosphokinase | diabetes | ejection_fraction | high_blood_pressure | platelets | serum_creatinine | serum_sodium | sex | smoking |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 70 | 0 | 582 | 0 | 40 | 0 | 51000 | 2.7 | 136 | 1 | 1 |
+| 0 | 50 | 1 | 298 | 0 | 35 | 0 | 362000 | 0.9 | 140 | 1 | 1 |
+| 1 | 45 | 0 | 2442 | 1 | 30 | 0 | 334000 | 1.1 | 139 | 1 | 0 |
+| 1 | 80 | 1 | 123 | 0 | 35 | 1 | 388000 | 9.4 | 133 | 1 | 1 |
+| 0 | 42 | 0 | 102 | 1 | 40 | 0 | 237000 | 1.2 | 140 | 1 | 0 |
+
 ## Curation notes
 
 We use the data as is from UCI.

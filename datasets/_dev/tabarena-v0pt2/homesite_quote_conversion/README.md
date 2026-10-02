@@ -144,6 +144,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 260,753 rows of the final frame (random rows: the frame is shuffled); 12 of 296 columns, the target first. Cells are cut at 40 characters.
+
+| QuoteConversion_Flag | Original_Quote_Date | Field6 | Field7 | Field8 | Field9 | Field10 | Field11 | Field12 | CoverageField1A | CoverageField1B | CoverageField2A |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2014-03-12 00:00:00 | E | 14 | 0.9392 | 0.0006 | 1487 | 1.3045 | N | 1 | 1 | 1 |
+| 1 | 2014-03-23 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 5 | 8 | 5 |
+| 0 | 2013-06-27 00:00:00 | B | 23 | 0.9403 | 0.0006 | 965 | 1.02 | N | 9 | 15 | 9 |
+| 1 | 2014-03-25 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 11 | 18 | 11 |
+| 0 | 2013-06-29 00:00:00 | B | 24 | 0.9403 | 0.0006 | 965 | 1.02 | N | 19 | 24 | 19 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

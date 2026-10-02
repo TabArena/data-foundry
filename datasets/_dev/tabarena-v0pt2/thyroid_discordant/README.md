@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 3,711 rows of the final frame (random rows: the frame is shuffled); 12 of 27 columns, the target first. Cells are cut at 40 characters.
+
+| discordant | age | sex | on_thyroxine | query_on_thyroxine | on_antithyroid_medication | sick | pregnant | thyroid_surgery | I131_treatment | query_hypothyroid | query_hyperthyroid |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| negative | 11 | F | f | f | t | f | f | f | f | f | f |
+| negative | 19 | M | f | f | f | f | f | f | f | f | f |
+| negative | 59 | F | f | f | f | f | f | f | f | f | f |
+| negative | 73 | F | f | f | f | f | f | f | f | f | t |
+| negative | 33 | F | f | f | f | f | t | f | f | f | t |
+
 ## Curation notes
 
 We start with the .data file from UCI and add columns and encode nan values.

@@ -161,6 +161,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,212 rows of the final frame (random rows: the frame is shuffled); 12 of 138 columns, the target first. Cells are cut at 40 characters.
+
+| algorithm | Frac_Neg_Body | Frac_Pos_Body | Frac_Unary_Rules | Frac_Binary_Rules | Frac_Ternary_Rules | Frac_Integrity_Rules | Tight | Problem_Variables | Free_Problem_Variables | Assigned_Problem_Variables | Constraints |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| clasp/2.1.3/h11-n1 | 0.0094 | 0.8846 | 0.0077 | 0.0045 | 0.5951 | 0.4004 | 0 | 53071 | 44709 | 8362 | 158491 |
+| clasp/2.1.3/h4-n1 | 0.0073 | 0.7807 | 0.0051 | 0.6897 | 0.2181 | 0.1476 | 1 | 9283 | 6338 | 2945 | 23907 |
+| clasp/2.1.3/h1-n1 | 0.0462 | 0.9792 | 0.0045 | 0.0886 | 0.7975 | 0.0886 | 1 | 7516 | 7074 | 442 | 23391 |
+| clasp/2.1.3/h5-n1 | 0.0459 | 0.9573 | 0.0185 | 0.1224 | 0.7287 | 0.0002 | 0 | 215697 | 215335 | 362 | 792842 |
+| clasp/2.1.3/h4-n1 | 0.0024 | 0.8266 | 0.0007 | 0.0088 | 0.2024 | 0.0195 | 1 | 37516 | 25890 | 11626 | 144822 |
+
 ## Curation notes
 
 We get the data from ASlib and merge them into one file.

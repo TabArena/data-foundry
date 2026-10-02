@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled); 12 of 21 columns, the target first. Cells are cut at 40 characters.
+
+| good_or_bad_customer | checking_status | duration_months | credit_history | credit_purpose | credit_amount | savings_status | employment_since | installment_rate_percent | personal_status_sex | other_debtors | residence_since |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| bad | <0 DM | 18 | existing credits paid duly till now | radio/television | 3190 | < 100 DM | 1 <= ... < 4 years | 2 | female: divorced/separated/married | none | 2 |
+| good | <0 DM | 18 | existing credits paid duly till now | car (new) | 4380 | 100 <= ... < 500 DM | 1 <= ... < 4 years | 3 | male: single | none | 4 |
+| good | <0 DM | 24 | all credits at this bank paid duly | car (new) | 2325 | 100 <= ... < 500 DM | 4 <= ... < 7 years | 2 | male: single | none | 3 |
+| good | >= 200 DM / salary assignments for >= 1… | 12 | existing credits paid duly till now | radio/television | 1297 | < 100 DM | 1 <= ... < 4 years | 3 | male: married/widowed | none | 4 |
+| good | no checking account | 33 | critical account / other credits existi… | car (used) | 7253 | < 100 DM | 4 <= ... < 7 years | 3 | male: single | none | 2 |
+
 ## Curation notes
 
 - We reversed the original ordinal encoding.

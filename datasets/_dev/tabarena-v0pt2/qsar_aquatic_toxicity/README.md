@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 546 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| LC50 | TPSA | SAacc | H-050 | MLOGP | RDCHI | GATS1p | nN | C-040 |
+|---|---|---|---|---|---|---|---|---|
+| 2.072 | 90.37 | 131.635 | 3 | 0.332 | 2.706 | 1.313 | 3 | 1 |
+| 6.848 | 38.33 | 54.156 | 1 | 1.737 | 2.472 | 0.638 | 1 | 0 |
+| 3.902 | 84.58 | 129.736 | 4 | 0.925 | 3.178 | 1.263 | 2 | 1 |
+| 6.102 | 38.8 | 0 | 1 | 1.364 | 1.334 | 1.212 | 0 | 0 |
+| 4.038 | 20.23 | 42.683 | 1 | 2.193 | 1.96 | 1.02 | 0 | 0 |
+
 ## Curation notes
 
 We start with the data from UCI.

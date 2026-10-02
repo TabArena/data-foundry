@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 462 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| chd | sbp | tobacco | ldl | adiposity | famhist | typea | obesity | alcohol | age |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 143 | 5.04 | 4.86 | 23.59 | Absent | 58 | 24.69 | 18.72 | 42 |
+| 1 | 136 | 2.52 | 3.95 | 25.63 | Absent | 51 | 21.86 | 0 | 45 |
+| 1 | 136 | 11.2 | 5.81 | 31.85 | Present | 75 | 27.68 | 22.94 | 58 |
+| 0 | 144 | 2.4 | 8.13 | 35.61 | Absent | 46 | 27.38 | 13.37 | 60 |
+| 0 | 153 | 7.8 | 3.96 | 25.73 | Absent | 54 | 25.91 | 27.03 | 45 |
+
 ## Curation notes
 
 We start with the data from Kaggle.

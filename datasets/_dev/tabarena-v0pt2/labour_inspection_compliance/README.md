@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 63,634 rows of the final frame (random rows: the frame is shuffled); 12 of 377 columns, the target first. Cells are cut at 40 characters.
+
+| NonCompliance | Industry Code | IsRegisteredVATregister | IsRegisteredEmploymentregister | Business Age | County | Number of Employees | Checklist Content | Currency code | Fiscal accounting type | Total receivables | Trade receivables |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 10 | Nei | Ja | 163 | Vestland | 341 | HSE and working environment training fo… | NOK | STORE | 1.63637e+08 | 1.56638e+08 |
+| 1 | 16 | Nei | Ja | 53 | Agder | 11 | HSE and working environment training fo… | NOK | STORE | 1.48274e+07 | 233112 |
+| 1 | 85 | Nei | Ja | 604 | Viken | 63 | HSE and working environment training fo… | nan | nan | nan | nan |
+| 1 | 77 | Nei | Ja | 295 | Viken | 7 | Working agreements, Employers responsib… | NOK | STORE | 1.33679e+08 | 1.05348e+08 |
+| 1 | 10 | Nei | Ja | 183 | Viken | 34 | HSE and working environment training fo… | NOK | STORE | 7.5481e+06 | 7.04787e+06 |
+
 ## Curation notes
 
 We start with the data from dataverse. We create a task for the Non-compliance Classification Problem (NCP).

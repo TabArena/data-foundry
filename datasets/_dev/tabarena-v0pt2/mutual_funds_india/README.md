@@ -136,6 +136,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 793 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| returns_3yr | scheme_name | min_sip | min_lumpsum | expense_ratio | fund_size_cr | fund_age_yr | fund_manager | risk_level | amc_name | category | sub_category |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5.2 | Canara Robeco Savings Fund | 1000 | 5000 | 0.31 | 1003 | 10 | Kunal Jain | 2 | Canara Robeco Mutual Fund | Debt | Low Duration Funds |
+| 9.8 | Franklin India Debt Hybrid Fund | 500 | 10000 | 0.57 | 246 | 10 | Rajasa Kakulavarapu | 4 | Franklin Templeton Mutual Fund | Hybrid | Conservative Hybrid Mutual Funds |
+| 4.4 | Union Arbitrage Fund | 500 | 1000 | 0.44 | 72 | 4 | Vishal Thakker | 1 | Union Mutual Fund | Hybrid | Arbitrage Mutual Funds |
+| 3.9 | PGIM India Overnight Fund | 1000 | 100 | 0.12 | 75 | 4 | Puneet Pal | 1 | PGIM India Mutual Fund | Debt | Overnight Mutual Funds |
+| 21.7 | Sundaram Aggressive Hybrid Fund | 100 | 100 | 0.67 | 2981 | 10 | S Bharath | 5 | Sundaram Mutual Fund | Hybrid | Aggressive Hybrid Mutual Funds |
+
 ## Curation notes
 
 We start with the data from Kaggle.

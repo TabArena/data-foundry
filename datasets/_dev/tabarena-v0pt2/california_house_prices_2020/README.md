@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 41,528 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 42 columns, the target first. Cells are cut at 40 characters.
+
+| Sold Price | time_index | Address | Summary | Type | Year built | Heating | Cooling | Parking | Lot | Bedrooms | Bathrooms |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 13.1323 | 0 | 1727 W 67th St | HURRY, HURRY.......Great house 3 bed an… | SingleFamily | 1926-01-01 00:00:00 | Combination | Wall/Window Unit(s), Evaporative Coolin… | Detached Carport, Garage | 4047 | 3 | 2 |
+| 11.8494 | 1 | 28093 Pine Ave | 'THE PERFECT CABIN TO FLIP! Strawberry … | SingleFamily | 1958-01-01 00:00:00 | Forced air |  | 0 spaces | 9147 | 2 | 3 |
+| 14.3893 | 2 | 10750 Braddock Dr | Rare 2-story Gated 5 bedroom Modern Med… | SingleFamily | 1947-01-01 00:00:00 | Central | Central Air | Detached Carport, Driveway, Garage - Tw… | nan | 5 | 3 |
+| 13.9768 | 3 | 7415 O Donovan Rd | Beautiful 200 acre ranch land with seve… | VacantLand | NaT |  |  | 0 spaces | nan | nan | nan |
+| 14.2786 | 4 | 1926 Mellon Ave | Two newly built modern farm houses in s… | Unknown | 1926-01-01 00:00:00 | Central | Central Air | Driveway, Garage | nan | nan | nan |
+
 ## Curation notes
 
 We follow some common preprocessing steps from Kaggle and enhance features as much as possible.

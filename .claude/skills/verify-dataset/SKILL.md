@@ -62,7 +62,7 @@ Your verdict is **advisory**. A human curator has the final say (same contract a
    (or the `_1m` folder whose class declares `version_of` the record). Read it in full: the class attributes, every
    hook (`_load_raw`, `_clean`, `_feature_types`, `_make_splits`, ...), the regime (`grouping` or `temporal`) and the
    accepted warnings with their reasons. Then read the generated `README.md` next to it: the frontmatter (checksum,
-   split sizes, bundle-check findings, `build`) and the sections (data checks, group structure, splits) are evidence
+   split sizes, bundle-check findings, `build`) and the sections (sample rows, data checks, group structure, splits) are evidence
    to use, not to re-run.
 2. **The container** — the `build.path` in the `README.md` frontmatter, under the warehouse (`<unique_name>/<uuid>/`,
    or `<version_of>/versions/<uuid>/` for a `_1m` version). Not built yet: `dataset check` (Step 1) builds the same

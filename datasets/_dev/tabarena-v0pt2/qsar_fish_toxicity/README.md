@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 908 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| LC50 | CIC0 | SM1_Dz(Z) | GATS1i | NdsCH | NdssC | MLOGP |
+|---|---|---|---|---|---|---|
+| 3.46 | 1.783 | 0.629 | 0.75 | 1 | 0 | 0.736 |
+| 6.213 | 4.181 | 0.57 | 1.383 | 0 | 0 | 4.379 |
+| 3.779 | 2.137 | 0.223 | 1.179 | 0 | 0 | 0.655 |
+| 1.691 | 2.748 | 0.223 | 1.705 | 0 | 0 | 0.8 |
+| 4.421 | 1.417 | 0.898 | 0.648 | 0 | 0 | 2.042 |
+
 ## Curation notes
 
 - We assigned descriptive column names following the original dataset documentation.

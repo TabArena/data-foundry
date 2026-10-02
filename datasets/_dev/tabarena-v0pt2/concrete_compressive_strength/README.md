@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,030 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| ConcreteCompressiveStrength | Cement | BlastFurnaceSlag | FlyAsh | Water | Superplasticizer | CoarseAggregate | FineAggregate | Age |
+|---|---|---|---|---|---|---|---|---|
+| 52.9083 | 266 | 114 | 0 | 228 | 0 | 932 | 670 | 365 |
+| 55.8958 | 362.6 | 189 | 0 | 164.9 | 11.6 | 944.7 | 755.8 | 7 |
+| 74.4979 | 389.9 | 189 | 0 | 145.9 | 22 | 944.7 | 755.8 | 28 |
+| 35.3012 | 362.6 | 189 | 0 | 164.9 | 11.6 | 944.7 | 755.8 | 3 |
+| 10.5352 | 145 | 0 | 179 | 202 | 8 | 824 | 869 | 28 |
+
 ## Curation notes
 
 - We rename features to be shorter while similar to the original names.

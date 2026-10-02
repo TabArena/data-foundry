@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 19,158 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| LookingForJobChange | city | city_development_index | gender | relevent_experience | enrolled_university | education_level | major_discipline | experience | company_size | company_type | last_new_job |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | city_16 | 0.91 | nan | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 500-999 | Pvt Ltd | 1 |
+| No | city_103 | 0.92 | Female | Has relevent experience | no_enrollment | Masters | Humanities | >20 | 100-500 | Funded Startup | 2 |
+| No | city_104 | 0.924 | nan | Has relevent experience | no_enrollment | Graduate | STEM | 9 | 10/49 | Pvt Ltd | 1 |
+| No | city_21 | 0.624 | Male | Has relevent experience | no_enrollment | Masters | STEM | 15 | 10000+ | Pvt Ltd | 1 |
+| No | city_134 | 0.698 | Male | No relevent experience | no_enrollment | Masters | STEM | 12 | 500-999 | NGO | 1 |
+
 ## Curation notes
 
 - We renamed the target feature and its values to be more descriptive.

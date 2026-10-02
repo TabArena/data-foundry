@@ -149,6 +149,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,296,316 rows of the final frame (random rows: the frame is shuffled); 12 of 111 columns, the target first. Cells are cut at 40 characters.
+
+| permanent_magnet_temperature | u_q | coolant | u_d | motor_speed | i_d | i_q | ambient | profile_id | profile_time_index | u_s | i_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 77.4982 | -2.09624 | 62.2237 | 1.66461 | 0.00100333 | -2.00049 | 1.09862 | 26.346 | 76 | 8768 | 2.67678 | 2.2823 |
+| 61.7623 | -2.17398 | 74.1516 | 0.222524 | 0.00395606 | -2.00211 | 1.09662 | 25.093 | 63 | 5902 | 2.18534 | 2.28277 |
+| 68.5038 | 16.9076 | 61.1574 | 11.1384 | 453.221 | -15.4675 | -73.8694 | 26.1097 | 79 | 17370 | 20.2467 | 75.4714 |
+| 23.9523 | 4.16109 | 18.6985 | 1.42966 | 99.9631 | -1.99937 | 1.09794 | 22.4239 | 3 | 15315 | 4.39984 | 2.281 |
+| 87.5618 | 31.6665 | 18.9038 | -126.626 | 5845.62 | -192.004 | 59.9086 | 24.7501 | 27 | 28260 | 130.525 | 201.134 |
+
 ## Curation notes
 
 We select the task to predict permanent magnet temperature from the input features. We create grouped splits on the profile_id, which corresponds to predicting the temperature for an unseen motor run session, thus simulating how the model would be used in reality.

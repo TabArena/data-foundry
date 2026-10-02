@@ -150,6 +150,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 99,847 rows of the final frame (the oldest rows: the frame is sorted by `Filed Date`); 12 of 38 columns, the target first. Cells are cut at 40 characters.
+
+| DaysToIssue | Permit Type Definition | Block | Lot | Street Number | Street Number Suffix | Street Name | Street Suffix | Unit | Unit Suffix | Description | Filed Date |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6.15106 | additions alterations or repairs | 2192 | 032 | 1625 |  | Quintara | St |  |  | remove (e) 160 sq.ft. attached green ho… | 2015-01-02 09:19:47 |
+| 5.54478 | additions alterations or repairs | 1014 | 073 | 3974 |  | Sacramento | St |  |  | configuration of lower unit & associate… | 2015-01-02 11:04:27 |
+| 3.29542 | otc alterations permit | 3731 | 119 | 47 |  | Moss | St |  |  | install 52 sprinklers per nfpa #13-r & … | 2015-01-02 14:04:57 |
+| 3.46629 | otc alterations permit | 3583 | 007 | 532 |  | Noe | St |  |  | partial foundation replacement, grade b… | 2015-01-02 14:22:22 |
+| 2.4773 | otc alterations permit | 3721 | 050 | 143 |  | 02nd | St |  |  | tenant improvement, 4th flr: new partit… | 2015-01-02 14:32:49 |
+
 ## Curation notes
 
 We simulate the task of predicting the days (in float) it takes to issue the permit. We add the special use case, that we assume the model is only used to predict for permits that take longer than one day to be issued. We do this, as waiting for one day seems very reasonable. Plus, the data contains several unresolvable data errors when the permit was issued on the same day it was filed.

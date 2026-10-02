@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,338 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| charges | age | sex | bmi | children | smoker | region |
+|---|---|---|---|---|---|---|
+| 9.11549 | 45 | female | 25.175 | 2 | no | northeast |
+| 8.5702 | 36 | female | 30.02 | 0 | no | northwest |
+| 10.2864 | 64 | female | 26.885 | 0 | yes | northwest |
+| 9.13797 | 46 | male | 25.745 | 3 | no | northwest |
+| 10.4267 | 19 | male | 31.92 | 0 | yes | northwest |
+
 ## Curation notes
 
 - Unlike in TabArena, we log scale the target as the distribution is very skewed. This is a common practice for price-related targets.

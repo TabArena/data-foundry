@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 61,878 rows of the final frame (random rows: the frame is shuffled); 12 of 94 columns, the target first. Cells are cut at 40 characters.
+
+| target | feat_1 | feat_2 | feat_3 | feat_4 | feat_5 | feat_6 | feat_7 | feat_8 | feat_9 | feat_10 | feat_11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Class_7 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Class_7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 |
+| Class_6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 6 |
+| Class_6 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Class_6 | 0 | 2 | 9 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 9 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

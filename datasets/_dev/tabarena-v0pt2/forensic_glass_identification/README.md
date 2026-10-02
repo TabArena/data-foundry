@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 214 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Type_of_glass | RI | Na | Mg | Al | Si | K | Ca | Ba | Fe |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1.51755 | 13 | 3.6 | 1.36 | 72.99 | 0.57 | 8.4 | 0 | 0.11 |
+| 7 | 1.51727 | 14.7 | 0 | 2.34 | 73.28 | 0 | 8.95 | 0.66 | 0 |
+| 1 | 1.52152 | 13.05 | 3.65 | 0.87 | 72.22 | 0.19 | 9.85 | 0 | 0.17 |
+| 7 | 1.51602 | 14.85 | 0 | 2.38 | 73.28 | 0 | 8.76 | 0.64 | 0.09 |
+| 2 | 1.51708 | 13.72 | 3.68 | 1.81 | 72.06 | 0.64 | 7.88 | 0 | 0 |
+
 ## Curation notes
 
 We start with the data from UCI.

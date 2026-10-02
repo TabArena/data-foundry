@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 498 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+
+| BodyMass | Gender | Age | family_history_with_overweight | FAVC | FCVC | NCP | CAEC | SMOKE | CH2O | SCC | FAF |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 30.7183 | Male | 20 | yes | no | 2 | 3 | Sometimes | no | 3 | no | 3 |
+| 18.992 | Male | 19 | yes | no | 2 | 3 | Sometimes | no | 3 | no | 2 |
+| 24.841 | Female | 21 | yes | yes | 3 | 1 | Sometimes | yes | 3 | no | 0 |
+| 22.2338 | Female | 38 | yes | yes | 2 | 3 | Sometimes | no | 2 | no | 2 |
+| 19.7055 | Female | 19 | yes | yes | 3 | 3 | Sometimes | no | 1 | no | 1 |
+
 ## Curation notes
 
 - We use only the real data, throwing away the SMOTE samples.

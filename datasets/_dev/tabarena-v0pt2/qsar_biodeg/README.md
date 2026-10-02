@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,054 rows of the final frame (random rows: the frame is shuffled); 12 of 42 columns, the target first. Cells are cut at 40 characters.
+
+| Biodegradable | Laplace_Leading_Eigenvalue | Weighted_Balaban_Index_Barysz_Matrix | Num_Heavy_Atoms | Freq_NN_At_Dist1 | Freq_CN_At_Dist4 | Num_ssssC_Atoms | Num_Substituted_BenzeneC | Percentage_C_Atoms | Num_Terminal_PrimaryC | Num_Oxygen_Atoms | Freq_CN_At_Dist3 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Yes | 5.099 | 2.2523 | 0 | 0 | 0 | 1 | 0 | 35.1 | 2 | 2 | 0 |
+| No | 5.262 | 4.2718 | 2 | 0 | 0 | 1 | 0 | 25 | 2 | 0 | 0 |
+| Yes | 4.56 | 4.4123 | 0 | 0 | 0 | 0 | 0 | 33.3 | 4 | 4 | 0 |
+| No | 4.973 | 3.602 | 0 | 0 | 2 | 0 | 3 | 35 | 0 | 3 | 4 |
+| Yes | 4.802 | 3.0226 | 0 | 0 | 1 | 0 | 2 | 50 | 0 | 0 | 2 |
+
 ## Curation notes
 
 - We added semantic meaningful feature names.

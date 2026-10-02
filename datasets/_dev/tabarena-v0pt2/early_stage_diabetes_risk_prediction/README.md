@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 251 rows of the final frame (random rows: the frame is shuffled); 12 of 17 columns, the target first. Cells are cut at 40 characters.
+
+| class | Age | Gender | Polyuria | Polydipsia | sudden weight loss | weakness | Polyphagia | Genital thrush | visual blurring | Itching | Irritability |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Positive | 55 | Male | Yes | Yes | Yes | Yes | No | Yes | No | No | Yes |
+| Positive | 57 | Male | Yes | Yes | No | Yes | Yes | Yes | No | No | No |
+| Positive | 61 | Female | Yes | No | No | No | Yes | No | No | No | Yes |
+| Positive | 65 | Female | Yes | Yes | No | Yes | Yes | No | No | Yes | No |
+| Positive | 55 | Female | Yes | No | Yes | No | No | Yes | Yes | Yes | No |
+
 ## Curation notes
 
 We use the data as is from UCI.

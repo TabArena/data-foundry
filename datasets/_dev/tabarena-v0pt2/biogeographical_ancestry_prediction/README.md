@@ -158,6 +158,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 607 rows of the final frame (random rows: the frame is shuffled); 12 of 103 columns, the target first. Cells are cut at 40 characters.
+
+| Population | rs1024124 | rs1040934 | rs1074689 | rs10764919 | rs10954737 | rs10962599 | rs1150911 | rs11960137 | rs1197062 | rs12142199 | rs1229984 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| France (French) | CT | TT | AT | AG | TT | CT | TT | CC | TT | AA | CC |
+| Spain (Iberian) | TT | CT | AA | AG | TT | TT | CT | CG | GT | AA | CT |
+| Utah (CEPH, N/W European ancestry) | CC | TT | AT | GG | TT | CT | CT | CG | TT | AA | CC |
+| Utah (CEPH, N/W European ancestry) | TT | CT | AT | GG | TT | CT | CC | CC | TT | AA | CC |
+| Finland (Finnish) | CC | TT | AC | AA | TT | CT | CG | GG | TT | AA | CC |
+
 ## Curation notes
 
 We use this dataset as one of the most recent example of a machine learning task based on the Human Genome project.

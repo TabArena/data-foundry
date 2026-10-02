@@ -135,6 +135,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 649 rows of the final frame (random rows: the frame is shuffled); 12 of 31 columns, the target first. Cells are cut at 40 characters.
+
+| G3 | school | sex | age | address | famsize | Pstatus | Medu | Fedu | Mjob | Fjob | reason |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 19 | MS | M | 18 | U | GT3 | T | 4 | 4 | teacher | teacher | home |
+| 12 | GP | F | 16 | U | GT3 | A | 3 | 1 | services | other | course |
+| 18 | MS | F | 18 | U | GT3 | T | 4 | 4 | teacher | teacher | reputation |
+| 11 | MS | M | 16 | R | LE3 | A | 4 | 4 | at_home | other | home |
+| 11 | GP | F | 15 | R | GT3 | T | 1 | 1 | other | other | reputation |
+
 ## Curation notes
 
 We use the data from UCI.

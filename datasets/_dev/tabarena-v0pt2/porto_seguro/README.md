@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 595,206 rows of the final frame (random rows: the frame is shuffled); 12 of 38 columns, the target first. Cells are cut at 40 characters.
+
+| target | ps_ind_01 | ps_ind_02_cat | ps_ind_03 | ps_ind_04_cat | ps_ind_05_cat | ps_ind_06_bin | ps_ind_07_bin | ps_ind_08_bin | ps_ind_09_bin | ps_ind_10_bin | ps_ind_11_bin |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 1 | 1 | 7 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2 | 1 | 4 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 2 | 1 | 5 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 2 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

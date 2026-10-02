@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 3,751 rows of the final frame (random rows: the frame is shuffled); 12 of 1,777 columns, the target first. Cells are cut at 40 characters.
+
+| MoleculeElicitsResponse | D1 | D2 | D3 | D4 | D5 | D6 | D7 | D8 | D9 | D10 | D11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Yes | 0.1 | 0.734427 | 0.2 | 0.25 | 0.136259 | 0.674081 | 0.212153 | 0.512164 | 0.707647 | 0.244693 | 0.221774 |
+| Yes | 0 | 0.37299 | 0 | 0 | 0.124049 | 0.608342 | 0.405229 | 0.593604 | 0.737318 | 0.368695 | 0 |
+| No | 0 | 0.337305 | 0 | 0 | 0.192214 | 0.702996 | 0.281719 | 0.0678 | 0.805263 | 0.191363 | 0.354839 |
+| Yes | 0.0333 | 0.56048 | 0.05 | 0 | 0.154026 | 0.616952 | 0.228655 | 0.528427 | 0.722801 | 0.317141 | 0.0507 |
+| No | 0.0333 | 0.694001 | 0 | 0 | 0.280807 | 0.574624 | 0.451219 | 0.705057 | 0.707184 | 0.410486 | 0 |
+
 ## Curation notes
 
 - We changed the name of the target and mapped it to yes/no

@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 517 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| area | X | Y | month | day | FFMC | DMC | DC | ISI | temp | RH | wind |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 6 | 5 | may | sat | 85.1 | 28 | 113.8 | 3.5 | 11.3 | 94 | 4.9 |
+| 0 | 7 | 5 | aug | tue | 96.1 | 181.1 | 671.2 | 14.3 | 21.6 | 65 | 4.9 |
+| 0.802002 | 8 | 6 | aug | mon | 92.1 | 207 | 672.6 | 8.2 | 25.5 | 29 | 1.8 |
+| 0.900161 | 5 | 4 | sep | fri | 94.3 | 85.1 | 692.3 | 15.9 | 20.1 | 47 | 4.9 |
+| 1.08181 | 2 | 4 | aug | wed | 94.5 | 139.4 | 689.1 | 20 | 29.2 | 30 | 4.9 |
+
 ## Curation notes
 
 We start with the data from UCI.

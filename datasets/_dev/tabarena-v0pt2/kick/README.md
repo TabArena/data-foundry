@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sorted by `PurchDate`); 12 of 33 columns, the target first. Cells are cut at 40 characters.
+
+| IsBadBuy | PurchDate | Auction | VehYear | VehicleAge | Make | Model | Trim | SubModel | Color | Transmission | WheelTypeID |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2006 | 3 | CHEVROLET | COBALT 2.2L I4 MPI | LT | 4D SEDAN LT | SILVER | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2007 | 2 | CHEVROLET | UPLANDER FWD V6 3.9L | LS | PASSENGER EXT 3.5L | WHITE | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | CHEVROLET | VENTURE FWD V6 3.4L | LS | PASSENGER EXT 3.4L LS | MAROON | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | HYUNDAI | ELANTRA 2.0L I4 MPI | GLS | 4D SEDAN | SILVER | AUTO | 2 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | DODGE | CARAVAN GRAND FWD V6 | SE | MINIVAN 3.3L | SILVER | AUTO | 2 |
+
 ## Curation notes
 
 - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.

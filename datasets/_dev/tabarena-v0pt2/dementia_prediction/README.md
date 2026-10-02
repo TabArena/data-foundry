@@ -149,6 +149,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 370 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| CDR | Subject ID | M/F | Age | EDUC | SES | MMSE | eTIV | nWBV | ASF |
+|---|---|---|---|---|---|---|---|---|---|
+| mild_AD | OAS2_0164 | M | 77 | 20 | 1 | 23 | 1713.44 | 0.756122 | 1.02426 |
+| no_dementia | OAS2_0018 | F | 87 | 14 | 1 | 30 | 1406.41 | 0.715094 | 1.24785 |
+| very_mild_AD | OAS2_0009 | M | 68 | 12 | 2 | 27 | 1456.6 | 0.806315 | 1.20486 |
+| mild_AD | OAS2_0157 | F | 73 | 12 | 2 | 19 | 1274.26 | 0.728498 | 1.37727 |
+| no_dementia | OAS2_0031 | F | 86 | 12 | 3 | 30 | 1430.22 | 0.718065 | 1.22708 |
+
 ## Curation notes
 
 We start with the data from Mendeley.

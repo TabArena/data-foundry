@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 155 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+
+| class | age | sex | steroid | antivirals | fatigue | malaise | anorexia | liver_big | liver_firm | spleen_palpable | spiders |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2 | 36 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| 2 | 51 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 1 | 1 | 1 |
+| 1 | 62 | 1 | 1 | 2 | 1 | 1 | 2 | nan | nan | 2 | 2 |
+| 2 | 51 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 |
+| 1 | 61 | 1 | 1 | 2 | 1 | 1 | 2 | nan | nan | 2 | 1 |
+
 ## Curation notes
 
 We start with the data from UCI.

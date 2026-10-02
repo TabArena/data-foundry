@@ -168,6 +168,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 195 rows of the final frame (random rows: the frame is shuffled); 12 of 25 columns, the target first. Cells are cut at 40 characters.
+
+| status | MDVP:Fo(Hz) | MDVP:Fhi(Hz) | MDVP:Flo(Hz) | MDVP:Jitter(%) | MDVP:Jitter(Abs) | MDVP:RAP | MDVP:PPQ | Jitter:DDP | MDVP:Shimmer | MDVP:Shimmer(dB) | Shimmer:APQ3 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 112.239 | 126.609 | 104.095 | 0.00472 | 4e-05 | 0.00238 | 0.0029 | 0.00715 | 0.05643 | 0.517 | 0.0307 |
+| 1 | 144.188 | 349.259 | 82.764 | 0.00544 | 4e-05 | 0.00211 | 0.00292 | 0.00632 | 0.02047 | 0.192 | 0.00969 |
+| 1 | 117.87 | 127.349 | 95.654 | 0.00647 | 5e-05 | 0.00356 | 0.003 | 0.01067 | 0.03087 | 0.276 | 0.01659 |
+| 1 | 159.116 | 168.913 | 144.811 | 0.00342 | 2e-05 | 0.00178 | 0.00184 | 0.00535 | 0.03381 | 0.307 | 0.01806 |
+| 1 | 143.533 | 162.215 | 65.809 | 0.01101 | 8e-05 | 0.00647 | 0.00467 | 0.01941 | 0.05384 | 0.478 | 0.03152 |
+
 ## Curation notes
 
 We start with the data from UCI.

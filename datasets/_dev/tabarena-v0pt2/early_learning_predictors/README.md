@@ -159,6 +159,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffled); 12 of 745 columns, the target first. Cells are cut at 40 characters.
+
+| child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 66.58 | NaT | Male | 65.6393 | 60-69 Months | nan | nan | Yes | nan | 117 | 0.903275 | Normal HAZ |
+| 38.7 | NaT | Female | 61.082 | 60-69 Months | nan | nan | nan | nan | 102 | -1.59908 | Normal HAZ |
+| 71.58 | 2018-01-29 00:00:00 | Male | 68 | 60-69 Months | 5 | Yes | nan | nan | nan | nan | nan |
+| 31.71 | 2017-04-30 00:00:00 | Female | 52 | 50-59 Months | nan | nan | Yes | nan | 107.5 | 0.549413 | Normal HAZ |
+| 72.29 | 2017-06-11 00:00:00 | Female | 65.117 | 60-69 Months | 5 | Yes | nan | nan | 108.233 | -0.739699 | Normal HAZ |
+
 ## Curation notes
 
 - The data is collected for predictive analytics to find major drivers of early learning outcomes. Nevertheless, predictive performance matters and the data could also be used for identifying at risk children.

@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 5,790 rows of the final frame (random rows: the frame is shuffled); 12 of 65 columns, the target first. Cells are cut at 40 characters.
+
+| company_bankrupt | net_profit_to_total_assets | total_liabilities_to_total_assets | working_capital_to_total_assets | current_assets_to_short_term_liabilities | liquidity_days_ratio | retained_earnings_to_total_assets | ebit_to_total_assets | book_value_equity_to_total_liabilities | sales_to_total_assets | equity_to_total_assets | extended_profit_to_total_assets |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | -0.024622 | 0.69575 | 0.23866 | 1.362 | 6.9025 | -0.03091 | -0.024622 | 0.43729 | 3.9185 | 0.30425 | 0.006002 |
+| No | 0.37015 | 0.37631 | 0.39923 | 2.0609 | 36.285 | 0 | 0.48124 | 1.6574 | 3.8763 | 0.62369 | 0.60972 |
+| No | 0.009359 | 0.46223 | 0.11333 | 1.2549 | -92.857 | 0 | 0.009478 | 1.1634 | 1.4469 | 0.53777 | 0.028016 |
+| No | 0.085659 | 0.28314 | 0.48309 | 2.7062 | -4.5713 | 0.18313 | 0.10766 | 2.1267 | 1.0215 | 0.60217 | 0.10766 |
+| No | 0.042429 | 0.24166 | 0.38281 | 2.584 | 68.555 | 0.22159 | 0.055587 | 2.8074 | 1.1018 | 0.67845 | 0.055587 |
+
 ## Curation notes
 
 - We only use data from year 5 (5year.arff), because it is the newest data and the target is bankruptcy status after only 1 year.

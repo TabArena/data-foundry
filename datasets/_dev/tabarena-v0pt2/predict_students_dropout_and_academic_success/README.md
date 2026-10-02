@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled); 12 of 37 columns, the target first. Cells are cut at 40 characters.
+
+| AcademicOutcome | Marital_status | Application_mode | Application_order | Course | Daytimeevening_attendance | Previous_qualification | Previous_qualification_grade | Nationality | Mothers_qualification | Fathers_qualification | Mothers_occupation |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Dropout | divorced | Over 23 years old | 1 | Equinculture | daytime | Secondary education | 133.1 | Portuguese | Higher Education - Degree | Secondary Education - 12th Year of Scho… | Personal Services, Security and Safety … |
+| Graduate | single | 2nd phase - general contingent | 1 | Social Service | daytime | Secondary education | 125 | Portuguese | Higher Education - Master's | Higher Education - Degree | Representatives of Legislative/Executiv… |
+| Graduate | single | 2nd phase - general contingent | 1 | Basic Education | daytime | Secondary education | 133 | Portuguese | Basic Education 2nd Cycle | Basic Education 2nd Cycle | Unskilled Workers |
+| Graduate | single | 2nd phase - general contingent | 2 | Advertising and Marketing Management | daytime | Secondary education | 110 | Portuguese | Secondary Education - 12th Year of Scho… | Secondary Education - 12th Year of Scho… | Administrative staff |
+| Dropout | single | Over 23 years old | 1 | Nursing | daytime | Secondary education | 130 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic Education 3rd Cycle | Unskilled Workers |
+
 ## Curation notes
 
 - We renamed the target variable and fixed some typos in the feature names.

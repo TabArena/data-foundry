@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,279 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+
+| Price | Title | Description | Capacity | Grape | Secondary Grape Varieties | Closure | Country | Characteristics | Type | Region | Style |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 4.44265 | Taylor's Port 2007, Portugal |  | 750 | Tinta Barroca | Touriga Nacional, Tinta Amarela, Tinta … | Natural Cork | Portugal | Jammy, Chocolate, Dried Fruit | Red | Douro | nan |
+| 3.61065 | Philippe le Hardi 'Les Platanes d'Henri… | This is made on a magnificent 9th centu… | 750 | Chardonnay |  | Natural Cork | France | Vanilla, Bread, Cream, Stone Fruit | White | Burgundy | Rich & Toasty |
+| 2.63834 | Cave Vinicole de Hunawihr Kuhlmann-Plat… | Cave Vinicole de Hunawihr began in Alsa… | 750 | Pinot Noir |  | Screwcap | France | Red Fruit, Black Cherry, Blackcurrant, … | Red | Alsace | Light & Elegant |
+| 2.70738 | Copper Kingdom Shiraz 2017, Barossa | Barossa is where you’ll find some of Au… | 750 | Shiraz |  | Screwcap | Australia | Leather, Black Pepper, Blackberry, Blac… | Red | South Australia | Bold & Spicy |
+| 2.77196 | The King's Wrath Pinot Noir 2020/21, Ma… | Brent Marris is the man behind our best… | 750 | Pinot Noir |  | Screwcap | New Zealand | Sweet Spice, Black Cherry, Blackberry, … | Red | Marlborough | Light & Elegant |
+
 ## Curation notes
 
 We start with the Kaggle version. We resolve several issues from the web scrapper.

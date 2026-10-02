@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 319 rows of the final frame (random rows: the frame is shuffled); 12 of 39 columns, the target first. Cells are cut at 40 characters.
+
+| Gallstone Status | Age | Gender | Comorbidity | Coronary Artery Disease (CAD) | Hypothyroidism | Hyperlipidemia | Diabetes Mellitus (DM) | Height | Weight | Body Mass Index (BMI) | Total Body Water (TBW) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 44 | 0 | 0 | 0 | 0 | 0 | 0 | 179 | 81.9 | 25.6 | 47.3 |
+| 1 | 42 | 0 | 0 | 0 | 0 | 0 | 0 | 182 | 88 | 26.6 | 47.6 |
+| 0 | 52 | 0 | 1 | 1 | 0 | 0 | 0 | 169 | 88.9 | 31.1 | 47.1 |
+| 1 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 178 | 94.8 | 29.9 | 50.9 |
+| 0 | 38 | 0 | 0 | 0 | 0 | 0 | 0 | 171 | 68.6 | 23.5 | 39.5 |
+
 ## Curation notes
 
 We use the data without any further curation.

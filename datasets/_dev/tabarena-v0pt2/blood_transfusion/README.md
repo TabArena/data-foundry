@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 748 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| DonatedBloodInMarch2007 | MonthsSinceLastDonation | NumberOfDonations | TotalBloodDonated | MonthsSinceFirstDonation |
+|---|---|---|---|---|
+| No | 2 | 1 | 250 | 2 |
+| No | 16 | 6 | 1500 | 40 |
+| No | 4 | 6 | 1500 | 35 |
+| No | 11 | 2 | 500 | 11 |
+| No | 14 | 2 | 500 | 14 |
+
 ## Curation notes
 
 - We made feature names more descriptive.

@@ -144,6 +144,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffled); 12 of 505 columns, the target first. Cells are cut at 40 characters.
+
+| TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_REALTY | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE | NAME_EDUCATION_TYPE | NAME_FAMILY_STATUS |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | Cash loans | F | Y | 72000 | 198666 | 15696 | 175500 | Unaccompanied | State servant | Secondary / secondary special | Married |
+| 0 | Cash loans | F | N | 221400 | 247500 | 9814.5 | 247500 | Unaccompanied | State servant | Higher education | Married |
+| 0 | Cash loans | M | N | 360000 | 521136 | 54855 | 495000 | Unaccompanied | Commercial associate | Higher education | Civil marriage |
+| 0 | Cash loans | M | Y | 360000 | 824918 | 39816 | 724500 | Unaccompanied | Commercial associate | Secondary / secondary special | Married |
+| 0 | Cash loans | F | Y | 135000 | 628114 | 22689 | 477000 | Unaccompanied | Working | Secondary / secondary special | Married |
+
 ## Curation notes
 
 We start with the SQL tables from Kaggle. We then merge these tables into a single file following the top Kaggle solutions.

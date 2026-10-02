@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+
+| SubscribeTermDeposit | age | job | marital | education | default | balance | housing | loan | contact | campaign | pdays |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| no | 40 | blue-collar | married | secondary | no | 580 | yes | no | unknown | 1 | -1 |
+| no | 47 | services | single | secondary | no | 3644 | no | no | unknown | 2 | -1 |
+| no | 25 | student | single | tertiary | no | 538 | yes | no | cellular | 1 | -1 |
+| no | 42 | management | married | tertiary | no | 1773 | no | no | cellular | 1 | 336 |
+| no | 56 | management | married | tertiary | no | 217 | no | yes | cellular | 2 | -1 |
+
 ## Curation notes
 
 - We removed the "duration" feature following its original description to obtain a "realistic predictive model".

@@ -145,6 +145,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 144,095 rows of the final frame (random rows: the frame is shuffled); 12 of 478 columns, the target first. Cells are cut at 40 characters.
+
+| TARGET_B | ODATEDW | OSOURCE | STATE | ZIP | MAILCODE | PVASTATE | DOB | NOEXCH | RECINHSE | RECP3 | RECPGVG |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 1995-01-01 00:00:00 | MM1 | CA | 91702 | Address is OK | nan | 1916-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1990-01-01 00:00:00 | MAD | MI | 48034 | Address is OK | nan | 1902-04-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1989-01-01 00:00:00 | IMP | TX | 78209 | Address is OK | nan | 1926-01-01 00:00:00 | 0-nan-case | Donor has given to PVA's In House progr… | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1989-01-01 00:00:00 | IMP | NC | 28590 | Address is OK | nan | 1932-01-01 00:00:00 | 0-nan-case | Donor has given to PVA's In House progr… | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1995-01-01 00:00:00 | ADD | FL | 32250 | Address is OK | nan | 1960-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+
 ## Curation notes
 
 We start with the train and validation data from the KDD Cup 1998 website and combine them.

@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 197 rows of the final frame (random rows: the frame is shuffled); 12 of 12,601 columns, the target first. Cells are cut at 40 characters.
+
+| CancerType | AFFX-MurIL2_at | AFFX-MurIL10_at | AFFX-MurIL4_at | AFFX-MurFAS_at | AFFX-BioB-5_at | AFFX-BioB-M_at | AFFX-BioB-3_at | AFFX-BioC-5_at | AFFX-BioC-3_at | AFFX-BioDn-5_at | AFFX-BioDn-3_at |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| normal lung | -29.4 | -27.79 | -28.6 | 13.22 | -45.5 | -55.15 | -31.01 | -5.27 | -55.96 | -75.28 | -37.45 |
+| lung adenocarcinoma | 3.01 | 14.26 | 17.71 | 25.73 | 5.295 | 0.47 | 10.06 | 27.89 | 1.265 | -13.285 | 31.435 |
+| lung adenocarcinoma | -44.73 | -15.36 | -21.08 | -7.2 | -25.16 | -39.84 | -23.52 | -13.73 | -32.5 | -80.57 | 65.7 |
+| lung adenocarcinoma | -34.15 | -11.46 | -3.06 | 16.26 | -34.15 | -24.91 | -22.39 | 29.69 | -26.59 | -62.71 | 43.13 |
+| normal lung | -14.29 | -1.17 | -0.23 | 9.15 | -20.85 | -12.41 | -14.29 | 44.78 | -15.23 | -52.72 | -16.16 |
+
 ## Curation notes
 
 - The original data comes with lung adenocarcinoma and other adenocarcinomas merged into one class already. We keep the same and were not able to find a way to reverse this from the public data.

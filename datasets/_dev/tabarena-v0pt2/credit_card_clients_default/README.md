@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffled); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+
+| DefaultOnPaymentNextMonth | LIMIT_BAL | SEX | EDUCATION | MARRIAGE | AGE | PAY_0 | PAY_2 | PAY_3 | PAY_4 | PAY_5 | PAY_6 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 30000 | 1 | 2 | 2 | 25 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 150000 | 2 | 1 | 2 | 26 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 70000 | 2 | 3 | 1 | 32 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 130000 | 1 | 3 | 2 | 49 | 0 | 0 | 0 | 0 | 0 | -1 |
+| Yes | 50000 | 2 | 2 | 2 | 36 | 0 | 0 | 0 | 0 | 0 | 2 |
+
 ## Curation notes
 
 - We rename the target variable and restore the original class names.

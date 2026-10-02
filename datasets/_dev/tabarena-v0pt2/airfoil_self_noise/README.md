@@ -133,6 +133,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,503 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| scaled-sound-pressure | frequency | attack-angle | chord-length | free-stream-velocity | suction-side-displacement-thickness |
+|---|---|---|---|---|---|
+| 125.045 | 400 | 0 | 0.3048 | 31.7 | 0.00331266 |
+| 118.767 | 1250 | 12.3 | 0.1016 | 31.7 | 0.0418756 |
+| 120.233 | 2500 | 4 | 0.3048 | 39.6 | 0.00579636 |
+| 137.047 | 4000 | 0 | 0.0254 | 31.7 | 0.000439472 |
+| 134.556 | 5000 | 0 | 0.0508 | 55.5 | 0.00076193 |
+
 ## Curation notes
 
 N/A

@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 763 rows of the final frame (random rows: the frame is shuffled); 12 of 52 columns, the target first. Cells are cut at 40 characters.
+
+| Severity | Age | BMI | Sex | Height | Weight | Alvarado_Score | Paedriatic_Appendicitis_Score | Appendix_on_US | Appendix_Diameter | Migratory_Pain | Lower_Right_Abd_Pain |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| uncomplicated | 12.8706 | 15.1479 | female | 162.5 | 40 | 7 | 4 | no | nan | no | yes |
+| uncomplicated | 14.4257 | 20.53 | female | 150.5 | 46.5 | 2 | 4 | yes | 5 | no | yes |
+| uncomplicated | 11.5483 | 17.5294 | female | 152 | 40.5 | 9 | 7 | yes | 10 | no | yes |
+| uncomplicated | 9.94 | 15.3 | male | 140 | 29.5 | 8 | 6 | no | nan | yes | yes |
+| uncomplicated | 9.1937 | 15.4321 | female | 144 | 32 | 10 | 9 | yes | 7.5 | yes | yes |
+
 ## Curation notes
 
 We start with the tabular meta-data used in the paper. We create only one task out of the dataset using one of the three available classes. We note that the main use case of the paper was image-based modelling and comparing to tabular baselines with image-to-tabular-radiometric. The authors also published the tabular data, which we use here.

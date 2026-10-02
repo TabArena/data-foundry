@@ -161,6 +161,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,840 rows of the final frame (random rows: the frame is shuffled); 12 of 171 columns, the target first. Cells are cut at 40 characters.
+
+| runtime | instance_id | nvarsOrig | nclausesOrig | nvars | nclauses | reducedVars | reducedClauses | vars_clauses_ratio | POSNEG_RATIO_CLAUSE_mean | POSNEG_RATIO_CLAUSE_coeff_variation | POSNEG_RATIO_CLAUSE_min |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| -5.80948 | e3cd2a8bc2c8 | 91 | 322 | 91 | 322 | 0 | 0 | 0.2826 | 1 | 0 | 1 |
+| 8.26167 | 806840d7ba3a | 110 | 1892 | 110 | 1892 | 0 | 0 | 0.0581 | 0.3744 | 0.6786 | 0 |
+| 3.16469 | d009a9cb2002 | 550 | 35586 | 525 | 35036 | 0.0476 | 0.0157 | 0.015 | 0.9973 | 0.0159 | 0.8667 |
+| 8.51719 | 615a5546ce44 | 150 | 58358 | 150 | 58358 | 0 | 0 | 0.0026 | 0.245 | 0.8063 | 0 |
+| 8.51719 | 75f3bcf3f869 | 945 | 61409 | 900 | 60159 | 0.05 | 0.0208 | 0.015 | 0.9939 | 0.0236 | 0.7778 |
+
 ## Curation notes
 
 We get the data from ASlib and merge them into one file.

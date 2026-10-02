@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 3,190 rows of the final frame (random rows: the frame is shuffled); 12 of 61 columns, the target first. Cells are cut at 40 characters.
+
+| SiteType | position_-30 | position_-29 | position_-28 | position_-27 | position_-26 | position_-25 | position_-24 | position_-23 | position_-22 | position_-21 | position_-20 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| IE | T | C | C | T | T | G | A | C | C | T | G |
+| IE | T | T | G | A | T | A | A | C | A | T | G |
+| IE | C | A | T | G | C | C | T | T | G | A | A |
+| EI | G | A | T | T | C | T | C | T | T | C | A |
+| IE | T | C | C | C | T | C | C | A | T | T | G |
+
 ## Curation notes
 
 - We tabularized the fixed-size DNA sequences from the original dataset based on the nucleotide position.

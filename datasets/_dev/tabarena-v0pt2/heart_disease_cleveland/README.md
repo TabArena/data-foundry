@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 303 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+
+| heart_disease_diagnosis | age | sex | cp | trestbps | chol | fbs | restecg | thalach | exang | oldpeak | slope |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 53 | 1 | 3 | 130 | 246 | 1 | 2 | 173 | 0 | 0 | 1 |
+| 1 | 54 | 1 | 4 | 110 | 206 | 0 | 2 | 108 | 1 | 0 | 2 |
+| 1 | 56 | 1 | 4 | 125 | 249 | 1 | 2 | 144 | 1 | 1.2 | 2 |
+| 1 | 58 | 1 | 4 | 100 | 234 | 0 | 0 | 156 | 0 | 0.1 | 1 |
+| 1 | 51 | 0 | 4 | 130 | 305 | 0 | 0 | 142 | 1 | 1.2 | 2 |
+
 ## Curation notes
 
 We start with the processed version and the subset of 14 attributes used in the study and clinical practice.

@@ -135,6 +135,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 32,769 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| ResourceApproved | RESOURCE | MGR_ID | ROLE_ROLLUP_1 | ROLE_ROLLUP_2 | ROLE_DEPTNAME | ROLE_TITLE | ROLE_FAMILY_DESC | ROLE_FAMILY | ROLE_CODE |
+|---|---|---|---|---|---|---|---|---|---|
+| Yes | 37793 | 81744 | 117902 | 117903 | 118783 | 118451 | 130134 | 118453 | 118454 |
+| Yes | 40309 | 1541 | 117961 | 118225 | 123173 | 119093 | 123174 | 119095 | 119096 |
+| Yes | 27356 | 205 | 117961 | 118386 | 118746 | 118784 | 147114 | 290919 | 118786 |
+| Yes | 5173 | 8229 | 117961 | 118300 | 121305 | 119351 | 149246 | 3130 | 119353 |
+| Yes | 77207 | 51791 | 117961 | 119256 | 120943 | 118995 | 280788 | 292795 | 118997 |
+
 ## Curation notes
 
 - We only use the training data from Kaggle.

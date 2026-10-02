@@ -153,6 +153,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 609,544 rows of the final frame (the oldest rows: the frame is sorted by `issue_d`); 12 of 82 columns, the target first. Cells are cut at 40 characters.
+
+| Default | issue_d | annual_inc | dti_n | loan_amnt | fico_n | emp_length | purpose | home_ownership_n | addr_state | zip_code | title |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Fully Paid | 2008-04-01 00:00:00 | 45000 | 7.17 | 7500 | 797 | 7 years | other | MORTGAGE | KS | 662xx | Pawn Shop |
+| Defaulted | 2008-04-01 00:00:00 | 64000 | 13.5 | 25000 | 697 | 1 year | major_purchase | MORTGAGE | CT | 060xx | Persuing my dream |
+| Fully Paid | 2008-04-01 00:00:00 | 19368 | 15.06 | 6700 | 667 | < 1 year | debt_consolidation | RENT | CA | 945xx | Paying off High Intrest Credit Cards |
+| Defaulted | 2008-04-01 00:00:00 | 50000 | 18.01 | 7500 | 672 | 1 year | other | RENT | VA | 232xx | To Promote Global Business Pages |
+| Fully Paid | 2008-04-01 00:00:00 | 82000 | 9.06 | 7000 | 662 | 9 years | credit_card | MORTGAGE | OH | 453xx | Paying Off High Interest Credit Card |
+
 ## Curation notes
 
 We start withe data from Sanz-Guerrero et al. (2025). This data is already well preprocessed and curated for the task and used for tabular-text learning. However, we noticed a lot variables from the original data are missing that can be added to the task without invalidating the task or introducing data leakage. Thus, we also merge new features from the original data into the version from Sanz-Guerrero et al. (2025).

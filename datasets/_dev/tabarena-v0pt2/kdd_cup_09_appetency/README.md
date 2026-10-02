@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 50,000 rows of the final frame (random rows: the frame is shuffled); 12 of 213 columns, the target first. Cells are cut at 40 characters.
+
+| Appetency | Var1 | Var2 | Var3 | Var4 | Var5 | Var6 | Var7 | Var9 | Var10 | Var11 | Var12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| -1 | nan | nan | nan | 0 | nan | nan | nan | nan | nan | nan | nan |
+| -1 | nan | nan | nan | nan | nan | 441 | 7 | nan | nan | nan | nan |
+| -1 | nan | nan | nan | nan | nan | 910 | 14 | nan | nan | nan | nan |
+| -1 | nan | nan | nan | nan | nan | 679 | 28 | nan | nan | nan | nan |
+| -1 | nan | nan | nan | nan | nan | 1302 | 7 | nan | nan | nan | nan |
+
 ## Curation notes
 
 - We use the small training data from the original data (230 features).

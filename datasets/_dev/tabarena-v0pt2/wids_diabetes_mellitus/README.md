@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 127,358 rows of the final frame (random rows: the frame is shuffled); 12 of 182 columns, the target first. Cells are cut at 40 characters.
+
+| diabetes_mellitus | hospital_id | age | bmi | elective_surgery | ethnicity | gender | height | hospital_admit_source | icu_admit_source | icu_id | icu_stay_type |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 118 | 86 | 26.4887 | 1 | Caucasian | M | 175.3 | Operating Room | Operating Room / Recovery | 92 | admit |
+| 0 | 30 | 30 | 25.8505 | 0 | Caucasian | M | 172.7 | Emergency Department | Accident & Emergency | 921 | admit |
+| 0 | 194 | 63 | 32.2556 | 0 | Caucasian | M | 163 | Emergency Department | Accident & Emergency | 601 | admit |
+| 0 | 67 | 86 | 23.8194 | 0 | Caucasian | F | 170.2 | Emergency Department | Accident & Emergency | 1049 | admit |
+| 0 | 118 | 61 | 24.8222 | 0 | Caucasian | M | 177.8 | Floor | Floor | 93 | admit |
+
 ## Curation notes
 
 We start with the Kaggle dataset.

@@ -49,6 +49,15 @@ MAX_CELL_CHARS = 80
 MAX_OPEN_ROWS = 10
 """Generated tables with more rows than this are collapsed into a ``<details>`` block."""
 
+SAMPLE_ROWS = 5
+"""Rows of the final frame shown in the README's "Sample rows" section."""
+
+SAMPLE_COLUMNS = 12
+"""Columns shown in the sample, the target first; the others are counted."""
+
+SAMPLE_CELL_CHARS = 40
+"""Characters shown per cell of the sample, so a text column does not take the page."""
+
 PROBLEM_TYPES = {
     "binary_classification": "Binary classification",
     "multiclass_classification": "Multiclass classification",
@@ -174,6 +183,7 @@ def render_report(
     out += _files_section(result.dataset, has_figures=bool(figures))
     out += _rebuild_section(result.dataset)
     out += _dataset_section(result, fm)
+    out += _sample_section(result)
     out += _curation_notes_section(result)
     out += _splits_section(result, fm)
     out += _group_section(result)
@@ -323,6 +333,26 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     out += _details(f"Feature types: {counts}", "\n".join(lines))
     out += _details("BibTeX", _fence(meta.academic_reference_bibtex, "bibtex"))
     return out
+
+
+def _sample_section(result: CurationResult) -> list[str]:
+    """The first rows of the final frame, the target first, wide frames cut to :data:`SAMPLE_COLUMNS` columns."""
+    df = result.container.dataset
+    task = result.container.task_metadata
+    columns = [task.target_column_name, *(c for c in df.columns if c != task.target_column_name)]
+    shown = columns[:SAMPLE_COLUMNS]
+    if task.time_on is not None:
+        order = f"the oldest rows: the frame is sorted by `{task.time_on}`"
+    elif result.dataset.shuffle:
+        order = "random rows: the frame is shuffled"
+    else:
+        order = "in the order of the source"
+    text = f"The first {min(SAMPLE_ROWS, len(df))} of {len(df):,} rows of the final frame ({order})"
+    if len(columns) > len(shown):
+        text += f"; {len(shown)} of {len(columns):,} columns, the target first"
+    text += f". Cells are cut at {SAMPLE_CELL_CHARS} characters."
+    table = _table(df[shown].head(SAMPLE_ROWS), max_chars=SAMPLE_CELL_CHARS)
+    return ["## Sample rows", "", text, "", table, ""]
 
 
 def _curation_notes_section(result: CurationResult) -> list[str]:
@@ -576,7 +606,7 @@ def _one_line(text: str) -> str:
     return " ".join(str(text).split())
 
 
-def _cell(value: Any, *, full: bool = False) -> str:
+def _cell(value: Any, *, full: bool = False, max_chars: int = MAX_CELL_CHARS) -> str:
     if isinstance(value, float):
         text = f"{value:.6g}"
     elif isinstance(value, (dt.datetime, pd.Timestamp)):
@@ -586,20 +616,23 @@ def _cell(value: Any, *, full: bool = False) -> str:
     else:
         text = str(value)
     text = _one_line(text).replace("|", "\\|")
-    return text if full or len(text) <= MAX_CELL_CHARS else text[: MAX_CELL_CHARS - 1] + "…"
+    return text if full or len(text) <= max_chars else text[: max_chars - 1] + "…"
 
 
-def _table(df: pd.DataFrame, *, index: bool = False, full: bool = False) -> str:
+def _table(df: pd.DataFrame, *, index: bool = False, full: bool = False, max_chars: int = MAX_CELL_CHARS) -> str:
     """Render ``df`` as a GitHub markdown table, truncated to :data:`MAX_TABLE_ROWS` rows.
 
-    Cells are cut to :data:`MAX_CELL_CHARS` characters unless ``full`` (for the short field/value tables).
+    Cells are cut to ``max_chars`` characters unless ``full`` (for the short field/value tables).
     """
     if index:
         df = df.reset_index()
     shown = df.head(MAX_TABLE_ROWS)
-    header = [_cell(c) for c in shown.columns]
+    header = [_cell(c, max_chars=max_chars) for c in shown.columns]
     lines = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
-    lines += ["| " + " | ".join(_cell(v, full=full) for v in row) + " |" for row in shown.itertuples(index=False)]
+    lines += [
+        "| " + " | ".join(_cell(v, full=full, max_chars=max_chars) for v in row) + " |"
+        for row in shown.itertuples(index=False)
+    ]
     if len(df) > len(shown):
         lines.append(f"\n({len(df) - len(shown):,} more rows not shown)")
     return "\n".join(lines)

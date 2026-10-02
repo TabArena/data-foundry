@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 5,320 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| median_wine_quality | fixed_acidity | volatile_acidity | citric_acid | residual_sugar | chlorides | free_sulfur_dioxide | total_sulfur_dioxide | density | pH | sulphates | alcohol |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5 | 9.4 | 0.42 | 0.32 | 6.5 | 0.027 | 20 | 167 | 0.99479 | 3.08 | 0.43 | 10.6 |
+| 5 | 8.6 | 0.635 | 0.68 | 1.8 | 0.403 | 19 | 56 | 0.99632 | 3.02 | 1.15 | 9.3 |
+| 5 | 5.7 | 0.695 | 0.06 | 6.8 | 0.042 | 9 | 84 | 0.99432 | 3.44 | 0.44 | 10.2 |
+| 5 | 8 | 0.57 | 0.23 | 3.2 | 0.073 | 17 | 119 | 0.99675 | 3.26 | 0.57 | 9.3 |
+| 6 | 7.1 | 0.17 | 0.38 | 7.4 | 0.052 | 49 | 182 | 0.9958 | 3.35 | 0.52 | 9.6 |
+
 ## Curation notes
 
 - We combine the original datasets for red and white wine into a single dataset with an additional column indicating the type of wine (red or white).

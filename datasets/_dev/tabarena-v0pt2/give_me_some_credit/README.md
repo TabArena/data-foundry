@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 150,000 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| FinancialDistressNextTwoYears | RevolvingUtilizationOfUnsecuredLines | age | NumberOfTime30-59DaysPastDueNotWorse | DebtRatio | MonthlyIncome | NumberOfOpenCreditLinesAndLoans | NumberOfTimes90DaysLate | NumberRealEstateLoansOrLines | NumberOfTime60-89DaysPastDueNotWorse | NumberOfDependents |
+|---|---|---|---|---|---|---|---|---|---|---|
+| No | 0.0296897 | 57 | 0 | 0.283244 | 10121 | 7 | 0 | 1 | 0 | 0 |
+| No | 0 | 57 | 0 | 0.142562 | 7750 | 9 | 0 | 1 | 0 | 0 |
+| No | 0.0365692 | 48 | 0 | 0.236294 | 6000 | 6 | 0 | 2 | 0 | 3 |
+| No | 1.01833 | 41 | 0 | 0.163138 | 4958 | 4 | 0 | 0 | 0 | 0 |
+| No | 1.0088 | 49 | 0 | 3942 | nan | 10 | 0 | 1 | 0 | 0 |
+
 ## Curation notes
 
 - We renamed the target feature and its value to be more descriptive.

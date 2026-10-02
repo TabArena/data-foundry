@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 327 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| class | mcg | gvh | lip | aac | alm1 | alm2 |
+|---|---|---|---|---|---|---|
+| imU | 0.76 | 0.71 | 0.48 | 0.5 | 0.71 | 0.75 |
+| cp | 0.32 | 0.33 | 0.48 | 0.6 | 0.06 | 0.2 |
+| imU | 0.63 | 0.51 | 0.48 | 0.64 | 0.72 | 0.76 |
+| cp | 0.42 | 0.4 | 0.48 | 0.56 | 0.18 | 0.3 |
+| cp | 0.3 | 0.45 | 0.48 | 0.36 | 0.21 | 0.32 |
+
 ## Curation notes
 
 We start with the dataset from UCI.

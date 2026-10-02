@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 171 rows of the final frame (random rows: the frame is shuffled); 12 of 1,118 columns, the target first. Cells are cut at 40 characters.
+
+| Toxic | MATS3v | nHBint10 | MATS3s | MATS3p | nHBDon_Lipinski | minHBint8 | MATS3e | MATS3c | minHBint2 | MATS3m | minHBint6 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Toxic | -0.0416 | 1 | -0.0352 | -0.0298 | 1 | 0 | 0.0522 | 0.1049 | 0 | -0.0426 | 0.4462 |
+| NonToxic | -0.0562 | 2 | -0.0346 | -0.0636 | 2 | 4.016 | -0.0739 | -0.0369 | 0 | -0.0583 | 0.5651 |
+| NonToxic | -0.0342 | 0 | 0.0403 | -0.091 | 0 | 0 | -0.0569 | -0.0875 | 0 | -0.0725 | 0 |
+| NonToxic | 0.0743 | 0 | -0.006 | 0.0397 | 2 | 0 | -0.0265 | -0.1426 | 0 | 0.0623 | 0 |
+| NonToxic | -0.3115 | 0 | -0.0157 | -0.3485 | 2 | 0 | -0.0332 | -0.0808 | 7.2342 | -0.1987 | 0 |
+
 ## Curation notes
 
 - We remove duplicated columns (same values for all rows).

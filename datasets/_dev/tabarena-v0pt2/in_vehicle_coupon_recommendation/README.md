@@ -150,6 +150,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffled); 12 of 26 columns, the target first. Cells are cut at 40 characters.
+
+| AcceptCoupon | destination | passenger | weather | temperature | time | coupon | expiration | gender | age | maritalStatus | has_children |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Yes | Home | Partner | Rainy | 55 | 18 | Coffee House | 1d | Female | 50plus | Married partner | 0 |
+| Yes | No Urgent Place | Friend(s) | Sunny | 80 | 18 | Coffee House | 1d | Female | 50plus | Married partner | 1 |
+| No | Work | Alone | Rainy | 55 | 7 | Bar | 1d | Female | 31 | Married partner | 1 |
+| Yes | Home | Alone | Snowy | 30 | 18 | Coffee House | 1d | Female | 31 | Married partner | 0 |
+| Yes | Home | Alone | Sunny | 55 | 18 | Bar | 1d | Female | 50plus | Married partner | 1 |
+
 ## Curation notes
 
 - We renamed the target feature and its value to be more descriptive.

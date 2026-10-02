@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is sorted by `Transaction_date`); 12 of 436 columns, the target first. Cells are cut at 40 characters.
+
+| isFraud | TransactionID | TransactionAmt | ProductCD | card1 | card2 | card3 | card4 | card5 | card6 | addr1 | addr2 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2987000 | 68.5 | W | 13926 | nan | 150 | discover | 142 | credit | 315 | 87 |
+| 0 | 2987001 | 29 | W | 2755 | 404 | 150 | mastercard | 102 | credit | 325 | 87 |
+| 0 | 2987002 | 59 | W | 4663 | 490 | 150 | visa | 166 | debit | 330 | 87 |
+| 0 | 2987003 | 50 | W | 18132 | 567 | 150 | mastercard | 117 | debit | 476 | 87 |
+| 0 | 2987004 | 50 | H | 4497 | 514 | 150 | mastercard | 102 | credit | 420 | 87 |
+
 ## Curation notes
 
 - We use insights of the first place solution on Kaggle for conceptualizing the task: https://www.kaggle.com/competitions/ieee-fraud-detection/discussion/111284

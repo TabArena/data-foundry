@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffled); 12 of 45 columns, the target first. Cells are cut at 40 characters.
+
+| EarlyReadmission | race | gender | age | weight | admission_type_id | discharge_disposition_id | admission_source_id | time_in_hospital | payer_code | medical_specialty | num_lab_procedures |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | Caucasian | Male | [80-90) | nan | Emergency | Discharged/transferred to home with hom… | Emergency Room | 6 | MC | nan | 60 |
+| No | AfricanAmerican | Female | [70-80) | nan | Emergency | Discharged to home | Emergency Room | 2 | CM | nan | 32 |
+| No | Hispanic | Female | [30-40) | nan | Elective | Discharged to home | Physician Referral | 2 | nan | Family/GeneralPractice | 20 |
+| No | AfricanAmerican | Male | [80-90) | nan | Urgent | Discharged to home | Physician Referral | 4 | MC | InternalMedicine | 35 |
+| No | Caucasian | Female | [50-60) | nan | Urgent | Discharged to home | Emergency Room | 4 | OG | Emergency/Trauma | 67 |
+
 ## Curation notes
 
 - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).

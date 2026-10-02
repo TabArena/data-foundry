@@ -159,6 +159,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,499,997 rows of the final frame (random rows: the frame is shuffled); 12 of 44 columns, the target first. Cells are cut at 40 characters.
+
+| SepsisLabel | Hour | HR | O2Sat | Temp | SBP | MAP | DBP | Resp | EtCO2 | BaseExcess | HCO3 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 48 | 98 | 100 | nan | 151 | 111 | 86 | 16 | 29 | nan | nan |
+| 0 | 4 | 75 | 100 | 35.39 | 88 | 56 | nan | 24 | nan | nan | nan |
+| 0 | 7 | 95 | 97 | nan | 118 | 80.67 | nan | 12 | nan | nan | nan |
+| 0 | 11 | 46 | 99 | nan | 169 | 111 | 77 | 20 | nan | nan | nan |
+| 0 | 2 | 70 | 94 | nan | 103 | 65 | nan | 18 | nan | nan | nan |
+
 ## Curation notes
 
 We start with all files from Kaggle.

@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled); 12 of 86 columns, the target first. Cells are cut at 40 characters.
+
+| MobileHomePolicy | customerSubtype | numberOfHouses | avgSizeHousehold | avgAge | customerMainType | romanCatholic | protestant | otherReligion | noReligion | married | livingTogether |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | Low income catholics | 1 | 3 | 40-50 years | Retired and Religeous | 0% | 2 | 4 | 4 | 9 | 0 |
+| No | Stable family | 1 | 4 | 40-50 years | Average Family | 50 - 62% | 3 | 1 | 1 | 8 | 1 |
+| No | Large family farms | 1 | 3 | 30-40 years | Farmers | 0% | 6 | 0 | 3 | 6 | 3 |
+| No | Mixed seniors | 2 | 2 | 60-70 years | Successful hedonists | 0% | 4 | 2 | 3 | 5 | 0 |
+| No | Lower class large families | 2 | 3 | 30-40 years | Family with grown ups | 0% | 7 | 0 | 2 | 7 | 2 |
+
 ## Curation notes
 
 - We created semantic meaningful names for the features.

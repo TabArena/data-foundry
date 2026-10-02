@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,538 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| price | model | engine_power | age_in_days | km | previous_owners | lat | lon |
+|---|---|---|---|---|---|---|---|
+| 7900 | pop | 51 | 3197 | 120000 | 2 | 40.1747 | 18.1676 |
+| 7900 | pop | 62 | 2101 | 103000 | 1 | 45.7979 | 8.64444 |
+| 9400 | lounge | 51 | 670 | 32473 | 1 | 41.1079 | 14.2088 |
+| 8500 | lounge | 51 | 913 | 29000 | 1 | 45.7786 | 8.94625 |
+| 9700 | lounge | 51 | 762 | 18800 | 1 | 45.5387 | 9.92831 |
+
 ## Curation notes
 
 N/A

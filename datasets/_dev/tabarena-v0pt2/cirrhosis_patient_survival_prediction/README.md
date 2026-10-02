@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 161 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+
+| log_days_to_death | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 7.64492 | Placebo | 22857 | F | N | N | N | N | 0.7 | 255 | 3.74 | 23 |
+| 7.48773 | Placebo | 25329 | F | N | Y | N | N | 0.9 | 404 | 3.43 | 34 |
+| 6.49527 | nan | 17532 | F | nan | nan | nan | N | 2.1 | nan | 4.1 | nan |
+| 7.41276 | D-penicillamine | 19270 | F | N | Y | Y | N | 5 | 1600 | 3.21 | 75 |
+| 7.62803 | D-penicillamine | 19540 | F | N | N | N | N | 0.3 | 233 | 4.08 | 20 |
+
 ## Curation notes
 
 We start with the UCI data.

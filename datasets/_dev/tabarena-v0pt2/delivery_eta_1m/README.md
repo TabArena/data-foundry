@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 222 columns, the target first. Cells are cut at 40 characters.
+
+| delivery_eta_minutes | num_0 | num_1 | num_2 | num_3 | num_4 | num_5 | num_6 | num_7 | num_8 | num_9 | num_10 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2.30757 | 2.87776 | 4.26592 | 4.58546 | 5.19934 | 2.8455 | 3.057 | 3.16072 | 3.48135 | 0.421408 | 0.265056 | 0.667419 |
+| 2.37335 | 2.20253 | 2.24102 | 2.19689 | 2.27305 | 2.14828 | 2.14395 | 2.16128 | 2.24531 | 1.55418 | 0.217806 | 1.53769 |
+| 2.09392 | 2.0331 | 2.09655 | 2.25661 | 2.65173 | 1.99777 | 2.06412 | 2.15834 | 2.56959 | 1.76777 | 0.352779 | 1.57129 |
+| 1.73166 | 2.29695 | 2.16969 | 2.09652 | 2.00423 | 2.37622 | 2.21581 | 2.11726 | 2.02432 | 0.234984 | -0.92861 | 0.387075 |
+| 2.7526 | 2.20253 | 2.24102 | 2.19689 | 2.27305 | 2.16894 | 2.19148 | 2.19994 | 2.27757 | 0.628582 | 0.0999297 | 0.621098 |
+
 ## Curation notes
 
 We start with data from TabRed, which already comes preprocessed.

@@ -156,6 +156,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 181 rows of the final frame (random rows: the frame is shuffled); 12 of 6,773 columns, the target first. Cells are cut at 40 characters.
+
+| HasPanIN | M/Z:800.0 | M/Z:800.32 | M/Z:800.64014 | M/Z:800.9604 | M/Z:801.28076 | M/Z:801.60126 | M/Z:801.9219 | M/Z:802.2426 | M/Z:802.56354 | M/Z:802.8846 | M/Z:803.20575 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 69 | 134 | 49 | 122 | 295 | 77 | 85 | 154 | 94 | 169 | 181 |
+| No | 467 | 709 | 273 | 796 | 1063 | 360 | 450 | 782 | 482 | 466 | 780 |
+| Yes | 123 | 233 | 73 | 147 | 342 | 134 | 87 | 264 | 117 | 233 | 220 |
+| No | 569 | 485 | 277 | 772 | 847 | 342 | 470 | 597 | 344 | 1230 | 847 |
+| Yes | 138 | 223 | 105 | 171 | 316 | 104 | 128 | 230 | 96 | 211 | 196 |
+
 ## Curation notes
 
 The task in the original data is grouped as multiple serums per mouse were taken.

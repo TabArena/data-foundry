@@ -150,6 +150,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sorted by `arrival_date`); 12 of 29 columns, the target first. Cells are cut at 40 characters.
+
+| IsCanceled | LeadTime | ArrivalDateYear | ArrivalDateMonth | ArrivalDateWeekNumber | ArrivalDateDayOfMonth | StaysInWeekendNights | StaysInWeekNights | Adults | Children | Babies | Meal |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 342 | 2015 | July | 27 | 1 | 0 | 0 | 2 | 0 | 0 | BB |
+| 0 | 737 | 2015 | July | 27 | 1 | 0 | 0 | 2 | 0 | 0 | BB |
+| 0 | 7 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
+| 0 | 13 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
+| 0 | 14 | 2015 | July | 27 | 1 | 0 | 2 | 2 | 0 | 0 | BB |
+
 ## Curation notes
 
 - We concatenate the two datasets H1 (resort hotels) and H2 (city hotels). We add a column "hotel" to indicate the hotel type.

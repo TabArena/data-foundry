@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 71,080 rows of the final frame (random rows: the frame is shuffled); 12 of 308 columns, the target first. Cells are cut at 40 characters.
+
+| TARGET | var3 | var15 | imp_ent_var16_ult1 | imp_op_var39_comer_ult1 | imp_op_var39_comer_ult3 | imp_op_var40_comer_ult1 | imp_op_var40_comer_ult3 | imp_op_var40_efect_ult1 | imp_op_var40_efect_ult3 | imp_op_var40_ult1 | imp_op_var41_comer_ult1 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2 | 31 | 0 | 0 | 364.05 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2 | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2 | 25 | 0 | 5.97 | 454.95 | 0 | 0 | 0 | 0 | 0 | 5.97 |
+| 0 | 2 | 36 | 0 | 743.49 | 743.49 | 0 | 0 | 0 | 0 | 0 | 743.49 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

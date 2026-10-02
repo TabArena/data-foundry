@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 345 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| drinks | mcv | alkphos | sgpt | sgot | gammagt |
+|---|---|---|---|---|---|
+| 0.405465 | 97 | 62 | 17 | 13 | 5 |
+| 1.94591 | 92 | 87 | 57 | 25 | 44 |
+| 0.405465 | 85 | 58 | 18 | 24 | 16 |
+| 0.405465 | 89 | 82 | 33 | 32 | 18 |
+| 1.94591 | 95 | 93 | 21 | 27 | 47 |
+
 ## Curation notes
 
 The task is framed as a liver disorder prediction task, but we only have data bout the amount of drinks consumed. So instead, we will frame it as a task to predict the number of drinks based on the blood work data. This is a proxy for the original task, where later based on the number of drinks the liver disorder was determined.

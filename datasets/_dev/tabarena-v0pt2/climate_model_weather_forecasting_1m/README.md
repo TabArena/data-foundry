@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 2,115,283 rows of the final frame (the oldest rows: the frame is sorted by `fact_time`); 12 of 100 columns, the target first. Cells are cut at 40 characters.
+
+| fact_temperature | apply_time_rl | climate_pressure | climate_temperature | cmc_0_0_0_1000 | cmc_0_0_0_2 | cmc_0_0_0_2_grad | cmc_0_0_0_2_interpolated | cmc_0_0_0_2_next | cmc_0_0_0_500 | cmc_0_0_0_700 | cmc_0_0_0_850 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 25 | 1656432623 | 734.744 | 23.885 | 298.765 | 298.14 | -0.368469 | 298.14 | 297.772 | 267.95 | 283.108 | 291.608 |
+| 25 | 1656411029 | 755.256 | 23.195 | 296.915 | 297.54 | 2.58151 | 297.54 | 300.122 | 267.525 | 282.108 | 293.008 |
+| 27 | 1656526223 | 740.618 | 24.8136 | 299.45 | 298.047 | 1.65775 | 298.047 | 299.705 | 269.904 | 284.09 | 292.202 |
+| 28 | 1656567021 | 753.076 | 25.4457 | 298.934 | 299.798 | 2.20074 | 299.798 | 301.999 | 268.817 | 283.017 | 290.969 |
+| 25 | 1656630364 | 728.353 | 21.7021 | nan | nan | nan | nan | nan | nan | nan | nan |
+
 ## Curation notes
 
 We start with data from TabRed, which already comes preprocessed.

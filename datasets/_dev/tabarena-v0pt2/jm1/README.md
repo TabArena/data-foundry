@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 8,736 rows of the final frame (random rows: the frame is shuffled); 12 of 22 columns, the target first. Cells are cut at 40 characters.
+
+| defects | loc | v(g) | ev(g) | iv(g) | n | v | l | d | i | e | b |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| True | 56 | 8 | 7 | 5 | 115 | 638.78 | 0.06 | 17.78 | 35.93 | 11356 | 0.21 |
+| True | 48 | 7 | 3 | 4 | 169 | 905.43 | 0.03 | 33.33 | 27.16 | 30180.9 | 0.3 |
+| False | 16 | 1 | 1 | 1 | 65 | 265.69 | 0.21 | 4.77 | 55.71 | 1267.11 | 0.09 |
+| True | 17 | 2 | 1 | 2 | 39 | 168.56 | 0.11 | 9 | 18.73 | 1517 | 0.06 |
+| True | 94 | 5 | 1 | 5 | 208 | 1202.52 | 0.04 | 25.94 | 46.36 | 31194.9 | 0.4 |
+
 ## Curation notes
 
 - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.

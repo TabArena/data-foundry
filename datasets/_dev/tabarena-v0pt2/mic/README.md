@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,699 rows of the final frame (random rows: the frame is shuffled); 12 of 103 columns, the target first. Cells are cut at 40 characters.
+
+| LET_IS | AGE | SEX | INF_ANAM | STENOK_AN | FK_STENOK | IBS_POST | IBS_NASL | GB | SIM_GIPERT | DLIT_AG | ZSN_A |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| alive | 55 | 1 | 1 | 2 | 2 | 1 | nan | 0 | 0 | 0 | 0 |
+| alive | 64 | 0 | 0 | 4 | 2 | 1 | nan | 3 | 0 | 7 | 1 |
+| alive | 78 | 1 | 1 | 2 | 2 | 1 | nan | 3 | 0 | 7 | 0 |
+| alive | 61 | 1 | 0 | 0 | 0 | 2 | nan | 2 | 0 | 7 | 0 |
+| alive | 78 | 1 | 0 | 4 | 2 | 2 | nan | 2 | 0 | nan | 0 |
+
 ## Curation notes
 
 - There are 12 possible targets and four possible time moments to predict the targets for this dataset. We use the categorical target as it summarizes the other possible targets. We predict at the time of admission, the first of the four time points in the dataset description (Golovenkin et al., Leicester data 2020, "Problems to solve"): all inputs except columns 93-95 and 100-105, i.e. we drop the 9 day-1..3 ICU columns R_AB_{1,2,3}_n, NA_R_{1,2,3}_n and NOT_NA_{1,2,3}_n. The end of day 3, which allows all inputs, leaks the target: LET_IS counts any death in hospital, and a patient who died before day 2 or 3 has no day-2/3 records, so their missingness encodes death (91% of the 138 rows missing a day-3 field died, vs 16% overall).

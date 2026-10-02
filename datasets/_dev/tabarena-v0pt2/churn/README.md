@@ -134,6 +134,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 5,000 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+
+| CustomerChurned | state | account_length | area_code | international_plan | voice_mail_plan | number_vmail_messages | total_day_minutes | total_day_calls | total_day_charge | total_eve_minutes | total_eve_calls |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 3 | 72 | 510 | No | No | 0 | 272.4 | 88 | 46.31 | 107.9 | 125 |
+| No | 23 | 53 | 415 | No | No | 0 | 164.1 | 106 | 27.9 | 206 | 56 |
+| No | 36 | 155 | 408 | No | Yes | 30 | 61.6 | 103 | 10.47 | 255.1 | 110 |
+| No | 37 | 161 | 415 | No | No | 0 | 178.1 | 109 | 30.28 | 146.5 | 86 |
+| No | 11 | 99 | 415 | No | No | 0 | 62.9 | 81 | 10.69 | 231 | 64 |
+
 ## Curation notes
 
 - The original source is lost, so we use https://github.com/EpistasisLab/pmlb/tree/master/datasets/churn (or https://www.openml.org/d/40701)

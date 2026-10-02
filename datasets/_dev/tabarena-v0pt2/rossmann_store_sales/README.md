@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is sorted by `Date`); 12 of 16 columns, the target first. Cells are cut at 40 characters.
+
+| Sales | Store | DayOfWeek | Date | Promo | StateHoliday | SchoolHoliday | StoreType | Assortment | CompetitionDistance | CompetitionOpenSinceMonth | CompetitionOpenSinceYear |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 4220 | 85 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 1870 | 10 | 2011 |
+| 6851 | 259 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 210 | nan | nan |
+| 17267 | 262 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 1180 | 5 | 2013 |
+| 3102 | 274 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 3640 | nan | nan |
+| 2401 | 335 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 90 | nan | nan |
+
 ## Curation notes
 
 - We merge the store data with the train data.

@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| price | carat | cut | color | clarity | depth | table | x | y | z |
+|---|---|---|---|---|---|---|---|---|---|
+| 6.32615 | 0.24 | Ideal | G | VVS1 | 62.1 | 56 | 3.97 | 4 | 2.47 |
+| 7.69667 | 0.58 | Very Good | F | VVS2 | 60 | 57 | 5.44 | 5.42 | 3.26 |
+| 7.12125 | 0.4 | Ideal | E | VVS2 | 62.1 | 55 | 4.76 | 4.74 | 2.95 |
+| 7.17319 | 0.43 | Premium | E | VVS2 | 60.8 | 57 | 4.92 | 4.89 | 2.98 |
+| 8.83942 | 1.55 | Ideal | E | SI2 | 62.3 | 55 | 7.44 | 7.37 | 4.61 |
+
 ## Curation notes
 
 - Unlike TabArena, we log scale the target as it is a price and hence log scaling is generally recommended.

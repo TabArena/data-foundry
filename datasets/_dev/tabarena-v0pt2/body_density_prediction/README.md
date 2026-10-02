@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 252 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+
+| Density | Age | Weight | Height | Neck | Chest | Abdomen | Hip | Thigh | Knee | Ankle | Biceps |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1.0549 | 35 | 217 | 73.75 | 40.5 | 107.5 | 95.1 | 104.5 | 64.8 | 41.3 | 25.6 | 36.4 |
+| 1.0549 | 26 | 181 | 69.75 | 36.4 | 105.1 | 90.7 | 100.3 | 58.4 | 38.3 | 22.9 | 31.9 |
+| 1.0355 | 43 | 183.25 | 70 | 37.1 | 108 | 105 | 103 | 63.7 | 40 | 23.6 | 33.5 |
+| 1.0521 | 35 | 177.25 | 71 | 38.4 | 100.5 | 90.3 | 98.7 | 57.8 | 37.3 | 22.4 | 31 |
+| 1.0607 | 40 | 158 | 69.25 | 36.3 | 97 | 86.6 | 92.6 | 55.9 | 36.3 | 22.1 | 29.8 |
+
 ## Curation notes
 
 We start with the data from Kaggle.

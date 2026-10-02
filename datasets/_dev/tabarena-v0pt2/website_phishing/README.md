@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,353 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| WebsiteType | SFH | popUpWidnow | SSLfinal_State | Request_URL | URL_of_Anchor | web_traffic | URL_Length | age_of_domain | having_IP_Address |
+|---|---|---|---|---|---|---|---|---|---|
+| Suspicious | Legitimate | Legitimate | Phishy | Phishy | Legitimate | Phishy | Legitimate | Legitimate | Suspicious |
+| Legitimate | Phishy | Phishy | Suspicious | Phishy | Phishy | Legitimate | Phishy | Phishy | Suspicious |
+| Phishy | Legitimate | Suspicious | Legitimate | Phishy | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
+| Phishy | Legitimate | Suspicious | Legitimate | Legitimate | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
+| Legitimate | Phishy | Phishy | Legitimate | Phishy | Phishy | Suspicious | Suspicious | Legitimate | Suspicious |
+
 ## Curation notes
 
 - We reversed the ordinal encoding of the original data.

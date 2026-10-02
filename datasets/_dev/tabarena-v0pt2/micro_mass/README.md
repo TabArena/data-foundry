@@ -147,6 +147,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 571 rows of the final frame (random rows: the frame is shuffled); 12 of 1,084 columns, the target first. Cells are cut at 40 characters.
+
+| Species | Strain | peak_list_spectra_bin_3 | peak_list_spectra_bin_4 | peak_list_spectra_bin_5 | peak_list_spectra_bin_7 | peak_list_spectra_bin_8 | peak_list_spectra_bin_9 | peak_list_spectra_bin_10 | peak_list_spectra_bin_11 | peak_list_spectra_bin_12 | peak_list_spectra_bin_13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Citrobacter freundii | 191 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 163774 | 0 | 0 |
+| Citrobacter braakii | 26 | 9010.8 | 0 | 0 | 34239.1 | 0 | 11893.5 | 56969.9 | 482951 | 0 | 6307.97 |
+| Haemophilus influenzae | 49 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Citrobacter freundii | 191 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 684972 | 0 | 0 |
+| Enterobacter cloacae | 202 | 0 | 0 | 0 | 0 | 44730.8 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 We use the pure spectra version (without mixing) and replicate a grouped-based task to predict the species of strains.

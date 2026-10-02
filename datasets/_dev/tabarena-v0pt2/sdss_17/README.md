@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 99,999 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| ObjectType | alpha | delta | u | g | r | i | z | cam_col |
+|---|---|---|---|---|---|---|---|---|
+| QSO | 118.663 | 39.6424 | 22.8577 | 22.1887 | 21.3556 | 21.2658 | 20.9394 | 6 |
+| STAR | 358.992 | 32.7491 | 22.6256 | 22.021 | 22.0679 | 22.4404 | 22.1734 | 3 |
+| STAR | 30.8872 | 1.18871 | 18.1891 | 16.8947 | 16.4216 | 16.2463 | 16.1855 | 1 |
+| STAR | 118.272 | 66.181 | 17.5789 | 16.5508 | 16.2153 | 16.1037 | 16.0974 | 4 |
+| GALAXY | 22.8481 | -4.61196 | 27.104 | 22.6557 | 21.2636 | 20.048 | 19.6131 | 4 |
+
 ## Curation notes
 
 - We renamed the target feature.

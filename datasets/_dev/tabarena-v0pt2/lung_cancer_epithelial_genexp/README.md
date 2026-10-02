@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 187 rows of the final frame (random rows: the frame is shuffled); 12 of 22,216 columns, the target first. Cells are cut at 40 characters.
+
+| DiagnosedCancer | 1007_s_at | 1053_at | 117_at | 121_at | 1255_g_at | 1294_at | 1316_at | 1320_at | 1405_i_at | 1431_at | 1438_at |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 10.4078 | 4.37766 | 5.6673 | 8.11022 | 3.71385 | 7.62146 | 5.25229 | 4.24137 | 6.59805 | 3.31877 | 6.75011 |
+| No | 10.5952 | 4.45761 | 5.79546 | 8.10896 | 3.67725 | 7.78915 | 5.23923 | 4.24712 | 6.87911 | 3.32506 | 6.53596 |
+| Yes | 10.536 | 4.28161 | 5.64302 | 8.10313 | 3.74449 | 7.49289 | 5.21521 | 4.24879 | 5.34305 | 3.67167 | 6.49201 |
+| Yes | 10.3537 | 4.5045 | 5.34984 | 7.68844 | 3.7233 | 7.28171 | 4.93636 | 3.99849 | 6.2172 | 3.23178 | 6.52157 |
+| Yes | 10.2852 | 4.57275 | 5.54167 | 8.22949 | 3.724 | 7.64849 | 5.11321 | 4.3447 | 6.26766 | 3.47941 | 6.64994 |
+
 ## Curation notes
 
 - We start with an extended dataset of 192 patients. The original reference uses 129 samples as "Individuals without final diagnoses as of May 2005 were excluded from this primary dataset". We remove 5 samples without a clear label ("Smoker with suspect lung cancer Sample"), yielding a dataset of 187 samples.

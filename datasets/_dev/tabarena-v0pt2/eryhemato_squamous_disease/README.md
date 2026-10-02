@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 366 rows of the final frame (random rows: the frame is shuffled); 12 of 35 columns, the target first. Cells are cut at 40 characters.
+
+| class | erythema | scaling | definite borders | itching | koebner phenomenon | polygonal papules | follicular papules | oral mucosal involvement | knee and elbow involvement | scalp involvement | family history |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 2 | 2 | 1 |
+| 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+| 4 | 1 | 1 | 0 | 1 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 1 | 3 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |
+| 3 | 2 | 1 | 1 | 3 | 0 | 3 | 0 | 1 | 0 | 0 | 0 |
+
 ## Curation notes
 
 We start with the data from UCI.

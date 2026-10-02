@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 3,845 rows of the final frame (random rows: the frame is shuffled); 12 of 1,519 columns, the target first. Cells are cut at 40 characters.
+
+| CompoundActive | molecule_structure_property_1 | molecule_structure_property_2 | molecule_structure_property_3 | molecule_structure_property_4 | molecule_structure_property_5 | molecule_structure_property_6 | molecule_structure_property_7 | molecule_structure_property_8 | molecule_structure_property_9 | molecule_structure_property_10 | molecule_structure_property_11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 - We take the original data with the original labels with three classes.

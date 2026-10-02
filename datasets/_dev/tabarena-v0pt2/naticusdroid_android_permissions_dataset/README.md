@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 7,491 rows of the final frame (random rows: the frame is shuffled); 12 of 86 columns, the target first. Cells are cut at 40 characters.
+
+| Malware | android.permission.GET_ACCOUNTS | com.sonyericsson.home.permission.BROADC… | android.permission.READ_PROFILE | android.permission.MANAGE_ACCOUNTS | android.permission.WRITE_SYNC_SETTINGS | android.permission.READ_EXTERNAL_STORAGE | android.permission.RECEIVE_SMS | com.android.launcher.permission.READ_SE… | android.permission.WRITE_SETTINGS | com.google.android.providers.gsf.permis… | android.permission.DOWNLOAD_WITHOUT_NOT… |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| Yes | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| Yes | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+
 ## Curation notes
 
 - Originally, the data has 75% duplicates and a perfect class balance. The authors never mention duplicates in their paper. Given this large amount of duplicates, we dropped all row-duplicates, keeping only the first entry.

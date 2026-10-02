@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 344 rows of the final frame (random rows: the frame is shuffled); 12 of 21 columns, the target first. Cells are cut at 40 characters.
+
+| outcome | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Euthanized | 1 | 37.5 | 48 | 40 | nan | nan | nan | nan | nan | nan | nan |
+| Euthanized | 1 | 38 | 66 | 20 | 1 | 3 | 3 | 1 | 5 | 3 | 1 |
+| Euthanized | 1 | 36.1 | 88 | nan | 3 | 3 | 3 | 1 | 3 | 3 | 2 |
+| Lived | 1 | 38 | 76 | 18 | nan | nan | nan | 2 | nan | nan | nan |
+| Lived | 1 | 37.5 | 44 | nan | 1 | 1 | 1 | 1 | 3 | 3 | 2 |
+
 ## Curation notes
 
 We start with the data from UCI and merge the train and test data.

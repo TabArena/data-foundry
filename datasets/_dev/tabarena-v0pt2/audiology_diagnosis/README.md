@@ -136,6 +136,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 199 rows of the final frame (random rows: the frame is shuffled); 12 of 69 columns, the target first. Cells are cut at 40 characters.
+
+| diagnosis | age_gt_60 | air | airBoneGap | ar_c | ar_u | bone | boneAbnormal | bser | history_buzzing | history_dizziness | history_fluctuating |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| cochlear | f | mild | f | elevated | normal | mild | t | nan | f | f | f |
+| cochlear | t | mild | f | normal | elevated | mild | t | nan | f | f | f |
+| cochlear | t | normal | f | absent | absent | normal | f | nan | f | f | f |
+| cochlear | t | mild | f | normal | normal | unmeasured | f | nan | f | f | f |
+| cochlear | f | normal | f | normal | elevated | nan | f | nan | f | f | f |
+
 ## Curation notes
 
 We start with the data from UCI and merge train and test data.

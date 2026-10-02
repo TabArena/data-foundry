@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 10,459 rows of the final frame (random rows: the frame is shuffled); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+
+| RiskPerformance | ExternalRiskEstimate | MSinceOldestTradeOpen | MSinceMostRecentTradeOpen | AverageMInFile | NumSatisfactoryTrades | NumTrades60Ever2DerogPubRec | NumTrades90Ever2DerogPubRec | PercentTradesNeverDelq | MSinceMostRecentDelq | MaxDelq2PublicRecLast12M | MaxDelqEver |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Bad | 69 | 148 | 4 | 66 | 41 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Bad | 77 | 229 | 3 | 109 | 23 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Bad | 58 | 46 | 7 | 38 | 13 | 0 | 0 | 93 | 8 | 4 | 6 |
+| Bad | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 |
+| Bad | 80 | 226 | 2 | 66 | 35 | 0 | 0 | 100 | -7 | 7 | 8 |
+
 ## Curation notes
 
 - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.

@@ -160,6 +160,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 16,116 rows of the final frame (random rows: the frame is shuffled); 12 of 19 columns, the target first. Cells are cut at 40 characters.
+
+| fraudulent | title | location | department | salary_range | company_profile | description | requirements | benefits | telecommuting | has_company_logo | has_questions |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | Product Manager | EE, 37, Tallinn | Product |  | Want to build a 21st century financial … | TransferWho?TransferWise is the clever … |  | You will join one of Europe’s most hotl… | 0 | 1 | 0 |
+| 0 | Launch Manager | US, CA, Palo Alto |  |  |  | Title: Launch Manager*Please note we wa… | RequirementsBA / BS from a top schoolHi… |  | 0 | 1 | 1 |
+| 0 | Art Director | HK, , Hong Kong |  |  | Joy Aether is a leading provider of mob… | Joy Aether is a leading provider of mob… | Master / Degree / Diploma in Web / Grap… | Gain experience in a fast growing indus… | 0 | 1 | 1 |
+| 0 | Sales Associate - NRG | US, IL, Chicago | Networking Research Group |  | The story of the Great Chicago Fire of … | NRG (NETWORK RESEARCHING GROUP)SALES AS… | - 2+ years of B2B Sales experience- Pro… | Salary and commission is negotiable. | 0 | 1 | 0 |
+| 0 | Back End Software Engineer | GR, I, Athens | Software Engineering |  |  | Certoid is an identity, impersonation a… |  |  | 0 | 1 | 1 |
+
 ## Curation notes
 
 We have no access to the original state and the data already contains some preprocessed features.

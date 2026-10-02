@@ -150,6 +150,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffled); 12 of 22 columns, the target first. Cells are cut at 40 characters.
+
+| Energy | BS | load | ESMode1 | ESMode2 | ESMode3 | ESMode5 | ESMode6 | RUType | Mode | Frequency | Bandwidth |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 44.843 | B_595 | 0.63944 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
+| 20.4783 | B_21 | 0.01364 | 0.943056 | 0.942222 | 0 | 0 | 0 | Type4 | Mode2 | 532 | 20 |
+| 13.7519 | B_495 | 0.07902 | 0 | 0 | 0 | 0 | 0 | Type6 | Mode2 | 189 | 10 |
+| 57.997 | B_728 | 0.605117 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
+| 37.9671 | B_298 | 0.01999 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
+
 ## Curation notes
 
 - Note: The dataset was used in a Zindi challenge, but also uploaded to Huggingface under a MIT license by the company (Huawei).

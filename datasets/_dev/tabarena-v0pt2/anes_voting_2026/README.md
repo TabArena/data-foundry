@@ -144,6 +144,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sorted by `VCF0004`); 12 of 262 columns, the target first. Cells are cut at 40 characters.
+
+| VCF0702 | VCF0004 | VCF0101 | VCF0102 | VCF0103 | VCF0104 | VCF0105a | VCF0105b | VCF0106 | VCF0107 | VCF0108 | VCF0109 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2 | 1948 | nan | 3 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 3 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 2 | 6 | 2 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 3 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 2 | 6 | 1 | 1 | 1 | 1 | nan | nan | nan |
+
 ## Curation notes
 
 - We remove all samples with missing pre-election data, missing post-election data or a missing target.

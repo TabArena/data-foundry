@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 2,240 rows of the final frame (random rows: the frame is shuffled); 12 of 26 columns, the target first. Cells are cut at 40 characters.
+
+| Response | Year_Birth | Education | Marital_Status | Income | Kidhome | Teenhome | Dt_Customer | Recency | MntWines | MntFruits | MntMeatProducts |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 1953 | Graduation | Single | 40464 | 0 | 1 | 2013-01-11 00:00:00 | 78 | 424 | 17 | 118 |
+| No | 1960 | Graduation | Widow | 47916 | 0 | 1 | 2012-11-22 00:00:00 | 72 | 505 | 0 | 26 |
+| No | 1972 | Basic | Married | 14188 | 0 | 0 | 2013-02-28 00:00:00 | 40 | 2 | 7 | 11 |
+| No | 1969 | Graduation | Together | 76653 | 0 | 0 | 2013-08-16 00:00:00 | 91 | 736 | 63 | 946 |
+| No | 1958 | Graduation | Together | 65196 | 0 | 2 | 2013-07-25 00:00:00 | 34 | 743 | 19 | 181 |
+
 ## Curation notes
 
 - We ensure Dt_Customer is a pandas datetime.

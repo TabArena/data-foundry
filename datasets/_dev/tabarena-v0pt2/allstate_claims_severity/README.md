@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 188,317 rows of the final frame (random rows: the frame is shuffled); 12 of 131 columns, the target first. Cells are cut at 40 characters.
+
+| loss | cat1 | cat2 | cat3 | cat4 | cat5 | cat6 | cat7 | cat8 | cat9 | cat10 | cat11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 7.34652 | A | B | A | B | A | A | A | A | B | A | A |
+| 6.94937 | A | A | A | A | A | B | A | A | A | A | A |
+| 8.59705 | A | A | A | A | B | A | A | A | A | A | A |
+| 8.29467 | A | B | B | A | A | A | A | A | B | B | A |
+| 8.54588 | A | B | A | A | A | B | A | B | B | A | A |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

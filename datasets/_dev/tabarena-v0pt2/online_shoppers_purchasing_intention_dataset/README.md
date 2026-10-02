@@ -142,6 +142,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled); 12 of 17 columns, the target first. Cells are cut at 40 characters.
+
+| Revenue | Administrative | Administrative_Duration | Informational | Informational_Duration | ProductRelated | ProductRelated_Duration | BounceRates | ExitRates | PageValues | Month | OperatingSystems |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| False | 0 | 0 | 0 | 0 | 49 | 1023.96 | 0.0346939 | 0.0578231 | 0 | Aug | 2 |
+| False | 0 | 0 | 2 | 19.5 | 48 | 1249.75 | 0.00833333 | 0.0204613 | 0 | Dec | 2 |
+| True | 4 | 46.0417 | 4 | 93.4167 | 75 | 6057.93 | 0.0104252 | 0.0196674 | 0 | Nov | 3 |
+| True | 0 | 0 | 0 | 0 | 40 | 2046.83 | 0.00416667 | 0.033881 | 0 | Nov | 1 |
+| False | 0 | 0 | 0 | 0 | 43 | 907.508 | 0 | 0.00243902 | 0 | Nov | 1 |
+
 ## Curation notes
 
 - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.

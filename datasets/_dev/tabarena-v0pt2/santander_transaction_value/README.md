@@ -137,6 +137,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 4,447 rows of the final frame (random rows: the frame is shuffled); 12 of 541 columns, the target first. Cells are cut at 40 characters.
+
+| target | high_48df886f9_4991 | mean_48df886f9_4991 | low_48df886f9_4991 | median_48df886f9_4991 | sum_48df886f9_4991 | stddev_48df886f9_4991 | first_nonZero_48df886f9_4991 | last_nonZero_48df886f9_4991 | nb_nans_48df886f9_4991 | unique_48df886f9_4991 | high_48df886f9_4511 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 12.3884 | 3.19612e+08 | 1.51949e+07 | 20000 | 3.73667e+06 | 3.41886e+09 | 8.82147e+06 | 17.3633 | 17.5026 | 4766 | 133 | 3.19612e+08 |
+| 12.8992 | 4e+07 | 4.26417e+06 | 80000 | 1.5125e+06 | 3.83775e+08 | 1.09055e+06 | 15.2018 | 13.3047 | 4901 | 45 | 4e+07 |
+| 11.4825 | 7.6e+07 | 1.01266e+07 | 4000 | 4e+06 | 1.2557e+09 | 2.83039e+06 | 16.8112 | 17.0344 | 4867 | 56 | 7.6e+07 |
+| 14.5087 | 6.05e+06 | 1.18634e+06 | 40000 | 800000 | 1.36429e+08 | 260214 | 12.2061 | 13.8155 | 4876 | 45 | 6.05e+06 |
+| 11.6953 | 1e+08 | 5.74706e+06 | 10000 | 581000 | 1.86205e+09 | 4.80907e+06 | 14.1156 | 16.8112 | 4667 | 146 | 1e+08 |
+
 ## Curation notes
 
 We start with the train.csv from Kaggle.

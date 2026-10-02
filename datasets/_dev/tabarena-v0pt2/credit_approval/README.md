@@ -141,6 +141,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 690 rows of the final frame (random rows: the frame is shuffled); 12 of 16 columns, the target first. Cells are cut at 40 characters.
+
+| A16 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9 | A10 | A11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| - | a | nan | 1.5 | u | g | ff | ff | 0 | f | t | 2 |
+| + | a | 46 | 4 | u | g | j | j | 0 | t | f | 0 |
+| - | b | 20 | 0 | u | g | d | v | 0.5 | f | f | 0 |
+| - | b | 47.33 | 6.5 | u | g | c | v | 1 | f | f | 0 |
+| + | b | 19.17 | 0 | y | p | m | bb | 0 | f | f | 0 |
+
 ## Curation notes
 
 We get the data from UCI.

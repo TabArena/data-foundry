@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 19,675 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| LnMedianHouseValue | MedianIncome | HousingMedianAge | TotalRooms | TotalBedrooms | Population | Households | Latitude | Longitude |
+|---|---|---|---|---|---|---|---|---|
+| 11.5541 | 1.8357 | 24 | 2493 | 693 | 1420 | 643 | 32.8 | -116.96 |
+| 12.0506 | 4.2109 | 14 | 1946 | 463 | 1205 | 390 | 32.93 | -117.14 |
+| 11.4856 | 4.0481 | 52 | 1683 | 266 | 646 | 256 | 34.14 | -117.29 |
+| 11.5396 | 3.538 | 21 | 1513 | 319 | 943 | 301 | 40.97 | -124.01 |
+| 11.6656 | 2.2 | 34 | 2352 | 610 | 1127 | 592 | 38.62 | -121.38 |
+
 ## Curation notes
 
 - The data contains rows whose values were capped artificially at a price of 500001. This creates a censored target, punishing model that learn to extrapolate from the data. We remove rows with this censored value in the target variable to obtain a more realistic task.

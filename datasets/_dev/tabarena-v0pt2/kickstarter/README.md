@@ -143,6 +143,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 187,117 rows of the final frame (the oldest rows: the frame is sorted by `created_at`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+
+| state | blurb | country | created_at | deadline | goal | launched_at | name | prelaunch_activated | main_category | sub_category | creator_name |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| successful | UPDATE: Shannon Powell, Walter Payton, … | the United States | 2009-04-22 02:11:10 | 2009-06-05 06:59:00 | 4000 | 2009-05-01 15:44:25 | Electronola - An electronic gumbo of Ne… | False | Electronic Music | Music | Earl Scioneaux |
+| successful | Using a framework that ensures for resi… | the United States | 2009-04-23 03:06:59 | 2010-01-18 07:59:00 | 3000 | 2009-11-19 21:43:15 | How to Build a City in 200 Days: Mahaba… | False | Journalism | nan | Enthusiastic Grad Students |
+| successful | Let's make the world's first crowd-fund… | the United States | 2009-04-27 04:44:17 | 2009-05-16 09:59:00 | 3000 | 2009-04-28 11:55:41 | New York Makes a Book!! | False | Journalism | nan | We Make a Book |
+| successful | I make cool icons for iPhone developers… | the United States | 2009-04-29 19:52:44 | 2009-06-15 19:00:00 | 500 | 2009-04-29 21:11:15 | Icons for your iPhone apps | False | Software | Technology | Joseph Wain |
+| successful | Opening Friday, June 5 2009, on view th… | the United States | 2009-05-04 05:32:44 | 2009-06-06 05:00:00 | 5000 | 2009-05-04 23:48:21 | "LostLES" at Tiny's Giant | False | Painting | Art | Mike Brown |
+
 ## Curation notes
 
 Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully. We simulate predicting at launch: only information known when the campaign starts is used.

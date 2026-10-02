@@ -155,6 +155,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 1,224,927 rows of the final frame (the oldest rows: the frame is sorted by `date_decision`); 12 of 711 columns, the target first. Cells are cut at 40 characters.
+
+| target | date_decision | MONTH | WEEK_NUM | actualdpdtolerance_344P | amtinstpaidbefduel24m_4187115A | annuity_780A | annuitynextmonth_57A | applicationcnt_361L | applications30d_658L | applicationscnt_1086L | applicationscnt_464L |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1589.8 | 0 | 0 | 0 | 0 | 15 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 2506 | 0 | 0 | 0 | 0 | 0 |
+| 1 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 2692.2 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1769.4 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1746.8 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 We start with the data from Kaggle and follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20), which in turn follows two Kaggle solutions (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/discussion/507946, https://www.kaggle.com/code/yuuniekiri/fork-of-home-credit-catboost-inference).

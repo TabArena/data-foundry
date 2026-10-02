@@ -136,6 +136,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 310 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| class | pelvic_incidence | pelvic_tilt | lumbar_lordosis_angle | sacral_slope | pelvic_radius | degree_spondylolisthesis |
+|---|---|---|---|---|---|---|
+| Normal | 44.4307 | 14.1743 | 32.2435 | 30.2564 | 131.718 | -3.60426 |
+| Hernia | 36.6864 | 5.01088 | 41.9488 | 31.6755 | 84.2414 | 0.664437 |
+| Hernia | 46.8558 | 15.3515 | 38 | 31.5043 | 116.251 | 1.66271 |
+| Spondylolisthesis | 74.3777 | 32.0531 | 78.772 | 42.3246 | 143.561 | 56.1259 |
+| Hernia | 54.1249 | 26.6505 | 35.3297 | 27.4744 | 121.447 | 1.5712 |
+
 ## Curation notes
 
 We start with the UCI version, which is the oldest existing version of the dataset we found.

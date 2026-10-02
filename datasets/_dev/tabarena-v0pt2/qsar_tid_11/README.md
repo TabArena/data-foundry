@@ -139,6 +139,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 5,741 rows of the final frame (random rows: the frame is shuffled); 12 of 1,025 columns, the target first. Cells are cut at 40 characters.
+
+| MEDIAN_PXC50 | FCFP6_1024_0 | FCFP6_1024_1 | FCFP6_1024_2 | FCFP6_1024_3 | FCFP6_1024_4 | FCFP6_1024_5 | FCFP6_1024_6 | FCFP6_1024_7 | FCFP6_1024_8 | FCFP6_1024_9 | FCFP6_1024_10 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5.721 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 6.444 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 4.301 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 6.553 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 5.322 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
 ## Curation notes
 
 - We drop the "MOLECULE_CHEMBL_ID" column.

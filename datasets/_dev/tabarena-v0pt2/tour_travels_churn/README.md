@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 954 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| Target | Age | FrequentFlyer | AnnualIncomeClass | ServicesOpted | AccountSyncedToSocialMedia | BookedHotelOrNot |
+|---|---|---|---|---|---|---|
+| 1 | 33 | No Record | Low Income | 2 | Yes | No |
+| 0 | 37 | No | Middle Income | 3 | Yes | No |
+| 0 | 30 | No | Middle Income | 2 | No | Yes |
+| 0 | 30 | No | Low Income | 2 | No | No |
+| 0 | 30 | No | Low Income | 1 | Yes | No |
+
 ## Curation notes
 
 The source of the data from Kaggle is unknown but the data distributions look reasonable enough to use. But I would also not be surprised if we find out the data is artificially created.

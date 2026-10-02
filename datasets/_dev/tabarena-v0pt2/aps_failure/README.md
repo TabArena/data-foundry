@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 76,000 rows of the final frame (random rows: the frame is shuffled); 12 of 171 columns, the target first. Cells are cut at 40 characters.
+
+| AirPressureSystemFailure | aa_000 | ab_000 | ac_000 | ad_000 | ae_000 | af_000 | ag_000 | ag_001 | ag_002 | ag_003 | ag_004 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| neg | 4090 | 0 | 268 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| neg | 12 | 0 | 8 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 2328 |
+| neg | 378 | nan | 32 | 32 | 0 | 0 | 0 | 0 | 0 | 0 | 148 |
+| neg | 10616 | nan | 0 | nan | 0 | 0 | 0 | 0 | 0 | 6882 | 120030 |
+| neg | 38218 | nan | 414 | 408 | 0 | 0 | 0 | 0 | 0 | 13824 | 295106 |
+
 ## Curation notes
 
 - We combined the original training and testing data into a single dataset.

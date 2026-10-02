@@ -138,6 +138,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 45,730 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+
+| ResidualSize | TotalSurfaceArea | NonPolarExposedArea | FracExposedNonPolarResidue | FracExposedNonPolarPart | MassWeightedExposedArea | AvgDeviationExposedArea | EuclideanDistance | SecondaryStructurePenalty | SpatialDistNK |
+|---|---|---|---|---|---|---|---|---|---|
+| 18.858 | 7031.44 | 2456.97 | 0.34942 | 47.018 | 1.00854e+06 | 88.0866 | 3998.06 | 3 | 38.7263 |
+| 1.834 | 17099.1 | 5994.03 | 0.35054 | 223.806 | 2.31683e+06 | 278.863 | 5468.55 | 135 | 23.3121 |
+| 2.732 | 16079.5 | 5807.81 | 0.36119 | 180.963 | 2.2503e+06 | 272.178 | 5617.59 | 149 | 23.8631 |
+| 4.337 | 13600.6 | 3520.54 | 0.25885 | 167.189 | 1.86523e+06 | 221.014 | 4804.69 | 115 | 28.5555 |
+| 3.032 | 7876.41 | 1984.92 | 0.252 | 88.5033 | 1.05135e+06 | 112.937 | 3535.51 | 29 | 36.0818 |
+
 ## Curation notes
 
 - We renamed the features to be more semantically meaningful.

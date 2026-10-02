@@ -140,6 +140,18 @@ Only curators run `build`, when the dataset ships.
 
 </details>
 
+## Sample rows
+
+The first 5 of 21,263 rows of the final frame (random rows: the frame is shuffled); 12 of 82 columns, the target first. Cells are cut at 40 characters.
+
+| critical_temp | number_of_elements | mean_atomic_mass | wtd_mean_atomic_mass | gmean_atomic_mass | wtd_gmean_atomic_mass | entropy_atomic_mass | wtd_entropy_atomic_mass | range_atomic_mass | wtd_range_atomic_mass | std_atomic_mass | wtd_std_atomic_mass |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6.4 | 2 | 82.7682 | 87.8373 | 82.1449 | 87.3601 | 0.685627 | 0.509575 | 20.2764 | 51.5223 | 10.1382 | 8.77993 |
+| 91.2 | 4 | 76.4446 | 81.4567 | 59.3567 | 68.2296 | 1.19954 | 1.10819 | 121.328 | 36.9507 | 43.8234 | 40.6123 |
+| 38 | 5 | 88.9367 | 51.0904 | 70.359 | 34.784 | 1.44582 | 1.52509 | 122.906 | 10.4387 | 46.4823 | 44.2612 |
+| 19 | 4 | 76.5177 | 56.1494 | 59.3101 | 35.5621 | 1.19727 | 1.04213 | 122.906 | 31.9207 | 44.2895 | 51.8156 |
+| 11 | 3 | 104.608 | 89.559 | 101.72 | 88.4812 | 1.07026 | 0.944284 | 59.9455 | 33.5414 | 25.2251 | 15.1598 |
+
 ## Curation notes
 
 - Anomaly: the data has a lot of duplicates (29%) when ignoring the target feature
