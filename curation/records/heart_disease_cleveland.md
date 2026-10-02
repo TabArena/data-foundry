@@ -24,6 +24,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
 - https://doi.org/10.24432/C52P4X
 notebook_path: datasets/beyond_iid/new_iid/heart_disease_cleveland/heart_disease_cleveland.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/heart_disease_cleveland/dataset.py
 source_row: 756
 type_adapter_id: curation-record-v1
 ---

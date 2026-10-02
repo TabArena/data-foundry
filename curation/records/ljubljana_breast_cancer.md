@@ -25,6 +25,7 @@ source_links:
 - https://doi.org/10.24432/C51P4M
 - https://www.openml.org/d/13
 notebook_path: datasets/beyond_iid/new_iid/ljubljana_breast_cancer/ljubljana_breast_cancer.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/ljubljana_breast_cancer/dataset.py
 source_row: 769
 type_adapter_id: curation-record-v1
 ---

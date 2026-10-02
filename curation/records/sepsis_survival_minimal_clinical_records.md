@@ -23,6 +23,7 @@ source_links:
 - https://archive.ics.uci.edu/dataset/827/sepsis+survival+minimal+clinical+records
 - https://doi.org/10.24432/C53C8N
 notebook_path: datasets/beyond_iid/new_iid/sepsis_survival_minimal_clinical_records/sepsis_survival_minimal_clinical_records.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sepsis_survival_minimal_clinical_records/dataset.py
 source_row: 662
 type_adapter_id: curation-record-v1
 ---

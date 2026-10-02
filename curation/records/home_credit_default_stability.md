@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20
 notebook_path: datasets/beyond_iid/temporal/home_credit_default_stability/home_credit_default_stability_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/home_credit_default_stability_1m/dataset.py
 source_row: 710
 type_adapter_id: curation-record-v1
 ---

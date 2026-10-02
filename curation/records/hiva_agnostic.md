@@ -16,6 +16,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1039
 notebook_path: datasets/beyond_iid/old_iid/hiva_agnostic/hiva_agnostic.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/hiva_agnostic/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

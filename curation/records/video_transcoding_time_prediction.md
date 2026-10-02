@@ -25,6 +25,7 @@ source_links:
 - https://doi.org/10.24432/C58C9K
 - https://www.openml.org/d/44974
 notebook_path: datasets/beyond_iid/grouped/video_transcoding_time_prediction/video_transcoding_time_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/video_transcoding_time_prediction/dataset.py
 source_row: 698
 type_adapter_id: curation-record-v1
 ---

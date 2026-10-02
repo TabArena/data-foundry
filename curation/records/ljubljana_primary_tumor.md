@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5WK5Q
 notebook_path: datasets/beyond_iid/new_iid/ljubljana_primary_tumor/ljubljana_primary_tumor.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/ljubljana_primary_tumor/dataset.py
 source_row: 770
 type_adapter_id: curation-record-v1
 ---

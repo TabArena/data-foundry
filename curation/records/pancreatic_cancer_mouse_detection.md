@@ -17,12 +17,13 @@ year: '2003'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
-problem_type: Multiclass Classification
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://home.ccr.cancer.gov/ncifdaproteomics/CancerCellPanINDataBinned.zip
 - https://home.ccr.cancer.gov/ncifdaproteomics/ppatterns.asp
 notebook_path: datasets/beyond_iid/grouped/pancreatic_cancer_mouse_detection/pancreatic_cancer_mouse_detection.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/pancreatic_cancer_mouse_detection/dataset.py
 source_row: 1035
 type_adapter_id: curation-record-v1
 ---

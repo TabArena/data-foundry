@@ -25,6 +25,7 @@ source_links:
 - https://www.openml.org/d/41980
 - https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO
 notebook_path: datasets/beyond_iid/grouped/sat11_hand_algo_runtime/sat11_hand_algo_runtime.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sat11_hand_algo_runtime/dataset.py
 source_row: 694
 type_adapter_id: curation-record-v1
 ---

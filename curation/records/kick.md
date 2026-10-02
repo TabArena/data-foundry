@@ -24,6 +24,7 @@ source_links:
 - https://www.kaggle.com/c/DontGetKicked/overview
 - https://www.openml.org/search?type=data&id=41162&sort=runs&status=active
 notebook_path: datasets/beyond_iid/temporal/kick/kick.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/kick/dataset.py
 source_row: 723
 type_adapter_id: curation-record-v1
 ---
@@ -35,6 +36,11 @@ CC: "Is from a competition, nice tabular data task. Might require temporal split
 Old competition without clear restriction on data usage. Can assume public domain
 
 The competition used a random split
+
+CC (2026-10-01, Lennart): Leak audit:
+- **Split:** the temporal split stays. The Kaggle train/test split was neither temporal nor grouped: both cover Jan 2009 - Dec 2010 (test is 36-44% of every quarter), and 78.9% of test rows sit at an auction location (Auction + VNZIP1) that is also in train (72 of 128 test locations). The earlier claim that the competition grouped by Auction and VNZIP1 came from a notebook check that compared train "Auction + VNZIP1" with test "VNZIP1" only (0 overlap by construction); the curation comments are corrected. A grouped split would test unseen auctions, but a model is deployed on future purchases at mostly known auctions.
+- **WheelType, potential leak kept on purpose:** missing WheelType is likely blanked when a car is kicked back: missing for 24.9% of bad buys in every month vs 1.5% of good cars, erratically (Sep-Oct 2010: 1 good vs 218 bad). Dropping WheelType/WheelTypeID: LightGBM AUC on our temporal splits 0.757 -> 0.691. Kept because the company released the data this way for the competition (missing in 4.5% of Kaggle test rows vs 4.3% of train) and the recording process is not documented. Revisit if it is.
+- The note above that "the competition used a random split" is closer to the truth than the old curation comment.
 
 ## Reference
 

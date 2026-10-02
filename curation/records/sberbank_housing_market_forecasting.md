@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/competitions/sberbank-russian-housing-market
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting
 notebook_path: datasets/beyond_iid/temporal/sberbank_housing_market_forecasting/sberbank_housing_market_forecasting.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sberbank_housing_market_forecasting/dataset.py
 source_row: 711
 type_adapter_id: curation-record-v1
 ---

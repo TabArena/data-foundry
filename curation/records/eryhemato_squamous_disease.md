@@ -22,6 +22,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/dermatology/metadata.yaml
 - https://doi.org/10.24432/C5FK5P
 notebook_path: datasets/beyond_iid/new_iid/eryhemato_squamous_disease/eryhemato_squamous_disease.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/eryhemato_squamous_disease/dataset.py
 source_row: 753
 type_adapter_id: curation-record-v1
 ---

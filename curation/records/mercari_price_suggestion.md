@@ -25,6 +25,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/elizabethsam/mercari-price-suggestion-challenge https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/overview
 notebook_path: datasets/beyond_iid/new_iid/mercari_price_suggestion/mercari_price_suggestion_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/mercari_price_suggestion/dataset.py
 source_row: 658
 type_adapter_id: curation-record-v1
 ---

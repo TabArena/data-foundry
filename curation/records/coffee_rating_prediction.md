@@ -26,6 +26,7 @@ source_links:
 - https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview
 - https://www.coffeereview.com/
 notebook_path: datasets/beyond_iid/temporal/coffee_rating_prediction/coffee_rating_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/coffee_rating_prediction/dataset.py
 source_row: 481
 type_adapter_id: curation-record-v1
 ---
@@ -41,6 +42,8 @@ Could still be used for some kind of task, although it is unlikely it is close t
 Maybe we could frame it as rating prediction only based on text, but this is closer to NLP than tabular based on the small amount of other information -> then it is a regression task, we could make it binary but that is wrong too.
 
 CC (2026-07-27, Lennart): **Leak concern resolved -- verified against the curation notebook.** The category-score features (aroma, acid, body, flavor, aftertaste, with_milk) that sum to the rating are **dropped** in curation (`df.drop(columns=[... 'aroma','acid','body','flavor','aftertaste','with_milk' ...])`), along with desc_2/all_text (which leak award notes). Target is `rating` (regression); splits are temporal. So there is no circular leak in the shipped data -- `Yes` stands. Aligned `problem_type` -> Regression and `required_split` -> Temporal (NON-IID) to match the curated task.
+
+CC (2026-10-01, Lennart): Leak audit: temporal splits are now 13 two-month windows (>= 50% train, 54-115 test rows each) instead of 5 six-month windows. Total test rows stay about 1,150 under any window size; monthly windows (26, some with 2 reviews) doubled the noise of a LightGBM vs Ridge comparison.
 
 ## Reference
 

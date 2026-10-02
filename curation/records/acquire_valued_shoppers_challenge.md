@@ -24,6 +24,7 @@ source_links:
 - https://www.kaggle.com/c/acquire-valued-shoppers-challenge
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave
 notebook_path: datasets/beyond_iid/temporal/acquire_valued_shoppers_challenge/acquire_valued_shoppers_challenge.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/acquire_valued_shoppers_challenge/dataset.py
 source_row: 709
 type_adapter_id: curation-record-v1
 ---

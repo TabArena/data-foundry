@@ -4,12 +4,15 @@ import json
 
 import pandas as pd
 import pandas.testing as pdt
+import pydantic
 import pytest
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import (
     DatasetMetadata,
+    Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
 )
 
 
@@ -509,3 +512,187 @@ def test_versioned_save_path(tmp_path):
     save_path = curated.save(save_dir=tmp_path)
     assert "versions" in str(save_path)
     assert save_path.exists()
+
+
+# --- Container formats ---
+PINNED_FORMAT_1_CHECKSUM = "a46bb98f3fe822d762e537a833691a5ca696090980b4151c3eebdb197e81c5d3"
+"""The toy grouped format-1 container's checksum, computed by release v0.0.5 (before `split_random_state` existed).
+Never regenerate it from the current code: it guards that the shipped containers keep their checksum."""
+
+V0_0_5_FIELDS = {
+    "DatasetMetadata": {
+        "academic_reference_bibtex",
+        "academic_reference_bibtex_key",
+        "curation_comments",
+        "data_tags",
+        "dataset_source",
+        "dataset_year",
+        "domain_str",
+        "download_description",
+        "license",
+        "original_dataset_source_download_link",
+        "type_adapter_id",
+        "unique_name",
+        "version_comment",
+        "version_from_unique_name",
+    },
+    "PredictiveMLTaskMetadata": {
+        "group_labels",
+        "group_on",
+        "group_time_on",
+        "objective_metric_name",
+        "problem_type",
+        "stratify_on",
+        "target_column_name",
+        "time_on",
+        "type_adapter_id",
+    },
+    "PredictiveMLSplitsMetadata": {"splits", "splits_comment", "time_horizon", "time_horizon_unit", "type_adapter_id"},
+}
+"""The metadata fields of release v0.0.5, which the shipped BeyondArena checksums encode."""
+
+
+def _grouped_toy(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2 | None = None) -> CuratedContainer:
+    df = pd.DataFrame(
+        {"g": ["a", "a", "b", "b", "c", "c"], "x": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "y": [0, 0, 1, 1, 0, 0]}
+    )
+    if task is None:
+        task = PredictiveMLTaskMetadata(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric_name="roc_auc",
+            group_on="g",
+            group_labels="per_group",
+        )
+    return CuratedContainer(
+        dataset=df,
+        dataset_metadata=DatasetMetadata(
+            unique_name="toy_ds",
+            dataset_year="2025",
+            domain_str="finance",
+            dataset_source="Kaggle",
+            original_dataset_source_download_link="http://example",
+            download_description="desc",
+            academic_reference_bibtex="bib",
+            academic_reference_bibtex_key="key",
+            license=None,
+            data_tags=["Non-IID", "Grouped"],
+            curation_comments=None,
+        ),
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits={0: {0: ([0, 1, 2, 3], [4, 5])}}),
+        uuid="u",
+    )
+
+
+def _v2_task(grouping: Grouping | None) -> PredictiveMLTaskMetadataV2:
+    return PredictiveMLTaskMetadataV2(
+        target_column_name="y", problem_type="binary_classification", objective_metric_name="roc_auc", grouping=grouping
+    )
+
+
+TOY_GROUPING = Grouping(
+    on="g",
+    labels="per_group",
+    prediction_unit="group",
+    aggregation="mean",
+    context="all_rows",
+    definition="One group is a toy.",
+)
+
+
+def test_a_format_1_container_keeps_its_checksum_and_files(tmp_path):
+    container = _grouped_toy()
+    assert container.format_version == 1
+    assert container.checksum == PINNED_FORMAT_1_CHECKSUM
+    path = container.save(save_dir=tmp_path)
+    assert set(json.loads((path / "container_metadata.json").read_text())) == {"uuid", "checksum", "version_comment"}
+    assert CuratedContainer.load(path).format_version == 1
+    with pytest.raises(NotImplementedError, match="format-1 container has no grouping"):
+        _ = container.grouping
+
+
+def test_a_format_2_container_round_trips(tmp_path):
+    container = _grouped_toy(_v2_task(TOY_GROUPING))
+    assert container.format_version == 2
+    task = container.task_metadata
+    assert (task.group_on, task.group_labels, task.group_time_on, task.split_regime) == (
+        "g",
+        "per_group",
+        None,
+        "grouped_non_iid",
+    )
+    path = container.save(save_dir=tmp_path)
+    assert json.loads((path / "container_metadata.json").read_text())["format_version"] == 2
+    task_json = json.loads((path / "task_metadata.predictive-ml-task-mold-v2.json").read_text())
+    assert "group_on" not in task_json  # stored once, in the grouping
+    loaded = CuratedContainer.load(path)
+    assert loaded.format_version == 2
+    assert loaded.grouping == TOY_GROUPING
+    assert loaded.checksum == loaded._create_checksum() == container.checksum
+    assert loaded.container_metadata["format_version"] == 2
+
+
+def test_an_iid_format_2_container_has_no_grouping():
+    container = _grouped_toy(_v2_task(None))
+    assert container.grouping is None
+    assert container.task_metadata.split_regime == "iid"
+
+
+def test_a_stated_format_must_match_the_task_metadata(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    meta = json.loads((path / "container_metadata.json").read_text())
+    (path / "container_metadata.json").write_text(json.dumps({**meta, "format_version": 2}))
+    with pytest.raises(ValueError, match="states format 2, but its task metadata is format 1"):
+        CuratedContainer.load(path)
+
+
+def test_an_unknown_metadata_type_names_a_newer_format(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    old = path / "task_metadata.predictive-ml-task-mold-v1.json"
+    old.rename(path / "task_metadata.predictive-ml-task-mold-v9.json")
+    with pytest.raises(ValueError, match="newer data_foundry"):
+        CuratedContainer.load(path)
+
+
+@pytest.mark.parametrize(
+    ("problem_type", "kwargs", "match"),
+    [
+        ("binary_classification", {"time_on": "t", "grouping": TOY_GROUPING}, "temporal .* or grouped"),
+        (
+            "regression",
+            {"grouping": Grouping(on="g", labels="per_group", prediction_unit="group", aggregation="any")},
+            "binary target",
+        ),
+        (
+            "binary_classification",
+            {"grouping": Grouping(on="g", labels="per_sample", prediction_unit="group", aggregation="select_min")},
+            "regression target",
+        ),
+        ("binary_classification", {"grouping": Grouping(on="y", labels="per_sample")}, "cannot be a time or group"),
+        ("regression", {"stratify_on": "y"}, "cannot be stratified"),
+    ],
+)
+def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type=problem_type, objective_metric_name="m", **kwargs
+        )
+
+
+def test_every_field_added_after_the_release_is_omitted_while_unset():
+    """A new field must not enter the checksum of a format-1 container that does not set it (it broke them once)."""
+    import dataclasses
+
+    for cls in (DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata):
+        added = {f.name for f in dataclasses.fields(cls)} - V0_0_5_FIELDS[cls.__name__]
+        omitted = set(getattr(cls, "_OMIT_WHEN_UNSET", ()))
+        assert added <= omitted, f"{cls.__name__}: {sorted(added - omitted)} would change every older checksum"
+
+
+def test_the_packaged_toy_container_keeps_its_original_checksum():
+    from data_foundry.examples import get_toy_container_path
+
+    container = CuratedContainer.load(get_toy_container_path())
+    assert container.checksum == "5e564f4fd7095781edacc2ec95254b78b2e600c77f89169686352ad9fc24adb5"
+    assert container._create_checksum() == container.checksum

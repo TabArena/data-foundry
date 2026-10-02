@@ -17,6 +17,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=43828
 - https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows
 notebook_path: datasets/beyond_iid/old_iid/fiat_500/fiat_500.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/fiat_500/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

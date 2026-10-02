@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 from data_foundry.curation._paths import records_dir, resolve_curation_root
-from data_foundry.curation.notebooks import required_tree, shipped_uuids, sync_notebook_paths
+from data_foundry.curation.notebooks import V2_TREE, required_tree, shipped_uuids, sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
     AI_FILLED_TAG,
@@ -322,3 +322,21 @@ def test_notebook_path_names_the_run_that_shipped(records):
     # 10 datasets ship a _1m sub-sample, pva_revenue_prediction_kddcup98 ships _clf; guards
     # against this check going vacuous if the layout changes.
     assert checked >= 11, f"expected at least 11 datasets with sibling notebooks, found {checked}"
+
+
+@pytest.mark.skipif(not (DATASETS.parent / V2_TREE).is_dir(), reason="no TabArena v0.2 working copy")
+def test_v2_paths_are_in_sync_with_the_working_copy():
+    """Every record's ``v2_path`` names its folder in the TabArena v0.2 working copy (``sync-notebooks``)."""
+    drift = sync_v2_paths(RECDIR, DATASETS, check=True)
+    assert not drift, f"v2_path drift (run `data-foundry-curation sync-notebooks`): {drift}"
+
+
+@pytest.mark.skipif(not (DATASETS.parent / V2_TREE).is_dir(), reason="no TabArena v0.2 working copy")
+def test_beyond_arena_records_point_at_both_definitions(records):
+    """A BeyondArena dataset has its BeyondArena notebook and its TabArena v0.2 definition (unless retired)."""
+    missing = [
+        r.unique_name
+        for r in records
+        if "BeyondArena" in (r.data_foundry_status or []) and r.suggestion != RETIRED_SUGGESTION and not r.v2_path
+    ]
+    assert not missing, f"BeyondArena records without a v2_path: {missing}"

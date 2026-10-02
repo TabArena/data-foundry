@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=40670
 - https://doi.org/10.24432/C5M888
 notebook_path: datasets/beyond_iid/old_iid/splice/splice.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/splice/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

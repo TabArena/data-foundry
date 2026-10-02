@@ -8,6 +8,18 @@ import pandas as pd
 import pydantic
 
 
+def omit_unset_fields(obj: Any, dumped: Any) -> Any:
+    """Drop the fields of ``obj`` listed in its ``_OMIT_WHEN_UNSET`` from ``dumped`` while they are ``None``.
+
+    Fields added to a metadata class after containers shipped are listed there, so a container that does not set
+    them keeps its checksum and its saved JSON.
+    """
+    omit = getattr(type(obj), "_OMIT_WHEN_UNSET", ())
+    if omit and isinstance(dumped, dict):
+        dumped = {k: v for k, v in dumped.items() if not (k in omit and v is None)}
+    return dumped
+
+
 def encode_pydantic_metadata(obj: Any) -> bytes:
     """Canonical JSON bytes for pydantic dataclasses/models (and plain python types),
     with stable key ordering and no whitespace.
@@ -22,6 +34,7 @@ def encode_pydantic_metadata(obj: Any) -> bytes:
         exclude_none=False,
         round_trip=True,  # preserve e.g. tuples vs lists where possible
     )
+    py = omit_unset_fields(obj, py)
 
     # Canonical: sorted keys, compact separators
     s = json.dumps(py, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -46,6 +59,3 @@ def encode_dataset(df: pd.DataFrame) -> bytes:
     h.update(encode_pydantic_metadata(meta))
     h.update(row_hashes.tobytes(order="C"))
     return h.digest()
-
-
-

@@ -25,6 +25,7 @@ source_links:
 - 'Can get data from paper website as well and we should: https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials'
 - Contains Dataset A and B, B is subset of A that is only binary classification
 notebook_path: datasets/beyond_iid/new_iid/lung_cancer/lung_cancer.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/lung_cancer/dataset.py
 source_row: 1033
 type_adapter_id: curation-record-v1
 ---

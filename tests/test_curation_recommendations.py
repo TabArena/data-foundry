@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.curation_recommendations import (
+    LEGACY_SINGLE_SPLIT_RANDOM_STATE,
     SPLIT_RANDOM_STATE,
     _get_grouped_splits_via_groupkfold,
     _get_grouped_splits_via_index_split,
     get_recommended_grouped_splits,
     get_recommended_iid_splits,
     get_recommended_splits_dimensions,
+    subsample_split_to_budget,
     subsample_temporal,
 )
 from data_foundry.schema import PredictiveMLSplitsMetadata
@@ -117,6 +119,33 @@ def test_iid_single_train_test_and_metadata(make_dataset):
     _validate_pair(len(df), train_idx, test_idx)
     sm = PredictiveMLSplitsMetadata(splits_comment="test", splits=splits)
     assert sm.splits == splits
+
+
+def test_iid_single_split_uses_the_shared_default_seed(make_dataset):
+    """The single train/test split is seeded like the k-fold splits (``SPLIT_RANDOM_STATE``)."""
+    from sklearn.model_selection import train_test_split
+
+    df = make_dataset(100)
+    splits = get_recommended_iid_splits(dataset=df, n_repeats=1, n_splits=1, test_size=20, stratify_on=None)
+    expected_train, expected_test = train_test_split(df.index, test_size=20, random_state=SPLIT_RANDOM_STATE)
+    assert splits[0][0] == (expected_train.tolist(), expected_test.tolist())
+
+
+def test_iid_single_split_legacy_seed_reproduces_the_old_split(make_dataset):
+    """Passing the legacy seed rebuilds a single split made while the seed was hard-coded to 42."""
+    from sklearn.model_selection import train_test_split
+
+    df = make_dataset(100)
+    splits = get_recommended_iid_splits(
+        dataset=df,
+        n_repeats=1,
+        n_splits=1,
+        test_size=20,
+        stratify_on=None,
+        random_state=LEGACY_SINGLE_SPLIT_RANDOM_STATE,
+    )
+    old_train, old_test = train_test_split(df.index, test_size=20, random_state=42)
+    assert splits[0][0] == (old_train.tolist(), old_test.tolist())
 
 
 def test_iid_kfold_structure(make_dataset):
@@ -472,3 +501,66 @@ def test_grouped_random_state_is_forwarded(grouped_dataset_per_group, grouped_da
     default = _flat(get_recommended_grouped_splits(**kwargs))
     assert default == _flat(get_recommended_grouped_splits(**kwargs, random_state=SPLIT_RANDOM_STATE))
     assert default != _flat(get_recommended_grouped_splits(**kwargs, random_state=SPLIT_RANDOM_STATE + 1))
+
+
+# --- Row budget / sub-sampling --------------------------------------------------------
+def test_large_per_group_dataset_gets_a_single_split(monkeypatch):
+    """The row count decides first: a large dataset with few groups is not cross-validated."""
+    from data_foundry import curation_recommendations as cr
+
+    monkeypatch.setattr(cr, "SPLIT_TRAIN_ROW_BUDGET", 80)
+    monkeypatch.setattr(cr, "SPLIT_TEST_ROW_BUDGET", 20)
+    df = pd.DataFrame({"g": np.repeat(np.arange(10), 12), "y": 0})  # 120 rows, 10 groups
+    assert cr.get_recommended_splits_dimensions(dataset=df, group_on="g", group_labels="per_group") == (1, 1, 20)
+
+
+def _grouped_frame(n_groups=200, seed=0):
+    rng = np.random.default_rng(seed)
+    sizes = rng.integers(1, 20, size=n_groups)
+    groups = np.repeat(np.arange(n_groups), sizes)
+    labels = np.repeat(rng.choice(["a", "b"], size=n_groups, p=[0.8, 0.2]), sizes)
+    return pd.DataFrame({"g": groups, "y": pd.Categorical(labels), "x": rng.normal(size=len(groups))})
+
+
+def test_subsample_split_to_budget_keeps_groups_whole_and_fits_the_caps():
+    df = _grouped_frame()
+    test_groups = set(range(0, 200, 4))
+    test_idx = [i for i, g in enumerate(df["g"]) if g in test_groups]
+    train_idx = [i for i, g in enumerate(df["g"]) if g not in test_groups]
+    reduced, train, test = subsample_split_to_budget(
+        df=df, train_idx=train_idx, test_idx=test_idx, group_on="g", stratify_on="y", train_cap=500, test_cap=100
+    )
+    assert len(train) <= 500 and len(test) <= 100
+    assert reduced.index.equals(pd.RangeIndex(len(reduced)))
+    train_g, test_g = set(reduced.iloc[train]["g"]), set(reduced.iloc[test]["g"])
+    assert train_g.isdisjoint(test_g) and test_g <= test_groups
+    for g in train_g | test_g:  # every kept group is complete
+        assert (reduced["g"] == g).sum() == (df["g"] == g).sum()
+
+
+def test_subsample_split_to_budget_keeps_the_class_balance():
+    df = _grouped_frame(n_groups=2000, seed=1)
+    everything = list(range(len(df)))
+    reduced, train, _ = subsample_split_to_budget(
+        df=df, train_idx=everything, test_idx=[], group_on="g", stratify_on="y", train_cap=len(df) // 4
+    )
+    before = (df["y"] == "b").mean()
+    after = (reduced.iloc[train]["y"] == "b").mean()
+    assert abs(after - before) < 0.03
+
+
+def test_subsample_split_to_budget_is_a_no_op_within_budget():
+    df = _grouped_frame()
+    train_idx, test_idx = list(range(50)), list(range(50, 60))
+    reduced, train, test = subsample_split_to_budget(df=df, train_idx=train_idx, test_idx=test_idx, group_on="g")
+    assert reduced.equals(df.iloc[train_idx + test_idx].reset_index(drop=True))
+    assert (len(train), len(test)) == (50, 10)
+
+
+# --- Seeds -----------------------------------------------------------------------------
+
+
+def test_subsample_temporal_defaults_to_the_shared_seed():
+    df = pd.DataFrame({"x": np.arange(100)})
+    kwargs = dict(df=df, train_idx=list(range(80)), test_idx=list(range(80, 100)), train_cap=10, test_cap=5)
+    assert subsample_temporal(**kwargs)[0].equals(subsample_temporal(**kwargs, seed=SPLIT_RANDOM_STATE)[0])

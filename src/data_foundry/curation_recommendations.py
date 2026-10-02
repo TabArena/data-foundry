@@ -9,11 +9,23 @@ if TYPE_CHECKING:
     from data_foundry.schema import GroupLabelTypes
 
 
-#: The seed every k-fold and grouped k-fold split in this module is built with unless a caller passes
-#: ``random_state``. Exposed so downstream code that wants to reproduce or align with these splits (for
-#: example an inner validation split seeded like the outer one) can refer to it by name instead of copying
-#: the number. Written into :attr:`PredictiveMLSplitsMetadata.split_random_state` when splits are recorded.
+#: The seed every IID and grouped split in this module is built with unless a caller passes
+#: ``random_state``: repeated k-fold, grouped k-fold, and the single train/test split used for the largest
+#: datasets. Exposed so downstream code that wants to reproduce or align with these splits (for example an
+#: inner validation split seeded like the outer one) can refer to it by name instead of copying the number.
+#: Curation notebooks pass it explicitly and record it in :attr:`PredictiveMLSplitsMetadata.split_random_state`.
 SPLIT_RANDOM_STATE = 4267
+
+#: The seed the single train/test split used before 2026-09-29, when it ignored ``random_state``. Pass it to
+#: reproduce such a split, e.g. the BeyondArena splits of ``mercari_price_suggestion`` and ``amex_non_iid``.
+LEGACY_SINGLE_SPLIT_RANDOM_STATE = 42
+
+#: Row budget of every outer split: at most this many rows on the train side ...
+SPLIT_TRAIN_ROW_BUDGET = 1_000_000
+#: ... and at most this many on the test side. Enforced by ``bundle_checks``; :func:`subsample_temporal`
+#: caps to it by default, and :func:`get_recommended_splits_dimensions` recommends a single split with this
+#: test size for datasets with ``SPLIT_TRAIN_ROW_BUDGET + SPLIT_TEST_ROW_BUDGET`` samples or more.
+SPLIT_TEST_ROW_BUDGET = 250_000
 
 
 def get_recommended_splits_dimensions(
@@ -35,6 +47,10 @@ def get_recommended_splits_dimensions(
       * 250_000 <= N < 1_000_000: 1-3
       * N >= 1_000_000: 1-1-test_size (single train-test split)
         * Note: test_size is set to 250_000 samples for large datasets.
+      * A dataset with 1_250_000 rows or more always gets the single split, also when N counts groups
+        (``group_labels="per_group"``), because of the per-split row budget. Its ``<unique_name>_1m``
+        notebook then caps the split with :func:`subsample_split_to_budget`.
+
 
     Returns:
         A tuple of (n_repeats, n_splits, n_test_size).
@@ -52,6 +68,12 @@ def get_recommended_splits_dimensions(
 
     n_samples = len(dataset)
 
+    # The row budget comes first: a dataset this large gets a single split even when its groups are few
+    # enough for cross-validation (per-group labels), since every fold would exceed the row budget. Such a
+    # dataset is sub-sampled to the budget in its `<unique_name>_1m` notebook (see `subsample_split_to_budget`).
+    if n_samples >= SPLIT_TRAIN_ROW_BUDGET + SPLIT_TEST_ROW_BUDGET:
+        return 1, 1, SPLIT_TEST_ROW_BUDGET
+
     if (group_on is not None) and (group_labels == "per_group"):
         n_groups = dataset[group_on].nunique()
         print(f"Providing recommendations based on number of groups ({n_groups}).")
@@ -59,8 +81,8 @@ def get_recommended_splits_dimensions(
 
     # Dataset provides enough samples for a single train-test split with a large test set,
     # so we recommend that.
-    if n_samples >= 1_250_000:
-        return 1, 1, 250_000
+    if n_samples >= SPLIT_TRAIN_ROW_BUDGET + SPLIT_TEST_ROW_BUDGET:
+        return 1, 1, SPLIT_TEST_ROW_BUDGET
 
     n_train_samples = int(n_samples * 2 / 3)
     if n_train_samples < 500:
@@ -93,8 +115,10 @@ def get_recommended_iid_splits(
             If None, cross-validation is performed.
         stratify_on (str | None): Column name to use for stratification. If None,
             no stratification is applied.
-        random_state (int): Seed of the repeated (stratified) k-fold splitter.
-            Defaults to :data:`SPLIT_RANDOM_STATE`.
+        random_state (int): Seed of the repeated (stratified) k-fold splitter and of the single
+            train/test split. Defaults to :data:`SPLIT_RANDOM_STATE`. Before 2026-09-29 the single
+            split ignored it and always used :data:`LEGACY_SINGLE_SPLIT_RANDOM_STATE`; pass that to
+            reproduce such a split.
 
     Returns:
         dict[int, dict[int, tuple[list[int], list[int]]]]: A dictionary of
@@ -124,7 +148,7 @@ def get_recommended_iid_splits(
             X.index,
             test_size=test_size,
             stratify=y,
-            random_state=42,
+            random_state=random_state,
         )
         splits[0] = {0: (train_indices.tolist(), test_indices.tolist())}
         return splits
@@ -384,9 +408,9 @@ def subsample_temporal(
     df: pd.DataFrame,
     train_idx: list[int],
     test_idx: list[int],
-    train_cap: int = 1_000_000,
-    test_cap: int = 250_000,
-    seed: int = 42,
+    train_cap: int = SPLIT_TRAIN_ROW_BUDGET,
+    test_cap: int = SPLIT_TEST_ROW_BUDGET,
+    seed: int = SPLIT_RANDOM_STATE,
     stratify_on: str | None = None,
 ) -> tuple[pd.DataFrame, list[int], list[int]]:
     """Subsample existing train/test splits, reduce the dataframe to only those rows,
@@ -400,7 +424,8 @@ def subsample_temporal(
         test_idx: Existing test indices referring to rows in `df`.
         train_cap: Maximum number of train samples to keep.
         test_cap: Maximum number of test samples to keep.
-        seed: Random seed for reproducible subsampling.
+        seed: Random seed for reproducible subsampling. Defaults to :data:`SPLIT_RANDOM_STATE` (it was 42
+            before 2026-09-29; pass 42 to reproduce an older subsample).
         stratify_on: Optional column name to use for stratified subsampling.
             If None, no stratification is applied.
 
@@ -443,6 +468,86 @@ def subsample_temporal(
     new_test_idx = np.arange(n_train, len(df_reduced))
 
     return df_reduced, new_train_idx.tolist(), new_test_idx.tolist()
+
+
+def subsample_split_to_budget(
+    *,
+    df: pd.DataFrame,
+    train_idx: list[int],
+    test_idx: list[int],
+    group_on: str | None = None,
+    stratify_on: str | None = None,
+    train_cap: int = SPLIT_TRAIN_ROW_BUDGET,
+    test_cap: int = SPLIT_TEST_ROW_BUDGET,
+    random_state: int = SPLIT_RANDOM_STATE,
+) -> tuple[pd.DataFrame, list[int], list[int]]:
+    """Sub-sample one train/test split to the row budget, reduce the frame to its rows, and re-index.
+
+    This is the sub-sampling step of a ``<unique_name>_1m`` notebook for IID and grouped data (temporal
+    data uses :func:`subsample_temporal`): build the single train/test split the recommendation gives for
+    a dataset of 1.25M rows or more, then cap it here. Without ``group_on`` rows are sampled, like
+    :func:`subsample_temporal`. With ``group_on`` whole groups are sampled, so no group is cut and none
+    moves between train and test; each side then holds at most ``cap`` rows, filled greedily from a
+    random group order. With ``stratify_on`` that order interleaves the groups of each stratum (a group's
+    stratum is its most frequent value), so the kept groups keep roughly the class balance.
+
+    Args:
+        df: Source dataframe with a RangeIndex; ``train_idx``/``test_idx`` are positions in it.
+        train_idx: Train positions.
+        test_idx: Test positions.
+        group_on: Column whose values must stay whole. None samples rows.
+        stratify_on: Column to keep balanced while sampling.
+        train_cap: Maximum rows on the train side.
+        test_cap: Maximum rows on the test side.
+        random_state: Seed of the sampling. Defaults to :data:`SPLIT_RANDOM_STATE`.
+
+    Returns:
+        The reduced frame (train rows first, then test rows, index reset), and the new train and test
+        positions in it.
+    """
+    if group_on is None:
+        return subsample_temporal(
+            df=df,
+            train_idx=train_idx,
+            test_idx=test_idx,
+            train_cap=train_cap,
+            test_cap=test_cap,
+            seed=random_state,
+            stratify_on=stratify_on,
+        )
+
+    rng = np.random.default_rng(random_state)
+
+    def keep_groups(positions: np.ndarray, cap: int) -> np.ndarray:
+        if len(positions) <= cap:
+            return positions
+        side = df.iloc[positions]
+        codes, uniques = pd.factorize(side[group_on].to_numpy())
+        sizes = np.bincount(codes, minlength=len(uniques))
+        order = rng.permutation(len(uniques))
+        if stratify_on is not None:
+            strata = side.groupby(codes, sort=True)[stratify_on].agg(lambda s: s.value_counts().index[0]).to_numpy()
+            strata_codes = pd.factorize(strata[order])[0]
+            # rank of each group inside its stratum, scaled to [0, 1): sorting on it interleaves the strata
+            rank = np.zeros(len(order))
+            for s in np.unique(strata_codes):
+                members = np.flatnonzero(strata_codes == s)
+                rank[members] = (np.arange(len(members)) + 0.5) / len(members)
+            order = order[np.argsort(rank, kind="stable")]
+        kept, total = np.zeros(len(uniques), dtype=bool), 0
+        for g in order:
+            if total + sizes[g] <= cap:
+                kept[g] = True
+                total += sizes[g]
+            if total == cap:
+                break
+        return positions[kept[codes]]
+
+    train_idx = keep_groups(np.asarray(train_idx), train_cap)
+    test_idx = keep_groups(np.asarray(test_idx), test_cap)
+    df_reduced = df.iloc[np.concatenate([train_idx, test_idx])].copy().reset_index(drop=True)
+    n_train = len(train_idx)
+    return df_reduced, list(range(n_train)), list(range(n_train, len(df_reduced)))
 
 
 def _show_grouped_splits(
