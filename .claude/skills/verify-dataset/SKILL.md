@@ -1,7 +1,7 @@
 ---
 name: verify-dataset
-description: Verify a curated dataset before it ships. Runs the automated bundle checks (`dataset check` for a v2 `dataset.py`; `run_bundle_checks` for a shipped v1 container, see references/v1_notebooks.md), then works a 15-item judgment rubric (original source, uniqueness, scope, split regime, prediction-time availability, leakage, comments vs code, dtypes, metric, citation, record pointers) and reports pass / concern / cannot-verify with evidence. Use when a definition is filled in and checks run clean, before a PR, or when a shipped dataset is suspected of leakage, a wrong split or wrong provenance ("is X ready / correct / leaky?").
-argument-hint: <unique_name | dataset folder | notebook>
+description: Verify a v2 dataset definition before it ships. Runs the automated checks (`dataset check` on its `dataset.py`, plus the leak, task and group probes), then works a 15-item judgment rubric (original source, uniqueness, scope, split regime, prediction-time availability, leakage, comments vs code, dtypes, metric, citation, record pointers) and reports pass / concern / cannot-verify with evidence. Use when a definition is filled in and checks run clean, before a PR, or when a dataset of the working copy is suspected of leakage, a wrong split or wrong provenance ("is X ready / correct / leaky?"). v2 only: a shipped BeyondArena (v1) notebook is checked as DATA_FOUNDRY_V1.md describes.
+argument-hint: <unique_name | dataset folder>
 user-invocable: true
 ---
 
@@ -10,7 +10,7 @@ user-invocable: true
 Verify a curated dataset before it ships: run the automated bundle checks, then work the
 judgment rubric that no code can check, and report both with evidence.
 
-**Input (optional):** a v2 dataset folder (holding `dataset.py`), a notebook path, a `unique_name`, or a container path.
+**Input (optional):** a v2 dataset folder (holding `dataset.py`) or its `unique_name`.
 
 $ARGUMENTS
 
@@ -18,25 +18,17 @@ $ARGUMENTS
 
 * `/add-dataset` scaffolded a v2 dataset folder, the curator has filled it in and `dataset check` runs clean, and
   it is time to check.
-* A shipped dataset is suspected of a problem (leakage, wrong split, wrong provenance); for the shipped container
-  itself, see the v1 path below.
+* A dataset of the working copy is suspected of a problem (leakage, wrong split, wrong provenance).
 * The curator asks "is this dataset ready / correct / leaky / really original?"
 
 Related: `/triage-candidates` for the backlog record and the selection criteria; `/add-dataset` to scaffold
 a v2 dataset folder; `BEYOND_ARENA.get_dataset(name)` (CLAUDE.md) to load a shipped container.
 
-**Two paths.** Which one applies depends on what ships:
-
-* **v2** (TabArena v0.2 and every new dataset): a folder holding `dataset.py` (one `AbstractCuratedDataset` subclass,
-  the only definition), `explore.ipynb` (workbench) and a generated `README.md` (evidence; the frontmatter is
-  machine-readable). Its container is format 2 (`container.format_version == 2`). Steps 0 and 1 below are this path.
-* **v1** (the shipped BeyondArena containers): a curation notebook under `datasets/beyond_iid/` and a format-1
-  container. Use [`references/v1_notebooks.md`](references/v1_notebooks.md) for Steps 0 and 1 and for the v1 halves
-  of items 14 and 15. Steps 2 and 3 are the same; read the notebook where they say `dataset.py`, and its committed
-  cell outputs where they say `README.md`.
-
-A dataset in the v0.2 working copy has both. Verify the v2 folder for anything that ships in v0.2, and the notebook
-only when the question is about the shipped container.
+**What it verifies.** A v2 dataset: a folder holding `dataset.py` (one `AbstractCuratedDataset` subclass, the only
+definition), `explore.ipynb` (workbench) and a generated `README.md` (evidence; the frontmatter is machine-readable),
+and its format-2 container. This skill does not verify v1 notebooks or shipped format-1 containers; a question about a
+shipped BeyondArena container is answered on its v2 definition in the working copy, or as
+[`DATA_FOUNDRY_V1.md`](../../../DATA_FOUNDRY_V1.md) describes.
 
 ## What this is, and what it is not
 
@@ -108,7 +100,7 @@ across groups (item 4).
 ## Step 2 — Work the judgment rubric
 
 For each item: **pass / concern / cannot-verify**, plus one line of *evidence* (a quote from the
-source page, a notebook line, a number from the check output). "Looks fine" is not evidence.
+source page, a line of `dataset.py`, a number from the check output or the README). "Looks fine" is not evidence.
 `cannot-verify` is a legitimate and useful verdict — never upgrade it to `pass`.
 
 | # | Item | What to actually check |
@@ -126,8 +118,8 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
 | 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in the curation guidelines. |
 | 13 | **Trivial or empty** | Read the task-probe flags. `no_signal`: no model beats the dummy, so the features do not carry the target (wrong target, lost columns, or a task too noisy to rank models). `solved` (ROC AUC or R^2 at least 0.995) and `one_feature` (one feature with 95% of the best skill): first a leak or a deterministic target, run the leak probes. `no_spread`: all three untuned families tie, which criterion 4C calls trivial, unless the folds are too noisy to tell (`unstable`). `drift_baseline`: a constant from the newest data predicts as well as the models, so the task is mostly drift. Each flag is a question: report the numbers and propose `Trivial` only with a reason. The cheap findings (`splits_test_single_class`, `splits_test_minority_few`, `splits_test_target_constant`, `task_target_value_dominant`) say whether every fold can be scored. |
-| 14 | **Record pointer** | Does the record's `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built (`build.uuid`, `build_stale` false)? `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` must be clean; evidence is the UUID string itself. For the shipped container's `notebook_path` and the collection pin, see [`references/v1_notebooks.md`](references/v1_notebooks.md). |
-| 15 | **Template conformance** | The class validates on import (`dataset list` shows it), follows the current [`datasets/_template/v2/dataset.py`](../../../datasets/_template/v2/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `README.md` was regenerated after the last edit (`build_stale` is false when built). Report each drift as a concrete edit. |
+| 14 | **Record pointer** | Does the record's `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built (`build.uuid`, `build_stale` false)? `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` must be clean; evidence is the UUID string itself. |
+| 15 | **Template conformance** | The class validates on import (`dataset list` shows it), follows the current [`datasets/_template/dataset.py`](../../../datasets/_template/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `README.md` was regenerated after the last edit (`build_stale` is false when built). Report each drift as a concrete edit. |
 
 Read the selection criteria and processing conventions in [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md) before judging items 1–4 and
 12–13; they encode decisions you would otherwise guess at.
@@ -138,7 +130,7 @@ Read the selection criteria and processing conventions in [`.claude/skills/triag
 2. **Automated** — error/warning counts, each error, and the per-warning call from Step 1.
 3. **Rubric** — a compact table of the 15 items with verdict + evidence. Put `concern` and
    `cannot-verify` rows first; the passes can be one line each.
-4. **Proposed fixes** — concrete edits (`dataset.py` attribute or hook, notebook cell, accepted-warning entry with its
+4. **Proposed fixes** — concrete edits (`dataset.py` attribute or hook, accepted-warning entry with its
    reason). Apply them only if the user asks.
 5. **What a human must still check** — every `cannot-verify`, spelled out so it can be picked up.
 

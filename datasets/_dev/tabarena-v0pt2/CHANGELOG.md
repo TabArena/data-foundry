@@ -1,8 +1,22 @@
 # Changelog: TabArena v0.2 working copy
 
-Every change to this folder gets an entry here, newest first: edited notebooks or helper files, added or removed
+Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
+
+## 2026-10-02 (getting started; the grouped-data plan and the Atlas folder removed)
+
+- Added [`GETTING_STARTED.md`](GETTING_STARTED.md), the way in for a new curator, made from the Atlas getting-started
+  guide (`datasets/_dev/atlas/`) and independent of it: set-up, this folder, the curation log, the two workflows in
+  v2 (settling a record, adding a definition), worked examples from this folder, and the large-data candidates
+  (`Review Prio 1 (Atlas)`, 1M–10M rows) as the priority, with their state as of today. `datasets/_dev/atlas/` is
+  removed: its 11 v1 seed notebooks are v2 definitions here, and its size tracker's notes are in the candidate list.
+- Removed `GROUPED_DATA_PLAN.md`: the plan is implemented. Its scoring recommendation (section 4) moved to
+  [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md); the use cases are in each grouping's `definition`, and
+  the deferred items in `TODO.md`. The entries below still name it.
+- The generated READMEs escape the characters markdown would interpret in the sample rows and the data-check
+  tables (a SMILES such as `[C@H](C)` rendered as a link), and describe `explore.ipynb` as committed without
+  outputs. All 130 READMEs are regenerated; no container changes.
 
 ## 2026-10-02 (README: sample rows)
 

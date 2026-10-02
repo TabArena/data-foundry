@@ -24,5 +24,5 @@ jobs:
 
       - name: Lint v2 dataset definitions
         run: |
-          uvx ruff@0.15.15 check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/v2/dataset.py
-          uvx ruff@0.15.15 format --check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/v2/dataset.py
+          uvx ruff@0.15.15 check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py
+          uvx ruff@0.15.15 format --check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py

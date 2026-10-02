@@ -198,7 +198,9 @@ def test_sample_rows_cut_wide_frames_and_long_text() -> None:
 
     from data_foundry.v2 import report
 
-    df = pd.DataFrame({"text": ["a" * 100] * 8} | {f"x{i}": range(8) for i in range(20)} | {"y": range(8)})
+    df = pd.DataFrame(
+        {"text": ["a" * 100] * 7 + ["C[C@H](C)<b>|"]} | {f"x{i}": range(8) for i in range(20)} | {"y": range(8)}
+    )
     container = SimpleNamespace(dataset=df, task_metadata=SimpleNamespace(target_column_name="y", time_on="x0"))
     out = "\n".join(report._sample_section(SimpleNamespace(container=container, dataset=SimpleNamespace(shuffle=True))))
     assert "(the oldest rows: the frame is sorted by `x0`); 12 of 22 columns, the target first." in out
@@ -207,6 +209,8 @@ def test_sample_rows_cut_wide_frames_and_long_text() -> None:
     assert table[0].startswith("| y | text | x0 |")
     assert table[0].count(" | ") == 11
     assert "a" * 39 + "…" in table[1]
+    smiles = report._table(df[["text"]].tail(1), escape=True)
+    assert "C\\[C@H\\](C)&lt;b>\\|" in smiles  # markdown in raw data is escaped, not rendered as a link
 
 
 def test_build_records_uuid_and_a_later_edit_marks_it_stale(tmp_path: Path, warehouse: Path) -> None:

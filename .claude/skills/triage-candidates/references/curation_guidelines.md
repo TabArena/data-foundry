@@ -66,7 +66,7 @@ needs to act: what the dataset really is, the decisive reason for the verdict, w
 be obtained, what still needs checking. A few sentences is normal; a screenful is almost always too
 much. Do **not** dump everything you learned while investigating — per-column missingness, byte
 sizes, checksums, download-endpoint mechanics, side observations, or restatements of front-matter
-fields. Those belong in the curation notebook, not the record. If you were asked for one thing (a
+fields. Those belong in the dataset's definition (`dataset.py`) and its README, not the record. If you were asked for one thing (a
 download link, a duplicate check), write *that* down, not a report of the whole investigation.
 
 **Cite papers by location in the text, never from memory.** A dataset's paper is often the decisive

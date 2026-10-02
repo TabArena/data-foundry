@@ -25,7 +25,7 @@ $ARGUMENTS
 * A shipped dataset is suspected of a leak, or an audit finding needs a deep dive before the curator decides.
 
 Read the curation guidelines first, [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md): they are the
-rubric. (No need to start the dashboard for this.) `/verify-dataset` is for a filled-in definition (a v2 `dataset.py`, or a v1 notebook), not for a backlog record.
+rubric. (No need to start the dashboard for this.) `/verify-dataset` is for a filled-in v2 definition (`dataset.py`), not for a backlog record.
 
 ## Protocol
 

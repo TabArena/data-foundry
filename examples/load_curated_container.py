@@ -1,16 +1,22 @@
-"""Load a downloaded :class:`CuratedContainer` and inspect its metadata.
+"""Load a :class:`CuratedContainer` and inspect its metadata and its extra files.
 
 Every container is a self-contained directory with a dataset (parquet), the
 preserved column dtypes, three pieces of structured metadata, and the
 container-level integrity info (uuid + checksum). All of it round-trips
-through :meth:`CuratedContainer.save` / :meth:`CuratedContainer.load`.
+through :meth:`CuratedContainer.save` / :meth:`CuratedContainer.load`, for both
+container formats (1: the shipped BeyondArena containers, 2: a v2 definition's).
+
+A producer may also ship extra files next to the core ones (embedding caches,
+per-fold predictions, documentation). Data Foundry does not interpret them; it
+lists them and resolves their paths, and the caller loads them. The toy container
+ships one, ``toy_extra.parquet``.
 
 Run::
 
     # Use the toy container shipped with the package (no download needed).
     python examples/load_curated_container.py
 
-    # Or point at any container you've downloaded into your warehouse.
+    # Or point at any container in your warehouse or cache.
     python examples/load_curated_container.py /path/to/warehouse/<name>/<uuid>
 """
 
@@ -19,11 +25,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.examples import get_toy_container_path
 
 
 def main(path: Path) -> None:
+    """Print the container's identity, data, metadata and extra files."""
     container = CuratedContainer.load(path)
 
     print(f"Loaded curated container from: {path}")
@@ -64,6 +72,15 @@ def main(path: Path) -> None:
     print(f"  # repeats:           {len(em.splits)}")
     print(f"  # folds of repeat 0: {len(em.splits[0])}")
     print(f"  splits_comment:      {em.splits_comment}")
+
+    print("\n-- Extra files --")
+    extras = container.list_extra_files()
+    print(f"  present: {extras or '(none)'}")
+    if extras:
+        resolved = container.extra_file_path(extras[0])  # raises for a name that is not a plain extra file
+        print(f"  {extras[0]} -> {resolved}")
+        if resolved.suffix == ".parquet":
+            print(pd.read_parquet(resolved).head().to_string())
 
 
 if __name__ == "__main__":

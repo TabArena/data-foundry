@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `.venv/bin/python -m data_foundry.curation.cli dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. Replaces the old `/process-dataset` notebook scaffolder.
+description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X". Reads the curation record, scaffolds the folder with `.venv/bin/python -m data_foundry.curation.cli dataset new`, fills the metadata and the preprocessing from the source, and loops on `dataset check` until the bundle checks are clean. v2 only: never writes a v1 curation notebook.
 argument-hint: <unique_name>
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ working copy):
 | File | Written by | Role |
 |---|---|---|
 | `dataset.py` | you | The **only** definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
-| `explore.ipynb` | the template, then whoever explores | The workbench: `ds = workbench()` loads this folder's dataset and picks up every edit to `dataset.py`. Outputs are committed so GitHub shows them; never needed to rebuild the dataset. |
+| `explore.ipynb` | the template, then whoever explores | The workbench: `ds = workbench()` loads this folder's dataset and picks up every edit to `dataset.py`. Committed without outputs: the README is the page GitHub shows, and its checksum tells when it is stale. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `build` | The dataset card and evidence, which GitHub shows below the folder's files: YAML frontmatter (machine-readable build record, data/split shape, bundle-check slugs, decision titles), then the files of the folder, links (record, source, collection), how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edit it by hand: it is rewritten from `dataset.py`. |
 
 The interface is `data_foundry.v2.AbstractCuratedDataset` (`src/data_foundry/v2/dataset.py`, read its class
@@ -117,7 +117,7 @@ Read the closest reference in full before writing (paths under `datasets/_dev/ta
 .venv/bin/python -m data_foundry.curation.cli dataset new <unique_name> --root datasets/_dev/tabarena-v0pt2
 ```
 
-This copies `datasets/_template/v2/{dataset.py,explore.ipynb}`, names the class, and pre-fills year, link and
+This copies `datasets/_template/{dataset.py,explore.ipynb}`, names the class, and pre-fills year, link and
 problem type from the record. Then fill in, following `references/dataset_patterns.md`:
 
 1. **Attributes:** every field from Step 1; `"TODO"` where the data must be seen first.
@@ -141,8 +141,9 @@ Do not write `explore.ipynb` cells beyond the template; that is the curator's sp
 
 ## Step 4: Point the curation record at the definition
 
-A record carries two pointers: `notebook_path` (the BeyondArena notebook it shipped from) and `v2_path` (its
-`dataset.py` in the TabArena v0.2 working copy). Run `.venv/bin/python -m data_foundry.curation.cli sync-notebooks`
+A record carries two pointers: `v2_path` (its `dataset.py`, the one this skill writes) and, for a dataset that
+shipped in BeyondArena, `notebook_path` (the v1 notebook it shipped from; never write or edit one, see
+`DATA_FOUNDRY_V1.md`). Run `.venv/bin/python -m data_foundry.curation.cli sync-notebooks`
 to fill both from the tree; `--check` must stay clean (`tests/test_records_integrity.py` checks it).
 
 ## Step 5: Verify the scaffold

@@ -49,8 +49,8 @@ class ClassName(AbstractCuratedDataset):
     #     """,
     # )
     # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`
-    # (which replaces the generated text, so restate the windows there). A calendar window gives the horizon; other
-    # windows also need `horizon=..., horizon_unit="steps"` (or days, weeks, months, years):
+    # (which replaces the generated text, so restate the windows there). A window of fixed length (a calendar unit, or
+    # unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`:
     # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

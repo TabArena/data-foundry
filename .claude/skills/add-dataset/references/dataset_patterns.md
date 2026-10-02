@@ -1,16 +1,9 @@
 # Dataset patterns for the `add-dataset` skill
 
-Reference for writing a v2 `dataset.py`, distilled from the ~155 curation notebooks shipped under
-`datasets/beyond_iid/` (formerly the reference sections of `/process-dataset`). §A maps the curation record to
+Reference for writing a v2 `dataset.py`, distilled from the curation practice of the collection (the BeyondArena
+datasets and their 130 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
 the attributes; §B and §C are what to *write*; §D is what to *flag*; §E maps each automated check to the action
 that pre-empts it; §F shows how to record decisions with their evidence.
-
-Coming from a v1 notebook: `dataset_mold` / `task_mold` fields are flat class attributes (inside methods,
-`self.dataset_metadata` / `self.task_metadata` hold the built objects), `dataset_mold.path` is the `raw_dir`
-argument, the preprocessing cell is `_load_raw` (reading) + `_clean` (the rest, including column drops), the
-dtype casts are `_feature_types`, the final shuffle is the base class's, the regime fields become one
-`grouping = Grouping(...)` or `temporal = Temporal(...)`, the split cell is `Temporal(splits=...)` or `_make_splits`,
-and `ignore=[...]` is `accepted_check_warnings`.
 
 ## The definition file
 
@@ -189,7 +182,7 @@ We start with <file> from <source>.
 - Note: <a decision a reviewer would otherwise question>
 ```
 
-`Anomaly:` and `Note:` are established prefixes across the shipped notebooks — use them. A suspected leak that stays
+`Anomaly:` and `Note:` are established prefixes across the collection — use them. A suspected leak that stays
 in on purpose gets `Potential leak, kept on purpose:` with the mechanism, the numbers, why it stays and when to
 revisit (`homesite_quote_conversion`, `kick`).
 Comments are the audit trail: **every non-obvious line of preprocessing code needs a bullet,
@@ -197,7 +190,7 @@ and every bullet needs code.** `/verify-dataset` checks exactly that corresponde
 
 ## §B The preprocessing recipe (the body of `_clean`)
 
-The order below is what the ~155 notebooks under `datasets/beyond_iid/` converge on. Emit the
+The order below is what the collection's definitions converge on. Emit the
 steps that plausibly apply as commented stubs with TODO markers; drop the ones the source clearly
 doesn't need.
 
@@ -346,7 +339,7 @@ with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment
   is an error.
 
 A dataset that sets `splits_comment` itself states the sub-sampling there (the generated sentence is only appended
-to the default comment). v1 notebooks keep the v1 rule (one 1M / 250k split from 1.25M rows on).
+to the default comment).
 
 ## §D Recurring traps — what to pre-flag
 
@@ -425,7 +418,7 @@ impossible values standing in for missing ones (`chol == 0` and `trestbps == 0` 
 `age = 455` in thyroid_discordant, `-9999` in sdss_17) and rows that are a sentinel in every feature (heloc: 588 rows
 of `-9`, no bureau record). A sentinel that holds one class only shows up as `dataset_pure_feature_value`.
 
-**8. Rare classes.** Classes with <10 samples get dropped in the shipped notebooks — they break
+**8. Rare classes.** Classes with <10 samples get dropped across the collection — they break
 stratification and leave folds whose test set holds an unseen class (`splits_test_class_unseen_in_train`).
 Merging label groups into a coarser, meaningful taxonomy is also accepted; document the mapping.
 
@@ -446,7 +439,7 @@ is such a step even when it won the competition (`santander_customer_transaction
 encodings — keep the data as-is, tag `Anonymized`, and say what you could not determine.
 
 **12. Reconstruct destroyed meaning.** Ordinal-encoded categories, one-hot blocks, dates split
-across three columns, IDs that encode a group and a session — the shipped notebooks reverse these.
+across three columns, IDs that encode a group and a session — the collection's definitions reverse these.
 It is the one kind of feature engineering that is always welcome.
 
 **13. Classes recorded differently.** When the classes come from different sources, sites or assays, the recording

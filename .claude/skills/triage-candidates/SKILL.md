@@ -21,8 +21,8 @@ decisions the way a human curator would.
 For an independent deep-dive on one record the curator is looking at ("check X", "what did I miss"),
 use `/check-candidate <unique_name>`: it runs the source-tracing protocol against these guidelines.
 If the user instead wants to process an already-decided dataset (scaffold its v2
-`dataset.py` folder), use `/add-dataset`; to check a filled-in definition, notebook or saved
-bundle before it ships, use `/verify-dataset`.
+`dataset.py` folder), use `/add-dataset`; to check a filled-in v2 definition before it ships, use
+`/verify-dataset`.
 
 ## Step 1 — Start the dashboard
 
@@ -53,8 +53,9 @@ guidelines as `references/curation_guidelines.md`.
   `decision_markers`, `tags`, `collections`, `original_source`, `year`, `domain`,
   `required_split`, `problem_type`, `original_data_state`, `source_links`, `notebook_path`, `v2_path`,
   `comments`, `reference`, `needs_review`).
-* **`notebook_path` is the record's own pointer to its curation notebook** — one dataset, one
-  notebook, stored in the record rather than resolved from the tree. See the pointer rules
+* **`v2_path` and `notebook_path` are the record's own pointers** to its v2 `dataset.py` and, for a dataset
+  curated with v1, its notebook — stored in the record rather than resolved from the tree. New datasets only get a
+  `v2_path`. See the pointer rules
   in [`references/record_pointers.md`](references/record_pointers.md) for when to set and check them.
 * Editable dropdown options live in `curation/vocabularies.yaml` (add new options
   there, via the dashboard's ＋ header buttons, or with `save_vocabularies`).

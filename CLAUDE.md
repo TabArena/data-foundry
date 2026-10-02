@@ -34,22 +34,26 @@ gotchas that look like blockers but aren't — lives in
   human ask.
 * **TabArena v0.2 working copy:** `datasets/_dev/tabarena-v0pt2/` holds one
   v2 folder per dataset of TabArena v0.2 (migrated from the BeyondArena notebooks
-  and rebuilt on 2026-10-01; its `README.md` has the table of datasets and UUIDs and
-  how to rebuild them). Every change there (edited definition or helper file, added or
+  and rebuilt on 2026-10-02; its `README.md` has the table of datasets and UUIDs and
+  how to rebuild them, its `GETTING_STARTED.md` the way in for a new curator). Every change there (edited definition or helper file, added or
   removed dataset, a re-run that makes a new container) gets a dated entry in its
   `CHANGELOG.md`, and a new, removed or rebuilt dataset also updates the table in its
   `README.md`. A dataset retired to `No (Retired)` is removed from the copy.
+* **v2 only for new work:** every new dataset is a v2 folder. The BeyondArena notebooks are Data Foundry v1;
+  never add or re-curate a dataset with v1. [DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md) is the one page about v1.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it
   applies to docstrings, markdown, commit messages, and chat replies.
 
 ## Using shipped datasets (load, browse, benchmark)
 
-No slash command for these; the examples are the reference.
+No slash command for these; the examples are the reference ([`examples/README.md`](examples/README.md)). A
+collection is how datasets ship (BeyondArena today, the TabArena v0.2 collection next); the calls below work for
+both container formats.
 
 * **Load one:** `BEYOND_ARENA.get_dataset(name_or_uuid)` from `data_foundry.collections`, then
   `container.describe()`. Check integrity with `container.checksum == container._create_checksum()`.
   How it was built: the record `curation/records/<name>.md` (`notebook_path`, `v2_path`, `## Comments`).
-  See `examples/download_beyond_arena_dataset.py`, `examples/load_curated_container.py`.
+  See `examples/load_curated_container.py`, `examples/benchmark_on_beyond_arena.py`.
 * **Browse a collection:** `list_collections()`, `get_collection(name)`, `BEYOND_ARENA.unique_names`,
   `iter_containers()`, `prefetch()`. `prefetch` / `iter_containers` download several GB, so ask
   first. The cache is `~/.cache/data_foundry/<collection>/` (`$DATA_FOUNDRY_CACHE`, `clear_cache()`,

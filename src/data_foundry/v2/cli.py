@@ -37,7 +37,7 @@ DATASETS_ROOT_ENV = "DATA_FOUNDRY_DATASETS_ROOT"
 TEMPLATE_DIR_ENV = "DATA_FOUNDRY_V2_TEMPLATE"
 """Environment variable naming the template folder that ``dataset new`` copies."""
 
-_REPO_TEMPLATE = Path(__file__).resolve().parents[3] / "datasets" / "_template" / "v2"
+_REPO_TEMPLATE = Path(__file__).resolve().parents[3] / "datasets" / "_template"
 
 PROBLEM_TYPES = {
     "regression": ("regression",),

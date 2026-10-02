@@ -26,7 +26,7 @@ side (metadata, checks, the dataset review) is tracked in [`TODO.md`](TODO.md).
   The v0.2 group-unit datasets: musk (`any`), parkinsons_biomedical_voice_measurements (`mean`), amex_non_iid_1m
   (`last`, by `S_2`), sat11_hand_algo_runtime (`select_min`). How it becomes a scoring spec is TabArena's choice; our
   recommendation (resolution table, named metrics, methods that return their own group predictions, tuning on the
-  same metric) is in [`GROUPED_DATA_PLAN.md`](GROUPED_DATA_PLAN.md), section 4.
+  same metric) is [below](#recommended-scoring-of-grouped-tasks).
 - [ ] **Use the information about a group that the use case allows.** The group aggregation features are built for
   every `per_group` task, from all rows of a test group. That fits a task where all rows of a new group are known at
   prediction time; a task that may only use earlier rows of a group (`group_time_on`) needs causal aggregates, and a
@@ -43,6 +43,36 @@ side (metadata, checks, the dataset review) is tracked in [`TODO.md`](TODO.md).
   need its runtimes kept as metadata first).
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (32 patients in `parkinsons_biomedical_voice_measurements`); show it next to the results.
+
+## Recommended scoring of grouped tasks
+
+The metadata is meant to determine the official score, so every method is scored the same way. The resolution we
+recommend:
+
+| Prediction unit | Label of a group | Default group prediction | Metric computed on |
+|---|---|---|---|
+| `row` | | | the rows, unweighted (as today) |
+| `group` + `mean` | the shared label | mean of the rows' predicted probabilities (regression: of the predictions) | one value per group |
+| `group` + `any` | positive if any row is | max of the rows' P(positive) | one value per group |
+| `group` + `last` | the latest row's label (`time_on`) | the latest row's prediction | one value per group |
+| `group` + `select_min` / `select_max` | | the row with the lowest / highest prediction | the true value of the selected row (for example PAR10 for sat11) |
+
+* The metric is the task's `objective_metric_name` applied at that unit: ROC AUC over molecules for musk on the max
+  of each molecule's row probabilities, over subjects for parkinsons on the mean, over rows for in_vehicle.
+* Named metrics that need the group structure get the group ids and the order from the metadata: the PhysioNet 2019
+  utility for sepsis (each patient's ordered hours), `amex_metric` per customer, the 5G challenge's weighted MAPE,
+  micro_mass's accuracy averaged per strain and then per species, PAR10 for sat11 (a timeout is a runtime of the
+  5,000 s cutoff, counted 10 times). asp_potassco keeps only each instance's best configuration, so PAR10 there would
+  need the 11 runtimes kept as metadata (deferred, `TODO.md`).
+* Methods: the task fixes the unit and the metric. The harness applies the default aggregation when a method returns
+  row predictions; a method may return one prediction per group itself (a multiple-instance model, a learned pooling,
+  another rule) and is scored with the same metric on the same unit. What a method may look at follows `context`; a
+  group-level override needs `all_rows`. At the row unit every row is predicted.
+* Inner validation and tuning should use the same resolved metric, so a model is not tuned on rows and scored on
+  groups.
+* Report the number of test groups per fold next to a group-level score; it is the score's sample size.
+* Until TabArena scores at the group unit, the four group-unit datasets are scored per row; the metadata says what
+  the right unit is, and nothing is held back.
 
 ## Library version
 

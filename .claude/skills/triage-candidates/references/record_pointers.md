@@ -1,10 +1,12 @@
 # The definition pointers (`notebook_path`, `v2_path`)
 
-A record points at two definitions: `notebook_path`, the BeyondArena notebook that produced the shipped
-container (the rules below), and `v2_path`, its `dataset.py` in the TabArena v0.2 working copy
-(`datasets/_dev/tabarena-v0pt2/<name>/`, or the `<name>_*/` folder whose class declares
-`version_of = "<name>"`). The `_dev` rule below is about `notebook_path`; `v2_path` points into `_dev` by
-design until v0.2 ships. `sync-notebooks` fills and checks both, and the dashboard links them as 📓 and 🧩.
+A record points at two definitions. `v2_path` is its `dataset.py` in the TabArena v0.2 working copy
+(`datasets/_dev/tabarena-v0pt2/<name>/`, or the `<name>_*/` folder whose class declares `version_of = "<name>"`);
+it points into `_dev` by design until v0.2 ships. `notebook_path` is the v1 notebook a dataset was curated in:
+for a shipped dataset the BeyondArena or TabArena v0.1 notebook that produced the container, otherwise an older one
+under `_maintenance/` or `_dev/` (the rules below). A new dataset only ever gets a `v2_path`; nobody writes a v1
+notebook any more (`DATA_FOUNDRY_V1.md`). `sync-notebooks` fills and
+checks both, and the dashboard links them as 📓 and 🧩.
 
 A curated dataset comes from exactly one notebook, and the record stores which one:
 
@@ -38,7 +40,7 @@ report as a shipped record missing its notebook.
 
 **Set it when:**
 
-* a notebook or v2 `dataset.py` is created — `/add-dataset` does this as its own step;
+* a v2 `dataset.py` is created — `/add-dataset` does this as its own step;
 * a notebook is renamed, moved between trees (`_dev/` → `beyond_iid/`, or into `_maintenance/`
   when a dataset is retired), or a dataset directory is renamed;
 * the run that ships changes — a `<name>_1m.ipynb` sub-sample or a `<name>_clf.ipynb` alternative
