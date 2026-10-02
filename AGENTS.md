@@ -81,7 +81,7 @@ notebooks**: the ordered preprocessing recipe, the per-regime split recipes (inc
 the declarative `TemporalSplits` recipes and the `Grouping` fields), the recurring traps worth flagging,
 and a table mapping every `bundle_checks` slug to the scaffold action that pre-empts it.
 Keep them in sync when the collection's practice changes — the check-side evidence comes
-from `scripts/beyond_arena/check_collection_bundles.py`, the practice-side evidence from
+from `.claude/skills/verify-dataset/scripts/check_collection_bundles.py`, the practice-side evidence from
 re-reading the notebooks' preprocessing / task-curation cells and `curation_comments`.
 The governing rule for scaffolding is **pre-fill structure, never facts**: anything that
 needs a look at the data becomes a `# TODO(verify): …` marker, which `dataset check` reports
@@ -240,13 +240,14 @@ bump versions or publish without explicit human authorization.
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
 | Triage candidates — dashboard + curation guidelines | [`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md) |
 | Check one candidate — second opinion with citations | [`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md) |
-| Leak checks — probes and the 2026 leak-audit precedents | [`.claude/skills/check-candidate/references/leak_checks.md`](.claude/skills/check-candidate/references/leak_checks.md) · [`scripts/v2/leak_probes.py`](scripts/v2/leak_probes.py) |
+| Leak checks — probes and the 2026 leak-audit precedents | [`.claude/skills/check-candidate/references/leak_checks.md`](.claude/skills/check-candidate/references/leak_checks.md) · [`.claude/skills/verify-dataset/scripts/leak_probes.py`](.claude/skills/verify-dataset/scripts/leak_probes.py) |
 | Curation guidelines (selection criteria + processing) | [`src/data_foundry/curation/static/guidelines.html`](src/data_foundry/curation/static/guidelines.html) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
 | Process a dataset — scaffold its v2 dataset folder | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
 | Verify a dataset / bundle (checks + judgment rubric) | [`.claude/skills/verify-dataset/SKILL.md`](.claude/skills/verify-dataset/SKILL.md) |
+| Rebuild the TabArena v0.2 working copy and verify the build | [`.claude/skills/rebuild-working-copy/SKILL.md`](.claude/skills/rebuild-working-copy/SKILL.md) |
 | Load / browse / benchmark shipped datasets | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) |
 | Dataset templates (v2 / v1 notebook) | [`datasets/_template/v2/`](datasets/_template/v2/) · [`datasets/_template/_template.ipynb`](datasets/_template/_template.ipynb) |
 | Examples (use-case anchors) | [`examples/`](examples) |

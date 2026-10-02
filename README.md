@@ -320,7 +320,7 @@ The `dev` extra adds curation-time deps (`openml`, `kaggle`, `seaborn`, `polars`
 data-foundry/
 ├── src/data_foundry/         # the package — schema, container, collections, checks, splits
 │   ├── v2/                   # v2 dataset definitions: AbstractCuratedDataset, split protocol, checks, README report
-│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (+ Grouping), PredictiveMLSplitsMetadata
+│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (format 1) / V2 (+ Grouping), PredictiveMLSplitsMetadata
 │   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
 │   ├── curation_recommendations.py  # v1 recommended split helpers (IID, grouped, temporal)
@@ -335,9 +335,11 @@ data-foundry/
 │   ├── _maintenance/         # re-runs / fixes for already-released datasets
 │   └── beyond_iid/           # promoted datasets — pinned by `final_uuid_list.py`
 ├── examples/                 # runnable demos (covers the use-cases above)
-├── scripts/                  # one-off tooling (toy container builder)
-│   ├── v2/                   # probes for v2 datasets: leak, group and task probes
+├── scripts/                  # one-off tooling (toy container builder, release)
 │   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
+├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
+│   ├── verify-dataset/scripts/  # leak, task and group probes for v2 datasets, the collection bundle check
+│   └── rebuild-working-copy/scripts/  # rebuild the v0.2 working copy and verify the build
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
 ```
@@ -350,7 +352,7 @@ The short version (v2):
    datasets/_dev/tabarena-v0pt2` (or `/add-dataset <unique_name>` in Claude Code), and fill in `dataset.py`.
 2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
    warning is fixed or accepted with a reason; it writes the folder's `README.md`. Then run the probes in
-   `scripts/v2/` (leak, task and, for a grouped task, group probes).
+   `.claude/skills/verify-dataset/scripts/` (leak, task and, for a grouped task, group probes).
 3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
 
 The shipped BeyondArena datasets are v1 notebooks built from

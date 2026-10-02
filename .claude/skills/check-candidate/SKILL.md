@@ -58,7 +58,7 @@ Do every step; skip only when an earlier step settles the verdict and say so.
    as a one-line note and never used as the reason for a verdict or a marker.
    If the source cannot be traced or the data looks too clean, run the tests in "Checking whether the data
    is generated" below. When the data can be loaded, name the prediction point, then run the leak probes in
-   [`references/leak_checks.md`](references/leak_checks.md) (`scripts/v2/leak_probes.py <unique_name>` for a
+   [`references/leak_checks.md`](references/leak_checks.md) (`.claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` for a
    v2 folder). That file also lists what the 2026 leak audit decided for each kind of leak, which is the
    precedent for your recommendation.
 5. **Write into the record only substance.** Add the source links you verified. Add one dated comment

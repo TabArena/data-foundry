@@ -260,7 +260,7 @@ One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "
 | nearest neighbour in the same group | 5.0% of the rows (chance: 1.4%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.44) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 

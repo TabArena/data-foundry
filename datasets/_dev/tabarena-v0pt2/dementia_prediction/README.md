@@ -253,7 +253,7 @@ One group is a subject of OASIS-2: older adults scanned on two or more visits at
 | nearest neighbour in the same group | 83.0% of the rows (chance: 0.5%) |
 | label variance explained by the group | 0.83 (shuffled groups: 0.42) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 

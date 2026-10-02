@@ -63,7 +63,7 @@ bundle_checks:
   infos: []
   accepted:
     groups_test_groups_few: '32 subjects give 10-11 test subjects per fold; kept because
-      the signal across subjects is real (2026-10-01, scripts/v2/group_probes.py:
+      the signal across subjects is real (2026-10-01, .claude/skills/verify-dataset/scripts/group_probes.py:
       per-subject ROC AUC 0.82 for a logistic regression on 3 repeats, permutation
       test across subjects p = 0.01).'
     task_group_time_on_few_unique: '`session_number` counts a subject''s recordings
@@ -270,7 +270,7 @@ One group is a subject; its rows are about six sustained phonations (32 subjects
 | nearest neighbour in the same group | 75.9% of the rows (chance: 2.6%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.17) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -279,7 +279,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: 32 subjects give 10-11 test subjects per fold; kept because the signal across subjects is real (2026-10-01, scripts/v2/group_probes.py: per-subject ROC AUC 0.82 for a logistic regression on 3 repeats, permutation test across subjects p = 0.01).
+- `groups_test_groups_few`: 32 subjects give 10-11 test subjects per fold; kept because the signal across subjects is real (2026-10-01, .claude/skills/verify-dataset/scripts/group_probes.py: per-subject ROC AUC 0.82 for a logistic regression on 3 repeats, permutation test across subjects p = 0.01).
 - `task_group_time_on_few_unique`: `session_number` counts a subject's recordings up (1-7): it orders them within a subject, which is all `time_on` records (decided 2026-10-01).
 
 ## Data checks

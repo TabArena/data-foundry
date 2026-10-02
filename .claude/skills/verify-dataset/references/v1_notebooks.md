@@ -34,14 +34,14 @@ container = BEYOND_ARENA.get_dataset("<unique_name>")
 report = run_bundle_checks(container)                       # prints the report
 ```
 
-For a whole collection: `.venv/bin/python scripts/beyond_arena/check_collection_bundles.py --examples 5`.
+For a whole collection: `.venv/bin/python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --examples 5`.
 
 A format-1 container is judged by the v1 split protocol (`curation_recommendations`): repeats by train size
 (`get_recommended_splits_dimensions`), at most 1M train and 250k test rows per split, and a frame of 1.25M rows or
 more as a single holdout split in a `_1m` version. A warning the curator accepts belongs in the notebook's
 `ignore=[...]` **with the reason**; report errors and warnings as the skill's Step 1 says.
 
-The leak probes, task probes and group probes (`scripts/v2/*_probes.py`) run on v2 definitions. For a shipped
+The leak probes, task probes and group probes (`.claude/skills/verify-dataset/scripts/*_probes.py`) run on v2 definitions. For a shipped
 container, run the same probes by hand on its splits (see
 [`../../check-candidate/references/leak_checks.md`](../../check-candidate/references/leak_checks.md)), or run the
 scripts on the dataset's v2 folder when its splits match the shipped ones.

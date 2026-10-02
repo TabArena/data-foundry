@@ -91,18 +91,18 @@ Then, in your own report:
 * do not re-state passing checks one by one. "Bundle checks: 0 errors, 3 warnings (2 accepted,
   see below)" is the right level.
 
-Then run the leak probes, which the bundle checks do not cover: `.venv/bin/python scripts/v2/leak_probes.py
+Then run the leak probes, which the bundle checks do not cover: `.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py
 <unique_name>`. Read them with
 [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the
 other probes (same-label subgroups, number formats by class, target by period, entity overlap) and what the 2026 leak
 audit decided for each kind of leak. Their numbers are the evidence for items 4, 5, 6, 9 and 13.
 
-Then run the task probes: `.venv/bin/python scripts/v2/task_probes.py <unique_name>` (or `--built` to read the built
+Then run the task probes: `.venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name>` (or `--built` to read the built
 container). On the shipped splits they compare dummy baselines (the train side's class shares or mean, and for a
 temporal regression or multiclass task the same from the newest data) with a linear model, a random forest and
 LightGBM (per group for a group-unit task with `mean`, `any` or `last`; a `select_*` task is scored per row), plus
 the best single feature. Their flags are the evidence for item 13.
-For a grouped task, `scripts/v2/group_probes.py <unique_name>` gives the IID vs grouped gap and a permutation test
+For a grouped task, `.claude/skills/verify-dataset/scripts/group_probes.py <unique_name>` gives the IID vs grouped gap and a permutation test
 across groups (item 4).
 
 ## Step 2 — Work the judgment rubric
@@ -116,7 +116,7 @@ source page, a notebook line, a number from the check output). "Looks fine" is n
 | 1 | **Original source** | Does the link bottom out at the *original* publication (paper, competition, institution), not an anonymous re-upload? A working Kaggle/OpenML link is not provenance. Does `dataset_source` name where the data first appeared? |
 | 2 | **Uniqueness** | Is this the same underlying data as another dataset in the collection under a different name — including a different target/slice/version of one cohort? Compare canonical links and follow each to its origin (see *Checking for duplicates* in the curation guidelines). |
 | 3 | **Scope** | Was it *published for* a predictive classification/regression task? Exclude time-series forecasting, CTR, ranking/recsys, non-predictive survey/discovery tables. Scope by the **original** task, not the re-upload's framing. |
-| 4 | **Split regime** | Does the declared regime (`Temporal`, `Grouping`, or neither) match the real application? Read the source description; a prescribed random split is a *claim*, not evidence. For a grouped task, do `prediction_unit`, `aggregation` and `context` follow the source's use case, and does the `definition` cite it? Read the README's "Group structure" section and run `scripts/v2/group_probes.py` for a small or doubtful grouped task (signal across groups, IID vs grouped gap). A missing timestamp does not make a stream of contemporaneous readings IID. Check for grouped structure inside a temporal task (repeated entities over time) and vice versa. A group id must be a true id or one constructed exactly from the data (identical profile text, consecutive blocks in the raw file order), never a similarity cluster; check a claimed source split against the data (share of test entities seen in train); check that a row-order time index follows the date. |
+| 4 | **Split regime** | Does the declared regime (`Temporal`, `Grouping`, or neither) match the real application? Read the source description; a prescribed random split is a *claim*, not evidence. For a grouped task, do `prediction_unit`, `aggregation` and `context` follow the source's use case, and does the `definition` cite it? Read the README's "Group structure" section and run `.claude/skills/verify-dataset/scripts/group_probes.py` for a small or doubtful grouped task (signal across groups, IID vs grouped gap). A missing timestamp does not make a stream of contemporaneous readings IID. Check for grouped structure inside a temporal task (repeated entities over time) and vice versa. A group id must be a true id or one constructed exactly from the data (identical profile text, consecutive blocks in the raw file order), never a similarity cluster; check a claimed source split against the data (share of test entities seen in train); check that a row-order time index follows the date. |
 | 5 | **Availability at prediction time** | Is the prediction point written down, and would every feature have been known then? Aggregates computed over the full dataset, post-outcome fields, or anything the source computed after the label are leaks; so is missingness caused by the outcome (fields blank because the patient died) and a feature window that ends at the outcome. Temporal tasks: is the planning gap real, and is every training row's label known at the prediction point? |
 | 6 | **Irreversible leakage** | Any feature that is itself the output of a supervised transform fit on the whole dataset (discriminant score, target/mean encoding, a model's prediction, PCA of the full set)? That cannot be recomputed per split and is an exclusion, not a warning. Label-aware features computed over all rows before splitting are fixable (drop them). Recording or batch artefacts that differ by class (rounding, a source-specific assay; two same-label subgroups that separate) are fixed by harmonising, or exclude the dataset when they run through every feature. |
 | 7 | **Comments vs code** | Is every claim in `curation_comments` actually implemented in `dataset.py`, and is every non-obvious code step documented? Silent drops, filters, and casts are the ones that bite. |

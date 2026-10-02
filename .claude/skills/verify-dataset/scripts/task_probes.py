@@ -2,8 +2,8 @@
 
 Usage::
 
-    python scripts/v2/task_probes.py <unique_name> [<unique_name> ...] [--root datasets/_dev/tabarena-v0pt2]
-    python scripts/v2/task_probes.py --all [--built] [--jobs 8] [--out DIR]
+    python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name> [<unique_name> ...] [--root datasets/_dev/tabarena-v0pt2]
+    python .claude/skills/verify-dataset/scripts/task_probes.py --all [--built] [--jobs 8] [--out DIR]
 
 For each dataset, on its first ``--splits`` shipped splits (IID folds, grouped folds or the newest temporal windows,
 so the probe follows the task's regime) and with untuned models:
@@ -26,7 +26,7 @@ resolve with criterion 4C of the curation guidelines (``Trivial``):
 * ``no_spread``: the mean skills of the three model families lie within twice their typical standard error (the
   median over the families) or within 0.01;
 * ``one_feature``: one feature alone reaches at least 95% of the best model's skill (a leak or a lookup? run
-  ``scripts/v2/leak_probes.py``);
+  ``.claude/skills/verify-dataset/scripts/leak_probes.py``);
 * ``drift_baseline``: for a temporal task, the drift baseline is as good as the best model;
 * ``unstable``: the best model's skill varies by more than 0.1 (standard deviation) over the splits.
 

@@ -149,7 +149,7 @@ the README's "Group structure" section and turns them into findings:
 | `groups_labels_constant` (warning) | the share of groups with one label | `labels = per_sample` but at least 95% of the groups have a single label |
 | `groups_not_clustered` (info) | nearest neighbour in the same group vs chance, label variance the group explains vs shuffled groups | both close to chance: the grouping may not be needed |
 
-The model-based diagnostics are a script, like `scripts/v2/leak_probes.py`: `scripts/v2/group_probes.py <name>` runs
+The model-based diagnostics are a script, like `.claude/skills/verify-dataset/scripts/leak_probes.py`: `.claude/skills/verify-dataset/scripts/group_probes.py <name>` runs
 the IID vs grouped score gap (untuned LightGBM, with the fold spread) and the learnability test (several model
 families, group-level scores, a permutation test across groups). `check-candidate/references/leak_checks.md` probe 11
 and the `/verify-dataset` rubric (item 4) cite these numbers instead of computing them by hand.
@@ -188,7 +188,7 @@ the source, fix what the research found, and accept the findings of section 5 wh
   template `datasets/_template/v2/dataset.py`; the notebook migration script did the same until it was retired with
   the v1 notebooks on 2026-10-01).
 * `/verify-dataset` rubric item 4 and `leak_checks.md` probe 11: the "Group structure" section and
-  `scripts/v2/group_probes.py`.
+  `.claude/skills/verify-dataset/scripts/group_probes.py`.
 * The schema docstrings and the examples (`load_curated_container.py`, `benchmark_on_beyond_arena.py`): the fields,
   `CuratedContainer.grouping`, and the group column kept out of the features.
 
@@ -203,7 +203,7 @@ the source, fix what the research found, and accept the findings of section 5 wh
 
 * The temporal regime gets a definition-side structure but no stored block (section 3.1).
 * No model-based checks inside `dataset check`: they are slow and seeded runs would still make the README depend on
-  them; `scripts/v2/group_probes.py` runs them on demand.
+  them; `.claude/skills/verify-dataset/scripts/group_probes.py` runs them on demand.
 * Dropped: a domain-shift check that trains a model to separate a held-out group. Its motivating case (covertype, 3
   groups) is gone, and few groups are already flagged (`task_group_count_low`, `groups_test_groups_few`).
 * Deferred to `TODO.md`: a check for hidden groups in IID tasks (id-like columns that repeat with clustered labels;

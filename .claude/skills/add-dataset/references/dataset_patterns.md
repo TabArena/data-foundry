@@ -286,7 +286,7 @@ grouping = Grouping(
 * The group statistics give four findings (`data_foundry.v2.group_checks`, §E): few test groups per fold, one group
   holding over 20% of the rows, `per_sample` labels that are nearly all one per group, and groups that are not
   clustered. For the model-based questions (does the grouping change the score, is there signal across groups) run
-  `scripts/v2/group_probes.py <name>`: the IID vs grouped gap, several model families scored per group, and a
+  `.claude/skills/verify-dataset/scripts/group_probes.py <name>`: the IID vs grouped gap, several model families scored per group, and a
   permutation test across groups. Accept `groups_test_groups_few` only with that evidence.
 
 ### Temporal: `Temporal` and `TemporalSplits`
@@ -504,7 +504,7 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: for a frame above 1.5M rows make a `_1m` version (§C); otherwise narrow the windows |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 (§C) |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
-| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`scripts/v2/group_probes.py`), and accept with that evidence |
+| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`.claude/skills/verify-dataset/scripts/group_probes.py`), and accept with that evidence |
 | `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
 | `groups_labels_constant` | `per_sample` with at least 95% single-label groups: `per_group` if one label by construction, else accept with the count of mixed groups |
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
@@ -534,7 +534,7 @@ inside the hook. Typical decisions, with examples from the collection:
 |---|---|
 | A column leaks the target and is dropped (sub-scores that add up to the target, a post-outcome field) | a table of the column's correlation with / single-feature AUC for the target |
 | The split regime (kick: temporal, not grouped by auction location) | a table of how many groups recur over time; a histogram of time points per group |
-| A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column (`scripts/v2/leak_probes.py`) |
+| A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column (`.claude/skills/verify-dataset/scripts/leak_probes.py`) |
 | Duplicate rows are kept or dropped (§D.4) | the duplicate share and how many conflict in the target |
 | Rare classes are merged or dropped (§D.8) | the class counts before and after |
 | A proxy missing value is converted (§B.5) | the value counts of the sentinel |

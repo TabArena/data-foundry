@@ -24,6 +24,8 @@ gotchas that look like blockers but aren't — lives in
     class + `explore.ipynb` + generated `README.md`, API in `src/data_foundry/v2/`)
     via the `/add-dataset` skill
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)),
+  * rebuild the working copy and verify the build — the `/rebuild-working-copy` skill
+    ([`.claude/skills/rebuild-working-copy/SKILL.md`](.claude/skills/rebuild-working-copy/SKILL.md)),
   * extend the package (`src/data_foundry/`),
   * update examples (`examples/`) when an API changes.
 * **Before changes land:** `pytest -q && ruff check . && ruff format --check .`

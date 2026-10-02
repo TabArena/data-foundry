@@ -205,7 +205,7 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
 * **Survey / scientific-discovery / non-predictive table** (no genuine predictive target) →
   `No Good Target / Scientific Discovery` → **No** or `TBD -> 2nd Tier`.
 * **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C). The evidence for a
-  curated dataset is the task-probe sweep against dummy baselines on its own splits (`scripts/v2/task_probes.py`:
+  curated dataset is the task-probe sweep against dummy baselines on its own splits (`.claude/skills/verify-dataset/scripts/task_probes.py`:
   `no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`). A flag is a question for the curator, not
   a verdict: a `solved` or `one_feature` task is first a leak suspect, and `no_spread` on a small task can be noise.
   * **Under class imbalance, accuracy against the majority class is not evidence** of anything, in either

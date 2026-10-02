@@ -235,7 +235,7 @@ One group is a problem class of the Potassco ASP benchmark set (96 classes with 
 | nearest neighbour in the same group | 84.3% of the rows (chance: 3.6%) |
 | label variance explained by the group | 0.28 (shuffled groups: 0.08) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 

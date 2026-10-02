@@ -71,7 +71,7 @@ class ParkinsonsBiomedicalVoiceMeasurements(AbstractCuratedDataset):
     """
     accepted_check_warnings = {
         "groups_test_groups_few": "32 subjects give 10-11 test subjects per fold; kept because the signal across "
-        "subjects is real (2026-10-01, scripts/v2/group_probes.py: per-subject ROC AUC 0.82 for a logistic regression "
+        "subjects is real (2026-10-01, .claude/skills/verify-dataset/scripts/group_probes.py: per-subject ROC AUC 0.82 for a logistic regression "
         "on 3 repeats, permutation test across subjects p = 0.01).",
         "task_group_time_on_few_unique": "`session_number` counts a subject's recordings up (1-7): it orders them "
         "within a subject, which is all `time_on` records (decided 2026-10-01).",

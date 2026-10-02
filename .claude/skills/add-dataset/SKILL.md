@@ -171,7 +171,7 @@ The bundle checks catch mechanical problems, not most leaks. Once the data loads
 with [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md):
 
 ```bash
-.venv/bin/python scripts/v2/leak_probes.py <unique_name>
+.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>
 ```
 
 A single feature that comes close to the full model, a missing-value indicator that predicts the label, test rows
@@ -183,13 +183,13 @@ Then check that the task is worth benchmarking: dummy baselines against three un
 splits, scored per group for a group-unit task with `mean`, `any` or `last` (per row for `select_*`), with a drift baseline for temporal regression and multiclass tasks:
 
 ```bash
-.venv/bin/python scripts/v2/task_probes.py <unique_name>
+.venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name>
 ```
 
 Each flag needs a decision written down: `no_signal` (no model beats the dummy; check the features and the target),
 `solved` or `one_feature` (a leak or a lookup first: back to the leak probes), `no_spread` (all families tie; on a
 small task this may be noise), `drift_baseline` (a constant from the newest data is as good as the models),
-`unstable` (few test rows or groups). For a grouped task also run `scripts/v2/group_probes.py <unique_name>`.
+`unstable` (few test rows or groups). For a grouped task also run `.claude/skills/verify-dataset/scripts/group_probes.py <unique_name>`.
 
 ## Step 7: Build (curator only)
 

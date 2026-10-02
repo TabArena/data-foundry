@@ -28,7 +28,7 @@ that does not match the task, or a selection that depends on the outcome.
 
 ## 2. Probes, cheapest first
 
-`.venv/bin/python scripts/v2/leak_probes.py <unique_name>` runs probes 2, 3, 5 and 6 on a v2 folder, and probe 1
+`.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` runs probes 2, 3, 5 and 6 on a v2 folder, and probe 1
 for the three strongest single features (untuned LightGBM on the first three shipped splits). The others take a few lines of pandas. Score with ROC AUC, log loss or
 R², never accuracy against the majority class, and say how many splits a number comes from. The numbers compare the
 shipped data with a suspected fix; they are not leaderboard-grade.
@@ -45,7 +45,7 @@ shipped data with a suspected fix; they are not leaderboard-grade.
 | 8 | Features in a range where no signal can exist | they predict the label | prostate m/z < 1 Da: AUC 0.81-0.85 |
 | 9 | Number formats by class (share of whole numbers, decimals, units) | formats differ by class | hepatitis_c `ALB`, `BIL` whole numbers in ~100% of patient rows, ~10% of donor rows |
 | 10 | Row order: target by position in the raw file, next-row label match; a time index against the date and against any sort key | the order is temporal or sorted by the target, or the "time" index follows another key | seismic_bumps next-row match 2,583 of 2,583; california time index Spearman 1.000 with the address rank, 0.003 with `Listed On` |
-| 11 | Entity overlap: share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; IID score vs grouped score. For a v2 grouped task, read the "Group structure" section of its README (test groups per fold, label granularity, clustering against chance) and run `scripts/v2/group_probes.py <name>` (the IID vs grouped gap, several models scored per group, a permutation test across groups) | large overlap and a large drop | in_vehicle 0.83 → 0.75; emscad 0.99 → 0.94; video_game_fps: every test CPU and GPU in train |
+| 11 | Entity overlap: share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; IID score vs grouped score. For a v2 grouped task, read the "Group structure" section of its README (test groups per fold, label granularity, clustering against chance) and run `.claude/skills/verify-dataset/scripts/group_probes.py <name>` (the IID vs grouped gap, several models scored per group, a permutation test across groups) | large overlap and a large drop | in_vehicle 0.83 → 0.75; emscad 0.99 → 0.94; video_game_fps: every test CPU and GPU in train |
 | 12 | Temporal: rows and minority-class rows per test window | a handful of positives, or under ~50 test rows | seismic_bumps 0-5 positives per window; ghana rain from 3-6 farmer-days per window; coffee monthly windows of 2-72 rows |
 | 13 | Target by period (rows, p50, p90, max), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
 | 14 | A simple formula or lookup for the target | R² near 1 | video_game_fps: log FPS = game + CPU + GPU, R² 0.99998 |
@@ -127,7 +127,7 @@ Reading the probes:
   families (a regularised logistic regression, a random forest, gradient boosting, kNN) on the shipped grouped splits,
   score per group (average each group's predicted probabilities) against the class-share baseline, and run a
   permutation test that shuffles the labels across groups and repeats the whole grouped CV
-  (`scripts/v2/group_probes.py` does all of this). A regression task whose models all score below the mean predictor
+  (`.claude/skills/verify-dataset/scripts/group_probes.py` does all of this). A regression task whose models all score below the mean predictor
   on unseen groups has no signal across groups (telemonitoring_parkinsons, 42 subjects: R^2 -0.17 to -0.31 grouped
   against 0.75 IID, 2026-10-01): the use case has to allow known groups (warm start), or the dataset goes. Before
   recasting as warm start, compare a model against the group's known value carried forward (plus the mean drift of

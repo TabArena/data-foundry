@@ -395,7 +395,7 @@ def _group_section(result: CurationResult) -> list[str]:
     out += [
         "The nearest neighbour is computed on the standardised numeric features of a sample of up to "
         f"{group_checks.NEIGHBOUR_SAMPLE_ROWS:,} rows; chance is the share expected if the groups were unrelated to "
-        "the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.",
+        "the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.",
         "",
     ]
     return out

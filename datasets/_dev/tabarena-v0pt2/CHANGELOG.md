@@ -4,6 +4,17 @@ Every change to this folder gets an entry here, newest first: edited notebooks o
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-02 (probe scripts moved into the verify-dataset skill)
+
+- The leak, task and group probes and the collection bundle check moved from `scripts/v2/` and
+  `scripts/beyond_arena/` to `.claude/skills/verify-dataset/scripts/`, next to the skill that runs them. The paths in
+  this folder's `README.md`, `TASK_PROBES.md`, `LEAK_AUDIT.md` and `GROUPED_DATA_PLAN.md`, in
+  `parkinsons_biomedical_voice_measurements`'s accepted-warning reason and in the "Group structure" section of the 16
+  grouped READMEs follow; no container changes. The entries below keep the old paths.
+- The rebuild procedure of this folder (parallel build, comparison with the previous build, the check from the traced
+  inputs, the backup zip, the dataset table) is the new `rebuild-working-copy` skill, with its scripts; the README's
+  "Rebuild" section points to it.
+
 ## 2026-10-02 (rebuild as container format 2; telemonitoring retired)
 
 - Rebuilt all 131 datasets as container format 2 (`dataset build`, new UUIDs; the table in

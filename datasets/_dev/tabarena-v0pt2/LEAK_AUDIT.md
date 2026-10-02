@@ -89,7 +89,7 @@ BeyondArena); BeyondArena means BeyondArena only.
   `electric_motor_temperature_prediction` are taken in full. `lending_club` keeps only the 36-month loans issued up
   to 2015, the only loans with complete labels (the source holds only loans finished by 2018Q4), and tests on the
   quarters 2015 Q2-Q4. Not built yet.
-- New datasets get the same checks: the leak probes ([`scripts/v2/leak_probes.py`](../../../scripts/v2/leak_probes.py))
+- New datasets get the same checks: the leak probes ([`.claude/skills/verify-dataset/scripts/leak_probes.py`](../../../.claude/skills/verify-dataset/scripts/leak_probes.py))
   and the audit's precedents ([`leak_checks.md`](../../../.claude/skills/check-candidate/references/leak_checks.md))
   are part of the curation skills.
 

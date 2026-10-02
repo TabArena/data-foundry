@@ -202,7 +202,7 @@ One group is a survey respondent; its rows are the coupon offers in about 20 dri
 | nearest neighbour in the same group | 0.2% of the rows (chance: 0.2%) |
 | label variance explained by the group | 0.16 (shuffled groups: 0.05) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 

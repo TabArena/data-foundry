@@ -25,11 +25,14 @@ the repository root:
   holds only those files gives the same checksums. The two `_prepare_raw_files` steps read 33 more (4.4 GB). A backup
   of these 468, with a manifest, is kept outside the repository (it also holds the input of the retired
   telemonitoring dataset).
+- To rebuild the whole folder, with the comparison against the previous build, the check from the traced inputs, the
+  backup and this table, follow the `/rebuild-working-copy` skill
+  ([`.claude/skills/rebuild-working-copy/SKILL.md`](../../../.claude/skills/rebuild-working-copy/SKILL.md)).
 - Build in the locked environment (pandas 2.3.3). The rows and splits are the same on every machine; a numpy log or
   exp can differ in its last bit between CPUs, so a dataset with a log-scaled target may get another checksum
   elsewhere.
-- `scripts/v2/task_probes.py --all --built` sweeps the built containers against dummy baselines ([`TASK_PROBES.md`](TASK_PROBES.md) holds the sweep of this build), and
-  `scripts/v2/group_probes.py <name>` probes a grouped task.
+- `.claude/skills/verify-dataset/scripts/task_probes.py --all --built` sweeps the built containers against dummy baselines ([`TASK_PROBES.md`](TASK_PROBES.md) holds the sweep of this build), and
+  `.claude/skills/verify-dataset/scripts/group_probes.py <name>` probes a grouped task.
 
 ## Datasets
 

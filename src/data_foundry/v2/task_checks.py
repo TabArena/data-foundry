@@ -14,7 +14,7 @@ varies.
   target, as with a cap (censored values), a placeholder or a zero-inflated target.
 
 The model-based questions (does any model beat a dummy, is the task solved, do the model families differ) are slow,
-so they run on demand: ``scripts/v2/task_probes.py``.
+so they run on demand: ``.claude/skills/verify-dataset/scripts/task_probes.py``.
 """
 
 from __future__ import annotations

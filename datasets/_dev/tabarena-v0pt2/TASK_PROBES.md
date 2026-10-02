@@ -1,6 +1,6 @@
 # Task probes of the v0.2 build
 
-Generated on 2026-10-01 by `scripts/v2/task_probes.py --all --built` on the built containers: dummy baselines against
+Generated on 2026-10-01 by `.claude/skills/verify-dataset/scripts/task_probes.py --all --built` on the built containers: dummy baselines against
 three untuned model families (regularised linear, random forest, LightGBM) on each dataset's first 5 shipped splits
 (train and test capped at 50,000 rows), scored per group for a group-unit task with `mean`, `any` or `last`. Skill
 is 0 for the dummy and 1 for a perfect model (`2 AUC - 1`, `1 - log loss / dummy log loss`, `1 - MSE / dummy MSE`).

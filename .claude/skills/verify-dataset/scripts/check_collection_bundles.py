@@ -6,9 +6,9 @@ healthy datasets is noise, and a hard ``error`` must be reproducible on a real b
 
 Run from the repo root::
 
-    python scripts/beyond_arena/check_collection_bundles.py                       # BeyondArena, via cache/HF
-    python scripts/beyond_arena/check_collection_bundles.py --base-dir <warehouse>  # local warehouse
-    python scripts/beyond_arena/check_collection_bundles.py --json findings.json
+    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py                       # BeyondArena, via cache/HF
+    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --base-dir <warehouse>  # local warehouse
+    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --json findings.json
 
 Containers are loaded one at a time (a full collection does not fit in memory).
 """

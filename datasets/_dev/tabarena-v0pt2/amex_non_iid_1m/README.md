@@ -203,7 +203,7 @@ One group is a customer; its rows are its monthly statements (1 to 13). The task
 | nearest neighbour in the same group | 7.0% of the rows (chance: 0.0%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.08) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `scripts/v2/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 

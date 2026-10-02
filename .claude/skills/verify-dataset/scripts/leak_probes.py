@@ -2,7 +2,7 @@
 
 Usage::
 
-    python scripts/v2/leak_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2] [--splits 3]
+    python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2] [--splits 3]
         [--max-rows 50000]
 
 Fits untuned LightGBM on the first ``--splits`` shipped splits and prints:
