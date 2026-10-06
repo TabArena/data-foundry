@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: d57512b74f1b2c0ad4f2b9f2a6980908add6ba265123863075b8821bb4d64b8f
+checksum: de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12
 build:
-  uuid: 01a0fc60-7f2f-70ef-ae6b-41f291d9c4de
-  checksum: d57512b74f1b2c0ad4f2b9f2a6980908add6ba265123863075b8821bb4d64b8f
-  built_at: '2026-10-02T11:29:37+00:00'
-  path: qsar_biodeg/01a0fc60-7f2f-70ef-ae6b-41f291d9c4de
+  uuid: 01a11191-e259-79b9-879f-f763ddd3adcb
+  checksum: de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12
+  built_at: '2026-10-06T14:15:35+00:00'
+  path: qsar_biodeg/01a11191-e259-79b9-879f-f763ddd3adcb
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,054 rows and 41 features. Source: UCI (2013).
 
-Built as `01a0fc60-7f2f-70ef-ae6b-41f291d9c4de` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e259-79b9-879f-f763ddd3adcb` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 1,054 rows of the final frame (random rows: the frame is shuffled
 
 | Biodegradable | Laplace_Leading_Eigenvalue | Weighted_Balaban_Index_Barysz_Matrix | Num_Heavy_Atoms | Freq_NN_At_Dist1 | Freq_CN_At_Dist4 | Num_ssssC_Atoms | Num_Substituted_BenzeneC | Percentage_C_Atoms | Num_Terminal_PrimaryC | Num_Oxygen_Atoms | Freq_CN_At_Dist3 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | 5.099 | 2.2523 | 0 | 0 | 0 | 1 | 0 | 35.1 | 2 | 2 | 0 |
-| No | 5.262 | 4.2718 | 2 | 0 | 0 | 1 | 0 | 25 | 2 | 0 | 0 |
-| Yes | 4.56 | 4.4123 | 0 | 0 | 0 | 0 | 0 | 33.3 | 4 | 4 | 0 |
-| No | 4.973 | 3.602 | 0 | 0 | 2 | 0 | 3 | 35 | 0 | 3 | 4 |
-| Yes | 4.802 | 3.0226 | 0 | 0 | 1 | 0 | 2 | 50 | 0 | 0 | 2 |
+| No | 5.449 | 3.493 | 0 | 0 | 0 | 3 | 3 | 37.5 | 9 | 0 | 0 |
+| No | 5.177 | 3.0834 | 2 | 0 | 0 | 0 | 5 | 52.6 | 0 | 1 | 0 |
+| Yes | 4.543 | 2.5935 | 0 | 0 | 2 | 0 | 1 | 40.9 | 1 | 1 | 2 |
+| Yes | 4.334 | 3.1387 | 0 | 0 | 0 | 0 | 0 | 26.3 | 2 | 2 | 0 |
+| No | 4.933 | 2.0578 | 0 | 0 | 3 | 0 | 4 | 53.3 | 0 | 0 | 4 |
 
 ## Curation notes
 
@@ -222,42 +222,42 @@ Default splits.
 | Presence_CBr_At_Dist4 | category | 0 | 0 | 2 | 0, 1 |
 | C026_chemical_substructure | category | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 8, 10, 12 |
 | Biodegradable | category | 0 | 0 | 2 | No, Yes |
-| Laplace_Leading_Eigenvalue | float64 | 0 | 0 | 440 | 4.414, 4.732, 4.17, 4.0, 4.562, 4.303, 4.807, 4.77, 4.499, 3.618 |
-| Weighted_Balaban_Index_Barysz_Matrix | float64 | 0 | 0 | 1021 | 3.1356, 3.5332, 2.9372, 3.2017, 3.2896, 4.2631, 2.7059, 3.2439, 3.6943, 3.1387 |
+| Laplace_Leading_Eigenvalue | float64 | 0 | 0 | 440 | 4.732, 4.414, 4.17, 4.0, 4.562, 4.807, 4.303, 4.77, 4.499, 3.618 |
+| Weighted_Balaban_Index_Barysz_Matrix | float64 | 0 | 0 | 1021 | 3.0634, 3.0785, 3.2512, 3.2439, 3.1387, 3.1334, 3.0402, 3.4572, 3.2017, 3.1241 |
 | Percentage_C_Atoms | float64 | 0 | 0 | 188 | 33.3, 50.0, 40.0, 25.0, 42.9, 28.6, 30.0, 37.5, 46.2, 41.2 |
-| Sum_dssC_EStates | float64 | 0 | 0 | 384 | 0.0, -1.093, -0.945, -0.117, -0.741, -0.875, -2.514, -0.888, -0.671, -0.481 |
-| Weighted_HyperWiener_Index_Burden_Matrix | float64 | 0 | 0 | 755 | 3.647, 3.192, 3.462, 3.375, 3.66, 3.233, 3.37, 3.351, 3.764, 3.678 |
-| Lopping_Centric_Index | float64 | 0 | 0 | 373 | 0.0, 0.875, 1.185, 0.881, 1.187, 1.16, 0.971, 1.459, 0.918, 0.802 |
-| Laplace_Spectral_Moment6 | float64 | 0 | 0 | 510 | 9.54, 8.597, 9.183, 9.833, 9.882, 10.099, 9.311, 8.755, 8.16, 7.408 |
-| Mean_Sanderson_Electronegativity | float64 | 0 | 0 | 167 | 0.998, 0.979, 0.993, 0.974, 0.987, 0.991, 1.014, 0.98, 0.983, 1.007 |
-| Mean_Ionization_Potential | float64 | 0 | 0 | 125 | 1.127, 1.139, 1.14, 1.125, 1.129, 1.146, 1.121, 1.141, 1.144, 1.132 |
-| Weighted_Normalized_SpectralPositiveSum_Burden_Matrix | float64 | 0 | 0 | 352 | 1.254, 1.296, 1.299, 1.195, 1.253, 1.28, 1.211, 1.202, 1.264, 1.261 |
-| Adjacency_LeadingEigenvalue | float64 | 0 | 0 | 329 | 2.0, 2.236, 2.194, 1.848, 2.175, 2.101, 2.303, 1.902, 1.732, 2.136 |
-| Intrinsic_State_Pseudoconnectivity | float64 | 0 | 0 | 204 | 0.0, -0.008, 0.004, 0.001, -0.002, -0.001, 0.014, 0.015, -0.025, -0.007 |
-| Sum_dO_EStates | float64 | 0 | 0 | 470 | 0.0, 10.143, 9.431, 10.118, 22.449, 20.772, 10.696, 10.249, 20.135, 10.582 |
-| Laplace_MoharIndex2 | float64 | 0 | 0 | 553 | 1.542, 0.975, 1.06, 0.95, 1.74, 1.0, 1.481, 2.052, 1.14, 2.488 |
-| Weighted_LeadingEigenvalue_Burden_Matrix | float64 | 0 | 0 | 704 | 3.423, 4.009, 6.88, 3.497, 3.309, 3.728, 3.795, 3.834, 3.648, 3.755 |
-| Intrinsic_State_Pseudoconnectivity_SAvg | float64 | 0 | 0 | 623 | 2.833, 2.167, 2.5, 2.667, 2.0, 1.833, 2.333, 2.25, 2.802, 3.133 |
-| Weighted_SpectralMoment6_Burden_Matrix | float64 | 0 | 0 | 861 | 8.143, 8.128, 8.562, 8.601, 9.118, 8.015, 8.497, 8.704, 8.68, 8.506 |
-| Num_Heavy_Atoms | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 7, 8, 10 |
+| Sum_dssC_EStates | float64 | 0 | 0 | 384 | 0.0, -0.671, -0.193, 0.787, -1.072, -0.271, 0.134, -0.741, -0.945, -1.093 |
+| Weighted_HyperWiener_Index_Burden_Matrix | float64 | 0 | 0 | 755 | 3.647, 3.66, 3.375, 3.192, 3.462, 3.37, 3.233, 3.453, 3.772, 3.272 |
+| Lopping_Centric_Index | float64 | 0 | 0 | 373 | 0.0, 0.875, 1.185, 0.881, 1.16, 1.187, 0.971, 1.459, 0.918, 0.802 |
+| Laplace_Spectral_Moment6 | float64 | 0 | 0 | 510 | 9.54, 8.597, 9.833, 9.183, 9.882, 9.311, 10.099, 8.755, 8.16, 9.863 |
+| Mean_Sanderson_Electronegativity | float64 | 0 | 0 | 167 | 0.998, 0.979, 0.993, 0.974, 0.987, 1.014, 0.991, 0.98, 0.983, 1.011 |
+| Mean_Ionization_Potential | float64 | 0 | 0 | 125 | 1.127, 1.139, 1.125, 1.14, 1.129, 1.121, 1.146, 1.141, 1.132, 1.144 |
+| Weighted_Normalized_SpectralPositiveSum_Burden_Matrix | float64 | 0 | 0 | 352 | 1.254, 1.195, 1.299, 1.296, 1.253, 1.28, 1.295, 1.261, 1.25, 1.264 |
+| Adjacency_LeadingEigenvalue | float64 | 0 | 0 | 329 | 2.0, 2.236, 2.194, 1.848, 2.175, 2.303, 2.101, 1.732, 1.902, 2.136 |
+| Intrinsic_State_Pseudoconnectivity | float64 | 0 | 0 | 204 | 0.0, -0.008, 0.001, 0.004, -0.002, -0.001, 0.014, -0.025, 0.015, -0.007 |
+| Sum_dO_EStates | float64 | 0 | 0 | 470 | 0.0, 11.089, 22.051, 9.431, 22.449, 10.87, 20.135, 10.582, 22.204, 10.645 |
+| Laplace_MoharIndex2 | float64 | 0 | 0 | 553 | 1.542, 0.95, 1.06, 0.975, 1.74, 1.0, 1.481, 1.14, 2.052, 2.488 |
+| Weighted_LeadingEigenvalue_Burden_Matrix | float64 | 0 | 0 | 704 | 6.88, 4.009, 3.309, 3.423, 3.497, 3.767, 3.876, 3.728, 3.795, 3.794 |
+| Intrinsic_State_Pseudoconnectivity_SAvg | float64 | 0 | 0 | 623 | 2.833, 2.167, 2.5, 2.667, 2.0, 1.833, 2.333, 2.25, 2.802, 2.611 |
+| Weighted_SpectralMoment6_Burden_Matrix | float64 | 0 | 0 | 861 | 8.68, 8.015, 8.497, 8.601, 9.118, 8.506, 8.128, 8.143, 8.562, 8.704 |
+| Num_Heavy_Atoms | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 10, 8, 7 |
 | Freq_NN_At_Dist1 | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| Freq_CN_At_Dist4 | int64 | 0 | 0 | 16 | 0, 2, 1, 3, 4, 6, 7, 11, 9, 5 |
-| Num_ssssC_Atoms | int64 | 0 | 0 | 13 | 0, 1, 2, 3, 4, 6, 9, 8, 5, 11 |
+| Freq_CN_At_Dist4 | int64 | 0 | 0 | 16 | 0, 2, 1, 3, 4, 6, 7, 11, 5, 9 |
+| Num_ssssC_Atoms | int64 | 0 | 0 | 13 | 0, 1, 2, 3, 4, 6, 8, 9, 5, 11 |
 | Num_Substituted_BenzeneC | int64 | 0 | 0 | 15 | 0, 2, 3, 4, 1, 6, 5, 8, 7, 9 |
 | Num_Terminal_PrimaryC | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 4, 6, 5, 8, 9, 7 |
 | Num_Oxygen_Atoms | int64 | 0 | 0 | 12 | 0, 2, 1, 4, 3, 6, 5, 7, 8, 12 |
-| Freq_CN_At_Dist3 | int64 | 0 | 0 | 21 | 0, 2, 4, 3, 1, 6, 8, 5, 12, 10 |
+| Freq_CN_At_Dist3 | int64 | 0 | 0 | 21 | 0, 2, 4, 1, 3, 6, 8, 5, 12, 10 |
 | Freq_CO_At_Dist3 | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 1, 3, 12, 9, 10 |
 | Num_N_Hydrazine | int64 | 0 | 0 | 3 | 0, 1, 2 |
 | Num_Aromatic_Nitro_Groups | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Num_CRX3 | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Num_Circuits | int64 | 0 | 0 | 13 | 1, 0, 2, 3, 6, 4, 7, 5, 15, 10 |
-| Num_RingTertiaryC | int64 | 0 | 0 | 8 | 0, 1, 2, 4, 6, 3, 5, 8 |
+| Num_RingTertiaryC | int64 | 0 | 0 | 8 | 0, 1, 2, 4, 6, 3, 8, 5 |
 | Freq_CN_At_Dist2 | int64 | 0 | 0 | 16 | 0, 2, 4, 3, 1, 6, 8, 5, 10, 18 |
 | Num_HBond_Donors_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 6, 5, 7 |
-| Num_Nitrogen_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 6, 5, 8 |
-| Num_Esters | int64 | 0 | 0 | 5 | 0, 2, 1, 4, 3 |
-| Num_Halogen_Atoms | int64 | 0 | 0 | 17 | 0, 1, 2, 3, 4, 6, 5, 10, 8, 7 |
+| Num_Nitrogen_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 8 |
+| Num_Esters | int64 | 0 | 0 | 5 | 0, 2, 1, 3, 4 |
+| Num_Halogen_Atoms | int64 | 0 | 0 | 17 | 0, 1, 2, 3, 4, 6, 5, 8, 10, 27 |
 
 </details>
 
@@ -345,10 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7f2f-70ef-ae6b-41f291d9c4de |
-| checksum | d57512b74f1b2c0ad4f2b9f2a6980908add6ba265123863075b8821bb4d64b8f |
-| built_at | 2026-10-02T11:29:37+00:00 |
-| path | qsar_biodeg/01a0fc60-7f2f-70ef-ae6b-41f291d9c4de |
+| uuid | 01a11191-e259-79b9-879f-f763ddd3adcb |
+| checksum | de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12 |
+| built_at | 2026-10-06T14:15:35+00:00 |
+| path | qsar_biodeg/01a11191-e259-79b9-879f-f763ddd3adcb |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

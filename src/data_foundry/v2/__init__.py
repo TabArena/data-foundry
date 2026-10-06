@@ -8,6 +8,7 @@ steps, :mod:`data_foundry.v2.splits` for the split protocol, :mod:`data_foundry.
 from __future__ import annotations
 
 from data_foundry.schema import Grouping
+from data_foundry.utils.dtypes import object_columns
 from data_foundry.v2.dataset import (
     AUTO,
     AbstractCuratedDataset,
@@ -42,6 +43,7 @@ __all__ = [
     "drop_columns",
     "get_dataset",
     "load_definition",
+    "object_columns",
     "order_rows",
     "read_report",
     "workbench",

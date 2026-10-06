@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: 70be235bfb6e97b1604861708edb5f76b3d22492abde1b7c76b5add6e550bfa3
+checksum: b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334
 build:
-  uuid: 01a0fc60-2a9c-79d6-8132-e7cbd2de59a7
-  checksum: 70be235bfb6e97b1604861708edb5f76b3d22492abde1b7c76b5add6e550bfa3
-  built_at: '2026-10-02T11:29:19+00:00'
-  path: hotel_booking_demand/01a0fc60-2a9c-79d6-8132-e7cbd2de59a7
+  uuid: 01a11191-43de-75d1-8d55-d1ef2a848559
+  checksum: b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334
+  built_at: '2026-10-06T14:14:58+00:00'
+  path: hotel_booking_demand/01a11191-43de-75d1-8d55-d1ef2a848559
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2019).
 
-Built as `01a0fc60-2a9c-79d6-8132-e7cbd2de59a7` on 2026-10-02. See [Build](#build).
+Built as `01a11191-43de-75d1-8d55-d1ef2a848559` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -156,11 +156,11 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 
 | IsCanceled | LeadTime | ArrivalDateYear | ArrivalDateMonth | ArrivalDateWeekNumber | ArrivalDateDayOfMonth | StaysInWeekendNights | StaysInWeekNights | Adults | Children | Babies | Meal |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 342 | 2015 | July | 27 | 1 | 0 | 0 | 2 | 0 | 0 | BB |
-| 0 | 737 | 2015 | July | 27 | 1 | 0 | 0 | 2 | 0 | 0 | BB |
-| 0 | 7 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
-| 0 | 13 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
-| 0 | 14 | 2015 | July | 27 | 1 | 0 | 2 | 2 | 0 | 0 | BB |
+| 1 | 85 | 2015 | July | 27 | 1 | 0 | 3 | 2 | 0 | 0 | BB |
+| 0 | 110 | 2015 | July | 27 | 1 | 1 | 4 | 3 | 0 | 0 | BB |
+| 0 | 149 | 2015 | July | 27 | 1 | 2 | 5 | 2 | 1 | 0 | BB |
+| 0 | 1 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
+| 0 | 181 | 2015 | July | 27 | 1 | 0 | 4 | 2 | 0 | 0 | BB |
 
 ## Curation notes
 
@@ -242,7 +242,7 @@ Accepted on purpose:
 | ArrivalDateDayOfMonth | int64 | 0 | 0 | 31 | 17, 26, 2, 5, 19, 16, 12, 18, 11, 28 |
 | StaysInWeekendNights | int64 | 0 | 0 | 17 | 0, 2, 1, 4, 3, 6, 5, 8, 7, 9 |
 | StaysInWeekNights | int64 | 0 | 0 | 35 | 2, 1, 3, 5, 4, 0, 6, 10, 7, 8 |
-| Adults | int64 | 0 | 0 | 14 | 2, 1, 3, 0, 4, 26, 5, 27, 20, 40 |
+| Adults | int64 | 0 | 0 | 14 | 2, 1, 3, 0, 4, 26, 20, 27, 5, 40 |
 | Babies | int64 | 0 | 0 | 5 | 0, 1, 2, 9, 10 |
 | IsRepeatedGuest | int64 | 0 | 0 | 2 | 0, 1 |
 | PreviousCancellations | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 11, 4, 5, 6, 13, 24 |
@@ -360,10 +360,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-2a9c-79d6-8132-e7cbd2de59a7 |
-| checksum | 70be235bfb6e97b1604861708edb5f76b3d22492abde1b7c76b5add6e550bfa3 |
-| built_at | 2026-10-02T11:29:19+00:00 |
-| path | hotel_booking_demand/01a0fc60-2a9c-79d6-8132-e7cbd2de59a7 |
+| uuid | 01a11191-43de-75d1-8d55-d1ef2a848559 |
+| checksum | b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334 |
+| built_at | 2026-10-06T14:14:58+00:00 |
+| path | hotel_booking_demand/01a11191-43de-75d1-8d55-d1ef2a848559 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: ce0336e52c17ebcb1f9ab05815d95fb39bb4d0dc322030b2abe6c401555ae181
+checksum: c77e42a8ff70f355639f61cc8d47b819a99821c63c5210548d37da69fb31924c
 build:
-  uuid: 01a0fc5f-8eeb-737d-aac0-63ea9cff8929
-  checksum: ce0336e52c17ebcb1f9ab05815d95fb39bb4d0dc322030b2abe6c401555ae181
-  built_at: '2026-10-02T11:28:40+00:00'
-  path: pva_revenue_prediction_kddcup98/01a0fc5f-8eeb-737d-aac0-63ea9cff8929
+  uuid: 01a11190-b582-7779-8ee6-9f3d4b55825c
+  checksum: c77e42a8ff70f355639f61cc8d47b819a99821c63c5210548d37da69fb31924c
+  built_at: '2026-10-06T14:14:23+00:00'
+  path: pva_revenue_prediction_kddcup98/01a11190-b582-7779-8ee6-9f3d4b55825c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -71,7 +71,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 144,095 rows and 477 features. Source: Other (1997).
 
-Built as `01a0fc5f-8eeb-737d-aac0-63ea9cff8929` on 2026-10-02. See [Build](#build).
+Built as `01a11190-b582-7779-8ee6-9f3d4b55825c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -151,11 +151,11 @@ The first 5 of 144,095 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET_B | ODATEDW | OSOURCE | STATE | ZIP | MAILCODE | PVASTATE | DOB | NOEXCH | RECINHSE | RECP3 | RECPGVG |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1995-01-01 00:00:00 | MM1 | CA | 91702 | Address is OK | nan | 1916-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1990-01-01 00:00:00 | MAD | MI | 48034 | Address is OK | nan | 1902-04-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1989-01-01 00:00:00 | IMP | TX | 78209 | Address is OK | nan | 1926-01-01 00:00:00 | 0-nan-case | Donor has given to PVA's In House progr… | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1989-01-01 00:00:00 | IMP | NC | 28590 | Address is OK | nan | 1932-01-01 00:00:00 | 0-nan-case | Donor has given to PVA's In House progr… | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1995-01-01 00:00:00 | ADD | FL | 32250 | Address is OK | nan | 1960-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1992-01-01 00:00:00 | SSS | FL | 34653 | Address is OK | nan | 1923-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1995-01-01 00:00:00 | CNT | MN | 56308 | Address is OK | nan | 1942-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1995-01-01 00:00:00 | SIG | AZ | 85208 | Address is OK | nan | 1950-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1994-01-01 00:00:00 | USB | TX | 76044 | Address is OK | nan | 1955-09-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1986-01-01 00:00:00 | DUR | SC | 29405 | Address is OK | nan | 1918-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
 
 ## Curation notes
 
@@ -264,7 +264,7 @@ Default splits.
 | MDMAUD_recency | category | 0 | 0 | 5 | Not applicable, Current Donor, Lapsed Donor, Dormant Donor, Inactive Donor |
 | MDMAUD_frequency | category | 0 | 0 | 4 | Not applicable, One gift in the period of recency, Two-Four gifts in the period… |
 | MDMAUD_amount | category | 0 | 0 | 5 | Not applicable, $100-499 (Core), Less than $100 (Low Dollar), $500-999 (Major),… |
-| RDATE_5 | datetime64\[ns\] | 144078 | 99.99 | 6 | 1996-04-01 00:00:00, 1998-03-01 00:00:00, 1996-05-01 00:00:00, 1997-03-01 00:00… |
+| RDATE_5 | datetime64\[ns\] | 144078 | 99.99 | 6 | 1996-04-01 00:00:00, 1998-03-01 00:00:00, 1997-03-01 00:00:00, 1996-05-01 00:00… |
 | RDATE_3 | datetime64\[ns\] | 143770 | 99.77 | 17 | 1996-06-01 00:00:00, 1996-07-01 00:00:00, 1997-04-01 00:00:00, 1996-05-01 00:00… |
 | RDATE_4 | datetime64\[ns\] | 143659 | 99.7 | 24 | 1996-05-01 00:00:00, 1996-04-01 00:00:00, 1996-01-01 00:00:00, 1996-06-01 00:00… |
 | RDATE_6 | datetime64\[ns\] | 143042 | 99.27 | 19 | 1996-03-01 00:00:00, 1996-04-01 00:00:00, 1996-02-01 00:00:00, 1995-12-01 00:00… |
@@ -433,10 +433,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-8eeb-737d-aac0-63ea9cff8929 |
-| checksum | ce0336e52c17ebcb1f9ab05815d95fb39bb4d0dc322030b2abe6c401555ae181 |
-| built_at | 2026-10-02T11:28:40+00:00 |
-| path | pva_revenue_prediction_kddcup98/01a0fc5f-8eeb-737d-aac0-63ea9cff8929 |
+| uuid | 01a11190-b582-7779-8ee6-9f3d4b55825c |
+| checksum | c77e42a8ff70f355639f61cc8d47b819a99821c63c5210548d37da69fb31924c |
+| built_at | 2026-10-06T14:14:23+00:00 |
+| path | pva_revenue_prediction_kddcup98/01a11190-b582-7779-8ee6-9f3d4b55825c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

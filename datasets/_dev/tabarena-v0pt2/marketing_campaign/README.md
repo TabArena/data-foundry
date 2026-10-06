@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: marketing_campaign
 container_format: 2
-checksum: 319010a047ad057e20b89dcb14515cfa69b69d86e781bd2e36e94ce930418134
+checksum: 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48
 build:
-  uuid: 01a0fc60-47fb-7887-8e5a-530f31ce2d21
-  checksum: 319010a047ad057e20b89dcb14515cfa69b69d86e781bd2e36e94ce930418134
-  built_at: '2026-10-02T11:29:23+00:00'
-  path: marketing_campaign/01a0fc60-47fb-7887-8e5a-530f31ce2d21
+  uuid: 01a11191-d064-7c27-abcd-bcb947e441d0
+  checksum: 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48
+  built_at: '2026-10-06T14:15:31+00:00'
+  path: marketing_campaign/01a11191-d064-7c27-abcd-bcb947e441d0
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `Response`, scored with `roc_auc` on IID splits. 2,240 rows and 25 features. Source: Kaggle (2020).
 
-Built as `01a0fc60-47fb-7887-8e5a-530f31ce2d21` on 2026-10-02. See [Build](#build).
+Built as `01a11191-d064-7c27-abcd-bcb947e441d0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 2,240 rows of the final frame (random rows: the frame is shuffled
 
 | Response | Year_Birth | Education | Marital_Status | Income | Kidhome | Teenhome | Dt_Customer | Recency | MntWines | MntFruits | MntMeatProducts |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 1953 | Graduation | Single | 40464 | 0 | 1 | 2013-01-11 00:00:00 | 78 | 424 | 17 | 118 |
-| No | 1960 | Graduation | Widow | 47916 | 0 | 1 | 2012-11-22 00:00:00 | 72 | 505 | 0 | 26 |
-| No | 1972 | Basic | Married | 14188 | 0 | 0 | 2013-02-28 00:00:00 | 40 | 2 | 7 | 11 |
-| No | 1969 | Graduation | Together | 76653 | 0 | 0 | 2013-08-16 00:00:00 | 91 | 736 | 63 | 946 |
-| No | 1958 | Graduation | Together | 65196 | 0 | 2 | 2013-07-25 00:00:00 | 34 | 743 | 19 | 181 |
+| No | 1957 | PhD | Divorced | 54237 | 0 | 1 | 2013-04-27 00:00:00 | 48 | 267 | 3 | 30 |
+| Yes | 1977 | Graduation | Married | 42014 | 1 | 0 | 2012-08-17 00:00:00 | 56 | 244 | 15 | 108 |
+| No | 1952 | 2n Cycle | Widow | 28457 | 0 | 0 | 2012-10-28 00:00:00 | 96 | 24 | 1 | 108 |
+| Yes | 1952 | Graduation | Single | 47139 | 1 | 1 | 2014-03-06 00:00:00 | 2 | 46 | 0 | 12 |
+| No | 1963 | Graduation | Divorced | 68118 | 0 | 1 | 2013-10-18 00:00:00 | 51 | 595 | 23 | 123 |
 
 ## Curation notes
 
@@ -228,18 +228,18 @@ Default splits.
 | AcceptedCmp1 | category | 0 | 0 | 2 | No, Yes |
 | AcceptedCmp2 | category | 0 | 0 | 2 | No, Yes |
 | Response | category | 0 | 0 | 2 | No, Yes |
-| Dt_Customer | datetime64\[ns\] | 0 | 0 | 663 | 2012-08-31 00:00:00, 2012-09-12 00:00:00, 2014-05-12 00:00:00, 2013-02-14 00:00… |
-| Income | float64 | 24 | 1.07 | 1974 | 7500.0, 35860.0, 63841.0, 34176.0, 39922.0, 83844.0, 48432.0, 80134.0, 67445.0,… |
+| Dt_Customer | datetime64\[ns\] | 0 | 0 | 663 | 2012-08-31 00:00:00, 2014-05-12 00:00:00, 2013-02-14 00:00:00, 2012-09-12 00:00… |
+| Income | float64 | 24 | 1.07 | 1974 | 7500.0, 35860.0, 63841.0, 80134.0, 48432.0, 47025.0, 83844.0, 18690.0, 18929.0,… |
 | Year_Birth | int64 | 0 | 0 | 59 | 1976, 1971, 1975, 1972, 1970, 1978, 1973, 1965, 1969, 1974 |
 | Kidhome | int64 | 0 | 0 | 3 | 0, 1, 2 |
 | Teenhome | int64 | 0 | 0 | 3 | 0, 1, 2 |
-| Recency | int64 | 0 | 0 | 100 | 56, 30, 54, 46, 65, 49, 92, 29, 71, 3 |
-| MntWines | int64 | 0 | 0 | 776 | 2, 5, 1, 6, 4, 3, 8, 9, 12, 10 |
+| Recency | int64 | 0 | 0 | 100 | 56, 30, 54, 46, 65, 49, 92, 3, 29, 71 |
+| MntWines | int64 | 0 | 0 | 776 | 2, 5, 1, 6, 4, 8, 3, 9, 12, 10 |
 | MntFruits | int64 | 0 | 0 | 158 | 0, 1, 2, 3, 4, 7, 5, 6, 12, 8 |
-| MntMeatProducts | int64 | 0 | 0 | 558 | 7, 5, 11, 8, 6, 3, 10, 9, 16, 12 |
+| MntMeatProducts | int64 | 0 | 0 | 558 | 7, 5, 11, 8, 6, 10, 3, 9, 16, 12 |
 | MntFishProducts | int64 | 0 | 0 | 182 | 0, 2, 3, 4, 6, 7, 8, 10, 13, 12 |
 | MntSweetProducts | int64 | 0 | 0 | 177 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 12 |
-| MntGoldProds | int64 | 0 | 0 | 213 | 1, 4, 3, 12, 5, 2, 0, 6, 7, 10 |
+| MntGoldProds | int64 | 0 | 0 | 213 | 1, 4, 3, 5, 12, 2, 0, 6, 7, 10 |
 | NumDealsPurchases | int64 | 0 | 0 | 15 | 1, 2, 3, 4, 5, 6, 0, 7, 8, 9 |
 | NumWebPurchases | int64 | 0 | 0 | 15 | 2, 1, 3, 4, 5, 6, 7, 8, 9, 0 |
 | NumCatalogPurchases | int64 | 0 | 0 | 14 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
@@ -301,10 +301,10 @@ Default splits.
 | AcceptedCmp5 | 1 | No | 2077 | 92.72 |
 | AcceptedCmp5 | 2 | Yes | 163 | 7.28 |
 | Dt_Customer | 1 | 2012-08-31 00:00:00 | 12 | 0.54 |
-| Dt_Customer | 2 | 2012-09-12 00:00:00 | 11 | 0.49 |
-| Dt_Customer | 3 | 2014-05-12 00:00:00 | 11 | 0.49 |
-| Dt_Customer | 4 | 2013-02-14 00:00:00 | 11 | 0.49 |
-| Dt_Customer | 5 | 2014-05-22 00:00:00 | 10 | 0.45 |
+| Dt_Customer | 2 | 2014-05-12 00:00:00 | 11 | 0.49 |
+| Dt_Customer | 3 | 2013-02-14 00:00:00 | 11 | 0.49 |
+| Dt_Customer | 4 | 2012-09-12 00:00:00 | 11 | 0.49 |
+| Dt_Customer | 5 | 2013-08-20 00:00:00 | 10 | 0.45 |
 | Education | 1 | Graduation | 1127 | 50.31 |
 | Education | 2 | PhD | 486 | 21.7 |
 | Education | 3 | Master | 370 | 16.52 |
@@ -324,10 +324,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-47fb-7887-8e5a-530f31ce2d21 |
-| checksum | 319010a047ad057e20b89dcb14515cfa69b69d86e781bd2e36e94ce930418134 |
-| built_at | 2026-10-02T11:29:23+00:00 |
-| path | marketing_campaign/01a0fc60-47fb-7887-8e5a-530f31ce2d21 |
+| uuid | 01a11191-d064-7c27-abcd-bcb947e441d0 |
+| checksum | 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48 |
+| built_at | 2026-10-06T14:15:31+00:00 |
+| path | marketing_campaign/01a11191-d064-7c27-abcd-bcb947e441d0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -235,7 +235,8 @@ Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md
 <summary><b>📦 From PyPI</b> — use Data Foundry as a library</summary>
 
 ```bash
-pip install data-foundry
+pip install data-foundry            # load and use curated datasets
+pip install "data-foundry[build]"   # also build datasets from their definitions
 ```
 
 </details>
@@ -257,12 +258,16 @@ uv pip install -e .
 ```bash
 git clone https://github.com/TabArena/data-foundry.git
 cd data-foundry
-uv pip install -e ".[dev,tests]"
+uv pip install -e ".[dev]"
 pytest                                 # run the test suite
 ruff check . && ruff format --check .  # lint + format
 ```
 
-The `dev` extra adds curation-time deps (`openml`, `kaggle`, `seaborn`, `polars`, etc.); `tests` adds `pytest` and `scikit-learn` (needed for the recommended-split helpers and examples).
+Loading and using a container needs only the core install. The `build` extra adds what building a dataset from its
+definition needs: `scikit-learn` for the splits, `scipy` for the checks, and the readers the definitions use
+(`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). `tests` adds `build` and `pytest`; `dev` adds
+both plus the curation tools (`autogluon`, `kaggle`, `seaborn`, `ruff`, …). pandas 2.3 and 3 build and load the same
+containers; the lock stays on pandas 2 because AutoGluon (and so TabArena) requires pandas below 2.4.
 
 </details>
 

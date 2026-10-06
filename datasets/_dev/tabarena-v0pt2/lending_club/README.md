@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217
+checksum: dbd5661bf99b4b68c34c2be2d95bc9f0b186771c78c4e42378e6d569019aba8c
 build:
-  uuid: 01a0fc5f-427a-7b9a-810a-0d730ffdc5cf
-  checksum: 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217
-  built_at: '2026-10-02T11:28:46+00:00'
-  path: lending_club/01a0fc5f-427a-7b9a-810a-0d730ffdc5cf
+  uuid: 01a11190-2301-71d2-ae57-df0b516eed79
+  checksum: dbd5661bf99b4b68c34c2be2d95bc9f0b186771c78c4e42378e6d569019aba8c
+  built_at: '2026-10-06T14:14:22+00:00'
+  path: lending_club/01a11190-2301-71d2-ae57-df0b516eed79
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Kaggle (2018).
 
-Built as `01a0fc5f-427a-7b9a-810a-0d730ffdc5cf` on 2026-10-02. See [Build](#build).
+Built as `01a11190-2301-71d2-ae57-df0b516eed79` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -159,10 +159,10 @@ The first 5 of 609,544 rows of the final frame (the oldest rows: the frame is so
 
 | Default | issue_d | annual_inc | dti_n | loan_amnt | fico_n | emp_length | purpose | home_ownership_n | addr_state | zip_code | title |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Fully Paid | 2008-04-01 00:00:00 | 45000 | 7.17 | 7500 | 797 | 7 years | other | MORTGAGE | KS | 662xx | Pawn Shop |
-| Defaulted | 2008-04-01 00:00:00 | 64000 | 13.5 | 25000 | 697 | 1 year | major_purchase | MORTGAGE | CT | 060xx | Persuing my dream |
-| Fully Paid | 2008-04-01 00:00:00 | 19368 | 15.06 | 6700 | 667 | &lt; 1 year | debt_consolidation | RENT | CA | 945xx | Paying off High Intrest Credit Cards |
-| Defaulted | 2008-04-01 00:00:00 | 50000 | 18.01 | 7500 | 672 | 1 year | other | RENT | VA | 232xx | To Promote Global Business Pages |
+| Defaulted | 2008-04-01 00:00:00 | 47000 | 13.3 | 6600 | 702 | 1 year | home_improvement | MORTGAGE | GA | 315xx | air conditioner |
+| Fully Paid | 2008-04-01 00:00:00 | 89018 | 14.59 | 5800 | 677 | 7 years | credit_card | MORTGAGE | NV | 891xx | Debt Consolidation |
+| Fully Paid | 2008-04-01 00:00:00 | 80004 | 11.46 | 2000 | 762 | &lt; 1 year | other | RENT | CO | 801xx | Income Taxes |
+| Fully Paid | 2008-04-01 00:00:00 | 61000 | 9.29 | 6000 | 692 | &lt; 1 year | credit_card | RENT | MA | 021xx | Paying off Bank of America card |
 | Fully Paid | 2008-04-01 00:00:00 | 82000 | 9.06 | 7000 | 662 | 9 years | credit_card | MORTGAGE | OH | 453xx | Paying Off High Interest Credit Card |
 
 ## Curation notes
@@ -221,14 +221,14 @@ We try to create splits that simulate a model deployed to solve the task.
 | all_util | float64 | 594661 | 97.56 | 136 | 59.0, 60.0, 61.0, 66.0, 63.0, 64.0, 55.0, 67.0, 68.0, 73.0 |
 | inq_fi | float64 | 594661 | 97.56 | 17 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | inq_last_12m | float64 | 594661 | 97.56 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| max_bal_bc | float64 | 594661 | 97.56 | 8530 | 0.0, 2968.0, 4900.0, 3958.0, 2098.0, 1900.0, 4000.0, 2430.0, 2265.0, 2907.0 |
+| max_bal_bc | float64 | 594661 | 97.56 | 8530 | 0.0, 2968.0, 4900.0, 2098.0, 3958.0, 4000.0, 2907.0, 2000.0, 2430.0, 2924.0 |
 | open_acc_6m | float64 | 594661 | 97.56 | 13 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_il_12m | float64 | 594661 | 97.56 | 12 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 8.0 |
 | open_il_24m | float64 | 594661 | 97.56 | 17 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_act_il | float64 | 594661 | 97.56 | 33 | 1.0, 2.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_rv_12m | float64 | 594661 | 97.56 | 18 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | open_rv_24m | float64 | 594661 | 97.56 | 28 | 1.0, 2.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| total_bal_il | float64 | 594661 | 97.56 | 12061 | 0.0, 8391.0, 2350.0, 10409.0, 20898.0, 23821.0, 12199.0, 3758.0, 23454.0, 11159… |
+| total_bal_il | float64 | 594661 | 97.56 | 12061 | 0.0, 21098.0, 12621.0, 26748.0, 10238.0, 26750.0, 16187.0, 11196.0, 10409.0, 18… |
 | total_cu_tl | float64 | 594661 | 97.56 | 30 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | mths_since_last_record | float64 | 511699 | 83.95 | 122 | 61.0, 62.0, 65.0, 64.0, 69.0, 66.0, 67.0, 71.0, 68.0, 57.0 |
 | mths_since_recent_bc_dlq | float64 | 465154 | 76.31 | 152 | 46.0, 45.0, 48.0, 25.0, 14.0, 44.0, 19.0, 35.0, 21.0, 40.0 |
@@ -239,8 +239,8 @@ We try to create splits that simulate a model deployed to solve the task.
 | mo_sin_old_il_acct | float64 | 68900 | 11.3 | 479 | 122.0, 121.0, 124.0, 123.0, 126.0, 125.0, 132.0, 130.0, 133.0, 120.0 |
 | num_tl_120dpd_2m | float64 | 68588 | 11.25 | 5 | 0.0, 1.0, 2.0, 3.0, 6.0 |
 | pct_tl_nvr_dlq | float64 | 47912 | 7.86 | 550 | 100.0, 95.0, 90.0, 96.0, 92.0, 97.0, 90.9, 91.7, 92.3, 80.0 |
-| avg_cur_bal | float64 | 47807 | 7.84 | 60256 | 1971.0, 1843.0, 1762.0, 2112.0, 0.0, 1956.0, 1839.0, 2289.0, 2587.0, 1250.0 |
-| mo_sin_old_rev_tl_op | float64 | 47799 | 7.84 | 720 | 131.0, 119.0, 125.0, 138.0, 127.0, 120.0, 124.0, 130.0, 132.0, 156.0 |
+| avg_cur_bal | float64 | 47807 | 7.84 | 60256 | 1971.0, 1843.0, 2112.0, 1762.0, 1956.0, 0.0, 1839.0, 2289.0, 1250.0, 1826.0 |
+| mo_sin_old_rev_tl_op | float64 | 47799 | 7.84 | 720 | 131.0, 119.0, 125.0, 138.0, 127.0, 124.0, 120.0, 130.0, 132.0, 156.0 |
 | mo_sin_rcnt_rev_tl_op | float64 | 47799 | 7.84 | 241 | 2.0, 3.0, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | mo_sin_rcnt_tl | float64 | 47798 | 7.84 | 166 | 2.0, 3.0, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | num_accts_ever_120_pd | float64 | 47798 | 7.84 | 35 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
@@ -255,8 +255,8 @@ We try to create splits that simulate a model deployed to solve the task.
 | num_tl_90g_dpd_24m | float64 | 47798 | 7.84 | 22 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | num_tl_op_past_12m | float64 | 47798 | 7.84 | 28 | 1.0, 2.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | tot_coll_amt | float64 | 47798 | 7.84 | 8917 | 0.0, 50.0, 100.0, 75.0, 150.0, 60.0, 200.0, 70.0, 80.0, 55.0 |
-| tot_cur_bal | float64 | 47798 | 7.84 | 257345 | 0.0, 19998.0, 5537.0, 12066.0, 17951.0, 14511.0, 16219.0, 22396.0, 27316.0, 264… |
-| tot_hi_cred_lim | float64 | 47798 | 7.84 | 269449 | 17500.0, 12500.0, 15500.0, 16500.0, 12000.0, 13500.0, 13800.0, 12400.0, 16000.0… |
+| tot_cur_bal | float64 | 47798 | 7.84 | 257345 | 0.0, 19998.0, 5537.0, 12066.0, 22396.0, 17951.0, 14511.0, 27316.0, 16219.0, 197… |
+| tot_hi_cred_lim | float64 | 47798 | 7.84 | 269449 | 17500.0, 12500.0, 15500.0, 16500.0, 12000.0, 13800.0, 13500.0, 12400.0, 16000.0… |
 | total_il_high_credit_limit | float64 | 47798 | 7.84 | 119478 | 0.0, 10000.0, 15000.0, 5000.0, 20000.0, 12000.0, 6000.0, 25000.0, 8000.0, 4000.0 |
 | total_rev_hi_lim | float64 | 47798 | 7.84 | 16364 | 10000.0, 12000.0, 11000.0, 13500.0, 8500.0, 15000.0, 13000.0, 9000.0, 11500.0, … |
 | num_bc_sats | float64 | 38224 | 6.27 | 43 | 3.0, 4.0, 2.0, 5.0, 6.0, 7.0, 1.0, 8.0, 9.0, 10.0 |
@@ -267,7 +267,7 @@ We try to create splits that simulate a model deployed to solve the task.
 | mths_since_recent_bc | float64 | 36639 | 6.01 | 439 | 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 1.0, 10.0 |
 | acc_open_past_24mths | float64 | 31273 | 5.13 | 48 | 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
 | mort_acc | float64 | 31273 | 5.13 | 35 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| total_bal_ex_mort | float64 | 31273 | 5.13 | 131732 | 0.0, 19998.0, 19217.0, 22396.0, 16219.0, 12479.0, 9999.0, 12066.0, 26475.0, 273… |
+| total_bal_ex_mort | float64 | 31273 | 5.13 | 131732 | 0.0, 19998.0, 19217.0, 9999.0, 12066.0, 16219.0, 22396.0, 12479.0, 16473.0, 948… |
 | total_bc_limit | float64 | 31273 | 5.13 | 11542 | 0.0, 5000.0, 6000.0, 4000.0, 3000.0, 7000.0, 8000.0, 7500.0, 4500.0, 3500.0 |
 
 (22 more rows not shown)
@@ -420,10 +420,10 @@ We try to create splits that simulate a model deployed to solve the task.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-427a-7b9a-810a-0d730ffdc5cf |
-| checksum | 839698966a771a8fe23581aa266a7a42e1cf454fa3e7ce741126927376234217 |
-| built_at | 2026-10-02T11:28:46+00:00 |
-| path | lending_club/01a0fc5f-427a-7b9a-810a-0d730ffdc5cf |
+| uuid | 01a11190-2301-71d2-ae57-df0b516eed79 |
+| checksum | dbd5661bf99b4b68c34c2be2d95bc9f0b186771c78c4e42378e6d569019aba8c |
+| built_at | 2026-10-06T14:14:22+00:00 |
+| path | lending_club/01a11190-2301-71d2-ae57-df0b516eed79 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

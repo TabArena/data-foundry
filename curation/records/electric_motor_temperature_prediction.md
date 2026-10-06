@@ -45,6 +45,8 @@ See Table 2 in paper for what is measured input and what is measured target (htt
 
 Text says 4 target temperatures? are 4 PM, ST, SW, SY, we select PM
 
+CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 build. The probe flagged `no_spread`: R^2 0.970 (linear), 0.963 (LightGBM) and 0.937 (random forest), and with 3 grouped folds the paired gap (0.026) is within 2 standard errors. The tuned methods spread: on BeyondArena the RMSE of the 21 configurations ranges from 1.77 (RealMLP, tuned) to 3.52 (dummy 22.9), so the task separates methods even though all explain most of the variance.
+
 ## Reference
 
 @article{kirchgassner2020estimating,

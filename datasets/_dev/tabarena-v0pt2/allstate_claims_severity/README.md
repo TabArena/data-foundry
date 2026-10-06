@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claims_severity
 container_format: 2
-checksum: d3b2363627cafae8ae1b55905fb21c34913580e0e77d0393cdc286cc8e79d7bc
+checksum: b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0
 build:
-  uuid: 01a0fc5f-f972-7ece-bbf2-2fb7fc4cd87a
-  checksum: d3b2363627cafae8ae1b55905fb21c34913580e0e77d0393cdc286cc8e79d7bc
-  built_at: '2026-10-02T11:29:06+00:00'
-  path: allstate_claims_severity/01a0fc5f-f972-7ece-bbf2-2fb7fc4cd87a
+  uuid: 01a11191-0c86-7fe9-9fb2-11530080c5fe
+  checksum: b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0
+  built_at: '2026-10-06T14:14:44+00:00'
+  path: allstate_claims_severity/01a11191-0c86-7fe9-9fb2-11530080c5fe
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 features. Source: Kaggle (2016).
 
-Built as `01a0fc5f-f972-7ece-bbf2-2fb7fc4cd87a` on 2026-10-02. See [Build](#build).
+Built as `01a11191-0c86-7fe9-9fb2-11530080c5fe` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 188,317 rows of the final frame (random rows: the frame is shuffl
 
 | loss | cat1 | cat2 | cat3 | cat4 | cat5 | cat6 | cat7 | cat8 | cat9 | cat10 | cat11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 7.34652 | A | B | A | B | A | A | A | A | B | A | A |
-| 6.94937 | A | A | A | A | A | B | A | A | A | A | A |
-| 8.59705 | A | A | A | A | B | A | A | A | A | A | A |
-| 8.29467 | A | B | B | A | A | A | A | A | B | B | A |
-| 8.54588 | A | B | A | A | A | B | A | B | B | A | A |
+| 8.80967 | A | A | A | A | A | B | A | A | A | A | A |
+| 9.22965 | A | B | A | B | B | A | B | A | B | B | B |
+| 8.41071 | A | B | A | A | B | A | A | A | A | A | A |
+| 7.81556 | A | B | A | B | A | A | A | A | B | A | B |
+| 8.54995 | A | B | A | A | B | A | A | A | B | B | A |
 
 ## Curation notes
 
@@ -363,10 +363,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-f972-7ece-bbf2-2fb7fc4cd87a |
-| checksum | d3b2363627cafae8ae1b55905fb21c34913580e0e77d0393cdc286cc8e79d7bc |
-| built_at | 2026-10-02T11:29:06+00:00 |
-| path | allstate_claims_severity/01a0fc5f-f972-7ece-bbf2-2fb7fc4cd87a |
+| uuid | 01a11191-0c86-7fe9-9fb2-11530080c5fe |
+| checksum | b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0 |
+| built_at | 2026-10-06T14:14:44+00:00 |
+| path | allstate_claims_severity/01a11191-0c86-7fe9-9fb2-11530080c5fe |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

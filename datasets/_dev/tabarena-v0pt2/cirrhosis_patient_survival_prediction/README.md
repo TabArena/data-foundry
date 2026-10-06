@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: 40ffd947cf440c25c0a0302d527bb2086dc4b271cb6dacdba94e1a20d04d1fb3
+checksum: e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522
 build:
-  uuid: 01a0fc60-6ebe-7eb5-8202-0d4b00011049
-  checksum: 40ffd947cf440c25c0a0302d527bb2086dc4b271cb6dacdba94e1a20d04d1fb3
-  built_at: '2026-10-02T11:29:33+00:00'
-  path: cirrhosis_patient_survival_prediction/01a0fc60-6ebe-7eb5-8202-0d4b00011049
+  uuid: 01a11191-a18b-73c8-829a-81687d227f5c
+  checksum: e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: cirrhosis_patient_survival_prediction/01a11191-a18b-73c8-829a-81687d227f5c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `log_days_to_death`, scored with `rmse` on IID splits. 161 rows and 17 features. Source: UCI (1984).
 
-Built as `01a0fc60-6ebe-7eb5-8202-0d4b00011049` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a18b-73c8-829a-81687d227f5c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 161 rows of the final frame (random rows: the frame is shuffled);
 
 | log_days_to_death | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 7.64492 | Placebo | 22857 | F | N | N | N | N | 0.7 | 255 | 3.74 | 23 |
-| 7.48773 | Placebo | 25329 | F | N | Y | N | N | 0.9 | 404 | 3.43 | 34 |
-| 6.49527 | nan | 17532 | F | nan | nan | nan | N | 2.1 | nan | 4.1 | nan |
-| 7.41276 | D-penicillamine | 19270 | F | N | Y | Y | N | 5 | 1600 | 3.21 | 75 |
-| 7.62803 | D-penicillamine | 19540 | F | N | N | N | N | 0.3 | 233 | 4.08 | 20 |
+| 5.51745 | nan | 22280 | F | nan | nan | nan | N | 1.3 | nan | 3.01 | nan |
+| 5.77144 | Placebo | 15116 | F | N | Y | Y | N | 3.6 | 260 | 2.54 | 172 |
+| 6.65673 | nan | 23376 | F | nan | nan | nan | N | 1.8 | nan | 3.15 | nan |
+| 6.32615 | nan | 25568 | F | nan | nan | nan | S | 0.6 | nan | 3.81 | nan |
+| 5.57595 | Placebo | 15857 | F | N | Y | Y | S | 8.5 | nan | 3.34 | 161 |
 
 ## Curation notes
 
@@ -256,17 +256,17 @@ Default splits.
 | Stage | category | 4 | 2.48 | 4 | 4.0, 3.0, 2.0, 1.0 |
 | Sex | category | 0 | 0 | 2 | F, M |
 | Edema | category | 0 | 0 | 3 | N, S, Y |
-| Tryglicerides | float64 | 48 | 29.81 | 90 | 91.0, 68.0, 140.0, 88.0, 118.0, 137.0, 157.0, 63.0, 99.0, 104.0 |
-| Cholesterol | float64 | 47 | 29.19 | 99 | 260.0, 674.0, 257.0, 244.0, 178.0, 416.0, 408.0, 175.0, 932.0, 426.0 |
-| Copper | float64 | 37 | 22.98 | 97 | 58.0, 50.0, 75.0, 20.0, 52.0, 94.0, 200.0, 67.0, 161.0, 43.0 |
-| Alk_Phos | float64 | 36 | 22.36 | 122 | 944.0, 1790.0, 2276.0, 622.0, 2656.0, 933.0, 1303.0, 2412.0, 11552.0, 1024.0 |
-| SGOT | float64 | 36 | 22.36 | 92 | 128.65, 165.85, 119.35, 151.9, 137.95, 198.4, 170.5, 97.65, 134.85, 167.4 |
-| Platelets | float64 | 6 | 3.73 | 125 | 200.0, 190.0, 165.0, 268.0, 236.0, 295.0, 139.0, 156.0, 142.0, 233.0 |
-| Prothrombin | float64 | 1 | 0.62 | 43 | 11.0, 10.6, 11.1, 9.9, 11.5, 12.0, 11.7, 10.3, 10.0, 10.1 |
-| Bilirubin | float64 | 0 | 0 | 83 | 0.8, 1.1, 1.3, 0.7, 2.1, 1.8, 1.4, 3.2, 4.5, 2.0 |
-| Albumin | float64 | 0 | 0 | 103 | 3.26, 3.19, 3.12, 3.4, 3.01, 3.55, 3.43, 3.52, 3.48, 3.63 |
-| log_days_to_death | float64 | 0 | 0 | 156 | 5.5759, 7.4325, 7.0825, 6.3919, 3.7136, 7.7213, 7.3626, 6.7912, 7.628, 7.6449 |
-| Age | int64 | 0 | 0 | 148 | 20454, 19724, 16802, 18628, 17532, 23011, 24472, 21550, 23376, 19270 |
+| Tryglicerides | float64 | 48 | 29.81 | 90 | 91.0, 118.0, 63.0, 99.0, 112.0, 84.0, 155.0, 88.0, 140.0, 104.0 |
+| Cholesterol | float64 | 47 | 29.19 | 99 | 260.0, 175.0, 178.0, 408.0, 426.0, 257.0, 222.0, 259.0, 674.0, 374.0 |
+| Copper | float64 | 37 | 22.98 | 97 | 58.0, 52.0, 50.0, 20.0, 75.0, 94.0, 172.0, 161.0, 111.0, 262.0 |
+| Alk_Phos | float64 | 36 | 22.36 | 122 | 2276.0, 944.0, 1790.0, 1428.0, 1056.0, 705.0, 746.0, 11320.2, 11552.0, 2132.0 |
+| SGOT | float64 | 36 | 22.36 | 92 | 151.9, 119.35, 128.65, 198.4, 137.95, 170.5, 165.85, 134.85, 97.65, 77.5 |
+| Platelets | float64 | 6 | 3.73 | 125 | 165.0, 190.0, 200.0, 268.0, 160.0, 319.0, 233.0, 123.0, 224.0, 195.0 |
+| Prothrombin | float64 | 1 | 0.62 | 43 | 11.0, 10.6, 11.1, 9.9, 11.5, 12.0, 11.7, 10.0, 10.3, 10.1 |
+| Bilirubin | float64 | 0 | 0 | 83 | 0.8, 1.3, 1.1, 0.7, 1.4, 3.2, 2.1, 1.8, 2.3, 4.5 |
+| Albumin | float64 | 0 | 0 | 103 | 3.26, 3.19, 3.08, 3.5, 3.6, 3.4, 3.01, 3.12, 3.63, 3.35 |
+| log_days_to_death | float64 | 0 | 0 | 156 | 3.7136, 5.5759, 7.4325, 6.3919, 7.0825, 6.3261, 7.9417, 4.2627, 4.9416, 6.6567 |
+| Age | int64 | 0 | 0 | 148 | 18628, 19724, 20454, 16802, 24472, 21550, 23011, 17532, 23376, 25568 |
 
 </details>
 
@@ -274,7 +274,7 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.971 | -1.44 | 1.1 | 0.03 | log | 1073.8 | 2.0823e+14 | exponential |
+| 0 | 0 | 0 | -0.971 | -1.44 | 1.1 | 0.03 | log | 1073.8 | 7.65666e+14 | exponential |
 
 ### Numeric features
 
@@ -333,10 +333,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-6ebe-7eb5-8202-0d4b00011049 |
-| checksum | 40ffd947cf440c25c0a0302d527bb2086dc4b271cb6dacdba94e1a20d04d1fb3 |
-| built_at | 2026-10-02T11:29:33+00:00 |
-| path | cirrhosis_patient_survival_prediction/01a0fc60-6ebe-7eb5-8202-0d4b00011049 |
+| uuid | 01a11191-a18b-73c8-829a-81687d227f5c |
+| checksum | e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522 |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | cirrhosis_patient_survival_prediction/01a11191-a18b-73c8-829a-81687d227f5c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

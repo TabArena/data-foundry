@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: churn
 container_format: 2
-checksum: 801708fa32d7554c414c9670d57f312b6f2638bfaa1ec5ec6e6e9a32d3246788
+checksum: ed50870596267ae2105e02243d0d19464e04222e6546f4f79fdd8df712e0e292
 build:
-  uuid: 01a0fc60-816a-780f-9da9-cf33df8d6045
-  checksum: 801708fa32d7554c414c9670d57f312b6f2638bfaa1ec5ec6e6e9a32d3246788
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: churn/01a0fc60-816a-780f-9da9-cf33df8d6045
+  uuid: 01a11191-a193-7bd1-a5f2-7593eb389b3c
+  checksum: ed50870596267ae2105e02243d0d19464e04222e6546f4f79fdd8df712e0e292
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: churn/01a11191-a193-7bd1-a5f2-7593eb389b3c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `CustomerChurned`, scored with `roc_auc` on IID splits. 5,000 rows and 19 features. Source: OpenML (2005).
 
-Built as `01a0fc60-816a-780f-9da9-cf33df8d6045` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a193-7bd1-a5f2-7593eb389b3c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -140,11 +140,11 @@ The first 5 of 5,000 rows of the final frame (random rows: the frame is shuffled
 
 | CustomerChurned | state | account_length | area_code | international_plan | voice_mail_plan | number_vmail_messages | total_day_minutes | total_day_calls | total_day_charge | total_eve_minutes | total_eve_calls |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 3 | 72 | 510 | No | No | 0 | 272.4 | 88 | 46.31 | 107.9 | 125 |
-| No | 23 | 53 | 415 | No | No | 0 | 164.1 | 106 | 27.9 | 206 | 56 |
-| No | 36 | 155 | 408 | No | Yes | 30 | 61.6 | 103 | 10.47 | 255.1 | 110 |
-| No | 37 | 161 | 415 | No | No | 0 | 178.1 | 109 | 30.28 | 146.5 | 86 |
-| No | 11 | 99 | 415 | No | No | 0 | 62.9 | 81 | 10.69 | 231 | 64 |
+| No | 6 | 103 | 510 | No | No | 0 | 160.2 | 104 | 27.23 | 138.9 | 70 |
+| No | 15 | 98 | 408 | No | Yes | 21 | 64.6 | 98 | 10.98 | 176.1 | 86 |
+| Yes | 23 | 128 | 510 | Yes | No | 0 | 192.8 | 96 | 32.78 | 136.6 | 86 |
+| No | 30 | 15 | 415 | Yes | No | 0 | 224.3 | 85 | 38.13 | 166.3 | 79 |
+| No | 24 | 103 | 408 | No | Yes | 24 | 111.8 | 85 | 19.01 | 239.6 | 102 |
 
 ## Curation notes
 
@@ -189,20 +189,20 @@ Default splits.
 | international_plan | category | 0 | 0 | 2 | No, Yes |
 | voice_mail_plan | category | 0 | 0 | 2 | No, Yes |
 | CustomerChurned | category | 0 | 0 | 2 | No, Yes |
-| account_length | float64 | 0 | 0 | 218 | 90.0, 87.0, 105.0, 93.0, 112.0, 101.0, 100.0, 86.0, 116.0, 103.0 |
+| account_length | float64 | 0 | 0 | 218 | 90.0, 87.0, 93.0, 105.0, 112.0, 86.0, 101.0, 100.0, 103.0, 116.0 |
 | number_vmail_messages | float64 | 0 | 0 | 48 | 0.0, 31.0, 28.0, 29.0, 33.0, 27.0, 24.0, 30.0, 26.0, 32.0 |
-| total_day_minutes | float64 | 0 | 0 | 1961 | 189.3, 154.0, 159.5, 174.5, 180.0, 177.1, 184.5, 182.1, 183.4, 215.6 |
-| total_day_calls | float64 | 0 | 0 | 123 | 105.0, 102.0, 95.0, 97.0, 94.0, 100.0, 110.0, 112.0, 92.0, 108.0 |
-| total_day_charge | float64 | 0 | 0 | 1961 | 32.18, 26.18, 27.12, 29.67, 30.6, 30.11, 31.37, 30.96, 31.18, 36.65 |
-| total_eve_minutes | float64 | 0 | 0 | 1879 | 169.9, 199.7, 230.9, 187.0, 223.5, 194.0, 216.5, 210.6, 188.8, 161.7 |
-| total_eve_calls | float64 | 0 | 0 | 126 | 105.0, 97.0, 91.0, 94.0, 103.0, 101.0, 96.0, 104.0, 98.0, 102.0 |
-| total_eve_charge | float64 | 0 | 0 | 1659 | 15.9, 14.25, 16.12, 18.96, 18.79, 16.97, 19.41, 18.62, 16.18, 16.35 |
-| total_night_minutes | float64 | 0 | 0 | 1853 | 194.3, 188.2, 186.2, 214.6, 228.1, 208.9, 210.0, 191.4, 192.7, 193.6 |
-| total_night_calls | float64 | 0 | 0 | 131 | 105.0, 102.0, 100.0, 104.0, 99.0, 103.0, 91.0, 94.0, 98.0, 95.0 |
-| total_night_charge | float64 | 0 | 0 | 1028 | 9.66, 8.47, 9.63, 8.15, 10.26, 9.4, 10.8, 9.45, 10.49, 9.76 |
-| total_intl_minutes | float64 | 0 | 0 | 170 | 11.1, 9.8, 11.3, 11.4, 10.1, 10.9, 9.7, 10.0, 10.5, 11.0 |
+| total_day_minutes | float64 | 0 | 0 | 1961 | 189.3, 154.0, 159.5, 184.5, 174.5, 177.1, 180.0, 182.1, 215.6, 168.6 |
+| total_day_calls | float64 | 0 | 0 | 123 | 105.0, 102.0, 95.0, 94.0, 97.0, 100.0, 112.0, 110.0, 108.0, 92.0 |
+| total_day_charge | float64 | 0 | 0 | 1961 | 32.18, 26.18, 27.12, 31.37, 29.67, 30.11, 30.6, 30.96, 36.65, 28.66 |
+| total_eve_minutes | float64 | 0 | 0 | 1879 | 230.9, 199.7, 169.9, 167.6, 188.8, 194.0, 216.5, 223.5, 210.6, 187.5 |
+| total_eve_calls | float64 | 0 | 0 | 126 | 105.0, 97.0, 91.0, 94.0, 103.0, 101.0, 104.0, 96.0, 102.0, 109.0 |
+| total_eve_charge | float64 | 0 | 0 | 1659 | 15.9, 14.25, 16.12, 18.79, 16.97, 18.96, 19.41, 16.18, 17.99, 16.41 |
+| total_night_minutes | float64 | 0 | 0 | 1853 | 194.3, 188.2, 186.2, 228.1, 214.6, 208.9, 197.4, 210.0, 191.4, 214.7 |
+| total_night_calls | float64 | 0 | 0 | 131 | 105.0, 102.0, 100.0, 104.0, 99.0, 103.0, 94.0, 91.0, 95.0, 98.0 |
+| total_night_charge | float64 | 0 | 0 | 1028 | 8.47, 9.66, 9.63, 10.26, 10.8, 9.4, 8.15, 9.45, 10.49, 9.65 |
+| total_intl_minutes | float64 | 0 | 0 | 170 | 11.1, 9.8, 11.3, 10.1, 11.4, 10.9, 9.7, 10.6, 10.0, 11.0 |
 | total_intl_calls | float64 | 0 | 0 | 21 | 3.0, 4.0, 2.0, 5.0, 6.0, 7.0, 1.0, 8.0, 9.0, 10.0 |
-| total_intl_charge | float64 | 0 | 0 | 170 | 3.0, 2.65, 3.05, 3.08, 2.73, 2.94, 2.62, 2.7, 2.84, 2.97 |
+| total_intl_charge | float64 | 0 | 0 | 170 | 3.0, 2.65, 3.05, 2.73, 3.08, 2.94, 2.62, 2.86, 2.7, 2.97 |
 | number_customer_service_calls | float64 | 0 | 0 | 10 | 1.0, 2.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 8.0 |
 
 </details>
@@ -267,10 +267,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-816a-780f-9da9-cf33df8d6045 |
-| checksum | 801708fa32d7554c414c9670d57f312b6f2638bfaa1ec5ec6e6e9a32d3246788 |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | churn/01a0fc60-816a-780f-9da9-cf33df8d6045 |
+| uuid | 01a11191-a193-7bd1-a5f2-7593eb389b3c |
+| checksum | ed50870596267ae2105e02243d0d19464e04222e6546f4f79fdd8df712e0e292 |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | churn/01a11191-a193-7bd1-a5f2-7593eb389b3c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

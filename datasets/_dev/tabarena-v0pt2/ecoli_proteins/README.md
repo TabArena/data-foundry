@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: 7a47d19f47a059487e7e832b62b5f391ef3ef3734c95bab900bca94c2f1f439b
+checksum: fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12
 build:
-  uuid: 01a0fc60-8917-7087-9551-ec700f738d69
-  checksum: 7a47d19f47a059487e7e832b62b5f391ef3ef3734c95bab900bca94c2f1f439b
-  built_at: '2026-10-02T11:29:40+00:00'
-  path: ecoli_proteins/01a0fc60-8917-7087-9551-ec700f738d69
+  uuid: 01a11191-a850-76e9-8b59-f560a2b09472
+  checksum: fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12
+  built_at: '2026-10-06T14:15:20+00:00'
+  path: ecoli_proteins/01a11191-a850-76e9-8b59-f560a2b09472
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 6 features. Source: UCI (1996).
 
-Built as `01a0fc60-8917-7087-9551-ec700f738d69` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a850-76e9-8b59-f560a2b09472` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 327 rows of the final frame (random rows: the frame is shuffled).
 
 | class | mcg | gvh | lip | aac | alm1 | alm2 |
 |---|---|---|---|---|---|---|
-| imU | 0.76 | 0.71 | 0.48 | 0.5 | 0.71 | 0.75 |
-| cp | 0.32 | 0.33 | 0.48 | 0.6 | 0.06 | 0.2 |
-| imU | 0.63 | 0.51 | 0.48 | 0.64 | 0.72 | 0.76 |
-| cp | 0.42 | 0.4 | 0.48 | 0.56 | 0.18 | 0.3 |
-| cp | 0.3 | 0.45 | 0.48 | 0.36 | 0.21 | 0.32 |
+| im | 0.31 | 0.44 | 0.48 | 0.5 | 0.79 | 0.82 |
+| cp | 0.18 | 0.3 | 0.48 | 0.46 | 0.24 | 0.35 |
+| cp | 0.23 | 0.4 | 0.48 | 0.39 | 0.28 | 0.38 |
+| im | 0.33 | 0.56 | 0.48 | 0.33 | 0.78 | 0.8 |
+| cp | 0.34 | 0.28 | 0.48 | 0.41 | 0.35 | 0.44 |
 
 ## Curation notes
 
@@ -245,11 +245,11 @@ Default splits.
 |---|---|---|---|---|---|
 | lip | category | 0 | 0 | 2 | 0.48, 1.0 |
 | class | category | 0 | 0 | 5 | cp, im, pp, imU, om |
-| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.44, 0.64, 0.74, 0.29, 0.4, 0.67, 0.69, 0.25 |
-| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.42, 0.47, 0.37, 0.49, 0.46, 0.57, 0.44, 0.39 |
-| aac | float64 | 0 | 0 | 59 | 0.42, 0.46, 0.48, 0.51, 0.41, 0.49, 0.57, 0.43, 0.56, 0.54 |
-| alm1 | float64 | 0 | 0 | 81 | 0.35, 0.39, 0.28, 0.33, 0.78, 0.76, 0.71, 0.38, 0.45, 0.49 |
-| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.35, 0.74, 0.41, 0.33, 0.38, 0.79, 0.44, 0.42 |
+| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.64, 0.44, 0.74, 0.29, 0.4, 0.67, 0.69, 0.25 |
+| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.42, 0.37, 0.47, 0.49, 0.46, 0.57, 0.44, 0.39 |
+| aac | float64 | 0 | 0 | 59 | 0.42, 0.48, 0.46, 0.51, 0.41, 0.57, 0.49, 0.58, 0.56, 0.52 |
+| alm1 | float64 | 0 | 0 | 81 | 0.35, 0.39, 0.28, 0.33, 0.78, 0.76, 0.37, 0.42, 0.49, 0.71 |
+| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.35, 0.41, 0.74, 0.33, 0.38, 0.79, 0.44, 0.42 |
 
 ### Target distribution
 
@@ -287,10 +287,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8917-7087-9551-ec700f738d69 |
-| checksum | 7a47d19f47a059487e7e832b62b5f391ef3ef3734c95bab900bca94c2f1f439b |
-| built_at | 2026-10-02T11:29:40+00:00 |
-| path | ecoli_proteins/01a0fc60-8917-7087-9551-ec700f738d69 |
+| uuid | 01a11191-a850-76e9-8b59-f560a2b09472 |
+| checksum | fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12 |
+| built_at | 2026-10-06T14:15:20+00:00 |
+| path | ecoli_proteins/01a11191-a850-76e9-8b59-f560a2b09472 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

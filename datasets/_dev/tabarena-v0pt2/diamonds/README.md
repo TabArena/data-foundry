@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: aeca438ed4ab35b66714527cf1d16bbe69cfb55e18b88fb37215161e66b70452
+checksum: 45f6a2e25b23f338fc1e7024f72608f7aa877490ea758b68259f0a99f7093150
 build:
-  uuid: 01a0fc60-421d-7a66-96d8-6aa8b67ffadb
-  checksum: aeca438ed4ab35b66714527cf1d16bbe69cfb55e18b88fb37215161e66b70452
-  built_at: '2026-10-02T11:29:22+00:00'
-  path: diamonds/01a0fc60-421d-7a66-96d8-6aa8b67ffadb
+  uuid: 01a11191-80c2-7f3f-a583-03f519bc26f7
+  checksum: 45f6a2e25b23f338fc1e7024f72608f7aa877490ea758b68259f0a99f7093150
+  built_at: '2026-10-06T14:15:11+00:00'
+  path: diamonds/01a11191-80c2-7f3f-a583-03f519bc26f7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 53,940 rows and 9 features. Source: Other (2015).
 
-Built as `01a0fc60-421d-7a66-96d8-6aa8b67ffadb` on 2026-10-02. See [Build](#build).
+Built as `01a11191-80c2-7f3f-a583-03f519bc26f7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
 
 | price | carat | cut | color | clarity | depth | table | x | y | z |
 |---|---|---|---|---|---|---|---|---|---|
-| 6.32615 | 0.24 | Ideal | G | VVS1 | 62.1 | 56 | 3.97 | 4 | 2.47 |
-| 7.69667 | 0.58 | Very Good | F | VVS2 | 60 | 57 | 5.44 | 5.42 | 3.26 |
-| 7.12125 | 0.4 | Ideal | E | VVS2 | 62.1 | 55 | 4.76 | 4.74 | 2.95 |
-| 7.17319 | 0.43 | Premium | E | VVS2 | 60.8 | 57 | 4.92 | 4.89 | 2.98 |
-| 8.83942 | 1.55 | Ideal | E | SI2 | 62.3 | 55 | 7.44 | 7.37 | 4.61 |
+| 8.7397 | 1.56 | Good | I | SI1 | 64 | 57 | 7.32 | 7.28 | 4.67 |
+| 6.92461 | 0.4 | Very Good | E | VVS2 | 60.3 | 59 | 4.74 | 4.78 | 2.87 |
+| 6.32794 | 0.25 | Very Good | E | VVS1 | 61.5 | 56 | 4.06 | 4.08 | 2.5 |
+| 6.95273 | 0.53 | Ideal | I | VS2 | 62.1 | 54 | 5.2 | 5.24 | 3.24 |
+| 8.42134 | 1 | Very Good | D | SI2 | 61.6 | 58 | 6.37 | 6.45 | 3.95 |
 
 ## Curation notes
 
@@ -192,7 +192,7 @@ Default splits.
 | carat | float64 | 0 | 0 | 273 | 0.3, 0.31, 1.01, 0.7, 0.32, 1.0, 0.9, 0.41, 0.4, 0.71 |
 | depth | float64 | 0 | 0 | 184 | 62.0, 61.9, 61.8, 62.2, 62.1, 61.6, 62.3, 61.7, 62.4, 61.5 |
 | table | float64 | 0 | 0 | 127 | 56.0, 57.0, 58.0, 59.0, 55.0, 60.0, 54.0, 61.0, 62.0, 63.0 |
-| price | float64 | 0 | 0 | 11602 | 6.4052, 6.6871, 6.4378, 6.719, 6.6542, 6.6708, 6.5482, 6.2989, 6.5013, 6.3135 |
+| price | float64 | 0 | 0 | 11602 | 6.4052, 6.6871, 6.4378, 6.719, 6.6542, 6.5482, 6.6708, 6.2989, 6.5013, 6.3135 |
 | x | float64 | 0 | 0 | 554 | 4.37, 4.34, 4.33, 4.38, 4.32, 4.35, 4.39, 4.31, 4.36, 4.4 |
 | y | float64 | 0 | 0 | 552 | 4.34, 4.37, 4.35, 4.33, 4.32, 4.39, 4.38, 4.4, 4.31, 4.41 |
 | z | float64 | 0 | 0 | 375 | 2.7, 2.69, 2.71, 2.68, 2.72, 2.67, 2.73, 2.66, 2.74, 4.02 |
@@ -244,10 +244,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-421d-7a66-96d8-6aa8b67ffadb |
-| checksum | aeca438ed4ab35b66714527cf1d16bbe69cfb55e18b88fb37215161e66b70452 |
-| built_at | 2026-10-02T11:29:22+00:00 |
-| path | diamonds/01a0fc60-421d-7a66-96d8-6aa8b67ffadb |
+| uuid | 01a11191-80c2-7f3f-a583-03f519bc26f7 |
+| checksum | 45f6a2e25b23f338fc1e7024f72608f7aa877490ea758b68259f0a99f7093150 |
+| built_at | 2026-10-06T14:15:11+00:00 |
+| path | diamonds/01a11191-80c2-7f3f-a583-03f519bc26f7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

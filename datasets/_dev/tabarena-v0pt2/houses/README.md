@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: houses
 container_format: 2
-checksum: 0af557d2efeace8660ca4a22912244cd062a2bb2c7c1e81fc51e420ff3a996af
+checksum: 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa
 build:
-  uuid: 01a0fc60-6926-76c5-a660-115db0d40ff0
-  checksum: 0af557d2efeace8660ca4a22912244cd062a2bb2c7c1e81fc51e420ff3a996af
-  built_at: '2026-10-02T11:29:32+00:00'
-  path: houses/01a0fc60-6926-76c5-a660-115db0d40ff0
+  uuid: 01a11191-cc2d-7228-bde0-03602ae96471
+  checksum: 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa
+  built_at: '2026-10-06T14:15:30+00:00'
+  path: houses/01a11191-cc2d-7228-bde0-03602ae96471
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -62,7 +62,7 @@ decisions: []
 
 Regression of `LnMedianHouseValue`, scored with `rmse` on IID splits. 19,675 rows and 8 features. Source: Other (1990).
 
-Built as `01a0fc60-6926-76c5-a660-115db0d40ff0` on 2026-10-02. See [Build](#build).
+Built as `01a11191-cc2d-7228-bde0-03602ae96471` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 19,675 rows of the final frame (random rows: the frame is shuffle
 
 | LnMedianHouseValue | MedianIncome | HousingMedianAge | TotalRooms | TotalBedrooms | Population | Households | Latitude | Longitude |
 |---|---|---|---|---|---|---|---|---|
-| 11.5541 | 1.8357 | 24 | 2493 | 693 | 1420 | 643 | 32.8 | -116.96 |
-| 12.0506 | 4.2109 | 14 | 1946 | 463 | 1205 | 390 | 32.93 | -117.14 |
-| 11.4856 | 4.0481 | 52 | 1683 | 266 | 646 | 256 | 34.14 | -117.29 |
-| 11.5396 | 3.538 | 21 | 1513 | 319 | 943 | 301 | 40.97 | -124.01 |
-| 11.6656 | 2.2 | 34 | 2352 | 610 | 1127 | 592 | 38.62 | -121.38 |
+| 12.5187 | 5.4286 | 24 | 2991 | 500 | 1437 | 453 | 33.72 | -117.97 |
+| 12.7388 | 5.883 | 52 | 2474 | 403 | 1104 | 398 | 37.82 | -122.25 |
+| 12.9923 | 6.9014 | 21 | 4349 | 553 | 1680 | 519 | 33.77 | -117.79 |
+| 12.7734 | 5.3473 | 41 | 1912 | 308 | 896 | 314 | 34.23 | -118.24 |
+| 11.5982 | 2.4375 | 15 | 4784 | 1039 | 1810 | 986 | 33.22 | -117.32 |
 
 ## Curation notes
 
@@ -188,10 +188,10 @@ Default splits.
 |---|---|---|---|---|---|
 | MedianIncome | float64 | 0 | 0 | 12190 | 3.125, 2.875, 4.125, 2.625, 3.875, 3.0, 3.375, 3.625, 4.0, 4.375 |
 | HousingMedianAge | float64 | 0 | 0 | 52 | 52.0, 36.0, 35.0, 16.0, 17.0, 34.0, 26.0, 33.0, 18.0, 25.0 |
-| TotalRooms | float64 | 0 | 0 | 5793 | 1527.0, 1582.0, 1613.0, 1607.0, 1703.0, 1717.0, 1722.0, 2053.0, 1787.0, 2127.0 |
-| TotalBedrooms | float64 | 0 | 0 | 1910 | 280.0, 331.0, 393.0, 343.0, 394.0, 348.0, 388.0, 314.0, 272.0, 309.0 |
-| Population | float64 | 0 | 0 | 3868 | 1052.0, 891.0, 1227.0, 782.0, 1005.0, 825.0, 872.0, 850.0, 1098.0, 781.0 |
-| Households | float64 | 0 | 0 | 1793 | 386.0, 306.0, 335.0, 429.0, 282.0, 297.0, 362.0, 375.0, 284.0, 330.0 |
+| TotalRooms | float64 | 0 | 0 | 5793 | 1527.0, 1582.0, 1613.0, 1703.0, 1717.0, 1607.0, 1722.0, 1705.0, 1880.0, 1731.0 |
+| TotalBedrooms | float64 | 0 | 0 | 1910 | 280.0, 393.0, 331.0, 394.0, 348.0, 343.0, 388.0, 272.0, 314.0, 328.0 |
+| Population | float64 | 0 | 0 | 3868 | 1227.0, 891.0, 1052.0, 1005.0, 782.0, 825.0, 872.0, 781.0, 850.0, 1098.0 |
+| Households | float64 | 0 | 0 | 1793 | 386.0, 306.0, 429.0, 335.0, 282.0, 297.0, 375.0, 362.0, 284.0, 330.0 |
 | Latitude | float64 | 0 | 0 | 862 | 34.08, 34.05, 34.09, 34.07, 34.02, 34.06, 34.04, 34.1, 34.03, 33.93 |
 | Longitude | float64 | 0 | 0 | 842 | -118.31, -118.3, -118.29, -118.27, -118.28, -118.19, -118.35, -118.32, -118.36,… |
 | LnMedianHouseValue | float64 | 0 | 0 | 3841 | 11.8314, 11.9984, 11.6307, 12.1415, 12.3239, 12.7657, 11.3794, 12.5245, 11.9184… |
@@ -200,7 +200,7 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.295 | -0.401 | 0.284 | 0.002 | log | 230568 | 5.20018e+15 | exponential |
+| 0 | 0 | 0 | -0.295 | -0.401 | 0.284 | 0.002 | log | 230568 | 4.74461e+17 | exponential |
 
 ### Numeric features
 
@@ -224,10 +224,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-6926-76c5-a660-115db0d40ff0 |
-| checksum | 0af557d2efeace8660ca4a22912244cd062a2bb2c7c1e81fc51e420ff3a996af |
-| built_at | 2026-10-02T11:29:32+00:00 |
-| path | houses/01a0fc60-6926-76c5-a660-115db0d40ff0 |
+| uuid | 01a11191-cc2d-7228-bde0-03602ae96471 |
+| checksum | 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa |
+| built_at | 2026-10-06T14:15:30+00:00 |
+| path | houses/01a11191-cc2d-7228-bde0-03602ae96471 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

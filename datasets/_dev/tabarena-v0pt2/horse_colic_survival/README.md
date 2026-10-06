@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: 647d70682e9c3112d665d4071d313ac8094eeb00163f1bdff178aed90328dac3
+checksum: 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1
 build:
-  uuid: 01a0fc60-4d8b-7581-8794-9c1299951b90
-  checksum: 647d70682e9c3112d665d4071d313ac8094eeb00163f1bdff178aed90328dac3
-  built_at: '2026-10-02T11:29:24+00:00'
-  path: horse_colic_survival/01a0fc60-4d8b-7581-8794-9c1299951b90
+  uuid: 01a11191-ca60-7384-910a-019da61288a4
+  checksum: 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1
+  built_at: '2026-10-06T14:15:29+00:00'
+  path: horse_colic_survival/01a11191-ca60-7384-910a-019da61288a4
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a0fc60-4d8b-7581-8794-9c1299951b90` on 2026-10-02. See [Build](#build).
+Built as `01a11191-ca60-7384-910a-019da61288a4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 344 rows of the final frame (random rows: the frame is shuffled);
 
 | outcome | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Euthanized | 1 | 37.5 | 48 | 40 | nan | nan | nan | nan | nan | nan | nan |
-| Euthanized | 1 | 38 | 66 | 20 | 1 | 3 | 3 | 1 | 5 | 3 | 1 |
-| Euthanized | 1 | 36.1 | 88 | nan | 3 | 3 | 3 | 1 | 3 | 3 | 2 |
-| Lived | 1 | 38 | 76 | 18 | nan | nan | nan | 2 | nan | nan | nan |
-| Lived | 1 | 37.5 | 44 | nan | 1 | 1 | 1 | 1 | 3 | 3 | 2 |
+| Euthanized | 1 | nan | 40 | 16 | nan | nan | nan | 1 | nan | nan | nan |
+| Died | 9 | 38.1 | 136 | 48 | 3 | 3 | 3 | 1 | 5 | 1 | 3 |
+| Died | 1 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
+| Lived | 9 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
+| Lived | 1 | 38.9 | 44 | 14 | 3 | 1 | 1 | 1 | 2 | 3 | 2 |
 
 ## Curation notes
 
@@ -265,13 +265,13 @@ Default splits.
 | mucous_membranes | category | 48 | 13.95 | 6 | 1.0, 3.0, 4.0, 2.0, 5.0, 6.0 |
 | capillary_refill_time | category | 37 | 10.76 | 3 | 1.0, 2.0, 3.0 |
 | outcome | category | 0 | 0 | 3 | Lived, Died, Euthanized |
-| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 4.0, 3.0, 7.5 |
-| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 4.3, 2.6, 1.4, 3.4, 3.6, 5.0 |
-| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 60.0 |
+| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 3.0, 4.0, 7.5 |
+| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 3.4, 3.6, 1.4, 4.3, 2.6 |
+| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 18.0 |
 | rectal_temperature | float64 | 65 | 18.9 | 40 | 38.0, 38.2, 38.3, 38.5, 37.8, 37.5, 38.1, 38.6, 38.4, 37.7 |
-| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.5, 7.0, 6.6, 65.0, 6.0, 6.7, 6.8, 6.2, 7.2 |
-| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 35.0, 50.0, 44.0, 43.0, 40.0, 47.0, 36.0, 48.0 |
-| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 42.0, 88.0, 120.0, 72.0, 52.0, 100.0 |
+| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.0, 7.5, 6.0, 65.0, 6.6, 6.7, 6.8, 6.2, 7.2 |
+| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 44.0, 35.0, 50.0, 40.0, 43.0, 36.0, 47.0, 38.0 |
+| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 88.0, 42.0, 52.0, 72.0, 120.0, 100.0 |
 | age | int64 | 0 | 0 | 2 | 1, 9 |
 
 </details>
@@ -370,10 +370,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4d8b-7581-8794-9c1299951b90 |
-| checksum | 647d70682e9c3112d665d4071d313ac8094eeb00163f1bdff178aed90328dac3 |
-| built_at | 2026-10-02T11:29:24+00:00 |
-| path | horse_colic_survival/01a0fc60-4d8b-7581-8794-9c1299951b90 |
+| uuid | 01a11191-ca60-7384-910a-019da61288a4 |
+| checksum | 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1 |
+| built_at | 2026-10-06T14:15:29+00:00 |
+| path | horse_colic_survival/01a11191-ca60-7384-910a-019da61288a4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

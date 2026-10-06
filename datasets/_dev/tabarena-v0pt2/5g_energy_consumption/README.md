@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: 94801d626d27b99c6d37d636e5a29fa33001828b0c8738ee6d30454961067af5
+checksum: da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c
 build:
-  uuid: 01a0fc60-13f7-7fc9-94b5-ed7745caef30
-  checksum: 94801d626d27b99c6d37d636e5a29fa33001828b0c8738ee6d30454961067af5
-  built_at: '2026-10-02T11:29:11+00:00'
-  path: 5g_energy_consumption/01a0fc60-13f7-7fc9-94b5-ed7745caef30
+  uuid: 01a11191-233a-7c01-9cf4-45515d30cb4b
+  checksum: da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c
+  built_at: '2026-10-06T14:14:48+00:00'
+  path: 5g_energy_consumption/01a11191-233a-7c01-9cf4-45515d30cb4b
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 21 features. Source: HuggingFace (2023).
 
-Built as `01a0fc60-13f7-7fc9-94b5-ed7745caef30` on 2026-10-02. See [Build](#build).
+Built as `01a11191-233a-7c01-9cf4-45515d30cb4b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -156,11 +156,11 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
 
 | Energy | BS | load | ESMode1 | ESMode2 | ESMode3 | ESMode5 | ESMode6 | RUType | Mode | Frequency | Bandwidth |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 44.843 | B_595 | 0.63944 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
-| 20.4783 | B_21 | 0.01364 | 0.943056 | 0.942222 | 0 | 0 | 0 | Type4 | Mode2 | 532 | 20 |
-| 13.7519 | B_495 | 0.07902 | 0 | 0 | 0 | 0 | 0 | Type6 | Mode2 | 189 | 10 |
-| 57.997 | B_728 | 0.605117 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
-| 37.9671 | B_298 | 0.01999 | 0 | 0 | 0 | 0 | 0 | Type1 | Mode2 | 365 | 20 |
+| 18.6846 | B_1 | 0.07411 | 0 | 0 | 0 | 0 | 0 | Type2 | Mode2 | 532 | 20 |
+| 18.0867 | B_103 | 0.04508 | 0 | 0 | 0 | 0 | 0 | Type6 | Mode2 | 189 | 10 |
+| 17.0404 | B_684 | 0.01422 | 0 | 0 | 0 | 0 | 0 | Type4 | Mode2 | 532 | 20 |
+| 20.1794 | B_116 | 0.32132 | 0 | 0 | 0 | 0 | 0 | Type5 | Mode2 | 189 | 10 |
+| 12.7055 | B_796 | 0.08693 | 0 | 0 | 0 | 0 | 0 | Type4 | Mode2 | 532 | 20 |
 
 ## Curation notes
 
@@ -211,7 +211,7 @@ One group is a base station; its rows are its hourly measurements. The ITU AI/ML
 | largest group | 0.1% of the rows |
 | test groups per fold | 307 to 308 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 5.0% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 5.1% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.86 (shuffled groups: 0.01) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
@@ -233,18 +233,18 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | BS | category | 0 | 0 | 923 | B_583, B_728, B_261, B_669, B_512, B_26, B_168, B_777, B_160, B_733 |
 | RUType | category | 0 | 0 | 12 | Type4, Type6, Type1, Type7, Type3, Type2, Type5, Type9, Type10, Type8 |
 | Mode | category | 0 | 0 | 2 | Mode2, Mode1 |
-| load_Cell1 | float64 | 87254 | 94.2 | 4392 | 0.0459, 0.0458, 0.0459, 0.0344, 0.046, 0.0462, 0.0459, 0.0462, 0.046, 0.0582 |
-| ESMode1_Cell1 | float64 | 87254 | 94.2 | 25 | 0.0, 1.0, 0.8069, 0.0208, 0.9486, 0.6472, 0.1847, 0.9431, 0.6375, 0.9806 |
-| ESMode2_Cell1 | float64 | 87254 | 94.2 | 24 | 0.0, 0.8053, 0.9486, 0.0203, 0.6472, 0.9997, 0.1836, 0.9436, 0.6356, 0.9806 |
-| ESMode3_Cell1 | float64 | 87254 | 94.2 | 21 | 0.0, 0.0347, 0.0628, 0.0368, 0.0479, 0.0368, 0.0295, 0.0319, 0.0446, 0.0252 |
-| ESMode6_Cell1 | float64 | 87254 | 94.2 | 2705 | 0.0, 0.788, 0.8599, 0.8853, 0.8765, 0.8773, 0.7819, 0.9143, 0.8359, 0.725 |
+| load_Cell1 | float64 | 87254 | 94.2 | 4392 | 0.0459, 0.0458, 0.0459, 0.0344, 0.0582, 0.046, 0.0462, 0.046, 0.0462, 0.0459 |
+| ESMode1_Cell1 | float64 | 87254 | 94.2 | 25 | 0.0, 1.0, 0.5, 0.9889, 0.5444, 0.5194, 0.9431, 0.9806, 0.6375, 0.1847 |
+| ESMode2_Cell1 | float64 | 87254 | 94.2 | 24 | 0.0, 1.0, 0.9889, 0.5439, 0.5178, 0.9436, 0.9806, 0.6356, 0.1836, 0.0011 |
+| ESMode3_Cell1 | float64 | 87254 | 94.2 | 21 | 0.0, 0.0479, 0.0291, 0.0241, 0.0446, 0.0252, 0.0568, 0.0368, 0.0218, 0.0475 |
+| ESMode6_Cell1 | float64 | 87254 | 94.2 | 2705 | 0.0, 0.6063, 0.7804, 0.8311, 0.7439, 0.459, 0.7174, 0.8125, 0.816, 0.7692 |
 | Energy | float64 | 0 | 0 | 612 | 17.9372, 17.7877, 18.2362, 18.3857, 18.0867, 18.8341, 18.5351, 17.6383, 18.9836… |
-| load | float64 | 0 | 0 | 56889 | 0.0083, 0.0082, 0.0459, 0.0083, 0.0083, 0.0083, 0.0083, 0.0083, 0.0083, 0.0082 |
-| ESMode1 | float64 | 0 | 0 | 508 | 0.0, 1.0, 0.0014, 0.9833, 0.9792, 0.9806, 0.9986, 0.9778, 0.9903, 0.9861 |
+| load | float64 | 0 | 0 | 56889 | 0.0082, 0.0083, 0.0459, 0.0083, 0.0083, 0.0083, 0.0083, 0.0083, 0.0083, 0.0082 |
+| ESMode1 | float64 | 0 | 0 | 508 | 0.0, 1.0, 0.0014, 0.9833, 0.9792, 0.9806, 0.9986, 0.9778, 0.9861, 0.9903 |
 | ESMode2 | float64 | 0 | 0 | 1095 | 0.0, 1.0, 0.9997, 0.0006, 0.0011, 0.0008, 0.0014, 0.0003, 0.0017, 0.98 |
-| ESMode3 | float64 | 0 | 0 | 149 | 0.0, 0.1546, 0.0603, 0.0017, 0.0524, 0.0221, 0.0004, 0.0673, 0.0283, 0.004 |
-| ESMode5 | float64 | 0 | 0 | 4 | 0.0, 0.7681, 0.0008, 0.6298 |
-| ESMode6 | float64 | 0 | 0 | 1498 | 0.0, 0.9243, 0.9243, 0.9243, 0.9243, 0.9272, 0.9241, 0.9272, 0.9246, 0.9241 |
+| ESMode3 | float64 | 0 | 0 | 149 | 0.0, 0.0824, 0.081, 0.0594, 0.0253, 0.0522, 0.0879, 0.0377, 0.1131, 0.0651 |
+| ESMode5 | float64 | 0 | 0 | 4 | 0.0, 0.0008, 0.7681, 0.6298 |
+| ESMode6 | float64 | 0 | 0 | 1498 | 0.0, 0.9243, 0.9243, 0.9243, 0.9272, 0.9243, 0.9241, 0.9246, 0.9241, 0.9246 |
 | Frequency | float64 | 0 | 0 | 8 | 365.0, 532.0, 189.0, 426.98, 155.6, 697.002, 364.0, 979.998 |
 | TXpower | float64 | 0 | 0 | 25 | 6.8759, 6.4275, 6.1286, 7.3259, 5.9791, 5.6801, 6.577, 6.7265, 8.0345, 5.3812 |
 | day | int32 | 0 | 0 | 8 | 2, 3, 1, 4, 6, 5, 7, 8 |
@@ -316,10 +316,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-13f7-7fc9-94b5-ed7745caef30 |
-| checksum | 94801d626d27b99c6d37d636e5a29fa33001828b0c8738ee6d30454961067af5 |
-| built_at | 2026-10-02T11:29:11+00:00 |
-| path | 5g_energy_consumption/01a0fc60-13f7-7fc9-94b5-ed7745caef30 |
+| uuid | 01a11191-233a-7c01-9cf4-45515d30cb4b |
+| checksum | da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c |
+| built_at | 2026-10-06T14:14:48+00:00 |
+| path | 5g_energy_consumption/01a11191-233a-7c01-9cf4-45515d30cb4b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

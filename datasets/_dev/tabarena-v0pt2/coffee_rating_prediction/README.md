@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: 85915b48dce2bb90298dcb64b84fa12f3b453198fca36a6c194083598f3e835b
+checksum: ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b
 build:
-  uuid: 01a0fc60-89e4-7e07-b681-3db0f2cd368d
-  checksum: 85915b48dce2bb90298dcb64b84fa12f3b453198fca36a6c194083598f3e835b
-  built_at: '2026-10-02T11:29:41+00:00'
-  path: coffee_rating_prediction/01a0fc60-89e4-7e07-b681-3db0f2cd368d
+  uuid: 01a11191-9ce9-7ae4-b341-107ad5bb22f4
+  checksum: ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: coffee_rating_prediction/01a11191-9ce9-7ae4-b341-107ad5bb22f4
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,369 rows and 12 features. Source: Kaggle (2023).
 
-Built as `01a0fc60-89e4-7e07-b681-3db0f2cd368d` on 2026-10-02. See [Build](#build).
+Built as `01a11191-9ce9-7ae4-b341-107ad5bb22f4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 2,369 rows of the final frame (the oldest rows: the frame is sort
 
 | rating | roaster | name | location | origin | roast | review_date | desc_1 | desc_3 | agtron_lower | agtron_upper | NT_price |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 95 | Branch Street Coffee Roasters | Kenya Konyu | Youngstown, Ohio | Kirinyaga District, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | Vibrant, rich-toned, sweetly-tart. Tart… | A multi-layered Kenya coffee with a per… | 57 | 81 | nan |
+| 93 | Big Creek Coffee Roasters | Kenya Gatuya | Hamilton, Montana | South-central Kenya | Medium | 2018-10-01 00:00:00 | Crisply sweet, richly cocoa-toned. Dark… | A complex, chocolaty and floral Kenya c… | 50 | 70 | nan |
+| 94 | JBC Coffee Roasters | Karimikui Kenya | Madison, Wisconsin | Kirinyaga District, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | Boldy sweet-tart, savory-edged. Dark ch… | A big, juicy Kenya with sweet-tart frui… | 55 | 75 | nan |
+| 93 | Caffeic | Ethiopia | Helena, Montana | Bench-Maji Zone, southern Ethiopia | Medium-Light | 2018-10-01 00:00:00 | Crisply sweet, fruit-toned. Raspberry, … | A sweetly fruit-forward natural-process… | 56 | 82 | nan |
+| 96 | Dragonfly Coffee Roasters | Esmeralda Estate Porton Geisha Natural | Boulder, Colorado | Boquete growing region, western Panama | Medium-Light | 2018-10-01 00:00:00 | Rich-toned, cleanly fruit-forward, intr… | A harmonious, refined, exquisitely clea… | 56 | 84 | nan |
 | 92 | Magnolia Coffee | Guatemala Finca San Gerardo | Charlotte, North Carolina | Lake Amatitlán area, south-central Guat… | Medium-Light | 2018-10-01 00:00:00 | Crisp, richly sweet. Magnolia, dried pe… | A friendly, floral-toned Guatemala cup … | 52 | 72 | nan |
-| 95 | Dragonfly Coffee Roasters | Hacienda La Esmeralda Cabana Geisha Nat… | Boulder, Colorado | Boquete growing region, western Panama | Medium-Light | 2018-10-01 00:00:00 | Rich, resonant, high-toned. Lychee, lil… | A complex, multi-layered, exquisitely c… | 57 | 83 | nan |
-| 96 | Dragonfly Coffee Roasters | Finca La Aurora Camilina Geisha | Boulder, Colorado | Piedra Candela, Chiriqui Province, far … | Medium-Light | 2018-10-01 00:00:00 | Crisp, elegantly sweet, rich-toned. Dri… | Tropical fruit- and spice-toned aromati… | 56 | 76 | nan |
-| 96 | Barrington Coffee Roasting | Twenty Five | Lee, Massachusetts | Ethiopia; Papua New Guinea; Guatemala | Medium-Light | 2018-10-01 00:00:00 | Evaluated as espresso. Luminous, comple… | Barrington’s anniversary blend is worth… | 50 | 74 | nan |
 
 ## Curation notes
 
@@ -216,12 +216,12 @@ We simulate a setting where we refit the model every 2 months and only test on t
 | review_date | datetime64\[ns\] | 0 | 0 | 61 | 2022-11-01 00:00:00, 2023-03-01 00:00:00, 2022-10-01 00:00:00, 2021-11-01 00:00… |
 | agtron_lower | float64 | 7 | 0.3 | 49 | 58.0, 60.0, 56.0, 62.0, 54.0, 52.0, 64.0, 57.0, 59.0, 50.0 |
 | agtron_upper | float64 | 7 | 0.3 | 54 | 78.0, 76.0, 80.0, 74.0, 77.0, 72.0, 70.0, 82.0, 84.0, 68.0 |
-| price_per_gram_in_usd | float64 | 0 | 0 | 656 | 0.0529, 0.0588, 0.0559, 0.0647, 0.047, 0.0617, 0.05, 0.0676, 0.0735, 0.0705 |
+| price_per_gram_in_usd | float64 | 0 | 0 | 656 | 0.0529, 0.0588, 0.0559, 0.0647, 0.047, 0.0617, 0.05, 0.0735, 0.0676, 0.0705 |
 | rating | int64 | 0 | 0 | 17 | 93, 94, 92, 95, 91, 90, 96, 88, 97, 87 |
 | desc_1 | string | 1 | 0.04 | 2367 | Richly chocolaty, deeply sweet. Dark chocolate, freesia-like flowers, crisp pea… |
-| desc_3 | string | 1 | 0.04 | 2368 | A uniquely composed anaerobic natural cup with rich chocolate and salted carame… |
+| desc_3 | string | 1 | 0.04 | 2368 | An excitingly original espresso blend that foregrounds sweet florals and tropic… |
 | roaster | string | 0 | 0 | 472 | JBC Coffee Roasters, Paradise Roasters, Kakalove Cafe, RamsHead Coffee Roasters… |
-| name | string | 0 | 0 | 2166 | Espresso Blend, Holiday Blend, Bella Carmona Guatemala, Colombia Pink Bourbon, … |
+| name | string | 0 | 0 | 2166 | Espresso Blend, Ethiopia Kayon Mountain, Bella Carmona Guatemala, Holiday Blend… |
 | location | string | 0 | 0 | 301 | Madison, Wisconsin, Chia-Yi, Taiwan, Taipei, Taiwan, San Diego, California, Min… |
 | origin | string | 0 | 0 | 1040 | Yirgacheffe growing region, southern Ethiopia, Guji Zone, Oromia Region, southe… |
 
@@ -231,7 +231,7 @@ We simulate a setting where we refit the model every 2 months and only test on t
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -1.145 | -1.279 | 2.751 | 0 | log | 51223.9 | 1.86956e+16 | exponential |
+| 0 | 0 | 0 | -1.145 | -1.279 | 2.751 | 0 | log | 51223.9 | 8.24459e+16 | exponential |
 
 ### Numeric features
 
@@ -252,25 +252,25 @@ We simulate a setting where we refit the model every 2 months and only test on t
 | NT_price | 1 | &lt;NA> | 1763 | 74.42 |
 | NT_price | 2 | NT | 606 | 25.58 |
 | desc_1 | 1 | Richly chocolaty, deeply sweet. Dark chocolate, freesia-like flo... | 2 | 0.08 |
-| desc_1 | 2 | Sweetly smoky, crisply chocolaty. Scorched cedar, baking chocola... | 1 | 0.04 |
-| desc_1 | 3 | Earthy, bittersweet. Fresh-cut oak, cocoa powder, fresh leather,... | 1 | 0.04 |
-| desc_1 | 4 | Rather dry, wood-framed, bittersweet. Scorched fir, cocoa powder... | 1 | 0.04 |
-| desc_1 | 5 | Brisk, dry, sweetly vegetal. Green bean, carob, charred balsa, f... | 1 | 0.04 |
-| desc_3 | 1 | An impossibly complex, delightfully floral carbonic-macerated Ja... | 1 | 0.04 |
-| desc_3 | 2 | A uniquely composed anaerobic natural cup with rich chocolate an... | 1 | 0.04 |
-| desc_3 | 3 | A solid Guatemala cup processed by the honey method: gently brig... | 1 | 0.04 |
-| desc_3 | 4 | A compelling rendition of Pink Bourbon with distinct citrus, coc... | 1 | 0.04 |
-| desc_3 | 5 | An Ethiopian landrace coffee variety grown in Guatemala and natu... | 1 | 0.04 |
+| desc_1 | 2 | Confidently fruit-forward, sweetly tart. Pomegranate, cherry blo... | 1 | 0.04 |
+| desc_1 | 3 | Bright, balanced, energetic, tropical. Star jasmine, passion fru... | 1 | 0.04 |
+| desc_1 | 4 | Balanced, deep, chocolaty. Lavender, red currant, gently scorche... | 1 | 0.04 |
+| desc_1 | 5 | Bright, balanced, citrusy. Tangerine, almond butter, apple bloss... | 1 | 0.04 |
+| desc_3 | 1 | A deep-toned, sweetly savory Kenya cup with inviting floral note... | 1 | 0.04 |
+| desc_3 | 2 | An excitingly original espresso blend that foregrounds sweet flo... | 1 | 0.04 |
+| desc_3 | 3 | A classic Yirgacheffe cup, balanced and bright, with notes of st... | 1 | 0.04 |
+| desc_3 | 4 | A balanced, nuanced washed Ethiopia cup with pretty citrus and s... | 1 | 0.04 |
+| desc_3 | 5 | A darker-roasted blend for those who like full-bodied, slightly ... | 1 | 0.04 |
 | location | 1 | Madison, Wisconsin | 187 | 7.89 |
 | location | 2 | Chia-Yi, Taiwan | 152 | 6.42 |
 | location | 3 | Taipei, Taiwan | 149 | 6.29 |
 | location | 4 | San Diego, California | 124 | 5.23 |
 | location | 5 | Minneapolis, Minnesota | 120 | 5.07 |
 | name | 1 | Espresso Blend | 8 | 0.34 |
-| name | 2 | Holiday Blend | 5 | 0.21 |
+| name | 2 | Ethiopia Kayon Mountain | 5 | 0.21 |
 | name | 3 | Bella Carmona Guatemala | 5 | 0.21 |
-| name | 4 | Colombia Pink Bourbon | 5 | 0.21 |
-| name | 5 | Ethiopia Kayon Mountain | 5 | 0.21 |
+| name | 4 | Holiday Blend | 5 | 0.21 |
+| name | 5 | Colombia Pink Bourbon | 5 | 0.21 |
 | origin | 1 | Yirgacheffe growing region, southern Ethiopia | 79 | 3.33 |
 | origin | 2 | Guji Zone, Oromia Region, southern Ethiopia | 70 | 2.95 |
 | origin | 3 | Nyeri growing region, south-central Kenya | 62 | 2.62 |
@@ -298,10 +298,10 @@ We simulate a setting where we refit the model every 2 months and only test on t
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-89e4-7e07-b681-3db0f2cd368d |
-| checksum | 85915b48dce2bb90298dcb64b84fa12f3b453198fca36a6c194083598f3e835b |
-| built_at | 2026-10-02T11:29:41+00:00 |
-| path | coffee_rating_prediction/01a0fc60-89e4-7e07-b681-3db0f2cd368d |
+| uuid | 01a11191-9ce9-7ae4-b341-107ad5bb22f4 |
+| checksum | ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | coffee_rating_prediction/01a11191-9ce9-7ae4-b341-107ad5bb22f4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

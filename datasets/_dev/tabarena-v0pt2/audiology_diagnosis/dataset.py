@@ -34,9 +34,11 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         We start with the data from UCI and merge train and test data.
 
         - We drop the ID column as it is uninformative here.
-        - The target label contains groups of labels with specifications. We merge labels into groups that represent general a diagnosis. We create 3 labels: "normal", "cochlear", "other". There is likely a much better way to partition these labels, but this is most reasonable partitioning for an acutal task, going from names and my limited domain knowledge about the various diagnoses.
-        - We drop duplicated rows as they might introduce too much information leakage for such small data and are likely not natural but rather an artifact of the limited number of features.
-        - We remove one constant column (history_fullness).
+        - We drop duplicated cases (the same findings and the same original diagnosis; 27 of 226) as they are likely not natural but rather an artifact of the coarse, categorical findings, and would put copies of one case on both sides of a split.
+        - The 24 original diagnoses cannot be a target at this size: 16 of them have 4 or fewer cases. Each name combines the site of the hearing loss with its cause (`mixed_cochlear_age_otitis_media`: a mixed loss, its cochlear part from age, its conductive part from otitis media). We use the site, grouped as the standard distinction in audiology between a hearing loss with and without a conductive part (the air-bone gap): "normal" (normal_ear), "sensorineural" (the cochlear diagnoses, possible_menieres, and the retrocochlear acoustic_neuroma and retrocochlear_unknown) and "conductive_or_mixed" (the conductive diagnoses, otitis_media and every mixed diagnosis). The four standard types (conductive and mixed apart) would leave 10 conductive cases, 3-4 per test fold.
+        - We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
+        - We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
+        - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
     """
 
     # Task
@@ -125,53 +127,46 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = raw
-        cochlear_classes = [
+        df = raw.drop(columns=["indentifier"]).drop_duplicates()
+        sensorineural = [
+            "cochlear_age",
             "cochlear_age_and_noise",
             "cochlear_age_plus_poss_menieres",
             "cochlear_noise_and_heredity",
             "cochlear_poss_noise",
             "cochlear_unknown",
             "possible_menieres",
+            "acoustic_neuroma",
+            "retrocochlear_unknown",
+        ]
+        conductive_or_mixed = [
+            "conductive_discontinuity",
+            "conductive_fixation",
+            "otitis_media",
             "mixed_cochlear_age_fixation",
             "mixed_cochlear_age_otitis_media",
             "mixed_cochlear_age_s_om",
             "mixed_cochlear_unk_discontinuity",
             "mixed_cochlear_unk_fixation",
             "mixed_cochlear_unk_ser_om",
-            "cochlear_age",
+            "mixed_poss_central_om",
             "mixed_poss_noise_om",
         ]
-        normal_classes = ["normal_ear"]
-        other_classes = [
-            "acoustic_neuroma",
-            "bells_palsy",
-            "conductive_discontinuity",
-            "conductive_fixation",
-            "mixed_poss_central_om",
-            "otitis_media",
-            "poss_central",
-            "possible_brainstem_disorder",
-            "retrocochlear_unknown",
-        ]
+        not_a_hearing_loss_type = ["bells_palsy", "possible_brainstem_disorder", "poss_central"]
 
-        def map_to_diagnosis(x):
-            if x in cochlear_classes:
-                return "cochlear"
-            if x in normal_classes:
+        def hearing_loss(x):
+            if x == "normal_ear":
                 return "normal"
-            if x in other_classes:
-                return "other"
+            if x in sensorineural:
+                return "sensorineural"
+            if x in conductive_or_mixed:
+                return "conductive_or_mixed"
             raise ValueError(f"Unknown diagnosis class: {x}")
 
-        df["diagnosis"] = df["diagnosis"].apply(map_to_diagnosis)
-        df = df.drop(
-            columns=[
-                "indentifier",
-                "history_fullness",  # constant column
-            ]
-        )
-        df = df.drop_duplicates()
+        df = df[~df["diagnosis"].isin(not_a_hearing_loss_type)].copy()
+        df["diagnosis"] = df["diagnosis"].apply(hearing_loss)
+        # Constant after the steps above: the brainstem-test findings were recorded only for the dropped cases.
+        df = df.drop(columns=["history_fullness", "bser", "viith_nerve_signs", "waveform_ItoV_prolonged"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

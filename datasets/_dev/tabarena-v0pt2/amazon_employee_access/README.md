@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: amazon_employee_access
 container_format: 2
-checksum: d03a85c4b7d39e25c6eecb86e5899f7bdc268fca33ef3bdc5d71af892e0ed2a0
+checksum: 267d2b2d27e6e28d510f922375a8ed64a22b2505df3755b6e2274318f9c30d1c
 build:
-  uuid: 01a0fc60-551f-7f99-a617-e2a8acf507e5
-  checksum: d03a85c4b7d39e25c6eecb86e5899f7bdc268fca33ef3bdc5d71af892e0ed2a0
-  built_at: '2026-10-02T11:29:27+00:00'
-  path: amazon_employee_access/01a0fc60-551f-7f99-a617-e2a8acf507e5
+  uuid: 01a11191-6319-7a2c-9c0e-86a6675fc98a
+  checksum: 267d2b2d27e6e28d510f922375a8ed64a22b2505df3755b6e2274318f9c30d1c
+  built_at: '2026-10-06T14:15:03+00:00'
+  path: amazon_employee_access/01a11191-6319-7a2c-9c0e-86a6675fc98a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 9 features. Source: Kaggle (2010).
 
-Built as `01a0fc60-551f-7f99-a617-e2a8acf507e5` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6319-7a2c-9c0e-86a6675fc98a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -141,11 +141,11 @@ The first 5 of 32,769 rows of the final frame (random rows: the frame is shuffle
 
 | ResourceApproved | RESOURCE | MGR_ID | ROLE_ROLLUP_1 | ROLE_ROLLUP_2 | ROLE_DEPTNAME | ROLE_TITLE | ROLE_FAMILY_DESC | ROLE_FAMILY | ROLE_CODE |
 |---|---|---|---|---|---|---|---|---|---|
-| Yes | 37793 | 81744 | 117902 | 117903 | 118783 | 118451 | 130134 | 118453 | 118454 |
-| Yes | 40309 | 1541 | 117961 | 118225 | 123173 | 119093 | 123174 | 119095 | 119096 |
-| Yes | 27356 | 205 | 117961 | 118386 | 118746 | 118784 | 147114 | 290919 | 118786 |
-| Yes | 5173 | 8229 | 117961 | 118300 | 121305 | 119351 | 149246 | 3130 | 119353 |
-| Yes | 77207 | 51791 | 117961 | 119256 | 120943 | 118995 | 280788 | 292795 | 118997 |
+| Yes | 28109 | 3225 | 117961 | 118327 | 118929 | 118784 | 126514 | 290919 | 118786 |
+| Yes | 21373 | 5054 | 117961 | 118300 | 118597 | 118530 | 278014 | 118131 | 118532 |
+| Yes | 39262 | 18686 | 117961 | 118386 | 121883 | 117905 | 290919 | 290919 | 117908 |
+| Yes | 38721 | 4757 | 118212 | 118213 | 118458 | 119849 | 290535 | 118638 | 119851 |
+| Yes | 73194 | 48492 | 117961 | 118225 | 118403 | 118321 | 240983 | 290919 | 118322 |
 
 ## Curation notes
 
@@ -267,10 +267,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-551f-7f99-a617-e2a8acf507e5 |
-| checksum | d03a85c4b7d39e25c6eecb86e5899f7bdc268fca33ef3bdc5d71af892e0ed2a0 |
-| built_at | 2026-10-02T11:29:27+00:00 |
-| path | amazon_employee_access/01a0fc60-551f-7f99-a617-e2a8acf507e5 |
+| uuid | 01a11191-6319-7a2c-9c0e-86a6675fc98a |
+| checksum | 267d2b2d27e6e28d510f922375a8ed64a22b2505df3755b6e2274318f9c30d1c |
+| built_at | 2026-10-06T14:15:03+00:00 |
+| path | amazon_employee_access/01a11191-6319-7a2c-9c0e-86a6675fc98a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

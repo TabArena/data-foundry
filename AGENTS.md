@@ -80,7 +80,7 @@ decisions you would otherwise have to guess at.
 
 Its reference, [`references/dataset_patterns.md`](.claude/skills/add-dataset/references/dataset_patterns.md)
 (§A–§F), holds the **distilled conventions of the collection** (first distilled from the ~155 BeyondArena
-notebooks, now the 130 v2 definitions of the working copy): the ordered preprocessing recipe, the per-regime split recipes (including
+notebooks, now the 128 v2 definitions of the working copy): the ordered preprocessing recipe, the per-regime split recipes (including
 the declarative `TemporalSplits` recipes and the `Grouping` fields), the recurring traps worth flagging,
 and a table mapping every `bundle_checks` slug to the scaffold action that pre-empts it.
 Keep them in sync when the collection's practice changes — the check-side evidence comes

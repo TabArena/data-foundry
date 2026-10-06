@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: wids_diabetes_mellitus
 container_format: 2
-checksum: e58f3e2d6479765501a87dcdb24eace5f3bfc3c6e800e19b4c518b66ecfdeeb6
+checksum: e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e
 build:
-  uuid: 01a0fc5f-b011-7c24-b294-7e6357ace5f1
-  checksum: e58f3e2d6479765501a87dcdb24eace5f3bfc3c6e800e19b4c518b66ecfdeeb6
-  built_at: '2026-10-02T11:28:56+00:00'
-  path: wids_diabetes_mellitus/01a0fc5f-b011-7c24-b294-7e6357ace5f1
+  uuid: 01a11190-c732-79a0-9535-32a4f762da86
+  checksum: e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e
+  built_at: '2026-10-06T14:14:35+00:00'
+  path: wids_diabetes_mellitus/01a11190-c732-79a0-9535-32a4f762da86
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `diabetes_mellitus`, scored with `roc_auc` on IID splits. 127,358 rows and 181 features. Source: Kaggle (2021).
 
-Built as `01a0fc5f-b011-7c24-b294-7e6357ace5f1` on 2026-10-02. See [Build](#build).
+Built as `01a11190-c732-79a0-9535-32a4f762da86` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 127,358 rows of the final frame (random rows: the frame is shuffl
 
 | diabetes_mellitus | hospital_id | age | bmi | elective_surgery | ethnicity | gender | height | hospital_admit_source | icu_admit_source | icu_id | icu_stay_type |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 118 | 86 | 26.4887 | 1 | Caucasian | M | 175.3 | Operating Room | Operating Room / Recovery | 92 | admit |
-| 0 | 30 | 30 | 25.8505 | 0 | Caucasian | M | 172.7 | Emergency Department | Accident & Emergency | 921 | admit |
-| 0 | 194 | 63 | 32.2556 | 0 | Caucasian | M | 163 | Emergency Department | Accident & Emergency | 601 | admit |
-| 0 | 67 | 86 | 23.8194 | 0 | Caucasian | F | 170.2 | Emergency Department | Accident & Emergency | 1049 | admit |
-| 0 | 118 | 61 | 24.8222 | 0 | Caucasian | M | 177.8 | Floor | Floor | 93 | admit |
+| 0 | 196 | 20 | 24.3359 | 0 | Caucasian | F | 160 | Emergency Department | Accident & Emergency | 829 | admit |
+| 0 | 18 | 89 | 20.3356 | 0 | Caucasian | M | 185.4 | Emergency Department | Accident & Emergency | 804 | admit |
+| 1 | 119 | 60 | 23.4375 | 0 | Native American | F | 160 | Emergency Department | Accident & Emergency | 417 | admit |
+| 1 | 118 | 78 | 27.6786 | 0 | Caucasian | M | 177.8 | Operating Room | Accident & Emergency | 92 | admit |
+| 0 | 185 | 58 | 17.1914 | 0 | African American | F | 170.2 | nan | Accident & Emergency | 679 | admit |
 
 ## Curation notes
 
@@ -232,22 +232,22 @@ Default splits.
 | h1_albumin_min | float64 | 116438 | 91.43 | 37 | 3.2, 3.3, 3.4, 3.0, 3.1, 3.5, 2.8, 2.9, 2.6, 2.7 |
 | h1_lactate_max | float64 | 115935 | 91.03 | 593 | 1.0, 1.2, 1.1, 1.3, 0.9, 1.6, 1.4, 1.5, 1.8, 1.7 |
 | h1_lactate_min | float64 | 115935 | 91.03 | 583 | 1.0, 1.2, 1.1, 1.3, 0.9, 1.6, 1.4, 1.5, 1.8, 0.8 |
-| h1_pao2fio2ratio_max | float64 | 110959 | 87.12 | 3374 | 200.0, 42.0, 720.0, 160.0, 180.0, 190.0, 210.0, 260.0, 300.0, 140.0 |
-| h1_pao2fio2ratio_min | float64 | 110959 | 87.12 | 3351 | 200.0, 38.0, 654.8138, 190.0, 180.0, 150.0, 160.0, 210.0, 260.0, 140.0 |
+| h1_pao2fio2ratio_max | float64 | 110959 | 87.12 | 3374 | 200.0, 42.0, 720.0, 160.0, 190.0, 180.0, 210.0, 260.0, 300.0, 250.0 |
+| h1_pao2fio2ratio_min | float64 | 110959 | 87.12 | 3351 | 200.0, 38.0, 654.8138, 190.0, 180.0, 160.0, 210.0, 150.0, 260.0, 120.0 |
 | h1_arterial_ph_max | float64 | 105538 | 82.87 | 577 | 7.36, 7.38, 7.34, 7.37, 7.35, 7.4, 7.39, 7.32, 7.33, 7.41 |
-| h1_arterial_ph_min | float64 | 105538 | 82.87 | 598 | 7.34, 7.32, 7.37, 7.36, 7.35, 7.38, 7.33, 7.39, 7.4, 7.31 |
+| h1_arterial_ph_min | float64 | 105538 | 82.87 | 598 | 7.34, 7.32, 7.37, 7.36, 7.35, 7.38, 7.33, 7.4, 7.39, 7.31 |
 | h1_arterial_pco2_max | float64 | 105354 | 82.72 | 819 | 41.0, 39.0, 38.0, 40.0, 44.0, 42.0, 43.0, 45.0, 46.0, 37.0 |
-| h1_arterial_pco2_min | float64 | 105354 | 82.72 | 800 | 39.0, 38.0, 40.0, 37.0, 41.0, 42.0, 36.0, 43.0, 44.0, 35.0 |
+| h1_arterial_pco2_min | float64 | 105354 | 82.72 | 800 | 39.0, 38.0, 40.0, 37.0, 41.0, 42.0, 43.0, 36.0, 44.0, 35.0 |
 | h1_arterial_po2_max | float64 | 105145 | 82.56 | 1823 | 81.0, 76.0, 71.0, 80.0, 74.0, 82.0, 79.0, 84.0, 67.0, 83.0 |
-| h1_arterial_po2_min | float64 | 105145 | 82.56 | 1820 | 81.0, 76.0, 80.0, 82.0, 73.0, 69.0, 71.0, 70.0, 67.0, 74.0 |
+| h1_arterial_po2_min | float64 | 105145 | 82.56 | 1820 | 81.0, 76.0, 80.0, 73.0, 82.0, 69.0, 71.0, 70.0, 67.0, 72.0 |
 | h1_hco3_max | float64 | 104037 | 81.69 | 222 | 23.0, 24.0, 22.0, 25.0, 21.0, 26.0, 20.0, 27.0, 19.0, 28.0 |
 | h1_hco3_min | float64 | 104037 | 81.69 | 210 | 23.0, 24.0, 22.0, 25.0, 21.0, 26.0, 20.0, 27.0, 19.0, 28.0 |
-| h1_wbc_max | float64 | 103602 | 81.35 | 2109 | 10.6, 10.1, 9.3, 9.6, 13.6, 10.7, 9.2, 9.8, 12.9, 10.8 |
-| h1_wbc_min | float64 | 103602 | 81.35 | 2105 | 10.6, 10.1, 9.6, 10.7, 9.8, 9.3, 10.8, 10.0, 12.9, 13.6 |
+| h1_wbc_max | float64 | 103602 | 81.35 | 2109 | 10.6, 10.1, 9.3, 9.6, 13.6, 10.7, 9.2, 9.8, 10.0, 12.9 |
+| h1_wbc_min | float64 | 103602 | 81.35 | 2105 | 10.6, 10.1, 9.6, 10.7, 9.8, 9.3, 12.9, 10.8, 10.0, 13.6 |
 | h1_calcium_max | float64 | 103567 | 81.32 | 59 | 8.3, 8.4, 8.1, 8.2, 8.6, 8.5, 8.0, 7.9, 8.7, 8.8 |
 | h1_calcium_min | float64 | 103567 | 81.32 | 62 | 8.3, 8.4, 8.1, 8.2, 8.6, 8.5, 8.0, 7.9, 8.7, 8.8 |
-| h1_platelets_max | float64 | 103337 | 81.14 | 554 | 173.0, 157.0, 178.0, 175.0, 144.0, 133.0, 183.0, 153.0, 158.0, 152.0 |
-| h1_platelets_min | float64 | 103337 | 81.14 | 554 | 173.0, 144.0, 157.0, 175.0, 133.0, 178.0, 183.0, 159.0, 153.0, 139.0 |
+| h1_platelets_max | float64 | 103337 | 81.14 | 554 | 173.0, 157.0, 178.0, 175.0, 144.0, 133.0, 183.0, 153.0, 152.0, 158.0 |
+| h1_platelets_min | float64 | 103337 | 81.14 | 554 | 173.0, 144.0, 157.0, 183.0, 178.0, 133.0, 175.0, 159.0, 153.0, 139.0 |
 | h1_bun_max | float64 | 102663 | 80.61 | 259 | 14.0, 13.0, 15.0, 12.0, 11.0, 16.0, 17.0, 10.0, 18.0, 9.0 |
 | h1_bun_min | float64 | 102663 | 80.61 | 259 | 14.0, 13.0, 15.0, 12.0, 11.0, 16.0, 17.0, 10.0, 18.0, 9.0 |
 | h1_creatinine_max | float64 | 102456 | 80.45 | 874 | 0.9, 0.8, 0.7, 1.0, 1.1, 0.6, 1.2, 1.3, 0.5, 1.4 |
@@ -417,10 +417,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-b011-7c24-b294-7e6357ace5f1 |
-| checksum | e58f3e2d6479765501a87dcdb24eace5f3bfc3c6e800e19b4c518b66ecfdeeb6 |
-| built_at | 2026-10-02T11:28:56+00:00 |
-| path | wids_diabetes_mellitus/01a0fc5f-b011-7c24-b294-7e6357ace5f1 |
+| uuid | 01a11190-c732-79a0-9535-32a4f762da86 |
+| checksum | e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e |
+| built_at | 2026-10-06T14:14:35+00:00 |
+| path | wids_diabetes_mellitus/01a11190-c732-79a0-9535-32a4f762da86 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

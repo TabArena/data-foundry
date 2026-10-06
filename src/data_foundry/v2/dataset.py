@@ -16,10 +16,10 @@ turns the raw download into the curated frame lives in a few hooks:
 * :meth:`~AbstractCuratedDataset._extra_checks` (optional): dataset-specific checks, such as a leak test.
 
 The base class runs the rest the same way for every dataset: after ``_clean`` it casts the columns
-``_feature_types`` names (and a classification target to ``category``), and fixes the row order (stable sort
-by the time column for temporal tasks, else a shuffle with seed 42); then it builds the splits with the benchmark
-seed, the container, the bundle checks and the report. The pattern follows
-TabArena's model interface: declarative class attributes plus a small set of hooks.
+``_feature_types`` names (and a classification target to ``category``), and fixes the row order (the rows in the
+order of their content, then a stable sort by the time column for temporal tasks, else a shuffle with seed 42);
+then it builds the splits with the benchmark seed, the container, the bundle checks and the report. The pattern
+follows TabArena's model interface: declarative class attributes plus a small set of hooks.
 
 From a notebook next to ``dataset.py``::
 
@@ -72,7 +72,14 @@ from data_foundry.v2 import (
     splits as protocol,
     task_checks,
 )
-from data_foundry.v2.preprocessing import SHUFFLE_RANDOM_STATE, canonical_nans, cast_dtypes, order_rows
+from data_foundry.v2.preprocessing import (
+    PANDAS_3,
+    SHUFFLE_RANDOM_STATE,
+    canonical_dtypes,
+    canonical_nans,
+    cast_dtypes,
+    order_rows,
+)
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
 
 DEFINITION_FILENAME = "dataset.py"
@@ -258,7 +265,8 @@ class AbstractCuratedDataset(ABC):
 
     # --- row order ----------------------------------------------------------------------------------
     shuffle: ClassVar[bool] = True
-    """Shuffle IID and grouped data (seed 42) as the last step. Temporal data is always sorted by time."""
+    """Put the rows in the order of their content, then shuffle IID and grouped data (seed 42) as the last step;
+    temporal data is sorted by time, ties in content order. False keeps the order ``_clean`` returns."""
 
     # --- splits -------------------------------------------------------------------------------------
     splits_comment: ClassVar[str | None] = None
@@ -477,7 +485,7 @@ class AbstractCuratedDataset(ABC):
             string=[c for c in types.string if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
-        df = canonical_nans(df)
+        df = canonical_nans(canonical_dtypes(df))
         if not order:
             return df.reset_index(drop=True)
         return order_rows(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
@@ -834,8 +842,11 @@ def _copy_on_write():
 
     A shallow copy costs no memory up front; a column is copied only when `_clean` changes it, and the cached raw
     data never changes. (Under copy-on-write a chained assignment such as ``df["a"][mask] = x`` does not write;
-    use ``df.loc[mask, "a"] = x``.)
+    use ``df.loc[mask, "a"] = x``.) pandas 3 always copies on write and deprecates the option.
     """
+    if PANDAS_3:
+        yield
+        return
     with pd.option_context("mode.copy_on_write", True):  # noqa: FBT003 - pandas option API
         yield
 

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: give_me_some_credit
 container_format: 2
-checksum: ab51523c50d9a6388a9d4b221b1fd95c4cd8c367e89456d3268b4209d6885c87
+checksum: 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747
 build:
-  uuid: 01a0fc60-0ac2-79b7-8900-5b13abc509c4
-  checksum: ab51523c50d9a6388a9d4b221b1fd95c4cd8c367e89456d3268b4209d6885c87
-  built_at: '2026-10-02T11:29:08+00:00'
-  path: give_me_some_credit/01a0fc60-0ac2-79b7-8900-5b13abc509c4
+  uuid: 01a11191-430b-73b9-a4dd-59db60e76e6d
+  checksum: 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747
+  built_at: '2026-10-06T14:14:56+00:00'
+  path: give_me_some_credit/01a11191-430b-73b9-a4dd-59db60e76e6d
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `FinancialDistressNextTwoYears`, scored with `roc_auc` on IID splits. 150,000 rows and 10 features. Source: Kaggle (2011).
 
-Built as `01a0fc60-0ac2-79b7-8900-5b13abc509c4` on 2026-10-02. See [Build](#build).
+Built as `01a11191-430b-73b9-a4dd-59db60e76e6d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 150,000 rows of the final frame (random rows: the frame is shuffl
 
 | FinancialDistressNextTwoYears | RevolvingUtilizationOfUnsecuredLines | age | NumberOfTime30-59DaysPastDueNotWorse | DebtRatio | MonthlyIncome | NumberOfOpenCreditLinesAndLoans | NumberOfTimes90DaysLate | NumberRealEstateLoansOrLines | NumberOfTime60-89DaysPastDueNotWorse | NumberOfDependents |
 |---|---|---|---|---|---|---|---|---|---|---|
-| No | 0.0296897 | 57 | 0 | 0.283244 | 10121 | 7 | 0 | 1 | 0 | 0 |
-| No | 0 | 57 | 0 | 0.142562 | 7750 | 9 | 0 | 1 | 0 | 0 |
-| No | 0.0365692 | 48 | 0 | 0.236294 | 6000 | 6 | 0 | 2 | 0 | 3 |
-| No | 1.01833 | 41 | 0 | 0.163138 | 4958 | 4 | 0 | 0 | 0 | 0 |
-| No | 1.0088 | 49 | 0 | 3942 | nan | 10 | 0 | 1 | 0 | 0 |
+| No | 0.332897 | 48 | 0 | 0.325521 | 4650 | 11 | 0 | 2 | 0 | 0 |
+| No | 0.177218 | 73 | 0 | 1241 | nan | 18 | 0 | 1 | 0 | 0 |
+| No | 0.453341 | 34 | 0 | 2.75798 | 970 | 10 | 0 | 1 | 0 | 0 |
+| No | 0.0848472 | 53 | 0 | 0.374587 | 13000 | 20 | 0 | 1 | 0 | 1 |
+| No | 1 | 55 | 0 | 1177 | nan | 4 | 0 | 1 | 0 | 0 |
 
 ## Curation notes
 
@@ -192,10 +192,10 @@ Default splits.
 |---|---|---|---|---|---|
 | FinancialDistressNextTwoYears | category | 0 | 0 | 2 | No, Yes |
 | MonthlyIncome | float64 | 29731 | 19.82 | 13594 | 5000.0, 4000.0, 6000.0, 3000.0, 0.0, 2500.0, 10000.0, 3500.0, 4500.0, 7000.0 |
-| NumberOfDependents | float64 | 3924 | 2.62 | 13 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| RevolvingUtilizationOfUnsecuredLines | float64 | 0 | 0 | 125728 | 0.0, 1.0, 1.0, 0.9501, 0.7131, 0.008, 0.9541, 0.005, 0.7964, 0.994 |
+| NumberOfDependents | float64 | 3924 | 2.62 | 13 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
+| RevolvingUtilizationOfUnsecuredLines | float64 | 0 | 0 | 125728 | 0.0, 1.0, 1.0, 0.9501, 0.7131, 0.008, 0.9541, 0.7171, 0.988, 1.0033 |
 | DebtRatio | float64 | 0 | 0 | 114194 | 0.0, 1.0, 4.0, 2.0, 3.0, 5.0, 9.0, 10.0, 7.0, 13.0 |
-| age | int64 | 0 | 0 | 86 | 49, 48, 50, 47, 63, 46, 53, 51, 52, 56 |
+| age | int64 | 0 | 0 | 86 | 49, 48, 50, 63, 47, 46, 53, 51, 52, 56 |
 | NumberOfTime30-59DaysPastDueNotWorse | int64 | 0 | 0 | 16 | 0, 1, 2, 3, 4, 5, 98, 6, 7, 8 |
 | NumberOfOpenCreditLinesAndLoans | int64 | 0 | 0 | 58 | 6, 7, 5, 8, 4, 9, 10, 3, 11, 12 |
 | NumberOfTimes90DaysLate | int64 | 0 | 0 | 19 | 0, 1, 2, 3, 4, 98, 5, 6, 7, 8 |
@@ -237,10 +237,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-0ac2-79b7-8900-5b13abc509c4 |
-| checksum | ab51523c50d9a6388a9d4b221b1fd95c4cd8c367e89456d3268b4209d6885c87 |
-| built_at | 2026-10-02T11:29:08+00:00 |
-| path | give_me_some_credit/01a0fc60-0ac2-79b7-8900-5b13abc509c4 |
+| uuid | 01a11191-430b-73b9-a4dd-59db60e76e6d |
+| checksum | 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747 |
+| built_at | 2026-10-06T14:14:56+00:00 |
+| path | give_me_some_credit/01a11191-430b-73b9-a4dd-59db60e76e6d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

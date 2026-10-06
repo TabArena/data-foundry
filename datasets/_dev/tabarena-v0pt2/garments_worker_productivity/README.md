@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: garments_worker_productivity
 container_format: 2
-checksum: d918b88fb5641019d76a90b731a4516185b345503dd46cf62a1814eab9403a90
+checksum: 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4
 build:
-  uuid: 01a0fc60-8243-7a49-9cef-961cf380a456
-  checksum: d918b88fb5641019d76a90b731a4516185b345503dd46cf62a1814eab9403a90
-  built_at: '2026-10-02T11:29:39+00:00'
-  path: garments_worker_productivity/01a0fc60-8243-7a49-9cef-961cf380a456
+  uuid: 01a11191-afba-78de-84e3-7bb317cd8665
+  checksum: 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4
+  built_at: '2026-10-06T14:15:24+00:00'
+  path: garments_worker_productivity/01a11191-afba-78de-84e3-7bb317cd8665
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `actual_productivity`, scored with `rmse` on temporal splits by `date`. 1,197 rows and 15 features. Source: UCI (2020).
 
-Built as `01a0fc60-8243-7a49-9cef-961cf380a456` on 2026-10-02. See [Build](#build).
+Built as `01a11191-afba-78de-84e3-7bb317cd8665` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 1,197 rows of the final frame (the oldest rows: the frame is sort
 
 | actual_productivity | date | quarter | department | day | team | targeted_productivity | no_of_style_change | no_of_workers | days_since_prev_obs | smv_lag_1 | wip_lag_1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.8865 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 1 | 0.75 | 0 | 8 | nan | nan | nan |
+| 0.712205 | 2015-01-01 00:00:00 | Quarter1 | sweing | Thursday | 10 | 0.75 | 0 | 54 | nan | nan | nan |
+| 0.80057 | 2015-01-01 00:00:00 | Quarter1 | sweing | Thursday | 12 | 0.8 | 0 | 30.5 | nan | nan | nan |
+| 0.750428 | 2015-01-01 00:00:00 | Quarter1 | sweing | Thursday | 1 | 0.75 | 0 | 57.5 | nan | nan | nan |
 | 0.755167 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 2 | 0.75 | 0 | 8 | nan | nan | nan |
-| 0.593056 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 4 | 0.75 | 0 | 18 | nan | nan | nan |
-| 0.540729 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 7 | 0.8 | 0 | 8 | nan | nan | nan |
-| 0.676667 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 8 | 0.75 | 0 | 8 | nan | nan | nan |
+| 0.436326 | 2015-01-01 00:00:00 | Quarter1 | finishing | Thursday | 11 | 0.7 | 0 | 12 | nan | nan | nan |
 
 ## Curation notes
 
@@ -233,16 +233,16 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 | day | category | 0 | 0 | 6 | Wednesday, Sunday, Tuesday, Monday, Thursday, Saturday |
 | team | category | 0 | 0 | 12 | 2, 8, 4, 1, 9, 10, 12, 7, 3, 6 |
 | date | datetime64\[ns\] | 0 | 0 | 59 | 2015-01-31 00:00:00, 2015-03-11 00:00:00, 2015-01-11 00:00:00, 2015-01-24 00:00… |
-| wip_lag_1 | float64 | 518 | 43.27 | 540 | 1039.0, 1282.0, 913.0, 1209.0, 1263.0, 1108.0, 1413.0, 1216.0, 1140.0, 759.0 |
+| wip_lag_1 | float64 | 518 | 43.27 | 540 | 1039.0, 1282.0, 968.0, 1263.0, 1216.0, 1083.0, 759.0, 1209.0, 1144.0, 970.0 |
 | days_since_prev_obs | float64 | 24 | 2.01 | 14 | 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 6.0, 8.0, 11.0, 15.0 |
 | smv_lag_1 | float64 | 24 | 2.01 | 70 | 3.94, 2.9, 22.52, 30.1, 4.15, 18.79, 4.6, 15.26, 25.9, 11.61 |
 | over_time_lag_1 | float64 | 24 | 2.01 | 143 | 960.0, 1440.0, 6960.0, 6840.0, 1200.0, 1800.0, 10170.0, 0.0, 3360.0, 4080.0 |
-| idle_time_lag_1 | float64 | 24 | 2.01 | 12 | 0.0, 3.5, 2.0, 8.0, 4.0, 4.5, 5.0, 150.0, 270.0, 90.0 |
+| idle_time_lag_1 | float64 | 24 | 2.01 | 12 | 0.0, 3.5, 2.0, 5.0, 4.0, 4.5, 8.0, 150.0, 270.0, 90.0 |
 | idle_men_lag_1 | float64 | 24 | 2.01 | 10 | 0.0, 15.0, 10.0, 30.0, 20.0, 35.0, 37.0, 45.0, 25.0, 40.0 |
 | incentive_lag_1 | float64 | 24 | 2.01 | 48 | 0.0, 50.0, 63.0, 45.0, 30.0, 23.0, 38.0, 60.0, 40.0, 75.0 |
 | targeted_productivity | float64 | 0 | 0 | 9 | 0.8, 0.7, 0.75, 0.65, 0.6, 0.5, 0.35, 0.4, 0.07 |
-| no_of_workers | float64 | 0 | 0 | 61 | 8.0, 58.0, 57.0, 59.0, 10.0, 56.5, 56.0, 34.0, 9.0, 15.0 |
-| actual_productivity | float64 | 0 | 0 | 879 | 0.8004, 0.8501, 0.9719, 1.0002, 0.7507, 0.8505, 0.7504, 0.8001, 0.8581, 0.8 |
+| no_of_workers | float64 | 0 | 0 | 61 | 8.0, 58.0, 57.0, 59.0, 10.0, 56.5, 56.0, 34.0, 9.0, 12.0 |
+| actual_productivity | float64 | 0 | 0 | 879 | 0.8004, 0.9719, 0.8501, 0.8505, 0.7507, 1.0002, 0.8001, 0.7504, 0.8, 0.8581 |
 | no_of_style_change | int64 | 0 | 0 | 3 | 0, 1, 2 |
 
 </details>
@@ -251,7 +251,7 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.807 | -1.574 | 0.03 | 0.084 | log | 1859.1 | 1.05905e+15 | exponential |
+| 0 | 0 | 0 | -0.807 | -1.574 | 0.03 | 0.084 | log | 1859.1 | 4.87816e+15 | exponential |
 
 ### Numeric features
 
@@ -310,10 +310,10 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8243-7a49-9cef-961cf380a456 |
-| checksum | d918b88fb5641019d76a90b731a4516185b345503dd46cf62a1814eab9403a90 |
-| built_at | 2026-10-02T11:29:39+00:00 |
-| path | garments_worker_productivity/01a0fc60-8243-7a49-9cef-961cf380a456 |
+| uuid | 01a11191-afba-78de-84e3-7bb317cd8665 |
+| checksum | 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4 |
+| built_at | 2026-10-06T14:15:24+00:00 |
+| path | garments_worker_productivity/01a11191-afba-78de-84e3-7bb317cd8665 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

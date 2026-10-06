@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: fd61bbacb9d9016689d77697da66d9901a9b764c02b4c391606fc597b88874b5
+checksum: 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce
 build:
-  uuid: 01a0fc60-682b-77b1-bc3e-dd1fe07452bc
-  checksum: fd61bbacb9d9016689d77697da66d9901a9b764c02b4c391606fc597b88874b5
-  built_at: '2026-10-02T11:29:31+00:00'
-  path: dementia_prediction/01a0fc60-682b-77b1-bc3e-dd1fe07452bc
+  uuid: 01a11191-820a-7ba8-8b75-3ff9248bfa5f
+  checksum: 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce
+  built_at: '2026-10-06T14:15:11+00:00'
+  path: dementia_prediction/01a11191-820a-7ba8-8b75-3ff9248bfa5f
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -71,7 +71,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 9 features. Source: Other (2010).
 
-Built as `01a0fc60-682b-77b1-bc3e-dd1fe07452bc` on 2026-10-02. See [Build](#build).
+Built as `01a11191-820a-7ba8-8b75-3ff9248bfa5f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -155,11 +155,11 @@ The first 5 of 370 rows of the final frame (random rows: the frame is shuffled).
 
 | CDR | Subject ID | M/F | Age | EDUC | SES | MMSE | eTIV | nWBV | ASF |
 |---|---|---|---|---|---|---|---|---|---|
-| mild_AD | OAS2_0164 | M | 77 | 20 | 1 | 23 | 1713.44 | 0.756122 | 1.02426 |
-| no_dementia | OAS2_0018 | F | 87 | 14 | 1 | 30 | 1406.41 | 0.715094 | 1.24785 |
-| very_mild_AD | OAS2_0009 | M | 68 | 12 | 2 | 27 | 1456.6 | 0.806315 | 1.20486 |
-| mild_AD | OAS2_0157 | F | 73 | 12 | 2 | 19 | 1274.26 | 0.728498 | 1.37727 |
-| no_dementia | OAS2_0031 | F | 86 | 12 | 3 | 30 | 1430.22 | 0.718065 | 1.22708 |
+| no_dementia | OAS2_0121 | F | 73 | 11 | 4 | 30 | 1475.33 | 0.725546 | 1.18956 |
+| mild_AD | OAS2_0079 | F | 73 | 12 | 4 | 16 | 1477.65 | 0.696455 | 1.18769 |
+| no_dementia | OAS2_0103 | F | 69 | 16 | 1 | 30 | 1404.46 | 0.750452 | 1.24959 |
+| no_dementia | OAS2_0109 | M | 83 | 11 | 4 | 29 | 1744.08 | 0.670229 | 1.00626 |
+| mild_AD | OAS2_0106 | F | 70 | 11 | 4 | 22 | 1445.16 | 0.722038 | 1.2144 |
 
 ## Curation notes
 
@@ -263,7 +263,7 @@ One group is a subject of OASIS-2: older adults scanned on two or more visits at
 | test groups per fold | 48 to 52 |
 | groups of two or more rows with a single label | 78.9% |
 | nearest neighbour in the same group | 83.0% of the rows (chance: 0.5%) |
-| label variance explained by the group | 0.83 (shuffled groups: 0.42) |
+| label variance explained by the group | 0.83 (shuffled groups: 0.37) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
@@ -282,10 +282,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | M/F | category | 0 | 0 | 2 | F, M |
 | CDR | category | 0 | 0 | 3 | no_dementia, very_mild_AD, mild_AD |
 | SES | float64 | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
-| MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 23.0, 25.0, 21.0, 20.0, 22.0 |
-| eTIV | float64 | 0 | 0 | 368 | 1364.5, 1402.1, 1316.2345, 1445.94, 1273.44, 1344.328, 1413.5636, 1650.5, 1823.… |
-| nWBV | float64 | 0 | 0 | 370 | 0.7877, 0.7561, 0.7151, 0.8063, 0.7285, 0.7181, 0.7687, 0.7422, 0.7557, 0.7202 |
-| ASF | float64 | 0 | 0 | 368 | 1.2862, 1.2517, 1.3333, 1.2137, 1.3782, 1.3055, 1.2415, 1.0633, 0.9626, 1.1345 |
+| MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 25.0, 23.0, 21.0, 20.0, 22.0 |
+| eTIV | float64 | 0 | 0 | 368 | 1364.5, 1402.1, 1927.705, 1956.9603, 1294.81, 1525.34, 1569.21, 1688.0096, 1360… |
+| nWBV | float64 | 0 | 0 | 370 | 0.8195, 0.7255, 0.6965, 0.7505, 0.6702, 0.722, 0.7732, 0.737, 0.8063, 0.7267 |
+| ASF | float64 | 0 | 0 | 368 | 1.2862, 1.2517, 0.9104, 0.8968, 1.3554, 1.1506, 1.1184, 1.0397, 1.2897, 0.9679 |
 | Age | int64 | 0 | 0 | 38 | 73, 75, 78, 80, 71, 81, 82, 76, 77, 68 |
 | EDUC | int64 | 0 | 0 | 12 | 12, 16, 18, 14, 13, 15, 20, 11, 8, 17 |
 
@@ -328,10 +328,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-682b-77b1-bc3e-dd1fe07452bc |
-| checksum | fd61bbacb9d9016689d77697da66d9901a9b764c02b4c391606fc597b88874b5 |
-| built_at | 2026-10-02T11:29:31+00:00 |
-| path | dementia_prediction/01a0fc60-682b-77b1-bc3e-dd1fe07452bc |
+| uuid | 01a11191-820a-7ba8-8b75-3ff9248bfa5f |
+| checksum | 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce |
+| built_at | 2026-10-06T14:15:11+00:00 |
+| path | dementia_prediction/01a11191-820a-7ba8-8b75-3ff9248bfa5f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: 86dcafe8589961f24a76818f747028716655be191993222a6e1f1c37ec8bcc67
+checksum: 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192
 build:
-  uuid: 01a0fc60-8175-7e7c-9ec8-322f32e214e7
-  checksum: 86dcafe8589961f24a76818f747028716655be191993222a6e1f1c37ec8bcc67
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: forest_fires/01a0fc60-8175-7e7c-9ec8-322f32e214e7
+  uuid: 01a11191-b856-721f-a0f5-4aba02658649
+  checksum: 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192
+  built_at: '2026-10-06T14:15:25+00:00'
+  path: forest_fires/01a11191-b856-721f-a0f5-4aba02658649
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `area`, scored with `rmse` on IID splits. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a0fc60-8175-7e7c-9ec8-322f32e214e7` on 2026-10-02. See [Build](#build).
+Built as `01a11191-b856-721f-a0f5-4aba02658649` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 517 rows of the final frame (random rows: the frame is shuffled);
 
 | area | X | Y | month | day | FFMC | DMC | DC | ISI | temp | RH | wind |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 6 | 5 | may | sat | 85.1 | 28 | 113.8 | 3.5 | 11.3 | 94 | 4.9 |
-| 0 | 7 | 5 | aug | tue | 96.1 | 181.1 | 671.2 | 14.3 | 21.6 | 65 | 4.9 |
-| 0.802002 | 8 | 6 | aug | mon | 92.1 | 207 | 672.6 | 8.2 | 25.5 | 29 | 1.8 |
-| 0.900161 | 5 | 4 | sep | fri | 94.3 | 85.1 | 692.3 | 15.9 | 20.1 | 47 | 4.9 |
-| 1.08181 | 2 | 4 | aug | wed | 94.5 | 139.4 | 689.1 | 20 | 29.2 | 30 | 4.9 |
+| 0 | 2 | 2 | aug | mon | 91.1 | 103.2 | 638.8 | 5.8 | 23.1 | 31 | 3.1 |
+| 3.41707 | 4 | 4 | sep | sun | 92.4 | 124.1 | 680.7 | 8.5 | 16.9 | 60 | 1.3 |
+| 2.39425 | 7 | 4 | feb | mon | 84.7 | 9.5 | 58.3 | 4.1 | 7.5 | 71 | 6.3 |
+| 0 | 5 | 4 | apr | sun | 91 | 14.6 | 25.6 | 12.3 | 17.6 | 27 | 5.8 |
+| 2.12346 | 4 | 3 | jul | sun | 93.7 | 101.3 | 423.4 | 14.7 | 26.1 | 45 | 4 |
 
 ## Curation notes
 
@@ -251,17 +251,17 @@ Default splits.
 |---|---|---|---|---|---|
 | month | category | 0 | 0 | 12 | aug, sep, mar, jul, feb, jun, oct, apr, dec, jan |
 | day | category | 0 | 0 | 7 | sun, fri, sat, mon, tue, thu, wed |
-| FFMC | float64 | 0 | 0 | 106 | 92.1, 91.6, 91.0, 91.7, 92.4, 93.7, 92.5, 94.8, 90.1, 90.2 |
-| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 142.4, 231.1, 126.5, 35.8, 137.0, 108.3, 108.4, 139.4 |
-| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 698.6, 601.4, 715.1, 692.3, 706.4, 686.5, 80.8, 764.0 |
-| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 8.1, 7.8 |
-| temp | float64 | 0 | 0 | 192 | 19.6, 17.4, 15.4, 20.6, 20.8, 21.9, 21.6, 20.1, 19.3, 20.4 |
-| wind | float64 | 0 | 0 | 21 | 3.1, 2.2, 4.0, 4.9, 2.7, 4.5, 5.4, 3.6, 1.8, 5.8 |
-| rain | float64 | 0 | 0 | 7 | 0.0, 0.8, 0.2, 1.4, 0.4, 6.4, 1.0 |
-| area | float64 | 0 | 0 | 251 | 0.0, 1.0784, 0.9002, 0.5188, 0.94, 1.1569, 0.6419, 0.4187, 2.3292, 0.967 |
+| FFMC | float64 | 0 | 0 | 106 | 92.1, 91.6, 91.0, 91.7, 93.7, 92.4, 92.5, 94.8, 90.1, 90.2 |
+| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 142.4, 231.1, 126.5, 35.8, 108.4, 108.3, 137.0, 152.6 |
+| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 601.4, 715.1, 692.3, 698.6, 686.5, 706.4, 764.0, 647.1 |
+| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 9.0, 8.1 |
+| temp | float64 | 0 | 0 | 192 | 19.6, 17.4, 20.6, 15.4, 21.9, 15.2, 18.2, 23.4, 20.1, 19.1 |
+| wind | float64 | 0 | 0 | 21 | 3.1, 2.2, 4.0, 4.9, 2.7, 5.4, 4.5, 3.6, 1.8, 5.8 |
+| rain | float64 | 0 | 0 | 7 | 0.0, 0.8, 0.2, 1.4, 6.4, 1.0, 0.4 |
+| area | float64 | 0 | 0 | 251 | 0.0, 1.0784, 2.3943, 3.3898, 0.6419, 1.5497, 0.9708, 1.0818, 0.4187, 2.0055 |
 | X | int64 | 0 | 0 | 9 | 4, 6, 2, 8, 7, 3, 1, 5, 9 |
 | Y | int64 | 0 | 0 | 7 | 4, 5, 6, 3, 2, 9, 8 |
-| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 34, 45, 40, 33, 46 |
+| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 34, 45, 33, 40, 46 |
 
 </details>
 
@@ -311,10 +311,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8175-7e7c-9ec8-322f32e214e7 |
-| checksum | 86dcafe8589961f24a76818f747028716655be191993222a6e1f1c37ec8bcc67 |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | forest_fires/01a0fc60-8175-7e7c-9ec8-322f32e214e7 |
+| uuid | 01a11191-b856-721f-a0f5-4aba02658649 |
+| checksum | 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192 |
+| built_at | 2026-10-06T14:15:25+00:00 |
+| path | forest_fires/01a11191-b856-721f-a0f5-4aba02658649 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

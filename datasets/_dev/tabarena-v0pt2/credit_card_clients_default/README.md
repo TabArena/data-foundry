@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: f2f3ef6da074621dc85f36a27c853fd07944773a6fc2405cd6fd811177a740b8
+checksum: b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245
 build:
-  uuid: 01a0fc60-27a8-7af0-9d04-d3623053a72e
-  checksum: f2f3ef6da074621dc85f36a27c853fd07944773a6fc2405cd6fd811177a740b8
-  built_at: '2026-10-02T11:29:15+00:00'
-  path: credit_card_clients_default/01a0fc60-27a8-7af0-9d04-d3623053a72e
+  uuid: 01a11191-3c35-718e-a11e-f177b87a1883
+  checksum: b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245
+  built_at: '2026-10-06T14:14:53+00:00'
+  path: credit_card_clients_default/01a11191-3c35-718e-a11e-f177b87a1883
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2009).
 
-Built as `01a0fc60-27a8-7af0-9d04-d3623053a72e` on 2026-10-02. See [Build](#build).
+Built as `01a11191-3c35-718e-a11e-f177b87a1883` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
 
 | DefaultOnPaymentNextMonth | LIMIT_BAL | SEX | EDUCATION | MARRIAGE | AGE | PAY_0 | PAY_2 | PAY_3 | PAY_4 | PAY_5 | PAY_6 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 30000 | 1 | 2 | 2 | 25 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 150000 | 2 | 1 | 2 | 26 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 70000 | 2 | 3 | 1 | 32 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 130000 | 1 | 3 | 2 | 49 | 0 | 0 | 0 | 0 | 0 | -1 |
-| Yes | 50000 | 2 | 2 | 2 | 36 | 0 | 0 | 0 | 0 | 0 | 2 |
+| Yes | 210000 | 1 | 2 | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Yes | 400000 | 2 | 2 | 2 | 41 | -2 | -2 | -2 | -2 | -2 | -2 |
+| No | 50000 | 2 | 2 | 2 | 25 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 50000 | 2 | 1 | 2 | 28 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 250000 | 2 | 2 | 1 | 38 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -206,10 +206,10 @@ Default splits.
 | PAY_4 | int64 | 0 | 0 | 11 | 0, -1, -2, 2, 3, 4, 7, 5, 6, 1 |
 | PAY_5 | int64 | 0 | 0 | 10 | 0, -1, -2, 2, 3, 4, 7, 5, 6, 8 |
 | PAY_6 | int64 | 0 | 0 | 10 | 0, -1, -2, 2, 3, 4, 7, 6, 5, 8 |
-| BILL_AMT1 | int64 | 0 | 0 | 22723 | 0, 390, 780, 326, 316, 2500, 396, 2400, 416, 1050 |
-| BILL_AMT2 | int64 | 0 | 0 | 22346 | 0, 390, 780, 326, 316, 2500, 396, 2400, -200, 416 |
+| BILL_AMT1 | int64 | 0 | 0 | 22723 | 0, 390, 780, 326, 316, 2500, 396, 2400, 416, 500 |
+| BILL_AMT2 | int64 | 0 | 0 | 22346 | 0, 390, 326, 780, 316, 396, 2500, 2400, -200, 416 |
 | BILL_AMT3 | int64 | 0 | 0 | 22026 | 0, 390, 780, 326, 316, 396, 2500, 2400, 416, 200 |
-| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 150, 2400, 2500, 416 |
+| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 2400, 150, 2500, 416 |
 | BILL_AMT5 | int64 | 0 | 0 | 21010 | 0, 390, 780, 316, 326, 150, 396, 2400, 2500, 416 |
 | BILL_AMT6 | int64 | 0 | 0 | 20604 | 0, 390, 780, 150, 316, 326, 396, 416, -18, 2400 |
 | PAY_AMT1 | int64 | 0 | 0 | 7943 | 0, 2000, 3000, 5000, 1500, 4000, 10000, 1000, 2500, 6000 |
@@ -285,10 +285,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-27a8-7af0-9d04-d3623053a72e |
-| checksum | f2f3ef6da074621dc85f36a27c853fd07944773a6fc2405cd6fd811177a740b8 |
-| built_at | 2026-10-02T11:29:15+00:00 |
-| path | credit_card_clients_default/01a0fc60-27a8-7af0-9d04-d3623053a72e |
+| uuid | 01a11191-3c35-718e-a11e-f177b87a1883 |
+| checksum | b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245 |
+| built_at | 2026-10-06T14:14:53+00:00 |
+| path | credit_card_clients_default/01a11191-3c35-718e-a11e-f177b87a1883 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

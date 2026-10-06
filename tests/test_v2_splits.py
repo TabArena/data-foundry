@@ -287,3 +287,12 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
         ),
     )
     assert ("splits_too_few" in slugs(container)) is flagged
+
+
+def test_a_missing_build_dependency_names_the_extra() -> None:
+    from data_foundry.v2._optional import BUILD_INSTALL, import_build_dependency
+
+    assert import_build_dependency("sklearn.model_selection").__name__ == "sklearn.model_selection"
+    with pytest.raises(ImportError, match=r"needs `no_such_package`.*data-foundry\[build\]") as error:
+        import_build_dependency("no_such_package.sub")
+    assert BUILD_INSTALL in str(error.value)

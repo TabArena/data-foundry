@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: 16ab0558caef567322b13fdb4492f77c9bdece9512faad3a50f52810051f8e5a
+checksum: 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2
 build:
-  uuid: 01a0fc5f-c1b7-7d56-bab5-76daaf9c5079
-  checksum: 16ab0558caef567322b13fdb4492f77c9bdece9512faad3a50f52810051f8e5a
-  built_at: '2026-10-02T11:28:53+00:00'
-  path: homesite_quote_conversion/01a0fc5f-c1b7-7d56-bab5-76daaf9c5079
+  uuid: 01a11191-1593-7081-be0a-df66953b5c15
+  checksum: 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2
+  built_at: '2026-10-06T14:14:47+00:00'
+  path: homesite_quote_conversion/01a11191-1593-7081-be0a-df66953b5c15
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID splits. 260,753 rows and 295 features. Source: Kaggle (2015).
 
-Built as `01a0fc5f-c1b7-7d56-bab5-76daaf9c5079` on 2026-10-02. See [Build](#build).
+Built as `01a11191-1593-7081-be0a-df66953b5c15` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -150,11 +150,11 @@ The first 5 of 260,753 rows of the final frame (random rows: the frame is shuffl
 
 | QuoteConversion_Flag | Original_Quote_Date | Field6 | Field7 | Field8 | Field9 | Field10 | Field11 | Field12 | CoverageField1A | CoverageField1B | CoverageField2A |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2014-03-12 00:00:00 | E | 14 | 0.9392 | 0.0006 | 1487 | 1.3045 | N | 1 | 1 | 1 |
-| 1 | 2014-03-23 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 5 | 8 | 5 |
-| 0 | 2013-06-27 00:00:00 | B | 23 | 0.9403 | 0.0006 | 965 | 1.02 | N | 9 | 15 | 9 |
-| 1 | 2014-03-25 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 11 | 18 | 11 |
-| 0 | 2013-06-29 00:00:00 | B | 24 | 0.9403 | 0.0006 | 965 | 1.02 | N | 19 | 24 | 19 |
+| 0 | 2013-09-03 00:00:00 | J | 23 | 0.9497 | 0.0004 | 1165 | 1.2665 | N | 9 | 15 | 9 |
+| 0 | 2015-02-17 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 25 | 25 | 25 |
+| 1 | 2014-03-25 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 24 | 25 | 25 |
+| 1 | 2013-09-27 00:00:00 | B | 24 | 0.9403 | 0.0006 | 965 | 1.02 | N | 7 | 11 | 7 |
+| 0 | 2014-07-21 00:00:00 | J | 23 | 0.8928 | 0.0004 | 1113 | 1.2665 | N | 3 | 3 | 3 |
 
 ## Curation notes
 
@@ -254,8 +254,8 @@ Default splits.
 | GeographicField37A | float64 | 3101 | 1.19 | 25 | 3.0, 4.0, 5.0, 2.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 |
 | GeographicField37B | float64 | 3101 | 1.19 | 25 | 10.0, 5.0, 8.0, 3.0, 21.0, 15.0, 4.0, 22.0, 7.0, 16.0 |
 | GeographicField55A | float64 | 1553 | 0.6 | 25 | 4.0, 3.0, 5.0, 6.0, 7.0, 2.0, 8.0, 9.0, 10.0, 11.0 |
-| GeographicField55B | float64 | 1553 | 0.6 | 25 | 9.0, 4.0, 12.0, 20.0, 5.0, 25.0, 7.0, 18.0, 21.0, 2.0 |
-| GeographicField56B | float64 | 1553 | 0.6 | 24 | 2.0, 10.0, 25.0, 22.0, 12.0, 11.0, 23.0, 17.0, 5.0, 20.0 |
+| GeographicField55B | float64 | 1553 | 0.6 | 25 | 9.0, 4.0, 12.0, 20.0, 5.0, 25.0, 7.0, 21.0, 18.0, 2.0 |
+| GeographicField56B | float64 | 1553 | 0.6 | 24 | 2.0, 10.0, 25.0, 22.0, 11.0, 12.0, 23.0, 17.0, 5.0, 20.0 |
 | GeographicField54A | float64 | 1544 | 0.59 | 25 | 15.0, 14.0, 16.0, 13.0, 12.0, 17.0, 11.0, 10.0, 18.0, 19.0 |
 | GeographicField54B | float64 | 1544 | 0.59 | 25 | 2.0, 8.0, 25.0, 17.0, 24.0, 9.0, 14.0, 13.0, 7.0, 18.0 |
 | GeographicField2A | float64 | 1260 | 0.48 | 25 | 14.0, 13.0, 12.0, 11.0, 16.0, 17.0, 18.0, 15.0, 10.0, 9.0 |
@@ -425,10 +425,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-c1b7-7d56-bab5-76daaf9c5079 |
-| checksum | 16ab0558caef567322b13fdb4492f77c9bdece9512faad3a50f52810051f8e5a |
-| built_at | 2026-10-02T11:28:53+00:00 |
-| path | homesite_quote_conversion/01a0fc5f-c1b7-7d56-bab5-76daaf9c5079 |
+| uuid | 01a11191-1593-7081-be0a-df66953b5c15 |
+| checksum | 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2 |
+| built_at | 2026-10-06T14:14:47+00:00 |
+| path | homesite_quote_conversion/01a11191-1593-7081-be0a-df66953b5c15 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

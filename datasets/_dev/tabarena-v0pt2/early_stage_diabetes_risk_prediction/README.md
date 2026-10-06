@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: early_stage_diabetes_risk_prediction
 container_format: 2
-checksum: 74a987e19bc4e194111d1776f2d27bf1f2f6bc96d2a15a81e4d49b79cc3f83d9
+checksum: c78bec346abd9d9faf50cca04e908734f24704970aacf0332f7f879120581ee0
 build:
-  uuid: 01a0fc60-8a23-7b51-aa7a-665371deeddb
-  checksum: 74a987e19bc4e194111d1776f2d27bf1f2f6bc96d2a15a81e4d49b79cc3f83d9
-  built_at: '2026-10-02T11:29:40+00:00'
-  path: early_stage_diabetes_risk_prediction/01a0fc60-8a23-7b51-aa7a-665371deeddb
+  uuid: 01a11191-a382-7a42-8d1a-12466e7af801
+  checksum: c78bec346abd9d9faf50cca04e908734f24704970aacf0332f7f879120581ee0
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: early_stage_diabetes_risk_prediction/01a11191-a382-7a42-8d1a-12466e7af801
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2019).
 
-Built as `01a0fc60-8a23-7b51-aa7a-665371deeddb` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a382-7a42-8d1a-12466e7af801` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 251 rows of the final frame (random rows: the frame is shuffled);
 
 | class | Age | Gender | Polyuria | Polydipsia | sudden weight loss | weakness | Polyphagia | Genital thrush | visual blurring | Itching | Irritability |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Positive | 55 | Male | Yes | Yes | Yes | Yes | No | Yes | No | No | Yes |
-| Positive | 57 | Male | Yes | Yes | No | Yes | Yes | Yes | No | No | No |
-| Positive | 61 | Female | Yes | No | No | No | Yes | No | No | No | Yes |
-| Positive | 65 | Female | Yes | Yes | No | Yes | Yes | No | No | Yes | No |
-| Positive | 55 | Female | Yes | No | Yes | No | No | Yes | Yes | Yes | No |
+| Positive | 56 | Male | Yes | No | Yes | Yes | No | Yes | No | Yes | Yes |
+| Negative | 47 | Male | No | No | No | No | No | No | No | No | Yes |
+| Negative | 27 | Male | No | No | No | No | No | No | No | No | No |
+| Positive | 69 | Female | Yes | Yes | Yes | Yes | No | No | Yes | Yes | Yes |
+| Positive | 48 | Male | Yes | Yes | No | Yes | Yes | No | No | No | No |
 
 ## Curation notes
 
@@ -260,7 +260,7 @@ Default splits.
 | Alopecia | category | 0 | 0 | 2 | No, Yes |
 | Obesity | category | 0 | 0 | 2 | No, Yes |
 | class | category | 0 | 0 | 2 | Positive, Negative |
-| Age | int64 | 0 | 0 | 51 | 35, 40, 48, 50, 60, 58, 55, 43, 45, 54 |
+| Age | int64 | 0 | 0 | 51 | 35, 40, 48, 58, 60, 50, 55, 45, 43, 54 |
 
 </details>
 
@@ -323,10 +323,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8a23-7b51-aa7a-665371deeddb |
-| checksum | 74a987e19bc4e194111d1776f2d27bf1f2f6bc96d2a15a81e4d49b79cc3f83d9 |
-| built_at | 2026-10-02T11:29:40+00:00 |
-| path | early_stage_diabetes_risk_prediction/01a0fc60-8a23-7b51-aa7a-665371deeddb |
+| uuid | 01a11191-a382-7a42-8d1a-12466e7af801 |
+| checksum | c78bec346abd9d9faf50cca04e908734f24704970aacf0332f7f879120581ee0 |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | early_stage_diabetes_risk_prediction/01a11191-a382-7a42-8d1a-12466e7af801 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

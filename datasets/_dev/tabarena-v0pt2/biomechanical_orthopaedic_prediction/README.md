@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: biomechanical_orthopaedic_prediction
 container_format: 2
-checksum: a50831d5e85a784a47c8fdad1ab8c508bad4c6f242f9640f3bbc9f7bc329a097
+checksum: 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb
 build:
-  uuid: 01a0fc60-9963-7a6f-bb80-1e4eba9607c5
-  checksum: a50831d5e85a784a47c8fdad1ab8c508bad4c6f242f9640f3bbc9f7bc329a097
-  built_at: '2026-10-02T11:29:44+00:00'
-  path: biomechanical_orthopaedic_prediction/01a0fc60-9963-7a6f-bb80-1e4eba9607c5
+  uuid: 01a11191-6a8b-7d1a-b794-2f9e4c70ad19
+  checksum: 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb
+  built_at: '2026-10-06T14:15:05+00:00'
+  path: biomechanical_orthopaedic_prediction/01a11191-6a8b-7d1a-b794-2f9e4c70ad19
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 310 rows and 6 features. Source: UCI (2006).
 
-Built as `01a0fc60-9963-7a6f-bb80-1e4eba9607c5` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6a8b-7d1a-b794-2f9e4c70ad19` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -142,11 +142,11 @@ The first 5 of 310 rows of the final frame (random rows: the frame is shuffled).
 
 | class | pelvic_incidence | pelvic_tilt | lumbar_lordosis_angle | sacral_slope | pelvic_radius | degree_spondylolisthesis |
 |---|---|---|---|---|---|---|
-| Normal | 44.4307 | 14.1743 | 32.2435 | 30.2564 | 131.718 | -3.60426 |
-| Hernia | 36.6864 | 5.01088 | 41.9488 | 31.6755 | 84.2414 | 0.664437 |
-| Hernia | 46.8558 | 15.3515 | 38 | 31.5043 | 116.251 | 1.66271 |
-| Spondylolisthesis | 74.3777 | 32.0531 | 78.772 | 42.3246 | 143.561 | 56.1259 |
-| Hernia | 54.1249 | 26.6505 | 35.3297 | 27.4744 | 121.447 | 1.5712 |
+| Spondylolisthesis | 48.2599 | 16.4175 | 36.3291 | 31.8425 | 94.8823 | 28.3438 |
+| Spondylolisthesis | 72.2223 | 23.0777 | 91 | 49.1446 | 137.737 | 56.8041 |
+| Spondylolisthesis | 57.2869 | 15.1494 | 64 | 42.1376 | 116.735 | 30.3412 |
+| Normal | 36.4225 | 13.8794 | 20.2426 | 22.5431 | 126.077 | 0.179717 |
+| Spondylolisthesis | 95.4802 | 46.5501 | 59 | 48.9302 | 96.6839 | 77.2831 |
 
 ## Curation notes
 
@@ -240,12 +240,12 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | class | category | 0 | 0 | 3 | Spondylolisthesis, Normal, Hernia |
-| pelvic_incidence | float64 | 0 | 0 | 310 | 70.3993, 44.4307, 36.6864, 46.8558, 74.3777, 54.1249, 77.6906, 85.3523, 81.0566… |
-| pelvic_tilt | float64 | 0 | 0 | 310 | 13.47, 14.1743, 5.0109, 15.3515, 32.0531, 26.6505, 21.3806, 15.8449, 20.8015, 2… |
-| lumbar_lordosis_angle | float64 | 0 | 0 | 280 | 52.0, 35.0, 47.0, 42.0, 34.0, 58.0, 37.0, 38.0, 43.1992, 39.0 |
-| sacral_slope | float64 | 0 | 0 | 281 | 35.4171, 56.3099, 45.0, 33.1113, 53.1301, 33.2153, 30.7841, 34.3803, 47.2906, 5… |
-| pelvic_radius | float64 | 0 | 0 | 310 | 102.3375, 131.7176, 84.2414, 116.2509, 143.5607, 121.447, 114.8188, 124.4198, 1… |
-| degree_spondylolisthesis | float64 | 0 | 0 | 310 | 25.5384, -3.6043, 0.6644, 1.6627, 56.1259, 1.5712, 26.9318, 76.0206, 38.1818, 7… |
+| pelvic_incidence | float64 | 0 | 0 | 310 | 63.0736, 48.2599, 72.2223, 57.2869, 36.4225, 95.4802, 69.5635, 68.7219, 45.2528… |
+| pelvic_tilt | float64 | 0 | 0 | 310 | 24.4138, 16.4175, 23.0777, 15.1494, 13.8794, 46.5501, 15.4011, 49.4319, 8.6932,… |
+| lumbar_lordosis_angle | float64 | 0 | 0 | 280 | 35.0, 42.0, 52.0, 47.0, 58.0, 37.0, 34.0, 40.0, 63.0, 43.1992 |
+| sacral_slope | float64 | 0 | 0 | 281 | 35.4171, 45.0, 56.3099, 33.1113, 53.1301, 39.8056, 35.6553, 42.6467, 48.1798, 5… |
+| pelvic_radius | float64 | 0 | 0 | 310 | 106.4243, 94.8823, 137.7367, 116.7354, 126.0769, 96.6839, 105.0674, 125.0185, 1… |
+| degree_spondylolisthesis | float64 | 0 | 0 | 310 | 15.7797, 28.3438, 56.8041, 30.3412, 0.1797, 77.2831, 29.7012, 54.6913, 0.2148, … |
 
 ### Target distribution
 
@@ -278,10 +278,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9963-7a6f-bb80-1e4eba9607c5 |
-| checksum | a50831d5e85a784a47c8fdad1ab8c508bad4c6f242f9640f3bbc9f7bc329a097 |
-| built_at | 2026-10-02T11:29:44+00:00 |
-| path | biomechanical_orthopaedic_prediction/01a0fc60-9963-7a6f-bb80-1e4eba9607c5 |
+| uuid | 01a11191-6a8b-7d1a-b794-2f9e4c70ad19 |
+| checksum | 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb |
+| built_at | 2026-10-06T14:15:05+00:00 |
+| path | biomechanical_orthopaedic_prediction/01a11191-6a8b-7d1a-b794-2f9e4c70ad19 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

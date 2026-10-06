@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: 2ffb4c0b4d19a5fe9fede1b6e81681814a982bf8a61123e6d1633578b3016945
+checksum: 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6
 build:
-  uuid: 01a0fc60-96e8-7d64-801f-0d2241496bdd
-  checksum: 2ffb4c0b4d19a5fe9fede1b6e81681814a982bf8a61123e6d1633578b3016945
-  built_at: '2026-10-02T11:30:26+00:00'
-  path: consumer_complaints/versions/01a0fc60-96e8-7d64-801f-0d2241496bdd
+  uuid: 01a11191-c5be-7cbf-bcdc-6dfb1ffd743c
+  checksum: 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6
+  built_at: '2026-10-06T14:16:29+00:00'
+  path: consumer_complaints/versions/01a11191-c5be-7cbf-bcdc-6dfb1ffd743c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2025).
 
-Built as `01a0fc60-96e8-7d64-801f-0d2241496bdd` on 2026-10-02. See [Build](#build).
+Built as `01a11191-c5be-7cbf-bcdc-6dfb1ffd743c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -156,11 +156,11 @@ The first 5 of 1,811,452 rows of the final frame (the oldest rows: the frame is 
 
 | Company response to consumer | Date received | Product | Sub-product | Issue | Sub-issue | Consumer complaint narrative | Company | State | ZIP code | Low population area | Tag: Older American |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Problem with a credit reporting company… | Their investigation did not fix an erro… | I requested TransUnion to verify and se… | TRANSUNION INTERMEDIATE HOLDINGS, INC. | CT | 065XX | True | nan |
-| Closed with explanation | 2017-04-24 00:00:00 | Debt collection | Federal student loan debt | False statements or representation | Attempted to collect wrong amount | Accepted a student loan for the spring … | Continental Services Group, Inc. d/b/a … | TX | 787XX | True | nan |
-| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Incorrect information on your report | Account status incorrect | XXXX 's client XXXX XXXX is an identity… | TD BANK US HOLDING COMPANY | IL | 604XX | True | nan |
-| Closed with non-monetary relief | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Problem with a credit reporting company… | Their investigation did not fix an erro… | I have been dealing w/ XXXX , XXXX and … | Experian Information Solutions Inc. | GA | 302XX | True | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Incorrect information on your report | Public record information inaccurate | There is a Tax Lien that was filed with… | EQUIFAX, INC. | GA | 30157 | False | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Mortgage | FHA mortgage | Applying for a mortgage or refinancing … | nan | XXXX XXXX XXXX is my client. This is at… | U.S. BANCORP | NV | 89103 | False | nan |
 | Closed with explanation | 2017-04-24 00:00:00 | Credit card or prepaid card | General-purpose credit card or charge c… | Advertising and marketing, including pr… | Confusing or misleading advertising abo… | XXXX XXXX card : I am putting my compla… | AMERICAN EXPRESS COMPANY | MN | 55372 | False | nan |
+| Closed with monetary relief | 2017-04-24 00:00:00 | Credit card or prepaid card | General-purpose credit card or charge c… | Problem with a purchase shown on your s… | Card was charged for something you did … | Our credit card was taken while we were… | BARCLAYS BANK DELAWARE | VA | 23116 | False | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Debt collection | I do not know | Took or threatened to take negative or … | Sued you in a state where you do not li… | Northwood Asset Management Company call… | Northwood Asset Management Group | UT | 84070 | False | nan |
 
 ## Curation notes
 
@@ -224,19 +224,19 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Tag: Older American | category | 1.66225e+06 | 91.76 | 2 | False, True |
-| Tag: Servicemember | category | 1.66225e+06 | 91.76 | 2 | True, False |
-| Sub-issue | category | 104145 | 5.75 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
-| Low population area | category | 24312 | 1.34 | 2 | False, True |
+| Tag: Older American | category | 1.66197e+06 | 91.75 | 2 | False, True |
+| Tag: Servicemember | category | 1.66197e+06 | 91.75 | 2 | True, False |
+| Sub-issue | category | 104414 | 5.76 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
+| Low population area | category | 24123 | 1.33 | 2 | False, True |
 | Product | category | 0 | 0 | 14 | Credit reporting or other personal consumer reports, Credit reporting, credit r… |
-| Sub-product | category | 18 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
+| Sub-product | category | 9 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
 | Issue | category | 0 | 0 | 93 | Incorrect information on your report, Improper use of your report, Problem with… |
 | State | category | 0 | 0 | 50 | TX, FL, CA, GA, NY, IL, NC, PA, NJ, MD |
 | Company response to consumer | category | 0 | 0 | 3 | Closed with explanation, Closed with non-monetary relief, Closed with monetary … |
 | Date received | datetime64\[ns\] | 0 | 0 | 3169 | 2025-01-17 00:00:00, 2025-08-14 00:00:00, 2025-08-12 00:00:00, 2025-08-06 00:00… |
-| Consumer complaint narrative | string | 0 | 0 | 1.18203e+06 | You have reported inaccurate and unauthorized accounts on my credit report, whi… |
+| Consumer complaint narrative | string | 0 | 0 | 1.18183e+06 | You have reported inaccurate and unauthorized accounts on my credit report, whi… |
 | Company | string | 0 | 0 | 4628 | EQUIFAX, INC., TRANSUNION INTERMEDIATE HOLDINGS, INC., Experian Information Sol… |
-| ZIP code | string | 0 | 0 | 6844 | XXXXX, 770XX, 604XX, 30349, 752XX, 331XX, 631XX, 303XX, 283XX, 30331 |
+| ZIP code | string | 0 | 0 | 6845 | XXXXX, 604XX, 770XX, 30349, 752XX, 331XX, 303XX, 190XX, 751XX, 070XX |
 
 </details>
 
@@ -259,63 +259,63 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Company | 1 | EQUIFAX, INC. | 42554 | 23.49 |
-| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 40297 | 22.25 |
-| Company | 3 | Experian Information Solutions Inc. | 38431 | 21.22 |
-| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 2951 | 1.63 |
-| Company | 5 | JPMORGAN CHASE & CO. | 2564 | 1.42 |
-| Company response to consumer | 1 | Closed with explanation | 117615 | 64.93 |
-| Company response to consumer | 2 | Closed with non-monetary relief | 59925 | 33.08 |
-| Company response to consumer | 3 | Closed with monetary relief | 3605 | 1.99 |
-| Consumer complaint narrative | 1 | You have reported inaccurate and unauthorized accounts on my cre... | 1724 | 0.95 |
-| Consumer complaint narrative | 2 | My credit reports are inaccurate. These inaccuracies are causing... | 1335 | 0.74 |
-| Consumer complaint narrative | 3 | In accordance with the Fair Credit Reporting act. The List of ac... | 1322 | 0.73 |
-| Consumer complaint narrative | 4 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 932 | 0.51 |
-| Consumer complaint narrative | 5 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 871 | 0.48 |
+| Company | 1 | EQUIFAX, INC. | 42229 | 23.31 |
+| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 40431 | 22.32 |
+| Company | 3 | Experian Information Solutions Inc. | 38561 | 21.29 |
+| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 2851 | 1.57 |
+| Company | 5 | JPMORGAN CHASE & CO. | 2590 | 1.43 |
+| Company response to consumer | 1 | Closed with explanation | 117273 | 64.74 |
+| Company response to consumer | 2 | Closed with non-monetary relief | 60213 | 33.24 |
+| Company response to consumer | 3 | Closed with monetary relief | 3659 | 2.02 |
+| Consumer complaint narrative | 1 | You have reported inaccurate and unauthorized accounts on my cre... | 1679 | 0.93 |
+| Consumer complaint narrative | 2 | In accordance with the Fair Credit Reporting act. The List of ac... | 1367 | 0.75 |
+| Consumer complaint narrative | 3 | My credit reports are inaccurate. These inaccuracies are causing... | 1304 | 0.72 |
+| Consumer complaint narrative | 4 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 948 | 0.52 |
+| Consumer complaint narrative | 5 | I am writing to have the following information removed from my c... | 895 | 0.49 |
 | Date received | 1 | 2025-01-17 00:00:00 | 667 | 0.37 |
 | Date received | 2 | 2025-08-14 00:00:00 | 571 | 0.32 |
 | Date received | 3 | 2025-08-12 00:00:00 | 553 | 0.31 |
 | Date received | 4 | 2025-08-06 00:00:00 | 539 | 0.3 |
 | Date received | 5 | 2025-08-15 00:00:00 | 539 | 0.3 |
-| Issue | 1 | Incorrect information on your report | 64471 | 35.59 |
-| Issue | 2 | Improper use of your report | 35780 | 19.75 |
-| Issue | 3 | Problem with a company's investigation into an existing problem | 18940 | 10.46 |
-| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 9391 | 5.18 |
-| Issue | 5 | Attempts to collect debt not owed | 8554 | 4.72 |
-| Low population area | 1 | False | 141847 | 78.31 |
-| Low population area | 2 | True | 36900 | 20.37 |
-| Low population area | 3 | &lt;NA> | 2398 | 1.32 |
-| Product | 1 | Credit reporting or other personal consumer reports | 99088 | 54.7 |
-| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 30057 | 16.59 |
-| Product | 3 | Debt collection | 18347 | 10.13 |
-| Product | 4 | Checking or savings account | 8144 | 4.5 |
-| Product | 5 | Credit card | 5246 | 2.9 |
-| State | 1 | TX | 24545 | 13.55 |
-| State | 2 | FL | 21732 | 12 |
-| State | 3 | CA | 19028 | 10.5 |
-| State | 4 | GA | 14491 | 8 |
-| State | 5 | NY | 10255 | 5.66 |
-| Sub-issue | 1 | Information belongs to someone else | 38217 | 21.1 |
-| Sub-issue | 2 | Reporting company used your report improperly | 28403 | 15.68 |
-| Sub-issue | 3 | Their investigation did not fix an error on your report | 17937 | 9.9 |
-| Sub-issue | 4 | &lt;NA> | 10271 | 5.67 |
-| Sub-issue | 5 | Account information incorrect | 10196 | 5.63 |
-| Sub-product | 1 | Credit reporting | 128115 | 70.73 |
-| Sub-product | 2 | General-purpose credit card or charge card | 7710 | 4.26 |
-| Sub-product | 3 | Checking account | 6673 | 3.68 |
-| Sub-product | 4 | I do not know | 6146 | 3.39 |
-| Sub-product | 5 | Other debt | 3858 | 2.13 |
-| Tag: Older American | 1 | &lt;NA> | 166233 | 91.77 |
-| Tag: Older American | 2 | False | 10144 | 5.6 |
-| Tag: Older American | 3 | True | 4768 | 2.63 |
-| Tag: Servicemember | 1 | &lt;NA> | 166233 | 91.77 |
-| Tag: Servicemember | 2 | True | 11297 | 6.24 |
-| Tag: Servicemember | 3 | False | 3615 | 2 |
-| ZIP code | 1 | XXXXX | 2398 | 1.32 |
-| ZIP code | 2 | 770XX | 630 | 0.35 |
-| ZIP code | 3 | 604XX | 600 | 0.33 |
-| ZIP code | 4 | 30349 | 415 | 0.23 |
-| ZIP code | 5 | 752XX | 355 | 0.2 |
+| Issue | 1 | Incorrect information on your report | 64610 | 35.67 |
+| Issue | 2 | Improper use of your report | 35650 | 19.68 |
+| Issue | 3 | Problem with a company's investigation into an existing problem | 19029 | 10.5 |
+| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 9278 | 5.12 |
+| Issue | 5 | Attempts to collect debt not owed | 8377 | 4.62 |
+| Low population area | 1 | False | 141643 | 78.19 |
+| Low population area | 2 | True | 37075 | 20.47 |
+| Low population area | 3 | &lt;NA> | 2427 | 1.34 |
+| Product | 1 | Credit reporting or other personal consumer reports | 99058 | 54.68 |
+| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 30063 | 16.6 |
+| Product | 3 | Debt collection | 18287 | 10.1 |
+| Product | 4 | Checking or savings account | 8240 | 4.55 |
+| Product | 5 | Credit card | 5360 | 2.96 |
+| State | 1 | TX | 24604 | 13.58 |
+| State | 2 | FL | 22014 | 12.15 |
+| State | 3 | CA | 19029 | 10.5 |
+| State | 4 | GA | 14157 | 7.82 |
+| State | 5 | NY | 10139 | 5.6 |
+| Sub-issue | 1 | Information belongs to someone else | 38329 | 21.16 |
+| Sub-issue | 2 | Reporting company used your report improperly | 28402 | 15.68 |
+| Sub-issue | 3 | Their investigation did not fix an error on your report | 18073 | 9.98 |
+| Sub-issue | 4 | &lt;NA> | 10339 | 5.71 |
+| Sub-issue | 5 | Account information incorrect | 10262 | 5.67 |
+| Sub-product | 1 | Credit reporting | 128099 | 70.72 |
+| Sub-product | 2 | General-purpose credit card or charge card | 7709 | 4.26 |
+| Sub-product | 3 | Checking account | 6799 | 3.75 |
+| Sub-product | 4 | I do not know | 6073 | 3.35 |
+| Sub-product | 5 | Credit card debt | 3727 | 2.06 |
+| Tag: Older American | 1 | &lt;NA> | 166258 | 91.78 |
+| Tag: Older American | 2 | False | 10071 | 5.56 |
+| Tag: Older American | 3 | True | 4816 | 2.66 |
+| Tag: Servicemember | 1 | &lt;NA> | 166258 | 91.78 |
+| Tag: Servicemember | 2 | True | 11215 | 6.19 |
+| Tag: Servicemember | 3 | False | 3672 | 2.03 |
+| ZIP code | 1 | XXXXX | 2427 | 1.34 |
+| ZIP code | 2 | 604XX | 642 | 0.35 |
+| ZIP code | 3 | 770XX | 573 | 0.32 |
+| ZIP code | 4 | 30349 | 381 | 0.21 |
+| ZIP code | 5 | 752XX | 358 | 0.2 |
 
 </details>
 
@@ -323,10 +323,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-96e8-7d64-801f-0d2241496bdd |
-| checksum | 2ffb4c0b4d19a5fe9fede1b6e81681814a982bf8a61123e6d1633578b3016945 |
-| built_at | 2026-10-02T11:30:26+00:00 |
-| path | consumer_complaints/versions/01a0fc60-96e8-7d64-801f-0d2241496bdd |
+| uuid | 01a11191-c5be-7cbf-bcdc-6dfb1ffd743c |
+| checksum | 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6 |
+| built_at | 2026-10-06T14:16:29+00:00 |
+| path | consumer_complaints/versions/01a11191-c5be-7cbf-bcdc-6dfb1ffd743c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

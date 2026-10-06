@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377
+checksum: 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941
 build:
-  uuid: 01a0fc60-1965-734a-954e-9bafda35dff1
-  checksum: f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377
-  built_at: '2026-10-02T11:29:14+00:00'
-  path: kick/01a0fc60-1965-734a-954e-9bafda35dff1
+  uuid: 01a11191-2bb7-7949-83a9-f40803cf6445
+  checksum: 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941
+  built_at: '2026-10-06T14:14:51+00:00'
+  path: kick/01a11191-2bb7-7949-83a9-f40803cf6445
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
 
-Built as `01a0fc60-1965-734a-954e-9bafda35dff1` on 2026-10-02. See [Build](#build).
+Built as `01a11191-2bb7-7949-83a9-f40803cf6445` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 
 | IsBadBuy | PurchDate | Auction | VehYear | VehicleAge | Make | Model | Trim | SubModel | Color | Transmission | WheelTypeID |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2006 | 3 | CHEVROLET | COBALT 2.2L I4 MPI | LT | 4D SEDAN LT | SILVER | AUTO | 1 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2007 | 2 | CHEVROLET | UPLANDER FWD V6 3.9L | LS | PASSENGER EXT 3.5L | WHITE | AUTO | 1 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | CHEVROLET | VENTURE FWD V6 3.4L | LS | PASSENGER EXT 3.4L LS | MAROON | AUTO | 1 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | HYUNDAI | ELANTRA 2.0L I4 MPI | GLS | 4D SEDAN | SILVER | AUTO | 2 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | DODGE | CARAVAN GRAND FWD V6 | SE | MINIVAN 3.3L | SILVER | AUTO | 2 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2004 | 5 | CHEVROLET | TRAILBLAZER 4WD 6C 4 | Nor | 4D SUV 4.2L LS | SILVER | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | PONTIAC | GRAND PRIX 3.8L V6 S | Bas | 4D SEDAN | GOLD | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2007 | 2 | FORD | FIVE HUNDRED 3.0L V6 | SEL | 4D SEDAN SEL | SILVER | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2007 | 2 | CHEVROLET | IMPALA V6 3.5L V6 SF | LT | 4D SEDAN LT 3.5L | GREY | AUTO | 1 |
+| 0 | 2009-01-05 00:00:00 | MANHEIM | 2004 | 5 | FORD | TAURUS 3.0L V6 EFI | SES | 4D SEDAN SES DURATEC | GOLD | AUTO | 1 |
 
 ## Curation notes
 
@@ -245,7 +245,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | VehBCost | float64 | 0 | 0 | 2072 | 7500.0, 6500.0, 7200.0, 6000.0, 4200.0, 7000.0, 8000.0, 7800.0, 7100.0, 7400.0 |
 | VehYear | int64 | 0 | 0 | 10 | 2006, 2005, 2007, 2004, 2008, 2003, 2002, 2001, 2009, 2010 |
 | VehicleAge | int64 | 0 | 0 | 10 | 4, 3, 5, 2, 6, 7, 1, 8, 9, 0 |
-| VehOdo | int64 | 0 | 0 | 39947 | 77995, 75009, 71225, 75371, 67464, 79015, 79600, 85884, 73159, 89362 |
+| VehOdo | int64 | 0 | 0 | 39947 | 77995, 75009, 79015, 71225, 75371, 67464, 77449, 88958, 73159, 75064 |
 | IsOnlineSale | int64 | 0 | 0 | 2 | 0, 1 |
 | WarrantyCost | int64 | 0 | 0 | 281 | 920, 1974, 2152, 1389, 1215, 1155, 803, 728, 1503, 1086 |
 
@@ -358,10 +358,10 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1965-734a-954e-9bafda35dff1 |
-| checksum | f1b0dd5a4ea5ff1a597c07ab3d7211a1f28b13fc2765dedfb3e0bf41e188d377 |
-| built_at | 2026-10-02T11:29:14+00:00 |
-| path | kick/01a0fc60-1965-734a-954e-9bafda35dff1 |
+| uuid | 01a11191-2bb7-7949-83a9-f40803cf6445 |
+| checksum | 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941 |
+| built_at | 2026-10-06T14:14:51+00:00 |
+| path | kick/01a11191-2bb7-7949-83a9-f40803cf6445 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

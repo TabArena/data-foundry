@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: 44efdea3779706912005dd8b5a06d146d4ccc473b773a33d7b042dc8d7995659
+checksum: 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b
 build:
-  uuid: 01a0fc60-7b4a-79ea-9389-6d93c544377d
-  checksum: 44efdea3779706912005dd8b5a06d146d4ccc473b773a33d7b042dc8d7995659
-  built_at: '2026-10-02T11:29:37+00:00'
-  path: coil_2000/01a0fc60-7b4a-79ea-9389-6d93c544377d
+  uuid: 01a11191-8081-71c6-99f9-15801ed5bc63
+  checksum: 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b
+  built_at: '2026-10-06T14:15:11+00:00'
+  path: coil_2000/01a11191-8081-71c6-99f9-15801ed5bc63
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `roc_auc` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a0fc60-7b4a-79ea-9389-6d93c544377d` on 2026-10-02. See [Build](#build).
+Built as `01a11191-8081-71c6-99f9-15801ed5bc63` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled
 
 | MobileHomePolicy | customerSubtype | numberOfHouses | avgSizeHousehold | avgAge | customerMainType | romanCatholic | protestant | otherReligion | noReligion | married | livingTogether |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | Low income catholics | 1 | 3 | 40-50 years | Retired and Religeous | 0% | 2 | 4 | 4 | 9 | 0 |
-| No | Stable family | 1 | 4 | 40-50 years | Average Family | 50 - 62% | 3 | 1 | 1 | 8 | 1 |
-| No | Large family farms | 1 | 3 | 30-40 years | Farmers | 0% | 6 | 0 | 3 | 6 | 3 |
-| No | Mixed seniors | 2 | 2 | 60-70 years | Successful hedonists | 0% | 4 | 2 | 3 | 5 | 0 |
-| No | Lower class large families | 2 | 3 | 30-40 years | Family with grown ups | 0% | 7 | 0 | 2 | 7 | 2 |
+| No | Large family, employed child | 1 | 3 | 40-50 years | Family with grown ups | 0% | 9 | 0 | 0 | 5 | 0 |
+| No | Couples with teens 'Married with childr… | 1 | 2 | 40-50 years | Family with grown ups | 0% | 3 | 0 | 6 | 3 | 2 |
+| No | High Income, expensive child | 1 | 5 | 40-50 years | Successful hedonists | 0% | 5 | 0 | 4 | 9 | 0 |
+| No | Mixed apartment dwellers | 1 | 2 | 40-50 years | Living well | 1 - 10% | 3 | 2 | 5 | 5 | 2 |
+| No | High status seniors | 1 | 3 | 40-50 years | Successful hedonists | 0% | 3 | 1 | 5 | 6 | 1 |
 
 ## Curation notes
 
@@ -197,7 +197,7 @@ Default splits.
 | romanCatholic | category | 0 | 0 | 10 | 0%, 1 - 10%, 11 - 23%, 24 - 36%, 37 - 49%, 50 - 62%, 63 - 75%, 76 - 88%, 100%, … |
 | contributionPrivateThirdPartyInsurance | category | 0 | 0 | 4 | f 0, f 50 - 99, f 1 - 49, f 100 - 199 |
 | MobileHomePolicy | category | 0 | 0 | 2 | No, Yes |
-| numberOfHouses | int64 | 0 | 0 | 9 | 1, 2, 3, 7, 4, 5, 6, 10, 8 |
+| numberOfHouses | int64 | 0 | 0 | 9 | 1, 2, 3, 7, 4, 5, 6, 8, 10 |
 | avgSizeHousehold | int64 | 0 | 0 | 6 | 3, 2, 4, 1, 5, 6 |
 | protestant | int64 | 0 | 0 | 10 | 4, 5, 6, 3, 7, 2, 9, 1, 0, 8 |
 | otherReligion | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
@@ -221,7 +221,7 @@ Default splits.
 | socialClassB1 | int64 | 0 | 0 | 10 | 2, 1, 0, 3, 4, 5, 6, 9, 8, 7 |
 | socialClassB2 | int64 | 0 | 0 | 10 | 2, 3, 0, 1, 4, 5, 6, 8, 7, 9 |
 | socialClassC | int64 | 0 | 0 | 10 | 5, 4, 3, 2, 6, 0, 1, 7, 9, 8 |
-| socialClassD | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
+| socialClassD | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | rentedHouse | int64 | 0 | 0 | 10 | 0, 9, 2, 3, 4, 8, 5, 1, 7, 6 |
 | homeOwners | int64 | 0 | 0 | 10 | 9, 0, 7, 6, 5, 1, 4, 8, 2, 3 |
 | oneCar | int64 | 0 | 0 | 10 | 6, 7, 5, 9, 4, 8, 3, 2, 0, 1 |
@@ -233,8 +233,8 @@ Default splits.
 | income30To45k | int64 | 0 | 0 | 10 | 4, 3, 5, 2, 0, 6, 1, 7, 9, 8 |
 | income45To75k | int64 | 0 | 0 | 10 | 3, 2, 4, 0, 1, 5, 6, 7, 9, 8 |
 | income75To122k | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
-| incomeAbove123k | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 4, 5, 6, 9, 7 |
-| averageIncome | int64 | 0 | 0 | 10 | 3, 4, 5, 2, 6, 7, 8, 1, 0, 9 |
+| incomeAbove123k | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 4, 5, 6, 7, 9 |
+| averageIncome | int64 | 0 | 0 | 10 | 3, 4, 5, 2, 6, 7, 8, 1, 9, 0 |
 | purchasingPowerClass | int64 | 0 | 0 | 8 | 3, 6, 4, 5, 1, 7, 2, 8 |
 | contributionThirdPartyInsuranceFirms | int64 | 0 | 0 | 7 | 0, 2, 3, 4, 1, 6, 5 |
 | contributionThirdPartyInsuranceAgriculture | int64 | 0 | 0 | 5 | 0, 4, 3, 2, 1 |
@@ -246,10 +246,10 @@ Default splits.
 | contributionTractorPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 5, 6, 7 |
 | contributionAgriculturalMachinesPolicies | int64 | 0 | 0 | 6 | 0, 4, 3, 2, 6, 1 |
 | contributionMopedPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 2, 5, 6 |
-| contributionLifeInsurances | int64 | 0 | 0 | 10 | 0, 4, 3, 5, 6, 2, 1, 7, 9, 8 |
-| contributionPrivateAccidentInsurancePolicies | int64 | 0 | 0 | 7 | 0, 2, 3, 1, 4, 5, 6 |
+| contributionLifeInsurances | int64 | 0 | 0 | 10 | 0, 4, 3, 6, 5, 2, 1, 7, 9, 8 |
+| contributionPrivateAccidentInsurancePolicies | int64 | 0 | 0 | 7 | 0, 2, 3, 1, 4, 6, 5 |
 | contributionFamilyAccidentsInsurancePolicies | int64 | 0 | 0 | 3 | 0, 2, 3 |
-| contributionDisabilityInsurancePolicies | int64 | 0 | 0 | 5 | 0, 6, 7, 5, 4 |
+| contributionDisabilityInsurancePolicies | int64 | 0 | 0 | 5 | 0, 6, 7, 4, 5 |
 | contributionFirePolicies | int64 | 0 | 0 | 9 | 0, 4, 3, 2, 5, 6, 1, 7, 8 |
 
 (26 more rows not shown)
@@ -375,10 +375,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7b4a-79ea-9389-6d93c544377d |
-| checksum | 44efdea3779706912005dd8b5a06d146d4ccc473b773a33d7b042dc8d7995659 |
-| built_at | 2026-10-02T11:29:37+00:00 |
-| path | coil_2000/01a0fc60-7b4a-79ea-9389-6d93c544377d |
+| uuid | 01a11191-8081-71c6-99f9-15801ed5bc63 |
+| checksum | 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b |
+| built_at | 2026-10-06T14:15:11+00:00 |
+| path | coil_2000/01a11191-8081-71c6-99f9-15801ed5bc63 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: blood_tests_drink_prediction
 container_format: 2
-checksum: 942899abe5722e8f5dd884edf23ccd6e351ab34010f24900a34c0bc5959a1aa7
+checksum: 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533
 build:
-  uuid: 01a0fc60-8cc3-7555-9222-50db3938b132
-  checksum: 942899abe5722e8f5dd884edf23ccd6e351ab34010f24900a34c0bc5959a1aa7
-  built_at: '2026-10-02T11:29:41+00:00'
-  path: blood_tests_drink_prediction/01a0fc60-8cc3-7555-9222-50db3938b132
+  uuid: 01a11191-94e7-75a4-b189-60dea33df5d2
+  checksum: 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533
+  built_at: '2026-10-06T14:15:15+00:00'
+  path: blood_tests_drink_prediction/01a11191-94e7-75a4-b189-60dea33df5d2
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 features. Source: UCI (1996).
 
-Built as `01a0fc60-8cc3-7555-9222-50db3938b132` on 2026-10-02. See [Build](#build).
+Built as `01a11191-94e7-75a4-b189-60dea33df5d2` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 345 rows of the final frame (random rows: the frame is shuffled).
 
 | drinks | mcv | alkphos | sgpt | sgot | gammagt |
 |---|---|---|---|---|---|
-| 0.405465 | 97 | 62 | 17 | 13 | 5 |
-| 1.94591 | 92 | 87 | 57 | 25 | 44 |
-| 0.405465 | 85 | 58 | 18 | 24 | 16 |
-| 0.405465 | 89 | 82 | 33 | 32 | 18 |
-| 1.94591 | 95 | 93 | 21 | 27 | 47 |
+| 0.405465 | 88 | 61 | 19 | 21 | 13 |
+| 1.09861 | 93 | 58 | 20 | 23 | 18 |
+| 0.405465 | 101 | 65 | 18 | 21 | 22 |
+| 1.94591 | 91 | 63 | 25 | 26 | 15 |
+| 0.405465 | 65 | 63 | 19 | 20 | 14 |
 
 ## Curation notes
 
@@ -246,10 +246,10 @@ Default splits.
 |---|---|---|---|---|---|
 | drinks | float64 | 0 | 0 | 16 | 0.4055, 1.6094, 1.9459, 1.0986, 2.1972, 1.3863, 1.7918, 0.6931, 2.3979, 0.0 |
 | mcv | int64 | 0 | 0 | 26 | 91, 92, 90, 88, 89, 87, 86, 93, 85, 94 |
-| alkphos | int64 | 0 | 0 | 78 | 63, 62, 67, 57, 55, 58, 65, 80, 70, 60 |
-| sgpt | int64 | 0 | 0 | 67 | 17, 20, 25, 21, 26, 27, 18, 24, 19, 29 |
-| sgot | int64 | 0 | 0 | 47 | 20, 23, 21, 26, 19, 22, 25, 18, 17, 24 |
-| gammagt | int64 | 0 | 0 | 94 | 14, 16, 11, 19, 13, 18, 15, 22, 12, 17 |
+| alkphos | int64 | 0 | 0 | 78 | 63, 62, 67, 57, 65, 58, 55, 80, 68, 59 |
+| sgpt | int64 | 0 | 0 | 67 | 20, 17, 25, 21, 26, 24, 18, 27, 19, 33 |
+| sgot | int64 | 0 | 0 | 47 | 20, 23, 21, 26, 19, 22, 25, 18, 17, 27 |
+| gammagt | int64 | 0 | 0 | 94 | 14, 16, 11, 19, 18, 15, 13, 26, 23, 22 |
 
 ### Target distribution
 
@@ -276,10 +276,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8cc3-7555-9222-50db3938b132 |
-| checksum | 942899abe5722e8f5dd884edf23ccd6e351ab34010f24900a34c0bc5959a1aa7 |
-| built_at | 2026-10-02T11:29:41+00:00 |
-| path | blood_tests_drink_prediction/01a0fc60-8cc3-7555-9222-50db3938b132 |
+| uuid | 01a11191-94e7-75a4-b189-60dea33df5d2 |
+| checksum | 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533 |
+| built_at | 2026-10-06T14:15:15+00:00 |
+| path | blood_tests_drink_prediction/01a11191-94e7-75a4-b189-60dea33df5d2 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

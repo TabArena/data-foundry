@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: thyroid_discordant
 container_format: 2
-checksum: 07d5c91b3bbb69af36c931830a0852821da9c2bc472f1d9de595f18f2491d285
+checksum: 84811aefc6d184a2d54e39a3f66434b860c018e5b69dd270aa6d984490368b9a
 build:
-  uuid: 01a0fc60-81f3-7930-9897-9dc9aceaea25
-  checksum: 07d5c91b3bbb69af36c931830a0852821da9c2bc472f1d9de595f18f2491d285
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: thyroid_discordant/01a0fc60-81f3-7930-9897-9dc9aceaea25
+  uuid: 01a11191-f4f3-74a8-b9f7-c72224504edf
+  checksum: 84811aefc6d184a2d54e39a3f66434b860c018e5b69dd270aa6d984490368b9a
+  built_at: '2026-10-06T14:15:40+00:00'
+  path: thyroid_discordant/01a11191-f4f3-74a8-b9f7-c72224504edf
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `discordant`, scored with `roc_auc` on IID splits. 3,711 rows and 26 features. Source: UCI (1986).
 
-Built as `01a0fc60-81f3-7930-9897-9dc9aceaea25` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f4f3-74a8-b9f7-c72224504edf` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 3,711 rows of the final frame (random rows: the frame is shuffled
 
 | discordant | age | sex | on_thyroxine | query_on_thyroxine | on_antithyroid_medication | sick | pregnant | thyroid_surgery | I131_treatment | query_hypothyroid | query_hyperthyroid |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| negative | 11 | F | f | f | t | f | f | f | f | f | f |
-| negative | 19 | M | f | f | f | f | f | f | f | f | f |
-| negative | 59 | F | f | f | f | f | f | f | f | f | f |
-| negative | 73 | F | f | f | f | f | f | f | f | f | t |
-| negative | 33 | F | f | f | f | f | t | f | f | f | t |
+| negative | 70 | F | f | f | f | f | f | f | f | f | f |
+| negative | 54 | F | f | f | f | f | f | f | f | f | f |
+| negative | 74 | F | f | f | f | f | f | f | t | f | f |
+| negative | 21 | F | f | f | f | f | f | f | f | f | f |
+| negative | 63 | F | f | f | f | f | f | f | f | f | f |
 
 ## Curation notes
 
@@ -241,11 +241,11 @@ Default splits.
 | FTI_measured | category | 0 | 0 | 2 | t, f |
 | discordant | category | 0 | 0 | 2 | negative, discordant |
 | T3 | float64 | 709 | 19.11 | 69 | 2.0, 1.8, 2.2, 1.9, 2.1, 2.3, 1.6, 1.7, 1.5, 2.4 |
-| T4U | float64 | 327 | 8.81 | 146 | 0.99, 0.9, 1.01, 1.0, 0.92, 0.97, 0.93, 1.02, 0.91, 0.95 |
-| FTI | float64 | 325 | 8.76 | 234 | 100.0, 93.0, 114.0, 107.0, 98.0, 104.0, 92.0, 97.0, 106.0, 101.0 |
-| TSH | float64 | 309 | 8.33 | 287 | 0.2, 1.3, 1.1, 1.4, 1.2, 1.9, 1.5, 1.6, 1.7, 2.3 |
-| TT4 | float64 | 171 | 4.61 | 241 | 101.0, 93.0, 98.0, 103.0, 87.0, 102.0, 91.0, 94.0, 99.0, 95.0 |
-| age | float64 | 1 | 0.03 | 93 | 59.0, 60.0, 70.0, 73.0, 55.0, 63.0, 72.0, 62.0, 58.0, 68.0 |
+| T4U | float64 | 327 | 8.81 | 146 | 0.99, 0.9, 1.01, 1.0, 0.92, 0.93, 0.97, 1.02, 0.91, 0.95 |
+| FTI | float64 | 325 | 8.76 | 234 | 100.0, 93.0, 114.0, 107.0, 98.0, 92.0, 104.0, 96.0, 97.0, 106.0 |
+| TSH | float64 | 309 | 8.33 | 287 | 0.2, 1.3, 1.1, 1.4, 1.9, 1.2, 1.5, 1.6, 1.7, 2.3 |
+| TT4 | float64 | 171 | 4.61 | 241 | 101.0, 93.0, 98.0, 103.0, 87.0, 102.0, 94.0, 91.0, 99.0, 89.0 |
+| age | float64 | 1 | 0.03 | 93 | 59.0, 60.0, 70.0, 73.0, 55.0, 72.0, 63.0, 62.0, 58.0, 68.0 |
 
 </details>
 
@@ -324,10 +324,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-81f3-7930-9897-9dc9aceaea25 |
-| checksum | 07d5c91b3bbb69af36c931830a0852821da9c2bc472f1d9de595f18f2491d285 |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | thyroid_discordant/01a0fc60-81f3-7930-9897-9dc9aceaea25 |
+| uuid | 01a11191-f4f3-74a8-b9f7-c72224504edf |
+| checksum | 84811aefc6d184a2d54e39a3f66434b860c018e5b69dd270aa6d984490368b9a |
+| built_at | 2026-10-06T14:15:40+00:00 |
+| path | thyroid_discordant/01a11191-f4f3-74a8-b9f7-c72224504edf |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

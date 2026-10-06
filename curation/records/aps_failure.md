@@ -38,6 +38,8 @@ Lennart: verify split
 
 Andrej: need to verify that original provided split was also random
 
+CC (2026-10-06, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `one_feature`: `ck_000` alone +0.944 skill against +0.982 for LightGBM). Not trivial: the best single feature chosen on each split's training side (`ci_000` or `aa_000`) ranks the test rows at ROC AUC 0.970, below all 20 BeyondArena configurations (TabPFN-3 0.994 to a default linear model 0.988) on every fold; the methods cut the remaining error (1 - AUC) from 0.031 to 0.006. The flag comes from AUC near its ceiling, where the methods differ in the third decimal; the original challenge scored a cost (500 per missed failure, 10 per false alarm). Still open from the earlier triage: the source ships a train/test split (the last 16,000 readings) that may be temporal; there are no timestamps to check it, so the random folds stay.
+
 ## Reference
 
 10.24432/C5V60Q

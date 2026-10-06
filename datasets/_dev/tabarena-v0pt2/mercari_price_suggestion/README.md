@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mercari_price_suggestion
 container_format: 2
-checksum: 745e2386aa5fdb8ff4fba91eec6efbdff3662067014413b347226c4da7c5ce1e
+checksum: f8509172e97ef07ba1069984b88bedc71fb94e701f634faad1c3ab328369f324
 build:
-  uuid: 01a0fc5e-e059-7a50-8ee8-b7f29dd2b509
-  checksum: 745e2386aa5fdb8ff4fba91eec6efbdff3662067014413b347226c4da7c5ce1e
-  built_at: '2026-10-02T11:28:11+00:00'
-  path: mercari_price_suggestion/01a0fc5e-e059-7a50-8ee8-b7f29dd2b509
+  uuid: 01a1118f-ba40-79d1-9973-7b496d476785
+  checksum: f8509172e97ef07ba1069984b88bedc71fb94e701f634faad1c3ab328369f324
+  built_at: '2026-10-06T14:13:36+00:00'
+  path: mercari_price_suggestion/01a1118f-ba40-79d1-9973-7b496d476785
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,482,486 rows and 6 features. Source: Kaggle (2018).
 
-Built as `01a0fc5e-e059-7a50-8ee8-b7f29dd2b509` on 2026-10-02. See [Build](#build).
+Built as `01a1118f-ba40-79d1-9973-7b496d476785` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 1,482,486 rows of the final frame (random rows: the frame is shuf
 
 | price | name | item_condition_id | category_name | brand_name | shipping | item_description |
 |---|---|---|---|---|---|---|
-| 2.77259 | POPULAR STYLE HEADBAND FREE SH | 1 | Women/Women's Accessories/Hair Accessor… |  | 1 | Designer style Great grip Free fast shi… |
-| 4.70048 | bundle for hollywood | 3 | Women/Other/Other |  | 0 | bundle for hollywood |
-| 2.56495 | Levi capris sz 12 | 3 | Women/Pants/Capris, Cropped | Levi's® | 0 | White Capri pants by Levi size 12. In g… |
-| 3.29584 | The trash pack - purple series | 3 | Kids/Other/Other |  | 0 | 1 large trash pack with seven character… |
-| 2.99573 | VS PINK Jacket | 3 | Women/Athletic Apparel/Jackets | PINK | 0 | pink vs pink jacket! zips and buttons. … |
+| 3.73767 | Rae Dunn Hip Hop Coffee Mug Magenta New | 1 | Home/Kitchen & Dining/Coffee & Tea Acce… | Rae Dunn | 0 | RAE DUNN COFFEE CUP Farmhouse Country B… |
+| 2.48491 | Colourpop Liquid Lipsticks | 2 | Beauty/Makeup/Lips | ColourPop Cosmetics | 1 | Only been swatched once. Colors are: Vi… |
+| 2.83321 | Cute flower print romper | 3 | Women/Dresses/Above Knee, Mini |  | 0 | Bought in Spain. Too small for me now. |
+| 3.89182 | LuLaRoe Disney Os Leggings Toy Story | 1 | Women/Athletic Apparel/Pants, Tights, L… | LuLaRoe | 1 | Toy story characters Black grey cream O… |
+| 3.58352 | Kobe 9 (Peach Mango) | 3 | Men/Shoes/Athletic | Nike | 0 | - Size 8.5 - Good Condition - Great Bas… |
 
 ## Curation notes
 
@@ -189,21 +189,21 @@ Default splits.
 | shipping | category | 0 | 0 | 2 | 0, 1 |
 | price | float64 | 0 | 0 | 828 | 2.3979, 2.5649, 2.7081, 2.8332, 2.3026, 2.1972, 2.7726, 3.0445, 2.0794, 3.2189 |
 | brand_name | string | 632641 | 42.67 | 4809 | PINK, Nike, Victoria's Secret, LuLaRoe, Apple, FOREVER 21, Nintendo, Lululemon,… |
-| item_description | string | 82495 | 5.56 | 1.28142e+06 | New, Brand new, Great condition, Good condition, NWT, New with tags, Like new, … |
+| item_description | string | 82495 | 5.56 | 1.28142e+06 | New, Brand new, Good condition, Great condition, Never worn, Like new, NWT, Nev… |
 | category_name | string | 6327 | 0.43 | 1287 | Women/Athletic Apparel/Pants, Tights, Leggings, Women/Tops & Blouses/T-Shirts, … |
-| name | string | 0 | 0 | 1.22527e+06 | Bundle, Coach purse, Converse, Romper, American Eagle Jeans, BUNDLE, Reserved, … |
+| name | string | 0 | 0 | 1.22527e+06 | Bundle, Reserved, Vans, Converse, Coach purse, BUNDLE, Lularoe TC leggings, Ame… |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0.06 | 0.662 | -0.148 | 0.561 | 0.035 | log1p | 692150 | 491781 | lognormal |
+| 0 | 0 | 0.06 | 0.677 | -0.127 | 0.561 | 0.035 | log1p | 692213 | 488700 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| price | 148249 | 2.97708 | 0.749001 | 0 | 7.50439 |
+| price | 148249 | 2.97833 | 0.749159 | 0 | 7.6034 |
 
 ### Categorical features
 
@@ -212,33 +212,33 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| brand_name | 1 | &lt;NA> | 63577 | 42.89 |
-| brand_name | 2 | PINK | 5297 | 3.57 |
-| brand_name | 3 | Nike | 5295 | 3.57 |
-| brand_name | 4 | Victoria's Secret | 4758 | 3.21 |
-| brand_name | 5 | LuLaRoe | 3029 | 2.04 |
-| category_name | 1 | Women/Athletic Apparel/Pants, Tights, Leggings | 6009 | 4.05 |
-| category_name | 2 | Women/Tops & Blouses/T-Shirts | 4541 | 3.06 |
-| category_name | 3 | Beauty/Makeup/Face | 3448 | 2.33 |
-| category_name | 4 | Beauty/Makeup/Lips | 3016 | 2.03 |
-| category_name | 5 | Electronics/Video Games & Consoles/Games | 2635 | 1.78 |
-| item_condition_id | 1 | 1 | 63754 | 43 |
-| item_condition_id | 2 | 3 | 43458 | 29.31 |
-| item_condition_id | 3 | 2 | 37543 | 25.32 |
-| item_condition_id | 4 | 4 | 3244 | 2.19 |
-| item_condition_id | 5 | 5 | 250 | 0.17 |
-| item_description | 1 | &lt;NA> | 8206 | 5.54 |
-| item_description | 2 | New | 436 | 0.29 |
-| item_description | 3 | Brand new | 283 | 0.19 |
-| item_description | 4 | Great condition | 144 | 0.1 |
-| item_description | 5 | Good condition | 129 | 0.09 |
-| name | 1 | Bundle | 216 | 0.15 |
-| name | 2 | Coach purse | 46 | 0.03 |
-| name | 3 | Converse | 44 | 0.03 |
-| name | 4 | Romper | 43 | 0.03 |
-| name | 5 | American Eagle Jeans | 42 | 0.03 |
-| shipping | 1 | 0 | 81890 | 55.24 |
-| shipping | 2 | 1 | 66359 | 44.76 |
+| brand_name | 1 | &lt;NA> | 63252 | 42.67 |
+| brand_name | 2 | PINK | 5414 | 3.65 |
+| brand_name | 3 | Nike | 5389 | 3.64 |
+| brand_name | 4 | Victoria's Secret | 4854 | 3.27 |
+| brand_name | 5 | LuLaRoe | 3101 | 2.09 |
+| category_name | 1 | Women/Athletic Apparel/Pants, Tights, Leggings | 6134 | 4.14 |
+| category_name | 2 | Women/Tops & Blouses/T-Shirts | 4646 | 3.13 |
+| category_name | 3 | Beauty/Makeup/Face | 3477 | 2.35 |
+| category_name | 4 | Beauty/Makeup/Lips | 3017 | 2.04 |
+| category_name | 5 | Electronics/Video Games & Consoles/Games | 2700 | 1.82 |
+| item_condition_id | 1 | 1 | 64458 | 43.48 |
+| item_condition_id | 2 | 3 | 43122 | 29.09 |
+| item_condition_id | 3 | 2 | 37326 | 25.18 |
+| item_condition_id | 4 | 4 | 3088 | 2.08 |
+| item_condition_id | 5 | 5 | 255 | 0.17 |
+| item_description | 1 | &lt;NA> | 8375 | 5.65 |
+| item_description | 2 | New | 402 | 0.27 |
+| item_description | 3 | Brand new | 340 | 0.23 |
+| item_description | 4 | Good condition | 129 | 0.09 |
+| item_description | 5 | Great condition | 115 | 0.08 |
+| name | 1 | Bundle | 238 | 0.16 |
+| name | 2 | Reserved | 46 | 0.03 |
+| name | 3 | Vans | 43 | 0.03 |
+| name | 4 | Converse | 42 | 0.03 |
+| name | 5 | Coach purse | 42 | 0.03 |
+| shipping | 1 | 0 | 81706 | 55.11 |
+| shipping | 2 | 1 | 66543 | 44.89 |
 
 </details>
 
@@ -246,10 +246,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5e-e059-7a50-8ee8-b7f29dd2b509 |
-| checksum | 745e2386aa5fdb8ff4fba91eec6efbdff3662067014413b347226c4da7c5ce1e |
-| built_at | 2026-10-02T11:28:11+00:00 |
-| path | mercari_price_suggestion/01a0fc5e-e059-7a50-8ee8-b7f29dd2b509 |
+| uuid | 01a1118f-ba40-79d1-9973-7b496d476785 |
+| checksum | f8509172e97ef07ba1069984b88bedc71fb94e701f634faad1c3ab328369f324 |
+| built_at | 2026-10-06T14:13:36+00:00 |
+| path | mercari_price_suggestion/01a1118f-ba40-79d1-9973-7b496d476785 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

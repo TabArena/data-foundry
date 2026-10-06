@@ -34,6 +34,8 @@ Lennart: I think the task can be understood as gap filling without a temporal sp
 
 Andrej: Unclear whether temporal split
 
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (three untuned families at skill +0.962 to +0.968) does not hold for tuned methods. On BeyondArena the best (LimiX-2) reaches ROC AUC 0.989 and the median 0.986, with no other method within noise of the best (Kendall's W 0.96).
+
 ## Reference
 
 NATICUSdroid: A malware detection framework for Android using native and custom permissions

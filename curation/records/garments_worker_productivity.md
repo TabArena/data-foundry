@@ -41,6 +41,8 @@ CC (2026-10-01, Lennart): Leak audit: **`incentive` leaks the same day's product
 - Same test for the other start-of-day features: no_of_workers and no_of_style_change show no same-day link. targeted_productivity does (0.46), but the paper defines it as "set by the authority for each team for each day", a plan the team works towards, so it stays.
 - Effect (LightGBM, the 30 shipped one-day splits, mean RMSE; train-mean baseline 0.178): same-day incentive 0.134, previous-day incentive 0.140, no incentive 0.141.
 
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag measures the noise of single windows, not the task. Over the 30 one-day windows (17-24 rows each) random forest and LightGBM beat the train mean in 28 and 29 of them (mean skill +0.40 and +0.38, standard error 0.04); the linear model breaks down in a few windows (one at -2.9), which inflates the spread.
+
 ## Reference
 
 Mining the productivity data of the garment industry

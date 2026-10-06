@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: bf5a67771a4c4f7c690061353e9ed2706ed4fee0b1aa30df2391a39f6fc1cde9
+checksum: f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789
 build:
-  uuid: 01a0fc5f-83b9-7961-9d36-00c8578fcb0f
-  checksum: bf5a67771a4c4f7c690061353e9ed2706ed4fee0b1aa30df2391a39f6fc1cde9
-  built_at: '2026-10-02T11:28:39+00:00'
-  path: anes_voting_2026/01a0fc5f-83b9-7961-9d36-00c8578fcb0f
+  uuid: 01a11190-6c97-7d29-a0ff-963610741e1f
+  checksum: f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789
+  built_at: '2026-10-06T14:14:07+00:00'
+  path: anes_voting_2026/01a11190-6c97-7d29-a0ff-963610741e1f
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a0fc5f-83b9-7961-9d36-00c8578fcb0f` on 2026-10-02. See [Build](#build).
+Built as `01a11190-6c97-7d29-a0ff-963610741e1f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -150,11 +150,11 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 
 | VCF0702 | VCF0004 | VCF0101 | VCF0102 | VCF0103 | VCF0104 | VCF0105a | VCF0105b | VCF0106 | VCF0107 | VCF0108 | VCF0109 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 1948 | nan | 3 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 3 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 2 | 6 | 2 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 3 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 2 | 6 | 1 | 1 | 1 | 1 | nan | nan | nan |
+| 1 | 1948 | nan | 4 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 4 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 4 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
+| 1 | 1948 | nan | 4 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
+| 2 | 1948 | nan | 5 | 8 | 1 | 1 | 1 | 1 | nan | nan | nan |
 
 ## Curation notes
 
@@ -382,10 +382,10 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-83b9-7961-9d36-00c8578fcb0f |
-| checksum | bf5a67771a4c4f7c690061353e9ed2706ed4fee0b1aa30df2391a39f6fc1cde9 |
-| built_at | 2026-10-02T11:28:39+00:00 |
-| path | anes_voting_2026/01a0fc5f-83b9-7961-9d36-00c8578fcb0f |
+| uuid | 01a11190-6c97-7d29-a0ff-963610741e1f |
+| checksum | f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789 |
+| built_at | 2026-10-06T14:14:07+00:00 |
+| path | anes_voting_2026/01a11190-6c97-7d29-a0ff-963610741e1f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -155,11 +155,11 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         df.loc[(df["ZIP code"].str.contains("XX") & (df["ZIP code"] != "XXXXX")), "Low population area"] = "True"
         df.loc[df["ZIP code"] == "XXXXX", "Low population area"] = np.nan
         # Resolve Multi-Tags feature into two categorical features
-        assert list(np.unique(df["Tags"].astype(str))) == [
+        assert df["Tags"].isna().any()
+        assert sorted(df["Tags"].dropna().unique()) == [
             "Older American",
             "Older American, Servicemember",
             "Servicemember",
-            "nan",
         ]
         tags_nan_mask = df["Tags"].isna()
         tags_is_older_american = df["Tags"].str.contains("Older American", na=False)

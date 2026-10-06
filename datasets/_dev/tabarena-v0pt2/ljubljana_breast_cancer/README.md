@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_breast_cancer
 container_format: 2
-checksum: 9d8a33109465942077eb7851a40ed2cab199ea440c96fbde0046b75f5c39ed92
+checksum: 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a
 build:
-  uuid: 01a0fc60-7067-7a1f-befe-84639546dfce
-  checksum: 9d8a33109465942077eb7851a40ed2cab199ea440c96fbde0046b75f5c39ed92
-  built_at: '2026-10-02T11:29:33+00:00'
-  path: ljubljana_breast_cancer/01a0fc60-7067-7a1f-befe-84639546dfce
+  uuid: 01a11191-ce34-7502-a02e-67d7f690a32f
+  checksum: 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a
+  built_at: '2026-10-06T14:15:30+00:00'
+  path: ljubljana_breast_cancer/01a11191-ce34-7502-a02e-67d7f690a32f
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows and 9 features. Source: UCI (1988).
 
-Built as `01a0fc60-7067-7a1f-befe-84639546dfce` on 2026-10-02. See [Build](#build).
+Built as `01a11191-ce34-7502-a02e-67d7f690a32f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 286 rows of the final frame (random rows: the frame is shuffled).
 
 | Class | age | menopause | tumor-size | inv-nodes | node-caps | deg-malig | breast | breast-quad | irradiat |
 |---|---|---|---|---|---|---|---|---|---|
-| no-recurrence-events | 44.5 | premeno | 22 | 1 | no | 2 | right | left_up | no |
+| no-recurrence-events | 44.5 | ge40 | 32 | 1 | no | 2 | left | left_up | yes |
+| no-recurrence-events | 54.5 | premeno | 27 | 1 | no | 2 | left | left_low | no |
+| no-recurrence-events | 64.5 | ge40 | 17 | 1 | no | 2 | left | left_low | no |
+| no-recurrence-events | 34.5 | premeno | 32 | 7 | yes | 2 | right | right_up | no |
 | recurrence-events | 64.5 | ge40 | 22 | 25 | yes | 3 | left | left_low | yes |
-| no-recurrence-events | 44.5 | premeno | 47 | 1 | no | 2 | left | left_low | yes |
-| recurrence-events | 44.5 | premeno | 32 | 1 | no | 3 | right | right_up | no |
-| recurrence-events | 54.5 | premeno | 32 | 1 | no | 3 | right | left_up | yes |
 
 ## Curation notes
 
@@ -254,7 +254,7 @@ Default splits.
 | breast | category | 0 | 0 | 2 | left, right |
 | irradiat | category | 0 | 0 | 2 | no, yes |
 | age | float64 | 0 | 0 | 6 | 54.5, 44.5, 64.5, 34.5, 74.5, 24.5 |
-| tumor-size | float64 | 0 | 0 | 11 | 32.0, 27.0, 22.0, 17.0, 12.0, 42.0, 37.0, 2.0, 52.0, 7.0 |
+| tumor-size | float64 | 0 | 0 | 11 | 32.0, 27.0, 22.0, 17.0, 12.0, 42.0, 37.0, 52.0, 2.0, 7.0 |
 | inv-nodes | float64 | 0 | 0 | 7 | 1.0, 4.0, 7.0, 10.0, 16.0, 13.0, 25.0 |
 | deg-malig | int64 | 0 | 0 | 3 | 2, 3, 1 |
 
@@ -305,10 +305,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7067-7a1f-befe-84639546dfce |
-| checksum | 9d8a33109465942077eb7851a40ed2cab199ea440c96fbde0046b75f5c39ed92 |
-| built_at | 2026-10-02T11:29:33+00:00 |
-| path | ljubljana_breast_cancer/01a0fc60-7067-7a1f-befe-84639546dfce |
+| uuid | 01a11191-ce34-7502-a02e-67d7f690a32f |
+| checksum | 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a |
+| built_at | 2026-10-06T14:15:30+00:00 |
+| path | ljubljana_breast_cancer/01a11191-ce34-7502-a02e-67d7f690a32f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

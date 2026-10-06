@@ -2,8 +2,8 @@
 
 Usage::
 
-    python .claude/skills/verify-dataset/scripts/group_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2] [--repeats 3]
-        [--permutations 100] [--max-rows 200000] [--n-jobs 8]
+    python .claude/skills/verify-dataset/scripts/group_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2]
+        [--repeats 3] [--permutations 100] [--max-rows 200000] [--n-jobs 8]
 
 Prints:
 

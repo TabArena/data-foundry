@@ -41,10 +41,11 @@ report as a shipped record missing its notebook.
 **Set it when:**
 
 * a v2 `dataset.py` is created — `/add-dataset` does this as its own step;
-* a notebook is renamed, moved between trees (`_dev/` → `beyond_iid/`, or into `_maintenance/`
-  when a dataset is retired), or a dataset directory is renamed;
-* the run that ships changes — a `<name>_1m.ipynb` sub-sample or a `<name>_clf.ipynb` alternative
-  target supersedes the full-size run. Point at the run that shipped and say why in `## Comments`;
+* a dataset is retired from the working copy: its folder is removed, so clear `v2_path` in the same change (a pointer
+  to a missing file fails `tests/test_records_integrity.py`);
+* a notebook or dataset directory is renamed or moved between trees;
+* the definition that ships changes — a `_1m` sub-sample (a v2 folder whose class declares `version_of`) or a `_clf`
+  alternative target supersedes the full-size run. Point at the one that ships and say why in `## Comments`;
   a reader following the wrong sibling reads preprocessing that produced no shipped data.
 
 **Check it when:**
@@ -53,8 +54,9 @@ report as a shipped record missing its notebook.
   data_foundry.curation.cli sync-notebooks --check` prints every drifted record and exits non-zero, and plain
   `sync-notebooks` writes the fixes;
 * a 📓 link opens something unexpected (the wrong tree, the wrong variant, a 404);
-* you are verifying a dataset — `/verify-dataset` carries this as a rubric item: the pointer must
-  name the notebook whose output holds the UUID the collection pins.
+* you are verifying a dataset — `/verify-dataset` carries this as rubric item 14: `v2_path` names the dataset's
+  `dataset.py` and its `README.md` carries the build UUID; for a shipped dataset, `notebook_path` names the notebook
+  whose container the collection pins.
 
 `tests/test_records_integrity.py` fails on a pointer that is missing on a shipped dataset, does not
 exist, is not a `.ipynb`, sits outside its dataset's directory, has drifted from the tree, or names

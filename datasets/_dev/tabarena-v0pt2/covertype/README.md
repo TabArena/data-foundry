@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: covertype
 container_format: 2
-checksum: 1beb4ef1f14a6d61e50544b6973a7ab7d919f438a01e1aaa0eb4a3dff51a4eb7
+checksum: 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939
 build:
-  uuid: 01a0fc5f-e75a-7013-a0ea-b491f4910b26
-  checksum: 1beb4ef1f14a6d61e50544b6973a7ab7d919f438a01e1aaa0eb4a3dff51a4eb7
-  built_at: '2026-10-02T11:29:01+00:00'
-  path: covertype/01a0fc5f-e75a-7013-a0ea-b491f4910b26
+  uuid: 01a11191-1459-73b7-a8d7-bf59bc25d895
+  checksum: 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939
+  built_at: '2026-10-06T14:14:45+00:00'
+  path: covertype/01a11191-1459-73b7-a8d7-bf59bc25d895
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits. 581,012 rows and 14 features. Source: UCI (1998).
 
-Built as `01a0fc5f-e75a-7013-a0ea-b491f4910b26` on 2026-10-02. See [Build](#build).
+Built as `01a11191-1459-73b7-a8d7-bf59bc25d895` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 581,012 rows of the final frame (random rows: the frame is shuffl
 
 | Cover_Type | Elevation | Aspect | Slope | Horizontal_Distance_To_Hydrology | Vertical_Distance_To_Hydrology | Horizontal_Distance_To_Roadways | Hillshade_9am | Hillshade_Noon | Hillshade_3pm | Horizontal_Distance_To_Fire_Points | Wilderness_Area |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Spruce/Fir | 3351 | 206 | 27 | 726 | 124 | 3813 | 192 | 252 | 180 | 2271 | Rawah Wilderness Area |
-| Lodgepole Pine | 2732 | 129 | 7 | 212 | 1 | 1082 | 231 | 236 | 137 | 912 | Comanche Peak Wilderness Area |
-| Lodgepole Pine | 2572 | 24 | 9 | 201 | 25 | 957 | 216 | 222 | 142 | 2191 | Comanche Peak Wilderness Area |
-| Lodgepole Pine | 2824 | 69 | 13 | 417 | 39 | 3223 | 233 | 214 | 110 | 6478 | Rawah Wilderness Area |
-| Lodgepole Pine | 2529 | 84 | 5 | 120 | 9 | 1092 | 227 | 231 | 139 | 4983 | Rawah Wilderness Area |
+| Lodgepole Pine | 2769 | 359 | 18 | 67 | 17 | 949 | 189 | 203 | 149 | 573 | Comanche Peak Wilderness Area |
+| Spruce/Fir | 3171 | 59 | 6 | 60 | -7 | 2227 | 224 | 228 | 139 | 828 | Rawah Wilderness Area |
+| Lodgepole Pine | 2572 | 68 | 15 | 124 | 20 | 1106 | 234 | 209 | 102 | 1256 | Comanche Peak Wilderness Area |
+| Spruce/Fir | 3171 | 117 | 8 | 175 | 23 | 5583 | 234 | 233 | 131 | 1937 | Rawah Wilderness Area |
+| Lodgepole Pine | 2909 | 315 | 1 | 162 | 0 | 4080 | 215 | 237 | 160 | 5671 | Rawah Wilderness Area |
 
 ## Curation notes
 
@@ -198,7 +198,7 @@ Default splits.
 | Soil_Type | category | 0 | 0 | 40 | Como - Legault families complex, extremely stony., Leighcan family, till substr… |
 | Soil_ClimaticZone | category | 0 | 0 | 7 | subalpine, montane, alpine, lower montane, montane and subalpine, montane dry a… |
 | Soil_GeologicZone | category | 0 | 0 | 4 | igneous and metamorphic, glacial, alluvium, mixed sedimentary |
-| Elevation | int64 | 0 | 0 | 1978 | 2968, 2962, 2991, 2972, 2975, 2978, 2988, 2955, 2952, 2965 |
+| Elevation | int64 | 0 | 0 | 1978 | 2968, 2962, 2991, 2972, 2978, 2975, 2988, 2955, 2952, 2965 |
 | Aspect | int64 | 0 | 0 | 361 | 45, 0, 90, 135, 63, 315, 72, 18, 27, 34 |
 | Slope | int64 | 0 | 0 | 67 | 11, 10, 12, 13, 9, 14, 8, 15, 16, 7 |
 | Horizontal_Distance_To_Hydrology | int64 | 0 | 0 | 551 | 30, 0, 150, 60, 67, 42, 108, 85, 90, 120 |
@@ -275,10 +275,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-e75a-7013-a0ea-b491f4910b26 |
-| checksum | 1beb4ef1f14a6d61e50544b6973a7ab7d919f438a01e1aaa0eb4a3dff51a4eb7 |
-| built_at | 2026-10-02T11:29:01+00:00 |
-| path | covertype/01a0fc5f-e75a-7013-a0ea-b491f4910b26 |
+| uuid | 01a11191-1459-73b7-a8d7-bf59bc25d895 |
+| checksum | 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939 |
+| built_at | 2026-10-06T14:14:45+00:00 |
+| path | covertype/01a11191-1459-73b7-a8d7-bf59bc25d895 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

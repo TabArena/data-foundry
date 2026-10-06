@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: f0265d11a2cf790c54444a91a1d0599196bec6d6498a4e36f31e8db6e5400491
+checksum: fa96974a66e7cb6ed6d23018b6db93f951ec9356e66bef19ef3e7af67bccedee
 build:
-  uuid: 01a0fc5f-8b62-78bf-9350-b702f9318885
-  checksum: f0265d11a2cf790c54444a91a1d0599196bec6d6498a4e36f31e8db6e5400491
-  built_at: '2026-10-02T11:28:48+00:00'
-  path: porto_seguro/01a0fc5f-8b62-78bf-9350-b702f9318885
+  uuid: 01a11190-6bf9-7ab9-8c04-044ef7b9de7f
+  checksum: fa96974a66e7cb6ed6d23018b6db93f951ec9356e66bef19ef3e7af67bccedee
+  built_at: '2026-10-06T14:14:14+00:00'
+  path: porto_seguro/01a11190-6bf9-7ab9-8c04-044ef7b9de7f
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `target`, scored with `normalized_gini_coefficient` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a0fc5f-8b62-78bf-9350-b702f9318885` on 2026-10-02. See [Build](#build).
+Built as `01a11190-6bf9-7ab9-8c04-044ef7b9de7f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 595,206 rows of the final frame (random rows: the frame is shuffl
 
 | target | ps_ind_01 | ps_ind_02_cat | ps_ind_03 | ps_ind_04_cat | ps_ind_05_cat | ps_ind_06_bin | ps_ind_07_bin | ps_ind_08_bin | ps_ind_09_bin | ps_ind_10_bin | ps_ind_11_bin |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1 | 1 | 7 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 2 | 1 | 4 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| 0 | 0 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 0 | 2 | 1 | 5 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 0 | 2 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| 0 | 1 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 7 | 1 | 5 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -335,10 +335,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-8b62-78bf-9350-b702f9318885 |
-| checksum | f0265d11a2cf790c54444a91a1d0599196bec6d6498a4e36f31e8db6e5400491 |
-| built_at | 2026-10-02T11:28:48+00:00 |
-| path | porto_seguro/01a0fc5f-8b62-78bf-9350-b702f9318885 |
+| uuid | 01a11190-6bf9-7ab9-8c04-044ef7b9de7f |
+| checksum | fa96974a66e7cb6ed6d23018b6db93f951ec9356e66bef19ef3e7af67bccedee |
+| built_at | 2026-10-06T14:14:14+00:00 |
+| path | porto_seguro/01a11190-6bf9-7ab9-8c04-044ef7b9de7f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

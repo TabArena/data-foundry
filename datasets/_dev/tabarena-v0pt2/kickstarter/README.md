@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: fe62f5801bb5c48e7e5d4d04bff9d119b00337b9cc755ac7bf64ccc465283c13
+checksum: e0f56af747c22c43f684be7701cf2f98e040aeb533925d6d37a011a032951385
 build:
-  uuid: 01a0fc5f-ce7d-78d2-9291-6eba96feb93c
-  checksum: fe62f5801bb5c48e7e5d4d04bff9d119b00337b9cc755ac7bf64ccc465283c13
-  built_at: '2026-10-02T11:28:59+00:00'
-  path: kickstarter/01a0fc5f-ce7d-78d2-9291-6eba96feb93c
+  uuid: 01a1118f-d3e3-72e7-9fb5-50e718ae3b68
+  checksum: e0f56af747c22c43f684be7701cf2f98e040aeb533925d6d37a011a032951385
+  built_at: '2026-10-06T14:13:29+00:00'
+  path: kickstarter/01a1118f-d3e3-72e7-9fb5-50e718ae3b68
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `state`, scored with `roc_auc` on temporal splits by `created_at`. 187,117 rows and 12 features. Source: Other (2025).
 
-Built as `01a0fc5f-ce7d-78d2-9291-6eba96feb93c` on 2026-10-02. See [Build](#build).
+Built as `01a1118f-d3e3-72e7-9fb5-50e718ae3b68` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -301,10 +301,10 @@ We try to create splits that simulate a model deployed to solve the task.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-ce7d-78d2-9291-6eba96feb93c |
-| checksum | fe62f5801bb5c48e7e5d4d04bff9d119b00337b9cc755ac7bf64ccc465283c13 |
-| built_at | 2026-10-02T11:28:59+00:00 |
-| path | kickstarter/01a0fc5f-ce7d-78d2-9291-6eba96feb93c |
+| uuid | 01a1118f-d3e3-72e7-9fb5-50e718ae3b68 |
+| checksum | e0f56af747c22c43f684be7701cf2f98e040aeb533925d6d37a011a032951385 |
+| built_at | 2026-10-06T14:13:29+00:00 |
+| path | kickstarter/01a1118f-d3e3-72e7-9fb5-50e718ae3b68 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

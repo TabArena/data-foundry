@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886
+checksum: d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec
 build:
-  uuid: 01a0fc5f-f286-75ad-98a3-27aa42fd59fe
-  checksum: 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886
-  built_at: '2026-10-02T11:29:06+00:00'
-  path: early_learning_predictors/01a0fc5f-f286-75ad-98a3-27aa42fd59fe
+  uuid: 01a11190-f36c-76ca-a386-b00582a71674
+  checksum: d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec
+  built_at: '2026-10-06T14:14:39+00:00'
+  path: early_learning_predictors/01a11190-f36c-76ca-a386-b00582a71674
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -74,7 +74,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 744 features. Source: Other (2023).
 
-Built as `01a0fc5f-f286-75ad-98a3-27aa42fd59fe` on 2026-10-02. See [Build](#build).
+Built as `01a11190-f36c-76ca-a386-b00582a71674` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -165,11 +165,11 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 
 | child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 66.58 | NaT | Male | 65.6393 | 60-69 Months | nan | nan | Yes | nan | 117 | 0.903275 | Normal HAZ |
-| 38.7 | NaT | Female | 61.082 | 60-69 Months | nan | nan | nan | nan | 102 | -1.59908 | Normal HAZ |
-| 71.58 | 2018-01-29 00:00:00 | Male | 68 | 60-69 Months | 5 | Yes | nan | nan | nan | nan | nan |
-| 31.71 | 2017-04-30 00:00:00 | Female | 52 | 50-59 Months | nan | nan | Yes | nan | 107.5 | 0.549413 | Normal HAZ |
-| 72.29 | 2017-06-11 00:00:00 | Female | 65.117 | 60-69 Months | 5 | Yes | nan | nan | 108.233 | -0.739699 | Normal HAZ |
+| 32.56 | 2017-03-31 00:00:00 | Male | 53 | 50-59 Months | nan | nan | nan | nan | 106.5 | 0.0882086 | Normal HAZ |
+| 35.2 | NaT | Female | 68.7213 | 60-69 Months | nan | nan | nan | nan | 114.4 | 0.173314 | Normal HAZ |
+| 33.04 | 2017-01-03 00:00:00 | Male | 50 | 50-59 Months | nan | nan | Yes | nan | nan | nan | nan |
+| 25.79 | 2017-03-25 00:00:00 | Male | 55 | 50-59 Months | nan | nan | Yes | nan | 112 | 1.07401 | Normal HAZ |
+| 59.22 | 2016-08-07 00:00:00 | Female | 66 | 60-69 Months | nan | nan | nan | nan | nan | nan | nan |
 
 ## Curation notes
 
@@ -232,8 +232,8 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 59.3% of the rows (chance: 0.1%) |
-| label variance explained by the group | 0.40 (shuffled groups: 0.13) |
+| nearest neighbour in the same group | 59.4% of the rows (chance: 0.1%) |
+| label variance explained by the group | 0.40 (shuffled groups: 0.14) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
@@ -473,10 +473,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-f286-75ad-98a3-27aa42fd59fe |
-| checksum | 0606ce5047f86e243f915d13f7ded3212cf95fa2b9ddef0eab0cb7e09fe50886 |
-| built_at | 2026-10-02T11:29:06+00:00 |
-| path | early_learning_predictors/01a0fc5f-f286-75ad-98a3-27aa42fd59fe |
+| uuid | 01a11190-f36c-76ca-a386-b00582a71674 |
+| checksum | d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec |
+| built_at | 2026-10-06T14:14:39+00:00 |
+| path | early_learning_predictors/01a11190-f36c-76ca-a386-b00582a71674 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

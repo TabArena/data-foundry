@@ -6,8 +6,8 @@ healthy datasets is noise, and a hard ``error`` must be reproducible on a real b
 
 Run from the repo root::
 
-    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py                       # BeyondArena, via cache/HF
-    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --base-dir <warehouse>  # local warehouse
+    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py  # BeyondArena, via cache/HF
+    python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --base-dir <warehouse>  # local
     python .claude/skills/verify-dataset/scripts/check_collection_bundles.py --json findings.json
 
 Containers are loaded one at a time (a full collection does not fit in memory).
@@ -27,6 +27,7 @@ from data_foundry.collections import get_collection
 
 
 def parse_args() -> argparse.Namespace:
+    """The command-line options."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--collection", default="BeyondArena", help="Registered collection name.")
     parser.add_argument(
@@ -47,6 +48,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Check every container of the collection and print the findings by check."""
     args = parse_args()
     collection = get_collection(args.collection)
     findings: dict[str, list[str]] = defaultdict(list)
@@ -59,9 +61,7 @@ def main() -> int:
     for i, entry in enumerate(entries, start=1):
         print(f"[{i}/{len(entries)}] {entry.unique_name}", file=sys.stderr, flush=True)
         try:
-            container = (
-                entry.load(args.base_dir) if args.base_dir is not None else collection.get_dataset(entry.uuid)
-            )
+            container = entry.load(args.base_dir) if args.base_dir is not None else collection.get_dataset(entry.uuid)
         except Exception as error:  # noqa: BLE001 - one broken container must not stop the audit
             counts["load_failed"] += 1
             findings["container_load_failed"].append(f"{entry.unique_name}: {type(error).__name__}: {error}")

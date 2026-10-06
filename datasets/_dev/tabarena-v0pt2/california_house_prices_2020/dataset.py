@@ -133,6 +133,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
                 return n
             return x
 
+        df["Bedrooms"] = df["Bedrooms"].astype(object)  # pandas 3 reads text as `str`, which takes no numbers
         df.loc[bedroom_description_mask, "Bedrooms"] = df.loc[bedroom_description_mask, "Bedrooms"].apply(bedroom_proxy)
         df["Bedrooms"] = pd.to_numeric(df["Bedrooms"], errors="coerce")
         # Fix wrong sqft parsing outliers

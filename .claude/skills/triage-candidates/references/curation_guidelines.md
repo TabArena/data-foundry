@@ -38,8 +38,9 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
    (A) from a non-tabular modality where modality-specific models are clearly superior
    (judged per-dataset; vectorized image/text/audio/time-series is OK if tabular models
    are competitive); (B) not from a real random distribution (artificial / deterministic;
-   also exclude simulated-physics data that has dedicated benchmarks); (C) trivial (all
-   untuned models reach the same better-than-random score, or solve it perfectly);
+   also exclude simulated-physics data that has dedicated benchmarks); (C) trivial (one
+   feature or a simple rule gives the score the best methods reach, or the task is solved
+   perfectly; a small but real signal, or methods that tie on a hard task, is not trivial);
    (D) have irreversible data-quality issues that leak the target / test distribution
    (e.g. PCA-transformed); (E) lack enough information to make an informed decision.
 5. **Ethically unambiguous** — exclude tasks with ethical concerns, including data whose
@@ -177,8 +178,8 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
     other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
     entity directly (lab values, sensor readings, questionnaire responses, transaction fields), **not**
     read off a photo / scan of it. Signals (audio/sonar) are the same call case-by-case: interpretable
-    engineered acoustic *measures* the field uses as the instrument (jitter/shimmer in the shipped
-    Parkinsons voice data) can be in-scope; raw-signal spectral bins lean out. (`wbcatt` — expert-annotated
+    engineered acoustic *measures* the field uses as the instrument (jitter/shimmer in the
+    Parkinsons voice data, retired in 2026 for its size, not its modality) can be in-scope; raw-signal spectral bins lean out. (`wbcatt` — expert-annotated
     white-blood-cell morphology attributes — sits on the same boundary as `breast_w` and is only kept
     **provisionally** for a possible causal/counterfactual framing; treat it as borderline, not a clean
     in-scope precedent.) **Decide on the data's actual columns, not the dataset's fame** — "features
@@ -204,10 +205,15 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
     comments should state why they are distinct (ideally each citing its own specific DOI).
 * **Survey / scientific-discovery / non-predictive table** (no genuine predictive target) →
   `No Good Target / Scientific Discovery` → **No** or `TBD -> 2nd Tier`.
-* **Trivial** (all untuned models tie / solved perfectly) → `Trivial` → **No** (crit. 4C). The evidence for a
-  curated dataset is the task-probe sweep against dummy baselines on its own splits (`.claude/skills/verify-dataset/scripts/task_probes.py`:
-  `no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`). A flag is a question for the curator, not
-  a verdict: a `solved` or `one_feature` task is first a leak suspect, and `no_spread` on a small task can be noise.
+* **Trivial** (one feature or a simple rule matches the best methods / solved perfectly) → `Trivial` → **No**
+  (crit. 4C). For a curated dataset the evidence is the task probes on its own splits
+  (`.claude/skills/verify-dataset/scripts/task_probes.py`) checked against the benchmark's tuned methods; the rules
+  and the 24 decisions of the v0.2 review are in `.claude/skills/verify-dataset/references/task_probes.md`
+  (Lennart, 2026-10-05/06). In short: a flag is a question, not a verdict; a `solved` or `one_feature` task is first a
+  leak suspect; read what a dominant feature means (a listed price is the natural core of a sale price); `Trivial`
+  needs the raw feature to match or beat the methods fold by fold (fitness_club). A small but real signal is no
+  reason to retire, and neither is a cutoff on the best skill (forest_fires, R² 0.013, is a valid task); if tuned
+  methods spread, the dataset stays.
   * **Under class imbalance, accuracy against the majority class is not evidence** of anything, in either
     direction (Lennart, 2026-09-23). "78% accuracy on an 80% majority class" does not show a task is
     unlearnable, and a high accuracy does not show it is trivial. Judge learnability with ROC AUC (per class
@@ -222,7 +228,10 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   train/test split, so it leaks the test distribution irreversibly. E.g. `yeast` ships a column *"Score of
   discriminant analysis of the amino acid content of vacuolar and extracellular proteins"* — a DA fit on
   the full dataset, already baked in and unfixable → leak → **No**.
-* **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`.
+* **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`. That means a handful of
+  units of a class per test fold and in total, counted in the unit the task is scored on (parkinsons: 8 healthy
+  people, 2-3 per fold; retired 2026-10-05), not a small dataset as such (musk: 102 molecules, 13 musk per fold;
+  kept as a tiny-data task).
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a
   reason** and no marker: write it down as a note in `## Comments` and triage the data on its merits.

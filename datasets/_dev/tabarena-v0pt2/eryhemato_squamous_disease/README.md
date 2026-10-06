@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: 6fadac7405288b6446f9903a55ec32cfb7f4f9a7a1ee10aa9356050cd3c024de
+checksum: c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c
 build:
-  uuid: 01a0fc60-5622-772d-b079-ece2927b2dba
-  checksum: 6fadac7405288b6446f9903a55ec32cfb7f4f9a7a1ee10aa9356050cd3c024de
-  built_at: '2026-10-02T11:29:27+00:00'
-  path: eryhemato_squamous_disease/01a0fc60-5622-772d-b079-ece2927b2dba
+  uuid: 01a11191-aadc-7e12-a102-e16562cee512
+  checksum: c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c
+  built_at: '2026-10-06T14:15:21+00:00'
+  path: eryhemato_squamous_disease/01a11191-aadc-7e12-a102-e16562cee512
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,9 +20,9 @@ build:
 build_stale: false
 data:
   n_rows: 366
-  n_features: 34
+  n_features: 12
   dtypes:
-    category: 34
+    category: 12
     float64: 1
   n_test_dataset_rows: null
 task:
@@ -52,7 +52,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - dataset_conflicting_duplicate_rows
   accepted: {}
 decisions: []
 ---
@@ -61,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 34 features. Source: UCI (1997).
+Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1997).
 
-Built as `01a0fc60-5622-772d-b079-ece2927b2dba` on 2026-10-02. See [Build](#build).
+Built as `01a11191-aadc-7e12-a102-e16562cee512` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -107,7 +108,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | guvenir1998learning |
-| rows x columns | 366 x 35 |
+| rows x columns | 366 x 13 |
 | task.target | class |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -115,9 +116,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | class |
 
 <details>
-<summary>Feature types: 34 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 12 categorical, 0 string, 0 datetime</summary>
 
-- categorical (34): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`, `family history`, `melanin incontinence`, `eosinophils in the infiltrate`, `PNL infiltrate`, `fibrosis of the papillary dermis`, `exocytosis`, `acanthosis`, `hyperkeratosis`, `parakeratosis`, `clubbing of the rete ridges`, `elongation of the rete ridges`, `thinning of the suprapapillary epidermis`, `spongiform pustule`, `munro microabcess`, `focal hypergranulosis`, `disappearance of the granular layer`, `vacuolisation and damage of basal layer`, `spongiosis`, `saw-tooth appearance of retes`, `follicular horn plug`, `perifollicular parakeratosis`, `inflammatory monoluclear inflitrate`, `band-like infiltrate`, `class`
+- categorical (12): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`, `family history`, `class`
 - string (0): none
 - datetime (0): none
 
@@ -143,20 +144,21 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 366 rows of the final frame (random rows: the frame is shuffled); 12 of 35 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 366 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
 | class | erythema | scaling | definite borders | itching | koebner phenomenon | polygonal papules | follicular papules | oral mucosal involvement | knee and elbow involvement | scalp involvement | family history |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 2 | 2 | 1 |
+| 1 | 2 | 3 | 2 | 0 | 1 | 0 | 0 | 0 | 2 | 3 | 0 |
+| 5 | 1 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
 | 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-| 4 | 1 | 1 | 0 | 1 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 1 | 3 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |
-| 3 | 2 | 1 | 1 | 3 | 0 | 3 | 0 | 1 | 0 | 0 | 0 |
+| 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 2 | 2 | 0 |
+| 5 | 1 | 2 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
 We start with the data from UCI.
 
+- We keep only the clinical features: the 11 clinical findings, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
 - We encode all features but age as categorical, since they are ordinal features in nature.
 - We ensure missing values in age are encoded as NaN.
 
@@ -236,15 +238,16 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
+- **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (35 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -259,30 +262,8 @@ Default splits.
 | knee and elbow involvement | category | 0 | 0 | 4 | 0, 2, 1, 3 |
 | scalp involvement | category | 0 | 0 | 4 | 0, 2, 1, 3 |
 | family history | category | 0 | 0 | 2 | 0, 1 |
-| melanin incontinence | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| eosinophils in the infiltrate | category | 0 | 0 | 3 | 0, 1, 2 |
-| PNL infiltrate | category | 0 | 0 | 4 | 0, 1, 2, 3 |
-| fibrosis of the papillary dermis | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| exocytosis | category | 0 | 0 | 4 | 2, 0, 3, 1 |
-| acanthosis | category | 0 | 0 | 4 | 2, 3, 1, 0 |
-| hyperkeratosis | category | 0 | 0 | 4 | 0, 1, 2, 3 |
-| parakeratosis | category | 0 | 0 | 4 | 2, 1, 0, 3 |
-| clubbing of the rete ridges | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| elongation of the rete ridges | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| thinning of the suprapapillary epidermis | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| spongiform pustule | category | 0 | 0 | 4 | 0, 1, 2, 3 |
-| munro microabcess | category | 0 | 0 | 4 | 0, 1, 2, 3 |
-| focal hypergranulosis | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| disappearance of the granular layer | category | 0 | 0 | 4 | 0, 2, 1, 3 |
-| vacuolisation and damage of basal layer | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| spongiosis | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| saw-tooth appearance of retes | category | 0 | 0 | 4 | 0, 2, 3, 1 |
-| follicular horn plug | category | 0 | 0 | 4 | 0, 1, 2, 3 |
-| perifollicular parakeratosis | category | 0 | 0 | 4 | 0, 2, 1, 3 |
-| inflammatory monoluclear inflitrate | category | 0 | 0 | 4 | 2, 1, 3, 0 |
-| band-like infiltrate | category | 0 | 0 | 4 | 0, 3, 2, 1 |
 | class | category | 0 | 0 | 6 | 1, 3, 2, 5, 4, 6 |
-| age | float64 | 8 | 2.19 | 60 | 40.0, 50.0, 27.0, 36.0, 22.0, 55.0, 25.0, 35.0, 30.0, 33.0 |
+| age | float64 | 8 | 2.19 | 60 | 40.0, 50.0, 27.0, 36.0, 22.0, 25.0, 55.0, 35.0, 30.0, 33.0 |
 
 </details>
 
@@ -306,72 +287,57 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (134 rows)</summary>
+<summary>Show the table (47 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| PNL infiltrate | 1 | 0 | 235 | 64.21 |
-| PNL infiltrate | 2 | 1 | 69 | 18.85 |
-| PNL infiltrate | 3 | 2 | 55 | 15.03 |
-| PNL infiltrate | 4 | 3 | 7 | 1.91 |
-| acanthosis | 1 | 2 | 210 | 57.38 |
-| acanthosis | 2 | 3 | 75 | 20.49 |
-| acanthosis | 3 | 1 | 71 | 19.4 |
-| acanthosis | 4 | 0 | 10 | 2.73 |
-| band-like infiltrate | 1 | 0 | 289 | 78.96 |
-| band-like infiltrate | 2 | 3 | 52 | 14.21 |
-| band-like infiltrate | 3 | 2 | 22 | 6.01 |
-| band-like infiltrate | 4 | 1 | 3 | 0.82 |
 | class | 1 | 1 | 112 | 30.6 |
 | class | 2 | 3 | 72 | 19.67 |
 | class | 3 | 2 | 61 | 16.67 |
 | class | 4 | 5 | 52 | 14.21 |
 | class | 5 | 4 | 49 | 13.39 |
-| clubbing of the rete ridges | 1 | 0 | 252 | 68.85 |
-| clubbing of the rete ridges | 2 | 2 | 61 | 16.67 |
-| clubbing of the rete ridges | 3 | 3 | 34 | 9.29 |
-| clubbing of the rete ridges | 4 | 1 | 19 | 5.19 |
 | definite borders | 1 | 2 | 168 | 45.9 |
 | definite borders | 2 | 1 | 93 | 25.41 |
 | definite borders | 3 | 0 | 59 | 16.12 |
 | definite borders | 4 | 3 | 46 | 12.57 |
-| disappearance of the granular layer | 1 | 0 | 273 | 74.59 |
-| disappearance of the granular layer | 2 | 2 | 49 | 13.39 |
-| disappearance of the granular layer | 3 | 1 | 30 | 8.2 |
-| disappearance of the granular layer | 4 | 3 | 14 | 3.83 |
-| elongation of the rete ridges | 1 | 0 | 198 | 54.1 |
-| elongation of the rete ridges | 2 | 2 | 95 | 25.96 |
-| elongation of the rete ridges | 3 | 3 | 50 | 13.66 |
-| elongation of the rete ridges | 4 | 1 | 23 | 6.28 |
-| eosinophils in the infiltrate | 1 | 0 | 324 | 88.52 |
-| eosinophils in the infiltrate | 2 | 1 | 33 | 9.02 |
-| eosinophils in the infiltrate | 3 | 2 | 9 | 2.46 |
 | erythema | 1 | 2 | 215 | 58.74 |
 | erythema | 2 | 3 | 90 | 24.59 |
 | erythema | 3 | 1 | 57 | 15.57 |
 | erythema | 4 | 0 | 4 | 1.09 |
-| exocytosis | 1 | 2 | 129 | 35.25 |
-| exocytosis | 2 | 0 | 118 | 32.24 |
-| exocytosis | 3 | 3 | 62 | 16.94 |
-| exocytosis | 4 | 1 | 57 | 15.57 |
 | family history | 1 | 0 | 320 | 87.43 |
 | family history | 2 | 1 | 46 | 12.57 |
-| fibrosis of the papillary dermis | 1 | 0 | 312 | 85.25 |
-| fibrosis of the papillary dermis | 2 | 2 | 23 | 6.28 |
-| fibrosis of the papillary dermis | 3 | 3 | 23 | 6.28 |
-| fibrosis of the papillary dermis | 4 | 1 | 8 | 2.19 |
-| focal hypergranulosis | 1 | 0 | 295 | 80.6 |
-| focal hypergranulosis | 2 | 2 | 43 | 11.75 |
-| focal hypergranulosis | 3 | 3 | 15 | 4.1 |
-| focal hypergranulosis | 4 | 1 | 13 | 3.55 |
-| follicular horn plug | 1 | 0 | 344 | 93.99 |
-| follicular horn plug | 2 | 1 | 10 | 2.73 |
-| follicular horn plug | 3 | 2 | 8 | 2.19 |
-| follicular horn plug | 4 | 3 | 4 | 1.09 |
 | follicular papules | 1 | 0 | 333 | 90.98 |
 | follicular papules | 2 | 2 | 16 | 4.37 |
-
-(74 more rows not shown)
+| follicular papules | 3 | 1 | 11 | 3.01 |
+| follicular papules | 4 | 3 | 6 | 1.64 |
+| itching | 1 | 0 | 118 | 32.24 |
+| itching | 2 | 2 | 100 | 27.32 |
+| itching | 3 | 3 | 76 | 20.77 |
+| itching | 4 | 1 | 72 | 19.67 |
+| knee and elbow involvement | 1 | 0 | 251 | 68.58 |
+| knee and elbow involvement | 2 | 2 | 64 | 17.49 |
+| knee and elbow involvement | 3 | 1 | 28 | 7.65 |
+| knee and elbow involvement | 4 | 3 | 23 | 6.28 |
+| koebner phenomenon | 1 | 0 | 224 | 61.2 |
+| koebner phenomenon | 2 | 1 | 70 | 19.13 |
+| koebner phenomenon | 3 | 2 | 54 | 14.75 |
+| koebner phenomenon | 4 | 3 | 18 | 4.92 |
+| oral mucosal involvement | 1 | 0 | 299 | 81.69 |
+| oral mucosal involvement | 2 | 2 | 45 | 12.3 |
+| oral mucosal involvement | 3 | 3 | 13 | 3.55 |
+| oral mucosal involvement | 4 | 1 | 9 | 2.46 |
+| polygonal papules | 1 | 0 | 297 | 81.15 |
+| polygonal papules | 2 | 2 | 41 | 11.2 |
+| polygonal papules | 3 | 3 | 27 | 7.38 |
+| polygonal papules | 4 | 1 | 1 | 0.27 |
+| scaling | 1 | 2 | 195 | 53.28 |
+| scaling | 2 | 1 | 111 | 30.33 |
+| scaling | 3 | 3 | 52 | 14.21 |
+| scaling | 4 | 0 | 8 | 2.19 |
+| scalp involvement | 1 | 0 | 264 | 72.13 |
+| scalp involvement | 2 | 2 | 56 | 15.3 |
+| scalp involvement | 3 | 1 | 30 | 8.2 |
+| scalp involvement | 4 | 3 | 16 | 4.37 |
 
 </details>
 
@@ -379,10 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-5622-772d-b079-ece2927b2dba |
-| checksum | 6fadac7405288b6446f9903a55ec32cfb7f4f9a7a1ee10aa9356050cd3c024de |
-| built_at | 2026-10-02T11:29:27+00:00 |
-| path | eryhemato_squamous_disease/01a0fc60-5622-772d-b079-ece2927b2dba |
+| uuid | 01a11191-aadc-7e12-a102-e16562cee512 |
+| checksum | c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c |
+| built_at | 2026-10-06T14:15:21+00:00 |
+| path | eryhemato_squamous_disease/01a11191-aadc-7e12-a102-e16562cee512 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

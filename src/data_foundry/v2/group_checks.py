@@ -33,6 +33,7 @@ import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
 from data_foundry.schema import as_column_list
+from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -130,8 +131,8 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
                 "warning",
                 f"A test fold holds {low} groups ({low}-{high} per fold, {stats.n_groups} groups in all): a score per "
                 "group rests on few independent units, and a score per row on not many more.",
-                hint="Keep the dataset only if its signal across groups is real (`.claude/skills/verify-dataset/scripts/group_probes.py`), and "
-                "accept the warning with that reason.",
+                hint="Keep the dataset only if its signal across groups is real "
+                "(`.claude/skills/verify-dataset/scripts/group_probes.py`), and accept the warning with that reason.",
             ),
         )
     if stats.largest_share > MAX_GROUP_SHARE:
@@ -182,7 +183,7 @@ def _near_chance(value: float | None, chance: float | None) -> bool:
 
 def _neighbour_share(df: pd.DataFrame, groups: np.ndarray, *, exclude: list[str]) -> tuple[float | None, float | None]:
     """The share of sampled rows whose nearest other row is in the same group, and that share for unrelated groups."""
-    from sklearn.neighbors import NearestNeighbors  # noqa: PLC0415 - heavy import
+    neighbors = import_build_dependency("sklearn.neighbors")
 
     if len(df) < 3:  # a row, its neighbour and one more
         return None, None
@@ -198,7 +199,7 @@ def _neighbour_share(df: pd.DataFrame, groups: np.ndarray, *, exclude: list[str]
         return None, None
     standardised = ((values - values.mean()) / values.std()).fillna(0.0).to_numpy()
     # kneighbors() without X leaves each row itself out, also when the row has an exact copy
-    _, neighbours = NearestNeighbors(n_neighbors=1).fit(standardised).kneighbors()
+    _, neighbours = neighbors.NearestNeighbors(n_neighbors=1).fit(standardised).kneighbors()
     sampled_groups = groups[sample]
     same = float(np.mean(sampled_groups[neighbours[:, 0]] == sampled_groups))
     sizes = np.bincount(sampled_groups)

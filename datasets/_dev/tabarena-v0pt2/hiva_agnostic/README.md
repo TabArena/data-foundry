@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hiva_agnostic
 container_format: 2
-checksum: d77861f5860e1216a0fe42c5c70949c1861cab6ae27f122f4db0fac495b5d647
+checksum: b15529897e2cd9d8e7a2f03c2d8713f232ea18e05f9d8d4dc47a5c121ad36b2b
 build:
-  uuid: 01a0fc5f-d0c9-7748-a28f-bfaa223669cc
-  checksum: d77861f5860e1216a0fe42c5c70949c1861cab6ae27f122f4db0fac495b5d647
-  built_at: '2026-10-02T11:29:01+00:00'
-  path: hiva_agnostic/01a0fc5f-d0c9-7748-a28f-bfaa223669cc
+  uuid: 01a11190-d968-7f4c-9a3c-c7d1cae62a30
+  checksum: b15529897e2cd9d8e7a2f03c2d8713f232ea18e05f9d8d4dc47a5c121ad36b2b
+  built_at: '2026-10-06T14:14:36+00:00'
+  path: hiva_agnostic/01a11190-d968-7f4c-9a3c-c7d1cae62a30
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `CompoundActive`, scored with `roc_auc` on IID splits. 3,845 rows and 1,518 features. Source: Other (2007).
 
-Built as `01a0fc5f-d0c9-7748-a28f-bfaa223669cc` on 2026-10-02. See [Build](#build).
+Built as `01a11190-d968-7f4c-9a3c-c7d1cae62a30` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,10 +145,10 @@ The first 5 of 3,845 rows of the final frame (random rows: the frame is shuffled
 
 | CompoundActive | molecule_structure_property_1 | molecule_structure_property_2 | molecule_structure_property_3 | molecule_structure_property_4 | molecule_structure_property_5 | molecule_structure_property_6 | molecule_structure_property_7 | molecule_structure_property_8 | molecule_structure_property_9 | molecule_structure_property_10 | molecule_structure_property_11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| -1 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
@@ -342,10 +342,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-d0c9-7748-a28f-bfaa223669cc |
-| checksum | d77861f5860e1216a0fe42c5c70949c1861cab6ae27f122f4db0fac495b5d647 |
-| built_at | 2026-10-02T11:29:01+00:00 |
-| path | hiva_agnostic/01a0fc5f-d0c9-7748-a28f-bfaa223669cc |
+| uuid | 01a11190-d968-7f4c-9a3c-c7d1cae62a30 |
+| checksum | b15529897e2cd9d8e7a2f03c2d8713f232ea18e05f9d8d4dc47a5c121ad36b2b |
+| built_at | 2026-10-06T14:14:36+00:00 |
+| path | hiva_agnostic/01a11190-d968-7f4c-9a3c-c7d1cae62a30 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

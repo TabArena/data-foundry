@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: b4ab72b604cc40f461959f057fb382892316fc3ad9520a8418960d0914389924
+checksum: 163ede18e2e4eb01e3fdc48f170a291208c1c6d723242e8364d26145c7a9e0f9
 build:
-  uuid: 01a0fc60-9908-7417-92f7-d60b4f0332a8
-  checksum: b4ab72b604cc40f461959f057fb382892316fc3ad9520a8418960d0914389924
-  built_at: '2026-10-02T11:29:44+00:00'
-  path: website_phishing/01a0fc60-9908-7417-92f7-d60b4f0332a8
+  uuid: 01a11191-f562-7b40-89cc-dfd32c48ec62
+  checksum: 163ede18e2e4eb01e3fdc48f170a291208c1c6d723242e8364d26145c7a9e0f9
+  built_at: '2026-10-06T14:15:40+00:00'
+  path: website_phishing/01a11191-f562-7b40-89cc-dfd32c48ec62
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `WebsiteType`, scored with `log_loss` on IID splits. 1,353 rows and 9 features. Source: UCI (2014).
 
-Built as `01a0fc60-9908-7417-92f7-d60b4f0332a8` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f562-7b40-89cc-dfd32c48ec62` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 1,353 rows of the final frame (random rows: the frame is shuffled
 
 | WebsiteType | SFH | popUpWidnow | SSLfinal_State | Request_URL | URL_of_Anchor | web_traffic | URL_Length | age_of_domain | having_IP_Address |
 |---|---|---|---|---|---|---|---|---|---|
-| Suspicious | Legitimate | Legitimate | Phishy | Phishy | Legitimate | Phishy | Legitimate | Legitimate | Suspicious |
-| Legitimate | Phishy | Phishy | Suspicious | Phishy | Phishy | Legitimate | Phishy | Phishy | Suspicious |
-| Phishy | Legitimate | Suspicious | Legitimate | Phishy | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
-| Phishy | Legitimate | Suspicious | Legitimate | Legitimate | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
-| Legitimate | Phishy | Phishy | Legitimate | Phishy | Phishy | Suspicious | Suspicious | Legitimate | Suspicious |
+| Legitimate | Phishy | Phishy | Phishy | Phishy | Phishy | Suspicious | Legitimate | Legitimate | Suspicious |
+| Legitimate | Phishy | Phishy | Phishy | Suspicious | Phishy | Suspicious | Legitimate | Legitimate | Suspicious |
+| Phishy | Legitimate | Suspicious | Phishy | Legitimate | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
+| Phishy | Legitimate | Legitimate | Legitimate | Phishy | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
+| Suspicious | Suspicious | Phishy | Suspicious | Suspicious | Suspicious | Suspicious | Phishy | Legitimate | Suspicious |
 
 ## Curation notes
 
@@ -281,10 +281,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9908-7417-92f7-d60b4f0332a8 |
-| checksum | b4ab72b604cc40f461959f057fb382892316fc3ad9520a8418960d0914389924 |
-| built_at | 2026-10-02T11:29:44+00:00 |
-| path | website_phishing/01a0fc60-9908-7417-92f7-d60b4f0332a8 |
+| uuid | 01a11191-f562-7b40-89cc-dfd32c48ec62 |
+| checksum | 163ede18e2e4eb01e3fdc48f170a291208c1c6d723242e8364d26145c7a9e0f9 |
+| built_at | 2026-10-06T14:15:40+00:00 |
+| path | website_phishing/01a11191-f562-7b40-89cc-dfd32c48ec62 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

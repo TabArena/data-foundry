@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: 3b5bc78970aeb9e63c09990f44cda3a630730b5aedd7d4530e611da0f84eee1d
+checksum: f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb
 build:
-  uuid: 01a0fc5e-f5a5-7c73-83cb-12df88f8575d
-  checksum: 3b5bc78970aeb9e63c09990f44cda3a630730b5aedd7d4530e611da0f84eee1d
-  built_at: '2026-10-02T11:28:09+00:00'
-  path: labour_inspection_compliance/01a0fc5e-f5a5-7c73-83cb-12df88f8575d
+  uuid: 01a1118f-c85a-73f9-a1d9-90f43014e947
+  checksum: f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb
+  built_at: '2026-10-06T14:13:33+00:00'
+  path: labour_inspection_compliance/01a1118f-c85a-73f9-a1d9-90f43014e947
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2019).
 
-Built as `01a0fc5e-f5a5-7c73-83cb-12df88f8575d` on 2026-10-02. See [Build](#build).
+Built as `01a1118f-c85a-73f9-a1d9-90f43014e947` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 63,634 rows of the final frame (random rows: the frame is shuffle
 
 | NonCompliance | Industry Code | IsRegisteredVATregister | IsRegisteredEmploymentregister | Business Age | County | Number of Employees | Checklist Content | Currency code | Fiscal accounting type | Total receivables | Trade receivables |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 10 | Nei | Ja | 163 | Vestland | 341 | HSE and working environment training fo… | NOK | STORE | 1.63637e+08 | 1.56638e+08 |
-| 1 | 16 | Nei | Ja | 53 | Agder | 11 | HSE and working environment training fo… | NOK | STORE | 1.48274e+07 | 233112 |
-| 1 | 85 | Nei | Ja | 604 | Viken | 63 | HSE and working environment training fo… | nan | nan | nan | nan |
-| 1 | 77 | Nei | Ja | 295 | Viken | 7 | Working agreements, Employers responsib… | NOK | STORE | 1.33679e+08 | 1.05348e+08 |
-| 1 | 10 | Nei | Ja | 183 | Viken | 34 | HSE and working environment training fo… | NOK | STORE | 7.5481e+06 | 7.04787e+06 |
+| 1 | 43 | Nei | Ja | 20 | Nordland | 6 | Working agreements, Building and equipm… | NOK | STORE | 145896 | 69562 |
+| 1 | 43 | Nei | Ja | 181 | Agder | 13 | Working agreements, Working hour schedu… | NOK | STORE | 5.12771e+06 | 4.72646e+06 |
+| 0 | 55 | Nei | Ja | 115 | Viken | 12 | Ordering obligations, Not specified, Du… | NOK | STORE | 9.49023e+07 | 7.2305e+06 |
+| 1 | 43 | Ja | Ja | 318 | Vestfold og Telemark | 21 | Working agreements, HSE and working env… | NOK | STORE | 2.57084e+06 | 1.92734e+06 |
+| 1 | 96 | Nei | Ja | 133 | Trøndelag | 14 | HSE and working environment training fo… | NOK | STORE | 3.07152e+06 | 112057 |
 
 ## Curation notes
 
@@ -213,54 +213,54 @@ Default splits.
 | Receivables factoring | float64 | 63628 | 99.99 | 3 | 0.0, 2297185815.0, 76190525.0 |
 | Holdings of own shares/equity certificates | float64 | 63626 | 99.99 | 1 | -100000.0 |
 | Extraordinary costs | float64 | 63626 | 99.99 | 1 | 0.0 |
-| Transferred from gift funds | float64 | 63629 | 99.99 | 5 | 2878000.0, 200000.0, 100000.0, 800000.0, 193000.0 |
+| Transferred from gift funds | float64 | 63629 | 99.99 | 5 | 200000.0, 2878000.0, 100000.0, 193000.0, 800000.0 |
 | Lending factoring | float64 | 63629 | 99.99 | 2 | 0.0, 9756101.0 |
-| Investment properties | float64 | 63628 | 99.99 | 5 | 269000000.0, 9908000.0, 1581000.0, 639647.0, 91476454.0 |
+| Investment properties | float64 | 63628 | 99.99 | 5 | 269000000.0, 91476454.0, 639647.0, 9908000.0, 1581000.0 |
 | Value regulations - property, plant and equipment | float64 | 63626 | 99.99 | 2 | -19000000.0, 100000000.0 |
 | Changes in prepaid direct sales costs | float64 | 63627 | 99.99 | 2 | 69000000.0, 1462030.0 |
-| Shares in responsible companies, limited partnerships m.v. | float64 | 63625 | 99.99 | 6 | 2416000.0, 7319000000.0, 21000000.0, 747000.0, 604000.0, 1193000.0 |
-| Transferred from other equity | float64 | 63625 | 99.99 | 6 | 20000000.0, -17240000.0, 298000.0, 937000.0, -259000.0, -9591349.0 |
+| Shares in responsible companies, limited partnerships m.v. | float64 | 63625 | 99.99 | 6 | 7319000000.0, 21000000.0, 2416000.0, 747000.0, 604000.0, 1193000.0 |
+| Transferred from other equity | float64 | 63625 | 99.99 | 6 | 20000000.0, 937000.0, -9591349.0, -259000.0, -17240000.0, 298000.0 |
 | Extraordinary revenues | float64 | 63629 | 99.99 | 3 | 3597000.0, 36885000.0, 19280000.0 |
-| Obligations to credit institutions | float64 | 63629 | 99.99 | 4 | 178000000.0, 611000.0, 1334000000.0, 0.0 |
-| Other interest-bearing securities | float64 | 63621 | 99.98 | 7 | 0.0, 160114000000.0, 56218000.0, 3828147569.0, 1047498000.0, 684000000.0, 56480… |
+| Obligations to credit institutions | float64 | 63629 | 99.99 | 4 | 178000000.0, 0.0, 611000.0, 1334000000.0 |
+| Other interest-bearing securities | float64 | 63621 | 99.98 | 7 | 0.0, 160114000000.0, 56218000.0, 3828147569.0, 684000000.0, 1047498000.0, 56480… |
 | Credit losses on certificates, bonds and other interest-bearing securities | float64 | 63624 | 99.98 | 1 | 0.0 |
-| Transferred to funds for assessment differences | float64 | 63619 | 99.98 | 7 | -7000000.0, -111000000.0, 44000000.0, -8170000.0, 9255000.0, -95000000.0, 27553… |
-| Investments that are held to maturity | float64 | 63621 | 99.98 | 5 | 1625900000.0, 26407.0, 178914000.0, 192115000.0, 2039791790.0 |
-| Other possessions denoted by their nature | float64 | 63620 | 99.98 | 6 | 486200000.0, 742000000.0, 5557000.0, 34649310.0, 3000000.0, 6685699.0 |
-| Assets by tax | float64 | 63621 | 99.98 | 7 | 21000000.0, 0.0, 10339000.0, 1381000.0, 50613000.0, 4054590.0, 563000000.0 |
-| Responsible loan capital with associated conversion rights | float64 | 63622 | 99.98 | 7 | 0.0, 90573000.0, 30000000.0, 150000000.0, 44722000.0, 90000000.0, 49887000.0 |
+| Transferred to funds for assessment differences | float64 | 63619 | 99.98 | 7 | -7000000.0, -111000000.0, 44000000.0, -8170000.0, -95000000.0, 9255000.0, 27553… |
+| Investments that are held to maturity | float64 | 63621 | 99.98 | 5 | 1625900000.0, 26407.0, 192115000.0, 2039791790.0, 178914000.0 |
+| Other possessions denoted by their nature | float64 | 63620 | 99.98 | 6 | 486200000.0, 742000000.0, 34649310.0, 6685699.0, 3000000.0, 5557000.0 |
+| Assets by tax | float64 | 63621 | 99.98 | 7 | 21000000.0, 0.0, 1381000.0, 50613000.0, 4054590.0, 10339000.0, 563000000.0 |
+| Responsible loan capital with associated conversion rights | float64 | 63622 | 99.98 | 7 | 0.0, 90573000.0, 30000000.0, 44722000.0, 150000000.0, 49887000.0, 90000000.0 |
 | Earned, undiscensed rental income | float64 | 63624 | 99.98 | 4 | 373000000.0, 221000000.0, 14756000.0, 386000000.0 |
-| Other securities | float64 | 63619 | 99.98 | 4 | 4172000000.0, 696000.0, 101730000.0, 57558000.0 |
-| Interest rates and similar income from debt letters that can be refinanced in c… | float64 | 63619 | 99.98 | 5 | 0.0, 55000000.0, 660000000.0, 395000.0, 48000000.0 |
+| Other securities | float64 | 63619 | 99.98 | 4 | 4172000000.0, 696000.0, 57558000.0, 101730000.0 |
+| Interest rates and similar income from debt letters that can be refinanced in c… | float64 | 63619 | 99.98 | 5 | 0.0, 55000000.0, 660000000.0, 48000000.0, 395000.0 |
 | Prepaid direct sales costs | float64 | 63624 | 99.98 | 4 | 985000000.0, 10144760.0, 181806000.0, 39550000.0 |
 | Gains and losses on financial assets available for sale | float64 | 63619 | 99.98 | 3 | -12200000.0, 1014000000.0, 2207292.0 |
 | Unspecified provisions on warranty liability | float64 | 63622 | 99.98 | 4 | 0.0, 100000.0, 498000.0, 175000.0 |
-| Loss on guarantees m.v. | float64 | 63615 | 99.97 | 11 | 0.0, -155000.0, 235000.0, 1000000.0, 895000.0, -2000.0, -926000.0, 1400000.0, 6… |
-| Unspecified loss provisions | float64 | 63617 | 99.97 | 11 | 49352000.0, 0.0, 20000000.0, 109955000.0, 8206000.0, 12678000.0, 11000000.0, 28… |
-| Fund for assessment differences | float64 | 63615 | 99.97 | 8 | 134000000.0, 0.0, 52000000.0, 335000000.0, 5575000.0, 115432000.0, 363000.0, 11… |
+| Loss on guarantees m.v. | float64 | 63615 | 99.97 | 11 | 0.0, 235000.0, 1000000.0, -155000.0, 1400000.0, -2000.0, 6000000.0, 150000.0, -… |
+| Unspecified loss provisions | float64 | 63617 | 99.97 | 11 | 49352000.0, 0.0, 20000000.0, 109955000.0, 12678000.0, 39546000.0, 17600000.0, 1… |
+| Fund for assessment differences | float64 | 63615 | 99.97 | 8 | 134000000.0, 0.0, 52000000.0, 335000000.0, 363000.0, 115432000.0, 117516000.0, … |
 | Debt letters that can be refinanced in central banks | float64 | 63616 | 99.97 | 3 | 94236000000.0, 0.0, 107571000000.0 |
-| Other financial assets | float64 | 63617 | 99.97 | 9 | 18268700000.0, 651762000.0, 15166000.0, 208223000.0, 40483000.0, 121054395.0, 8… |
-| Receivables in connection with reinsurance | float64 | 63612 | 99.97 | 8 | 340100000.0, 426000000.0, 183000000.0, 54273477.0, 23422000.0, 119761433.0, 110… |
-| Sales costs | float64 | 63612 | 99.97 | 13 | 3508000000.0, 2106000000.0, 53781000.0, 41905662.0, 7832069.0, 3292000.0, 36684… |
+| Other financial assets | float64 | 63617 | 99.97 | 9 | 18268700000.0, 651762000.0, 24230000.0, 15166000.0, 333515646.0, 208223000.0, 1… |
+| Receivables in connection with reinsurance | float64 | 63612 | 99.97 | 8 | 340100000.0, 426000000.0, 54273477.0, 183000000.0, 119761433.0, 10528000.0, 234… |
+| Sales costs | float64 | 63612 | 99.97 | 13 | 3508000000.0, 2106000000.0, 41905662.0, 7832069.0, 53781000.0, -4056155.0, 3489… |
 | Purpose capital with statutory restrictions | float64 | 63613 | 99.97 | 2 | 11142000.0, 7000.0 |
-| Itemized loss provisions | float64 | 63617 | 99.97 | 11 | 10231000.0, 0.0, 19351000.0, 297093000.0, 2008000.0, 22274000.0, 26124000.0, 25… |
+| Itemized loss provisions | float64 | 63617 | 99.97 | 11 | 10231000.0, 0.0, 19351000.0, 297093000.0, 22274000.0, 28991000.0, 5405000.0, 10… |
 | Margin deductions and other intercompany with customers | float64 | 63618 | 99.97 | 3 | 1572000000.0, 0.0, 21055827.0 |
-| Provision for the guarantee scheme | float64 | 63615 | 99.97 | 9 | 628900000.0, 83301000.0, 3018074.0, 13920870.0, 109793000.0, 2388000.0, 764684.… |
-| Actuarial gains and losses on defined benefit pension schemes - benefits to emp… | float64 | 63616 | 99.97 | 9 | -159200000.0, -1181000.0, -95000000.0, -63000.0, -4681000.0, -119271.0, -193500… |
-| Write-downs | float64 | 63615 | 99.97 | 7 | 0.0, 6800000.0, 16500000.0, 66000000.0, 5000000.0, 765000.0, 2000000.0 |
-| Member revenue | float64 | 63618 | 99.97 | 9 | 4799000.0, 3383000.0, 15773000.0, 159000.0, 42358045.0, 855000.0, 33277000.0, 9… |
+| Provision for the guarantee scheme | float64 | 63615 | 99.97 | 9 | 628900000.0, 13920870.0, 83301000.0, 3018074.0, 44102000.0, 2388000.0, 764684.0… |
+| Actuarial gains and losses on defined benefit pension schemes - benefits to emp… | float64 | 63616 | 99.97 | 9 | -159200000.0, -1181000.0, -95000000.0, -1935000.0, 3966733.0, -119271.0, -63000… |
+| Write-downs | float64 | 63615 | 99.97 | 7 | 0.0, 6800000.0, 66000000.0, 5000000.0, 16500000.0, 2000000.0, 765000.0 |
+| Member revenue | float64 | 63618 | 99.97 | 9 | 4799000.0, 15773000.0, 3383000.0, 159000.0, 93200.0, 855000.0, 3807000.0, 42358… |
 | Preference share capital | float64 | 63617 | 99.97 | 3 | 3013000000.0, 0.0, 230149000.0 |
-| Provision for the Nature Damage Fund | float64 | 63613 | 99.97 | 10 | 2266200000.0, 8326000.0, 6315844.0, 822000000.0, 0.0, 71013000.0, 462000.0, 109… |
-| Pension liabilities o.l. | float64 | 63612 | 99.97 | 13 | 511800000.0, 10924000.0, 345000000.0, 61000.0, 863000.0, 109451000.0, 61428000.… |
-| Shares and shares in subsidiaries, associated enterprises and joint ventures | float64 | 63617 | 99.97 | 9 | 6828600000.0, 3172000000.0, 274489000.0, 39586000.0, 825887000.0, 630846364.0, … |
-| Income from investments in subsidiaries, affiliated enterprises and joint ventu… | float64 | 63612 | 99.97 | 9 | 19100000.0, -6000000.0, 558000000.0, 26689000.0, 53810000.0, 91672098.0, 830000… |
-| Exchange rate differences from foreign activities | float64 | 63613 | 99.97 | 7 | -391300000.0, 386000000.0, -3297000.0, 51000000.0, 3095000.0, 8042000.0, -23800… |
-| Policyholders | float64 | 63612 | 99.97 | 13 | 9036000000.0, 83798000.0, 110945770.0, 15513356.0, 1108000000.0, 1122389000.0, … |
+| Provision for the Nature Damage Fund | float64 | 63613 | 99.97 | 10 | 2266200000.0, 822000000.0, 0.0, 8326000.0, 6315844.0, 159759000.0, 462000.0, 10… |
+| Pension liabilities o.l. | float64 | 63612 | 99.97 | 13 | 511800000.0, 10924000.0, 345000000.0, 63166000.0, 863000.0, 233040902.0, 495163… |
+| Shares and shares in subsidiaries, associated enterprises and joint ventures | float64 | 63617 | 99.97 | 9 | 6828600000.0, 3172000000.0, 616581000.0, 503442731.0, 274489000.0, 630846364.0,… |
+| Income from investments in subsidiaries, affiliated enterprises and joint ventu… | float64 | 63612 | 99.97 | 9 | 19100000.0, -6000000.0, 558000000.0, 91672098.0, 9406291.0, 26689000.0, 1427945… |
+| Exchange rate differences from foreign activities | float64 | 63613 | 99.97 | 7 | -391300000.0, 386000000.0, 51000000.0, -3297000.0, 3095000.0, 8042000.0, -23800… |
+| Policyholders | float64 | 63612 | 99.97 | 13 | 9036000000.0, 1108000000.0, 110945770.0, 15513356.0, 83798000.0, 380079901.0, 1… |
 | Reinsurance depots | float64 | 63618 | 99.97 | 4 | 457800000.0, 7000000.0, 3705589.0, 4000000.0 |
-| Other purpose capital with statutory restrictions | float64 | 63607 | 99.96 | 4 | 71402000.0, 203414000.0, 16297145.0, 0.0 |
-| Realized gain and loss on investments | float64 | 63606 | 99.96 | 13 | 1920800000.0, 266000000.0, 17757000.0, 4098803.0, 11720044.0, 1088000.0, 901800… |
-| Net operating income from real estate | float64 | 63610 | 99.96 | 10 | 0.0, 8000000.0, 12000000.0, -2576928.0, 292000.0, -123460.0, 363293.0, -1000000… |
-| Specified provisions on warranty liability | float64 | 63611 | 99.96 | 7 | 0.0, 10000000.0, 2500000.0, 2743118.0, 1150000.0, 6000000.0, 5400000.0 |
+| Other purpose capital with statutory restrictions | float64 | 63607 | 99.96 | 4 | 71402000.0, 203414000.0, 0.0, 16297145.0 |
+| Realized gain and loss on investments | float64 | 63606 | 99.96 | 13 | 1920800000.0, 266000000.0, 4098803.0, 17757000.0, 11720044.0, 1088000.0, 168172… |
+| Net operating income from real estate | float64 | 63610 | 99.96 | 10 | 0.0, 8000000.0, -2576928.0, 12000000.0, 68011412.0, 363293.0, -123460.0, 292000… |
+| Specified provisions on warranty liability | float64 | 63611 | 99.96 | 7 | 0.0, 10000000.0, 2500000.0, 1150000.0, 2743118.0, 6000000.0, 5400000.0 |
 
 (317 more rows not shown)
 
@@ -402,10 +402,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5e-f5a5-7c73-83cb-12df88f8575d |
-| checksum | 3b5bc78970aeb9e63c09990f44cda3a630730b5aedd7d4530e611da0f84eee1d |
-| built_at | 2026-10-02T11:28:09+00:00 |
-| path | labour_inspection_compliance/01a0fc5e-f5a5-7c73-83cb-12df88f8575d |
+| uuid | 01a1118f-c85a-73f9-a1d9-90f43014e947 |
+| checksum | f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb |
+| built_at | 2026-10-06T14:13:33+00:00 |
+| path | labour_inspection_compliance/01a1118f-c85a-73f9-a1d9-90f43014e947 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

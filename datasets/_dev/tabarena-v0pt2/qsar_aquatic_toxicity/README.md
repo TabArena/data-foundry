@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_aquatic_toxicity
 container_format: 2
-checksum: 8000889a7e3de7f50492732e6f030eb04f6bf400b7fe87a19c0146e6f3e4454a
+checksum: 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846
 build:
-  uuid: 01a0fc60-8ae1-702f-a4a7-913b6cc593ba
-  checksum: 8000889a7e3de7f50492732e6f030eb04f6bf400b7fe87a19c0146e6f3e4454a
-  built_at: '2026-10-02T11:29:40+00:00'
-  path: qsar_aquatic_toxicity/01a0fc60-8ae1-702f-a4a7-913b6cc593ba
+  uuid: 01a11191-e1e8-7c64-adc5-ec401f8db2ba
+  checksum: 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846
+  built_at: '2026-10-06T14:15:35+00:00'
+  path: qsar_aquatic_toxicity/01a11191-e1e8-7c64-adc5-ec401f8db2ba
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 546 rows and 8 features. Source: UCI (2014).
 
-Built as `01a0fc60-8ae1-702f-a4a7-913b6cc593ba` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e1e8-7c64-adc5-ec401f8db2ba` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 546 rows of the final frame (random rows: the frame is shuffled).
 
 | LC50 | TPSA | SAacc | H-050 | MLOGP | RDCHI | GATS1p | nN | C-040 |
 |---|---|---|---|---|---|---|---|---|
-| 2.072 | 90.37 | 131.635 | 3 | 0.332 | 2.706 | 1.313 | 3 | 1 |
-| 6.848 | 38.33 | 54.156 | 1 | 1.737 | 2.472 | 0.638 | 1 | 0 |
-| 3.902 | 84.58 | 129.736 | 4 | 0.925 | 3.178 | 1.263 | 2 | 1 |
-| 6.102 | 38.8 | 0 | 1 | 1.364 | 1.334 | 1.212 | 0 | 0 |
-| 4.038 | 20.23 | 42.683 | 1 | 2.193 | 1.96 | 1.02 | 0 | 0 |
+| 2.957 | 52.49 | 103.377 | 3 | -0.917 | 1.84 | 1.75 | 1 | 0 |
+| 3.138 | 134.73 | 159.536 | 2 | 1.649 | 2.527 | 0.818 | 3 | 1 |
+| 6.21 | 47.58 | 62.119 | 0 | 3.133 | 2.324 | 0.467 | 2 | 2 |
+| 2.659 | 0 | 0 | 0 | 1.364 | 1.155 | 0.576 | 0 | 0 |
+| 5.642 | 35.25 | 43.897 | 2 | 1.246 | 2.046 | 1.081 | 1 | 0 |
 
 ## Curation notes
 
@@ -244,13 +244,13 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| TPSA | float64 | 0 | 0 | 227 | 0.0, 20.23, 26.02, 45.82, 9.23, 17.07, 29.46, 52.6, 37.3, 40.46 |
-| SAacc | float64 | 0 | 0 | 210 | 0.0, 42.683, 11.0, 32.897, 50.747, 16.786, 53.683, 25.145, 85.367, 28.269 |
-| MLOGP | float64 | 0 | 0 | 405 | 1.859, 2.226, 2.193, 1.246, 2.729, 2.127, 3.314, -0.317, 3.11, -0.273 |
-| RDCHI | float64 | 0 | 0 | 342 | 1.334, 1.975, 1.401, 1.509, 2.031, 1.155, 1.225, 1.924, 1.918, 1.908 |
-| GATS1p | float64 | 0 | 0 | 403 | 0.478, 1.081, 1.15, 0.867, 0.462, 0.942, 0.575, 1.111, 0.917, 1.063 |
-| LC50 | float64 | 0 | 0 | 515 | 3.85, 1.22, 3.339, 3.277, 3.432, 3.884, 5.6, 4.34, 6.064, 5.551 |
-| H-050 | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 16 |
+| TPSA | float64 | 0 | 0 | 227 | 0.0, 20.23, 26.02, 45.82, 9.23, 17.07, 29.46, 37.3, 52.6, 40.46 |
+| SAacc | float64 | 0 | 0 | 210 | 0.0, 42.683, 11.0, 32.897, 50.747, 16.786, 53.683, 25.145, 28.269, 85.367 |
+| MLOGP | float64 | 0 | 0 | 405 | 1.859, 2.193, 1.246, 2.226, 2.729, 3.314, 2.127, -0.081, -0.317, 3.11 |
+| RDCHI | float64 | 0 | 0 | 342 | 1.975, 1.334, 1.401, 1.509, 2.031, 1.924, 1.918, 1.225, 1.155, 2.119 |
+| GATS1p | float64 | 0 | 0 | 403 | 0.478, 0.917, 0.575, 0.462, 0.57, 0.942, 0.867, 1.063, 1.15, 1.111 |
+| LC50 | float64 | 0 | 0 | 515 | 3.85, 5.76, 3.277, 4.34, 3.358, 3.002, 3.339, 5.47, 6.064, 0.59 |
+| H-050 | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 18 |
 | nN | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 5, 4, 7, 6, 11 |
 | C-040 | int64 | 0 | 0 | 6 | 0, 1, 2, 4, 3, 11 |
 
@@ -282,10 +282,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8ae1-702f-a4a7-913b6cc593ba |
-| checksum | 8000889a7e3de7f50492732e6f030eb04f6bf400b7fe87a19c0146e6f3e4454a |
-| built_at | 2026-10-02T11:29:40+00:00 |
-| path | qsar_aquatic_toxicity/01a0fc60-8ae1-702f-a4a7-913b6cc593ba |
+| uuid | 01a11191-e1e8-7c64-adc5-ec401f8db2ba |
+| checksum | 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846 |
+| built_at | 2026-10-06T14:15:35+00:00 |
+| path | qsar_aquatic_toxicity/01a11191-e1e8-7c64-adc5-ec401f8db2ba |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: tour_travels_churn
 container_format: 2
-checksum: 7b730b7c269aaaf17920595abfa35f9ea61f60de99bb2f6d10fa158c6574203f
+checksum: 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a
 build:
-  uuid: 01a0fc60-82e1-7734-a58d-bfe1316f6bf4
-  checksum: 7b730b7c269aaaf17920595abfa35f9ea61f60de99bb2f6d10fa158c6574203f
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: tour_travels_churn/01a0fc60-82e1-7734-a58d-bfe1316f6bf4
+  uuid: 01a11191-f52c-7f5a-b894-97cc1b4601a6
+  checksum: 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a
+  built_at: '2026-10-06T14:15:40+00:00'
+  path: tour_travels_churn/01a11191-f52c-7f5a-b894-97cc1b4601a6
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows and 6 features. Source: Kaggle (2021).
 
-Built as `01a0fc60-82e1-7734-a58d-bfe1316f6bf4` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f52c-7f5a-b894-97cc1b4601a6` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 954 rows of the final frame (random rows: the frame is shuffled).
 
 | Target | Age | FrequentFlyer | AnnualIncomeClass | ServicesOpted | AccountSyncedToSocialMedia | BookedHotelOrNot |
 |---|---|---|---|---|---|---|
-| 1 | 33 | No Record | Low Income | 2 | Yes | No |
-| 0 | 37 | No | Middle Income | 3 | Yes | No |
-| 0 | 30 | No | Middle Income | 2 | No | Yes |
-| 0 | 30 | No | Low Income | 2 | No | No |
-| 0 | 30 | No | Low Income | 1 | Yes | No |
+| 0 | 34 | No | Middle Income | 1 | Yes | Yes |
+| 0 | 36 | No | Middle Income | 1 | No | Yes |
+| 0 | 36 | Yes | Low Income | 1 | No | Yes |
+| 1 | 28 | Yes | Low Income | 1 | No | No |
+| 0 | 31 | No | Middle Income | 1 | No | Yes |
 
 ## Curation notes
 
@@ -260,10 +260,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-82e1-7734-a58d-bfe1316f6bf4 |
-| checksum | 7b730b7c269aaaf17920595abfa35f9ea61f60de99bb2f6d10fa158c6574203f |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | tour_travels_churn/01a0fc60-82e1-7734-a58d-bfe1316f6bf4 |
+| uuid | 01a11191-f52c-7f5a-b894-97cc1b4601a6 |
+| checksum | 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a |
+| built_at | 2026-10-06T14:15:40+00:00 |
+| path | tour_travels_churn/01a11191-f52c-7f5a-b894-97cc1b4601a6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

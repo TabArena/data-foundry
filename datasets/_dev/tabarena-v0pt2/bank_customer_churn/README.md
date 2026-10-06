@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: a91804f466714cabb4225093ba1ecd08cf121084445a5d5aeaaac9d0fd01593b
+checksum: 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956
 build:
-  uuid: 01a0fc60-97f7-749c-8dfa-e48acb8ab268
-  checksum: a91804f466714cabb4225093ba1ecd08cf121084445a5d5aeaaac9d0fd01593b
-  built_at: '2026-10-02T11:29:44+00:00'
-  path: bank_customer_churn/01a0fc60-97f7-749c-8dfa-e48acb8ab268
+  uuid: 01a11191-6944-7875-b29c-110e9289d253
+  checksum: 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956
+  built_at: '2026-10-06T14:15:04+00:00'
+  path: bank_customer_churn/01a11191-6944-7875-b29c-110e9289d253
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2020).
 
-Built as `01a0fc60-97f7-749c-8dfa-e48acb8ab268` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6944-7875-b29c-110e9289d253` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 10,000 rows of the final frame (random rows: the frame is shuffle
 
 | churn | credit_score | country | gender | age | tenure | balance | products_number | credit_card | active_member | estimated_salary |
 |---|---|---|---|---|---|---|---|---|---|---|
-| No | 596 | Germany | Male | 32 | 3 | 96709.1 | 2 | 0 | 0 | 41788.4 |
-| No | 623 | France | Male | 43 | 1 | 0 | 2 | 1 | 1 | 146379 |
-| No | 601 | Spain | Female | 44 | 4 | 0 | 2 | 1 | 0 | 58561.3 |
-| No | 506 | Germany | Male | 59 | 8 | 119152 | 2 | 1 | 1 | 170680 |
-| No | 560 | Spain | Female | 27 | 7 | 124996 | 1 | 1 | 1 | 114670 |
+| Yes | 632 | France | Female | 44 | 3 | 133794 | 1 | 1 | 1 | 34607.1 |
+| No | 763 | Spain | Female | 32 | 8 | 0 | 2 | 1 | 0 | 16725.5 |
+| No | 656 | Spain | Female | 40 | 10 | 167878 | 1 | 0 | 1 | 151887 |
+| No | 820 | France | Female | 49 | 1 | 0 | 2 | 1 | 1 | 119087 |
+| No | 532 | Germany | Male | 24 | 8 | 142755 | 1 | 0 | 0 | 34231.5 |
 
 ## Curation notes
 
@@ -191,9 +191,9 @@ Default splits.
 | credit_card | category | 0 | 0 | 2 | 1, 0 |
 | active_member | category | 0 | 0 | 2 | 1, 0 |
 | churn | category | 0 | 0 | 2 | No, Yes |
-| balance | float64 | 0 | 0 | 6382 | 0.0, 105473.74, 130170.82, 145018.64, 136855.94, 135795.63, 112713.34, 88963.31… |
-| estimated_salary | float64 | 0 | 0 | 9999 | 24924.92, 143301.49, 10023.15, 87609.5, 9903.42, 64831.36, 40313.47, 164248.33,… |
-| credit_score | int64 | 0 | 0 | 460 | 850, 678, 655, 705, 667, 684, 670, 651, 648, 683 |
+| balance | float64 | 0 | 0 | 6382 | 0.0, 105473.74, 130170.82, 85818.18, 83134.3, 90560.48, 176173.52, 130652.52, 1… |
+| estimated_salary | float64 | 0 | 0 | 9999 | 24924.92, 57121.51, 123269.71, 77981.54, 7680.23, 3837.08, 161571.79, 196990.79… |
+| credit_score | int64 | 0 | 0 | 460 | 850, 678, 655, 705, 667, 684, 670, 651, 648, 652 |
 | age | int64 | 0 | 0 | 70 | 37, 38, 35, 36, 34, 33, 40, 39, 32, 31 |
 | tenure | int64 | 0 | 0 | 11 | 2, 1, 7, 8, 5, 3, 4, 9, 6, 10 |
 | products_number | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
@@ -243,10 +243,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-97f7-749c-8dfa-e48acb8ab268 |
-| checksum | a91804f466714cabb4225093ba1ecd08cf121084445a5d5aeaaac9d0fd01593b |
-| built_at | 2026-10-02T11:29:44+00:00 |
-| path | bank_customer_churn/01a0fc60-97f7-749c-8dfa-e48acb8ab268 |
+| uuid | 01a11191-6944-7875-b29c-110e9289d253 |
+| checksum | 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956 |
+| built_at | 2026-10-06T14:15:04+00:00 |
+| path | bank_customer_churn/01a11191-6944-7875-b29c-110e9289d253 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

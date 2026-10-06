@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: 3bf32675b696ae6cd9237e71a01fb7daffecbf357263ad42029d5039e8f43748
+checksum: 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b
 build:
-  uuid: 01a0fc60-54ae-7610-bf92-be667616e935
-  checksum: 3bf32675b696ae6cd9237e71a01fb7daffecbf357263ad42029d5039e8f43748
-  built_at: '2026-10-02T11:29:26+00:00'
-  path: hr_analytics/01a0fc60-54ae-7610-bf92-be667616e935
+  uuid: 01a11191-cb27-7668-968c-d8e83b66db19
+  checksum: 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b
+  built_at: '2026-10-06T14:15:30+00:00'
+  path: hr_analytics/01a11191-cb27-7668-968c-d8e83b66db19
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2021).
 
-Built as `01a0fc60-54ae-7610-bf92-be667616e935` on 2026-10-02. See [Build](#build).
+Built as `01a11191-cb27-7668-968c-d8e83b66db19` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 19,158 rows of the final frame (random rows: the frame is shuffle
 
 | LookingForJobChange | city | city_development_index | gender | relevent_experience | enrolled_university | education_level | major_discipline | experience | company_size | company_type | last_new_job |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | city_16 | 0.91 | nan | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 500-999 | Pvt Ltd | 1 |
-| No | city_103 | 0.92 | Female | Has relevent experience | no_enrollment | Masters | Humanities | >20 | 100-500 | Funded Startup | 2 |
-| No | city_104 | 0.924 | nan | Has relevent experience | no_enrollment | Graduate | STEM | 9 | 10/49 | Pvt Ltd | 1 |
-| No | city_21 | 0.624 | Male | Has relevent experience | no_enrollment | Masters | STEM | 15 | 10000+ | Pvt Ltd | 1 |
-| No | city_134 | 0.698 | Male | No relevent experience | no_enrollment | Masters | STEM | 12 | 500-999 | NGO | 1 |
+| No | city_173 | 0.878 | nan | Has relevent experience | no_enrollment | Masters | Arts | 7 | nan | nan | never |
+| Yes | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 9 | nan | nan | 3 |
+| No | city_57 | 0.866 | Male | Has relevent experience | Part time course | High School | nan | 4 | 50-99 | Pvt Ltd | 1 |
+| No | city_28 | 0.939 | Male | Has relevent experience | no_enrollment | Masters | STEM | >20 | 5000-9999 | Pvt Ltd | 4 |
+| No | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 100-500 | Public Sector | 2 |
 
 ## Curation notes
 
@@ -201,7 +201,7 @@ Default splits.
 | relevent_experience | category | 0 | 0 | 2 | Has relevent experience, No relevent experience |
 | LookingForJobChange | category | 0 | 0 | 2 | No, Yes |
 | city_development_index | float64 | 0 | 0 | 93 | 0.92, 0.624, 0.91, 0.926, 0.698, 0.897, 0.939, 0.855, 0.804, 0.924 |
-| training_hours | int64 | 0 | 0 | 241 | 28, 12, 18, 22, 50, 20, 17, 24, 34, 6 |
+| training_hours | int64 | 0 | 0 | 241 | 28, 12, 18, 22, 50, 20, 17, 24, 6, 34 |
 
 </details>
 
@@ -280,10 +280,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-54ae-7610-bf92-be667616e935 |
-| checksum | 3bf32675b696ae6cd9237e71a01fb7daffecbf357263ad42029d5039e8f43748 |
-| built_at | 2026-10-02T11:29:26+00:00 |
-| path | hr_analytics/01a0fc60-54ae-7610-bf92-be667616e935 |
+| uuid | 01a11191-cb27-7668-968c-d8e83b66db19 |
+| checksum | 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b |
+| built_at | 2026-10-06T14:15:30+00:00 |
+| path | hr_analytics/01a11191-cb27-7668-968c-d8e83b66db19 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

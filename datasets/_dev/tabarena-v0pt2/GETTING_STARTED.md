@@ -9,7 +9,7 @@ dataset**, with a list of candidates to pick from.
 [TabArena](https://tabarena.ai/) benchmarks tabular ML on curated, real-world prediction tasks.
 This folder is the working copy of its next version, **TabArena v0.2**: one folder per dataset, each a v2 definition
 (`dataset.py`) built as a curated container. It started from the 142 datasets of
-[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited (130 remain), and new
+[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited (128 remain), and new
 datasets join it here. The datasets come from three split regimes: random (IID), **temporal** (predict the future)
 and **grouped** (generalise to unseen entities such as patients or customers).
 
@@ -40,7 +40,7 @@ Python 3.10+ and [`uv`](https://docs.astral.sh/uv/):
 git clone https://github.com/TabArena/data-foundry.git
 cd data-foundry
 uv venv --seed && source .venv/bin/activate
-uv pip install -e ".[dev,tests]"   # the dev extra adds the curation dependencies (openml, kaggle, …)
+uv pip install -e ".[dev]"   # dev = the build and tests extras plus the curation tools (autogluon, kaggle, …)
 pytest -q                          # sanity check
 ```
 
@@ -69,7 +69,6 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
 | [`TODO.md`](TODO.md) | Open decisions and later work. |
 | [`LEAK_AUDIT.md`](LEAK_AUDIT.md) | The 2026 leak audit: removed and changed datasets, with severity. |
-| [`TASK_PROBES.md`](TASK_PROBES.md) | The sweep against dummy baselines; flagged datasets wait for a decision. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
 Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `explore.ipynb` (the

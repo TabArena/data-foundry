@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: 943d218fd81cf5e32f087987afa918df5a8450842471ff4f94a04236a6053057
+checksum: 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2
 build:
-  uuid: 01a0fc60-2a7d-7d20-b3a3-5f2630395883
-  checksum: 943d218fd81cf5e32f087987afa918df5a8450842471ff4f94a04236a6053057
-  built_at: '2026-10-02T11:29:16+00:00'
-  path: regensburg_pediatric_appendicitis/01a0fc60-2a7d-7d20-b3a3-5f2630395883
+  uuid: 01a11191-9112-73da-a73b-344ee1bad337
+  checksum: 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2
+  built_at: '2026-10-06T14:15:15+00:00'
+  path: regensburg_pediatric_appendicitis/01a11191-9112-73da-a73b-344ee1bad337
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2021).
 
-Built as `01a0fc60-2a7d-7d20-b3a3-5f2630395883` on 2026-10-02. See [Build](#build).
+Built as `01a11191-9112-73da-a73b-344ee1bad337` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 763 rows of the final frame (random rows: the frame is shuffled);
 
 | Severity | Age | BMI | Sex | Height | Weight | Alvarado_Score | Paedriatic_Appendicitis_Score | Appendix_on_US | Appendix_Diameter | Migratory_Pain | Lower_Right_Abd_Pain |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| uncomplicated | 12.8706 | 15.1479 | female | 162.5 | 40 | 7 | 4 | no | nan | no | yes |
-| uncomplicated | 14.4257 | 20.53 | female | 150.5 | 46.5 | 2 | 4 | yes | 5 | no | yes |
-| uncomplicated | 11.5483 | 17.5294 | female | 152 | 40.5 | 9 | 7 | yes | 10 | no | yes |
-| uncomplicated | 9.94 | 15.3 | male | 140 | 29.5 | 8 | 6 | no | nan | yes | yes |
-| uncomplicated | 9.1937 | 15.4321 | female | 144 | 32 | 10 | 9 | yes | 7.5 | yes | yes |
+| uncomplicated | 8.09 | 16.1 | male | 127 | 25.5 | 7 | 6 | yes | 7 | yes | yes |
+| uncomplicated | 15.3265 | 20.6174 | male | 167 | 57.5 | 9 | 8 | yes | 7 | no | yes |
+| complicated | 5.07871 | 17.6978 | female | 114 | 23 | 6 | 6 | no | nan | no | yes |
+| uncomplicated | 3.27 | 15.75 | female | 87.7 | 12.2 | 8 | 7 | yes | 10 | no | yes |
+| uncomplicated | 16.12 | 22.5 | female | 166 | 62 | 4 | 4 | no | nan | yes | yes |
 
 ## Curation notes
 
@@ -254,25 +254,25 @@ Default splits.
 | Appendix_on_US | category | 1 | 0.13 | 2 | yes, no |
 | Nausea | category | 1 | 0.13 | 2 | yes, no |
 | Severity | category | 0 | 0 | 2 | uncomplicated, complicated |
-| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 82.0, 72.0, 39.0, 54.0, 61.0, 68.0, 46.0, 74.0, 73.0 |
-| Appendix_Diameter | float64 | 267 | 34.99 | 78 | 8.0, 9.0, 7.0, 6.0, 10.0, 5.0, 12.0, 11.0, 4.0, 7.5 |
-| Neutrophil_Percentage | float64 | 96 | 12.58 | 351 | 79.0, 68.4, 84.5, 80.0, 84.0, 88.0, 85.5, 83.8, 83.0, 80.8 |
+| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 82.0, 46.0, 59.0, 72.0, 62.0, 74.0, 39.0, 61.0, 68.0 |
+| Appendix_Diameter | float64 | 267 | 34.99 | 78 | 8.0, 9.0, 7.0, 6.0, 10.0, 5.0, 11.0, 12.0, 4.0, 7.5 |
+| Neutrophil_Percentage | float64 | 96 | 12.58 | 351 | 79.0, 84.0, 84.5, 68.4, 80.0, 88.0, 83.0, 85.5, 75.5, 87.1 |
 | Alvarado_Score | float64 | 43 | 5.64 | 11 | 5.0, 8.0, 7.0, 6.0, 4.0, 9.0, 3.0, 2.0, 10.0, 0.0 |
 | Paedriatic_Appendicitis_Score | float64 | 43 | 5.64 | 11 | 6.0, 4.0, 5.0, 7.0, 3.0, 8.0, 2.0, 9.0, 10.0, 1.0 |
-| BMI | float64 | 25 | 3.28 | 624 | 16.0, 16.6, 19.6, 17.4, 15.3, 16.2, 17.6, 17.3, 15.9, 20.8 |
-| Height | float64 | 24 | 3.15 | 187 | 140.0, 158.0, 165.0, 160.0, 143.0, 164.0, 152.0, 146.0, 163.0, 161.0 |
+| BMI | float64 | 25 | 3.28 | 624 | 16.0, 16.6, 19.6, 16.7, 17.4, 16.2, 14.9, 20.8, 15.9, 18.6 |
+| Height | float64 | 24 | 3.15 | 187 | 140.0, 158.0, 160.0, 165.0, 164.0, 143.0, 152.0, 163.0, 146.0, 154.0 |
 | RDW | float64 | 23 | 3.01 | 53 | 12.6, 12.7, 12.5, 12.9, 12.8, 12.4, 12.2, 12.1, 12.3, 13.1 |
-| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.73, 4.54, 4.74, 4.61, 4.56, 4.59, 4.98, 4.9, 4.92 |
-| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 12.8, 14.0, 13.9, 13.6, 13.8, 13.3 |
-| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 221.0, 267.0, 250.0, 275.0, 223.0, 245.0, 277.0, 234.0, 233.0, 305.0 |
-| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 8.0, 7.0, 15.0 |
-| WBC_Count | float64 | 4 | 0.52 | 209 | 8.1, 8.7, 6.9, 7.0, 8.6, 11.0, 10.9, 15.9, 8.0, 16.1 |
-| Weight | float64 | 2 | 0.26 | 268 | 50.0, 45.0, 33.0, 40.0, 39.0, 52.0, 56.0, 53.0, 36.0, 47.0 |
-| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 37.3, 38.0, 36.9, 38.2 |
-| Age | float64 | 0 | 0 | 699 | 11.05, 14.1985, 9.25, 12.7, 6.64, 13.83, 10.7351, 15.3238, 12.97, 9.49 |
-| Abscess_Location | string | 750 | 98.3 | 7 | Douglas, rechter Unterbauch, perityphlitisch, an den M. psoas rechts, retrovesi… |
-| Gynecological_Findings | string | 737 | 96.59 | 14 | keine, Ovarialzyste, Ovarialzysten, V. a. Ovarialtorsion, Ausschluss gyn. Ursac… |
-| Lymph_Nodes_Location | string | 642 | 84.14 | 26 | mesenterial, re UB, rechter Unterbauch, reUB, re MB, ileocoecal, ileocöcal, rec… |
+| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.74, 4.73, 4.54, 4.61, 4.56, 4.59, 4.98, 4.75, 4.92 |
+| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 12.8, 13.9, 13.6, 14.0, 13.8, 13.3 |
+| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 221.0, 267.0, 234.0, 245.0, 233.0, 275.0, 250.0, 305.0, 277.0, 223.0 |
+| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 3.0, 2.0, 4.0, 6.0, 5.0, 8.0, 15.0, 7.0 |
+| WBC_Count | float64 | 4 | 0.52 | 209 | 8.1, 8.7, 6.9, 7.0, 8.6, 11.0, 15.9, 8.0, 16.1, 10.9 |
+| Weight | float64 | 2 | 0.26 | 268 | 50.0, 33.0, 45.0, 40.0, 56.0, 39.0, 52.0, 53.0, 37.0, 36.0 |
+| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 38.0, 37.3, 36.9, 38.2 |
+| Age | float64 | 0 | 0 | 699 | 11.05, 6.64, 12.7, 13.83, 14.1985, 9.25, 11.37, 13.473, 8.7584, 13.89 |
+| Abscess_Location | string | 750 | 98.3 | 7 | Douglas, rechter Unterbauch, re Mittelbauch, an den M. psoas rechts, rechter Mi… |
+| Gynecological_Findings | string | 737 | 96.59 | 14 | keine, Ovarialzyste, Ovarialzysten, Zyste Uterus, kleine Ovarzyste rechts, V. a… |
+| Lymph_Nodes_Location | string | 642 | 84.14 | 26 | mesenterial, re UB, rechter Unterbauch, reUB, re MB, ileocoecal, re UB , rechte… |
 
 </details>
 
@@ -319,7 +319,7 @@ Default splits.
 | Abscess_Location | 1 | &lt;NA> | 750 | 98.3 |
 | Abscess_Location | 2 | Douglas | 6 | 0.79 |
 | Abscess_Location | 3 | rechter Unterbauch | 2 | 0.26 |
-| Abscess_Location | 4 | perityphlitisch | 1 | 0.13 |
+| Abscess_Location | 4 | re Mittelbauch | 1 | 0.13 |
 | Abscess_Location | 5 | an den M. psoas rechts | 1 | 0.13 |
 | Appendicolith | 1 | &lt;NA> | 694 | 90.96 |
 | Appendicolith | 2 | no | 33 | 4.33 |
@@ -365,7 +365,7 @@ Default splits.
 | Gynecological_Findings | 2 | keine | 9 | 1.18 |
 | Gynecological_Findings | 3 | Ovarialzyste | 4 | 0.52 |
 | Gynecological_Findings | 4 | Ovarialzysten | 2 | 0.26 |
-| Gynecological_Findings | 5 | V. a. Ovarialtorsion | 1 | 0.13 |
+| Gynecological_Findings | 5 | Zyste Uterus | 1 | 0.13 |
 | Ileus | 1 | &lt;NA> | 703 | 92.14 |
 | Ileus | 2 | no | 37 | 4.85 |
 | Ileus | 3 | yes | 23 | 3.01 |
@@ -385,10 +385,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-2a7d-7d20-b3a3-5f2630395883 |
-| checksum | 943d218fd81cf5e32f087987afa918df5a8450842471ff4f94a04236a6053057 |
-| built_at | 2026-10-02T11:29:16+00:00 |
-| path | regensburg_pediatric_appendicitis/01a0fc60-2a7d-7d20-b3a3-5f2630395883 |
+| uuid | 01a11191-9112-73da-a73b-344ee1bad337 |
+| checksum | 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2 |
+| built_at | 2026-10-06T14:15:15+00:00 |
+| path | regensburg_pediatric_appendicitis/01a11191-9112-73da-a73b-344ee1bad337 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

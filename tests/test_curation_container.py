@@ -553,9 +553,9 @@ V0_0_5_FIELDS = {
 
 
 def _grouped_toy(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2 | None = None) -> CuratedContainer:
-    df = pd.DataFrame(
-        {"g": ["a", "a", "b", "b", "c", "c"], "x": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "y": [0, 0, 1, 1, 0, 0]}
-    )
+    # `object`, as pandas 2 infers it: pandas 3 infers `str`, a different dtype in the pinned checksum
+    g = pd.Series(["a", "a", "b", "b", "c", "c"], dtype=object)
+    df = pd.DataFrame({"g": g, "x": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "y": [0, 0, 1, 1, 0, 0]})
     if task is None:
         task = PredictiveMLTaskMetadata(
             target_column_name="y",

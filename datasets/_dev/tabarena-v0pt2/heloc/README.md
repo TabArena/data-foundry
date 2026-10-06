@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: e7a58d25e8f861d395a46c64f3dcbe851256fce2f24c521fb118463297365cb4
+checksum: 28b56b2570c8917caff53d7af80ea0939cef587fd08b1fe217745a898980a16b
 build:
-  uuid: 01a0fc60-74ac-7a86-b360-95cc96b51c90
-  checksum: e7a58d25e8f861d395a46c64f3dcbe851256fce2f24c521fb118463297365cb4
-  built_at: '2026-10-02T11:29:35+00:00'
-  path: heloc/01a0fc60-74ac-7a86-b360-95cc96b51c90
+  uuid: 01a11191-c354-7c3d-8afd-a026d562a375
+  checksum: 28b56b2570c8917caff53d7af80ea0939cef587fd08b1fe217745a898980a16b
+  built_at: '2026-10-06T14:15:27+00:00'
+  path: heloc/01a11191-c354-7c3d-8afd-a026d562a375
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 10,459 rows and 23 features. Source: Kaggle (2021).
 
-Built as `01a0fc60-74ac-7a86-b360-95cc96b51c90` on 2026-10-02. See [Build](#build).
+Built as `01a11191-c354-7c3d-8afd-a026d562a375` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 10,459 rows of the final frame (random rows: the frame is shuffle
 
 | RiskPerformance | ExternalRiskEstimate | MSinceOldestTradeOpen | MSinceMostRecentTradeOpen | AverageMInFile | NumSatisfactoryTrades | NumTrades60Ever2DerogPubRec | NumTrades90Ever2DerogPubRec | PercentTradesNeverDelq | MSinceMostRecentDelq | MaxDelq2PublicRecLast12M | MaxDelqEver |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Bad | 69 | 148 | 4 | 66 | 41 | 0 | 0 | 100 | -7 | 7 | 8 |
-| Bad | 77 | 229 | 3 | 109 | 23 | 0 | 0 | 100 | -7 | 7 | 8 |
-| Bad | 58 | 46 | 7 | 38 | 13 | 0 | 0 | 93 | 8 | 4 | 6 |
-| Bad | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 |
-| Bad | 80 | 226 | 2 | 66 | 35 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Bad | 73 | 41 | 10 | 23 | 7 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Good | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 |
+| Good | 87 | 177 | 10 | 82 | 9 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Good | 90 | 332 | 14 | 145 | 8 | 0 | 0 | 100 | -7 | 7 | 8 |
+| Bad | 57 | 89 | 2 | 48 | 25 | 1 | 1 | 89 | 2 | 4 | 2 |
 
 ## Curation notes
 
@@ -193,9 +193,9 @@ Default splits.
 |---|---|---|---|---|---|
 | RiskPerformance | category | 0 | 0 | 2 | Bad, Good |
 | ExternalRiskEstimate | int64 | 0 | 0 | 61 | -9, 65, 66, 68, 73, 72, 70, 63, 75, 69 |
-| MSinceOldestTradeOpen | int64 | 0 | 0 | 526 | -9, -8, 178, 132, 176, 150, 165, 183, 158, 169 |
+| MSinceOldestTradeOpen | int64 | 0 | 0 | 526 | -9, -8, 132, 178, 150, 176, 165, 183, 162, 172 |
 | MSinceMostRecentTradeOpen | int64 | 0 | 0 | 112 | 2, 3, 4, 5, 1, 6, -9, 7, 8, 9 |
-| AverageMInFile | int64 | 0 | 0 | 237 | -9, 79, 71, 74, 68, 80, 75, 84, 63, 70 |
+| AverageMInFile | int64 | 0 | 0 | 237 | -9, 71, 79, 74, 68, 80, 75, 84, 70, 63 |
 | NumSatisfactoryTrades | int64 | 0 | 0 | 74 | -9, 18, 15, 16, 22, 19, 13, 14, 21, 20 |
 | NumTrades60Ever2DerogPubRec | int64 | 0 | 0 | 19 | 0, 1, 2, -9, 3, 4, 5, 6, 7, 8 |
 | NumTrades90Ever2DerogPubRec | int64 | 0 | 0 | 17 | 0, 1, -9, 2, 3, 4, 5, 6, 7, 9 |
@@ -203,7 +203,7 @@ Default splits.
 | MSinceMostRecentDelq | int64 | 0 | 0 | 87 | -7, -9, 1, 2, 3, 4, 5, -8, 6, 8 |
 | MaxDelq2PublicRecLast12M | int64 | 0 | 0 | 10 | 7, 6, 4, -9, 0, 5, 3, 1, 2, 9 |
 | MaxDelqEver | int64 | 0 | 0 | 8 | 8, 6, 5, 2, -9, 4, 3, 7 |
-| NumTotalTrades | int64 | 0 | 0 | 88 | -9, 15, 16, 17, 22, 20, 24, 21, 19, 13 |
+| NumTotalTrades | int64 | 0 | 0 | 88 | -9, 15, 16, 17, 22, 20, 24, 21, 13, 18 |
 | NumTradesOpeninLast12M | int64 | 0 | 0 | 19 | 1, 0, 2, 3, 4, -9, 5, 6, 7, 8 |
 | PercentInstallTrades | int64 | 0 | 0 | 96 | -9, 33, 50, 29, 25, 38, 20, 36, 40, 27 |
 | MSinceMostRecentInqexcl7days | int64 | 0 | 0 | 28 | 0, -7, 1, -9, -8, 2, 3, 4, 5, 6 |
@@ -269,10 +269,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-74ac-7a86-b360-95cc96b51c90 |
-| checksum | e7a58d25e8f861d395a46c64f3dcbe851256fce2f24c521fb118463297365cb4 |
-| built_at | 2026-10-02T11:29:35+00:00 |
-| path | heloc/01a0fc60-74ac-7a86-b360-95cc96b51c90 |
+| uuid | 01a11191-c354-7c3d-8afd-a026d562a375 |
+| checksum | 28b56b2570c8917caff53d7af80ea0939cef587fd08b1fe217745a898980a16b |
+| built_at | 2026-10-06T14:15:27+00:00 |
+| path | heloc/01a11191-c354-7c3d-8afd-a026d562a375 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

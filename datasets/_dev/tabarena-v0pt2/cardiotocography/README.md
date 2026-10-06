@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: d2d36c90f570934428263f20791da2b18bbe9f969cba7cb1806ccaedfcaf9404
+checksum: 204d9611c82b15fb662ab01e161657a0646394aa55cdf1c73bb195acc780725b
 build:
-  uuid: 01a0fc60-4871-7a30-b1d9-6d6150de7a20
-  checksum: d2d36c90f570934428263f20791da2b18bbe9f969cba7cb1806ccaedfcaf9404
-  built_at: '2026-10-02T11:29:23+00:00'
-  path: cardiotocography/01a0fc60-4871-7a30-b1d9-6d6150de7a20
+  uuid: 01a11191-7d99-7aa5-960c-b1e675f56a39
+  checksum: 204d9611c82b15fb662ab01e161657a0646394aa55cdf1c73bb195acc780725b
+  built_at: '2026-10-06T14:15:10+00:00'
+  path: cardiotocography/01a11191-7d99-7aa5-960c-b1e675f56a39
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -73,7 +73,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 23 features. Source: UCI (2010).
 
-Built as `01a0fc60-4871-7a30-b1d9-6d6150de7a20` on 2026-10-02. See [Build](#build).
+Built as `01a11191-7d99-7aa5-960c-b1e675f56a39` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -153,11 +153,11 @@ The first 5 of 2,126 rows of the final frame (random rows: the frame is shuffled
 
 | NSP | LB | AC | FM | UC | ASTV | MSTV | ALTV | MLTV | DL | DS | DP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 133 | 2 | 12 | 3 | 46 | 1.1 | 0 | 15.4 | 2 | 0 | 0 |
-| 1 | 125 | 0 | 1 | 8 | 62 | 1.7 | 0 | 1.1 | 7 | 0 | 0 |
-| 1 | 131 | 5 | 3 | 5 | 60 | 2.1 | 0 | 0.9 | 6 | 0 | 1 |
-| 1 | 131 | 8 | 0 | 4 | 29 | 1.3 | 0 | 4.5 | 0 | 0 | 0 |
-| 1 | 125 | 0 | 0 | 8 | 64 | 1.3 | 0 | 2.6 | 7 | 0 | 1 |
+| 1 | 142 | 1 | 3 | 1 | 55 | 1.3 | 10 | 15.5 | 2 | 0 | 0 |
+| 2 | 144 | 0 | 10 | 0 | 75 | 0.3 | 67 | 4.2 | 0 | 0 | 0 |
+| 1 | 136 | 0 | 0 | 4 | 51 | 0.6 | 28 | 6.2 | 0 | 0 | 0 |
+| 1 | 122 | 0 | 0 | 1 | 26 | 1.3 | 4 | 9.8 | 0 | 0 | 0 |
+| 1 | 128 | 4 | 6 | 3 | 29 | 1.6 | 0 | 7.1 | 4 | 0 | 0 |
 
 ## Curation notes
 
@@ -260,20 +260,20 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0, 5.0, 8.0, 10.0 |
 | UC | float64 | 0 | 0 | 19 | 0.0, 3.0, 4.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | ASTV | float64 | 0 | 0 | 75 | 60.0, 58.0, 65.0, 63.0, 64.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
-| MSTV | float64 | 0 | 0 | 57 | 0.8, 1.3, 0.5, 0.4, 0.7, 0.9, 0.6, 1.2, 1.5, 1.0 |
-| ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 7.0 |
-| MLTV | float64 | 0 | 0 | 249 | 0.0, 6.7, 7.1, 5.2, 6.5, 9.5, 6.8, 5.6, 8.5, 7.2 |
+| MSTV | float64 | 0 | 0 | 57 | 0.8, 0.5, 1.3, 0.4, 0.7, 0.9, 0.6, 1.2, 1.5, 1.0 |
+| ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 10.0 |
+| MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 5.2, 6.5, 9.5, 8.5, 7.2, 6.8, 5.6 |
 | DL | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | DS | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | DP | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
 | DR | float64 | 0 | 0 | 1 | 0.0 |
-| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 96.0, 83.0, 22.0, 42.0 |
+| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 83.0, 22.0, 96.0, 42.0 |
 | Min | float64 | 0 | 0 | 109 | 50.0, 52.0, 71.0, 120.0, 60.0, 68.0, 67.0, 103.0, 51.0, 62.0 |
 | Max | float64 | 0 | 0 | 86 | 157.0, 171.0, 158.0, 156.0, 159.0, 152.0, 178.0, 154.0, 172.0, 165.0 |
 | Nmax | float64 | 0 | 0 | 18 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
-| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 5.0, 4.0, 8.0, 7.0, 10.0 |
-| Mode | float64 | 0 | 0 | 88 | 133.0, 150.0, 136.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
-| Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 145.0, 133.0, 136.0, 147.0 |
+| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 8.0, 10.0 |
+| Mode | float64 | 0 | 0 | 88 | 133.0, 136.0, 150.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
+| Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 133.0, 145.0, 136.0, 147.0 |
 | Median | float64 | 0 | 0 | 95 | 146.0, 137.0, 142.0, 145.0, 147.0, 141.0, 151.0, 134.0, 149.0, 143.0 |
 | Variance | float64 | 0 | 0 | 133 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 9.0 |
 | Tendency | float64 | 0 | 0 | 3 | 0.0, 1.0, -1.0 |
@@ -337,10 +337,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4871-7a30-b1d9-6d6150de7a20 |
-| checksum | d2d36c90f570934428263f20791da2b18bbe9f969cba7cb1806ccaedfcaf9404 |
-| built_at | 2026-10-02T11:29:23+00:00 |
-| path | cardiotocography/01a0fc60-4871-7a30-b1d9-6d6150de7a20 |
+| uuid | 01a11191-7d99-7aa5-960c-b1e675f56a39 |
+| checksum | 204d9611c82b15fb662ab01e161657a0646394aa55cdf1c73bb195acc780725b |
+| built_at | 2026-10-06T14:15:10+00:00 |
+| path | cardiotocography/01a11191-7d99-7aa5-960c-b1e675f56a39 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

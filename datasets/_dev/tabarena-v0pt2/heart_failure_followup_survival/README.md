@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: fb7a45349ceb10c3ca50924c9f6b7bb38a5ccc84f2c91f07c11245c86a70df2c
+checksum: ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d
 build:
-  uuid: 01a0fc60-8c62-7d5d-af04-b396601d6137
-  checksum: fb7a45349ceb10c3ca50924c9f6b7bb38a5ccc84f2c91f07c11245c86a70df2c
-  built_at: '2026-10-02T11:29:41+00:00'
-  path: heart_failure_followup_survival/01a0fc60-8c62-7d5d-af04-b396601d6137
+  uuid: 01a11191-be7f-7bca-87e5-6fca817d30ba
+  checksum: ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d
+  built_at: '2026-10-06T14:15:26+00:00'
+  path: heart_failure_followup_survival/01a11191-be7f-7bca-87e5-6fca817d30ba
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299 rows and 11 features. Source: UCI (2020).
 
-Built as `01a0fc60-8c62-7d5d-af04-b396601d6137` on 2026-10-02. See [Build](#build).
+Built as `01a11191-be7f-7bca-87e5-6fca817d30ba` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 299 rows of the final frame (random rows: the frame is shuffled).
 
 | DEATH_EVENT | age | anaemia | creatinine_phosphokinase | diabetes | ejection_fraction | high_blood_pressure | platelets | serum_creatinine | serum_sodium | sex | smoking |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 70 | 0 | 582 | 0 | 40 | 0 | 51000 | 2.7 | 136 | 1 | 1 |
-| 0 | 50 | 1 | 298 | 0 | 35 | 0 | 362000 | 0.9 | 140 | 1 | 1 |
+| 0 | 60 | 0 | 320 | 0 | 35 | 0 | 133000 | 1.4 | 139 | 1 | 0 |
 | 1 | 45 | 0 | 2442 | 1 | 30 | 0 | 334000 | 1.1 | 139 | 1 | 0 |
-| 1 | 80 | 1 | 123 | 0 | 35 | 1 | 388000 | 9.4 | 133 | 1 | 1 |
-| 0 | 42 | 0 | 102 | 1 | 40 | 0 | 237000 | 1.2 | 140 | 1 | 0 |
+| 0 | 55 | 0 | 1820 | 0 | 38 | 0 | 270000 | 1.2 | 139 | 0 | 0 |
+| 1 | 80 | 0 | 805 | 0 | 38 | 0 | 263358 | 1.1 | 134 | 1 | 0 |
+| 0 | 70 | 0 | 93 | 0 | 35 | 0 | 185000 | 1.1 | 134 | 1 | 1 |
 
 ## Curation notes
 
@@ -254,10 +254,10 @@ Default splits.
 | sex | category | 0 | 0 | 2 | 1, 0 |
 | smoking | category | 0 | 0 | 2 | 0, 1 |
 | DEATH_EVENT | category | 0 | 0 | 2 | 0, 1 |
-| age | float64 | 0 | 0 | 47 | 60.0, 50.0, 65.0, 70.0, 45.0, 55.0, 75.0, 53.0, 58.0, 63.0 |
-| platelets | float64 | 0 | 0 | 176 | 263358.03, 237000.0, 235000.0, 255000.0, 271000.0, 228000.0, 279000.0, 221000.0… |
-| serum_creatinine | float64 | 0 | 0 | 40 | 1.0, 0.9, 1.1, 1.2, 0.8, 1.3, 0.7, 1.18, 1.7, 1.4 |
-| creatinine_phosphokinase | int64 | 0 | 0 | 208 | 582, 66, 129, 115, 231, 60, 47, 59, 69, 64 |
+| age | float64 | 0 | 0 | 47 | 60.0, 50.0, 65.0, 70.0, 45.0, 55.0, 75.0, 58.0, 53.0, 63.0 |
+| platelets | float64 | 0 | 0 | 176 | 263358.03, 305000.0, 235000.0, 279000.0, 221000.0, 228000.0, 255000.0, 226000.0… |
+| serum_creatinine | float64 | 0 | 0 | 40 | 1.0, 1.1, 0.9, 1.2, 0.8, 1.3, 0.7, 1.18, 1.7, 1.4 |
+| creatinine_phosphokinase | int64 | 0 | 0 | 208 | 582, 129, 66, 84, 231, 47, 68, 115, 60, 69 |
 | ejection_fraction | int64 | 0 | 0 | 17 | 35, 38, 40, 25, 30, 60, 50, 45, 20, 55 |
 | serum_sodium | int64 | 0 | 0 | 27 | 136, 137, 140, 134, 138, 139, 135, 132, 141, 142 |
 
@@ -307,10 +307,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8c62-7d5d-af04-b396601d6137 |
-| checksum | fb7a45349ceb10c3ca50924c9f6b7bb38a5ccc84f2c91f07c11245c86a70df2c |
-| built_at | 2026-10-02T11:29:41+00:00 |
-| path | heart_failure_followup_survival/01a0fc60-8c62-7d5d-af04-b396601d6137 |
+| uuid | 01a11191-be7f-7bca-87e5-6fca817d30ba |
+| checksum | ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d |
+| built_at | 2026-10-06T14:15:26+00:00 |
+| path | heart_failure_followup_survival/01a11191-be7f-7bca-87e5-6fca817d30ba |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

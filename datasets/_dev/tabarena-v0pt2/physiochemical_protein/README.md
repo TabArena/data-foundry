@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: physiochemical_protein
 container_format: 2
-checksum: b2982e9b6ae091a2ebfb74110107755f61f68794d6fc48269575925b0c5dc31d
+checksum: 404c9cb60a892cc23c080e7c79e7f4c807a51aecb6dab05dd0cb89d6583e6cc1
 build:
-  uuid: 01a0fc60-70dd-7f0b-9011-6f3e92981c89
-  checksum: b2982e9b6ae091a2ebfb74110107755f61f68794d6fc48269575925b0c5dc31d
-  built_at: '2026-10-02T11:29:34+00:00'
-  path: physiochemical_protein/01a0fc60-70dd-7f0b-9011-6f3e92981c89
+  uuid: 01a11191-e0d0-7b45-a12e-0e5a658aaa0d
+  checksum: 404c9cb60a892cc23c080e7c79e7f4c807a51aecb6dab05dd0cb89d6583e6cc1
+  built_at: '2026-10-06T14:15:36+00:00'
+  path: physiochemical_protein/01a11191-e0d0-7b45-a12e-0e5a658aaa0d
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `ResidualSize`, scored with `rmse` on IID splits. 45,730 rows and 9 features. Source: UCI (2013).
 
-Built as `01a0fc60-70dd-7f0b-9011-6f3e92981c89` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e0d0-7b45-a12e-0e5a658aaa0d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 45,730 rows of the final frame (random rows: the frame is shuffle
 
 | ResidualSize | TotalSurfaceArea | NonPolarExposedArea | FracExposedNonPolarResidue | FracExposedNonPolarPart | MassWeightedExposedArea | AvgDeviationExposedArea | EuclideanDistance | SecondaryStructurePenalty | SpatialDistNK |
 |---|---|---|---|---|---|---|---|---|---|
-| 18.858 | 7031.44 | 2456.97 | 0.34942 | 47.018 | 1.00854e+06 | 88.0866 | 3998.06 | 3 | 38.7263 |
-| 1.834 | 17099.1 | 5994.03 | 0.35054 | 223.806 | 2.31683e+06 | 278.863 | 5468.55 | 135 | 23.3121 |
-| 2.732 | 16079.5 | 5807.81 | 0.36119 | 180.963 | 2.2503e+06 | 272.178 | 5617.59 | 149 | 23.8631 |
-| 4.337 | 13600.6 | 3520.54 | 0.25885 | 167.189 | 1.86523e+06 | 221.014 | 4804.69 | 115 | 28.5555 |
-| 3.032 | 7876.41 | 1984.92 | 0.252 | 88.5033 | 1.05135e+06 | 112.937 | 3535.51 | 29 | 36.0818 |
+| 2.744 | 9861.3 | 3115.21 | 0.3159 | 89.3957 | 1.39258e+06 | 139.934 | 3491.8 | 20 | 35.194 |
+| 14.736 | 6597.88 | 2228.39 | 0.33774 | 68.3897 | 929143 | 103.142 | 3118.56 | 72 | 38.415 |
+| 13.779 | 7022.69 | 2765.73 | 0.39382 | 66.8312 | 975742 | 118.16 | 3157 | 55 | 38.4369 |
+| 16.462 | 17593.3 | 5586 | 0.3175 | 193.876 | 2.50254e+06 | 291.424 | 5418.01 | 256 | 19.2805 |
+| 1.086 | 6208.65 | 1241.9 | 0.20002 | 55.482 | 852362 | 83.3048 | 2811.67 | 17 | 40.2291 |
 
 ## Curation notes
 
@@ -185,15 +185,15 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| ResidualSize | float64 | 0 | 0 | 15903 | 0.0, 2.006, 1.787, 1.9, 2.055, 1.811, 1.987, 1.896, 1.904, 1.932 |
-| TotalSurfaceArea | float64 | 0 | 0 | 39916 | 13475.4, 5811.82, 4000.26, 14170.5, 20734.4, 4670.89, 15024.1, 4465.62, 14958.5… |
-| NonPolarExposedArea | float64 | 0 | 0 | 39863 | 4814.93, 1087.13, 1053.23, 2129.8, 1866.32, 7997.71, 3520.75, 3102.87, 1729.67,… |
-| FracExposedNonPolarResidue | float64 | 0 | 0 | 20089 | 0.3573, 0.2718, 0.2485, 0.3118, 0.2663, 0.2807, 0.2873, 0.1812, 0.269, 0.2795 |
-| FracExposedNonPolarPart | float64 | 0 | 0 | 40374 | 168.55, 52.5591, 33.732, 186.407, 189.396, 46.7282, 174.306, 108.529, 49.8648, … |
-| MassWeightedExposedArea | float64 | 0 | 0 | 41868 | 1877843.5474, 799977.1539, 569494.3892, 1937925.8075, 2876946.082, 686984.9356,… |
-| AvgDeviationExposedArea | float64 | 0 | 0 | 39155 | 227.605, 65.2332, 46.039, 66.6405, 356.061, 214.666, 118.232, 211.148, 132.03, … |
-| EuclideanDistance | float64 | 0 | 0 | 39450 | 4644.75, 4057.08, 1773.46, 3034.98, 1399.62, 4628.02, 2334.29, 4581.39, 3903.68… |
-| SpatialDistNK | float64 | 0 | 0 | 37299 | 46.5464, 29.7563, 39.7659, 34.8833, 44.4892, 38.8321, 44.4197, 38.1176, 43.1816… |
+| ResidualSize | float64 | 0 | 0 | 15903 | 0.0, 1.787, 2.006, 1.9, 2.055, 1.811, 2.012, 1.937, 1.932, 1.896 |
+| TotalSurfaceArea | float64 | 0 | 0 | 39916 | 13475.4, 4000.26, 5811.82, 14170.5, 20734.4, 4670.89, 15024.1, 11104.7, 6001.6,… |
+| NonPolarExposedArea | float64 | 0 | 0 | 39863 | 4814.93, 1087.13, 1053.23, 3520.75, 2129.8, 1866.32, 7997.71, 3102.87, 2067.07,… |
+| FracExposedNonPolarResidue | float64 | 0 | 0 | 20089 | 0.3573, 0.2718, 0.2485, 0.3118, 0.2663, 0.2795, 0.2807, 0.1812, 0.269, 0.2873 |
+| FracExposedNonPolarPart | float64 | 0 | 0 | 40374 | 168.55, 33.732, 52.5591, 186.407, 46.7282, 189.396, 174.306, 184.361, 76.0205, … |
+| MassWeightedExposedArea | float64 | 0 | 0 | 41868 | 1877843.5474, 799977.1539, 569494.3892, 1937925.8075, 686984.9356, 2876946.082,… |
+| AvgDeviationExposedArea | float64 | 0 | 0 | 39155 | 227.605, 65.2332, 46.039, 214.666, 356.061, 66.6405, 118.232, 211.148, 133.842,… |
+| EuclideanDistance | float64 | 0 | 0 | 39450 | 4644.75, 4057.08, 1773.46, 3034.98, 1399.62, 2334.29, 4628.02, 4581.39, 3903.68… |
+| SpatialDistNK | float64 | 0 | 0 | 37299 | 46.5464, 29.7563, 44.4892, 34.8833, 39.7659, 38.8321, 44.4197, 38.1176, 28.9962… |
 | SecondaryStructurePenalty | int64 | 0 | 0 | 341 | 32, 17, 40, 36, 30, 41, 33, 27, 39, 38 |
 
 ### Target distribution
@@ -225,10 +225,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-70dd-7f0b-9011-6f3e92981c89 |
-| checksum | b2982e9b6ae091a2ebfb74110107755f61f68794d6fc48269575925b0c5dc31d |
-| built_at | 2026-10-02T11:29:34+00:00 |
-| path | physiochemical_protein/01a0fc60-70dd-7f0b-9011-6f3e92981c89 |
+| uuid | 01a11191-e0d0-7b45-a12e-0e5a658aaa0d |
+| checksum | 404c9cb60a892cc23c080e7c79e7f4c807a51aecb6dab05dd0cb89d6583e6cc1 |
+| built_at | 2026-10-06T14:15:36+00:00 |
+| path | physiochemical_protein/01a11191-e0d0-7b45-a12e-0e5a658aaa0d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

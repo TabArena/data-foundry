@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: d50e30dd51a671b5431502909995b7639b3318f2e50b96244c718aba35e24cd1
+checksum: 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f
 build:
-  uuid: 01a0fc60-9358-7bc1-ad5e-84fa3e717179
-  checksum: d50e30dd51a671b5431502909995b7639b3318f2e50b96244c718aba35e24cd1
-  built_at: '2026-10-02T11:29:42+00:00'
-  path: online_shoppers_purchasing_intention_dataset/01a0fc60-9358-7bc1-ad5e-84fa3e717179
+  uuid: 01a11191-df61-7834-8ecd-112fdac6fd13
+  checksum: 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f
+  built_at: '2026-10-06T14:15:35+00:00'
+  path: online_shoppers_purchasing_intention_dataset/01a11191-df61-7834-8ecd-112fdac6fd13
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2017).
 
-Built as `01a0fc60-9358-7bc1-ad5e-84fa3e717179` on 2026-10-02. See [Build](#build).
+Built as `01a11191-df61-7834-8ecd-112fdac6fd13` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 
 | Revenue | Administrative | Administrative_Duration | Informational | Informational_Duration | ProductRelated | ProductRelated_Duration | BounceRates | ExitRates | PageValues | Month | OperatingSystems |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| False | 0 | 0 | 0 | 0 | 49 | 1023.96 | 0.0346939 | 0.0578231 | 0 | Aug | 2 |
-| False | 0 | 0 | 2 | 19.5 | 48 | 1249.75 | 0.00833333 | 0.0204613 | 0 | Dec | 2 |
-| True | 4 | 46.0417 | 4 | 93.4167 | 75 | 6057.93 | 0.0104252 | 0.0196674 | 0 | Nov | 3 |
-| True | 0 | 0 | 0 | 0 | 40 | 2046.83 | 0.00416667 | 0.033881 | 0 | Nov | 1 |
-| False | 0 | 0 | 0 | 0 | 43 | 907.508 | 0 | 0.00243902 | 0 | Nov | 1 |
+| False | 0 | 0 | 0 | 0 | 5 | 168 | 0.04 | 0.08 | 0 | Nov | 3 |
+| False | 4 | 53.2 | 0 | 0 | 14 | 496.967 | 0 | 0.00980392 | 0 | Oct | 2 |
+| False | 0 | 0 | 0 | 0 | 5 | 614.75 | 0 | 0.0733333 | 0 | Dec | 2 |
+| True | 1 | 5 | 0 | 0 | 6 | 119.6 | 0 | 0.0142857 | 0 | Jul | 2 |
+| False | 8 | 279.267 | 0 | 0 | 16 | 453.4 | 0 | 0.0114035 | 0 | Jul | 3 |
 
 ## Curation notes
 
@@ -202,12 +202,12 @@ Default splits.
 | VisitorType | category | 0 | 0 | 3 | Returning_Visitor, New_Visitor, Other |
 | Weekend | category | 0 | 0 | 2 | False, True |
 | Revenue | category | 0 | 0 | 2 | False, True |
-| Administrative_Duration | float64 | 0 | 0 | 2504 | 0.0, 5.0, 4.0, 11.0, 6.0, 7.0, 12.0, 9.0, 8.0, 21.0 |
-| Informational_Duration | float64 | 0 | 0 | 964 | 0.0, 9.0, 6.0, 8.0, 7.0, 10.0, 11.0, 12.0, 5.0, 13.0 |
-| ProductRelated_Duration | float64 | 0 | 0 | 6046 | 0.0, 8.0, 11.0, 12.0, 17.0, 7.0, 15.0, 22.0, 18.0, 96.0 |
+| Administrative_Duration | float64 | 0 | 0 | 2504 | 0.0, 5.0, 4.0, 11.0, 6.0, 7.0, 12.0, 9.0, 8.0, 19.0 |
+| Informational_Duration | float64 | 0 | 0 | 964 | 0.0, 9.0, 6.0, 8.0, 7.0, 11.0, 10.0, 12.0, 5.0, 13.0 |
+| ProductRelated_Duration | float64 | 0 | 0 | 6046 | 0.0, 8.0, 11.0, 17.0, 7.0, 15.0, 12.0, 18.0, 96.0, 22.0 |
 | BounceRates | float64 | 0 | 0 | 1438 | 0.0, 0.2, 0.0667, 0.0167, 0.0286, 0.05, 0.0333, 0.0125, 0.02, 0.0182 |
 | ExitRates | float64 | 0 | 0 | 3268 | 0.2, 0.05, 0.0333, 0.1, 0.0667, 0.025, 0.04, 0.0167, 0.02, 0.0286 |
-| PageValues | float64 | 0 | 0 | 1673 | 0.0, 42.2931, 9.0848, 58.9242, 34.04, 44.8935, 16.1586, 42.4225, 40.4014, 14.12… |
+| PageValues | float64 | 0 | 0 | 1673 | 0.0, 42.2931, 21.2113, 16.1586, 42.4225, 10.999, 78.5696, 87.903, 34.04, 9.0848 |
 | Administrative | int64 | 0 | 0 | 27 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | Informational | int64 | 0 | 0 | 14 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
 | ProductRelated | int64 | 0 | 0 | 302 | 1, 3, 2, 4, 7, 8, 6, 5, 10, 11 |
@@ -281,10 +281,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9358-7bc1-ad5e-84fa3e717179 |
-| checksum | d50e30dd51a671b5431502909995b7639b3318f2e50b96244c718aba35e24cd1 |
-| built_at | 2026-10-02T11:29:42+00:00 |
-| path | online_shoppers_purchasing_intention_dataset/01a0fc60-9358-7bc1-ad5e-84fa3e717179 |
+| uuid | 01a11191-df61-7834-8ecd-112fdac6fd13 |
+| checksum | 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f |
+| built_at | 2026-10-06T14:15:35+00:00 |
+| path | online_shoppers_purchasing_intention_dataset/01a11191-df61-7834-8ecd-112fdac6fd13 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: 9b5ae49172c1fe01e03580efbc65880dc0fcbc62abb6368410d1e8d483c83134
+checksum: f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805
 build:
-  uuid: 01a0fc5f-96a0-79d1-bbf3-a0e71eeb806d
-  checksum: 9b5ae49172c1fe01e03580efbc65880dc0fcbc62abb6368410d1e8d483c83134
-  built_at: '2026-10-02T11:28:40+00:00'
-  path: sf_permit_time/01a0fc5f-96a0-79d1-bbf3-a0e71eeb806d
+  uuid: 01a11190-95a2-75c7-a40c-ed4f679cf6d7
+  checksum: f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805
+  built_at: '2026-10-06T14:14:19+00:00'
+  path: sf_permit_time/01a11190-95a2-75c7-a40c-ed4f679cf6d7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2025).
 
-Built as `01a0fc5f-96a0-79d1-bbf3-a0e71eeb806d` on 2026-10-02. See [Build](#build).
+Built as `01a11190-95a2-75c7-a40c-ed4f679cf6d7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -235,7 +235,7 @@ Accepted on purpose:
 | Number of Existing Stories | float64 | 3953 | 3.96 | 65 | 2.0, 3.0, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | Estimated Cost | float64 | 161 | 0.16 | 9494 | 1.0, 10000.0, 5000.0, 20000.0, 50000.0, 30000.0, 15000.0, 25000.0, 40000.0, 100… |
 | Plansets | float64 | 0 | 0 | 7 | 2.0, 0.0, 1.0, 3.0, 4.0, 9.0, 7.0 |
-| DaysToIssue | float64 | 0 | 0 | 97742 | 0.0119, 5.5706, 0.0451, 5.5706, 0.0324, 0.6973, 0.0509, 0.0429, 0.0142, 0.0392 |
+| DaysToIssue | float64 | 0 | 0 | 97742 | 0.0119, 5.5706, 0.0451, 0.0108, 0.6973, 5.5706, 0.0324, 0.0429, 0.0142, 0.0392 |
 | Location_Longitude | float64 | 0 | 0 | 39869 | -122.395, -122.3971, -122.4768, -122.4018, -122.398, -122.4035, -122.3996, -122… |
 | Location_Latitude | float64 | 0 | 0 | 39863 | 37.794, 37.7899, 37.7285, 37.7898, 37.793, 37.7926, 37.7946, 37.7766, 37.7896, … |
 | Unit Suffix | string | 98874 | 99.03 | 117 | A, PARCEL A, B, C, BLDG 1, D, E, COMML, C102, PARCEL B |
@@ -351,10 +351,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-96a0-79d1-bbf3-a0e71eeb806d |
-| checksum | 9b5ae49172c1fe01e03580efbc65880dc0fcbc62abb6368410d1e8d483c83134 |
-| built_at | 2026-10-02T11:28:40+00:00 |
-| path | sf_permit_time/01a0fc5f-96a0-79d1-bbf3-a0e71eeb806d |
+| uuid | 01a11190-95a2-75c7-a40c-ed4f679cf6d7 |
+| checksum | f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805 |
+| built_at | 2026-10-06T14:14:19+00:00 |
+| path | sf_permit_time/01a11190-95a2-75c7-a40c-ed4f679cf6d7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

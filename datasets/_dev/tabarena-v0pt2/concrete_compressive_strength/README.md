@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: 2bf2737e9d47c634188f5c558fbaad47b660ba147752e9f8fc8bc9ff5033e7f2
+checksum: 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef
 build:
-  uuid: 01a0fc60-9801-7be5-a7ef-e3e66812974d
-  checksum: 2bf2737e9d47c634188f5c558fbaad47b660ba147752e9f8fc8bc9ff5033e7f2
-  built_at: '2026-10-02T11:29:43+00:00'
-  path: concrete_compressive_strength/01a0fc60-9801-7be5-a7ef-e3e66812974d
+  uuid: 01a11191-a206-7b43-8326-902a99f9493a
+  checksum: 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: concrete_compressive_strength/01a11191-a206-7b43-8326-902a99f9493a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1,030 rows and 8 features. Source: UCI (1998).
 
-Built as `01a0fc60-9801-7be5-a7ef-e3e66812974d` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a206-7b43-8326-902a99f9493a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 1,030 rows of the final frame (random rows: the frame is shuffled
 
 | ConcreteCompressiveStrength | Cement | BlastFurnaceSlag | FlyAsh | Water | Superplasticizer | CoarseAggregate | FineAggregate | Age |
 |---|---|---|---|---|---|---|---|---|
-| 52.9083 | 266 | 114 | 0 | 228 | 0 | 932 | 670 | 365 |
-| 55.8958 | 362.6 | 189 | 0 | 164.9 | 11.6 | 944.7 | 755.8 | 7 |
-| 74.4979 | 389.9 | 189 | 0 | 145.9 | 22 | 944.7 | 755.8 | 28 |
-| 35.3012 | 362.6 | 189 | 0 | 164.9 | 11.6 | 944.7 | 755.8 | 3 |
-| 10.5352 | 145 | 0 | 179 | 202 | 8 | 824 | 869 | 28 |
+| 22.8354 | 233.81 | 0 | 94.58 | 197.89 | 4.567 | 947.04 | 852.16 | 28 |
+| 55.6476 | 397 | 17.2 | 158 | 167 | 20.8 | 967 | 633 | 28 |
+| 11.9576 | 203.5 | 135.7 | 0 | 185.7 | 0 | 1076.2 | 759.3 | 7 |
+| 26.2277 | 153 | 145 | 113 | 178 | 8 | 867 | 824 | 28 |
+| 28.6822 | 249.1 | 0 | 98.75 | 158.11 | 12.8 | 987.76 | 889.01 | 14 |
 
 ## Curation notes
 
@@ -214,14 +214,14 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Cement | float64 | 0 | 0 | 280 | 362.6, 425.0, 251.37, 310.0, 446.0, 331.0, 250.0, 475.0, 349.0, 387.0 |
-| BlastFurnaceSlag | float64 | 0 | 0 | 187 | 0.0, 189.0, 106.3, 24.0, 20.0, 145.0, 19.0, 26.0, 22.0, 190.0 |
-| FlyAsh | float64 | 0 | 0 | 163 | 0.0, 141.0, 118.27, 79.0, 94.0, 125.18, 174.24, 121.62, 100.52, 98.75 |
-| Water | float64 | 0 | 0 | 205 | 192.0, 228.0, 185.7, 203.5, 186.0, 164.9, 162.0, 185.0, 153.5, 193.0 |
-| Superplasticizer | float64 | 0 | 0 | 155 | 0.0, 8.0, 11.6, 7.0, 6.0, 10.0, 9.0, 16.5, 11.0, 11.66 |
-| CoarseAggregate | float64 | 0 | 0 | 284 | 932.0, 852.1, 944.7, 968.0, 1125.0, 1047.0, 967.0, 822.0, 938.0, 942.0 |
-| FineAggregate | float64 | 0 | 0 | 304 | 755.8, 594.0, 670.0, 613.0, 801.0, 746.6, 887.1, 712.0, 845.0, 750.0 |
-| ConcreteCompressiveStrength | float64 | 0 | 0 | 938 | 33.3982, 77.2972, 35.3012, 79.2966, 71.2987, 31.3505, 49.201, 18.1263, 64.9004,… |
+| Cement | float64 | 0 | 0 | 280 | 362.6, 425.0, 251.37, 310.0, 446.0, 250.0, 475.0, 331.0, 387.0, 349.0 |
+| BlastFurnaceSlag | float64 | 0 | 0 | 187 | 0.0, 189.0, 106.3, 24.0, 20.0, 145.0, 19.0, 22.0, 26.0, 190.0 |
+| FlyAsh | float64 | 0 | 0 | 163 | 0.0, 141.0, 118.27, 79.0, 94.0, 174.24, 100.52, 121.62, 95.69, 125.18 |
+| Water | float64 | 0 | 0 | 205 | 192.0, 228.0, 185.7, 203.5, 186.0, 162.0, 164.9, 185.0, 153.5, 178.0 |
+| Superplasticizer | float64 | 0 | 0 | 155 | 0.0, 8.0, 11.6, 7.0, 6.0, 9.0, 16.5, 10.0, 11.0, 11.66 |
+| CoarseAggregate | float64 | 0 | 0 | 284 | 932.0, 852.1, 944.7, 968.0, 1125.0, 1047.0, 967.0, 938.0, 942.0, 974.0 |
+| FineAggregate | float64 | 0 | 0 | 304 | 594.0, 755.8, 670.0, 613.0, 801.0, 746.6, 887.1, 845.0, 712.0, 750.0 |
+| ConcreteCompressiveStrength | float64 | 0 | 0 | 938 | 33.3982, 35.3012, 79.2966, 31.3505, 71.2987, 77.2972, 55.8958, 65.1969, 64.3005… |
 | Age | int64 | 0 | 0 | 14 | 28, 3, 7, 56, 14, 90, 100, 180, 91, 365 |
 
 ### Target distribution
@@ -252,10 +252,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9801-7be5-a7ef-e3e66812974d |
-| checksum | 2bf2737e9d47c634188f5c558fbaad47b660ba147752e9f8fc8bc9ff5033e7f2 |
-| built_at | 2026-10-02T11:29:43+00:00 |
-| path | concrete_compressive_strength/01a0fc60-9801-7be5-a7ef-e3e66812974d |
+| uuid | 01a11191-a206-7b43-8326-902a99f9493a |
+| checksum | 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | concrete_compressive_strength/01a11191-a206-7b43-8326-902a99f9493a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

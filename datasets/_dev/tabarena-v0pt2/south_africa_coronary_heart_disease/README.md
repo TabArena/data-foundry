@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: south_africa_coronary_heart_disease
 container_format: 2
-checksum: bf70e3225ca601a43496ad255b3c31280ebba4242bbe37669ad88cfe98263499
+checksum: 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d
 build:
-  uuid: 01a0fc60-7d88-7a8e-8d06-01a1a2156167
-  checksum: bf70e3225ca601a43496ad255b3c31280ebba4242bbe37669ad88cfe98263499
-  built_at: '2026-10-02T11:29:37+00:00'
-  path: south_africa_coronary_heart_disease/01a0fc60-7d88-7a8e-8d06-01a1a2156167
+  uuid: 01a11191-eb28-7861-bd1e-cda4bb9e5d76
+  checksum: 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d
+  built_at: '2026-10-06T14:15:38+00:00'
+  path: south_africa_coronary_heart_disease/01a11191-eb28-7861-bd1e-cda4bb9e5d76
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `chd`, scored with `roc_auc` on IID splits. 462 rows and 9 features. Source: Kaggle (1983).
 
-Built as `01a0fc60-7d88-7a8e-8d06-01a1a2156167` on 2026-10-02. See [Build](#build).
+Built as `01a11191-eb28-7861-bd1e-cda4bb9e5d76` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 462 rows of the final frame (random rows: the frame is shuffled).
 
 | chd | sbp | tobacco | ldl | adiposity | famhist | typea | obesity | alcohol | age |
 |---|---|---|---|---|---|---|---|---|---|
-| 0 | 143 | 5.04 | 4.86 | 23.59 | Absent | 58 | 24.69 | 18.72 | 42 |
-| 1 | 136 | 2.52 | 3.95 | 25.63 | Absent | 51 | 21.86 | 0 | 45 |
-| 1 | 136 | 11.2 | 5.81 | 31.85 | Present | 75 | 27.68 | 22.94 | 58 |
-| 0 | 144 | 2.4 | 8.13 | 35.61 | Absent | 46 | 27.38 | 13.37 | 60 |
-| 0 | 153 | 7.8 | 3.96 | 25.73 | Absent | 54 | 25.91 | 27.03 | 45 |
+| 1 | 140 | 8.6 | 3.9 | 32.16 | Present | 52 | 28.51 | 11.11 | 64 |
+| 0 | 134 | 12.5 | 2.73 | 39.35 | Absent | 48 | 35.58 | 0 | 48 |
+| 0 | 126 | 1.8 | 6.22 | 19.71 | Absent | 65 | 24.81 | 0.69 | 31 |
+| 0 | 109 | 1.2 | 6.14 | 29.26 | Absent | 47 | 24.72 | 10.46 | 40 |
+| 0 | 134 | 2 | 3.66 | 14.69 | Absent | 52 | 21.03 | 2.06 | 37 |
 
 ## Curation notes
 
@@ -247,14 +247,14 @@ Default splits.
 |---|---|---|---|---|---|
 | famhist | category | 0 | 0 | 2 | Absent, Present |
 | chd | category | 0 | 0 | 2 | 0, 1 |
-| tobacco | float64 | 0 | 0 | 214 | 0.0, 6.0, 3.0, 4.0, 0.4, 4.2, 4.5, 0.6, 2.0, 1.2 |
-| ldl | float64 | 0 | 0 | 329 | 3.95, 4.37, 3.57, 3.3, 4.16, 3.58, 2.4, 5.9, 2.44, 3.79 |
-| adiposity | float64 | 0 | 0 | 408 | 27.55, 30.79, 21.1, 29.3, 35.95, 24.65, 30.84, 37.83, 23.07, 29.18 |
-| obesity | float64 | 0 | 0 | 400 | 26.09, 24.86, 22.01, 21.94, 22.51, 24.7, 24.98, 22.59, 27.29, 28.4 |
-| alcohol | float64 | 0 | 0 | 249 | 0.0, 2.06, 0.51, 8.33, 43.2, 14.4, 11.11, 8.23, 1.03, 3.81 |
-| sbp | int64 | 0 | 0 | 62 | 136, 134, 128, 132, 124, 118, 126, 130, 138, 122 |
+| tobacco | float64 | 0 | 0 | 214 | 0.0, 6.0, 3.0, 0.4, 4.0, 4.5, 4.2, 1.5, 2.0, 12.0 |
+| ldl | float64 | 0 | 0 | 329 | 3.57, 4.37, 3.95, 4.16, 3.58, 3.3, 2.4, 3.98, 6.06, 4.9 |
+| adiposity | float64 | 0 | 0 | 408 | 29.3, 30.79, 27.55, 21.1, 28.61, 23.88, 32.03, 16.38, 16.64, 17.2 |
+| obesity | float64 | 0 | 0 | 400 | 24.86, 26.09, 27.29, 24.7, 22.01, 22.59, 25.99, 28.4, 24.98, 22.51 |
+| alcohol | float64 | 0 | 0 | 249 | 0.0, 2.06, 0.51, 8.23, 11.11, 14.4, 8.33, 43.2, 3.81, 1.03 |
+| sbp | int64 | 0 | 0 | 62 | 134, 136, 128, 132, 124, 118, 126, 130, 138, 122 |
 | typea | int64 | 0 | 0 | 54 | 52, 57, 50, 54, 49, 56, 60, 61, 55, 47 |
-| age | int64 | 0 | 0 | 49 | 16, 17, 58, 55, 61, 59, 60, 49, 45, 53 |
+| age | int64 | 0 | 0 | 49 | 16, 17, 58, 55, 61, 59, 60, 49, 53, 45 |
 
 ### Target distribution
 
@@ -289,10 +289,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7d88-7a8e-8d06-01a1a2156167 |
-| checksum | bf70e3225ca601a43496ad255b3c31280ebba4242bbe37669ad88cfe98263499 |
-| built_at | 2026-10-02T11:29:37+00:00 |
-| path | south_africa_coronary_heart_disease/01a0fc60-7d88-7a8e-8d06-01a1a2156167 |
+| uuid | 01a11191-eb28-7861-bd1e-cda4bb9e5d76 |
+| checksum | 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d |
+| built_at | 2026-10-06T14:15:38+00:00 |
+| path | south_africa_coronary_heart_disease/01a11191-eb28-7861-bd1e-cda4bb9e5d76 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

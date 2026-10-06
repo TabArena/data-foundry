@@ -12,8 +12,6 @@ import pandas as pd
 from pydantic import TypeAdapter
 from uuid6 import uuid7
 
-logger = logging.getLogger(__name__)
-
 from data_foundry.schema import (
     DatasetMetadata,
     Grouping,
@@ -24,6 +22,9 @@ from data_foundry.schema import (
     resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import encode_dataset, encode_pydantic_metadata, omit_unset_fields
+from data_foundry.utils.dtypes import is_str_dtype
+
+logger = logging.getLogger(__name__)
 
 MetadataRegistry = {
     DatasetMetadata.type_adapter_id: DatasetMetadata,
@@ -83,7 +84,11 @@ class CuratedContainer:
     """The path from which the curated container was loaded, if applicable. Used for caching purposes."""
 
     def __post_init__(self):
-        """Post-initialization to set the UUID if not provided."""
+        """Post-initialization: text categories as ``object`` under any pandas version, then the UUID and checksum."""
+        if self.dataset is not None:
+            self.dataset = self._text_categories_as_object(self.dataset)
+        if self.test_dataset is not None:
+            self.test_dataset = self._text_categories_as_object(self.test_dataset)
         if self.uuid is None:
             self.uuid = self._create_uuid()
         if self.checksum is None:
@@ -269,12 +274,13 @@ class CuratedContainer:
     def _restore_dtypes(df: pd.DataFrame, path: Path) -> pd.DataFrame:
         """Restore DataFrame column dtypes from a JSON file.
 
-        If the file does not exist, logs a warning and returns the DataFrame unchanged.
-        If a column cast fails, logs a warning for that column and skips it.
+        If the file does not exist, logs a warning and returns the DataFrame with only its text categories fixed.
+        If a column cast fails, logs a warning for that column and skips it. Text categories come back as
+        ``object``, as pandas 2 reads them (pandas 3 reads them as ``str``), so both load the same frame.
         """
         if not path.exists():
             logger.warning("dtype file %s not found — skipping dtype restoration (backward compatibility).", path)
-            return df
+            return CuratedContainer._text_categories_as_object(df)
 
         with path.open("r") as f:
             dtypes = json.load(f)
@@ -289,7 +295,21 @@ class CuratedContainer:
                 df[col] = df[col].astype(dtype_str)
             except (ValueError, TypeError) as e:
                 logger.warning("Failed to cast column '%s' to %s: %s — skipping.", col, dtype_str, e)
-        return df
+        return CuratedContainer._text_categories_as_object(df)
+
+    @staticmethod
+    def _text_categories_as_object(df: pd.DataFrame) -> pd.DataFrame:
+        """Give categorical columns with pandas 3 ``str`` categories ``object`` categories, as pandas 2 makes them.
+
+        Returns ``df`` itself when there is nothing to change, else a shallow copy. The checksum hashes both alike.
+        """
+        out = df
+        for col in df.columns:
+            dtype = df[col].dtype
+            if isinstance(dtype, pd.CategoricalDtype) and is_str_dtype(dtype.categories.dtype):
+                out = df.copy(deep=False) if out is df else out
+                out[col] = df[col].cat.rename_categories(dtype.categories.astype(object))
+        return out
 
     def _save_path(self, save_dir: Path) -> Path:
         """Resolve the on-disk save directory for this container under ``save_dir``."""

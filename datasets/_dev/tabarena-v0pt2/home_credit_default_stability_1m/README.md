@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: 6f37dfc7c7d1386a334b4fee64a8961b7c05bcbf3c0705b93c569410ded8af86
+checksum: e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35
 build:
-  uuid: 01a0fc5f-32a9-7c9d-8a01-13068f6a7589
-  checksum: 6f37dfc7c7d1386a334b4fee64a8961b7c05bcbf3c0705b93c569410ded8af86
-  built_at: '2026-10-02T11:28:58+00:00'
-  path: home_credit_default_stability/versions/01a0fc5f-32a9-7c9d-8a01-13068f6a7589
+  uuid: 01a11190-62b3-7529-b8fd-e5ea5439dfa5
+  checksum: e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35
+  built_at: '2026-10-06T14:14:45+00:00'
+  path: home_credit_default_stability/versions/01a11190-62b3-7529-b8fd-e5ea5439dfa5
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a0fc5f-32a9-7c9d-8a01-13068f6a7589` on 2026-10-02. See [Build](#build).
+Built as `01a11190-62b3-7529-b8fd-e5ea5439dfa5` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -161,11 +161,11 @@ The first 5 of 1,224,927 rows of the final frame (the oldest rows: the frame is 
 
 | target | date_decision | MONTH | WEEK_NUM | actualdpdtolerance_344P | amtinstpaidbefduel24m_4187115A | annuity_780A | annuitynextmonth_57A | applicationcnt_361L | applications30d_658L | applicationscnt_1086L | applicationscnt_464L |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1589.8 | 0 | 0 | 0 | 0 | 15 |
-| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 2506 | 0 | 0 | 0 | 0 | 0 |
-| 1 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 2692.2 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1769.4 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1746.8 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 2098.2 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 3959.6 | 0 | 0 | 0 | 0 | 1 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | 0 | nan | 1054.2 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | nan | nan | 1140 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 2019-01-01 00:00:00 | 201901 | 0 | 0 | nan | 3797.8 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -213,65 +213,65 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | isbidproduct_1095L | bool | 0 | 0 | 2 | False, True |
-| last_credacc_status_367L | category | 1.1626e+06 | 94.91 | 6 | AC, CL, CA, PCL, PO, CR |
-| equalitydataagreement_891L | category | 1.1624e+06 | 94.9 | 2 | True, False |
-| first_housetype_905L | category | 1.12411e+06 | 91.77 | 6 | OWNED, PARENTAL, FLAT, COMPANY_FLAT, COOP_FLAT, STATE_FLAT |
-| last_relationshiptoclient_415T | category | 1.08055e+06 | 88.21 | 10 | CHILD, SPOUSE, OTHER_RELATIVE, SIBLING, FRIEND, OTHER, PARENT, COLLEAGUE, NEIGH… |
-| cardtype_51L | category | 1.0727e+06 | 87.57 | 2 | INSTANT, PERSONALIZED |
-| max_isdebitcard_527L | category | 944801 | 77.13 | 2 | False, True |
-| min_isdebitcard_527L | category | 944801 | 77.13 | 2 | False, True |
-| first_familystate_726L | category | 827553 | 67.56 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
-| first_empl_industry_691L | category | 822193 | 67.12 | 24 | OTHER, GOVERNMENT, EDUCATION, TRADE, HEALTH, MANUFACTURING, AGRICULTURE, TRANSP… |
-| first_empl_employedtotal_800L | category | 817506 | 66.74 | 3 | MORE_FIVE, MORE_ONE, LESS_ONE |
-| last_relationshiptoclient_642T | category | 750016 | 61.23 | 10 | SIBLING, SPOUSE, CHILD, OTHER_RELATIVE, FRIEND, PARENT, COLLEAGUE, OTHER, NEIGH… |
-| requesttype_4525192L | category | 706700 | 57.69 | 3 | DEDUCTION_6, PENSION_6, SOCIAL_6 |
-| first_familystate_447L | category | 641291 | 52.35 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
-| last_incometype_1044T | category | 604070 | 49.31 | 8 | PRIVATE_SECTOR_EMPLOYEE, RETIRED_PENSIONER, SALARIED_GOVT, EMPLOYED, SELFEMPLOY… |
-| last_sex_738L | category | 604070 | 49.31 | 2 | F, M |
-| last_familystate_726L | category | 325393 | 26.56 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
-| first_credtype_587L | category | 264262 | 21.57 | 3 | COL, CAL, REL |
-| first_inittransactioncode_279L | category | 264262 | 21.57 | 3 | POS, CASH, NDF |
-| last_credtype_587L | category | 246633 | 20.13 | 3 | COL, CAL, REL |
-| last_inittransactioncode_279L | category | 246633 | 20.13 | 3 | POS, CASH, NDF |
-| lastst_736L | category | 241530 | 19.72 | 11 | D, A, K, T, N, S, Q, L, H, P |
-| opencred_647L | category | 241530 | 19.72 | 2 | False, True |
-| max_isbidproduct_390L | category | 241530 | 19.72 | 2 | False, True |
-| last_cancelreason_3545846M | category | 241530 | 19.72 | 65 | a55475b1, P94_109_143, P73_130_169, P85_114_140, P198_89_166, P24_27_36, P180_6… |
-| first_cancelreason_3545846M | category | 241530 | 19.72 | 73 | a55475b1, P94_109_143, P85_114_140, P30_86_84, P198_89_166, P180_60_137, P24_27… |
-| last_district_544M | category | 241530 | 19.72 | 399 | a55475b1, P131_33_167, P197_47_166, P123_6_84, P98_137_111, P204_99_158, P147_2… |
-| first_district_544M | category | 241530 | 19.72 | 931 | a55475b1, P131_33_167, P197_47_166, P123_6_84, P98_137_111, P204_99_158, P159_1… |
-| last_education_1138M | category | 241530 | 19.72 | 6 | P97_36_170, P33_146_175, a55475b1, P106_81_188, P17_36_170, P157_18_172 |
-| first_education_1138M | category | 241530 | 19.72 | 6 | a55475b1, P97_36_170, P33_146_175, P106_81_188, P17_36_170, P157_18_172 |
-| last_postype_4733339M | category | 241530 | 19.72 | 9 | a55475b1, P177_117_192, P60_146_156, P149_40_170, P46_145_78, P217_110_186, P67… |
-| first_postype_4733339M | category | 241530 | 19.72 | 9 | a55475b1, P177_117_192, P46_145_78, P149_40_170, P67_102_161, P60_146_156, P217… |
-| last_profession_152M | category | 241530 | 19.72 | 3143 | a55475b1, P46_72_80, P104_137_180, P25_111_112, P21_76_53, P80_95_87, P116_87_1… |
-| first_profession_152M | category | 241530 | 19.72 | 1683 | a55475b1, P46_72_80, P143_116_69, P104_137_180, P21_76_53, P25_111_112, P203_66… |
-| last_rejectreason_755M | category | 241530 | 19.72 | 17 | a55475b1, P99_56_166, P45_84_106, P198_131_9, P94_109_143, P196_88_176, P121_60… |
-| first_rejectreason_755M | category | 241530 | 19.72 | 18 | a55475b1, P99_56_166, P94_109_143, P45_84_106, P198_131_9, P48_22_32, P30_86_84… |
-| last_rejectreasonclient_4145042M | category | 241530 | 19.72 | 11 | a55475b1, P94_109_143, P5_143_178, P30_86_84, P84_14_61, P19_25_34, P53_10_15, … |
-| first_rejectreasonclient_4145042M | category | 241530 | 19.72 | 14 | a55475b1, P94_109_143, P30_86_84, P52_67_90, P69_72_116, P129_162_80, P84_14_61… |
-| last_status_219L | category | 241579 | 19.72 | 10 | K, D, A, T, Q, N, H, L, S, P |
-| first_status_219L | category | 241530 | 19.72 | 11 | D, A, K, T, N, S, Q, L, H, P |
-| last_collater_typofvalofguarant_298M | category | 110242 | 9 | 3 | a55475b1, 8fd95e4b, 9a0c095e |
-| first_collater_typofvalofguarant_298M | category | 110242 | 9 | 5 | 9a0c095e, 8fd95e4b, a55475b1, 06fb9ba8, 26cf31be |
-| last_collater_typofvalofguarant_407M | category | 110242 | 9 | 3 | a55475b1, 8fd95e4b, 9a0c095e |
-| first_collater_typofvalofguarant_407M | category | 110242 | 9 | 7 | 9a0c095e, a55475b1, 8fd95e4b, 06fb9ba8, 3cbe86ba, 9276e4bb, c7a5ad39 |
-| last_collaterals_typeofguarante_359M | category | 110242 | 9 | 7 | a55475b1, c7a5ad39, 0e63c0f0, 7b62420e, 3cbe86ba, 9276e4bb, f4d8a027 |
-| first_collaterals_typeofguarante_359M | category | 110242 | 9 | 15 | c7a5ad39, a55475b1, 3cbe86ba, 9276e4bb, 168ad9f3, 940efad7, 5224034a, 0e63c0f0,… |
-| last_collaterals_typeofguarante_669M | category | 110242 | 9 | 6 | a55475b1, 0e63c0f0, 168ad9f3, 3cbe86ba, 9276e4bb, f4d8a027 |
-| first_collaterals_typeofguarante_669M | category | 110242 | 9 | 15 | c7a5ad39, a55475b1, 9276e4bb, 7b62420e, 0e63c0f0, 940efad7, 2fd21cf1, 3cbe86ba,… |
-| last_subjectroles_name_541M | category | 110242 | 9 | 2 | a55475b1, ab3c25cf |
-| first_subjectroles_name_541M | category | 110242 | 9 | 9 | ab3c25cf, a55475b1, 15f04f45, daf49a8a, be4fd70b, 0c42a10e, 71ddaa88, 1d94eac1,… |
-| first_subjectroles_name_838M | category | 110242 | 9 | 9 | ab3c25cf, a55475b1, 15f04f45, be4fd70b, daf49a8a, P28_48_88, 71ddaa88, 0c42a10e… |
-| last_classificationofcontr_13M | category | 109466 | 8.94 | 3 | a55475b1, ea6782cc, 01f63ac8 |
-| first_classificationofcontr_13M | category | 109466 | 8.94 | 11 | ea6782cc, a55475b1, 01f63ac8, 00135d9c, 4408ff0f, 1cf4e481, be7b251d, 2c070815,… |
-| last_classificationofcontr_400M | category | 109466 | 8.94 | 24 | a55475b1, ea6782cc, 01f63ac8, 00135d9c, 4408ff0f, 1cf4e481, 081682a1, 011769b0,… |
-| first_classificationofcontr_400M | category | 109466 | 8.94 | 287 | ea6782cc, a55475b1, 01f63ac8, 42a42e75, 9158339f, e2453741, 00135d9c, d7416962,… |
-| last_contractst_545M | category | 109466 | 8.94 | 3 | a55475b1, 8f3a197f, 7241344e |
-| first_contractst_545M | category | 109466 | 8.94 | 46 | 7241344e, a55475b1, 8f3a197f, 0dc85f9d, b919198c, a52d5641, dd67cff0, 7640edc3,… |
-| last_contractst_964M | category | 109466 | 8.94 | 56 | a55475b1, 7241344e, 8ff23ce1, 01f63ac8, c400401f, dc23998c, 41694615, 45c45f3e,… |
-| first_contractst_964M | category | 109466 | 8.94 | 190 | 7241344e, a55475b1, 8f3a197f, d7416962, 8260bab9, b83056f9, 4476359f, 89721976,… |
-| last_description_351M | category | 109466 | 8.94 | 10 | a55475b1, f8e51f8d, 0349102c, 6da7c7ed, 53179c19, 18e98e64, 0cb4d552, 95decc86,… |
+| last_credacc_status_367L | category | 1.16268e+06 | 94.92 | 6 | AC, CL, CA, PCL, PO, CR |
+| equalitydataagreement_891L | category | 1.1623e+06 | 94.89 | 2 | True, False |
+| first_housetype_905L | category | 1.12411e+06 | 91.77 | 6 | OWNED, PARENTAL, FLAT, COMPANY_FLAT, STATE_FLAT, COOP_FLAT |
+| last_relationshiptoclient_415T | category | 1.0804e+06 | 88.2 | 10 | CHILD, SPOUSE, SIBLING, OTHER_RELATIVE, FRIEND, OTHER, PARENT, COLLEAGUE, NEIGH… |
+| cardtype_51L | category | 1.07261e+06 | 87.57 | 2 | INSTANT, PERSONALIZED |
+| max_isdebitcard_527L | category | 944645 | 77.12 | 2 | False, True |
+| min_isdebitcard_527L | category | 944645 | 77.12 | 2 | False, True |
+| first_familystate_726L | category | 826993 | 67.51 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
+| first_empl_industry_691L | category | 822133 | 67.12 | 24 | OTHER, GOVERNMENT, EDUCATION, TRADE, HEALTH, MANUFACTURING, AGRICULTURE, TRANSP… |
+| first_empl_employedtotal_800L | category | 817464 | 66.74 | 3 | MORE_FIVE, MORE_ONE, LESS_ONE |
+| last_relationshiptoclient_642T | category | 749959 | 61.22 | 10 | SIBLING, SPOUSE, CHILD, OTHER_RELATIVE, FRIEND, PARENT, COLLEAGUE, OTHER, NEIGH… |
+| requesttype_4525192L | category | 706697 | 57.69 | 3 | DEDUCTION_6, PENSION_6, SOCIAL_6 |
+| first_familystate_447L | category | 641133 | 52.34 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
+| last_incometype_1044T | category | 604372 | 49.34 | 8 | PRIVATE_SECTOR_EMPLOYEE, RETIRED_PENSIONER, SALARIED_GOVT, EMPLOYED, SELFEMPLOY… |
+| last_sex_738L | category | 604372 | 49.34 | 2 | F, M |
+| last_familystate_726L | category | 325525 | 26.58 | 5 | MARRIED, SINGLE, WIDOWED, DIVORCED, LIVING_WITH_PARTNER |
+| first_credtype_587L | category | 264287 | 21.58 | 3 | COL, CAL, REL |
+| first_inittransactioncode_279L | category | 264287 | 21.58 | 3 | POS, CASH, NDF |
+| last_credtype_587L | category | 246797 | 20.15 | 3 | COL, CAL, REL |
+| last_inittransactioncode_279L | category | 246797 | 20.15 | 3 | POS, CASH, NDF |
+| last_status_219L | category | 241643 | 19.73 | 10 | K, D, A, T, Q, N, H, L, S, P |
+| lastst_736L | category | 241593 | 19.72 | 11 | D, A, K, T, N, S, Q, L, H, P |
+| opencred_647L | category | 241593 | 19.72 | 2 | False, True |
+| max_isbidproduct_390L | category | 241593 | 19.72 | 2 | False, True |
+| last_cancelreason_3545846M | category | 241593 | 19.72 | 64 | a55475b1, P94_109_143, P73_130_169, P85_114_140, P198_89_166, P180_60_137, P24_… |
+| first_cancelreason_3545846M | category | 241593 | 19.72 | 73 | a55475b1, P94_109_143, P85_114_140, P30_86_84, P198_89_166, P180_60_137, P24_27… |
+| last_district_544M | category | 241593 | 19.72 | 396 | a55475b1, P131_33_167, P197_47_166, P123_6_84, P98_137_111, P204_99_158, P159_1… |
+| first_district_544M | category | 241593 | 19.72 | 944 | a55475b1, P131_33_167, P197_47_166, P123_6_84, P98_137_111, P204_99_158, P159_1… |
+| last_education_1138M | category | 241593 | 19.72 | 6 | P97_36_170, P33_146_175, a55475b1, P106_81_188, P17_36_170, P157_18_172 |
+| first_education_1138M | category | 241593 | 19.72 | 6 | a55475b1, P97_36_170, P33_146_175, P106_81_188, P17_36_170, P157_18_172 |
+| last_postype_4733339M | category | 241593 | 19.72 | 9 | a55475b1, P177_117_192, P60_146_156, P149_40_170, P46_145_78, P217_110_186, P67… |
+| first_postype_4733339M | category | 241593 | 19.72 | 9 | a55475b1, P177_117_192, P46_145_78, P149_40_170, P67_102_161, P60_146_156, P217… |
+| last_profession_152M | category | 241593 | 19.72 | 3133 | a55475b1, P104_137_180, P46_72_80, P95_143_148, P25_111_112, P130_31_165, P143_… |
+| first_profession_152M | category | 241593 | 19.72 | 1685 | a55475b1, P143_116_69, P46_72_80, P21_76_53, P95_143_148, P130_31_165, P116_87_… |
+| last_rejectreason_755M | category | 241593 | 19.72 | 17 | a55475b1, P99_56_166, P45_84_106, P198_131_9, P94_109_143, P196_88_176, P121_60… |
+| first_rejectreason_755M | category | 241593 | 19.72 | 18 | a55475b1, P99_56_166, P94_109_143, P45_84_106, P198_131_9, P48_22_32, P30_86_84… |
+| last_rejectreasonclient_4145042M | category | 241593 | 19.72 | 11 | a55475b1, P94_109_143, P5_143_178, P30_86_84, P84_14_61, P52_67_90, P129_162_80… |
+| first_rejectreasonclient_4145042M | category | 241593 | 19.72 | 14 | a55475b1, P94_109_143, P30_86_84, P52_67_90, P69_72_116, P129_162_80, P84_14_61… |
+| first_status_219L | category | 241593 | 19.72 | 11 | D, A, K, T, N, S, Q, L, H, P |
+| last_collater_typofvalofguarant_298M | category | 110614 | 9.03 | 3 | a55475b1, 9a0c095e, 8fd95e4b |
+| first_collater_typofvalofguarant_298M | category | 110614 | 9.03 | 5 | 9a0c095e, 8fd95e4b, a55475b1, 06fb9ba8, 26cf31be |
+| last_collater_typofvalofguarant_407M | category | 110614 | 9.03 | 3 | a55475b1, 8fd95e4b, 9a0c095e |
+| first_collater_typofvalofguarant_407M | category | 110614 | 9.03 | 7 | 9a0c095e, a55475b1, 8fd95e4b, 06fb9ba8, 3cbe86ba, 9276e4bb, c7a5ad39 |
+| last_collaterals_typeofguarante_359M | category | 110614 | 9.03 | 6 | a55475b1, 0e63c0f0, 3cbe86ba, 9276e4bb, c7a5ad39, f4d8a027 |
+| first_collaterals_typeofguarante_359M | category | 110614 | 9.03 | 15 | c7a5ad39, a55475b1, 3cbe86ba, 9276e4bb, 168ad9f3, 940efad7, 5224034a, 0e63c0f0,… |
+| last_collaterals_typeofguarante_669M | category | 110614 | 9.03 | 6 | a55475b1, 0e63c0f0, 168ad9f3, 3cbe86ba, 9276e4bb, f4d8a027 |
+| first_collaterals_typeofguarante_669M | category | 110614 | 9.03 | 15 | c7a5ad39, a55475b1, 9276e4bb, 7b62420e, 0e63c0f0, 940efad7, 2fd21cf1, 3cbe86ba,… |
+| last_subjectroles_name_541M | category | 110614 | 9.03 | 2 | a55475b1, ab3c25cf |
+| first_subjectroles_name_541M | category | 110614 | 9.03 | 8 | ab3c25cf, a55475b1, 15f04f45, daf49a8a, be4fd70b, 0c42a10e, 71ddaa88, 1d94eac1 |
+| first_subjectroles_name_838M | category | 110614 | 9.03 | 9 | ab3c25cf, a55475b1, 15f04f45, be4fd70b, daf49a8a, P28_48_88, 0c42a10e, 71ddaa88… |
+| last_classificationofcontr_13M | category | 109839 | 8.97 | 3 | a55475b1, ea6782cc, 01f63ac8 |
+| first_classificationofcontr_13M | category | 109839 | 8.97 | 11 | ea6782cc, a55475b1, 01f63ac8, 00135d9c, 4408ff0f, be7b251d, 1cf4e481, 2c070815,… |
+| last_classificationofcontr_400M | category | 109839 | 8.97 | 22 | a55475b1, ea6782cc, 01f63ac8, 00135d9c, a4c62d3b, 1cf4e481, c8012654, 4408ff0f,… |
+| first_classificationofcontr_400M | category | 109839 | 8.97 | 286 | ea6782cc, a55475b1, 01f63ac8, 42a42e75, 9158339f, e2453741, 00135d9c, d7416962,… |
+| last_contractst_545M | category | 109839 | 8.97 | 3 | a55475b1, 7241344e, 8f3a197f |
+| first_contractst_545M | category | 109839 | 8.97 | 46 | 7241344e, a55475b1, 8f3a197f, 0dc85f9d, b919198c, a52d5641, dd67cff0, 7640edc3,… |
+| last_contractst_964M | category | 109839 | 8.97 | 55 | a55475b1, 7241344e, 181f7276, 0bc37630, b2f1bf5c, 89c856d6, 06bb8bb0, 8ff23ce1,… |
+| first_contractst_964M | category | 109839 | 8.97 | 193 | 7241344e, a55475b1, 8f3a197f, d7416962, 8260bab9, b83056f9, 4476359f, 89721976,… |
+| last_description_351M | category | 109839 | 8.97 | 10 | a55475b1, f8e51f8d, 0349102c, 6da7c7ed, 53179c19, 1d89fa48, 18e98e64, 0cb4d552,… |
 
 (651 more rows not shown)
 
@@ -292,65 +292,65 @@ Accepted on purpose:
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | MONTH | 122493 | 201939 | 46.1236 | 201901 | 202010 |
-| WEEK_NUM | 122493 | 42.627 | 24.7584 | 0 | 91 |
-| actualdpdtolerance_344P | 89268 | 0.115831 | 16.1029 | 0 | 3660 |
-| amtinstpaidbefduel24m_4187115A | 78302 | 56937.2 | 72627 | 0 | 973588 |
-| annuity_780A | 122493 | 4068.14 | 3010.92 | 80.8 | 54996.8 |
-| annuitynextmonth_57A | 122493 | 1449.71 | 2846.25 | 0 | 70924.2 |
+| WEEK_NUM | 122493 | 42.6271 | 24.7584 | 0 | 91 |
+| actualdpdtolerance_344P | 89538 | 0.0727177 | 9.76454 | 0 | 2118 |
+| amtinstpaidbefduel24m_4187115A | 78458 | 56085.3 | 72163 | 0 | 1.40801e+06 |
+| annuity_780A | 122493 | 4063.32 | 3020.62 | 145.8 | 53019 |
+| annuitynextmonth_57A | 122493 | 1431.99 | 2819.41 | 0 | 65747.8 |
 | applicationcnt_361L | 122493 | 0 | 0 | 0 | 0 |
-| applications30d_658L | 122493 | 0.139788 | 0.490725 | 0 | 25 |
-| applicationscnt_1086L | 122493 | 0.419502 | 2.83135 | 0 | 258 |
-| applicationscnt_464L | 122493 | 1.04199 | 9.5056 | 0 | 244 |
-| applicationscnt_629L | 122493 | 0.260407 | 2.41421 | 0 | 84 |
-| applicationscnt_867L | 122493 | 2.93174 | 4.45718 | 0 | 264 |
-| avgdbddpdlast24m_3658932P | 73625 | 30.3684 | 319.034 | -923 | 4719 |
-| avgdbddpdlast3m_4187120P | 47014 | 30.5913 | 376.092 | -531 | 4719 |
-| avgdbdtollast24m_4525197P | 46077 | 32.0638 | 326.489 | -923 | 4719 |
-| avgdpdtolclosure24_3658938P | 85467 | 46.7194 | 321.529 | 0 | 4719 |
-| avginstallast24m_3658937A | 72712 | 5443.9 | 6592.5 | 1.2 | 400000 |
-| avglnamtstart24m_4525187A | 13251 | 44595.5 | 45069.1 | 0 | 496149 |
-| avgmaxdpdlast9m_3716943P | 62026 | 0.725454 | 4.49067 | 0 | 213 |
-| avgoutstandbalancel6m_4187114A | 55636 | 46208.6 | 64920.6 | -2e+06 | 1.12872e+06 |
-| avgpmtlast12m_4525200A | 41553 | 6546.91 | 9947.46 | 0 | 383958 |
-| clientscnt12m_3712952L | 122493 | 0.0378716 | 0.913714 | 0 | 176 |
-| clientscnt3m_3712950L | 122493 | 0.0174541 | 0.50283 | 0 | 86 |
-| clientscnt6m_3712949L | 122493 | 0.0267444 | 0.899391 | 0 | 175 |
-| clientscnt_100L | 122493 | 0.0454148 | 0.23047 | 0 | 12 |
-| clientscnt_1022L | 122493 | 0.108063 | 1.34921 | 0 | 244 |
-| clientscnt_1071L | 122493 | 0.0320018 | 0.18292 | 0 | 3 |
-| clientscnt_1130L | 122493 | 0.0306222 | 0.240112 | 0 | 26 |
-| clientscnt_157L | 122493 | 0.071898 | 0.425947 | 0 | 34 |
-| clientscnt_257L | 122493 | 0.00297976 | 0.0616735 | 0 | 9 |
-| clientscnt_304L | 122493 | 0.0772289 | 0.841365 | 0 | 218 |
-| clientscnt_360L | 122493 | 0.00275934 | 0.0583511 | 0 | 8 |
-| clientscnt_493L | 122493 | 0.0105965 | 0.350291 | 0 | 74 |
-| clientscnt_533L | 122493 | 0.0756043 | 0.283527 | 0 | 12 |
-| clientscnt_887L | 122493 | 2.30926 | 38.8435 | 0 | 1242 |
-| clientscnt_946L | 122493 | 0.0324345 | 0.290851 | 0 | 32 |
-| cntincpaycont9m_3716944L | 86380 | 6.22853 | 6.43815 | 0 | 575 |
-| cntpmts24_3658933L | 85927 | 10.6994 | 7.9161 | 0 | 25 |
-| credamount_770A | 122493 | 50130.8 | 44449.2 | 2000 | 540000 |
-| currdebt_22A | 122493 | 19848.9 | 51357.7 | 0 | 1.07176e+06 |
-| currdebtcredtyperange_828A | 122493 | 11074.1 | 37065.6 | 0 | 1.02834e+06 |
-| datefirstoffer_1144D | 56048 | -2465.34 | 1619.7 | -4902 | 13 |
-| datelastinstal40dpd_247D | 11088 | -1965.37 | 1560.1 | -5200 | -26 |
-| datelastunpaid_3546854D | 51513 | -967.262 | 1250.56 | -5305 | 13 |
-| daysoverduetolerancedd_3976961L | 86606 | 98.5709 | 487.075 | 0 | 5274 |
-| disbursedcredamount_1113A | 122493 | 46350.6 | 42770.8 | 0 | 540000 |
-| downpmt_116A | 122493 | 554.131 | 4364.19 | 0 | 380000 |
-| dtlastpmtallstes_4499206D | 45296 | -414.864 | 847.747 | -5139 | 13 |
-| eir_270L | 107480 | 0.278172 | 0.197124 | 0 | 0.45 |
-| firstclxcampaign_1125D | 53800 | -1002.58 | 470.131 | -1709 | 14 |
-| firstdatedue_489D | 84316 | -1846.66 | 1453.74 | -5360 | 46 |
-| homephncnt_628L | 122493 | 0.637898 | 0.848575 | 0 | 8 |
-| inittransactionamount_650A | 15144 | 32746.3 | 33934.6 | 0 | 200000 |
-| isbidproduct_1095L | 122493 | 0.116529 | 0.32086 | 0 | 1 |
-| lastactivateddate_801D | 86521 | -632.992 | 911.321 | -5315 | 14 |
-| lastapplicationdate_877D | 98284 | -467.635 | 745.458 | -5279 | 14 |
-| lastapprcredamount_781A | 87386 | 36722.9 | 37111.8 | 0 | 400000 |
-| lastapprdate_640D | 87386 | -612.23 | 894.13 | -5318 | 14 |
-| lastdelinqdate_224D | 44388 | -549.282 | 658.121 | -4902 | 13 |
-| lastrejectcredamount_222A | 61022 | 51874.3 | 54422.2 | 0 | 1e+06 |
+| applications30d_658L | 122493 | 0.140702 | 0.48938 | 0 | 28 |
+| applicationscnt_1086L | 122493 | 0.425028 | 3.02878 | 0 | 443 |
+| applicationscnt_464L | 122493 | 1.04067 | 9.65313 | 0 | 244 |
+| applicationscnt_629L | 122493 | 0.26128 | 2.44912 | 0 | 84 |
+| applicationscnt_867L | 122493 | 2.92142 | 4.48577 | 0 | 275 |
+| avgdbddpdlast24m_3658932P | 73764 | 29.8672 | 316.388 | -1135 | 4644 |
+| avgdbddpdlast3m_4187120P | 46693 | 27.9697 | 360.329 | -488 | 4684 |
+| avgdbdtollast24m_4525197P | 46190 | 30.5015 | 320.643 | -1136 | 4644 |
+| avgdpdtolclosure24_3658938P | 85522 | 45.8082 | 317.807 | 0 | 4644 |
+| avginstallast24m_3658937A | 72822 | 5393.27 | 6423.56 | 0 | 303980 |
+| avglnamtstart24m_4525187A | 13218 | 44637.6 | 44331.8 | 0 | 403980 |
+| avgmaxdpdlast9m_3716943P | 61980 | 0.762052 | 4.82888 | 0 | 217 |
+| avgoutstandbalancel6m_4187114A | 55451 | 45722.4 | 63999.2 | -2e+06 | 1.04213e+06 |
+| avgpmtlast12m_4525200A | 41701 | 6433.04 | 9074.09 | 0 | 379675 |
+| clientscnt12m_3712952L | 122493 | 0.040337 | 0.995392 | 0 | 187 |
+| clientscnt3m_3712950L | 122493 | 0.0205399 | 0.577404 | 0 | 108 |
+| clientscnt6m_3712949L | 122493 | 0.0294466 | 0.938056 | 0 | 175 |
+| clientscnt_100L | 122493 | 0.0470149 | 0.37453 | 0 | 104 |
+| clientscnt_1022L | 122493 | 0.110602 | 1.45993 | 0 | 255 |
+| clientscnt_1071L | 122493 | 0.0328917 | 0.197635 | 0 | 24 |
+| clientscnt_1130L | 122493 | 0.0296588 | 0.199869 | 0 | 20 |
+| clientscnt_157L | 122493 | 0.0734001 | 0.502281 | 0 | 103 |
+| clientscnt_257L | 122493 | 0.0027022 | 0.0622134 | 0 | 12 |
+| clientscnt_304L | 122493 | 0.0779391 | 1.12321 | 0 | 345 |
+| clientscnt_360L | 122493 | 0.00280016 | 0.0551113 | 0 | 2 |
+| clientscnt_493L | 122493 | 0.0160744 | 0.907582 | 0 | 240 |
+| clientscnt_533L | 122493 | 0.0736777 | 0.278197 | 0 | 4 |
+| clientscnt_887L | 122493 | 2.30084 | 38.1285 | 0 | 1240 |
+| clientscnt_946L | 122493 | 0.0332917 | 0.299018 | 0 | 32 |
+| cntincpaycont9m_3716944L | 86524 | 6.18914 | 6.45742 | 0 | 392 |
+| cntpmts24_3658933L | 86128 | 10.6408 | 7.89048 | 0 | 25 |
+| credamount_770A | 122493 | 50063.7 | 44492.9 | 2000 | 500000 |
+| currdebt_22A | 122493 | 19645.2 | 50841.4 | 0 | 1.06847e+06 |
+| currdebtcredtyperange_828A | 122493 | 10897.4 | 36705.5 | 0 | 987535 |
+| datefirstoffer_1144D | 55933 | -2468.96 | 1620.52 | -4907 | 13 |
+| datelastinstal40dpd_247D | 11120 | -1947.36 | 1560.97 | -5157 | -26 |
+| datelastunpaid_3546854D | 51653 | -958.615 | 1246.77 | -5194 | 13 |
+| daysoverduetolerancedd_3976961L | 86733 | 96.9583 | 480.137 | 0 | 5280 |
+| disbursedcredamount_1113A | 122493 | 46305.3 | 42779.9 | 0 | 500000 |
+| downpmt_116A | 122493 | 542.316 | 4135.95 | 0 | 297086 |
+| dtlastpmtallstes_4499206D | 45427 | -414.781 | 841.032 | -5155 | 13 |
+| eir_270L | 107288 | 0.278204 | 0.196988 | 0 | 0.45 |
+| firstclxcampaign_1125D | 53813 | -1002.04 | 470.075 | -1709 | 14 |
+| firstdatedue_489D | 84323 | -1845.44 | 1455.25 | -5360 | 45 |
+| homephncnt_628L | 122493 | 0.639441 | 0.850101 | 0 | 14 |
+| inittransactionamount_650A | 15312 | 32650.4 | 32894.8 | 0 | 200000 |
+| isbidproduct_1095L | 122493 | 0.11626 | 0.320537 | 0 | 1 |
+| lastactivateddate_801D | 86649 | -630.563 | 901.961 | -5279 | 14 |
+| lastapplicationdate_877D | 98583 | -467.463 | 740.278 | -5279 | 14 |
+| lastapprcredamount_781A | 87589 | 36686 | 36956.4 | 0 | 400000 |
+| lastapprdate_640D | 87589 | -610.01 | 886 | -5283 | 14 |
+| lastdelinqdate_224D | 44474 | -539.056 | 648.265 | -4826 | 13 |
+| lastrejectcredamount_222A | 61280 | 51168.4 | 53852.9 | 0 | 1e+06 |
 
 (538 more rows not shown)
 
@@ -359,72 +359,72 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (510 rows)</summary>
+<summary>Show the table (512 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| cardtype_51L | 1 | &lt;NA> | 107406 | 87.68 |
-| cardtype_51L | 2 | INSTANT | 14890 | 12.16 |
-| cardtype_51L | 3 | PERSONALIZED | 197 | 0.16 |
-| credtype_322L | 1 | COL | 79234 | 64.68 |
-| credtype_322L | 2 | CAL | 28115 | 22.95 |
-| credtype_322L | 3 | REL | 15144 | 12.36 |
+| cardtype_51L | 1 | &lt;NA> | 107221 | 87.53 |
+| cardtype_51L | 2 | INSTANT | 15104 | 12.33 |
+| cardtype_51L | 3 | PERSONALIZED | 168 | 0.14 |
+| credtype_322L | 1 | COL | 79214 | 64.67 |
+| credtype_322L | 2 | CAL | 27966 | 22.83 |
+| credtype_322L | 3 | REL | 15312 | 12.5 |
+| credtype_322L | 4 | &lt;NA> | 1 | 0 |
 | date_decision | 1 | 2019-11-29 00:00:00 | 709 | 0.58 |
-| date_decision | 2 | 2019-11-30 00:00:00 | 686 | 0.56 |
+| date_decision | 2 | 2019-11-30 00:00:00 | 687 | 0.56 |
 | date_decision | 3 | 2019-12-28 00:00:00 | 526 | 0.43 |
 | date_decision | 4 | 2019-11-17 00:00:00 | 489 | 0.4 |
 | date_decision | 5 | 2019-12-29 00:00:00 | 485 | 0.4 |
-| description_5085714M | 1 | a55475b1 | 101808 | 83.11 |
-| description_5085714M | 2 | 2fc785b2 | 18665 | 15.24 |
-| description_5085714M | 3 | &lt;NA> | 2020 | 1.65 |
-| disbursementtype_67L | 1 | SBA | 91090 | 74.36 |
-| disbursementtype_67L | 2 | GBA | 28114 | 22.95 |
-| disbursementtype_67L | 3 | DD | 3230 | 2.64 |
-| disbursementtype_67L | 4 | &lt;NA> | 59 | 0.05 |
-| education_1103M | 1 | a55475b1 | 68720 | 56.1 |
-| education_1103M | 2 | 6b2ae0fa | 36641 | 29.91 |
-| education_1103M | 3 | 717ddd49 | 10889 | 8.89 |
-| education_1103M | 4 | 39a0853f | 3789 | 3.09 |
-| education_1103M | 5 | &lt;NA> | 2020 | 1.65 |
-| education_88M | 1 | a55475b1 | 119249 | 97.35 |
-| education_88M | 2 | &lt;NA> | 2020 | 1.65 |
-| education_88M | 3 | 6b2ae0fa | 931 | 0.76 |
-| education_88M | 4 | 717ddd49 | 254 | 0.21 |
-| education_88M | 5 | a34a13c8 | 25 | 0.02 |
-| equalitydataagreement_891L | 1 | &lt;NA> | 116309 | 94.95 |
-| equalitydataagreement_891L | 2 | True | 5750 | 4.69 |
-| equalitydataagreement_891L | 3 | False | 434 | 0.35 |
-| first_cancelreason_3545846M | 1 | a55475b1 | 61632 | 50.31 |
-| first_cancelreason_3545846M | 2 | &lt;NA> | 24209 | 19.76 |
-| first_cancelreason_3545846M | 3 | P94_109_143 | 23930 | 19.54 |
-| first_cancelreason_3545846M | 4 | P85_114_140 | 1828 | 1.49 |
-| first_cancelreason_3545846M | 5 | P30_86_84 | 1804 | 1.47 |
-| first_classificationofcontr_13M | 1 | ea6782cc | 93004 | 75.93 |
-| first_classificationofcontr_13M | 2 | &lt;NA> | 10913 | 8.91 |
-| first_classificationofcontr_13M | 3 | a55475b1 | 10052 | 8.21 |
-| first_classificationofcontr_13M | 4 | 01f63ac8 | 5053 | 4.13 |
-| first_classificationofcontr_13M | 5 | 00135d9c | 1917 | 1.56 |
-| first_classificationofcontr_400M | 1 | ea6782cc | 42689 | 34.85 |
-| first_classificationofcontr_400M | 2 | a55475b1 | 28848 | 23.55 |
-| first_classificationofcontr_400M | 3 | &lt;NA> | 10913 | 8.91 |
-| first_classificationofcontr_400M | 4 | 01f63ac8 | 5484 | 4.48 |
-| first_classificationofcontr_400M | 5 | 42a42e75 | 4627 | 3.78 |
-| first_collater_typofvalofguarant_298M | 1 | 9a0c095e | 78795 | 64.33 |
-| first_collater_typofvalofguarant_298M | 2 | 8fd95e4b | 22662 | 18.5 |
-| first_collater_typofvalofguarant_298M | 3 | &lt;NA> | 10998 | 8.98 |
-| first_collater_typofvalofguarant_298M | 4 | a55475b1 | 10004 | 8.17 |
-| first_collater_typofvalofguarant_298M | 5 | 06fb9ba8 | 34 | 0.03 |
-| first_collater_typofvalofguarant_407M | 1 | 9a0c095e | 55356 | 45.19 |
-| first_collater_typofvalofguarant_407M | 2 | a55475b1 | 29213 | 23.85 |
-| first_collater_typofvalofguarant_407M | 3 | 8fd95e4b | 26713 | 21.81 |
-| first_collater_typofvalofguarant_407M | 4 | &lt;NA> | 10998 | 8.98 |
-| first_collater_typofvalofguarant_407M | 5 | 06fb9ba8 | 195 | 0.16 |
-| first_collaterals_typeofguarante_359M | 1 | c7a5ad39 | 57017 | 46.55 |
-| first_collaterals_typeofguarante_359M | 2 | a55475b1 | 29213 | 23.85 |
-| first_collaterals_typeofguarante_359M | 3 | 3cbe86ba | 17427 | 14.23 |
-| first_collaterals_typeofguarante_359M | 4 | &lt;NA> | 10998 | 8.98 |
+| description_5085714M | 1 | a55475b1 | 101903 | 83.19 |
+| description_5085714M | 2 | 2fc785b2 | 18627 | 15.21 |
+| description_5085714M | 3 | &lt;NA> | 1963 | 1.6 |
+| disbursementtype_67L | 1 | SBA | 91252 | 74.5 |
+| disbursementtype_67L | 2 | GBA | 27965 | 22.83 |
+| disbursementtype_67L | 3 | DD | 3219 | 2.63 |
+| disbursementtype_67L | 4 | &lt;NA> | 57 | 0.05 |
+| education_1103M | 1 | a55475b1 | 68743 | 56.12 |
+| education_1103M | 2 | 6b2ae0fa | 36475 | 29.78 |
+| education_1103M | 3 | 717ddd49 | 11054 | 9.02 |
+| education_1103M | 4 | 39a0853f | 3848 | 3.14 |
+| education_1103M | 5 | &lt;NA> | 1963 | 1.6 |
+| education_88M | 1 | a55475b1 | 119255 | 97.36 |
+| education_88M | 2 | &lt;NA> | 1963 | 1.6 |
+| education_88M | 3 | 6b2ae0fa | 959 | 0.78 |
+| education_88M | 4 | 717ddd49 | 275 | 0.22 |
+| education_88M | 5 | a34a13c8 | 34 | 0.03 |
+| equalitydataagreement_891L | 1 | &lt;NA> | 116266 | 94.92 |
+| equalitydataagreement_891L | 2 | True | 5826 | 4.76 |
+| equalitydataagreement_891L | 3 | False | 401 | 0.33 |
+| first_cancelreason_3545846M | 1 | a55475b1 | 61559 | 50.26 |
+| first_cancelreason_3545846M | 2 | P94_109_143 | 24350 | 19.88 |
+| first_cancelreason_3545846M | 3 | &lt;NA> | 23910 | 19.52 |
+| first_cancelreason_3545846M | 4 | P85_114_140 | 1844 | 1.51 |
+| first_cancelreason_3545846M | 5 | P30_86_84 | 1807 | 1.48 |
+| first_classificationofcontr_13M | 1 | ea6782cc | 92937 | 75.87 |
+| first_classificationofcontr_13M | 2 | &lt;NA> | 10859 | 8.86 |
+| first_classificationofcontr_13M | 3 | a55475b1 | 10113 | 8.26 |
+| first_classificationofcontr_13M | 4 | 01f63ac8 | 5134 | 4.19 |
+| first_classificationofcontr_13M | 5 | 00135d9c | 1898 | 1.55 |
+| first_classificationofcontr_400M | 1 | ea6782cc | 42582 | 34.76 |
+| first_classificationofcontr_400M | 2 | a55475b1 | 28840 | 23.54 |
+| first_classificationofcontr_400M | 3 | &lt;NA> | 10859 | 8.86 |
+| first_classificationofcontr_400M | 4 | 01f63ac8 | 5575 | 4.55 |
+| first_classificationofcontr_400M | 5 | 42a42e75 | 4559 | 3.72 |
+| first_collater_typofvalofguarant_298M | 1 | 9a0c095e | 78846 | 64.37 |
+| first_collater_typofvalofguarant_298M | 2 | 8fd95e4b | 22603 | 18.45 |
+| first_collater_typofvalofguarant_298M | 3 | &lt;NA> | 10941 | 8.93 |
+| first_collater_typofvalofguarant_298M | 4 | a55475b1 | 10070 | 8.22 |
+| first_collater_typofvalofguarant_298M | 5 | 06fb9ba8 | 32 | 0.03 |
+| first_collater_typofvalofguarant_407M | 1 | 9a0c095e | 55579 | 45.37 |
+| first_collater_typofvalofguarant_407M | 2 | a55475b1 | 29184 | 23.83 |
+| first_collater_typofvalofguarant_407M | 3 | 8fd95e4b | 26561 | 21.68 |
+| first_collater_typofvalofguarant_407M | 4 | &lt;NA> | 10941 | 8.93 |
+| first_collater_typofvalofguarant_407M | 5 | 06fb9ba8 | 212 | 0.17 |
+| first_collaterals_typeofguarante_359M | 1 | c7a5ad39 | 57187 | 46.69 |
+| first_collaterals_typeofguarante_359M | 2 | a55475b1 | 29184 | 23.83 |
+| first_collaterals_typeofguarante_359M | 3 | 3cbe86ba | 17208 | 14.05 |
 
-(450 more rows not shown)
+(452 more rows not shown)
 
 </details>
 
@@ -432,10 +432,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-32a9-7c9d-8a01-13068f6a7589 |
-| checksum | 6f37dfc7c7d1386a334b4fee64a8961b7c05bcbf3c0705b93c569410ded8af86 |
-| built_at | 2026-10-02T11:28:58+00:00 |
-| path | home_credit_default_stability/versions/01a0fc5f-32a9-7c9d-8a01-13068f6a7589 |
+| uuid | 01a11190-62b3-7529-b8fd-e5ea5439dfa5 |
+| checksum | e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35 |
+| built_at | 2026-10-06T14:14:45+00:00 |
+| path | home_credit_default_stability/versions/01a11190-62b3-7529-b8fd-e5ea5439dfa5 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

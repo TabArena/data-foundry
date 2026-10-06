@@ -46,6 +46,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.schema import as_column_list
+from data_foundry.utils.dtypes import object_columns
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -463,12 +464,12 @@ def _check_dataset_frame(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Duplicate column names: {duplicated_names[:5]}.",
         )
 
-    object_columns = df.select_dtypes(include=["object"]).columns.tolist()
-    if object_columns:
+    objects = object_columns(df)
+    if objects:
         yield CheckResult(
             "dataset_object_dtype",
             "error",
-            f"{len(object_columns)} column(s) have `object` dtype: {object_columns[:5]}.",
+            f"{len(objects)} column(s) have `object` dtype: {objects[:5]}.",
             hint="Cast to `category` (fixed, finite value set), `string` (free text), a numeric dtype, or datetime. "
             "TabArena rejects object columns.",
         )

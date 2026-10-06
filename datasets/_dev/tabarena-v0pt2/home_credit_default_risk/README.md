@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: 7db516eed8cf966ee05371a1720d3ee9d6b1f3a41212c8e1f9e17597887e2765
+checksum: 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146
 build:
-  uuid: 01a0fc5f-9149-7b30-8caf-80ceaf0609c8
-  checksum: 7db516eed8cf966ee05371a1720d3ee9d6b1f3a41212c8e1f9e17597887e2765
-  built_at: '2026-10-02T11:28:51+00:00'
-  path: home_credit_default_risk/01a0fc5f-9149-7b30-8caf-80ceaf0609c8
+  uuid: 01a11190-911e-76ab-bc64-f291692f39f7
+  checksum: 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146
+  built_at: '2026-10-06T14:14:25+00:00'
+  path: home_credit_default_risk/01a11190-911e-76ab-bc64-f291692f39f7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 504 features. Source: Kaggle (2018).
 
-Built as `01a0fc5f-9149-7b30-8caf-80ceaf0609c8` on 2026-10-02. See [Build](#build).
+Built as `01a11190-911e-76ab-bc64-f291692f39f7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -150,11 +150,11 @@ The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_REALTY | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE | NAME_EDUCATION_TYPE | NAME_FAMILY_STATUS |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Cash loans | F | Y | 72000 | 198666 | 15696 | 175500 | Unaccompanied | State servant | Secondary / secondary special | Married |
-| 0 | Cash loans | F | N | 221400 | 247500 | 9814.5 | 247500 | Unaccompanied | State servant | Higher education | Married |
-| 0 | Cash loans | M | N | 360000 | 521136 | 54855 | 495000 | Unaccompanied | Commercial associate | Higher education | Civil marriage |
-| 0 | Cash loans | M | Y | 360000 | 824918 | 39816 | 724500 | Unaccompanied | Commercial associate | Secondary / secondary special | Married |
-| 0 | Cash loans | F | Y | 135000 | 628114 | 22689 | 477000 | Unaccompanied | Working | Secondary / secondary special | Married |
+| 0 | Cash loans | F | Y | 180000 | 497520 | 52920 | 450000 | Unaccompanied | Commercial associate | Higher education | Single / not married |
+| 0 | Cash loans | M | N | 157500 | 675000 | 21775.5 | 675000 | Unaccompanied | Working | Lower secondary | Single / not married |
+| 0 | Cash loans | F | Y | 85500 | 1.28835e+06 | 37800 | 1.125e+06 | Family | Commercial associate | Higher education | Married |
+| 0 | Cash loans | F | Y | 121500 | 592560 | 32274 | 450000 | Family | Working | Secondary / secondary special | Married |
+| 0 | Cash loans | F | Y | 61650 | 297130 | 13216.5 | 256500 | Unaccompanied | Pensioner | Secondary / secondary special | Married |
 
 ## Curation notes
 
@@ -227,39 +227,39 @@ Accepted on purpose:
 | FLAG_DOCUMENT_3 | category | 0 | 0 | 2 | 1, 0 |
 | FLAG_DOCUMENT_8 | category | 0 | 0 | 2 | 0, 1 |
 | FLAG_DOCUMENT_18 | category | 0 | 0 | 2 | 0, 1 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 0.3, 5.0, 1.875, 0.296, 0.4364, 0.6667, 0.5 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 3.2608, 0.5683, 0.6934, 0.1428, 0.7695, 1.8448, 0.0, 1.004, 4.4003 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 3.2608, 0.1428, 0.5683, -1455.487, 1.6121, 0.9589, -13144.0353, -488.9192,… |
-| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 6550 | 0.0, 1.0, 2.0, 0.5, 0.9309, 3.0, 0.3333, 0.4, 0.799, 0.7927 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 0.3, 5.0, 0.2878, 3.8785, 1.875, 2.5949, 0.3333 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.7695, 0.5683, 0.1428, 3.2608, 0.6934, 0.2588, 1.2347, 182.7729, 1.6765 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 0.5683, 1.6121, -13144.0353, -488.9192, 3.2608, 0.1428, 0.9589, -1455.487,… |
+| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 6550 | 0.0, 1.0, 2.0, 0.5, 0.9309, 0.7927, 3.0, 0.9309, 0.4, 0.3333 |
 | NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MAX | float64 | 286429 | 93.15 | 13992 | 0.0, 1.0, 2.0, 0.5, 1.5, 2.5, 1.3333, 1.6667, 3.0, 5.0 |
 | NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 16387 | 0.0, 1.0, 0.5, 2.0, 0.3333, 0.6667, 1.5, 0.25, 0.4, 1.3333 |
-| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 17681 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.6667, 0.25, 1.5, 0.3333, 0.4 |
-| NEW_RATIO_BURO_AMT_CREDIT_MAX_OVERDUE_MEAN | float64 | 276818 | 90.02 | 10756 | 0.0, 2.9149, 7.6963, 0.0745, 0.5649, 1.2586, 1.8219, 2.9425, 2.2393, 2.9375 |
-| NEW_RATIO_BURO_AMT_ANNUITY_MAX | float64 | 276511 | 89.92 | 10438 | 1.0, 0.0, 0.0161, 2.0, 0.5, 0.3333, 0.75, 1.6667, 10.0, 1.5 |
+| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 17681 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.6667, 0.25, 1.5, 0.3333, 0.75 |
+| NEW_RATIO_BURO_AMT_CREDIT_MAX_OVERDUE_MEAN | float64 | 276818 | 90.02 | 10756 | 0.0, 2.2988, 2.533, 0.0629, 0.2819, 1.2586, 2.628, 4.2667, 0.1857, 1.4146 |
+| NEW_RATIO_BURO_AMT_ANNUITY_MAX | float64 | 276511 | 89.92 | 10438 | 1.0, 0.0, 0.0161, 2.0, 0.5, 0.3333, 1.6667, 10.0, 1.5, 5.0 |
 | NEW_RATIO_BURO_AMT_ANNUITY_MEAN | float64 | 276511 | 89.92 | 14382 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.6667, 1.3333, 3.0, 0.75, 1.25 |
-| NEW_RATIO_PREV_APP_CREDIT_PERC_VAR | float64 | 272714 | 88.69 | 34225 | 0.0, 1.0, 54.0, 88.6895, 0.1463, 0.0136, 615.5377, 0.0351, 222.308, 4.306 |
+| NEW_RATIO_PREV_APP_CREDIT_PERC_VAR | float64 | 272714 | 88.69 | 34225 | 0.0, 1.0, 54.0, 222.308, 0.1463, 4.306, 615.5377, 22.5286, 0.0351, 0.6667 |
 | REFUSED_AMT_DOWN_PAYMENT_MIN | float64 | 262339 | 85.31 | 5273 | 0.0, 4500.0, 9000.0, 13500.0, 22500.0, 6750.0, 2250.0, 45000.0, 18000.0, 2700.0 |
 | REFUSED_RATE_DOWN_PAYMENT_MAX | float64 | 262339 | 85.31 | 15641 | 0.0, 0.1089, 0.2178, 0.3267, 0.5445, 0.4356, 0.0653, 0.109, 0.1091, 0.1307 |
 | REFUSED_RATE_DOWN_PAYMENT_MEAN | float64 | 262339 | 85.31 | 17145 | 0.0, 0.1089, 0.0545, 0.2178, 0.0363, 0.0726, 0.1634, 0.0272, 0.3267, 0.5445 |
 | REFUSED_APP_CREDIT_PERC_VAR | float64 | 258350 | 84.01 | 31695 | 0.0, 0.5, 0.0062, 0.0019, 0.0137, 0.3333, 0.008, 0.0091, 0.0041, 0.0068 |
-| CC_AMT_PAYMENT_CURRENT_VAR | float64 | 246888 | 80.29 | 59041 | 0.0, 1012500.0, 10125000.0, 40500.0, 2531250.0, 50625.0, 6328125000.0, 4050000.… |
+| CC_AMT_PAYMENT_CURRENT_VAR | float64 | 246888 | 80.29 | 59041 | 0.0, 1012500.0, 10125000.0, 40500.0, 2531250.0, 4050000.0, 3375000.0, 632812500… |
 | CC_AMT_DRAWINGS_ATM_CURRENT_VAR | float64 | 246814 | 80.26 | 43704 | 0.0, 337500000.0, 253125000.0, 1012500000.0, 506250000.0, 289285714.2857, 11571… |
-| CC_AMT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 33669 | 0.0, 2109.375, 225000000.0, 25312.5, 337500000.0, 22500.0, 289285714.2857, 4050… |
-| CC_CNT_DRAWINGS_ATM_CURRENT_VAR | float64 | 246814 | 80.26 | 29341 | 0.0, 0.1667, 0.1429, 0.5, 0.125, 1.0, 2.0, 0.5714, 0.6667, 0.5536 |
+| CC_AMT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 33669 | 0.0, 2109.375, 225000000.0, 25312.5, 337500000.0, 22500.0, 40500.0, 289285714.2… |
+| CC_CNT_DRAWINGS_ATM_CURRENT_VAR | float64 | 246814 | 80.26 | 29341 | 0.0, 0.1667, 0.1429, 0.5, 0.125, 1.0, 2.0, 0.5714, 0.6667, 0.619 |
 | CC_CNT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 21978 | 0.0, 0.1667, 0.1429, 0.0104, 0.5, 0.125, 0.1111, 0.0909, 0.0104, 0.0104 |
 | CC_AMT_PAYMENT_CURRENT_MIN | float64 | 246447 | 80.14 | 9923 | 0.0, 2250.0, 4500.0, 9000.0, 6750.0, 13500.0, 2700.0, 11250.0, 22500.0, 2475.0 |
 | CC_AMT_PAYMENT_CURRENT_MAX | float64 | 246447 | 80.14 | 25753 | 22500.0, 13500.0, 45000.0, 9000.0, 18000.0, 27000.0, 90000.0, 67500.0, 11250.0,… |
 | CC_AMT_PAYMENT_CURRENT_MEAN | float64 | 246447 | 80.14 | 56764 | 0.0, 9000.0, 4500.0, 22500.0, 11250.0, 13500.0, 6750.0, 2250.0, 4950.0, 45000.0 |
 | CC_AMT_DRAWINGS_ATM_CURRENT_MAX | float64 | 246367 | 80.12 | 1305 | 0.0, 135000.0, 90000.0, 45000.0, 67500.0, 180000.0, 112500.0, 225000.0, 157500.… |
 | CC_AMT_DRAWINGS_ATM_CURRENT_MEAN | float64 | 246367 | 80.12 | 22420 | 0.0, 22500.0, 4500.0, 11250.0, 9000.0, 45000.0, 2250.0, 7500.0, 13500.0, 15000.0 |
-| CC_AMT_DRAWINGS_POS_CURRENT_MIN | float64 | 246367 | 80.12 | 2459 | 0.0, 450.0, 2250.0, 1350.0, 225.0, 900.0, 675.0, 4500.0, 3150.0, 45.0 |
+| CC_AMT_DRAWINGS_POS_CURRENT_MIN | float64 | 246367 | 80.12 | 2459 | 0.0, 450.0, 2250.0, 1350.0, 225.0, 900.0, 4500.0, 675.0, 45.0, 3150.0 |
 | CC_AMT_DRAWINGS_POS_CURRENT_MAX | float64 | 246367 | 80.12 | 28865 | 0.0, 45000.0, 450.0, 900.0, 90000.0, 225.0, 1350.0, 2250.0, 4500.0, 135000.0 |
-| CC_AMT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 33412 | 0.0, 90.0, 56.25, 5000.0, 4.6875, 225.0, 45.0, 375.0, 14.0625, 9.375 |
+| CC_AMT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 33412 | 0.0, 90.0, 5000.0, 56.25, 45.0, 225.0, 4.6875, 375.0, 14.0625, 9.375 |
 | CC_CNT_DRAWINGS_ATM_CURRENT_MAX | float64 | 246367 | 80.12 | 44 | 0.0, 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 8.0, 9.0 |
 | CC_CNT_DRAWINGS_ATM_CURRENT_MEAN | float64 | 246367 | 80.12 | 3385 | 0.0, 1.0, 0.5, 0.3333, 0.25, 0.6667, 0.1667, 0.125, 2.0, 0.2 |
 | CC_CNT_DRAWINGS_POS_CURRENT_MIN | float64 | 246367 | 80.12 | 45 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | CC_CNT_DRAWINGS_POS_CURRENT_MAX | float64 | 246367 | 80.12 | 123 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| CC_CNT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 5024 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.0104, 0.1667, 0.25, 0.2, 0.1429 |
+| CC_CNT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 5024 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.0104, 0.1667, 0.25, 0.2, 3.0 |
 | ACTIVE_AMT_ANNUITY_MAX | float64 | 246161 | 80.05 | 19214 | 0.0, 4500.0, 13500.0, 22500.0, 45000.0, 18000.0, 27000.0, 9000.0, 11250.0, 2700… |
 | ACTIVE_AMT_ANNUITY_MEAN | float64 | 246161 | 80.05 | 26843 | 0.0, 4500.0, 13500.0, 22500.0, 9000.0, 18000.0, 2250.0, 45000.0, 27000.0, 6750.0 |
 | NEW_RATIO_BURO_MONTHS_BALANCE_MIN_MIN | float64 | 242444 | 78.84 | 4501 | 1.0, 0.5, 0.3333, 0.0, 0.6667, 0.25, 0.4, 0.2, 0.75, 0.6 |
@@ -424,10 +424,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-9149-7b30-8caf-80ceaf0609c8 |
-| checksum | 7db516eed8cf966ee05371a1720d3ee9d6b1f3a41212c8e1f9e17597887e2765 |
-| built_at | 2026-10-02T11:28:51+00:00 |
-| path | home_credit_default_risk/01a0fc5f-9149-7b30-8caf-80ceaf0609c8 |
+| uuid | 01a11190-911e-76ab-bc64-f291692f39f7 |
+| checksum | 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146 |
+| built_at | 2026-10-06T14:14:25+00:00 |
+| path | home_credit_default_risk/01a11190-911e-76ab-bc64-f291692f39f7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

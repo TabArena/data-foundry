@@ -157,9 +157,8 @@ class SantanderTransactionValue(AbstractCuratedDataset):
             d5 = d4.merge(d3, how="inner", on="key")
 
             d_feat = d1.merge(d5, how="left", on="key")
-            d_feat.fillna(0, inplace=True)
 
-            ordered_features = list(d_feat[["ID_x", "ID_y"]][d_feat.ID_x != 0].apply(list, axis=1))
+            ordered_features = list(d_feat[["ID_x", "ID_y"]][d_feat.ID_x.notna()].apply(list, axis=1))
             del d1, d2, d3, d4, d5, d_feat
             gc.collect()
 
@@ -205,9 +204,8 @@ class SantanderTransactionValue(AbstractCuratedDataset):
             d5 = d4.merge(d3, how="inner", on="key")
             del d4
             d = d1.merge(d5, how="left", on="key")
-            d.fillna(0, inplace=True)
             # print('here')
-            ordered_ids = list(d[["ID_x", "ID_y"]][d.ID_x != 0].apply(list, axis=1))
+            ordered_ids = list(d[["ID_x", "ID_y"]][d.ID_x.notna()].apply(list, axis=1))
             del d1, d3, d5, d
             gc.collect()
 

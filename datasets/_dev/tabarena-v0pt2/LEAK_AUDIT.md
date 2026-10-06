@@ -10,7 +10,9 @@ this file is the short version for the benchmark team and the tech report.
 - 40 of the 142 datasets needed action: 12 are removed, 21 changed (features, rows or split), 7 kept as they are with
   a documented note. The other 103 showed no leak.
 - By severity: 21 large, 9 medium, 7 small or no leak, and 3 kept although they affect results (below).
-- The working copy now holds 130 datasets, 44 of them from TabArena v0.1.
+- The working copy now holds 128 datasets, 43 of them from TabArena v0.1: after the audit, the task-probe review
+  retired `fitness_club` (trivial) and `parkinsons_biomedical_voice_measurements` (too small); the evidence is in
+  their records and [`CHANGELOG.md`](CHANGELOG.md).
 - Built on 2026-10-02 as container format 2: every dataset of the working copy has a new container and UUID (the table in
   [`README.md`](README.md)); the shipped BeyondArena containers are unchanged. Results on the changed datasets are not
   comparable with earlier TabArena v0.1 or BeyondArena results.
@@ -77,7 +79,8 @@ BeyondArena); BeyondArena means BeyondArena only.
 
 ## What changes for TabArena v0.2
 
-- 130 datasets: the 142 BeyondArena datasets minus the 12 removed. 44 of the 51 TabArena v0.1 datasets remain (5
+- 128 datasets: the 142 BeyondArena datasets minus the 12 removed here and the 2 retired by the task-probe review
+  (`fitness_club`, `parkinsons_biomedical_voice_measurements`). 43 of the 51 TabArena v0.1 datasets remain (6
   removed, 2 never in BeyondArena).
 - 21 datasets changed through the audit, 7 of them from TabArena v0.1 (the 6 above plus `diabetes_130_us`). Their
   v0.2 results are not comparable with earlier results.

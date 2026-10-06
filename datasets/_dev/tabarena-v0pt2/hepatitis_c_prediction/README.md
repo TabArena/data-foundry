@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: e9efaf09f59793622a8fefbf0ec260b716089d12b50e13282f8d78c5694eba98
+checksum: 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e
 build:
-  uuid: 01a0fc60-758d-7571-b119-112ac68c4761
-  checksum: e9efaf09f59793622a8fefbf0ec260b716089d12b50e13282f8d78c5694eba98
-  built_at: '2026-10-02T11:29:35+00:00'
-  path: hepatitis_c_prediction/01a0fc60-758d-7571-b119-112ac68c4761
+  uuid: 01a11191-c997-7386-a391-8dfcaae5b97a
+  checksum: 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e
+  built_at: '2026-10-06T14:15:29+00:00'
+  path: hepatitis_c_prediction/01a11191-c997-7386-a391-8dfcaae5b97a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2018).
 
-Built as `01a0fc60-758d-7571-b119-112ac68c4761` on 2026-10-02. See [Build](#build).
+Built as `01a11191-c997-7386-a391-8dfcaae5b97a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 608 rows of the final frame (random rows: the frame is shuffled).
 
 | Category | Age | Sex | ALB | ALT | AST | BIL | CHE | CHOL | CREA | GGT | PROT |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0=Blood Donor | 42 | m | 44 | 24 | 19 | 7 | 10.83 | 6.28 | 95 | 20 | 73 |
-| 0=Blood Donor | 32 | m | 44 | 22 | 22 | 17 | 4.15 | 3.57 | 78 | 24 | 75 |
-| 0=Blood Donor | 48 | m | 46 | 29 | 28 | 13 | 10.07 | 8.28 | 98 | 29 | 83 |
-| 0=Blood Donor | 38 | m | 48 | 23 | 22 | 8 | 10.53 | 7.51 | 87 | 43 | 83 |
-| 1=Hepatitis | 29 | m | 49 | 53 | 39 | 15 | 8.79 | 3.6 | 79 | 37 | 90 |
+| 0=Blood Donor | 48 | m | 43 | 18 | 21 | 10 | 7.19 | 6.37 | 80 | 16 | 69 |
+| 0=Blood Donor | 50 | m | 36 | 26 | 29 | 6 | 7.5 | 5.75 | 67 | 64 | 70 |
+| 0=Blood Donor | 56 | m | 38 | 17 | 16 | 4 | 9.9 | 5.3 | 95 | 21 | 67 |
+| 0=Blood Donor | 45 | f | 38 | 13 | 15 | 6 | 6.95 | 5.29 | 66 | 49 | 70 |
+| 0=Blood Donor | 36 | m | 46 | 27 | 25 | 6 | 6.61 | 5.07 | 71 | 10 | 80 |
 
 ## Curation notes
 
@@ -250,16 +250,16 @@ Default splits.
 |---|---|---|---|---|---|
 | Category | category | 0 | 0 | 4 | 0=Blood Donor, 3=Cirrhosis, 1=Hepatitis, 2=Fibrosis |
 | Sex | category | 0 | 0 | 2 | m, f |
-| CHOL | float64 | 10 | 1.64 | 309 | 5.07, 5.1, 5.3, 5.9, 5.73, 5.31, 5.62, 4.43, 4.69, 5.88 |
-| ALB | float64 | 1 | 0.16 | 36 | 40.0, 46.0, 42.0, 43.0, 45.0, 41.0, 44.0, 39.0, 38.0, 47.0 |
-| ALT | float64 | 1 | 0.16 | 82 | 20.0, 18.0, 15.0, 17.0, 16.0, 19.0, 21.0, 24.0, 25.0, 26.0 |
+| CHOL | float64 | 10 | 1.64 | 309 | 5.1, 5.07, 5.3, 5.73, 5.9, 4.69, 4.43, 5.62, 4.55, 4.68 |
+| ALB | float64 | 1 | 0.16 | 36 | 40.0, 46.0, 42.0, 43.0, 44.0, 45.0, 41.0, 39.0, 38.0, 47.0 |
+| ALT | float64 | 1 | 0.16 | 82 | 18.0, 20.0, 15.0, 17.0, 16.0, 19.0, 21.0, 25.0, 24.0, 26.0 |
 | PROT | float64 | 1 | 0.16 | 33 | 72.0, 73.0, 71.0, 74.0, 70.0, 76.0, 69.0, 77.0, 68.0, 75.0 |
-| AST | float64 | 0 | 0 | 82 | 22.0, 24.0, 26.0, 25.0, 28.0, 19.0, 20.0, 21.0, 23.0, 30.0 |
+| AST | float64 | 0 | 0 | 82 | 22.0, 24.0, 26.0, 28.0, 25.0, 19.0, 20.0, 21.0, 23.0, 30.0 |
 | BIL | float64 | 0 | 0 | 47 | 6.0, 4.0, 7.0, 5.0, 8.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
-| CHE | float64 | 0 | 0 | 401 | 7.52, 9.82, 7.1, 5.95, 7.87, 8.9, 7.5, 6.8, 7.93, 8.84 |
-| CREA | float64 | 0 | 0 | 78 | 72.0, 74.0, 67.0, 70.0, 71.0, 83.0, 69.0, 81.0, 88.0, 82.0 |
-| GGT | float64 | 0 | 0 | 120 | 16.0, 14.0, 15.0, 24.0, 12.0, 19.0, 22.0, 18.0, 10.0, 23.0 |
-| Age | int64 | 0 | 0 | 49 | 46, 48, 33, 51, 52, 35, 50, 44, 53, 37 |
+| CHE | float64 | 0 | 0 | 401 | 7.52, 9.82, 5.95, 7.1, 6.8, 8.9, 7.93, 7.0, 7.87, 7.5 |
+| CREA | float64 | 0 | 0 | 78 | 67.0, 74.0, 72.0, 70.0, 71.0, 83.0, 69.0, 81.0, 88.0, 82.0 |
+| GGT | float64 | 0 | 0 | 120 | 16.0, 14.0, 15.0, 24.0, 12.0, 19.0, 22.0, 18.0, 21.0, 13.0 |
+| Age | int64 | 0 | 0 | 49 | 46, 48, 33, 51, 52, 35, 50, 43, 49, 37 |
 
 </details>
 
@@ -302,10 +302,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-758d-7571-b119-112ac68c4761 |
-| checksum | e9efaf09f59793622a8fefbf0ec260b716089d12b50e13282f8d78c5694eba98 |
-| built_at | 2026-10-02T11:29:35+00:00 |
-| path | hepatitis_c_prediction/01a0fc60-758d-7571-b119-112ac68c4761 |
+| uuid | 01a11191-c997-7386-a391-8dfcaae5b97a |
+| checksum | 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e |
+| built_at | 2026-10-06T14:15:29+00:00 |
+| path | hepatitis_c_prediction/01a11191-c997-7386-a391-8dfcaae5b97a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

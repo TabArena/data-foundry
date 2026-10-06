@@ -45,6 +45,8 @@ CC (2026-07-27, Lennart): **Leak concern resolved -- verified against the curati
 
 CC (2026-10-01, Lennart): Leak audit: temporal splits are now 13 two-month windows (>= 50% train, 54-115 test rows each) instead of 5 six-month windows. Total test rows stay about 1,150 under any window size; monthly windows (26, some with 2 reviews) doubled the noise of a LightGBM vs Ridge comparison.
 
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag measures the noise of single windows, not the task. Over all 13 two-month windows (54-115 reviews each) random forest and LightGBM beat the train mean in every window (mean skill +0.25 and +0.27, standard error 0.03), and random forest beats the linear model in all 13 (by +0.20 on average); the standard deviation of about 0.1 per window is expected at this size.
+
 ## Reference
 
 Kaggle

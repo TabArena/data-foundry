@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, object_columns
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -553,4 +553,4 @@ class AnesVoting2026(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # VCF0110 is cast in `_clean` already. Every text column as categorical would require more careful audition.
-        return FeatureTypes(categorical=["VCF0110", *df.select_dtypes(include="object").columns])
+        return FeatureTypes(categorical=["VCF0110", *object_columns(df)])

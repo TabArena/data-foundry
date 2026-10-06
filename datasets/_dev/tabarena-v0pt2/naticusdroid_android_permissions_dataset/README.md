@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: naticusdroid_android_permissions_dataset
 container_format: 2
-checksum: 58a4871b93ee616b4d1386981ead3b6938a7ce8016afc9b59d9cfebd5f4f4567
+checksum: b67714077f87b4ee499440fd0978d2e708dc60dd0127ffe6b33750d210ccd0e0
 build:
-  uuid: 01a0fc60-4104-72c4-9c10-bdf97e3066d9
-  checksum: 58a4871b93ee616b4d1386981ead3b6938a7ce8016afc9b59d9cfebd5f4f4567
-  built_at: '2026-10-02T11:29:22+00:00'
-  path: naticusdroid_android_permissions_dataset/01a0fc60-4104-72c4-9c10-bdf97e3066d9
+  uuid: 01a11191-8f6c-7e4d-96d2-5e05c9552aa7
+  checksum: b67714077f87b4ee499440fd0978d2e708dc60dd0127ffe6b33750d210ccd0e0
+  built_at: '2026-10-06T14:15:15+00:00'
+  path: naticusdroid_android_permissions_dataset/01a11191-8f6c-7e4d-96d2-5e05c9552aa7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Malware`, scored with `roc_auc` on IID splits. 7,491 rows and 85 features. Source: UCI (2021).
 
-Built as `01a0fc60-4104-72c4-9c10-bdf97e3066d9` on 2026-10-02. See [Build](#build).
+Built as `01a11191-8f6c-7e4d-96d2-5e05c9552aa7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 7,491 rows of the final frame (random rows: the frame is shuffled
 
 | Malware | android.permission.GET_ACCOUNTS | com.sonyericsson.home.permission.BROADC… | android.permission.READ_PROFILE | android.permission.MANAGE_ACCOUNTS | android.permission.WRITE_SYNC_SETTINGS | android.permission.READ_EXTERNAL_STORAGE | android.permission.RECEIVE_SMS | com.android.launcher.permission.READ_SE… | android.permission.WRITE_SETTINGS | com.google.android.providers.gsf.permis… | android.permission.DOWNLOAD_WITHOUT_NOT… |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
-| No | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 |
 | No | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| Yes | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| Yes | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 |
 
 ## Curation notes
 
@@ -344,10 +344,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4104-72c4-9c10-bdf97e3066d9 |
-| checksum | 58a4871b93ee616b4d1386981ead3b6938a7ce8016afc9b59d9cfebd5f4f4567 |
-| built_at | 2026-10-02T11:29:22+00:00 |
-| path | naticusdroid_android_permissions_dataset/01a0fc60-4104-72c4-9c10-bdf97e3066d9 |
+| uuid | 01a11191-8f6c-7e4d-96d2-5e05c9552aa7 |
+| checksum | b67714077f87b4ee499440fd0978d2e708dc60dd0127ffe6b33750d210ccd0e0 |
+| built_at | 2026-10-06T14:15:15+00:00 |
+| path | naticusdroid_android_permissions_dataset/01a11191-8f6c-7e4d-96d2-5e05c9552aa7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

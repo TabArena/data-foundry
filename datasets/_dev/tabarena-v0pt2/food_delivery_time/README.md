@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: food_delivery_time
 container_format: 2
-checksum: 51c2313255aa5562d0de171fc0685b72445fd8c2eda9a1419086816c14f2a127
+checksum: 67098cd3ca9743eb4749b70013d67b71524a8f869142eb74a74b242bd957e7b2
 build:
-  uuid: 01a0fc60-49df-7f8b-86d9-a1bd2a5ad746
-  checksum: 51c2313255aa5562d0de171fc0685b72445fd8c2eda9a1419086816c14f2a127
-  built_at: '2026-10-02T11:29:24+00:00'
-  path: food_delivery_time/01a0fc60-49df-7f8b-86d9-a1bd2a5ad746
+  uuid: 01a11191-8267-77d0-a45f-9739ff3b3340
+  checksum: 67098cd3ca9743eb4749b70013d67b71524a8f869142eb74a74b242bd957e7b2
+  built_at: '2026-10-06T14:15:11+00:00'
+  path: food_delivery_time/01a11191-8267-77d0-a45f-9739ff3b3340
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `Time_taken(min)`, scored with `rmse` on IID splits. 45,451 rows and 9 features. Source: Kaggle (2023).
 
-Built as `01a0fc60-49df-7f8b-86d9-a1bd2a5ad746` on 2026-10-02. See [Build](#build).
+Built as `01a11191-8267-77d0-a45f-9739ff3b3340` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 45,451 rows of the final frame (random rows: the frame is shuffle
 
 | Time_taken(min) | Delivery_person_ID | Delivery_person_Age | Delivery_person_Ratings | Restaurant_latitude | Restaurant_longitude | Delivery_location_latitude | Delivery_location_longitude | Type_of_order | Type_of_vehicle |
 |---|---|---|---|---|---|---|---|---|---|
-| 36 | AGRRES14DEL01 | 37 | 4.3 | 27.1619 | 78.0402 | 27.2019 | 78.0802 | Snack | motorcycle |
-| 24 | CHENRES13DEL03 | 29 | 5 | 13.027 | 80.2548 | 13.117 | 80.3448 | Buffet | scooter |
-| 34 | HYDRES14DEL02 | 22 | 4.1 | 17.4262 | 78.4075 | 17.5062 | 78.4875 | Meal | motorcycle |
-| 24 | COIMBRES06DEL03 | 38 | 4.6 | 11.0213 | 76.995 | 11.0513 | 77.025 | Buffet | motorcycle |
-| 28 | COIMBRES08DEL01 | 33 | 4.9 | 11.0019 | 76.9763 | 11.0119 | 76.9863 | Meal | electric_scooter |
+| 45 | JAPRES08DEL03 | 29 | 4.5 | 26.9103 | 75.783 | 27.0003 | 75.873 | Meal | motorcycle |
+| 36 | MUMRES14DEL02 | 22 | 4.6 | 19.1813 | 72.8362 | 19.2613 | 72.9162 | Meal | scooter |
+| 19 | MUMRES010DEL02 | 28 | 4.7 | 19.0035 | 72.8277 | 19.0535 | 72.8777 | Meal | motorcycle |
+| 30 | BANGRES12DEL03 | 22 | 4.7 | 12.9395 | 77.626 | 13.0295 | 77.716 | Drinks | motorcycle |
+| 31 | HYDRES12DEL02 | 35 | 4 | 17.4296 | 78.3926 | 17.5096 | 78.4726 | Drinks | motorcycle |
 
 ## Curation notes
 
@@ -190,8 +190,8 @@ Default splits.
 | Type_of_order | category | 0 | 0 | 4 | Snack , Meal , Drinks , Buffet |
 | Type_of_vehicle | category | 0 | 0 | 4 | motorcycle , scooter , electric_scooter , bicycle |
 | Delivery_person_Ratings | float64 | 0 | 0 | 28 | 4.6, 4.8, 4.7, 4.9, 5.0, 4.5, 4.1, 4.2, 4.3, 4.4 |
-| Restaurant_latitude | float64 | 0 | 0 | 653 | 0.0, 26.9114, 26.9141, 26.9029, 26.8923, 26.9029, 26.8884, 26.9137, 26.9053, 26… |
-| Restaurant_longitude | float64 | 0 | 0 | 515 | 0.0, 75.8057, 75.789, 75.7929, 75.8069, 75.793, 75.8007, 75.7528, 75.7946, 75.8… |
+| Restaurant_latitude | float64 | 0 | 0 | 653 | 0.0, 26.9114, 26.9141, 26.8923, 26.9029, 26.9029, 26.8884, 26.9137, 26.9053, 26… |
+| Restaurant_longitude | float64 | 0 | 0 | 515 | 0.0, 75.8057, 75.789, 75.7929, 75.793, 75.8069, 75.8007, 75.7528, 75.7946, 75.8… |
 | Delivery_location_latitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.09, 0.02, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
 | Delivery_location_longitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.09, 0.02, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
 | Delivery_person_Age | int64 | 0 | 0 | 22 | 29, 35, 36, 37, 30, 38, 24, 32, 22, 33 |
@@ -242,10 +242,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-49df-7f8b-86d9-a1bd2a5ad746 |
-| checksum | 51c2313255aa5562d0de171fc0685b72445fd8c2eda9a1419086816c14f2a127 |
-| built_at | 2026-10-02T11:29:24+00:00 |
-| path | food_delivery_time/01a0fc60-49df-7f8b-86d9-a1bd2a5ad746 |
+| uuid | 01a11191-8267-77d0-a45f-9739ff3b3340 |
+| checksum | 67098cd3ca9743eb4749b70013d67b71524a8f869142eb74a74b242bd957e7b2 |
+| built_at | 2026-10-06T14:15:11+00:00 |
+| path | food_delivery_time/01a11191-8267-77d0-a45f-9739ff3b3340 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -57,6 +57,6 @@ class BloodTransfusion(AbstractCuratedDataset):
             "MonthsSinceFirstDonation",
             target_feature,
         ]
-        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
         return df

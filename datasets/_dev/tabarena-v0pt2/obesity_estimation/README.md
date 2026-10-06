@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: 0870d12770e6acf4cf94159fb4834fe5aa556ec5465754c66d89f94f77ccf391
+checksum: a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb
 build:
-  uuid: 01a0fc60-8862-7bf6-81ae-3727e184a312
-  checksum: 0870d12770e6acf4cf94159fb4834fe5aa556ec5465754c66d89f94f77ccf391
-  built_at: '2026-10-02T11:29:39+00:00'
-  path: obesity_estimation/01a0fc60-8862-7bf6-81ae-3727e184a312
+  uuid: 01a11191-deea-7d9a-97d1-984916c2e8c0
+  checksum: a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb
+  built_at: '2026-10-06T14:15:34+00:00'
+  path: obesity_estimation/01a11191-deea-7d9a-97d1-984916c2e8c0
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `BodyMass`, scored with `rmse` on IID splits. 498 rows and 14 features. Source: UCI (2019).
 
-Built as `01a0fc60-8862-7bf6-81ae-3727e184a312` on 2026-10-02. See [Build](#build).
+Built as `01a11191-deea-7d9a-97d1-984916c2e8c0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 498 rows of the final frame (random rows: the frame is shuffled);
 
 | BodyMass | Gender | Age | family_history_with_overweight | FAVC | FCVC | NCP | CAEC | SMOKE | CH2O | SCC | FAF |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 30.7183 | Male | 20 | yes | no | 2 | 3 | Sometimes | no | 3 | no | 3 |
-| 18.992 | Male | 19 | yes | no | 2 | 3 | Sometimes | no | 3 | no | 2 |
-| 24.841 | Female | 21 | yes | yes | 3 | 1 | Sometimes | yes | 3 | no | 0 |
-| 22.2338 | Female | 38 | yes | yes | 2 | 3 | Sometimes | no | 2 | no | 2 |
-| 19.7055 | Female | 19 | yes | yes | 3 | 3 | Sometimes | no | 1 | no | 1 |
+| 21.4844 | Female | 18 | no | yes | 2 | 4 | Frequently | no | 2 | no | 2 |
+| 29.4118 | Male | 24 | yes | yes | 2 | 3 | Frequently | no | 3 | no | 0 |
+| 24.4857 | Male | 19 | yes | yes | 3 | 3 | Frequently | no | 2 | no | 2 |
+| 22.6422 | Male | 19 | yes | no | 2 | 3 | Frequently | no | 2 | no | 1 |
+| 31.25 | Male | 44 | yes | no | 2 | 3 | Sometimes | yes | 3 | no | 0 |
 
 ## Curation notes
 
@@ -260,7 +260,7 @@ Default splits.
 | CALC | category | 0 | 0 | 4 | Sometimes, no, Frequently, Always |
 | MTRANS | category | 0 | 0 | 5 | Public_Transportation, Automobile, Walking, Motorbike, Bike |
 | Age | float64 | 0 | 0 | 35 | 18.0, 21.0, 23.0, 19.0, 20.0, 22.0, 17.0, 24.0, 25.0, 26.0 |
-| BodyMass | float64 | 0 | 0 | 392 | 29.3848, 22.0386, 24.4898, 24.2215, 22.4913, 22.2222, 26.6728, 21.7738, 26.9896… |
+| BodyMass | float64 | 0 | 0 | 392 | 29.3848, 22.0386, 24.4898, 26.9896, 22.2222, 24.2215, 21.7738, 22.4913, 26.6728… |
 
 </details>
 
@@ -330,10 +330,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8862-7bf6-81ae-3727e184a312 |
-| checksum | 0870d12770e6acf4cf94159fb4834fe5aa556ec5465754c66d89f94f77ccf391 |
-| built_at | 2026-10-02T11:29:39+00:00 |
-| path | obesity_estimation/01a0fc60-8862-7bf6-81ae-3727e184a312 |
+| uuid | 01a11191-deea-7d9a-97d1-984916c2e8c0 |
+| checksum | a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb |
+| built_at | 2026-10-06T14:15:34+00:00 |
+| path | obesity_estimation/01a11191-deea-7d9a-97d1-984916c2e8c0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

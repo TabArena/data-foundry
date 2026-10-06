@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: 17bbbd176a71bae4d954d7e7188e551b5c3205f700c0041691107c0230f8e802
+checksum: 337a51f140678d8eecc41f935215eb616932e6c3aabb871f91382f215e262344
 build:
-  uuid: 01a0fc60-55ba-74f5-883c-486d25b92cff
-  checksum: 17bbbd176a71bae4d954d7e7188e551b5c3205f700c0041691107c0230f8e802
-  built_at: '2026-10-02T11:29:27+00:00'
-  path: ljubljana_primary_tumor/01a0fc60-55ba-74f5-883c-486d25b92cff
+  uuid: 01a11191-ce7c-7717-b17f-8bdaccc0c10c
+  checksum: 337a51f140678d8eecc41f935215eb616932e6c3aabb871f91382f215e262344
+  built_at: '2026-10-06T14:15:30+00:00'
+  path: ljubljana_primary_tumor/01a11191-ce7c-7717-b17f-8bdaccc0c10c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1987).
 
-Built as `01a0fc60-55ba-74f5-883c-486d25b92cff` on 2026-10-02. See [Build](#build).
+Built as `01a11191-ce7c-7717-b17f-8bdaccc0c10c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 302 rows of the final frame (random rows: the frame is shuffled);
 
 | class | age | sex | histologic-type | degree-of-diffe | bone | bone-marrow | lung | pleura | peritoneum | liver | brain |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| pancreas | 30-59 | male | nan | poorly | no | no | yes | no | yes | yes | no |
-| kidney | 30-59 | male | nan | nan | yes | no | no | no | no | no | no |
-| thyroid | 30-59 | female | adeno | poorly | yes | no | no | yes | no | yes | no |
-| prostate | >=60 | male | adeno | well | no | no | yes | no | no | yes | no |
-| lung | 30-59 | female | anaplastic | poorly | no | no | no | yes | no | no | yes |
+| lung | >=60 | male | epidermoid | well | yes | no | no | no | yes | yes | no |
+| lung | >=60 | female | nan | nan | no | no | no | no | yes | yes | no |
+| kidney | 30-59 | male | adeno | nan | yes | no | no | no | no | no | no |
+| lung | 30-59 | male | nan | poorly | no | no | no | no | no | no | no |
+| lung | 30-59 | female | nan | nan | no | no | no | yes | no | no | no |
 
 ## Curation notes
 
@@ -356,10 +356,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-55ba-74f5-883c-486d25b92cff |
-| checksum | 17bbbd176a71bae4d954d7e7188e551b5c3205f700c0041691107c0230f8e802 |
-| built_at | 2026-10-02T11:29:27+00:00 |
-| path | ljubljana_primary_tumor/01a0fc60-55ba-74f5-883c-486d25b92cff |
+| uuid | 01a11191-ce7c-7717-b17f-8bdaccc0c10c |
+| checksum | 337a51f140678d8eecc41f935215eb616932e6c3aabb871f91382f215e262344 |
+| built_at | 2026-10-06T14:15:30+00:00 |
+| path | ljubljana_primary_tumor/01a11191-ce7c-7717-b17f-8bdaccc0c10c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

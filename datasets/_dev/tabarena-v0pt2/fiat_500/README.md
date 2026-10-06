@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: 982e0f36e02776663f7018a4343753181313fff8adacc1d5d0156dbd658dfdea
+checksum: 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea
 build:
-  uuid: 01a0fc60-8cd2-76fe-84ea-0b9c2ed166ca
-  checksum: 982e0f36e02776663f7018a4343753181313fff8adacc1d5d0156dbd658dfdea
-  built_at: '2026-10-02T11:29:41+00:00'
-  path: fiat_500/01a0fc60-8cd2-76fe-84ea-0b9c2ed166ca
+  uuid: 01a11191-b66b-7b06-9b21-e264518558cf
+  checksum: 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea
+  built_at: '2026-10-06T14:15:24+00:00'
+  path: fiat_500/01a11191-b66b-7b06-9b21-e264518558cf
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,538 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a0fc60-8cd2-76fe-84ea-0b9c2ed166ca` on 2026-10-02. See [Build](#build).
+Built as `01a11191-b66b-7b06-9b21-e264518558cf` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 1,538 rows of the final frame (random rows: the frame is shuffled
 
 | price | model | engine_power | age_in_days | km | previous_owners | lat | lon |
 |---|---|---|---|---|---|---|---|
-| 7900 | pop | 51 | 3197 | 120000 | 2 | 40.1747 | 18.1676 |
-| 7900 | pop | 62 | 2101 | 103000 | 1 | 45.7979 | 8.64444 |
-| 9400 | lounge | 51 | 670 | 32473 | 1 | 41.1079 | 14.2088 |
-| 8500 | lounge | 51 | 913 | 29000 | 1 | 45.7786 | 8.94625 |
-| 9700 | lounge | 51 | 762 | 18800 | 1 | 45.5387 | 9.92831 |
+| 9999 | lounge | 51 | 701 | 19000 | 1 | 40.6724 | 14.7282 |
+| 10500 | lounge | 51 | 425 | 18233 | 1 | 45.3544 | 11.8693 |
+| 8499 | lounge | 51 | 1186 | 34000 | 1 | 40.8159 | 14.5796 |
+| 10490 | pop | 51 | 366 | 19000 | 1 | 45.4954 | 12.1565 |
+| 9900 | lounge | 51 | 762 | 18000 | 2 | 45.5841 | 9.27096 |
 
 ## Curation notes
 
@@ -213,9 +213,9 @@ Default splits.
 | model | category | 0 | 0 | 3 | lounge, pop, sport |
 | lat | float64 | 0 | 0 | 449 | 41.9032, 41.1079, 45.0697, 45.468, 45.4381, 43.7824, 45.5126, 38.1221, 45.5366,… |
 | lon | float64 | 0 | 0 | 450 | 12.4957, 14.2088, 7.7049, 9.1818, 12.3181, 11.255, 10.329, 13.3611, 10.232, 11.… |
-| engine_power | int64 | 0 | 0 | 8 | 51, 62, 73, 74, 77, 58, 63, 66 |
-| age_in_days | int64 | 0 | 0 | 140 | 790, 366, 701, 397, 670, 762, 456, 731, 425, 1066 |
-| km | int64 | 0 | 0 | 988 | 17000, 56779, 15000, 120000, 19000, 100000, 21000, 60000, 90000, 9248 |
+| engine_power | int64 | 0 | 0 | 8 | 51, 62, 73, 74, 77, 58, 66, 63 |
+| age_in_days | int64 | 0 | 0 | 140 | 366, 790, 701, 397, 670, 762, 456, 731, 425, 1066 |
+| km | int64 | 0 | 0 | 988 | 17000, 56779, 120000, 19000, 15000, 21000, 100000, 18000, 32057, 60000 |
 | previous_owners | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
 | price | int64 | 0 | 0 | 222 | 10500, 10900, 8900, 9900, 9400, 10800, 9500, 7900, 9800, 6900 |
 
@@ -223,7 +223,7 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.686 | -1.104 | 3.76344e+06 | 0.067 | log | 31142.1 | 1.10528e+20 | exponential |
+| 0 | 0 | 0 | -0.686 | -1.104 | 3.76344e+06 | 0.067 | log | 31142.1 | 1.44655e+16 | exponential |
 
 ### Numeric features
 
@@ -249,10 +249,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8cd2-76fe-84ea-0b9c2ed166ca |
-| checksum | 982e0f36e02776663f7018a4343753181313fff8adacc1d5d0156dbd658dfdea |
-| built_at | 2026-10-02T11:29:41+00:00 |
-| path | fiat_500/01a0fc60-8cd2-76fe-84ea-0b9c2ed166ca |
+| uuid | 01a11191-b66b-7b06-9b21-e264518558cf |
+| checksum | 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea |
+| built_at | 2026-10-06T14:15:24+00:00 |
+| path | fiat_500/01a11191-b66b-7b06-9b21-e264518558cf |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

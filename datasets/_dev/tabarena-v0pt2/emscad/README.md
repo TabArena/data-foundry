@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: emscad
 container_format: 2
-checksum: 0d7cb89bb40e4d857696d4a1d1841bbc973bf8a750409b976a97ed684fc4ac0e
+checksum: 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4
 build:
-  uuid: 01a0fc60-1da1-7adb-be53-5e67c3c0b798
-  checksum: 0d7cb89bb40e4d857696d4a1d1841bbc973bf8a750409b976a97ed684fc4ac0e
-  built_at: '2026-10-02T11:29:14+00:00'
-  path: emscad/01a0fc60-1da1-7adb-be53-5e67c3c0b798
+  uuid: 01a11191-33bc-74d2-ac80-3e98063d23c2
+  checksum: 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4
+  built_at: '2026-10-06T14:14:53+00:00'
+  path: emscad/01a11191-33bc-74d2-ac80-3e98063d23c2
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -78,7 +78,7 @@ decisions: []
 
 Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 18 features. Source: Other (2014).
 
-Built as `01a0fc60-1da1-7adb-be53-5e67c3c0b798` on 2026-10-02. See [Build](#build).
+Built as `01a11191-33bc-74d2-ac80-3e98063d23c2` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -166,11 +166,11 @@ The first 5 of 16,116 rows of the final frame (random rows: the frame is shuffle
 
 | fraudulent | title | location | department | salary_range | company_profile | description | requirements | benefits | telecommuting | has_company_logo | has_questions |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Product Manager | EE, 37, Tallinn | Product |  | Want to build a 21st century financial … | TransferWho?TransferWise is the clever … |  | You will join one of Europe’s most hotl… | 0 | 1 | 0 |
-| 0 | Launch Manager | US, CA, Palo Alto |  |  |  | Title: Launch Manager\*Please note we wa… | RequirementsBA / BS from a top schoolHi… |  | 0 | 1 | 1 |
-| 0 | Art Director | HK, , Hong Kong |  |  | Joy Aether is a leading provider of mob… | Joy Aether is a leading provider of mob… | Master / Degree / Diploma in Web / Grap… | Gain experience in a fast growing indus… | 0 | 1 | 1 |
-| 0 | Sales Associate - NRG | US, IL, Chicago | Networking Research Group |  | The story of the Great Chicago Fire of … | NRG (NETWORK RESEARCHING GROUP)SALES AS… | - 2+ years of B2B Sales experience- Pro… | Salary and commission is negotiable. | 0 | 1 | 0 |
-| 0 | Back End Software Engineer | GR, I, Athens | Software Engineering |  |  | Certoid is an identity, impersonation a… |  |  | 0 | 1 | 1 |
+| 0 | Carrier Sales Representative | US, CA, Fresno | Carrier Sales |  |  | Company DescriptionCargoBarn is a third… | Very strong individuals with Bachelor’s… | We offer excellent benefits including Q… | 0 | 1 | 1 |
+| 1 | Data Center Migration App Lead for FULL… | US, PA, Harrisburg |  | 0-0 |  | Data Center Migration Application Lead … |  |  | 0 | 0 | 0 |
+| 0 | Team Leader | GB, , | Edinburgh |  | Social Care Alba is the highest graded … | Job DescriptionWe are looking to recrui… |  | TEN REASONS TO JOIN US: 1. Variety of h… | 0 | 1 | 1 |
+| 0 | Project Engineer- New Product Developme… | US, NV, Las Vegas |  |  | Vx Group is a Business Leadership and M… | Do you love to design new products? Are… | BS in Mechanical Engineering or equival… |  | 0 | 0 | 1 |
+| 0 | Class Teacher, Primary Years V1 | SG, 01, |  | 6000-10000 | Situated on a spacious, leafy campus wi… | For August 2015:Early Years and Primary… | Relevant degree and teaching qualificat… | Three year contractCompetitive salary10… | 0 | 1 | 1 |
 
 ## Curation notes
 
@@ -230,7 +230,7 @@ One group is a poster (an account); its rows are its job ads. The use case is a 
 | largest group | 3.3% of the rows |
 | test groups per fold | 1,476 to 1,484 |
 | groups of two or more rows with a single label | 99.8% |
-| nearest neighbour in the same group | 0.6% of the rows (chance: 0.4%) |
+| nearest neighbour in the same group | 1.3% of the rows (chance: 0.4%) |
 | label variance explained by the group | 0.99 (shuffled groups: 0.28) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
@@ -313,9 +313,9 @@ Accepted on purpose:
 | department | 5 | Operations | 266 | 1.65 |
 | description | 1 | The International Broadcaster shall properly complete all daily ... | 31 | 0.19 |
 | description | 2 | As an Outside Sales Representative, you must have excellent sale... | 21 | 0.13 |
-| description | 3 | We are seeking individuals to be connected with companies who ar... | 20 | 0.12 |
+| description | 3 | We are currently recruiting for an exciting Sales &amp; Customer... | 20 | 0.12 |
 | description | 4 | As a Delivery Driver, you will operate your truck and deliver bu... | 20 | 0.12 |
-| description | 5 | We are currently recruiting for an exciting Sales &amp; Customer... | 20 | 0.12 |
+| description | 5 | We are seeking individuals to be connected with companies who ar... | 20 | 0.12 |
 | employment_type | 1 | Full-time | 10879 | 67.5 |
 | employment_type | 2 | &lt;NA> | 3195 | 19.83 |
 | employment_type | 3 | Contract | 826 | 5.13 |
@@ -365,10 +365,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1da1-7adb-be53-5e67c3c0b798 |
-| checksum | 0d7cb89bb40e4d857696d4a1d1841bbc973bf8a750409b976a97ed684fc4ac0e |
-| built_at | 2026-10-02T11:29:14+00:00 |
-| path | emscad/01a0fc60-1da1-7adb-be53-5e67c3c0b798 |
+| uuid | 01a11191-33bc-74d2-ac80-3e98063d23c2 |
+| checksum | 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4 |
+| built_at | 2026-10-06T14:14:53+00:00 |
+| path | emscad/01a11191-33bc-74d2-ac80-3e98063d23c2 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

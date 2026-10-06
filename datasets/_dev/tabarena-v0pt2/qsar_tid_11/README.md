@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: d8b673ed9f29c2b9d1d64f40dab0c866f5b0767587e9c5fe92a22269c2f602c8
+checksum: d29acc2d00354db6e9ca0f491bd662df68c5322412f26ceae8f705eb64f56668
 build:
-  uuid: 01a0fc60-0a98-7ec4-9ce5-f4bdcf8be91a
-  checksum: d8b673ed9f29c2b9d1d64f40dab0c866f5b0767587e9c5fe92a22269c2f602c8
-  built_at: '2026-10-02T11:29:11+00:00'
-  path: qsar_tid_11/01a0fc60-0a98-7ec4-9ce5-f4bdcf8be91a
+  uuid: 01a11191-154c-7ef3-bd80-3a1f5320c067
+  checksum: d29acc2d00354db6e9ca0f491bd662df68c5322412f26ceae8f705eb64f56668
+  built_at: '2026-10-06T14:14:46+00:00'
+  path: qsar_tid_11/01a11191-154c-7ef3-bd80-3a1f5320c067
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,741 rows and 1,024 features. Source: OpenML (2015).
 
-Built as `01a0fc60-0a98-7ec4-9ce5-f4bdcf8be91a` on 2026-10-02. See [Build](#build).
+Built as `01a11191-154c-7ef3-bd80-3a1f5320c067` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 5,741 rows of the final frame (random rows: the frame is shuffled
 
 | MEDIAN_PXC50 | FCFP6_1024_0 | FCFP6_1024_1 | FCFP6_1024_2 | FCFP6_1024_3 | FCFP6_1024_4 | FCFP6_1024_5 | FCFP6_1024_6 | FCFP6_1024_7 | FCFP6_1024_8 | FCFP6_1024_9 | FCFP6_1024_10 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5.721 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 6.444 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 4.301 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 6.553 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
-| 5.322 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 7.137 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 6.469 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 7.114 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1 |
+| 5.944 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 7.796 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -343,10 +343,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-0a98-7ec4-9ce5-f4bdcf8be91a |
-| checksum | d8b673ed9f29c2b9d1d64f40dab0c866f5b0767587e9c5fe92a22269c2f602c8 |
-| built_at | 2026-10-02T11:29:11+00:00 |
-| path | qsar_tid_11/01a0fc60-0a98-7ec4-9ce5-f4bdcf8be91a |
+| uuid | 01a11191-154c-7ef3-bd80-3a1f5320c067 |
+| checksum | d29acc2d00354db6e9ca0f491bd662df68c5322412f26ceae8f705eb64f56668 |
+| built_at | 2026-10-06T14:14:46+00:00 |
+| path | qsar_tid_11/01a11191-154c-7ef3-bd80-3a1f5320c067 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

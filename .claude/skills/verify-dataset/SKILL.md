@@ -45,8 +45,7 @@ There are two halves to verification and they must not be confused:
   feature would have been available at prediction time, whether the comments describe what the code
   does. Code cannot settle these. This is what you are for.
 
-Your verdict is **advisory**. A human curator has the final say (same contract as the
-`AI (UNVERIFIED)` convention in `/triage-candidates`).
+Your verdict is **advisory**: a human curator has the final say.
 
 ## Step 0 — Locate the inputs
 
@@ -62,8 +61,8 @@ Your verdict is **advisory**. A human curator has the final say (same contract a
 3. **The backlog record** — `curation/records/<unique_name>.md`, if it exists. Its `## Comments` hold
    the provenance and duplicate-check reasoning already done; do not redo settled work, and do not
    contradict it without new evidence.
-4. **The upstream source** — follow `original_dataset_source_download_link`. Fetch the dataset page /
-   paper / competition description. Most rubric items below are unanswerable without it.
+4. **The upstream source** — follow the class's `source_url` and the record's `source_links`. Fetch the dataset
+   page / paper / competition description. Most rubric items below are unanswerable without it.
 
 Do not run `dataset build` to verify: it mints a new UUID. `dataset check` gives the same container without saving.
 
@@ -83,19 +82,19 @@ Then, in your own report:
 * do not re-state passing checks one by one. "Bundle checks: 0 errors, 3 warnings (2 accepted,
   see below)" is the right level.
 
-Then run the leak probes, which the bundle checks do not cover: `.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py
-<unique_name>`. Read them with
-[`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the
-other probes (same-label subgroups, number formats by class, target by period, entity overlap) and what the 2026 leak
-audit decided for each kind of leak. Their numbers are the evidence for items 4, 5, 6, 9 and 13.
+Then run the three probe scripts (`.venv/bin/python .claude/skills/verify-dataset/scripts/<script> <unique_name>`),
+which the bundle checks do not cover:
 
-Then run the task probes: `.venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name>` (or `--built` to read the built
-container). On the shipped splits they compare dummy baselines (the train side's class shares or mean, and for a
-temporal regression or multiclass task the same from the newest data) with a linear model, a random forest and
-LightGBM (per group for a group-unit task with `mean`, `any` or `last`; a `select_*` task is scored per row), plus
-the best single feature. Their flags are the evidence for item 13.
-For a grouped task, `.claude/skills/verify-dataset/scripts/group_probes.py <unique_name>` gives the IID vs grouped gap and a permutation test
-across groups (item 4).
+* `leak_probes.py`: what a model learns that it should not (each feature alone, missingness, drop-one, a shallow
+  tree, exact copies across the split, nearest neighbours). Read them with
+  [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the
+  probes to run by hand and what the 2026 leak audit decided for each kind of leak. Evidence for items 4, 5, 6, 9, 13.
+* `task_probes.py` (`--built` reads the built container): whether the task is worth benchmarking. Dummy baselines
+  against three untuned model families on the shipped splits, the best single feature chosen per split, and flags
+  (`no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`). Evidence for
+  item 13; answer each flag as [`references/task_probes.md`](references/task_probes.md) says, starting with
+  `tuned_results.py <unique_name> [--feature auto]`, which sets the flag against the benchmark's tuned methods.
+* `group_probes.py`, for a grouped task: the IID vs grouped gap and a permutation test across groups (item 4).
 
 ## Step 2 — Work the judgment rubric
 
@@ -105,7 +104,7 @@ source page, a line of `dataset.py`, a number from the check output or the READM
 
 | # | Item | What to actually check |
 |---|---|---|
-| 1 | **Original source** | Does the link bottom out at the *original* publication (paper, competition, institution), not an anonymous re-upload? A working Kaggle/OpenML link is not provenance. Does `dataset_source` name where the data first appeared? |
+| 1 | **Original source** | Does the link bottom out at the *original* publication (paper, competition, institution), not an anonymous re-upload? A working Kaggle/OpenML link is not provenance. Does `source` name where the data first appeared? |
 | 2 | **Uniqueness** | Is this the same underlying data as another dataset in the collection under a different name — including a different target/slice/version of one cohort? Compare canonical links and follow each to its origin (see *Checking for duplicates* in the curation guidelines). |
 | 3 | **Scope** | Was it *published for* a predictive classification/regression task? Exclude time-series forecasting, CTR, ranking/recsys, non-predictive survey/discovery tables. Scope by the **original** task, not the re-upload's framing. |
 | 4 | **Split regime** | Does the declared regime (`Temporal`, `Grouping`, or neither) match the real application? Read the source description; a prescribed random split is a *claim*, not evidence. For a grouped task, do `prediction_unit`, `aggregation` and `context` follow the source's use case, and does the `definition` cite it? Read the README's "Group structure" section and run `.claude/skills/verify-dataset/scripts/group_probes.py` for a small or doubtful grouped task (signal across groups, IID vs grouped gap). A missing timestamp does not make a stream of contemporaneous readings IID. Check for grouped structure inside a temporal task (repeated entities over time) and vice versa. A group id must be a true id or one constructed exactly from the data (identical profile text, consecutive blocks in the raw file order), never a similarity cluster; check a claimed source split against the data (share of test entities seen in train); check that a row-order time index follows the date. |
@@ -117,7 +116,7 @@ source page, a line of `dataset.py`, a number from the check output or the READM
 | 10 | **License & citation** | Is the license what the source actually states (the checks only see whether the field is filled)? Does the BibTeX cite the *right* work — the paper/competition that published this data, not a paper that merely used it? Syntax being valid says nothing about correctness. |
 | 11 | **Reproducibility** | Would `download_description`, pasted into a shell today, recreate the raw inputs? Are URLs pinned (DOI, archived release) rather than mutable HEAD links? |
 | 12 | **Ethics & representativeness** | Any subject/creator objection to ML use, obvious ethical concern, or a task tabular models would not be used for (e.g. features that are an algorithmic vectorization of image content)? See the exclusion criteria in the curation guidelines. |
-| 13 | **Trivial or empty** | Read the task-probe flags. `no_signal`: no model beats the dummy, so the features do not carry the target (wrong target, lost columns, or a task too noisy to rank models). `solved` (ROC AUC or R^2 at least 0.995) and `one_feature` (one feature with 95% of the best skill): first a leak or a deterministic target, run the leak probes. `no_spread`: all three untuned families tie, which criterion 4C calls trivial, unless the folds are too noisy to tell (`unstable`). `drift_baseline`: a constant from the newest data predicts as well as the models, so the task is mostly drift. Each flag is a question: report the numbers and propose `Trivial` only with a reason. The cheap findings (`splits_test_single_class`, `splits_test_minority_few`, `splits_test_target_constant`, `task_target_value_dominant`) say whether every fold can be scored. |
+| 13 | **Trivial or empty** | Read the task-probe flags and answer each one with [`references/task_probes.md`](references/task_probes.md): check it against tuned methods first (`tuned_results.py`). A small but real signal is no reason to retire; if tuned methods spread, the task stays; `Trivial` needs the raw feature to match or beat the methods fold by fold, after reading what the feature means (a listed price for a sale price is expected to dominate); `Too Small` means a handful of units of a class per test fold. A `solved` or `one_feature` task is first a leak suspect (leak probes, shallow tree). The cheap findings (`splits_test_single_class`, `splits_test_minority_few`, `splits_test_target_constant`, `task_target_value_dominant`) say whether every fold can be scored. |
 | 14 | **Record pointer** | Does the record's `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built (`build.uuid`, `build_stale` false)? `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` must be clean; evidence is the UUID string itself. |
 | 15 | **Template conformance** | The class validates on import (`dataset list` shows it), follows the current [`datasets/_template/dataset.py`](../../../datasets/_template/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `README.md` was regenerated after the last edit (`build_stale` is false when built). Report each drift as a concrete edit. |
 
@@ -144,7 +143,10 @@ Read the selection criteria and processing conventions in [`.claude/skills/triag
   one (or run `.venv/bin/python -m data_foundry.curation.cli sync-notebooks`) in the same change. A stale pointer
   sends every reader to a definition that did not produce the data, and `tests/test_records_integrity.py` fails on
   it.
-* If you record findings in the backlog record (`curation/records/<unique_name>.md`), follow the
-  `AI (UNVERIFIED)` convention from `/triage-candidates` and preserve existing human `CC (…)` notes.
+* If you record findings in the backlog record (`curation/records/<unique_name>.md`), edit it through the store API
+  and keep existing comments. A decision the curator made goes in as their dated `CC (YYYY-MM-DD, Name):` comment;
+  your own assessment as `**Assessment (AI, YYYY-MM-DD):**`, leaving `suggestion` and markers alone (as in
+  `/check-candidate`, step 5). The `AI (UNVERIFIED)` reviewer convention is only for provisional triage of untriaged
+  records.
 * Substance over volume: a short report with three real concerns beats thirteen paragraphs of
   "verified, looks good".

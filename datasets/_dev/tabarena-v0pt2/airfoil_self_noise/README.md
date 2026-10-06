@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: airfoil_self_noise
 container_format: 2
-checksum: e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722
+checksum: ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04
 build:
-  uuid: 01a0fc60-90f7-740e-8e9c-3d56033ca7d3
-  checksum: e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722
-  built_at: '2026-10-02T11:29:42+00:00'
-  path: airfoil_self_noise/01a0fc60-90f7-740e-8e9c-3d56033ca7d3
+  uuid: 01a11191-5cbe-7b83-90ce-4f445afb2a34
+  checksum: ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04
+  built_at: '2026-10-06T14:15:01+00:00'
+  path: airfoil_self_noise/01a11191-5cbe-7b83-90ce-4f445afb2a34
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `scaled-sound-pressure`, scored with `rmse` on IID splits. 1,503 rows and 5 features. Source: UCI (2014).
 
-Built as `01a0fc60-90f7-740e-8e9c-3d56033ca7d3` on 2026-10-02. See [Build](#build).
+Built as `01a11191-5cbe-7b83-90ce-4f445afb2a34` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -139,11 +139,11 @@ The first 5 of 1,503 rows of the final frame (random rows: the frame is shuffled
 
 | scaled-sound-pressure | frequency | attack-angle | chord-length | free-stream-velocity | suction-side-displacement-thickness |
 |---|---|---|---|---|---|
-| 125.045 | 400 | 0 | 0.3048 | 31.7 | 0.00331266 |
-| 118.767 | 1250 | 12.3 | 0.1016 | 31.7 | 0.0418756 |
-| 120.233 | 2500 | 4 | 0.3048 | 39.6 | 0.00579636 |
-| 137.047 | 4000 | 0 | 0.0254 | 31.7 | 0.000439472 |
-| 134.556 | 5000 | 0 | 0.0508 | 55.5 | 0.00076193 |
+| 130.567 | 1600 | 5.4 | 0.1524 | 55.5 | 0.00433288 |
+| 127.614 | 1600 | 17.4 | 0.0254 | 39.6 | 0.0172206 |
+| 120.607 | 8000 | 12.7 | 0.0254 | 39.6 | 0.0130253 |
+| 126.486 | 500 | 2 | 0.2286 | 71.3 | 0.00293031 |
+| 119.04 | 2000 | 8.9 | 0.1016 | 39.6 | 0.0124596 |
 
 ## Curation notes
 
@@ -207,15 +207,15 @@ Default splits.
 | attack-angle | category | 0 | 0 | 27 | 0.0, 4.0, 15.4, 9.9, 12.3, 7.3, 17.4, 3.0, 2.0, 9.5 |
 | chord-length | float64 | 0 | 0 | 6 | 0.0254, 0.1524, 0.2286, 0.1016, 0.0508, 0.3048 |
 | free-stream-velocity | float64 | 0 | 0 | 4 | 39.6, 71.3, 31.7, 55.5 |
-| suction-side-displacement-thickness | float64 | 0 | 0 | 105 | 0.0053, 0.0031, 0.0033, 0.005, 0.0091, 0.004, 0.0161, 0.0122, 0.013, 0.0264 |
-| scaled-sound-pressure | float64 | 0 | 0 | 1456 | 129.395, 126.54, 127.315, 125.586, 133.79, 134.058, 133.04, 130.307, 126.195, 1… |
+| suction-side-displacement-thickness | float64 | 0 | 0 | 105 | 0.0053, 0.0031, 0.005, 0.0033, 0.0264, 0.0161, 0.0039, 0.0122, 0.013, 0.004 |
+| scaled-sound-pressure | float64 | 0 | 0 | 1456 | 127.315, 129.395, 126.54, 108.034, 133.649, 127.054, 120.324, 128.401, 126.514,… |
 | frequency | int64 | 0 | 0 | 21 | 2000, 2500, 1600, 3150, 4000, 1250, 1000, 800, 5000, 6300 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.419 | -0.548 | 47.591 | 0.003 | log | 26708 | 6.04924e+14 | exponential |
+| 0 | 0 | 0 | -0.419 | -0.548 | 47.591 | 0.003 | log | 26708 | 2.83825e+15 | exponential |
 
 ### Numeric features
 
@@ -241,10 +241,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-90f7-740e-8e9c-3d56033ca7d3 |
-| checksum | e3d0be92f051a743e355103e60fa07cb2c58865dfed356efc2182ae1b96ec722 |
-| built_at | 2026-10-02T11:29:42+00:00 |
-| path | airfoil_self_noise/01a0fc60-90f7-740e-8e9c-3d56033ca7d3 |
+| uuid | 01a11191-5cbe-7b83-90ce-4f445afb2a34 |
+| checksum | ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04 |
+| built_at | 2026-10-06T14:15:01+00:00 |
+| path | airfoil_self_noise/01a11191-5cbe-7b83-90ce-4f445afb2a34 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

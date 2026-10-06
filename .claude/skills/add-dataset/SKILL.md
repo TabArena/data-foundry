@@ -50,13 +50,16 @@ remains. Say so in your report.
   `stratify_on` is the target for classification. Set them only to deviate.
 * **Standard steps after `_clean`**: cast the columns `_feature_types` names (`FeatureTypes(categorical=...,
   string=..., datetime=...)`, a dict gives datetime formats; unused categories removed; a classification target
-  becomes a category without being listed), then fix the row order — a stable sort by
-  the time column for temporal tasks, otherwise a shuffle with seed 42 (`shuffle = False` to opt out, with a reason in
+  becomes a category without being listed), then fix the row order: the rows in the order of their content (a hash
+  of each row, so the order `_clean` returns does not matter), then a stable sort by the time column for temporal
+  tasks, otherwise a shuffle with seed 42 (`shuffle = False` keeps the order of `_clean`; give a reason in
   `curation_comments`). Never shuffle, sort or `reset_index` yourself.
 * **Seeds:** one shuffle seed (42) and one split seed (4267) for the whole benchmark, fixed in the base class.
 * **Same data on every run and machine:** sorts take `kind="stable"`, file listings are `sorted(...)`, a polars
   `group_by` keeps `maintain_order=True`, and a polars join's output is sorted before it is written
-  (`definition_nondeterministic` checks the first three). The rows and splits are then the same everywhere; only the
+  (`definition_nondeterministic` checks the first three). The base class orders the rows by content, so the order
+  `_clean` returns matters only where it changes values (`drop_duplicates(keep="first")`, an id numbered by
+  consecutive blocks). The rows and splits are then the same everywhere; only the
   last bit of a numpy log or exp can differ between CPUs, so a rebuild elsewhere may give another checksum for a
   log-scaled target.
 * **Refused at import:** besides missing attributes, a multi-column group key or `stratify_on` (build one key in
@@ -180,17 +183,19 @@ copied from train, or a `dataset_pure_feature_value` warning each need a decisio
 drop, lag, filter, re-split or keep on purpose, with the numbers in a `curation_comments` bullet (or a `_decisions`
 table). The precedents for each kind of leak are in that file's §3-§5.
 
-Then check that the task is worth benchmarking: dummy baselines against three untuned model families on the shipped
-splits, scored per group for a group-unit task with `mean`, `any` or `last` (per row for `select_*`), with a drift baseline for temporal regression and multiclass tasks:
+Then check that the task is worth benchmarking:
 
 ```bash
 .venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name>
 ```
 
-Each flag needs a decision written down: `no_signal` (no model beats the dummy; check the features and the target),
-`solved` or `one_feature` (a leak or a lookup first: back to the leak probes), `no_spread` (all families tie; on a
-small task this may be noise), `drift_baseline` (a constant from the newest data is as good as the models),
-`unstable` (few test rows or groups). For a grouped task also run `.claude/skills/verify-dataset/scripts/group_probes.py <unique_name>`.
+It sets dummy baselines against three untuned model families on the shipped splits (per group for a group-unit task
+with `mean`, `any` or `last`; per row for `select_*`) and flags what needs a decision: `no_signal`, `solved`,
+`no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. A flag is a question. Answer it as
+[`../verify-dataset/references/task_probes.md`](../verify-dataset/references/task_probes.md) says (its rules came
+from the v0.2 review: a small signal is no reason to drop a task, `Trivial` needs proof, `Too Small` means a handful
+of units of a class per test fold), and write the answer down in `curation_comments` or a `_decisions` table. For a
+grouped task also run `.claude/skills/verify-dataset/scripts/group_probes.py <unique_name>`.
 
 ## Step 7: Build (curator only)
 
@@ -199,9 +204,10 @@ small task this may be noise), `drift_baseline` (a constant from the newest data
 ```
 
 saves the container to the warehouse (new UUID), verifies the export, and records UUID, checksum and git commit in
-the `README.md` frontmatter. There is no v0.2 collection in the registry yet: record the UUID in the working
-copy's `CHANGELOG.md` and its `README.md` table, and never add it to `BEYOND_ARENA_UUIDS`. Never run `build`
-yourself unless asked.
+the `README.md` frontmatter. There is no v0.2 collection in the registry yet: record the UUID in a dated entry of the
+working copy's `CHANGELOG.md`, refresh its `README.md` table with
+`.venv/bin/python .claude/skills/rebuild-working-copy/scripts/readme_table.py`, and never add it to
+`BEYOND_ARENA_UUIDS`. Never run `build` yourself unless asked.
 
 ## Step 8: Report
 

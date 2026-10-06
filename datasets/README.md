@@ -9,7 +9,7 @@ The notebooks in this tree are Data Foundry v1, kept as the record of what shipp
 datasets/
 ├── _template/        # the v2 template `dataset new` copies: dataset.py + explore.ipynb
 ├── _dev/             # work in progress, one folder per collection being built
-│   ├── tabarena-v0pt2/      # the TabArena v0.2 working copy: 130 v2 definitions (start with its GETTING_STARTED.md)
+│   ├── tabarena-v0pt2/      # the TabArena v0.2 working copy: 128 v2 definitions (start with its GETTING_STARTED.md)
 │   └── feature_selection/   # v1 notebooks of the feature-selection work (SelectArena)
 ├── beyond_iid/       # the shipped BeyondArena collection (v1 notebooks), pinned in final_uuid_list.py
 └── _maintenance/     # everything kept for reference or development that is not in a shipped collection

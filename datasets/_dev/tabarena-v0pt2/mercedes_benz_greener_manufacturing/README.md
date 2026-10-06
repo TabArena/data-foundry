@@ -4,12 +4,12 @@ unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
 checksum: 9d0f416c1b0fbbaa59c804409406369c01bdfbec97fc34d3a5ee77ad77c7a155
 build:
-  uuid: 01a0fc60-2978-72c3-9766-5d7f273e1f59
+  uuid: 01a11191-8766-7fd7-9a98-43cdfad5cdde
   checksum: 9d0f416c1b0fbbaa59c804409406369c01bdfbec97fc34d3a5ee77ad77c7a155
-  built_at: '2026-10-02T11:29:20+00:00'
-  path: mercedes_benz_greener_manufacturing/01a0fc60-2978-72c3-9766-5d7f273e1f59
+  built_at: '2026-10-06T14:15:14+00:00'
+  path: mercedes_benz_greener_manufacturing/01a11191-8766-7fd7-9a98-43cdfad5cdde
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `y`, scored with `rmse` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a0fc60-2978-72c3-9766-5d7f273e1f59` on 2026-10-02. See [Build](#build).
+Built as `01a11191-8766-7fd7-9a98-43cdfad5cdde` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -356,10 +356,10 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-2978-72c3-9766-5d7f273e1f59 |
+| uuid | 01a11191-8766-7fd7-9a98-43cdfad5cdde |
 | checksum | 9d0f416c1b0fbbaa59c804409406369c01bdfbec97fc34d3a5ee77ad77c7a155 |
-| built_at | 2026-10-02T11:29:20+00:00 |
-| path | mercedes_benz_greener_manufacturing/01a0fc60-2978-72c3-9766-5d7f273e1f59 |
+| built_at | 2026-10-06T14:15:14+00:00 |
+| path | mercedes_benz_greener_manufacturing/01a11191-8766-7fd7-9a98-43cdfad5cdde |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

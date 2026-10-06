@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: fd814dd15f565d4549088aa64af555c6f05a9deccd2322fdb4e8513913325b1f
+checksum: d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730
 build:
-  uuid: 01a0fc60-3ad9-7338-9076-03a005cfe236
-  checksum: fd814dd15f565d4549088aa64af555c6f05a9deccd2322fdb4e8513913325b1f
-  built_at: '2026-10-02T11:29:20+00:00'
-  path: biogeographical_ancestry_prediction/01a0fc60-3ad9-7338-9076-03a005cfe236
+  uuid: 01a11191-30d1-7005-851d-272125d77ffe
+  checksum: d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730
+  built_at: '2026-10-06T14:14:50+00:00'
+  path: biogeographical_ancestry_prediction/01a11191-30d1-7005-851d-272125d77ffe
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -62,7 +62,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: GitHub (2025).
 
-Built as `01a0fc60-3ad9-7338-9076-03a005cfe236` on 2026-10-02. See [Build](#build).
+Built as `01a11191-30d1-7005-851d-272125d77ffe` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -164,11 +164,11 @@ The first 5 of 607 rows of the final frame (random rows: the frame is shuffled);
 
 | Population | rs1024124 | rs1040934 | rs1074689 | rs10764919 | rs10954737 | rs10962599 | rs1150911 | rs11960137 | rs1197062 | rs12142199 | rs1229984 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| France (French) | CT | TT | AT | AG | TT | CT | TT | CC | TT | AA | CC |
-| Spain (Iberian) | TT | CT | AA | AG | TT | TT | CT | CG | GT | AA | CT |
-| Utah (CEPH, N/W European ancestry) | CC | TT | AT | GG | TT | CT | CT | CG | TT | AA | CC |
-| Utah (CEPH, N/W European ancestry) | TT | CT | AT | GG | TT | CT | CC | CC | TT | AA | CC |
-| Finland (Finnish) | CC | TT | AC | AA | TT | CT | CG | GG | TT | AA | CC |
+| Utah (CEPH, N/W European ancestry) | CT | TT | AC | AA | TT | TT | CG | CC | TT | AA | CC |
+| Spain (Iberian) | CC | TT | AA | AA | TT | CC | GG | CG | TT | AA | CC |
+| UK (England & Scotland, British) | CT | TT | AA | AG | TT | CT | CG | CC | TT | AG | CC |
+| Italy (Sardinian) | CC | TT | AC | AG | TT | CT | TT | CC | TT | AA | CC |
+| UK (England & Scotland, British) | CT | CT | CT | GG | TT | TT | CT | CC | TT | AA | CC |
 
 ## Curation notes
 
@@ -426,10 +426,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-3ad9-7338-9076-03a005cfe236 |
-| checksum | fd814dd15f565d4549088aa64af555c6f05a9deccd2322fdb4e8513913325b1f |
-| built_at | 2026-10-02T11:29:20+00:00 |
-| path | biogeographical_ancestry_prediction/01a0fc60-3ad9-7338-9076-03a005cfe236 |
+| uuid | 01a11191-30d1-7005-851d-272125d77ffe |
+| checksum | d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730 |
+| built_at | 2026-10-06T14:14:50+00:00 |
+| path | biogeographical_ancestry_prediction/01a11191-30d1-7005-851d-272125d77ffe |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

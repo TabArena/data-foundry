@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: 981e541290563c51bd8c4c18f2b5dbbe7d165b6d7a1a4265c3ec6409e5319963
+checksum: 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b
 build:
-  uuid: 01a0fc60-947c-78c4-8703-470535ccafb6
-  checksum: 981e541290563c51bd8c4c18f2b5dbbe7d165b6d7a1a4265c3ec6409e5319963
-  built_at: '2026-10-02T11:29:43+00:00'
-  path: credit_approval/01a0fc60-947c-78c4-8703-470535ccafb6
+  uuid: 01a11191-a23f-7268-8ff9-23cea2bac0ea
+  checksum: 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: credit_approval/01a11191-a23f-7268-8ff9-23cea2bac0ea
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 15 features. Source: UCI (1987).
 
-Built as `01a0fc60-947c-78c4-8703-470535ccafb6` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a23f-7268-8ff9-23cea2bac0ea` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 690 rows of the final frame (random rows: the frame is shuffled);
 
 | A16 | A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9 | A10 | A11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| - | a | nan | 1.5 | u | g | ff | ff | 0 | f | t | 2 |
-| + | a | 46 | 4 | u | g | j | j | 0 | t | f | 0 |
-| - | b | 20 | 0 | u | g | d | v | 0.5 | f | f | 0 |
-| - | b | 47.33 | 6.5 | u | g | c | v | 1 | f | f | 0 |
-| + | b | 19.17 | 0 | y | p | m | bb | 0 | f | f | 0 |
+| + | a | 50.08 | 12.54 | u | g | aa | v | 2.29 | t | t | 3 |
+| - | b | 27.83 | 4 | y | p | i | h | 5.75 | t | t | 2 |
+| + | b | 37.42 | 2.04 | u | g | w | v | 0.04 | t | f | 0 |
+| + | b | 43 | 0.29 | y | p | cc | h | 1.75 | t | t | 8 |
+| + | b | 48.33 | 12 | u | g | m | v | 16 | t | f | 0 |
 
 ## Curation notes
 
@@ -257,12 +257,12 @@ Default splits.
 | A12 | category | 0 | 0 | 2 | f, t |
 | A13 | category | 0 | 0 | 3 | g, s, p |
 | A16 | category | 0 | 0 | 2 | -, + |
-| A14 | float64 | 13 | 1.88 | 170 | 0.0, 200.0, 120.0, 160.0, 100.0, 80.0, 280.0, 180.0, 140.0, 320.0 |
-| A2 | float64 | 12 | 1.74 | 349 | 22.67, 20.42, 24.5, 23.58, 25.0, 22.5, 19.17, 18.83, 20.67, 23.25 |
-| A3 | float64 | 0 | 0 | 215 | 1.5, 0.0, 2.5, 3.0, 0.75, 1.25, 0.5, 5.0, 1.75, 6.5 |
+| A14 | float64 | 13 | 1.88 | 170 | 0.0, 120.0, 200.0, 160.0, 80.0, 100.0, 280.0, 180.0, 140.0, 240.0 |
+| A2 | float64 | 12 | 1.74 | 349 | 22.67, 20.42, 23.58, 18.83, 25.0, 24.5, 20.67, 22.5, 19.17, 33.17 |
+| A3 | float64 | 0 | 0 | 215 | 1.5, 2.5, 0.0, 3.0, 0.75, 1.25, 0.5, 5.0, 1.75, 4.0 |
 | A8 | float64 | 0 | 0 | 132 | 0.0, 0.25, 0.04, 1.0, 0.125, 0.5, 0.085, 1.5, 0.165, 2.5 |
 | A11 | int64 | 0 | 0 | 23 | 0, 1, 2, 3, 6, 11, 5, 7, 4, 9 |
-| A15 | int64 | 0 | 0 | 240 | 0, 1, 500, 1000, 2, 5, 6, 300, 3, 200 |
+| A15 | int64 | 0 | 0 | 240 | 0, 1, 500, 1000, 2, 5, 300, 6, 3, 100 |
 
 </details>
 
@@ -330,10 +330,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-947c-78c4-8703-470535ccafb6 |
-| checksum | 981e541290563c51bd8c4c18f2b5dbbe7d165b6d7a1a4265c3ec6409e5319963 |
-| built_at | 2026-10-02T11:29:43+00:00 |
-| path | credit_approval/01a0fc60-947c-78c4-8703-470535ccafb6 |
+| uuid | 01a11191-a23f-7268-8ff9-23cea2bac0ea |
+| checksum | 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | credit_approval/01a11191-a23f-7268-8ff9-23cea2bac0ea |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: 4b4476504927abf761f35fea37c2ab14604ae548b2b4d9e5d4ed4f1e05272731
+checksum: 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be
 build:
-  uuid: 01a0fc60-9847-7d24-bfc4-08a252ee1b97
-  checksum: 4b4476504927abf761f35fea37c2ab14604ae548b2b4d9e5d4ed4f1e05272731
-  built_at: '2026-10-02T11:29:44+00:00'
-  path: credit_g/01a0fc60-9847-7d24-bfc4-08a252ee1b97
+  uuid: 01a11191-a33d-7475-a7b5-a4ed12dc1ef1
+  checksum: 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be
+  built_at: '2026-10-06T14:15:19+00:00'
+  path: credit_g/01a11191-a33d-7475-a7b5-a4ed12dc1ef1
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `roc_auc` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a0fc60-9847-7d24-bfc4-08a252ee1b97` on 2026-10-02. See [Build](#build).
+Built as `01a11191-a33d-7475-a7b5-a4ed12dc1ef1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
 
 | good_or_bad_customer | checking_status | duration_months | credit_history | credit_purpose | credit_amount | savings_status | employment_since | installment_rate_percent | personal_status_sex | other_debtors | residence_since |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| bad | &lt;0 DM | 18 | existing credits paid duly till now | radio/television | 3190 | &lt; 100 DM | 1 &lt;= ... &lt; 4 years | 2 | female: divorced/separated/married | none | 2 |
-| good | &lt;0 DM | 18 | existing credits paid duly till now | car (new) | 4380 | 100 &lt;= ... &lt; 500 DM | 1 &lt;= ... &lt; 4 years | 3 | male: single | none | 4 |
-| good | &lt;0 DM | 24 | all credits at this bank paid duly | car (new) | 2325 | 100 &lt;= ... &lt; 500 DM | 4 &lt;= ... &lt; 7 years | 2 | male: single | none | 3 |
-| good | >= 200 DM / salary assignments for >= 1… | 12 | existing credits paid duly till now | radio/television | 1297 | &lt; 100 DM | 1 &lt;= ... &lt; 4 years | 3 | male: married/widowed | none | 4 |
-| good | no checking account | 33 | critical account / other credits existi… | car (used) | 7253 | &lt; 100 DM | 4 &lt;= ... &lt; 7 years | 3 | male: single | none | 2 |
+| good | no checking account | 48 | delay in paying off in past | radio/television | 12749 | 500 &lt;= ... &lt; 1000 DM | 4 &lt;= ... &lt; 7 years | 4 | male: single | none | 1 |
+| good | &lt;0 DM | 24 | all credits at this bank paid duly | furniture/equipment | 2483 | 500 &lt;= ... &lt; 1000 DM | 1 &lt;= ... &lt; 4 years | 4 | male: single | none | 4 |
+| bad | 0 &lt;= ... &lt; 200 DM | 24 | existing credits paid duly till now | others | 11328 | &lt; 100 DM | 1 &lt;= ... &lt; 4 years | 2 | male: single | co-applicant | 3 |
+| bad | 0 &lt;= ... &lt; 200 DM | 48 | existing credits paid duly till now | car (new) | 6560 | 100 &lt;= ... &lt; 500 DM | 4 &lt;= ... &lt; 7 years | 3 | male: single | none | 2 |
+| good | no checking account | 48 | critical account / other credits existi… | car (used) | 2751 | unknown / no savings | >= 7 years | 4 | male: single | none | 3 |
 
 ## Curation notes
 
@@ -227,10 +227,10 @@ Default splits.
 | foreign_worker | category | 0 | 0 | 2 | yes, no |
 | good_or_bad_customer | category | 0 | 0 | 2 | good, bad |
 | duration_months | int64 | 0 | 0 | 33 | 24, 12, 18, 36, 6, 15, 9, 48, 30, 21 |
-| credit_amount | int64 | 0 | 0 | 921 | 1275, 1393, 1262, 1478, 1258, 1413, 2028, 2333, 3832, 1924 |
+| credit_amount | int64 | 0 | 0 | 921 | 1262, 1275, 1393, 1258, 1478, 2333, 1287, 433, 1236, 1344 |
 | installment_rate_percent | int64 | 0 | 0 | 4 | 4, 2, 3, 1 |
 | residence_since | int64 | 0 | 0 | 4 | 4, 2, 3, 1 |
-| age_years | int64 | 0 | 0 | 53 | 27, 26, 23, 24, 28, 25, 35, 30, 36, 31 |
+| age_years | int64 | 0 | 0 | 53 | 27, 26, 23, 24, 28, 25, 30, 35, 36, 31 |
 | existing_credits_count | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
 | people_liable | int64 | 0 | 0 | 2 | 1, 2 |
 
@@ -320,10 +320,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9847-7d24-bfc4-08a252ee1b97 |
-| checksum | 4b4476504927abf761f35fea37c2ab14604ae548b2b4d9e5d4ed4f1e05272731 |
-| built_at | 2026-10-02T11:29:44+00:00 |
-| path | credit_g/01a0fc60-9847-7d24-bfc4-08a252ee1b97 |
+| uuid | 01a11191-a33d-7475-a7b5-a4ed12dc1ef1 |
+| checksum | 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be |
+| built_at | 2026-10-06T14:15:19+00:00 |
+| path | credit_g/01a11191-a33d-7475-a7b5-a4ed12dc1ef1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

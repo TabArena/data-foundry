@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: ebd87262001dd25180578945edf44f3b74bd3700ae21b2fa7e1b0b68955d8c5a
+checksum: 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b
 build:
-  uuid: 01a0fc60-401b-76a3-af45-73b26eff210d
-  checksum: ebd87262001dd25180578945edf44f3b74bd3700ae21b2fa7e1b0b68955d8c5a
-  built_at: '2026-10-02T11:29:21+00:00'
-  path: immoscout_german_house_prices/01a0fc60-401b-76a3-af45-73b26eff210d
+  uuid: 01a11191-85a4-7680-83c3-0a898f32a9e2
+  checksum: 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b
+  built_at: '2026-10-06T14:15:12+00:00'
+  path: immoscout_german_house_prices/01a11191-85a4-7680-83c3-0a898f32a9e2
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmse` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2019).
 
-Built as `01a0fc60-401b-76a3-af45-73b26eff210d` on 2026-10-02. See [Build](#build).
+Built as `01a11191-85a4-7680-83c3-0a898f32a9e2` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -153,11 +153,11 @@ The first 5 of 10,317 rows of the final frame (random rows: the frame is shuffle
 
 | LogPrice | Type | Living_space | Lot | Usable_area | Rooms | Bedrooms | Bathrooms | Floors | Year_built | Furnishing_quality | Year_renovated |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 10.7996 | Mid-terrace house | 200 | 2571 | 370 | 5 | 1 | 1 | 3 | nan | refined | nan |
-| 13.1224 | nan | 125 | 174 | 70 | 6 | 3 | 2 | 3 | 1990 | normal | 2015 |
-| 13.4981 | Residential property | 90 | 693 | 15 | 4 | 2 | 1 | nan | 1920 | refined | nan |
-| 13.1616 | Mid-terrace house | 255 | 752 | nan | 6 | 4 | 3 | 2 | 2009 | nan | 2009 |
-| 14.581 | Villa | 624 | 2288 | 150 | 14 | 4 | 5 | 5 | 1904 | nan | 2020 |
+| 14.221 | Duplex | 347 | 395 | 337 | 10 | nan | 4 | 4 | 1700 | nan | 2013 |
+| 14.221 | Duplex | 200 | 320 | 72 | 9 | nan | 3 | 3 | 1938 | normal | 2000 |
+| 10.4631 | nan | 52 | 495 | nan | 4 | 1 | 1 | 1 | 1972 | normal | nan |
+| 13.2159 | Mid-terrace house | 269 | 845 | 14 | 6 | 5 | 2 | 2 | 1994 | nan | nan |
+| 13.7953 | Duplex | 500 | 200 | 130 | 20 | nan | nan | 3 | 1973 | nan | 2020 |
 
 ## Curation notes
 
@@ -209,20 +209,20 @@ Default splits.
 | Heating | category | 572 | 5.54 | 13 | stove heating, heat pump, central heating, oil heating, underfloor heating, nig… |
 | Type | category | 394 | 3.82 | 11 | Mid-terrace house, Duplex, Single dwelling, Farmhouse, Villa, Multiple dwelling… |
 | Condition | category | 304 | 2.95 | 10 | modernized, refurbished, dilapidated, maintained, renovated, fixer-upper, first… |
-| Energy_consumption | float64 | 7926 | 76.82 | 1420 | 114.0, 128.0, 120.0, 130.0, 121.0, 119.0, 125.0, 97.0, 131.0, 87.0 |
+| Energy_consumption | float64 | 7926 | 76.82 | 1420 | 114.0, 128.0, 120.0, 121.0, 130.0, 119.0, 97.0, 125.0, 131.0, 90.0 |
 | Year_renovated | float64 | 5081 | 49.25 | 67 | 2019.0, 2018.0, 2017.0, 2020.0, 2015.0, 2016.0, 2010.0, 2014.0, 2012.0, 2013.0 |
-| Usable_area | float64 | 4874 | 47.24 | 1010 | 50.0, 100.0, 60.0, 30.0, 40.0, 80.0, 70.0, 20.0, 120.0, 90.0 |
+| Usable_area | float64 | 4874 | 47.24 | 1010 | 50.0, 100.0, 60.0, 30.0, 40.0, 80.0, 70.0, 20.0, 120.0, 150.0 |
 | Bedrooms | float64 | 3587 | 34.77 | 32 | 3.0, 4.0, 5.0, 2.0, 6.0, 1.0, 7.0, 8.0, 9.0, 10.0 |
-| Floors | float64 | 2584 | 25.05 | 10 | 2.0, 3.0, 1.0, 4.0, 5.0, 0.0, 6.0, 8.0, 7.0, 13.0 |
+| Floors | float64 | 2584 | 25.05 | 10 | 2.0, 3.0, 1.0, 4.0, 5.0, 0.0, 6.0, 7.0, 8.0, 13.0 |
 | Garages | float64 | 1912 | 18.53 | 37 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 7.0, 10.0, 12.0 |
 | Bathrooms | float64 | 1743 | 16.89 | 28 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 8.0, 7.0, 10.0, 9.0 |
 | Year_built | float64 | 679 | 6.58 | 292 | 1900.0, 1960.0, 2000.0, 2020.0, 1978.0, 1972.0, 1950.0, 1920.0, 1970.0, 1980.0 |
 | Living_space | float64 | 0 | 0 | 1862 | 120.0, 150.0, 200.0, 160.0, 130.0, 140.0, 180.0, 100.0, 170.0, 110.0 |
 | Lot | float64 | 0 | 0 | 2518 | 1000.0, 800.0, 500.0, 300.0, 600.0, 400.0, 700.0, 1200.0, 200.0, 250.0 |
 | Rooms | float64 | 0 | 0 | 72 | 5.0, 6.0, 4.0, 7.0, 8.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
-| LogPrice | float64 | 0 | 0 | 1407 | 12.8967, 12.7628, 12.6082, 12.4252, 13.017, 12.7657, 13.0148, 12.8866, 13.1204,… |
+| LogPrice | float64 | 0 | 0 | 1407 | 12.8967, 12.7628, 12.6082, 12.4252, 12.7657, 13.0148, 13.017, 12.8866, 13.2159,… |
 | Energy_source | string | 1187 | 11.51 | 104 | Gas , l , Strom , Fernwrme , Erdgas leicht , Holzpellets , Erdwrme , Holz , Fls… |
-| Place | string | 278 | 2.69 | 4748 | Innenstadt, Falkensee, Stadtmitte, Hameln, Homburg, Schotten, Barsinghausen, Gi… |
+| Place | string | 278 | 2.69 | 4748 | Innenstadt, Falkensee, Stadtmitte, Hameln, Barsinghausen, Homburg, Schotten, Gi… |
 | State | string | 1 | 0.01 | 16 | Nordrhein-Westfalen, Bayern, Baden-Wrttemberg, Niedersachsen, Rheinland-Pfalz, … |
 | City | string | 1 | 0.01 | 534 | Hannover (Kreis), Rhein-Neckar-Kreis, Nordfriesland (Kreis), Wetteraukreis, Rhe… |
 
@@ -327,10 +327,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-401b-76a3-af45-73b26eff210d |
-| checksum | ebd87262001dd25180578945edf44f3b74bd3700ae21b2fa7e1b0b68955d8c5a |
-| built_at | 2026-10-02T11:29:21+00:00 |
-| path | immoscout_german_house_prices/01a0fc60-401b-76a3-af45-73b26eff210d |
+| uuid | 01a11191-85a4-7680-83c3-0a898f32a9e2 |
+| checksum | 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b |
+| built_at | 2026-10-06T14:15:12+00:00 |
+| path | immoscout_german_house_prices/01a11191-85a4-7680-83c3-0a898f32a9e2 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

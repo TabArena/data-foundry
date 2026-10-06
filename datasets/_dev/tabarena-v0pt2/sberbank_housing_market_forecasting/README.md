@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: a88775eee6a733247c11794f482c57b9a01df0762464f91a71af5568debb8957
+checksum: 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9
 build:
-  uuid: 01a0fc5f-e899-753c-9593-305f988ab8a3
-  checksum: a88775eee6a733247c11794f482c57b9a01df0762464f91a71af5568debb8957
-  built_at: '2026-10-02T11:29:04+00:00'
-  path: sberbank_housing_market_forecasting/01a0fc5f-e899-753c-9593-305f988ab8a3
+  uuid: 01a11191-0a4d-72af-b626-cd5e836831dd
+  checksum: 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9
+  built_at: '2026-10-06T14:14:45+00:00'
+  path: sberbank_housing_market_forecasting/01a11191-0a4d-72af-b626-cd5e836831dd
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -23,7 +23,7 @@ data:
   n_features: 386
   dtypes:
     category: 23
-    datetime64[ms]: 1
+    datetime64[ns]: 1
     float32: 3
     float64: 208
     int64: 152
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 27,195 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a0fc5f-e899-753c-9593-305f988ab8a3` on 2026-10-02. See [Build](#build).
+Built as `01a11191-0a4d-72af-b626-cd5e836831dd` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -218,7 +218,7 @@ We always use 6 month of the data as test data and all prior data as training da
 | ID_railroad_terminal | category | 0 | 0 | 8 | 32, 50, 5, 83, 121, 101, 97, 113 |
 | ID_bus_terminal | category | 0 | 0 | 14 | 8, 1, 9, 5, 3, 14, 4, 7, 13, 6 |
 | ecology | category | 0 | 0 | 5 | no data, poor, good, satisfactory, excellent |
-| timestamp | datetime64\[ms\] | 0 | 0 | 1158 | 2014-12-16 00:00:00, 2014-12-09 00:00:00, 2014-06-30 00:00:00, 2014-12-18 00:00… |
+| timestamp | datetime64\[ns\] | 0 | 0 | 1158 | 2014-12-16 00:00:00, 2014-12-09 00:00:00, 2014-06-30 00:00:00, 2014-12-18 00:00… |
 | modern_education_share | float32 | 5053 | 18.58 | 3 | 93.08, 90.92, 95.4918 |
 | old_education_build_share | float32 | 5053 | 18.58 | 3 | 25.47, 23.14, 8.2517 |
 | child_on_acc_pre_school | float32 | 3411 | 12.54 | 3 | 16.765, 3.013, 7.311 |
@@ -239,7 +239,7 @@ We always use 6 month of the data as test data and all prior data as training da
 | preschool_quota | float64 | 6081 | 22.36 | 121 | 2395.0, 6839.0, 5278.0, 10175.0, 11926.0, 1503.0, 3953.0, 1874.0, 3092.0, 5088.0 |
 | school_quota | float64 | 6078 | 22.35 | 125 | 7377.0, 17063.0, 10529.0, 21892.0, 24750.0, 5782.0, 9700.0, 6772.0, 12721.0, 55… |
 | cafe_sum_1000_min_price_avg | float64 | 5918 | 21.76 | 1570 | 500.0, 1000.0, 750.0, 600.0, 700.0, 300.0, 400.0, 666.67, 660.0, 650.0 |
-| cafe_sum_1000_max_price_avg | float64 | 5918 | 21.76 | 1008 | 1000.0, 1500.0, 1750.0, 1250.0, 1166.67, 750.0, 500.0, 1125.0, 1100.0, 833.33 |
+| cafe_sum_1000_max_price_avg | float64 | 5918 | 21.76 | 1008 | 1000.0, 1500.0, 1750.0, 1250.0, 1166.67, 750.0, 500.0, 1100.0, 1125.0, 833.33 |
 | cafe_avg_price_1000 | float64 | 5918 | 21.76 | 2047 | 750.0, 1375.0, 1250.0, 1000.0, 400.0, 800.0, 575.0, 916.67, 1207.26, 880.0 |
 | raion_build_count_with_material_info | float64 | 4514 | 16.6 | 112 | 43.0, 1.0, 458.0, 2.0, 372.0, 352.0, 244.0, 217.0, 1681.0, 314.0 |
 | build_count_block | float64 | 4514 | 16.6 | 76 | 3.0, 0.0, 9.0, 58.0, 55.0, 52.0, 8.0, 25.0, 14.0, 41.0 |
@@ -264,7 +264,7 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.974 | -1.205 | 0.155 | 0.001 | log | 238496 | 5.59351e+16 | exponential |
+| 0 | 0 | 0 | -0.974 | -1.205 | 0.155 | 0.001 | log | 238496 | 2.50209e+16 | exponential |
 
 ### Numeric features
 
@@ -414,10 +414,10 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-e899-753c-9593-305f988ab8a3 |
-| checksum | a88775eee6a733247c11794f482c57b9a01df0762464f91a71af5568debb8957 |
-| built_at | 2026-10-02T11:29:04+00:00 |
-| path | sberbank_housing_market_forecasting/01a0fc5f-e899-753c-9593-305f988ab8a3 |
+| uuid | 01a11191-0a4d-72af-b626-cd5e836831dd |
+| checksum | 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9 |
+| built_at | 2026-10-06T14:14:45+00:00 |
+| path | sberbank_housing_market_forecasting/01a11191-0a4d-72af-b626-cd5e836831dd |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

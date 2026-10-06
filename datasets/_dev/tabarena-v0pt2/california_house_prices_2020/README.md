@@ -4,12 +4,12 @@ unique_name: california_house_prices_2020
 container_format: 2
 checksum: b32339f1184167c02f885475b30d2f243e03eb16977c64935b3753bd351c687d
 build:
-  uuid: 01a0fc60-1800-7329-88dd-e4bf1a8c1a73
+  uuid: 01a11191-2ff0-779a-a11a-f21d778c64c9
   checksum: b32339f1184167c02f885475b30d2f243e03eb16977c64935b3753bd351c687d
-  built_at: '2026-10-02T11:29:13+00:00'
-  path: california_house_prices_2020/01a0fc60-1800-7329-88dd-e4bf1a8c1a73
+  built_at: '2026-10-06T14:14:52+00:00'
+  path: california_house_prices_2020/01a11191-2ff0-779a-a11a-f21d778c64c9
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index`. 41,528 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a0fc60-1800-7329-88dd-e4bf1a8c1a73` on 2026-10-02. See [Build](#build).
+Built as `01a11191-2ff0-779a-a11a-f21d778c64c9` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -356,10 +356,10 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1800-7329-88dd-e4bf1a8c1a73 |
+| uuid | 01a11191-2ff0-779a-a11a-f21d778c64c9 |
 | checksum | b32339f1184167c02f885475b30d2f243e03eb16977c64935b3753bd351c687d |
-| built_at | 2026-10-02T11:29:13+00:00 |
-| path | california_house_prices_2020/01a0fc60-1800-7329-88dd-e4bf1a8c1a73 |
+| built_at | 2026-10-06T14:14:52+00:00 |
+| path | california_house_prices_2020/01a11191-2ff0-779a-a11a-f21d778c64c9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

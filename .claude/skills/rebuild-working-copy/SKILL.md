@@ -26,14 +26,16 @@ The scripts are in [`scripts/`](scripts/); run them from the repository root wit
 
 1. Settle the open decisions that change a dataset (a retirement, an edited definition) before the rebuild, not
    after it: a second full rebuild costs another hour of machine time and another round of checks.
-2. Build in the repository's `.venv` (pandas 2.3.3; pandas 3 stores text differently). `pytest -q` passes, and
+2. Build in the repository's `.venv` (the `build` extra; pandas 2.3 or 3 give the same containers, scikit-learn
+   must stay below 1.8). `pytest -q` passes, and
    `.venv/bin/python -m data_foundry.curation.cli dataset list --root datasets/_dev/tabarena-v0pt2` lists every
    definition (it exits non-zero when one does not import).
 3. Commit the definitions first if the build record should carry a clean `git_sha`. A build from a dirty tree records
    `<sha>-dirty`, and rewriting the branch after the build leaves that sha out of the history.
 4. Memory sets the parallelism: at 16 jobs the full set fits in about 730 GB. The largest dataset
-   (maps_router_eta_1m) peaks at about 172 GB, the next ones at 58, 39 and 28 GB; acquire_valued_shoppers_challenge
-   reaches about 145 GB while its `_prepare_raw_files` inputs are traced (a full build traces them).
+   (maps_router_eta_1m) peaks at about 205 GB, the next ones at about 70, 50 and 35 GB;
+   acquire_valued_shoppers_challenge (about 150 GB) and home_credit_default_stability_1m (about 126 GB) peak while
+   their `_prepare_raw_files` inputs are traced (a full build traces them).
 
 ## Step 1: build
 
@@ -41,8 +43,8 @@ The scripts are in [`scripts/`](scripts/); run them from the repository root wit
 .venv/bin/python $K/build_all.py $OUT/build --jobs 16 [--previous $PREV/build] [--only a,b]
 ```
 
-Run it in the background: 8.4 minutes of wall time at 16 jobs in October 2026 (2,213 s of summed build time; the
-wall time is set by maps_router_eta_1m alone).
+Run it in the background: about 10 to 17 minutes of wall time at 16 jobs in October 2026 (2,000 to 3,600 s of
+summed build time; the wall time is set by maps_router_eta_1m alone).
 Each dataset writes `$OUT/build/<name>.json`: status, findings, checksum, UUID, saved path, time, peak memory, and the
 raw files it read (traced, `read`). The two definitions with `prepared_raw_files` also record the inputs of their
 `_prepare_raw_files` step (`prepare_read`). `--previous` starts the longest builds first.
@@ -93,7 +95,8 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
   format, and the count and size of the traced raw files;
 * a dated `CHANGELOG.md` entry, newest first: what was rebuilt and why, crashes and their fixes, the open warnings
   (count and datasets), and the verification of steps 2 and 3;
-* `TODO.md` (what the build settled or raised) and, when datasets were removed, the counts in `LEAK_AUDIT.md`.
+* `TODO.md` (what the build settled or raised) and, when datasets were removed, the counts in `LEAK_AUDIT.md`,
+  `AGENTS.md`, `datasets/README.md`, `GETTING_STARTED.md` and the add-dataset patterns.
 
 ## Step 6: the task-probe sweep (when rows or splits changed)
 
@@ -101,8 +104,12 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
 .venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py --all --built --jobs 8 --out $OUT/probes
 ```
 
-About 40 minutes. Regenerate `TASK_PROBES.md` from `$OUT/probes/summary.md` and list the newly flagged datasets in
-`TODO.md` for a decision; the flags are questions for the curator (verify-dataset rubric item 13), not verdicts.
+The sweep's output stays in `$OUT/probes` (`summary.md` and one JSON per dataset); nothing of it goes into git. A
+flag is a question, not a verdict. A dataset whose record already holds a dated task-probe decision for the same flag
+needs no new one unless its numbers moved. Every other flag gets a decision as
+`.claude/skills/verify-dataset/references/task_probes.md` describes (check it with `tuned_results.py` first). Record
+each decision in the record (a dated comment with the evidence), in `CHANGELOG.md`, and as a row of that reference's
+cases table; list the flags still open in `TODO.md`.
 
 ## Step 7: the superseded containers
 

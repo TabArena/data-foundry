@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sepsis_survival_minimal_clinical_records
 container_format: 2
-checksum: 88c04804ee5f26c038c42a34800dfe0add5a6f8416ecee3dee43eec8ab0e1c63
+checksum: 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721
 build:
-  uuid: 01a0fc60-1df5-70ee-ae63-c3826d15073c
-  checksum: 88c04804ee5f26c038c42a34800dfe0add5a6f8416ecee3dee43eec8ab0e1c63
-  built_at: '2026-10-02T11:29:12+00:00'
-  path: sepsis_survival_minimal_clinical_records/01a0fc60-1df5-70ee-ae63-c3826d15073c
+  uuid: 01a11191-e6bd-755d-ab95-f7f61733b3c8
+  checksum: 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721
+  built_at: '2026-10-06T14:15:37+00:00'
+  path: sepsis_survival_minimal_clinical_records/01a11191-e6bd-755d-ab95-f7f61733b3c8
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `sepsis_outcome_after9pt5_days_in_hospital`, scored with `roc_auc` on IID splits. 110,204 rows and 3 features. Source: UCI (2020).
 
-Built as `01a0fc60-1df5-70ee-ae63-c3826d15073c` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e6bd-755d-ab95-f7f61733b3c8` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 110,204 rows of the final frame (random rows: the frame is shuffl
 
 | sepsis_outcome_after9pt5_days_in_hospit… | age_years | episode_number | gender |
 |---|---|---|---|
-| Alive | 47 | 1 | Female |
-| Alive | 64 | 1 | Female |
-| Alive | 24 | 1 | Female |
-| Alive | 77 | 1 | Male |
-| Alive | 82 | 1 | Female |
+| Alive | 23 | 1 | Female |
+| Alive | 66 | 5 | Male |
+| Alive | 77 | 1 | Female |
+| Alive | 85 | 1 | Male |
+| Dead | 85 | 1 | Female |
 
 ## Curation notes
 
@@ -227,10 +227,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1df5-70ee-ae63-c3826d15073c |
-| checksum | 88c04804ee5f26c038c42a34800dfe0add5a6f8416ecee3dee43eec8ab0e1c63 |
-| built_at | 2026-10-02T11:29:12+00:00 |
-| path | sepsis_survival_minimal_clinical_records/01a0fc60-1df5-70ee-ae63-c3826d15073c |
+| uuid | 01a11191-e6bd-755d-ab95-f7f61733b3c8 |
+| checksum | 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721 |
+| built_at | 2026-10-06T14:15:37+00:00 |
+| path | sepsis_survival_minimal_clinical_records/01a11191-e6bd-755d-ab95-f7f61733b3c8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

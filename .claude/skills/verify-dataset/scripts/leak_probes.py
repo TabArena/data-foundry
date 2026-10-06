@@ -2,12 +2,14 @@
 
 Usage::
 
-    python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2] [--splits 3]
-        [--max-rows 50000]
+    python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name> [--root datasets/_dev/tabarena-v0pt2]
+        [--splits 3] [--max-rows 50000]
 
 Fits untuned LightGBM on the first ``--splits`` shipped splits and prints:
 
-* the score with all features (ROC AUC, one-vs-rest for multiclass, or R^2);
+* the score with all features (ROC AUC, one-vs-rest for multiclass, or R^2), and of a depth-2 and a depth-3
+  decision tree: a shallow tree close to the full model means the label is a rule over a few columns (a definition,
+  a lookup, or a label assigned from the features);
 * the score of each feature alone, and of each column's missing-value indicator alone, best first;
 * the score without each of the three strongest single features (a drop-one test misses a column that has a
   copy, such as kick's ``WheelType`` and ``WheelTypeID``: drop such columns together);
@@ -18,7 +20,9 @@ Fits untuned LightGBM on the first ``--splits`` shipped splits and prints:
 
 String and datetime columns are left out, and train and test rows are capped at ``--max-rows`` each. The
 numbers are indicative (untuned models, a few splits) and meant for comparing the shipped data with a
-suspected fix. How to read them: ``.claude/skills/check-candidate/references/leak_checks.md``.
+suspected fix. How to read them: ``.claude/skills/check-candidate/references/leak_checks.md``. The probes use the
+shipped target; when the definition changed the target (merged, dropped or binned classes), run the same checks on
+the source's labels in ``explore.ipynb`` as well (leak_checks.md, section 1).
 """
 
 from __future__ import annotations
@@ -32,6 +36,7 @@ import pandas as pd
 from data_foundry.v2 import discover_datasets
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.neighbors import NearestNeighbors
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
 def score(data: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool) -> float:
@@ -44,6 +49,24 @@ def score(data: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool) ->
             out.append(r2_score(y.iloc[te], model.predict(data.iloc[te])))
             continue
         proba = model.predict_proba(data.iloc[te])
+        proba = proba[:, 1] if proba.shape[1] == 2 else proba
+        out.append(roc_auc_score(y.iloc[te], proba, multi_class="ovr", labels=model.classes_))
+    return float(np.mean(out))
+
+
+def tree_score(data: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool, depth: int) -> float:
+    """Mean ROC AUC (one-vs-rest for multiclass) or R^2 of a decision tree of the given depth over the split pairs."""
+    numeric = data.apply(
+        lambda s: s.cat.codes.where(s.cat.codes >= 0) if isinstance(s.dtype, pd.CategoricalDtype) else s
+    ).astype(float)
+    out = []
+    for tr, te in pairs:
+        model = (DecisionTreeRegressor if regression else DecisionTreeClassifier)(max_depth=depth, random_state=0)
+        model.fit(numeric.iloc[tr], y.iloc[tr])
+        if regression:
+            out.append(r2_score(y.iloc[te], model.predict(numeric.iloc[te])))
+            continue
+        proba = model.predict_proba(numeric.iloc[te])
         proba = proba[:, 1] if proba.shape[1] == 2 else proba
         out.append(roc_auc_score(y.iloc[te], proba, multi_class="ovr", labels=model.classes_))
     return float(np.mean(out))
@@ -78,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"{args.name}: {len(df):,} rows, {X.shape[1]} features probed, {len(pairs)} splits")
     print(f"all features: {fit(X):.3f}")
+    shallow = [tree_score(X, y, pairs, regression=regression, depth=d) for d in (2, 3)]
+    print(f"shallow tree (depth 2 / 3): {shallow[0]:.3f} / {shallow[1]:.3f}")
     single = pd.Series({c: fit(X[[c]]) for c in X.columns}).sort_values(ascending=False)
     print("each feature alone:", single.head(8).round(3).to_dict())
     missing = {c: round(fit(X[[c]].isna()), 3) for c in X.columns if X[c].isna().any()}

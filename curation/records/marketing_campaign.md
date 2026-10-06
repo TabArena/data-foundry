@@ -34,6 +34,8 @@ Lennart: Likely a valid predictive task
 
 Andrej: License; Need to check book on how the data was obtained - could be artificial
 
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (three untuned families at skill +0.77 to +0.80) does not hold for tuned methods. On BeyondArena the best (TabFM) reaches ROC AUC 0.926 and the median 0.909, with no other method within noise of the best (Kendall's W 0.84).
+
 ## Reference
 
 https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign

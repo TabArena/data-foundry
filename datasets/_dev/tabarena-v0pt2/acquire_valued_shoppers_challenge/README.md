@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: acquire_valued_shoppers_challenge
 container_format: 2
-checksum: 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b
+checksum: ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4
 build:
-  uuid: 01a0fc5f-fcbd-7748-869f-f93a81d661b5
-  checksum: 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b
-  built_at: '2026-10-02T11:29:10+00:00'
-  path: acquire_valued_shoppers_challenge/01a0fc5f-fcbd-7748-869f-f93a81d661b5
+  uuid: 01a11191-02e4-76aa-a95c-8d4406216b18
+  checksum: ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4
+  built_at: '2026-10-06T14:14:45+00:00'
+  path: acquire_valued_shoppers_challenge/01a11191-02e4-76aa-a95c-8d4406216b18
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `offerdate`. 160,057 rows and 111 features. Source: Kaggle (2014).
 
-Built as `01a0fc5f-fcbd-7748-869f-f93a81d661b5` on 2026-10-02. See [Build](#build).
+Built as `01a11191-02e4-76aa-a95c-8d4406216b18` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -153,11 +153,11 @@ The first 5 of 160,057 rows of the final frame (the oldest rows: the frame is so
 
 | target | total_spend | offervalue | offerdate | day_of_week | day_of_month | day_of_year | has_bought_company | has_bought_company_q | has_bought_company_a | has_bought_category | has_bought_category_q |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2126.33 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 2 |
-| 1 | 1982.91 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
-| 0 | 2016.96 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
-| 1 | 705.58 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 5 | 6 |
-| 1 | 3945.34 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 1 | 1 | 2.99 | 2 | 2 |
+| 0 | 2033.16 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 321.51 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
+| 1 | 600.07 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| 0 | 3323.46 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| 1 | 749.88 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
 
 ## Curation notes
 
@@ -203,7 +203,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_brand_category | category | 0 | 0 | 2 | 0.0, 1.0 |
 | has_bought_brand_company | category | 0 | 0 | 2 | 0.0, 1.0 |
 | offerdate | datetime64\[ns\] | 0 | 0 | 56 | 2013-03-25 00:00:00, 2013-03-26 00:00:00, 2013-04-24 00:00:00, 2013-03-27 00:00… |
-| total_spend | float64 | 0 | 0 | 147140 | 712.46, 4384.62, 2493.83, 2571.15, 3164.14, 936.96, 2324.69, 5234.29, 2974.93, … |
+| total_spend | float64 | 0 | 0 | 147140 | 712.46, 6058.08, 3421.26, 1372.02, 1571.94, 2908.68, 1191.5, 5121.55, 1817.89, … |
 | offervalue | float64 | 0 | 0 | 6 | 1.0, 0.75, 2.0, 1.5, 1.25, 3.0 |
 | has_bought_company_q | float64 | 0 | 0 | 284 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_company_a | float64 | 0 | 0 | 14128 | 0.0, 2.0, 2.99, 1.0, 3.99, 3.0, 4.0, 4.99, 5.0, 1.99 |
@@ -212,12 +212,12 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_brand_q | float64 | 0 | 0 | 227 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_brand_a | float64 | 0 | 0 | 12964 | 0.0, 3.99, 2.99, 3.49, 4.29, 3.0, 4.99, 4.5, 5.99, 5.0 |
 | has_bought_company_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 10.0 |
-| has_bought_company_a_3 | float64 | 0 | 0 | 327 | 0.0, 3.99, 4.99, 3.0, 2.99, 3.49, 4.0, 4.49, 1.0, 5.99 |
+| has_bought_company_a_3 | float64 | 0 | 0 | 327 | 0.0, 3.99, 4.99, 3.0, 2.99, 3.49, 4.0, 1.0, 4.49, 5.99 |
 | has_bought_category_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 8.0 |
 | has_bought_category_a_3 | float64 | 0 | 0 | 369 | 0.0, 2.99, 4.99, 3.99, 2.5, 5.99, 3.49, 5.0, 3.69, 1.99 |
 | has_bought_brand_q_3 | float64 | 0 | 0 | 23 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
-| has_bought_brand_a_3 | float64 | 0 | 0 | 279 | 0.0, 3.99, 2.99, 3.49, 5.0, 4.99, 3.0, 2.5, 4.29, 4.49 |
-| has_bought_company_q_7 | float64 | 0 | 0 | 39 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
+| has_bought_brand_a_3 | float64 | 0 | 0 | 279 | 0.0, 3.99, 2.99, 3.49, 5.0, 4.99, 3.0, 2.5, 4.29, 5.99 |
+| has_bought_company_q_7 | float64 | 0 | 0 | 39 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 8.0 |
 | has_bought_company_a_7 | float64 | 0 | 0 | 855 | 0.0, 3.99, 4.99, 2.99, 3.0, 3.49, 2.0, 4.0, 1.99, 1.0 |
 | has_bought_category_q_7 | float64 | 0 | 0 | 41 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | has_bought_category_a_7 | float64 | 0 | 0 | 890 | 0.0, 4.99, 2.99, 3.99, 3.69, 3.49, 2.5, 5.99, 2.79, 3.0 |
@@ -240,7 +240,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_category_q_28 | float64 | 0 | 0 | 88 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_category_a_28 | float64 | 0 | 0 | 3510 | 0.0, 4.99, 2.99, 3.99, 3.69, 3.49, 1.99, 2.5, 5.99, 3.0 |
 | has_bought_brand_q_28 | float64 | 0 | 0 | 65 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| has_bought_brand_a_28 | float64 | 0 | 0 | 2300 | 0.0, 3.99, 2.99, 3.49, 4.29, 3.0, 2.5, 4.99, 5.0, 1.99 |
+| has_bought_brand_a_28 | float64 | 0 | 0 | 2300 | 0.0, 3.99, 2.99, 3.49, 4.29, 3.0, 2.5, 4.99, 5.0, 5.99 |
 | has_bought_company_q_60 | float64 | 0 | 0 | 113 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | has_bought_company_a_60 | float64 | 0 | 0 | 5026 | 0.0, 3.99, 2.99, 2.0, 3.0, 4.99, 4.0, 1.0, 4.29, 1.99 |
 | has_bought_category_q_60 | float64 | 0 | 0 | 126 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
@@ -372,10 +372,10 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-fcbd-7748-869f-f93a81d661b5 |
-| checksum | 0a57dde8122e54e2e61e51277d1a6b468176ed9efd67e0398db6abd1e202396b |
-| built_at | 2026-10-02T11:29:10+00:00 |
-| path | acquire_valued_shoppers_challenge/01a0fc5f-fcbd-7748-869f-f93a81d661b5 |
+| uuid | 01a11191-02e4-76aa-a95c-8d4406216b18 |
+| checksum | ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4 |
+| built_at | 2026-10-06T14:14:45+00:00 |
+| path | acquire_valued_shoppers_challenge/01a11191-02e4-76aa-a95c-8d4406216b18 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

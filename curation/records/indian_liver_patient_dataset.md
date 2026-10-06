@@ -34,6 +34,8 @@ CC: "There was a custom train/test split. Task might be rather a toy task and no
 
 Make sure to add indicator variable for clipping of 90
 
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (untuned skills +0.47 to +0.50) does not hold for tuned methods. On BeyondArena LimiX-2 reaches ROC AUC 0.771 and the median method 0.750, with 4 of 29 methods tied with the best.
+
 ## Reference
 
 The original dataset was first proposed by Ramana et al. (2012) as a critical comparison of patients across USA and India:

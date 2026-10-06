@@ -38,6 +38,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI.
 
+        - We keep only the clinical features: the 11 clinical findings, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
     """
@@ -88,7 +89,21 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = raw
+        clinical = [
+            "erythema",
+            "scaling",
+            "definite borders",
+            "itching",
+            "koebner phenomenon",
+            "polygonal papules",
+            "follicular papules",
+            "oral mucosal involvement",
+            "knee and elbow involvement",
+            "scalp involvement",
+            "family history",
+            "age",
+        ]
+        df = raw[[*clinical, self.target]].copy()
         df["age"] = df["age"].replace("?", np.nan).astype(float)
         return df
 

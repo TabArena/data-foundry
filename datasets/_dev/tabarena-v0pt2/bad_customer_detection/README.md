@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: 073134d74e704104068e911b6ea39a5f6654963a3faaa9cf6dfff0077ff4c688
+checksum: 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d
 build:
-  uuid: 01a0fc60-95a5-74e0-91dd-5e766e8b24fd
-  checksum: 073134d74e704104068e911b6ea39a5f6654963a3faaa9cf6dfff0077ff4c688
-  built_at: '2026-10-02T11:29:43+00:00'
-  path: bad_customer_detection/01a0fc60-95a5-74e0-91dd-5e766e8b24fd
+  uuid: 01a11191-6770-7227-bdc9-3d761133971c
+  checksum: 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d
+  built_at: '2026-10-06T14:15:04+00:00'
+  path: bad_customer_detection/01a11191-6770-7227-bdc9-3d761133971c
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a0fc60-95a5-74e0-91dd-5e766e8b24fd` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6770-7227-bdc9-3d761133971c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled
 
 | bad_customer | month | credit_amount | credit_term | age | sex | education | product_type | having_children_flg | region | income | family_status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | 3 | 9500 | 9 | 22 | female | Secondary special education | Computers | 0 | 2 | 19000 | Married |
-| No | 8 | 52500 | 24 | 63 | female | Higher education | Tourism | 0 | 2 | 1000 | Another |
-| No | 4 | 9500 | 3 | 32 | male | Higher education | Household appliances | 1 | 2 | 36000 | Another |
-| No | 10 | 52500 | 6 | 64 | male | Higher education | Furniture | 0 | 2 | 51000 | Another |
-| No | 5 | 8000 | 12 | 34 | female | Secondary special education | Cell phones | 1 | 2 | 21000 | Another |
+| Yes | 1 | 8000 | 12 | 25 | female | Secondary education | Household appliances | 0 | 2 | 11000 | Married |
+| No | 5 | 57000 | 15 | 33 | female | Higher education | Tourism | 1 | 2 | 41000 | Another |
+| No | 10 | 27500 | 12 | 24 | female | Secondary special education | Cell phones | 0 | 2 | 33000 | Married |
+| No | 10 | 30000 | 6 | 34 | female | Secondary special education | Cell phones | 1 | 2 | 101000 | Married |
+| No | 9 | 44500 | 24 | 56 | male | Higher education | Medical services | 0 | 0 | 26000 | Married |
 
 ## Curation notes
 
@@ -221,9 +221,9 @@ Default splits.
 | is_client | category | 0 | 0 | 2 | 1, 0 |
 | bad_customer | category | 0 | 0 | 2 | No, Yes |
 | month | int64 | 0 | 0 | 12 | 11, 12, 10, 3, 7, 8, 1, 2, 9, 4 |
-| credit_amount | int64 | 0 | 0 | 205 | 15000, 14000, 11000, 21000, 8000, 13000, 14500, 9500, 18000, 30000 |
+| credit_amount | int64 | 0 | 0 | 205 | 15000, 14000, 11000, 21000, 8000, 13000, 9500, 14500, 30000, 18000 |
 | credit_term | int64 | 0 | 0 | 22 | 12, 6, 10, 18, 24, 3, 4, 15, 36, 8 |
-| age | int64 | 0 | 0 | 66 | 23, 24, 26, 31, 25, 22, 30, 29, 21, 27 |
+| age | int64 | 0 | 0 | 66 | 23, 24, 26, 31, 22, 25, 30, 29, 27, 21 |
 | income | int64 | 0 | 0 | 76 | 26000, 31000, 21000, 36000, 16000, 41000, 51000, 19000, 46000, 61000 |
 
 </details>
@@ -288,10 +288,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-95a5-74e0-91dd-5e766e8b24fd |
-| checksum | 073134d74e704104068e911b6ea39a5f6654963a3faaa9cf6dfff0077ff4c688 |
-| built_at | 2026-10-02T11:29:43+00:00 |
-| path | bad_customer_detection/01a0fc60-95a5-74e0-91dd-5e766e8b24fd |
+| uuid | 01a11191-6770-7227-bdc9-3d761133971c |
+| checksum | 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d |
+| built_at | 2026-10-06T14:15:04+00:00 |
+| path | bad_customer_detection/01a11191-6770-7227-bdc9-3d761133971c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

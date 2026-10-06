@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_va_long_beach
 container_format: 2
-checksum: f25ec0653f9abbb176ab7ff2b37069527bc1750c617cc6ef1e33d74efd32fdaa
+checksum: ae28be6d09cfccb7aa74b3cc4d2bebc4dfccf8e6a5eb90caf9836ef0e1500109
 build:
-  uuid: 01a0fc60-8e35-7162-97c9-b06057bddb98
-  checksum: f25ec0653f9abbb176ab7ff2b37069527bc1750c617cc6ef1e33d74efd32fdaa
-  built_at: '2026-10-02T11:29:41+00:00'
-  path: heart_disease_va_long_beach/01a0fc60-8e35-7162-97c9-b06057bddb98
+  uuid: 01a11191-bc4f-7be5-a9b6-979ab150bccb
+  checksum: ae28be6d09cfccb7aa74b3cc4d2bebc4dfccf8e6a5eb90caf9836ef0e1500109
+  built_at: '2026-10-06T14:15:26+00:00'
+  path: heart_disease_va_long_beach/01a11191-bc4f-7be5-a9b6-979ab150bccb
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 200 rows and 13 features. Source: UCI (1989).
 
-Built as `01a0fc60-8e35-7162-97c9-b06057bddb98` on 2026-10-02. See [Build](#build).
+Built as `01a11191-bc4f-7be5-a9b6-979ab150bccb` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 200 rows of the final frame (random rows: the frame is shuffled);
 
 | heart_disease_diagnosis | age | sex | cp | trestbps | chol | fbs | restecg | thalach | exang | oldpeak | slope |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 63 | 1 | 4 | 160 | 267 | 1 | 1 | 88 | 1 | 2 | nan |
-| 0 | 62 | 1 | 4 | 120 | 220 | 0 | 1 | 86 | 0 | 0 | nan |
-| 1 | 54 | 1 | 4 | nan | 0 | 0 | 1 | nan | nan | nan | nan |
-| 1 | 69 | 1 | 4 | nan | 210 | 1 | 1 | nan | nan | nan | nan |
-| 0 | 61 | 0 | 2 | 140 | 298 | 1 | 0 | 120 | 1 | 0 | nan |
+| 0 | 35 | 1 | 3 | nan | 161 | 0 | 1 | nan | nan | nan | nan |
+| 0 | 55 | 1 | 4 | 150 | 160 | 0 | 1 | 150 | 0 | 0 | nan |
+| 1 | 57 | 1 | 4 | 130 | 311 | nan | 1 | 148 | 1 | 2 | 2 |
+| 1 | 54 | 0 | 4 | 138 | 274 | 0 | 0 | 105 | 1 | 1.5 | 2 |
+| 1 | 69 | 1 | 4 | 140 | 208 | 0 | 1 | 140 | 1 | 2 | nan |
 
 ## Curation notes
 
@@ -262,11 +262,11 @@ Default splits.
 | restecg | category | 0 | 0 | 3 | 1, 0, 2 |
 | heart_disease_diagnosis | category | 0 | 0 | 2 | 1, 0 |
 | ca | float64 | 198 | 99 | 1 | 0.0 |
-| trestbps | float64 | 56 | 28 | 40 | 120.0, 130.0, 140.0, 110.0, 150.0, 160.0, 122.0, 142.0, 126.0, 136.0 |
+| trestbps | float64 | 56 | 28 | 40 | 120.0, 130.0, 140.0, 150.0, 110.0, 160.0, 122.0, 142.0, 134.0, 136.0 |
 | oldpeak | float64 | 56 | 28 | 14 | 0.0, 2.0, 1.5, 1.0, 3.0, 2.5, 0.5, 4.0, 1.3, 1.7 |
-| thalach | float64 | 53 | 26.5 | 59 | 120.0, 140.0, 110.0, 112.0, 130.0, 118.0, 100.0, 105.0, 160.0, 150.0 |
-| chol | float64 | 7 | 3.5 | 99 | 0.0, 220.0, 258.0, 203.0, 310.0, 218.0, 216.0, 223.0, 186.0, 254.0 |
-| age | int64 | 0 | 0 | 39 | 63, 62, 55, 60, 58, 61, 57, 56, 64, 69 |
+| thalach | float64 | 53 | 26.5 | 59 | 140.0, 120.0, 110.0, 112.0, 130.0, 128.0, 105.0, 100.0, 160.0, 118.0 |
+| chol | float64 | 7 | 3.5 | 99 | 0.0, 203.0, 220.0, 258.0, 240.0, 223.0, 214.0, 310.0, 186.0, 236.0 |
+| age | int64 | 0 | 0 | 39 | 63, 62, 55, 61, 58, 60, 57, 64, 56, 59 |
 
 </details>
 
@@ -327,10 +327,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-8e35-7162-97c9-b06057bddb98 |
-| checksum | f25ec0653f9abbb176ab7ff2b37069527bc1750c617cc6ef1e33d74efd32fdaa |
-| built_at | 2026-10-02T11:29:41+00:00 |
-| path | heart_disease_va_long_beach/01a0fc60-8e35-7162-97c9-b06057bddb98 |
+| uuid | 01a11191-bc4f-7be5-a9b6-979ab150bccb |
+| checksum | ae28be6d09cfccb7aa74b3cc4d2bebc4dfccf8e6a5eb90caf9836ef0e1500109 |
+| built_at | 2026-10-06T14:15:26+00:00 |
+| path | heart_disease_va_long_beach/01a11191-bc4f-7be5-a9b6-979ab150bccb |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

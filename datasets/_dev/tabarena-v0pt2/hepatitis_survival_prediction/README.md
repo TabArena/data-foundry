@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: 445d1140228a3c74c120e1f3940f558f8549e4550cbafe54d0beb8b31f6e9881
+checksum: 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a
 build:
-  uuid: 01a0fc60-4730-7378-afef-efbb149e3ddf
-  checksum: 445d1140228a3c74c120e1f3940f558f8549e4550cbafe54d0beb8b31f6e9881
-  built_at: '2026-10-02T11:29:23+00:00'
-  path: hepatitis_survival_prediction/01a0fc60-4730-7378-afef-efbb149e3ddf
+  uuid: 01a11191-ca0b-7550-a0fe-720cad11b70a
+  checksum: 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a
+  built_at: '2026-10-06T14:15:29+00:00'
+  path: hepatitis_survival_prediction/01a11191-ca0b-7550-a0fe-720cad11b70a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1981).
 
-Built as `01a0fc60-4730-7378-afef-efbb149e3ddf` on 2026-10-02. See [Build](#build).
+Built as `01a11191-ca0b-7550-a0fe-720cad11b70a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 155 rows of the final frame (random rows: the frame is shuffled);
 
 | class | age | sex | steroid | antivirals | fatigue | malaise | anorexia | liver_big | liver_firm | spleen_palpable | spiders |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 36 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
-| 2 | 51 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 1 | 1 | 1 |
+| 2 | 30 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | 2 |
 | 1 | 62 | 1 | 1 | 2 | 1 | 1 | 2 | nan | nan | 2 | 2 |
-| 2 | 51 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 |
-| 1 | 61 | 1 | 1 | 2 | 1 | 1 | 2 | nan | nan | 2 | 1 |
+| 1 | 50 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 1 | 1 | 2 |
+| 2 | 23 | 1 | 2 | 2 | 2 | 2 | 2 | nan | nan | nan | nan |
+| 2 | 62 | 2 | 2 | 2 | 1 | 1 | 2 | 2 | 1 | 2 | 1 |
 
 ## Curation notes
 
@@ -259,12 +259,12 @@ Default splits.
 | sex | category | 0 | 0 | 2 | 1, 2 |
 | antivirals | category | 0 | 0 | 2 | 2, 1 |
 | histology | category | 0 | 0 | 2 | 1, 2 |
-| protime | float64 | 67 | 43.23 | 44 | 100.0, 46.0, 74.0, 85.0, 66.0, 57.0, 54.0, 90.0, 41.0, 31.0 |
-| alk_phosphate | float64 | 29 | 18.71 | 83 | 85.0, 81.0, 62.0, 75.0, 100.0, 135.0, 78.0, 70.0, 46.0, 72.0 |
-| albumin | float64 | 16 | 10.32 | 29 | 4.0, 4.2, 4.4, 3.8, 4.1, 3.9, 4.3, 3.5, 3.3, 2.9 |
-| bilirubin | float64 | 6 | 3.87 | 34 | 1.0, 0.7, 0.9, 0.6, 0.8, 1.2, 1.5, 1.3, 2.0, 4.6 |
-| sgot | float64 | 4 | 2.58 | 84 | 20.0, 60.0, 28.0, 30.0, 55.0, 18.0, 75.0, 69.0, 68.0, 58.0 |
-| age | float64 | 0 | 0 | 49 | 38.0, 34.0, 30.0, 36.0, 51.0, 50.0, 39.0, 37.0, 44.0, 54.0 |
+| protime | float64 | 67 | 43.23 | 44 | 100.0, 74.0, 46.0, 66.0, 85.0, 41.0, 54.0, 90.0, 52.0, 57.0 |
+| alk_phosphate | float64 | 29 | 18.71 | 83 | 85.0, 81.0, 62.0, 78.0, 75.0, 135.0, 100.0, 120.0, 102.0, 155.0 |
+| albumin | float64 | 16 | 10.32 | 29 | 4.0, 4.2, 4.4, 3.8, 3.9, 4.1, 4.3, 3.3, 3.5, 2.9 |
+| bilirubin | float64 | 6 | 3.87 | 34 | 1.0, 0.7, 0.9, 0.8, 0.6, 1.2, 1.5, 1.3, 2.0, 4.6 |
+| sgot | float64 | 4 | 2.58 | 84 | 20.0, 60.0, 30.0, 55.0, 28.0, 18.0, 75.0, 24.0, 68.0, 38.0 |
+| age | float64 | 0 | 0 | 49 | 30.0, 34.0, 38.0, 36.0, 51.0, 39.0, 50.0, 42.0, 28.0, 54.0 |
 
 </details>
 
@@ -338,10 +338,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4730-7378-afef-efbb149e3ddf |
-| checksum | 445d1140228a3c74c120e1f3940f558f8549e4550cbafe54d0beb8b31f6e9881 |
-| built_at | 2026-10-02T11:29:23+00:00 |
-| path | hepatitis_survival_prediction/01a0fc60-4730-7378-afef-efbb149e3ddf |
+| uuid | 01a11191-ca0b-7550-a0fe-720cad11b70a |
+| checksum | 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a |
+| built_at | 2026-10-06T14:15:29+00:00 |
+| path | hepatitis_survival_prediction/01a11191-ca0b-7550-a0fe-720cad11b70a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

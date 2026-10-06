@@ -1,7 +1,7 @@
 # Dataset patterns for the `add-dataset` skill
 
 Reference for writing a v2 `dataset.py`, distilled from the curation practice of the collection (the BeyondArena
-datasets and their 130 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
+datasets and their 128 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
 the attributes; §B and §C are what to *write*; §D is what to *flag*; §E maps each automated check to the action
 that pre-empts it; §F shows how to record decisions with their evidence.
 
@@ -222,13 +222,25 @@ doesn't need.
 #     counts): `df[target] = np.log(df[target])` / `np.log1p(...)`. Rename the column when you
 #     do (e.g. `log_days_to_death`). Skip it if the source already log-scaled the target.
 # 11. TODO(verify): drop implausible rows (data errors) and censored/capped target values.
-# 12. The row order and the index are the base class's job: a stable sort by the time column for
-#     temporal tasks, else a shuffle with seed 42, then `reset_index`. Do not shuffle or sort in `_clean`.
+# 12. The row order and the index are the base class's job: the rows in the order of their content, then a
+#     stable sort by the time column for temporal tasks, else a shuffle with seed 42, then `reset_index`. Do
+#     not shuffle or sort in `_clean`.
 ```
 
 Do **not**: geocode spatial columns, hand-engineer text features, one-hot encode, impute, or
 scale features. Leave that to the pipeline. Feature engineering is only for *removing leaks*
 with minimal information loss, or for reconstructing meaning the source destroyed.
+
+**pandas 2 and 3 must build the same container.** pandas 3 reads text as the `str` dtype (missing values stay NaN)
+and parses dates to `us` or `s`. The base class stores dates in nanoseconds and `str` text as `object`, so a
+definition only has to avoid code whose result depends on the version (all found in the v0.2 copy, 2026-10-06):
+
+* `astype(str)` to build a key or a label: pandas 2 writes a missing value as `"nan"`, pandas 3 keeps it missing.
+  Fill first: `df[cols].astype(object).fillna("nan").astype(str)`.
+* writing a number into a text column (`fillna(0)`, `df.loc[mask, col] = n`): pandas 3 refuses. Cast the column to
+  `object` first, or test `notna()` instead of filling.
+* `df.select_dtypes(include="object")`: use `object_columns(df)` from `data_foundry.v2`, which counts `str` too.
+* `DataFrame.applymap`: removed in pandas 3; use `DataFrame.map`.
 
 ## §C Split recipes
 
@@ -265,7 +277,7 @@ grouping = Grouping(
   sizes. It does not decide the unit: micro_mass has one species per strain, yet identifies the species from one
   spectrum.
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source, not from the label
-  structure: `mean` for replicate measurements of one label (parkinsons: about six phonations per subject), `any` for
+  structure: `mean` for replicate measurements of one label (several recordings of one patient), `any` for
   multiple-instance data (musk: a molecule is a musk if any conformation is), `last` when the latest row carries the
   label (amex: one prediction per customer at its latest statement; needs `time_on`), `select_min` / `select_max`
   when one row is chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest).
@@ -353,7 +365,9 @@ weight/height when the target is body mass, grades G1/G2 when the target is the 
 a "current status" column, award notes inside a description field. Also: a feature that is the
 output of a *supervised* transform fit on the whole dataset (discriminant score, target
 encoding, a model's own prediction) — that leak is irreversible and excludes the dataset.
-Also: a value fitted from the same measurement as the label (sdss_17 `redshift` in a photometric task), targeting or
+Also: a label assigned from feature values (audiology_diagnosis: its four cochlear diagnoses follow two history
+answers, age over 60 and noise exposure, in 139 of 147 cases), a value fitted from the same measurement as the label
+(sdss_17 `redshift` in a photometric task), targeting or
 pointing ids that encode how objects were pre-selected (sdss_17 `plate`, `fiber_ID`), and an aggregate that may
 include the row's own outcome (online_shoppers `PageValues`, kept only for the months where it behaves like history).
 → TODO marker: *"list every feature that is a component/consequence of the target and drop it."*
@@ -398,6 +412,11 @@ usually dropped unless they represent genuine label ambiguity. Shipped datasets 
   ```
 * reposts identical except an id or a location: drop them as the source paper does (`emscad`).
 
+Two precedents for the rule above: `sepsis_survival_minimal_clinical_records` keeps its 110,204 rows over 975
+distinct feature rows (three features; the repeats are real patients, and predicting from these three fields is the
+source's question), and `audiology_diagnosis` drops 27 exact copies (69 coarse findings and the same diagnosis on
+different patient ids).
+
 **5. Row order carries signal.** Data sorted by target, by price, by location, or by collection
 batch produces a fake distribution shift and lets models exploit position. Always shuffle IID and
 grouped data with a fixed seed; the bundle check `dataset_row_order_leaks_target` catches what you
@@ -418,9 +437,20 @@ impossible values standing in for missing ones (`chol == 0` and `trestbps == 0` 
 `age = 455` in thyroid_discordant, `-9999` in sdss_17) and rows that are a sentinel in every feature (heloc: 588 rows
 of `-9`, no bureau record). A sentinel that holds one class only shows up as `dataset_pure_feature_value`.
 
-**8. Rare classes.** Classes with <10 samples get dropped across the collection — they break
+**8. Rare classes and merged labels.** Classes with <10 samples get dropped across the collection — they break
 stratification and leave folds whose test set holds an unseen class (`splits_test_class_unseen_in_train`).
-Merging label groups into a coarser, meaningful taxonomy is also accepted; document the mapping.
+Merging label groups into a coarser taxonomy is also accepted, under these conditions (audiology_diagnosis, 2026-10-06):
+* use an established convention of the field, not a mapping made from the class names (audiology now separates a
+  hearing loss with and without a conductive part, the basic audiological distinction, instead of our own
+  cochlear / normal / other);
+* test each candidate grouping: the smallest class per test fold after duplicates are dropped (the four standard
+  hearing-loss types left 3-4 conductive cases per fold), the signal, and how rule-like the label is (a depth-3 tree;
+  `leak_probes.py` prints it);
+* keeping only the frequent original classes is not automatically more realistic: it can leave labels that are a
+  lookup of a few features and remove the cases where a differential matters;
+* drop classes that are not of the taxonomy's kind (audiology: a facial-nerve diagnosis and central disorders), and
+  run the leak probes against the original labels too (`leak_checks.md`, section 1);
+* write the mapping, the counts and the reason in `curation_comments`.
 
 **9. Trust the source's split protocol as a claim, not a fact.** Published splits are often
 leaking (a random split on temporal data). Conversely, a benchmark's non-IID label may be wrong
@@ -464,7 +494,13 @@ training rows by arrival date. Filtering on the status date does not remove the 
 time index built afterwards is then that key (california_house_prices_2020's "temporal" split ran on the
 alphabetical address). Restore the source order before deriving a time index, and check it against the date.
 
-**17. Definition bugs the audit found in shipped datasets.** A numeric column listed as categorical (a 125k-level
+**17. A label read off a later stage.** When the features include measurements taken after the decision the task
+models (a biopsy after the clinical examination, a lab result after triage), the task can be close to solved without a
+leak. Look for the stage the source describes and offer the task there: eryhemato_squamous_disease keeps only the 12
+clinical features ("Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken";
+macro ROC AUC 0.999 with the biopsy features, 0.98 without).
+
+**18. Definition bugs the audit found in shipped datasets.** A numeric column listed as categorical (a 125k-level
 category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`, which logs it again
 (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
 `license` (cirrhosis: `"IID"`). Read your class attributes once more for these before handing off.
@@ -497,7 +533,7 @@ category in give_me_some_credit); a target stored as `log1p` with metric `rmsle`
 | `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: for a frame above 1.5M rows make a `_1m` version (§C); otherwise narrow the windows |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 (§C) |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
-| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`.claude/skills/verify-dataset/scripts/group_probes.py`), and accept with that evidence |
+| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`.claude/skills/verify-dataset/scripts/group_probes.py`) and more than a handful of groups of each class per fold (else `Too Small`: parkinsons, 2-3 healthy people per fold), and accept with that evidence |
 | `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
 | `groups_labels_constant` | `per_sample` with at least 95% single-label groups: `per_group` if one label by construction, else accept with the count of mixed groups |
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
@@ -529,7 +565,7 @@ inside the hook. Typical decisions, with examples from the collection:
 | The split regime (kick: temporal, not grouped by auction location) | a table of how many groups recur over time; a histogram of time points per group |
 | A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column (`.claude/skills/verify-dataset/scripts/leak_probes.py`) |
 | Duplicate rows are kept or dropped (§D.4) | the duplicate share and how many conflict in the target |
-| Rare classes are merged or dropped (§D.8) | the class counts before and after |
+| Rare classes are merged or dropped (§D.8) | the class counts before and after, and the smallest class per test fold |
 | A proxy missing value is converted (§B.5) | the value counts of the sentinel |
 
 `kick/dataset.py` is the worked example (a table and a figure).

@@ -30,7 +30,6 @@ Run the server in the background, then point the user at the URL:
 
 ```bash
 .venv/bin/python -m data_foundry.curation.cli serve            # → http://127.0.0.1:8765
-# (equivalently: .venv/bin/python -m data_foundry.curation.cli serve)
 ```
 
 Tell the user to open **http://127.0.0.1:8765** (hard-refresh once if the tab was already open). The page
@@ -121,6 +120,9 @@ Read the other references when the task needs them:
 * [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md): the leak probes
   and what the 2026 BeyondArena leak audit decided for each kind of leak (drop, lag, re-split, keep on purpose,
   retire). Read it before calling a column a leak or a dataset leaky, and before advising how to fix one.
+* [`../verify-dataset/references/task_probes.md`](../verify-dataset/references/task_probes.md): how to decide
+  whether a curated task is empty, trivial or too small (the task-probe flags, the rules from the v0.2 review, and
+  its 24 decisions). Read it before proposing `Trivial` or `Too Small` for a dataset that has a definition.
 
 ## Push back on weak reasoning (you may second-guess a decision)
 
@@ -137,7 +139,9 @@ evidence contradicts the stated reasoning, **say so and argue your case** rather
   evidence is.
 * **Surface, don't override.** Don't silently flip a human's verdict. Record your counter-argument
   in the record's `## Comments` under a clear heading (e.g. `**Counter-argument (AI):** …`),
-  leaving the human the final call. If you change a field, follow the `AI (UNVERIFIED)` convention.
+  leaving the human the final call, and leave the fields alone. Change a field only on the human's call (then the
+  comment is theirs, `CC (YYYY-MM-DD, Name):`), or as a provisional triage of an untriaged record under the
+  `AI (UNVERIFIED)` convention below.
 * This cuts both ways: if pushing back means *keeping* an exclusion the user is inclined to overturn,
   argue that too. The goal is the right call, with the reasoning preserved — not agreement.
 

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: 2046d6fb3f52711e36231dde208afb38fd286b71c65d6f36f7565135b1e76b3d
+checksum: 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f
 build:
-  uuid: 01a0fc5f-efec-72a0-bd33-384ab0679c27
-  checksum: 2046d6fb3f52711e36231dde208afb38fd286b71c65d6f36f7565135b1e76b3d
-  built_at: '2026-10-02T11:29:07+00:00'
-  path: rossmann_store_sales/01a0fc5f-efec-72a0-bd33-384ab0679c27
+  uuid: 01a11191-13c6-7e9a-aeaa-a7b867670695
+  checksum: 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f
+  built_at: '2026-10-06T14:14:47+00:00'
+  path: rossmann_store_sales/01a11191-13c6-7e9a-aeaa-a7b867670695
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a0fc5f-efec-72a0-bd33-384ab0679c27` on 2026-10-02. See [Build](#build).
+Built as `01a11191-13c6-7e9a-aeaa-a7b867670695` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 
 | Sales | Store | DayOfWeek | Date | Promo | StateHoliday | SchoolHoliday | StoreType | Assortment | CompetitionDistance | CompetitionOpenSinceMonth | CompetitionOpenSinceYear |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 4220 | 85 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 1870 | 10 | 2011 |
-| 6851 | 259 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 210 | nan | nan |
+| 3375 | 682 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 150 | 9 | 2006 |
+| 4491 | 948 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 1430 | nan | nan |
 | 17267 | 262 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 1180 | 5 | 2013 |
-| 3102 | 274 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 3640 | nan | nan |
-| 2401 | 335 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 90 | nan | nan |
+| 3139 | 353 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 900 | nan | nan |
+| 2646 | 512 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 590 | nan | nan |
 
 ## Curation notes
 
@@ -204,7 +204,7 @@ The description says 'Rossmann store managers are tasked with predicting their d
 | CompetitionOpenSinceMonth | float64 | 268619 | 31.81 | 12 | 9.0, 4.0, 11.0, 3.0, 7.0, 12.0, 10.0, 6.0, 5.0, 2.0 |
 | CompetitionOpenSinceYear | float64 | 268619 | 31.81 | 23 | 2013.0, 2012.0, 2014.0, 2005.0, 2010.0, 2011.0, 2009.0, 2008.0, 2007.0, 2006.0 |
 | CompetitionDistance | float64 | 2186 | 0.26 | 654 | 250.0, 50.0, 350.0, 1200.0, 190.0, 90.0, 180.0, 330.0, 150.0, 140.0 |
-| Sales | int64 | 0 | 0 | 21734 | 5674, 5558, 5483, 6049, 6214, 5723, 5449, 5489, 5140, 5041 |
+| Sales | int64 | 0 | 0 | 21734 | 5674, 5558, 5483, 6214, 6049, 5723, 5449, 5140, 5489, 5041 |
 | Promo | int64 | 0 | 0 | 2 | 0, 1 |
 | SchoolHoliday | int64 | 0 | 0 | 2 | 0, 1 |
 | Promo2 | int64 | 0 | 0 | 2 | 0, 1 |
@@ -275,10 +275,10 @@ The description says 'Rossmann store managers are tasked with predicting their d
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-efec-72a0-bd33-384ab0679c27 |
-| checksum | 2046d6fb3f52711e36231dde208afb38fd286b71c65d6f36f7565135b1e76b3d |
-| built_at | 2026-10-02T11:29:07+00:00 |
-| path | rossmann_store_sales/01a0fc5f-efec-72a0-bd33-384ab0679c27 |
+| uuid | 01a11191-13c6-7e9a-aeaa-a7b867670695 |
+| checksum | 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f |
+| built_at | 2026-10-06T14:14:47+00:00 |
+| path | rossmann_store_sales/01a11191-13c6-7e9a-aeaa-a7b867670695 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

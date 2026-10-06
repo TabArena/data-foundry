@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: e4438149771cd320525ab5927aaceccad41b00cfe911470ab69f94d26204edc5
+checksum: 18289afd68bdde014cd63d03640bc3f050d5294cc44317dfb2456cd4ef657c4f
 build:
-  uuid: 01a0fc60-7ae3-773b-9871-80f4185eb988
-  checksum: e4438149771cd320525ab5927aaceccad41b00cfe911470ab69f94d26204edc5
-  built_at: '2026-10-02T11:29:36+00:00'
-  path: wine_world_cost/01a0fc60-7ae3-773b-9871-80f4185eb988
+  uuid: 01a11191-f722-7eb4-be31-88370169ae88
+  checksum: 18289afd68bdde014cd63d03640bc3f050d5294cc44317dfb2456cd4ef657c4f
+  built_at: '2026-10-06T14:15:41+00:00'
+  path: wine_world_cost/01a11191-f722-7eb4-be31-88370169ae88
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `Price`, scored with `rmse` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a0fc60-7ae3-773b-9871-80f4185eb988` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f722-7eb4-be31-88370169ae88` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 1,279 rows of the final frame (random rows: the frame is shuffled
 
 | Price | Title | Description | Capacity | Grape | Secondary Grape Varieties | Closure | Country | Characteristics | Type | Region | Style |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 4.44265 | Taylor's Port 2007, Portugal |  | 750 | Tinta Barroca | Touriga Nacional, Tinta Amarela, Tinta … | Natural Cork | Portugal | Jammy, Chocolate, Dried Fruit | Red | Douro | nan |
-| 3.61065 | Philippe le Hardi 'Les Platanes d'Henri… | This is made on a magnificent 9th centu… | 750 | Chardonnay |  | Natural Cork | France | Vanilla, Bread, Cream, Stone Fruit | White | Burgundy | Rich & Toasty |
-| 2.63834 | Cave Vinicole de Hunawihr Kuhlmann-Plat… | Cave Vinicole de Hunawihr began in Alsa… | 750 | Pinot Noir |  | Screwcap | France | Red Fruit, Black Cherry, Blackcurrant, … | Red | Alsace | Light & Elegant |
-| 2.70738 | Copper Kingdom Shiraz 2017, Barossa | Barossa is where you’ll find some of Au… | 750 | Shiraz |  | Screwcap | Australia | Leather, Black Pepper, Blackberry, Blac… | Red | South Australia | Bold & Spicy |
-| 2.77196 | The King's Wrath Pinot Noir 2020/21, Ma… | Brent Marris is the man behind our best… | 750 | Pinot Noir |  | Screwcap | New Zealand | Sweet Spice, Black Cherry, Blackberry, … | Red | Marlborough | Light & Elegant |
+| 3.84993 | Moët & Chandon 'Brut Impérial' Champagne | Moët is the ultimate celebratory fizz. … | 750 | Chardonnay | Pinot Noir, Pinot Meunier | Natural Cork | France | Citrus Fruit, Biscuit, Bread | White |  | Crisp & Fruity |
+| 3.55506 | Shaw + Smith ‘M3’ Chardonnay 2021/22, A… | The Shaw + Smith winery was purpose bui… | 750 | Chardonnay |  | Screwcap | Australia | Vanilla, Butter, Green Apple, Lemon, Pe… | White | South Australia | Rich & Toasty |
+| 2.70738 | Domaine des Tourelles Cuvée Pierre Brun… | When it comes to Lebanese wines it's no… | 750 | Cabernet Sauvignon | Carignan, Cinsault, Syrah | Natural Cork | Lebanon | Spice, Black Cherry, Black Fruit, Earth | Red | Lebanon | Savoury & Full Bodied |
+| 3.13506 | Famille Hugel ‘Classic’ Riesling 2021/2… | Hugel are one of the wine dynasties of … | 750 | Riesling |  | Natural Cork | France | Lime, Peach, Red Apple, Wet Stones | White | Alsace | Fresh & Elegant |
+| 2.07819 | Mon Plaisir du Sud Rosé 2019 | One of the most awarded producers in Fr… | 750 | Grenache | Syrah, Cinsault | Screwcap | France | Strawberry, Peach, Raspberry | Rosé | Other France | Delicate & Dry |
 
 ## Curation notes
 
@@ -227,12 +227,12 @@ Default splits.
 | Price | float64 | 0 | 0 | 119 | 2.4841, 2.7074, 2.3016, 2.6383, 2.8326, 2.772, 2.5642, 2.9952, 2.8898, 3.4009 |
 | Capacity | float64 | 0 | 0 | 6 | 750.0, 1500.0, 375.0, 500.0, 700.0, 3000.0 |
 | Secondary Grape Varieties | string | 793 | 62 | 197 | Pinot Noir, Pinot Meunier, Pinot Noir, Merlot, Syrah, Chardonnay, Cabernet Sauv… |
-| Appellation | string | 635 | 49.65 | 179 | Rioja, Barossa Valley, Chablis, Sancerre, Côtes Du Rhône, Côtes De Provence, Uc… |
+| Appellation | string | 635 | 49.65 | 179 | Rioja, Barossa Valley, Chablis, Côtes De Provence, Côtes Du Rhône, Sancerre, Uc… |
 | Region | string | 159 | 12.43 | 94 | Burgundy, Bordeaux, Marlborough, Loire, South Australia, Rhône, Languedoc-Rouss… |
 | Characteristics | string | 30 | 2.35 | 886 | Strawberry, Peach, Raspberry, Green Apple, Citrus Fruit, Grass, Sweet Spice, Bl… |
 | Grape | string | 8 | 0.63 | 113 | Chardonnay, Pinot Noir, Sauvignon Blanc, Cabernet Sauvignon, Grenache, Temprani… |
 | Description | string | 3 | 0.23 | 1273 | Nicolás Catena was the first South American winemaker to ever be named ‘Decante… |
-| Title | string | 0 | 0 | 1278 | Aqualta Prosecco DOC, Definition Zinfandel 2019/20, Lodi, Mirabeau 'Pure' Rosé … |
+| Title | string | 0 | 0 | 1278 | Aqualta Prosecco DOC, Jackson Estate 'Stich' Sauvignon Blanc 2022, Marlborough,… |
 | Country | string | 0 | 0 | 25 | France, Italy, Spain, Australia, New Zealand, South Africa, USA, Chile, Portuga… |
 
 </details>
@@ -263,12 +263,12 @@ Default splits.
 | Appellation | 2 | Rioja | 45 | 3.52 |
 | Appellation | 3 | Barossa Valley | 23 | 1.8 |
 | Appellation | 4 | Chablis | 15 | 1.17 |
-| Appellation | 5 | Sancerre | 14 | 1.09 |
+| Appellation | 5 | Côtes De Provence | 14 | 1.09 |
 | Characteristics | 1 | &lt;NA> | 30 | 2.35 |
 | Characteristics | 2 | Strawberry, Peach, Raspberry | 17 | 1.33 |
 | Characteristics | 3 | Green Apple, Citrus Fruit, Grass | 16 | 1.25 |
-| Characteristics | 4 | Sweet Spice, Black Cherry, Blackberry, Red Fruit | 15 | 1.17 |
-| Characteristics | 5 | Vanilla, Black Fruit, Red Fruit | 15 | 1.17 |
+| Characteristics | 4 | Vanilla, Black Fruit, Red Fruit | 15 | 1.17 |
+| Characteristics | 5 | Sweet Spice, Black Cherry, Blackberry, Red Fruit | 15 | 1.17 |
 | Closure | 1 | Natural Cork | 834 | 65.21 |
 | Closure | 2 | Screwcap | 414 | 32.37 |
 | Closure | 3 | Synthetic Cork | 24 | 1.88 |
@@ -281,8 +281,8 @@ Default splits.
 | Description | 1 | &lt;NA> | 3 | 0.23 |
 | Description | 2 | Nicolás Catena was the first South American winemaker to ever be... | 3 | 0.23 |
 | Description | 3 | Grand Cru Chardonnay has been used to make this Champagne. Citru... | 2 | 0.16 |
-| Description | 4 | Château Le Boscq has a rich winemaking history dating back to th... | 1 | 0.08 |
-| Description | 5 | The Definition range brings the world's greatest wine styles to ... | 1 | 0.08 |
+| Description | 4 | This is named after Jackson Estate’s founder, John ‘Stich’ Stich... | 1 | 0.08 |
+| Description | 5 | Over its 235-year history, Piper-Heidsieck’s Champagne has been ... | 1 | 0.08 |
 | Grape | 1 | Chardonnay | 237 | 18.53 |
 | Grape | 2 | Pinot Noir | 116 | 9.07 |
 | Grape | 3 | Sauvignon Blanc | 101 | 7.9 |
@@ -304,10 +304,10 @@ Default splits.
 | Style | 4 | Light & Elegant | 104 | 8.13 |
 | Style | 5 | Crisp & Zesty | 97 | 7.58 |
 | Title | 1 | Aqualta Prosecco DOC | 2 | 0.16 |
-| Title | 2 | Definition Zinfandel 2019/20, Lodi | 1 | 0.08 |
-| Title | 3 | Mirabeau 'Pure' Rosé 2021/22 Magnum, Côtes de Provence | 1 | 0.08 |
-| Title | 4 | Château Lynch-Moussas 2013, Pauillac | 1 | 0.08 |
-| Title | 5 | Château de Chassagne-Montrachet 2019/20, Chassagne-Montrachet | 1 | 0.08 |
+| Title | 2 | Jackson Estate 'Stich' Sauvignon Blanc 2022, Marlborough | 1 | 0.08 |
+| Title | 3 | Piper-Heidsieck 2012 Champagne | 1 | 0.08 |
+| Title | 4 | Catena Malbec 2019/20 Half Bottle, Mendoza | 1 | 0.08 |
+| Title | 5 | Cave Vinicole de Hunawihr ‘8’ Pinot Noir 2019, Alsace | 1 | 0.08 |
 | Type | 1 | White | 582 | 45.5 |
 | Type | 2 | Red | 564 | 44.1 |
 | Type | 3 | Rosé | 122 | 9.54 |
@@ -320,10 +320,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7ae3-773b-9871-80f4185eb988 |
-| checksum | e4438149771cd320525ab5927aaceccad41b00cfe911470ab69f94d26204edc5 |
-| built_at | 2026-10-02T11:29:36+00:00 |
-| path | wine_world_cost/01a0fc60-7ae3-773b-9871-80f4185eb988 |
+| uuid | 01a11191-f722-7eb4-be31-88370169ae88 |
+| checksum | 18289afd68bdde014cd63d03640bc3f050d5294cc44317dfb2456cd4ef657c4f |
+| built_at | 2026-10-06T14:15:41+00:00 |
+| path | wine_world_cost/01a11191-f722-7eb4-be31-88370169ae88 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

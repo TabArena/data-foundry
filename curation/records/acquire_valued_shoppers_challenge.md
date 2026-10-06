@@ -35,6 +35,8 @@ Follow TabRed preprocessing and how tables were merged. Investigate test.csv tim
 
 TabRed uses 4 days as time horizon
 
+CC (2026-10-06, Lennart): Kept as a real task after the task-probe review (flag `no_spread`). The signal is real but weak, and methods are hard to tell apart: the three untuned families reach skill +0.24 to +0.28 (ROC AUC about 0.62-0.64, standard deviation 0.06-0.08 over the 5 five-day windows of 2,758-30,305 test rows); on BeyondArena the best method (TabPFN-3.5-Fast) reaches AUC 0.654 and beats chance in every window, the median 0.646, and 12 of 21 methods are tied with the best. A low ceiling on a real repeat-buyer task, as in TabRed, is no reason to act.
+
 ## Reference
 
 DMDave, Todd B, and Will Cukierski. Acquire Valued Shoppers Challenge. https://kaggle.com/competitions/acquire-valued-shoppers-challenge, 2014. Kaggle.

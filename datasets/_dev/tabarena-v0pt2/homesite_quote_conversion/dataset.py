@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -217,6 +217,6 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=df.select_dtypes(include=["object"]).columns.tolist(),
+            categorical=object_columns(df),
             datetime=["Original_Quote_Date"],
         )

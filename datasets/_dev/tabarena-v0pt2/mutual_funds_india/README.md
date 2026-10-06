@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mutual_funds_india
 container_format: 2
-checksum: 34cdd9dddd52e764a9f149637f8c1bed00ec5fce2f68f38db37ea5386eb3b79d
+checksum: 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a
 build:
-  uuid: 01a0fc60-82e4-7bf3-a2cf-8e37a069fce0
-  checksum: 34cdd9dddd52e764a9f149637f8c1bed00ec5fce2f68f38db37ea5386eb3b79d
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: mutual_funds_india/01a0fc60-82e4-7bf3-a2cf-8e37a069fce0
+  uuid: 01a11191-de4b-7f3f-bc36-f88469de0c2a
+  checksum: 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a
+  built_at: '2026-10-06T14:15:34+00:00'
+  path: mutual_funds_india/01a11191-de4b-7f3f-bc36-f88469de0c2a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `returns_3yr`, scored with `rmse` on IID splits. 793 rows and 11 features. Source: Kaggle (2023).
 
-Built as `01a0fc60-82e4-7bf3-a2cf-8e37a069fce0` on 2026-10-02. See [Build](#build).
+Built as `01a11191-de4b-7f3f-bc36-f88469de0c2a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -142,11 +142,11 @@ The first 5 of 793 rows of the final frame (random rows: the frame is shuffled).
 
 | returns_3yr | scheme_name | min_sip | min_lumpsum | expense_ratio | fund_size_cr | fund_age_yr | fund_manager | risk_level | amc_name | category | sub_category |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5.2 | Canara Robeco Savings Fund | 1000 | 5000 | 0.31 | 1003 | 10 | Kunal Jain | 2 | Canara Robeco Mutual Fund | Debt | Low Duration Funds |
-| 9.8 | Franklin India Debt Hybrid Fund | 500 | 10000 | 0.57 | 246 | 10 | Rajasa Kakulavarapu | 4 | Franklin Templeton Mutual Fund | Hybrid | Conservative Hybrid Mutual Funds |
-| 4.4 | Union Arbitrage Fund | 500 | 1000 | 0.44 | 72 | 4 | Vishal Thakker | 1 | Union Mutual Fund | Hybrid | Arbitrage Mutual Funds |
-| 3.9 | PGIM India Overnight Fund | 1000 | 100 | 0.12 | 75 | 4 | Puneet Pal | 1 | PGIM India Mutual Fund | Debt | Overnight Mutual Funds |
-| 21.7 | Sundaram Aggressive Hybrid Fund | 100 | 100 | 0.67 | 2981 | 10 | S Bharath | 5 | Sundaram Mutual Fund | Hybrid | Aggressive Hybrid Mutual Funds |
+| 5.6 | Nippon India Dynamic Bond Fund | 100 | 5000 | 0.28 | 3340 | 10 | Pranay Sinha | 3 | Nippon India Mutual Fund | Debt | Dynamic Bond |
+| 23.1 | Baroda BNP Paribas Focused Fund | 300 | 5000 | 0.67 | 299 | 5 | Sanjay Chawla | 6 | Baroda BNP Paribas Mutual Fund | Equity | Focused Funds |
+| 24.3 | Nippon India Equity Hybrid Fund | 100 | 500 | 1.31 | 2764 | 10 | Meenakshi Dawar | 5 | Nippon India Mutual Fund | Hybrid | Aggressive Hybrid Mutual Funds |
+| 3.9 | AXIS Overnight Fund | 0 | 500 | 0.05 | 12566 | 4 | Aditya Pagaria | 1 | Axis Mutual Fund | Debt | Overnight Mutual Funds |
+| 5.5 | Nippon India GSF – Direct Growth | 100 | 5000 | 0.63 | 1158 | 10 | Pranay Sinha | 2 | Nippon India Mutual Fund | Debt | Gilt Mutual Funds |
 
 ## Curation notes
 
@@ -216,15 +216,15 @@ Default splits.
 |---|---|---|---|---|---|
 | category | category | 0 | 0 | 5 | Equity, Debt, Hybrid, Other, Solution Oriented |
 | sub_category | category | 0 | 0 | 38 | Sectoral / Thematic Mutual Funds, ELSS Mutual Funds, FoFs Domestic, Liquid Mutu… |
-| expense_ratio | float64 | 0 | 0 | 177 | 0.21, 0.22, 0.15, 0.39, 0.1, 0.2, 0.28, 0.4, 1.0, 0.37 |
-| fund_size_cr | float64 | 0 | 0 | 683 | 90.0, 30.0, 26.0, 49.0, 36.0, 1699.0, 91.0, 141.0, 34.0, 27.0 |
-| returns_3yr | float64 | 0 | 0 | 304 | 3.9, 4.4, 5.6, 4.3, 5.1, 32.4, 4.9, 6.9, 6.2, 25.0 |
-| min_sip | int64 | 0 | 0 | 10 | 500, 1000, 100, 0, 150, 300, 2000, 250, 99, 750 |
-| min_lumpsum | int64 | 0 | 0 | 11 | 5000, 500, 1000, 100, 10000, 10, 0, 15000, 99, 25000 |
+| expense_ratio | float64 | 0 | 0 | 177 | 0.22, 0.21, 0.15, 0.39, 0.28, 0.1, 0.2, 0.36, 0.33, 1.0 |
+| fund_size_cr | float64 | 0 | 0 | 683 | 90.0, 49.0, 30.0, 26.0, 91.0, 54.0, 111.0, 14.0, 27.0, 175.0 |
+| returns_3yr | float64 | 0 | 0 | 304 | 3.9, 4.4, 5.6, 5.1, 4.3, 6.2, 5.9, 4.9, 25.0, 6.9 |
+| min_sip | int64 | 0 | 0 | 10 | 500, 1000, 100, 0, 150, 300, 2000, 250, 750, 99 |
+| min_lumpsum | int64 | 0 | 0 | 11 | 5000, 500, 1000, 100, 10000, 10, 0, 300, 15000, 25000 |
 | fund_age_yr | int64 | 0 | 0 | 14 | 10, 4, 5, 9, 8, 3, 7, 6, 14, 17 |
 | risk_level | int64 | 0 | 0 | 6 | 6, 3, 2, 4, 1, 5 |
-| scheme_name | string | 0 | 0 | 768 | SBI Long Term Advantage Fund, ICICI Pru Retirement Fund, HDFC Retirement Saving… |
-| fund_manager | string | 0 | 0 | 258 | Rohit Seksaria, Deepak Agrawal, R Srinivasan, Manish Banthia, Devang Shah, Alok… |
+| scheme_name | string | 0 | 0 | 768 | SBI Long Term Advantage Fund, ICICI Pru Retirement Fund, AXIS Retirement Saving… |
+| fund_manager | string | 0 | 0 | 258 | Rohit Seksaria, R Srinivasan, Deepak Agrawal, Manish Banthia, Alok Ranjan, Deva… |
 | amc_name | string | 0 | 0 | 38 | ICICI Prudential Mutual Fund, Aditya Birla Sun Life Mutual Fund, SBI Mutual Fun… |
 
 </details>
@@ -265,15 +265,15 @@ Default splits.
 | category | 4 | Other | 79 | 9.96 |
 | category | 5 | Solution Oriented | 28 | 3.53 |
 | fund_manager | 1 | Rohit Seksaria | 18 | 2.27 |
-| fund_manager | 2 | Deepak Agrawal | 12 | 1.51 |
-| fund_manager | 3 | R Srinivasan | 12 | 1.51 |
+| fund_manager | 2 | R Srinivasan | 12 | 1.51 |
+| fund_manager | 3 | Deepak Agrawal | 12 | 1.51 |
 | fund_manager | 4 | Manish Banthia | 11 | 1.39 |
-| fund_manager | 5 | Devang Shah | 11 | 1.39 |
+| fund_manager | 5 | Alok Ranjan | 11 | 1.39 |
 | scheme_name | 1 | SBI Long Term Advantage Fund | 6 | 0.76 |
 | scheme_name | 2 | ICICI Pru Retirement Fund | 4 | 0.5 |
-| scheme_name | 3 | HDFC Retirement Savings Fund | 3 | 0.38 |
-| scheme_name | 4 | AXIS Retirement Savings Fund | 3 | 0.38 |
-| scheme_name | 5 | Tata Retirement Savings Fund | 3 | 0.38 |
+| scheme_name | 3 | AXIS Retirement Savings Fund | 3 | 0.38 |
+| scheme_name | 4 | Tata Retirement Savings Fund | 3 | 0.38 |
+| scheme_name | 5 | HDFC Retirement Savings Fund | 3 | 0.38 |
 | sub_category | 1 | Sectoral / Thematic Mutual Funds | 82 | 10.34 |
 | sub_category | 2 | ELSS Mutual Funds | 52 | 6.56 |
 | sub_category | 3 | FoFs Domestic | 34 | 4.29 |
@@ -286,10 +286,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-82e4-7bf3-a2cf-8e37a069fce0 |
-| checksum | 34cdd9dddd52e764a9f149637f8c1bed00ec5fce2f68f38db37ea5386eb3b79d |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | mutual_funds_india/01a0fc60-82e4-7bf3-a2cf-8e37a069fce0 |
+| uuid | 01a11191-de4b-7f3f-bc36-f88469de0c2a |
+| checksum | 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a |
+| built_at | 2026-10-06T14:15:34+00:00 |
+| path | mutual_funds_india/01a11191-de4b-7f3f-bc36-f88469de0c2a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

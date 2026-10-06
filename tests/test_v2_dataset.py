@@ -23,6 +23,8 @@ from data_foundry.v2 import (
     drop_columns,
     get_dataset,
     load_definition,
+    object_columns,
+    order_rows,
     read_report,
     splits as protocol,
     workbench,
@@ -772,3 +774,68 @@ def test_text_categories_are_stored_as_objects() -> None:
     df = pd.DataFrame({"c": pd.Series(["x", "y", None], dtype="string")})
     out = cast_dtypes(df, categorical=["c"])
     assert out["c"].cat.categories.dtype == object
+
+
+def test_dates_and_text_are_stored_the_same_under_pandas_2_and_3() -> None:
+    from data_foundry.v2.preprocessing import canonical_dtypes
+
+    dates = pd.Series(["2020-01-01 10:00", None, "2021-06-30 00:00"])
+    df = pd.DataFrame(
+        {
+            "d_us": pd.to_datetime(dates).astype("datetime64[us]"),  # pandas 3 parses to `us` or `s`
+            "d_s": pd.to_datetime(dates).astype("datetime64[s]"),
+            "d_tz": pd.to_datetime(dates).dt.tz_localize("UTC").dt.as_unit("us"),
+            "dt": (pd.to_datetime(dates) - pd.Timestamp("2020-01-01")).astype("timedelta64[s]"),
+            "s": pd.Series(["a", None, "b"], dtype=pd.StringDtype(na_value=np.nan)),  # pandas 3's `str`
+            "t": pd.Series(["a", None, "b"], dtype="string"),
+            "x": [1.0, 2.0, 3.0],
+        }
+    )
+    out = canonical_dtypes(df)
+    assert {c: str(t) for c, t in out.dtypes.items()} == {
+        "d_us": "datetime64[ns]",
+        "d_s": "datetime64[ns]",
+        "d_tz": "datetime64[ns, UTC]",
+        "dt": "timedelta64[ns]",
+        "s": "object",
+        "t": "string",
+        "x": "float64",
+    }
+    assert out["d_us"].equals(pd.to_datetime(dates).dt.as_unit("ns"))
+    assert out["s"].isna().tolist() == [False, True, False]
+    assert canonical_dtypes(out) is out  # nothing left to change
+    old = pd.DataFrame({"d": pd.Series(["1500-01-01"]).astype("datetime64[s]")})
+    with pytest.raises(ValueError, match="outside 1677-2262"):
+        canonical_dtypes(old)
+
+
+def test_object_columns_count_str_but_not_string() -> None:
+    df = pd.DataFrame(
+        {
+            "o": pd.Series(["a", 1], dtype=object),
+            "s": pd.Series(["a", "b"], dtype=pd.StringDtype(na_value=np.nan)),
+            "t": pd.Series(["a", "b"], dtype="string"),
+            "c": pd.Series(["a", "b"], dtype="category"),
+            "n": [1, 2],
+        }
+    )
+    assert object_columns(df) == ["o", "s"]
+
+
+def test_the_row_order_depends_on_the_rows_not_on_their_input_order() -> None:
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame(
+        {
+            "x": rng.normal(size=200),
+            "c": pd.Categorical(rng.choice(["a", "b", "c"], size=200)),
+            "t": pd.to_datetime("2020-01-01") + pd.to_timedelta(rng.integers(0, 20, size=200), unit="D"),
+        }
+    )
+    reordered = df.sample(frac=1, random_state=1)
+    reordered["c"] = reordered["c"].cat.reorder_categories(["c", "a", "b"])  # the category order does not matter
+    for time_on in (None, "t"):
+        first = order_rows(df, time_on=time_on, shuffle=True)
+        second = order_rows(reordered, time_on=time_on, shuffle=True)
+        assert first["x"].equals(second["x"])
+    assert order_rows(df, time_on="t", shuffle=True)["t"].is_monotonic_increasing
+    assert order_rows(df, time_on=None, shuffle=False)["x"].equals(df["x"])  # shuffle=False keeps the input order

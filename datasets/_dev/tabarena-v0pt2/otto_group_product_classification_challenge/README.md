@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: otto_group_product_classification_challenge
 container_format: 2
-checksum: 45642d63b002c042b62c5b46d0aa2d95bfd5baef4d6f3891652ebe89a7c86ebe
+checksum: f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5
 build:
-  uuid: 01a0fc5f-ed64-79b3-b4fc-d4e93da131a0
-  checksum: 45642d63b002c042b62c5b46d0aa2d95bfd5baef4d6f3891652ebe89a7c86ebe
-  built_at: '2026-10-02T11:29:01+00:00'
-  path: otto_group_product_classification_challenge/01a0fc5f-ed64-79b3-b4fc-d4e93da131a0
+  uuid: 01a11191-5070-7595-b2ba-bd1ac13a1add
+  checksum: f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5
+  built_at: '2026-10-06T14:14:59+00:00'
+  path: otto_group_product_classification_challenge/01a11191-5070-7595-b2ba-bd1ac13a1add
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `target`, scored with `log_loss` on IID splits. 61,878 rows and 93 features. Source: Kaggle (2015).
 
-Built as `01a0fc5f-ed64-79b3-b4fc-d4e93da131a0` on 2026-10-02. See [Build](#build).
+Built as `01a11191-5070-7595-b2ba-bd1ac13a1add` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -144,11 +144,11 @@ The first 5 of 61,878 rows of the final frame (random rows: the frame is shuffle
 
 | target | feat_1 | feat_2 | feat_3 | feat_4 | feat_5 | feat_6 | feat_7 | feat_8 | feat_9 | feat_10 | feat_11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Class_7 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Class_7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 |
-| Class_6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 6 |
-| Class_6 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Class_6 | 0 | 2 | 9 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 9 |
+| Class_6 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | 0 |
+| Class_8 | 1 | 15 | 3 | 7 | 0 | 3 | 2 | 0 | 0 | 1 | 9 |
+| Class_8 | 2 | 2 | 2 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 2 |
+| Class_2 | 0 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Class_6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -196,7 +196,7 @@ Default splits.
 | feat_3 | int64 | 0 | 0 | 48 | 0, 1, 2, 3, 4, 5, 6, 8, 7, 9 |
 | feat_4 | int64 | 0 | 0 | 59 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_5 | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 4, 7, 5, 6, 10, 8 |
-| feat_6 | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 5, 4, 10, 8, 6 |
+| feat_6 | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 5, 4, 8, 10, 6 |
 | feat_7 | int64 | 0 | 0 | 30 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_8 | int64 | 0 | 0 | 55 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_9 | int64 | 0 | 0 | 40 | 0, 1, 2, 3, 4, 14, 13, 12, 11, 15 |
@@ -211,7 +211,7 @@ Default splits.
 | feat_18 | int64 | 0 | 0 | 30 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
 | feat_19 | int64 | 0 | 0 | 105 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
 | feat_20 | int64 | 0 | 0 | 27 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| feat_21 | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
+| feat_21 | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_22 | int64 | 0 | 0 | 21 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_23 | int64 | 0 | 0 | 24 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_24 | int64 | 0 | 0 | 66 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
@@ -220,7 +220,7 @@ Default splits.
 | feat_27 | int64 | 0 | 0 | 55 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_28 | int64 | 0 | 0 | 21 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | feat_29 | int64 | 0 | 0 | 50 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
-| feat_30 | int64 | 0 | 0 | 51 | 0, 1, 2, 3, 4, 5, 6, 7, 11, 8 |
+| feat_30 | int64 | 0 | 0 | 51 | 0, 1, 2, 3, 4, 5, 6, 7, 11, 80 |
 | feat_31 | int64 | 0 | 0 | 29 | 0, 1, 2, 3, 4, 5, 6, 8, 10, 7 |
 | feat_32 | int64 | 0 | 0 | 40 | 0, 1, 2, 3, 7, 4, 6, 5, 8, 9 |
 | feat_33 | int64 | 0 | 0 | 20 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
@@ -355,10 +355,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc5f-ed64-79b3-b4fc-d4e93da131a0 |
-| checksum | 45642d63b002c042b62c5b46d0aa2d95bfd5baef4d6f3891652ebe89a7c86ebe |
-| built_at | 2026-10-02T11:29:01+00:00 |
-| path | otto_group_product_classification_challenge/01a0fc5f-ed64-79b3-b4fc-d4e93da131a0 |
+| uuid | 01a11191-5070-7595-b2ba-bd1ac13a1add |
+| checksum | f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5 |
+| built_at | 2026-10-06T14:14:59+00:00 |
+| path | otto_group_product_classification_challenge/01a11191-5070-7595-b2ba-bd1ac13a1add |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

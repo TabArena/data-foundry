@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: ceaf53377f967a40a1cdf6ac884577864de1bedd006de5c57de7754e68bae71b
+checksum: a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b
 build:
-  uuid: 01a0fc60-4dcc-70ca-a8f3-136bd4bb004a
-  checksum: ceaf53377f967a40a1cdf6ac884577864de1bedd006de5c57de7754e68bae71b
-  built_at: '2026-10-02T11:29:24+00:00'
-  path: forensic_glass_identification/01a0fc60-4dcc-70ca-a8f3-136bd4bb004a
+  uuid: 01a11191-b7ee-7a77-a0f1-4300ba47f8c3
+  checksum: a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b
+  built_at: '2026-10-06T14:15:24+00:00'
+  path: forensic_glass_identification/01a11191-b7ee-7a77-a0f1-4300ba47f8c3
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 214 rows and 9 features. Source: UCI (1987).
 
-Built as `01a0fc60-4dcc-70ca-a8f3-136bd4bb004a` on 2026-10-02. See [Build](#build).
+Built as `01a11191-b7ee-7a77-a0f1-4300ba47f8c3` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 214 rows of the final frame (random rows: the frame is shuffled).
 
 | Type_of_glass | RI | Na | Mg | Al | Si | K | Ca | Ba | Fe |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | 1.51755 | 13 | 3.6 | 1.36 | 72.99 | 0.57 | 8.4 | 0 | 0.11 |
-| 7 | 1.51727 | 14.7 | 0 | 2.34 | 73.28 | 0 | 8.95 | 0.66 | 0 |
-| 1 | 1.52152 | 13.05 | 3.65 | 0.87 | 72.22 | 0.19 | 9.85 | 0 | 0.17 |
-| 7 | 1.51602 | 14.85 | 0 | 2.38 | 73.28 | 0 | 8.76 | 0.64 | 0.09 |
-| 2 | 1.51708 | 13.72 | 3.68 | 1.81 | 72.06 | 0.64 | 7.88 | 0 | 0 |
+| 2 | 1.51707 | 13.48 | 3.48 | 1.71 | 72.52 | 0.62 | 7.99 | 0 | 0 |
+| 3 | 1.5161 | 13.42 | 3.4 | 1.22 | 72.69 | 0.59 | 8.32 | 0 | 0 |
+| 2 | 1.51851 | 13.2 | 3.63 | 1.07 | 72.83 | 0.57 | 8.41 | 0.09 | 0.17 |
+| 6 | 1.51969 | 14.56 | 0 | 0.56 | 73.48 | 0 | 11.22 | 0 | 0 |
+| 3 | 1.5161 | 13.33 | 3.53 | 1.34 | 72.67 | 0.56 | 8.33 | 0 | 0 |
 
 ## Curation notes
 
@@ -245,15 +245,15 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Type_of_glass | category | 0 | 0 | 6 | 2, 1, 7, 3, 5, 6 |
-| RI | float64 | 0 | 0 | 178 | 1.5159, 1.5215, 1.5165, 1.5161, 1.5176, 1.5175, 1.5183, 1.5178, 1.5167, 1.5197 |
-| Na | float64 | 0 | 0 | 142 | 13.0, 13.02, 13.21, 13.24, 13.64, 12.85, 13.33, 12.86, 13.41, 12.93 |
-| Mg | float64 | 0 | 0 | 94 | 0.0, 3.54, 3.48, 3.58, 3.52, 3.62, 3.57, 3.56, 3.61, 3.5 |
-| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.29, 1.43, 1.56, 1.23, 1.28, 1.36, 1.35, 1.63 |
-| Si | float64 | 0 | 0 | 133 | 72.99, 73.28, 72.86, 73.11, 73.1, 72.95, 72.72, 73.08, 72.97, 73.21 |
+| RI | float64 | 0 | 0 | 178 | 1.5215, 1.5159, 1.5165, 1.5197, 1.5178, 1.5175, 1.5218, 1.5167, 1.5177, 1.5176 |
+| Na | float64 | 0 | 0 | 142 | 13.02, 13.0, 13.21, 12.85, 13.33, 12.86, 13.64, 13.24, 12.79, 13.41 |
+| Mg | float64 | 0 | 0 | 94 | 0.0, 3.48, 3.54, 3.58, 3.52, 3.62, 3.66, 3.56, 3.57, 3.61 |
+| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.43, 1.29, 1.23, 1.56, 1.28, 1.35, 1.36, 1.33 |
+| Si | float64 | 0 | 0 | 133 | 73.11, 73.1, 72.86, 73.28, 72.99, 72.95, 73.08, 72.97, 73.01, 72.67 |
 | K | float64 | 0 | 0 | 65 | 0.0, 0.57, 0.56, 0.6, 0.58, 0.61, 0.64, 0.59, 0.62, 0.54 |
-| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.44, 9.57, 8.79, 8.39, 9.85, 8.6, 8.53, 8.67 |
-| Ba | float64 | 0 | 0 | 34 | 0.0, 0.64, 1.57, 0.09, 0.11, 1.59, 0.66, 0.61, 1.64, 0.76 |
-| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.14, 0.28, 0.16, 0.12 |
+| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.79, 9.57, 8.44, 8.6, 8.52, 9.85, 8.83, 8.53 |
+| Ba | float64 | 0 | 0 | 34 | 0.0, 0.09, 1.57, 0.11, 1.59, 0.64, 0.61, 1.55, 0.54, 0.63 |
+| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.07, 0.28, 0.12, 0.16 |
 
 ### Target distribution
 
@@ -294,10 +294,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4dcc-70ca-a8f3-136bd4bb004a |
-| checksum | ceaf53377f967a40a1cdf6ac884577864de1bedd006de5c57de7754e68bae71b |
-| built_at | 2026-10-02T11:29:24+00:00 |
-| path | forensic_glass_identification/01a0fc60-4dcc-70ca-a8f3-136bd4bb004a |
+| uuid | 01a11191-b7ee-7a77-a0f1-4300ba47f8c3 |
+| checksum | a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b |
+| built_at | 2026-10-06T14:15:24+00:00 |
+| path | forensic_glass_identification/01a11191-b7ee-7a77-a0f1-4300ba47f8c3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

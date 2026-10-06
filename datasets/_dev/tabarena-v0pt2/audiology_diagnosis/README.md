@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: audiology_diagnosis
 container_format: 2
-checksum: 7299858057801965431a1bd8eca1b28c38e0559fd9cad7ae2be062aef9b44029
+checksum: f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f
 build:
-  uuid: 01a0fc60-6901-7055-8704-c2226b646470
-  checksum: 7299858057801965431a1bd8eca1b28c38e0559fd9cad7ae2be062aef9b44029
-  built_at: '2026-10-02T11:29:32+00:00'
-  path: audiology_diagnosis/01a0fc60-6901-7055-8704-c2226b646470
+  uuid: 01a11191-6752-703a-9930-a7583503a5c4
+  checksum: f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f
+  built_at: '2026-10-06T14:15:04+00:00'
+  path: audiology_diagnosis/01a11191-6752-703a-9930-a7583503a5c4
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -19,10 +19,10 @@ build:
     polars: 1.41.1
 build_stale: false
 data:
-  n_rows: 199
-  n_features: 68
+  n_rows: 195
+  n_features: 65
   dtypes:
-    category: 69
+    category: 66
   n_test_dataset_rows: null
 task:
   target: diagnosis
@@ -42,11 +42,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 132
-    max: 133
+    min: 130
+    max: 130
   n_test:
-    min: 66
-    max: 67
+    min: 65
+    max: 65
 bundle_checks:
   ok: true
   errors: []
@@ -60,9 +60,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 199 rows and 68 features. Source: UCI (1987).
+Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 195 rows and 65 features. Source: UCI (1987).
 
-Built as `01a0fc60-6901-7055-8704-c2226b646470` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6752-703a-9930-a7583503a5c4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -104,7 +104,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | bareiss1990protos |
-| rows x columns | 199 x 69 |
+| rows x columns | 195 x 66 |
 | task.target | diagnosis |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -112,9 +112,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | diagnosis |
 
 <details>
-<summary>Feature types: 69 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 66 categorical, 0 string, 0 datetime</summary>
 
-- categorical (69): `age_gt_60`, `air`, `airBoneGap`, `ar_c`, `ar_u`, `bone`, `boneAbnormal`, `bser`, `history_buzzing`, `history_dizziness`, `history_fluctuating`, `history_heredity`, `history_nausea`, `history_noise`, `history_recruitment`, `history_ringing`, `history_roaring`, `history_vomiting`, `late_wave_poor`, `m_at_2k`, `m_cond_lt_1k`, `m_gt_1k`, `m_m_gt_2k`, `m_m_sn`, `m_m_sn_gt_1k`, `m_m_sn_gt_2k`, `m_m_sn_gt_500`, `m_p_sn_gt_2k`, `m_s_gt_500`, `m_s_sn`, `m_s_sn_gt_1k`, `m_s_sn_gt_2k`, `m_s_sn_gt_3k`, `m_s_sn_gt_4k`, `m_sn_2_3k`, `m_sn_gt_1k`, `m_sn_gt_2k`, `m_sn_gt_3k`, `m_sn_gt_4k`, `m_sn_gt_500`, `m_sn_gt_6k`, `m_sn_lt_1k`, `m_sn_lt_2k`, `m_sn_lt_3k`, `middle_wave_poor`, `mod_gt_4k`, `mod_mixed`, `mod_s_mixed`, `mod_s_sn_gt_500`, `mod_sn`, `mod_sn_gt_1k`, `mod_sn_gt_2k`, `mod_sn_gt_3k`, `mod_sn_gt_4k`, `mod_sn_gt_500`, `notch_4k`, `notch_at_4k`, `o_ar_c`, `o_ar_u`, `s_sn_gt_1k`, `s_sn_gt_2k`, `s_sn_gt_4k`, `speech`, `static_normal`, `tymp`, `viith_nerve_signs`, `wave_V_delayed`, `waveform_ItoV_prolonged`, `diagnosis`
+- categorical (66): `age_gt_60`, `air`, `airBoneGap`, `ar_c`, `ar_u`, `bone`, `boneAbnormal`, `history_buzzing`, `history_dizziness`, `history_fluctuating`, `history_heredity`, `history_nausea`, `history_noise`, `history_recruitment`, `history_ringing`, `history_roaring`, `history_vomiting`, `late_wave_poor`, `m_at_2k`, `m_cond_lt_1k`, `m_gt_1k`, `m_m_gt_2k`, `m_m_sn`, `m_m_sn_gt_1k`, `m_m_sn_gt_2k`, `m_m_sn_gt_500`, `m_p_sn_gt_2k`, `m_s_gt_500`, `m_s_sn`, `m_s_sn_gt_1k`, `m_s_sn_gt_2k`, `m_s_sn_gt_3k`, `m_s_sn_gt_4k`, `m_sn_2_3k`, `m_sn_gt_1k`, `m_sn_gt_2k`, `m_sn_gt_3k`, `m_sn_gt_4k`, `m_sn_gt_500`, `m_sn_gt_6k`, `m_sn_lt_1k`, `m_sn_lt_2k`, `m_sn_lt_3k`, `middle_wave_poor`, `mod_gt_4k`, `mod_mixed`, `mod_s_mixed`, `mod_s_sn_gt_500`, `mod_sn`, `mod_sn_gt_1k`, `mod_sn_gt_2k`, `mod_sn_gt_3k`, `mod_sn_gt_4k`, `mod_sn_gt_500`, `notch_4k`, `notch_at_4k`, `o_ar_c`, `o_ar_u`, `s_sn_gt_1k`, `s_sn_gt_2k`, `s_sn_gt_4k`, `speech`, `static_normal`, `tymp`, `wave_V_delayed`, `diagnosis`
 - string (0): none
 - datetime (0): none
 
@@ -138,96 +138,98 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 199 rows of the final frame (random rows: the frame is shuffled); 12 of 69 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 195 rows of the final frame (random rows: the frame is shuffled); 12 of 66 columns, the target first. Cells are cut at 40 characters.
 
-| diagnosis | age_gt_60 | air | airBoneGap | ar_c | ar_u | bone | boneAbnormal | bser | history_buzzing | history_dizziness | history_fluctuating |
+| diagnosis | age_gt_60 | air | airBoneGap | ar_c | ar_u | bone | boneAbnormal | history_buzzing | history_dizziness | history_fluctuating | history_heredity |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| cochlear | f | mild | f | elevated | normal | mild | t | nan | f | f | f |
-| cochlear | t | mild | f | normal | elevated | mild | t | nan | f | f | f |
-| cochlear | t | normal | f | absent | absent | normal | f | nan | f | f | f |
-| cochlear | t | mild | f | normal | normal | unmeasured | f | nan | f | f | f |
-| cochlear | f | normal | f | normal | elevated | nan | f | nan | f | f | f |
+| sensorineural | t | mild | f | normal | normal | mild | t | f | t | f | f |
+| normal | f | normal | f | elevated | normal | nan | f | f | f | f | f |
+| sensorineural | f | mild | f | elevated | elevated | nan | f | f | f | f | f |
+| sensorineural | f | mild | f | normal | normal | nan | f | f | t | t | f |
+| sensorineural | t | mild | f | normal | absent | mild | t | f | f | f | f |
 
 ## Curation notes
 
 We start with the data from UCI and merge train and test data.
 
 - We drop the ID column as it is uninformative here.
-- The target label contains groups of labels with specifications. We merge labels into groups that represent general a diagnosis. We create 3 labels: "normal", "cochlear", "other". There is likely a much better way to partition these labels, but this is most reasonable partitioning for an acutal task, going from names and my limited domain knowledge about the various diagnoses.
-- We drop duplicated rows as they might introduce too much information leakage for such small data and are likely not natural but rather an artifact of the limited number of features.
-- We remove one constant column (history_fullness).
+- We drop duplicated cases (the same findings and the same original diagnosis; 27 of 226) as they are likely not natural but rather an artifact of the coarse, categorical findings, and would put copies of one case on both sides of a split.
+- The 24 original diagnoses cannot be a target at this size: 16 of them have 4 or fewer cases. Each name combines the site of the hearing loss with its cause (`mixed_cochlear_age_otitis_media`: a mixed loss, its cochlear part from age, its conductive part from otitis media). We use the site, grouped as the standard distinction in audiology between a hearing loss with and without a conductive part (the air-bone gap): "normal" (normal_ear), "sensorineural" (the cochlear diagnoses, possible_menieres, and the retrocochlear acoustic_neuroma and retrocochlear_unknown) and "conductive_or_mixed" (the conductive diagnoses, otitis_media and every mixed diagnosis). The four standard types (conductive and mixed apart) would leave 10 conductive cases, 3-4 per test fold.
+- We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
+- We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
+- We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 132 to 133 rows, test 66 to 67 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 130 rows, test 65 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 132 | 67 |
-| 0 | 1 | 133 | 66 |
-| 0 | 2 | 133 | 66 |
-| 1 | 0 | 132 | 67 |
-| 1 | 1 | 133 | 66 |
-| 1 | 2 | 133 | 66 |
-| 2 | 0 | 132 | 67 |
-| 2 | 1 | 133 | 66 |
-| 2 | 2 | 133 | 66 |
-| 3 | 0 | 132 | 67 |
-| 3 | 1 | 133 | 66 |
-| 3 | 2 | 133 | 66 |
-| 4 | 0 | 132 | 67 |
-| 4 | 1 | 133 | 66 |
-| 4 | 2 | 133 | 66 |
-| 5 | 0 | 132 | 67 |
-| 5 | 1 | 133 | 66 |
-| 5 | 2 | 133 | 66 |
-| 6 | 0 | 132 | 67 |
-| 6 | 1 | 133 | 66 |
-| 6 | 2 | 133 | 66 |
-| 7 | 0 | 132 | 67 |
-| 7 | 1 | 133 | 66 |
-| 7 | 2 | 133 | 66 |
-| 8 | 0 | 132 | 67 |
-| 8 | 1 | 133 | 66 |
-| 8 | 2 | 133 | 66 |
-| 9 | 0 | 132 | 67 |
-| 9 | 1 | 133 | 66 |
-| 9 | 2 | 133 | 66 |
-| 10 | 0 | 132 | 67 |
-| 10 | 1 | 133 | 66 |
-| 10 | 2 | 133 | 66 |
-| 11 | 0 | 132 | 67 |
-| 11 | 1 | 133 | 66 |
-| 11 | 2 | 133 | 66 |
-| 12 | 0 | 132 | 67 |
-| 12 | 1 | 133 | 66 |
-| 12 | 2 | 133 | 66 |
-| 13 | 0 | 132 | 67 |
-| 13 | 1 | 133 | 66 |
-| 13 | 2 | 133 | 66 |
-| 14 | 0 | 132 | 67 |
-| 14 | 1 | 133 | 66 |
-| 14 | 2 | 133 | 66 |
-| 15 | 0 | 132 | 67 |
-| 15 | 1 | 133 | 66 |
-| 15 | 2 | 133 | 66 |
-| 16 | 0 | 132 | 67 |
-| 16 | 1 | 133 | 66 |
-| 16 | 2 | 133 | 66 |
-| 17 | 0 | 132 | 67 |
-| 17 | 1 | 133 | 66 |
-| 17 | 2 | 133 | 66 |
-| 18 | 0 | 132 | 67 |
-| 18 | 1 | 133 | 66 |
-| 18 | 2 | 133 | 66 |
-| 19 | 0 | 132 | 67 |
-| 19 | 1 | 133 | 66 |
-| 19 | 2 | 133 | 66 |
+| 0 | 0 | 130 | 65 |
+| 0 | 1 | 130 | 65 |
+| 0 | 2 | 130 | 65 |
+| 1 | 0 | 130 | 65 |
+| 1 | 1 | 130 | 65 |
+| 1 | 2 | 130 | 65 |
+| 2 | 0 | 130 | 65 |
+| 2 | 1 | 130 | 65 |
+| 2 | 2 | 130 | 65 |
+| 3 | 0 | 130 | 65 |
+| 3 | 1 | 130 | 65 |
+| 3 | 2 | 130 | 65 |
+| 4 | 0 | 130 | 65 |
+| 4 | 1 | 130 | 65 |
+| 4 | 2 | 130 | 65 |
+| 5 | 0 | 130 | 65 |
+| 5 | 1 | 130 | 65 |
+| 5 | 2 | 130 | 65 |
+| 6 | 0 | 130 | 65 |
+| 6 | 1 | 130 | 65 |
+| 6 | 2 | 130 | 65 |
+| 7 | 0 | 130 | 65 |
+| 7 | 1 | 130 | 65 |
+| 7 | 2 | 130 | 65 |
+| 8 | 0 | 130 | 65 |
+| 8 | 1 | 130 | 65 |
+| 8 | 2 | 130 | 65 |
+| 9 | 0 | 130 | 65 |
+| 9 | 1 | 130 | 65 |
+| 9 | 2 | 130 | 65 |
+| 10 | 0 | 130 | 65 |
+| 10 | 1 | 130 | 65 |
+| 10 | 2 | 130 | 65 |
+| 11 | 0 | 130 | 65 |
+| 11 | 1 | 130 | 65 |
+| 11 | 2 | 130 | 65 |
+| 12 | 0 | 130 | 65 |
+| 12 | 1 | 130 | 65 |
+| 12 | 2 | 130 | 65 |
+| 13 | 0 | 130 | 65 |
+| 13 | 1 | 130 | 65 |
+| 13 | 2 | 130 | 65 |
+| 14 | 0 | 130 | 65 |
+| 14 | 1 | 130 | 65 |
+| 14 | 2 | 130 | 65 |
+| 15 | 0 | 130 | 65 |
+| 15 | 1 | 130 | 65 |
+| 15 | 2 | 130 | 65 |
+| 16 | 0 | 130 | 65 |
+| 16 | 1 | 130 | 65 |
+| 16 | 2 | 130 | 65 |
+| 17 | 0 | 130 | 65 |
+| 17 | 1 | 130 | 65 |
+| 17 | 2 | 130 | 65 |
+| 18 | 0 | 130 | 65 |
+| 18 | 1 | 130 | 65 |
+| 18 | 2 | 130 | 65 |
+| 19 | 0 | 130 | 65 |
+| 19 | 1 | 130 | 65 |
+| 19 | 2 | 130 | 65 |
 
 </details>
 
@@ -241,17 +243,16 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (69 rows)</summary>
+<summary>Show the table (66 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| bser | category | 196 | 98.49 | 2 | normal, degraded |
-| bone | category | 65 | 32.66 | 4 | mild, unmeasured, normal, moderate |
-| o_ar_c | category | 5 | 2.51 | 3 | normal, absent, elevated |
-| speech | category | 5 | 2.51 | 6 | normal, good, very_good, very_poor, poor, unmeasured |
-| ar_c | category | 4 | 2.01 | 3 | normal, absent, elevated |
-| ar_u | category | 3 | 1.51 | 3 | normal, absent, elevated |
-| o_ar_u | category | 2 | 1.01 | 3 | normal, absent, elevated |
+| bone | category | 64 | 32.82 | 4 | mild, unmeasured, normal, moderate |
+| o_ar_c | category | 5 | 2.56 | 3 | normal, absent, elevated |
+| speech | category | 5 | 2.56 | 6 | normal, good, very_good, very_poor, poor, unmeasured |
+| ar_c | category | 4 | 2.05 | 3 | normal, absent, elevated |
+| ar_u | category | 3 | 1.54 | 3 | normal, absent, elevated |
+| o_ar_u | category | 2 | 1.03 | 3 | normal, absent, elevated |
 | age_gt_60 | category | 0 | 0 | 2 | f, t |
 | air | category | 0 | 0 | 5 | mild, normal, moderate, severe, profound |
 | airBoneGap | category | 0 | 0 | 2 | f, t |
@@ -305,8 +306,9 @@ Default splits.
 | mod_sn_gt_500 | category | 0 | 0 | 2 | f, t |
 | notch_4k | category | 0 | 0 | 2 | f, t |
 | notch_at_4k | category | 0 | 0 | 2 | f, t |
+| s_sn_gt_1k | category | 0 | 0 | 2 | f, t |
 
-(9 more rows not shown)
+(6 more rows not shown)
 
 </details>
 
@@ -314,9 +316,9 @@ Default splits.
 
 | diagnosis | count | pct |
 |---|---|---|
-| cochlear | 162 | 81.41 |
-| normal | 19 | 9.55 |
-| other | 18 | 9.05 |
+| sensorineural | 142 | 72.82 |
+| conductive_or_mixed | 34 | 17.44 |
+| normal | 19 | 9.74 |
 
 ### Numeric features
 
@@ -325,72 +327,72 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (160 rows)</summary>
+<summary>Show the table (153 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| age_gt_60 | 1 | f | 121 | 60.8 |
-| age_gt_60 | 2 | t | 78 | 39.2 |
-| air | 1 | mild | 98 | 49.25 |
-| air | 2 | normal | 72 | 36.18 |
-| air | 3 | moderate | 21 | 10.55 |
-| air | 4 | severe | 7 | 3.52 |
-| air | 5 | profound | 1 | 0.5 |
-| airBoneGap | 1 | f | 176 | 88.44 |
-| airBoneGap | 2 | t | 23 | 11.56 |
-| ar_c | 1 | normal | 112 | 56.28 |
-| ar_c | 2 | absent | 50 | 25.13 |
-| ar_c | 3 | elevated | 33 | 16.58 |
-| ar_c | 4 | &lt;NA> | 4 | 2.01 |
-| ar_u | 1 | normal | 118 | 59.3 |
-| ar_u | 2 | absent | 43 | 21.61 |
-| ar_u | 3 | elevated | 35 | 17.59 |
-| ar_u | 4 | &lt;NA> | 3 | 1.51 |
-| bone | 1 | &lt;NA> | 65 | 32.66 |
-| bone | 2 | mild | 56 | 28.14 |
-| bone | 3 | unmeasured | 39 | 19.6 |
-| bone | 4 | normal | 35 | 17.59 |
-| bone | 5 | moderate | 4 | 2.01 |
-| boneAbnormal | 1 | f | 155 | 77.89 |
-| boneAbnormal | 2 | t | 44 | 22.11 |
-| bser | 1 | &lt;NA> | 196 | 98.49 |
-| bser | 2 | normal | 2 | 1.01 |
-| bser | 3 | degraded | 1 | 0.5 |
-| diagnosis | 1 | cochlear | 162 | 81.41 |
-| diagnosis | 2 | normal | 19 | 9.55 |
-| diagnosis | 3 | other | 18 | 9.05 |
-| history_buzzing | 1 | f | 198 | 99.5 |
-| history_buzzing | 2 | t | 1 | 0.5 |
-| history_dizziness | 1 | f | 180 | 90.45 |
-| history_dizziness | 2 | t | 19 | 9.55 |
-| history_fluctuating | 1 | f | 192 | 96.48 |
-| history_fluctuating | 2 | t | 7 | 3.52 |
-| history_heredity | 1 | f | 197 | 98.99 |
-| history_heredity | 2 | t | 2 | 1.01 |
-| history_nausea | 1 | f | 189 | 94.97 |
-| history_nausea | 2 | t | 10 | 5.03 |
-| history_noise | 1 | f | 141 | 70.85 |
-| history_noise | 2 | t | 58 | 29.15 |
-| history_recruitment | 1 | f | 197 | 98.99 |
-| history_recruitment | 2 | t | 2 | 1.01 |
-| history_ringing | 1 | f | 190 | 95.48 |
-| history_ringing | 2 | t | 9 | 4.52 |
-| history_roaring | 1 | f | 189 | 94.97 |
-| history_roaring | 2 | t | 10 | 5.03 |
-| history_vomiting | 1 | f | 193 | 96.98 |
-| history_vomiting | 2 | t | 6 | 3.02 |
-| late_wave_poor | 1 | f | 197 | 98.99 |
-| late_wave_poor | 2 | t | 2 | 1.01 |
-| m_at_2k | 1 | f | 198 | 99.5 |
-| m_at_2k | 2 | t | 1 | 0.5 |
-| m_cond_lt_1k | 1 | f | 198 | 99.5 |
-| m_cond_lt_1k | 2 | t | 1 | 0.5 |
-| m_gt_1k | 1 | f | 198 | 99.5 |
-| m_gt_1k | 2 | t | 1 | 0.5 |
-| m_m_gt_2k | 1 | f | 197 | 98.99 |
-| m_m_gt_2k | 2 | t | 2 | 1.01 |
+| age_gt_60 | 1 | f | 117 | 60 |
+| age_gt_60 | 2 | t | 78 | 40 |
+| air | 1 | mild | 97 | 49.74 |
+| air | 2 | normal | 69 | 35.38 |
+| air | 3 | moderate | 21 | 10.77 |
+| air | 4 | severe | 7 | 3.59 |
+| air | 5 | profound | 1 | 0.51 |
+| airBoneGap | 1 | f | 172 | 88.21 |
+| airBoneGap | 2 | t | 23 | 11.79 |
+| ar_c | 1 | normal | 110 | 56.41 |
+| ar_c | 2 | absent | 48 | 24.62 |
+| ar_c | 3 | elevated | 33 | 16.92 |
+| ar_c | 4 | &lt;NA> | 4 | 2.05 |
+| ar_u | 1 | normal | 116 | 59.49 |
+| ar_u | 2 | absent | 41 | 21.03 |
+| ar_u | 3 | elevated | 35 | 17.95 |
+| ar_u | 4 | &lt;NA> | 3 | 1.54 |
+| bone | 1 | &lt;NA> | 64 | 32.82 |
+| bone | 2 | mild | 55 | 28.21 |
+| bone | 3 | unmeasured | 38 | 19.49 |
+| bone | 4 | normal | 34 | 17.44 |
+| bone | 5 | moderate | 4 | 2.05 |
+| boneAbnormal | 1 | f | 151 | 77.44 |
+| boneAbnormal | 2 | t | 44 | 22.56 |
+| diagnosis | 1 | sensorineural | 142 | 72.82 |
+| diagnosis | 2 | conductive_or_mixed | 34 | 17.44 |
+| diagnosis | 3 | normal | 19 | 9.74 |
+| history_buzzing | 1 | f | 194 | 99.49 |
+| history_buzzing | 2 | t | 1 | 0.51 |
+| history_dizziness | 1 | f | 177 | 90.77 |
+| history_dizziness | 2 | t | 18 | 9.23 |
+| history_fluctuating | 1 | f | 188 | 96.41 |
+| history_fluctuating | 2 | t | 7 | 3.59 |
+| history_heredity | 1 | f | 193 | 98.97 |
+| history_heredity | 2 | t | 2 | 1.03 |
+| history_nausea | 1 | f | 187 | 95.9 |
+| history_nausea | 2 | t | 8 | 4.1 |
+| history_noise | 1 | f | 137 | 70.26 |
+| history_noise | 2 | t | 58 | 29.74 |
+| history_recruitment | 1 | f | 193 | 98.97 |
+| history_recruitment | 2 | t | 2 | 1.03 |
+| history_ringing | 1 | f | 186 | 95.38 |
+| history_ringing | 2 | t | 9 | 4.62 |
+| history_roaring | 1 | f | 186 | 95.38 |
+| history_roaring | 2 | t | 9 | 4.62 |
+| history_vomiting | 1 | f | 189 | 96.92 |
+| history_vomiting | 2 | t | 6 | 3.08 |
+| late_wave_poor | 1 | f | 194 | 99.49 |
+| late_wave_poor | 2 | t | 1 | 0.51 |
+| m_at_2k | 1 | f | 194 | 99.49 |
+| m_at_2k | 2 | t | 1 | 0.51 |
+| m_cond_lt_1k | 1 | f | 194 | 99.49 |
+| m_cond_lt_1k | 2 | t | 1 | 0.51 |
+| m_gt_1k | 1 | f | 194 | 99.49 |
+| m_gt_1k | 2 | t | 1 | 0.51 |
+| m_m_gt_2k | 1 | f | 193 | 98.97 |
+| m_m_gt_2k | 2 | t | 2 | 1.03 |
+| m_m_sn | 1 | f | 187 | 95.9 |
+| m_m_sn | 2 | t | 8 | 4.1 |
+| m_m_sn_gt_1k | 1 | f | 190 | 97.44 |
 
-(100 more rows not shown)
+(93 more rows not shown)
 
 </details>
 
@@ -398,10 +400,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-6901-7055-8704-c2226b646470 |
-| checksum | 7299858057801965431a1bd8eca1b28c38e0559fd9cad7ae2be062aef9b44029 |
-| built_at | 2026-10-02T11:29:32+00:00 |
-| path | audiology_diagnosis/01a0fc60-6901-7055-8704-c2226b646470 |
+| uuid | 01a11191-6752-703a-9930-a7583503a5c4 |
+| checksum | f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f |
+| built_at | 2026-10-06T14:15:04+00:00 |
+| path | audiology_diagnosis/01a11191-6752-703a-9930-a7583503a5c4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: 80c4936074d6003a6396ba9e4ddb89751214ace823a3862ba9f6cad62c8a2fee
+checksum: aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f
 build:
-  uuid: 01a0fc60-809e-7fdf-a16f-b1bd66824a57
-  checksum: 80c4936074d6003a6396ba9e4ddb89751214ace823a3862ba9f6cad62c8a2fee
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: bank_marketing/01a0fc60-809e-7fdf-a16f-b1bd66824a57
+  uuid: 01a11191-6ab7-7d07-98ae-00bf39d2a4d9
+  checksum: aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f
+  built_at: '2026-10-06T14:15:05+00:00'
+  path: bank_marketing/01a11191-6ab7-7d07-98ae-00bf39d2a4d9
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a0fc60-809e-7fdf-a16f-b1bd66824a57` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6ab7-7d07-98ae-00bf39d2a4d9` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 
 | SubscribeTermDeposit | age | job | marital | education | default | balance | housing | loan | contact | campaign | pdays |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| no | 40 | blue-collar | married | secondary | no | 580 | yes | no | unknown | 1 | -1 |
-| no | 47 | services | single | secondary | no | 3644 | no | no | unknown | 2 | -1 |
-| no | 25 | student | single | tertiary | no | 538 | yes | no | cellular | 1 | -1 |
-| no | 42 | management | married | tertiary | no | 1773 | no | no | cellular | 1 | 336 |
-| no | 56 | management | married | tertiary | no | 217 | no | yes | cellular | 2 | -1 |
+| no | 40 | management | divorced | tertiary | no | 502 | yes | no | cellular | 4 | 270 |
+| no | 51 | management | married | tertiary | no | 21574 | no | no | unknown | 3 | -1 |
+| no | 44 | technician | married | secondary | no | 13761 | yes | no | unknown | 1 | -1 |
+| no | 57 | management | married | tertiary | no | 1318 | no | no | cellular | 2 | 94 |
+| no | 48 | admin. | married | secondary | no | 1800 | yes | no | unknown | 1 | -1 |
 
 ## Curation notes
 
@@ -206,7 +206,7 @@ Default splits.
 | poutcome | category | 0 | 0 | 4 | unknown, failure, other, success |
 | SubscribeTermDeposit | category | 0 | 0 | 2 | no, yes |
 | age | int64 | 0 | 0 | 77 | 32, 31, 33, 34, 35, 36, 30, 37, 39, 38 |
-| balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 7 |
+| balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 10 |
 | pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
 
 </details>
@@ -277,10 +277,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-809e-7fdf-a16f-b1bd66824a57 |
-| checksum | 80c4936074d6003a6396ba9e4ddb89751214ace823a3862ba9f6cad62c8a2fee |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | bank_marketing/01a0fc60-809e-7fdf-a16f-b1bd66824a57 |
+| uuid | 01a11191-6ab7-7d07-98ae-00bf39d2a4d9 |
+| checksum | aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f |
+| built_at | 2026-10-06T14:15:05+00:00 |
+| path | bank_marketing/01a11191-6ab7-7d07-98ae-00bf39d2a4d9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: 22a08f9041d9c676a4dbb35c1453ad38ea90e60aceaa30222c1170e5bbcfa28a
+checksum: 92a9d9004922c746966765c2a375c25310ea764322b7811cd528539e7ed6d623
 build:
-  uuid: 01a0fc60-530d-71eb-9e17-a7a093e3eab4
-  checksum: 22a08f9041d9c676a4dbb35c1453ad38ea90e60aceaa30222c1170e5bbcfa28a
-  built_at: '2026-10-02T11:29:26+00:00'
-  path: qsar_fish_toxicity/01a0fc60-530d-71eb-9e17-a7a093e3eab4
+  uuid: 01a11191-e247-78ec-a1f9-e8047c36a3e7
+  checksum: 92a9d9004922c746966765c2a375c25310ea764322b7811cd528539e7ed6d623
+  built_at: '2026-10-06T14:15:35+00:00'
+  path: qsar_fish_toxicity/01a11191-e247-78ec-a1f9-e8047c36a3e7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 908 rows and 6 features. Source: UCI (2015).
 
-Built as `01a0fc60-530d-71eb-9e17-a7a093e3eab4` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e247-78ec-a1f9-e8047c36a3e7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
 
 | LC50 | CIC0 | SM1_Dz(Z) | GATS1i | NdsCH | NdssC | MLOGP |
 |---|---|---|---|---|---|---|
-| 3.46 | 1.783 | 0.629 | 0.75 | 1 | 0 | 0.736 |
-| 6.213 | 4.181 | 0.57 | 1.383 | 0 | 0 | 4.379 |
-| 3.779 | 2.137 | 0.223 | 1.179 | 0 | 0 | 0.655 |
-| 1.691 | 2.748 | 0.223 | 1.705 | 0 | 0 | 0.8 |
-| 4.421 | 1.417 | 0.898 | 0.648 | 0 | 0 | 2.042 |
+| 5.104 | 4.532 | 0.405 | 1.189 | 2 | 3 | 4.639 |
+| 2.92 | 1.5 | 0.83 | 1.891 | 0 | 0 | 1.817 |
+| 6.236 | 3.098 | 0.93 | 1.075 | 0 | 0 | 2.702 |
+| 6.416 | 2.351 | 1.586 | 1.25 | 0 | 4 | 3.659 |
+| 5.262 | 3.001 | 0.651 | 0.781 | 0 | 0 | 4.203 |
 
 ## Curation notes
 
@@ -215,11 +215,11 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| CIC0 | float64 | 0 | 0 | 502 | 2.126, 3.08, 2.377, 2.08, 2.508, 3.252, 2.834, 2.479, 3.179, 2.216 |
+| CIC0 | float64 | 0 | 0 | 502 | 2.126, 3.08, 2.377, 2.508, 3.252, 2.834, 2.08, 2.479, 3.739, 3.332 |
 | SM1_Dz(Z) | float64 | 0 | 0 | 186 | 0.223, 0.134, 0.405, 0.331, 0.0, 0.693, 0.56, 0.496, 0.251, 0.83 |
-| GATS1i | float64 | 0 | 0 | 557 | 0.941, 0.938, 1.179, 0.954, 0.871, 1.189, 1.571, 1.6, 1.705, 1.288 |
-| MLOGP | float64 | 0 | 0 | 559 | 0.8, 1.701, 0.202, 1.064, 1.748, 2.604, 1.587, 1.442, 2.193, 1.859 |
-| LC50 | float64 | 0 | 0 | 827 | 4.208, 3.513, 3.979, 3.926, 3.47, 3.66, 4.739, 3.92, 4.691, 3.84 |
+| GATS1i | float64 | 0 | 0 | 557 | 0.941, 0.954, 0.938, 0.871, 1.179, 1.571, 1.6, 1.189, 1.583, 1.288 |
+| MLOGP | float64 | 0 | 0 | 559 | 0.8, 1.701, 1.748, 2.604, 1.064, 0.202, 1.442, 1.587, 2.193, 3.291 |
+| LC50 | float64 | 0 | 0 | 827 | 4.208, 3.513, 3.979, 3.66, 3.926, 3.47, 3.92, 3.112, 3.782, 4.737 |
 | NdsCH | int64 | 0 | 0 | 5 | 0, 1, 2, 4, 3 |
 | NdssC | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 6, 5 |
 
@@ -249,10 +249,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-530d-71eb-9e17-a7a093e3eab4 |
-| checksum | 22a08f9041d9c676a4dbb35c1453ad38ea90e60aceaa30222c1170e5bbcfa28a |
-| built_at | 2026-10-02T11:29:26+00:00 |
-| path | qsar_fish_toxicity/01a0fc60-530d-71eb-9e17-a7a093e3eab4 |
+| uuid | 01a11191-e247-78ec-a1f9-e8047c36a3e7 |
+| checksum | 92a9d9004922c746966765c2a375c25310ea764322b7811cd528539e7ed6d623 |
+| built_at | 2026-10-06T14:15:35+00:00 |
+| path | qsar_fish_toxicity/01a11191-e247-78ec-a1f9-e8047c36a3e7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

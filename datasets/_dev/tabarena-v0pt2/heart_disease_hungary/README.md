@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_hungary
 container_format: 2
-checksum: 846880ad8bebde91479c633a922eb27de19e81edcd1950cc30badce7f346e93d
+checksum: ede711c307b0ef872e2e59b5b4cff3d5128950576adbf77835a2bab1f797b1f0
 build:
-  uuid: 01a0fc60-493f-77a6-9992-0bb3843007fa
-  checksum: 846880ad8bebde91479c633a922eb27de19e81edcd1950cc30badce7f346e93d
-  built_at: '2026-10-02T11:29:23+00:00'
-  path: heart_disease_hungary/01a0fc60-493f-77a6-9992-0bb3843007fa
+  uuid: 01a11191-bab5-71bb-9274-51e984826b93
+  checksum: ede711c307b0ef872e2e59b5b4cff3d5128950576adbf77835a2bab1f797b1f0
+  built_at: '2026-10-06T14:15:25+00:00'
+  path: heart_disease_hungary/01a11191-bab5-71bb-9274-51e984826b93
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 294 rows and 13 features. Source: UCI (1989).
 
-Built as `01a0fc60-493f-77a6-9992-0bb3843007fa` on 2026-10-02. See [Build](#build).
+Built as `01a11191-bab5-71bb-9274-51e984826b93` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 294 rows of the final frame (random rows: the frame is shuffled);
 
 | heart_disease_diagnosis | age | sex | cp | trestbps | chol | fbs | restecg | thalach | exang | oldpeak | slope |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 39 | 1 | 2 | 120 | 204 | 0 | 0 | 145 | 0 | 0 | nan |
-| 0 | 34 | 0 | 2 | 130 | 161 | 0 | 0 | 190 | 0 | 0 | nan |
-| 0 | 54 | 0 | 2 | 160 | 312 | 0 | 0 | 130 | 0 | 0 | nan |
-| 1 | 47 | 0 | 4 | 120 | 205 | 0 | 0 | 98 | 1 | 2 | 2 |
-| 1 | 52 | 1 | 4 | 112 | 342 | 0 | 1 | 96 | 1 | 1 | 2 |
+| 0 | 58 | 1 | 4 | 135 | 222 | 0 | 0 | 100 | 0 | 0 | nan |
+| 0 | 59 | 1 | 3 | 130 | 318 | 0 | 0 | 120 | 1 | 1 | 2 |
+| 0 | 59 | 1 | 2 | 140 | 287 | 0 | 0 | 150 | 0 | 0 | nan |
+| 0 | 54 | 1 | 3 | 120 | 217 | 0 | 0 | 137 | 0 | 0 | nan |
+| 0 | 55 | 0 | 2 | 130 | 394 | 0 | 2 | 150 | 0 | 0 | nan |
 
 ## Curation notes
 
@@ -262,11 +262,11 @@ Default splits.
 | cp | category | 0 | 0 | 4 | 4, 2, 3, 1 |
 | heart_disease_diagnosis | category | 0 | 0 | 2 | 0, 1 |
 | ca | float64 | 291 | 98.98 | 1 | 0.0 |
-| chol | float64 | 23 | 7.82 | 153 | 230.0, 246.0, 275.0, 263.0, 215.0, 224.0, 260.0, 238.0, 196.0, 211.0 |
-| trestbps | float64 | 1 | 0.34 | 31 | 120.0, 130.0, 140.0, 150.0, 110.0, 160.0, 125.0, 180.0, 100.0, 170.0 |
-| thalach | float64 | 1 | 0.34 | 71 | 150.0, 140.0, 130.0, 170.0, 160.0, 120.0, 110.0, 142.0, 125.0, 155.0 |
-| oldpeak | float64 | 0 | 0 | 10 | 0.0, 1.0, 2.0, 1.5, 3.0, 2.5, 0.5, 4.0, 5.0, 0.8 |
-| age | int64 | 0 | 0 | 38 | 54, 48, 52, 49, 55, 46, 43, 53, 50, 39 |
+| chol | float64 | 23 | 7.82 | 153 | 275.0, 230.0, 246.0, 216.0, 238.0, 196.0, 224.0, 260.0, 237.0, 263.0 |
+| trestbps | float64 | 1 | 0.34 | 31 | 120.0, 130.0, 140.0, 150.0, 110.0, 160.0, 125.0, 100.0, 180.0, 145.0 |
+| thalach | float64 | 1 | 0.34 | 71 | 150.0, 140.0, 130.0, 170.0, 160.0, 120.0, 110.0, 142.0, 125.0, 135.0 |
+| oldpeak | float64 | 0 | 0 | 10 | 0.0, 1.0, 2.0, 1.5, 3.0, 2.5, 0.5, 5.0, 4.0, 0.8 |
+| age | int64 | 0 | 0 | 38 | 54, 48, 52, 55, 49, 46, 53, 50, 43, 39 |
 
 </details>
 
@@ -328,10 +328,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-493f-77a6-9992-0bb3843007fa |
-| checksum | 846880ad8bebde91479c633a922eb27de19e81edcd1950cc30badce7f346e93d |
-| built_at | 2026-10-02T11:29:23+00:00 |
-| path | heart_disease_hungary/01a0fc60-493f-77a6-9992-0bb3843007fa |
+| uuid | 01a11191-bab5-71bb-9274-51e984826b93 |
+| checksum | ede711c307b0ef872e2e59b5b4cff3d5128950576adbf77835a2bab1f797b1f0 |
+| built_at | 2026-10-06T14:15:25+00:00 |
+| path | heart_disease_hungary/01a11191-bab5-71bb-9274-51e984826b93 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

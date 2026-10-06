@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: blood_transfusion
 container_format: 2
-checksum: 5f0054894786b53387857c689da22ba02c88a75e6a1ed75035f82df273be9d41
+checksum: 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085
 build:
-  uuid: 01a0fc60-9787-7a1a-b452-2060af900230
-  checksum: 5f0054894786b53387857c689da22ba02c88a75e6a1ed75035f82df273be9d41
-  built_at: '2026-10-02T11:29:43+00:00'
-  path: blood_transfusion/01a0fc60-9787-7a1a-b452-2060af900230
+  uuid: 01a11191-9b9b-73e7-8a35-dca35228c2e7
+  checksum: 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085
+  built_at: '2026-10-06T14:15:17+00:00'
+  path: blood_transfusion/01a11191-9b9b-73e7-8a35-dca35228c2e7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `DonatedBloodInMarch2007`, scored with `roc_auc` on IID splits. 748 rows and 4 features. Source: UCI (2008).
 
-Built as `01a0fc60-9787-7a1a-b452-2060af900230` on 2026-10-02. See [Build](#build).
+Built as `01a11191-9b9b-73e7-8a35-dca35228c2e7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 748 rows of the final frame (random rows: the frame is shuffled).
 
 | DonatedBloodInMarch2007 | MonthsSinceLastDonation | NumberOfDonations | TotalBloodDonated | MonthsSinceFirstDonation |
 |---|---|---|---|---|
+| No | 9 | 3 | 750 | 14 |
+| No | 21 | 1 | 250 | 21 |
+| No | 14 | 3 | 750 | 31 |
+| No | 16 | 6 | 1500 | 81 |
 | No | 2 | 1 | 250 | 2 |
-| No | 16 | 6 | 1500 | 40 |
-| No | 4 | 6 | 1500 | 35 |
-| No | 11 | 2 | 500 | 11 |
-| No | 14 | 2 | 500 | 14 |
 
 ## Curation notes
 
@@ -249,9 +249,9 @@ Default splits.
 |---|---|---|---|---|---|
 | DonatedBloodInMarch2007 | category | 0 | 0 | 2 | No, Yes |
 | MonthsSinceLastDonation | int64 | 0 | 0 | 31 | 2, 4, 11, 14, 16, 23, 21, 9, 3, 1 |
-| NumberOfDonations | int64 | 0 | 0 | 33 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 11 |
-| TotalBloodDonated | int64 | 0 | 0 | 33 | 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2750 |
-| MonthsSinceFirstDonation | int64 | 0 | 0 | 78 | 4, 16, 14, 23, 2, 28, 26, 11, 35, 21 |
+| NumberOfDonations | int64 | 0 | 0 | 33 | 1, 2, 3, 5, 4, 6, 7, 8, 9, 11 |
+| TotalBloodDonated | int64 | 0 | 0 | 33 | 250, 500, 750, 1250, 1000, 1500, 1750, 2000, 2250, 2750 |
+| MonthsSinceFirstDonation | int64 | 0 | 0 | 78 | 4, 16, 14, 2, 23, 28, 26, 11, 35, 21 |
 
 ### Target distribution
 
@@ -280,10 +280,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9787-7a1a-b452-2060af900230 |
-| checksum | 5f0054894786b53387857c689da22ba02c88a75e6a1ed75035f82df273be9d41 |
-| built_at | 2026-10-02T11:29:43+00:00 |
-| path | blood_transfusion/01a0fc60-9787-7a1a-b452-2060af900230 |
+| uuid | 01a11191-9b9b-73e7-8a35-dca35228c2e7 |
+| checksum | 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085 |
+| built_at | 2026-10-06T14:15:17+00:00 |
+| path | blood_transfusion/01a11191-9b9b-73e7-8a35-dca35228c2e7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

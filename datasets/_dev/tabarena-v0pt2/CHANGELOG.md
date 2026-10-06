@@ -4,6 +4,119 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-06 (all 128 rebuilt: the row order comes from the rows' content)
+
+- The base class now puts the rows in the order of their content (a stable sort by a hash of each row) before the
+  shuffle or the time sort (`order_rows`, `content_order`). A container depends only on which rows `_clean` returns,
+  not on the order it returns them in (a polars join, a file listing, a library version). Within a timestamp, the rows
+  of a temporal task are now in content order too. `shuffle = False` keeps the order of `_clean`, as before.
+- Rebuilt all 128 datasets (new UUIDs in the table of `README.md`; this supersedes the four rebuilt earlier today).
+  The rows of 126 are in a new order, so their folds and checksums are new. california_house_prices_2020 and
+  mercedes_benz_greener_manufacturing keep their checksums: their time column has no ties. The 120 datasets that
+  are not sub-sampled hold the same rows as before. The eight sub-sampled `_1m` datasets draw their sample from the
+  reordered frame, so they hold a different sample of the same size: amex_non_iid_1m 124,466 groups (was 124,481),
+  sepsis_prediction_1m 38,968 (was 39,002), and other rows for climate_model_weather_forecasting_1m,
+  consumer_complaints_1m, cooking_time_1m, delivery_eta_1m, home_credit_default_stability_1m and maps_router_eta_1m.
+  From now on their sample no longer depends on the order of `_clean` either. Verification: all 128 built `ok`, every saved container reloads with its checksum, no new warning against
+  the committed READMEs (61 open warnings in 44 datasets, as before), and the raw files read are the same. A
+  check-only build under pandas 3.0.6 from a warehouse holding only the 466 traced files (71.5 GB) gives the same 128
+  checksums, so the traced files suffice and pandas 3 reproduces the build. The backup of 2026-10-02 still holds every
+  input (step 4 not re-run).
+- Memory: the first version of the new order copied the frame twice, and the `_1m` datasets are ordered before they
+  are sub-sampled, so maps_router_eta_1m peaked at 255 GB (17 minutes of wall time for the build). `order_rows` now
+  computes the positions first and copies once; a check-only build with it gives the same 128 checksums, and
+  maps_router_eta_1m peaks at 205 GB (172 GB before the content order).
+- The task-probe sweep of this build (all 128, no errors) flags 8 datasets. Six carry flags already decided in the
+  review (acquire_valued_shoppers_challenge, asp_potassco_classification, clock_protein_toxicity, forest_fires,
+  naticusdroid_android_permissions_dataset, sepsis_survival_minimal_clinical_records; their numbers did not move
+  materially). Two are new, both kept (evidence in the records and the cases table of
+  `.claude/skills/verify-dataset/references/task_probes.md`): consumer_complaints_1m (`unstable`: above the dummy
+  in 3 of 3 windows, the standard error over 3 windows is the drift between them) and
+  electric_motor_temperature_prediction (`no_spread`: every probe model has R^2 0.94-0.97, while the tuned
+  methods on BeyondArena range from RMSE 1.77 to 3.52).
+
+## 2026-10-06 (pandas 2 and 3 build the same containers; four datasets rebuilt with nanosecond times)
+
+- pandas 2.3.3 and pandas 3.0.6 now build the same container for every dataset: check-only builds of all 128 under
+  both (scikit-learn 1.7.2) give the same checksum each. Before the changes below, pandas 3 changed 17 checksums
+  (dates parsed to `us` or `s` instead of `ns`; values, metadata and splits were the same) and crashed 5 definitions.
+- The standard steps store datetimes and durations in nanoseconds and pandas 3 `str` text as `object`
+  (`canonical_dtypes`, after `cast_dtypes`). The loader gives text categories `object` categories under pandas 3, as
+  pandas 2 does, and the object-column checks count `str` columns (`object_columns`, now in `data_foundry.v2`).
+- Rebuilt the four datasets whose time column was not in nanoseconds; the values, rows and splits are unchanged, the
+  checksums are new: `cooking_time_1m` (`01a11121-7e5f-7033-902e-21ba9ae0fc7a`), `delivery_eta_1m`
+  (`01a11121-cd9b-7915-848b-88d944416d63`) and `maps_router_eta_1m` (`01a11122-8acf-7d20-8706-085a7edf6e23`) had
+  `datetime64[us]` from polars, `sberbank_housing_market_forecasting` (`01a11120-e8e3-707d-802c-84f8fa1cae08`)
+  `datetime64[ms]` from the Excel reader. The build reloads and verifies all four, with no new warnings; their raw
+  inputs did not change, so the check from the traced inputs was not re-run.
+- Edited for pandas 3, each with the same container as before: `blood_transfusion` (`DataFrame.map` instead of the
+  removed `applymap`), `california_house_prices_2020` (`Bedrooms` cast to `object` before numbers are written into
+  it), `consumer_complaints_1m` (an assert on the `Tags` values no longer goes through `astype(str)`),
+  `in_vehicle_coupon_recommendation` (the respondent key writes a missing answer as `"nan"` explicitly; pandas 3's
+  `astype(str)` keeps it missing), `santander_transaction_value` (`notna()` instead of `fillna(0)` on the id columns),
+  and `anes_voting_2026`, `homesite_quote_conversion`, `home_credit_default_risk` (`object_columns(df)` instead of
+  `select_dtypes(include="object")`, which pandas 3 deprecates for `str` columns).
+- Building needs the new `build` extra (scikit-learn `>=1.6,<1.8`, scipy, liac-arff, openml, polars, the Excel
+  engines, matplotlib); loading a container needs only the core install. scikit-learn 1.8 changes
+  `StratifiedGroupKFold` (on 13 sample datasets, 1.9 changed the splits of in_vehicle_coupon_recommendation, emscad
+  and sepsis_prediction_1m; 1.6 and 1.7 give the same splits); python-calamine 0.8 cannot open the xlsx of
+  gallstone_disease. The lock stays on pandas
+  2.3.3, since AutoGluon 1.5 requires pandas below 2.4; CI runs the tests under pandas 2 and 3.
+
+## 2026-10-06 (audiology_diagnosis and eryhemato_squamous_disease changed; task-probe review complete)
+
+- `eryhemato_squamous_disease` rebuilt with the clinical features only (new UUID `01a110c0-0a69-7edb-95e9-f96e2c752096`;
+  34 → 12 features, same 366 rows and six classes). The source evaluates clinically first and takes skin samples for
+  the 22 histopathological features afterwards; with them the task was close to solved (macro ROC AUC 0.999, flag
+  `solved`). Before the biopsy it is the clinical differential: macro ROC AUC 0.98, 87% accuracy for logistic
+  regression. Task probes: no flags. Evidence in the record.
+- `audiology_diagnosis` rebuilt with a new target (new UUID `01a1109b-6cc4-7fb8-9797-facc98f95aba`; 199 → 195 rows,
+  68 → 65 features). The old 3-class merge (cochlear / normal / other) was our own, made from the diagnosis names; the
+  new target is the standard distinction between a hearing loss with and without a conductive part: normal 19,
+  sensorineural 142, conductive_or_mixed 34. bells_palsy and the central diagnoses (possible_brainstem_disorder,
+  poss_central) are dropped as not a type of hearing loss, and the brainstem-test columns that only those cases had
+  (bser, viith_nerve_signs, waveform_ItoV_prolonged) with them. The duplicated cases stay dropped. The 24 original
+  diagnoses are not usable (16 have 4 or fewer cases), and the four large cochlear ones are spelled out by two history
+  findings. Task probes: no flags (were `no_spread`, `unstable`). Evidence in the record.
+- The task-probe review of the 24 flagged datasets is complete (each record has a dated comment with the evidence;
+  the rules and a table of the decisions are in `.claude/skills/verify-dataset/references/task_probes.md`): 2 retired (fitness_club, parkinsons_biomedical_voice_measurements,
+  2026-10-05), 2 changed (audiology_diagnosis, eryhemato_squamous_disease, above) and 20 kept without a container
+  change: forest_fires, clock_protein_toxicity, asp_potassco_classification, sepsis_survival_minimal_clinical_records,
+  musk, pancreatic_cancer_mouse_detection, aps_failure, coil_2000, marketing_campaign,
+  naticusdroid_android_permissions_dataset, mercari_price_suggestion, california_house_prices_2020, amex_non_iid_1m,
+  acquire_valued_shoppers_challenge, gallstone_disease, indian_liver_patient_dataset,
+  mercedes_benz_greener_manufacturing, coffee_rating_prediction, garments_worker_productivity and
+  heart_disease_cleveland. A selection version of asp_potassco_classification (PAR10) is planned to replace it
+  (`TODO.md`).
+- Removed `TASK_PROBES.md`: the sweep of 2026-10-01 is settled, its decisions are in the records and above, and the
+  probe script changed (below), so its numbers are not comparable with a new sweep. A sweep's output now stays in the
+  scratch folder of the run (`rebuild-working-copy`, step 6).
+- The probe tooling of the verify-dataset skill, after what the review found: `task_probes.py` picks the single
+  feature on each split's training side, pairs the `no_spread` test by split and probes every split (up to 30) of a
+  dataset with at most 5,000 scored units, reads `unstable` as the share of splits above the dummy and the standard
+  error of the mean, encodes text columns, flags `one_feature` only when the models also remove less than a fifth of
+  what the feature leaves, compares the drift baseline on log loss (binary temporal tasks included), and adds
+  `few_minority`. `leak_probes.py` adds a shallow-tree probe. The new `tuned_results.py` sets a flag against the
+  benchmark's tuned methods (per-fold BeyondArena results). On the datasets of the review, the false flags of
+  aps_failure, coffee, garments, mercari, california, musk and heart_disease_cleveland are gone; gallstone_disease's
+  untuned families still tie (its tuned methods spread).
+
+## 2026-10-05 (fitness_club and parkinsons retired; task-probe review)
+
+- Removed `parkinsons_biomedical_voice_measurements`: retired as too small (`No (Retired)`, marker `Too Small`;
+  evidence in the record). 32 patients, 8 of them healthy: every grouped test fold scores 2 or 3 healthy people, and
+  on BeyondArena the method ranks agree across folds less than on 98% of the datasets (best AUC per fold from 0.58 to
+  1.0). A BeyondArena dataset; the shipped notebook and collection pin are unchanged, and its container and raw file
+  stay in the warehouse. It was the only `mean` group-unit dataset: `BENCHMARK_CHANGES_TODO.md` now lists three.
+  128 datasets remain, 43 of them from TabArena v0.1.
+- Removed `fitness_club`: retired as trivial (`No (Retired)`, marker `Trivial`; the record's comment has the
+  evidence). Ranking the members by `months_as_member` alone, with no model, gives ROC AUC 0.822 on the 30 shipped
+  folds, above all 37 BeyondArena configurations (best RealTabPFN-2.5 0.821, median 0.818); every other feature lowers
+  the score. The booking lead time also follows a generator's rule: `days_before` is 2 x the weekday's number in 1,251
+  of the 1,500 rows. A TabArena v0.1 and BeyondArena dataset; the shipped notebook and collection pin are unchanged,
+  and its container and raw file stay in the warehouse (`LEAK_AUDIT.md`, the table in `README.md`).
+- The verify-dataset skill has a reference on reading the flags (`.claude/skills/verify-dataset/references/task_probes.md`).
+
 ## 2026-10-02 (getting started; the grouped-data plan and the Atlas folder removed)
 
 - Added [`GETTING_STARTED.md`](GETTING_STARTED.md), the way in for a new curator, made from the Atlas getting-started

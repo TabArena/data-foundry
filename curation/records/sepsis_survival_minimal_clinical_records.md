@@ -36,6 +36,8 @@ CC: "It has three features, which sound hard to be fully meaningful. But it is a
 
 The dataset is full of "real" duplicates and is technically just a small or tiny dataset. We keep it as is to see how methods can handle it, but this is not really large data...
 
+CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task by design after the task-probe review (flag `one_feature`). The 110,204 admissions hold only 975 distinct feature rows (age, sex, episode number; 7.4% died): the duplicates are real patients, and predicting survival from these three fields alone is the source paper's question. Age carries most of the signal but not all of it: age alone, chosen on each split's training side, gives ROC AUC 0.704, above only 6 of 28 BeyondArena configurations and below the best on all 9 folds; the best methods (TabPFN-3, tuned LightGBM, RealMLP) reach 0.707, a default random forest 0.689, and a lookup of each cell's death rate on the training side 0.689. So `Trivial` does not hold: sex and episode number add a small, consistent gain, and the methods gain by smoothing over age.
+
 ## Reference
 
 @article{chicco2020survival,

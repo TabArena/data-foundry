@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: c602677f6762828c6a43fdd5b08a05ac80975db10249b45c4ba90cbbec45691a
+checksum: 3bf8b501378314c88e89c9b11477b64da46ecec42356945d20dc8014af4a8ded
 build:
-  uuid: 01a0fc60-49ac-710c-9608-9722ea297c68
-  checksum: c602677f6762828c6a43fdd5b08a05ac80975db10249b45c4ba90cbbec45691a
-  built_at: '2026-10-02T11:29:24+00:00'
-  path: predict_students_dropout_and_academic_success/01a0fc60-49ac-710c-9608-9722ea297c68
+  uuid: 01a11191-e1c1-7a1e-a6c0-27b25c8071d3
+  checksum: 3bf8b501378314c88e89c9b11477b64da46ecec42356945d20dc8014af4a8ded
+  built_at: '2026-10-06T14:15:35+00:00'
+  path: predict_students_dropout_and_academic_success/01a11191-e1c1-7a1e-a6c0-27b25c8071d3
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID splits. 4,424 rows and 36 features. Source: UCI (2021).
 
-Built as `01a0fc60-49ac-710c-9608-9722ea297c68` on 2026-10-02. See [Build](#build).
+Built as `01a11191-e1c1-7a1e-a6c0-27b25c8071d3` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -145,11 +145,11 @@ The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled
 
 | AcademicOutcome | Marital_status | Application_mode | Application_order | Course | Daytimeevening_attendance | Previous_qualification | Previous_qualification_grade | Nationality | Mothers_qualification | Fathers_qualification | Mothers_occupation |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Dropout | divorced | Over 23 years old | 1 | Equinculture | daytime | Secondary education | 133.1 | Portuguese | Higher Education - Degree | Secondary Education - 12th Year of Scho… | Personal Services, Security and Safety … |
-| Graduate | single | 2nd phase - general contingent | 1 | Social Service | daytime | Secondary education | 125 | Portuguese | Higher Education - Master's | Higher Education - Degree | Representatives of Legislative/Executiv… |
-| Graduate | single | 2nd phase - general contingent | 1 | Basic Education | daytime | Secondary education | 133 | Portuguese | Basic Education 2nd Cycle | Basic Education 2nd Cycle | Unskilled Workers |
-| Graduate | single | 2nd phase - general contingent | 2 | Advertising and Marketing Management | daytime | Secondary education | 110 | Portuguese | Secondary Education - 12th Year of Scho… | Secondary Education - 12th Year of Scho… | Administrative staff |
-| Dropout | single | Over 23 years old | 1 | Nursing | daytime | Secondary education | 130 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic Education 3rd Cycle | Unskilled Workers |
+| Graduate | single | Technological specialization diploma ho… | 1 | Agronomy | daytime | Technological specialization course | 140 | Portuguese | Basic Education 3rd Cycle | Basic Education 2nd Cycle | Farmers and Skilled Workers |
+| Enrolled | single | 2nd phase - general contingent | 2 | Veterinary Nursing | daytime | Secondary education | 138 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic education 1st cycle | Unskilled Workers |
+| Graduate | single | 1st phase - general contingent | 4 | Nursing | daytime | Secondary education | 132 | Portuguese | Basic Education 3rd Cycle | Basic Education 2nd Cycle | Personal Services, Security and Safety … |
+| Dropout | single | 1st phase - general contingent | 1 | Equinculture | daytime | Secondary education | 121 | Portuguese | Higher Education - Degree | Basic Education 3rd Cycle | Specialists in Intellectual/Scientific … |
+| Dropout | single | Transfer | 1 | Informatics Engineering | daytime | Secondary education | 120 | Portuguese | Secondary Education - 12th Year of Scho… | Secondary Education - 12th Year of Scho… | Personal Services, Security and Safety … |
 
 ## Curation notes
 
@@ -208,9 +208,9 @@ Default splits.
 | International | category | 0 | 0 | 2 | no, yes |
 | AcademicOutcome | category | 0 | 0 | 3 | Graduate, Dropout, Enrolled |
 | Previous_qualification_grade | float64 | 0 | 0 | 101 | 133.1, 130.0, 140.0, 120.0, 150.0, 125.0, 135.0, 110.0, 131.0, 160.0 |
-| Admission_grade | float64 | 0 | 0 | 620 | 130.0, 140.0, 120.0, 100.0, 150.0, 110.0, 160.0, 128.2, 123.0, 128.0 |
+| Admission_grade | float64 | 0 | 0 | 620 | 130.0, 140.0, 120.0, 100.0, 150.0, 110.0, 160.0, 128.2, 128.0, 123.0 |
 | Curricular_units_1st_sem_grade | float64 | 0 | 0 | 805 | 0.0, 12.0, 13.0, 11.0, 11.5, 14.0, 12.5, 12.6667, 10.0, 12.3333 |
-| Curricular_units_2nd_sem_grade | float64 | 0 | 0 | 786 | 0.0, 12.0, 11.0, 13.0, 11.5, 12.5, 10.0, 14.0, 13.5, 12.6667 |
+| Curricular_units_2nd_sem_grade | float64 | 0 | 0 | 786 | 0.0, 12.0, 11.0, 13.0, 11.5, 12.5, 14.0, 10.0, 13.5, 12.6667 |
 | Unemployment_rate | float64 | 0 | 0 | 10 | 7.6, 9.4, 10.8, 12.4, 12.7, 11.1, 15.5, 13.9, 8.9, 16.2 |
 | Inflation_rate | float64 | 0 | 0 | 9 | 1.4, 2.6, -0.8, 0.5, 3.7, 0.6, 2.8, -0.3, 0.3 |
 | GDP | float64 | 0 | 0 | 10 | 0.32, -3.12, 1.74, 1.79, -1.7, 2.02, -4.06, 0.79, 3.51, -0.92 |
@@ -220,7 +220,7 @@ Default splits.
 | Curricular_units_1st_sem_enrolled | int64 | 0 | 0 | 23 | 6, 5, 7, 8, 0, 12, 10, 11, 9, 15 |
 | Curricular_units_1st_sem_evaluations | int64 | 0 | 0 | 35 | 8, 7, 6, 9, 0, 10, 11, 12, 5, 13 |
 | Curricular_units_1st_sem_approved | int64 | 0 | 0 | 23 | 6, 5, 0, 7, 4, 3, 2, 1, 8, 11 |
-| Curricular_units_1st_sem_without_evaluations | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 7, 5, 8, 12 |
+| Curricular_units_1st_sem_without_evaluations | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 7, 6, 5, 8, 12 |
 | Curricular_units_2nd_sem_credited | int64 | 0 | 0 | 19 | 0, 1, 2, 4, 5, 3, 6, 11, 7, 9 |
 | Curricular_units_2nd_sem_enrolled | int64 | 0 | 0 | 22 | 6, 5, 8, 7, 0, 11, 9, 10, 12, 13 |
 | Curricular_units_2nd_sem_evaluations | int64 | 0 | 0 | 30 | 8, 6, 7, 9, 0, 10, 5, 11, 12, 13 |
@@ -342,10 +342,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-49ac-710c-9608-9722ea297c68 |
-| checksum | c602677f6762828c6a43fdd5b08a05ac80975db10249b45c4ba90cbbec45691a |
-| built_at | 2026-10-02T11:29:24+00:00 |
-| path | predict_students_dropout_and_academic_success/01a0fc60-49ac-710c-9608-9722ea297c68 |
+| uuid | 01a11191-e1c1-7a1e-a6c0-27b25c8071d3 |
+| checksum | 3bf8b501378314c88e89c9b11477b64da46ecec42356945d20dc8014af4a8ded |
+| built_at | 2026-10-06T14:15:35+00:00 |
+| path | predict_students_dropout_and_academic_success/01a11191-e1c1-7a1e-a6c0-27b25c8071d3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

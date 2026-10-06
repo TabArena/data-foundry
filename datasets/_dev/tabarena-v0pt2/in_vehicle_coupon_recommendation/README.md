@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: 05b1fa10808f021700821791690523edafbed891387eafff1aa934c60af8047b
+checksum: 2807b03f2d7ab8088bfe5302a73dcf30974c24338d656bdbcb6d7cc4d082422c
 build:
-  uuid: 01a0fc60-3878-785b-8732-1585571026d6
-  checksum: 05b1fa10808f021700821791690523edafbed891387eafff1aa934c60af8047b
-  built_at: '2026-10-02T11:29:19+00:00'
-  path: in_vehicle_coupon_recommendation/01a0fc60-3878-785b-8732-1585571026d6
+  uuid: 01a11191-87c5-7fd4-96b7-34fd5eb7d14b
+  checksum: 2807b03f2d7ab8088bfe5302a73dcf30974c24338d656bdbcb6d7cc4d082422c
+  built_at: '2026-10-06T14:15:13+00:00'
+  path: in_vehicle_coupon_recommendation/01a11191-87c5-7fd4-96b7-34fd5eb7d14b
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 25 features. Source: UCI (2017).
 
-Built as `01a0fc60-3878-785b-8732-1585571026d6` on 2026-10-02. See [Build](#build).
+Built as `01a11191-87c5-7fd4-96b7-34fd5eb7d14b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -156,11 +156,11 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 
 | AcceptCoupon | destination | passenger | weather | temperature | time | coupon | expiration | gender | age | maritalStatus | has_children |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | Home | Partner | Rainy | 55 | 18 | Coffee House | 1d | Female | 50plus | Married partner | 0 |
-| Yes | No Urgent Place | Friend(s) | Sunny | 80 | 18 | Coffee House | 1d | Female | 50plus | Married partner | 1 |
-| No | Work | Alone | Rainy | 55 | 7 | Bar | 1d | Female | 31 | Married partner | 1 |
-| Yes | Home | Alone | Snowy | 30 | 18 | Coffee House | 1d | Female | 31 | Married partner | 0 |
-| Yes | Home | Alone | Sunny | 55 | 18 | Bar | 1d | Female | 50plus | Married partner | 1 |
+| Yes | Home | Alone | Sunny | 80 | 18 | Coffee House | 1d | Female | 36 | Single | 1 |
+| Yes | Home | Partner | Sunny | 30 | 22 | Restaurant(&lt;20) | 2h | Male | below21 | Unmarried partner | 0 |
+| No | No Urgent Place | Friend(s) | Sunny | 55 | 22 | Bar | 2h | Female | 21 | Married partner | 1 |
+| Yes | Work | Alone | Rainy | 55 | 7 | Carry out & Take away | 1d | Male | 36 | Married partner | 1 |
+| No | No Urgent Place | Partner | Sunny | 55 | 14 | Bar | 1d | Female | 21 | Married partner | 0 |
 
 ## Curation notes
 
@@ -351,10 +351,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-3878-785b-8732-1585571026d6 |
-| checksum | 05b1fa10808f021700821791690523edafbed891387eafff1aa934c60af8047b |
-| built_at | 2026-10-02T11:29:19+00:00 |
-| path | in_vehicle_coupon_recommendation/01a0fc60-3878-785b-8732-1585571026d6 |
+| uuid | 01a11191-87c5-7fd4-96b7-34fd5eb7d14b |
+| checksum | 2807b03f2d7ab8088bfe5302a73dcf30974c24338d656bdbcb6d7cc4d082422c |
+| built_at | 2026-10-06T14:15:13+00:00 |
+| path | in_vehicle_coupon_recommendation/01a11191-87c5-7fd4-96b7-34fd5eb7d14b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

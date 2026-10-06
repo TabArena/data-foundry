@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: wine_quality
 container_format: 2
-checksum: f06a94cbceb37e56dc873d59ab85ee25d3b1b39b02839e686dcfd60395d682b6
+checksum: dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9
 build:
-  uuid: 01a0fc60-9ca3-7220-ada0-cea14cb4e0f3
-  checksum: f06a94cbceb37e56dc873d59ab85ee25d3b1b39b02839e686dcfd60395d682b6
-  built_at: '2026-10-02T11:29:45+00:00'
-  path: wine_quality/01a0fc60-9ca3-7220-ada0-cea14cb4e0f3
+  uuid: 01a11191-f6e8-77a9-ae34-4a2480023fc7
+  checksum: dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9
+  built_at: '2026-10-06T14:15:41+00:00'
+  path: wine_quality/01a11191-f6e8-77a9-ae34-4a2480023fc7
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `median_wine_quality`, scored with `rmse` on IID splits. 5,320 rows and 12 features. Source: UCI (2009).
 
-Built as `01a0fc60-9ca3-7220-ada0-cea14cb4e0f3` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f6e8-77a9-ae34-4a2480023fc7` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -148,11 +148,11 @@ The first 5 of 5,320 rows of the final frame (random rows: the frame is shuffled
 
 | median_wine_quality | fixed_acidity | volatile_acidity | citric_acid | residual_sugar | chlorides | free_sulfur_dioxide | total_sulfur_dioxide | density | pH | sulphates | alcohol |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5 | 9.4 | 0.42 | 0.32 | 6.5 | 0.027 | 20 | 167 | 0.99479 | 3.08 | 0.43 | 10.6 |
-| 5 | 8.6 | 0.635 | 0.68 | 1.8 | 0.403 | 19 | 56 | 0.99632 | 3.02 | 1.15 | 9.3 |
-| 5 | 5.7 | 0.695 | 0.06 | 6.8 | 0.042 | 9 | 84 | 0.99432 | 3.44 | 0.44 | 10.2 |
-| 5 | 8 | 0.57 | 0.23 | 3.2 | 0.073 | 17 | 119 | 0.99675 | 3.26 | 0.57 | 9.3 |
-| 6 | 7.1 | 0.17 | 0.38 | 7.4 | 0.052 | 49 | 182 | 0.9958 | 3.35 | 0.52 | 9.6 |
+| 5 | 7 | 0.29 | 0.54 | 10.7 | 0.046 | 59 | 234 | 0.9966 | 3.05 | 0.61 | 9.5 |
+| 6 | 6.1 | 0.255 | 0.44 | 12.3 | 0.045 | 53 | 197 | 0.9967 | 3.24 | 0.54 | 9.5 |
+| 6 | 6.7 | 0.32 | 0.32 | 1.7 | 0.031 | 31 | 114 | 0.98946 | 3.12 | 0.35 | 12.5 |
+| 5 | 6.5 | 0.25 | 0.35 | 12 | 0.055 | 47 | 179 | 0.998 | 3.58 | 0.47 | 10 |
+| 7 | 6.5 | 0.28 | 0.29 | 2.7 | 0.038 | 26 | 107 | 0.9912 | 3.32 | 0.41 | 11.6 |
 
 ## Curation notes
 
@@ -198,13 +198,13 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | wine_color | category | 0 | 0 | 2 | white, red |
 | fixed_acidity | float64 | 0 | 0 | 106 | 6.8, 6.6, 6.4, 6.9, 7.0, 6.7, 7.2, 7.1, 6.5, 6.2 |
-| volatile_acidity | float64 | 0 | 0 | 187 | 0.28, 0.24, 0.26, 0.27, 0.25, 0.22, 0.23, 0.2, 0.3, 0.32 |
+| volatile_acidity | float64 | 0 | 0 | 187 | 0.28, 0.26, 0.24, 0.27, 0.25, 0.22, 0.23, 0.2, 0.3, 0.32 |
 | citric_acid | float64 | 0 | 0 | 89 | 0.3, 0.32, 0.28, 0.49, 0.34, 0.26, 0.29, 0.31, 0.24, 0.27 |
-| residual_sugar | float64 | 0 | 0 | 316 | 2.0, 1.6, 1.4, 1.8, 1.2, 2.2, 1.5, 1.9, 1.7, 2.1 |
+| residual_sugar | float64 | 0 | 0 | 316 | 2.0, 1.6, 1.4, 1.8, 1.2, 2.2, 1.5, 1.7, 1.9, 2.1 |
 | chlorides | float64 | 0 | 0 | 214 | 0.036, 0.044, 0.042, 0.046, 0.04, 0.047, 0.048, 0.038, 0.05, 0.034 |
-| free_sulfur_dioxide | float64 | 0 | 0 | 135 | 6.0, 29.0, 26.0, 15.0, 24.0, 34.0, 17.0, 31.0, 23.0, 28.0 |
-| total_sulfur_dioxide | float64 | 0 | 0 | 276 | 111.0, 113.0, 114.0, 122.0, 98.0, 128.0, 117.0, 104.0, 101.0, 126.0 |
-| density | float64 | 0 | 0 | 998 | 0.992, 0.9972, 0.9928, 0.998, 0.9976, 0.9968, 0.9934, 0.9932, 0.9962, 0.9966 |
+| free_sulfur_dioxide | float64 | 0 | 0 | 135 | 6.0, 29.0, 26.0, 15.0, 24.0, 31.0, 34.0, 17.0, 23.0, 28.0 |
+| total_sulfur_dioxide | float64 | 0 | 0 | 276 | 111.0, 113.0, 114.0, 98.0, 122.0, 128.0, 117.0, 101.0, 124.0, 150.0 |
+| density | float64 | 0 | 0 | 998 | 0.992, 0.9972, 0.9928, 0.998, 0.9976, 0.9968, 0.9932, 0.9934, 0.9962, 0.9966 |
 | pH | float64 | 0 | 0 | 108 | 3.16, 3.22, 3.14, 3.15, 3.2, 3.24, 3.18, 3.19, 3.12, 3.17 |
 | sulphates | float64 | 0 | 0 | 111 | 0.5, 0.46, 0.54, 0.44, 0.48, 0.38, 0.52, 0.47, 0.49, 0.45 |
 | alcohol | float64 | 0 | 0 | 111 | 9.5, 9.4, 9.2, 10.0, 10.5, 11.0, 9.8, 9.3, 10.4, 10.2 |
@@ -251,10 +251,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-9ca3-7220-ada0-cea14cb4e0f3 |
-| checksum | f06a94cbceb37e56dc873d59ab85ee25d3b1b39b02839e686dcfd60395d682b6 |
-| built_at | 2026-10-02T11:29:45+00:00 |
-| path | wine_quality/01a0fc60-9ca3-7220-ada0-cea14cb4e0f3 |
+| uuid | 01a11191-f6e8-77a9-ae34-4a2480023fc7 |
+| checksum | dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9 |
+| built_at | 2026-10-06T14:15:41+00:00 |
+| path | wine_quality/01a11191-f6e8-77a9-ae34-4a2480023fc7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

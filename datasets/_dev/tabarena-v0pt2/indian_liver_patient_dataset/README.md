@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: indian_liver_patient_dataset
 container_format: 2
-checksum: 448d62d9d6947e1396878257e8453ff367dd950543241ab84cd5cff00b22f4c6
+checksum: f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85
 build:
-  uuid: 01a0fc60-81d3-7387-b2a1-a75d12f77f21
-  checksum: 448d62d9d6947e1396878257e8453ff367dd950543241ab84cd5cff00b22f4c6
-  built_at: '2026-10-02T11:29:38+00:00'
-  path: indian_liver_patient_dataset/01a0fc60-81d3-7387-b2a1-a75d12f77f21
+  uuid: 01a11191-cad0-710a-89c9-546914224a18
+  checksum: f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85
+  built_at: '2026-10-06T14:15:29+00:00'
+  path: indian_liver_patient_dataset/01a11191-cad0-710a-89c9-546914224a18
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Selector`, scored with `roc_auc` on IID splits. 583 rows and 10 features. Source: UCI (2012).
 
-Built as `01a0fc60-81d3-7387-b2a1-a75d12f77f21` on 2026-10-02. See [Build](#build).
+Built as `01a11191-cad0-710a-89c9-546914224a18` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -149,11 +149,11 @@ The first 5 of 583 rows of the final frame (random rows: the frame is shuffled).
 
 | Selector | Age | Gender | TB | DB | Alkphos | Sgpt | Sgot | TP | ALB | A/G |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 19 | Male | 1.4 | 0.8 | 178 | 13 | 26 | 8 | 4.6 | 1.3 |
-| 1 | 12 | Male | 1 | 0.2 | 719 | 157 | 108 | 7.2 | 3.7 | 1 |
-| 1 | 60 | Male | 5.7 | 2.8 | 214 | 412 | 850 | 7.3 | 3.2 | 0.78 |
-| 1 | 42 | Female | 0.5 | 0.1 | 162 | 155 | 108 | 8.1 | 4 | 0.9 |
-| 1 | 40 | Male | 14.5 | 6.4 | 358 | 50 | 75 | 5.7 | 2.1 | 0.5 |
+| 1 | 66 | Female | 2.9 | 1.3 | 168 | 21 | 38 | 5.5 | 1.8 | 0.4 |
+| 2 | 45 | Male | 1.3 | 0.6 | 166 | 49 | 42 | 5.6 | 2.5 | 0.8 |
+| 1 | 60 | Male | 2 | 1.1 | 664 | 52 | 104 | 6 | 2.1 | 0.53 |
+| 2 | 22 | Male | 0.9 | 0.3 | 179 | 18 | 21 | 6.7 | 3.7 | 1.2 |
+| 2 | 24 | Female | 0.7 | 0.2 | 188 | 11 | 10 | 5.5 | 2.3 | 0.71 |
 
 ## Curation notes
 
@@ -254,12 +254,12 @@ Default splits.
 | A/G | float64 | 4 | 0.69 | 69 | 1.0, 0.8, 0.9, 0.7, 1.1, 1.2, 0.6, 0.5, 1.3, 1.4 |
 | TB | float64 | 0 | 0 | 113 | 0.8, 0.7, 0.9, 0.6, 1.0, 1.1, 1.8, 1.4, 1.3, 1.7 |
 | DB | float64 | 0 | 0 | 80 | 0.2, 0.1, 0.3, 0.8, 0.4, 0.5, 0.6, 1.0, 1.3, 0.7 |
-| TP | float64 | 0 | 0 | 58 | 7.0, 6.0, 6.8, 6.9, 6.2, 7.1, 7.2, 8.0, 6.1, 7.3 |
-| ALB | float64 | 0 | 0 | 40 | 3.0, 4.0, 2.9, 3.1, 3.2, 3.9, 2.5, 2.7, 3.5, 3.4 |
-| Age | int64 | 0 | 0 | 72 | 60, 45, 50, 42, 38, 32, 48, 55, 65, 40 |
-| Alkphos | int64 | 0 | 0 | 263 | 215, 198, 298, 180, 195, 190, 145, 182, 158, 165 |
+| TP | float64 | 0 | 0 | 58 | 7.0, 6.0, 6.8, 6.9, 6.2, 7.1, 7.2, 8.0, 6.4, 6.1 |
+| ALB | float64 | 0 | 0 | 40 | 3.0, 4.0, 2.9, 3.1, 3.2, 3.9, 2.7, 2.5, 3.5, 2.0 |
+| Age | int64 | 0 | 0 | 72 | 60, 45, 50, 38, 42, 48, 32, 55, 65, 40 |
+| Alkphos | int64 | 0 | 0 | 263 | 298, 198, 215, 195, 180, 190, 182, 145, 158, 218 |
 | Sgpt | int64 | 0 | 0 | 152 | 25, 20, 22, 21, 28, 18, 30, 48, 15, 24 |
-| Sgot | int64 | 0 | 0 | 177 | 23, 20, 30, 21, 28, 25, 22, 24, 34, 32 |
+| Sgot | int64 | 0 | 0 | 177 | 23, 21, 20, 30, 28, 22, 25, 24, 32, 34 |
 
 </details>
 
@@ -297,10 +297,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-81d3-7387-b2a1-a75d12f77f21 |
-| checksum | 448d62d9d6947e1396878257e8453ff367dd950543241ab84cd5cff00b22f4c6 |
-| built_at | 2026-10-02T11:29:38+00:00 |
-| path | indian_liver_patient_dataset/01a0fc60-81d3-7387-b2a1-a75d12f77f21 |
+| uuid | 01a11191-cad0-710a-89c9-546914224a18 |
+| checksum | f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85 |
+| built_at | 2026-10-06T14:15:29+00:00 |
+| path | indian_liver_patient_dataset/01a11191-cad0-710a-89c9-546914224a18 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

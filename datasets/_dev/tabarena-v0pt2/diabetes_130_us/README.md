@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: 1dc2f5c565aafeb4dbdca5fb03271b53d76cfb7e9f2552fd83a97ffe4d9d017d
+checksum: 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5
 build:
-  uuid: 01a0fc60-1e89-78c1-8d68-28a9de9a9585
-  checksum: 1dc2f5c565aafeb4dbdca5fb03271b53d76cfb7e9f2552fd83a97ffe4d9d017d
-  built_at: '2026-10-02T11:29:13+00:00'
-  path: diabetes_130_us/01a0fc60-1e89-78c1-8d68-28a9de9a9585
+  uuid: 01a11191-412c-7bdf-acc4-6e6734fc9a8a
+  checksum: 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5
+  built_at: '2026-10-06T14:14:55+00:00'
+  path: diabetes_130_us/01a11191-412c-7bdf-acc4-6e6734fc9a8a
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
 
-Built as `01a0fc60-1e89-78c1-8d68-28a9de9a9585` on 2026-10-02. See [Build](#build).
+Built as `01a11191-412c-7bdf-acc4-6e6734fc9a8a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 
 | EarlyReadmission | race | gender | age | weight | admission_type_id | discharge_disposition_id | admission_source_id | time_in_hospital | payer_code | medical_specialty | num_lab_procedures |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | Caucasian | Male | \[80-90) | nan | Emergency | Discharged/transferred to home with hom… | Emergency Room | 6 | MC | nan | 60 |
-| No | AfricanAmerican | Female | \[70-80) | nan | Emergency | Discharged to home | Emergency Room | 2 | CM | nan | 32 |
-| No | Hispanic | Female | \[30-40) | nan | Elective | Discharged to home | Physician Referral | 2 | nan | Family/GeneralPractice | 20 |
-| No | AfricanAmerican | Male | \[80-90) | nan | Urgent | Discharged to home | Physician Referral | 4 | MC | InternalMedicine | 35 |
-| No | Caucasian | Female | \[50-60) | nan | Urgent | Discharged to home | Emergency Room | 4 | OG | Emergency/Trauma | 67 |
+| No | AfricanAmerican | Female | \[70-80) | nan | Emergency | Discharged/transferred to SNF | Emergency Room | 5 | nan | Orthopedics-Reconstructive | 45 |
+| Yes | Caucasian | Male | \[60-70) | nan | nan | Discharged to home | nan | 1 | nan | nan | 54 |
+| No | Caucasian | Male | \[40-50) | \[100-125) | nan | Discharged to home | nan | 4 | nan | Cardiology | 75 |
+| Yes | Caucasian | Female | \[50-60) | nan | Emergency | Discharged/transferred to SNF | Emergency Room | 5 | MC | nan | 60 |
+| No | AfricanAmerican | Male | \[30-40) | nan | nan | Discharged to home | nan | 3 | nan | Family/GeneralPractice | 60 |
 
 ## Curation notes
 
@@ -339,10 +339,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1e89-78c1-8d68-28a9de9a9585 |
-| checksum | 1dc2f5c565aafeb4dbdca5fb03271b53d76cfb7e9f2552fd83a97ffe4d9d017d |
-| built_at | 2026-10-02T11:29:13+00:00 |
-| path | diabetes_130_us/01a0fc60-1e89-78c1-8d68-28a9de9a9585 |
+| uuid | 01a11191-412c-7bdf-acc4-6e6734fc9a8a |
+| checksum | 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5 |
+| built_at | 2026-10-06T14:14:55+00:00 |
+| path | diabetes_130_us/01a11191-412c-7bdf-acc4-6e6734fc9a8a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

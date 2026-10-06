@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from pandas.api import types as pdtypes
 
+from data_foundry.utils.dtypes import object_columns
+
 
 def run_all_checks(
     *,
@@ -70,7 +72,7 @@ def run_all_checks(
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
 
-    object_cols = data.select_dtypes(include=["object"]).columns.tolist()
+    object_cols = object_columns(data)
     if object_cols:
         raise TypeError(f"DataFrame contains object dtype columns: {object_cols}")
 

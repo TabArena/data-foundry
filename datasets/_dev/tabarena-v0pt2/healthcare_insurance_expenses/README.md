@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: healthcare_insurance_expenses
 container_format: 2
-checksum: f621b6f0c11c31f404e234845593838ff5ce96050eee79e4c17dc16397fbbf70
+checksum: 6263b5bd5812661ebebb05e7f0558ad5d5eb3edae5acd2e396739fe4cfe4acb3
 build:
-  uuid: 01a0fc60-95fe-7561-ab1b-3726140fec78
-  checksum: f621b6f0c11c31f404e234845593838ff5ce96050eee79e4c17dc16397fbbf70
-  built_at: '2026-10-02T11:29:43+00:00'
-  path: healthcare_insurance_expenses/01a0fc60-95fe-7561-ab1b-3726140fec78
+  uuid: 01a11191-b87f-7df8-a15e-1b5a3346a2b5
+  checksum: 6263b5bd5812661ebebb05e7f0558ad5d5eb3edae5acd2e396739fe4cfe4acb3
+  built_at: '2026-10-06T14:15:25+00:00'
+  path: healthcare_insurance_expenses/01a11191-b87f-7df8-a15e-1b5a3346a2b5
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `charges`, scored with `rmse` on IID splits. 1,338 rows and 6 features. Source: Kaggle (2023).
 
-Built as `01a0fc60-95fe-7561-ab1b-3726140fec78` on 2026-10-02. See [Build](#build).
+Built as `01a11191-b87f-7df8-a15e-1b5a3346a2b5` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -143,11 +143,11 @@ The first 5 of 1,338 rows of the final frame (random rows: the frame is shuffled
 
 | charges | age | sex | bmi | children | smoker | region |
 |---|---|---|---|---|---|---|
-| 9.11549 | 45 | female | 25.175 | 2 | no | northeast |
-| 8.5702 | 36 | female | 30.02 | 0 | no | northwest |
-| 10.2864 | 64 | female | 26.885 | 0 | yes | northwest |
-| 9.13797 | 46 | male | 25.745 | 3 | no | northwest |
-| 10.4267 | 19 | male | 31.92 | 0 | yes | northwest |
+| 10.4998 | 18 | male | 38.17 | 0 | yes | southeast |
+| 8.06212 | 28 | female | 33.4 | 0 | no | southwest |
+| 10.5544 | 20 | male | 39.4 | 2 | yes | southwest |
+| 8.10464 | 25 | male | 25.84 | 1 | no | northeast |
+| 10.0087 | 51 | male | 23.21 | 1 | yes | southeast |
 
 ## Curation notes
 
@@ -213,16 +213,16 @@ Default splits.
 | sex | category | 0 | 0 | 2 | male, female |
 | smoker | category | 0 | 0 | 2 | no, yes |
 | region | category | 0 | 0 | 4 | southeast, northwest, southwest, northeast |
-| bmi | float64 | 0 | 0 | 548 | 32.3, 28.31, 31.35, 34.1, 28.88, 30.8, 30.875, 30.495, 33.33, 38.06 |
-| charges | float64 | 0 | 0 | 1337 | 7.4022, 9.1026, 9.4776, 9.8909, 8.8452, 9.5553, 7.9553, 10.4576, 10.7408, 9.8124 |
-| age | int64 | 0 | 0 | 47 | 18, 19, 46, 47, 52, 50, 45, 20, 48, 51 |
+| bmi | float64 | 0 | 0 | 548 | 32.3, 28.31, 34.1, 30.8, 30.875, 28.88, 30.495, 31.35, 24.32, 35.2 |
+| charges | float64 | 0 | 0 | 1337 | 7.4022, 8.9151, 9.0854, 9.7084, 10.7299, 9.4354, 9.7163, 9.2502, 8.5402, 9.5693 |
+| age | int64 | 0 | 0 | 47 | 18, 19, 20, 51, 46, 47, 45, 48, 50, 52 |
 | children | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.09 | -0.3 | 0.846 | 0.011 | log | 13685.4 | 4.75029e+15 | exponential |
+| 0 | 0 | 0 | -0.09 | -0.3 | 0.846 | 0.011 | log | 13685.4 | 5.37343e+14 | exponential |
 
 ### Numeric features
 
@@ -250,10 +250,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-95fe-7561-ab1b-3726140fec78 |
-| checksum | f621b6f0c11c31f404e234845593838ff5ce96050eee79e4c17dc16397fbbf70 |
-| built_at | 2026-10-02T11:29:43+00:00 |
-| path | healthcare_insurance_expenses/01a0fc60-95fe-7561-ab1b-3726140fec78 |
+| uuid | 01a11191-b87f-7df8-a15e-1b5a3346a2b5 |
+| checksum | 6263b5bd5812661ebebb05e7f0558ad5d5eb3edae5acd2e396739fe4cfe4acb3 |
+| built_at | 2026-10-06T14:15:25+00:00 |
+| path | healthcare_insurance_expenses/01a11191-b87f-7df8-a15e-1b5a3346a2b5 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

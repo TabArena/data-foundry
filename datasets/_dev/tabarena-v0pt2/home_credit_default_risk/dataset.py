@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -610,7 +610,7 @@ def _previous_application_features(prev: pd.DataFrame) -> pd.DataFrame:
     """The kernel's `previous_applications`: aggregates per applicant."""
     # Cat encode for aggregations
     org_cols = list(prev.columns)
-    prev = pd.get_dummies(prev, columns=list(prev.select_dtypes(include=["object"]).columns), dummy_na=True)
+    prev = pd.get_dummies(prev, columns=object_columns(prev), dummy_na=True)
     prev_cat_cols = [c for c in prev.columns if c not in org_cols]
     # Days 365.243 values -> nan
     prev["DAYS_FIRST_DRAWING"] = prev["DAYS_FIRST_DRAWING"].replace(365243, np.nan)
@@ -661,7 +661,7 @@ def _pos_cash_features(pos: pd.DataFrame) -> pd.DataFrame:
     """The kernel's `pos_cash`: aggregates per applicant."""
     # Cat encode for aggregations
     org_cols = list(pos.columns)
-    pos = pd.get_dummies(pos, columns=list(pos.select_dtypes(include=["object"]).columns), dummy_na=True)
+    pos = pd.get_dummies(pos, columns=object_columns(pos), dummy_na=True)
     pos_cat_cols = [c for c in pos.columns if c not in org_cols]
     # Features
     aggregations = {
@@ -682,7 +682,7 @@ def _installments_features(ins: pd.DataFrame) -> pd.DataFrame:
     """The kernel's `installments_payments`: aggregates per applicant."""
     # Cat encode for aggregations
     org_cols = list(ins.columns)
-    ins = pd.get_dummies(ins, columns=list(ins.select_dtypes(include=["object"]).columns), dummy_na=True)
+    ins = pd.get_dummies(ins, columns=object_columns(ins), dummy_na=True)
     ins_cat_cols = [c for c in ins.columns if c not in org_cols]
     # Percentage and difference paid in each installment (amount paid and installment value)
     ins["PAYMENT_PERC"] = ins["AMT_PAYMENT"] / ins["AMT_INSTALMENT"]
@@ -715,7 +715,7 @@ def _installments_features(ins: pd.DataFrame) -> pd.DataFrame:
 def _credit_card_features(cc: pd.DataFrame) -> pd.DataFrame:
     """The kernel's `credit_card_balance`: aggregates per applicant."""
     # Cat encode for aggregations
-    cc = pd.get_dummies(cc, columns=list(cc.select_dtypes(include=["object"]).columns), dummy_na=True)
+    cc = pd.get_dummies(cc, columns=object_columns(cc), dummy_na=True)
     # General aggregations
     cc.drop(["SK_ID_PREV"], axis=1, inplace=True)
     cc_agg = cc.groupby("SK_ID_CURR").agg(["min", "max", "mean", "sum", "var"])

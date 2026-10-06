@@ -60,7 +60,9 @@ Do every step; skip only when an earlier step settles the verdict and say so.
    is generated" below. When the data can be loaded, name the prediction point, then run the leak probes in
    [`references/leak_checks.md`](references/leak_checks.md) (`.claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` for a
    v2 folder). That file also lists what the 2026 leak audit decided for each kind of leak, which is the
-   precedent for your recommendation.
+   precedent for your recommendation. When the question is whether a curated task is empty, trivial or too small,
+   follow [`../verify-dataset/references/task_probes.md`](../verify-dataset/references/task_probes.md): a small but
+   real signal is no reason to retire, and `Trivial` and `Too Small` need the tests it names.
 5. **Write into the record only substance.** Add the source links you verified. Add one dated comment
    with what the data is, the decisive facts, and the recommended verdict and markers. Fill empty
    optional metadata only where the evidence is clear. Reload immediately before saving: the human edits

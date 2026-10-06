@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: video_transcoding_time_prediction
 container_format: 2
-checksum: 2f73dd61c15b43caf7f4f2b1de30bf0d16195298432fc2563cf9d99743ad1c8c
+checksum: 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31
 build:
-  uuid: 01a0fc60-1cf9-7c39-a6a5-db1dd7a841f0
-  checksum: 2f73dd61c15b43caf7f4f2b1de30bf0d16195298432fc2563cf9d99743ad1c8c
-  built_at: '2026-10-02T11:29:13+00:00'
-  path: video_transcoding_time_prediction/01a0fc60-1cf9-7c39-a6a5-db1dd7a841f0
+  uuid: 01a11191-6402-776f-9b72-c4f0a99fda74
+  checksum: 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31
+  built_at: '2026-10-06T14:15:04+00:00'
+  path: video_transcoding_time_prediction/01a11191-6402-776f-9b72-c4f0a99fda74
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `log_transcoding_time`, scored with `rmse` on grouped splits by `video_id`. 68,784 rows and 19 features. Source: UCI (2015).
 
-Built as `01a0fc60-1cf9-7c39-a6a5-db1dd7a841f0` on 2026-10-02. See [Build](#build).
+Built as `01a11191-6402-776f-9b72-c4f0a99fda74` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -152,11 +152,11 @@ The first 5 of 68,784 rows of the final frame (random rows: the frame is shuffle
 
 | log_transcoding_time | video_id | duration | codec | width | height | bitrate | framerate | i | p | b | frames |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1.00357 | 4b7b-FY4JPI | 203.198 | flv | 320 | 240 | 239336 | 29 | 104 | 5974 | 0 | 6078 |
-| 3.83227 | 2SkA-cUEaJ0 | 490.6 | h264 | 480 | 360 | 300437 | 25 | 256 | 12010 | 0 | 12266 |
-| 0.740031 | 2TXm-QHXCzU | 270.655 | vp8 | 640 | 480 | 652967 | 30.063 | 89 | 8028 | 0 | 8117 |
-| -0.345311 | 1ZzJ-T2FJAw | 250.017 | h264 | 320 | 240 | 153059 | 29 | 128 | 7366 | 0 | 7494 |
-| 0.408128 | 1WrA-SRsgEk | 384.451 | h264 | 640 | 480 | 646432 | 29 | 205 | 11318 | 0 | 11523 |
+| 2.75551 | 1LXH-OibJYQ | 42.2 | h264 | 480 | 360 | 288705 | 25 | 23 | 1033 | 0 | 1056 |
+| 3.33939 | 0Hwk-yGT-M4 | 714.371 | vp8 | 1280 | 720 | 652356 | 29.9818 | 143 | 21264 | 0 | 21407 |
+| 1.04802 | 2tzy-vqeeLY | 106.765 | h264 | 1280 | 720 | 849586 | 25 | 66 | 2603 | 0 | 2669 |
+| 0.378436 | 04t6-jw9czg | 130.357 | mpeg4 | 176 | 144 | 54590 | 12 | 27 | 1537 | 0 | 1564 |
+| 0.71295 | 3Xyf-6FdtDA | 49.1783 | mpeg4 | 176 | 144 | 54338 | 7 | 10 | 334 | 0 | 344 |
 
 ## Curation notes
 
@@ -204,7 +204,7 @@ One group is a video; its rows are transcoding jobs of that video to an output s
 | test groups per fold | 366 to 367 |
 | groups of two or more rows with a single label | 0.0% |
 | nearest neighbour in the same group | 93.0% of the rows (chance: 1.2%) |
-| label variance explained by the group | 0.14 (shuffled groups: 0.01) |
+| label variance explained by the group | 0.14 (shuffled groups: 0.02) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
@@ -226,20 +226,20 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | video_id | category | 0 | 0 | 1099 | 3o_2-igmsyo, 3mWp-QQn-1M, 3fpg-LlHcks, 3fmy-4uvR9U, 3dI-kJGuWbY, 3_fF9rtYCQ0, 3… |
 | codec | category | 0 | 0 | 4 | h264, vp8, mpeg4, flv |
 | o_codec | category | 0 | 0 | 4 | mpeg4, vp8, flv, h264 |
-| duration | float64 | 0 | 0 | 1086 | 395.44, 106.765, 256.2083, 176.901, 476.957, 69.9383, 130.3567, 368.32, 33.09, … |
+| duration | float64 | 0 | 0 | 1086 | 339.667, 250.017, 254.922, 86.486, 95.462, 750.433, 69.933, 1768.9417, 127.2217… |
 | framerate | float64 | 0 | 0 | 261 | 29.0, 12.0, 25.0, 30.0, 15.0, 23.0, 24.0, 7.0, 13.0, 16.0 |
 | o_framerate | float64 | 0 | 0 | 5 | 15.0, 12.0, 29.97, 25.0, 24.0 |
-| log_transcoding_time | float64 | 0 | 0 | 10960 | -0.0367, 0.2183, 0.2151, 0.2531, 0.2311, -0.0325, -0.0121, -0.3975, 0.2086, -0.… |
+| log_transcoding_time | float64 | 0 | 0 | 10960 | -0.0367, 0.2151, 0.2183, 0.2531, 0.2311, -0.0325, -0.0121, -0.3975, 0.0545, 0.2… |
 | width | int64 | 0 | 0 | 6 | 480, 320, 176, 1280, 640, 1920 |
 | height | int64 | 0 | 0 | 6 | 360, 240, 144, 720, 480, 1080 |
-| bitrate | int64 | 0 | 0 | 1095 | 1387100, 56717, 55396, 29096, 279173, 5992818, 2207484, 139791, 3080852, 56152 |
-| i | int64 | 0 | 0 | 306 | 37, 23, 51, 15, 112, 53, 110, 113, 87, 77 |
-| p | int64 | 0 | 0 | 1042 | 7541, 6457, 6726, 3271, 4646, 3620, 825, 3873, 9134, 434 |
-| b | int64 | 0 | 0 | 20 | 0, 704, 9407, 184, 1965, 2025, 42, 2626, 6806, 316 |
-| frames | int64 | 0 | 0 | 1044 | 1184, 1050, 1318, 2862, 2318, 1716, 21227, 3050, 8228, 4017 |
-| i_size | int64 | 0 | 0 | 1099 | 3487520, 47521, 597549, 869558, 101794, 839251, 4369420, 802625, 3818903, 13821… |
-| p_size | int64 | 0 | 0 | 1099 | 79210885, 448322, 5760936, 470067, 1052937, 28416939, 41819887, 3994697, 451749… |
-| size | int64 | 0 | 0 | 1099 | 82698405, 495843, 6358485, 1339625, 1154731, 29256190, 46189307, 4797322, 48993… |
+| bitrate | int64 | 0 | 0 | 1095 | 1055982, 382461, 972572, 508160, 320011, 56108, 51225, 29096, 2207484, 56717 |
+| i | int64 | 0 | 0 | 306 | 37, 23, 51, 15, 112, 53, 110, 87, 77, 113 |
+| p | int64 | 0 | 0 | 1042 | 4646, 3271, 6726, 7541, 6457, 2547, 2811, 5974, 7656, 2980 |
+| b | int64 | 0 | 0 | 20 | 0, 704, 1996, 184, 316, 2416, 2025, 2626, 42, 626 |
+| frames | int64 | 0 | 0 | 1044 | 1716, 1050, 1318, 2318, 2862, 1184, 9232, 16146, 839, 4017 |
+| i_size | int64 | 0 | 0 | 1099 | 2285153, 671936, 597549, 47585, 869558, 4369420, 47521, 1081321, 529627, 481774 |
+| p_size | int64 | 0 | 0 | 1099 | 15944803, 3625932, 5760936, 385164, 470067, 41819887, 448322, 6660941, 4978664,… |
+| size | int64 | 0 | 0 | 1099 | 18229956, 4297868, 6358485, 432749, 1339625, 46189307, 495843, 7742262, 5508291… |
 | o_bitrate | int64 | 0 | 0 | 7 | 56000, 109000, 5000000, 3000000, 539000, 242000, 820000 |
 | o_width | int64 | 0 | 0 | 6 | 176, 320, 480, 640, 1920, 1280 |
 | o_height | int64 | 0 | 0 | 6 | 144, 240, 360, 480, 1080, 720 |
@@ -306,10 +306,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-1cf9-7c39-a6a5-db1dd7a841f0 |
-| checksum | 2f73dd61c15b43caf7f4f2b1de30bf0d16195298432fc2563cf9d99743ad1c8c |
-| built_at | 2026-10-02T11:29:13+00:00 |
-| path | video_transcoding_time_prediction/01a0fc60-1cf9-7c39-a6a5-db1dd7a841f0 |
+| uuid | 01a11191-6402-776f-9b72-c4f0a99fda74 |
+| checksum | 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31 |
+| built_at | 2026-10-06T14:15:04+00:00 |
+| path | video_transcoding_time_prediction/01a11191-6402-776f-9b72-c4f0a99fda74 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

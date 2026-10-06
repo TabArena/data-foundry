@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: splice
 container_format: 2
-checksum: 375a184ee848f4abd771aca791d274f409cdab843d2ec09c93ad538cdf6ca55f
+checksum: 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed
 build:
-  uuid: 01a0fc60-7d6b-7130-a04d-dcd231722181
-  checksum: 375a184ee848f4abd771aca791d274f409cdab843d2ec09c93ad538cdf6ca55f
-  built_at: '2026-10-02T11:29:37+00:00'
-  path: splice/01a0fc60-7d6b-7130-a04d-dcd231722181
+  uuid: 01a11191-f475-7106-8cea-f03ce0050611
+  checksum: 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed
+  built_at: '2026-10-06T14:15:40+00:00'
+  path: splice/01a11191-f475-7106-8cea-f03ce0050611
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `SiteType`, scored with `log_loss` on IID splits. 3,190 rows and 60 features. Source: UCI (1991).
 
-Built as `01a0fc60-7d6b-7130-a04d-dcd231722181` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f475-7106-8cea-f03ce0050611` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -147,11 +147,11 @@ The first 5 of 3,190 rows of the final frame (random rows: the frame is shuffled
 
 | SiteType | position_-30 | position_-29 | position_-28 | position_-27 | position_-26 | position_-25 | position_-24 | position_-23 | position_-22 | position_-21 | position_-20 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| IE | T | C | C | T | T | G | A | C | C | T | G |
-| IE | T | T | G | A | T | A | A | C | A | T | G |
-| IE | C | A | T | G | C | C | T | T | G | A | A |
-| EI | G | A | T | T | C | T | C | T | T | C | A |
-| IE | T | C | C | C | T | C | C | A | T | T | G |
+| IE | C | C | A | G | T | C | A | C | C | A | C |
+| IE | T | C | T | G | A | T | G | A | C | T | A |
+| IE | C | A | T | T | T | T | T | G | T | T | G |
+| IE | G | G | G | G | C | A | G | G | A | C | T |
+| IE | T | T | T | T | A | C | A | T | T | T | T |
 
 ## Curation notes
 
@@ -371,10 +371,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-7d6b-7130-a04d-dcd231722181 |
-| checksum | 375a184ee848f4abd771aca791d274f409cdab843d2ec09c93ad538cdf6ca55f |
-| built_at | 2026-10-02T11:29:37+00:00 |
-| path | splice/01a0fc60-7d6b-7130-a04d-dcd231722181 |
+| uuid | 01a11191-f475-7106-8cea-f03ce0050611 |
+| checksum | 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed |
+| built_at | 2026-10-06T14:15:40+00:00 |
+| path | splice/01a11191-f475-7106-8cea-f03ce0050611 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

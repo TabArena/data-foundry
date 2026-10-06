@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: student_portuguese_performance
 container_format: 2
-checksum: 0f86983fa294cdc756145f4e8b75366fb79a9657646e6757d38c11c6d1bc3b2d
+checksum: 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844
 build:
-  uuid: 01a0fc60-4f43-776b-afe9-2b1b77b5ad98
-  checksum: 0f86983fa294cdc756145f4e8b75366fb79a9657646e6757d38c11c6d1bc3b2d
-  built_at: '2026-10-02T11:29:25+00:00'
-  path: student_portuguese_performance/01a0fc60-4f43-776b-afe9-2b1b77b5ad98
+  uuid: 01a11191-f43b-7725-a911-16f5c99ddbba
+  checksum: 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844
+  built_at: '2026-10-06T14:15:40+00:00'
+  path: student_portuguese_performance/01a11191-f43b-7725-a911-16f5c99ddbba
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. Source: UCI (2008).
 
-Built as `01a0fc60-4f43-776b-afe9-2b1b77b5ad98` on 2026-10-02. See [Build](#build).
+Built as `01a11191-f43b-7725-a911-16f5c99ddbba` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -141,11 +141,11 @@ The first 5 of 649 rows of the final frame (random rows: the frame is shuffled);
 
 | G3 | school | sex | age | address | famsize | Pstatus | Medu | Fedu | Mjob | Fjob | reason |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 19 | MS | M | 18 | U | GT3 | T | 4 | 4 | teacher | teacher | home |
-| 12 | GP | F | 16 | U | GT3 | A | 3 | 1 | services | other | course |
-| 18 | MS | F | 18 | U | GT3 | T | 4 | 4 | teacher | teacher | reputation |
-| 11 | MS | M | 16 | R | LE3 | A | 4 | 4 | at_home | other | home |
-| 11 | GP | F | 15 | R | GT3 | T | 1 | 1 | other | other | reputation |
+| 15 | GP | M | 17 | U | LE3 | T | 4 | 3 | health | other | course |
+| 10 | MS | M | 15 | R | GT3 | T | 1 | 2 | other | services | course |
+| 10 | MS | M | 19 | R | GT3 | T | 1 | 1 | other | other | home |
+| 9 | MS | F | 17 | R | GT3 | T | 3 | 1 | at_home | other | reputation |
+| 10 | GP | F | 17 | U | GT3 | T | 1 | 1 | at_home | other | course |
 
 ## Curation notes
 
@@ -270,8 +270,8 @@ Default splits.
 | Dalc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
 | Walc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
 | health | int64 | 0 | 0 | 5 | 5, 3, 4, 1, 2 |
-| absences | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 10, 5, 1, 12, 16 |
-| G3 | int64 | 0 | 0 | 17 | 11, 10, 13, 12, 14, 15, 16, 9, 8, 17 |
+| absences | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 10, 12, 1, 5, 16 |
+| G3 | int64 | 0 | 0 | 17 | 11, 10, 13, 12, 14, 15, 16, 8, 9, 17 |
 
 </details>
 
@@ -362,10 +362,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-4f43-776b-afe9-2b1b77b5ad98 |
-| checksum | 0f86983fa294cdc756145f4e8b75366fb79a9657646e6757d38c11c6d1bc3b2d |
-| built_at | 2026-10-02T11:29:25+00:00 |
-| path | student_portuguese_performance/01a0fc60-4f43-776b-afe9-2b1b77b5ad98 |
+| uuid | 01a11191-f43b-7725-a911-16f5c99ddbba |
+| checksum | 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844 |
+| built_at | 2026-10-06T14:15:40+00:00 |
+| path | student_portuguese_performance/01a11191-f43b-7725-a911-16f5c99ddbba |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: e7975a1d3c0dc44cc6d5c3037b4879eb4cdcd11b5cea7de891ca049e6e64e5ae
+checksum: e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db
 build:
-  uuid: 01a0fc60-6eca-7f68-b3b9-98662f1ecb70
-  checksum: e7975a1d3c0dc44cc6d5c3037b4879eb4cdcd11b5cea7de891ca049e6e64e5ae
-  built_at: '2026-10-02T11:29:33+00:00'
-  path: mic/01a0fc60-6eca-7f68-b3b9-98662f1ecb70
+  uuid: 01a11191-4e6f-765b-bd8a-3259484499b0
+  checksum: e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db
+  built_at: '2026-10-06T14:14:58+00:00'
+  path: mic/01a11191-4e6f-765b-bd8a-3259484499b0
   data_foundry_version: 0.0.5
-  git_sha: 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty
+  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,699 rows and 102 features. Source: UCI (2020).
 
-Built as `01a0fc60-6eca-7f68-b3b9-98662f1ecb70` on 2026-10-02. See [Build](#build).
+Built as `01a11191-4e6f-765b-bd8a-3259484499b0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -146,11 +146,11 @@ The first 5 of 1,699 rows of the final frame (random rows: the frame is shuffled
 
 | LET_IS | AGE | SEX | INF_ANAM | STENOK_AN | FK_STENOK | IBS_POST | IBS_NASL | GB | SIM_GIPERT | DLIT_AG | ZSN_A |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| alive | 55 | 1 | 1 | 2 | 2 | 1 | nan | 0 | 0 | 0 | 0 |
-| alive | 64 | 0 | 0 | 4 | 2 | 1 | nan | 3 | 0 | 7 | 1 |
-| alive | 78 | 1 | 1 | 2 | 2 | 1 | nan | 3 | 0 | 7 | 0 |
-| alive | 61 | 1 | 0 | 0 | 0 | 2 | nan | 2 | 0 | 7 | 0 |
-| alive | 78 | 1 | 0 | 4 | 2 | 2 | nan | 2 | 0 | nan | 0 |
+| alive | 66 | 1 | 0 | 1 | 1 | 0 | nan | 0 | 0 | 0 | 0 |
+| alive | 44 | 1 | 0 | 0 | 0 | 0 | nan | 0 | 0 | 0 | 0 |
+| alive | 62 | 1 | 1 | 6 | 1 | 1 | nan | 2 | 0 | 1 | 0 |
+| alive | 73 | 0 | 2 | 6 | 2 | 2 | nan | 2 | 0 | 7 | nan |
+| alive | 69 | 0 | 1 | 6 | 2 | 1 | nan | 3 | 0 | 6 | 0 |
 
 ## Curation notes
 
@@ -393,10 +393,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a0fc60-6eca-7f68-b3b9-98662f1ecb70 |
-| checksum | e7975a1d3c0dc44cc6d5c3037b4879eb4cdcd11b5cea7de891ca049e6e64e5ae |
-| built_at | 2026-10-02T11:29:33+00:00 |
-| path | mic/01a0fc60-6eca-7f68-b3b9-98662f1ecb70 |
+| uuid | 01a11191-4e6f-765b-bd8a-3259484499b0 |
+| checksum | e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db |
+| built_at | 2026-10-06T14:14:58+00:00 |
+| path | mic/01a11191-4e6f-765b-bd8a-3259484499b0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4ecf2f186da5ddee1e57d2e718837e1a8384388a-dirty |
+| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

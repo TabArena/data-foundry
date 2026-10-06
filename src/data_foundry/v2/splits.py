@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
+from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -105,11 +106,11 @@ def iid_splits(
     random_state: int = SPLIT_RANDOM_STATE,
 ) -> Splits:
     """Repeated (stratified) k-fold cross-validation over the rows of ``df``."""
-    from sklearn.model_selection import RepeatedKFold, RepeatedStratifiedKFold  # noqa: PLC0415 - heavy import
+    model_selection = import_build_dependency("sklearn.model_selection")
 
     _require_range_index(df)
     y = df[stratify_on] if stratify_on is not None else None
-    splitter_cls = RepeatedStratifiedKFold if y is not None else RepeatedKFold
+    splitter_cls = model_selection.RepeatedStratifiedKFold if y is not None else model_selection.RepeatedKFold
     splitter = splitter_cls(n_splits=n_folds, n_repeats=n_repeats, random_state=random_state)
     splits: Splits = {}
     for i, (train, test) in enumerate(splitter.split(df, y)):
@@ -176,14 +177,14 @@ def _per_group_splits(
 def _per_sample_splits(
     df: pd.DataFrame, n_repeats: int, n_folds: int, group_on: str, stratify_on: str | None, random_state: int
 ) -> Splits:
-    from sklearn.model_selection import GroupKFold, StratifiedGroupKFold  # noqa: PLC0415 - heavy import
-    from sklearn.utils.multiclass import type_of_target  # noqa: PLC0415 - heavy import
+    model_selection = import_build_dependency("sklearn.model_selection")
+    multiclass = import_build_dependency("sklearn.utils.multiclass")
 
     y = df[stratify_on] if stratify_on is not None else None
-    if y is not None and type_of_target(y) not in ("binary", "multiclass"):
+    if y is not None and multiclass.type_of_target(y) not in ("binary", "multiclass"):
         msg = f"Stratified grouped splits need a binary or multiclass `{stratify_on}`; cast it to `category`."
         raise ValueError(msg)
-    splitter_cls = StratifiedGroupKFold if y is not None else GroupKFold
+    splitter_cls = model_selection.StratifiedGroupKFold if y is not None else model_selection.GroupKFold
     splits: Splits = {}
     for repeat in range(n_repeats):
         splitter = splitter_cls(n_splits=n_folds, shuffle=True, random_state=random_state + repeat)
@@ -655,12 +656,14 @@ def _sample_positions(
         return np.sort(positions)
     side = df.iloc[positions]
     if group_on is None:
-        from sklearn.model_selection import train_test_split  # noqa: PLC0415 - heavy import
+        model_selection = import_build_dependency("sklearn.model_selection")
 
         labels = side[stratify_on] if stratify_on is not None else None
         if labels is not None and labels.astype(object).value_counts().min() < 2:  # stratifying needs 2 rows per class
             labels = None
-        kept, _ = train_test_split(positions, train_size=cap, stratify=labels, random_state=random_state)
+        kept, _ = model_selection.train_test_split(
+            positions, train_size=cap, stratify=labels, random_state=random_state
+        )
         return np.sort(kept)
 
     rng = np.random.default_rng(random_state)

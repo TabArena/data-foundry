@@ -25,11 +25,19 @@ that does not match the task, or a selection that depends on the outcome.
   that the observation window ends at churn (iranian_churn), that the incentive comes from the end-of-day report
   (garments_worker_productivity), what the cohort is (diabetes_130_us), which duplicates the authors removed (emscad),
   that the real groups are collection sites the file does not hold (maternal_health_risk).
+* When the definition changes the target (merges or drops classes, bins or thresholds a number, binarizes), run the
+  probes against the source's original labels as well as the shipped ones. A merge can hide a column that spells out
+  the fine label, or the fine label can turn out to be read off a few features (probe 14). audiology_diagnosis's
+  three merged classes hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise
+  exposure (139 of 147 cases). Check the shipped label the same way: a depth-2 or depth-3 tree on its defining columns
+  shows whether the target is a rule (audiology's "conductive part: yes / no" is one depth-2 tree on the tympanogram,
+  99% accurate).
 
 ## 2. Probes, cheapest first
 
-`.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` runs probes 2, 3, 5 and 6 on a v2 folder, and probe 1
-for the three strongest single features (untuned LightGBM on the first three shipped splits). The others take a few lines of pandas. Score with ROC AUC, log loss or
+`.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` runs probes 2, 3, 5, 6 and 14 (a depth-2 and depth-3
+tree on the label) on a v2 folder, and probe 1 for the three strongest single features (untuned LightGBM on the first
+three shipped splits). The others take a few lines of pandas. Score with ROC AUC, log loss or
 R², never accuracy against the majority class, and say how many splits a number comes from. The numbers compare the
 shipped data with a suspected fix; they are not leaderboard-grade.
 
@@ -48,7 +56,7 @@ shipped data with a suspected fix; they are not leaderboard-grade.
 | 11 | Entity overlap: share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; IID score vs grouped score. For a v2 grouped task, read the "Group structure" section of its README (test groups per fold, label granularity, clustering against chance) and run `.claude/skills/verify-dataset/scripts/group_probes.py <name>` (the IID vs grouped gap, several models scored per group, a permutation test across groups) | large overlap and a large drop | in_vehicle 0.83 → 0.75; emscad 0.99 → 0.94; video_game_fps: every test CPU and GPU in train |
 | 12 | Temporal: rows and minority-class rows per test window | a handful of positives, or under ~50 test rows | seismic_bumps 0-5 positives per window; ghana rain from 3-6 farmer-days per window; coffee monthly windows of 2-72 rows |
 | 13 | Target by period (rows, p50, p90, max), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
-| 14 | A simple formula or lookup for the target | R² near 1 | video_game_fps: log FPS = game + CPU + GPU, R² 0.99998 |
+| 14 | A simple formula or lookup for the target; a shallow tree on the label | R² near 1; a depth-2 or depth-3 tree close to the full model | video_game_fps: log FPS = game + CPU + GPU, R² 0.99998; audiology's cochlear diagnoses: two history answers decide 139 of 147 |
 | 15 | The tests in [`../SKILL.md`](../SKILL.md), "Checking whether the data is generated" | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 
 Reading the probes:
@@ -89,6 +97,8 @@ Reading the probes:
 | Evaluation-level leak: the test set holds complete trajectories that end at the outcome | fix the scoring (causal per-entity predictions, the task's own utility), not the data; document the prediction point | sepsis_prediction |
 | Measured after the outcome, but it weakens the signal | keep it and note it | south_africa_coronary_heart_disease (ESL Sec. 5.2.2, p. 148; dropping `sbp`, `obesity`: AUC 0.774 → 0.778) |
 | Target is a lookup of the inputs | retire (`Trivial`, often `AHDS`) | video_game_fps_prediction |
+| A label we built that a few features spell out (classes merged or dropped by the definition) | use a convention of the field and check it with a shallow tree; run the probes on the source's labels too | audiology_diagnosis: three classes from names replaced by hearing loss with or without a conductive part |
+| Features from a stage after the decision the task models (a biopsy after the examination) | offer the task at the source's earlier stage | eryhemato_squamous_disease: clinical features only (macro AUC 0.999 → 0.98) |
 | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 
 ## 4. Not a leak
@@ -136,12 +146,14 @@ Reading the probes:
   so its log loss can be worse than the baseline while the signal is real (mice_protein: LightGBM log loss 2.53
   against a baseline of 2.07, while a random forest reaches 1.12 and a macro AUC of 0.92 per mouse, p < 0.01; it was
   retired anyway, because its classes are the experimental design: real signal does not make a predictive task). With
-  few groups, give the uncertainty of one split as a bootstrap over groups (parkinsons: 32 subjects, AUC 0.86 per
-  subject, 95% interval 0.69-0.99) and keep the dataset when the signal is real; the repeated splits still compare
-  models in pairs.
+  few groups, real signal is not enough: count the groups of each class in total and per test fold. parkinsons had real
+  signal (AUC 0.86 per subject) and was still retired on 2026-10-05 as `Too Small`: its 32 subjects hold 8 healthy
+  people, 2-3 per fold (`../../verify-dataset/references/task_probes.md`, rule 5). musk, with 13 musk and 21 non-musk
+  molecules per fold, stays.
 * Check the benchmark's own results for a dataset before retiring it for lack of signal: the probes found only a weak
-  linear signal in pancreatic_cancer_mouse_detection (AUC 0.63 per mouse, tree models at chance), yet models do well
-  on it in BeyondArena, so it stays.
+  linear signal in pancreatic_cancer_mouse_detection (AUC 0.63 per mouse, tree models at chance), yet foundation models
+  beat AUC 0.5 on all their BeyondArena folds (best 0.66), so it stays (`../../verify-dataset/scripts/tuned_results.py`
+  runs this check).
 * Check a claim about the source's split against the data: kick's comment called the Kaggle split grouped, yet 78.9%
   of its test rows are at a location also in train.
 * Ids parsed as floats collapse: deduplicating sdss_17 on its rounded `obj_ID` removed 21,947 distinct objects; it is
@@ -183,7 +195,8 @@ The audit's first suggestion was revised for most of the 38 cases. The patterns 
 * Report a borderline case as "maybe leak" for the human to decide, not as "no leak".
 * Do not call a small grouped task unlearnable from one quick model. mice_protein, parkinsons and pancreatic were first
   suggested as having no signal across groups from one untuned LightGBM run; several models and a permutation test
-  showed real signal in the first two, and the BeyondArena results kept the third (2026-10-01).
+  showed real signal in the first two, and the BeyondArena results kept the third (2026-10-01). Real signal did not
+  save parkinsons in the end: it was retired on 2026-10-05 for its size (8 healthy people), not its signal.
 
 ## 8. Recording
 
