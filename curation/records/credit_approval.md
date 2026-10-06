@@ -26,6 +26,7 @@ source_links:
 - https://doi.org/10.24432/C5FS30
 - https://doi.org/10.24432/C5259N
 notebook_path: datasets/beyond_iid/new_iid/credit_approval/credit_approval.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/credit_approval/dataset.py
 source_row: 775
 type_adapter_id: curation-record-v1
 ---

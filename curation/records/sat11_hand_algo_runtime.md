@@ -25,6 +25,7 @@ source_links:
 - https://www.openml.org/d/41980
 - https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO
 notebook_path: datasets/beyond_iid/grouped/sat11_hand_algo_runtime/sat11_hand_algo_runtime.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sat11_hand_algo_runtime/dataset.py
 source_row: 694
 type_adapter_id: curation-record-v1
 ---
@@ -41,6 +42,8 @@ For 41980, we can parse the row ID to get a grouped algorithm selection task. Th
 I would focus on including such datasets for SAT solving, as this seems a "realer" use case than for ML algorithm selection which is usually Pareto, dominated by other methods. 
 
 We use the task that aims to go from (Instance_features, algorithm_features) -> runtime; which is more or less an alternative to multi-target modelling aiming to generalize across algorithms.
+
+CC (2026-10-06, Lennart): The split holds out instances, not instance families, on purpose. The instances come in 48 families (74% of an instance's nearest neighbours are in its own family), but a selector in use has other members of a new instance's family in its data, so holding out single instances, as ASlib does, is the realistic setting.
 
 ## Reference
 

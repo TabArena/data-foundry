@@ -35,7 +35,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "pandas",
+    # pandas 2 and 3 build and load the same containers; a major version can change the checksums
+    "pandas>=2.3,<4",
     "numpy",
     "pydantic",
     "pyyaml",
@@ -56,9 +57,29 @@ Issues = "https://github.com/TabArena/data-foundry/issues"
 "Paper" = "https://arxiv.org/abs/2606.30410"
 
 [project.optional-dependencies]
-dev = [
-    "autogluon",
+# Building a dataset from its definition: the split protocol, the checks and the readers the definitions use.
+# Loading and using a container needs only the core dependencies.
+build = [
+    # 1.8 changes StratifiedGroupKFold, so the grouped splits (and checksums) of shipped datasets would change
+    "scikit-learn>=1.6,<1.8",
+    "scipy",
+    "liac-arff",
     "openml",
+    "polars",
+    "fastexcel",
+    "openpyxl",
+    "python-calamine<0.8",  # 0.8 cannot open the xlsx of gallstone_disease ("Relationship not found")
+    "xlrd",
+    "matplotlib",
+]
+tests = [
+    "data-foundry[build]",
+    "pytest",
+]
+dev = [
+    "data-foundry[build,tests]",
+    "autogluon",
+    "lightgbm",
     "ruff",
     "pyyaml",
     "seaborn",
@@ -66,16 +87,6 @@ dev = [
     "tqdm",
     "kaggle",
     "langdetect",
-    "xlrd",
-    "scipy",
-    "polars",
-    "fastexcel",
-    "openpyxl",
-    "python-calamine",
-]
-tests = [
-    "pytest",
-    "scikit-learn",
 ]
 curation = [
     # Optional: publish the flat snapshot to a read-only Google Sheet.
@@ -95,6 +106,8 @@ src = ["examples", "tabflow_slurm"]
 # better practices. Would be dangerous if using for first
 # time on established project.
 extend-safe-fixes = ["ALL"]
+# `== False` / `== None` on a pandas object is element-wise; the fix to `not x` / `is None` changes its meaning.
+unfixable = ["E711", "E712"]
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -192,6 +205,35 @@ exclude = [
     "node_modules",
     "venv",
     "docs",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts that skills run (`.claude/skills/<skill>/scripts/`): command-line tools, not a package, and the
+# rebuild scripts start `git` and Python subprocesses on purpose.
+".claude/skills/*/scripts/*.py" = [
+    "INP001",  # skill script folders are not packages
+    "S603", "S607",  # subprocess calls with fixed commands
+]
+# v2 dataset definitions (`datasets/**/dataset.py`): one class of declarations and a few hooks. Metadata text
+# and column lists are long, commented-out columns document decisions, and optional dependencies (polars,
+# matplotlib) are imported inside the hook that needs them.
+"datasets/**/dataset.py" = [
+    "D100", "D101", "D102",  # the class attributes are documented in AbstractCuratedDataset
+    "E501",  # long metadata text
+    "ERA001",  # commented-out columns record what was left out and why
+    "INP001",  # dataset folders are not packages
+    "PLC0415",  # optional dependencies are imported inside the hook
+    "RUF012",  # declarations are plain class attributes (the base class declares them ClassVar)
+    "ARG002",  # hooks keep the base-class signature
+    "RET504",  # `df = ...; return df` reads better in preprocessing
+    "E101",  # tabs inside metadata text copied from the source
+    "RUF001",  # non-ASCII characters in metadata text and value maps
+    "PTH123",  # `open()` for ARFF readers
+    "C901",  # preprocessing is long by nature
+    "PD",  # pandas idioms kept as curated
+    "FBT002",
+    "FBT003",
+    "RUF005",
 ]
 
 [tool.ruff.lint.isort]

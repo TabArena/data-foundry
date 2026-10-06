@@ -26,6 +26,7 @@ source_links:
 - https://www.kaggle.com/datasets/sammy123/lower-back-pain-symptoms-dataset/
 - https://www.kaggle.com/datasets/simaeel/vertebral-column
 notebook_path: datasets/beyond_iid/new_iid/biomechanical_orthopaedic_prediction/biomechanical_orthopaedic_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/biomechanical_orthopaedic_prediction/dataset.py
 source_row: 776
 type_adapter_id: curation-record-v1
 ---

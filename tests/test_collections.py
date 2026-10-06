@@ -66,7 +66,9 @@ def test_dataset_collection_basic_accessors():
 
 def test_find_entry_by_unique_name_and_uuid():
     coll = DatasetCollection.from_relative_paths(
-        name="tiny", description="x", relative_paths=["a/uuid-a", "b/versions/uuid-b"],
+        name="tiny",
+        description="x",
+        relative_paths=["a/uuid-a", "b/versions/uuid-b"],
     )
     assert coll.find_entry("a").uuid == "uuid-a"
     assert coll.find_entry("uuid-b").unique_name == "b"
@@ -76,7 +78,9 @@ def test_find_entry_by_unique_name_and_uuid():
 
 def test_get_dataset_without_source_raises():
     coll = DatasetCollection.from_relative_paths(
-        name="tiny", description="x", relative_paths=["a/uuid-a"],
+        name="tiny",
+        description="x",
+        relative_paths=["a/uuid-a"],
     )
     with pytest.raises(RuntimeError, match="has no `source`"):
         coll.get_dataset("a")
@@ -96,6 +100,7 @@ class _RecordingSource(DataSource):
 def test_get_dataset_routes_through_source(tmp_path):
     # Build a real on-disk container via the toy builder + reuse its path.
     from data_foundry.examples import get_toy_container_path
+
     src = _RecordingSource(container_dir=get_toy_container_path())
     coll = DatasetCollection.from_relative_paths(
         name="route-test",
@@ -179,12 +184,25 @@ def test_beyond_arena_has_unique_names():
 
 
 # --- HuggingFaceSource caching ---
+def _core_files(path: Path) -> Path:
+    """Create ``path`` with the (empty) core files of a container and return it."""
+    path.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "dataset.parquet",
+        "dtypes.json",
+        "container_metadata.json",
+        "dataset_metadata.dataset-mold-v1.json",
+        "task_metadata.predictive-ml-task-mold-v1.json",
+        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+    ):
+        (path / name).touch()
+    return path
+
+
 def _make_hf_snapshot(cache_dir: Path, repo_id: str, sha: str, relative: str, *, ref: str | None = None) -> Path:
     """Build a fake HF-style snapshot tree and return the container directory."""
     repo_folder = cache_dir / f"datasets--{repo_id.replace('/', '--')}"
-    snapshot_dir = repo_folder / "snapshots" / sha / relative
-    snapshot_dir.mkdir(parents=True)
-    (snapshot_dir / "container_metadata.json").write_text("{}")
+    snapshot_dir = _core_files(repo_folder / "snapshots" / sha / relative)
     if ref is not None:
         refs_dir = repo_folder / "refs"
         refs_dir.mkdir(parents=True, exist_ok=True)
@@ -219,7 +237,11 @@ def test_find_cached_uses_pinned_commit_revision(tmp_path):
 
 def test_find_cached_resolves_revision_through_refs(tmp_path):
     expected = _make_hf_snapshot(
-        tmp_path, "org/repo", sha="abc123", relative="name/uuid", ref="main",
+        tmp_path,
+        "org/repo",
+        sha="abc123",
+        relative="name/uuid",
+        ref="main",
     )
     src = HuggingFaceSource(repo_id="org/repo", revision="main")
     assert src._find_cached(tmp_path, "name/uuid") == expected
@@ -234,8 +256,7 @@ def test_find_cached_returns_none_when_pinned_revision_missing(tmp_path):
 
 def test_find_cached_repo_type_changes_folder_prefix(tmp_path):
     repo_folder = tmp_path / "models--org--repo"
-    snapshot_dir = repo_folder / "snapshots" / "abc" / "name/uuid"
-    snapshot_dir.mkdir(parents=True)
+    snapshot_dir = _core_files(repo_folder / "snapshots" / "abc" / "name/uuid")
     src = HuggingFaceSource(repo_id="org/repo", repo_type="model")
     assert src._find_cached(tmp_path, "name/uuid") == snapshot_dir
 
@@ -246,6 +267,7 @@ def test_fetch_uses_cache_without_importing_huggingface_hub(tmp_path, monkeypatc
 
     # Block the import so any attempt to reach the HF code path would fail loudly.
     import builtins
+
     real_import = builtins.__import__
 
     def blocked_import(name, *args, **kwargs):
@@ -263,6 +285,7 @@ def test_fetch_uses_cache_without_importing_huggingface_hub(tmp_path, monkeypatc
 def test_fetch_raises_import_error_on_cache_miss_without_hf(tmp_path, monkeypatch):
     """Cache miss must surface the ImportError, not a confusing inner failure."""
     import builtins
+
     real_import = builtins.__import__
 
     def blocked_import(name, *args, **kwargs):
@@ -286,6 +309,7 @@ def test_fetch_all_uses_cache_without_importing_huggingface_hub(tmp_path, monkey
     expected_b = _make_hf_snapshot(tmp_path, "org/repo", sha="abc", relative="b/versions/uuid-b")
 
     import builtins
+
     real_import = builtins.__import__
 
     def blocked_import(name, *args, **kwargs):
@@ -438,7 +462,9 @@ def test_prefetch_uses_source_fetch_all(tmp_path):
 
 def test_prefetch_without_source_raises():
     coll = DatasetCollection.from_relative_paths(
-        name="no-src", description="x", relative_paths=["a/uuid-a"],
+        name="no-src",
+        description="x",
+        relative_paths=["a/uuid-a"],
     )
     with pytest.raises(RuntimeError, match="nothing to prefetch"):
         coll.prefetch()
@@ -552,7 +578,9 @@ def test_clear_cache_uses_env_when_no_explicit_dir(tmp_path, monkeypatch):
 
 def test_dataset_collection_clear_cache_targets_own_subdir(tmp_path):
     coll = DatasetCollection.from_relative_paths(
-        name="my-coll", description="x", relative_paths=["a/uuid-a"],
+        name="my-coll",
+        description="x",
+        relative_paths=["a/uuid-a"],
     )
     target = tmp_path / "my-coll"
     target.mkdir()
@@ -565,8 +593,7 @@ def test_dataset_collection_clear_cache_targets_own_subdir(tmp_path):
 
 # --- LocalWarehouseSource ---
 def test_local_warehouse_source_returns_entry_path(tmp_path):
-    container_dir = tmp_path / "a" / "uuid-a"
-    container_dir.mkdir(parents=True)
+    container_dir = _core_files(tmp_path / "a" / "uuid-a")
     src = LocalWarehouseSource(base_dir=tmp_path)
     entry = CollectionEntry.from_relative_path("a/uuid-a")
     # cache_dir is ignored — pass anything.
@@ -574,8 +601,7 @@ def test_local_warehouse_source_returns_entry_path(tmp_path):
 
 
 def test_local_warehouse_source_handles_versioned_entry(tmp_path):
-    container_dir = tmp_path / "a" / "versions" / "uuid-a"
-    container_dir.mkdir(parents=True)
+    container_dir = _core_files(tmp_path / "a" / "versions" / "uuid-a")
     src = LocalWarehouseSource(base_dir=tmp_path)
     entry = CollectionEntry.from_relative_path("a/versions/uuid-a")
     assert src.fetch(entry, tmp_path) == container_dir
@@ -584,13 +610,12 @@ def test_local_warehouse_source_handles_versioned_entry(tmp_path):
 def test_local_warehouse_source_missing_entry_raises(tmp_path):
     src = LocalWarehouseSource(base_dir=tmp_path)
     entry = CollectionEntry.from_relative_path("a/uuid-a")
-    with pytest.raises(FileNotFoundError, match="No curated container at"):
+    with pytest.raises(FileNotFoundError, match="No complete curated container at"):
         src.fetch(entry, tmp_path)
 
 
 def test_local_warehouse_source_force_download_is_noop(tmp_path):
-    container_dir = tmp_path / "a" / "uuid-a"
-    container_dir.mkdir(parents=True)
+    container_dir = _core_files(tmp_path / "a" / "uuid-a")
     src = LocalWarehouseSource(base_dir=tmp_path)
     entry = CollectionEntry.from_relative_path("a/uuid-a")
     # force_download must not change behavior — nothing to re-download.
@@ -617,3 +642,47 @@ def test_local_warehouse_collection_loads_via_get_dataset(tmp_path):
     )
     container = coll.get_dataset("toy")
     assert container.dataset is not None
+
+
+def test_a_partial_download_is_not_a_cache_hit(tmp_path):
+    snapshot = _make_hf_snapshot(tmp_path, "org/repo", "abc123", "name/uuid")
+    (snapshot / "dataset.parquet").unlink()  # an interrupted download
+    assert HuggingFaceSource(repo_id="org/repo")._find_cached(tmp_path, "name/uuid") is None
+
+
+def test_a_version_is_found_by_its_own_name():
+    coll = DatasetCollection.from_relative_paths(
+        name="c", description="x", relative_paths=["a/uuid-a", "b/versions/uuid-b"], names={"uuid-b": "b_1m"}
+    )
+    assert coll.find_entry("b_1m").uuid == "uuid-b"
+    assert coll.find_entry("b").uuid == "uuid-b"  # the folder name still works
+    assert coll.dataset_names == ["a", "b_1m"]
+    assert coll.unique_names == ["a", "b"]
+
+
+def test_beyond_arena_names_its_versions_and_pins_the_revision():
+    versions = [e for e in BEYOND_ARENA.entries if e.is_versioned]
+    assert len(versions) == 10
+    assert all(e.dataset_name == f"{e.unique_name}_1m" for e in versions)
+    assert BEYOND_ARENA.find_entry("cooking_time_1m").unique_name == "cooking_time"
+    assert len(BEYOND_ARENA.source.revision) == 40  # a commit, not a branch
+
+
+def test_get_dataset_verify_rejects_a_changed_container(tmp_path):
+    from data_foundry.examples import get_toy_container_path
+
+    base_dir = tmp_path / "warehouse"
+    entry_dir = base_dir / "toy" / "uuid-toy"
+    entry_dir.mkdir(parents=True)
+    for f in get_toy_container_path().iterdir():
+        (entry_dir / f.name).write_bytes(f.read_bytes())
+    coll = DatasetCollection.from_relative_paths(
+        name="local-coll", description="x", relative_paths=["toy/uuid-toy"], source=LocalWarehouseSource(base_dir)
+    )
+    assert coll.get_dataset("toy", verify=True).dataset is not None
+    meta = entry_dir / "container_metadata.json"
+    meta.write_text(meta.read_text().replace('"checksum": "', '"checksum": "0'))
+    with pytest.raises(ValueError, match="do not match"):
+        coll.get_dataset("toy", verify=True)
+    with pytest.raises(ValueError, match="do not match"):
+        next(coll.iter_containers(base_dir, verify=True))

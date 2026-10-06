@@ -30,6 +30,18 @@ DATA_FOUNDRY_CACHE_ENV = "DATA_FOUNDRY_CACHE"
 DEFAULT_CACHE_DIR = Path.home() / ".cache" / "data_foundry"
 """Default cache directory (used when no env var or explicit ``cache_dir`` is given)."""
 
+CORE_FILES = ("dataset.parquet", "dtypes.json", "container_metadata.json")
+CORE_METADATA = ("dataset_metadata", "task_metadata", "experiment_metadata")
+
+
+def has_core_files(path: Path) -> bool:
+    """Whether ``path`` holds a complete container: the frame, its dtypes, the container metadata and the three
+    ``<name>.<type>.json`` metadata files (an interrupted download leaves some out).
+    """
+    if not path.is_dir() or not all((path / name).is_file() for name in CORE_FILES):
+        return False
+    return all(any(path.glob(f"{name}.*.json")) for name in CORE_METADATA)
+
 
 def _resolve_base_cache_dir(cache_dir: Path | str | None) -> Path:
     """Resolve the cache root without creating it (no per-collection suffix)."""
@@ -150,11 +162,11 @@ class LocalWarehouseSource(DataSource):
         ``cache_dir`` and ``force_download`` are ignored.
         """
         path = entry.local_path(self.base_dir)
-        if not path.is_dir():
+        if not has_core_files(path):
             raise FileNotFoundError(
-                f"No curated container at {path}. Expected a directory "
+                f"No complete curated container at {path}. Expected a directory "
                 f"matching entry {entry.relative_path.as_posix()!r} under the "
-                f"local warehouse {self.base_dir!s}.",
+                f"local warehouse {self.base_dir!s}, with {', '.join(CORE_FILES)} and the three metadata files.",
             )
         return path
 
@@ -202,8 +214,7 @@ class HuggingFaceSource(DataSource):
             from huggingface_hub import snapshot_download
         except ImportError as exc:
             raise ImportError(
-                "HuggingFaceSource requires the `huggingface_hub` package. "
-                "Install with: pip install huggingface_hub",
+                "HuggingFaceSource requires the `huggingface_hub` package. Install with: pip install huggingface_hub",
             ) from exc
 
         snapshot_path = snapshot_download(
@@ -242,8 +253,7 @@ class HuggingFaceSource(DataSource):
             from huggingface_hub import snapshot_download
         except ImportError as exc:
             raise ImportError(
-                "HuggingFaceSource requires the `huggingface_hub` package. "
-                "Install with: pip install huggingface_hub",
+                "HuggingFaceSource requires the `huggingface_hub` package. Install with: pip install huggingface_hub",
             ) from exc
 
         snapshot_path = snapshot_download(
@@ -271,18 +281,18 @@ class HuggingFaceSource(DataSource):
 
         if self.revision is not None:
             direct = snapshots_dir / self.revision / relative
-            if direct.is_dir():
+            if has_core_files(direct):
                 return direct
             ref_file = repo_root / "refs" / self.revision
             if ref_file.is_file():
                 sha = ref_file.read_text().strip()
                 candidate = snapshots_dir / sha / relative
-                if candidate.is_dir():
+                if has_core_files(candidate):
                     return candidate
             return None
 
-        for snapshot in snapshots_dir.iterdir():
+        for snapshot in sorted(snapshots_dir.iterdir()):
             candidate = snapshot / relative
-            if candidate.is_dir():
+            if has_core_files(candidate):
                 return candidate
         return None

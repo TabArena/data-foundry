@@ -25,11 +25,14 @@ source_links:
 - https://www.fsigenetics.com/article/S1872-4973(25)00070-5/fulltext
 - https://github.com/CarolaHeinzel/BGA-Classification/blob/main/datat/filtered_population_eur_update.xlsx
 notebook_path: datasets/beyond_iid/new_iid/biogeographical_ancestry_prediction/biogeographical_ancestry_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/biogeographical_ancestry_prediction/dataset.py
 source_row: 686
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-09-30, Lennart): **Fixed a source artefact: dropped the Turkey class and set no-calls to missing.** The data is Ruiz-Ramirez et al. 2023 (VISAGE Enhanced Tool), Supplementary Table S1A, as used by Heinzel et al. 2025 (Sec. 2.1), which pools 1000 Genomes, HGDP-CEPH, Middle East, SGDP and Estonian Biocentre samples. By sample ID, the inter-European classes come from three sources: 1000 Genomes (HG/NA IDs: British, Finnish, Iberian, Toscani, Utah CEPH), HGDP (HGDP IDs: Russian, Basque, French, Sardinian) and Turkey (IDs 2TR-..., source not confirmed; the Ruiz-Ramirez PDF was not reachable). Turkey's source has an assay artefact: rs3857620 is AG in 24 of 28 samples, 0 AA (about 5 expected under Hardy-Weinberg equilibrium), and GG in all 607 others; with the no-calls it separated Turkey at AUC 0.96-0.98 (leak audit 2026-09-24). Changes: Turkey dropped (635 -> 607 rows, 10 -> 9 classes, a deviation from the paper's ten); rs3857620 and rs367953206 (constant without Turkey) dropped; "NN" no-calls set to missing (28 cells in 24 HGDP rows, none in 1000 Genomes, so a weak source hint remains). Each class still comes from one source; the task stays hard (LightGBM log loss worse than the class prior on the shipped splits). rs2789823 (AG in 7 rows, all Iberian) may be a smaller artefact; kept.
 
 The Kaggle version already did PCA.
 

@@ -159,13 +159,31 @@ BEYOND_ARENA_UUIDS = (
 )
 
 
+BEYOND_ARENA_VERSION_NAMES = {
+    "019d736f-26fd-73bd-8853-dc219e5f4ed5": "mercari_price_suggestion_1m",
+    "019d7379-7906-707e-95e9-f479afb2e2c1": "climate_model_weather_forecasting_1m",
+    "019d737d-b4b1-7c24-8930-70a2c242b3f9": "cooking_time_1m",
+    "019d7382-df54-7dd3-8198-0567d7499858": "delivery_eta_1m",
+    "019d7383-f45a-72f7-ac99-09447cf6d41f": "home_credit_default_stability_1m",
+    "019d7407-606f-7147-b041-c7d0a3847c71": "maps_router_eta_1m",
+    "019d738b-4c6e-751f-972a-5f63b1508f70": "consumer_complaints_1m",
+    "019d738c-5edd-7437-9116-e3bc87a8b0c5": "lending_club_1m",
+    "019d7455-0e4e-7261-9842-93177684d486": "amex_non_iid_1m",
+    "019d7391-f36e-72f8-89d7-f7ca71725034": "sepsis_prediction_1m",
+}
+"""The own names of the versioned entries (saved under ``<base>/versions/<uuid>``), as their metadata states."""
+
+BEYOND_ARENA_REVISION = "2ecfe882ccfb814fc27c4de10a64ceefd5d7655c"
+"""The commit of ``TabArena/BeyondArena`` the entries are read from (2026-06-30). Pinned so the files behind a UUID
+cannot change; update it together with the entries."""
+
+
 BEYOND_ARENA = DatasetCollection.from_relative_paths(
     name="BeyondArena",
-    description=(
-        "BeyondArena — the official curated dataset collection. "
-    ),
+    description=("BeyondArena — the official curated dataset collection. "),
     relative_paths=BEYOND_ARENA_UUIDS,
-    source=HuggingFaceSource(repo_id="TabArena/BeyondArena"),
+    source=HuggingFaceSource(repo_id="TabArena/BeyondArena", revision=BEYOND_ARENA_REVISION),
+    names=BEYOND_ARENA_VERSION_NAMES,
 )
 
 

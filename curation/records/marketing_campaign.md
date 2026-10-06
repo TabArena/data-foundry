@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign
 notebook_path: datasets/beyond_iid/old_iid/marketing_campaign/marketing_campaign.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/marketing_campaign/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -32,6 +33,8 @@ Potential issue: Artificial
 Lennart: Likely a valid predictive task
 
 Andrej: License; Need to check book on how the data was obtained - could be artificial
+
+CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (three untuned families at skill +0.77 to +0.80) does not hold for tuned methods. On BeyondArena the best (TabFM) reaches ROC AUC 0.926 and the median 0.909, with no other method within noise of the best (Kendall's W 0.84).
 
 ## Reference
 

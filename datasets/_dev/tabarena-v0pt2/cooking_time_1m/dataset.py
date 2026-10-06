@@ -1,0 +1,76 @@
+"""Curated dataset definition for `cooking_time_1m` (data-foundry v2). Evidence: README.md."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+
+
+class CookingTime1m(AbstractCuratedDataset):
+    # Dataset
+    unique_name = "cooking_time_1m"
+    version_of = "cooking_time"
+    version_comment = """
+        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+    """
+    year = "2024"
+    domain = "industry & manufacturing"
+    source = "Kaggle"
+    source_url = "https://www.kaggle.com/datasets/pcovkrd84mejm/cooking-time"
+    license = "CC-BY-NC-SA-4.0"
+    data_tags = ("Anonymized",)
+    download_description = """
+        We get the TabRed data from Kaggle.
+
+        kaggle datasets download -d pcovkrd84mejm/cooking-time -f cooking_time.parquet && unzip cooking_time.parquet.zip && rm cooking_time.parquet.zip
+        mkdir -p local-data-warehouse/cooking_time && mv cooking_time.parquet local-data-warehouse/cooking_time/
+    """
+    bibtex = """
+        @inproceedings{rubachev2025tabred,
+          title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+          author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+          booktitle={The Thirteenth International Conference on Learning Representations},
+          year={2025},
+        }
+    """
+    curation_comments = """
+        We start with data from TabRed, which already comes preprocessed.
+    """
+
+    # Task
+    target = "cooking_time_minutes"
+    problem_type = "regression"
+
+    # Splits
+    splits_comment = (
+        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
+        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
+        "for all windows)."
+    )
+    temporal = Temporal(
+        on="timestamp",
+        splits=TemporalSplits(window=7, unit="days", n_windows=3),
+    )
+    subsample_to_budget = True
+
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        df = pd.read_parquet(raw_dir / "cooking_time.parquet")
+        return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # Following TabRed
+        df = df[df["cooking_time_minutes"] >= 1.0]
+        df["cooking_time_minutes"] = np.log(df["cooking_time_minutes"])
+        df = df.sort_values(by="timestamp", kind="stable").reset_index(drop=True)
+        return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(
+            # We take all bin + cat as Category
+            categorical=[c for c in df.columns if c.startswith(("cat", "bin"))],
+            datetime=["timestamp"],
+        )

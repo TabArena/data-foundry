@@ -17,6 +17,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=44089
 - https://www.kaggle.com/competitions/GiveMeSomeCredit/overview
 notebook_path: datasets/beyond_iid/old_iid/give_me_some_credit/give_me_some_credit.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/give_me_some_credit/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

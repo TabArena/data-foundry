@@ -10,7 +10,7 @@ suggestion: 'Yes'
 decision_markers:
 - Outdated
 tags:
-- Non-IID (Grouped)
+- Random (IID)
 collections:
 - TabArena Reject
 - TabSTAR
@@ -18,13 +18,14 @@ original_source: UCI
 year: '1998'
 domain: environmental science & climate
 required_split:
-- '?'
+- Random (IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://archive.ics.uci.edu/dataset/31/covertype
 - https://doi.org/10.24432/C50K5N
 notebook_path: datasets/beyond_iid/grouped/covertype/covertype.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/covertype/dataset.py
 source_row: 691
 type_adapter_id: curation-record-v1
 ---
@@ -48,6 +49,8 @@ Besides missing a time feature, the data is also missing location features that 
 
 From all the above, we conclude the following: if we use IID splits, we have either time or spatial leakage. To fix this, we need to perform some kind of spatial split. The only real non-relative spatial indicator is the area. This allows us to make the task a grouped-split with holding out one area at a time. However, some classes only exist for some areas, while others exist for many areas.
 Thus, we reduce the dataset only to the classes which exist for all the three biggest areas and do grouped splits across areas.
+
+CC (2026-10-01, Lennart): Back to IID splits on the full data (all 7 cover types, all 4 areas, 581,012 cells), as in Blackard & Dean (1999), who drew training and validation cells at random from the pooled areas. The leave-one-area-out split had only 3 groups, so it was three domain-shift tests rather than a grouped task, and it needed the frame cut to 3 cover types. IID is optimistic for land far from mapped cells: the cover maps are made of homogeneous stands of 2 to 80 ha, about 20 to 900 cells each, so a random test cell usually has cells of its stand in training; the data has no coordinates to split by.
 
 ## Reference
 

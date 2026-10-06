@@ -25,6 +25,7 @@ source_links:
 - https://doi.org/10.24432/C5Q59J
 - https://www.kaggle.com/datasets/abdelazizsami/hepatitis
 notebook_path: datasets/beyond_iid/new_iid/hepatitis_survival_prediction/hepatitis_survival_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/hepatitis_survival_prediction/dataset.py
 source_row: 760
 type_adapter_id: curation-record-v1
 ---

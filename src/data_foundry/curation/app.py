@@ -70,6 +70,8 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
         if rel:
             d["notebook_path"] = rel
             d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
+        if r.v2_path:
+            d["v2_url"] = f"{GITHUB_BLOB_BASE}/{r.v2_path}"
         try:
             rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
         except ValueError:  # custom records dir outside the repo: no stable GitHub link

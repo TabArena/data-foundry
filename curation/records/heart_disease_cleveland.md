@@ -24,6 +24,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
 - https://doi.org/10.24432/C52P4X
 notebook_path: datasets/beyond_iid/new_iid/heart_disease_cleveland/heart_disease_cleveland.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/heart_disease_cleveland/dataset.py
 source_row: 756
 type_adapter_id: curation-record-v1
 ---
@@ -33,6 +34,8 @@ type_adapter_id: curation-record-v1
 Consists of 4 datasets with similar features and low value counts depending on how it is used. Need to figure out how to use it. Otherwise, nothing speaks against using them in the benchmark
 
 We take all datasets from this repo as they all represent real tasks. We use the binary classification version of the datasets and the processed files.
+
+CC (2026-10-06, Lennart): Kept after the task-probe review (flag `no_spread`). A real, classic task with clear signal (best ROC AUC 0.913 on BeyondArena) and little room between methods: they spread from 0.913 to about 0.89, 15 of 29 are tied with the best, and the ranks vary across folds more than on any other BeyondArena dataset (Kendall's W 0.15). With 303 patients this is the noise of a small task, not a reason to act.
 
 ## Reference
 

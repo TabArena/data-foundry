@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://doi.org/10.24432/C5MC89
 notebook_path: datasets/beyond_iid/old_iid/predict_students_dropout_and_academic_success/predict_students_dropout_and_academic_success.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/predict_students_dropout_and_academic_success/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

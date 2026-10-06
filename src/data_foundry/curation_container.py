@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import logging
+import os
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
@@ -11,22 +14,40 @@ import pandas as pd
 from pydantic import TypeAdapter
 from uuid6 import uuid7
 
-logger = logging.getLogger(__name__)
-
 from data_foundry.schema import (
-    DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
+    Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
+    resolve_warehouse_dir,
 )
-from data_foundry.utils.checksum import encode_dataset, encode_pydantic_metadata
+from data_foundry.utils.checksum import (
+    CHECKSUM_VERSION,
+    categorical_details,
+    checksum_version,
+    encode_dataset,
+    encode_dataset_v2,
+    encode_pydantic_metadata,
+    omit_unset_fields,
+)
+from data_foundry.utils.dtypes import is_str_dtype
+
+logger = logging.getLogger(__name__)
 
 MetadataRegistry = {
     DatasetMetadata.type_adapter_id: DatasetMetadata,
     PredictiveMLTaskMetadata.type_adapter_id: PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2.type_adapter_id: PredictiveMLTaskMetadataV2,
     PredictiveMLSplitsMetadata.type_adapter_id: PredictiveMLSplitsMetadata,
 }
+FORMAT_VERSIONS = {
+    PredictiveMLTaskMetadata.type_adapter_id: 1,
+    PredictiveMLTaskMetadataV2.type_adapter_id: 2,
+}
+"""The container format of each task metadata class: 1 for the v1 notebooks (and the shipped BeyondArena
+containers), 2 for the v2 definitions (:mod:`data_foundry.v2`)."""
 NoIndentMetadata = [
     PredictiveMLSplitsMetadata.type_adapter_id,
 ]
@@ -40,18 +61,21 @@ class CuratedContainer:
         {
             "dataset.parquet",
             "dtypes.json",
+            "categories.json",
             "test_dataset.parquet",
             "test_dtypes.json",
+            "test_categories.json",
             "container_metadata.json",
         }
     )
+    _REQUIRED_METADATA: ClassVar[tuple[str, ...]] = ("dataset_metadata", "task_metadata", "experiment_metadata")
 
     dataset: pd.DataFrame
     """The curated dataset as a pandas DataFrame."""
     dataset_metadata: DatasetMetadata
     """Metadata about the dataset."""
-    task_metadata: PredictiveMLTaskMetadata
-    """Metadata about the task for the dataset."""
+    task_metadata: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2
+    """Metadata about the task for the dataset; its class sets the container format (:attr:`format_version`)."""
     experiment_metadata: PredictiveMLSplitsMetadata
     """Metadata about the experiments for the task."""
 
@@ -66,18 +90,50 @@ class CuratedContainer:
     uuid: str | None = None
     """A unique identifier for the curated data collection."""
     checksum: str | None = None
-    """A checksum for the curated data collection to verify integrity."""
+    """A checksum for the curated data collection to verify integrity (see :data:`CHECKSUM_VERSION`): the frame,
+    the metadata and, from version 2 on, the test set's checksum. Check it with :meth:`verify`."""
+    test_dataset_checksum: str | None = None
+    """The checksum of :attr:`test_dataset` (version 2 on, when there is a test set). The container checksum
+    includes it, so a container verifies without loading its test set."""
 
     # Cache meta-data
     loaded_from_path: Path | None = None
     """The path from which the curated container was loaded, if applicable. Used for caching purposes."""
 
     def __post_init__(self):
-        """Post-initialization to set the UUID if not provided."""
+        """Text categories as ``object`` under any pandas version, then the UUID and, for a new container, the frame
+        checks and the checksums.
+
+        Raises:
+            ValueError: A new container's frame has a column name that is not a string, or an index other than
+                ``0..n-1`` (the files keep neither, so the checksum would not verify after a save).
+        """
+        if self.dataset is not None:
+            self.dataset = self._text_categories_as_object(self.dataset)
+        if self.test_dataset is not None:
+            self.test_dataset = self._text_categories_as_object(self.test_dataset)
         if self.uuid is None:
             self.uuid = self._create_uuid()
         if self.checksum is None:
-            self.checksum = self._create_checksum()
+            for label, frame in (("dataset", self.dataset), ("test_dataset", self.test_dataset)):
+                if frame is not None:
+                    self._check_new_frame(frame, label)
+            if self.test_dataset is not None:
+                self.test_dataset_checksum = self._create_test_checksum()
+            self.checksum = self._create_checksum(CHECKSUM_VERSION)
+
+    @staticmethod
+    def _check_new_frame(df: pd.DataFrame, label: str) -> None:
+        """Refuse what a save would not keep: non-string column names and an index other than ``0..n-1``."""
+        not_str = [c for c in df.columns if not isinstance(c, str)]
+        if not_str:
+            raise ValueError(f"`{label}` has column names that are not strings: {not_str[:5]}.")
+        index = df.index
+        if not (isinstance(index, pd.RangeIndex) and index.start == 0 and index.step == 1):
+            raise ValueError(
+                f"`{label}` needs the index 0..n-1 (a RangeIndex); the files do not keep the index. "
+                "Call `df.reset_index(drop=True)` first.",
+            )
 
     @property
     def unique_name(self) -> str:
@@ -85,41 +141,98 @@ class CuratedContainer:
         return f"{self.dataset_metadata.unique_name}/{self.uuid}"
 
     @property
-    def container_metadata(self) -> dict[str, str | None]:
+    def format_version(self) -> int:
+        """The container format: 1 for a v1 notebook (every shipped BeyondArena container), 2 for a v2 definition.
+
+        Set by the class of :attr:`task_metadata`; a format-2 container also writes it to ``container_metadata.json``.
+        """
+        return FORMAT_VERSIONS[self.task_metadata.type_adapter_id]
+
+    @property
+    def grouping(self) -> Grouping | None:
+        """How a grouped task is used (:class:`~data_foundry.schema.Grouping`), or None for an IID or temporal task.
+
+        Format 2 only. A format-1 container records just ``group_on`` / ``group_labels`` / ``group_time_on``, not the
+        prediction unit, the aggregation or the context, so asking it for a grouping raises.
+        """
+        if self.format_version < 2:
+            raise NotImplementedError(
+                f"{self.dataset_metadata.unique_name}: a format-{self.format_version} container has no grouping "
+                "block (only task_metadata.group_on / group_labels / group_time_on); rebuild it from its v2 "
+                "definition, or check `container.format_version >= 2` first.",
+            )
+        return self.task_metadata.grouping
+
+    @property
+    def container_metadata(self) -> dict[str, str | int | None]:
         """Return a dictionary of the container's metadata."""
         assert self.uuid is not None, "UUID must be set."
         assert self.checksum is not None, "Checksum must be set."
 
-        return {
+        metadata = {
             "uuid": self.uuid,
             "checksum": self.checksum,
             "version_comment": self.version_comment,
         }
+        if self.format_version >= 2:  # format 1 keeps the file its readers know
+            metadata["format_version"] = self.format_version
+        if self.test_dataset_checksum is not None:
+            metadata["test_dataset_checksum"] = self.test_dataset_checksum
+        return metadata
 
     @staticmethod
     def _create_uuid() -> str:
         """Create a new unique identifier for the curated data collection."""
         return str(uuid7())
 
-    def _create_checksum(self) -> str:
-        """Hex digest checksum across dataframe + all metadata, using pydantic dumping."""
-
+    def _create_checksum(self, version: int | None = None) -> str:
+        """The checksum of the frame and the metadata, by ``version`` (default: the version of :attr:`checksum`, or
+        :data:`CHECKSUM_VERSION` for a container without one). Version 2 also covers the categories and, through
+        :attr:`test_dataset_checksum`, the test set.
+        """
         # Ensure container is fully loaded before calculating checksum
         if self.dataset is None:
             raise ValueError("Dataset must be loaded to calculate checksum.")
+        if version is None:
+            version = checksum_version(self.checksum) if self.checksum else CHECKSUM_VERSION
 
         print("Calculating checksum for curated container...")
         h = hashlib.blake2b(digest_size=32)
         h.update(b"\0")
         h.update(b"dataset\0")
-        h.update(encode_dataset(self.dataset))
+        h.update(encode_dataset(self.dataset) if version == 1 else encode_dataset_v2(self.dataset))
         h.update(b"dataset_metadata\0")
         h.update(encode_pydantic_metadata(self.dataset_metadata))
         h.update(b"task_metadata\0")
         h.update(encode_pydantic_metadata(self.task_metadata))
         h.update(b"experiment_metadata\0")
         h.update(encode_pydantic_metadata(self.experiment_metadata))
-        return h.hexdigest()
+        if version == 1:
+            return h.hexdigest()
+        if version != 2:
+            raise ValueError(f"Unknown checksum version {version}.")
+        if self.test_dataset_checksum is not None:
+            h.update(b"test_dataset\0")
+            h.update(self.test_dataset_checksum.encode())
+        return f"v{version}:{h.hexdigest()}"
+
+    def _create_test_checksum(self) -> str:
+        """The version-2 checksum of :attr:`test_dataset` (its frame alone)."""
+        if self.test_dataset is None:
+            raise ValueError("The test dataset must be loaded to calculate its checksum.")
+        return f"v2:{hashlib.blake2b(encode_dataset_v2(self.test_dataset), digest_size=32).hexdigest()}"
+
+    def verify(self) -> bool:
+        """Whether the stored checksums match the data: the container's, and the test set's when it is loaded.
+
+        Works for every checksum version; a container whose test set is not loaded is checked against the stored
+        test-set checksum.
+        """
+        if self.checksum != self._create_checksum():
+            return False
+        if self.test_dataset is not None and self.test_dataset_checksum is not None:
+            return self.test_dataset_checksum == self._create_test_checksum()
+        return True
 
     def _feature_dtype_counts(self) -> dict[str, int]:
         """Count feature-column dtypes.
@@ -231,15 +344,47 @@ class CuratedContainer:
             json.dump(dtypes, f, indent=2)
 
     @staticmethod
+    def _save_categories(df: pd.DataFrame, path: Path) -> None:
+        """Save each categorical column's categories (in order), their dtype and ``ordered``; ``dtypes.json`` only
+        says ``category``. Not written when the frame has no categorical column.
+        """
+        details = categorical_details(df)
+        if details:
+            with path.open("w") as f:
+                json.dump(details, f, indent=1, default=str)
+
+    @staticmethod
+    def _restore_categories(df: pd.DataFrame, path: Path) -> pd.DataFrame:
+        """Give the categorical columns the categories, order and ``ordered`` that :meth:`_save_categories` wrote.
+
+        Parquet alone can return integer categories with missing values as floats, and re-sort a custom order.
+        Containers saved before the file existed are left as they load.
+        """
+        if not path.exists():
+            return df
+        with path.open("r") as f:
+            details = json.load(f)
+        for col, detail in details.items():
+            if col not in df.columns:
+                logger.warning("Column '%s' from %s not found in DataFrame — skipping.", col, path.name)
+                continue
+            categories = pd.Index(detail["categories"], dtype=detail["categories_dtype"])
+            dtype = pd.CategoricalDtype(categories, ordered=detail["ordered"])
+            if df[col].dtype != dtype or list(df[col].cat.categories) != list(categories):
+                df[col] = df[col].astype(dtype)
+        return df
+
+    @staticmethod
     def _restore_dtypes(df: pd.DataFrame, path: Path) -> pd.DataFrame:
         """Restore DataFrame column dtypes from a JSON file.
 
-        If the file does not exist, logs a warning and returns the DataFrame unchanged.
-        If a column cast fails, logs a warning for that column and skips it.
+        If the file does not exist, logs a warning and returns the DataFrame with only its text categories fixed.
+        If a column cast fails, logs a warning for that column and skips it. Text categories come back as
+        ``object``, as pandas 2 reads them (pandas 3 reads them as ``str``), so both load the same frame.
         """
         if not path.exists():
             logger.warning("dtype file %s not found — skipping dtype restoration (backward compatibility).", path)
-            return df
+            return CuratedContainer._text_categories_as_object(df)
 
         with path.open("r") as f:
             dtypes = json.load(f)
@@ -254,7 +399,21 @@ class CuratedContainer:
                 df[col] = df[col].astype(dtype_str)
             except (ValueError, TypeError) as e:
                 logger.warning("Failed to cast column '%s' to %s: %s — skipping.", col, dtype_str, e)
-        return df
+        return CuratedContainer._text_categories_as_object(df)
+
+    @staticmethod
+    def _text_categories_as_object(df: pd.DataFrame) -> pd.DataFrame:
+        """Give categorical columns with pandas 3 ``str`` categories ``object`` categories, as pandas 2 makes them.
+
+        Returns ``df`` itself when there is nothing to change, else a shallow copy. The checksum hashes both alike.
+        """
+        out = df
+        for col in df.columns:
+            dtype = df[col].dtype
+            if isinstance(dtype, pd.CategoricalDtype) and is_str_dtype(dtype.categories.dtype):
+                out = df.copy(deep=False) if out is df else out
+                out[col] = df[col].cat.rename_categories(dtype.categories.astype(object))
+        return out
 
     def _save_path(self, save_dir: Path) -> Path:
         """Resolve the on-disk save directory for this container under ``save_dir``."""
@@ -265,29 +424,38 @@ class CuratedContainer:
             base = base / "versions"
         return base / self.uuid
 
-    def save(self, save_dir: Path | str = DEFAULT_LOCAL_DATA_DIR) -> Path:
-        """Save the curated data collection under ``save_dir``.
+    def save(self, save_dir: Path | str | None = None) -> Path:
+        """Save the curated data collection under ``save_dir`` (default: the warehouse,
+        ``$DATA_FOUNDRY_WAREHOUSE`` or ``local-data-warehouse/``).
 
         The container is written to
         ``<save_dir>/<unique_name>/<uuid>/`` (or
         ``<save_dir>/<version_from_unique_name>/versions/<uuid>/`` for
         versioned datasets).
         """
-        save_dir = Path(save_dir)
-        save_path = self._save_path(save_dir)
-        save_path.mkdir(parents=True, exist_ok=True)
-        warehouse_path = save_path.relative_to(save_dir)
+        save_dir = resolve_warehouse_dir() if save_dir is None else Path(save_dir)
+        final_path = self._save_path(save_dir)
+        final_path.parent.mkdir(parents=True, exist_ok=True)
+        warehouse_path = final_path.relative_to(save_dir)
         print(f"Saving curated container to {warehouse_path}")
+        # write into a temporary folder next to the target and rename it at the end, so an interrupted save never
+        # leaves a half-written container under the UUID
+        save_path = final_path.parent / f".{final_path.name}.saving-{os.getpid()}"
+        if save_path.exists():
+            shutil.rmtree(save_path)
+        save_path.mkdir()
 
         # Save dataset
         dataset_path = save_path / "dataset.parquet"
         self.dataset.to_parquet(dataset_path, index=False)
         self._save_dtypes(self.dataset, save_path / "dtypes.json")
+        self._save_categories(self.dataset, save_path / "categories.json")
 
         if self.test_dataset is not None:
             test_dataset_path = save_path / "test_dataset.parquet"
-            self.test_dataset.to_parquet(test_dataset_path)
+            self.test_dataset.to_parquet(test_dataset_path, index=False)
             self._save_dtypes(self.test_dataset, save_path / "test_dtypes.json")
+            self._save_categories(self.test_dataset, save_path / "test_categories.json")
 
         # Save metadata
         for meta_name, meta_obj in [
@@ -300,12 +468,15 @@ class CuratedContainer:
             meta_path = save_path / f"{meta_name}.{meta_obj.type_adapter_id}.json"
             indent = None if meta_obj.type_adapter_id in NoIndentMetadata else 2
             with meta_path.open("w") as f:
-                json.dump(adapter.dump_python(meta_obj, mode="json"), f, indent=indent)
+                json.dump(omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json")), f, indent=indent)
 
         with (save_path / "container_metadata.json").open("w") as f:
             json.dump(self.container_metadata, f, indent=2)
 
-        return save_path
+        if final_path.exists():  # saving the same UUID again replaces it
+            shutil.rmtree(final_path)
+        save_path.rename(final_path)
+        return final_path
 
     def load_test_dataset(self, path: Path | str | None = None) -> pd.DataFrame:
         """Load the test dataset if it exists."""
@@ -331,8 +502,45 @@ class CuratedContainer:
         test_dataset_path = path / "test_dataset.parquet"
         if test_dataset_path.exists():
             df = pd.read_parquet(test_dataset_path)
-            return CuratedContainer._restore_dtypes(df, path / "test_dtypes.json")
+            df = CuratedContainer._restore_dtypes(df, path / "test_dtypes.json")
+            return CuratedContainer._restore_categories(df, path / "test_categories.json")
         return None
+
+    @staticmethod
+    def _load_metadata(path: Path) -> dict:
+        """The dataset, task and experiment metadata of a saved container; other ``a.b.json`` files are skipped."""
+        metadata_objs = {}
+        for meta_file in sorted(path.glob("*.*.json")):
+            meta_name, type_adapter_id = meta_file.name.rsplit(".", 2)[:2]
+            if meta_name not in CuratedContainer._REQUIRED_METADATA:
+                logger.warning("%s: not a metadata file of the container — skipping.", meta_file.name)
+                continue
+            if type_adapter_id not in MetadataRegistry:
+                raise ValueError(
+                    f"{meta_file.name}: unknown metadata type {type_adapter_id!r}; the container was probably written "
+                    "by a newer data_foundry (a newer container format). Upgrade data_foundry to read it.",
+                )
+            adapter = TypeAdapter(MetadataRegistry[type_adapter_id])
+            with meta_file.open("r") as f:
+                meta_data = json.load(f)
+
+            # backward compatibility for typo (FIXME: remove in the future)
+            if "licence" in meta_data:
+                meta_data["license"] = meta_data.pop("licence")
+
+            # backward compatibility
+            meta_data.pop("local_data_directory_base", None)
+
+            # forward compatibility: a container saved by a newer version may carry fields this version lacks
+            known = {f.name for f in dataclasses.fields(MetadataRegistry[type_adapter_id])}
+            unknown = sorted(set(meta_data) - known)
+            if unknown:
+                logger.warning("%s: ignoring fields this version does not know: %s.", meta_file.name, unknown)
+                meta_data = {k: v for k, v in meta_data.items() if k in known}
+
+            metadata_objs[meta_name] = adapter.validate_python(meta_data)
+
+        return metadata_objs
 
     @staticmethod
     def load(path: Path | str, *, load_dataset: bool = True, load_test_data: bool = False) -> CuratedContainer:
@@ -345,31 +553,32 @@ class CuratedContainer:
             dataset_path = path / "dataset.parquet"
             dataset = pd.read_parquet(dataset_path)
             dataset = CuratedContainer._restore_dtypes(dataset, path / "dtypes.json")
+            dataset = CuratedContainer._restore_categories(dataset, path / "categories.json")
         else:
             dataset = None
         test_dataset = CuratedContainer._load_test_dataset(path=path) if load_test_data else None
 
-        # Load metadata
-        metadata_objs = {}
-        for meta_file in path.glob("*.*.json"):
-            meta_name, type_adapter_id = meta_file.name.rsplit(".", 2)[:2]
-            adapter = TypeAdapter(MetadataRegistry[type_adapter_id])
-            with meta_file.open("r") as f:
-                meta_data = json.load(f)
-
-            # backward compatibility for typo (FIXME: remove in the future)
-            if "licence" in meta_data:
-                meta_data["license"] = meta_data.pop("licence")
-
-            # backward compatibility
-            meta_data.pop("local_data_directory_base", None)
-
-            metadata_objs[meta_name] = adapter.validate_python(meta_data)
+        metadata_objs = CuratedContainer._load_metadata(path)
 
         # Load container metadata
         container_metadata_path = path / "container_metadata.json"
         with container_metadata_path.open("r") as f:
             container_metadata = json.load(f)
+        stated_format = container_metadata.pop("format_version", 1)
+        known = {"uuid", "checksum", "version_comment", "test_dataset_checksum"}
+        unknown = sorted(set(container_metadata) - known)
+        if unknown:
+            logger.warning("%s: ignoring fields this version does not know: %s.", container_metadata_path.name, unknown)
+            container_metadata = {k: v for k, v in container_metadata.items() if k in known}
+        missing = [m for m in CuratedContainer._REQUIRED_METADATA if m not in metadata_objs]
+        if missing:
+            raise ValueError(f"{path}: no metadata file for {missing}.")
+        actual_format = FORMAT_VERSIONS[metadata_objs["task_metadata"].type_adapter_id]
+        if stated_format != actual_format:
+            raise ValueError(
+                f"{container_metadata_path} states format {stated_format}, but its task metadata is format "
+                f"{actual_format} ({metadata_objs['task_metadata'].type_adapter_id}).",
+            )
 
         return CuratedContainer(
             dataset=dataset,
@@ -380,7 +589,6 @@ class CuratedContainer:
             loaded_from_path=path,
             **container_metadata,
         )
-
 
     # --- Extra (non-core) artifacts ---------------------------------------------------
     def _resolve_extras_dir(self, path: Path | str | None) -> Path:

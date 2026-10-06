@@ -27,11 +27,14 @@ source_links:
 - https://www.openml.org/search?type=data&id=46669
 - https://www.kaggle.com/c/california-house-prices
 notebook_path: datasets/beyond_iid/temporal/california_house_prices_2020/california_house_prices_2020.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/california_house_prices_2020/dataset.py
 source_row: 734
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-09-30, Lennart): **Split fixed: the "temporal" split ran on alphabetical address order.** The deduplication step (`groupby([Address, Zip, Year built]).idxmax()` + `df.loc[idx]`) returned rows in address order and `time_index` was then rebuilt from it (Spearman 1.000 with address rank, 0.003 with Listed On; leak audit 2026-09-24). Fix: sort back to the Kaggle Id before rebuilding `time_index`. The Id order is the sale order (checked on redfin.com earlier; in the data the latest listing date per Id decile rises from 2020-03-02 to 2020-12-30, Spearman(Id, Listed On) 0.745), so the split stays on it, not on Listed On: a house is listed before it sells, and a listing-date split could train on houses sold after the test period starts. Now: Spearman(time_index, address) 0.006, (time_index, Listed On) 0.757; in all 3 windows every training row precedes every test row. No target leak: Listed Price alone gives R^2 0.915 (legitimate, known before the sale). Leaderboard numbers on the old container come from an effectively random split.
 
 California Houses 2020 Prices (Duplicate with calif_houses below).
 
@@ -56,6 +59,8 @@ We need to find the original source... something from D2L website
 
 MT: summary column feels like it makes more sense to be preprocessed into multiple columns, if it was to be converted to an embedding I can see the LM doing the conversion being confused by some fancy wording that may not mean a better apartment (like italian style of apartment) and leading to misleading results, so it makes sense just to be preprocessed in a real life scenario
 Also in a real life scenario images would be used as well for such task
+
+CC (2026-10-06, Lennart): Kept after the task-probe review (flag `one_feature`: `Listed Price`). The listing price is the natural core of predicting a sale price and is known before the sale, so its dominance is expected. On the three temporal windows of v0.2, predicting the sold price as the listed price gives R^2 0.89-0.91 (the 39 listings priced at $0 get the train mean), any curve rising with it (isotonic) 0.92, LightGBM on all numeric features 0.93, and BeyondArena's best with the text (on the old address-order split) 0.945: the methods cut the remaining error by about a fifth, so the task is not trivial. What is left to predict is the sale-to-list ratio (75% of homes sell within 10% of their list price). Data notes: 921 sales (2.2%) closed at under half or over twice their list price, some apparently one transaction booked on several houses (four listings at $1.1-1.45M each with a sold price of $8.75M).
 
 ## Reference
 

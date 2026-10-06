@@ -20,6 +20,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5SG7H
 notebook_path: datasets/beyond_iid/new_iid/qsar_aquatic_toxicity/qsar_aquatic_toxicity.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/qsar_aquatic_toxicity/dataset.py
 source_row: 3
 type_adapter_id: curation-record-v1
 ---

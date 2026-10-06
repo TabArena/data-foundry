@@ -27,6 +27,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5T61S
 notebook_path: datasets/beyond_iid/grouped/micro_mass/micro_mass.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/micro_mass/dataset.py
 source_row: 792
 type_adapter_id: curation-record-v1
 ---

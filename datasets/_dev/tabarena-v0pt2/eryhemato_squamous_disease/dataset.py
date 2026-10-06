@@ -1,0 +1,112 @@
+"""Curated dataset definition for `eryhemato_squamous_disease` (data-foundry v2). Evidence: README.md."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+
+
+class EryhematoSquamousDisease(AbstractCuratedDataset):
+    # Dataset
+    unique_name = "eryhemato_squamous_disease"
+    year = "1997"
+    domain = "medical & healthcare"
+    source = "UCI"
+    source_url = "https://doi.org/10.24432/C5FK5P"
+    license = "CC BY 4.0"
+    download_description = """
+        We take the original data from UCI.
+
+        wget https://archive.ics.uci.edu/static/public/33/dermatology.zip && unzip dermatology.zip && rm dermatology.zip dermatology.names
+        mkdir -p local-data-warehouse/eryhemato_squamous_disease && mv dermatology.data local-data-warehouse/eryhemato_squamous_disease/
+    """
+    bibtex = r"""
+        @article{guvenir1998learning,
+          title={Learning differential diagnosis of erythemato-squamous diseases using voting feature intervals},
+          author={G{\"u}venir, H Altay and Demir{\"o}z, G{\"u}l{\c{s}}en and Ilter, Nilsel},
+          journal={Artificial intelligence in medicine},
+          volume={13},
+          number={3},
+          pages={147--165},
+          year={1998},
+          publisher={Elsevier}
+        }
+    """
+    curation_comments = """
+        We start with the data from UCI.
+
+        - We keep only the clinical features: the 11 clinical findings, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
+        - We encode all features but age as categorical, since they are ordinal features in nature.
+        - We ensure missing values in age are encoded as NaN.
+    """
+
+    # Task
+    target = "class"
+    problem_type = "multiclass_classification"
+
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        feature_names = [
+            "erythema",
+            "scaling",
+            "definite borders",
+            "itching",
+            "koebner phenomenon",
+            "polygonal papules",
+            "follicular papules",
+            "oral mucosal involvement",
+            "knee and elbow involvement",
+            "scalp involvement",
+            "family history",
+            "melanin incontinence",
+            "eosinophils in the infiltrate",
+            "PNL infiltrate",
+            "fibrosis of the papillary dermis",
+            "exocytosis",
+            "acanthosis",
+            "hyperkeratosis",
+            "parakeratosis",
+            "clubbing of the rete ridges",
+            "elongation of the rete ridges",
+            "thinning of the suprapapillary epidermis",
+            "spongiform pustule",
+            "munro microabcess",
+            "focal hypergranulosis",
+            "disappearance of the granular layer",
+            "vacuolisation and damage of basal layer",
+            "spongiosis",
+            "saw-tooth appearance of retes",
+            "follicular horn plug",
+            "perifollicular parakeratosis",
+            "inflammatory monoluclear inflitrate",
+            "band-like infiltrate",
+            "age",
+            "class",
+        ]
+        df = pd.read_csv(raw_dir / "dermatology.data", header=None, names=feature_names)
+        return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        clinical = [
+            "erythema",
+            "scaling",
+            "definite borders",
+            "itching",
+            "koebner phenomenon",
+            "polygonal papules",
+            "follicular papules",
+            "oral mucosal involvement",
+            "knee and elbow involvement",
+            "scalp involvement",
+            "family history",
+            "age",
+        ]
+        df = raw[[*clinical, self.target]].copy()
+        df["age"] = df["age"].replace("?", np.nan).astype(float)
+        return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # age is numeric, and has some missing values
+        return FeatureTypes(categorical=[c for c in df.columns if c not in ("age", self.target)])

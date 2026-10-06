@@ -16,6 +16,7 @@ required_split:
 source_links:
 - https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists
 notebook_path: datasets/beyond_iid/old_iid/hr_analytics/hr_analytics.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/hr_analytics/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

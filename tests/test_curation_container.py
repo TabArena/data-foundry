@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 
 import pandas as pd
 import pandas.testing as pdt
+import pydantic
 import pytest
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import (
     DatasetMetadata,
+    Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
 )
 
 
@@ -509,3 +513,276 @@ def test_versioned_save_path(tmp_path):
     save_path = curated.save(save_dir=tmp_path)
     assert "versions" in str(save_path)
     assert save_path.exists()
+
+
+# --- Container formats ---
+PINNED_FORMAT_1_CHECKSUM = "a46bb98f3fe822d762e537a833691a5ca696090980b4151c3eebdb197e81c5d3"
+"""The toy grouped format-1 container's checksum, computed by release v0.0.5 (before `split_random_state` existed).
+Never regenerate it from the current code: it guards that the shipped containers keep their checksum."""
+
+V0_0_5_FIELDS = {
+    "DatasetMetadata": {
+        "academic_reference_bibtex",
+        "academic_reference_bibtex_key",
+        "curation_comments",
+        "data_tags",
+        "dataset_source",
+        "dataset_year",
+        "domain_str",
+        "download_description",
+        "license",
+        "original_dataset_source_download_link",
+        "type_adapter_id",
+        "unique_name",
+        "version_comment",
+        "version_from_unique_name",
+    },
+    "PredictiveMLTaskMetadata": {
+        "group_labels",
+        "group_on",
+        "group_time_on",
+        "objective_metric_name",
+        "problem_type",
+        "stratify_on",
+        "target_column_name",
+        "time_on",
+        "type_adapter_id",
+    },
+    "PredictiveMLSplitsMetadata": {"splits", "splits_comment", "time_horizon", "time_horizon_unit", "type_adapter_id"},
+}
+"""The metadata fields of release v0.0.5, which the shipped BeyondArena checksums encode."""
+
+
+def _grouped_toy(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2 | None = None) -> CuratedContainer:
+    # `object`, as pandas 2 infers it: pandas 3 infers `str`, a different dtype in the pinned checksum
+    g = pd.Series(["a", "a", "b", "b", "c", "c"], dtype=object)
+    df = pd.DataFrame({"g": g, "x": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "y": [0, 0, 1, 1, 0, 0]})
+    if task is None:
+        task = PredictiveMLTaskMetadata(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric_name="roc_auc",
+            group_on="g",
+            group_labels="per_group",
+        )
+    return CuratedContainer(
+        dataset=df,
+        dataset_metadata=DatasetMetadata(
+            unique_name="toy_ds",
+            dataset_year="2025",
+            domain_str="finance",
+            dataset_source="Kaggle",
+            original_dataset_source_download_link="http://example",
+            download_description="desc",
+            academic_reference_bibtex="bib",
+            academic_reference_bibtex_key="key",
+            license=None,
+            data_tags=["Non-IID", "Grouped"],
+            curation_comments=None,
+        ),
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits={0: {0: ([0, 1, 2, 3], [4, 5])}}),
+        uuid="u",
+    )
+
+
+def _v2_task(grouping: Grouping | None) -> PredictiveMLTaskMetadataV2:
+    return PredictiveMLTaskMetadataV2(
+        target_column_name="y", problem_type="binary_classification", objective_metric_name="roc_auc", grouping=grouping
+    )
+
+
+TOY_GROUPING = Grouping(
+    on="g",
+    labels="per_group",
+    prediction_unit="group",
+    aggregation="mean",
+    context="all_rows",
+    definition="One group is a toy.",
+)
+
+
+def test_a_format_1_container_keeps_its_checksum_and_files(tmp_path):
+    container = _grouped_toy()
+    assert container.format_version == 1
+    assert container.checksum.startswith("v2:")  # a new container gets the current checksum version
+    assert container._create_checksum(1) == PINNED_FORMAT_1_CHECKSUM  # version 1 is unchanged
+    old = dataclasses.replace(container, checksum=PINNED_FORMAT_1_CHECKSUM)  # as saved before 2026-10-06
+    assert old.verify()
+    path = container.save(save_dir=tmp_path)
+    assert set(json.loads((path / "container_metadata.json").read_text())) == {"uuid", "checksum", "version_comment"}
+    assert CuratedContainer.load(path).format_version == 1
+    with pytest.raises(NotImplementedError, match="format-1 container has no grouping"):
+        _ = container.grouping
+
+
+def test_a_format_2_container_round_trips(tmp_path):
+    container = _grouped_toy(_v2_task(TOY_GROUPING))
+    assert container.format_version == 2
+    task = container.task_metadata
+    assert (task.group_on, task.group_labels, task.group_time_on, task.split_regime) == (
+        "g",
+        "per_group",
+        None,
+        "grouped_non_iid",
+    )
+    path = container.save(save_dir=tmp_path)
+    assert json.loads((path / "container_metadata.json").read_text())["format_version"] == 2
+    task_json = json.loads((path / "task_metadata.predictive-ml-task-mold-v2.json").read_text())
+    assert "group_on" not in task_json  # stored once, in the grouping
+    loaded = CuratedContainer.load(path)
+    assert loaded.format_version == 2
+    assert loaded.grouping == TOY_GROUPING
+    assert loaded.checksum == loaded._create_checksum() == container.checksum
+    assert loaded.container_metadata["format_version"] == 2
+
+
+def test_an_iid_format_2_container_has_no_grouping():
+    container = _grouped_toy(_v2_task(None))
+    assert container.grouping is None
+    assert container.task_metadata.split_regime == "iid"
+
+
+def test_a_stated_format_must_match_the_task_metadata(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    meta = json.loads((path / "container_metadata.json").read_text())
+    (path / "container_metadata.json").write_text(json.dumps({**meta, "format_version": 2}))
+    with pytest.raises(ValueError, match="states format 2, but its task metadata is format 1"):
+        CuratedContainer.load(path)
+
+
+def test_an_unknown_metadata_type_names_a_newer_format(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    old = path / "task_metadata.predictive-ml-task-mold-v1.json"
+    old.rename(path / "task_metadata.predictive-ml-task-mold-v9.json")
+    with pytest.raises(ValueError, match="newer data_foundry"):
+        CuratedContainer.load(path)
+
+
+@pytest.mark.parametrize(
+    ("problem_type", "kwargs", "match"),
+    [
+        ("binary_classification", {"time_on": "t", "grouping": TOY_GROUPING}, "temporal .* or grouped"),
+        (
+            "regression",
+            {"grouping": Grouping(on="g", labels="per_group", prediction_unit="group", aggregation="any")},
+            "binary target",
+        ),
+        (
+            "binary_classification",
+            {"grouping": Grouping(on="g", labels="per_sample", prediction_unit="group", aggregation="select_min")},
+            "regression target",
+        ),
+        ("binary_classification", {"grouping": Grouping(on="y", labels="per_sample")}, "cannot be a time or group"),
+        ("regression", {"stratify_on": "y"}, "cannot be stratified"),
+    ],
+)
+def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type=problem_type, objective_metric_name="m", **kwargs
+        )
+
+
+def test_every_field_added_after_the_release_is_omitted_while_unset():
+    """A new field must not enter the checksum of a format-1 container that does not set it (it broke them once)."""
+    import dataclasses
+
+    for cls in (DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata):
+        added = {f.name for f in dataclasses.fields(cls)} - V0_0_5_FIELDS[cls.__name__]
+        omitted = set(getattr(cls, "_OMIT_WHEN_UNSET", ()))
+        assert added <= omitted, f"{cls.__name__}: {sorted(added - omitted)} would change every older checksum"
+
+
+def test_the_packaged_toy_container_keeps_its_original_checksum():
+    from data_foundry.examples import get_toy_container_path
+
+    container = CuratedContainer.load(get_toy_container_path())
+    assert container.checksum == "5e564f4fd7095781edacc2ec95254b78b2e600c77f89169686352ad9fc24adb5"
+    assert container._create_checksum() == container.checksum
+
+
+# --- Checksum version 2, categories, index, test set, save and load ---
+def _with(container: CuratedContainer, **frames) -> CuratedContainer:
+    """A new container (new checksum) from ``container`` with other frames."""
+    return dataclasses.replace(container, uuid=None, checksum=None, test_dataset_checksum=None, **frames)
+
+
+def test_categories_round_trip_with_order_unused_values_and_ordered(tmp_path):
+    base = _grouped_toy()
+    df = base.dataset.assign(
+        i=pd.Categorical([1, 2, None, 2, 1, 3]),  # integer categories with a missing value come back as floats
+        c=pd.Categorical(list("bacabc"), categories=["c", "a", "b", "z"]),  # custom order, unused "z"
+        o=pd.Categorical(["lo", "hi", "mid", "lo", "hi", "mid"], categories=["lo", "mid", "hi"], ordered=True),
+    )
+    container = _with(base, dataset=df)
+    loaded = CuratedContainer.load(container.save(save_dir=tmp_path))
+    for col in ("i", "c", "o"):
+        assert list(loaded.dataset[col].cat.categories) == list(df[col].cat.categories)
+        assert loaded.dataset[col].cat.ordered == df[col].cat.ordered
+    assert str(loaded.dataset["i"].cat.categories.dtype) == "int64"
+    assert loaded.verify()
+
+
+def test_the_version_2_checksum_sees_categories_and_version_1_does_not():
+    base = _grouped_toy()
+    df = base.dataset.assign(c=pd.Categorical(list("aabbcc"), categories=["a", "b", "c"]))
+    reordered = df.assign(c=df["c"].cat.reorder_categories(["c", "b", "a"]))
+    unused = df.assign(c=df["c"].cat.add_categories(["d"]))
+    ordered = df.assign(c=df["c"].cat.as_ordered())
+    first = _with(base, dataset=df)
+    for other in (reordered, unused, ordered):
+        changed = _with(base, dataset=other)
+        assert changed.checksum != first.checksum
+        assert changed._create_checksum(1) == first._create_checksum(1)
+
+
+def test_a_stored_checksum_keeps_its_version():
+    container = _grouped_toy()
+    assert container.checksum.startswith("v2:")
+    old = dataclasses.replace(container, checksum=container._create_checksum(1))
+    assert old.verify()
+    assert not dataclasses.replace(container, checksum="0" * 64).verify()
+
+
+def test_a_new_container_needs_a_range_index_and_string_column_names():
+    base = _grouped_toy()
+    with pytest.raises(ValueError, match="index 0..n-1"):
+        _with(base, dataset=base.dataset.set_axis(range(1, 7)))
+    with pytest.raises(ValueError, match="not strings"):
+        _with(base, dataset=base.dataset.rename(columns={"x": 0}))
+
+
+def test_the_test_set_has_its_own_checksum_inside_the_container_checksum(tmp_path):
+    base = _grouped_toy()
+    test = pd.DataFrame({"g": pd.Series(["d", "d"], dtype=object), "x": [0.7, 0.8], "y": [0, 1]})
+    container = _with(base, test_dataset=test)
+    assert container.test_dataset_checksum.startswith("v2:")
+    path = container.save(save_dir=tmp_path)
+    assert json.loads((path / "container_metadata.json").read_text())["test_dataset_checksum"]
+    loaded = CuratedContainer.load(path)  # the test set is not loaded: the stored checksum stands for it
+    assert loaded.test_dataset is None and loaded.verify()
+    with_test = CuratedContainer.load(path, load_test_data=True)
+    assert isinstance(with_test.test_dataset.index, pd.RangeIndex)  # saved without its index
+    assert with_test.verify()
+    with_test.test_dataset.loc[0, "x"] = 9.9
+    assert not with_test.verify()
+    other = _with(base, test_dataset=test.assign(x=[0.7, 0.9]))
+    assert other.checksum != container.checksum
+
+
+def test_save_leaves_no_temporary_folder_and_replaces_the_same_uuid(tmp_path):
+    container = _grouped_toy()
+    first = container.save(save_dir=tmp_path)
+    second = container.save(save_dir=tmp_path)
+    assert first == second
+    assert [p.name for p in first.parent.iterdir()] == [first.name]
+
+
+def test_load_skips_extra_metadata_like_files_and_unknown_container_fields(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    (path / "notes.v1.json").write_text("{}")
+    meta = json.loads((path / "container_metadata.json").read_text())
+    (path / "container_metadata.json").write_text(json.dumps(meta | {"added_later": 1}))
+    loaded = CuratedContainer.load(path)
+    assert loaded.verify()
