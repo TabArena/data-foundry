@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b
+checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
 build:
-  uuid: 01a11191-9ce9-7ae4-b341-107ad5bb22f4
-  checksum: ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: coffee_rating_prediction/01a11191-9ce9-7ae4-b341-107ad5bb22f4
+  uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
+  checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
+  built_at: '2026-10-06T16:12:32+00:00'
+  path: coffee_rating_prediction/01a111fc-f020-7625-b0b4-3e15565c2a7b
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,369 rows and 12 features. Source: Kaggle (2023).
 
-Built as `01a11191-9ce9-7ae4-b341-107ad5bb22f4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -298,10 +298,10 @@ We simulate a setting where we refit the model every 2 months and only test on t
 
 | field | value |
 |---|---|
-| uuid | 01a11191-9ce9-7ae4-b341-107ad5bb22f4 |
-| checksum | ad5712ab6e3b616597029cb0a5d45d6779fc44f2e63e43dbb120901f27cce69b |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | coffee_rating_prediction/01a11191-9ce9-7ae4-b341-107ad5bb22f4 |
+| uuid | 01a111fc-f020-7625-b0b4-3e15565c2a7b |
+| checksum | v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694 |
+| built_at | 2026-10-06T16:12:32+00:00 |
+| path | coffee_rating_prediction/01a111fc-f020-7625-b0b4-3e15565c2a7b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

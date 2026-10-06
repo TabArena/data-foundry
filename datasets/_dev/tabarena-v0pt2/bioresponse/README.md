@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bioresponse
 container_format: 2
-checksum: 6269eafea0b6b00e797d4e2756927f79d41638613275ee4d1e0603b6601102c6
+checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
 build:
-  uuid: 01a11190-e899-7c60-a82f-3c93d11ecbd9
-  checksum: 6269eafea0b6b00e797d4e2756927f79d41638613275ee4d1e0603b6601102c6
-  built_at: '2026-10-06T14:14:38+00:00'
-  path: bioresponse/01a11190-e899-7c60-a82f-3c93d11ecbd9
+  uuid: 01a111fc-4c0b-76f4-b01d-a4db8e120e35
+  checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
+  built_at: '2026-10-06T16:11:56+00:00'
+  path: bioresponse/01a111fc-4c0b-76f4-b01d-a4db8e120e35
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `MoleculeElicitsResponse`, scored with `roc_auc` on IID splits. 3,751 rows and 1,776 features. Source: Kaggle (2012).
 
-Built as `01a11190-e899-7c60-a82f-3c93d11ecbd9` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -342,10 +342,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11190-e899-7c60-a82f-3c93d11ecbd9 |
-| checksum | 6269eafea0b6b00e797d4e2756927f79d41638613275ee4d1e0603b6601102c6 |
-| built_at | 2026-10-06T14:14:38+00:00 |
-| path | bioresponse/01a11190-e899-7c60-a82f-3c93d11ecbd9 |
+| uuid | 01a111fc-4c0b-76f4-b01d-a4db8e120e35 |
+| checksum | v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287 |
+| built_at | 2026-10-06T16:11:56+00:00 |
+| path | bioresponse/01a111fc-4c0b-76f4-b01d-a4db8e120e35 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

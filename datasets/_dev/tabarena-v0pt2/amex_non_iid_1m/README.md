@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: amex_non_iid_1m
 container_format: 2
-checksum: 90de43a782bc4cc2eefad22df7dc6fb7fd2bf01f3cac5c211dd55b97ae559d0a
+checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
 build:
-  uuid: 01a11190-c510-7fc4-9dad-f976c0ff79f1
-  checksum: 90de43a782bc4cc2eefad22df7dc6fb7fd2bf01f3cac5c211dd55b97ae559d0a
-  built_at: '2026-10-06T14:14:49+00:00'
-  path: amex_non_iid/versions/01a11190-c510-7fc4-9dad-f976c0ff79f1
+  uuid: 01a111fb-d73e-711b-a490-c684c5c4635d
+  checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
+  built_at: '2026-10-06T16:11:44+00:00'
+  path: amex_non_iid/versions/01a111fb-d73e-711b-a490-c684c5c4635d
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 1500000
-  n_features: 190
+  n_features: 189
   dtypes:
     category: 13
     datetime64[ns]: 1
@@ -78,9 +78,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `target`, scored with `amex_metric` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 190 features. Source: Kaggle (2022).
+Binary classification of `target`, scored with `amex_metric` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 189 features. Source: Kaggle (2022).
 
-Built as `01a11190-c510-7fc4-9dad-f976c0ff79f1` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -454,10 +454,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11190-c510-7fc4-9dad-f976c0ff79f1 |
-| checksum | 90de43a782bc4cc2eefad22df7dc6fb7fd2bf01f3cac5c211dd55b97ae559d0a |
-| built_at | 2026-10-06T14:14:49+00:00 |
-| path | amex_non_iid/versions/01a11190-c510-7fc4-9dad-f976c0ff79f1 |
+| uuid | 01a111fb-d73e-711b-a490-c684c5c4635d |
+| checksum | v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3 |
+| built_at | 2026-10-06T16:11:44+00:00 |
+| path | amex_non_iid/versions/01a111fb-d73e-711b-a490-c684c5c4635d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

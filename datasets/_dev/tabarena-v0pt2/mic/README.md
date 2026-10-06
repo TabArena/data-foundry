@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db
+checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
 build:
-  uuid: 01a11191-4e6f-765b-bd8a-3259484499b0
-  checksum: e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db
-  built_at: '2026-10-06T14:14:58+00:00'
-  path: mic/01a11191-4e6f-765b-bd8a-3259484499b0
+  uuid: 01a111fc-88a2-7b7e-86e3-99576cde774e
+  checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
+  built_at: '2026-10-06T16:12:05+00:00'
+  path: mic/01a111fc-88a2-7b7e-86e3-99576cde774e
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,699 rows and 102 features. Source: UCI (2020).
 
-Built as `01a11191-4e6f-765b-bd8a-3259484499b0` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -393,10 +393,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-4e6f-765b-bd8a-3259484499b0 |
-| checksum | e106f0245c74d5db9dfd469f443e3ff756ff1c9ce91cf26d539f63dfa6abb4db |
-| built_at | 2026-10-06T14:14:58+00:00 |
-| path | mic/01a11191-4e6f-765b-bd8a-3259484499b0 |
+| uuid | 01a111fc-88a2-7b7e-86e3-99576cde774e |
+| checksum | v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238 |
+| built_at | 2026-10-06T16:12:05+00:00 |
+| path | mic/01a111fc-88a2-7b7e-86e3-99576cde774e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

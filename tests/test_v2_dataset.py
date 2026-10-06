@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -30,7 +32,7 @@ from data_foundry.v2 import (
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import _horizon
+from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _horizon, _prepare_code_hash
 from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
@@ -677,9 +679,18 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
     text = (folder / "README.md").read_text()
     assert "## Group structure" in text
     assert "One group is a toy site." in text
-    grouping = read_report(folder / "README.md")["task"]["grouping"]
+    report = read_report(folder / "README.md")
+    grouping = report["task"]["grouping"]
     assert grouping["prediction_unit"] == "row"
     assert grouping["n_groups"] == 60
+    assert report["data"]["n_features"] == 2  # x1 and colour: the target and the group column are not features
+    multi = body.replace('        on="site",\n', '        on=["site", "colour"],\n')
+    write_definition(tmp_path / "datasets", body=multi)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    plan, df = ds.make_splits(), ds.df
+    key = df[["site", "colour"]].astype(object).astype(str).agg("|".join, axis=1)
+    for train, test in plan.splits[0].values():
+        assert not set(key.iloc[train]) & set(key.iloc[test])  # every site and colour combination on one side
 
 
 def test_a_placeholder_license_is_an_error(tmp_path: Path, warehouse: Path) -> None:
@@ -839,3 +850,70 @@ def test_the_row_order_depends_on_the_rows_not_on_their_input_order() -> None:
         assert first["x"].equals(second["x"])
     assert order_rows(df, time_on="t", shuffle=True)["t"].is_monotonic_increasing
     assert order_rows(df, time_on=None, shuffle=False)["x"].equals(df["x"])  # shuffle=False keeps the input order
+
+
+PREPARING = DEFINITION.replace(
+    """    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        return pd.read_csv(raw_dir / "toy.csv")
+""",
+    """    prepared_raw_files = ("prepared.csv",)
+
+    def _prepare_raw_files(self, raw_dir: Path) -> None:
+        helper(raw_dir)
+
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        return pd.read_csv(raw_dir / "prepared.csv")
+""",
+).replace(
+    "class Toy(AbstractCuratedDataset):",
+    """RUNS = []
+
+
+def helper(raw_dir: Path) -> None:
+    RUNS.append(1)
+    pd.read_csv(raw_dir / "toy.csv").to_csv(raw_dir / "prepared.csv", index=False)
+
+
+class Toy(AbstractCuratedDataset):""",
+)
+
+
+def test_prepared_raw_files_are_rewritten_when_their_code_changes(tmp_path: Path, warehouse: Path) -> None:
+    write_definition(tmp_path / "datasets", body=PREPARING.format(name="toy_ds", comment="x"))
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    module = sys.modules[type(ds).__module__]
+    ds.prepare_raw_files()
+    ds.prepare_raw_files()
+    assert len(module.RUNS) == 1  # the files exist and the code is the same
+    marker = warehouse / "toy_ds" / PREPARED_MARKER
+    assert json.loads(marker.read_text())["files"] == ["prepared.csv"]
+    marker.write_text(json.dumps({"code_hash": "written by other code"}))
+    ds.prepare_raw_files()
+    assert len(module.RUNS) == 2  # noqa: PLR2004
+    edited = PREPARING.format(name="toy_ds", comment="x").replace("RUNS.append(1)", "RUNS.append(2)")
+    assert (
+        _prepare_code_hash(load_definition_from_text(edited, "toy_ds")) != json.loads(marker.read_text())["code_hash"]
+    )
+
+
+def test_a_test_set_gets_the_training_categories_first() -> None:
+    train = pd.DataFrame({"c": pd.Categorical(["b", "a", "b"])})
+    test = pd.DataFrame({"c": pd.Categorical(["c", "a"])})
+    out = _categories_like(test, train)
+    assert list(out["c"].cat.categories) == ["a", "b", "c"]
+    assert out["c"].tolist() == ["c", "a"]
+
+
+def test_a_numeric_date_column_needs_a_format() -> None:
+    df = pd.DataFrame({"d": [20200101, 20210315]})
+    with pytest.raises(ValueError, match="nanoseconds since 1970"):
+        cast_dtypes(df, datetime=["d"])
+    assert cast_dtypes(df, datetime={"d": "%Y%m%d"})["d"].dt.year.tolist() == [2020, 2021]
+
+
+def test_anonymized_ids_keep_numbers_and_text_apart() -> None:
+    from data_foundry.v2 import anonymize_ids
+
+    codes = anonymize_ids(pd.Series([1, "1", "a"], dtype=object))
+    assert codes.iloc[0] != codes.iloc[1]
+    assert anonymize_ids(pd.Series(["1"])).iloc[0] == codes.iloc[1]  # text keeps the code it always had

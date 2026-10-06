@@ -9,7 +9,7 @@ dataset**, with a list of candidates to pick from.
 [TabArena](https://tabarena.ai/) benchmarks tabular ML on curated, real-world prediction tasks.
 This folder is the working copy of its next version, **TabArena v0.2**: one folder per dataset, each a v2 definition
 (`dataset.py`) built as a curated container. It started from the 142 datasets of
-[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited (128 remain), and new
+[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited (125 remain), and new
 datasets join it here. The datasets come from three split regimes: random (IID), **temporal** (predict the future)
 and **grouped** (generalise to unseen entities such as patients or customers).
 

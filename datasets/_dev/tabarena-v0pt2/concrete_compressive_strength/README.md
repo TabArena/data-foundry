@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef
+checksum: v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d
 build:
-  uuid: 01a11191-a206-7b43-8326-902a99f9493a
-  checksum: 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: concrete_compressive_strength/01a11191-a206-7b43-8326-902a99f9493a
+  uuid: 01a111fc-cee4-7ba9-97fd-b7a0365aad44
+  checksum: v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d
+  built_at: '2026-10-06T16:12:23+00:00'
+  path: concrete_compressive_strength/01a111fc-cee4-7ba9-97fd-b7a0365aad44
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1,030 rows and 8 features. Source: UCI (1998).
 
-Built as `01a11191-a206-7b43-8326-902a99f9493a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cee4-7ba9-97fd-b7a0365aad44` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -252,10 +252,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a206-7b43-8326-902a99f9493a |
-| checksum | 9a8ed608ee90b710820135a74d29ad67aa5007e5d8e46b0eb42e025962a124ef |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | concrete_compressive_strength/01a11191-a206-7b43-8326-902a99f9493a |
+| uuid | 01a111fc-cee4-7ba9-97fd-b7a0365aad44 |
+| checksum | v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d |
+| built_at | 2026-10-06T16:12:23+00:00 |
+| path | concrete_compressive_strength/01a111fc-cee4-7ba9-97fd-b7a0365aad44 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

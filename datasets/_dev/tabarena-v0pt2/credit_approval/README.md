@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b
+checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
 build:
-  uuid: 01a11191-a23f-7268-8ff9-23cea2bac0ea
-  checksum: 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: credit_approval/01a11191-a23f-7268-8ff9-23cea2bac0ea
+  uuid: 01a111fc-cedf-7a16-9575-fb28a8d57db5
+  checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
+  built_at: '2026-10-06T16:12:23+00:00'
+  path: credit_approval/01a111fc-cedf-7a16-9575-fb28a8d57db5
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 15 features. Source: UCI (1987).
 
-Built as `01a11191-a23f-7268-8ff9-23cea2bac0ea` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -330,10 +330,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a23f-7268-8ff9-23cea2bac0ea |
-| checksum | 73a0edd8597c9127fbdc338eea6081d39dd92aba47ac179b850defa76832783b |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | credit_approval/01a11191-a23f-7268-8ff9-23cea2bac0ea |
+| uuid | 01a111fc-cedf-7a16-9575-fb28a8d57db5 |
+| checksum | v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d |
+| built_at | 2026-10-06T16:12:23+00:00 |
+| path | credit_approval/01a111fc-cedf-7a16-9575-fb28a8d57db5 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

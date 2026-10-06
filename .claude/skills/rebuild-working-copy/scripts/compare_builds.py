@@ -49,7 +49,7 @@ def _verify(saved_path: str) -> bool:
 
     with contextlib.redirect_stdout(io.StringIO()):
         container = CuratedContainer.load(resolve_warehouse_dir() / saved_path)
-    return container.checksum == container._create_checksum()
+    return container.verify()
 
 
 def main() -> int:

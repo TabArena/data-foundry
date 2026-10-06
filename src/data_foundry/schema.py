@@ -655,9 +655,10 @@ class PredictiveMLSplitsMetadata:
 
     time_horizon: str | int | float | None = None
     """The time horizon for the splits for temporal splits.
-    Defines the amount of time between the training and test splits for temporal splits.
+    Defines the amount of time between the training and test splits for temporal splits: a positive number of
+    ``time_horizon_unit`` (a few shipped containers store it as text, such as ``"1"``).
     """
-    time_horizon_unit: Literal["steps", "days", "weeks", "months", "years"] | str | None = None
+    time_horizon_unit: Literal["steps", "days", "weeks", "months", "years"] | None = None
     """The unit for the time_horizon.
 
         - If "steps", then the time_horizon is interpreted as a number of steps (e.g. rows) of time points in
@@ -693,6 +694,7 @@ class PredictiveMLSplitsMetadata:
         if not self.splits:
             raise ValueError("splits must contain at least one repeat with one train/test split.")
 
+        self._check_split_ids()
         folds_per_repeat = {repeat_id: len(folds) for repeat_id, folds in self.splits.items()}
         empty_repeats = [repeat_id for repeat_id, n_folds in folds_per_repeat.items() if n_folds == 0]
         if empty_repeats:
@@ -719,9 +721,21 @@ class PredictiveMLSplitsMetadata:
             try:
                 horizon = float(self.time_horizon)
             except (TypeError, ValueError):
-                horizon = None
-            if horizon is not None and horizon <= 0:
+                raise ValueError(
+                    f"time_horizon must be a number of {self.time_horizon_unit}, got {self.time_horizon!r}.",
+                ) from None
+            if horizon <= 0:
                 raise ValueError(f"time_horizon must be positive, got {self.time_horizon!r}.")
+
+    def _check_split_ids(self) -> None:
+        """Repeat ids ``0..R-1``, and fold ids ``0..F-1`` in every repeat (consumers index them by position)."""
+        repeat_ids = sorted(self.splits)
+        if repeat_ids != list(range(len(repeat_ids))):
+            raise ValueError(f"Repeat ids must be 0..{len(repeat_ids) - 1}, got {repeat_ids[:10]}.")
+        for repeat_id, folds in self.splits.items():
+            fold_ids = sorted(folds)
+            if fold_ids != list(range(len(fold_ids))):
+                raise ValueError(f"Fold ids of repeat {repeat_id} must be 0..{len(fold_ids) - 1}, got {fold_ids[:10]}.")
 
     def describe(self) -> str:
         """Return a human-readable summary of the outer splits and split metadata.

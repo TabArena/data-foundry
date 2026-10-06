@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730
+checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
 build:
-  uuid: 01a11191-30d1-7005-851d-272125d77ffe
-  checksum: d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730
-  built_at: '2026-10-06T14:14:50+00:00'
-  path: biogeographical_ancestry_prediction/01a11191-30d1-7005-851d-272125d77ffe
+  uuid: 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
+  checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
+  built_at: '2026-10-06T16:12:10+00:00'
+  path: biogeographical_ancestry_prediction/01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -62,7 +62,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: GitHub (2025).
 
-Built as `01a11191-30d1-7005-851d-272125d77ffe` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -426,10 +426,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-30d1-7005-851d-272125d77ffe |
-| checksum | d7bbbf59cc86767bade785aa0879e884f797109a0e57b7d694cbe3b6d0075730 |
-| built_at | 2026-10-06T14:14:50+00:00 |
-| path | biogeographical_ancestry_prediction/01a11191-30d1-7005-851d-272125d77ffe |
+| uuid | 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12 |
+| checksum | v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e |
+| built_at | 2026-10-06T16:12:10+00:00 |
+| path | biogeographical_ancestry_prediction/01a111fc-9b9e-7d5b-bb54-5ba4424f3c12 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

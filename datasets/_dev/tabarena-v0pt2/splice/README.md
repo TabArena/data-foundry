@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: splice
 container_format: 2
-checksum: 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed
+checksum: v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af
 build:
-  uuid: 01a11191-f475-7106-8cea-f03ce0050611
-  checksum: 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed
-  built_at: '2026-10-06T14:15:40+00:00'
-  path: splice/01a11191-f475-7106-8cea-f03ce0050611
+  uuid: 01a111fc-bcd5-72b6-a429-8e9aea326bca
+  checksum: v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af
+  built_at: '2026-10-06T16:12:18+00:00'
+  path: splice/01a111fc-bcd5-72b6-a429-8e9aea326bca
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `SiteType`, scored with `log_loss` on IID splits. 3,190 rows and 60 features. Source: UCI (1991).
 
-Built as `01a11191-f475-7106-8cea-f03ce0050611` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bcd5-72b6-a429-8e9aea326bca` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -371,10 +371,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-f475-7106-8cea-f03ce0050611 |
-| checksum | 3af665adb40d34bd26373f7f84af4ec54c2ef438f2efbb016ea5600136f0a6ed |
-| built_at | 2026-10-06T14:15:40+00:00 |
-| path | splice/01a11191-f475-7106-8cea-f03ce0050611 |
+| uuid | 01a111fc-bcd5-72b6-a429-8e9aea326bca |
+| checksum | v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af |
+| built_at | 2026-10-06T16:12:18+00:00 |
+| path | splice/01a111fc-bcd5-72b6-a429-8e9aea326bca |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb
+checksum: v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8
 build:
-  uuid: 01a11191-deea-7d9a-97d1-984916c2e8c0
-  checksum: a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb
-  built_at: '2026-10-06T14:15:34+00:00'
-  path: obesity_estimation/01a11191-deea-7d9a-97d1-984916c2e8c0
+  uuid: 01a111fc-b36e-7939-b271-e858cafffee4
+  checksum: v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8
+  built_at: '2026-10-06T16:12:16+00:00'
+  path: obesity_estimation/01a111fc-b36e-7939-b271-e858cafffee4
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `BodyMass`, scored with `rmse` on IID splits. 498 rows and 14 features. Source: UCI (2019).
 
-Built as `01a11191-deea-7d9a-97d1-984916c2e8c0` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -330,10 +330,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-deea-7d9a-97d1-984916c2e8c0 |
-| checksum | a3c5e43d12de8aa8180c70c1081cbc422a0ce6b1510a0ac217ea66aff5ea8bfb |
-| built_at | 2026-10-06T14:15:34+00:00 |
-| path | obesity_estimation/01a11191-deea-7d9a-97d1-984916c2e8c0 |
+| uuid | 01a111fc-b36e-7939-b271-e858cafffee4 |
+| checksum | v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8 |
+| built_at | 2026-10-06T16:12:16+00:00 |
+| path | obesity_estimation/01a111fc-b36e-7939-b271-e858cafffee4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

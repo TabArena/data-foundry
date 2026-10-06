@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: wids_diabetes_mellitus
 container_format: 2
-checksum: e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e
+checksum: v2:b724e5a0243a18699a7ba8390138b37b2eb67967a3b0b97d6c8499f5a4a0484f
 build:
-  uuid: 01a11190-c732-79a0-9535-32a4f762da86
-  checksum: e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e
-  built_at: '2026-10-06T14:14:35+00:00'
-  path: wids_diabetes_mellitus/01a11190-c732-79a0-9535-32a4f762da86
+  uuid: 01a111fc-032c-7d1f-a669-78dc5d1cd86b
+  checksum: v2:b724e5a0243a18699a7ba8390138b37b2eb67967a3b0b97d6c8499f5a4a0484f
+  built_at: '2026-10-06T16:11:42+00:00'
+  path: wids_diabetes_mellitus/01a111fc-032c-7d1f-a669-78dc5d1cd86b
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `diabetes_mellitus`, scored with `roc_auc` on IID splits. 127,358 rows and 181 features. Source: Kaggle (2021).
 
-Built as `01a11190-c732-79a0-9535-32a4f762da86` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -417,10 +417,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11190-c732-79a0-9535-32a4f762da86 |
-| checksum | e250907e593aa0661ab6f77692259c113354342b42d1796c7af4505712adcf9e |
-| built_at | 2026-10-06T14:14:35+00:00 |
-| path | wids_diabetes_mellitus/01a11190-c732-79a0-9535-32a4f762da86 |
+| uuid | 01a111fc-032c-7d1f-a669-78dc5d1cd86b |
+| checksum | v2:b724e5a0243a18699a7ba8390138b37b2eb67967a3b0b97d6c8499f5a4a0484f |
+| built_at | 2026-10-06T16:11:42+00:00 |
+| path | wids_diabetes_mellitus/01a111fc-032c-7d1f-a669-78dc5d1cd86b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

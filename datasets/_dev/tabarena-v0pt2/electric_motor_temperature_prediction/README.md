@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: electric_motor_temperature_prediction
 container_format: 2
-checksum: b504953425369aaf0f3ba1ce8a4e8db237bf17ded019062cb4a35ab93b4fae88
+checksum: v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd
 build:
-  uuid: 01a1118f-c6ee-7076-ae66-f2ac19eee8f2
-  checksum: b504953425369aaf0f3ba1ce8a4e8db237bf17ded019062cb4a35ab93b4fae88
-  built_at: '2026-10-06T14:14:08+00:00'
-  path: electric_motor_temperature_prediction/01a1118f-c6ee-7076-ae66-f2ac19eee8f2
+  uuid: 01a111fb-0e27-7b57-8daa-3b40b8ba0e11
+  checksum: v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd
+  built_at: '2026-10-06T16:11:07+00:00'
+  path: electric_motor_temperature_prediction/01a111fb-0e27-7b57-8daa-3b40b8ba0e11
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 1296316
-  n_features: 110
+  n_features: 109
   dtypes:
     category: 1
     float64: 109
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `permanent_magnet_temperature`, scored with `rmse` on grouped splits by `profile_id`. 1,296,316 rows and 110 features. Source: Kaggle (2021).
+Regression of `permanent_magnet_temperature`, scored with `rmse` on grouped splits by `profile_id`. 1,296,316 rows and 109 features. Source: Kaggle (2021).
 
-Built as `01a1118f-c6ee-7076-ae66-f2ac19eee8f2` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -378,10 +378,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a1118f-c6ee-7076-ae66-f2ac19eee8f2 |
-| checksum | b504953425369aaf0f3ba1ce8a4e8db237bf17ded019062cb4a35ab93b4fae88 |
-| built_at | 2026-10-06T14:14:08+00:00 |
-| path | electric_motor_temperature_prediction/01a1118f-c6ee-7076-ae66-f2ac19eee8f2 |
+| uuid | 01a111fb-0e27-7b57-8daa-3b40b8ba0e11 |
+| checksum | v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd |
+| built_at | 2026-10-06T16:11:07+00:00 |
+| path | electric_motor_temperature_prediction/01a111fb-0e27-7b57-8daa-3b40b8ba0e11 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

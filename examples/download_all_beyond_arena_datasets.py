@@ -64,9 +64,7 @@ def main(cache_dir: Path | None) -> None:
     )
     for container in progress:
         name = container.dataset_metadata.unique_name
-        assert container.checksum == container._create_checksum(), (
-            f"Checksum mismatch for `{name}` — cached data may be corrupted."
-        )
+        assert container.verify(), f"Checksum mismatch for `{name}` — cached data may be corrupted."
         progress.write(
             f"  {name:<40} rows={container.dataset.shape[0]:>8}  target={container.task_metadata.target_column_name}",
         )

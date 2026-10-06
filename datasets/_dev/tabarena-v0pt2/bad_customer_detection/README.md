@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d
+checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
 build:
-  uuid: 01a11191-6770-7227-bdc9-3d761133971c
-  checksum: 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d
-  built_at: '2026-10-06T14:15:04+00:00'
-  path: bad_customer_detection/01a11191-6770-7227-bdc9-3d761133971c
+  uuid: 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
+  checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
+  built_at: '2026-10-06T16:12:20+00:00'
+  path: bad_customer_detection/01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a11191-6770-7227-bdc9-3d761133971c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -288,10 +288,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6770-7227-bdc9-3d761133971c |
-| checksum | 7006287506047ff38f6da841b8874707bbf73d5d584821a5b7aebeee1493b90d |
-| built_at | 2026-10-06T14:15:04+00:00 |
-| path | bad_customer_detection/01a11191-6770-7227-bdc9-3d761133971c |
+| uuid | 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8 |
+| checksum | v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad |
+| built_at | 2026-10-06T16:12:20+00:00 |
+| path | bad_customer_detection/01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

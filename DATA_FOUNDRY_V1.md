@@ -34,8 +34,8 @@ git (`git show 04e6cfe:datasets/_template/_template.ipynb`).
   `container.grouping` raises; `container.format_version` is 1, and `container_metadata.json` has no
   `format_version` key.
 * The format-1 classes keep exactly the fields the shipped checksums encode. A field added later is left out of the
-  checksum while unset (`_OMIT_WHEN_UNSET`), so every shipped container still verifies:
-  `container.checksum == container._create_checksum()`.
+  checksum while unset (`_OMIT_WHEN_UNSET`), so every shipped container still verifies: `container.verify()`.
+  Their checksum is version 1 (no `v2:` prefix), which hashes the dtype names, the values and the index.
 * Format 2 (v2 definitions) stores the group fields once, in `grouping`; `task_metadata.group_on`, `group_labels`
   and `group_time_on` read the same in both formats.
 

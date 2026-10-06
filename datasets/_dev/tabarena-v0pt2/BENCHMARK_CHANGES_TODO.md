@@ -39,8 +39,7 @@ side (metadata, checks, the dataset review) is tracked in [`TODO.md`](TODO.md).
   document the fallback per dataset. Metrics the sources use that need group information: the PhysioNet 2019
   utility (per patient over its ordered hours, needs `Patient_ID` and `Hour` and every hour of a test patient),
   the 5G challenge's weighted MAPE (higher weight for new base stations), micro_mass's accuracy averaged per strain
-  and then per species, and PAR10 for sat11 (asp_potassco keeps only each instance's best configuration, so it would
-  need its runtimes kept as metadata first).
+  and then per species, and PAR10 for sat11.
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (34 molecules per fold in `musk`); show it next to the results.
 
@@ -62,8 +61,7 @@ recommend:
 * Named metrics that need the group structure get the group ids and the order from the metadata: the PhysioNet 2019
   utility for sepsis (each patient's ordered hours), `amex_metric` per customer, the 5G challenge's weighted MAPE,
   micro_mass's accuracy averaged per strain and then per species, PAR10 for sat11 (a timeout is a runtime of the
-  5,000 s cutoff, counted 10 times). asp_potassco keeps only each instance's best configuration, so PAR10 there would
-  need the 11 runtimes kept as metadata (deferred, `TODO.md`).
+  5,000 s cutoff, counted 10 times).
 * Methods: the task fixes the unit and the metric. The harness applies the default aggregation when a method returns
   row predictions; a method may return one prediction per group itself (a multiple-instance model, a learned pooling,
   another rule) and is scored with the same metric on the same unit. What a method may look at follows `context`; a

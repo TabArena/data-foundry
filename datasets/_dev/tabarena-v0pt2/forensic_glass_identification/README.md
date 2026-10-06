@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b
+checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
 build:
-  uuid: 01a11191-b7ee-7a77-a0f1-4300ba47f8c3
-  checksum: a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b
-  built_at: '2026-10-06T14:15:24+00:00'
-  path: forensic_glass_identification/01a11191-b7ee-7a77-a0f1-4300ba47f8c3
+  uuid: 01a111fc-a27d-7f21-999e-eb82f18aaf21
+  checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
+  built_at: '2026-10-06T16:12:11+00:00'
+  path: forensic_glass_identification/01a111fc-a27d-7f21-999e-eb82f18aaf21
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 214 rows and 9 features. Source: UCI (1987).
 
-Built as `01a11191-b7ee-7a77-a0f1-4300ba47f8c3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -294,10 +294,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-b7ee-7a77-a0f1-4300ba47f8c3 |
-| checksum | a525cb404966e267f462da99e813e5243f78486fc760bc4c784e73c49b3c3f2b |
-| built_at | 2026-10-06T14:15:24+00:00 |
-| path | forensic_glass_identification/01a11191-b7ee-7a77-a0f1-4300ba47f8c3 |
+| uuid | 01a111fc-a27d-7f21-999e-eb82f18aaf21 |
+| checksum | v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b |
+| built_at | 2026-10-06T16:12:11+00:00 |
+| path | forensic_glass_identification/01a111fc-a27d-7f21-999e-eb82f18aaf21 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

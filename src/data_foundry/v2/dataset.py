@@ -36,8 +36,10 @@ import ast
 import contextlib
 import dataclasses
 import datetime as dt
+import hashlib
 import inspect
 import io
+import json
 import re
 import shutil
 import subprocess
@@ -281,7 +283,8 @@ class AbstractCuratedDataset(ABC):
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
     """Bundle-check slugs accepted on purpose, each with the reason it is correct for this dataset."""
     prepared_raw_files: ClassVar[tuple[str, ...]] = ()
-    """Files :meth:`_prepare_raw_files` writes into :attr:`raw_dir`; it runs when any is missing."""
+    """Files :meth:`_prepare_raw_files` writes into :attr:`raw_dir`; it runs when any is missing or when its code
+    (the method and the helpers of ``dataset.py`` it calls) changed since they were written."""
 
     # --- fixed seeds (one per benchmark, never per dataset) ----------------------------------------
     SHUFFLE_RANDOM_STATE: ClassVar[int] = SHUFFLE_RANDOM_STATE
@@ -426,10 +429,25 @@ class AbstractCuratedDataset(ABC):
 
     # --- data ---------------------------------------------------------------------------------------
     def prepare_raw_files(self, *, force: bool = False) -> None:
-        """Run :meth:`_prepare_raw_files` when a file in :attr:`prepared_raw_files` is missing (or ``force``)."""
+        """Run :meth:`_prepare_raw_files` when a file in :attr:`prepared_raw_files` is missing, when its code changed
+        since the files were written, or with ``force``.
+
+        The hash of the code is kept in :data:`PREPARED_MARKER` next to the files; files without one (written before
+        2026-10-06) count as written by other code, so the step runs once more.
+        """
+        if not self.prepared_raw_files:
+            return
+        marker = self.raw_dir / PREPARED_MARKER
+        code = _prepare_code_hash(type(self))
         missing = [name for name in self.prepared_raw_files if not (self.raw_dir / name).exists()]
-        if force or missing:
+        written_by = json.loads(marker.read_text()).get("code_hash") if marker.exists() else None
+        if force or missing or written_by != code:
+            if not missing and not force:
+                print(
+                    f"{self.unique_name}: `_prepare_raw_files` changed since its files were written; running it again."
+                )
             self._prepare_raw_files(self.raw_dir)
+            marker.write_text(json.dumps({"code_hash": code, "files": list(self.prepared_raw_files)}, indent=1))
 
     @property
     def raw(self) -> Any:
@@ -450,7 +468,7 @@ class AbstractCuratedDataset(ABC):
             self._check_declared_columns(df)
             df = self._standardize(df)
             if test is not None:
-                test = self._standardize(test, order=False)
+                test = _categories_like(self._standardize(test, order=False), df)
         return df, test
 
     def _check_declared_columns(self, df: pd.DataFrame) -> None:
@@ -912,6 +930,57 @@ def nondeterministic_calls(tree: ast.AST) -> list[tuple[int, str]]:  # noqa: C90
     return sorted(found)
 
 
+PREPARED_MARKER = ".prepared_raw_files.json"
+"""The file next to the prepared raw files that records the hash of the code that wrote them."""
+
+
+def _prepare_code_hash(cls: type) -> str:
+    """A hash of ``_prepare_raw_files`` and of the functions, classes and methods of its module it calls, directly
+    or through each other (an edit of a helper makes the prepared files stale too).
+    """
+    module = inspect.getmodule(cls)
+    sources: dict[str, str] = {}
+    pending = [("_prepare_raw_files", cls._prepare_raw_files)]
+    while pending:
+        name, obj = pending.pop()
+        if name in sources:
+            continue
+        try:
+            sources[name] = inspect.getsource(obj)
+        except (OSError, TypeError):
+            continue
+        code = getattr(obj, "__code__", None)
+        for used in _names_used(code) if code is not None else ():
+            target = getattr(module, used, None) or getattr(cls, used, None)
+            if callable(target) and inspect.getmodule(target) is module and used not in sources:
+                pending.append((used, target))
+    text = "\n".join(f"{name}\n{source}" for name, source in sorted(sources.items()))
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _names_used(code: Any) -> set[str]:
+    """The global and attribute names a code object (and the code nested in it) refers to."""
+    names = set(code.co_names)
+    for const in code.co_consts:
+        if inspect.iscode(const):
+            names |= _names_used(const)
+    return names
+
+
+def _categories_like(test: pd.DataFrame, train: pd.DataFrame) -> pd.DataFrame:
+    """Give the test set's categorical columns the training frame's categories first, in their order, and the
+    values only the test set has after them, so a value has the same code in both frames.
+    """
+    for col in test.columns:
+        if col in train.columns and isinstance(train[col].dtype, pd.CategoricalDtype):
+            if not isinstance(test[col].dtype, pd.CategoricalDtype):
+                continue
+            known = list(train[col].cat.categories)
+            new = [c for c in test[col].cat.categories if c not in set(known)]
+            test[col] = test[col].cat.set_categories(known + new)
+    return test
+
+
 def _source(cls: type, name: str) -> str | None:
     try:
         return inspect.getsource(getattr(cls, name))
@@ -1045,8 +1114,6 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "a task is grouped or temporal, not both. For grouped data ordered in time, record the order as "
             "`Grouping(time_on=...)`; for a temporal split, the test rows are future rows whatever their group."
         )
-    if cls.grouping is not None and len(as_column_list(cls.grouping.on)) > 1:
-        fail("the split protocol supports one group column: build a single group key in `_clean`.")
     if isinstance(cls.stratify_on, (list, tuple)) and len(cls.stratify_on) > 1:
         fail("`stratify_on` takes one column: build a single stratification key in `_clean`.")
     if cls.grouping is not None and not clean_text(cls.grouping.definition or ""):

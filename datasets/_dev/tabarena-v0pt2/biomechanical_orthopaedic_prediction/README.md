@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: biomechanical_orthopaedic_prediction
 container_format: 2
-checksum: 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb
+checksum: v2:499c8a9b3e03e898bc19fc529188962781881ea897a43e0024713197d18f9d24
 build:
-  uuid: 01a11191-6a8b-7d1a-b794-2f9e4c70ad19
-  checksum: 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb
-  built_at: '2026-10-06T14:15:05+00:00'
-  path: biomechanical_orthopaedic_prediction/01a11191-6a8b-7d1a-b794-2f9e4c70ad19
+  uuid: 01a111fc-c9b3-7a87-ad18-98510a3fb2b1
+  checksum: v2:499c8a9b3e03e898bc19fc529188962781881ea897a43e0024713197d18f9d24
+  built_at: '2026-10-06T16:12:21+00:00'
+  path: biomechanical_orthopaedic_prediction/01a111fc-c9b3-7a87-ad18-98510a3fb2b1
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 310 rows and 6 features. Source: UCI (2006).
 
-Built as `01a11191-6a8b-7d1a-b794-2f9e4c70ad19` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c9b3-7a87-ad18-98510a3fb2b1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -278,10 +278,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6a8b-7d1a-b794-2f9e4c70ad19 |
-| checksum | 0582c05e93449c52fe5b2e5dc88d04d330427687c166a07878a0a015b31d45fb |
-| built_at | 2026-10-06T14:15:05+00:00 |
-| path | biomechanical_orthopaedic_prediction/01a11191-6a8b-7d1a-b794-2f9e4c70ad19 |
+| uuid | 01a111fc-c9b3-7a87-ad18-98510a3fb2b1 |
+| checksum | v2:499c8a9b3e03e898bc19fc529188962781881ea897a43e0024713197d18f9d24 |
+| built_at | 2026-10-06T16:12:21+00:00 |
+| path | biomechanical_orthopaedic_prediction/01a111fc-c9b3-7a87-ad18-98510a3fb2b1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

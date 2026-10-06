@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: d70f97b2e31f591325a420f3413427a45797b38ec0c0bd3353b1cc8cf3edc747
+checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
 build:
-  uuid: 01a11191-900c-7cf7-8cb0-bbfcac7e5fde
-  checksum: d70f97b2e31f591325a420f3413427a45797b38ec0c0bd3353b1cc8cf3edc747
-  built_at: '2026-10-06T14:15:15+00:00'
-  path: sat11_hand_algo_runtime/01a11191-900c-7cf7-8cb0-bbfcac7e5fde
+  uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
+  checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
+  built_at: '2026-10-06T16:12:31+00:00'
+  path: sat11_hand_algo_runtime/01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 1840
-  n_features: 170
+  n_features: 169
   dtypes:
     category: 1
     float64: 170
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `runtime`, scored with `rmse` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 170 features. Source: ASlib (2011).
+Regression of `runtime`, scored with `rmse` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a11191-900c-7cf7-8cb0-bbfcac7e5fde` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -425,10 +425,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11191-900c-7cf7-8cb0-bbfcac7e5fde |
-| checksum | d70f97b2e31f591325a420f3413427a45797b38ec0c0bd3353b1cc8cf3edc747 |
-| built_at | 2026-10-06T14:15:15+00:00 |
-| path | sat11_hand_algo_runtime/01a11191-900c-7cf7-8cb0-bbfcac7e5fde |
+| uuid | 01a111fc-eda8-7830-9b0d-905bf0c5bc1d |
+| checksum | v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0 |
+| built_at | 2026-10-06T16:12:31+00:00 |
+| path | sat11_hand_algo_runtime/01a111fc-eda8-7830-9b0d-905bf0c5bc1d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e
+checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
 build:
-  uuid: 01a11191-c997-7386-a391-8dfcaae5b97a
-  checksum: 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e
-  built_at: '2026-10-06T14:15:29+00:00'
-  path: hepatitis_c_prediction/01a11191-c997-7386-a391-8dfcaae5b97a
+  uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
+  checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
+  built_at: '2026-10-06T16:12:26+00:00'
+  path: hepatitis_c_prediction/01a111fc-da06-7344-b05c-32c0c4829da1
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2018).
 
-Built as `01a11191-c997-7386-a391-8dfcaae5b97a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -302,10 +302,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-c997-7386-a391-8dfcaae5b97a |
-| checksum | 0934913c91d66c25c76f93052b92c364bb8dda2d44b329ee5cca62a7e9dfcd3e |
-| built_at | 2026-10-06T14:15:29+00:00 |
-| path | hepatitis_c_prediction/01a11191-c997-7386-a391-8dfcaae5b97a |
+| uuid | 01a111fc-da06-7344-b05c-32c0c4829da1 |
+| checksum | v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a |
+| built_at | 2026-10-06T16:12:26+00:00 |
+| path | hepatitis_c_prediction/01a111fc-da06-7344-b05c-32c0c4829da1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

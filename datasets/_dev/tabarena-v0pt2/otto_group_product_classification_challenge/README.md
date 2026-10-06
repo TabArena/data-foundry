@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: otto_group_product_classification_challenge
 container_format: 2
-checksum: f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5
+checksum: v2:62fe34a2b43854c8a17a969d4e50a367f3cea10744dac40bbfe54860048ac6fe
 build:
-  uuid: 01a11191-5070-7595-b2ba-bd1ac13a1add
-  checksum: f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5
-  built_at: '2026-10-06T14:14:59+00:00'
-  path: otto_group_product_classification_challenge/01a11191-5070-7595-b2ba-bd1ac13a1add
+  uuid: 01a111fc-7288-72b4-8ceb-e6f796d2a623
+  checksum: v2:62fe34a2b43854c8a17a969d4e50a367f3cea10744dac40bbfe54860048ac6fe
+  built_at: '2026-10-06T16:12:00+00:00'
+  path: otto_group_product_classification_challenge/01a111fc-7288-72b4-8ceb-e6f796d2a623
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `target`, scored with `log_loss` on IID splits. 61,878 rows and 93 features. Source: Kaggle (2015).
 
-Built as `01a11191-5070-7595-b2ba-bd1ac13a1add` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7288-72b4-8ceb-e6f796d2a623` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -355,10 +355,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-5070-7595-b2ba-bd1ac13a1add |
-| checksum | f4b5edd47799df4fe630137a449ba4462756f754b40f51671a7a78e94b2814d5 |
-| built_at | 2026-10-06T14:14:59+00:00 |
-| path | otto_group_product_classification_challenge/01a11191-5070-7595-b2ba-bd1ac13a1add |
+| uuid | 01a111fc-7288-72b4-8ceb-e6f796d2a623 |
+| checksum | v2:62fe34a2b43854c8a17a969d4e50a367f3cea10744dac40bbfe54860048ac6fe |
+| built_at | 2026-10-06T16:12:00+00:00 |
+| path | otto_group_product_classification_challenge/01a111fc-7288-72b4-8ceb-e6f796d2a623 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

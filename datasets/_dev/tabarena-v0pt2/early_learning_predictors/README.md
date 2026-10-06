@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec
+checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
 build:
-  uuid: 01a11190-f36c-76ca-a386-b00582a71674
-  checksum: d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec
-  built_at: '2026-10-06T14:14:39+00:00'
-  path: early_learning_predictors/01a11190-f36c-76ca-a386-b00582a71674
+  uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
+  checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
+  built_at: '2026-10-06T16:11:57+00:00'
+  path: early_learning_predictors/01a111fc-59b5-7e83-8468-0ee2628e95b3
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 18874
-  n_features: 744
+  n_features: 743
   dtypes:
     category: 511
     datetime64[ns]: 1
@@ -72,9 +72,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 744 features. Source: Other (2023).
+Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2023).
 
-Built as `01a11190-f36c-76ca-a386-b00582a71674` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -473,10 +473,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11190-f36c-76ca-a386-b00582a71674 |
-| checksum | d5b5abf2446793d07f906e942ce66508961d5c0cdc07aa874a28575367fa06ec |
-| built_at | 2026-10-06T14:14:39+00:00 |
-| path | early_learning_predictors/01a11190-f36c-76ca-a386-b00582a71674 |
+| uuid | 01a111fc-59b5-7e83-8468-0ee2628e95b3 |
+| checksum | v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237 |
+| built_at | 2026-10-06T16:11:57+00:00 |
+| path | early_learning_predictors/01a111fc-59b5-7e83-8468-0ee2628e95b3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

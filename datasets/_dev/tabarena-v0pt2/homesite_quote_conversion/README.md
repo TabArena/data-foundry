@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2
+checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
 build:
-  uuid: 01a11191-1593-7081-be0a-df66953b5c15
-  checksum: 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2
-  built_at: '2026-10-06T14:14:47+00:00'
-  path: homesite_quote_conversion/01a11191-1593-7081-be0a-df66953b5c15
+  uuid: 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
+  checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
+  built_at: '2026-10-06T16:11:39+00:00'
+  path: homesite_quote_conversion/01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID splits. 260,753 rows and 295 features. Source: Kaggle (2015).
 
-Built as `01a11191-1593-7081-be0a-df66953b5c15` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -425,10 +425,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-1593-7081-be0a-df66953b5c15 |
-| checksum | 37c13f35ec157c17a64b6f337ea9b7358d50d73e5d8d48836f4b79443c52b3b2 |
-| built_at | 2026-10-06T14:14:47+00:00 |
-| path | homesite_quote_conversion/01a11191-1593-7081-be0a-df66953b5c15 |
+| uuid | 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4 |
+| checksum | v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915 |
+| built_at | 2026-10-06T16:11:39+00:00 |
+| path | homesite_quote_conversion/01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

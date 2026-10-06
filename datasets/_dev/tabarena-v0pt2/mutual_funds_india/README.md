@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mutual_funds_india
 container_format: 2
-checksum: 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a
+checksum: v2:04548dd81e96b36f8e257c98300b907b56cda8dc4b0127030d08d7e18b429375
 build:
-  uuid: 01a11191-de4b-7f3f-bc36-f88469de0c2a
-  checksum: 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a
-  built_at: '2026-10-06T14:15:34+00:00'
-  path: mutual_funds_india/01a11191-de4b-7f3f-bc36-f88469de0c2a
+  uuid: 01a111fc-b2ce-7d31-a579-1f6e9371eade
+  checksum: v2:04548dd81e96b36f8e257c98300b907b56cda8dc4b0127030d08d7e18b429375
+  built_at: '2026-10-06T16:12:15+00:00'
+  path: mutual_funds_india/01a111fc-b2ce-7d31-a579-1f6e9371eade
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `returns_3yr`, scored with `rmse` on IID splits. 793 rows and 11 features. Source: Kaggle (2023).
 
-Built as `01a11191-de4b-7f3f-bc36-f88469de0c2a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b2ce-7d31-a579-1f6e9371eade` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -286,10 +286,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-de4b-7f3f-bc36-f88469de0c2a |
-| checksum | 8bb5405456bc6925eb606dc9194d117a03e23167025af462a6556104a9f24e8a |
-| built_at | 2026-10-06T14:15:34+00:00 |
-| path | mutual_funds_india/01a11191-de4b-7f3f-bc36-f88469de0c2a |
+| uuid | 01a111fc-b2ce-7d31-a579-1f6e9371eade |
+| checksum | v2:04548dd81e96b36f8e257c98300b907b56cda8dc4b0127030d08d7e18b429375 |
+| built_at | 2026-10-06T16:12:15+00:00 |
+| path | mutual_funds_india/01a111fc-b2ce-7d31-a579-1f6e9371eade |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

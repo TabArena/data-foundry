@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6
+checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
 build:
-  uuid: 01a11191-c5be-7cbf-bcdc-6dfb1ffd743c
-  checksum: 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6
-  built_at: '2026-10-06T14:16:29+00:00'
-  path: consumer_complaints/versions/01a11191-c5be-7cbf-bcdc-6dfb1ffd743c
+  uuid: 01a111fc-f194-75a8-92f0-489647625f28
+  checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
+  built_at: '2026-10-06T16:13:20+00:00'
+  path: consumer_complaints/versions/01a111fc-f194-75a8-92f0-489647625f28
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2025).
 
-Built as `01a11191-c5be-7cbf-bcdc-6dfb1ffd743c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -323,10 +323,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-c5be-7cbf-bcdc-6dfb1ffd743c |
-| checksum | 6d38d0d0142041f36d491d97ea52ea9ac05379566a2017bb8b5937c0fbbdcbd6 |
-| built_at | 2026-10-06T14:16:29+00:00 |
-| path | consumer_complaints/versions/01a11191-c5be-7cbf-bcdc-6dfb1ffd743c |
+| uuid | 01a111fc-f194-75a8-92f0-489647625f28 |
+| checksum | v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c |
+| built_at | 2026-10-06T16:13:20+00:00 |
+| path | consumer_complaints/versions/01a111fc-f194-75a8-92f0-489647625f28 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

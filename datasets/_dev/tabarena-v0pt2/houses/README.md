@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: houses
 container_format: 2
-checksum: 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa
+checksum: v2:46a559927f2914fd18765c7d2e0303759a82ff7b13817038d41d4bfca168ba15
 build:
-  uuid: 01a11191-cc2d-7228-bde0-03602ae96471
-  checksum: 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa
-  built_at: '2026-10-06T14:15:30+00:00'
-  path: houses/01a11191-cc2d-7228-bde0-03602ae96471
+  uuid: 01a111fc-e060-707f-b68e-7c2be9c5182f
+  checksum: v2:46a559927f2914fd18765c7d2e0303759a82ff7b13817038d41d4bfca168ba15
+  built_at: '2026-10-06T16:12:27+00:00'
+  path: houses/01a111fc-e060-707f-b68e-7c2be9c5182f
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -62,7 +62,7 @@ decisions: []
 
 Regression of `LnMedianHouseValue`, scored with `rmse` on IID splits. 19,675 rows and 8 features. Source: Other (1990).
 
-Built as `01a11191-cc2d-7228-bde0-03602ae96471` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e060-707f-b68e-7c2be9c5182f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -224,10 +224,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-cc2d-7228-bde0-03602ae96471 |
-| checksum | 5a58836ddc832ccb13f28d9ee950764f2f96ac1642a44c1aae997fdc04fc01fa |
-| built_at | 2026-10-06T14:15:30+00:00 |
-| path | houses/01a11191-cc2d-7228-bde0-03602ae96471 |
+| uuid | 01a111fc-e060-707f-b68e-7c2be9c5182f |
+| checksum | v2:46a559927f2914fd18765c7d2e0303759a82ff7b13817038d41d4bfca168ba15 |
+| built_at | 2026-10-06T16:12:27+00:00 |
+| path | houses/01a111fc-e060-707f-b68e-7c2be9c5182f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

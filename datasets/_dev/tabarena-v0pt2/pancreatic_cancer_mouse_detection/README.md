@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: pancreatic_cancer_mouse_detection
 container_format: 2
-checksum: 33ce5b0b5df2bfdec3bd0e7d7f0ff75f8e1f8096133947a62198437f16d32627
+checksum: v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014
 build:
-  uuid: 01a11190-ecff-777c-948d-fdf9eaa1ab6d
-  checksum: 33ce5b0b5df2bfdec3bd0e7d7f0ff75f8e1f8096133947a62198437f16d32627
-  built_at: '2026-10-06T14:14:40+00:00'
-  path: pancreatic_cancer_mouse_detection/01a11190-ecff-777c-948d-fdf9eaa1ab6d
+  uuid: 01a111fc-4ee4-7a63-9a02-e4ac045fac79
+  checksum: v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014
+  built_at: '2026-10-06T16:11:59+00:00'
+  path: pancreatic_cancer_mouse_detection/01a111fc-4ee4-7a63-9a02-e4ac045fac79
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 181
-  n_features: 6772
+  n_features: 6771
   dtypes:
     category: 2
     float64: 6771
@@ -69,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by `mouse_id`. 181 rows and 6,772 features. Source: Other (2003).
+Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by `mouse_id`. 181 rows and 6,771 features. Source: Other (2003).
 
-Built as `01a11190-ecff-777c-948d-fdf9eaa1ab6d` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -449,10 +449,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11190-ecff-777c-948d-fdf9eaa1ab6d |
-| checksum | 33ce5b0b5df2bfdec3bd0e7d7f0ff75f8e1f8096133947a62198437f16d32627 |
-| built_at | 2026-10-06T14:14:40+00:00 |
-| path | pancreatic_cancer_mouse_detection/01a11190-ecff-777c-948d-fdf9eaa1ab6d |
+| uuid | 01a111fc-4ee4-7a63-9a02-e4ac045fac79 |
+| checksum | v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014 |
+| built_at | 2026-10-06T16:11:59+00:00 |
+| path | pancreatic_cancer_mouse_detection/01a111fc-4ee4-7a63-9a02-e4ac045fac79 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: 882a90838db3faac8c2f4d7cf3769c1a38f1d2a9ad9e74446e913762c6c48e53
+checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
 build:
-  uuid: 01a11191-927b-78b3-adb9-d2ccd442bac0
-  checksum: 882a90838db3faac8c2f4d7cf3769c1a38f1d2a9ad9e74446e913762c6c48e53
-  built_at: '2026-10-06T14:15:16+00:00'
-  path: taiwanese_bankruptcy_prediction/01a11191-927b-78b3-adb9-d2ccd442bac0
+  uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
+  checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
+  built_at: '2026-10-06T16:12:19+00:00'
+  path: taiwanese_bankruptcy_prediction/01a111fc-bec6-75e8-b645-262ad3c192c3
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2009).
 
-Built as `01a11191-927b-78b3-adb9-d2ccd442bac0` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -349,10 +349,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-927b-78b3-adb9-d2ccd442bac0 |
-| checksum | 882a90838db3faac8c2f4d7cf3769c1a38f1d2a9ad9e74446e913762c6c48e53 |
-| built_at | 2026-10-06T14:15:16+00:00 |
-| path | taiwanese_bankruptcy_prediction/01a11191-927b-78b3-adb9-d2ccd442bac0 |
+| uuid | 01a111fc-bec6-75e8-b645-262ad3c192c3 |
+| checksum | v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4 |
+| built_at | 2026-10-06T16:12:19+00:00 |
+| path | taiwanese_bankruptcy_prediction/01a111fc-bec6-75e8-b645-262ad3c192c3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

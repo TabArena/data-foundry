@@ -35,7 +35,8 @@ The scripts are in [`scripts/`](scripts/); run them from the repository root wit
 4. Memory sets the parallelism: at 16 jobs the full set fits in about 730 GB. The largest dataset
    (maps_router_eta_1m) peaks at about 205 GB, the next ones at about 70, 50 and 35 GB;
    acquire_valued_shoppers_challenge (about 150 GB) and home_credit_default_stability_1m (about 126 GB) peak while
-   their `_prepare_raw_files` inputs are traced (a full build traces them).
+   their `_prepare_raw_files` inputs are traced (a full build traces them), acquire at about 190 GB when its prepare
+   step also runs for real (its code changed since `.prepared_raw_files.json` was written, or the file is missing).
 
 ## Step 1: build
 
@@ -60,6 +61,8 @@ What a good build shows, and what to do otherwise:
 * every dataset `ok`. A crash or an error is a finding: fix the definition or the framework, log the fix, and rebuild
   only the affected datasets (`--only`). Report each one with its cause, as in the rebuild of 2026-10-01 (an object
   column, NaNs with the sign bit, a text category that changed dtype);
+* after a change that should not touch the data (a new checksum version, a report field), every new container's
+  `_create_checksum(1)` equals the checksum the committed README states (the rebuild of 2026-10-06 checked all 128);
 * `reload verification failed: []`: every saved container reloads and its stored checksum equals the recomputed one;
 * no new warning against the committed READMEs, or each new one explained. A warning the definition accepts on
   purpose goes into its `accepted_check_warnings` with the reason, which needs that dataset rebuilt;
@@ -73,6 +76,8 @@ DATA_FOUNDRY_WAREHOUSE=$OUT/minimal_warehouse .venv/bin/python $K/build_all.py $
 .venv/bin/python $K/compare_builds.py $OUT/minimal --expect-checksums $OUT/build
 ```
 
+`links` links every traced file but copies the prepared ones with their `.prepared_raw_files.json`, so no prepare step
+runs in the check and none could write through a link into the warehouse.
 `checksum differs from the full build: []` shows that the traced files are all a rebuild needs. A difference means
 a build read a file the trace missed (a reader the tracer does not wrap) or is not deterministic; find out which
 before the README claims the inputs suffice. Containers are deterministic across machines in rows and splits, but a

@@ -80,6 +80,12 @@ def cast_dtypes(
     # a shallow copy under copy-on-write (the dataset pipeline), else a real one so the caller's frame stays as is
     df = df.copy(deep=not copy_on_write_enabled())
     for col, fmt in formats.items():
+        if fmt is None and pd.api.types.is_numeric_dtype(df[col]) and not pd.api.types.is_bool_dtype(df[col]):
+            msg = (
+                f"`{col}` is numeric, and `pd.to_datetime` reads numbers as nanoseconds since 1970. Give its format "
+                f"(`datetime={{'{col}': '%Y%m%d'}}`) or convert it in `_clean` (`pd.to_datetime(..., unit='s')`)."
+            )
+            raise ValueError(msg)
         df[col] = pd.to_datetime(df[col], format=fmt)
     for col in string:
         df[col] = df[col].where(df[col].notna(), np.nan).astype("string")
@@ -192,7 +198,15 @@ def anonymize_ids(values: pd.Series, *, length: int = 12) -> pd.Series:
     """Replace identifiers by stable anonymous codes (a hash of each value), the same on every run.
 
     Use it instead of random ids (``uuid.uuid4()``): random ids change the data, the checksum and grouped
-    splits on every run.
+    splits on every run. A text value is hashed as it is; any other value with its type, so ``1`` and ``"1"`` get
+    different codes.
     """
-    codes = {v: hashlib.blake2b(str(v).encode(), digest_size=16).hexdigest()[:length] for v in values.dropna().unique()}
+    codes = {
+        v: hashlib.blake2b(_id_text(v).encode(), digest_size=16).hexdigest()[:length] for v in values.dropna().unique()
+    }
     return values.map(codes)
+
+
+def _id_text(value: object) -> str:
+    """The text :func:`anonymize_ids` hashes: a string itself, anything else prefixed with its type name."""
+    return value if isinstance(value, str) else f"{type(value).__name__}:{value}"

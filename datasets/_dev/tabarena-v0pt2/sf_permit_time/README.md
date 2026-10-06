@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805
+checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
 build:
-  uuid: 01a11190-95a2-75c7-a40c-ed4f679cf6d7
-  checksum: f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805
-  built_at: '2026-10-06T14:14:19+00:00'
-  path: sf_permit_time/01a11190-95a2-75c7-a40c-ed4f679cf6d7
+  uuid: 01a111fb-de83-7f11-84c7-a33ce2f7887a
+  checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
+  built_at: '2026-10-06T16:11:24+00:00'
+  path: sf_permit_time/01a111fb-de83-7f11-84c7-a33ce2f7887a
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2025).
 
-Built as `01a11190-95a2-75c7-a40c-ed4f679cf6d7` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -351,10 +351,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11190-95a2-75c7-a40c-ed4f679cf6d7 |
-| checksum | f26f79f8be74ade6c2628decce6c65db63b3e83d6b1a05dadb5e2a6cac6c4805 |
-| built_at | 2026-10-06T14:14:19+00:00 |
-| path | sf_permit_time/01a11190-95a2-75c7-a40c-ed4f679cf6d7 |
+| uuid | 01a111fb-de83-7f11-84c7-a33ce2f7887a |
+| checksum | v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991 |
+| built_at | 2026-10-06T16:11:24+00:00 |
+| path | sf_permit_time/01a111fb-de83-7f11-84c7-a33ce2f7887a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: body_density_prediction
 container_format: 2
-checksum: a2377c0fab407964547af5e1a48560ab12504e6926c654a56fe5ec1b51d2c129
+checksum: v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7
 build:
-  uuid: 01a11191-a189-75d7-a082-b1d97c4153f5
-  checksum: a2377c0fab407964547af5e1a48560ab12504e6926c654a56fe5ec1b51d2c129
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: body_density_prediction/01a11191-a189-75d7-a082-b1d97c4153f5
+  uuid: 01a111fc-caac-7d14-8929-e266415ab9cf
+  checksum: v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7
+  built_at: '2026-10-06T16:12:22+00:00'
+  path: body_density_prediction/01a111fc-caac-7d14-8929-e266415ab9cf
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `Density`, scored with `rmse` on IID splits. 252 rows and 13 features. Source: Kaggle (1985).
 
-Built as `01a11191-a189-75d7-a082-b1d97c4153f5` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -301,10 +301,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a189-75d7-a082-b1d97c4153f5 |
-| checksum | a2377c0fab407964547af5e1a48560ab12504e6926c654a56fe5ec1b51d2c129 |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | body_density_prediction/01a11191-a189-75d7-a082-b1d97c4153f5 |
+| uuid | 01a111fc-caac-7d14-8929-e266415ab9cf |
+| checksum | v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7 |
+| built_at | 2026-10-06T16:12:22+00:00 |
+| path | body_density_prediction/01a111fc-caac-7d14-8929-e266415ab9cf |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

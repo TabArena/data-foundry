@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: video_transcoding_time_prediction
 container_format: 2
-checksum: 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31
+checksum: v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5
 build:
-  uuid: 01a11191-6402-776f-9b72-c4f0a99fda74
-  checksum: 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31
-  built_at: '2026-10-06T14:15:04+00:00'
-  path: video_transcoding_time_prediction/01a11191-6402-776f-9b72-c4f0a99fda74
+  uuid: 01a111fc-7b5a-7853-8e13-f42ccc0c3b03
+  checksum: v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5
+  built_at: '2026-10-06T16:12:02+00:00'
+  path: video_transcoding_time_prediction/01a111fc-7b5a-7853-8e13-f42ccc0c3b03
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 68784
-  n_features: 19
+  n_features: 18
   dtypes:
     category: 3
     float64: 4
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_transcoding_time`, scored with `rmse` on grouped splits by `video_id`. 68,784 rows and 19 features. Source: UCI (2015).
+Regression of `log_transcoding_time`, scored with `rmse` on grouped splits by `video_id`. 68,784 rows and 18 features. Source: UCI (2015).
 
-Built as `01a11191-6402-776f-9b72-c4f0a99fda74` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -306,10 +306,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6402-776f-9b72-c4f0a99fda74 |
-| checksum | 14e51621c3781123f6de85e99574c205ddbeb031871c47d5e025498296618c31 |
-| built_at | 2026-10-06T14:15:04+00:00 |
-| path | video_transcoding_time_prediction/01a11191-6402-776f-9b72-c4f0a99fda74 |
+| uuid | 01a111fc-7b5a-7853-8e13-f42ccc0c3b03 |
+| checksum | v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5 |
+| built_at | 2026-10-06T16:12:02+00:00 |
+| path | video_transcoding_time_prediction/01a111fc-7b5a-7853-8e13-f42ccc0c3b03 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

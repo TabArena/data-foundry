@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: garments_worker_productivity
 container_format: 2
-checksum: 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4
+checksum: v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc
 build:
-  uuid: 01a11191-afba-78de-84e3-7bb317cd8665
-  checksum: 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4
-  built_at: '2026-10-06T14:15:24+00:00'
-  path: garments_worker_productivity/01a11191-afba-78de-84e3-7bb317cd8665
+  uuid: 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
+  checksum: v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc
+  built_at: '2026-10-06T16:12:25+00:00'
+  path: garments_worker_productivity/01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `actual_productivity`, scored with `rmse` on temporal splits by `date`. 1,197 rows and 15 features. Source: UCI (2020).
 
-Built as `01a11191-afba-78de-84e3-7bb317cd8665` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -310,10 +310,10 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 
 | field | value |
 |---|---|
-| uuid | 01a11191-afba-78de-84e3-7bb317cd8665 |
-| checksum | 7fd3a44c40c5c062b5dae0f511e75e0f895ad6ada49c9ebf9ac371d93023cff4 |
-| built_at | 2026-10-06T14:15:24+00:00 |
-| path | garments_worker_productivity/01a11191-afba-78de-84e3-7bb317cd8665 |
+| uuid | 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4 |
+| checksum | v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc |
+| built_at | 2026-10-06T16:12:25+00:00 |
+| path | garments_worker_productivity/01a111fc-d4cc-702b-99bc-38e5c3ea0aa4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

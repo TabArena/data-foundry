@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea
+checksum: v2:60b349a2272b66227a23c9e835a94bc82b1fb16c3d807c29e8b56732eb31f5f7
 build:
-  uuid: 01a11191-b66b-7b06-9b21-e264518558cf
-  checksum: 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea
-  built_at: '2026-10-06T14:15:24+00:00'
-  path: fiat_500/01a11191-b66b-7b06-9b21-e264518558cf
+  uuid: 01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780
+  checksum: v2:60b349a2272b66227a23c9e835a94bc82b1fb16c3d807c29e8b56732eb31f5f7
+  built_at: '2026-10-06T16:12:11+00:00'
+  path: fiat_500/01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,538 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a11191-b66b-7b06-9b21-e264518558cf` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -249,10 +249,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-b66b-7b06-9b21-e264518558cf |
-| checksum | 6b299b9fe30a1d07ae086e02d709456a90dea09831f22315b6022790f3c176ea |
-| built_at | 2026-10-06T14:15:24+00:00 |
-| path | fiat_500/01a11191-b66b-7b06-9b21-e264518558cf |
+| uuid | 01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780 |
+| checksum | v2:60b349a2272b66227a23c9e835a94bc82b1fb16c3d807c29e8b56732eb31f5f7 |
+| built_at | 2026-10-06T16:12:11+00:00 |
+| path | fiat_500/01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d
+checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
 build:
-  uuid: 01a11191-be7f-7bca-87e5-6fca817d30ba
-  checksum: ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d
-  built_at: '2026-10-06T14:15:26+00:00'
-  path: heart_failure_followup_survival/01a11191-be7f-7bca-87e5-6fca817d30ba
+  uuid: 01a111fc-aabc-7a8e-a658-bf88e5751de1
+  checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
+  built_at: '2026-10-06T16:12:13+00:00'
+  path: heart_failure_followup_survival/01a111fc-aabc-7a8e-a658-bf88e5751de1
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299 rows and 11 features. Source: UCI (2020).
 
-Built as `01a11191-be7f-7bca-87e5-6fca817d30ba` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -307,10 +307,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-be7f-7bca-87e5-6fca817d30ba |
-| checksum | ac33fc39564fb17baa5ab86ffadc64aa79cd825ac6e243906f20562280e4145d |
-| built_at | 2026-10-06T14:15:26+00:00 |
-| path | heart_failure_followup_survival/01a11191-be7f-7bca-87e5-6fca817d30ba |
+| uuid | 01a111fc-aabc-7a8e-a658-bf88e5751de1 |
+| checksum | v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5 |
+| built_at | 2026-10-06T16:12:13+00:00 |
+| path | heart_failure_followup_survival/01a111fc-aabc-7a8e-a658-bf88e5751de1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

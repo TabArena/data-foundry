@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12
+checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
 build:
-  uuid: 01a11191-a850-76e9-8b59-f560a2b09472
-  checksum: fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12
-  built_at: '2026-10-06T14:15:20+00:00'
-  path: ecoli_proteins/01a11191-a850-76e9-8b59-f560a2b09472
+  uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
+  checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
+  built_at: '2026-10-06T16:12:24+00:00'
+  path: ecoli_proteins/01a111fc-d4ff-7dda-987a-8119d986e5f1
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 6 features. Source: UCI (1996).
 
-Built as `01a11191-a850-76e9-8b59-f560a2b09472` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -287,10 +287,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a850-76e9-8b59-f560a2b09472 |
-| checksum | fd7575fba05a65bfe764fe50091d3a16800a7f6d0e2e16c18a5202016c12bd12 |
-| built_at | 2026-10-06T14:15:20+00:00 |
-| path | ecoli_proteins/01a11191-a850-76e9-8b59-f560a2b09472 |
+| uuid | 01a111fc-d4ff-7dda-987a-8119d986e5f1 |
+| checksum | v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642 |
+| built_at | 2026-10-06T16:12:24+00:00 |
+| path | ecoli_proteins/01a111fc-d4ff-7dda-987a-8119d986e5f1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

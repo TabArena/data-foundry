@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: tour_travels_churn
 container_format: 2
-checksum: 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a
+checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
 build:
-  uuid: 01a11191-f52c-7f5a-b894-97cc1b4601a6
-  checksum: 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a
-  built_at: '2026-10-06T14:15:40+00:00'
-  path: tour_travels_churn/01a11191-f52c-7f5a-b894-97cc1b4601a6
+  uuid: 01a111fc-edc9-7641-b79f-dc54c06b0b31
+  checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
+  built_at: '2026-10-06T16:12:31+00:00'
+  path: tour_travels_churn/01a111fc-edc9-7641-b79f-dc54c06b0b31
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows and 6 features. Source: Kaggle (2021).
 
-Built as `01a11191-f52c-7f5a-b894-97cc1b4601a6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -260,10 +260,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-f52c-7f5a-b894-97cc1b4601a6 |
-| checksum | 7460591b4c28d800bcbc3b567e386304adc85be83db2f5430501e6645dff065a |
-| built_at | 2026-10-06T14:15:40+00:00 |
-| path | tour_travels_churn/01a11191-f52c-7f5a-b894-97cc1b4601a6 |
+| uuid | 01a111fc-edc9-7641-b79f-dc54c06b0b31 |
+| checksum | v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569 |
+| built_at | 2026-10-06T16:12:31+00:00 |
+| path | tour_travels_churn/01a111fc-edc9-7641-b79f-dc54c06b0b31 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

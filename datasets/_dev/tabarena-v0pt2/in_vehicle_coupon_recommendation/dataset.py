@@ -87,7 +87,7 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         df = raw
         # The raw file lists each respondent's answers as one consecutive block with the same first-part answers;
         # a block is one respondent (or, rarely, two adjacent respondents with identical answers)
-        profile = df[RESPONDENT_COLUMNS].astype(object).fillna("nan").astype(str).agg("|".join, axis=1)
+        profile = df[RESPONDENT_COLUMNS].astype("string").fillna("nan").agg("|".join, axis=1)
         block = (profile != profile.shift()).cumsum()
         df["respondent"] = anonymize_ids(block.astype(str))
         target_feature = "AcceptCoupon"

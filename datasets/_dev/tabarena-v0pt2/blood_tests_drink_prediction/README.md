@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: blood_tests_drink_prediction
 container_format: 2
-checksum: 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533
+checksum: v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081
 build:
-  uuid: 01a11191-94e7-75a4-b189-60dea33df5d2
-  checksum: 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533
-  built_at: '2026-10-06T14:15:15+00:00'
-  path: blood_tests_drink_prediction/01a11191-94e7-75a4-b189-60dea33df5d2
+  uuid: 01a111fc-c9a3-7ff6-8480-be0052f38d83
+  checksum: v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081
+  built_at: '2026-10-06T16:12:21+00:00'
+  path: blood_tests_drink_prediction/01a111fc-c9a3-7ff6-8480-be0052f38d83
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 features. Source: UCI (1996).
 
-Built as `01a11191-94e7-75a4-b189-60dea33df5d2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -276,10 +276,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-94e7-75a4-b189-60dea33df5d2 |
-| checksum | 1dedbec2828e2fe658f362cc265871becc155e8e55f7865fb319198615c76533 |
-| built_at | 2026-10-06T14:15:15+00:00 |
-| path | blood_tests_drink_prediction/01a11191-94e7-75a4-b189-60dea33df5d2 |
+| uuid | 01a111fc-c9a3-7ff6-8480-be0052f38d83 |
+| checksum | v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081 |
+| built_at | 2026-10-06T16:12:21+00:00 |
+| path | blood_tests_drink_prediction/01a111fc-c9a3-7ff6-8480-be0052f38d83 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

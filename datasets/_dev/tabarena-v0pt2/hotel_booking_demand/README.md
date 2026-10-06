@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334
+checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
 build:
-  uuid: 01a11191-43de-75d1-8d55-d1ef2a848559
-  checksum: b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334
-  built_at: '2026-10-06T14:14:58+00:00'
-  path: hotel_booking_demand/01a11191-43de-75d1-8d55-d1ef2a848559
+  uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
+  checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
+  built_at: '2026-10-06T16:12:05+00:00'
+  path: hotel_booking_demand/01a111fc-83ac-7d29-9b51-a07539b9d67c
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2019).
 
-Built as `01a11191-43de-75d1-8d55-d1ef2a848559` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -360,10 +360,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11191-43de-75d1-8d55-d1ef2a848559 |
-| checksum | b363f7ce4e2e71034216ffddbbfc4e7f720546b629d276b663a2a9f1a08c8334 |
-| built_at | 2026-10-06T14:14:58+00:00 |
-| path | hotel_booking_demand/01a11191-43de-75d1-8d55-d1ef2a848559 |
+| uuid | 01a111fc-83ac-7d29-9b51-a07539b9d67c |
+| checksum | v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c |
+| built_at | 2026-10-06T16:12:05+00:00 |
+| path | hotel_booking_demand/01a111fc-83ac-7d29-9b51-a07539b9d67c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

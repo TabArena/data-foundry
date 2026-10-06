@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789
+checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
 build:
-  uuid: 01a11190-6c97-7d29-a0ff-963610741e1f
-  checksum: f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789
-  built_at: '2026-10-06T14:14:07+00:00'
-  path: anes_voting_2026/01a11190-6c97-7d29-a0ff-963610741e1f
+  uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
+  checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
+  built_at: '2026-10-06T16:11:23+00:00'
+  path: anes_voting_2026/01a111fb-cb34-797a-ba46-5305a0c33af4
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a11190-6c97-7d29-a0ff-963610741e1f` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -382,10 +382,10 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 | field | value |
 |---|---|
-| uuid | 01a11190-6c97-7d29-a0ff-963610741e1f |
-| checksum | f897db69c4414997aff0f3ab1cf5fefb145de2cfd3bd86eed313cacf31b9f789 |
-| built_at | 2026-10-06T14:14:07+00:00 |
-| path | anes_voting_2026/01a11190-6c97-7d29-a0ff-963610741e1f |
+| uuid | 01a111fb-cb34-797a-ba46-5305a0c33af4 |
+| checksum | v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42 |
+| built_at | 2026-10-06T16:11:23+00:00 |
+| path | anes_voting_2026/01a111fb-cb34-797a-ba46-5305a0c33af4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

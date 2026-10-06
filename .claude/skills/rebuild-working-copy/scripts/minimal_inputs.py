@@ -19,12 +19,14 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import shutil
 import sys
 import zipfile
 from collections import defaultdict
 from pathlib import Path
 
 from data_foundry.schema import resolve_warehouse_dir
+from data_foundry.v2.dataset import PREPARED_MARKER
 
 STORED = (".gz", ".parquet", ".zip", ".xlsx", ".bz2", ".7z", ".xz", ".png", ".jpg")
 """Already compressed: stored as they are rather than deflated again."""
@@ -60,6 +62,16 @@ def inputs(out_dir: Path) -> dict[str, set[str]]:
     return used
 
 
+def prepared_files(warehouse: Path, used: dict[str, set[str]]) -> set[str]:
+    """The inputs that a ``_prepare_raw_files`` step wrote, as its marker next to them lists them."""
+    prepared = set()
+    for folder in {Path(rel).parent for rel in used}:
+        marker = warehouse / folder / PREPARED_MARKER
+        if marker.is_file():
+            prepared |= {(folder / name).as_posix() for name in json.loads(marker.read_text()).get("files", [])}
+    return prepared & set(used)
+
+
 def sha256(path: Path) -> str:
     """The SHA-256 of a file, read in 16 MB blocks."""
     digest = hashlib.sha256()
@@ -81,12 +93,21 @@ def main() -> int:
     used = inputs(args.out_dir)
     total = sum((warehouse / rel).stat().st_size for rel in used)
     if args.mode == "links":
+        # a prepared file is copied, not linked, with the hash of the code that wrote it: a `_prepare_raw_files` step
+        # that runs in the check would otherwise write through the link into the real warehouse
+        prepared = prepared_files(warehouse, used)
         for rel in used:
             link = args.target / rel
             link.parent.mkdir(parents=True, exist_ok=True)
-            if not link.exists():
-                link.symlink_to(warehouse / rel)
-        print(f"{len(used)} files, {total / 1e9:.1f} GB, linked under {args.target}")
+            if not link.exists() and not link.is_symlink():
+                if rel in prepared:
+                    shutil.copy2(warehouse / rel, link)
+                else:
+                    link.symlink_to(warehouse / rel)
+        for marker in {Path(rel).parent / PREPARED_MARKER for rel in prepared}:
+            if (warehouse / marker).is_file():
+                shutil.copy2(warehouse / marker, args.target / marker)
+        print(f"{len(used)} files, {total / 1e9:.1f} GB, under {args.target} ({len(prepared)} prepared files copied)")
         return 0
 
     manifest = ["path\tbytes\tsha256\tused_by"]

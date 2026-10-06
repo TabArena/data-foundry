@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a
+checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
 build:
-  uuid: 01a11191-ca0b-7550-a0fe-720cad11b70a
-  checksum: 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a
-  built_at: '2026-10-06T14:15:29+00:00'
-  path: hepatitis_survival_prediction/01a11191-ca0b-7550-a0fe-720cad11b70a
+  uuid: 01a111fc-dbca-7d8e-ab0c-322d3d816ede
+  checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
+  built_at: '2026-10-06T16:12:26+00:00'
+  path: hepatitis_survival_prediction/01a111fc-dbca-7d8e-ab0c-322d3d816ede
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1981).
 
-Built as `01a11191-ca0b-7550-a0fe-720cad11b70a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -338,10 +338,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-ca0b-7550-a0fe-720cad11b70a |
-| checksum | 03304e34a60012fa1aa0b6b259a699b1fa4cfa83142e106bcef3f3e735da2a4a |
-| built_at | 2026-10-06T14:15:29+00:00 |
-| path | hepatitis_survival_prediction/01a11191-ca0b-7550-a0fe-720cad11b70a |
+| uuid | 01a111fc-dbca-7d8e-ab0c-322d3d816ede |
+| checksum | v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4 |
+| built_at | 2026-10-06T16:12:26+00:00 |
+| path | hepatitis_survival_prediction/01a111fc-dbca-7d8e-ab0c-322d3d816ede |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

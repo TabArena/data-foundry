@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f
+checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
 build:
-  uuid: 01a11191-13c6-7e9a-aeaa-a7b867670695
-  checksum: 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f
-  built_at: '2026-10-06T14:14:47+00:00'
-  path: rossmann_store_sales/01a11191-13c6-7e9a-aeaa-a7b867670695
+  uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
+  checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
+  built_at: '2026-10-06T16:11:55+00:00'
+  path: rossmann_store_sales/01a111fc-4eab-762b-baa6-12fb81c7e2ee
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a11191-13c6-7e9a-aeaa-a7b867670695` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -275,10 +275,10 @@ The description says 'Rossmann store managers are tasked with predicting their d
 
 | field | value |
 |---|---|
-| uuid | 01a11191-13c6-7e9a-aeaa-a7b867670695 |
-| checksum | 7595d0558ba38d69bfae7bae8abefb0616bb0d0ed5b4a6a01fabe6969772c38f |
-| built_at | 2026-10-06T14:14:47+00:00 |
-| path | rossmann_store_sales/01a11191-13c6-7e9a-aeaa-a7b867670695 |
+| uuid | 01a111fc-4eab-762b-baa6-12fb81c7e2ee |
+| checksum | v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e |
+| built_at | 2026-10-06T16:11:55+00:00 |
+| path | rossmann_store_sales/01a111fc-4eab-762b-baa6-12fb81c7e2ee |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

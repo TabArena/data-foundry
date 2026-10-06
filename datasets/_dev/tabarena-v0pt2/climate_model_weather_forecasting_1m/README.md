@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: climate_model_weather_forecasting_1m
 container_format: 2
-checksum: 9a61d3f2936819f4ecae0a9d0372d30d081716759490be6fa11bba0787eb3d1e
+checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
 build:
-  uuid: 01a11190-ed52-7cd5-8181-40b82de9d20b
-  checksum: 9a61d3f2936819f4ecae0a9d0372d30d081716759490be6fa11bba0787eb3d1e
-  built_at: '2026-10-06T14:14:53+00:00'
-  path: climate_model_weather_forecasting/versions/01a11190-ed52-7cd5-8181-40b82de9d20b
+  uuid: 01a111fb-bc63-7614-a137-a3fd390bc4f1
+  checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
+  built_at: '2026-10-06T16:11:36+00:00'
+  path: climate_model_weather_forecasting/versions/01a111fb-bc63-7614-a137-a3fd390bc4f1
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `fact_temperature`, scored with `rmse` on temporal splits by `fact_time`. 2,115,283 rows and 99 features. Source: Kaggle (2024).
 
-Built as `01a11190-ed52-7cd5-8181-40b82de9d20b` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -363,10 +363,10 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 | field | value |
 |---|---|
-| uuid | 01a11190-ed52-7cd5-8181-40b82de9d20b |
-| checksum | 9a61d3f2936819f4ecae0a9d0372d30d081716759490be6fa11bba0787eb3d1e |
-| built_at | 2026-10-06T14:14:53+00:00 |
-| path | climate_model_weather_forecasting/versions/01a11190-ed52-7cd5-8181-40b82de9d20b |
+| uuid | 01a111fb-bc63-7614-a137-a3fd390bc4f1 |
+| checksum | v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc |
+| built_at | 2026-10-06T16:11:36+00:00 |
+| path | climate_model_weather_forecasting/versions/01a111fb-bc63-7614-a137-a3fd390bc4f1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

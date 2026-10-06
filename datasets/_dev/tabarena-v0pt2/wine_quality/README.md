@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: wine_quality
 container_format: 2
-checksum: dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9
+checksum: v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79
 build:
-  uuid: 01a11191-f6e8-77a9-ae34-4a2480023fc7
-  checksum: dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9
-  built_at: '2026-10-06T14:15:41+00:00'
-  path: wine_quality/01a11191-f6e8-77a9-ae34-4a2480023fc7
+  uuid: 01a111fc-f00a-7053-95dc-e278996515ca
+  checksum: v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79
+  built_at: '2026-10-06T16:12:31+00:00'
+  path: wine_quality/01a111fc-f00a-7053-95dc-e278996515ca
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `median_wine_quality`, scored with `rmse` on IID splits. 5,320 rows and 12 features. Source: UCI (2009).
 
-Built as `01a11191-f6e8-77a9-ae34-4a2480023fc7` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -251,10 +251,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11191-f6e8-77a9-ae34-4a2480023fc7 |
-| checksum | dc8ade3fda0c7fc95b7245a83380ab39114c4baf50c80445e49119d71d55e7d9 |
-| built_at | 2026-10-06T14:15:41+00:00 |
-| path | wine_quality/01a11191-f6e8-77a9-ae34-4a2480023fc7 |
+| uuid | 01a111fc-f00a-7053-95dc-e278996515ca |
+| checksum | v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79 |
+| built_at | 2026-10-06T16:12:31+00:00 |
+| path | wine_quality/01a111fc-f00a-7053-95dc-e278996515ca |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

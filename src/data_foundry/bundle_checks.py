@@ -46,7 +46,8 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.schema import as_column_list
-from data_foundry.utils.dtypes import object_columns
+from data_foundry.utils.checksum import categorical_details
+from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -1785,6 +1786,54 @@ def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
     return found[0] if found else "task_metadata.predictive-ml-task-mold-v1.json"
 
 
+def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
+    """The files a saved container must hold (the category and test-set files only when the frames need them)."""
+    files = [
+        "dataset.parquet",
+        "dtypes.json",
+        "container_metadata.json",
+        "dataset_metadata.dataset-mold-v1.json",
+        _task_metadata_file(path, container),
+        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+    ]
+    if container is not None and categorical_details(container.dataset):
+        files.append("categories.json")
+    if container is not None and container.test_dataset is not None:
+        files += ["test_dataset.parquet", "test_dtypes.json"]
+        if categorical_details(container.test_dataset):
+            files.append("test_categories.json")
+    return files
+
+
+def _checksum_results(reloaded: CuratedContainer) -> list[CheckResult]:
+    """The stored checksums (the container's, and the test set's when it is loaded) against the reloaded data."""
+    results: list[CheckResult] = []
+    recomputed = reloaded._create_checksum()
+    if recomputed != reloaded.checksum:
+        results.append(
+            CheckResult(
+                "export_checksum_mismatch",
+                "error",
+                f"Checksum recomputed from disk ({recomputed[:16]}…) differs from the stored one "
+                f"({(reloaded.checksum or '')[:16]}…).",
+                hint="The saved artifact does not match its own metadata — do not ship it. Usually a dtype that "
+                "does not survive parquet (see `export_dtype_changed`).",
+            ),
+        )
+    if reloaded.test_dataset is not None and reloaded.test_dataset_checksum is not None:
+        recomputed_test = reloaded._create_test_checksum()
+        if recomputed_test != reloaded.test_dataset_checksum:
+            results.append(
+                CheckResult(
+                    "export_checksum_mismatch",
+                    "error",
+                    f"The test set's checksum recomputed from disk ({recomputed_test[:16]}…) differs from the stored "
+                    f"one ({reloaded.test_dataset_checksum[:16]}…).",
+                ),
+            )
+    return results
+
+
 def verify_saved_container(
     path: Path | str,
     *,
@@ -1811,16 +1860,7 @@ def verify_saved_container(
     results: list[CheckResult] = []
     unique_name = container.dataset_metadata.unique_name if container is not None else path.parent.name
 
-    expected_files = [
-        "dataset.parquet",
-        "dtypes.json",
-        "container_metadata.json",
-        "dataset_metadata.dataset-mold-v1.json",
-        _task_metadata_file(path, container),
-        "experiment_metadata.predictive-ml-splits-mold-v1.json",
-    ]
-    if container is not None and container.test_dataset is not None:
-        expected_files += ["test_dataset.parquet", "test_dtypes.json"]
+    expected_files = _expected_files(path, container)
     missing_files = [name for name in expected_files if not (path / name).is_file()]
     if missing_files:
         results.append(
@@ -1834,18 +1874,7 @@ def verify_saved_container(
     has_test_dataset = container is not None and container.test_dataset is not None
     reloaded = CuratedContainer.load(path, load_dataset=True, load_test_data=has_test_dataset)
 
-    recomputed = reloaded._create_checksum()
-    if recomputed != reloaded.checksum:
-        results.append(
-            CheckResult(
-                "export_checksum_mismatch",
-                "error",
-                f"Checksum recomputed from disk ({recomputed[:16]}…) differs from the stored one "
-                f"({(reloaded.checksum or '')[:16]}…).",
-                hint="The saved artifact does not match its own metadata — do not ship it. Usually a dtype that "
-                "does not survive parquet (see `export_dtype_changed`).",
-            ),
-        )
+    results.extend(_checksum_results(reloaded))
 
     if container is not None:
         if reloaded.uuid != container.uuid:
@@ -1885,14 +1914,60 @@ def verify_saved_container(
     return report
 
 
+def _dtype_key(dtype: object) -> object:
+    """What a dtype has to keep through a save: for a categorical its categories in order, their dtype and
+    ``ordered``; for the ``string`` dtype not its storage (``python`` or ``pyarrow``, which pandas versions choose
+    differently); pandas 3's ``str`` counts as ``object``.
+    """
+    if isinstance(dtype, pd.CategoricalDtype):
+        categories = dtype.categories
+        kind = "object" if is_str_dtype(categories.dtype) else str(categories.dtype)
+        return ("category", tuple(categories.tolist()), kind, bool(dtype.ordered))
+    return "object" if is_str_dtype(dtype) else str(dtype)
+
+
+def _storage_free(df: pd.DataFrame) -> pd.DataFrame:
+    """``df`` with its ``string`` columns as ``object``, so values compare the same whatever the string storage."""
+    text = [c for c, dtype in df.dtypes.items() if isinstance(dtype, pd.StringDtype)]
+    return df.astype(dict.fromkeys(text, object)) if text else df
+
+
 def _compare_frames(before: pd.DataFrame, after: pd.DataFrame, *, label: str) -> list[CheckResult]:
-    """Compare an in-memory frame against its reloaded copy (shape, dtypes, values)."""
+    """Compare an in-memory frame against its reloaded copy (shape, dtypes per column, values)."""
     results: list[CheckResult] = []
     if before.shape != after.shape:
         results.append(
             CheckResult("export_shape_changed", "error", f"`{label}` shape changed: {before.shape} -> {after.shape}."),
         )
         return results
+
+    changed = {
+        column: (str(before[column].dtype), str(after[column].dtype))
+        for column in before.columns
+        if _dtype_key(before[column].dtype) != _dtype_key(after[column].dtype)
+    }
+    if changed:
+        results.append(
+            CheckResult(
+                "export_dtype_changed",
+                "error",
+                f"`{label}` dtypes changed on round-trip (for a category: its categories, their order or `ordered`): "
+                f"{dict(list(changed.items())[:5])}.",
+                hint="Parquet plus `dtypes.json` and `categories.json` could not reproduce the dtype. Use a dtype "
+                "that survives (e.g. `datetime64[ns]` instead of a period).",
+            ),
+        )
+
+    if not _storage_free(before).reset_index(drop=True).equals(_storage_free(after).reset_index(drop=True)):
+        results.append(
+            CheckResult(
+                "export_values_changed",
+                "error",
+                f"`{label}` values differ after the save/load round-trip.",
+                hint="Compare with `before.compare(after)` to find the offending column.",
+            ),
+        )
+    return results
 
     changed = {
         column: (str(before[column].dtype), str(after[column].dtype))

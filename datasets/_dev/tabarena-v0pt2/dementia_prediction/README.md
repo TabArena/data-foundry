@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce
+checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
 build:
-  uuid: 01a11191-820a-7ba8-8b75-3ff9248bfa5f
-  checksum: 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce
-  built_at: '2026-10-06T14:15:11+00:00'
-  path: dementia_prediction/01a11191-820a-7ba8-8b75-3ff9248bfa5f
+  uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
+  checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
+  built_at: '2026-10-06T16:12:25+00:00'
+  path: dementia_prediction/01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 370
-  n_features: 9
+  n_features: 8
   dtypes:
     category: 3
     float64: 5
@@ -69,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 9 features. Source: Other (2010).
+Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a11191-820a-7ba8-8b75-3ff9248bfa5f` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -328,10 +328,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11191-820a-7ba8-8b75-3ff9248bfa5f |
-| checksum | 5e26e2fc6705edf1cf082863c1f47de3328aa7fded1567542fd137300fb5bcce |
-| built_at | 2026-10-06T14:15:11+00:00 |
-| path | dementia_prediction/01a11191-820a-7ba8-8b75-3ff9248bfa5f |
+| uuid | 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0 |
+| checksum | v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c |
+| built_at | 2026-10-06T16:12:25+00:00 |
+| path | dementia_prediction/01a111fc-d5b5-7da4-8ffe-99dd2600b6e0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

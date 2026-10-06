@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245
+checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
 build:
-  uuid: 01a11191-3c35-718e-a11e-f177b87a1883
-  checksum: b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245
-  built_at: '2026-10-06T14:14:53+00:00'
-  path: credit_card_clients_default/01a11191-3c35-718e-a11e-f177b87a1883
+  uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
+  checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
+  built_at: '2026-10-06T16:12:12+00:00'
+  path: credit_card_clients_default/01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2009).
 
-Built as `01a11191-3c35-718e-a11e-f177b87a1883` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -285,10 +285,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-3c35-718e-a11e-f177b87a1883 |
-| checksum | b2702e15b239043567fc0d551a8fb03a704b232b7a603ce8476496ada6d50245 |
-| built_at | 2026-10-06T14:14:53+00:00 |
-| path | credit_card_clients_default/01a11191-3c35-718e-a11e-f177b87a1883 |
+| uuid | 01a111fc-a3c4-755e-b3fb-ad77ce7129a5 |
+| checksum | v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968 |
+| built_at | 2026-10-06T16:12:12+00:00 |
+| path | credit_card_clients_default/01a111fc-a3c4-755e-b3fb-ad77ce7129a5 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

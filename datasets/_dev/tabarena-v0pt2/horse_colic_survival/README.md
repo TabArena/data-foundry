@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1
+checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
 build:
-  uuid: 01a11191-ca60-7384-910a-019da61288a4
-  checksum: 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1
-  built_at: '2026-10-06T14:15:29+00:00'
-  path: horse_colic_survival/01a11191-ca60-7384-910a-019da61288a4
+  uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
+  checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
+  built_at: '2026-10-06T16:12:27+00:00'
+  path: horse_colic_survival/01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a11191-ca60-7384-910a-019da61288a4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -370,10 +370,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-ca60-7384-910a-019da61288a4 |
-| checksum | 063e80840857dcf3f40d58e1627454c00d60c1d87bc5285fda4d95b52eace3c1 |
-| built_at | 2026-10-06T14:15:29+00:00 |
-| path | horse_colic_survival/01a11191-ca60-7384-910a-019da61288a4 |
+| uuid | 01a111fc-df0b-7d08-9ad5-3bfee18c9b55 |
+| checksum | v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727 |
+| built_at | 2026-10-06T16:12:27+00:00 |
+| path | horse_colic_survival/01a111fc-df0b-7d08-9ad5-3bfee18c9b55 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

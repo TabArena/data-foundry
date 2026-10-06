@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be
+checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
 build:
-  uuid: 01a11191-a33d-7475-a7b5-a4ed12dc1ef1
-  checksum: 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: credit_g/01a11191-a33d-7475-a7b5-a4ed12dc1ef1
+  uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
+  checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
+  built_at: '2026-10-06T16:12:23+00:00'
+  path: credit_g/01a111fc-cf4e-7841-a626-e0358b0042c6
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `roc_auc` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a11191-a33d-7475-a7b5-a4ed12dc1ef1` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -320,10 +320,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a33d-7475-a7b5-a4ed12dc1ef1 |
-| checksum | 51c98f343f8f9db425e6f4dcf804a17222990f0ff2e4bdcad3e1abd8b061f6be |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | credit_g/01a11191-a33d-7475-a7b5-a4ed12dc1ef1 |
+| uuid | 01a111fc-cf4e-7841-a626-e0358b0042c6 |
+| checksum | v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2 |
+| built_at | 2026-10-06T16:12:23+00:00 |
+| path | credit_g/01a111fc-cf4e-7841-a626-e0358b0042c6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

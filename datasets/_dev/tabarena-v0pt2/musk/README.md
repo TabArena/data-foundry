@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: musk
 container_format: 2
-checksum: 3bcb142bcfd612357c7d2fd911bd6511d8da854ce3daa4eb640da7c09be01f84
+checksum: v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b
 build:
-  uuid: 01a11191-8f43-7a2b-a6b8-0b77bfadaa43
-  checksum: 3bcb142bcfd612357c7d2fd911bd6511d8da854ce3daa4eb640da7c09be01f84
-  built_at: '2026-10-06T14:15:15+00:00'
-  path: musk/01a11191-8f43-7a2b-a6b8-0b77bfadaa43
+  uuid: 01a111fc-e484-7212-b264-ac00bcffbd4d
+  checksum: v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b
+  built_at: '2026-10-06T16:12:29+00:00'
+  path: musk/01a111fc-e484-7212-b264-ac00bcffbd4d
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 6598
-  n_features: 167
+  n_features: 166
   dtypes:
     category: 2
     int64: 166
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `class`, scored with `roc_auc` on grouped splits by `molecule_name`, one prediction per group (any). 6,598 rows and 167 features. Source: UCI (1994).
+Binary classification of `class`, scored with `roc_auc` on grouped splits by `molecule_name`, one prediction per group (any). 6,598 rows and 166 features. Source: UCI (1994).
 
-Built as `01a11191-8f43-7a2b-a6b8-0b77bfadaa43` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -437,10 +437,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11191-8f43-7a2b-a6b8-0b77bfadaa43 |
-| checksum | 3bcb142bcfd612357c7d2fd911bd6511d8da854ce3daa4eb640da7c09be01f84 |
-| built_at | 2026-10-06T14:15:15+00:00 |
-| path | musk/01a11191-8f43-7a2b-a6b8-0b77bfadaa43 |
+| uuid | 01a111fc-e484-7212-b264-ac00bcffbd4d |
+| checksum | v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b |
+| built_at | 2026-10-06T16:12:29+00:00 |
+| path | musk/01a111fc-e484-7212-b264-ac00bcffbd4d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

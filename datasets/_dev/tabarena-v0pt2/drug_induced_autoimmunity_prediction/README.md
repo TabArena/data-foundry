@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: ecc2efc382d6e9c40e01e99cee0a9334572bf6bfff3a703b33e0a5864712dfb1
+checksum: v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730
 build:
-  uuid: 01a11191-812d-7dce-a917-1e0cc8a5fe14
-  checksum: ecc2efc382d6e9c40e01e99cee0a9334572bf6bfff3a703b33e0a5864712dfb1
-  built_at: '2026-10-06T14:15:11+00:00'
-  path: drug_induced_autoimmunity_prediction/01a11191-812d-7dce-a917-1e0cc8a5fe14
+  uuid: 01a111fc-d491-7412-a5c5-884df72be349
+  checksum: v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730
+  built_at: '2026-10-06T16:12:25+00:00'
+  path: drug_induced_autoimmunity_prediction/01a111fc-d491-7412-a5c5-884df72be349
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Label`, scored with `roc_auc` on IID splits. 597 rows and 177 features. Source: UCI (2025).
 
-Built as `01a11191-812d-7dce-a917-1e0cc8a5fe14` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d491-7412-a5c5-884df72be349` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -408,10 +408,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-812d-7dce-a917-1e0cc8a5fe14 |
-| checksum | ecc2efc382d6e9c40e01e99cee0a9334572bf6bfff3a703b33e0a5864712dfb1 |
-| built_at | 2026-10-06T14:15:11+00:00 |
-| path | drug_induced_autoimmunity_prediction/01a11191-812d-7dce-a917-1e0cc8a5fe14 |
+| uuid | 01a111fc-d491-7412-a5c5-884df72be349 |
+| checksum | v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730 |
+| built_at | 2026-10-06T16:12:25+00:00 |
+| path | drug_induced_autoimmunity_prediction/01a111fc-d491-7412-a5c5-884df72be349 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

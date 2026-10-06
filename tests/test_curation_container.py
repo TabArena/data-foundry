@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 
 import pandas as pd
@@ -604,7 +605,10 @@ TOY_GROUPING = Grouping(
 def test_a_format_1_container_keeps_its_checksum_and_files(tmp_path):
     container = _grouped_toy()
     assert container.format_version == 1
-    assert container.checksum == PINNED_FORMAT_1_CHECKSUM
+    assert container.checksum.startswith("v2:")  # a new container gets the current checksum version
+    assert container._create_checksum(1) == PINNED_FORMAT_1_CHECKSUM  # version 1 is unchanged
+    old = dataclasses.replace(container, checksum=PINNED_FORMAT_1_CHECKSUM)  # as saved before 2026-10-06
+    assert old.verify()
     path = container.save(save_dir=tmp_path)
     assert set(json.loads((path / "container_metadata.json").read_text())) == {"uuid", "checksum", "version_comment"}
     assert CuratedContainer.load(path).format_version == 1
@@ -696,3 +700,89 @@ def test_the_packaged_toy_container_keeps_its_original_checksum():
     container = CuratedContainer.load(get_toy_container_path())
     assert container.checksum == "5e564f4fd7095781edacc2ec95254b78b2e600c77f89169686352ad9fc24adb5"
     assert container._create_checksum() == container.checksum
+
+
+# --- Checksum version 2, categories, index, test set, save and load ---
+def _with(container: CuratedContainer, **frames) -> CuratedContainer:
+    """A new container (new checksum) from ``container`` with other frames."""
+    return dataclasses.replace(container, uuid=None, checksum=None, test_dataset_checksum=None, **frames)
+
+
+def test_categories_round_trip_with_order_unused_values_and_ordered(tmp_path):
+    base = _grouped_toy()
+    df = base.dataset.assign(
+        i=pd.Categorical([1, 2, None, 2, 1, 3]),  # integer categories with a missing value come back as floats
+        c=pd.Categorical(list("bacabc"), categories=["c", "a", "b", "z"]),  # custom order, unused "z"
+        o=pd.Categorical(["lo", "hi", "mid", "lo", "hi", "mid"], categories=["lo", "mid", "hi"], ordered=True),
+    )
+    container = _with(base, dataset=df)
+    loaded = CuratedContainer.load(container.save(save_dir=tmp_path))
+    for col in ("i", "c", "o"):
+        assert list(loaded.dataset[col].cat.categories) == list(df[col].cat.categories)
+        assert loaded.dataset[col].cat.ordered == df[col].cat.ordered
+    assert str(loaded.dataset["i"].cat.categories.dtype) == "int64"
+    assert loaded.verify()
+
+
+def test_the_version_2_checksum_sees_categories_and_version_1_does_not():
+    base = _grouped_toy()
+    df = base.dataset.assign(c=pd.Categorical(list("aabbcc"), categories=["a", "b", "c"]))
+    reordered = df.assign(c=df["c"].cat.reorder_categories(["c", "b", "a"]))
+    unused = df.assign(c=df["c"].cat.add_categories(["d"]))
+    ordered = df.assign(c=df["c"].cat.as_ordered())
+    first = _with(base, dataset=df)
+    for other in (reordered, unused, ordered):
+        changed = _with(base, dataset=other)
+        assert changed.checksum != first.checksum
+        assert changed._create_checksum(1) == first._create_checksum(1)
+
+
+def test_a_stored_checksum_keeps_its_version():
+    container = _grouped_toy()
+    assert container.checksum.startswith("v2:")
+    old = dataclasses.replace(container, checksum=container._create_checksum(1))
+    assert old.verify()
+    assert not dataclasses.replace(container, checksum="0" * 64).verify()
+
+
+def test_a_new_container_needs_a_range_index_and_string_column_names():
+    base = _grouped_toy()
+    with pytest.raises(ValueError, match="index 0..n-1"):
+        _with(base, dataset=base.dataset.set_axis(range(1, 7)))
+    with pytest.raises(ValueError, match="not strings"):
+        _with(base, dataset=base.dataset.rename(columns={"x": 0}))
+
+
+def test_the_test_set_has_its_own_checksum_inside_the_container_checksum(tmp_path):
+    base = _grouped_toy()
+    test = pd.DataFrame({"g": pd.Series(["d", "d"], dtype=object), "x": [0.7, 0.8], "y": [0, 1]})
+    container = _with(base, test_dataset=test)
+    assert container.test_dataset_checksum.startswith("v2:")
+    path = container.save(save_dir=tmp_path)
+    assert json.loads((path / "container_metadata.json").read_text())["test_dataset_checksum"]
+    loaded = CuratedContainer.load(path)  # the test set is not loaded: the stored checksum stands for it
+    assert loaded.test_dataset is None and loaded.verify()
+    with_test = CuratedContainer.load(path, load_test_data=True)
+    assert isinstance(with_test.test_dataset.index, pd.RangeIndex)  # saved without its index
+    assert with_test.verify()
+    with_test.test_dataset.loc[0, "x"] = 9.9
+    assert not with_test.verify()
+    other = _with(base, test_dataset=test.assign(x=[0.7, 0.9]))
+    assert other.checksum != container.checksum
+
+
+def test_save_leaves_no_temporary_folder_and_replaces_the_same_uuid(tmp_path):
+    container = _grouped_toy()
+    first = container.save(save_dir=tmp_path)
+    second = container.save(save_dir=tmp_path)
+    assert first == second
+    assert [p.name for p in first.parent.iterdir()] == [first.name]
+
+
+def test_load_skips_extra_metadata_like_files_and_unknown_container_fields(tmp_path):
+    path = _grouped_toy().save(save_dir=tmp_path)
+    (path / "notes.v1.json").write_text("{}")
+    meta = json.loads((path / "container_metadata.json").read_text())
+    (path / "container_metadata.json").write_text(json.dumps(meta | {"added_later": 1}))
+    loaded = CuratedContainer.load(path)
+    assert loaded.verify()

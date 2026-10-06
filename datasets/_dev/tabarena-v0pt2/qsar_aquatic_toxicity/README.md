@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_aquatic_toxicity
 container_format: 2
-checksum: 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846
+checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
 build:
-  uuid: 01a11191-e1e8-7c64-adc5-ec401f8db2ba
-  checksum: 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846
-  built_at: '2026-10-06T14:15:35+00:00'
-  path: qsar_aquatic_toxicity/01a11191-e1e8-7c64-adc5-ec401f8db2ba
+  uuid: 01a111fc-b7f2-70ec-b160-9c69d2d62b73
+  checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
+  built_at: '2026-10-06T16:12:17+00:00'
+  path: qsar_aquatic_toxicity/01a111fc-b7f2-70ec-b160-9c69d2d62b73
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 546 rows and 8 features. Source: UCI (2014).
 
-Built as `01a11191-e1e8-7c64-adc5-ec401f8db2ba` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -282,10 +282,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-e1e8-7c64-adc5-ec401f8db2ba |
-| checksum | 38659eda834525e652ee300bec69e3585f936e89111965b43b98ce5d6f42c846 |
-| built_at | 2026-10-06T14:15:35+00:00 |
-| path | qsar_aquatic_toxicity/01a11191-e1e8-7c64-adc5-ec401f8db2ba |
+| uuid | 01a111fc-b7f2-70ec-b160-9c69d2d62b73 |
+| checksum | v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6 |
+| built_at | 2026-10-06T16:12:17+00:00 |
+| path | qsar_aquatic_toxicity/01a111fc-b7f2-70ec-b160-9c69d2d62b73 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

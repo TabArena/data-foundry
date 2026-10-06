@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: give_me_some_credit
 container_format: 2
-checksum: 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747
+checksum: v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd
 build:
-  uuid: 01a11191-430b-73b9-a4dd-59db60e76e6d
-  checksum: 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747
-  built_at: '2026-10-06T14:14:56+00:00'
-  path: give_me_some_credit/01a11191-430b-73b9-a4dd-59db60e76e6d
+  uuid: 01a111fc-8c6a-7513-9b7c-cd856ad168b6
+  checksum: v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd
+  built_at: '2026-10-06T16:12:07+00:00'
+  path: give_me_some_credit/01a111fc-8c6a-7513-9b7c-cd856ad168b6
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `FinancialDistressNextTwoYears`, scored with `roc_auc` on IID splits. 150,000 rows and 10 features. Source: Kaggle (2011).
 
-Built as `01a11191-430b-73b9-a4dd-59db60e76e6d` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-8c6a-7513-9b7c-cd856ad168b6` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -237,10 +237,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-430b-73b9-a4dd-59db60e76e6d |
-| checksum | 651fdd9af0b21554699e9f87daf0a58f95fb1147727f22d49a1c06f445a27747 |
-| built_at | 2026-10-06T14:14:56+00:00 |
-| path | give_me_some_credit/01a11191-430b-73b9-a4dd-59db60e76e6d |
+| uuid | 01a111fc-8c6a-7513-9b7c-cd856ad168b6 |
+| checksum | v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd |
+| built_at | 2026-10-06T16:12:07+00:00 |
+| path | give_me_some_credit/01a111fc-8c6a-7513-9b7c-cd856ad168b6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

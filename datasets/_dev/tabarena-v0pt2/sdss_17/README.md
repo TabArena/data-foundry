@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: 84a6f567c9a357b6b0f28b57bb790b2e3410ad32fc5277b4b78afa06644fb52e
+checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
 build:
-  uuid: 01a11191-91bd-707a-b90e-0f40954d2006
-  checksum: 84a6f567c9a357b6b0f28b57bb790b2e3410ad32fc5277b4b78afa06644fb52e
-  built_at: '2026-10-06T14:15:16+00:00'
-  path: sdss_17/01a11191-91bd-707a-b90e-0f40954d2006
+  uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
+  checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
+  built_at: '2026-10-06T16:12:09+00:00'
+  path: sdss_17/01a111fc-9499-7f77-abbe-45c6b8ec8291
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on IID splits. 99,999 rows and 8 features. Source: Kaggle (2022).
 
-Built as `01a11191-91bd-707a-b90e-0f40954d2006` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -234,10 +234,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-91bd-707a-b90e-0f40954d2006 |
-| checksum | 84a6f567c9a357b6b0f28b57bb790b2e3410ad32fc5277b4b78afa06644fb52e |
-| built_at | 2026-10-06T14:15:16+00:00 |
-| path | sdss_17/01a11191-91bd-707a-b90e-0f40954d2006 |
+| uuid | 01a111fc-9499-7f77-abbe-45c6b8ec8291 |
+| checksum | v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d |
+| built_at | 2026-10-06T16:12:09+00:00 |
+| path | sdss_17/01a111fc-9499-7f77-abbe-45c6b8ec8291 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

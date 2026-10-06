@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: emscad
 container_format: 2
-checksum: 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4
+checksum: v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0
 build:
-  uuid: 01a11191-33bc-74d2-ac80-3e98063d23c2
-  checksum: 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4
-  built_at: '2026-10-06T14:14:53+00:00'
-  path: emscad/01a11191-33bc-74d2-ac80-3e98063d23c2
+  uuid: 01a111fc-7ebc-7346-942e-09517a07829e
+  checksum: v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0
+  built_at: '2026-10-06T16:12:04+00:00'
+  path: emscad/01a111fc-7ebc-7346-942e-09517a07829e
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 16116
-  n_features: 18
+  n_features: 17
   dtypes:
     category: 10
     float64: 1
@@ -76,9 +76,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 18 features. Source: Other (2014).
+Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 17 features. Source: Other (2014).
 
-Built as `01a11191-33bc-74d2-ac80-3e98063d23c2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -365,10 +365,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11191-33bc-74d2-ac80-3e98063d23c2 |
-| checksum | 2fa6d8bbb7b5a1ee2dbeb2b1da305d6677a38feaf659b826d6d54af1e85179c4 |
-| built_at | 2026-10-06T14:14:53+00:00 |
-| path | emscad/01a11191-33bc-74d2-ac80-3e98063d23c2 |
+| uuid | 01a111fc-7ebc-7346-942e-09517a07829e |
+| checksum | v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0 |
+| built_at | 2026-10-06T16:12:04+00:00 |
+| path | emscad/01a111fc-7ebc-7346-942e-09517a07829e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

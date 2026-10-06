@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sepsis_prediction_1m
 container_format: 2
-checksum: ceb1db44c87f4307d1f34278e42adf5969a73c5e36df9be9b64f768af494ba04
+checksum: v2:769367d731628622c049583f09643ea1b9bdb7e895abf45055be614366c5815d
 build:
-  uuid: 01a11190-cd8f-7034-8557-b9c3eee9a4b1
-  checksum: ceb1db44c87f4307d1f34278e42adf5969a73c5e36df9be9b64f768af494ba04
-  built_at: '2026-10-06T14:14:31+00:00'
-  path: sepsis_prediction/versions/01a11190-cd8f-7034-8557-b9c3eee9a4b1
+  uuid: 01a111fc-109e-7d32-85ac-ecdf6eea551e
+  checksum: v2:769367d731628622c049583f09643ea1b9bdb7e895abf45055be614366c5815d
+  built_at: '2026-10-06T16:11:39+00:00'
+  path: sepsis_prediction/versions/01a111fc-109e-7d32-85ac-ecdf6eea551e
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 1499997
-  n_features: 43
+  n_features: 42
   dtypes:
     category: 6
     float64: 36
@@ -75,9 +75,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `SepsisLabel`, scored with `PhysioNet2019UtilityFunction` on grouped splits by `Patient_ID`. 1,499,997 rows and 43 features. Source: Other (2019).
+Binary classification of `SepsisLabel`, scored with `PhysioNet2019UtilityFunction` on grouped splits by `Patient_ID`. 1,499,997 rows and 42 features. Source: Other (2019).
 
-Built as `01a11190-cd8f-7034-8557-b9c3eee9a4b1` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -378,10 +378,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11190-cd8f-7034-8557-b9c3eee9a4b1 |
-| checksum | ceb1db44c87f4307d1f34278e42adf5969a73c5e36df9be9b64f768af494ba04 |
-| built_at | 2026-10-06T14:14:31+00:00 |
-| path | sepsis_prediction/versions/01a11190-cd8f-7034-8557-b9c3eee9a4b1 |
+| uuid | 01a111fc-109e-7d32-85ac-ecdf6eea551e |
+| checksum | v2:769367d731628622c049583f09643ea1b9bdb7e895abf45055be614366c5815d |
+| built_at | 2026-10-06T16:11:39+00:00 |
+| path | sepsis_prediction/versions/01a111fc-109e-7d32-85ac-ecdf6eea551e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

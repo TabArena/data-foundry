@@ -62,8 +62,8 @@ remains. Say so in your report.
   consecutive blocks). The rows and splits are then the same everywhere; only the
   last bit of a numpy log or exp can differ between CPUs, so a rebuild elsewhere may give another checksum for a
   log-scaled target.
-* **Refused at import:** besides missing attributes, a multi-column group key or `stratify_on` (build one key in
-  `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with a custom `_make_splits` (they would be
+* **Refused at import:** besides missing attributes, a multi-column `stratify_on` (build one key in `_clean`; a
+  group may span several columns, `Grouping(on=["a", "b"])`, each combination one group), `Temporal(splits=...)` or `subsample_to_budget` together with a custom `_make_splits` (they would be
   ignored), `subsample_to_budget` on a name without `_1m`, and `TemporalSplits` without `n_windows`, `cutoffs` or
   `min_train_fraction`. After `_clean`, a declared column that is missing, or a group or time column with missing
   values, stops the run with the attribute's name.

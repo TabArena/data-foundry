@@ -4,6 +4,101 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-06 (healthcare_insurance_expenses, churn and physiochemical_protein retired; generated-data probe)
+
+- Removed `healthcare_insurance_expenses`: simulated data (`No (Retired)`, marker `AHDS`). It is the textbook data
+  of Lantz's Machine Learning with R, "simulated on the basis of demographic statistics from the US Census Bureau";
+  1,220 of its 1,338 charges equal a formula of the features to the cent (the record has it), the other 118 add a
+  random extra cost, and the best BeyondArena methods already reach the best possible score.
+- Removed `churn`: artificial data (`No (Retired)`, marker `AHDS`). MLC++ describes it as "artificial based on
+  claims similar to real world"; its area codes ignore the state, its call counts share one distribution, and its
+  label follows crisp rules (international-plan rules hold for 79 of 79 and 89 of 89 customers).
+- Removed `physiochemical_protein`: groups that cannot be recovered (`No (Retired)`, markers `Data Quality Issue`,
+  `Missing source information`). The rows are decoys of CASP target proteins, the use case needs new targets at test
+  time, and no copy of the file says which target a decoy belongs to; the authors' later release (RF-PCP, Rana et al.
+  2015) has target ids but other features.
+- All three are TabArena v0.1 and BeyondArena datasets; the shipped collections keep them, and their containers and
+  raw files stay in the warehouse. 125 datasets remain, 40 of them from TabArena v0.1 (`LEAK_AUDIT.md`, the table in
+  `README.md` and the other counts are updated).
+- New probe `generated_probes.py` (verify-dataset skill): a regression target that a median regression on simple
+  terms fits exactly for many rows (`formula`), or a classification label that crisp rules give for a large share of
+  the minority class (`rule_leaves`). On all 128 datasets of the morning's build it flags exactly the two generated
+  ones. How to read it: `.claude/skills/verify-dataset/references/task_probes.md` (generated data).
+
+## 2026-10-06 (airfoil_self_noise grouped by wind-tunnel run)
+
+- `airfoil_self_noise` is a grouped task now (new UUID `01a11312-37c8-7cae-b6c8-c0b883fea348`; same 1,503 rows and 5
+  features, new splits, scored per row). The rows are 106 wind-tunnel runs (one chord length, angle of attack and
+  free-stream velocity each), each a measured spectrum of 8 to 19 frequency bands stored as one block in the raw
+  file. A model is used for a configuration that was not measured; a random split gave a test row 62% of its run's
+  other bands in train. R² random / grouped by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840, random forest
+  0.926 / 0.830, kNN-5 0.755 / 0.629, ridge 0.510 / 0.490. The group column `run` is built from the three settings,
+  which stay features. Task probes: no flags. The single-column hidden-group probe cannot see such a group; the
+  probe reference says so now.
+
+## 2026-10-06 (superconductivity grouped by composition)
+
+- `superconductivity` is a grouped task now (new UUID `01a11308-e9d1-7f71-b3e3-e172887ea0d9`; same 21,263 rows and
+  81 features, new splits, scored per row). The features come from the composition alone, and a model like this is
+  used for compositions without a measured temperature, so a test composition must be new to it; a random split
+  gave 35% of the test rows an identical row in train. The group column `composition` comes from the element counts
+  in `unique_m.csv` (shipped with the release, row-aligned with `train.csv`): element shares at 6 decimals, which
+  only removes floating-point noise (15,164 compositions; it joins formulas written in another order or scale). The
+  cost on Tc is at most 0.009 R² (LightGBM 0.916 random, 0.913 grouped), and the ranking of five model families
+  stays; the use case decided, not the gap. Not grouped by element set (new families are another task), not
+  deduplicated (Stanev et al. 2018 average a material's entries; we keep the release's rows). Task probes: no
+  flags. The day's interim builds: grouped with 4-decimal shares (`01a112de-6c52-714d-9186-5e0f9cdd3bdd`, merged 28
+  different compositions) and IID again (`01a112f7-2990-72da-aeab-29cd3d672709`), both superseded. Evidence in the
+  record and the README's "Decisions"; the rule (the split follows the real use, the gap is reported) is in
+  `.claude/skills/verify-dataset/references/task_probes.md`.
+
+## 2026-10-06 (library follow-ups done; checksum version 2; all 128 rebuilt; hidden-group probe)
+
+- The library follow-ups of the framework review of 2026-10-01 are done (they were in `TODO.md`):
+  - **Checksum version 2** (`v2:<hex>`) for every new container: it also covers each categorical column's
+    categories, their order and `ordered`, and the test set through its own `test_dataset_checksum`; it leaves out the
+    index and the `string` storage (`python` or `pyarrow`, which pandas versions choose differently). Checksums
+    without the prefix (every shipped BeyondArena container) keep verifying with version 1. `container.verify()`
+    checks either.
+  - `categories.json` next to `dtypes.json` restores the categories, their order and `ordered` on load: integer
+    categories with missing values no longer come back as floats, and a custom order is kept.
+  - A new container needs the index `0..n-1` and string column names; the test set is saved without its index.
+    `save` writes into a temporary folder and renames it; `load` skips `a.b.json` files that are not container
+    metadata and ignores unknown fields of `container_metadata.json`.
+  - `verify_saved_container` compares the categories (order and `ordered` included) column by column and compares
+    values whatever the string storage.
+  - Collections: BeyondArena is read from a pinned commit of `TabArena/BeyondArena` (`2ecfe882`, 2026-06-30; the
+    newer commit changed only the README), a cached container counts only with its core files, `get_dataset(...,
+    verify=True)` checks the checksum, and the 10 `_1m` entries are found by their own names
+    (`get_dataset("cooking_time_1m")`).
+  - `time_horizon_unit` takes only the five documented units and `time_horizon` must be a positive number; split ids
+    must run 0..n-1 (all 1,100 saved containers on this machine pass).
+  - `_prepare_raw_files` runs again when its code changed: the hash of the method and the helpers it calls sits in
+    `.prepared_raw_files.json`. An unlabeled test set gets the training frame's categories first. A group may span
+    several columns (`Grouping(on=["a", "b"])`). Plain `cutoffs` apply to a time-zone-aware time column; a numeric
+    column listed as a date needs a format (pandas read it as nanoseconds since 1970); `anonymize_ids` gives `1` and
+    `"1"` different codes (text keeps its codes). The README's `n_features` no longer counts the group column (15
+    grouped datasets).
+- `in_vehicle_coupon_recommendation` builds its respondent key with `astype("string").fillna("nan")`, the same keys
+  without pandas 2's FutureWarning.
+- Rebuilt all 128 datasets (new UUIDs in the table). The data is unchanged: every container's version-1 checksum
+  equals the checksum the committed README stated, and rows and splits match the previous build. All 128 built `ok`,
+  reload and verify, carry a `v2:` checksum, and show no new warning (61 open in 44 datasets). The two
+  `_prepare_raw_files` steps ran once more (no hash recorded yet); acquire_valued_shoppers_challenge peaked at
+  188 GB while doing so. A check-only build under pandas 3.0.6 from a warehouse holding only the 466 traced files
+  (71.5 GB) gives the same 128 checksums. In that check the two prepare steps ran again under pandas 3 (their new
+  `.prepared_raw_files.json` was not among the traced files) and wrote through the symlinks of the check's warehouse
+  into the real prepared files; a pandas 2 check-only build that reads them reproduces both checksums, so they are
+  intact. `minimal_inputs.py links` now copies the prepared files with their marker instead of linking them.
+- The hidden-group probe (`hidden_groups.py`, verify-dataset skill) ran over the 93 IID datasets, with the 15 grouped
+  ones as controls (it finds the known group in 11; the 4 it misses gain little from a random split). Four IID hits:
+  amazon_employee_access (`MGR_ID`), covertype (`Soil_Type`) and mutual_funds_india (`sub_category`) need no action
+  (a value every new row has); superconductivity is grouped by composition (entry above).
+- Dropped the planned selection version of asp_potassco_classification (Lennart): it is gone from `TODO.md`, the
+  record, `BENCHMARK_CHANGES_TODO.md` and the probe reference. Also dropped from `TODO.md`: the
+  sat11_hand_algo_runtime family split (not wanted: a selector in use has other instances of a family in its data;
+  the reasoning is in its record).
+
 ## 2026-10-06 (all 128 rebuilt: the row order comes from the rows' content)
 
 - The base class now puts the rows in the order of their content (a stable sort by a hash of each row) before the
@@ -86,8 +181,7 @@ record, audit or PR that motivated it.
   naticusdroid_android_permissions_dataset, mercari_price_suggestion, california_house_prices_2020, amex_non_iid_1m,
   acquire_valued_shoppers_challenge, gallstone_disease, indian_liver_patient_dataset,
   mercedes_benz_greener_manufacturing, coffee_rating_prediction, garments_worker_productivity and
-  heart_disease_cleveland. A selection version of asp_potassco_classification (PAR10) is planned to replace it
-  (`TODO.md`).
+  heart_disease_cleveland.
 - Removed `TASK_PROBES.md`: the sweep of 2026-10-01 is settled, its decisions are in the records and above, and the
   probe script changed (below), so its numbers are not comparable with a new sweep. A sweep's output now stays in the
   scratch folder of the run (`rebuild-working-copy`, step 6).

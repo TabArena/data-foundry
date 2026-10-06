@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2
+checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
 build:
-  uuid: 01a11191-9112-73da-a73b-344ee1bad337
-  checksum: 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2
-  built_at: '2026-10-06T14:15:15+00:00'
-  path: regensburg_pediatric_appendicitis/01a11191-9112-73da-a73b-344ee1bad337
+  uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
+  checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
+  built_at: '2026-10-06T16:12:31+00:00'
+  path: regensburg_pediatric_appendicitis/01a111fc-ee89-74ad-b25b-309464691fe6
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2021).
 
-Built as `01a11191-9112-73da-a73b-344ee1bad337` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -385,10 +385,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-9112-73da-a73b-344ee1bad337 |
-| checksum | 0082ad674bad21bc6b9cfd9fc85bffcee613bebc27c27aa8d185d358fda5cfd2 |
-| built_at | 2026-10-06T14:15:15+00:00 |
-| path | regensburg_pediatric_appendicitis/01a11191-9112-73da-a73b-344ee1bad337 |
+| uuid | 01a111fc-ee89-74ad-b25b-309464691fe6 |
+| checksum | v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3 |
+| built_at | 2026-10-06T16:12:31+00:00 |
+| path | regensburg_pediatric_appendicitis/01a111fc-ee89-74ad-b25b-309464691fe6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

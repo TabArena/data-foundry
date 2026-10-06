@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_transaction_prediction
 container_format: 2
-checksum: 82e3cd91114cc4e390510c95ef7ec70c2cc71b50948125e5d8e1bdb3d2e34aee
+checksum: v2:b3ef8ee8ca0c351e81cce19f9f95b11f670a866449170f4460d8cc481e1e6a2a
 build:
-  uuid: 01a1118f-ab8b-7c47-afa5-3e4431f35d32
-  checksum: 82e3cd91114cc4e390510c95ef7ec70c2cc71b50948125e5d8e1bdb3d2e34aee
-  built_at: '2026-10-06T14:13:49+00:00'
-  path: santander_customer_transaction_prediction/01a1118f-ab8b-7c47-afa5-3e4431f35d32
+  uuid: 01a111fa-f277-7533-bac1-a15ddbf6a38d
+  checksum: v2:b3ef8ee8ca0c351e81cce19f9f95b11f670a866449170f4460d8cc481e1e6a2a
+  built_at: '2026-10-06T16:10:57+00:00'
+  path: santander_customer_transaction_prediction/01a111fa-f277-7533-bac1-a15ddbf6a38d
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on IID splits. 200,000 rows and 200 features. Source: Kaggle (2019).
 
-Built as `01a1118f-ab8b-7c47-afa5-3e4431f35d32` on 2026-10-06. See [Build](#build).
+Built as `01a111fa-f277-7533-bac1-a15ddbf6a38d` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -346,10 +346,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a1118f-ab8b-7c47-afa5-3e4431f35d32 |
-| checksum | 82e3cd91114cc4e390510c95ef7ec70c2cc71b50948125e5d8e1bdb3d2e34aee |
-| built_at | 2026-10-06T14:13:49+00:00 |
-| path | santander_customer_transaction_prediction/01a1118f-ab8b-7c47-afa5-3e4431f35d32 |
+| uuid | 01a111fa-f277-7533-bac1-a15ddbf6a38d |
+| checksum | v2:b3ef8ee8ca0c351e81cce19f9f95b11f670a866449170f4460d8cc481e1e6a2a |
+| built_at | 2026-10-06T16:10:57+00:00 |
+| path | santander_customer_transaction_prediction/01a111fa-f277-7533-bac1-a15ddbf6a38d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

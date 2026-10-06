@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b
+checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
 build:
-  uuid: 01a11191-8081-71c6-99f9-15801ed5bc63
-  checksum: 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b
-  built_at: '2026-10-06T14:15:11+00:00'
-  path: coil_2000/01a11191-8081-71c6-99f9-15801ed5bc63
+  uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
+  checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
+  built_at: '2026-10-06T16:12:23+00:00'
+  path: coil_2000/01a111fc-ceb4-7695-8b34-df7a285cfcb6
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `roc_auc` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a11191-8081-71c6-99f9-15801ed5bc63` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -375,10 +375,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-8081-71c6-99f9-15801ed5bc63 |
-| checksum | 5836567e11583c92bb0df4d6e152501aad3b3dc9fbf77e000f0917aa5117ed6b |
-| built_at | 2026-10-06T14:15:11+00:00 |
-| path | coil_2000/01a11191-8081-71c6-99f9-15801ed5bc63 |
+| uuid | 01a111fc-ceb4-7695-8b34-df7a285cfcb6 |
+| checksum | v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8 |
+| built_at | 2026-10-06T16:12:23+00:00 |
+| path | coil_2000/01a111fc-ceb4-7695-8b34-df7a285cfcb6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

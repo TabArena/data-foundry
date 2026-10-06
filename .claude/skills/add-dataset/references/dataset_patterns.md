@@ -1,7 +1,7 @@
 # Dataset patterns for the `add-dataset` skill
 
 Reference for writing a v2 `dataset.py`, distilled from the curation practice of the collection (the BeyondArena
-datasets and their 128 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
+datasets and their 125 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
 the attributes; §B and §C are what to *write*; §D is what to *flag*; §E maps each automated check to the action
 that pre-empts it; §F shows how to record decisions with their evidence.
 
@@ -72,7 +72,8 @@ class MyDataset(AbstractCuratedDataset):
 
 Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`),
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
-files into the raw directory, `_extra_checks(container)` for dataset-specific bundle checks (for example a leak test
+files into the raw directory (it runs again when a file is missing or when the method or a helper of `dataset.py` it
+calls changed; the hash sits in `.prepared_raw_files.json` next to the files), `_extra_checks(container)` for dataset-specific bundle checks (for example a leak test
 from an audit).
 
 The class is validated when `dataset.py` is imported: the required attributes are present and the metadata
@@ -236,7 +237,7 @@ and parses dates to `us` or `s`. The base class stores dates in nanoseconds and 
 definition only has to avoid code whose result depends on the version (all found in the v0.2 copy, 2026-10-06):
 
 * `astype(str)` to build a key or a label: pandas 2 writes a missing value as `"nan"`, pandas 3 keeps it missing.
-  Fill first: `df[cols].astype(object).fillna("nan").astype(str)`.
+  Fill first: `df[cols].astype("string").fillna("nan")` (every missing value becomes `"nan"`).
 * writing a number into a text column (`fillna(0)`, `df.loc[mask, col] = n`): pandas 3 refuses. Cast the column to
   `object` first, or test `notna()` instead of filling.
 * `df.select_dtypes(include="object")`: use `object_columns(df)` from `data_foundry.v2`, which counts `str` too.

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_cleveland
 container_format: 2
-checksum: 13d3a6b633cd34ca9f9ae2da754674d0d0aa4994a5bbebac9e5d28a4519c6a20
+checksum: v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95
 build:
-  uuid: 01a11191-b920-7b63-a4b0-be6d1b4f0c6e
-  checksum: 13d3a6b633cd34ca9f9ae2da754674d0d0aa4994a5bbebac9e5d28a4519c6a20
-  built_at: '2026-10-06T14:15:25+00:00'
-  path: heart_disease_cleveland/01a11191-b920-7b63-a4b0-be6d1b4f0c6e
+  uuid: 01a111fc-a515-7938-a082-7add803d38c2
+  checksum: v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95
+  built_at: '2026-10-06T16:12:12+00:00'
+  path: heart_disease_cleveland/01a111fc-a515-7938-a082-7add803d38c2
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 303 rows and 13 features. Source: UCI (1989).
 
-Built as `01a11191-b920-7b63-a4b0-be6d1b4f0c6e` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a515-7938-a082-7add803d38c2` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -318,10 +318,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-b920-7b63-a4b0-be6d1b4f0c6e |
-| checksum | 13d3a6b633cd34ca9f9ae2da754674d0d0aa4994a5bbebac9e5d28a4519c6a20 |
-| built_at | 2026-10-06T14:15:25+00:00 |
-| path | heart_disease_cleveland/01a11191-b920-7b63-a4b0-be6d1b4f0c6e |
+| uuid | 01a111fc-a515-7938-a082-7add803d38c2 |
+| checksum | v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95 |
+| built_at | 2026-10-06T16:12:12+00:00 |
+| path | heart_disease_cleveland/01a111fc-a515-7938-a082-7add803d38c2 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

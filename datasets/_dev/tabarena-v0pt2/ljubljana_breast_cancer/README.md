@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_breast_cancer
 container_format: 2
-checksum: 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a
+checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
 build:
-  uuid: 01a11191-ce34-7502-a02e-67d7f690a32f
-  checksum: 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a
-  built_at: '2026-10-06T14:15:30+00:00'
-  path: ljubljana_breast_cancer/01a11191-ce34-7502-a02e-67d7f690a32f
+  uuid: 01a111fc-e2f6-79bc-bc94-8e4779cb09a2
+  checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
+  built_at: '2026-10-06T16:12:28+00:00'
+  path: ljubljana_breast_cancer/01a111fc-e2f6-79bc-bc94-8e4779cb09a2
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows and 9 features. Source: UCI (1988).
 
-Built as `01a11191-ce34-7502-a02e-67d7f690a32f` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -305,10 +305,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-ce34-7502-a02e-67d7f690a32f |
-| checksum | 0968e1e033c4019e7997a5134a7f94d22fdec3d71f13b02e352ae8cdd1739b5a |
-| built_at | 2026-10-06T14:15:30+00:00 |
-| path | ljubljana_breast_cancer/01a11191-ce34-7502-a02e-67d7f690a32f |
+| uuid | 01a111fc-e2f6-79bc-bc94-8e4779cb09a2 |
+| checksum | v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0 |
+| built_at | 2026-10-06T16:12:28+00:00 |
+| path | ljubljana_breast_cancer/01a111fc-e2f6-79bc-bc94-8e4779cb09a2 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

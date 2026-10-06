@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b
+checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
 build:
-  uuid: 01a11191-85a4-7680-83c3-0a898f32a9e2
-  checksum: 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b
-  built_at: '2026-10-06T14:15:12+00:00'
-  path: immoscout_german_house_prices/01a11191-85a4-7680-83c3-0a898f32a9e2
+  uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
+  checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
+  built_at: '2026-10-06T16:12:28+00:00'
+  path: immoscout_german_house_prices/01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmse` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2019).
 
-Built as `01a11191-85a4-7680-83c3-0a898f32a9e2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -327,10 +327,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-85a4-7680-83c3-0a898f32a9e2 |
-| checksum | 20a4b0464e05fe6c1eec4fdff88629fa156a9b7237b69f21f6fac8a70804501b |
-| built_at | 2026-10-06T14:15:12+00:00 |
-| path | immoscout_german_house_prices/01a11191-85a4-7680-83c3-0a898f32a9e2 |
+| uuid | 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9 |
+| checksum | v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d |
+| built_at | 2026-10-06T16:12:28+00:00 |
+| path | immoscout_german_house_prices/01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

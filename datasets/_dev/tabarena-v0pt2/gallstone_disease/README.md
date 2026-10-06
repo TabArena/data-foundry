@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: gallstone_disease
 container_format: 2
-checksum: 3fcc8b185e3b2c596bd848f1dec1c432721d55920cc3a2900fbee4392d60b783
+checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
 build:
-  uuid: 01a11191-833d-73c6-97e1-0643fc2d6b6c
-  checksum: 3fcc8b185e3b2c596bd848f1dec1c432721d55920cc3a2900fbee4392d60b783
-  built_at: '2026-10-06T14:15:11+00:00'
-  path: gallstone_disease/01a11191-833d-73c6-97e1-0643fc2d6b6c
+  uuid: 01a111fc-d8af-7a12-816b-905e5085bf7f
+  checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
+  built_at: '2026-10-06T16:12:25+00:00'
+  path: gallstone_disease/01a111fc-d8af-7a12-816b-905e5085bf7f
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits. 319 rows and 38 features. Source: UCI (2023).
 
-Built as `01a11191-833d-73c6-97e1-0643fc2d6b6c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -366,10 +366,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-833d-73c6-97e1-0643fc2d6b6c |
-| checksum | 3fcc8b185e3b2c596bd848f1dec1c432721d55920cc3a2900fbee4392d60b783 |
-| built_at | 2026-10-06T14:15:11+00:00 |
-| path | gallstone_disease/01a11191-833d-73c6-97e1-0643fc2d6b6c |
+| uuid | 01a111fc-d8af-7a12-816b-905e5085bf7f |
+| checksum | v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520 |
+| built_at | 2026-10-06T16:12:25+00:00 |
+| path | gallstone_disease/01a111fc-d8af-7a12-816b-905e5085bf7f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

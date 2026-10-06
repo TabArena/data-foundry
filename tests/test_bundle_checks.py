@@ -121,7 +121,8 @@ def test_report_to_json(tmp_path):
 def test_non_range_index_is_an_error():
     df = make_iid_frame()
     df.index = df.index + 5
-    assert "dataset_index_range" in slugs_of(make_container(df))
+    # a new container refuses such an index; one with a stored checksum (saved before 2026-10-06) is checked
+    assert "dataset_index_range" in slugs_of(make_container(df, checksum="0" * 64))
 
 
 def test_object_dtype_is_an_error():
@@ -620,7 +621,7 @@ def test_ignore_drops_findings():
 def test_raise_if_errors_raises_and_lists_slugs():
     df = make_iid_frame()
     df.index = df.index + 1
-    report = run_bundle_checks(make_container(df), verbose=False)
+    report = run_bundle_checks(make_container(df, checksum="0" * 64), verbose=False)
     with pytest.raises(BundleCheckError, match="dataset_index_range"):
         report.raise_if_errors()
 
@@ -719,3 +720,20 @@ def test_split_dimensions_skip_a_budget_capped_single_split(monkeypatch):
 
 def test_split_dimensions_flag_an_uncapped_single_split():
     assert "splits_dimensions_off_protocol" in slugs_of(single_split_container())
+
+
+def test_round_trip_comparison_sees_category_order_but_not_string_storage():
+    from data_foundry.bundle_checks import _compare_frames
+
+    df = pd.DataFrame(
+        {
+            "c": pd.Categorical(["a", "b"], categories=["b", "a"]),
+            "s": pd.Series(["x", None], dtype=pd.StringDtype("python")),
+        }
+    )
+    other_storage = df.assign(s=df["s"].astype(pd.StringDtype("pyarrow")))
+    assert _compare_frames(df, other_storage, label="dataset") == []
+    reordered = df.assign(c=df["c"].cat.reorder_categories(["a", "b"]))
+    assert [r.slug for r in _compare_frames(df, reordered, label="dataset")] == ["export_dtype_changed"]
+    as_ordered = df.assign(c=df["c"].cat.as_ordered())
+    assert "export_dtype_changed" in [r.slug for r in _compare_frames(df, as_ordered, label="dataset")]

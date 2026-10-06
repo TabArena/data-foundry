@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522
+checksum: v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7
 build:
-  uuid: 01a11191-a18b-73c8-829a-81687d227f5c
-  checksum: e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522
-  built_at: '2026-10-06T14:15:19+00:00'
-  path: cirrhosis_patient_survival_prediction/01a11191-a18b-73c8-829a-81687d227f5c
+  uuid: 01a111fc-cd63-7ce2-90cc-a28712493bda
+  checksum: v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7
+  built_at: '2026-10-06T16:12:22+00:00'
+  path: cirrhosis_patient_survival_prediction/01a111fc-cd63-7ce2-90cc-a28712493bda
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Regression of `log_days_to_death`, scored with `rmse` on IID splits. 161 rows and 17 features. Source: UCI (1984).
 
-Built as `01a11191-a18b-73c8-829a-81687d227f5c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cd63-7ce2-90cc-a28712493bda` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -333,10 +333,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-a18b-73c8-829a-81687d227f5c |
-| checksum | e1e94239e6ce8ea114a628933a6652c3c0bc10651dc0fdeaf214ef3ee987f522 |
-| built_at | 2026-10-06T14:15:19+00:00 |
-| path | cirrhosis_patient_survival_prediction/01a11191-a18b-73c8-829a-81687d227f5c |
+| uuid | 01a111fc-cd63-7ce2-90cc-a28712493bda |
+| checksum | v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7 |
+| built_at | 2026-10-06T16:12:22+00:00 |
+| path | cirrhosis_patient_survival_prediction/01a111fc-cd63-7ce2-90cc-a28712493bda |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

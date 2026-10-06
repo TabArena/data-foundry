@@ -384,14 +384,25 @@ def test_predictive_splits_metadata_invalid_shapes_raise(splits_kwargs, match):
         PredictiveMLSplitsMetadata(splits_comment="x", **splits_kwargs)
 
 
-def test_predictive_splits_metadata_accepts_string_time_horizon():
+def test_predictive_splits_metadata_takes_a_number_of_a_known_unit():
     sm = PredictiveMLSplitsMetadata(
-        splits_comment="x",
-        splits={0: {0: ([0], [1])}},
-        time_horizon="one growing season",
-        time_horizon_unit="custom",
+        splits_comment="x", splits={0: {0: ([0], [1])}}, time_horizon="1", time_horizon_unit="months"
     )
-    assert sm.time_horizon == "one growing season"
+    assert sm.time_horizon == "1"  # as some shipped containers store it
+    with pytest.raises(pydantic.ValidationError, match="must be a number"):
+        PredictiveMLSplitsMetadata(
+            splits_comment="x", splits={0: {0: ([0], [1])}}, time_horizon="one season", time_horizon_unit="months"
+        )
+    with pytest.raises(pydantic.ValidationError):
+        PredictiveMLSplitsMetadata(
+            splits_comment="x", splits={0: {0: ([0], [1])}}, time_horizon=1, time_horizon_unit="seasons"
+        )
+
+
+@pytest.mark.parametrize("splits", [{1: {0: ([0], [1])}}, {0: {0: ([0], [1]), 2: ([1], [0])}}])
+def test_predictive_splits_metadata_needs_ids_from_zero(splits):
+    with pytest.raises(pydantic.ValidationError, match="ids"):
+        PredictiveMLSplitsMetadata(splits_comment="x", splits=splits)
 
 
 # --- DatasetMetadata.path / warehouse resolution ---

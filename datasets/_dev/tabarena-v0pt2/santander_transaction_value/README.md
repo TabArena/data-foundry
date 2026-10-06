@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: santander_transaction_value
 container_format: 2
-checksum: fb8ed6340da67873e6f6afcc5dd1abadb6b2d7290935e2b8a88de33c37f2d390
+checksum: v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4
 build:
-  uuid: 01a11190-1039-7bc7-bb74-934aa1ddd446
-  checksum: fb8ed6340da67873e6f6afcc5dd1abadb6b2d7290935e2b8a88de33c37f2d390
-  built_at: '2026-10-06T14:13:37+00:00'
-  path: santander_transaction_value/01a11190-1039-7bc7-bb74-934aa1ddd446
+  uuid: 01a111fb-c8c5-7b20-b3a0-528353375933
+  checksum: v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4
+  built_at: '2026-10-06T16:11:17+00:00'
+  path: santander_transaction_value/01a111fb-c8c5-7b20-b3a0-528353375933
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `target`, scored with `rmsle` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a11190-1039-7bc7-bb74-934aa1ddd446` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c8c5-7b20-b3a0-528353375933` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -342,10 +342,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11190-1039-7bc7-bb74-934aa1ddd446 |
-| checksum | fb8ed6340da67873e6f6afcc5dd1abadb6b2d7290935e2b8a88de33c37f2d390 |
-| built_at | 2026-10-06T14:13:37+00:00 |
-| path | santander_transaction_value/01a11190-1039-7bc7-bb74-934aa1ddd446 |
+| uuid | 01a111fb-c8c5-7b20-b3a0-528353375933 |
+| checksum | v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4 |
+| built_at | 2026-10-06T16:11:17+00:00 |
+| path | santander_transaction_value/01a111fb-c8c5-7b20-b3a0-528353375933 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

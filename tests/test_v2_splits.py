@@ -296,3 +296,26 @@ def test_a_missing_build_dependency_names_the_extra() -> None:
     with pytest.raises(ImportError, match=r"needs `no_such_package`.*data-foundry\[build\]") as error:
         import_build_dependency("no_such_package.sub")
     assert BUILD_INSTALL in str(error.value)
+
+
+def test_several_group_columns_make_one_group_per_combination() -> None:
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame(
+        {"a": rng.integers(0, 6, 300), "b": rng.choice(["x", "y", None], 300), "y": rng.integers(0, 2, 300)}
+    )
+    splits = protocol.grouped_splits(df, n_repeats=2, group_on=["a", "b"], group_labels="per_sample", stratify_on="y")
+    key = df[["a", "b"]].astype("string").fillna("nan").agg("|".join, axis=1)
+    for folds in splits.values():
+        for train, test in folds.values():
+            assert not set(key.iloc[train]) & set(key.iloc[test])
+    assert protocol.subsample_frame(df, group_on=["a", "b"], n_rows=100).groupby(["a", "b"], dropna=False).ngroups
+    single, _ = protocol.one_group_column(df, "a")
+    assert single is df  # one column: the frame and its splits are as before
+
+
+def test_plain_cutoffs_apply_to_a_time_zone_aware_column() -> None:
+    times = pd.date_range("2020-01-01", periods=400, freq="D", tz="Europe/Berlin")
+    df = pd.DataFrame({"t": times, "x": np.arange(400)})
+    splits = protocol.temporal_window_splits(df, time_on="t", window=1, unit="months", cutoffs=["2020-03", "2020-06"])
+    first_test = splits[0][0][1]
+    assert df["t"].iloc[first_test[0]] == pd.Timestamp("2020-06-01", tz="Europe/Berlin")

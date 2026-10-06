@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: blood_transfusion
 container_format: 2
-checksum: 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085
+checksum: v2:93e47e5b3ee11c67bcf87fbe3b8ae254f20261fc075653dfb34ccfb96d326847
 build:
-  uuid: 01a11191-9b9b-73e7-8a35-dca35228c2e7
-  checksum: 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085
-  built_at: '2026-10-06T14:15:17+00:00'
-  path: blood_transfusion/01a11191-9b9b-73e7-8a35-dca35228c2e7
+  uuid: 01a111fc-c9d3-70c1-ba1b-e4fe45899e78
+  checksum: v2:93e47e5b3ee11c67bcf87fbe3b8ae254f20261fc075653dfb34ccfb96d326847
+  built_at: '2026-10-06T16:12:21+00:00'
+  path: blood_transfusion/01a111fc-c9d3-70c1-ba1b-e4fe45899e78
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `DonatedBloodInMarch2007`, scored with `roc_auc` on IID splits. 748 rows and 4 features. Source: UCI (2008).
 
-Built as `01a11191-9b9b-73e7-8a35-dca35228c2e7` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -280,10 +280,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-9b9b-73e7-8a35-dca35228c2e7 |
-| checksum | 0771c1b9282f74a293fee66022b731bbb0f5caafa323351223eca457fbd21085 |
-| built_at | 2026-10-06T14:15:17+00:00 |
-| path | blood_transfusion/01a11191-9b9b-73e7-8a35-dca35228c2e7 |
+| uuid | 01a111fc-c9d3-70c1-ba1b-e4fe45899e78 |
+| checksum | v2:93e47e5b3ee11c67bcf87fbe3b8ae254f20261fc075653dfb34ccfb96d326847 |
+| built_at | 2026-10-06T16:12:21+00:00 |
+| path | blood_transfusion/01a111fc-c9d3-70c1-ba1b-e4fe45899e78 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

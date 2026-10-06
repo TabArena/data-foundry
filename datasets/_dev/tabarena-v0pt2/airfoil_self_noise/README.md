@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: airfoil_self_noise
 container_format: 2
-checksum: ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04
+checksum: v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f
 build:
-  uuid: 01a11191-5cbe-7b83-90ce-4f445afb2a34
-  checksum: ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04
-  built_at: '2026-10-06T14:15:01+00:00'
-  path: airfoil_self_noise/01a11191-5cbe-7b83-90ce-4f445afb2a34
+  uuid: 01a11312-37c8-7cae-b6c8-c0b883fea348
+  checksum: v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f
+  built_at: '2026-10-06T21:15:23+00:00'
+  path: airfoil_self_noise/01a11312-37c8-7cae-b6c8-c0b883fea348
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -22,7 +22,7 @@ data:
   n_rows: 1503
   n_features: 5
   dtypes:
-    category: 1
+    category: 2
     float64: 4
     int64: 1
   n_test_dataset_rows: null
@@ -30,13 +30,20 @@ task:
   target: scaled-sound-pressure
   problem_type: regression
   metric: rmse
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: run
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 106
+    test_groups_per_fold:
+      min: 35
+      max: 36
 splits:
   n_repeats: 10
   n_folds: 3
@@ -44,11 +51,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 1002
-    max: 1002
+    min: 977
+    max: 1022
   n_test:
-    min: 501
-    max: 501
+    min: 481
+    max: 526
 bundle_checks:
   ok: true
   errors: []
@@ -62,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `scaled-sound-pressure`, scored with `rmse` on IID splits. 1,503 rows and 5 features. Source: UCI (2014).
+Regression of `scaled-sound-pressure`, scored with `rmse` on grouped splits by `run`. 1,503 rows and 5 features. Source: UCI (2014).
 
-Built as `01a11191-5cbe-7b83-90ce-4f445afb2a34` on 2026-10-06. See [Build](#build).
+Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,18 +110,20 @@ Only curators run `build`, when the dataset ships.
 | year | 2014 |
 | domain | physics & astronomy |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | brooks1989airfoil |
-| rows x columns | 1,503 x 6 |
+| rows x columns | 1,503 x 7 |
 | task.target | scaled-sound-pressure |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | run |
+| task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `attack-angle`
+- categorical (2): `attack-angle`, `run`
 - string (0): none
 - datetime (0): none
 
@@ -137,61 +146,86 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 1,503 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| scaled-sound-pressure | frequency | attack-angle | chord-length | free-stream-velocity | suction-side-displacement-thickness |
-|---|---|---|---|---|---|
-| 130.567 | 1600 | 5.4 | 0.1524 | 55.5 | 0.00433288 |
-| 127.614 | 1600 | 17.4 | 0.0254 | 39.6 | 0.0172206 |
-| 120.607 | 8000 | 12.7 | 0.0254 | 39.6 | 0.0130253 |
-| 126.486 | 500 | 2 | 0.2286 | 71.3 | 0.00293031 |
-| 119.04 | 2000 | 8.9 | 0.1016 | 39.6 | 0.0124596 |
+| scaled-sound-pressure | frequency | attack-angle | chord-length | free-stream-velocity | suction-side-displacement-thickness | run |
+|---|---|---|---|---|---|---|
+| 125.571 | 2500 | 0 | 0.3048 | 71.3 | 0.00266337 | run_000 |
+| 115.085 | 3150 | 9.9 | 0.1524 | 55.5 | 0.0208438 | run_043 |
+| 121.146 | 5000 | 8.4 | 0.0508 | 71.3 | 0.00529514 | run_054 |
+| 119.541 | 6300 | 0 | 0.3048 | 71.3 | 0.00266337 | run_000 |
+| 118.134 | 10000 | 0 | 0.2286 | 71.3 | 0.00214345 | run_012 |
 
 ## Curation notes
 
-N/A
+- The 1,503 rows are 106 wind-tunnel runs: one airfoil section (6 chord lengths) at one angle of attack and one free-stream velocity (4), each a measured one-third-octave spectrum of 8 to 19 frequency bands. The raw file stores each run as one consecutive block, and the suction-side displacement thickness is constant within a run (it is computed from the run's settings). We add the run as the group column `run`.
+- Grouped by run since 2026-10-06 (IID before): a model is used for an airfoil configuration that was not measured, while a random split gave a test row 62% of its run's other bands in train, so models filled gaps in spectra they had seen. R^2, 5 x 3 folds, random against grouped by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840, random forest 0.926 / 0.830, kNN-5 0.755 / 0.629, ridge 0.510 / 0.490. Not grouped by chord length: a new airfoil size is a harder extrapolation than a new run.
 
 ## Splits
 
-Default splits.
+Grouped splits on the wind-tunnel run: all bands of a measured spectrum stay on one side, so a model predicts the spectrum of a configuration it has not seen. Runs with the same airfoil, angle or velocity in other combinations can be on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 1,002 rows, test 501 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 977 to 1,022 rows, test 481 to 526 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 1002 | 501 |
-| 0 | 1 | 1002 | 501 |
-| 0 | 2 | 1002 | 501 |
-| 1 | 0 | 1002 | 501 |
-| 1 | 1 | 1002 | 501 |
+| 0 | 0 | 987 | 516 |
+| 0 | 1 | 1007 | 496 |
+| 0 | 2 | 1012 | 491 |
+| 1 | 0 | 1000 | 503 |
+| 1 | 1 | 1004 | 499 |
 | 1 | 2 | 1002 | 501 |
-| 2 | 0 | 1002 | 501 |
-| 2 | 1 | 1002 | 501 |
-| 2 | 2 | 1002 | 501 |
-| 3 | 0 | 1002 | 501 |
-| 3 | 1 | 1002 | 501 |
-| 3 | 2 | 1002 | 501 |
-| 4 | 0 | 1002 | 501 |
+| 2 | 0 | 1003 | 500 |
+| 2 | 1 | 983 | 520 |
+| 2 | 2 | 1020 | 483 |
+| 3 | 0 | 994 | 509 |
+| 3 | 1 | 1011 | 492 |
+| 3 | 2 | 1001 | 502 |
+| 4 | 0 | 988 | 515 |
 | 4 | 1 | 1002 | 501 |
-| 4 | 2 | 1002 | 501 |
-| 5 | 0 | 1002 | 501 |
-| 5 | 1 | 1002 | 501 |
-| 5 | 2 | 1002 | 501 |
-| 6 | 0 | 1002 | 501 |
-| 6 | 1 | 1002 | 501 |
-| 6 | 2 | 1002 | 501 |
-| 7 | 0 | 1002 | 501 |
-| 7 | 1 | 1002 | 501 |
-| 7 | 2 | 1002 | 501 |
-| 8 | 0 | 1002 | 501 |
-| 8 | 1 | 1002 | 501 |
-| 8 | 2 | 1002 | 501 |
-| 9 | 0 | 1002 | 501 |
-| 9 | 1 | 1002 | 501 |
-| 9 | 2 | 1002 | 501 |
+| 4 | 2 | 1016 | 487 |
+| 5 | 0 | 977 | 526 |
+| 5 | 1 | 1009 | 494 |
+| 5 | 2 | 1020 | 483 |
+| 6 | 0 | 988 | 515 |
+| 6 | 1 | 1011 | 492 |
+| 6 | 2 | 1007 | 496 |
+| 7 | 0 | 982 | 521 |
+| 7 | 1 | 1006 | 497 |
+| 7 | 2 | 1018 | 485 |
+| 8 | 0 | 981 | 522 |
+| 8 | 1 | 1007 | 496 |
+| 8 | 2 | 1018 | 485 |
+| 9 | 0 | 988 | 515 |
+| 9 | 1 | 996 | 507 |
+| 9 | 2 | 1022 | 481 |
 
 </details>
+
+## Group structure
+
+One group is a wind-tunnel run: one NACA 0012 airfoil section (chord length) at one angle of attack and one free-stream velocity; its rows are the bands of the run's measured one-third-octave sound spectrum (8 to 19 per run, 106 runs; Brooks et al. 1989). The use case is predicting the self-noise of an airfoil configuration that was not measured, and a measured run comes with its whole spectrum, so the test runs are new to the model. Each row is one prediction, made from its band's frequency and the run's settings.
+
+| field | value |
+|---|---|
+| group column | `run` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 106 |
+| rows per group (min / median / max) | 8 / 14.0 / 19 |
+| largest group | 1.3% of the rows |
+| test groups per fold | 35 to 36 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 62.5% of the rows (chance: 0.9%) |
+| label variance explained by the group | 0.30 (shuffled groups: 0.06) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -205,11 +239,12 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | attack-angle | category | 0 | 0 | 27 | 0.0, 4.0, 15.4, 9.9, 12.3, 7.3, 17.4, 3.0, 2.0, 9.5 |
+| run | category | 0 | 0 | 106 | run_002, run_003, run_010, run_005, run_020, run_041, run_079, run_080, run_078… |
 | chord-length | float64 | 0 | 0 | 6 | 0.0254, 0.1524, 0.2286, 0.1016, 0.0508, 0.3048 |
 | free-stream-velocity | float64 | 0 | 0 | 4 | 39.6, 71.3, 31.7, 55.5 |
-| suction-side-displacement-thickness | float64 | 0 | 0 | 105 | 0.0053, 0.0031, 0.005, 0.0033, 0.0264, 0.0161, 0.0039, 0.0122, 0.013, 0.004 |
-| scaled-sound-pressure | float64 | 0 | 0 | 1456 | 127.315, 129.395, 126.54, 108.034, 133.649, 127.054, 120.324, 128.401, 126.514,… |
-| frequency | int64 | 0 | 0 | 21 | 2000, 2500, 1600, 3150, 4000, 1250, 1000, 800, 5000, 6300 |
+| suction-side-displacement-thickness | float64 | 0 | 0 | 105 | 0.0053, 0.0031, 0.005, 0.0033, 0.0161, 0.0039, 0.004, 0.0264, 0.013, 0.0122 |
+| scaled-sound-pressure | float64 | 0 | 0 | 1456 | 127.315, 126.54, 129.395, 128.444, 120.534, 122.088, 110.905, 108.034, 120.189,… |
+| frequency | int64 | 0 | 0 | 21 | 2000, 2500, 3150, 1600, 4000, 1250, 1000, 800, 5000, 6300 |
 
 ### Target distribution
 
@@ -236,15 +271,20 @@ Default splits.
 | attack-angle | 3 | 15.4 | 65 | 4.32 |
 | attack-angle | 4 | 9.9 | 64 | 4.26 |
 | attack-angle | 5 | 12.3 | 64 | 4.26 |
+| run | 1 | run_002 | 19 | 1.26 |
+| run | 2 | run_003 | 18 | 1.2 |
+| run | 3 | run_010 | 18 | 1.2 |
+| run | 4 | run_005 | 17 | 1.13 |
+| run | 5 | run_020 | 17 | 1.13 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a11191-5cbe-7b83-90ce-4f445afb2a34 |
-| checksum | ebeeb685ba546d277b310cf1a1a8c9a9b2320efd012fde757abbd6e5c714de04 |
-| built_at | 2026-10-06T14:15:01+00:00 |
-| path | airfoil_self_noise/01a11191-5cbe-7b83-90ce-4f445afb2a34 |
+| uuid | 01a11312-37c8-7cae-b6c8-c0b883fea348 |
+| checksum | v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f |
+| built_at | 2026-10-06T21:15:23+00:00 |
+| path | airfoil_self_noise/01a11312-37c8-7cae-b6c8-c0b883fea348 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

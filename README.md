@@ -96,6 +96,13 @@ definition of a group with its source. A format-1 container has no such block, s
 there. The group column is split and scoring metadata, never a model feature. `run_bundle_checks` judges each
 format by its own split protocol (v1: the repeat ladder and 250k test rows; v2: 3 folds and 500k test rows).
 
+**Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
+`get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2
+checksum (`v2:<hex>`): it also covers each categorical column's categories, their order and `ordered` (saved in
+`categories.json`, since `dtypes.json` only says `category`), and the unlabeled test set through its own
+`test_dataset_checksum`; a new container needs the index `0..n-1` and string column names. A checksum without the
+prefix is version 1 (every shipped BeyondArena container) and keeps verifying as it always did.
+
 Side-by-side regime printout (one IID, two grouped variants — `per_group` vs `per_sample` — and one temporal): [`examples/data_foundry_data_regimes.py`](examples/data_foundry_data_regimes.py).
 
 </details>

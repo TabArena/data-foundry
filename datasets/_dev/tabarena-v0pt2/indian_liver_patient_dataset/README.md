@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: indian_liver_patient_dataset
 container_format: 2
-checksum: f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85
+checksum: v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85
 build:
-  uuid: 01a11191-cad0-710a-89c9-546914224a18
-  checksum: f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85
-  built_at: '2026-10-06T14:15:29+00:00'
-  path: indian_liver_patient_dataset/01a11191-cad0-710a-89c9-546914224a18
+  uuid: 01a111fc-e244-78f8-9686-1c2a0bf3b820
+  checksum: v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85
+  built_at: '2026-10-06T16:12:28+00:00'
+  path: indian_liver_patient_dataset/01a111fc-e244-78f8-9686-1c2a0bf3b820
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Selector`, scored with `roc_auc` on IID splits. 583 rows and 10 features. Source: UCI (2012).
 
-Built as `01a11191-cad0-710a-89c9-546914224a18` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -297,10 +297,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-cad0-710a-89c9-546914224a18 |
-| checksum | f52be8a8e9c311767c6ec221caf3ed6ea306f767a520f9a1050a675b26e0da85 |
-| built_at | 2026-10-06T14:15:29+00:00 |
-| path | indian_liver_patient_dataset/01a11191-cad0-710a-89c9-546914224a18 |
+| uuid | 01a111fc-e244-78f8-9686-1c2a0bf3b820 |
+| checksum | v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85 |
+| built_at | 2026-10-06T16:12:28+00:00 |
+| path | indian_liver_patient_dataset/01a111fc-e244-78f8-9686-1c2a0bf3b820 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

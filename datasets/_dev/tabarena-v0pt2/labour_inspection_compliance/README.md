@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb
+checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
 build:
-  uuid: 01a1118f-c85a-73f9-a1d9-90f43014e947
-  checksum: f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb
-  built_at: '2026-10-06T14:13:33+00:00'
-  path: labour_inspection_compliance/01a1118f-c85a-73f9-a1d9-90f43014e947
+  uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
+  checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
+  built_at: '2026-10-06T16:11:28+00:00'
+  path: labour_inspection_compliance/01a111fb-c91d-7b12-beaf-b56406cfc014
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2019).
 
-Built as `01a1118f-c85a-73f9-a1d9-90f43014e947` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -402,10 +402,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a1118f-c85a-73f9-a1d9-90f43014e947 |
-| checksum | f7c4647563020dae14431e51039cf69c78dbc2a90ed9d5459800375985e131fb |
-| built_at | 2026-10-06T14:13:33+00:00 |
-| path | labour_inspection_compliance/01a1118f-c85a-73f9-a1d9-90f43014e947 |
+| uuid | 01a111fb-c91d-7b12-beaf-b56406cfc014 |
+| checksum | v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63 |
+| built_at | 2026-10-06T16:11:28+00:00 |
+| path | labour_inspection_compliance/01a111fb-c91d-7b12-beaf-b56406cfc014 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

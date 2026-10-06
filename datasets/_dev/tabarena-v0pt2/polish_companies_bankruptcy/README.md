@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: polish_companies_bankruptcy
 container_format: 2
-checksum: 19e83b9d3563284b251b97206c8b388f994830c3ff95ae8a9df5c53c19da8c4a
+checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
 build:
-  uuid: 01a11191-9039-755b-aded-211521c0c8e3
-  checksum: 19e83b9d3563284b251b97206c8b388f994830c3ff95ae8a9df5c53c19da8c4a
-  built_at: '2026-10-06T14:15:15+00:00'
-  path: polish_companies_bankruptcy/01a11191-9039-755b-aded-211521c0c8e3
+  uuid: 01a111fc-ea70-7bb1-9ee9-8875a112b674
+  checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
+  built_at: '2026-10-06T16:12:30+00:00'
+  path: polish_companies_bankruptcy/01a111fc-ea70-7bb1-9ee9-8875a112b674
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2010).
 
-Built as `01a11191-9039-755b-aded-211521c0c8e3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -345,10 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-9039-755b-aded-211521c0c8e3 |
-| checksum | 19e83b9d3563284b251b97206c8b388f994830c3ff95ae8a9df5c53c19da8c4a |
-| built_at | 2026-10-06T14:15:15+00:00 |
-| path | polish_companies_bankruptcy/01a11191-9039-755b-aded-211521c0c8e3 |
+| uuid | 01a111fc-ea70-7bb1-9ee9-8875a112b674 |
+| checksum | v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407 |
+| built_at | 2026-10-06T16:12:30+00:00 |
+| path | polish_companies_bankruptcy/01a111fc-ea70-7bb1-9ee9-8875a112b674 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

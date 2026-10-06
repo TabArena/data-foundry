@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f
+checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
 build:
-  uuid: 01a11191-6ab7-7d07-98ae-00bf39d2a4d9
-  checksum: aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f
-  built_at: '2026-10-06T14:15:05+00:00'
-  path: bank_marketing/01a11191-6ab7-7d07-98ae-00bf39d2a4d9
+  uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
+  checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
+  built_at: '2026-10-06T16:12:02+00:00'
+  path: bank_marketing/01a111fc-7c2d-7441-b859-646c9bfbf380
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a11191-6ab7-7d07-98ae-00bf39d2a4d9` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -277,10 +277,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6ab7-7d07-98ae-00bf39d2a4d9 |
-| checksum | aac7fa9d757d83a4342e80dbc1d88a90a368f358d2d6f629d0540bbbbb784b7f |
-| built_at | 2026-10-06T14:15:05+00:00 |
-| path | bank_marketing/01a11191-6ab7-7d07-98ae-00bf39d2a4d9 |
+| uuid | 01a111fc-7c2d-7441-b859-646c9bfbf380 |
+| checksum | v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb |
+| built_at | 2026-10-06T16:12:02+00:00 |
+| path | bank_marketing/01a111fc-7c2d-7441-b859-646c9bfbf380 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

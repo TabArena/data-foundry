@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: lung_cancer_epithelial_genexp
 container_format: 2
-checksum: a76c7d1c86c81923864085d5b09ef64b94900f0fb21548bbadb769445244c2c4
+checksum: v2:9108c0046efd8a3e052dd8570cc2bbe16449de9df488bfeb5f5d205f03e38493
 build:
-  uuid: 01a1118f-9e32-777e-a5f6-b3e5c8cfa841
-  checksum: a76c7d1c86c81923864085d5b09ef64b94900f0fb21548bbadb769445244c2c4
-  built_at: '2026-10-06T14:13:42+00:00'
-  path: lung_cancer_epithelial_genexp/01a1118f-9e32-777e-a5f6-b3e5c8cfa841
+  uuid: 01a111fa-e441-7be0-b4cb-2b1c80c2c167
+  checksum: v2:9108c0046efd8a3e052dd8570cc2bbe16449de9df488bfeb5f5d205f03e38493
+  built_at: '2026-10-06T16:10:55+00:00'
+  path: lung_cancer_epithelial_genexp/01a111fa-e441-7be0-b4cb-2b1c80c2c167
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `DiagnosedCancer`, scored with `roc_auc` on IID splits. 187 rows and 22,215 features. Source: GOV Website (2006).
 
-Built as `01a1118f-9e32-777e-a5f6-b3e5c8cfa841` on 2026-10-06. See [Build](#build).
+Built as `01a111fa-e441-7be0-b4cb-2b1c80c2c167` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -400,10 +400,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a1118f-9e32-777e-a5f6-b3e5c8cfa841 |
-| checksum | a76c7d1c86c81923864085d5b09ef64b94900f0fb21548bbadb769445244c2c4 |
-| built_at | 2026-10-06T14:13:42+00:00 |
-| path | lung_cancer_epithelial_genexp/01a1118f-9e32-777e-a5f6-b3e5c8cfa841 |
+| uuid | 01a111fa-e441-7be0-b4cb-2b1c80c2c167 |
+| checksum | v2:9108c0046efd8a3e052dd8570cc2bbe16449de9df488bfeb5f5d205f03e38493 |
+| built_at | 2026-10-06T16:10:55+00:00 |
+| path | lung_cancer_epithelial_genexp/01a111fa-e441-7be0-b4cb-2b1c80c2c167 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

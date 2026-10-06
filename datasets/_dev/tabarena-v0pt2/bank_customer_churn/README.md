@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956
+checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
 build:
-  uuid: 01a11191-6944-7875-b29c-110e9289d253
-  checksum: 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956
-  built_at: '2026-10-06T14:15:04+00:00'
-  path: bank_customer_churn/01a11191-6944-7875-b29c-110e9289d253
+  uuid: 01a111fc-c45b-7b5e-b6fe-7f527899d692
+  checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
+  built_at: '2026-10-06T16:12:20+00:00'
+  path: bank_customer_churn/01a111fc-c45b-7b5e-b6fe-7f527899d692
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2020).
 
-Built as `01a11191-6944-7875-b29c-110e9289d253` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -243,10 +243,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6944-7875-b29c-110e9289d253 |
-| checksum | 19dcd4a83769bb4e8a16c142041a9de6d08f85051454a37bbe26730ffb47d956 |
-| built_at | 2026-10-06T14:15:04+00:00 |
-| path | bank_customer_churn/01a11191-6944-7875-b29c-110e9289d253 |
+| uuid | 01a111fc-c45b-7b5e-b6fe-7f527899d692 |
+| checksum | v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b |
+| built_at | 2026-10-06T16:12:20+00:00 |
+| path | bank_customer_churn/01a111fc-c45b-7b5e-b6fe-7f527899d692 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claims_severity
 container_format: 2
-checksum: b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0
+checksum: v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c
 build:
-  uuid: 01a11191-0c86-7fe9-9fb2-11530080c5fe
-  checksum: b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0
-  built_at: '2026-10-06T14:14:44+00:00'
-  path: allstate_claims_severity/01a11191-0c86-7fe9-9fb2-11530080c5fe
+  uuid: 01a111fc-59f8-730c-b058-7264a71a29bc
+  checksum: v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c
+  built_at: '2026-10-06T16:11:56+00:00'
+  path: allstate_claims_severity/01a111fc-59f8-730c-b058-7264a71a29bc
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 features. Source: Kaggle (2016).
 
-Built as `01a11191-0c86-7fe9-9fb2-11530080c5fe` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -363,10 +363,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-0c86-7fe9-9fb2-11530080c5fe |
-| checksum | b301b1209c2ba8dff681bdeb59916801b3526dfd99ecd65da76e4b46b14044c0 |
-| built_at | 2026-10-06T14:14:44+00:00 |
-| path | allstate_claims_severity/01a11191-0c86-7fe9-9fb2-11530080c5fe |
+| uuid | 01a111fc-59f8-730c-b058-7264a71a29bc |
+| checksum | v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c |
+| built_at | 2026-10-06T16:11:56+00:00 |
+| path | allstate_claims_severity/01a111fc-59f8-730c-b058-7264a71a29bc |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

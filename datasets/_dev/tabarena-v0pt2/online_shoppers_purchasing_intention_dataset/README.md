@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f
+checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
 build:
-  uuid: 01a11191-df61-7834-8ecd-112fdac6fd13
-  checksum: 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f
-  built_at: '2026-10-06T14:15:35+00:00'
-  path: online_shoppers_purchasing_intention_dataset/01a11191-df61-7834-8ecd-112fdac6fd13
+  uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
+  checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
+  built_at: '2026-10-06T16:12:16+00:00'
+  path: online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2017).
 
-Built as `01a11191-df61-7834-8ecd-112fdac6fd13` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -281,10 +281,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-df61-7834-8ecd-112fdac6fd13 |
-| checksum | 62a42bb33149310c5f0f635d4f99d75896065e91b777140750d5f0c08667994f |
-| built_at | 2026-10-06T14:15:35+00:00 |
-| path | online_shoppers_purchasing_intention_dataset/01a11191-df61-7834-8ecd-112fdac6fd13 |
+| uuid | 01a111fc-b5f1-748b-a755-99b0a7c15a25 |
+| checksum | v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2 |
+| built_at | 2026-10-06T16:12:16+00:00 |
+| path | online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

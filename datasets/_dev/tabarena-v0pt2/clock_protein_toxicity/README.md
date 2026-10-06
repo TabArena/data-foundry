@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: clock_protein_toxicity
 container_format: 2
-checksum: b5f3a8bd493d64703f9860123d1aadc8cdf65a9f41927b764eaaa5100af41fe2
+checksum: v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2
 build:
-  uuid: 01a11191-3659-71fd-8010-d2cd4db33cc3
-  checksum: b5f3a8bd493d64703f9860123d1aadc8cdf65a9f41927b764eaaa5100af41fe2
-  built_at: '2026-10-06T14:14:53+00:00'
-  path: clock_protein_toxicity/01a11191-3659-71fd-8010-d2cd4db33cc3
+  uuid: 01a111fc-9673-778e-85dd-8d3026178022
+  checksum: v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2
+  built_at: '2026-10-06T16:12:10+00:00'
+  path: clock_protein_toxicity/01a111fc-9673-778e-85dd-8d3026178022
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `Toxic`, scored with `roc_auc` on IID splits. 171 rows and 1,117 features. Source: UCI (2021).
 
-Built as `01a11191-3659-71fd-8010-d2cd4db33cc3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -400,10 +400,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-3659-71fd-8010-d2cd4db33cc3 |
-| checksum | b5f3a8bd493d64703f9860123d1aadc8cdf65a9f41927b764eaaa5100af41fe2 |
-| built_at | 2026-10-06T14:14:53+00:00 |
-| path | clock_protein_toxicity/01a11191-3659-71fd-8010-d2cd4db33cc3 |
+| uuid | 01a111fc-9673-778e-85dd-8d3026178022 |
+| checksum | v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2 |
+| built_at | 2026-10-06T16:12:10+00:00 |
+| path | clock_protein_toxicity/01a111fc-9673-778e-85dd-8d3026178022 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

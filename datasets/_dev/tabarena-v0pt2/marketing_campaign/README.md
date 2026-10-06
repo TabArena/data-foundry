@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: marketing_campaign
 container_format: 2
-checksum: 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48
+checksum: v2:893ada28df4d611b1a2459028d4c32b5d8a87d0bfe839c66680e0d3ad048c6e7
 build:
-  uuid: 01a11191-d064-7c27-abcd-bcb947e441d0
-  checksum: 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48
-  built_at: '2026-10-06T14:15:31+00:00'
-  path: marketing_campaign/01a11191-d064-7c27-abcd-bcb947e441d0
+  uuid: 01a111fc-b058-7ad2-9e81-45d916a3052c
+  checksum: v2:893ada28df4d611b1a2459028d4c32b5d8a87d0bfe839c66680e0d3ad048c6e7
+  built_at: '2026-10-06T16:12:15+00:00'
+  path: marketing_campaign/01a111fc-b058-7ad2-9e81-45d916a3052c
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `Response`, scored with `roc_auc` on IID splits. 2,240 rows and 25 features. Source: Kaggle (2020).
 
-Built as `01a11191-d064-7c27-abcd-bcb947e441d0` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b058-7ad2-9e81-45d916a3052c` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -324,10 +324,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-d064-7c27-abcd-bcb947e441d0 |
-| checksum | 10f0284626b35834841fe88440e9ff22aaeba77aad74906976494f31c7105e48 |
-| built_at | 2026-10-06T14:15:31+00:00 |
-| path | marketing_campaign/01a11191-d064-7c27-abcd-bcb947e441d0 |
+| uuid | 01a111fc-b058-7ad2-9e81-45d916a3052c |
+| checksum | v2:893ada28df4d611b1a2459028d4c32b5d8a87d0bfe839c66680e0d3ad048c6e7 |
+| built_at | 2026-10-06T16:12:15+00:00 |
+| path | marketing_campaign/01a111fc-b058-7ad2-9e81-45d916a3052c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

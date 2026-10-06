@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9
+checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
 build:
-  uuid: 01a11191-0a4d-72af-b626-cd5e836831dd
-  checksum: 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9
-  built_at: '2026-10-06T14:14:45+00:00'
-  path: sberbank_housing_market_forecasting/01a11191-0a4d-72af-b626-cd5e836831dd
+  uuid: 01a111fc-67ad-73f9-9657-30238d911c5b
+  checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
+  built_at: '2026-10-06T16:12:02+00:00'
+  path: sberbank_housing_market_forecasting/01a111fc-67ad-73f9-9657-30238d911c5b
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 27,195 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a11191-0a4d-72af-b626-cd5e836831dd` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -414,10 +414,10 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | field | value |
 |---|---|
-| uuid | 01a11191-0a4d-72af-b626-cd5e836831dd |
-| checksum | 6b660bd02b1b1a7721c8e5fbf303cebf0495b03792600a20ee87963555fef6e9 |
-| built_at | 2026-10-06T14:14:45+00:00 |
-| path | sberbank_housing_market_forecasting/01a11191-0a4d-72af-b626-cd5e836831dd |
+| uuid | 01a111fc-67ad-73f9-9657-30238d911c5b |
+| checksum | v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc |
+| built_at | 2026-10-06T16:12:02+00:00 |
+| path | sberbank_housing_market_forecasting/01a111fc-67ad-73f9-9657-30238d911c5b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

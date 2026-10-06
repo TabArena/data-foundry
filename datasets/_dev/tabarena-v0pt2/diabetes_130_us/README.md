@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5
+checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
 build:
-  uuid: 01a11191-412c-7bdf-acc4-6e6734fc9a8a
-  checksum: 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5
-  built_at: '2026-10-06T14:14:55+00:00'
-  path: diabetes_130_us/01a11191-412c-7bdf-acc4-6e6734fc9a8a
+  uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
+  checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
+  built_at: '2026-10-06T16:12:04+00:00'
+  path: diabetes_130_us/01a111fc-82d1-7838-bf50-fa314882cfef
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
 
-Built as `01a11191-412c-7bdf-acc4-6e6734fc9a8a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -339,10 +339,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-412c-7bdf-acc4-6e6734fc9a8a |
-| checksum | 321a2b00ad3b3d3ccbec8b715a29fb3d0db687471218b2bca3dc8c0b4e2681a5 |
-| built_at | 2026-10-06T14:14:55+00:00 |
-| path | diabetes_130_us/01a11191-412c-7bdf-acc4-6e6734fc9a8a |
+| uuid | 01a111fc-82d1-7838-bf50-fa314882cfef |
+| checksum | v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02 |
+| built_at | 2026-10-06T16:12:04+00:00 |
+| path | diabetes_130_us/01a111fc-82d1-7838-bf50-fa314882cfef |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

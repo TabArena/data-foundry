@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b
+checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
 build:
-  uuid: 01a11191-cb27-7668-968c-d8e83b66db19
-  checksum: 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b
-  built_at: '2026-10-06T14:15:30+00:00'
-  path: hr_analytics/01a11191-cb27-7668-968c-d8e83b66db19
+  uuid: 01a111fc-e13c-73b1-a5b6-46586d1602ca
+  checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
+  built_at: '2026-10-06T16:12:28+00:00'
+  path: hr_analytics/01a111fc-e13c-73b1-a5b6-46586d1602ca
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2021).
 
-Built as `01a11191-cb27-7668-968c-d8e83b66db19` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -280,10 +280,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-cb27-7668-968c-d8e83b66db19 |
-| checksum | 88fcc4acbc1e6a32de0476dad60971f45ab6f6a09106b3ccf8020beb58a70e1b |
-| built_at | 2026-10-06T14:15:30+00:00 |
-| path | hr_analytics/01a11191-cb27-7668-968c-d8e83b66db19 |
+| uuid | 01a111fc-e13c-73b1-a5b6-46586d1602ca |
+| checksum | v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11 |
+| built_at | 2026-10-06T16:12:28+00:00 |
+| path | hr_analytics/01a111fc-e13c-73b1-a5b6-46586d1602ca |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

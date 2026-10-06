@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146
+checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
 build:
-  uuid: 01a11190-911e-76ab-bc64-f291692f39f7
-  checksum: 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146
-  built_at: '2026-10-06T14:14:25+00:00'
-  path: home_credit_default_risk/01a11190-911e-76ab-bc64-f291692f39f7
+  uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
+  checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
+  built_at: '2026-10-06T16:11:32+00:00'
+  path: home_credit_default_risk/01a111fb-c9a4-79ac-b807-b4b9dffd8068
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 504 features. Source: Kaggle (2018).
 
-Built as `01a11190-911e-76ab-bc64-f291692f39f7` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -424,10 +424,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11190-911e-76ab-bc64-f291692f39f7 |
-| checksum | 504a258647b9fc4321139bdf986f5b9c5947f87b01d063d8bc1fd1df4416a146 |
-| built_at | 2026-10-06T14:14:25+00:00 |
-| path | home_credit_default_risk/01a11190-911e-76ab-bc64-f291692f39f7 |
+| uuid | 01a111fb-c9a4-79ac-b807-b4b9dffd8068 |
+| checksum | v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f |
+| built_at | 2026-10-06T16:11:32+00:00 |
+| path | home_credit_default_risk/01a111fb-c9a4-79ac-b807-b4b9dffd8068 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

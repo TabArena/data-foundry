@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c
+checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
 build:
-  uuid: 01a11191-233a-7c01-9cf4-45515d30cb4b
-  checksum: da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c
-  built_at: '2026-10-06T14:14:48+00:00'
-  path: 5g_energy_consumption/01a11191-233a-7c01-9cf4-45515d30cb4b
+  uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
+  checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
+  built_at: '2026-10-06T16:12:03+00:00'
+  path: 5g_energy_consumption/01a111fc-7d10-76f4-b97c-284becb386ec
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -20,7 +20,7 @@ build:
 build_stale: false
 data:
   n_rows: 92629
-  n_features: 21
+  n_features: 20
   dtypes:
     category: 3
     float64: 14
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 21 features. Source: HuggingFace (2023).
+Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: HuggingFace (2023).
 
-Built as `01a11191-233a-7c01-9cf4-45515d30cb4b` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -316,10 +316,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a11191-233a-7c01-9cf4-45515d30cb4b |
-| checksum | da9a95319d45c7c8ba03b3ede1a4a0ff084a45c0f353c636d1bfdc71b302f05c |
-| built_at | 2026-10-06T14:14:48+00:00 |
-| path | 5g_energy_consumption/01a11191-233a-7c01-9cf4-45515d30cb4b |
+| uuid | 01a111fc-7d10-76f4-b97c-284becb386ec |
+| checksum | v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85 |
+| built_at | 2026-10-06T16:12:03+00:00 |
+| path | 5g_energy_consumption/01a111fc-7d10-76f4-b97c-284becb386ec |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

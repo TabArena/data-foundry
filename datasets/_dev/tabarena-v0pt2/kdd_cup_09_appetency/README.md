@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: kdd_cup_09_appetency
 container_format: 2
-checksum: a424558152e99dd9420d7a49eb03499e6eb55b6b36fc35efc2831b72d45f0a74
+checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
 build:
-  uuid: 01a11191-0b04-751e-a24a-ce768651f100
-  checksum: a424558152e99dd9420d7a49eb03499e6eb55b6b36fc35efc2831b72d45f0a74
-  built_at: '2026-10-06T14:14:46+00:00'
-  path: kdd_cup_09_appetency/01a11191-0b04-751e-a24a-ce768651f100
+  uuid: 01a111fc-4f06-781e-a57e-d46ef749395b
+  checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
+  built_at: '2026-10-06T16:11:55+00:00'
+  path: kdd_cup_09_appetency/01a111fc-4f06-781e-a57e-d46ef749395b
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,000 rows and 212 features. Source: Other (2008).
 
-Built as `01a11191-0b04-751e-a24a-ce768651f100` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -415,10 +415,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-0b04-751e-a24a-ce768651f100 |
-| checksum | a424558152e99dd9420d7a49eb03499e6eb55b6b36fc35efc2831b72d45f0a74 |
-| built_at | 2026-10-06T14:14:46+00:00 |
-| path | kdd_cup_09_appetency/01a11191-0b04-751e-a24a-ce768651f100 |
+| uuid | 01a111fc-4f06-781e-a57e-d46ef749395b |
+| checksum | v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e |
+| built_at | 2026-10-06T16:11:55+00:00 |
+| path | kdd_cup_09_appetency/01a111fc-4f06-781e-a57e-d46ef749395b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

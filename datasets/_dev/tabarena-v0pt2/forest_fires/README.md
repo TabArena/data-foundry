@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192
+checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
 build:
-  uuid: 01a11191-b856-721f-a0f5-4aba02658649
-  checksum: 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192
-  built_at: '2026-10-06T14:15:25+00:00'
-  path: forest_fires/01a11191-b856-721f-a0f5-4aba02658649
+  uuid: 01a111fc-a4a0-72df-82ce-c3f0eed0000e
+  checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
+  built_at: '2026-10-06T16:12:12+00:00'
+  path: forest_fires/01a111fc-a4a0-72df-82ce-c3f0eed0000e
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `area`, scored with `rmse` on IID splits. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a11191-b856-721f-a0f5-4aba02658649` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -311,10 +311,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-b856-721f-a0f5-4aba02658649 |
-| checksum | 1e5d408527a5f26d0ac38681b0aed01f1445f60dde0fb3dcdd07c8bf426e0192 |
-| built_at | 2026-10-06T14:15:25+00:00 |
-| path | forest_fires/01a11191-b856-721f-a0f5-4aba02658649 |
+| uuid | 01a111fc-a4a0-72df-82ce-c3f0eed0000e |
+| checksum | v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f |
+| built_at | 2026-10-06T16:12:12+00:00 |
+| path | forest_fires/01a111fc-a4a0-72df-82ce-c3f0eed0000e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

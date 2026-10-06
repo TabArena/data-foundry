@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sepsis_survival_minimal_clinical_records
 container_format: 2
-checksum: 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721
+checksum: v2:f76477259fc86a25e4b4ad61dcca5414ce2c902f7baebf605f11dd067f7d18e7
 build:
-  uuid: 01a11191-e6bd-755d-ab95-f7f61733b3c8
-  checksum: 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721
-  built_at: '2026-10-06T14:15:37+00:00'
-  path: sepsis_survival_minimal_clinical_records/01a11191-e6bd-755d-ab95-f7f61733b3c8
+  uuid: 01a111fc-94f7-7c86-b795-2ecaea21d5dd
+  checksum: v2:f76477259fc86a25e4b4ad61dcca5414ce2c902f7baebf605f11dd067f7d18e7
+  built_at: '2026-10-06T16:12:08+00:00'
+  path: sepsis_survival_minimal_clinical_records/01a111fc-94f7-7c86-b795-2ecaea21d5dd
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `sepsis_outcome_after9pt5_days_in_hospital`, scored with `roc_auc` on IID splits. 110,204 rows and 3 features. Source: UCI (2020).
 
-Built as `01a11191-e6bd-755d-ab95-f7f61733b3c8` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-94f7-7c86-b795-2ecaea21d5dd` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -227,10 +227,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-e6bd-755d-ab95-f7f61733b3c8 |
-| checksum | 0de1a5a2bb95f7d4deb52998201eeab440d3d51c90175eb5cc05fc5e41680721 |
-| built_at | 2026-10-06T14:15:37+00:00 |
-| path | sepsis_survival_minimal_clinical_records/01a11191-e6bd-755d-ab95-f7f61733b3c8 |
+| uuid | 01a111fc-94f7-7c86-b795-2ecaea21d5dd |
+| checksum | v2:f76477259fc86a25e4b4ad61dcca5414ce2c902f7baebf605f11dd067f7d18e7 |
+| built_at | 2026-10-06T16:12:08+00:00 |
+| path | sepsis_survival_minimal_clinical_records/01a111fc-94f7-7c86-b795-2ecaea21d5dd |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

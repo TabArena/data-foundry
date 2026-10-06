@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: student_portuguese_performance
 container_format: 2
-checksum: 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844
+checksum: v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc
 build:
-  uuid: 01a11191-f43b-7725-a911-16f5c99ddbba
-  checksum: 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844
-  built_at: '2026-10-06T14:15:40+00:00'
-  path: student_portuguese_performance/01a11191-f43b-7725-a911-16f5c99ddbba
+  uuid: 01a111fc-bd82-7068-93bd-0d20f8e4fea0
+  checksum: v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc
+  built_at: '2026-10-06T16:12:18+00:00'
+  path: student_portuguese_performance/01a111fc-bd82-7068-93bd-0d20f8e4fea0
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. Source: UCI (2008).
 
-Built as `01a11191-f43b-7725-a911-16f5c99ddbba` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -362,10 +362,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-f43b-7725-a911-16f5c99ddbba |
-| checksum | 0cb7edeb8e2134c423e9919cc94d35689d1fa40f4adec64c11a4aaa0e4c71844 |
-| built_at | 2026-10-06T14:15:40+00:00 |
-| path | student_portuguese_performance/01a11191-f43b-7725-a911-16f5c99ddbba |
+| uuid | 01a111fc-bd82-7068-93bd-0d20f8e4fea0 |
+| checksum | v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc |
+| built_at | 2026-10-06T16:12:18+00:00 |
+| path | student_portuguese_performance/01a111fc-bd82-7068-93bd-0d20f8e4fea0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

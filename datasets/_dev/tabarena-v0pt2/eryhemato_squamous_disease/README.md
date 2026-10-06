@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c
+checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
 build:
-  uuid: 01a11191-aadc-7e12-a102-e16562cee512
-  checksum: c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c
-  built_at: '2026-10-06T14:15:21+00:00'
-  path: eryhemato_squamous_disease/01a11191-aadc-7e12-a102-e16562cee512
+  uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
+  checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
+  built_at: '2026-10-06T16:12:11+00:00'
+  path: eryhemato_squamous_disease/01a111fc-a1c3-79c0-8d48-48221a6702fe
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1997).
 
-Built as `01a11191-aadc-7e12-a102-e16562cee512` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -345,10 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-aadc-7e12-a102-e16562cee512 |
-| checksum | c4b3121c974016b440da5d06d9ce2f73b7ccd7fb8ce0ba456c455935de3f8f5c |
-| built_at | 2026-10-06T14:15:21+00:00 |
-| path | eryhemato_squamous_disease/01a11191-aadc-7e12-a102-e16562cee512 |
+| uuid | 01a111fc-a1c3-79c0-8d48-48221a6702fe |
+| checksum | v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15 |
+| built_at | 2026-10-06T16:12:11+00:00 |
+| path | eryhemato_squamous_disease/01a111fc-a1c3-79c0-8d48-48221a6702fe |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

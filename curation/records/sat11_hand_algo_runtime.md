@@ -43,6 +43,8 @@ I would focus on including such datasets for SAT solving, as this seems a "reale
 
 We use the task that aims to go from (Instance_features, algorithm_features) -> runtime; which is more or less an alternative to multi-target modelling aiming to generalize across algorithms.
 
+CC (2026-10-06, Lennart): The split holds out instances, not instance families, on purpose. The instances come in 48 families (74% of an instance's nearest neighbours are in its own family), but a selector in use has other members of a new instance's family in its data, so holding out single instances, as ASlib does, is the realistic setting.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

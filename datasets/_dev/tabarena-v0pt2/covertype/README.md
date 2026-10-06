@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: covertype
 container_format: 2
-checksum: 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939
+checksum: v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da
 build:
-  uuid: 01a11191-1459-73b7-a8d7-bf59bc25d895
-  checksum: 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939
-  built_at: '2026-10-06T14:14:45+00:00'
-  path: covertype/01a11191-1459-73b7-a8d7-bf59bc25d895
+  uuid: 01a111fc-5b2f-72b3-983a-85ec312c2e8f
+  checksum: v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da
+  built_at: '2026-10-06T16:11:55+00:00'
+  path: covertype/01a111fc-5b2f-72b3-983a-85ec312c2e8f
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -63,7 +63,7 @@ decisions: []
 
 Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits. 581,012 rows and 14 features. Source: UCI (1998).
 
-Built as `01a11191-1459-73b7-a8d7-bf59bc25d895` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -275,10 +275,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-1459-73b7-a8d7-bf59bc25d895 |
-| checksum | 314d56a956d8bf11d679debfb18967b803dd2eec86fc9ccaf93173ea1b259939 |
-| built_at | 2026-10-06T14:14:45+00:00 |
-| path | covertype/01a11191-1459-73b7-a8d7-bf59bc25d895 |
+| uuid | 01a111fc-5b2f-72b3-983a-85ec312c2e8f |
+| checksum | v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da |
+| built_at | 2026-10-06T16:11:55+00:00 |
+| path | covertype/01a111fc-5b2f-72b3-983a-85ec312c2e8f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: 79d032b013e44aa24fbf80198f3104010e0fdd3cb2840e3fe39e54e1f70eb3e2
+checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
 build:
-  uuid: 01a11190-4892-7cab-b756-7367b919e0ad
-  checksum: 79d032b013e44aa24fbf80198f3104010e0fdd3cb2840e3fe39e54e1f70eb3e2
-  built_at: '2026-10-06T14:14:10+00:00'
-  path: ieee_fraud_detection/01a11190-4892-7cab-b756-7367b919e0ad
+  uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
+  checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
+  built_at: '2026-10-06T16:10:45+00:00'
+  path: ieee_fraud_detection/01a111fa-fc65-735f-bcbe-b5845dbfe917
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 435 features. Source: Kaggle (2019).
 
-Built as `01a11190-4892-7cab-b756-7367b919e0ad` on 2026-10-06. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -419,10 +419,10 @@ To define three train/test splits, we use the last three months as test sets, le
 
 | field | value |
 |---|---|
-| uuid | 01a11190-4892-7cab-b756-7367b919e0ad |
-| checksum | 79d032b013e44aa24fbf80198f3104010e0fdd3cb2840e3fe39e54e1f70eb3e2 |
-| built_at | 2026-10-06T14:14:10+00:00 |
-| path | ieee_fraud_detection/01a11190-4892-7cab-b756-7367b919e0ad |
+| uuid | 01a111fa-fc65-735f-bcbe-b5845dbfe917 |
+| checksum | v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e |
+| built_at | 2026-10-06T16:10:45+00:00 |
+| path | ieee_fraud_detection/01a111fa-fc65-735f-bcbe-b5845dbfe917 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

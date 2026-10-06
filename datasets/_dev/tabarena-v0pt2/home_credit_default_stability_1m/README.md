@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35
+checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
 build:
-  uuid: 01a11190-62b3-7529-b8fd-e5ea5439dfa5
-  checksum: e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35
-  built_at: '2026-10-06T14:14:45+00:00'
-  path: home_credit_default_stability/versions/01a11190-62b3-7529-b8fd-e5ea5439dfa5
+  uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
+  checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
+  built_at: '2026-10-06T16:12:28+00:00'
+  path: home_credit_default_stability/versions/01a111fc-2b8d-77ef-a922-3ea3b96a716e
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a11190-62b3-7529-b8fd-e5ea5439dfa5` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -432,10 +432,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a11190-62b3-7529-b8fd-e5ea5439dfa5 |
-| checksum | e3ca178cc1dedfb492a553150593aa3339de2aac114afeddb93bd2b3776e3c35 |
-| built_at | 2026-10-06T14:14:45+00:00 |
-| path | home_credit_default_stability/versions/01a11190-62b3-7529-b8fd-e5ea5439dfa5 |
+| uuid | 01a111fc-2b8d-77ef-a922-3ea3b96a716e |
+| checksum | v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db |
+| built_at | 2026-10-06T16:12:28+00:00 |
+| path | home_credit_default_stability/versions/01a111fc-2b8d-77ef-a922-3ea3b96a716e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

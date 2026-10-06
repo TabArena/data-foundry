@@ -51,7 +51,7 @@ collection is how datasets ship (BeyondArena today, the TabArena v0.2 collection
 both container formats.
 
 * **Load one:** `BEYOND_ARENA.get_dataset(name_or_uuid)` from `data_foundry.collections`, then
-  `container.describe()`. Check integrity with `container.checksum == container._create_checksum()`.
+  `container.describe()`. Check integrity with `container.verify()` (or `get_dataset(..., verify=True)`).
   How it was built: the record `curation/records/<name>.md` (`notebook_path`, `v2_path`, `## Comments`).
   See `examples/load_curated_container.py`, `examples/benchmark_on_beyond_arena.py`.
 * **Browse a collection:** `list_collections()`, `get_collection(name)`, `BEYOND_ARENA.unique_names`,

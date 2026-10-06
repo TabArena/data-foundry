@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: south_africa_coronary_heart_disease
 container_format: 2
-checksum: 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d
+checksum: v2:7f6c2ba73134b6cf44a868d9e6fe1d685a8ad2e86ae07edaec5ed3716f59c7c9
 build:
-  uuid: 01a11191-eb28-7861-bd1e-cda4bb9e5d76
-  checksum: 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d
-  built_at: '2026-10-06T14:15:38+00:00'
-  path: south_africa_coronary_heart_disease/01a11191-eb28-7861-bd1e-cda4bb9e5d76
+  uuid: 01a111fc-ed62-786a-ac41-9c1deb571902
+  checksum: v2:7f6c2ba73134b6cf44a868d9e6fe1d685a8ad2e86ae07edaec5ed3716f59c7c9
+  built_at: '2026-10-06T16:12:31+00:00'
+  path: south_africa_coronary_heart_disease/01a111fc-ed62-786a-ac41-9c1deb571902
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `chd`, scored with `roc_auc` on IID splits. 462 rows and 9 features. Source: Kaggle (1983).
 
-Built as `01a11191-eb28-7861-bd1e-cda4bb9e5d76` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ed62-786a-ac41-9c1deb571902` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -289,10 +289,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-eb28-7861-bd1e-cda4bb9e5d76 |
-| checksum | 79442d22be75067eec4e1d9986ae8982239ce7dfcc28649995f18a1a5ddec84d |
-| built_at | 2026-10-06T14:15:38+00:00 |
-| path | south_africa_coronary_heart_disease/01a11191-eb28-7861-bd1e-cda4bb9e5d76 |
+| uuid | 01a111fc-ed62-786a-ac41-9c1deb571902 |
+| checksum | v2:7f6c2ba73134b6cf44a868d9e6fe1d685a8ad2e86ae07edaec5ed3716f59c7c9 |
+| built_at | 2026-10-06T16:12:31+00:00 |
+| path | south_africa_coronary_heart_disease/01a111fc-ed62-786a-ac41-9c1deb571902 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

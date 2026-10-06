@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12
+checksum: v2:d0a0fa13d4751eb442b2643321abd35397ed955e7becde71803798b4008d87a1
 build:
-  uuid: 01a11191-e259-79b9-879f-f763ddd3adcb
-  checksum: de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12
-  built_at: '2026-10-06T14:15:35+00:00'
-  path: qsar_biodeg/01a11191-e259-79b9-879f-f763ddd3adcb
+  uuid: 01a111fc-bbf4-7a48-86aa-22bfb52b8d59
+  checksum: v2:d0a0fa13d4751eb442b2643321abd35397ed955e7becde71803798b4008d87a1
+  built_at: '2026-10-06T16:12:18+00:00'
+  path: qsar_biodeg/01a111fc-bbf4-7a48-86aa-22bfb52b8d59
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,054 rows and 41 features. Source: UCI (2013).
 
-Built as `01a11191-e259-79b9-879f-f763ddd3adcb` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bbf4-7a48-86aa-22bfb52b8d59` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -345,10 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-e259-79b9-879f-f763ddd3adcb |
-| checksum | de8fdb4128a352ff0cc7c645bf2949b6f9c1f3e0d735c8b8359fc2286217af12 |
-| built_at | 2026-10-06T14:15:35+00:00 |
-| path | qsar_biodeg/01a11191-e259-79b9-879f-f763ddd3adcb |
+| uuid | 01a111fc-bbf4-7a48-86aa-22bfb52b8d59 |
+| checksum | v2:d0a0fa13d4751eb442b2643321abd35397ed955e7becde71803798b4008d87a1 |
+| built_at | 2026-10-06T16:12:18+00:00 |
+| path | qsar_biodeg/01a111fc-bbf4-7a48-86aa-22bfb52b8d59 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -25,7 +25,7 @@ flag is read), so the next decision starts from the precedent.
    the others (musk: 102 molecules, 13 musk per fold; kept).
 6. **Keep two questions apart: is the task valid, and is it the best version?** A valid task stays. A better version
    the source itself defines (a stage it describes, the scoring it uses) replaces the current one: eryhemato before
-   the biopsy, asp_potassco scored by PAR10. A fix of our own invention (dropping near-ties, a label merge made from
+   the biopsy. A fix of our own invention (dropping near-ties, a label merge made from
    names) is not a better version.
 7. **When the definition builds the target itself** (merged or dropped classes), use an established convention,
    test each candidate (classes per test fold after dropping duplicates, signal, how rule-like the label is), and run
@@ -89,7 +89,7 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (6 Oct) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy |
 | forest_fires | no_signal | kept (6 Oct) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing |
 | clock_protein_toxicity | no_signal | kept (6 Oct) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect |
-| asp_potassco_classification | no_signal | kept; a PAR10 selection version to replace it (6 Oct) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) |
+| asp_potassco_classification | no_signal | kept (6 Oct) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) |
 | sepsis_survival_minimal_clinical_records | one_feature | kept (6 Oct) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design |
 | california_house_prices_2020 | one_feature | kept (6 Oct) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 |
 | aps_failure | one_feature | kept (6 Oct) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling |
@@ -104,3 +104,71 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | heart_disease_cleveland | no_spread | kept (6 Oct) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task |
 | consumer_complaints_1m | unstable | kept (6 Oct, rebuild sweep) | best probe model above the dummy in 3 of 3 windows (AUC 0.90); the standard error of 0.060 over 3 windows is drift, not a missing signal; all 21 BeyondArena configurations beat the dummy |
 | electric_motor_temperature_prediction | no_spread | kept (6 Oct, rebuild sweep) | R^2 0.94-0.97 for every probe model, a gap 3 folds cannot test; tuned RMSE 1.77-3.52 on BeyondArena (rule 3) |
+
+## Hidden groups in IID tasks (`hidden_groups.py`)
+
+An IID split is wrong when many rows share an entity that new data would not have and the entity carries the label:
+a random split then rewards recognising the entity. The probe ranks columns with repeated values by how much a row's
+label follows from the other rows with that value, beyond what the value says about unseen values. Among those that
+look like an entity (attributes that stay fixed within a value, or a label the value nearly fixes) it measures
+untuned LightGBM on a random split against a split by the column; its docstring has the thresholds.
+
+**The rule (Lennart, 2026-10-06): a hit is a question.** Re-split a dataset only when the context says the rows share
+an entity that new data would not have (the source calls the column an id, or the use case predicts for new
+entities), or when the evidence is very strong. Holding out the values of any useful feature opens a gap, so the gap
+alone never decides: a manager, a soil type or a fund category is known for every new row.
+
+**The split follows what the task does in reality, not the size of the gap** (Lennart, 2026-10-06). Ask what a
+deployed model predicts for: if it is an entity that new data would not contain (a material nobody has measured, a
+new respondent), the test entities must be new, even when a random split costs only a little (superconductivity:
+at most 0.009 R², grouped). If new rows keep having the value (a manager, a soil type), the column is a feature and
+the split stays. Report the gap across a few model families, but let the use case decide. Take the group key from
+the source's own data, at the resolution the features see (superconductivity: element shares from `unique_m.csv`,
+which the features are computed from; a formula string would split one composition written two ways). Keep the
+source's rows: deduplicating with averaged targets is a different dataset.
+
+**The probe checks single columns only.** A group defined by several columns (a wind-tunnel run is one chord, angle and velocity) or by no column at all (the target protein of a CASP decoy) does not show up; read what one row is in the source and check the combinations of its settings (`df.groupby(settings).ngroup()`, rows per group, blocks in the raw file order).
+
+Calibration on 2026-10-06 (the 15 grouped datasets run as if IID): the probe finds the known group or an equivalent
+key in 11 (respondent, poster group, patient, subject, customer, molecule, mouse, motor profile, instance, facility
+attributes, ASP instance); the 4 it misses have small gaps (0.03-0.05: cardiotocography, micro_mass,
+5g_energy_consumption, video_transcoding_time_prediction), where a random split would gain little.
+
+| Dataset | Hit | Decision | Evidence |
+|---|---|---|---|
+| amazon_employee_access | `MGR_ID` (4,243 values) | no action (6 Oct) | a request's manager is known when it is made, and managers recur: a feature, not an entity new data lacks |
+| covertype | `Soil_Type` (40 values) | no action (6 Oct) | every location has a known soil type; its two "attributes" are zones derived from it |
+| mutual_funds_india | `sub_category` (38 values) | no action (6 Oct) | a new fund has a known sub-category |
+| superconductivity | `range_atomic_radius` (repeated compositions) | grouped by composition (6 Oct) | the features come from the composition alone and a model is used for compositions without a measured temperature; a random split gave 35% of the test rows an identical row in train. Key: element shares from `unique_m.csv` (15,164 compositions; joins `Dy1Ir2Rh2B4`/`Dy1Rh2Ir2B4` and `V2Zr1`/`V66.6Zr33.3`). Gap on Tc at most 0.009 R², ranking unchanged: the use case decided, not the gap. Not by element set (a new family is a different task) |
+| airfoil_self_noise | none (a run is three columns) | grouped by wind-tunnel run (6 Oct) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random split gave a test row 62% of its run's other bands in train. R² random / by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840. Found by reading the source, not by the probe |
+
+## Generated data (`generated_probes.py`)
+
+Simulated data is out of scope (curation guidelines, criterion 4B, marker `AHDS`), and a generator leaves marks a
+model can learn completely: the best possible score is then known, and strong methods reach it, so their ranking is
+noise. The probe looks for two marks; its docstring has the thresholds.
+
+* `formula` (regression): a median regression on the numeric features, their squares, one-hot categoricals and the
+  products of each binary column with each numeric feature fits many rows exactly (within the target's rounding),
+  far more than it fits a shuffled target. Rows at a mass point of the target (a cap, a timeout) do not count:
+  sat11_hand_algo_runtime has 36% of its rows at the timeout. The target is also tried after `exp`, since a
+  definition may have logged it.
+* `rule_leaves` (classification): leaves of a depth-5 tree, fit on one half and read on the other, whose held-out
+  rows all belong to a minority class cover at least a fifth of that class.
+
+**A flag is a question.** A target that is legitimately computed from the features (a score, a label defined by
+thresholds) or a leak gives the same marks. Before proposing a retirement, find what the source says ("simulated",
+"artificial", "generated", a textbook example) and look for marks the probe does not test: dependence that the world
+would show but the data does not (churn's area codes spread over all states alike), several columns with one
+distribution, every row of a group following a rule. When you can, write the generator down: that settles it.
+
+Calibration on 2026-10-06 (all 128 datasets of the working copy): the probe flags the two datasets known to be
+generated and no other. The nearest regression is student_portuguese_performance (2.6% exact against 0.0%), the
+nearest classifications are eryhemato_squamous_disease (17.7% of the minority in rule leaves: clinical diagnoses),
+website_phishing (16.1%: its features are rule outputs) and homesite_quote_conversion (13.9%).
+
+| Dataset | Flag | Decision | Evidence |
+|---|---|---|---|
+| healthcare_insurance_expenses | `formula` (72% exact, 2% shuffled) | retired, `AHDS` (6 Oct) | Lantz's textbook data, "simulated on the basis of demographic statistics from the US Census Bureau"; 1,220 of 1,338 charges equal 1072 + 3.363 age² + 1.39 bmi + 589 children − 489 [male] + region + [smoker](1500 + 489 bmi + 15000 [bmi > 30]), the rest add a random extra cost; the best BeyondArena methods reach the best possible score |
+| churn | `rule_leaves` (26%) | retired, `AHDS` (6 Oct) | MLC++: "artificial based on claims similar to real world"; area codes independent of the state, one distribution for all call counts, charges = minutes × fixed rates, international-plan rules with 79/79 and 89/89 churners |
+

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: audiology_diagnosis
 container_format: 2
-checksum: f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f
+checksum: v2:3044c012f561b616370f46630853c7c58c6476463989263eb70d410e8b786995
 build:
-  uuid: 01a11191-6752-703a-9930-a7583503a5c4
-  checksum: f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f
-  built_at: '2026-10-06T14:15:04+00:00'
-  path: audiology_diagnosis/01a11191-6752-703a-9930-a7583503a5c4
+  uuid: 01a111fc-c395-7cc5-9b60-91d8a7afaa20
+  checksum: v2:3044c012f561b616370f46630853c7c58c6476463989263eb70d410e8b786995
+  built_at: '2026-10-06T16:12:20+00:00'
+  path: audiology_diagnosis/01a111fc-c395-7cc5-9b60-91d8a7afaa20
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -62,7 +62,7 @@ decisions: []
 
 Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 195 rows and 65 features. Source: UCI (1987).
 
-Built as `01a11191-6752-703a-9930-a7583503a5c4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -400,10 +400,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a11191-6752-703a-9930-a7583503a5c4 |
-| checksum | f75b03ead62670d26a7f042536a87cb0916dd5803e531a859648bef4d4f2e96f |
-| built_at | 2026-10-06T14:15:04+00:00 |
-| path | audiology_diagnosis/01a11191-6752-703a-9930-a7583503a5c4 |
+| uuid | 01a111fc-c395-7cc5-9b60-91d8a7afaa20 |
+| checksum | v2:3044c012f561b616370f46630853c7c58c6476463989263eb70d410e8b786995 |
+| built_at | 2026-10-06T16:12:20+00:00 |
+| path | audiology_diagnosis/01a111fc-c395-7cc5-9b60-91d8a7afaa20 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

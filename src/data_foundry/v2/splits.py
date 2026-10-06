@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
+from data_foundry.schema import as_column_list
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
@@ -73,8 +74,23 @@ _CALENDAR_UNITS = ("days", "weeks", "months", "years")
 # --- split dimensions -----------------------------------------------------------------------------------------
 
 
+GROUP_KEY = "__group_key__"
+"""The column :func:`one_group_column` adds for a group of several columns."""
+
+
+def one_group_column(df: pd.DataFrame, group_on: str | list[str] | None) -> tuple[pd.DataFrame, str | None]:
+    """``df`` and one column naming the groups: ``group_on`` itself, or for several columns a key numbering their
+    combinations (:data:`GROUP_KEY`, in order of first appearance; a missing value is a value of its own).
+    """
+    columns = as_column_list(group_on)
+    if len(columns) <= 1:
+        return df, columns[0] if columns else None
+    key = df.groupby(columns, sort=False, observed=True, dropna=False).ngroup().to_numpy()
+    return df.assign(**{GROUP_KEY: key}), GROUP_KEY
+
+
 def recommended_dimensions(
-    df: pd.DataFrame, *, group_on: str | None = None, group_labels: str | None = None
+    df: pd.DataFrame, *, group_on: str | list[str] | None = None, group_labels: str | None = None
 ) -> tuple[int, int]:
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
@@ -86,6 +102,7 @@ def recommended_dimensions(
     if n >= SINGLE_REPEAT_ROWS:
         return 1, N_FOLDS
     if group_on is not None and group_labels == "per_group":
+        df, group_on = one_group_column(df, group_on)
         n = df[group_on].nunique()
     n_train = int(n * 2 / 3)
     for limit, repeats in REPEATS_BY_TRAIN_SIZE:
@@ -122,13 +139,14 @@ def grouped_splits(
     df: pd.DataFrame,
     *,
     n_repeats: int,
-    group_on: str,
+    group_on: str | list[str],
     group_labels: str | None,
     n_folds: int = N_FOLDS,
     stratify_on: str | None = None,
     random_state: int = SPLIT_RANDOM_STATE,
 ) -> Splits:
-    """Repeated k-fold cross-validation that keeps every group of ``group_on`` on one side.
+    """Repeated k-fold cross-validation that keeps every group of ``group_on`` on one side (several columns: every
+    combination of their values is a group).
 
     With ``group_labels="per_group"`` (one label per group) the folds are drawn over the groups, one row per
     group, as :func:`iid_splits` would draw them over rows; group sizes are ignored. Otherwise
@@ -136,6 +154,7 @@ def grouped_splits(
     numbers per fold; the folds of the current datasets are within 5% of equal rows).
     """
     _require_range_index(df)
+    df, group_on = one_group_column(df, group_on)
     if group_labels == "per_group":
         return _per_group_splits(df, n_repeats, n_folds, group_on, stratify_on, random_state)
     return _per_sample_splits(df, n_repeats, n_folds, group_on, stratify_on, random_state)
@@ -432,6 +451,8 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         for cutoff in sorted(cutoffs, reverse=True):
             if unit in _CALENDAR_UNITS:
                 start = pd.Timestamp(str(cutoff))
+                if times.dt.tz is not None and start.tzinfo is None:  # a plain cutoff means the column's time zone
+                    start = start.tz_localize(times.dt.tz)
                 end = None if window is None else start + _calendar_offset(unit, window)
                 train_end = start - _calendar_offset(unit, gap) if gap else start
             else:
@@ -516,7 +537,7 @@ class SplitPlan:
 def subsample_frame(
     df: pd.DataFrame,
     *,
-    group_on: str | None = None,
+    group_on: str | list[str] | None = None,
     stratify_on: str | None = None,
     n_rows: int | None = None,
     random_state: int = SPLIT_RANDOM_STATE,
@@ -530,8 +551,9 @@ def subsample_frame(
     n_rows = FRAME_ROW_BUDGET if n_rows is None else n_rows
     if len(df) <= n_rows:
         return df
+    keyed, key = one_group_column(df, group_on)
     keep = _sample_positions(
-        df, np.arange(len(df)), n_rows, group_on=group_on, stratify_on=stratify_on, random_state=random_state
+        keyed, np.arange(len(df)), n_rows, group_on=key, stratify_on=stratify_on, random_state=random_state
     )
     return df.iloc[keep].reset_index(drop=True)
 
@@ -540,7 +562,7 @@ def cap_splits(
     df: pd.DataFrame,
     splits: Splits,
     *,
-    group_on: str | None = None,
+    group_on: str | list[str] | None = None,
     stratify_on: str | None = None,
     train_cap: int | None = None,
     test_cap: int | None = None,
@@ -552,6 +574,7 @@ def cap_splits(
     left as they are. Returns the splits and whether any side was trimmed.
     """
     caps = (TRAIN_ROW_BUDGET if train_cap is None else train_cap, TEST_ROW_BUDGET if test_cap is None else test_cap)
+    df, group_on = one_group_column(df, group_on)
     trimmed = False
     capped: Splits = {}
     for repeat, folds in splits.items():
@@ -743,7 +766,7 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
         return findings
 
     folds_per_repeat = {len(folds) for folds in splits.values()}
-    if not flat or len(folds_per_repeat) != 1 or not isinstance(task.group_on, (str, type(None))):
+    if not flat or len(folds_per_repeat) != 1:
         return findings
     actual = (len(splits), folds_per_repeat.pop())
     recommended = recommended_dimensions(container.dataset, group_on=task.group_on, group_labels=task.group_labels)

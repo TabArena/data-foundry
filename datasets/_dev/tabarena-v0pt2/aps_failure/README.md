@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: aps_failure
 container_format: 2
-checksum: 4a6a4a60a9e5c68181ff0abf7c0bcad83329238982cf4116f2bc8ab0c414a183
+checksum: v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6
 build:
-  uuid: 01a11190-cd17-7165-bd1e-ebb933111320
-  checksum: 4a6a4a60a9e5c68181ff0abf7c0bcad83329238982cf4116f2bc8ab0c414a183
-  built_at: '2026-10-06T14:14:33+00:00'
-  path: aps_failure/01a11190-cd17-7165-bd1e-ebb933111320
+  uuid: 01a111fc-0ce6-78ed-a870-52ce14ff98d0
+  checksum: v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6
+  built_at: '2026-10-06T16:11:42+00:00'
+  path: aps_failure/01a111fc-0ce6-78ed-a870-52ce14ff98d0
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `AirPressureSystemFailure`, scored with `roc_auc` on IID splits. 76,000 rows and 170 features. Source: UCI (2016).
 
-Built as `01a11190-cd17-7165-bd1e-ebb933111320` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -348,10 +348,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a11190-cd17-7165-bd1e-ebb933111320 |
-| checksum | 4a6a4a60a9e5c68181ff0abf7c0bcad83329238982cf4116f2bc8ab0c414a183 |
-| built_at | 2026-10-06T14:14:33+00:00 |
-| path | aps_failure/01a11190-cd17-7165-bd1e-ebb933111320 |
+| uuid | 01a111fc-0ce6-78ed-a870-52ce14ff98d0 |
+| checksum | v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6 |
+| built_at | 2026-10-06T16:11:42+00:00 |
+| path | aps_failure/01a111fc-0ce6-78ed-a870-52ce14ff98d0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

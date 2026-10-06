@@ -24,7 +24,7 @@ import pandas as pd
 import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
-from data_foundry.schema import resolve_warehouse_dir
+from data_foundry.schema import as_column_list, resolve_warehouse_dir
 from data_foundry.v2 import group_checks
 from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
 
@@ -135,7 +135,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         "build_stale": bool(build) and build.get("checksum") != container.checksum,
         "data": {
             "n_rows": len(df),
-            "n_features": int(df.shape[1] - 1),
+            # the target and the group columns are not features
+            "n_features": int(df.shape[1] - 1 - len(as_column_list(task.group_on))),
             "dtypes": {str(k): int(v) for k, v in df.dtypes.astype(str).value_counts().sort_index().items()},
             "n_test_dataset_rows": None if container.test_dataset is None else len(container.test_dataset),
         },

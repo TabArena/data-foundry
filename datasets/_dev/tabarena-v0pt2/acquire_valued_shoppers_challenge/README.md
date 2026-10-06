@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: acquire_valued_shoppers_challenge
 container_format: 2
-checksum: ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4
+checksum: v2:9dc30949c1f564c5e25257b74de5c366d1b95c4e22542a831003512e79ab64cd
 build:
-  uuid: 01a11191-02e4-76aa-a95c-8d4406216b18
-  checksum: ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4
-  built_at: '2026-10-06T14:14:45+00:00'
-  path: acquire_valued_shoppers_challenge/01a11191-02e4-76aa-a95c-8d4406216b18
+  uuid: 01a111fd-7588-73e4-bf55-26fb6336c1f4
+  checksum: v2:9dc30949c1f564c5e25257b74de5c366d1b95c4e22542a831003512e79ab64cd
+  built_at: '2026-10-06T16:13:13+00:00'
+  path: acquire_valued_shoppers_challenge/01a111fd-7588-73e4-bf55-26fb6336c1f4
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `offerdate`. 160,057 rows and 111 features. Source: Kaggle (2014).
 
-Built as `01a11191-02e4-76aa-a95c-8d4406216b18` on 2026-10-06. See [Build](#build).
+Built as `01a111fd-7588-73e4-bf55-26fb6336c1f4` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -372,10 +372,10 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 | field | value |
 |---|---|
-| uuid | 01a11191-02e4-76aa-a95c-8d4406216b18 |
-| checksum | ba4f6331f2e312fe5b8790a9f05863817cf2cc38a1c5288609ff9a8f281b8bd4 |
-| built_at | 2026-10-06T14:14:45+00:00 |
-| path | acquire_valued_shoppers_challenge/01a11191-02e4-76aa-a95c-8d4406216b18 |
+| uuid | 01a111fd-7588-73e4-bf55-26fb6336c1f4 |
+| checksum | v2:9dc30949c1f564c5e25257b74de5c366d1b95c4e22542a831003512e79ab64cd |
+| built_at | 2026-10-06T16:13:13+00:00 |
+| path | acquire_valued_shoppers_challenge/01a111fd-7588-73e4-bf55-26fb6336c1f4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

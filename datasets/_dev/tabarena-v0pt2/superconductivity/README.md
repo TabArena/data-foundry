@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: 98bb061c7209b72b705cd53a242878c0054ec10bc98e396e06027ec3fe7f4a45
+checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
 build:
-  uuid: 01a11191-5066-7ef7-98e7-d2acd6d6cd57
-  checksum: 98bb061c7209b72b705cd53a242878c0054ec10bc98e396e06027ec3fe7f4a45
-  built_at: '2026-10-06T14:14:59+00:00'
-  path: superconductivity/01a11191-5066-7ef7-98e7-d2acd6d6cd57
+  uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
+  checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
+  built_at: '2026-10-06T21:05:15+00:00'
+  path: superconductivity/01a11308-e9d1-7f71-b3e3-e172887ea0d9
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -22,6 +22,7 @@ data:
   n_rows: 21263
   n_features: 81
   dtypes:
+    category: 1
     float64: 79
     int64: 3
   n_test_dataset_rows: null
@@ -29,13 +30,20 @@ task:
   target: critical_temp
   problem_type: regression
   metric: rmse
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: composition
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 15164
+    test_groups_per_fold:
+      min: 5054
+      max: 5055
 splits:
   n_repeats: 3
   n_folds: 3
@@ -43,11 +51,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 14175
-    max: 14176
+    min: 14016
+    max: 14333
   n_test:
-    min: 7087
-    max: 7088
+    min: 6930
+    max: 7247
 bundle_checks:
   ok: true
   errors: []
@@ -56,16 +64,17 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   accepted: {}
-decisions: []
+decisions:
+- Grouped by composition
 ---
 
 # superconductivity
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `critical_temp`, scored with `rmse` on IID splits. 21,263 rows and 81 features. Source: UCI (2018).
+Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
 
-Built as `01a11191-5066-7ef7-98e7-d2acd6d6cd57` on 2026-10-06. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -106,18 +115,20 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | physics & astronomy |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | hamidieh2018data |
-| rows x columns | 21,263 x 82 |
+| rows x columns | 21,263 x 83 |
 | task.target | critical_temp |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | composition |
+| task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
-- categorical (0): none
+- categorical (1): `composition`
 - string (0): none
 - datetime (0): none
 
@@ -142,37 +153,78 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 21,263 rows of the final frame (random rows: the frame is shuffled); 12 of 82 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 21,263 rows of the final frame (random rows: the frame is shuffled); 12 of 83 columns, the target first. Cells are cut at 40 characters.
 
 | critical_temp | number_of_elements | mean_atomic_mass | wtd_mean_atomic_mass | gmean_atomic_mass | wtd_gmean_atomic_mass | entropy_atomic_mass | wtd_entropy_atomic_mass | range_atomic_mass | wtd_range_atomic_mass | std_atomic_mass | wtd_std_atomic_mass |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 4.65 | 6 | 95.1075 | 87.3349 | 59.4562 | 56.2652 | 1.44219 | 1.32625 | 192.981 | 40.8361 | 75.7838 | 76.273 |
-| 93 | 4 | 96.0328 | 57.7546 | 69.5159 | 37.0324 | 1.15978 | 1.33528 | 151.26 | 12.845 | 59.6639 | 53.4406 |
-| 6.3 | 5 | 89.3372 | 53.3643 | 70.5606 | 35.9256 | 1.44454 | 1.41448 | 124.908 | 17.6734 | 46.9177 | 46.3049 |
-| 72.4 | 6 | 84.1883 | 60.4614 | 63.6243 | 36.8628 | 1.54596 | 1.44751 | 192.981 | 26.2075 | 61.4121 | 64.2858 |
-| 4.65 | 3 | 58.8365 | 56.1233 | 58.3191 | 55.6041 | 1.08965 | 0.902699 | 18.7815 | 27.6129 | 7.95395 | 7.9825 |
+| 18.2 | 3 | 49.5833 | 50.4322 | 46.3778 | 49.1797 | 1.0369 | 0.699213 | 41.6375 | 34.6954 | 17.0255 | 10.4467 |
+| 114 | 7 | 106.455 | 89.951 | 78.7745 | 68.7669 | 1.70975 | 1.62139 | 192.981 | 32.7611 | 71.3936 | 65.3539 |
+| 13.48 | 5 | 65.8693 | 41.1546 | 40.4045 | 27.74 | 1.24541 | 1.25553 | 148.114 | 17.5627 | 55.0886 | 33.5291 |
+| 2.66 | 2 | 155.053 | 172.435 | 146.021 | 164.086 | 0.635474 | 0.49891 | 104.294 | 103.832 | 52.1472 | 49.1649 |
+| 2.3 | 3 | 43.9032 | 35.9837 | 41.5106 | 34.591 | 1.0432 | 1.04835 | 35.4605 | 8.6442 | 14.7272 | 11.1301 |
 
 ## Curation notes
 
-- Anomaly: the data has a lot of duplicates (29%) when ignoring the target feature
+- The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).
+- Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept and scored per row. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
 
 ## Splits
 
-Default splits.
+Grouped splits on the composition: every SuperCon entry of a composition stays on one side, so a model predicts for compositions it has not seen. Compositions of the same elements in other proportions (another doping level of a known family) can be on both sides.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 14,175 to 14,176 rows, test 7,087 to 7,088 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 14,016 to 14,333 rows, test 6,930 to 7,247 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 14175 | 7088 |
-| 0 | 1 | 14175 | 7088 |
-| 0 | 2 | 14176 | 7087 |
-| 1 | 0 | 14175 | 7088 |
-| 1 | 1 | 14175 | 7088 |
-| 1 | 2 | 14176 | 7087 |
-| 2 | 0 | 14175 | 7088 |
-| 2 | 1 | 14175 | 7088 |
-| 2 | 2 | 14176 | 7087 |
+| 0 | 0 | 14244 | 7019 |
+| 0 | 1 | 14016 | 7247 |
+| 0 | 2 | 14266 | 6997 |
+| 1 | 0 | 14288 | 6975 |
+| 1 | 1 | 14086 | 7177 |
+| 1 | 2 | 14152 | 7111 |
+| 2 | 0 | 14333 | 6930 |
+| 2 | 1 | 14167 | 7096 |
+| 2 | 2 | 14026 | 7237 |
+
+## Group structure
+
+One group is a composition: the share of each element in the chemical formula, from which the 81 features are computed. Its rows are the SuperCon entries for that composition (1 to 110), whose critical temperatures can differ (other samples, phases or pressures that the release does not record). The source predicts the critical temperature from the formula alone (Hamidieh 2018), and a model like that is used for compositions without a measured temperature, so the test compositions are new to the model. Each row is one prediction, made from the composition's features.
+
+| field | value |
+|---|---|
+| group column | `composition` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 15,164 |
+| rows per group (min / median / max) | 1 / 1.0 / 110 |
+| largest group | 0.5% of the rows |
+| test groups per fold | 5,054 to 5,055 |
+| groups of two or more rows with a single label | 1.9% |
+| nearest neighbour in the same group | 39.3% of the rows (chance: 0.0%) |
+| label variance explained by the group | 0.98 (shuffled groups: 0.71) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+
+## Decisions
+
+### 1. Grouped by composition
+
+The features come from the composition alone, so the entries of one composition are identical rows; a model is used for compositions without a measured temperature, so a test composition must be new to it. A random split gave 35% of the test rows an identical row in train.
+
+| index | value |
+|---|---|
+| rows | 21263 |
+| compositions | 15164 |
+| compositions with more than one entry | 2422 |
+| rows of those compositions | 8521 |
+| median std of their critical temperature (K) | 1.3 |
+| of those, max - min above 10 K | 562 |
+| of those, max - min above 30 K | 132 |
 
 ## Bundle checks
 
@@ -186,12 +238,13 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (82 rows)</summary>
+<summary>Show the table (83 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| composition | category | 0 | 0 | 15164 | Y1Ba2Cu3O7, Bi2Sr2Ca1Cu2O8, La1.85Sr0.15Cu1O4, B2Mg1, Tl2Ba2Cu1O6, Y1Ba2Cu3O, B… |
 | mean_atomic_mass | float64 | 0 | 0 | 3365 | 76.4446, 76.5177, 83.2448, 74.2317, 89.3372, 88.9367, 72.3247, 88.9445, 79.1712… |
-| wtd_mean_atomic_mass | float64 | 0 | 0 | 15164 | 51.2457, 59.2244, 56.8088, 15.309, 76.633, 97.0463, 81.4567, 49.7159, 59.3441, … |
+| wtd_mean_atomic_mass | float64 | 0 | 0 | 15164 | 51.2457, 59.2244, 56.8088, 15.309, 76.633, 81.4567, 97.0463, 49.7159, 59.3441, … |
 | gmean_atomic_mass | float64 | 0 | 0 | 3365 | 59.3567, 59.3101, 59.5061, 60.5152, 70.5606, 70.359, 58.6371, 66.3616, 59.9949,… |
 | wtd_gmean_atomic_mass | float64 | 0 | 0 | 15165 | 34.9353, 36.1262, 35.7734, 14.1626, 42.6054, 73.6759, 68.2296, 34.5124, 36.4969… |
 | entropy_atomic_mass | float64 | 0 | 0 | 3314 | 1.1995, 1.1973, 1.3115, 0.0, 1.4537, 1.4445, 1.4458, 1.4446, 1.1818, 1.39 |
@@ -199,13 +252,13 @@ Default splits.
 | range_atomic_mass | float64 | 0 | 0 | 1042 | 121.3276, 192.981, 122.9061, 128.2426, 124.9082, 188.3839, 184.5906, 141.2506, … |
 | wtd_range_atomic_mass | float64 | 0 | 0 | 12641 | 0.0, 36.9507, 12.5122, 50.2452, 14.2883, 17.5627, 25.1922, 40.1961, 22.7487, 18… |
 | std_atomic_mass | float64 | 0 | 0 | 3313 | 43.8234, 44.2895, 67.2338, 0.0, 39.4459, 46.9177, 46.4823, 40.0535, 51.9688, 50… |
-| wtd_std_atomic_mass | float64 | 0 | 0 | 15031 | 0.0, 44.1921, 64.1963, 52.5332, 6.3611, 75.2195, 68.2777, 40.6123, 42.227, 55.8… |
+| wtd_std_atomic_mass | float64 | 0 | 0 | 15031 | 0.0, 44.1921, 64.1963, 52.5332, 6.3611, 75.2195, 40.6123, 68.2777, 42.227, 55.8… |
 | mean_fie | float64 | 0 | 0 | 2997 | 794.0, 787.05, 779.88, 816.36, 740.52, 787.02, 743.42, 775.425, 738.22, 891.65 |
 | wtd_mean_fie | float64 | 0 | 0 | 14940 | 1003.6231, 1005.8667, 1011.5407, 779.2333, 982.4, 737.0375, 738.3571, 1007.0133… |
 | gmean_fie | float64 | 0 | 0 | 3286 | 741.6293, 734.2196, 740.3993, 771.891, 692.5413, 745.091, 696.3138, 718.1529, 6… |
 | wtd_gmean_fie | float64 | 0 | 0 | 15089 | 937.5592, 945.3714, 940.2943, 778.6586, 905.2205, 709.1597, 702.4242, 944.2692,… |
 | entropy_fie | float64 | 0 | 0 | 3238 | 1.315, 1.313, 1.5532, 0.0, 1.5525, 1.537, 1.5517, 1.5385, 1.306, 1.5366 |
-| wtd_entropy_fie | float64 | 0 | 0 | 15058 | 0.0, 0.8905, 1.0192, 0.7869, 0.6233, 0.8772, 1.5671, 1.2824, 0.8835, 0.7832 |
+| wtd_entropy_fie | float64 | 0 | 0 | 15058 | 0.0, 0.8905, 1.0192, 0.7869, 0.6233, 0.8772, 1.2824, 1.5671, 0.8835, 0.7832 |
 | range_fie | float64 | 0 | 0 | 854 | 810.6, 764.1, 772.0, 773.0, 781.6, 786.5, 0.0, 894.6, 443.7, 1138.9 |
 | wtd_range_fie | float64 | 0 | 0 | 12266 | 0.0, 738.7693, 659.7154, 661.0267, 738.5786, 698.9523, 648.5091, 253.4475, 112.… |
 | std_fie | float64 | 0 | 0 | 3185 | 311.7435, 314.506, 276.0631, 0.0, 282.3953, 298.643, 279.1811, 296.6152, 323.81… |
@@ -213,22 +266,22 @@ Default splits.
 | mean_atomic_radius | float64 | 0 | 0 | 942 | 164.5, 149.8, 160.0, 151.75, 167.0, 181.0, 150.5, 162.8, 162.0, 160.25 |
 | wtd_mean_atomic_radius | float64 | 0 | 0 | 12423 | 114.5385, 106.1333, 157.0, 104.3714, 106.3333, 156.0, 113.7273, 171.5714, 112.1… |
 | gmean_atomic_radius | float64 | 0 | 0 | 3148 | 139.0005, 131.3022, 133.4253, 139.5953, 155.9382, 148.7374, 142.2453, 136.126, … |
-| wtd_gmean_atomic_radius | float64 | 0 | 0 | 14969 | 89.6852, 86.4573, 84.1108, 103.1499, 88.963, 144.683, 153.256, 88.8243, 85.0316… |
-| entropy_atomic_radius | float64 | 0 | 0 | 3111 | 1.2567, 1.2753, 1.5195, 0.0, 1.5012, 1.4999, 1.5045, 1.507, 1.2592, 1.5088 |
-| wtd_entropy_atomic_radius | float64 | 0 | 0 | 14948 | 0.0, 1.3397, 1.5732, 1.1601, 0.689, 1.3004, 1.1668, 1.456, 1.3268, 1.1333 |
+| wtd_gmean_atomic_radius | float64 | 0 | 0 | 14969 | 89.6852, 86.4573, 84.1108, 103.1499, 88.963, 153.256, 144.683, 88.8243, 85.0316… |
+| entropy_atomic_radius | float64 | 0 | 0 | 3111 | 1.2567, 1.2753, 1.5195, 0.0, 1.5012, 1.4999, 1.507, 1.5045, 1.2592, 1.5088 |
+| wtd_entropy_atomic_radius | float64 | 0 | 0 | 14948 | 0.0, 1.3397, 1.5732, 1.1601, 0.689, 1.3004, 1.456, 1.1668, 1.3268, 1.1333 |
 | wtd_range_atomic_radius | float64 | 0 | 0 | 11407 | 0.0, 65.4286, 38.5, 48.75, 22.6154, 16.2667, 55.2857, 55.7143, 35.1231, 46.8429 |
 | std_atomic_radius | float64 | 0 | 0 | 2529 | 77.5258, 65.5796, 58.6085, 0.0, 69.9228, 76.7932, 1.0, 69.4245, 70.4062, 75.2375 |
 | wtd_std_atomic_radius | float64 | 0 | 0 | 14312 | 0.0, 79.2354, 66.3193, 67.1115, 27.3415, 79.3532, 67.9114, 51.9832, 76.1077, 70… |
 | mean_Density | float64 | 0 | 0 | 3274 | 4235.8573, 4434.3573, 4584.2858, 4816.6858, 4716.6858, 4617.8858, 4963.4858, 45… |
-| wtd_mean_Density | float64 | 0 | 0 | 15010 | 2952.4618, 2953.4288, 2961.4737, 2219.3333, 3608.0522, 5481.9184, 5536.4286, 73… |
+| wtd_mean_Density | float64 | 0 | 0 | 15010 | 2952.4618, 2953.4288, 2961.4737, 2219.3333, 3608.0522, 5536.4286, 5481.9184, 73… |
 | gmean_Density | float64 | 0 | 0 | 3332 | 669.5566, 674.4848, 874.1648, 1074.9035, 1059.4085, 1043.1538, 1096.1473, 724.9… |
 | wtd_gmean_Density | float64 | 0 | 0 | 15085 | 66.3422, 64.6229, 53.427, 2190.988, 67.4747, 1814.7681, 1780.0774, 71.2372, 731… |
 | entropy_Density | float64 | 0 | 0 | 3283 | 1.0154, 0.996, 1.1618, 0.0, 1.3222, 1.3239, 1.3245, 1.318, 1.0331, 1.2248 |
-| wtd_entropy_Density | float64 | 0 | 0 | 15087 | 0.0, 0.8128, 1.0995, 0.7696, 0.5741, 0.9521, 1.0977, 0.811, 0.7186, 0.8286 |
+| wtd_entropy_Density | float64 | 0 | 0 | 15087 | 0.0, 0.8128, 1.0995, 0.7696, 0.5741, 0.9521, 0.811, 1.0977, 0.7186, 0.8286 |
 | range_Density | float64 | 0 | 0 | 890 | 8958.571, 9778.571, 11338.571, 13532.571, 11848.571, 7872.571, 0.0, 12368.571, … |
 | wtd_range_Density | float64 | 0 | 0 | 9279 | 2066.9228, 3839.7959, 1303.2379, 0.0, 1623.4834, 2388.5712, 2444.8214, 1279.183… |
 | std_Density | float64 | 0 | 0 | 3265 | 3194.9389, 3402.8562, 4004.2732, 0.0, 3084.7293, 3015.1107, 2958.0215, 3206.849… |
-| wtd_std_Density | float64 | 0 | 0 | 14939 | 0.0, 3639.1292, 3977.0608, 3581.8489, 340.3541, 4695.9205, 3919.1831, 3275.9683… |
+| wtd_std_Density | float64 | 0 | 0 | 14939 | 0.0, 3639.1292, 3977.0608, 3581.8489, 340.3541, 4695.9205, 3275.9683, 3919.1831… |
 | mean_ElectronAffinity | float64 | 0 | 0 | 2377 | 77.2375, 82.3375, 79.6075, 73.1, 72.09, 62.09, 76.17, 69.5, 91.35, 71.69 |
 | wtd_mean_ElectronAffinity | float64 | 0 | 0 | 13526 | 110.7385, 113.2714, 81.7167, 109.1692, 83.5143, 105.4753, 19.3, 111.7792, 1.5, … |
 | gmean_ElectronAffinity | float64 | 0 | 0 | 2678 | 53.528, 60.7215, 48.4773, 33.1488, 53.1161, 26.1868, 58.7537, 82.0469, 35.6745,… |
@@ -238,20 +291,19 @@ Default splits.
 | range_ElectronAffinity | float64 | 0 | 0 | 644 | 127.05, 138.63, 135.97, 141.0, 127.2, 0.0, 91.0, 312.3, 64.05, 179.3 |
 | wtd_range_ElectronAffinity | float64 | 0 | 0 | 10937 | 0.0, 74.3538, 75.742, 81.2886, 80.325, 46.9714, 76.4331, 73.94, 29.4913, 29.25 |
 | std_ElectronAffinity | float64 | 0 | 0 | 2562 | 54.8308, 51.1257, 54.3731, 57.6457, 50.111, 0.0, 57.6447, 47.3627, 53.2352, 40.… |
-| wtd_std_ElectronAffinity | float64 | 0 | 0 | 13581 | 0.0, 47.2166, 39.8077, 48.4608, 49.4457, 52.6708, 50.3438, 12.5865, 42.5579, 39… |
+| wtd_std_ElectronAffinity | float64 | 0 | 0 | 13581 | 0.0, 47.2166, 39.8077, 48.4608, 49.4457, 50.3438, 52.6708, 12.5865, 42.5579, 39… |
 | mean_FusionHeat | float64 | 0 | 0 | 2660 | 8.1805, 6.9055, 8.1524, 8.0144, 7.9244, 9.3044, 7.8044, 7.2324, 6.8124, 5.903 |
 | wtd_mean_FusionHeat | float64 | 0 | 0 | 14194 | 5.2503, 4.9544, 3.8347, 9.5603, 5.4384, 9.0953, 36.2333, 3.5302, 3.8469, 3.9926 |
-| gmean_FusionHeat | float64 | 0 | 0 | 3166 | 4.0356, 3.4795, 4.6464, 4.5497, 4.4926, 5.1606, 4.4116, 4.1639, 2.7017, 3.8396 |
+| gmean_FusionHeat | float64 | 0 | 0 | 3166 | 4.0356, 3.4795, 4.6464, 4.5497, 4.4926, 5.1606, 4.4116, 4.1639, 3.8396, 2.7017 |
 | wtd_gmean_FusionHeat | float64 | 0 | 0 | 14767 | 1.3369, 1.3219, 1.0392, 6.2297, 1.381, 6.2976, 27.9139, 1.0533, 1.041, 1.064 |
 | entropy_FusionHeat | float64 | 0 | 0 | 3108 | 1.1121, 1.0886, 1.3929, 0.0, 1.3847, 1.3808, 1.3902, 1.3746, 1.3781, 0.9637 |
-| wtd_entropy_FusionHeat | float64 | 0 | 0 | 14885 | 0.0, 1.0429, 1.3958, 0.964, 0.2789, 1.1788, 0.9751, 1.3311, 0.995, 0.9621 |
+| wtd_entropy_FusionHeat | float64 | 0 | 0 | 14885 | 0.0, 1.0429, 1.3958, 0.964, 0.2789, 1.1788, 1.3311, 0.9751, 0.995, 0.9621 |
 | range_FusionHeat | float64 | 0 | 0 | 595 | 12.878, 27.478, 13.578, 15.978, 16.978, 10.678, 0.0, 19.7, 34.27, 25.478 |
 | wtd_range_FusionHeat | float64 | 0 | 0 | 9671 | 2.9035, 1.7446, 5.5826, 1.6283, 0.0, 3.2473, 3.3749, 1.8958, 6.8695, 2.0468 |
-| std_FusionHeat | float64 | 0 | 0 | 2920 | 4.9482, 4.5991, 4.361, 0.0, 4.4382, 4.4553, 4.9639, 4.4892, 4.1652, 5.0379 |
+| std_FusionHeat | float64 | 0 | 0 | 2920 | 4.9482, 4.5991, 4.361, 0.0, 4.4382, 4.4553, 4.9639, 4.4892, 4.1652, 4.3402 |
 | wtd_std_FusionHeat | float64 | 0 | 0 | 14470 | 0.0, 5.6486, 5.2534, 4.6583, 4.3597, 5.7801, 3.8735, 19.469, 4.2437, 4.6669 |
-| mean_ThermalConductivity | float64 | 0 | 0 | 1980 | 108.7566, 89.6053, 112.0066, 128.6053, 111.0053, 107.7566, 102.8053, 126.2053, … |
 
-(22 more rows not shown)
+(23 more rows not shown)
 
 </details>
 
@@ -335,16 +387,22 @@ Default splits.
 
 ### Categorical features
 
-No categorical/object features to summarize.
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| composition | 1 | Y1Ba2Cu3O7 | 110 | 0.52 |
+| composition | 2 | Bi2Sr2Ca1Cu2O8 | 83 | 0.39 |
+| composition | 3 | La1.85Sr0.15Cu1O4 | 53 | 0.25 |
+| composition | 4 | B2Mg1 | 47 | 0.22 |
+| composition | 5 | Tl2Ba2Cu1O6 | 45 | 0.21 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a11191-5066-7ef7-98e7-d2acd6d6cd57 |
-| checksum | 98bb061c7209b72b705cd53a242878c0054ec10bc98e396e06027ec3fe7f4a45 |
-| built_at | 2026-10-06T14:14:59+00:00 |
-| path | superconductivity/01a11191-5066-7ef7-98e7-d2acd6d6cd57 |
+| uuid | 01a11308-e9d1-7f71-b3e3-e172887ea0d9 |
+| checksum | v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04 |
+| built_at | 2026-10-06T21:05:15+00:00 |
+| path | superconductivity/01a11308-e9d1-7f71-b3e3-e172887ea0d9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

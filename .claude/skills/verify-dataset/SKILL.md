@@ -95,6 +95,13 @@ which the bundle checks do not cover:
   item 13; answer each flag as [`references/task_probes.md`](references/task_probes.md) says, starting with
   `tuned_results.py <unique_name> [--feature auto]`, which sets the flag against the benchmark's tuned methods.
 * `group_probes.py`, for a grouped task: the IID vs grouped gap and a permutation test across groups (item 4).
+* `generated_probes.py` (`--built`): whether the target is a formula of the features (regression: the share of rows
+  a median regression on simple terms fits exactly, against a shuffled target) or follows crisp rules
+  (classification: pure minority leaves of a shallow tree on held-out rows), as in simulated data (items 1 and 13).
+  Read a flag with the "Generated data" section of [`references/task_probes.md`](references/task_probes.md).
+* `hidden_groups.py` (`--built`), for an IID task: columns whose repeated values carry the label and look like an
+  entity, and how much a random split gains over a split by them (item 4). Read a hit with the "Hidden groups"
+  section of [`references/task_probes.md`](references/task_probes.md): the context decides, not the gap.
 
 ## Step 2 — Work the judgment rubric
 

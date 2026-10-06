@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941
+checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
 build:
-  uuid: 01a11191-2bb7-7949-83a9-f40803cf6445
-  checksum: 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941
-  built_at: '2026-10-06T14:14:51+00:00'
-  path: kick/01a11191-2bb7-7949-83a9-f40803cf6445
+  uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
+  checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
+  built_at: '2026-10-06T16:12:08+00:00'
+  path: kick/01a111fc-8ab4-7b2f-9955-2cc583c9e979
   data_foundry_version: 0.0.5
-  git_sha: 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty
+  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
   libraries:
     python: 3.11.14
     pandas: 2.3.3
@@ -67,7 +67,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
 
-Built as `01a11191-2bb7-7949-83a9-f40803cf6445` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06. See [Build](#build).
 
 ## Files in this folder
 
@@ -358,10 +358,10 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 | field | value |
 |---|---|
-| uuid | 01a11191-2bb7-7949-83a9-f40803cf6445 |
-| checksum | 3ee1b44c521ad59b2abcd1520f9b56ce5cdb7e37c7df653cd7bd92123087e941 |
-| built_at | 2026-10-06T14:14:51+00:00 |
-| path | kick/01a11191-2bb7-7949-83a9-f40803cf6445 |
+| uuid | 01a111fc-8ab4-7b2f-9955-2cc583c9e979 |
+| checksum | v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae |
+| built_at | 2026-10-06T16:12:08+00:00 |
+| path | kick/01a111fc-8ab4-7b2f-9955-2cc583c9e979 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 0a417ec7132b928f042a200e9e2b9e72a5171ef4-dirty |
+| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
