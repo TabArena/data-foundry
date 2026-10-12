@@ -17,7 +17,7 @@ record, audit or PR that motivated it.
   without the block, 0.935 with it. No task-probe flag.
 - `apistox`: RDKit's 2D descriptors (199 of 217; the rest constant or copies) next to the SMILES, RDKit 2026.3.6
   pinned in the `build` extra; mean ROC AUC on its windows 0.79 / 0.71 without, 0.83 / 0.82 with them.
-- Retired (records `No`; folders removed in the next commit): brca_breast_cancer, glioblastoma and ov_ovarian_cancer,
+- Retired (records `No`, folders removed, `v2_path` cleared; the definitions stay in git history at 86272ac): brca_breast_cancer, glioblastoma and ov_ovarian_cancer,
   whose labels come from unsupervised learning (PAM50, expression subtypes, NMF clusters), and
   central_international_medical_college_and_hospital_health_risk_prediction (`Trivial`: the NEWS2 chart on the vitals
   it ships). The rule is in the curation guidelines (criterion 3). churn_telco_europa (never added) is `No`: Chilean

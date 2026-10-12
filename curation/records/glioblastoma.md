@@ -19,7 +19,6 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://acgt.cs.tau.ac.il/multi_omic_benchmark/download.html
-v2_path: datasets/_dev/tabarena-v0pt2/glioblastoma/dataset.py
 source_row: 784
 type_adapter_id: curation-record-v1
 ---

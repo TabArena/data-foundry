@@ -19,7 +19,6 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/ludocielbeckett/health-risk-prediction-anonymized-real-data
-v2_path: datasets/_dev/tabarena-v0pt2/central_international_medical_college_and_hospital_health_risk_prediction/dataset.py
 source_row: 670
 type_adapter_id: curation-record-v1
 ---

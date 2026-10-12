@@ -9,13 +9,13 @@ Working setup towards TabArena-v0.2
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates from its `dataset.py`: the folder's files, links to the curation record and the source, how to rebuild, the evidence and the build record.
 - Open decisions are in the curation records (`curation/records/<name>.md`) and in the newest `CHANGELOG.md` entries.
-- 59 definitions added on 2026-10-07 from the curation backlog are not built yet; their issues and the decisions they
+- 55 definitions added on 2026-10-07 from the curation backlog (59, of which 4 were retired on 2026-10-12) are not built yet; their issues and the decisions they
   need are in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
 
 ## Rebuild
 
 The 125 datasets were built on 2026-10-06 from the definitions in this folder (the UUIDs below), as container
-format 2 (`container.format_version == 2`). The 59 definitions added on 2026-10-07 are not built yet ("not built"
+format 2 (`container.format_version == 2`). The 55 definitions added on 2026-10-07 are not built yet ("not built"
 in the table). To rebuild one, from the repository root:
 
 ```bash
@@ -79,13 +79,11 @@ not accepted in the definition.
 | [`blood_transfusion`](blood_transfusion/) | IID | 748 | 4 | 20 x 3 | `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`body_density_prediction`](body_density_prediction/) | IID | 252 | 13 | 20 x 3 | not built |  |
 | [`brazilian_ecommerce`](brazilian_ecommerce/) | temporal | 88,721 | 24 | 5 x 1 | not built |  |
-| [`brca_breast_cancer`](brca_breast_cancer/) | IID | 381 | 5,864 | 20 x 3 | not built |  |
 | [`breast_cancer_prediction`](breast_cancer_prediction/) | grouped | 39,998 | 10 | 3 x 3 | not built |  |
 | [`california_house_prices_2020`](california_house_prices_2020/) | temporal | 41,528 | 41 | 3 x 1 | not built |  |
 | [`caracas_cervical_cancer`](caracas_cervical_cancer/) | IID | 750 | 30 | 10 x 3 | not built |  |
 | [`cardiotocography`](cardiotocography/) | grouped | 2,126 | 22 | 10 x 3 | `01a111fc-7d1e-7b12-8cc7-298d2fc12820` | `dataset_constant_column` |
 | [`cdc_diabetes_health_indicators`](cdc_diabetes_health_indicators/) | IID | 253,680 | 21 | 3 x 3 | not built |  |
-| [`central_international_medical_college_and_hospital_health_risk_prediction`](central_international_medical_college_and_hospital_health_risk_prediction/) | IID | 1,000 | 8 | 10 x 3 | not built |  |
 | [`churn_telco_south_asia`](churn_telco_south_asia/) | IID | 2,000 | 13 | 10 x 3 | not built |  |
 | [`cirrhosis_patient_survival_prediction`](cirrhosis_patient_survival_prediction/) | IID | 161 | 17 | 20 x 3 | not built |  |
 | [`climate_model_weather_forecasting_1m`](climate_model_weather_forecasting_1m/) | temporal | 2,115,283 | 99 | 3 x 1 | `01a111fb-bc63-7614-a137-a3fd390bc4f1` |  |
@@ -132,7 +130,6 @@ not accepted in the definition.
 | [`gallstone_disease`](gallstone_disease/) | IID | 319 | 38 | 20 x 3 | not built |  |
 | [`garments_worker_productivity`](garments_worker_productivity/) | temporal | 1,197 | 15 | 30 x 1 | not built |  |
 | [`give_me_some_credit`](give_me_some_credit/) | IID | 150,000 | 10 | 3 x 3 | `01a111fc-8c6a-7513-9b7c-cd856ad168b6` |  |
-| [`glioblastoma`](glioblastoma/) | IID | 274 | 5,534 | 20 x 3 | not built |  |
 | [`glioma_grading_clinical_and_mutation_features`](glioma_grading_clinical_and_mutation_features/) | IID | 862 | 23 | 10 x 3 | not built |  |
 | [`heart_disease_cleveland`](heart_disease_cleveland/) | IID | 303 | 13 | 20 x 3 | not built |  |
 | [`heart_disease_hungary`](heart_disease_hungary/) | IID | 294 | 13 | 20 x 3 | not built | `dataset_constant_column` |
@@ -190,7 +187,6 @@ not accepted in the definition.
 | [`onlinenewspopularity`](onlinenewspopularity/) | temporal | 39,643 | 40 | 9 x 1 | not built |  |
 | [`open_university_learning_analytics_dataset`](open_university_learning_analytics_dataset/) | grouped | 26,395 | 40 | 3 x 3 | not built |  |
 | [`otto_group_product_classification_challenge`](otto_group_product_classification_challenge/) | IID | 61,878 | 93 | 3 x 3 | `01a111fc-7288-72b4-8ceb-e6f796d2a623` |  |
-| [`ov_ovarian_cancer`](ov_ovarian_cancer/) | IID | 284 | 48,279 | 20 x 3 | not built |  |
 | [`pancreatic_cancer_mouse_detection`](pancreatic_cancer_mouse_detection/) | grouped | 181 | 6,771 | 20 x 3 | `01a111fc-4ee4-7a63-9a02-e4ac045fac79` | `dataset_missing_value_sentinel` |
 | [`perth_house_prices`](perth_house_prices/) | temporal | 33,090 | 18 | 9 x 1 | not built |  |
 | [`phiusil_phishing`](phiusil_phishing/) | IID | 235,370 | 49 | 3 x 3 | not built |  |

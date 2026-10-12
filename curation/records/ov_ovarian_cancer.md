@@ -19,7 +19,6 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://github.com/chenzRG/Cancer-Multi-Omics-Benchmark.git
-v2_path: datasets/_dev/tabarena-v0pt2/ov_ovarian_cancer/dataset.py
 source_row: 780
 type_adapter_id: curation-record-v1
 ---
