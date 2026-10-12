@@ -10,14 +10,11 @@ from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temp
 DELAY_THRESHOLD_MINUTES = 15
 """US DOT: a flight is on time when it arrives less than 15 minutes after its scheduled arrival (BTS `ARR_DEL15`)."""
 
-PRECIPITATION_CODE_MM = 200
-"""Hourly precipitation from 200 mm on is a missing-value code: 213.4 to 257.3 mm (8.4 to 10.1 inches)."""
+HISTORY_START = "2023-01-01"
+"""First flight date kept: two seasonal cycles before the test windows, after COVID-19 (curation notes)."""
 
 MIN_SCHEDULED_MINUTES = 15
 """Scheduled block times below 15 minutes are errors; the shortest real hop (Wrangell-Petersburg) is 18 minutes."""
-
-FLIGHT_KEY = ["FL_DATE", "OP_CARRIER", "OP_CARRIER_FL_NUM", "ORIGIN", "DEST", "CRS_DEP_TIME"]
-"""One scheduled flight: date, carrier, flight number, route and scheduled departure."""
 
 SKIPPED_COLUMNS = (
     "DEP_DELAY",
@@ -56,7 +53,7 @@ class Aeolus1m(AbstractCuratedDataset):
     unique_name = "aeolus_1m"
     version_of = "aeolus"
     version_comment = """
-        The nine years hold 54,674,003 flights. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of all earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        The release holds 54,674,003 flights of 2016-2024; we keep the 12,930,302 from 2023 on (curation notes). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
     """
     year = "2025"
     domain = "business & marketing"
@@ -88,23 +85,21 @@ class Aeolus1m(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with the nine yearly tables `Aeolus/Flight_Tab/flight_with_weather_<year>.csv` (2016-2024) of the authors' Kaggle release of Aeolus (Xu et al., NeurIPS 2025): 54,674,003 completed US domestic flights with hourly Meteostat weather at both airports.
+        We start with the nine yearly tables `Aeolus/Flight_Tab/flight_with_weather_<year>.csv` (2016-2024) of the authors' Kaggle release of Aeolus (Xu et al., NeurIPS 2025): 54,674,003 completed US domestic flights with hourly Meteostat weather at both airports, of which we keep the 12,930,302 from 2023 on.
 
         - Prediction point: shortly before the scheduled departure, with the paper's tabular features (Table 9).
-        - Target: `ARR_DEL15` is "Yes" for an arrival 15 minutes or more after the schedule, the US DOT definition and the paper's classification task. We do not use the minutes (ARR_DELAY): in every year the 1% longest delays hold 56-71% of their variance, so an RMSE would mostly score a few extreme delays (third decision).
+        - History: we keep the flights from 2023-01-01 on (`HISTORY_START`), what a delay model refit every two weeks would train on: two seasonal cycles with the previous holidays, without COVID-19 (2020: 9.7% delayed against 17-21%). The authors' benchmarks use 2024 alone (Sec. 4.1). The 2016-2018 precipitation code and the one flight recorded twice (2018) fall before it.
+        - Target: `ARR_DEL15` is "Yes" for an arrival 15 minutes or more after the schedule, the US DOT definition and the paper's classification task. We do not use the minutes (ARR_DELAY): in 2023 and 2024 the 1% longest delays hold 66-68% of their variance, so an RMSE would mostly score a few extreme delays (third decision).
         - Note: the authors' classifier code labels `abs(ARR_DELAY) > 15`, which counts early arrivals as delayed; we follow the DOT definition.
-        - Dropped as recorded at or after the departure: `_load_raw` skips DEP_DELAY, TAXI_OUT, WHEELS_OFF, WHEELS_ON, TAXI_IN, ACTUAL_ELAPSED_TIME and AIR_TIME; `_clean` drops DEP_TIME and ARR_TIME (read for the first decision) and ARR_DELAY, the target's source.
-        - `_load_raw` also skips FLIGHTS (always 1), ORIGIN_INDEX and DEST_INDEX (one per airport code) and MONTH, DAY_OF_MONTH and DAY_OF_WEEK (parts of FL_DATE).
-        - CRS_DEP_TIME and CRS_ARR_TIME are local clock times dated on the flight date, also after midnight. We keep their time of day as minutes since midnight (`CRS_DEP_TIME_MIN`, `CRS_ARR_TIME_MIN`, as the authors' code does).
+        - Dropped as recorded at or after the departure: DEP_DELAY, TAXI_OUT, WHEELS_OFF, WHEELS_ON, TAXI_IN, ACTUAL_ELAPSED_TIME, AIR_TIME, DEP_TIME and ARR_TIME (the last two read for the first decision), and ARR_DELAY, the target's source. Also not read: FLIGHTS (always 1), ORIGIN_INDEX and DEST_INDEX (one per airport) and the parts of FL_DATE.
+        - CRS_DEP_TIME and CRS_ARR_TIME are local clock times dated on the flight date; we keep their time of day in minutes (`CRS_DEP_TIME_MIN`, `CRS_ARR_TIME_MIN`, as the authors' code does).
         - Anomaly: the release joined Meteostat's hourly records, whose timestamps are UTC, to the local scheduled clock times (first and second decision). So the origin weather is from a median 5.2 hours before the departure, the destination weather a median 3.0 hours.
-        - Potential leak, kept on purpose: the destination weather of 1.86% of the flights (1.0% in each test week) is read after the scheduled departure, a median 0.75 hours after it, and the 3,243 departures from Guam get weather from after the departure. All of the destination weather adds 0.010 to 0.016 ROC AUC (untuned LightGBM), an upper bound for its late part. We keep the weather as released; re-joining it would be our own fix. Revisit if the authors correct the join.
-        - Proxy missing values: hourly precipitation of 213.4 to 257.3 mm is a missing-value code, 99.8% of it at EWR, LGA and JFK in 2016-2018 (fourth decision). We set values from 200 mm on to missing. Scheduled block times below 15 minutes (17 rows) become missing; the shortest real hop is 18 minutes.
-        - Duplicates: one scheduled flight occurs twice with arrival delays of 941 and 4 minutes; we drop both rows.
+        - Potential leak, kept on purpose: the destination weather of 1.94% of the flights (0.9-1.0% in each test window) is read after the scheduled departure, a median 0.7 hours after it, and the 686 departures from Guam get weather from after the departure. All of the destination weather adds 0.006 to 0.024 ROC AUC per test window (untuned LightGBM), an upper bound for its late part. We keep it as released; re-joining it would be our own fix.
+        - Proxy missing values: scheduled block times below 15 minutes (3 rows) become missing; the shortest real hop is 18 minutes.
         - OP_CARRIER_FL_NUM is categorical (the paper's Table 9): a flight number names a recurring service of its carrier.
-        - Task probes flag no_spread at 50k training rows per window and not at 300k; the benchmark trains on 1M.
+        - Task probes (50k training rows per window): no flags; ROC AUC LightGBM 0.609, linear 0.594, the scheduled arrival time alone 0.584.
         - Note: the release holds no cancelled or diverted flights, so the task is the delay of a flight that operates.
-        - Anomaly: 2020 (COVID-19) has 9.7% delayed flights against 17-21% in the other years.
-        - Anomaly: March 2024 is missing from the release; the test weeks are not affected.
+        - Anomaly: March 2024 is missing from the release, a gap in the training history; the test windows are not affected.
     """
 
     # Task
@@ -113,9 +108,9 @@ class Aeolus1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A delay model is refit every week and predicts the flights of the week ahead from the schedule and the weather. We use each of the last 3 weeks of 2024 as a test window (2024-12-25 to 12-31, 12-18 to 12-24 and 12-11 to 12-17, newest first). Train is every flight dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's departures and long delays land after midnight. Each window keeps all of its flights (127,743, 130,808 and 128,644); each train side is a random 1M of all earlier flights back to 2016 (one random order for all windows), following TabReD. Training on 1M flights from 2022 on or from 2024 alone gave no consistently better LightGBM (ROC AUC from 2016, 2022 and 2024 on: 0.652, 0.628 and 0.648 in the newest window, 0.618, 0.624 and 0.617 in the second, 0.615, 0.625 and 0.643 in the third), so we keep the whole release.
+        A delay model is refit every two weeks and predicts the flights of the two weeks ahead from the schedule and the weather. We use the last six weeks of 2024 as three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.8%, 16.7% and 17.3% of the flights late), so that one window, not two of three weekly ones, falls in the holiday peak (20.8% late over 2024). Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's departures and long delays land after midnight. Each window keeps all of its flights (258,551, 256,013 and 269,272); each train side is a random 1M of the earlier flights (one random order for all windows).
     """
-    temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1))
+    temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=14, unit="days", n_windows=3, gap=1))
     subsample_to_budget = True
 
     # The nine CSVs (15.2 GB) are too large for pandas: `_prepare_raw_files` converts them once, streaming with
@@ -142,22 +137,23 @@ class Aeolus1m(AbstractCuratedDataset):
 
         path = raw_dir / "aeolus_flights.parquet"
         columns = [c for c in pq.read_schema(path).names if c not in SKIPPED_COLUMNS]  # in the source's order
-        table = pq.read_table(path, columns=columns, read_dictionary=["OP_CARRIER", "ORIGIN", "DEST"])
+        table = pq.read_table(
+            path,
+            columns=columns,
+            read_dictionary=["OP_CARRIER", "ORIGIN", "DEST"],
+            filters=[("FL_DATE", ">=", pd.Timestamp(HISTORY_START))],  # only the kept history is read
+        )
         return table.to_pandas(split_blocks=True, self_destruct=True)
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # One flight recorded twice with different outcomes: both copies go (the mask is applied after the drops).
-        duplicated = df.duplicated(subset=FLIGHT_KEY, keep=False).to_numpy()
         # Target: an arrival 15 minutes or more after the schedule (US DOT on-time definition, BTS `ARR_DEL15`).
         late = (df["ARR_DELAY"] >= DELAY_THRESHOLD_MINUTES).to_numpy().astype("int8")
         df["ARR_DEL15"] = pd.Categorical.from_codes(late, categories=["No", "Yes"])
         # The scheduled times as local minutes since midnight (their date part is FL_DATE, also after midnight).
         for col in ("CRS_DEP_TIME", "CRS_ARR_TIME"):
             df[f"{col}_MIN"] = (df[col].dt.hour * 60 + df[col].dt.minute).astype("int64")
-        # Proxy missing values: the precipitation code and impossible scheduled block times.
-        for col in ("O_PRCP", "D_PRCP"):
-            df[col] = df[col].mask(df[col] >= PRECIPITATION_CODE_MM)
+        # Proxy missing values: impossible scheduled block times.
         df["CRS_ELAPSED_TIME"] = df["CRS_ELAPSED_TIME"].mask(df["CRS_ELAPSED_TIME"] < MIN_SCHEDULED_MINUTES)
         # A flight number is a label of its carrier, not a quantity (the CSV writes 4814.0).
         df["OP_CARRIER_FL_NUM"] = df["OP_CARRIER_FL_NUM"].astype("int64")
@@ -174,7 +170,7 @@ class Aeolus1m(AbstractCuratedDataset):
                 "CRS_ARR_TIME",  # replaced by CRS_ARR_TIME_MIN
             ],
         )
-        return df[~duplicated]
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
@@ -256,28 +252,6 @@ class Aeolus1m(AbstractCuratedDataset):
             )
         target = pd.DataFrame(per_year)
 
-        # 4. The precipitation code: where and when it occurs.
-        coded = pd.concat(
-            [
-                raw.loc[raw[f"{p}_PRCP"] >= PRECIPITATION_CODE_MM, [airport, f"{p}_PRCP", "FL_DATE"]].set_axis(
-                    ["airport", "precipitation (mm)", "date"], axis=1
-                )
-                for p, airport in (("O", "ORIGIN"), ("D", "DEST"))
-            ]
-        )
-        coded["airport"] = coded["airport"].astype(str)
-        code_table = (
-            coded.groupby("airport")
-            .agg(
-                values=("precipitation (mm)", "size"),
-                lowest=("precipitation (mm)", "min"),
-                highest=("precipitation (mm)", "max"),
-                first=("date", "min"),
-                last=("date", "max"),
-            )
-            .sort_values("values", ascending=False, kind="stable")
-        )
-        below = max(float(raw.loc[raw[c] < PRECIPITATION_CODE_MM, c].max()) for c in ("O_PRCP", "D_PRCP"))
         return [
             Decision(
                 "The weather is looked up by the scheduled clock times",
@@ -304,13 +278,5 @@ class Aeolus1m(AbstractCuratedDataset):
                 "an RMSE on the minutes would mostly score a few extreme delays. The 15-minute indicator is the US "
                 "DOT definition and the paper's classification task.",
                 target,
-            ),
-            Decision(
-                "Precipitation of 200 mm or more in an hour is a code, set to missing",
-                f"The values cluster at 213-257 mm (8.4 to 10.1 inches) at three New York airports in 2016-2018; the "
-                f"largest value below them is {below} mm. At JFK, Meteostat's station record (74486, read on "
-                f"2026-10-07) has no precipitation value at any of the 39 coded hours of 2016-2018 and equals the "
-                f"release at all 21,398 other hours where it has one: the code stands for a missing reading.",
-                code_table,
             ),
         ]

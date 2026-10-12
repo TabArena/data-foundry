@@ -9,13 +9,13 @@ Working setup towards TabArena-v0.2
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates from its `dataset.py`: the folder's files, links to the curation record and the source, how to rebuild, the evidence and the build record.
 - Open decisions are in the curation records (`curation/records/<name>.md`) and in the newest `CHANGELOG.md` entries.
-- 55 definitions added on 2026-10-07 from the curation backlog (59, of which 4 were retired on 2026-10-12) are not built yet; their issues and the decisions they
+- 54 definitions added on 2026-10-07 from the curation backlog (59, of which 5 were retired on 2026-10-12) are not built yet; their issues and the decisions they
   need are in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
 
 ## Rebuild
 
 The 125 datasets were built on 2026-10-06 from the definitions in this folder (the UUIDs below), as container
-format 2 (`container.format_version == 2`). The 55 definitions added on 2026-10-07 are not built yet ("not built"
+format 2 (`container.format_version == 2`). The 54 definitions added on 2026-10-07 are not built yet ("not built"
 in the table). To rebuild one, from the repository root:
 
 ```bash
@@ -53,12 +53,11 @@ not accepted in the definition.
 | [`5g_energy_consumption`](5g_energy_consumption/) | grouped | 92,629 | 20 | 3 x 3 | not built |  |
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,871 | 7 | 3 x 3 | not built |  |
 | [`acquire_valued_shoppers_challenge`](acquire_valued_shoppers_challenge/) | temporal | 160,057 | 111 | 5 x 1 | `01a111fd-7588-73e4-bf55-26fb6336c1f4` |  |
-| [`aeolus_1m`](aeolus_1m/) | temporal | 1,387,518 | 18 | 3 x 1 | not built |  |
+| [`aeolus_1m`](aeolus_1m/) | temporal | 1,785,315 | 18 | 3 x 1 | not built |  |
 | [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 58,953 | 11 | 9 x 1 | not built |  |
 | [`airfoil_self_noise`](airfoil_self_noise/) | grouped | 1,503 | 5 | 10 x 3 | not built |  |
 | [`alfa_battle_2_0_task_2`](alfa_battle_2_0_task_2/) | temporal | 963,811 | 127 | 3 x 1 | not built |  |
 | [`allstate_claims_severity`](allstate_claims_severity/) | IID | 188,317 | 130 | 3 x 3 | `01a111fc-59f8-730c-b058-7264a71a29bc` |  |
-| [`alvin_smart_money_management_classification_challenge`](alvin_smart_money_management_classification_challenge/) | temporal | 350 | 9 | 3 x 1 | not built |  |
 | [`amazon_employee_access`](amazon_employee_access/) | IID | 32,769 | 9 | 3 x 3 | not built | `dataset_pure_feature_value` |
 | [`amex_non_iid_1m`](amex_non_iid_1m/) | grouped (per group: last) | 1,500,000 | 189 | 1 x 3 | `01a111fb-d73e-711b-a490-c684c5c4635d` | `dataset_missing_value_sentinel` |
 | [`analcatdata_supreme`](analcatdata_supreme/) | IID | 4,052 | 7 | 3 x 3 | not built |  |

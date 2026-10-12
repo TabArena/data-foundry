@@ -30,6 +30,12 @@ flag is read), so the next decision starts from the precedent.
 7. **When the definition builds the target itself** (merged or dropped classes), use an established convention,
    test each candidate (classes per test fold after dropping duplicates, signal, how rule-like the label is), and run
    the leak probes on the source's labels too (audiology_diagnosis).
+8. **A short class in a multiclass task is a question about that class, not about the task.** `Too Small` applies
+   when the short classes carry a large share of the score (alvin: the 8 rows of the rarest classes give 51-54% of a
+   window's log loss) or a test fold holds only a handful of units in all (parkinsons). A rare class of the source's
+   own labels whose rows carry about their share of the loss stays (mic: 0.7% of the test rows, 4.8% of a random
+   forest's log loss). A class that a grouped split leaves out of a fold because few groups hold it is not a small
+   class (force_2020: Halite, 14,711 rows in 4 wells).
 
 ## How to check a flag
 
@@ -71,7 +77,7 @@ flag is read), so the next decision starts from the precedent.
 | `one_feature` | The best single feature, chosen on each split's training side, reaches 95% of the best family's skill and leaves at most 1.25 times its remaining error (1 − skill). | Rule 4: what the feature means, then the raw feature against the methods fold by fold (`tuned_results.py --feature auto`). |
 | `drift_baseline` | Temporal tasks: a constant from the newest train rows has a loss within 2% of the best family's (log loss, or squared error). | The task may be mostly drift: compare the windows' class shares or means over time. |
 | `unstable` | The best family beats the dummy on fewer than 80% of the splits, or the standard error of its mean skill is above 0.05. | How many units a test fold holds; whether tuned methods are robust over all splits. |
-| `few_minority` | A probed test fold holds fewer than 5 rows (groups, for a task scored per group) of a class, binary or multiclass. The report names each class that falls short with its smallest count in a test fold (`few_minority_classes` in the JSON). | Rule 5: count the units of each named class in total; wider windows or merged classes (rule 7), or `Too Small`. |
+| `few_minority` | A probed test fold holds fewer than 5 rows (groups, for a task scored per group) of a class, binary or multiclass. The report names each class that falls short with its smallest count in a test fold (`few_minority_classes` in the JSON). | Rules 5 and 8: count the units of each named class in total and the share of the log loss its rows carry; wider windows or merged classes (rule 7), or `Too Small`. |
 
 The script probes every shipped split (up to 30) for a dataset of at most 5,000 scored units (rows, or groups for a
 task scored per group) and the first 5 otherwise, encodes
@@ -112,6 +118,10 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | bias_correction_r_bias_correction_r_2 | no_spread | kept (7 Oct) | a window is 6-7 weather days and the day carries 82.5% of the target's variance, so strong methods separate little (paired SE 0.03-0.04 RMSE); their mean beats a per-station MOS in 7 of 9 windows; re-check with tuned results |
 | african_credit_scoring_challenge | no_spread, drift_baseline (unstable on 5 windows) | kept (7 Oct, rules 1-3) | windows of 20-56 defaults; the linear model beats the class shares in 9 of 9 (AUC 0.649); the drift flag is about log loss (the default rate moves from 1-1.4% to 6.4-9.4%), which ROC AUC, the metric, ignores; re-check with tuned results |
 | sf_permit_time | no_spread (after the 6-month label gap) | kept (12 Oct) | random forest, LightGBM and linear within 0.032 skill (paired SE 0.019) on 5 of 8 windows; in 2021-H2 LightGBM carries the slow COVID level forward, as a real refit in July 2021 would; no tuned results in the cache, re-check with the first tuned runs |
+| alvin_smart_money_management_classification_challenge | few_minority | retired, `Too Small` (12 Oct, rule 8) | only Train.csv has labels: 3 windows of 27-41 test purchases from 5-12 users; Shopping has 2 test rows over all windows; the 8 rows of the rarest classes carry 51-54% of window 1's log loss |
+| forensic_glass_identification, ljubljana_primary_tumor, mic, sarcoma | few_minority | kept (12 Oct, rule 8) | rare classes of 9-14 rows, 3-5 per test fold: 0.7-13% of the test rows, 4.8-22% of a random forest's log loss |
+| micro_mass, asp_potassco_classification | few_minority | kept (12 Oct, rule 8) | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss |
+| force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (12 Oct) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) |
 
 ## Hidden groups (`hidden_groups.py`)
 
@@ -183,6 +193,7 @@ most 58 s (2.5M rows); a sweep of all 184 definitions with 10 jobs of 2 threads 
 | mutual_funds_india | `sub_category` (38 values) | no action (6 Oct) | a new fund has a known sub-category |
 | superconductivity | `range_atomic_radius` (repeated compositions) | grouped by composition (6 Oct) | the features come from the composition alone and a model is used for compositions without a measured temperature; a random split gave 35% of the test rows an identical row in train. Key: element shares from `unique_m.csv` (15,164 compositions; joins `Dy1Ir2Rh2B4`/`Dy1Rh2Ir2B4` and `V2Zr1`/`V66.6Zr33.3`). Gap on Tc at most 0.009 R², ranking unchanged: the use case decided, not the gap. Not by element set (a new family is a different task) |
 | airfoil_self_noise | none (a run is three columns) | grouped by wind-tunnel run (6 Oct) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random split gave a test row 62% of its run's other bands in train. R² random / by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840. Found by reading the source, not by the probe |
+| account_debt_south_africa | none (the eight municipalities have no column; they show as blocks of the file) | IID kept, tagged `ForcedIIDFromTemporal` (12 Oct) | a municipality scores its own accounts, so its level is known; held out by file position, LightGBM ROC AUC falls from 0.877 to 0.843 (blocks of 2,500 rows) and 0.786 (thirds of the file), recorded in a bullet. One extract without dates: the status at the extract stands in for a forecast |
 
 ## Generated data (`generated_probes.py`)
 

@@ -4,6 +4,62 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-12 (aeolus_1m: Lennart's review; two-week windows, history from 2023)
+
+- Test windows: two weeks instead of one (2024-12-18..31, 12-04..17, 11-20..12-03; 25.8%, 16.7% and 17.3% late;
+  258,551, 256,013 and 269,272 flights). Two of the three newest weeks were the holiday peak (26.5% and 25.1% against
+  20.8% for 2024); now one window is.
+- History: flights from 2023-01-01 on (12,930,302 of 54,674,003; `HISTORY_START`, and `_load_raw` reads only them),
+  each train side a random 1M of them. TabReD's random sample of all nine years put about 11.5% of each train side in
+  2024 and mixed in COVID-19; a model refit every two weeks trains on recent data with the previous holidays, and
+  the authors' own benchmarks use 2024 alone. The per-week comparison of history pools did not decide it (each pool
+  best in one week); on the new windows all nine years and 2023 on score alike (untuned LightGBM ROC AUC 0.632 /
+  0.609 / 0.620 against 0.625 / 0.613 / 0.622).
+- Gone with the history: the precipitation code (2016-2018) and its decision, and the one flight recorded twice
+  (2018). Weather timing, probes and notes recomputed: destination weather after the departure for 1.94% of the
+  flights (0.9-1.0% per window), all destination weather worth 0.006-0.024 ROC AUC; task probes no longer flag
+  `no_spread`. A check peaks at 9 GB instead of 35 GB. 1,785,315 rows; checksum `v2:d04fe7bd…` (not built).
+- Kept as implemented: target `ARR_DEL15` (record `problem_type` Binary Classification), the weather as released,
+  the flight number as a categorical. The release's data problems are noted only. `airlines` and
+  `airlines_depdelay_10m` get a dated note that aeolus covers US flight delays.
+
+## 2026-10-12 (account_debt_south_africa: Lennart's review)
+
+- Tagged `ForcedIIDFromTemporal`: the file is one extract without dates, so the bad-debt status at the extract stands
+  in for the forecast the data card aims at. The split stays IID (a municipality scores its own accounts); a new
+  bullet gives the cost for a municipality not in the data, which has no column: LightGBM ROC AUC 0.877 random,
+  0.843 by file blocks of 2,500 rows, 0.786 by thirds of the file.
+- `TotalElectricityBill` and `HasIDNo` stay, with rewritten bullets: the electricity signal is mostly whether the
+  municipality bills it at all (no trace of cut-offs within the window), and the data card describes the ID number
+  as a property of the holder. The anomaly bullet now names the Unknown-category run at the end of the file (rows
+  134,192-138,276), which stays. Notes shortened to 493 words; checksum `v2:14c792e2…` (not built).
+
+## 2026-10-12 (few_minority decisions: alvin retired, seven kept; three more sources set to the first publication)
+
+- `alvin_smart_money_management_classification_challenge` retired (record `No`, `Too Small`; folder removed,
+  `v2_path` cleared; the definition stays in git history at 86272ac). Only Train.csv has labels, so its three windows
+  hold 27-41 test purchases from 5-12 users, Shopping has 2 test rows over all windows, and the 8 rows of the rarest
+  classes carry 51-54% of window 1's log loss. 179 definitions remain, 54 of them unbuilt.
+- Kept after the multiclass `few_minority` flag (a dated note in each record): forensic_glass_identification,
+  ljubljana_primary_tumor, mic, sarcoma, micro_mass, asp_potassco_classification and
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition. Their short classes are 0.7-18%
+  of the test rows and carry 3.9-25% of a random forest's log loss; force_2020's two classes have thousands of rows
+  and miss a fold only because the well split leaves them out (already accepted as `splits_test_class_missing`).
+- The rule (Lennart): a short class in a multiclass task is `Too Small` only when its rows decide the score or a fold
+  holds a handful of units in all. It is rule 8 in the verify-dataset `task_probes.md`, with case rows for the eight,
+  and in the `Too Small` paragraph of the curation guidelines.
+- `source` now names the first publication for three built definitions the source sweep had left as UCI; each
+  downloads UCI's copy, and its `download_description` says so. Records follow (`original_source: Other`, the link
+  added). All three need a rebuild for the new metadata; aps_failure and biomechanical_orthopaedic_prediction join
+  the 64 stale built datasets of the entries below, 66 in all.
+  - `biomechanical_orthopaedic_prediction`: Appendix A of da Rocha Neto's 2006 master's thesis (UFC) lists all 310
+    samples (60 disc hernia, 150 spondylolisthesis, 100 normal, as in UCI 212). The empty bullet in its notes is
+    gone. The bibtex still cites the 2011 paper: the thesis repository did not respond, so its title is unchecked.
+  - `in_vehicle_coupon_recommendation`: Wang et al. (2017, Sec. 6 and references) published the survey as a
+    ResearchGate deposit (publication 318645502); UCI 603 is a later copy.
+  - `aps_failure`: the IDA 2016 Industrial Challenge (Scania) released the data; UCI 421 re-hosts its
+    `ida2016challenge.zip`. The challenge site is gone, so `source_url` is its 2016 capture in the Internet Archive.
+
 ## 2026-10-12 (Lennart's decisions on the open points; four datasets retired; 64 built datasets need a rebuild)
 
 - `sf_permit_time`: each window trains only on permits issued before it starts, with a 6-month gap, over 8 half-year

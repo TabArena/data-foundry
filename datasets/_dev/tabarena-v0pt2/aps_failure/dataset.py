@@ -13,11 +13,13 @@ class ApsFailure(AbstractCuratedDataset):
     unique_name = "aps_failure"
     year = "2016"
     domain = "industry & manufacturing"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5V60Q"
+    source = "Other"  # the IDA 2016 Industrial Challenge (Scania); its site is gone, UCI 421 re-hosts its zip
+    source_url = "https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/"
     license = "CC BY 4.0"
     data_tags = ("ForcedIIDFromTemporal", "Anonymized")
     download_description = """
+        We download UCI's copy (https://doi.org/10.24432/C5V60Q) of the IDA 2016 Industrial Challenge files.
+
         mkdir -p local-data-warehouse/aps_failure && wget -P local-data-warehouse/aps_failure/ https://archive.ics.uci.edu/static/public/414/ida2016challenge.zip && unzip local-data-warehouse/aps_failure/ida2016challenge.zip -d local-data-warehouse/aps_failure/ && rm local-data-warehouse/aps_failure/ida2016challenge.zip
     """
     bibtex = r"""

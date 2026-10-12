@@ -9,11 +9,12 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
-original_source: UCI
+original_source: Other
 year: '2017'
 required_split:
 - Grouped (NON-IID)
 source_links:
+- https://www.researchgate.net/publication/318645502_in-vehicle_coupon_recommendation
 - https://doi.org/10.24432/C5GS4P
 notebook_path: datasets/beyond_iid/old_iid/in_vehicle_coupon_recommendation/in_vehicle_coupon_recommendation.ipynb
 v2_path: datasets/_dev/tabarena-v0pt2/in_vehicle_coupon_recommendation/dataset.py

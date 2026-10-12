@@ -45,7 +45,7 @@ Need to filter predictions from features, need to determine best target (binary 
 - Also changed with the new cohort: bun, glucose and urine stay dropped (not measured in phase I). adls and adlsc are dropped (Lennart, below): the ADL answers describe function two weeks before admission, but the interviews took place on study days 2-7 (median day 4), adls is missing for 46% of the patients whose stay ended by day 7 against 24% of longer stays, and adlsc's imputed values used the interview status, whose groups include "Pt Death" and "Pt Discharged" (codebook Appendix A). adlp, edu and income stay: adlp is missing mostly when the patient cannot answer, and edu and income are missing as often for short as for long stays. 25 features. Probes (2026-10-12): random forest ROC AUC 0.806, no task, leak, generated-data or hidden-group flag.
 - Terms of use (noted): ICPSR's terms forbid redistributing its data or other materials without ICPSR's written agreement and ask to cite the study (second BibTeX entry).
 
-CC (2026-10-12, Lennart): Use ICPSR 2957 only to put the phase II physiology back into the right rows, and ship only support2.csv's values. Report the error to Vanderbilt later.
+CC (2026-10-12, Lennart): Use ICPSR 2957 only to put the phase II physiology back into the right rows, and ship only support2.csv's values.
 
 CC (2026-10-12, Lennart): One target, death within 2 months; not a multi-target task (the 6-month and in-hospital framings are nested versions of the same signal).
 

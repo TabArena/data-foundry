@@ -39,6 +39,8 @@ See: Aeolus for better flight delay dataset
 
 Get newer version of data, likely needs more features to be made a good dataset
 
+CC (2026-10-12, Lennart): aeolus (BTS on-time flights 2016-2024 with hourly weather at both airports, a temporal task in the TabArena v0.2 working copy as `aeolus_1m`) covers US flight delays. When this record is processed, decide whether it is a second flight-delay task or a duplicate of aeolus.
+
 ## Reference
 
 ?

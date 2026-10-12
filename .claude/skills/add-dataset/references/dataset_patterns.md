@@ -340,6 +340,18 @@ whose train side is smaller than that share (of the distinct values for `"unique
 `window=None` and `unit="unique"`, sizes the windows so they cover the newest `1 - min_train_fraction` of the
 values. Only a split that also filters rows by an as-of date (hotel_booking_demand) needs `_make_splits`.
 
+**Training history and the season of the test windows.** When the source defines the split (a competition's or the
+paper's official periods: delivery_eta_1m, consumer_complaints_1m), follow it. Otherwise decide what the train side
+holds from the use case: the history a model refit at each window would train on. Read what the source's authors
+trained on, check the history for breaks (COVID-19, a change of rules or of the data collection), and keep a recent
+stretch with at least one full season before the newest window; set its start in `_load_raw` or `_clean` and give
+the reason in a `History:` bullet (aeolus_1m: flights from 2023 on rather than all of 2016-2024, whose random 1M put
+11.5% of each train side in 2024 and mixed in 2020; the authors train on 2024 alone). Check also whether the newest
+windows fall in an atypical season, and widen them so that most do not (aeolus_1m: two-week windows, one of three in
+the holiday peak instead of two of three weekly ones). Do not decide either from a comparison over a few test
+windows: it changes with the kind of window (aeolus_1m: each history pool was best in one week), so it measures the
+windows, not the design (Lennart, 2026-10-12).
+
 ### Larger than the row budget: the `_1m` version
 The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows.
 A dataset that does not fit gets a sub-sampled version, its own folder and class, `<unique_name>_1m/dataset.py`,
@@ -353,9 +365,9 @@ with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment
 * Temporal data: the frame is not sampled. The windows (at least 3, for example `TemporalSplits(window=7,
   unit="days", n_windows=3)`) are built on the full data, then `sample_temporal_splits` keeps at most 500k rows of
   each test window and a random 1M of all earlier rows for each train side, drawn in one random order so the train
-  sides overlap; the frame keeps only the rows a split uses. Test windows stay dense and train covers the whole
-  history (random sub-sampling of the train data follows TabReD). A temporal `_1m` version whose windows all fit
-  is an error.
+  sides overlap; the frame keeps only the rows a split uses. Test windows stay dense and train covers the history the
+  definition keeps (random sub-sampling of the train data follows TabReD; which history, see "Training history"
+  above). A temporal `_1m` version whose windows all fit is an error.
 
 A dataset that sets `splits_comment` itself states the sub-sampling there (the generated sentence is only appended
 to the default comment).

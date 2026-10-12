@@ -30,11 +30,12 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
     unique_name = "in_vehicle_coupon_recommendation"
     year = "2017"
     domain = "business & marketing"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5GS4P"
+    source = "Other"  # the authors' ResearchGate deposit, cited in Wang et al. (2017) Sec. 6; UCI 603 is a copy
+    source_url = "https://www.researchgate.net/publication/318645502_in-vehicle_coupon_recommendation"
     license = "CC BY 4.0"
     download_description = """
-        We download the data from the UCI repository and uzip it to a predefined folder.
+        We download UCI's copy (https://doi.org/10.24432/C5GS4P) of the data the authors deposited on ResearchGate,
+        and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/in_vehicle_coupon_recommendation/ && wget -P local-data-warehouse/in_vehicle_coupon_recommendation/ https://archive.ics.uci.edu/static/public/603/in+vehicle+coupon+recommendation.zip && unzip local-data-warehouse/in_vehicle_coupon_recommendation/in+vehicle+coupon+recommendation.zip -d local-data-warehouse/in_vehicle_coupon_recommendation/
     """

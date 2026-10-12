@@ -9,12 +9,13 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
-original_source: UCI
+original_source: Other
 year: '2016'
 required_split:
 - '?'
 problem_type: Binary Classification
 source_links:
+- https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/
 - https://www.openml.org/search?type=data&id=41138
 - https://doi.org/10.24432/C5V60Q
 notebook_path: datasets/beyond_iid/old_iid/aps_failure/aps_failure.ipynb

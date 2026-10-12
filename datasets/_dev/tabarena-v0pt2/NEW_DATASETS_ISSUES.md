@@ -62,7 +62,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`aeolus`](#aeolus) | added as `aeolus_1m` | The target is the 15-minute delay flag, not the record's regression. All three test weeks fall in the Christmas peak. The weather is 4-10 hours older than the scheduled times (text corrected; no leak). |
 | [`alfa_battle_2_0_task_1`](#alfa_battle_2_0_task_1) | not added | The task-1 files are gone from every source. `No` unless Alfa-Bank shares them. |
 | [`alfa_battle_2_0_task_2`](#alfa_battle_2_0_task_2) | added | The products of a test window's clients are dropped from each training side. The features are the organizers' 127 baseline aggregates. Window length is open. |
-| [`alvin_smart_money_management_classification_challenge`](#alvin_smart_money_management_classification_challenge) | added; recommended `Too Small` (`TBD -> 2nd Tier`) | 350 rows, 27-41 test purchases per window. Payees who are private persons are masked (142 rows); `Ethical Issue` is the alternative to masking. |
+| [`alvin_smart_money_management_classification_challenge`](#alvin_smart_money_management_classification_challenge) | added; `No` (`Too Small`) on 2026-10-12, folder removed | 350 rows, 27-41 test purchases per window. Payees who are private persons are masked (142 rows); `Ethical Issue` is the alternative to masking. |
 | [`analcatdata_supreme`](#analcatdata_supreme) | added | IID: a temporal split is invalid because the label window ends in 1988. Keep or retire; target scale. |
 | [`apistox`](#apistox) | added | The molecule is only a SMILES string. Under the default pipeline (Qwen3 text embedding, 32 dimensions) a model learns from the agrochemical type and the year, not from the structure (ECFP4 or MACCS would add 0.03-0.05 AUC). Four 10-year windows on a noisy first-publication year; 8 windows are the alternative. |
 | [`ashrae_great_energy_predictor_iii`](#ashrae_great_energy_predictor_iii) | added as `ashrae_great_energy_predictor_iii_1m` | The test year comes from a second source (BDG2 2017). Forecasting scope; temporal or grouped by building. |
@@ -307,7 +307,7 @@ the schema's `Other`. Tags are listed when a `Non-IID` tag names another regime.
   **Resolved (2026-10-12):** noted as a problem of that copy in the account_debt_south_africa record (`total90debt`, `totalwriteoff` and `debtbillingratio` next to `baddebt`, no default target).
 - SUPPORT2 (UCI 880 and hbiostat's support2.csv): in about half the rows (phase II) the 14 day-3 physiology columns
   belong to another patient, at an offset that grows along the file. The study data (ICPSR 2957) confirm it; every
-  patient's correct values are in the file at another row. To be reported to Vanderbilt later (Lennart, 2026-10-12).
+  patient's correct values are in the file at another row.
 
   **Resolved (2026-10-12):** fixed in the definition: both phases, with the physiology rows restored using ICPSR 2957.
 - MLOmics on Hugging Face: in every revision, the LGG methylation profiles do not match the patients, and the LGG and
@@ -588,10 +588,19 @@ reads the ICPSR files.
 2. **The label is a rule of three shipped columns.** Every account with `total90debt` > 0 or `totalwriteoff` > 0 is a bad debt, and all but 371 of the 74,909 others are not (138,138 of 138,509 rows); AUC 0.999 with them. Dropped, as the uploader's notebook does ("These fields are used to determine whether a consumer is already a bad debt and not to predict whether they will become a bad debt"). OpenML 43838 ships them as features, so a benchmark that uses that copy unchanged scores a lookup (the record lists the dataset in TabSTAR; its preprocessing was not checked). No alternative proposed.
 3. **The payment totals are dropped (prediction point).** `totalreceipting`, `avgreceipting` and `collectionratio` sum the payments of the two years at whose end the status is read; arrears are billing less payments plus the opening balance. The bad-debt rate falls from 91.5% for accounts that paid nothing (97% when billed over 24-100 lines) to 14.7% for those that paid 87.5-105% of their billing. Dropped by the mutual_funds_india rule (patterns §D.2). Implemented: dropped (AUC 0.874). Alternatives: keep them as the uploader does, whose notebook's main feature is the collection ratio (AUC 0.952); or keep only the static profile, category, property value and size and `HasIDNo` (0.832). A deployed model with them mostly flags accounts the municipality's age analysis already lists.
 4. **`TotalElectricityBill` may reflect credit control.** The data card: the municipality "has the right to cut a consumer's electricity connection" when an amount is outstanding; bad debts have electricity billed less often in every property-value quintile (0.11-0.30 against 0.20-0.57). Implemented: kept with a `Potential leak, kept on purpose` bullet (AUC 0.874 with, 0.865 without). Alternative: drop it.
+
+   **Resolved (Lennart, 2026-10-12):** kept. The signal is mostly whether the municipality bills electricity at all (in 12 of 52 file blocks of 2,500 rows most accounts get a bill; there 26.6% of billed accounts are bad debts against 51.0%); among billed accounts electricity is the same share of the bill for bad debts and others (median 0.33), so cut-offs within the window leave no trace. The bullet says so.
+
 5. **`HasIDNo` may be captured during collection.** Accounts with an ID number are bad debts more often (63% against 48%), the opposite of what the data card implies, and capture follows the municipality (0% to 94% per 2,500 rows). Implemented: kept with a `Potential leak, kept on purpose` bullet (AUC 0.874 with, 0.872 without). Alternative: drop it.
+
+   **Resolved (Lennart, 2026-10-12):** kept. The data card describes it as a property of the holder (useful in legal proceedings, marks a person, "often not captured properly or at all") and says nothing about when it is captured. The difference holds within Residential (64% against 47%), not for Business, Agricultural or Unknown. The bullet quotes the card.
+
 6. **The uploader's cohort filter.** 8,700 accounts dropped: 903 not billed in the window, 7,722 with a net credit, 121 with negative payment totals (46 overlap); 77.8% are bad debts whose debt predates the window. Implemented as the notebook does. Alternative: keep them.
 7. **Duplicates kept.** 6,355 exact duplicate rows (6.2%, groups up to 162); 8.1% of the test rows of split 0/0 have an exact copy in train, and ROC AUC there is 0.874 on all test rows, 0.867 without them. Implemented: kept, warning accepted. Alternative: drop exact copies (wine_quality precedent), which would remove plausible distinct accounts.
 8. **Municipality structure and a weak residual.** The file is in blocks (bad-debt rate 0% to 98% per 2,500 rows), likely the 8 municipalities and account-number ranges; no column identifies them, so the split is IID (a municipality scoring its own accounts). In rows 134,000-138,499 (92% Unknown category) only 62% of the 1,511 billed never-payers are bad debts (93% elsewhere); debt may be recorded incompletely there too, but no boundary exists to cut at, so it is kept with an anomaly bullet.
+
+   **Resolved (Lennart, 2026-10-12):** IID kept, tagged `ForcedIIDFromTemporal`: the file is one extract without dates, so the status at the extract stands in for the forecast the card aims at. A municipality scores its own accounts; held out by file position, LightGBM ROC AUC falls from 0.877 (random 3-fold) to 0.843 (blocks of 2,500 rows), 0.825 (10,000 rows) and 0.786 (thirds), which a bullet records; no column identifies the municipality. The tail is one run of category Unknown (rows 134,192-138,276; 2,396 curated rows), mostly billed 1-3 times in two years (never-payers with 1-3 bills: 53% bad debts, 86% elsewhere); debt is recorded there, so it stays, with the anomaly bullet rewritten.
+
 **Verification:** (independent verifier, verdict "needs changes")
 1. Payment totals cover the window that sets the label (blocker): applied. Checked first: never-payers billed over 24-100 lines are 97.3% bad debts (25,942 accounts), the bad-debt rate by share paid runs from 91.5% to 14.7%, and nothing shows the window does not define the target. The three columns are dropped; the prediction-point and drop bullets are rewritten; probes re-run (no flags). Keeping them, and also dropping `TotalElectricityBill`, are issues 3 and 4 with their numbers.
 2. Run drop kept, wording: applied. "Debt was not recorded"; added the partial payers (2,282 inside, 0% bad; 6,631 outside, 89.6%) and that 56.6% of the 27,623 billed accounts in the runs paid something (recomputed). The run-segment numbers are recomputed for the 7 columns.
@@ -604,6 +613,8 @@ reads the ICPSR files.
 
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/aeolus_1m/`, `version_of = "aeolus"`). The verification fix round
 changed only the text, one decision and the columns `_load_raw` reads. The frame and splits are identical (see Verification).
+
+**Changed on 2026-10-12 (Lennart's review):** two-week test windows and the history from 2023 on (issues 3 and 4); the Definition, Checks and Probes below describe the definition of 2026-10-07.
 
 **Record judgment:** valid with concerns.
 - Source: Xu et al., "Aeolus: A Multi-structural Flight Delay Dataset", NeurIPS 2025 Datasets and Benchmarks
@@ -698,6 +709,9 @@ changed only the text, one decision and the columns `_load_raw` reads. The frame
    - Alternative: `aeolus_reg_1m` on ARR_DELAY.
    - The record's `problem_type` becomes Binary Classification; the orchestrator sets it together with `v2_path` (the
      verifier agrees).
+
+   **Resolved (Lennart, 2026-10-12):** kept; the record's `problem_type` is Binary Classification.
+
 2. **Weather timing (corrected in the fix round; the earlier "oracle forecast" reading was wrong).**
    - Implemented: the weather stays as released. The bullet "Potential leak, kept on purpose (small)" gives the numbers.
    - Evidence: the release looked up Meteostat's UTC hours by the local scheduled clock times, so the weather was observed
@@ -712,15 +726,22 @@ changed only the text, one decision and the columns `_load_raw` reads. The frame
      - re-join Meteostat at the local scheduled hours (our own fix; at the scheduled arrival it would add a perfect-forecast
        leak, so the verifier and I advise against it);
      - drop the destination weather (-0.010 to -0.016 AUC).
+
+   **Resolved (Lennart, 2026-10-12):** kept as released, with the numbers recomputed for the 2023-2024 history (destination weather after the departure for 1.94% of the flights, 0.9-1.0% per test window; 686 Guam departures).
+
 3. **History: all nine years in the train pool.**
    - Implemented: the whole release (TabReD sampling, as in delivery_eta_1m and consumer_complaints_1m). Each train side is a
      random 1M of 2016-2024 flights, which includes COVID-19 2020-21 and the change of carriers in 2018.
-   - Evidence: LightGBM with 1M training flights drawn from 2016, 2022 or 2024 on scores, per test week:
-     - newest: 0.652 / 0.628 / 0.648;
-     - second: 0.618 / 0.624 / 0.617;
-     - third: 0.615 / 0.625 / 0.643.
+   - Evidence: LightGBM with 1M training flights drawn from 2016, 2022 or 2024 on; ROC AUC per training pool, test weeks
+     newest first (Dec 25-31, 18-24, 11-17):
+     - from 2016 on: 0.652 / 0.618 / 0.615;
+     - from 2022 on: 0.628 / 0.624 / 0.625;
+     - 2024 only: 0.648 / 0.617 / 0.643.
      No pool is consistently better.
    - Alternative: start in 2022 (19.3M flights) or in 2024 (6.3M).
+
+   **Resolved (Lennart, 2026-10-12):** changed: flights from 2023-01-01 on (12,930,302), read only those. TabReD's random sample of all nine years put about 11.5% of each train side in 2024 and mixed in COVID-19 (2020: 9.7% late), while a model refit every two weeks trains on recent data that holds the previous holidays; the authors' own benchmarks use 2024 alone (June 1-15 for the tabular task, Sec. 4.1). The comparison above does not decide it: each pool is best in one week, and the winner follows the kind of week. The precipitation code (2016-2018) and the duplicated flight (2018) fall before the history, so their steps and the fourth decision are gone.
+
 4. **All three test weeks are the Christmas peak.**
    - Implemented: the convention, walking back from the newest data with weekly windows (Lennart's one-to-two-week rule
      for weather tasks).
@@ -734,6 +755,9 @@ changed only the text, one decision and the columns `_load_raw` reads. The frame
      | months | Dec: 21.1%; Nov: 14.6%; Oct: 13.2% (563k-600k flights, capped to 500k) |
 
    - Lennart's call.
+
+   **Resolved (Lennart, 2026-10-12):** two-week windows: 2024-12-18..31 (25.8% late), 12-04..17 (16.7%) and 11-20..12-03 (17.3%), 258,551, 256,013 and 269,272 flights. Only one window falls in the holiday peak. (The newest weekly windows were two peak weeks, 26.5% and 25.1%, and one ordinary week, 16.5%.)
+
 5. **Licence conflict (noted only).** The Kaggle card says Apache-2.0, the paper says CC BY-NC 4.0. BTS data are US
    government works. Meteostat's page states CC BY 4.0 (dev.meteostat.net/license).
 6. **No pinned version.** kaggle 2.2.2 refuses `owner/slug/versions/N` (the verifier tested it).
@@ -753,14 +777,23 @@ changed only the text, one decision and the columns `_load_raw` reads. The frame
      arrivals as delays, and it fits its encoders and scaler separately on train, validation and test;
    - the checklist says the carrier codes were anonymized, but they are the real IATA codes.
    Only the precipitation code changes the definition (it is set to missing). The rest is noted in `curation_comments`.
+
+   **Resolved (Lennart, 2026-10-12):** noted only, not reported.
+
 9. **Flight number as a 7,096-level categorical** (minor).
    - The paper lists it as categorical. Untuned LightGBM is unchanged without it (0.675/0.640/0.639 against
      0.673/0.640/0.639).
    - Some models may handle a 7k-level category poorly.
    - Alternative: numeric, or drop it.
+
+   **Resolved (Lennart, 2026-10-12):** kept as a categorical.
+
 10. **Sibling records** (from the verifier). `airlines_depdelay_10m` (suggestion Yes, AI-unverified) and `airlines` hold BTS
     on-time data of earlier years. When one of them is processed, decide whether it is a second US flight-delay task or a
     duplicate of this one.
+
+
+   **Resolved (Lennart, 2026-10-12):** a dated note in both records; decided when they are processed.
 
 **Verification (fix round, 2026-10-07):** the verifier's verdict was "needs changes, text only". I re-checked each finding
 with my own code (scripts in `fix/`):
@@ -824,6 +857,8 @@ with my own code (scripts in `fix/`):
 2. Scope, if the data turns up. The task is to predict the target action of a client's next app session (10 classes: card2card_transfer, card_recharge, chat, credit_info, invest, main_screen, mobile_recharge, own_transfer, phone_money_transfer, statement; macro F1; 7th place private 0.421, Dro1000/AlfaBattle_task1) from the client's earlier sessions and click events. Its use is to show the predicted action at app launch ("Предугадывание цели, с которой клиент открыл приложение", v010ch README quoting the task page), close to a next-action recommendation. Unlike task 2 the organizers published no tabular baseline I could find; the winners used ALBERT and RNNs (organizer's LinkedIn summary "Финал AlfaBattle 2.0"). A tabular version would be our own featurisation of the session sequence (dremovd's pipeline builds 146 history features per client and session). Implemented: nothing. Alternative: a grouped (by client) or temporal next-session task with history features, only if the curator accepts the featurisation as ours.
 3. Record metadata: the record lists the task-2 Kaggle dataset as its source link, `problem_type: TBD` (it is multiclass) and the tags `Larger IID Data` and `Non-IID (Grouped)`; the source's test is the next session of known clients, i.e. temporal per client.
 
+   **Resolved (Lennart, 2026-10-12):** `No` stands (data unobtainable). The record now has `problem_type` Multiclass Classification, `required_split` and tag Temporal, and no longer links the task-2 Kaggle dataset or tags `Larger IID Data`.
+
 ### alfa_battle_2_0_task_2
 **Outcome:** added and checked (revised after verification, 2026-10-07)
 **Record judgment:** valid with concerns: the tabular version is an aggregation of event sequences; the time axis is reconstructed; repeat clients are linked from the data only.
@@ -854,7 +889,7 @@ with my own code (scripts in `fix/`):
 
 ### alvin_smart_money_management_classification_challenge
 
-**Outcome:** added and checked, with private-person payees masked (`datasets/_dev/tabarena-v0pt2/alvin_smart_money_management_classification_challenge/`). The folder stays for Lennart's decision on `Too Small` (issue 2).
+**Outcome:** added and checked, with private-person payees masked (`datasets/_dev/tabarena-v0pt2/alvin_smart_money_management_classification_challenge/`). Retired as `Too Small` on 2026-10-12 (issue 2); the folder is removed and stays in git history at 86272ac.
 
 **Record judgment:** valid with concerns.
 - The source is clear: a Zindi competition by Alvin, a Kenyan budgeting app (22 June to 24 July 2022, 510 participants, metric log loss; Zindi API `api.zindi.world/v1/competitions/alvin-smart-money-management-classification-challenge`).
@@ -934,9 +969,12 @@ with my own code (scripts in `fix/`):
      - 3 windows is the minimum;
      - 4-week windows leave the oldest train side 34% of the rows;
      - the drift rules out an IID fallback: Bills & Fees is 15% of the purchases before the windows and 39% of the test purchases.
-   - `few_minority` checks only binary tasks, so no probe flags this.
+   - `few_minority` checked only binary tasks then, so no probe flagged this.
    - The signal is real: random forest 1.581 against 2.044, on 3 of 3 windows.
    - Revisit if Zindi or Alvin release Test.csv's labels: it holds 64, 49 and 73 more verified purchases in the three windows, so about 100, 76 and 114 test rows (the verifier's 102/78/114 adds the raw Train.csv counts, before deduplication and the rare-class drop).
+
+   **Resolved (Lennart, 2026-10-12):** `No` with `Too Small`, as parkinsons_biomedical_voice_measurements: the 8 rows of the rarest classes decide half of window 1's loss. The multiclass `few_minority` flag now catches it; the folder is removed, and the record notes the revisit if Test.csv's labels come out.
+
 3. **Scope: the name works as a lookup of payees seen before.**
    - With the real names, the name as an exact id scores 1.609 against 1.571 for TF-IDF (logistic regression on the name alone).
    - Test purchases at a payee not seen in train are 12, 16 and 28 rows (33%, 59%, 68% of the windows). This is the source's "future merchants" use. On these rows:

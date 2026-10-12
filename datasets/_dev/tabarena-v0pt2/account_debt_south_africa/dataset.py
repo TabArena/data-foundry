@@ -63,6 +63,7 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/dmsconsultingsa/municipal-debt-risk-analysis"
     license = "CC0-1.0"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download version 1 of the Kaggle dataset (the only version, 4 June 2020). It holds one file,
         MunicipalDebtAnalysis.csv (138,509 rows, md5 d5fa5aaf696e31a65eebb0532fa4568d). OpenML 43838
@@ -82,19 +83,19 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
     curation_comments = """
         We start with MunicipalDebtAnalysis.csv (138,509 accounts of eight South African municipalities) from version 1 of the Kaggle dataset.
 
-        - Prediction point: an account at the date of the extract, with its category, its property, whether an ID number is on file and its billing of the two years before; the label is its bad-debt status then.
+        - Prediction point: an account at the date of the extract, with its category, property, ID number on file and billing of the two years before; the label is its bad-debt status then.
         - We drop `total90debt`, `totalwriteoff` and `debtbillingratio`: they set the label (decision table).
-        - We drop the 27,938 rows (20.2%) of seven runs of 1,185 to 8,762 consecutive rows of the file without any debt aged 90+ days or write-off, where debt was not recorded: none of their accounts billed and never paying is a bad debt, against 91.5% outside (decision table). Shorter runs reach 334 rows; the threshold is `NO_DEBT_RUN_ROWS` = 1,000.
-        - Anomaly: a run of 186 rows (from row 91,971) of accounts billed and never paying, none a bad debt, stays: a lower threshold would also drop two runs of paying accounts (218 and 334 rows).
-        - We follow the uploader's cohort and drop 8,700 accounts with no net billing in the two years (`totalbilling` <= 0), whose debt predates the window, or with negative payments.
-        - We drop the payment totals `totalreceipting`, `avgreceipting` and `collectionratio`. The status is read at the end of the two years they sum, and the arrears are the billing less these payments plus the opening balance (decision table). LightGBM ROC AUC: 0.952 with them, 0.874 without (3-fold CV).
-        - We drop `accountcategoryid` and `acccatabbr` (`accountcategory` again) and rename the columns to the data card's names; `BadDebt` is "Yes" or "No".
-        - A `PropertyValue` or `PropertySize` of 0 (none on file) becomes missing.
-        - Potential leak, kept on purpose: `TotalElectricityBill`. The municipality may cut an account's electricity for arrears (data card), and bad debts have electricity billed less often in every property-value quintile, but a bill of 0 can also mean no municipal supply (69% of the curated rows). ROC AUC 0.874 with it, 0.865 without. Revisit if the uploader can say whether cut-offs show in the bill.
-        - Potential leak, kept on purpose: `HasIDNo`. Accounts with an ID number on file are bad debts more often (63% against 48%), so it may be captured during collection, though the data card describes it as a property of the holder. ROC AUC 0.874 with it, 0.872 without; revisit if the uploader can say when it is captured.
-        - We keep the 6,355 exact duplicate rows (6.2%), plausibly distinct accounts with the same property record or flat charge (162 accounts billed R6 in six R1 lines) and no account id to tell. Without the copied test rows, ROC AUC on the first split falls from 0.874 to 0.867.
-        - Anomaly: debt may be incomplete in rows 134,000-138,499 of the file too (62% of the billed accounts that never paid are bad debts, 93% elsewhere); there is no boundary to cut at.
-        - IID: a municipality scores its own accounts; `hidden_groups.py` finds no hidden group.
+        - We drop the 27,938 rows (20.2%) of seven runs of 1,185-8,762 consecutive file rows without any debt aged 90+ days or write-off, where debt was not recorded: none of their billed never-payers is a bad debt, against 91.5% outside (decision table; `NO_DEBT_RUN_ROWS` = 1,000).
+        - Anomaly: a 186-row run (from row 91,971) of billed never-payers without bad debts stays; a lower threshold would also drop two runs of paying accounts (218 and 334 rows).
+        - We follow the uploader's cohort and drop 8,700 accounts with no net billing in the two years, whose debt predates the window, or with negative payments.
+        - We drop the payment totals `totalreceipting`, `avgreceipting` and `collectionratio`: the status is read at the end of the two years they sum (decision table). ROC AUC 0.952 with them, 0.874 without.
+        - We drop `accountcategoryid` and `acccatabbr` (the category again), rename to the data card's names, and set a `PropertyValue` or `PropertySize` of 0 to missing.
+        - Potential leak, kept on purpose: `TotalElectricityBill`, which the data card adds as "a means to recover debt" (a cut-off for arrears). Its signal is mostly whether the municipality bills electricity at all; among billed accounts it is the same share of the bill for bad debts and others (median 0.33), so cut-offs within the window leave no trace. ROC AUC 0.874 with it, 0.865 without.
+        - Potential leak, kept on purpose: `HasIDNo`, by the data card a property of the holder ("often not captured properly or at all"). Accounts with one are bad debts more often (Residential 64% against 47%), so it may be captured when debt is pursued. ROC AUC 0.874 with it, 0.872 without.
+        - We keep the 6,355 exact duplicate rows (6.2%), plausibly distinct accounts with the same property record or flat charge; without the copied test rows, ROC AUC falls from 0.874 to 0.867.
+        - Anomaly: the file ends with a run of category Unknown (rows 134,192-138,276; 2,396 curated rows), mostly billed 1-3 times in two years; its never-payers with 1-3 bills are bad debts at 53% (86% elsewhere). Debt is recorded there, so it stays.
+        - IID, forced: the file is one extract without dates, so the task (bad-debt status at the extract) stands in for the data card's forecast, a model trained on one snapshot scoring the next.
+        - A municipality scores its own accounts, so its level is known information. The eight municipalities have no column; held out by file position, ROC AUC falls from 0.877 (random) to 0.843 (blocks of 2,500 rows) and 0.786 (thirds of the file).
     """
 
     # Task

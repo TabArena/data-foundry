@@ -7,8 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Needs extensive data wrangling
 tags:
-- Larger IID Data
-- Non-IID (Grouped)
+- Non-IID (Temporal)
 - Review Prio 1 (Atlas)
 collections:
 - New (BeyondArena)
@@ -16,12 +15,11 @@ original_source: Other
 year: '2020'
 domain: business & marketing
 required_split:
-- '?'
-problem_type: TBD
+- Temporal (NON-IID)
+problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://boosters.pro/championship/alfabattle2/overview
-- https://www.kaggle.com/datasets/mrmorj/alfabattle-20?select=alfabattle2_alpha_sample.csv
 source_row: 661
 type_adapter_id: curation-record-v1
 ---

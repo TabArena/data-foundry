@@ -15,13 +15,14 @@ tags:
 - Tiny Data
 collections:
 - New (BeyondArena)
-original_source: UCI
+original_source: Other
 domain: medical & healthcare
 required_split:
 - Random (IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
+- https://repositorio.ufc.br/bitstream/riufc/15977/1/2006_dis_arrochaneto.pdf
 - https://doi.org/10.24432/C5K89B
 - https://www.kaggle.com/datasets/sammy123/lower-back-pain-symptoms-dataset/
 - https://www.kaggle.com/datasets/simaeel/vertebral-column

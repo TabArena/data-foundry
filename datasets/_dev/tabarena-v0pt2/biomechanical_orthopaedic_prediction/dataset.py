@@ -12,12 +12,14 @@ from data_foundry.v2 import AbstractCuratedDataset
 class BiomechanicalOrthopaedicPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "biomechanical_orthopaedic_prediction"
-    year = "2006"  # The oldest original source is a 2006 thesis: https://repositorio.ufc.br/bitstream/riufc/15977/1/2006_dis_arrochaneto.pdf (But they also published a paper in 2011).
+    year = "2006"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5K89B"
+    source = "Other"  # Appendix A of da Rocha Neto's 2006 master's thesis lists all 310 samples; UCI 212 is a copy
+    source_url = "https://repositorio.ufc.br/bitstream/riufc/15977/1/2006_dis_arrochaneto.pdf"
     license = "CC BY 4.0"
     download_description = """
+        We download UCI's copy (https://doi.org/10.24432/C5K89B) of the data the 2006 thesis lists.
+
         wget https://archive.ics.uci.edu/static/public/212/vertebral+column.zip && unzip vertebral+column.zip column_3C_weka.arff && rm vertebral+column.zip && mkdir -p local-data-warehouse/biomechanical_orthopaedic_prediction && mv column_3C_weka.arff local-data-warehouse/biomechanical_orthopaedic_prediction/
     """
     bibtex = """
@@ -31,9 +33,8 @@ class BiomechanicalOrthopaedicPrediction(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with the UCI version, which is the oldest existing version of the dataset we found.
-
-        -
+        We start with UCI's copy (`column_3C_weka.arff`) of the 310 samples that Appendix A of da Rocha Neto's 2006
+        master's thesis lists: 60 disc hernia, 150 spondylolisthesis and 100 normal, with six biomechanical features.
     """
 
     # Task

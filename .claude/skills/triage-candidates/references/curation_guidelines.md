@@ -238,7 +238,9 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
 * **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`. That means a handful of
   units of a class per test fold and in total, counted in the unit the task is scored on (parkinsons: 8 healthy
   people, 2-3 per fold; retired 2026-10-05), not a small dataset as such (musk: 102 molecules, 13 musk per fold;
-  kept as a tiny-data task).
+  kept as a tiny-data task). In a multiclass task a rare class counts when its rows decide the score (alvin: 8 rows
+  of the rarest classes carry half of a window's log loss; retired 2026-10-12); a rare class of the source's own
+  labels among well-filled ones stays (mic: 12 rows, 4 per fold, 5% of the loss; kept 2026-10-12).
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a
   reason** and no marker: write it down as a note in `## Comments` and triage the data on its merits.
