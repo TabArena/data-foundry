@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: OpenML
-year: '2016'
+year: '2021'
 required_split:
 - Random (IID)
 source_links:

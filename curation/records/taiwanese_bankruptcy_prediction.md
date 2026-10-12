@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: UCI
-year: '2016'
+year: '2020'
 required_split:
 - Random (IID)
 - Temporal (NON-IID)

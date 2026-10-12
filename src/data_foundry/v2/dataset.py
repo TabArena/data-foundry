@@ -218,11 +218,13 @@ class AbstractCuratedDataset(ABC):
     unique_name: ClassVar[str]
     """Snake-case name; equal to the folder name. A version sub-sampled to the row budget ends in ``_1m``."""
     year: ClassVar[str]
-    """Year the data was published."""
+    """Year the data was first published, at the publication ``source_url`` names (a competition's launch, a
+    dataset's release or donation, the online date of the paper or supplement that holds the rows), not the year it
+    was collected or the year of a later copy."""
     domain: ClassVar[str]
     """One of :data:`data_foundry.schema.Domain`."""
     source: ClassVar[str]
-    """Where the data first appeared: one of :data:`data_foundry.schema.DatasetSource`."""
+    """Where the data was first published (not a later re-upload): one of :data:`data_foundry.schema.DatasetSource`."""
     source_url: ClassVar[str]
     """Link to the original publication of the data."""
     download_description: ClassVar[str]
@@ -496,6 +498,8 @@ class AbstractCuratedDataset(ABC):
 
     def _standardize(self, df: pd.DataFrame, *, order: bool = True) -> pd.DataFrame:
         types = self.feature_types(df)
+        if order:  # the full cleaned frame, before its dtypes are cast; the README lists these types
+            self._applied_feature_types = types
         present = set(df.columns)
         df = cast_dtypes(
             df,
@@ -674,7 +678,7 @@ class AbstractCuratedDataset(ABC):
         elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
             plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
         if self.splits_comment is not None:
-            plan.comment = self.splits_comment
+            plan.comment = clean_text(self.splits_comment)
         if not plan.comment:
             msg = f"{type(self).__name__}: custom splits need a `splits_comment` (or `SplitPlan(comment=...)`)."
             raise DatasetDefinitionError(msg)
@@ -936,10 +940,14 @@ PREPARED_MARKER = ".prepared_raw_files.json"
 
 def _prepare_code_hash(cls: type) -> str:
     """A hash of ``_prepare_raw_files`` and of the functions, classes and methods of its module it calls, directly
-    or through each other (an edit of a helper makes the prepared files stale too).
+    or through each other, and of the module-level assignments they read (an edit of a helper or of a constant such
+    as a list of files makes the prepared files stale too). Constants are hashed as written, not by their value, so
+    module state that changes at run time does not count.
     """
     module = inspect.getmodule(cls)
+    assignments = _module_assignments(module)
     sources: dict[str, str] = {}
+    constants: dict[str, str] = {}
     pending = [("_prepare_raw_files", cls._prepare_raw_files)]
     while pending:
         name, obj = pending.pop()
@@ -954,8 +962,43 @@ def _prepare_code_hash(cls: type) -> str:
             target = getattr(module, used, None) or getattr(cls, used, None)
             if callable(target) and inspect.getmodule(target) is module and used not in sources:
                 pending.append((used, target))
+            elif used in assignments:
+                _add_constant(used, assignments, constants)
     text = "\n".join(f"{name}\n{source}" for name, source in sorted(sources.items()))
+    if constants:  # appended only when there are any, so the hash of code without constants does not change
+        text += "\n" + "\n".join(source for _, source in sorted(constants.items()))
     return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _module_assignments(module: Any) -> dict[str, tuple[str, set[str]]]:
+    """The module-level assignments of ``module``: name -> (the statement as written, the names its value reads)."""
+    try:
+        source = inspect.getsource(module)
+    except (OSError, TypeError):
+        return {}
+    out: dict[str, tuple[str, set[str]]] = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign):
+            targets, value = node.targets, node.value
+        elif isinstance(node, ast.AnnAssign) and node.value is not None:
+            targets, value = [node.target], node.value
+        else:
+            continue
+        reads = {n.id for n in ast.walk(value) if isinstance(n, ast.Name)}
+        for target in targets:
+            if isinstance(target, ast.Name):
+                out[target.id] = (ast.get_source_segment(source, node) or "", reads)
+    return out
+
+
+def _add_constant(name: str, assignments: dict[str, tuple[str, set[str]]], constants: dict[str, str]) -> None:
+    """Add the assignment of ``name`` and of the module-level names its value reads (a constant built from others)."""
+    if name in constants or name not in assignments:
+        return
+    statement, reads = assignments[name]
+    constants[name] = statement
+    for read in reads:
+        _add_constant(read, assignments, constants)
 
 
 def _names_used(code: Any) -> set[str]:

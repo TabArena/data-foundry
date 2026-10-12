@@ -9,7 +9,7 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
-original_source: UCI
+original_source: Other
 year: '2020'
 required_split:
 - Random (IID)

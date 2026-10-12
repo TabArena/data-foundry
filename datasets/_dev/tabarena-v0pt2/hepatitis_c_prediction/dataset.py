@@ -13,7 +13,7 @@ ROUNDED_LABS = ["ALB", "ALT", "AST", "BIL", "CREA", "GGT", "PROT"]
 class HepatitisCPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "hepatitis_c_prediction"
-    year = "2018"
+    year = "2020"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5D612"

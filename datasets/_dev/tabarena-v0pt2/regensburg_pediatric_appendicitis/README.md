@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
+checksum: v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 763
   n_features: 51
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2021).
+Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -104,7 +104,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://doi.org/10.5281/zenodo.7711412 |
-| year | 2021 |
+| year | 2023 |
 | domain | medical & healthcare |
 | license | CC-BY-NC-4.0 |
 | data_tags | IID |
@@ -392,3 +392,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce` |

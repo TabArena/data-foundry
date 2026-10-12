@@ -37,9 +37,13 @@ that does not match the task, or a selection that depends on the outcome.
 
 `.venv/bin/python .claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` runs probes 2, 3, 5, 6 and 14 (a depth-2 and depth-3
 tree on the label) on a v2 folder, and probe 1 for the three strongest single features (untuned LightGBM on the first
-three shipped splits). The others take a few lines of pandas. Score with ROC AUC, log loss or
-R², never accuracy against the majority class, and say how many splits a number comes from. The numbers compare the
-shipped data with a suspected fix; they are not leaderboard-grade.
+three shipped splits). With more than 300 columns (`--max-single-features`) it fits only the 300 columns that explain
+the label best alone on the first training side and prints how many it screened out, so a 49,000-column omics dataset
+takes minutes instead of hours; the all-feature, shallow-tree, missing-indicator and drop-one fits still run.
+`--out DIR` also writes the numbers to `DIR/<unique_name>.json`. A multiclass ROC AUC is the mean over the classes
+present in the test fold (a grouped or temporal fold can lack one). The others take a few lines of pandas. Score with
+ROC AUC, log loss or R², never accuracy against the majority class, and say how many splits a number comes from. The
+numbers compare the shipped data with a suspected fix; they are not leaderboard-grade.
 
 | # | Probe | Red flag | Audit cases |
 |---|---|---|---|
@@ -47,7 +51,7 @@ shipped data with a suspected fix; they are not leaderboard-grade.
 | 2 | Each feature alone | one column comes close to the full model | heart_failure `time` alone 0.84; sdss `redshift`, STAR vs rest 0.998; online_shoppers `PageValues` 0.974 (Feb-May) |
 | 3 | Missing-value indicator alone; target rate when missing vs present | missingness predicts the label | mic: rows missing `NA_R_3_n` are 95% deaths (base rate 16%); kick: missing `WheelType` 70.5% bad buys (9.7% otherwise) |
 | 4 | Pure values: bundle check `dataset_pure_feature_value` (a value, or present vs missing, with ≥ 100 rows and ≥ 99.5% one class) | a value that occurs with one class only | kickstarter `profile_blurb` (0 of 69,970 failed projects); hotel `RequiredCarParkingSpaces = 1` (0 cancellations); airline `Seat comfort = 0` (99.8% satisfied) |
-| 5 | Share of test rows whose feature vector has an exact copy in train | a large share, above all with the same label | maternal_health_risk 74%; wine_quality 24% |
+| 5 | Share of test rows whose feature vector has an exact copy in train, without and with the string and datetime columns; for each string column of more than 50 values, the share of test values seen in train (the same SMILES or text) | a large share, above all with the same label | maternal_health_risk 74%; wine_quality 24%; qsar_bioconcentration 5.4% on the nine descriptors but 0% with the SMILES (isomers the descriptors do not tell apart) |
 | 6 | 1-NN label agreement (closest tenth vs all vs chance); each row's distance to its nearest other row used as a label-free score | near-copies agree on the label almost always (reposts, re-scans); the distance alone comes close to the full model (class-conditional generation) | emscad 0.998 among near-copies; homeq distance alone 0.923 (full model 0.975) |
 | 7 | Separate two subgroups that share a label (two sources, two clinical groups, donors vs patients) | they separate far better than the label does: a source or batch signal | prostate Benign vs NED 0.997; hepatitis_c donor vs patient 1.000 from four formatting flags |
 | 8 | Features in a range where no signal can exist | they predict the label | prostate m/z < 1 Da: AUC 0.81-0.85 |
@@ -65,6 +69,8 @@ Reading the probes:
   the same information; drop such columns together.
 * The label-free distance score is above 0.5 on ordinary data too (heart_failure 0.64, against 0.73 for the full
   model). Compare it with the full model, not with 0.5.
+* The string overlap compares exact values: the same molecule written as two SMILES strings, or the same text with
+  other whitespace, does not count. Canonicalise (RDKit for SMILES) before comparing when the overlap matters.
 * A pure-value flag on a heavily imbalanced target (base rates of 94-98%: amazon_employee_access, aps_failure) is
   usually an ordinary category effect.
 * A near-saturated score alone is not a leak (diamonds R² 0.993 and splice AUC 0.99+ showed none). Run the probes and
@@ -206,7 +212,7 @@ The audit's first suggestion was revised for most of the 38 cases. The patterns 
   when to revisit.
 * The record: a dated `CC (YYYY-MM-DD, Name):` comment with the same substance, and a revisit condition when the call
   is provisional (ghana "retired for now", sf_permit_time "re-download in 1-2 years", homesite "if the fields are
-  documented"). Planned outreach to authors goes into the record, not into `TODO.md`.
+  documented"). Planned outreach to authors goes into the record.
 * A retirement: `No (Retired)` with its markers (`Data Quality Issue`, `AHDS`, `Too Small`, `Trivial`, ...), the
   folder removed from the v0.2 working copy and a `CHANGELOG.md` entry.
 * An accepted bundle-check warning keeps its reason in `accepted_check_warnings` (emscad accepts

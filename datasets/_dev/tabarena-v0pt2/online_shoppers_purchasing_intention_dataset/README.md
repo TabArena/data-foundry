@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
+checksum: v2:d37f00cf9d97c3b99dcb3578ccf389931909eed14112fc5700ccf189daddf059
 build:
   uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
   checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 6875
   n_features: 16
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2017).
+Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d37f00cf9d97c3b99dcb3578ccf389931909eed14112fc5700ccf189daddf059`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5F88Q |
-| year | 2017 |
+| year | 2018 |
 | domain | business & marketing |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -288,3 +288,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:d37f00cf9d97c3b99dcb3578ccf389931909eed14112fc5700ccf189daddf059` |

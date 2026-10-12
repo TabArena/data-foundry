@@ -12,10 +12,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "cirrhosis_patient_survival_prediction"
-    year = "1984"
+    year = "1991"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5R02G"
+    source = "Other"  # the Mayo Clinic PBC trial data (Fleming and Harrington 1991); UCI 878 is a later copy
+    source_url = "https://www.mayo.edu/research/documents/pbchtml/doc-10027635"
     license = "IID"
     download_description = """
         We get the UCI data.

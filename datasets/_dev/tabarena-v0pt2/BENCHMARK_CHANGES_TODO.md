@@ -2,7 +2,7 @@
 
 Changes the benchmark harness (`tabarena/`) needs so that the v0.2 datasets are used as they are curated. They came
 out of the review of grouped data on 2026-10-01 (counts and file references are from that day). The data-foundry
-side (metadata, checks, the dataset review) is tracked in [`TODO.md`](TODO.md).
+side (metadata, checks, the dataset review) is tracked in the curation records and [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Grouped tasks
 

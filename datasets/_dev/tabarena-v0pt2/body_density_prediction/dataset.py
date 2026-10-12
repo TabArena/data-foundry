@@ -11,10 +11,10 @@ from data_foundry.v2 import AbstractCuratedDataset
 class BodyDensityPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "body_density_prediction"
-    year = "1985"
+    year = "1995"
     domain = "medical & healthcare"
-    source = "Kaggle"  # Other OpenML. Original UCI source is gone.
-    source_url = "https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset"
+    source = "Other"  # StatLib (Johnson's bodyfat file); later copies on OpenML and Kaggle
+    source_url = "https://lib.stat.cmu.edu/datasets/bodyfat"
     license = "None"
     download_description = """
         We download the data from Kaggle.

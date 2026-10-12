@@ -86,7 +86,9 @@ Then run the three probe scripts (`.venv/bin/python .claude/skills/verify-datase
 which the bundle checks do not cover:
 
 * `leak_probes.py`: what a model learns that it should not (each feature alone, missingness, drop-one, a shallow
-  tree, exact copies across the split, nearest neighbours). Read them with
+  tree, exact copies across the split with string columns included, nearest neighbours). On wide data it fits only
+  the `--max-single-features` (300) most informative columns alone and says how many it screened out; `--out DIR`
+  writes a JSON per dataset. Read them with
   [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the
   probes to run by hand and what the 2026 leak audit decided for each kind of leak. Evidence for items 4, 5, 6, 9, 13.
 * `task_probes.py` (`--built` reads the built container): whether the task is worth benchmarking. Dummy baselines
@@ -95,13 +97,19 @@ which the bundle checks do not cover:
   item 13; answer each flag as [`references/task_probes.md`](references/task_probes.md) says, starting with
   `tuned_results.py <unique_name> [--feature auto]`, which sets the flag against the benchmark's tuned methods.
 * `group_probes.py`, for a grouped task: the IID vs grouped gap and a permutation test across groups (item 4).
-* `generated_probes.py` (`--built`): whether the target is a formula of the features (regression: the share of rows
-  a median regression on simple terms fits exactly, against a shuffled target) or follows crisp rules
-  (classification: pure minority leaves of a shallow tree on held-out rows), as in simulated data (items 1 and 13).
-  Read a flag with the "Generated data" section of [`references/task_probes.md`](references/task_probes.md).
+* `generated_probes.py` (`--built`): whether the target is a formula of the features (`formula`, regression: the
+  share of rows a median regression on simple terms fits exactly, against a shuffled target) or follows crisp rules
+  (`rule_leaves`, classification: pure minority leaves of a shallow tree on held-out rows), and whether the columns
+  were drawn one by one: few column pairs that depend on each other and most numeric columns uniform over their range,
+  in the whole table with the target (`independent_columns`) or within each class (`uniform_within_class`). These
+  are the marks of simulated data (items 1 and 13). Read a flag with the "Generated data" section of
+  [`references/task_probes.md`](references/task_probes.md).
 * `hidden_groups.py` (`--built`), for an IID task: columns whose repeated values carry the label and look like an
-  entity, and how much a random split gains over a split by them (item 4). Read a hit with the "Hidden groups"
-  section of [`references/task_probes.md`](references/task_probes.md): the context decides, not the gap.
+  entity, and clusters of near-copy rows (rows that agree on almost every column, for a group no single column holds,
+  as in a table of fingerprint bits), each with how much a random split gains over a split by them (item 4). For a
+  temporal task it flags nothing and reports how many test rows have their entity (the value of each entity-like
+  column, or a near copy) on the training side. Read a hit with the "Hidden groups" section of
+  [`references/task_probes.md`](references/task_probes.md): the context decides, not the gap.
 
 ## Step 2 — Work the judgment rubric
 

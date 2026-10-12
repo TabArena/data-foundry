@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: thyroid_discordant
 container_format: 2
-checksum: v2:f5c74e813cab415e1a6768fc8409d90f62d1e18a0e286ad1a66c8e1535f1b16d
+checksum: v2:3e04b30c7f27dce464a2428991f866d69df3ac33a0e6f6a2c21cd532b8db3c0e
 build:
   uuid: 01a111fc-bea0-79f8-b0a4-5d00de089637
   checksum: v2:f5c74e813cab415e1a6768fc8409d90f62d1e18a0e286ad1a66c8e1535f1b16d
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 3711
   n_features: 26
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `discordant`, scored with `roc_auc` on IID splits. 3,711 rows and 26 features. Source: UCI (1986).
+Binary classification of `discordant`, scored with `roc_auc` on IID splits. 3,711 rows and 26 features. Source: UCI (1987).
 
-Built as `01a111fc-bea0-79f8-b0a4-5d00de089637` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bea0-79f8-b0a4-5d00de089637` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3e04b30c7f27dce464a2428991f866d69df3ac33a0e6f6a2c21cd532b8db3c0e`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -101,7 +101,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5D010 |
-| year | 1986 |
+| year | 1987 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -331,3 +331,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:3e04b30c7f27dce464a2428991f866d69df3ac33a0e6f6a2c21cd532b8db3c0e` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
+checksum: v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e
 build:
   uuid: 01a111fc-67ad-73f9-9657-30238d911c5b
   checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 27195
   n_features: 386
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 27,195 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -421,3 +421,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e` |

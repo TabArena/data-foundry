@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "early_stage_diabetes_risk_prediction"
-    year = "2019"
+    year = "2020"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5VG8H"

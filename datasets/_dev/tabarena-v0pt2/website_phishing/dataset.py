@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class WebsitePhishing(AbstractCuratedDataset):
     # Dataset
     unique_name = "website_phishing"
-    year = "2014"
+    year = "2016"
     domain = "technology & internet"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5B301"

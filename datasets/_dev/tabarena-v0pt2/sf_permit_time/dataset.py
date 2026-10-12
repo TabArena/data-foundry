@@ -6,13 +6,56 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Splits, Temporal, TemporalSplits
+
+SECONDS_PER_DAY = 86_400
+# Half-year test windows; train is the permits filed at least six months before the window starts
+WINDOWS = TemporalSplits(window=6, unit="months", gap=6, min_train_fraction=0.5)
+
+
+def _issued(df: pd.DataFrame) -> pd.Series:
+    """The issue date, rebuilt from the filing date and the target (the log of the days to issue).
+
+    Both dates in the raw file are whole seconds, so rounding to the second gives the raw issue date back.
+    """
+    days = np.exp(df["DaysToIssue"])
+    return (df["Filed Date"] + pd.to_timedelta(days * SECONDS_PER_DAY, unit="s")).dt.round("s")
+
+
+def _label_known_windows(df: pd.DataFrame) -> tuple[Splits, pd.DataFrame]:
+    """The windows of `WINDOWS`, each training only on the permits issued before it starts.
+
+    Returns the splits and, per window, the training rows kept and left out (the evidence in `_decisions`).
+    """
+    filed, issued = df["Filed Date"], _issued(df)
+    splits, rows = {}, []
+    for split, folds in WINDOWS.splits(df, "Filed Date").items():
+        train, test = (np.asarray(side) for side in folds[0])
+        start = filed.iloc[test].min().normalize().replace(day=1)
+        known = (issued.iloc[train] < start).to_numpy()
+        splits[split] = {0: (train[known].tolist(), test.tolist())}
+
+        still_open = issued >= start
+        one, six, twelve = (start - pd.DateOffset(months=m) for m in (1, 6, 12))
+        filed_1_6 = (filed >= six) & (filed < one)
+        filed_6_12 = (filed >= twelve) & (filed < six)
+        rows.append(
+            {
+                "window start": f"{start:%Y-%m}",
+                "test rows": len(test),
+                "train rows": int(known.sum()),
+                "train rows left out (issued after the start)": int((~known).sum()),
+                "still open at the start: filed 1-6 months before": f"{still_open[filed_1_6].mean():.0%}",
+                "filed 6-12 months before": f"{still_open[filed_6_12].mean():.0%}",
+            }
+        )
+    return splits, pd.DataFrame(rows).set_index("window start")
 
 
 class SfPermitTime(AbstractCuratedDataset):
     # Dataset
     unique_name = "sf_permit_time"
-    year = "2025"
+    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "business & marketing"
     source = "GOV Website"
     source_url = "https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9"
@@ -39,16 +82,16 @@ class SfPermitTime(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We simulate the task of predicting the days (in float) it takes to issue the permit. We add the special use case, that we assume the model is only used to predict for permits that take longer than one day to be issued. We do this, as waiting for one day seems very reasonable. Plus, the data contains several unresolvable data errors when the permit was issued on the same day it was filed.
+        We start with the Building Permits table of the San Francisco open data portal (permits filed 2015 to 2025, downloaded 2026-02-05).
 
-        - We only keep permits filed before 2024. The data only holds permits that were issued by the download date, so recent filings miss their slowest permits: the share of permits still open is 1.8-5.3% for 2015-2021 but 10.2% for 2023, 11.1% for 2024 and 21.5% for 2025, and the p90 of the days to issue falls from about 300 days to 147 (2024) and 97 (2025). A check against the portal eight months later (October 2026) showed the 2024 and 2025 tails still growing (2025 p90: 97 -> 160 days), while 2023 had nearly settled (216 -> 222).
-        - We drop miscellaneous permits (those that start with "M") as they are not of interest for our task. Compared to normal permits, these are usually automatically or very quickly approved and thus are not relevant to predict the time it takes to issue the permit. Moreover, the represent a significant distribution shift compared to the rest of the data.
-        - We drop the permit type ordinal encoding and the creation date of the permit in the tracking system as other dates are more accurate.
-        - A large number of descriptions are from standard phrases (they appear in the same way multiple times). so we add a new column that indicates whether the description is from a standard phrase or not through a categorical variable. We define a standard phrase as a description that appears more than 100 times in the dataset.
-        - The 'Current Status' is the last status update of the permit. Note, that for miscellaneous permits, the permit is never completed. We filter to permits that have been issued for our task. Thus, we select all permits that are issued or completed.
-        - There are several features that have almost no information (up to only 20 non nan values). We keep this and let the pipeline decide what to do with them.
-        - We only keep on permit per primary address (filter based on Primary Address Flag) following https://data.sf.gov/Housing-and-Buildings/Building-Permits-Deduplicated-on-Primary-Address/f2jc-ivnc
-        - We drop all permits without a location, as every permit requires a location by definition, thus these are likely data errors.
+        - Prediction point: at filing. Target: the log of the days from Filed Date to Issued Date, for permits issued at least one day after filing; waiting a day is no burden, and same-day permits hold unresolvable data errors.
+        - Cohort: permits filed before 2024. The download holds only permits issued by then, so recent filings miss their slowest permits: 1.8-5.3% are still open for 2015-2021, 10.2% for 2023 and 21.5% for 2025. In October 2026 the 2023 tail had settled (p90 216 -> 222 days), the 2025 one had not (97 -> 160).
+        - Cohort: no miscellaneous permits (numbers starting with "M"); they are approved automatically or very fast and shift the distribution.
+        - Cohort: issued or complete permits (Current Status), one per primary address (Primary Address Flag, as in the portal's deduplicated table) and with a location; a permit without one is a data error.
+        - We drop the dates recorded after filing (Issued, Completed, First Construction Document, approved_date, Current Status and Last Permit Activity dates), Current Status, Revised Cost (most likely set at plan review), the ordinal codes of Permit Type and the construction types, Permit Creation Date (a system log date), ADU (deprecated from 2025), Record ID, Permit Number and the portal's load metadata.
+        - Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions that occur more than 100 times. Nearly empty columns (some with 20 values) stay for the pipeline to handle.
+        - Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
+        - Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
     """
 
     # Task
@@ -57,17 +100,14 @@ class SfPermitTime(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We try to create splits that simulate a model deployed to solve the task.
-
-        The official data is updated daily but has not enough data per day to create large enough test splits. We simulate a model that is refit every six months and tested on the next six months, walking back from the last kept filing date (end of 2023) until the training data would fall below 50% of the rows. This gives 9 half-year test windows from the second half of 2019 to the second half of 2023. For each test split, we use all permits filed before the test window as training data.
+        A model refit at the start of each half-year predicts the days to issue of the permits filed in the next six months. It trains on the permits filed at least six months before the refit that were issued by then. The days to issue are known only once a permit is issued and have a long tail (p90 315 days), so many recent permits are still open at a refit and the issued ones are the fast ones. The gap leaves out the newest filings, and older permits still open at the refit are left out of that window's training rows (decision table). The test windows walk back from the second half of 2023, the newest filings kept (see curation_comments), while the training side keeps at least 50% of the rows: 8 windows, 2020-H1 to 2023-H2, newest first, with 52,851 to 89,314 training rows. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with the gap.
     """
-    temporal = Temporal(
-        on="Filed Date",
-        splits=TemporalSplits(window=6, unit="months", min_train_fraction=0.5),
-    )
+    temporal = Temporal(on="Filed Date", horizon=6, horizon_unit="months")
     accepted_check_warnings = {
         "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
         "missing means the flag is not set, so they are not constant.",
+        "splits_rows_unused": "193 permits filed before 2020 (1,306 to 3,428 days to issue) are in no split: they were "
+        "filed before the oldest test window and were still open when the newest one started.",
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -160,3 +200,21 @@ class SfPermitTime(AbstractCuratedDataset):
             ],
             datetime=["Filed Date"],
         )
+
+    def _make_splits(self, df: pd.DataFrame) -> Splits:
+        """Half-year windows after a six-month gap; train keeps only the permits issued before the window starts."""
+        splits, _ = _label_known_windows(df)
+        return splits
+
+    def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
+        _, windows = _label_known_windows(df)
+        return [
+            Decision(
+                "Training rows are permits filed six months or more before the window and issued before it starts",
+                "The days to issue are known only once a permit is issued, and many permits filed shortly before a "
+                "window are still open when it starts; the issued ones are the fast ones. The six-month gap leaves "
+                "out the newest filings, and the older permits still open at the start are left out of that "
+                "window's training rows.",
+                windows,
+            )
+        ]

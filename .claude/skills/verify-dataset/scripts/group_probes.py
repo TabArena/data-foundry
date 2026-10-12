@@ -16,7 +16,8 @@ Prints:
 * for one label per group: a permutation test that shuffles the labels across groups and re-runs the grouped CV with
   the best model; its p-value says whether the per-group score could come from chance.
 
-Scores are ROC AUC (one-vs-rest macro for multiclass) or R^2. Group, target and string columns are not features;
+Scores are ROC AUC or R^2; a multiclass ROC AUC is the mean of the one-vs-rest ROC AUCs over the classes present in
+the scored rows (a grouped fold can lack a class). Group, target and string columns are not features;
 categoricals enter as codes and datetimes as numbers. A frame over ``--max-rows`` keeps a random set of whole
 groups. The numbers are indicative (untuned models) and meant for the curation decision; how to read them:
 ``.claude/skills/check-candidate/references/leak_checks.md`` (probe 11).
@@ -91,13 +92,17 @@ def out_of_fold(make, X: pd.DataFrame, y: np.ndarray, folds: list, n_classes: in
 
 
 def score(y: np.ndarray, pred: np.ndarray, n_classes: int) -> float:
-    """ROC AUC (macro one-vs-rest for multiclass) or R^2; higher is better."""
+    """ROC AUC (for multiclass, the mean one-vs-rest ROC AUC over the classes present in ``y``) or R^2; higher is
+    better. NaN for a multiclass ``y`` of one class.
+    """
     if not n_classes:
         return float(r2_score(y, pred[:, 0]))
     if n_classes == 2:  # binary
         return float(roc_auc_score(y, pred[:, 1]))
     p = pred.clip(1e-12)
-    return float(roc_auc_score(y, p / p.sum(axis=1, keepdims=True), multi_class="ovr", labels=list(range(n_classes))))
+    p = p / p.sum(axis=1, keepdims=True)
+    present = np.unique(y)
+    return float(np.mean([roc_auc_score(y == k, p[:, k]) for k in present])) if len(present) > 1 else float("nan")
 
 
 def per_group(pred: np.ndarray, y: np.ndarray, groups: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

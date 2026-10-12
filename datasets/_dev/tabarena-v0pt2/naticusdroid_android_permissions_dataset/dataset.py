@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class NaticusdroidAndroidPermissionsDataset(AbstractCuratedDataset):
     # Dataset
     unique_name = "naticusdroid_android_permissions_dataset"
-    year = "2021"
+    year = "2022"
     domain = "technology & internet"
     source = "UCI"
     source_url = "https://archive.ics.uci.edu/dataset/722/naticusdroid+android+permissions+dataset"

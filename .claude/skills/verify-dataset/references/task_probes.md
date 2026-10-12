@@ -71,13 +71,14 @@ flag is read), so the next decision starts from the precedent.
 | `one_feature` | The best single feature, chosen on each split's training side, reaches 95% of the best family's skill and leaves at most 1.25 times its remaining error (1 − skill). | Rule 4: what the feature means, then the raw feature against the methods fold by fold (`tuned_results.py --feature auto`). |
 | `drift_baseline` | Temporal tasks: a constant from the newest train rows has a loss within 2% of the best family's (log loss, or squared error). | The task may be mostly drift: compare the windows' class shares or means over time. |
 | `unstable` | The best family beats the dummy on fewer than 80% of the splits, or the standard error of its mean skill is above 0.05. | How many units a test fold holds; whether tuned methods are robust over all splits. |
-| `few_minority` | Binary tasks: a test fold holds fewer than 5 rows (groups, for a task scored per group) of a class. | Rule 5: count the units of each class in total; wider windows or merged classes, or `Too Small`. |
+| `few_minority` | A probed test fold holds fewer than 5 rows (groups, for a task scored per group) of a class, binary or multiclass. The report names each class that falls short with its smallest count in a test fold (`few_minority_classes` in the JSON). | Rule 5: count the units of each named class in total; wider windows or merged classes (rule 7), or `Too Small`. |
 
 The script probes every shipped split (up to 30) for a dataset of at most 5,000 scored units (rows, or groups for a
 task scored per group) and the first 5 otherwise, encodes
 text columns (TF-IDF + SVD), and reports each family's skill, the single feature chosen per split and the smallest
 class per test fold. Flags from sweeps before 6 October 2026 used weaker rules (one feature chosen once on the first
-split, an unpaired spread test, the standard deviation for `unstable`, text left out) and are not comparable.
+split, an unpaired spread test, the standard deviation for `unstable`, text left out) and are not comparable. Before
+12 October 2026, `few_minority` checked binary tasks only.
 
 ## Cases (the v0.2 review)
 
@@ -104,14 +105,22 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | heart_disease_cleveland | no_spread | kept (6 Oct) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task |
 | consumer_complaints_1m | unstable | kept (6 Oct, rebuild sweep) | best probe model above the dummy in 3 of 3 windows (AUC 0.90); the standard error of 0.060 over 3 windows is drift, not a missing signal; all 21 BeyondArena configurations beat the dummy |
 | electric_motor_temperature_prediction | no_spread | kept (6 Oct, rebuild sweep) | R^2 0.94-0.97 for every probe model, a gap 3 folds cannot test; tuned RMSE 1.77-3.52 on BeyondArena (rule 3) |
+| expresso_churn_prediction_1m | one_feature | kept (7 Oct, rule 4) | active days (REGULARITY, AUC 0.890) are the natural core of a churn task; on the full 1M/500k folds untuned LightGBM beats it on 3 of 3 (0.903 against 0.890) |
+| mortgage | drift_baseline (one_feature before the macro-lag fix) | kept (7 Oct) | the previous quarter's class shares (log loss 0.134) match untuned models on 50k sampled rows; on the full training side LightGBM beats them in 3 of 3 quarters (0.120/0.132/0.136 against 0.125/0.137/0.139) and ranks loans within a quarter (AUC 0.56-0.72) |
+| rosbank1 | no_spread | kept (7 Oct) | 3 monthly windows of 63-123 clients cannot test a LightGBM - linear gap of 0.045 AUC (paired SE 0.036); all models beat the dummy in 3 of 3; no longer history in the release (as electric_motor_temperature_prediction) |
+| apistox | unstable (no_spread before the SMILES encoding) | kept (7 Oct; 12 Oct with RDKit descriptors) | above the dummy in 4 of 4 windows; the standard error (0.117 for the linear model on SMILES TF-IDF, 0.065 for LightGBM with the RDKit descriptors) is window-to-window variation of a small temporal task (as consumer_complaints_1m) |
+| bias_correction_r_bias_correction_r_2 | no_spread | kept (7 Oct) | a window is 6-7 weather days and the day carries 82.5% of the target's variance, so strong methods separate little (paired SE 0.03-0.04 RMSE); their mean beats a per-station MOS in 7 of 9 windows; re-check with tuned results |
+| african_credit_scoring_challenge | no_spread, drift_baseline (unstable on 5 windows) | kept (7 Oct, rules 1-3) | windows of 20-56 defaults; the linear model beats the class shares in 9 of 9 (AUC 0.649); the drift flag is about log loss (the default rate moves from 1-1.4% to 6.4-9.4%), which ROC AUC, the metric, ignores; re-check with tuned results |
+| sf_permit_time | no_spread (after the 6-month label gap) | kept (12 Oct) | random forest, LightGBM and linear within 0.032 skill (paired SE 0.019) on 5 of 8 windows; in 2021-H2 LightGBM carries the slow COVID level forward, as a real refit in July 2021 would; no tuned results in the cache, re-check with the first tuned runs |
 
-## Hidden groups in IID tasks (`hidden_groups.py`)
+## Hidden groups (`hidden_groups.py`)
 
 An IID split is wrong when many rows share an entity that new data would not have and the entity carries the label:
 a random split then rewards recognising the entity. The probe ranks columns with repeated values by how much a row's
 label follows from the other rows with that value, beyond what the value says about unseen values. Among those that
 look like an entity (attributes that stay fixed within a value, or a label the value nearly fixes) it measures
-untuned LightGBM on a random split against a split by the column; its docstring has the thresholds.
+untuned LightGBM on a random split against a split by the column. It also clusters rows that agree on almost every
+column (near copies) and tests the clusters the same way. Its docstring has the thresholds.
 
 **The rule (Lennart, 2026-10-06): a hit is a question.** Re-split a dataset only when the context says the rows share
 an entity that new data would not have (the source calls the column an id, or the use case predicts for new
@@ -127,12 +136,45 @@ the source's own data, at the resolution the features see (superconductivity: el
 which the features are computed from; a formula string would split one composition written two ways). Keep the
 source's rows: deduplicating with averaged targets is a different dataset.
 
-**The probe checks single columns only.** A group defined by several columns (a wind-tunnel run is one chord, angle and velocity) or by no column at all (the target protein of a CASP decoy) does not show up; read what one row is in the source and check the combinations of its settings (`df.groupby(settings).ngroup()`, rows per group, blocks in the raw file order).
+**Near copies cover a group that no single column holds, in a wide table.** Each row becomes a set of tokens (a
+quantile bin or a value per column, without the values most rows have), and two rows are near copies when their
+token Jaccard is at least 0.85 (92% of the columns agree; on fingerprint bits it is the Tanimoto coefficient) and they
+share at least 10 tokens. Clusters of more than 100 rows are common profiles (empty records) or chains of neighbours,
+and their rows are left single. The output gives the clusters at 0.9, 0.85, 0.8 and 0.7 and the gap at 0.85, against
+the same random folds with each cluster moved into one fold. Read a near-copy hit as a pointer: find in the source
+what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
+invoices) and take the group key from there, never from the clusters (`leak_checks.md` §5 bars similarity clusters).
+A table with fewer than 10 informative columns has no near copies, so a group defined by a few settings (a
+wind-tunnel run is one chord, angle and velocity) or by no column at all (the target protein of a CASP decoy) still
+does not show up; read what one row is in the source and check the combinations of its settings
+(`df.groupby(settings).ngroup()`, rows per group, blocks in the raw file order).
+
+**Temporal tasks get no hit.** The shipped split already keeps the future out, and an entity that recurs across the
+cutoff is part of the task. For the top candidates (the entity-like ones first) and the near copies, the probe
+reports the share of test rows whose value occurs on the training side of each shipped split (`test_rows_seen`):
+`building_id` 100% (ashrae_great_energy_predictor_iii_1m), `customer_id` 69% (african_credit_scoring_challenge),
+`USER_ID` 64% (alvin_smart_money_management_classification_challenge). Read it against the use case (rubric item 4,
+grouped structure inside a temporal task): a high share is right when the model predicts for known entities, and a
+question when the use case is a new entity.
 
 Calibration on 2026-10-06 (the 15 grouped datasets run as if IID): the probe finds the known group or an equivalent
 key in 11 (respondent, poster group, patient, subject, customer, molecule, mouse, motor profile, instance, facility
 attributes, ASP instance); the 4 it misses have small gaps (0.03-0.05: cardiotocography, micro_mass,
 5g_energy_consumption, video_transcoding_time_prediction), where a random split would gain little.
+
+Calibration of the near copies on 2026-10-12 (all 184 definitions, the grouped ones as if IID with their group column
+left out of the tokens): no IID dataset is a near-copy hit. The closest are coil_2000 (85% of the rows in clusters
+of customers who share their zip area's socio-demographic columns, which the source derives from the zip code; gap
+0.036, 7.9% of the random-split skill), labour_inspection_compliance (52%, a company inspected again; gap 0.019, 5.9%)
+and qsar_tid_11 (35%, analog series; gap 0.035, 4.7%). qsar_oral_toxicity has small families: 366 clusters of 2-25
+compounds hold 11% of the rows at 0.85 (3.7% at 0.9, 24% at 0.8), and the gap is 0.006 (skill 0.750 against 0.744),
+the analog effect its record describes, not series to memorise. Among the grouped datasets early_learning_predictors
+is a hit (facilities; gap 0.041, 10.9%) and fraud_detection_in_electricity_and_gas_consumption_1m comes close (one
+client's invoices; 24% of the rows, gap 0.041, 8.5%). The similarity is 0.85 because at 0.8 qsar_tid_11's analog
+series reach a gap of 0.061-0.071 (8-9% of the skill over three fold seeds), next to the hit line; the 10-token
+minimum keeps out tables of a few columns, where rows agree on all but one by design (amazon_employee_access, an
+employee's role columns and manager: gap 0.14 at 0.8 without it). The clusters take 0.1 s on a median dataset and at
+most 58 s (2.5M rows); a sweep of all 184 definitions with 10 jobs of 2 threads took 13 minutes.
 
 | Dataset | Hit | Decision | Evidence |
 |---|---|---|---|
@@ -146,7 +188,7 @@ attributes, ASP instance); the 4 it misses have small gaps (0.03-0.05: cardiotoc
 
 Simulated data is out of scope (curation guidelines, criterion 4B, marker `AHDS`), and a generator leaves marks a
 model can learn completely: the best possible score is then known, and strong methods reach it, so their ranking is
-noise. The probe looks for two marks; its docstring has the thresholds.
+noise. The probe looks for four marks; its docstring has the thresholds.
 
 * `formula` (regression): a median regression on the numeric features, their squares, one-hot categoricals and the
   products of each binary column with each numeric feature fits many rows exactly (within the target's rounding),
@@ -155,17 +197,48 @@ noise. The probe looks for two marks; its docstring has the thresholds.
   definition may have logged it.
 * `rule_leaves` (classification): leaves of a depth-5 tree, fit on one half and read on the other, whose held-out
   rows all belong to a minority class cover at least a fifth of that class.
+* `independent_columns` (any task): on 1,000 rows, the features and the target together, at most 10% of the column
+  pairs depend on each other at the 5% level (independent columns give about 5%), and at least half of the numeric
+  columns with 20 or more values (at least 5 of them) are uniform over their range by a KS test. The JSON lists the
+  uniform columns (`uniform_names`).
+* `uniform_within_class` (classes, or a regression target of at most 20 values): the same two thresholds on the
+  features within each class of at least 50 rows, pooled over the classes. It catches a generator that draws each
+  feature uniformly between its class's minimum and maximum: the whole table then looks dependent, because the
+  ranges differ by class.
 
 **A flag is a question.** A target that is legitimately computed from the features (a score, a label defined by
-thresholds) or a leak gives the same marks. Before proposing a retirement, find what the source says ("simulated",
-"artificial", "generated", a textbook example) and look for marks the probe does not test: dependence that the world
-would show but the data does not (churn's area codes spread over all states alike), several columns with one
-distribution, every row of a group following a rule. When you can, write the generator down: that settles it.
+thresholds) or a leak gives the first two marks; inputs set by a design (a uniform grid, a Latin hypercube) can give
+the last two. Before proposing a retirement, find what the source says ("simulated", "artificial", "generated", a
+textbook example) and look for marks the probe does not test: dependence that the world would show but the data does
+not (churn's area codes spread over all states alike), several columns with one distribution, every row of a group
+following a rule. When you can, write the generator down: that settles it. For the independence marks, name the
+dependence the domain must show (AST and ALT in liver patients, size and equity in banks) and check it directly.
+Either statistic alone is common in real data: santander_customer_transaction_prediction has 5.4% of its pairs
+dependent but no uniform column, homesite_quote_conversion 13 of 42 uniform columns (each `...B` field codes its
+`...A` field in 25 equal-frequency bins) but 45% of its pairs dependent, and bank_customer_churn has one uniform
+column, `estimated_salary`.
 
 Calibration on 2026-10-06 (all 128 datasets of the working copy): the probe flags the two datasets known to be
 generated and no other. The nearest regression is student_portuguese_performance (2.6% exact against 0.0%), the
 nearest classifications are eryhemato_squamous_disease (17.7% of the minority in rule leaves: clinical diagnoses),
 website_phishing (16.1%: its features are rule outputs) and homesite_quote_conversion (13.9%).
+
+Calibration of the two independence flags on 2026-10-12 (all 184 definitions: the 125 built ones from their
+containers, the other 59 rebuilt; plus the six retired generated datasets): neither flag fires on any of them, and both
+fire on the two generated tables found in the 7 October run, which have no definition (UCI 503 and OpenML 46372, run
+through `check_frame`).
+
+* `independent_columns`: UCI 503 has 5.7% of 406 pairs dependent and 11 of 17 columns uniform (the 17-feature
+  definition drafted in that run: 6.5% and 7 of 7). Lowest pair shares in the working copy: santander (5.4%),
+  audiology_diagnosis (7.2%) and biogeographical_ancestry_prediction (7.9%), none with a uniform column; then
+  qsar_tid_11 (14.2%). Highest uniform share with at least 5 columns tested: homesite_quote_conversion (0.31).
+* `uniform_within_class`: OpenML 46372 has 4.0% of 150 within-class pairs dependent and 60 of 60 cells uniform
+  (UCI 503: 5.0% and 50 of 68). Lowest in the working copy: santander (4.9%, 0 of 200 uniform),
+  biogeographical_ancestry_prediction (5.6%, nothing tested), bank_customer_churn (11.1%, 2 of 8). Highest uniform
+  share: pancreatic_cancer_mouse_detection (0.41, every pair dependent). The book's 197 rows that OpenML 46372 was
+  made from (corporate_credit_rating_cat_data_set_ratings_raitings) have no class of 50 rows; with classes down to
+  10 rows they give 17.1% of 105 pairs dependent and 10 of 24 cells uniform, no flag. Classes need 50 rows because
+  the KS test loses its power on small classes: with classes of 10-49 rows, lung_cancer reaches 0.495 uniform.
 
 | Dataset | Flag | Decision | Evidence |
 |---|---|---|---|

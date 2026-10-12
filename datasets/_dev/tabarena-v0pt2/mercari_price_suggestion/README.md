@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercari_price_suggestion
 container_format: 2
-checksum: v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e
+checksum: v2:87dd74d2b2fffad29d1e96c500ab12f74f5d377c6017605f1fd4dbbfd5e7f9eb
 build:
   uuid: 01a111fb-0462-74d5-bdd8-89846cb8d091
   checksum: v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1482486
   n_features: 6
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `price`, scored with `rmse` on IID splits. 1,482,486 rows and 6 features. Source: Kaggle (2018).
+Regression of `price`, scored with `rmse` on IID splits. 1,482,486 rows and 6 features. Source: Kaggle (2017).
 
-Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87dd74d2b2fffad29d1e96c500ab12f74f5d377c6017605f1fd4dbbfd5e7f9eb`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -104,7 +104,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/competitions/mercari-price-suggestion-challenge |
-| year | 2018 |
+| year | 2017 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
 | data_tags | IID |
@@ -253,3 +253,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:87dd74d2b2fffad29d1e96c500ab12f74f5d377c6017605f1fd4dbbfd5e7f9eb` |

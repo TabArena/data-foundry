@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
+checksum: v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 81418
   n_features: 28
@@ -70,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2019).
+Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -111,7 +111,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://www.sciencedirect.com/science/article/pii/S2352340918315191#s0005 |
-| year | 2019 |
+| year | 2018 |
 | domain | business & marketing |
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal |
@@ -181,10 +181,10 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 ## Splits
 
 To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data. \
-            To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
-            To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance. \
-            Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the newest split, against 12.5% cancelled in the test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
-            We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
+    To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
+    To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance. \
+    Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the newest split, against 12.5% cancelled in the test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
+    We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 35,860 to 60,693 rows, test 2,474 to 6,390 rows. Prediction horizon: 3 months.
 
@@ -367,3 +367,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad` |

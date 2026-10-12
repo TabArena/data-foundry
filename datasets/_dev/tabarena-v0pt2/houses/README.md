@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: houses
 container_format: 2
-checksum: v2:46a559927f2914fd18765c7d2e0303759a82ff7b13817038d41d4bfca168ba15
+checksum: v2:bf2746f47adc7a4d105605216a602b6908120af9f151ae55d827d28e41e1e01c
 build:
   uuid: 01a111fc-e060-707f-b68e-7c2be9c5182f
   checksum: v2:46a559927f2914fd18765c7d2e0303759a82ff7b13817038d41d4bfca168ba15
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 19675
   n_features: 8
@@ -60,9 +60,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `LnMedianHouseValue`, scored with `rmse` on IID splits. 19,675 rows and 8 features. Source: Other (1990).
+Regression of `LnMedianHouseValue`, scored with `rmse` on IID splits. 19,675 rows and 8 features. Source: Other (1999).
 
-Built as `01a111fc-e060-707f-b68e-7c2be9c5182f` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e060-707f-b68e-7c2be9c5182f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bf2746f47adc7a4d105605216a602b6908120af9f151ae55d827d28e41e1e01c`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -100,7 +100,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://lib.stat.cmu.edu/datasets/ |
-| year | 1990 |
+| year | 1999 |
 | domain | business & marketing |
 | license | Public |
 | data_tags | IID, Spatial |
@@ -231,3 +231,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:bf2746f47adc7a4d105605216a602b6908120af9f151ae55d827d28e41e1e01c` |

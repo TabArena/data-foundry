@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
     # Dataset
     unique_name = "online_shoppers_purchasing_intention_dataset"
-    year = "2017"
+    year = "2018"
     domain = "business & marketing"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5F88Q"

@@ -13,7 +13,7 @@ collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
-year: '2019'
+year: '2020'
 domain: medical & healthcare
 required_split:
 - Random (IID)

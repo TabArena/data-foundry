@@ -917,3 +917,66 @@ def test_anonymized_ids_keep_numbers_and_text_apart() -> None:
     codes = anonymize_ids(pd.Series([1, "1", "a"], dtype=object))
     assert codes.iloc[0] != codes.iloc[1]
     assert anonymize_ids(pd.Series(["1"])).iloc[0] == codes.iloc[1]  # text keeps the code it always had
+
+
+def test_cli_new_prefills_domain_and_source_from_the_record(tmp_path: Path) -> None:
+    parser = argparse.ArgumentParser()
+    add_dataset_parser(parser.add_subparsers(dest="command"))
+    records = tmp_path / "records"
+    records.mkdir()
+    (records / "fresh_ds.md").write_text(
+        "---\nunique_name: fresh_ds\nname: Fresh\nyear: '2020'\ndomain: finance\noriginal_source: Github\n---\n\n"
+        "## Comments\n"
+    )
+    (records / "odd_ds.md").write_text(
+        "---\nunique_name: odd_ds\nname: Odd\ndomain: Other\noriginal_source: Company\n---\n\n## Comments\n"
+    )
+    for name in ("fresh_ds", "odd_ds"):
+        args = parser.parse_args(["dataset", "new", name, "--root", str(tmp_path / "datasets")])
+        args.records_dir = str(records)
+        assert args.func(args) == 0
+    fresh = (tmp_path / "datasets" / "fresh_ds" / "dataset.py").read_text()
+    assert 'domain = "finance"' in fresh
+    assert 'source = "GitHub"' in fresh
+    odd = (tmp_path / "datasets" / "odd_ds" / "dataset.py").read_text()
+    assert 'domain = "TODO"' in odd  # no schema value to map to: the curator picks one
+    assert 'source = "TODO"' in odd
+
+
+def test_prepared_files_are_stale_when_a_constant_they_read_changes() -> None:
+    with_constant = (
+        PREPARING.format(name="toy_ds", comment="x")
+        .replace("RUNS = []", 'RUNS = []\nRAW_FILE = "toy.csv"')
+        .replace('pd.read_csv(raw_dir / "toy.csv").to_csv', "pd.read_csv(raw_dir / RAW_FILE).to_csv")
+    )
+    edited = with_constant.replace('RAW_FILE = "toy.csv"', 'RAW_FILE = "other.csv"')
+    assert _prepare_code_hash(load_definition_from_text(with_constant, "toy_ds")) != _prepare_code_hash(
+        load_definition_from_text(edited, "toy_ds")
+    )
+    # code without module constants keeps the hash it had before constants were hashed
+    plain = load_definition_from_text(PREPARING.format(name="toy_ds", comment="x"), "toy_ds")
+    assert _prepare_code_hash(plain) == _prepare_code_hash(
+        load_definition_from_text(PREPARING.format(name="toy_ds", comment="x"), "toy_ds")
+    )
+
+
+def test_a_multi_line_splits_comment_is_dedented(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        '    target = "y"',
+        '    splits_comment = """\n        First line.\n        Second line.\n    """\n\n    target = "y"',
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.container.experiment_metadata.splits_comment == "First line.\nSecond line."
+
+
+def test_report_lists_feature_types_read_from_dtypes(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return FeatureTypes(categorical=["colour"])',
+        "return FeatureTypes(categorical=[c for c in df.columns if df[c].dtype == object])",
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert "Feature types: 2 categorical" in (folder / "README.md").read_text()  # colour and the target y

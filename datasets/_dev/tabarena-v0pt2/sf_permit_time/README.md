@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
+checksum: v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04
 build:
   uuid: 01a111fb-de83-7f11-84c7-a33ce2f7887a
   checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 99847
   n_features: 37
@@ -39,14 +39,14 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 9
+  n_repeats: 8
   n_folds: 1
   random_state: 4267
   time_horizon: 6
   time_horizon_unit: months
   n_train:
-    min: 54455
-    max: 95491
+    min: 52851
+    max: 89314
   n_test:
     min: 3758
     max: 6878
@@ -60,16 +60,21 @@ bundle_checks:
     dataset_constant_column: 'The flagged columns are Y-or-missing flags (e.g. Fire
       Only Permit: Y in 12,204 rows); missing means the flag is not set, so they are
       not constant.'
-decisions: []
+    splits_rows_unused: '193 permits filed before 2020 (1,306 to 3,428 days to issue)
+      are in no split: they were filed before the oldest test window and were still
+      open when the newest one started.'
+decisions:
+- Training rows are permits filed six months or more before the window and issued
+  before it starts
 ---
 
 # sf_permit_time
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2025).
+Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
 
-Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -114,7 +119,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | GOV Website: https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9 |
-| year | 2025 |
+| year | 2026 |
 | domain | business & marketing |
 | license | Open Data Commons Public Domain Dedication and License |
 | data_tags | Non-IID, Temporal |
@@ -164,36 +169,50 @@ The first 5 of 99,847 rows of the final frame (the oldest rows: the frame is sor
 
 ## Curation notes
 
-We simulate the task of predicting the days (in float) it takes to issue the permit. We add the special use case, that we assume the model is only used to predict for permits that take longer than one day to be issued. We do this, as waiting for one day seems very reasonable. Plus, the data contains several unresolvable data errors when the permit was issued on the same day it was filed.
+We start with the Building Permits table of the San Francisco open data portal (permits filed 2015 to 2025, downloaded 2026-02-05).
 
-- We only keep permits filed before 2024. The data only holds permits that were issued by the download date, so recent filings miss their slowest permits: the share of permits still open is 1.8-5.3% for 2015-2021 but 10.2% for 2023, 11.1% for 2024 and 21.5% for 2025, and the p90 of the days to issue falls from about 300 days to 147 (2024) and 97 (2025). A check against the portal eight months later (October 2026) showed the 2024 and 2025 tails still growing (2025 p90: 97 -> 160 days), while 2023 had nearly settled (216 -> 222).
-- We drop miscellaneous permits (those that start with "M") as they are not of interest for our task. Compared to normal permits, these are usually automatically or very quickly approved and thus are not relevant to predict the time it takes to issue the permit. Moreover, the represent a significant distribution shift compared to the rest of the data.
-- We drop the permit type ordinal encoding and the creation date of the permit in the tracking system as other dates are more accurate.
-- A large number of descriptions are from standard phrases (they appear in the same way multiple times). so we add a new column that indicates whether the description is from a standard phrase or not through a categorical variable. We define a standard phrase as a description that appears more than 100 times in the dataset.
-- The 'Current Status' is the last status update of the permit. Note, that for miscellaneous permits, the permit is never completed. We filter to permits that have been issued for our task. Thus, we select all permits that are issued or completed.
-- There are several features that have almost no information (up to only 20 non nan values). We keep this and let the pipeline decide what to do with them.
-- We only keep on permit per primary address (filter based on Primary Address Flag) following https://data.sf.gov/Housing-and-Buildings/Building-Permits-Deduplicated-on-Primary-Address/f2jc-ivnc
-- We drop all permits without a location, as every permit requires a location by definition, thus these are likely data errors.
+- Prediction point: at filing. Target: the log of the days from Filed Date to Issued Date, for permits issued at least one day after filing; waiting a day is no burden, and same-day permits hold unresolvable data errors.
+- Cohort: permits filed before 2024. The download holds only permits issued by then, so recent filings miss their slowest permits: 1.8-5.3% are still open for 2015-2021, 10.2% for 2023 and 21.5% for 2025. In October 2026 the 2023 tail had settled (p90 216 -> 222 days), the 2025 one had not (97 -> 160).
+- Cohort: no miscellaneous permits (numbers starting with "M"); they are approved automatically or very fast and shift the distribution.
+- Cohort: issued or complete permits (Current Status), one per primary address (Primary Address Flag, as in the portal's deduplicated table) and with a location; a permit without one is a data error.
+- We drop the dates recorded after filing (Issued, Completed, First Construction Document, approved_date, Current Status and Last Permit Activity dates), Current Status, Revised Cost (most likely set at plan review), the ordinal codes of Permit Type and the construction types, Permit Creation Date (a system log date), ADU (deprecated from 2025), Record ID, Permit Number and the portal's load metadata.
+- Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions that occur more than 100 times. Nearly empty columns (some with 20 values) stay for the pipeline to handle.
+- Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
+- Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
 
 ## Splits
 
-We try to create splits that simulate a model deployed to solve the task.
+A model refit at the start of each half-year predicts the days to issue of the permits filed in the next six months. It trains on the permits filed at least six months before the refit that were issued by then. The days to issue are known only once a permit is issued and have a long tail (p90 315 days), so many recent permits are still open at a refit and the issued ones are the fast ones. The gap leaves out the newest filings, and older permits still open at the refit are left out of that window's training rows (decision table). The test windows walk back from the second half of 2023, the newest filings kept (see curation_comments), while the training side keeps at least 50% of the rows: 8 windows, 2020-H1 to 2023-H2, newest first, with 52,851 to 89,314 training rows. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with the gap.
 
-        The official data is updated daily but has not enough data per day to create large enough test splits. We simulate a model that is refit every six months and tested on the next six months, walking back from the last kept filing date (end of 2023) until the training data would fall below 50% of the rows. This gives 9 half-year test windows from the second half of 2019 to the second half of 2023. For each test split, we use all permits filed before the test window as training data.
-
-9 repeat(s) x 1 fold(s) with seed 4267; train 54,455 to 95,491 rows, test 3,758 to 6,878 rows. Prediction horizon: 6 months.
+8 repeat(s) x 1 fold(s) with seed 4267; train 52,851 to 89,314 rows, test 3,758 to 6,878 rows. Prediction horizon: 6 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 95491 | 4356 | 2015-01-02 09:19:47 | 2023-06-30 15:29:38 | 2023-07-03 07:45:23 | 2023-12-29 14:27:45 |
-| 1 | 0 | 90784 | 4707 | 2015-01-02 09:19:47 | 2022-12-30 15:53:43 | 2023-01-03 08:13:55 | 2023-06-30 15:29:38 |
-| 2 | 0 | 86080 | 4704 | 2015-01-02 09:19:47 | 2022-06-30 15:52:13 | 2022-07-01 08:23:59 | 2022-12-30 15:53:43 |
-| 3 | 0 | 81335 | 4745 | 2015-01-02 09:19:47 | 2021-12-31 12:20:09 | 2022-01-03 11:00:47 | 2022-06-30 15:52:13 |
-| 4 | 0 | 76763 | 4572 | 2015-01-02 09:19:47 | 2021-06-30 15:40:27 | 2021-07-01 07:52:44 | 2021-12-31 12:20:09 |
-| 5 | 0 | 71420 | 5343 | 2015-01-02 09:19:47 | 2020-12-31 15:09:15 | 2021-01-04 07:15:43 | 2021-06-30 15:40:27 |
-| 6 | 0 | 64542 | 6878 | 2015-01-02 09:19:47 | 2020-06-30 16:21:12 | 2020-07-01 06:48:36 | 2020-12-31 15:09:15 |
-| 7 | 0 | 60784 | 3758 | 2015-01-02 09:19:47 | 2019-12-31 16:37:11 | 2020-01-02 08:16:17 | 2020-06-30 16:21:12 |
-| 8 | 0 | 54455 | 6329 | 2015-01-02 09:19:47 | 2019-06-28 15:56:37 | 2019-07-01 07:41:11 | 2019-12-31 16:37:11 |
+| 0 | 0 | 89314 | 4356 | 2015-01-02 09:19:47 | 2022-12-30 15:53:43 | 2023-07-03 07:45:23 | 2023-12-29 14:27:45 |
+| 1 | 0 | 84641 | 4707 | 2015-01-02 09:19:47 | 2022-06-30 15:21:53 | 2023-01-03 08:13:55 | 2023-06-30 15:29:38 |
+| 2 | 0 | 79799 | 4704 | 2015-01-02 09:19:47 | 2021-12-31 12:20:09 | 2022-07-01 08:23:59 | 2022-12-30 15:53:43 |
+| 3 | 0 | 75046 | 4745 | 2015-01-02 09:19:47 | 2021-06-30 15:40:27 | 2022-01-03 11:00:47 | 2022-06-30 15:52:13 |
+| 4 | 0 | 69535 | 4572 | 2015-01-02 09:19:47 | 2020-12-31 14:26:47 | 2021-07-01 07:52:44 | 2021-12-31 12:20:09 |
+| 5 | 0 | 62660 | 5343 | 2015-01-02 09:19:47 | 2020-06-30 16:08:58 | 2021-01-04 07:15:43 | 2021-06-30 15:40:27 |
+| 6 | 0 | 58717 | 6878 | 2015-01-02 09:19:47 | 2019-12-31 15:10:21 | 2020-07-01 06:48:36 | 2020-12-31 15:09:15 |
+| 7 | 0 | 52851 | 3758 | 2015-01-02 09:19:47 | 2019-06-28 15:56:37 | 2020-01-02 08:16:17 | 2020-06-30 16:21:12 |
+
+## Decisions
+
+### 1. Training rows are permits filed six months or more before the window and issued before it starts
+
+The days to issue are known only once a permit is issued, and many permits filed shortly before a window are still open when it starts; the issued ones are the fast ones. The six-month gap leaves out the newest filings, and the older permits still open at the start are left out of that window's training rows.
+
+| window start | test rows | train rows | train rows left out (issued after the start) | still open at the start: filed 1-6 months before | filed 6-12 months before |
+|---|---|---|---|---|---|
+| 2023-07 | 4356 | 89314 | 1470 | 21% | 13% |
+| 2023-01 | 4707 | 84641 | 1439 | 27% | 11% |
+| 2022-07 | 4704 | 79799 | 1536 | 24% | 10% |
+| 2022-01 | 4745 | 75046 | 1717 | 25% | 11% |
+| 2021-07 | 4572 | 69535 | 1885 | 29% | 11% |
+| 2021-01 | 5343 | 62660 | 1882 | 33% | 12% |
+| 2020-07 | 6878 | 58717 | 2067 | 34% | 15% |
+| 2020-01 | 3758 | 52851 | 1604 | 22% | 9% |
 
 ## Bundle checks
 
@@ -204,6 +223,7 @@ We try to create splits that simulate a model deployed to solve the task.
 Accepted on purpose:
 
 - `dataset_constant_column`: The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); missing means the flag is not set, so they are not constant.
+- `splits_rows_unused`: 193 permits filed before 2020 (1,306 to 3,428 days to issue) are in no split: they were filed before the oldest test window and were still open when the newest one started.
 
 ## Data checks
 
@@ -358,3 +378,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04` |

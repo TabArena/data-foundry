@@ -3,6 +3,8 @@ unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learni
 name: FORCE 2020 Well well log and lithofacies dataset for machine learning competition
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Larger IID Data
@@ -25,6 +27,7 @@ source_links:
 - https://github.com/TabArena/tabarena_dataset_curation/issues/2
 - https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition/tree/master/lithology_competition
 - https://docs.google.com/document/d/13XAftsBVHIm01ZN0lP56Q4hZ9hgdYR1G_6KeV2DdzOA/edit?tab=t.0
+v2_path: datasets/_dev/tabarena-v0pt2/force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/dataset.py
 source_row: 660
 type_adapter_id: curation-record-v1
 ---
@@ -37,6 +40,8 @@ Need to double-check. Also, once checked, update GitHub issue! "
 
 "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants."
 "10 random wells from the train data set were used in preparing a validation set. Two validation sets were made from each train set prepared. "
+
+**Assessment (AI, 2026-10-07):** Valid; added as a task grouped by well. Each row holds wireline readings at one depth, not a vectorised image, and tree ensembles won: XGBoost first and second, random forests third (technical retrospective in the repository, p. 3-4), and all 13 finalists used tree ensembles. All 118 wells have published labels, so they are stacked and split by well; the Zenodo LAS files carry the same labels. GROUP and FORMATION are NPD's stratigraphic picks (Zenodo NPD tables, Interpreter NPD), not the label interpreters', and the competition gave them as features. Licence: CC BY 4.0 (Zenodo), original logs NLOD 2.0. Open: whether models may use the well's other depths (the winners added depth windows).
 
 ## Reference
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
+checksum: v2:df5a08fc7e18d317ef27c4115050d5dbf07219c752cd0a0cdd51a9b85a9091be
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 18874
   n_features: 743
@@ -72,9 +72,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2023).
+Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:df5a08fc7e18d317ef27c4115050d5dbf07219c752cd0a0cdd51a9b85a9091be`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -118,7 +118,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962 |
-| year | 2023 |
+| year | 2024 |
 | domain | education |
 | license | Creative Commons CC-BY (Attribution-only) License |
 | data_tags | Non-IID, Grouped |
@@ -232,7 +232,7 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 59.4% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 59.3% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.40 (shuffled groups: 0.14) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
@@ -480,3 +480,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:df5a08fc7e18d317ef27c4115050d5dbf07219c752cd0a0cdd51a9b85a9091be` |

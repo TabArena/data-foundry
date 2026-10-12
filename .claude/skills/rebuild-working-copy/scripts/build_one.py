@@ -74,7 +74,16 @@ def _install_tracing() -> None:
     import pandas as pd  # noqa: PLC0415 - the readers are wrapped before any definition imports them
     import pyarrow.parquet as pq  # noqa: PLC0415
 
-    for fn in ("read_parquet", "read_csv", "read_table", "read_excel", "read_feather", "read_json", "read_pickle"):
+    for fn in (
+        "read_parquet",
+        "read_csv",
+        "read_table",
+        "read_fwf",
+        "read_excel",
+        "read_feather",
+        "read_json",
+        "read_pickle",
+    ):
         _wrap(pd, fn)
     for fn in ("read_table", "ParquetFile", "ParquetDataset", "read_metadata", "read_schema"):
         _wrap(pq, fn)

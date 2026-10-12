@@ -16,7 +16,7 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
     version_comment = """
         We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
-    year = "2025"
+    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "finance"
     source = "GOV Website"
     source_url = "https://www.consumerfinance.gov/data-research/consumer-complaints/"

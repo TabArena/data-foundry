@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: Kaggle
-year: '2021'
+year: '2020'
 required_split:
 - Random (IID)
 source_links:

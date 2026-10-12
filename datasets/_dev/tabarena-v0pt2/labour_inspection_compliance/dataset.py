@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class LabourInspectionCompliance(AbstractCuratedDataset):
     # Dataset
     unique_name = "labour_inspection_compliance"
-    year = "2019"
+    year = "2022"
     domain = "industry & manufacturing"
     source = "Other"
     source_url = "https://doi.org/10.18710/7U6TZP"

@@ -17,8 +17,8 @@ class Jm1(AbstractCuratedDataset):
     unique_name = "jm1"
     year = "2004"
     domain = "technology & internet"
-    source = "OpenML"
-    source_url = "https://www.openml.org/d/1053"
+    source = "Other"  # the PROMISE repository; OpenML 1053 is a copy
+    source_url = "http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff"
     license = "Public Domain"
     download_description = """
         We download the data from OpenML inside the notebook.

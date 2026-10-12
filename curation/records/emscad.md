@@ -16,7 +16,7 @@ collections:
 - TexTabBench
 - TabSTAR
 original_source: Other
-year: '2020'
+year: '2017'
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)

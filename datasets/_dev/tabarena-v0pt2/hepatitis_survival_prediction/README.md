@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
+checksum: v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b
 build:
   uuid: 01a111fc-dbca-7d8e-ab0c-322d3d816ede
   checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 155
   n_features: 19
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1981).
+Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1988).
 
-Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -101,7 +101,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5Q59J |
-| year | 1981 |
+| year | 1988 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -345,3 +345,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b` |

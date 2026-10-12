@@ -100,7 +100,8 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
   format, and the count and size of the traced raw files;
 * a dated `CHANGELOG.md` entry, newest first: what was rebuilt and why, crashes and their fixes, the open warnings
   (count and datasets), and the verification of steps 2 and 3;
-* `TODO.md` (what the build settled or raised) and, when datasets were removed, the counts in `LEAK_AUDIT.md`,
+* the open items the build raised, in the same `CHANGELOG.md` entry and in the affected records, and, when
+  datasets were removed, the counts in `LEAK_AUDIT.md`,
   `AGENTS.md`, `datasets/README.md`, `GETTING_STARTED.md` and the add-dataset patterns.
 
 ## Step 6: the task-probe sweep (when rows or splits changed)
@@ -114,7 +115,7 @@ flag is a question, not a verdict. A dataset whose record already holds a dated 
 needs no new one unless its numbers moved. Every other flag gets a decision as
 `.claude/skills/verify-dataset/references/task_probes.md` describes (check it with `tuned_results.py` first). Record
 each decision in the record (a dated comment with the evidence), in `CHANGELOG.md`, and as a row of that reference's
-cases table; list the flags still open in `TODO.md`.
+cases table; list the flags still open in the `CHANGELOG.md` entry.
 
 ## Step 7: the superseded containers
 

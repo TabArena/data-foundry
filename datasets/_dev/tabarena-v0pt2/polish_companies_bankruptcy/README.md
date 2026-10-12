@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: polish_companies_bankruptcy
 container_format: 2
-checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
+checksum: v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94
 build:
   uuid: 01a111fc-ea70-7bb1-9ee9-8875a112b674
   checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 5790
   n_features: 64
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2010).
+Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2016).
 
-Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -101,7 +101,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5F600 |
-| year | 2010 |
+| year | 2016 |
 | domain | finance |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -352,3 +352,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94` |

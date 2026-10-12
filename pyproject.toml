@@ -71,6 +71,8 @@ build = [
     "python-calamine<0.8",  # 0.8 cannot open the xlsx of gallstone_disease ("Relationship not found")
     "xlrd",
     "matplotlib",
+    # SMILES descriptors of apistox; pinned because descriptor values can change between releases
+    "rdkit==2026.3.6",
 ]
 tests = [
     "data-foundry[build]",
@@ -182,6 +184,8 @@ ignore = [
     "COM812", # Trailing comma missing (conflicts with formatter)
     "T201", # Remove prints
     "C408", # use of {} instead of dict
+    "C416", # Unnecessary comprehension: its --fix turns {a: b for a, b in d} over a dict keyed by pairs into dict(d),
+            # which maps the pairs instead (it broke qsar_bioconcentration once)
 ]
 
 exclude = [
@@ -248,3 +252,7 @@ convention = "google"
 
 [tool.ruff.lint.pylint]
 max-args = 10
+
+[tool.pytest.ini_options]
+# as CI runs it; keeps scripts kept under the gitignored local-data-warehouse/ out of collection
+testpaths = ["tests"]

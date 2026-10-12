@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
+checksum: v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084
 build:
   uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
   checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 63634
   n_features: 376
@@ -66,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2019).
+Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -108,7 +108,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://doi.org/10.18710/7U6TZP |
-| year | 2019 |
+| year | 2022 |
 | domain | industry & manufacturing |
 | license | CC0 1.0 |
 | data_tags | IID, Spatial, ForcedIIDFromTemporal |
@@ -409,3 +409,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084` |

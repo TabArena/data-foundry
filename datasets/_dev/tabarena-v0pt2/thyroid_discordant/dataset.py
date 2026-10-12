@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class ThyroidDiscordant(AbstractCuratedDataset):
     # Dataset
     unique_name = "thyroid_discordant"
-    year = "1986"
+    year = "1987"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5D010"

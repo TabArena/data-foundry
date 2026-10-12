@@ -122,7 +122,7 @@ STRING_COLUMNS = [
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     # Dataset
     unique_name = "pva_revenue_prediction_kddcup98"
-    year = "1997"
+    year = "1998"
     domain = "business & marketing"
     source = "Other"
     source_url = "https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html"  # Rel 10.24432/C5401H

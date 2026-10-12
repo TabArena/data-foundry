@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: airfoil_self_noise
 container_format: 2
-checksum: v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f
+checksum: v2:e8245f4280ad36526f49d46e8eaabb5152b97f1e523f5e9481e7031fd6549258
 build:
   uuid: 01a11312-37c8-7cae-b6c8-c0b883fea348
   checksum: v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1503
   n_features: 5
@@ -71,7 +71,7 @@ decisions: []
 
 Regression of `scaled-sound-pressure`, scored with `rmse` on grouped splits by `run`. 1,503 rows and 5 features. Source: UCI (2014).
 
-Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06. See [Build](#build).
+Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e8245f4280ad36526f49d46e8eaabb5152b97f1e523f5e9481e7031fd6549258`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -288,3 +288,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:e8245f4280ad36526f49d46e8eaabb5152b97f1e523f5e9481e7031fd6549258` |

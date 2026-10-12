@@ -322,7 +322,9 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k != "grouping"]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
 
-    types = result.dataset.feature_types(df)
+    # the types the standard steps applied to the cleaned frame; asked again of the cast frame, a `_feature_types`
+    # that reads dtypes (object columns as categorical) would find none
+    types = getattr(result.dataset, "_applied_feature_types", None) or result.dataset.feature_types(df)
     present = set(df.columns)  # a custom split step may drop columns after `_feature_types` named them
     groups = [
         ("categorical", [c for c in types.categorical if c in present]),

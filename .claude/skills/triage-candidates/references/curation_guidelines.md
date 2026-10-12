@@ -34,6 +34,13 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
 3. **Published for a predictive task** — explicitly a classification/regression task.
    Exclude scientific-discovery (survey / non-predictive) tables, click-through-rate,
    and ranking / information-retrieval (recommender) tasks.
+   The target is an observed outcome or an expert annotation, not a label from unsupervised
+   learning: a molecular subtype defined by clustering (PAM50, expression subtypes, NMF
+   clusters) is not a real predictive task (Lennart, 2026-10-12: brca_breast_cancer,
+   glioblastoma, ov_ovarian_cancer). A label the source computes with a published,
+   deterministic rule from the columns: drop the rule's inputs when the rest still makes a
+   real task (account_debt_south_africa); when the inputs are the whole task it is `Trivial`
+   (central_international_medical_college_and_hospital_health_risk_prediction, NEWS2).
 4. **Representative of a real tabular-ML application** — exclude datasets that are:
    (A) from a non-tabular modality where modality-specific models are clearly superior
    (judged per-dataset; vectorized image/text/audio/time-series is OK if tabular models

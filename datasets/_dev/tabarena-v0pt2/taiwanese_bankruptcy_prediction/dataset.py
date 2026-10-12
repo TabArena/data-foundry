@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "taiwanese_bankruptcy_prediction"
-    year = "2009"
+    year = "2020"
     domain = "finance"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5004D"

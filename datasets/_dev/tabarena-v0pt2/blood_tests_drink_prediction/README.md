@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: blood_tests_drink_prediction
 container_format: 2
-checksum: v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081
+checksum: v2:05f0b8988049a6c38cad7ab1b89cabaec1490df62fb542cf6708ff12398b4100
 build:
   uuid: 01a111fc-c9a3-7ff6-8480-be0052f38d83
   checksum: v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 345
   n_features: 5
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 features. Source: UCI (1996).
+Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 features. Source: UCI (1990).
 
-Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:05f0b8988049a6c38cad7ab1b89cabaec1490df62fb542cf6708ff12398b4100`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C54G67 |
-| year | 1996 |
+| year | 1990 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -283,3 +283,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:05f0b8988049a6c38cad7ab1b89cabaec1490df62fb542cf6708ff12398b4100` |

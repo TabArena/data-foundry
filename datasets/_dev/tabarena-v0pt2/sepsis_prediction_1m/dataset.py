@@ -18,7 +18,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     year = "2019"
     domain = "medical & healthcare"
     source = "Other"
-    source_url = "https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis"  # alt https://physionet.org/content/challenge-2019/1.0.0/
+    source_url = "https://physionet.org/content/challenge-2019/1.0.0/"  # the Kaggle file is a copy
     license = "ODC Open Database License"  # CC BY-NC-SA 4.0 on Kaggle...
     data_tags = ("Non-IID", "Grouped")
     download_description = """

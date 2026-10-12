@@ -171,3 +171,5 @@ uv.lock
 
 # Keep only README.md
 !/local-data-warehouse/README.md
+# CatBoost training logs written to the working directory
+catboost_info/

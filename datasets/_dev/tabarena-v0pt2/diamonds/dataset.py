@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class Diamonds(AbstractCuratedDataset):
     # Dataset
     unique_name = "diamonds"
-    year = "2015"
+    year = "2007"
     domain = "business & marketing"
     source = "Other"
     source_url = "https://github.com/tidyverse/ggplot2/blob/main/data-raw/diamonds.csv"

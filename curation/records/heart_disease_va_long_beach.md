@@ -14,7 +14,7 @@ tags:
 collections:
 - TabArena Reject
 original_source: UCI
-year: '1989'
+year: '1988'
 domain: medical & healthcare
 required_split:
 - Random (IID)

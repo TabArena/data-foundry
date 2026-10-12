@@ -11,10 +11,10 @@ from data_foundry.v2 import AbstractCuratedDataset
 class Heloc(AbstractCuratedDataset):
     # Dataset
     unique_name = "heloc"
-    year = "2021"
+    year = "2018"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc"
+    source = "Other"  # FICO's Explainable Machine Learning Challenge (heloc_dataset_v1); the Kaggle file is a copy
+    source_url = "https://community.fico.com/s/explainable-machine-learning-challenge"
     license = "Public"
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.

@@ -8,9 +8,9 @@ dataset**, with a list of candidates to pick from.
 
 [TabArena](https://tabarena.ai/) benchmarks tabular ML on curated, real-world prediction tasks.
 This folder is the working copy of its next version, **TabArena v0.2**: one folder per dataset, each a v2 definition
-(`dataset.py`) built as a curated container. It started from the 142 datasets of
-[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited (125 remain), and new
-datasets join it here. The datasets come from three split regimes: random (IID), **temporal** (predict the future)
+(`dataset.py`) built as a curated container. It started from the datasets of
+[BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited, and new datasets join it
+here; [`README.md`](README.md) lists the current ones. The datasets come from three split regimes: random (IID), **temporal** (predict the future)
 and **grouped** (generalise to unseen entities such as patients or customers).
 
 > [!TIP]
@@ -67,7 +67,6 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 |---|---|
 | [`README.md`](README.md) | The table of datasets (regime, size, splits, UUID, open warnings) and how to rebuild them. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
-| [`TODO.md`](TODO.md) | Open decisions and later work. |
 | [`LEAK_AUDIT.md`](LEAK_AUDIT.md) | The 2026 leak audit: removed and changed datasets, with severity. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
@@ -131,48 +130,18 @@ is left as a `TODO(verify)` marker. From there you do the data science: download
 the split, and judge whether the result is a sound benchmark task. Then run the probes and `/verify-dataset
 <unique_name>`, and open the PR; a curator builds the container after review.
 
-**Learn from the datasets in this folder**, worked examples across the regimes:
-
-| Example | Regime | Why it is a good read |
-|---|---|---|
-| [`blood_transfusion`](blood_transfusion/dataset.py) | IID | the smallest complete definition |
-| [`mercari_price_suggestion`](mercari_price_suggestion/dataset.py) | IID | 1.48M rows taken in full, text features |
-| [`delivery_eta_1m`](delivery_eta_1m/dataset.py) | temporal | 17M rows, sampled per test window into a `_1m` version |
-| [`rossmann_store_sales`](rossmann_store_sales/dataset.py) | temporal | horizon from the source, a planning gap |
-| [`amex_non_iid_1m`](amex_non_iid_1m/dataset.py) | grouped | one prediction per customer from all its statements (`last`, `all_rows`), sub-sampled by whole customers |
-| [`electric_motor_temperature_prediction`](electric_motor_temperature_prediction/dataset.py) | grouped | sensor streams held out by measurement session |
-| [`sat11_hand_algo_runtime`](sat11_hand_algo_runtime/dataset.py) | grouped | algorithm selection (`select_min`), censored runtimes |
+**Learn from the definitions in this folder.** The add-dataset skill names a reference definition for each regime
+(IID, grouped, temporal, a sub-sampled `_1m` version, heavy raw data) in step 2 of
+[`.claude/skills/add-dataset/SKILL.md`](../../../.claude/skills/add-dataset/SKILL.md); read the closest one in full
+before you write your own.
 
 ## 7. Where to start: the large-data candidates
 
-As of 2026-10-02; the [filtered log](https://tabarena.github.io/data-foundry/#hf.tags=Review+Prio+1+%28Atlas%29)
-shows the current state. Rows are rough estimates from the records.
-
-### 7.1 Records to settle (Workflow A)
-
-| Record | State | Rows ≈ | What's needed |
-|---|---|---:|---|
-| [`usa_airport_dataset`](../../../curation/records/usa_airport_dataset.md) | `TBD -> Yes` | 3.5M | Define the task: flight records with no settled non-leaking target yet (forecast one of flights, seats, passengers). |
-| [`wind_turbine_scada_data_for_early_fault_detection`](../../../curation/records/wind_turbine_scada_data_for_early_fault_detection.md) | `TBD -> 2nd Tier` | 4.7M | CARE-to-Compare SCADA: the per-turbine grouped / temporal setup and the real task are unclear. |
-| [`yelp`](../../../curation/records/yelp.md) | `TBD -> 2nd Tier` | 7M | Probably no tabular task beyond entity matching or recommendation; confirm or reject. |
-
-### 7.2 Accepted, waiting for a definition (Workflow B)
-
-| Record | Rows ≈ | Task (one line) |
-|---|---:|---|
-| [`g_research_crypto_forecasting`](../../../curation/records/g_research_crypto_forecasting.md) | 24M | Crypto-returns regression, temporal + grouped; the split design needs care (anonymisation). |
-| [`fraud_detection_in_electricity_and_gas_consumption`](../../../curation/records/fraud_detection_in_electricity_and_gas_consumption.md) | 4.5M invoices, 135K clients | STEG utility fraud, one label per client from the invoice history; grouped by client, check temporal. |
-| [`huntprohibited`](../../../curation/records/huntprohibited.md) | 4M | Avito prohibited-content detection (binary, Russian text), much preprocessing. |
-| [`numerai_v5_2`](../../../curation/records/numerai_v5_2.md) | 2.4M | Obfuscated stock-market regression, temporal split on `era`. |
-| [`expresso_churn_prediction`](../../../curation/records/expresso_churn_prediction.md) | 2.15M | Zindi telecom churn; check IID against temporal. |
-| [`pkdd_15_taxi_trip_time_prediction_ii`](../../../curation/records/pkdd_15_taxi_trip_time_prediction_ii.md) | 1.7M | Porto taxi trip time from partial GPS trajectories, temporal. |
-| [`nyc_taxi_trip_duration`](../../../curation/records/nyc_taxi_trip_duration.md) | 1.46M | NYC trip-duration regression (Kaggle 2016), temporal. |
-| [`force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`](../../../curation/records/force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition.md) | 1.17M | Lithofacies multiclass from well logs, grouped by well. |
-| [`rosbank1`](../../../curation/records/rosbank1.md) | 1M | Card-transaction churn and spending prediction, transaction level. |
-| [`sasol_customer_retention_recruitment_competition`](../../../curation/records/sasol_customer_retention_recruitment_competition.md) | multi-M | 90-day customer inactivity (~1.5M clients); read the licence notes in the record first. |
-| [`alfa_battle_2_0_task_1`](../../../curation/records/alfa_battle_2_0_task_1.md) | multi-M | Next-action prediction from 270 days of mobile-banking event logs. |
-| [`alfa_battle_2_0_task_2`](../../../curation/records/alfa_battle_2_0_task_2.md) | multi-M | Credit-default prediction (binary), temporal train/test. |
-| [`zillow_prize`](../../../curation/records/zillow_prize.md) | 90K labelled | Home-value error (`logerror`) regression; only ~90K labelled rows, so below the large-data bar. |
+The candidates change every week, so this guide does not list them. The
+[filtered curation log](https://tabarena.github.io/data-foundry/#hf.tags=Review+Prio+1+%28Atlas%29) (or
+[the same view locally](http://127.0.0.1:8765/#hf.tags=Review+Prio+1+%28Atlas%29) with the dashboard running) shows
+them with their state: a `TBD -> …` suggestion needs settling (Workflow A), a `Yes` without `DF: Yes` needs a
+definition (Workflow B). Each record's comments say what is open.
 
 Pick one, tell the team you are on it (claims are marked in the record's `data_foundry_status`: `WIP (Triage)` or
 `WIP (DF)`), and go. The record's comments, the Guidelines tab and the definitions in this folder answer most

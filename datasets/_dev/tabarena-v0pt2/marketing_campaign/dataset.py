@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class MarketingCampaign(AbstractCuratedDataset):
     # Dataset
     unique_name = "marketing_campaign"
-    year = "2020"
+    year = "2019"
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign"

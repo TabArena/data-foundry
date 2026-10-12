@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class AmazonEmployeeAccess(AbstractCuratedDataset):
     # Dataset
     unique_name = "amazon_employee_access"
-    year = "2010"
+    year = "2013"
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/c/amazon-employee-access-challenge"

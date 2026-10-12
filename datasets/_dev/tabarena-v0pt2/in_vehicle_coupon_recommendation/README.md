@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
+checksum: v2:62d6558584112aecac07e6681d50e705ce72acde20e13bf885e1d6f347f083cd
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 12684
   n_features: 24
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: UCI (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:62d6558584112aecac07e6681d50e705ce72acde20e13bf885e1d6f347f083cd`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -176,7 +176,7 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 ## Splits
 
 Grouped splits on the survey respondent: all answers of one person stay on one side, so the task is a cold-start
-        model that predicts a new person's response from their profile, stated habits and the driving scenario.
+model that predicts a new person's response from their profile, stated habits and the driving scenario.
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 8,390 to 8,503 rows, test 4,181 to 4,294 rows.
 
@@ -358,3 +358,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:62d6558584112aecac07e6681d50e705ce72acde20e13bf885e1d6f347f083cd` |

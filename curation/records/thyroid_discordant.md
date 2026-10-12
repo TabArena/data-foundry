@@ -16,6 +16,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
+year: '1987'
 domain: medical & healthcare
 required_split:
 - Random (IID)

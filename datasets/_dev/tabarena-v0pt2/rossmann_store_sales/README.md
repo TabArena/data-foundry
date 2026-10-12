@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
+checksum: v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34
 build:
   uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
   checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 844392
   n_features: 15
@@ -65,7 +65,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -168,7 +168,7 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 ## Splits
 
 The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance'.
-        Therefore, we define the same horizon for our test splits and add one day between train/test as a planning gap.
+Therefore, we define the same horizon for our test splits and add one day between train/test as a planning gap.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 728,478 to 802,996 rows, test 37,044 to 40,282 rows. Prediction horizon: 42 days.
 
@@ -282,3 +282,4 @@ The description says 'Rossmann store managers are tasked with predicting their d
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34` |

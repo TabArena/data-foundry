@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, drop
 class EarlyLearningPredictors(AbstractCuratedDataset):
     # Dataset
     unique_name = "early_learning_predictors"
-    year = "2023"
+    year = "2024"
     domain = "education"
     source = "Other"
     source_url = "https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962"

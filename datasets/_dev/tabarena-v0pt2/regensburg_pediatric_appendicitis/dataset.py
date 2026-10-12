@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     # Dataset
     unique_name = "regensburg_pediatric_appendicitis"
-    year = "2021"
+    year = "2023"
     domain = "medical & healthcare"
     source = "Other"
     source_url = "https://doi.org/10.5281/zenodo.7711412"

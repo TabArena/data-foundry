@@ -13,7 +13,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, Temp
 class Kickstarter(AbstractCuratedDataset):
     # Dataset
     unique_name = "kickstarter"
-    year = "2025"
+    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "business & marketing"
     source = "Other"
     source_url = "https://webrobots.io/kickstarter-datasets/"

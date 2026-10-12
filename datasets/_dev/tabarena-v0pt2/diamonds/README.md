@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
+checksum: v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f
 build:
   uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
   checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 53940
   n_features: 9
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `price`, scored with `rmse` on IID splits. 53,940 rows and 9 features. Source: Other (2015).
+Regression of `price`, scored with `rmse` on IID splits. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://github.com/tidyverse/ggplot2/blob/main/data-raw/diamonds.csv |
-| year | 2015 |
+| year | 2007 |
 | domain | business & marketing |
 | license | MIT License |
 | data_tags | IID |
@@ -251,3 +251,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f` |

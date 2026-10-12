@@ -94,7 +94,9 @@ Keep `print` diagnostics out of the definition: `README.md` already records spli
 
 **Map `domain`** (record `domain`) — must exactly match one of: `"education"`, `"environmental science & climate"`, `"biology & life sciences"`, `"handcrafted"`, `"chemistry & material science"`, `"industry & manufacturing"`, `"physics & astronomy"`, `"multimedia"`, `"medical & healthcare"`, `"technology & internet"`, `"finance"`, `"social science"`, `"business & marketing"`, `"insurance"`. If the input doesn't match, pick the closest match.
 
-**Map `source`** (record `original_source`) — must exactly match one of: `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`, `"Customer"`, `"Other"`, `"ASlib"`. This is where the data *first appeared*, which is often not the link you were given.
+**Map `source`** (record `original_source`) — must exactly match one of: `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`, `"Customer"`, `"Other"`, `"ASlib"`. This is where the data was *first published*, which is often not the link you were given: a Kaggle, OpenML, UCI or Hugging Face re-upload of a government survey, a paper's repository or a company release takes the original's source (and `source_url` points to that first publication). `"Kaggle"` stays only when Kaggle is where the data first appeared (a competition, a dataset first released there) or the only source found (Lennart, 2026-10-12). `download_description` still says where the files are downloaded from, and names the original when the download is a copy.
+
+**Set `year`** to the year the data was first published, at the publication `source_url` points to: a competition's launch, a dataset's release (UCI's "Donated on" or the date in its `.names` file, a Kaggle dataset's first version), the online date of the paper or supplement that holds the rows, or the first commit that shares them; not the collection period, a paper that only analysed the data, or the date of the copy you download (Lennart, 2026-10-12). A source that grows over time (a public register, a scraped site, a monthly archive) takes the year of the snapshot the definition pins.
 
 **Map `data_tags`** (record tags) — context tags only. The base class adds the regime tags from the declaration:
 `IID`, or `Non-IID` with `Temporal` (a `Temporal`), `Grouped` (a `Grouping`) or `GroupedTemporal` (a `Grouping` with a
@@ -188,6 +190,10 @@ in on purpose gets `Potential leak, kept on purpose:` with the mechanism, the nu
 revisit (`homesite_quote_conversion`, `kick`).
 Comments are the audit trail: **every non-obvious line of preprocessing code needs a bullet,
 and every bullet needs code.** `/verify-dataset` checks exactly that correspondence.
+
+Keep them short: one or two sentences per bullet, about 400 words in all (the collection's median is about 100).
+State each decision and the fact or number that decides it. The long evidence (provenance, probe output, the
+verification history, quotes) goes to the curation record and the `_decisions` tables, not here.
 
 ## §B The preprocessing recipe (the body of `_clean`)
 
@@ -562,7 +568,8 @@ inside the hook. Typical decisions, with examples from the collection:
 
 | Decision | Evidence |
 |---|---|
-| A column leaks the target and is dropped (sub-scores that add up to the target, a post-outcome field) | a table of the column's correlation with / single-feature AUC for the target |
+| A column is dropped for what it is: recorded after the prediction point, an outcome, a model output or estimate fit with the label, a field the source says not to use | no numbers: the reason (the source's words, when it is recorded) in `curation_comments`, and no decision unless a reviewer could question the call |
+| A column is dropped for what its values show, and the context does not settle it (sub-scores that add up to the target, a column tied to the label's time window rather than the features', a block of columns with no signal) | the comparison that shows it: the column's correlation with / ROC AUC alone for the target against a reference (another window, another subset, the strongest kept feature), with `roc_auc_score` and pandas `corr`, not a hand-written helper; how much the drop matters comes from `leak_probes.py` (the score with and without it) |
 | The split regime (kick: temporal, not grouped by auction location) | a table of how many groups recur over time; a histogram of time points per group |
 | A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column (`.claude/skills/verify-dataset/scripts/leak_probes.py`) |
 | Duplicate rows are kept or dropped (§D.4) | the duplicate share and how many conflict in the target |
@@ -570,4 +577,9 @@ inside the hook. Typical decisions, with examples from the collection:
 | A proxy missing value is converted (§B.5) | the value counts of the sentinel |
 
 `kick/dataset.py` is the worked example (a table and a figure).
+
+Show a number only where it decides the call. A column recorded after the prediction point goes whatever it scores
+alone, and a column known at the prediction point stays whatever it scores, so a single-column score for a drop the
+context settles repeats the context and invites a reader to weigh it. `rain_in_australia` shows a case where the
+number decides: it compares each column's ROC AUC for the rain before 9 am on D with that for the label's window.
 

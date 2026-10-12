@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
+checksum: v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9
 build:
   uuid: 01a111fc-f194-75a8-92f0-489647625f28
   checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1811452
   n_features: 12
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2025).
+Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2026).
 
-Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -112,7 +112,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | GOV Website: https://www.consumerfinance.gov/data-research/consumer-complaints/ |
-| year | 2025 |
+| year | 2026 |
 | domain | finance |
 | license | U.S. Government Works |
 | data_tags | Non-IID, Temporal, Spatial |
@@ -190,13 +190,13 @@ Version of `consumer_complaints`: We use the last three quarters of 2025 as test
 
 We try to create splits that simulate a model deployed to solve the task.
 
-        - The official data is updated daily but companies have 180 days to respond to a new complaint.
-        - We could simulate a model that is refitted daily, but this would need many splits. Moreover, data from just a few days is likely not enough to create a robust test set.
-        - Thus, we instead simulate a model that is refit every three months and then deployed.
-        - This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
+- The official data is updated daily but companies have 180 days to respond to a new complaint.
+- We could simulate a model that is refitted daily, but this would need many splits. Moreover, data from just a few days is likely not enough to create a robust test set.
+- Thus, we instead simulate a model that is refit every three months and then deployed.
+- This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
 
-        We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
-        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
+We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months.
 
@@ -330,3 +330,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9` |

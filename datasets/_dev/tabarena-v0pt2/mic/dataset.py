@@ -13,8 +13,8 @@ class Mic(AbstractCuratedDataset):
     unique_name = "mic"
     year = "2020"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://archive.ics.uci.edu/dataset/579/myocardial+infarction+complications"
+    source = "Other"  # the University of Leicester deposit (2020); UCI 579 is a later copy
+    source_url = "https://doi.org/10.25392/leicester.data.12045261"
     license = "CC BY 4.0"
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
@@ -45,7 +45,8 @@ class Mic(AbstractCuratedDataset):
     problem_type = "multiclass_classification"
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        df = pd.read_csv(f"{raw_dir}/MI.data", na_values="?")
+        # the file has no header row: without header=None the first patient became the header
+        df = pd.read_csv(f"{raw_dir}/MI.data", header=None, na_values="?")
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:

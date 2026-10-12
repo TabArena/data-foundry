@@ -12,12 +12,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
 class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "biogeographical_ancestry_prediction"
-    year = "2025"  # source data is older, but this version was created in 2025
+    year = "2023"
     domain = "biology & life sciences"
-    source = "GitHub"
-    source_url = """
-        https://github.com/CarolaHeinzel/BGA_Classification/blob/main/data/input_data/full_data.csv
-    """
+    source = "Other"  # Supplementary Table S1A of Ruiz-Ramirez et al. 2023; the GitHub file is a later copy
+    source_url = "https://doi.org/10.1016/j.fsigen.2023.102853"
     license = "None"  # Data from GitHub does not have a license, source is Apache-2.0 license (I think)
     download_description = """
         We download the data from the GitHub repository and save it to a predefined folder.

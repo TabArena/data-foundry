@@ -2,10 +2,10 @@
 unique_name: indabax_drc_2022
 name: indabax-drc-2022
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-tags:
-- AI-Filled (Verify)
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Duplicate
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -20,8 +20,6 @@ source_links:
 - https://zindi.africa/competitions/instadeep-fraud-detection-in-electricity-and-gas-consumption-challenge
 - https://zindi.africa/competitions/indabax-cameroon-2021-2
 source_row: 997
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -34,3 +32,5 @@ IndabaX DRC 2022 reuses the well-known STEG fraud-detection task (fraud in elect
 ---
 
 Fraud Detection in Electricity and Gas Consumption
+
+CC (2026-10-12, Lennart): No: duplicate of fraud_detection_in_electricity_and_gas_consumption. Its Zindi data page lists the same STEG files (train.zip 61.2 MB, test.zip 26.4 MB, SampleSubmission.csv 2.1 MB) and says "The data provided by STEG is composed of two files".

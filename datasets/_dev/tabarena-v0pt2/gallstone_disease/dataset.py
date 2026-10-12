@@ -11,10 +11,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class GallstoneDisease(AbstractCuratedDataset):
     # Dataset
     unique_name = "gallstone_disease"
-    year = "2023"
+    year = "2025"
     domain = "medical & healthcare"
     source = "UCI"
-    source_url = "https://doi.org/10.1097/md.0000000000037258"
+    source_url = "https://archive.ics.uci.edu/dataset/1150/gallstone-1"  # the paper says its data are not public
     license = "CC BY 4.0"
     download_description = """
         We get the data from UCI.

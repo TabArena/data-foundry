@@ -3,6 +3,8 @@ unique_name: fraud_detection_in_electricity_and_gas_consumption
 name: fraud-detection-in-electricity-and-gas-consumption-challenge
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
 suggestion: 'Yes'
 tags:
 - Review Prio 1 (Atlas)
@@ -28,6 +30,7 @@ source_links:
 - https://zindi.africa/competitions/indabax-cameroon-2021-2
 - https://zindi.africa/competitions/indabax-sudan-classification2022
 - https://zindi.africa/competitions/indabax-drc-2022
+v2_path: datasets/_dev/tabarena-v0pt2/fraud_detection_in_electricity_and_gas_consumption_1m/dataset.py
 source_row: 988
 type_adapter_id: curation-record-v1
 ---
@@ -47,6 +50,14 @@ Train data starts from 2005, release date is 2020, cut-off likely 2019
 The competition split uses a grouped split on clients, carrying the same range. Hence this should be a grouped split as well. 
 
 Label-per-group cases, which would be much smaller if we aggregate the columns.
+
+**Assessment (AI, 2026-10-07):** Added as `fraud_detection_in_electricity_and_gas_consumption_1m`. One prediction per
+client, grouped by client, from its invoices before 2013-01-01: 83,874 clients billed before and after that date. The
+data place STEG's findings in 2013-2019. Clients who left earlier are almost never fraud (21 of 19,133). Meter
+replacements, counter status 5 and new counter codes first seen from 2013Q1 go with 21-36% fraud, against 4-12% up to
+2012Q4. 47.8% of frauds carry such a trace, which the full history (Zindi's task) leaks. Per-client AUC is 0.61-0.69
+with the cut and 0.85 with the full history. First run as AI Hack Tunisia #4 (Sep 2019). `indabax_drc_2022` is the
+same STEG data.
 
 ## Reference
 

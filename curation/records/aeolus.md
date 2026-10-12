@@ -3,6 +3,8 @@ unique_name: aeolus
 name: Aeolus
 checked_by:
 - Andrej
+data_foundry_status:
+- WIP (DF)
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
@@ -20,6 +22,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/datasets/flnny123/mfddmulti-modal-flight-delay-dataset
 - https://github.com/Flnny/Delay-data
+v2_path: datasets/_dev/tabarena-v0pt2/aeolus_1m/dataset.py
 source_row: 733
 type_adapter_id: curation-record-v1
 ---
@@ -27,6 +30,10 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Quite extensive. Could be the best flight data there is
+
+**Assessment (AI, 2026-10-07):** Source: Xu et al., NeurIPS 2025 Datasets and Benchmarks (arXiv:2510.26616); the Kaggle release holds 54,674,003 completed BTS flights 2016-2024 (March 2024 missing) with hourly Meteostat weather. Added as `aeolus_1m`: arrival 15 minutes or more late (US DOT definition, the paper's classification task), predicted before departure from the schedule and the airports' weather. The release joined Meteostat's UTC hours to local clock times, so that weather was observed a median 5.2 (origin) and 3.0 hours (destination) before the departure. The minutes make a poor target: the 1% longest delays hold 56-71% of their variance, and LightGBM reaches R² 0.01-0.02 on them against ROC AUC 0.64-0.67 for the indicator. So the problem type becomes Binary Classification.
+
+**Assessment (AI, 2026-10-12), problems in the release:** (1) The authors' release joins Meteostat's hourly weather, whose timestamps are UTC, to the local scheduled clock times, so the weather of a flight is read 4-10 hours early (origin weather a median 5.2 hours before departure); a few destination readings fall after the departure. (2) March 2024 is missing. Both are worth reporting to the authors (Xu et al., NeurIPS 2025). The definition keeps the release as published and states both as `Anomaly:` bullets; the leak of the late destination readings is a `Potential leak, kept on purpose:` bullet.
 
 ## Reference
 

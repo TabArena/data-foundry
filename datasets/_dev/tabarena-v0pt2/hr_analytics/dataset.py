@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class HrAnalytics(AbstractCuratedDataset):
     # Dataset
     unique_name = "hr_analytics"
-    year = "2021"
+    year = "2020"
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists"

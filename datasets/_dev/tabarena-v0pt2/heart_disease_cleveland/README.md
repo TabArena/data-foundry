@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_cleveland
 container_format: 2
-checksum: v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95
+checksum: v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9
 build:
   uuid: 01a111fc-a515-7938-a082-7add803d38c2
   checksum: v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 303
   n_features: 13
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 303 rows and 13 features. Source: UCI (1989).
+Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 303 rows and 13 features. Source: UCI (1988).
 
-Built as `01a111fc-a515-7938-a082-7add803d38c2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a515-7938-a082-7add803d38c2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -101,7 +101,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C52P4X |
-| year | 1989 |
+| year | 1988 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -325,3 +325,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9` |

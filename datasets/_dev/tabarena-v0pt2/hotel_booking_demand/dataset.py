@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan, Tem
 class HotelBookingDemand(AbstractCuratedDataset):
     # Dataset
     unique_name = "hotel_booking_demand"
-    year = "2019"
+    year = "2018"
     domain = "business & marketing"
     source = "Other"
     source_url = "https://www.sciencedirect.com/science/article/pii/S2352340918315191#s0005"

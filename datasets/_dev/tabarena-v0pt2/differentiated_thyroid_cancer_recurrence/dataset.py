@@ -1,0 +1,133 @@
+"""Curated dataset definition for `differentiated_thyroid_cancer_recurrence` (data-foundry v2). Evidence: README.md."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pandas as pd
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+
+
+class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
+    # Dataset
+    unique_name = "differentiated_thyroid_cancer_recurrence"
+    year = "2023"
+    domain = "medical & healthcare"
+    source = "UCI"
+    source_url = "https://doi.org/10.24432/C5632J"
+    license = "CC BY 4.0"
+    download_description = """
+        We download the data from UCI (dataset 915, donated by the authors; the zip holds one file, Thyroid_Diff.csv,
+        sha256 a2c65f7c8fa0e78a65aa4946961aafd45218c92760d10375fe2c778045c97b44). OpenML 46605 is a 2025 re-upload
+        of the same 383 rows.
+
+        mkdir -p local-data-warehouse/differentiated_thyroid_cancer_recurrence && wget -P local-data-warehouse/differentiated_thyroid_cancer_recurrence/ https://archive.ics.uci.edu/static/public/915/differentiated+thyroid+cancer+recurrence.zip && unzip local-data-warehouse/differentiated_thyroid_cancer_recurrence/differentiated+thyroid+cancer+recurrence.zip -d local-data-warehouse/differentiated_thyroid_cancer_recurrence/
+    """
+    bibtex = """
+        @article{borzooei2024machine,
+          title={Machine learning for risk stratification of thyroid cancer patients: a 15-year cohort study},
+          author={Borzooei, Shiva and Briganti, Giovanni and Golparian, Mitra and Lechien, Jerome R and Tarokhian, Aidin},
+          journal={European Archives of Oto-Rhino-Laryngology},
+          volume={281},
+          number={4},
+          pages={2095--2104},
+          year={2024},
+          publisher={Springer},
+          doi={10.1007/s00405-023-08299-w}
+        }
+    """
+    curation_comments = """
+        We start with Thyroid_Diff.csv from UCI: 383 patients with well-differentiated thyroid cancer followed after thyroidectomy in Hamadan, Iran, for at least 10 years.
+
+        - Prediction point: after initial therapy, at the initial staging, when the ATA risk of recurrence is assigned. The model predicts recurrence during follow-up; the 14 kept features describe the patient and the tumour at diagnosis and surgery.
+        - We drop `Response`, the response to therapy. It is assessed during the first 2 years of follow-up (Tuttle et al. 2010), after the prediction point, and its structural incomplete category, "persistent or newly identified loco-regional or distant metastases" (ATA 2015), is the outcome itself (decision table).
+        - We drop `Hx Radiothreapy` ("Yes" for 7 patients). No source defines or dates it, and 6 of the 7 are ATA high-risk men with advanced disease who all recurred, which fits radiotherapy given after the prediction point (decision table).
+        - We rename the pathology value "Hurthel cell" to "Hurthle cell" (source typo).
+        - `Age` is numeric and every other feature categorical.
+        - Duplicates: we keep the 26 rows (6.8%) that copy another row. The file's 383 rows are the paper's 383 patients, so the copies are distinct patients with the same coarse record (women with an ATA low-risk tumour who did not recur). Permuting `Age` within ATA risk and sex gives about as many by chance (23.2 duplicate feature vectors against 27). One profile of three patients carries both labels; we keep all three.
+        - IID split over patients.
+        - Anomaly: `Stage` differs from the AJCC 8th edition stage computed from `Age`, `T`, `N` and `M` in 12 of 383 rows, and 2 of the 18 patients with M1 are ATA intermediate risk, so their metastases may have been found after the initial staging. We keep them as recorded; dropping `M` and `Stage` changes the ROC AUC by +0.001.
+        - Note: the label seems to count persistent disease as recurrence (all 18 patients with M1 and all 32 ATA high-risk patients recurred); the paper is behind a paywall. The task is valid either way, as the ATA initial risk estimates "the risk of persistent/recurrent disease" (ATA 2015).
+        - Note: the record's `Trivial` marker came from the paper's ROC AUC 0.984-0.997 on all features combined. Here the ATA risk alone gives 0.896 on the 60 shipped splits, and three untuned models (0.929-0.932) beat it on 59 to 60 of them.
+    """
+
+    # Task
+    target = "Recurred"
+    problem_type = "binary_classification"
+    accepted_check_warnings = {
+        "dataset_duplicate_rows": (
+            "Kept on purpose: the 383 rows are the paper's 383 patients, and the 26 copies (22 profiles) are women with "
+            "an ATA low-risk tumour who did not recur, the most common record of 14 coarse clinical fields. Permuting age "
+            "within risk and sex gives 23 duplicate feature vectors by chance (95% range 17-30) against 27 observed, and "
+            "leaving the copied test rows out lowers the ROC AUC by 0.002-0.003 on the 60 shipped splits."
+        ),
+    }
+
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        return pd.read_csv(raw_dir / "Thyroid_Diff.csv")
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # typo in the source
+        df["Pathology"] = df["Pathology"].replace({"Hurthel cell": "Hurthle cell"})
+        # the response to therapy is assessed during the first 2 years of follow-up, after the prediction point, and
+        # its structural incomplete category is persistent or new metastatic disease, the outcome itself; no source
+        # defines or dates the radiotherapy column, and its "Yes" rows look like treatment of advanced disease
+        df = drop_columns(df, ["Response", "Hx Radiothreapy"])
+        return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=[c for c in df.columns if c not in ("Age", self.target)])
+
+    def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
+        recurred = raw["Recurred"].eq("Yes")
+        by_response = recurred.groupby(raw["Response"]).agg(patients="size", recurred="sum")
+        by_response["share_recurred"] = (by_response["recurred"] / by_response["patients"]).round(3)
+
+        radiotherapy = raw.groupby("Hx Radiothreapy").agg(
+            patients=("Recurred", "size"),
+            recurred=("Recurred", lambda s: int(s.eq("Yes").sum())),
+            ata_high_risk=("Risk", lambda s: int(s.eq("High").sum())),
+            distant_metastases=("M", lambda s: int(s.eq("M1").sum())),
+            men=("Gender", lambda s: int(s.eq("M").sum())),
+            median_age=("Age", "median"),
+        )
+
+        copies = df.duplicated(keep=False)
+        features = [c for c in df.columns if c != self.target]
+        duplicates = pd.Series(
+            {
+                "rows": len(df),
+                "exact duplicate rows in the raw file (Response included)": int(raw.duplicated().sum()),
+                "exact duplicate rows of the curated frame (copies beyond the first)": int(df.duplicated().sum()),
+                "rows in these duplicate groups": int(copies.sum()),
+                "of these labelled recurred": int(df.loc[copies, self.target].eq("Yes").sum()),
+                "of these ATA low risk": int(df.loc[copies, "Risk"].eq("Low").sum()),
+                "rows whose features occur with both labels": int(
+                    df.groupby(features, observed=True)[self.target].transform("nunique").gt(1).sum()
+                ),
+            },
+            name="count",
+        )
+        return [
+            Decision(
+                "Response to therapy dropped",
+                "It is assessed during the first 2 years of follow-up, after the initial staging at which the task "
+                "predicts, and a structural incomplete response is persistent or new metastatic disease, the outcome "
+                "itself (ATA 2015, [B29]).",
+                by_response,
+            ),
+            Decision(
+                "Radiotherapy column (Hx Radiothreapy) dropped",
+                "No source defines or dates it, and 6 of its 7 'Yes' rows are high-risk men with advanced disease who "
+                "all recurred, so it may record treatment given after the prediction point; it adds nothing to the "
+                "other columns.",
+                radiotherapy,
+            ),
+            Decision(
+                "Duplicate rows kept",
+                "The 383 rows are the paper's 383 patients; the copies are women with a low-risk tumour who did not "
+                "recur, the most common record of 14 coarse fields.",
+                duplicates,
+            ),
+        ]

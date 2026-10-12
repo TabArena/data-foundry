@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
+checksum: v2:2bb63d68044976bac841176706fb5d0381e9e647ed835c430775405555e0851d
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 366
   n_features: 12
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1997).
+Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2bb63d68044976bac841176706fb5d0381e9e647ed835c430775405555e0851d`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5FK5P |
-| year | 1997 |
+| year | 1998 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -352,3 +352,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:2bb63d68044976bac841176706fb5d0381e9e647ed835c430775405555e0851d` |

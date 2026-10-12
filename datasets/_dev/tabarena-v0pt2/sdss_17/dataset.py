@@ -12,10 +12,10 @@ from data_foundry.v2 import AbstractCuratedDataset
 class Sdss17(AbstractCuratedDataset):
     # Dataset
     unique_name = "sdss_17"
-    year = "2022"
+    year = "2021"
     domain = "physics & astronomy"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17"
+    source = "Other"  # SDSS Data Release 17; the Kaggle file is a cut of it
+    source_url = "https://www.sdss4.org/dr17/"
     license = "Public Domain"  # On Kaggle it says Data files © Original Authors which is under public domain.
     download_description = """
         We download the data from Kaggle.

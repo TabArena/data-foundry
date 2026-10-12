@@ -11,10 +11,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
     # Dataset
     unique_name = "heart_failure_followup_survival"
-    year = "2020"
+    year = "2017"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5Z89R"
+    source = "Other"  # S1 Data of Ahmad et al. 2017 (PLoS ONE); UCI 519 is the 2020 re-upload
+    source_url = "https://doi.org/10.1371/journal.pone.0181001"
     license = "CC BY 4.0"
     download_description = """
         We get the data from UCI.

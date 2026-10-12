@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
+checksum: v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1
 build:
   uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
   checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 6819
   n_features: 92
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2009).
+Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5004D |
-| year | 2009 |
+| year | 2020 |
 | domain | finance |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -356,3 +356,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1` |

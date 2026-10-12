@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class ConcreteCompressiveStrength(AbstractCuratedDataset):
     # Dataset
     unique_name = "concrete_compressive_strength"
-    year = "1998"
+    year = "2007"
     domain = "chemistry & material science"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5PK67"

@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class KddCup09Appetency(AbstractCuratedDataset):
     # Dataset
     unique_name = "kdd_cup_09_appetency"
-    year = "2008"
+    year = "2009"
     domain = "business & marketing"
     source = "Other"
     source_url = "https://kdd.org/kdd-cup/view/kdd-cup-2009/Data"

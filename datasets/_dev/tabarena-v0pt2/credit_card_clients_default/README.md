@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
+checksum: v2:73bc7ee5a2a741ededdbe3c54add41764f5153033b7c581bc7c5cadaa23d9649
 build:
   uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 30000
   n_features: 23
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2009).
+Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2016).
 
-Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:73bc7ee5a2a741ededdbe3c54add41764f5153033b7c581bc7c5cadaa23d9649`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C55S3H |
-| year | 2009 |
+| year | 2016 |
 | domain | finance |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -292,3 +292,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:73bc7ee5a2a741ededdbe3c54add41764f5153033b7c581bc7c5cadaa23d9649` |

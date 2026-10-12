@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
+checksum: v2:593f7439a41d4a034f84c84bd228f5a9638f04dbdef90e6f961bc669ef31e6c3
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 590540
   n_features: 435
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 435 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:593f7439a41d4a034f84c84bd228f5a9638f04dbdef90e6f961bc669ef31e6c3`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -426,3 +426,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:593f7439a41d4a034f84c84bd228f5a9638f04dbdef90e6f961bc669ef31e6c3` |

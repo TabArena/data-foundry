@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "hepatitis_survival_prediction"
-    year = "1981"
+    year = "1988"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5Q59J"

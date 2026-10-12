@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class PolishCompaniesBankruptcy(AbstractCuratedDataset):
     # Dataset
     unique_name = "polish_companies_bankruptcy"
-    year = "2010"
+    year = "2016"
     domain = "finance"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5F600"

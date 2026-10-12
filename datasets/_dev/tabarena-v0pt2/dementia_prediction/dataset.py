@@ -14,7 +14,7 @@ class DementiaPrediction(AbstractCuratedDataset):
     year = "2010"
     domain = "medical & healthcare"
     source = "Other"
-    source_url = "https://doi.org/10.17632/tsy6rbc5d4.1"
+    source_url = "https://sites.wustl.edu/oasisbrains/"  # OASIS-2; the Mendeley deposit is a later copy
     license = "CC BY NC 3.0"
     data_tags = ("WrongDomain",)
     download_description = """

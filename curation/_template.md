@@ -67,9 +67,11 @@ Field-by-field:
 - **collections** — *external* benchmarks/collections the dataset appears in (NOT our own):
   `TabSTAR`, `CARTE/TARTE`, `TabRed`, `TableShift`, `TexTabBench`, `New (BeyondArena)`,
   `TabArena Reject`, … (our own membership lives in `data_foundry_status`).
-- **original_source** — where the data was first shared: `OpenML`, `UCI`, `Kaggle`, `Zindi`,
-  `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`.
-- **year** — publication / collection year (free text; e.g. `2014` or `? (2014)`).
+- **original_source** — where the data was first published: `OpenML`, `UCI`, `Kaggle`, `Zindi`,
+  `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`. A re-upload (a Kaggle copy of a government survey,
+  say) takes the original's source; `Kaggle` only when the data first appeared there or no other source is found.
+- **year** — the year the data was first published (free text; e.g. `2014` or `? (2014)`), not the collection
+  year or the year of a later copy.
 - **domain** — real-world application domain, e.g. `medical & healthcare`, `finance`,
   `business & marketing`, `industry & manufacturing`, `environmental science & climate`.
 - **required_split** — appropriate evaluation protocol: `Random (IID)`, `Temporal (NON-IID)`,

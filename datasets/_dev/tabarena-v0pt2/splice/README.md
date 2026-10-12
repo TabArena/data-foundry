@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: splice
 container_format: 2
-checksum: v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af
+checksum: v2:aecc7c72c3ee5caaffce1b46993c907dbacaa8bb3aeb0529480f2e62a40b8d5b
 build:
   uuid: 01a111fc-bcd5-72b6-a429-8e9aea326bca
   checksum: v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 3190
   n_features: 60
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `SiteType`, scored with `log_loss` on IID splits. 3,190 rows and 60 features. Source: UCI (1991).
+Multiclass classification of `SiteType`, scored with `log_loss` on IID splits. 3,190 rows and 60 features. Source: UCI (1992).
 
-Built as `01a111fc-bcd5-72b6-a429-8e9aea326bca` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bcd5-72b6-a429-8e9aea326bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aecc7c72c3ee5caaffce1b46993c907dbacaa8bb3aeb0529480f2e62a40b8d5b`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5M888 |
-| year | 1991 |
+| year | 1992 |
 | domain | biology & life sciences |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -378,3 +378,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:aecc7c72c3ee5caaffce1b46993c907dbacaa8bb3aeb0529480f2e62a40b8d5b` |

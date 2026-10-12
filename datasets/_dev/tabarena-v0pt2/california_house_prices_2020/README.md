@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:57c8fe6ac8985c5ab638149937132daf567b52aa5eb11c22a30c77aa7957b760
+checksum: v2:c3da4aa54b8eda07b3f55e1a7eb8acb512127736e539c058845d614c80a3a4f1
 build:
   uuid: 01a111fc-8933-7ac4-8766-8038342d53f2
   checksum: v2:57c8fe6ac8985c5ab638149937132daf567b52aa5eb11c22a30c77aa7957b760
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 41528
   n_features: 41
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index`. 41,528 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a111fc-8933-7ac4-8766-8038342d53f2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-8933-7ac4-8766-8038342d53f2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c3da4aa54b8eda07b3f55e1a7eb8acb512127736e539c058845d614c80a3a4f1`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -363,3 +363,4 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:c3da4aa54b8eda07b3f55e1a7eb8acb512127736e539c058845d614c80a3a4f1` |

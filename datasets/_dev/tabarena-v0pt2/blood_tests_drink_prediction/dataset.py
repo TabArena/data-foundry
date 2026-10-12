@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class BloodTestsDrinkPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "blood_tests_drink_prediction"
-    year = "1996"
+    year = "1990"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C54G67"

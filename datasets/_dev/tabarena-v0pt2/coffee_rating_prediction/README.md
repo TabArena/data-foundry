@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
+checksum: v2:5ce0d3a7162adfe415021d3257d6b85b057aaf7bab5559d8ce9c4f02615560a0
 build:
   uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
   checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 2369
   n_features: 12
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,369 rows and 12 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5ce0d3a7162adfe415021d3257d6b85b057aaf7bab5559d8ce9c4f02615560a0`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -169,9 +169,9 @@ We start with the Kaggle version. Note, we acknowledge that the dataset is not o
 ## Splits
 
 We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
-        from the newest review until the training data would fall below 50% of the rows (13 windows). Monthly windows
-        (26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
-        RMSE noise; 2-month windows keep at least ~50 test rows each.
+from the newest review until the training data would fall below 50% of the rows (13 windows). Monthly windows
+(26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
+RMSE noise; 2-month windows keep at least ~50 test rows each.
 
 13 repeat(s) x 1 fold(s) with seed 4267; train 1,211 to 2,315 rows, test 54 to 115 rows. Prediction horizon: 2 months.
 
@@ -305,3 +305,4 @@ We simulate a setting where we refit the model every 2 months and only test on t
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:5ce0d3a7162adfe415021d3257d6b85b057aaf7bab5559d8ce9c4f02615560a0` |

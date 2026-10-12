@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class Splice(AbstractCuratedDataset):
     # Dataset
     unique_name = "splice"
-    year = "1991"
+    year = "1992"
     domain = "biology & life sciences"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5M888"

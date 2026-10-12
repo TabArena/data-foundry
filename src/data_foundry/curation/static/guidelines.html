@@ -155,7 +155,7 @@
     <li><strong>Unique</strong> — the dataset and its predictive ML task are unique within the benchmark.</li>
     <li><strong>IID or non-IID tabular task</strong> — a random, temporal, or grouped split is the appropriate
     validation protocol.</li>
-    <li><strong>Published for a predictive task</strong> — explicitly published for classification or regression.</li>
+    <li><strong>Published for a predictive task</strong> — explicitly published for classification or regression. The target is an observed outcome or an expert annotation, not a label from unsupervised learning: a molecular subtype defined by clustering (PAM50, expression subtypes, NMF clusters) is not a real predictive task (brca_breast_cancer, glioblastoma, ov_ovarian_cancer, 2026-10-12). A label the source computes with a published, deterministic rule from the columns: drop the rule&rsquo;s inputs when the rest still makes a real task (account_debt_south_africa); when the inputs are the whole task it is <code>Trivial</code> (central_international_medical_college_and_hospital_health_risk_prediction, NEWS2).</li>
     <li><strong>Representative of a real application</strong> — stems from a real random distribution (not generated
     by a deterministic function), and tabular models are a suitable, competitive choice (e.g., not a vectorized
     version of ImageNet).</li>

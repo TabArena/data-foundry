@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: naticusdroid_android_permissions_dataset
 container_format: 2
-checksum: v2:bceafdf60887995c602c1274957a22e2e7521f21450526955a33b7df0399a88b
+checksum: v2:819eef4ce887a52723ea5a65938e344e5d97ca802664a39376a1c16921387a18
 build:
   uuid: 01a111fc-e77d-7818-aca7-ffb8763af26a
   checksum: v2:bceafdf60887995c602c1274957a22e2e7521f21450526955a33b7df0399a88b
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 7491
   n_features: 85
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Malware`, scored with `roc_auc` on IID splits. 7,491 rows and 85 features. Source: UCI (2021).
+Binary classification of `Malware`, scored with `roc_auc` on IID splits. 7,491 rows and 85 features. Source: UCI (2022).
 
-Built as `01a111fc-e77d-7818-aca7-ffb8763af26a` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e77d-7818-aca7-ffb8763af26a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:819eef4ce887a52723ea5a65938e344e5d97ca802664a39376a1c16921387a18`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://archive.ics.uci.edu/dataset/722/naticusdroid+android+permissions+dataset |
-| year | 2021 |
+| year | 2022 |
 | domain | technology & internet |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -351,3 +351,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:819eef4ce887a52723ea5a65938e344e5d97ca802664a39376a1c16921387a18` |

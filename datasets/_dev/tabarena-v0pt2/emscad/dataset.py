@@ -65,10 +65,10 @@ def poster_groups(df: pd.DataFrame) -> pd.Series:
 class Emscad(AbstractCuratedDataset):
     # Dataset
     unique_name = "emscad"
-    year = "2014"
+    year = "2017"
     domain = "business & marketing"
     source = "Other"
-    source_url = "https://www.kaggle.com/datasets/shivamb/real-or-fake-fake-jobposting-prediction/data"
+    source_url = "https://doi.org/10.3390/fi9010006"  # the dataset paper; the EMSCAD site is down, Kaggle is a copy
     license = (
         "CC0: Public Domain"  # from Kaggle, paper does not state anything, website is down to check -> so maybe None...
     )

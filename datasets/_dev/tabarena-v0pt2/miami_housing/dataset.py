@@ -13,7 +13,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class MiamiHousing(AbstractCuratedDataset):
     # Dataset
     unique_name = "miami_housing"
-    year = "2016"  # data from 2016, curated in 2021
+    year = "2021"  # data from 2016, curated in 2021
     domain = "finance"
     source = "Kaggle"
     source_url = "https://www.openml.org/d/43093"

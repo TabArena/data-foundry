@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class LjubljanaPrimaryTumor(AbstractCuratedDataset):
     # Dataset
     unique_name = "ljubljana_primary_tumor"
-    year = "1987"  # from the cite date on UCI...
+    year = "1988"  # UCI names file: "Date: November 1988"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5WK5Q"

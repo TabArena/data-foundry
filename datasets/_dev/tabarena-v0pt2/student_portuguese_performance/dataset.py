@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class StudentPortuguesePerformance(AbstractCuratedDataset):
     # Dataset
     unique_name = "student_portuguese_performance"
-    year = "2008"
+    year = "2014"
     domain = "education"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5TG7T"

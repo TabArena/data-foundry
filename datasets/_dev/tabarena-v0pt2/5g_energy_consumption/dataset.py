@@ -13,8 +13,8 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
     unique_name = "5g_energy_consumption"
     year = "2023"
     domain = "technology & internet"
-    source = "HuggingFace"
-    source_url = "https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption"
+    source = "Zindi"  # first released for the Zindi challenge (2023); the Hugging Face copy is from 2025
+    source_url = "https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling"
     license = "MIT"
     download_description = r"""
         We use the dataset version uploaded by a top solution from the Zindi challenge.

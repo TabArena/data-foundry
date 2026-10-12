@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
+checksum: v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f
 build:
   uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
   checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 21263
   n_features: 81
@@ -74,7 +74,7 @@ decisions:
 
 Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
 
-Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -406,3 +406,4 @@ The features come from the composition alone, so the entries of one composition 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f` |

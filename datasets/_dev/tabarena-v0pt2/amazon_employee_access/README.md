@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: amazon_employee_access
 container_format: 2
-checksum: v2:1f6e14acca44e0951d49562b7d2dc4a9d1264b8ce0c60f2fb26d2b2fd244da8e
+checksum: v2:33b7f74c684f284bac870ca69d0f906cd31a52e3177d14937d459b10377fff59
 build:
   uuid: 01a111fc-c1ef-71ea-8931-5bb5679fad84
   checksum: v2:1f6e14acca44e0951d49562b7d2dc4a9d1264b8ce0c60f2fb26d2b2fd244da8e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 32769
   n_features: 9
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 9 features. Source: Kaggle (2010).
+Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 9 features. Source: Kaggle (2013).
 
-Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:33b7f74c684f284bac870ca69d0f906cd31a52e3177d14937d459b10377fff59`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -99,7 +99,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/c/amazon-employee-access-challenge |
-| year | 2010 |
+| year | 2013 |
 | domain | business & marketing |
 | license | Public Domain |
 | data_tags | IID |
@@ -274,3 +274,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:33b7f74c684f284bac870ca69d0f906cd31a52e3177d14937d459b10377fff59` |

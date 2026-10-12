@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:487448d9494aab3c3889fdcab0a5f6eca2c0b3fccc6d9d9fefa8a7b1969ca0d7
+checksum: v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad
 build:
   uuid: 01a111fc-ef84-7289-a58d-5a6ca10a3a3f
   checksum: v2:487448d9494aab3c3889fdcab0a5f6eca2c0b3fccc6d9d9fefa8a7b1969ca0d7
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1353
   n_features: 9
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `WebsiteType`, scored with `log_loss` on IID splits. 1,353 rows and 9 features. Source: UCI (2014).
+Multiclass classification of `WebsiteType`, scored with `log_loss` on IID splits. 1,353 rows and 9 features. Source: UCI (2016).
 
-Built as `01a111fc-ef84-7289-a58d-5a6ca10a3a3f` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ef84-7289-a58d-5a6ca10a3a3f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5B301 |
-| year | 2014 |
+| year | 2016 |
 | domain | technology & internet |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -288,3 +288,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad` |

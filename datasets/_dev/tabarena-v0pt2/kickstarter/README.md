@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
+checksum: v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4
 build:
   uuid: 01a111fc-1005-78e7-8906-36e684a9081e
   checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 187117
   n_features: 12
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `state`, scored with `roc_auc` on temporal splits by `created_at`. 187,117 rows and 12 features. Source: Other (2025).
+Binary classification of `state`, scored with `roc_auc` on temporal splits by `created_at`. 187,117 rows and 12 features. Source: Other (2026).
 
-Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -105,7 +105,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://webrobots.io/kickstarter-datasets/ |
-| year | 2025 |
+| year | 2026 |
 | domain | business & marketing |
 | license | None |
 | data_tags | Non-IID, Temporal, Spatial |
@@ -178,9 +178,9 @@ Similar to the Kaggle task, we aim to predict whether a Kickstarter project will
 
 We try to create splits that simulate a model deployed to solve the task.
 
-        The official data is updated monthly but has not enough data per month to create large enough test splits. We opt for simulating a model that is refit every year to obtain a robust test set.
+The official data is updated monthly but has not enough data per month to create large enough test splits. We opt for simulating a model that is refit every year to obtain a robust test set.
 
-         We could simulate a model that is refitted every month, but this would need many splits. Moreover, data from just one month is not enough to create a robust test set. We instead simulate a model that is refit every year. This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 3 test splits by 2023, 2024, and 2025 as test year. For each test split, we use all data before the test month as training data.
+ We could simulate a model that is refitted every month, but this would need many splits. Moreover, data from just one month is not enough to create a robust test set. We instead simulate a model that is refit every year. This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 3 test splits by 2023, 2024, and 2025 as test year. For each test split, we use all data before the test month as training data.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 131,836 to 166,292 rows, test 13,056 to 21,400 rows. Prediction horizon: 1 years.
 
@@ -308,3 +308,4 @@ We try to create splits that simulate a model deployed to solve the task.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4` |

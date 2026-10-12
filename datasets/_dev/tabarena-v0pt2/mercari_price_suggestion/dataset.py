@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class MercariPriceSuggestion(AbstractCuratedDataset):
     # Dataset
     unique_name = "mercari_price_suggestion"
-    year = "2018"
+    year = "2017"
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/competitions/mercari-price-suggestion-challenge"

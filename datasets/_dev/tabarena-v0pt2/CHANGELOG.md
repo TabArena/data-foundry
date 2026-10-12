@@ -4,6 +4,182 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-12 (Lennart's decisions on the open points; four datasets retired; 64 built datasets need a rebuild)
+
+- `sf_permit_time`: each window trains only on permits issued before it starts, with a 6-month gap, over 8 half-year
+  windows (2020-H1 to 2023-H2). 3.0-6.7% of earlier permits are still open at a window start; with them LightGBM
+  learned the COVID slowdown from labels issued later (2020-H2: RMSE 1.19, 1.52 without them), and a 1-month gap would
+  leave 21-34% of the newest filings open and bias predictions 0.58 log-days low. The Current Status filter (issued
+  or complete, which drops 4.1% of the cohort for later events) is an `Anomaly:` bullet. The task probes now flag
+  `no_spread` (kept, case row added; re-check with tuned runs). Checksum `v2:8010ef7e…`.
+- `coad_colon_adenocarcinoma`: the copy-number block is dropped (36,355 features). Copy-number changes define CIN
+  against GS, so the realistic task is the subtype from expression and methylation; random forest macro ROC AUC 0.923
+  without the block, 0.935 with it. No task-probe flag.
+- `apistox`: RDKit's 2D descriptors (199 of 217; the rest constant or copies) next to the SMILES, RDKit 2026.3.6
+  pinned in the `build` extra; mean ROC AUC on its windows 0.79 / 0.71 without, 0.83 / 0.82 with them.
+- Retired (records `No`; folders removed in the next commit): brca_breast_cancer, glioblastoma and ov_ovarian_cancer,
+  whose labels come from unsupervised learning (PAM50, expression subtypes, NMF clusters), and
+  central_international_medical_college_and_hospital_health_risk_prediction (`Trivial`: the NEWS2 chart on the vitals
+  it ships). The rule is in the curation guidelines (criterion 3). churn_telco_europa (never added) is `No`: Chilean
+  customers under a European name, personal data, and active lines and churners measured on different dates.
+- `year` (Lennart): the year the data was first published, at the publication `source_url` names; a source that grows
+  over time takes the year of the snapshot we pin. 49 definitions changed (43 built), sf_permit_time,
+  consumer_complaints_1m and kickstarter are 2026, and 40 records follow. Written into the `year` docstring, the
+  add-dataset patterns and the record template. Unclear and left as they are: bank_customer_churn,
+  immoscout_german_house_prices, framingham_heart_study_fhs, lending_club, pancreatic_cancer_mouse_detection,
+  sat11_hand_algo_runtime, dementia_prediction, airfoil_self_noise and the three QSAR siblings.
+- Probes: `hidden_groups.py` adds clusters of near-identical rows as a candidate group (it finds qsar_oral_toxicity's
+  compound families; no IID dataset hits) and reports how often entities recur across the cutoff of temporal tasks;
+  two crashes fixed. `task_probes.py` checks `few_minority` per class for multiclass tasks; open for the curator (rule
+  7), it now flags alvin_smart_money_management_classification_challenge, asp_potassco_classification,
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, forensic_glass_identification,
+  ljubljana_primary_tumor, mic, micro_mass and sarcoma (and the retired brca_breast_cancer).
+- Stale until the next build (`dataset list` marks them), 64 built datasets:
+  5g_energy_consumption, airfoil_self_noise, amazon_employee_access, biogeographical_ancestry_prediction,
+  blood_tests_drink_prediction, body_density_prediction, california_house_prices_2020,
+  cirrhosis_patient_survival_prediction, clock_protein_toxicity, coffee_rating_prediction,
+  concrete_compressive_strength, consumer_complaints_1m, credit_card_clients_default, dementia_prediction, diamonds,
+  early_learning_predictors, early_stage_diabetes_risk_prediction, emscad, eryhemato_squamous_disease,
+  gallstone_disease, garments_worker_productivity, heart_disease_cleveland, heart_disease_hungary,
+  heart_disease_va_long_beach, heart_failure_followup_survival, heloc, hepatitis_c_prediction,
+  hepatitis_survival_prediction, home_credit_default_stability_1m, hotel_booking_demand, houses, hr_analytics,
+  ieee_fraud_detection, in_vehicle_coupon_recommendation, jm1, kdd_cup_09_appetency, kickstarter,
+  labour_inspection_compliance, lending_club, ljubljana_primary_tumor, marketing_campaign, mercari_price_suggestion,
+  mercedes_benz_greener_manufacturing, miami_housing, mic, musk, naticusdroid_android_permissions_dataset,
+  online_shoppers_purchasing_intention_dataset, polish_companies_bankruptcy, pva_revenue_prediction_kddcup98,
+  regensburg_pediatric_appendicitis, rossmann_store_sales, sberbank_housing_market_forecasting, sdss_17,
+  sepsis_prediction_1m, sepsis_survival_minimal_clinical_records, sf_permit_time,
+  south_africa_coronary_heart_disease, splice, student_portuguese_performance, superconductivity,
+  taiwanese_bankruptcy_prediction, thyroid_discordant, website_phishing
+  Every README was re-checked: 0 errors, and the warnings are those of the table.
+
+## 2026-10-12 (Lennart's review of the cross-dataset items; 32 built datasets need a rebuild)
+
+- Framework (`src/data_foundry/v2/`, tests added): a multi-line `splits_comment` is dedented like the other text
+  fields; the README lists the feature types the standard steps applied (a `_feature_types` that reads dtypes showed
+  "0 categorical"); the hash of `_prepare_raw_files` also covers the module constants it reads, as written; `dataset
+  new` fills `domain` and `source` from the record when the value names one schema value. ruff ignores C416 (its
+  fix once broke qsar_bioconcentration), which uses its dict comprehension again.
+- `mic` read its file without `header=None` and lost its first patient (1,699 rows instead of 1,700).
+- `source` convention (Lennart): the first publication, not a re-upload; Kaggle only when the data first appeared
+  there or no other source is found. Written into add-dataset's `dataset_patterns.md` §A, the `source` docstring and
+  the record template. Changed: 10 of the 59 new definitions (cdc_diabetes_health_indicators, nyc_taxi_trip_duration,
+  rain_in_australia and house_sales to their government publishers, corporate_credit_rating to GitHub,
+  credit_card_customers to the LEAPS case, the three MLOmics datasets to the authors' repository,
+  open_university's URL) and 16 built ones (5g_energy_consumption to Zindi; body_density_prediction, sdss_17,
+  south_africa_coronary_heart_disease, heloc, lending_club, cirrhosis_patient_survival_prediction,
+  heart_failure_followup_survival, sepsis_survival_minimal_clinical_records, mic, biogeographical_ancestry_prediction
+  and jm1 to Other with the original publication; new URLs for emscad, sepsis_prediction_1m, dementia_prediction and
+  gallstone_disease), with the records' `original_source` aligned. Left as they are, for lack of evidence:
+  bank_customer_churn, aps_failure, miami_housing, immoscout, pancreatic_cancer_mouse_detection.
+- 32 built datasets are stale until the next build (`dataset list` marks them): the 19 with a multi-line
+  `splits_comment` (airfoil_self_noise, california_house_prices_2020, coffee_rating_prediction,
+  consumer_complaints_1m, dementia_prediction, emscad, garments_worker_productivity, home_credit_default_stability_1m,
+  hotel_booking_demand, ieee_fraud_detection, in_vehicle_coupon_recommendation, kickstarter, lending_club,
+  mercedes_benz_greener_manufacturing, musk, rossmann_store_sales, sberbank_housing_market_forecasting,
+  sf_permit_time, superconductivity), mic, and the 12 other built ones whose source changed. Their READMEs and all 59
+  new ones were re-checked: 0 errors, and the warnings are the open ones of the table.
+- Records: colleges (OpenML 42727, the College Scorecard file of 2013-14), indabax_drc_2022, indabax_eswatini_2022 and
+  melbourne_housing_snapshot set to `No` + `Duplicate` (names kept); a record for the simulated OpenML 46372 copy
+  (`corporate_credit_rating_cat_data_set_ratings_raitings_duplicate`, AHDS); churn_telco_europa flagged
+  `Ethical Issue` (Chilean national ids and mobile numbers, also on OpenML 44228); notes on OpenML 43838 (account debt),
+  the Aeolus release and a paper to get for churn_telco_south_asia; related links moved out of `source_links`
+  (nyc_taxi_trip_duration, melbourne_housing_market). The two dev notebooks in `_too_late_to_add` are renamed to their
+  records' names, which sets `notebook_path`.
+- `TODO.md` stays deleted; the links to it now point to the records and this file. `GETTING_STARTED.md` no longer
+  lists datasets or counts. `verify-dataset/references/task_probes.md` has the six case rows of the 2026-10-07 run.
+  `catboost_info/` is gitignored.
+- Probes: `generated_probes.py` flags columns drawn independently (label included) and values drawn uniformly within
+  each class; neither fires on the working copy. `leak_probes.py` screens wide data to its 300 most informative
+  columns for the single-feature fits (coad: about 5 hours to 10 minutes), writes `--out` JSON, scores macro ROC AUC
+  over the classes present in a test fold (as `group_probes.py` now does), and checks string columns for copies.
+
+## 2026-10-12 (shorter curation notes for the 59 definitions of 2026-10-07)
+
+- Lennart found the `curation_comments` of the 59 new definitions too long (79,947 words in all, median 1,304; the
+  older 125 have a median of 95). They now hold 28,266 words (median 495): one bullet per step or decision of the
+  code, and numbers only where they decide a call. The cut evidence (provenance, probe output, verification history,
+  long quotes) stays in the curation records, `NEW_DATASETS_ISSUES.md`, the `_decisions` tables and git history. The
+  house format in add-dataset's `references/dataset_patterns.md` now asks for about 400 words.
+- Only the comments changed, apart from small fixes found on the way: `force_2020_…` has a bullet for its categorical
+  columns; `zillow_prize` labels the post-sale tax-delinquency snapshot `Potential leak, kept on purpose:`; stale
+  pointers to the comments were removed in `college_scorecard`, `differentiated_thyroid_cancer_recurrence` and
+  `rosbank1`; `african_credit_scoring_challenge` no longer scores a drop the context settles; the glioma decision
+  title no longer calls Primary_Diagnosis a copy of the label; `stroke_prediction` lost a stale bullet that
+  contradicted the code (bmi is dropped).
+- Every README was regenerated by `dataset check`: 0 errors and the warnings as before. The checksums change because
+  the comments are part of the metadata; rows and splits do not. `NEW_DATASETS_ISSUES.md` carries the new checksums.
+  None is built.
+
+## 2026-10-12 (2_month_survival_rate_prediction: both phases, phase II physiology moved back into its rows)
+
+- In SUPPORT2 (hbiostat's `support2.csv`, also UCI 880) most phase II rows hold another patient's day-3 physiology
+  (the 14 columns meanbp to urine). The study's own data, ICPSR 2957 V2 parts 9 and 10 (public-use, login download by
+  Lennart), show where each patient's block is: in `support2.csv` itself, at another phase II row. The definition
+  links each row to its ICPSR patient on ten columns both files hold on the patient's row, finds the row that holds
+  the patient's ICPSR day-3 values, and takes the block from there. Every value of the dataset comes from
+  `support2.csv`; the ICPSR files are read at build time from `local-data-warehouse/2_month_survival_rate_prediction/
+  icpsr_2957/` and are not in git (their terms forbid redistribution; Lennart's call to ship only support2's values).
+- The dataset now holds both phases: 8,967 patients alive after day 3 (was 4,232, phase I only), 33.4% positive,
+  25 features, 3 x 3 folds. adls and adlsc are dropped (Lennart's review): the interviews took place on study days
+  2-7, so a missing surrogate answer depends on whether the stay lasted until the interview (46% missing for stays
+  that ended by day 7, 24% for longer ones); adlp, edu and income stay. Probes: random forest ROC AUC 0.806, no flag.
+- Checksum `v2:12056202e362b4fb06ec43d52b932206008964f408d086b4df896e668d524ed7` (pandas 2.3.3 and 3.0.6). Not built.
+- The record drops the `Multi-target` tag (Lennart's review); its comments hold the procedure and the evidence.
+- `rebuild-working-copy/scripts/build_one.py` also traces `pd.read_fwf`, which reads the ICPSR files.
+
+## 2026-10-12 (single-column scores only where they decide a call; three new definitions)
+
+- Lennart's rule, now in add-dataset's `references/dataset_patterns.md` §F: a column dropped for what it is (recorded
+  after the prediction point, an outcome, a model output or estimate fit with the label, a field the source says not
+  to use) gets its reason and no score; a correlation or ROC AUC alone is shown only where the values decide the
+  call, computed with pandas `corr` and sklearn `roc_auc_score`.
+- `2_month_survival_rate_prediction`: the dropped-columns table lists the reasons only, and `curation_comments` no
+  longer score the drops the source advises (sps, surv2m, surv6m, aps, prg2m, prg6m). The phase I / phase II table
+  keeps its numbers, now from pandas and sklearn instead of two hand-written helpers (same values). Checksum
+  `v2:e6e6bc0ddd74e70913477961a93a559b4ca916013c74d13e9599dc2e60707364` (the comments are part of the metadata;
+  rows and splits unchanged).
+- `credit_card_customers`: the naive Bayes AUC table and its decision are removed; the column names show the two
+  columns are fit with the label. Checksum `v2:ecd65d2464a44474cc2b05af6b1cff319c77271823d3fed878ca7e4ec4ab774a`.
+- `phiusil_phishing`: the table of features alone uses `roc_auc_score` instead of a hand-written rank AUC; the
+  README is unchanged.
+- None of the three is built. `dataset check`: 0 errors, 0 warnings for each.
+
+## 2026-10-07 (59 new definitions from the curation backlog; not built)
+
+- Added 59 v2 definitions; none is built yet, so the table lists them as "not built":
+  - 56 come from the 65 records that match the dashboard filter `suggestion = Yes`, no `DF: Yes`, not
+    `AI (UNVERIFIED)`;
+  - 3 come from `datasets/_maintenance/_out_of_scope/_too_late_to_add` (`african_credit_scoring_challenge`,
+    `infrared_thermography_temperature`, `phiusil_phishing`).
+- Each definition was checked and probed:
+  - `dataset check` gives 0 errors, and pandas 2.3 and 3 give the same checksum;
+  - leak, task, generated-data and hidden-group probes ran, plus group probes for grouped tasks;
+  - an independent agent verified it against the `/verify-dataset` rubric, and the findings were applied or rejected
+    with evidence.
+- Eight `_1m` versions: `aeolus_1m`, `ashrae_great_energy_predictor_iii_1m`, `expresso_churn_prediction_1m`,
+  `fraud_detection_in_electricity_and_gas_consumption_1m`, `g_research_crypto_forecasting_1m`, `huntprohibited_1m`,
+  `numerai_v5_2_1m`, `pkdd_15_taxi_trip_time_prediction_ii_1m`.
+- Eight are recommended not to ship, which is Lennart's call; their folders stay until he decides:
+  `central_international_medical_college_and_hospital_health_risk_prediction`, `credit_card_customers`,
+  `g_research_crypto_forecasting_1m`, `stroke_prediction`, `alvin_smart_money_management_classification_challenge`,
+  `digicow_farmer_training_adoption_challenge`, `lgg_low_grade_glioma`, `phiusil_phishing`.
+- Nine of the 65 records got no folder:
+  - duplicates: `churn_telco_nigeria`, `myocardial_infarction_complications`, `numerai28_6`,
+    `sasol_customer_retention_recruitment_competition`;
+  - data gone: `alfa_battle_2_0_task_1`;
+  - generated or injected data: `hepatitis_c_egypt`, `high_storage_system_data_for_energy_optimization`;
+  - classes recorded differently, plus personal data in the files: `churn_telco_europa`;
+  - a recommender task: `farm_to_feed_shopping_basket_recommendation_challenge`.
+- Every issue and open decision, per dataset and across datasets, is in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
+  It includes two bugs in datasets already here: `mic` reads its file without `header=None` and so loses patient 1,
+  and multi-line `splits_comment`s keep their code indentation.
+- The records of all 68 carry a dated AI assessment comment. The records with a folder have their `v2_path` and
+  `WIP (DF)`; `DF: Suspended` (ASHRAE and the six TCGA records) and `DF: Much work` (apistox) were replaced. The
+  ASHRAE suspension had a reason in its v1 notebook (open judgment calls, too much time for then), which the new
+  definition settles; the TCGA ones had none recorded.
+  `problem_type` and `required_split` were filled only where they read `TBD` or `?`.
+
 ## 2026-10-06 (healthcare_insurance_expenses, churn and physiochemical_protein retired; generated-data probe)
 
 - Removed `healthcare_insurance_expenses`: simulated data (`No (Retired)`, marker `AHDS`). It is the textbook data

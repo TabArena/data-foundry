@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class EryhematoSquamousDisease(AbstractCuratedDataset):
     # Dataset
     unique_name = "eryhemato_squamous_disease"
-    year = "1997"
+    year = "1998"
     domain = "medical & healthcare"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5FK5P"

@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class CreditCardClientsDefault(AbstractCuratedDataset):
     # Dataset
     unique_name = "credit_card_clients_default"
-    year = "2009"
+    year = "2016"
     domain = "finance"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C55S3H"

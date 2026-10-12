@@ -12,7 +12,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class Houses(AbstractCuratedDataset):
     # Dataset
     unique_name = "houses"
-    year = "1990"
+    year = "1999"
     domain = "business & marketing"
     source = "Other"
     source_url = "https://lib.stat.cmu.edu/datasets/"

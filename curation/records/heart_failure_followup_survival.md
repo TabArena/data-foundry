@@ -11,8 +11,8 @@ tags:
 - Tiny Data
 collections:
 - New (BeyondArena)
-original_source: UCI
-year: '2020'
+original_source: Other
+year: '2017'
 domain: medical & healthcare
 required_split:
 - Random (IID)

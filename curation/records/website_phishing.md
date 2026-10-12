@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: UCI
-year: '2014'
+year: '2016'
 required_split:
 - '?'
 source_links:

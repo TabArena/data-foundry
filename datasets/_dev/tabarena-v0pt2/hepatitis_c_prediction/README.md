@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
+checksum: v2:e5ffa736903c2357041ba9801a90a0ac2720e5eacd7a698db514668a245d0aaf
 build:
   uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
   checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 608
   n_features: 11
@@ -62,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2018).
+Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2020).
 
-Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e5ffa736903c2357041ba9801a90a0ac2720e5eacd7a698db514668a245d0aaf`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5D612 |
-| year | 2018 |
+| year | 2020 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -309,3 +309,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:e5ffa736903c2357041ba9801a90a0ac2720e5eacd7a698db514668a245d0aaf` |

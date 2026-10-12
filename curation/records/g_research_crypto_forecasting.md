@@ -3,6 +3,8 @@ unique_name: g_research_crypto_forecasting
 name: G-Research Crypto Forecasting
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
@@ -21,6 +23,7 @@ problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/competitions/g-research-crypto-forecasting/data?select=train.csv
+v2_path: datasets/_dev/tabarena-v0pt2/g_research_crypto_forecasting_1m/dataset.py
 source_row: 707
 type_adapter_id: curation-record-v1
 ---
@@ -34,6 +37,8 @@ Forecasting-as-tabular task. Unsure if timestamps exist to create real splits. W
 Solved with LGBM twice, training data seems to have enough data for creating our own splits for the future: https://www.kaggle.com/code/sugghi/training-3rd-place-solution
 
 CV was temporal
+
+**Assessment (AI, 2026-10-07):** This is time-series forecasting by the guidelines: the competition calls itself "a forecasting competition" (Timeline), and the target is the asset's own Close(t+16)/Close(t+1) − 1, residualised against the market (rebuilt from Close, median error 5e-7). The one-minute bar alone correlates 0.012, −0.006 and 0.002 with it on three 91-day windows; all signal comes from 18 lags of the same Close series (3rd-place solution), the only lagged-target design in the working copy. Even then R² against the train mean is +0.0007, +0.0012, −0.0003 (only the middle window outside day-to-day noise). Suggest `No` + `Time-series (Forecasting)` unless the "Forecasting-as-tabular" acceptance is meant for this case; the definition `g_research_crypto_forecasting_1m` is ready either way.
 
 ## Reference
 

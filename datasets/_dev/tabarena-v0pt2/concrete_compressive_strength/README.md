@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d
+checksum: v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3
 build:
   uuid: 01a111fc-cee4-7ba9-97fd-b7a0365aad44
   checksum: v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1030
   n_features: 8
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1,030 rows and 8 features. Source: UCI (1998).
+Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1,030 rows and 8 features. Source: UCI (2007).
 
-Built as `01a111fc-cee4-7ba9-97fd-b7a0365aad44` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cee4-7ba9-97fd-b7a0365aad44` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -103,7 +103,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5PK67 |
-| year | 1998 |
+| year | 2007 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -259,3 +259,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3` |

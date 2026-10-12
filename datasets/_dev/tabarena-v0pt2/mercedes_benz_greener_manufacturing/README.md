@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:115e6497b0dd4b2e109029b3c73c5a219075c5f5e7290fff3c034bdf0af7da41
+checksum: v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8
 build:
   uuid: 01a111fc-ad75-71b3-a65b-bf31e51792f6
   checksum: v2:115e6497b0dd4b2e109029b3c73c5a219075c5f5e7290fff3c034bdf0af7da41
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 4204
   n_features: 371
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `y`, scored with `rmse` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a111fc-ad75-71b3-a65b-bf31e51792f6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ad75-71b3-a65b-bf31e51792f6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -363,3 +363,4 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8` |

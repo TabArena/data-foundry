@@ -1,0 +1,153 @@
+"""Curated dataset definition for `numerai_v5_2_1m` (data-foundry v2). Evidence: README.md."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Temporal, TemporalSplits, drop_columns
+
+FEATURE_SET = "medium"
+"""Numerai's feature set in features.json: 780 basic features of the 2,748 in v5.2."""
+
+LAST_ERA = 1235
+"""The newest era whose target had resolved in the download of 2026-10-06; later downloads add newer eras."""
+
+MISSING_BIN = 2
+"""Numerai fills every stock of a feature-era without data with the middle bin."""
+
+
+class NumeraiV521m(AbstractCuratedDataset):
+    # Dataset
+    unique_name = "numerai_v5_2_1m"
+    version_of = "numerai_v5_2"
+    version_comment = """
+        We sample per test window (v2 split protocol): each test window keeps at most 500k of its rows (all of them here: 327,025 to 361,712), and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train data is sub-sampled at random rather than cut in time, so it keeps rows of every era. The full data has 6,881,281 rows (eras 1-1235); the frame has 2,025,745.
+    """
+    year = "2025"
+    domain = "finance"
+    source = "Other"
+    source_url = "https://numer.ai/data/v5.2"
+    license = (
+        "Numerai Terms of Service (updated 2026-08-31), section 4.2: use solely to participate in Numerai tournaments; "
+        "no commercial use outside its services, no redistribution, keep the data confidential"
+    )
+    data_tags = ("Anonymized",)
+    download_description = """
+        We download Numerai's v5.2 ("Faith2") tournament files with the numerapi client on 2026-10-06:
+
+        mkdir -p local-data-warehouse/numerai_v5_2 && cd local-data-warehouse/numerai_v5_2
+        uvx --from numerapi==3.1.1 python -c "from numerapi import NumerAPI; api = NumerAPI(); [api.download_dataset(f'v5.2/{f}', f) for f in ('features.json', 'train.parquet', 'validation.parquet')]"
+
+        The API serves only the current weekly snapshot of each file, with no versioned URL. Ours came from the S3 folder 20261005: features.json (323,414 bytes), train.parquet (2,597,791,287 bytes, eras 1-574) and validation.parquet (4,417,740,944 bytes, eras 575-1240). Numerai adds new eras to validation.parquet as their targets resolve, so the definition keeps eras 1-1235; a later download gives the same rows as long as Numerai does not revise past eras. SHA-256 of our files:
+
+        64cd254cba63c0966eeeb71c7c83c99cacb81d4acd8b36524195d20c92dd5c35  features.json
+        73b41e084c91e50618227aca3759be46f59367a4506d0f3f43a5112fb83bbeca  train.parquet
+        04f74ad99dd1afcee046a12c52d1a98b51dab4bf978fa042aa3f5fbaeb4601c0  validation.parquet
+    """
+    bibtex = r"""
+        @misc{numerai2025v52,
+          author = {{Numerai}},
+          title = {Numerai Tournament Dataset v5.2 (Faith2)},
+          year = {2025},
+          howpublished = {\url{https://numer.ai/data/v5.2}},
+          note = {Obfuscated global equity data, downloaded with numerapi; documentation at \url{https://docs.numer.ai/numerai-tournament/data}}
+        }
+    """
+    curation_comments = """
+        We start with train.parquet and validation.parquet of the Numerai tournament data v5.2 ("Faith2"), with the medium feature set of features.json.
+
+        - Prediction point: every Friday after the market close (one era), a model scores each stock from its features as of that day; the target is the stock's return over the next 20 market days, known about 4 weeks later.
+        - Target: `target_ender_20`, equal to the main target `target` of v5.2: a stock-specific return, ranked within each era and binned into 0, 0.25, 0.5, 0.75 and 1, so every era has a mean of 0.5. The other 40 target columns are future returns and are not read.
+        - Features: the 780 features of Numerai's `medium` set, of the 2,748 in v5.2, each an integer bin 0-4 within its era with an obfuscated name. On the newest test window, LightGBM correlates with the target at 0.0064 per era with `medium`, 0.0055 with `all` and 0.0011 with `small`.
+        - Rows: we keep data_type `train` and `validation` up to era 1235 and drop data_type `test` (eras 1236-1240), whose targets had not resolved on 2026-10-06.
+        - `era` (one per week; Numerai publishes no dates) becomes an integer and the time column. `id` is unique per stock per era (docs), so it identifies no stock and is not read.
+        - Missing values: Numerai sets every value of a feature-era without data to 2 (hello_numerai.ipynb of v5.2); we set such feature-eras to missing (decision table). Elsewhere each bin holds 20% of an era's stocks, so no single stock is filled with 2. No duplicate rows.
+        - Anomaly: the universe grows from 2,314 stocks in era 1 to 6,057-7,231 per era since era 1100.
+        - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2): LightGBM like Numerai's example model (600 trees, 1M train rows) correlates with the target at 0.006, 0.014 and 0.018 per era (t = 3.0, 7.2 and 8.7).
+        - Note: RMSE mostly ranks how far a model shrinks towards 0.5 (on the newest window the constant 0.5 beats LightGBM and ridge). We keep it because TabArena's adapter accepts only `rmse` for regression; `pearsonr` would be closer to Numerai's scoring.
+        - Potential leak, kept on purpose: Numerai designs features to predict the target and released the 75 `faith` features of `medium` at era 1192, so test eras 1080-1191 lie in their design period. With ridge they add +0.0041 per-era correlation in 1080-1131, +0.0016 in 1132-1183, +0.0097 in 1184-1191 and +0.0019 after the release; the 122 `midnight` features (about era 1098) add +0.0017 in 1080-1097. We keep them because every method sees them (leak_checks.md, feature selection on the full labelled set). Revisit once v5.2 has a year of eras after its release, or drop the 75 `faith` features (705 left).
+        - Note: feature neutralization post-processes predictions per era, so it belongs to a model or a scorer and is not applied.
+        - Note: numerai28_6 (OpenML 23517), an older sample of this data, is not added separately.
+    """
+
+    # Task
+    target = "target_ender_20"
+    problem_type = "regression"
+
+    # Splits: three windows of 52 weekly eras, 4 embargoed eras between train and test.
+    temporal = Temporal(
+        on="era",
+        splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4),
+        horizon=52,
+        horizon_unit="weeks",
+    )
+    subsample_to_budget = True
+    splits_comment = """
+        Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 4 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. Numerai's example notebooks score a model on a long out-of-sample period (eras 575 onward); one year per window keeps 3 windows near the newest data and gives each window score 52 eras. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses.
+    """
+
+    accepted_check_warnings = {
+        "task_target_low_cardinality": "The target is a continuous return that Numerai ranks within each era and bins "
+        "into 5 ordered levels (0 to 1); Numerai treats it as regression (its example models are regressors scored by "
+        "correlation), and so do we.",
+    }
+
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
+        features = json.loads((raw_dir / "features.json").read_text())["feature_sets"][FEATURE_SET]
+        columns = ["era", "data_type", self.target, *features]
+        tables = [pq.read_table(raw_dir / f"{name}.parquet", columns=columns) for name in ("train", "validation")]
+        return pa.concat_tables(tables).to_pandas()
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        # 1. The era ("0001", ...) as an integer; keep the rows with a resolved target: data_type train and
+        #    validation (not test), eras up to LAST_ERA (one row filter: the frame is several GB).
+        era = raw["era"].astype("int32")
+        keep = raw["data_type"].isin(["train", "validation"]) & (era <= LAST_ERA)
+        df = drop_columns(raw.assign(era=era), ["data_type"])[keep]
+        # 2. A feature-era in which every stock has the middle bin is missing data (Numerai's fill): set it to NaN.
+        return _missing_feature_eras_to_nan(df)
+
+    def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
+        features = [c for c in df.columns if c.startswith("feature_")]
+        eras = pd.cut(df["era"], [0, 574, 894, LAST_ERA], labels=["1-574", "575-894", "895-1235"]).rename("eras")
+        missing = df[features].isna()
+        table = pd.DataFrame(
+            {
+                "rows": eras.value_counts(sort=False),
+                "share of feature values missing": missing.groupby(eras, observed=False).mean().mean(axis=1),
+                "features with a missing era": missing.groupby(eras, observed=False).any().sum(axis=1),
+            }
+        )
+        return [
+            Decision(
+                "Feature-eras filled with the middle bin are set to missing",
+                "Numerai sets every stock of a feature-era without data to 2; an era in which a feature takes only "
+                "that value is missing data, not a middle rank. It occurs only in the older eras (shares of the "
+                "rows in this frame).",
+                table,
+            )
+        ]
+
+
+def _missing_feature_eras_to_nan(df: pd.DataFrame) -> pd.DataFrame:
+    """Set to NaN the values of every (feature, era) in which all stocks have MISSING_BIN; such features become
+    float32, the others stay int8.
+    """
+    codes, _ = pd.factorize(df["era"], sort=True)
+    n_eras = int(codes.max()) + 1
+    columns = {}
+    for col in df.columns:
+        values = df[col].to_numpy()
+        if col.startswith("feature_"):
+            counts = np.bincount(codes * 5 + values, minlength=n_eras * 5).reshape(n_eras, 5)
+            missing_era = (counts > 0).sum(axis=1) == 1
+            missing_era &= counts[:, MISSING_BIN] > 0
+            if missing_era.any():
+                values = np.where(missing_era[codes], np.float32(np.nan), values.astype(np.float32))
+        columns[col] = values
+    return pd.DataFrame(columns, index=df.index)

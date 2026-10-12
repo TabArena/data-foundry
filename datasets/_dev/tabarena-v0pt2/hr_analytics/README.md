@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
+checksum: v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd
 build:
   uuid: 01a111fc-e13c-73b1-a5b6-46586d1602ca
   checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 19158
   n_features: 12
@@ -64,9 +64,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2021).
+Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -102,7 +102,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists |
-| year | 2021 |
+| year | 2020 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
 | data_tags | IID, Spatial |
@@ -287,3 +287,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd` |

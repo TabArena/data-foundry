@@ -13,8 +13,8 @@ class LendingClub(AbstractCuratedDataset):
     unique_name = "lending_club"
     year = "2018"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://zenodo.org/records/11295916"
+    source = "Other"  # LendingClub's own download portal (gone); we read the archived copy on Zenodo
+    source_url = "https://www.lendingclub.com"
     license = "CC0: Public Domain"  # On Kaggle, likely not true TOS from the website.
     data_tags = ("Spatial",)
     download_description = """

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: marketing_campaign
 container_format: 2
-checksum: v2:893ada28df4d611b1a2459028d4c32b5d8a87d0bfe839c66680e0d3ad048c6e7
+checksum: v2:adb9aa089f94f3aa1ea63bad8099c50b24a8dbbc45c55e0496ed03f55338fd96
 build:
   uuid: 01a111fc-b058-7ad2-9e81-45d916a3052c
   checksum: v2:893ada28df4d611b1a2459028d4c32b5d8a87d0bfe839c66680e0d3ad048c6e7
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 2240
   n_features: 25
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Response`, scored with `roc_auc` on IID splits. 2,240 rows and 25 features. Source: Kaggle (2020).
+Binary classification of `Response`, scored with `roc_auc` on IID splits. 2,240 rows and 25 features. Source: Kaggle (2019).
 
-Built as `01a111fc-b058-7ad2-9e81-45d916a3052c` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b058-7ad2-9e81-45d916a3052c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:adb9aa089f94f3aa1ea63bad8099c50b24a8dbbc45c55e0496ed03f55338fd96`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -105,7 +105,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign |
-| year | 2020 |
+| year | 2019 |
 | domain | business & marketing |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -331,3 +331,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:adb9aa089f94f3aa1ea63bad8099c50b24a8dbbc45c55e0496ed03f55338fd96` |

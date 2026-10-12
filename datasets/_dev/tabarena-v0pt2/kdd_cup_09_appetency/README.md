@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kdd_cup_09_appetency
 container_format: 2
-checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
+checksum: v2:193bf8f2d2397d878c6f1695ed90acae11782766f1de30e26fc691fcaf8f53d5
 build:
   uuid: 01a111fc-4f06-781e-a57e-d46ef749395b
   checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 50000
   n_features: 212
@@ -64,9 +64,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,000 rows and 212 features. Source: Other (2008).
+Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,000 rows and 212 features. Source: Other (2009).
 
-Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:193bf8f2d2397d878c6f1695ed90acae11782766f1de30e26fc691fcaf8f53d5`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -104,7 +104,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://kdd.org/kdd-cup/view/kdd-cup-2009/Data |
-| year | 2008 |
+| year | 2009 |
 | domain | business & marketing |
 | license | Public Domain |
 | data_tags | IID |
@@ -422,3 +422,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:193bf8f2d2397d878c6f1695ed90acae11782766f1de30e26fc691fcaf8f53d5` |

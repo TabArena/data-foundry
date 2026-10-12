@@ -14,7 +14,7 @@ tags:
 collections:
 - FS Benchmark
 original_source: UCI
-year: '2021'
+year: '2022'
 domain: chemistry & material science
 required_split:
 - Random (IID)

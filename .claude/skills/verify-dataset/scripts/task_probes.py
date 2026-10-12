@@ -21,7 +21,7 @@ with untuned models:
   for a temporal one); it is then refitted on the train side and scored on the test side;
 * the scores: ROC AUC (binary), macro ROC AUC and log loss (multiclass), R^2 and RMSE (regression), per row and,
   for a task scored per group (``Grouping(prediction_unit="group")`` with ``mean``, ``any`` or ``last``), per group;
-* the smallest class of each test fold, in rows (or in groups for a task scored per group).
+* the units of each class in each test fold, in rows (or in groups for a task scored per group).
 
 Every score is also a skill against the dummy, 0 for the dummy and 1 for a perfect model: ``2 AUC - 1`` (binary),
 ``1 - log loss / dummy log loss`` (multiclass), ``1 - MSE / dummy MSE`` (regression). The flags are questions for the
@@ -37,8 +37,8 @@ curator, not verdicts; how to answer each one: ``.claude/skills/verify-dataset/r
   the best family's;
 * ``unstable``: the best family beats the dummy on fewer than 80% of the splits, or the standard error of its mean
   skill is above 0.05;
-* ``few_minority``: for a binary task, a test fold holds fewer than 5 rows (or groups) of a class (a rare class of a
-  multiclass task is the bundle check ``splits_test_minority_few``).
+* ``few_minority``: a probed test fold holds fewer than 5 rows (or groups) of a class, binary or multiclass; the
+  report names each class that falls short with its smallest count in a test fold.
 
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
 the train side (``--no-text`` leaves them out); categoricals enter as codes and datetimes as numbers. Train and test
@@ -254,6 +254,7 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
     if not text:
         text_cols = []
     target = df[task.target_column_name]
+    classes: pd.Index = pd.Index([])
     if regression:
         y, n_classes = target.to_numpy(dtype=float), 0
     else:
@@ -291,7 +292,7 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
     results: dict[str, list[dict]] = {}
     candidates = models(regression=regression, n_jobs=n_jobs)
     chosen_single: list[str] = []
-    minority: list[int] = []
+    class_counts: list[np.ndarray] = []  # the units of each class, per probed test fold
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
 
     def reference_of(rows: np.ndarray) -> np.ndarray:
@@ -331,9 +332,9 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
                 if labels is None:
                     frame = pd.DataFrame({"_y": y_te, "_g": groups[test]})
                     labels = frame.groupby("_g")["_y"].first()
-                minority.append(int(np.bincount(labels.to_numpy(), minlength=n_classes).min()))
+                class_counts.append(np.bincount(labels.to_numpy(), minlength=n_classes))
             else:
-                minority.append(int(np.bincount(y_te, minlength=n_classes).min()))
+                class_counts.append(np.bincount(y_te, minlength=n_classes))
         dummy_pred = np.broadcast_to(ref, (len(test), max(n_classes, 1))).copy()
         record("dummy", y_te, dummy_pred if n_classes else dummy_pred[:, 0], ref, test)
         if times is not None:
@@ -417,7 +418,9 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
             flags.append("drift_baseline")
     if above < UNSTABLE_SHARE or se > UNSTABLE_SE:
         flags.append("unstable")
-    if n_classes == 2 and minority and min(minority) < FEW_MINORITY:
+    smallest = np.min(class_counts, axis=0) if class_counts else np.array([], dtype=int)
+    few = {str(classes[k]): int(smallest[k]) for k in np.argsort(smallest, kind="stable") if smallest[k] < FEW_MINORITY}
+    if few:
         flags.append("few_minority")
     counts = pd.Series(chosen_single).value_counts()
     return {
@@ -436,7 +439,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         "best_skill_se": se,
         "best_beats_dummy_share": above,
         "single_feature": {"skill": single_skill, "chosen": {str(k): int(v) for k, v in counts.items()}},
-        "smallest_class_per_test_fold": min(minority) if minority else None,
+        "smallest_class_per_test_fold": int(smallest.min()) if len(smallest) else None,
+        "few_minority_classes": few,
         "flags": flags,
         "seconds": round(time.time() - started),
     }
@@ -474,6 +478,10 @@ def render(result: dict) -> str:
     if result["smallest_class_per_test_fold"] is not None:
         what = "groups" if result["unit"].startswith("group") else "rows"
         lines.append(f"  smallest class in a test fold: {result['smallest_class_per_test_fold']} {what}")
+        if few := result.get("few_minority_classes"):
+            named = ", ".join(f"{k!r} {v}" for k, v in list(few.items())[:20])
+            more = f" and {len(few) - 20} more" if len(few) > 20 else ""
+            lines.append(f"  classes under {FEW_MINORITY} {what} in a test fold (smallest count): {named}{more}")
     lines.append(f"  flags: {', '.join(result['flags']) or 'none'}")
     return "\n".join(lines)
 

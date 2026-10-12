@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
+checksum: v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1224927
   n_features: 710
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -132,9 +132,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | date_decision |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 112 categorical, 0 string, 1 datetime</summary>
 
-- categorical (1): `target`
+- categorical (112): `cardtype_51L`, `credtype_322L`, `disbursementtype_67L`, `equalitydataagreement_891L`, `inittransactioncode_186L`, `lastapprcommoditycat_1041M`, `lastapprcommoditytypec_5251766M`, `lastcancelreason_561M`, `lastrejectcommoditycat_161M`, `lastrejectcommodtypec_5251769M`, `lastrejectreason_759M`, `lastrejectreasonclient_4145040M`, `lastst_736L`, `opencred_647L`, `previouscontdistrict_112M`, `twobodfilling_608L`, `description_5085714M`, `education_1103M`, `education_88M`, `maritalst_385M`, `maritalst_893M`, `requesttype_4525192L`, `max_isbidproduct_390L`, `max_isdebitcard_527L`, `min_isdebitcard_527L`, `last_cancelreason_3545846M`, `first_cancelreason_3545846M`, `last_credacc_status_367L`, `last_credtype_587L`, `first_credtype_587L`, `last_district_544M`, `first_district_544M`, `last_education_1138M`, `first_education_1138M`, `last_familystate_726L`, `first_familystate_726L`, `last_inittransactioncode_279L`, `first_inittransactioncode_279L`, `last_postype_4733339M`, `first_postype_4733339M`, `last_profession_152M`, `first_profession_152M`, `last_rejectreason_755M`, `first_rejectreason_755M`, `last_rejectreasonclient_4145042M`, `first_rejectreasonclient_4145042M`, `last_status_219L`, `first_status_219L`, `last_classificationofcontr_13M`, `first_classificationofcontr_13M`, `last_classificationofcontr_400M`, `first_classificationofcontr_400M`, `last_contractst_545M`, `first_contractst_545M`, `last_contractst_964M`, `first_contractst_964M`, `last_description_351M`, `first_description_351M`, `last_financialinstitution_382M`, `first_financialinstitution_382M`, `last_financialinstitution_591M`, `first_financialinstitution_591M`, `last_purposeofcred_426M`, `first_purposeofcred_426M`, `last_purposeofcred_874M`, `first_purposeofcred_874M`, `first_subjectrole_182M`, `first_subjectrole_93M`, `max_contaddr_smempladdr_334L`, `max_safeguarantyflag_411L`, `last_contaddr_district_15M`, `first_contaddr_district_15M`, `last_contaddr_zipcode_807M`, `first_contaddr_zipcode_807M`, `last_education_927M`, `first_education_927M`, `first_empl_employedtotal_800L`, `first_empl_industry_691L`, `last_empladdr_district_926M`, `first_empladdr_district_926M`, `last_empladdr_zipcode_114M`, `first_empladdr_zipcode_114M`, `first_familystate_447L`, `first_housetype_905L`, `last_incometype_1044T`, `first_incometype_1044T`, `last_language1_981M`, `first_language1_981M`, `last_registaddr_district_1083M`, `first_registaddr_district_1083M`, `last_registaddr_zipcode_184M`, `first_registaddr_zipcode_184M`, `last_relationshiptoclient_415T`, `last_relationshiptoclient_642T`, `last_role_1084L`, `first_role_1084L`, `last_sex_738L`, `first_sex_738L`, `last_type_25L`, `first_type_25L`, `last_collater_typofvalofguarant_298M`, `first_collater_typofvalofguarant_298M`, `last_collater_typofvalofguarant_407M`, `first_collater_typofvalofguarant_407M`, `last_collaterals_typeofguarante_359M`, `first_collaterals_typeofguarante_359M`, `last_collaterals_typeofguarante_669M`, `first_collaterals_typeofguarante_669M`, `last_subjectroles_name_541M`, `first_subjectroles_name_541M`, `first_subjectroles_name_838M`, `target`
 - string (0): none
 - datetime (1): `date_decision (%Y-%m-%d)`
 
@@ -439,3 +439,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd` |

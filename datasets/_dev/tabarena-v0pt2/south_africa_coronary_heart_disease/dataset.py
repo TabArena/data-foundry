@@ -11,10 +11,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
 class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
     # Dataset
     unique_name = "south_africa_coronary_heart_disease"
-    year = "1983"
+    year = "2001"
     domain = "medical & healthcare"
-    source = "Kaggle"  # Originally from http://statweb.stanford.edu/~tibs/ElemStatLearn/data.html
-    source_url = "https://www.kaggle.com/datasets/waalbannyantudre/south-african-heart-disease-dataset"
+    source = "Other"  # the data page of The Elements of Statistical Learning; the Kaggle file is a copy
+    source_url = "https://hastie.su.domains/ElemStatLearn/"
     license = "CC BY-SA 4.0"
     download_description = """
         We get the data from Kaggle, as it has the best curation and documentation.

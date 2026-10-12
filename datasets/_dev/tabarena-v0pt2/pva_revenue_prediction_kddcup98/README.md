@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:d2d3bca5b13de00bd61a14131112143f51f3fd9594e33352c0cdf491674f4e5a
+checksum: v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5
 build:
   uuid: 01a111fb-cc18-7704-b06a-adfc58623727
   checksum: v2:d2d3bca5b13de00bd61a14131112143f51f3fd9594e33352c0cdf491674f4e5a
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 144095
   n_features: 477
@@ -69,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 144,095 rows and 477 features. Source: Other (1997).
+Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 144,095 rows and 477 features. Source: Other (1998).
 
-Built as `01a111fb-cc18-7704-b06a-adfc58623727` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-cc18-7704-b06a-adfc58623727` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -109,7 +109,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Other: https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html |
-| year | 1997 |
+| year | 1998 |
 | domain | business & marketing |
 | license |  |
 | data_tags | IID |
@@ -440,3 +440,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5` |

@@ -20,10 +20,11 @@ import re
 import shutil
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, get_args
 
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.store import load_record
+from data_foundry.schema import DatasetSource, Domain
 from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME
 from data_foundry.v2.registry import discover_datasets, load_definition
 from data_foundry.v2.report import read_report
@@ -90,6 +91,20 @@ def _cmd_build(args: argparse.Namespace) -> int:
     return 0
 
 
+# The record's domain and original_source values that name one schema value (`data_foundry.schema.Domain` and
+# `DatasetSource`); any other value ("Other" domain, "Company", "?") stays TODO for the curator.
+RECORD_DOMAINS = {
+    **{d: d for d in get_args(Domain)},
+    "handcrafted/toy": "handcrafted",
+    "Multimedia (from non-tabular modalities)": "multimedia",
+}
+RECORD_SOURCES = {
+    **{s: s for s in get_args(DatasetSource)},
+    "Github": "GitHub",
+    "Website": "Other",
+}
+
+
 def _class_name(unique_name: str) -> str:
     name = "".join(part.capitalize() for part in unique_name.split("_"))
     return name if name[:1].isalpha() else f"Dataset{name}"
@@ -106,6 +121,8 @@ def _prefill(text: str, record: object | None) -> str:
             text = re.sub(rf'({field} = )"TODO"', lambda m: f"{m.group(1)}{json.dumps(value)}", text, count=1)
 
     put("year", getattr(record, "year", None))
+    put("domain", RECORD_DOMAINS.get(getattr(record, "domain", None) or ""))
+    put("source", RECORD_SOURCES.get(getattr(record, "original_source", None) or ""))
     links = getattr(record, "source_links", None) or []
     put("source_url", links[0] if links else None)
     problem = PROBLEM_TYPES.get((getattr(record, "problem_type", None) or "").strip().lower())

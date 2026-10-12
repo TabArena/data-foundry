@@ -11,7 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset
 class ClockProteinToxicity(AbstractCuratedDataset):
     # Dataset
     unique_name = "clock_protein_toxicity"
-    year = "2021"
+    year = "2022"
     domain = "biology & life sciences"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C59313"

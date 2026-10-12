@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_stage_diabetes_risk_prediction
 container_format: 2
-checksum: v2:0b8f6e7383d176e7de0df96ac97ce13cd123e9a0727212f315d38b92a3a72b2a
+checksum: v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113
 build:
   uuid: 01a111fc-d514-780d-9d44-d5ec9c6d44d3
   checksum: v2:0b8f6e7383d176e7de0df96ac97ce13cd123e9a0727212f315d38b92a3a72b2a
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 251
   n_features: 16
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2019).
+Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2020).
 
-Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113`, so the build is stale. See [Build](#build).
 
 ## Files in this folder
 
@@ -101,7 +101,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5VG8H |
-| year | 2019 |
+| year | 2020 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
@@ -330,3 +330,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113` |
