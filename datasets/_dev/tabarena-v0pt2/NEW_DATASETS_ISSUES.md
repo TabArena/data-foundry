@@ -861,6 +861,8 @@ with my own code (scripts in `fix/`):
 
 ### alfa_battle_2_0_task_2
 **Outcome:** added and checked (revised after verification, 2026-10-07)
+
+**Changed on 2026-10-13 (Lennart's review):** the features of the top solutions replace the organizers' baseline (issue 2); the Definition, Checks and Probes below describe the definition of 2026-10-07.
 **Record judgment:** valid with concerns: the tabular version is an aggregation of event sequences; the time axis is reconstructed; repeat clients are linked from the data only.
 - Source: AlfaBattle 2.0, task 2, run by Alfa-Bank on Boosters.pro (Boosters timetable: "12 декабря 2020 - 18 января 2021 — чемпионат; 29 января 2021 — официальный финал"). Boosters task text: "оценить вероятность того, что клиент выйдет в дефолт, основываясь на истории потребительского поведения по карточным транзакциям"; metric ROC AUC. Habr (habr.com/ru/companies/alfa/articles/551130, "Описание данных"): 1.5M issued products, one year of card transactions each, train "выдачи за период в N дней", test "за последующий период в K дней".
 - Scope: credit scoring at issue, binary, temporal: in scope. Tabular models are competitive: organizers' boosting baseline on aggregates 0.737 public AUC, their RNN baselines 0.750 and 0.760 (smirnovevgeny/AlfaBattle2.0 README); 9th place 0.776 private with LightGBM on aggregates, 0.781 blended with an RNN (aizakharov94/AlfaBattle_task2). Criterion 4A holds.
@@ -886,6 +888,12 @@ with my own code (scripts in `fix/`):
 3. Window length and gap. Implemented: 3 windows of 2 months, no gap (oldest train side 581,221 rows, 60% after the filter). Alternatives: `gap=1` like the competition's unreleased month, or 3 one-month windows (months 21-23).
 4. Two deviations from the baseline code: `amnt` 0.0 and `hour_diff` -1 (documented codes) set to missing before aggregating, a mean over no known amount missing instead of 0.0, `mean_operation_type_20` dropped. Alternative: copy the baseline exactly.
 5. Record metadata to align: `domain` (business & marketing in the record, finance here); the tag `Non-IID (Grouped)` (clients now exist only as a split filter, not as the regime); `required_split: ?` is temporal; source link: the ODS.ai copy.
+
+   **Resolved (Lennart, 2026-10-13):** the features the top solutions share instead of the organizers' baseline: 513 aggregates over restored rubles (`exp(amnt * 17.8209) - 1`; 98.8% whole rubles): amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in against out, salary-like inflows and twelve 30-day blocks; daily activity; a balance proxy; the last 30 and 90 days. Label-based encodings, embeddings and sequence-model scores stay out. Untuned LightGBM on the shipped windows: 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 with the 127. Sources (from the record): 1st place slides (boosting 0.774 single, 0.780 six models, 0.785 with the organizers' RNN), 4th private place slides, 9th place code. The notes' earlier "top teams 0.776 with aggregates alone" was 9th place; corrected.
+
+   **Resolved (Lennart, 2026-10-13):** `domain` finance, the tag `Non-IID (Grouped)` removed, the ODS.ai page added to the source links; `required_split` was already temporal.
+
+
 
 ### alvin_smart_money_management_classification_challenge
 

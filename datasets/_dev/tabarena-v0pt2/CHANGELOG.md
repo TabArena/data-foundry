@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-13 (alfa_battle_2_0_task_2: features of the top solutions)
+
+- The organizers' 127-feature baseline is replaced by the aggregates the competition's top solutions share (1st place
+  and 4th private place slides, 9th place code): 513 features over amounts restored to rubles
+  (`exp(amnt * 17.8209) - 1`; 98.8% whole rubles) - amount, gap and recency statistics; count share, amount share and
+  mean amount per value of ten coded columns and the 30 most frequent `mcc` and `card_type` codes; distinct values,
+  mode and last values; money in against out, salary-like inflows and twelve 30-day blocks; daily activity; a balance
+  proxy; the last 30 and 90 days. Label-based encodings, embeddings and sequence-model scores stay out.
+- Untuned LightGBM on the shipped windows: ROC AUC 0.787 / 0.771 / 0.772, against 0.774 / 0.757 / 0.763 with the
+  127. The leak probes find nothing to answer (single features at most 0.614, no exact copies); the task probes raise
+  no flag (50k rows per side: LightGBM and linear 0.744, before 0.724 and 0.705). `dataset check`: 0 errors, 0
+  warnings; peak 16 GB, 11 minutes with `_prepare_raw_files`. Checksum `v2:0329b674…` (not built).
+- The notes' "top teams reached 0.776 with aggregates alone" was 9th place; 1st place's boosting reached 0.780.
+- Record: `domain` finance, tag `Non-IID (Grouped)` removed (clients are a split filter only), the ODS.ai page added.
+
 ## 2026-10-12 (aeolus_1m: Lennart's review; two-week windows, history from 2023)
 
 - Test windows: two weeks instead of one (2024-12-18..31, 12-04..17, 11-20..12-03; 25.8%, 16.7% and 17.3% late;

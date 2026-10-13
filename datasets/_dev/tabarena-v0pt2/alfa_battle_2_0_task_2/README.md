@@ -2,17 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: alfa_battle_2_0_task_2
 container_format: 2
-checksum: v2:52cf0976c55b4cc07fc9bc9f7be454dd38b060f392518911e4f72b55ddd86527
+checksum: v2:0329b6741a3b4557f47165077b97cf7e0298c9edaecbd459f1de39041db5ece1
 build: null
 build_stale: false
 data:
   n_rows: 963811
-  n_features: 127
+  n_features: 514
   dtypes:
-    category: 2
-    float64: 66
-    int32: 2
-    int64: 58
+    category: 14
+    float32: 500
+    int64: 1
   n_test_dataset_rows: null
 task:
   target: default
@@ -58,9 +57,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `default`, scored with `roc_auc` on temporal splits by `issue_month`. 963,811 rows and 127 features. Source: Other (2020).
+Binary classification of `default`, scored with `roc_auc` on temporal splits by `issue_month`. 963,811 rows and 514 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:52cf0976c55b4cc07fc9bc9f7be454dd38b060f392518911e4f72b55ddd86527`.
+Not built yet. The current definition gives checksum `v2:0329b6741a3b4557f47165077b97cf7e0298c9edaecbd459f1de39041db5ece1`.
 
 ## Files in this folder
 
@@ -110,7 +109,7 @@ Only curators run `build`, when the dataset ships.
 | license | Competition rules (Alfa Battle 2.0 Rules, Sec. 3.10 and 5.6): participants must not publish or pass on the data. Alfa-Bank later allowed its use in scientific publications and theses (habr.com/ru/companies/alfa/articles/551130) and re-hosted it for its 2022 ODS.ai competition; the Kaggle mirror mrmorj/alfabattle-20 labels it CC0-1.0 (the uploader's label) |
 | data_tags | Non-IID, Temporal, Anonymized |
 | reference | AlfaBank2020AlfaBattle2 |
-| rows x columns | 963,811 x 128 |
+| rows x columns | 963,811 x 515 |
 | task.target | default |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -119,9 +118,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | issue_month |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `product`, `default`
+- categorical (14): `product`, `last_mcc`, `last_mcc_category`, `last_card_type`, `last_operation_type`, `last_city`, `last_country`, `mode_mcc`, `mode_mcc_category`, `mode_card_type`, `mode_operation_type`, `mode_city`, `mode_country`, `default`
 - string (0): none
 - datetime (0): none
 
@@ -144,25 +143,25 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 963,811 rows of the final frame (the oldest rows: the frame is sorted by `issue_month`); 12 of 128 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 963,811 rows of the final frame (the oldest rows: the frame is sorted by `issue_month`); 12 of 515 columns, the target first. Cells are cut at 40 characters.
 
-| default | issue_month | product | count_mcc_category_1 | count_mcc_category_2 | count_mcc_category_3 | count_mcc_category_4 | count_mcc_category_5 | count_mcc_category_6 | count_mcc_category_7 | count_mcc_category_8 | count_mcc_category_9 |
+| default | issue_month | product | n_transactions | share_no_amount | rub_sum | rub_mean | rub_median | rub_std | rub_min | rub_max | hour_diff_mean |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 0 | 1 | 172 | 105 | 59 | 1 | 1 | 30 | 18 | 0 | 6 |
-| No | 0 | 1 | 15 | 13 | 0 | 0 | 2 | 2 | 1 | 0 | 0 |
-| No | 0 | 1 | 241 | 107 | 51 | 54 | 21 | 8 | 3 | 0 | 17 |
-| No | 0 | 0 | 6 | 40 | 4 | 10 | 1 | 1 | 0 | 0 | 3 |
-| No | 0 | 1 | 1 | 61 | 1 | 0 | 1 | 0 | 1 | 0 | 0 |
+| No | 0 | 1 | 305 | 0 | 73001.4 | 239.349 | 100 | 443.72 | 1 | 4000 | 27.7171 |
+| No | 0 | 0 | 257 | 0 | 5.27105e+06 | 20509.9 | 1835 | 47494.7 | 3 | 350000 | 32.8867 |
+| No | 0 | 0 | 41 | 0 | 164429 | 4010.47 | 3000 | 4569.71 | 200 | 20000 | 212.45 |
+| No | 0 | 2 | 15 | 0.0666667 | 89740 | 6410 | 6200 | 5546.68 | 100 | 23330 | 306.5 |
+| No | 0 | 1 | 217 | 0 | 535586 | 2468.14 | 1430 | 2974.11 | 22 | 17000 | 37.5278 |
 
 ## Curation notes
 
 We start with train_target.csv and the 50 train transaction files of AlfaBattle 2.0, task 2 (Alfa-Bank on Boosters.pro, 2020), from the organizer's archive on ODS.ai.
 
 - Prediction point: a credit product is issued. The bank knows the product type and the client's card transactions of the preceding year (Alfa-Bank on Habr, 2021). The target `default` is the source's flag "1 - факт ухода в дефолт" (1: the applicant defaulted), with no horizon stated.
-- Tabular framing: the source is an event sequence per product. Top teams reached 0.776 private ROC AUC with boosting on aggregates alone and 0.781 with an RNN blended in, so we build the aggregates of the organizers' boosting baseline: `extract_basic_aggregations` with `cat_columns=["mcc_category", "day_of_week", "operation_type"]`, the statistics of `amnt`, `hour_diff` and `days_before`, plus `product`.
-- The other transaction fields are not aggregated, as in the baseline. Counts and mean amounts per value of all of them except `weekofyear` raise one untuned LightGBM from 0.720 to 0.733 ROC AUC; we keep the baseline's set.
-- Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a mean amount over no known amount stays missing (the baseline filled 0.0). So `mean_operation_type_20` is missing for every product and is dropped.
-- Time: the data has no dates, but the applications are numbered so that later applications have a later date. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`). `calendar_months` moves 292 products at the month edges to the neighbouring month whose calendar fits their latest transaction, and `issue_calendar` finds one issue date per calendar month (first decision). The 5 products `app_id` 0-4 fit month 11's calendar but come first in the published order, so they stay in month 0. We keep the month as `issue_month` (0-23), the time column, and drop `app_id` and the latest-transaction fields, which only date the issue.
+- Features: the source is an event sequence per product; we aggregate it like the competition's top solutions (record), whose boosting reached 0.774-0.780 private ROC AUC against 0.737 public for the organizers' 127-feature baseline. Their label encodings, embeddings and sequence-model scores are modelling steps and stay out.
+- We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; 98.8% come out whole) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Untuned LightGBM: ROC AUC 0.787 / 0.771 / 0.772 on the windows, 0.774 / 0.757 / 0.763 with the 127.
+- Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a statistic over no known amount stays missing.
+- Time: the data has no dates, but later applications have a later `app_id`. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`); `calendar_months` moves 292 products at the month edges to the month whose calendar fits them, and `issue_calendar` finds one issue date per month (first decision; `app_id` 0-4 stay in month 0). We keep `issue_month` (0-23) as the time column and drop `app_id` and the latest-transaction fields, which only date the issue.
 - Repeat clients: there is no client id, but a client's products issued less than a year apart share identical transactions. We link two products by the `LINK_*` rules (at least 3 identical transactions, 80% of the smaller product's, in the 28 days before an issue date) and take connected products as one client (`client_keys`). In the newest window the test products whose client's earlier product defaulted default in 95.6% of cases, the others in 2.5% (second decision). That earlier flag was most likely set after the test product was issued, so it carries the test product's own outcome. `_make_splits` removes from each training side the products of clients with a product in the test window (as in hotel_booking_demand: a training label not known at the prediction point is left out).
 - Note: the default rate rises from 2.0-2.6% (months 1-12) to 3.0-3.4% (months 18-23). The competition labelled 7 later months with the same flag, so we see no sign of right-censoring.
 - No duplicate rows.
@@ -226,8 +225,8 @@ A product is linked to the client's other products by identical transactions: 30
 
 0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 123,367,808 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 123,367,808 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 496,362,665 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 496,362,665 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='months'` implies calendar time, but `time_on='issue_month'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:
@@ -239,72 +238,72 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (128 rows)</summary>
+<summary>Show the table (515 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | product | category | 0 | 0 | 5 | 0, 1, 2, 3, 4 |
+| last_mcc | category | 0 | 0 | 108 | 2, 1, 9, 4, 3, 11, 7, 8, 5, 10 |
+| last_mcc_category | category | 0 | 0 | 28 | 2, 1, 3, 4, 8, 5, 6, 7, 11, 9 |
+| last_card_type | category | 0 | 0 | 173 | 2, 5, 1, 3, 6, 67, 10, 11, 4, 14 |
+| last_operation_type | category | 0 | 0 | 22 | 1, 2, 4, 3, 6, 5, 7, 10, 8, 11 |
+| last_city | category | 0 | 0 | 163 | 1, 2, 3, 4, 5, 6, 7, 9, 163, 11 |
+| last_country | category | 0 | 0 | 24 | 1, 2, 3, 24, 4, 13, 5, 8, 9, 6 |
+| mode_mcc | category | 0 | 0 | 108 | 1, 2, 4, 3, 9, 6, 8, 7, 11, 5 |
+| mode_mcc_category | category | 0 | 0 | 27 | 1, 2, 4, 3, 8, 5, 6, 12, 9, 11 |
+| mode_card_type | category | 0 | 0 | 171 | 5, 1, 2, 6, 3, 10, 11, 67, 14, 175 |
+| mode_operation_type | category | 0 | 0 | 21 | 1, 2, 4, 3, 6, 14, 10, 7, 8, 11 |
+| mode_city | category | 0 | 0 | 163 | 1, 2, 3, 4, 5, 6, 7, 9, 11, 8 |
+| mode_country | category | 0 | 0 | 24 | 1, 3, 24, 5, 6, 8, 7, 2, 4, 16 |
 | default | category | 0 | 0 | 2 | No, Yes |
-| mean_mcc_category_28 | float64 | 962580 | 99.87 | 889 | 0.2297, 0.3488, 0.4654, 0.5168, 0.5043, 0.4493, 0.3101, 0.4779, 0.5222, 0.5029 |
-| mean_operation_type_18 | float64 | 958921 | 99.49 | 3263 | 0.3877, 0.4779, 0.3488, 0.4265, 0.4493, 0.4654, 0.259, 0.4104, 0.3202, 0.5168 |
-| mean_operation_type_12 | float64 | 953223 | 98.9 | 10228 | 0.2976, 0.3488, 0.3202, 0.1995, 0.3104, 0.2549, 0.3677, 0.3003, 0.5557, 0.3877 |
-| mean_operation_type_19 | float64 | 933761 | 96.88 | 14376 | 0.3202, 0.2976, 0.3877, 0.3488, 0.3101, 0.2815, 0.3591, 0.3363, 0.259, 0.4104 |
-| mean_mcc_category_27 | float64 | 919782 | 95.43 | 23728 | 0.3877, 0.3488, 0.4265, 0.3184, 0.4493, 0.4779, 0.4104, 0.3202, 0.2976, 0.3109 |
-| mean_operation_type_21 | float64 | 908338 | 94.24 | 31217 | 0.0389, 0.3877, 0.3488, 0.3362, 0.3202, 0.259, 0.4265, 0.3876, 0.2976, 0.1005 |
-| mean_operation_type_15 | float64 | 897904 | 93.16 | 36364 | 0.259, 0.3488, 0.0392, 0.3877, 0.2976, 0.3202, 0.2815, 0.4265, 0.2206, 0.3363 |
-| mean_mcc_category_23 | float64 | 880163 | 91.32 | 45247 | 0.3488, 0.3877, 0.259, 0.2976, 0.3202, 0.2815, 0.2206, 0.4265, 0.4104, 0.3289 |
-| mean_mcc_category_26 | float64 | 868356 | 90.1 | 65822 | 0.3877, 0.4265, 0.4391, 0.4104, 0.3202, 0.3363, 0.2976, 0.4493, 0.3979, 0.3591 |
-| mean_mcc_category_25 | float64 | 861480 | 89.38 | 54137 | 0.2584, 0.25, 0.4349, 0.2851, 0.2777, 0.48, 0.5098, 0.4875, 0.5189, 0.4665 |
-| mean_operation_type_14 | float64 | 861139 | 89.35 | 55080 | 0.4779, 0.5168, 0.4265, 0.4493, 0.3877, 0.5396, 0.259, 0.4654, 0.4104, 0.4882 |
-| mean_operation_type_22 | float64 | 859581 | 89.19 | 53006 | 0.0389, 0.3877, 0.4779, 0.4265, 0.5168, 0.3488, 0.4493, 0.4654, 0.5557, 0.259 |
-| mean_operation_type_16 | float64 | 824547 | 85.55 | 56704 | 0.259, 0.2976, 0.3202, 0.3488, 0.3877, 0.2206, 0.3363, 0.2815, 0.3289, 0.3101 |
-| mean_mcc_category_20 | float64 | 799675 | 82.97 | 142692 | 0.2812, 0.2848, 0.2773, 0.2973, 0.2882, 0.4434, 0.2731, 0.3876, 0.2584, 0.3201 |
-| mean_mcc_category_22 | float64 | 798466 | 82.84 | 117777 | 0.4265, 0.4493, 0.4104, 0.4391, 0.3877, 0.3202, 0.2976, 0.3979, 0.4206, 0.3488 |
-| mean_operation_type_17 | float64 | 790375 | 82.01 | 110576 | 0.0389, 0.2307, 0.0228, 0.3877, 0.3876, 0.4265, 0.4779, 0.359, 0.3488, 0.3751 |
-| mean_mcc_category_21 | float64 | 777767 | 80.7 | 149885 | 0.3202, 0.4265, 0.4391, 0.4493, 0.3488, 0.3363, 0.3877, 0.3289, 0.3591, 0.4104 |
-| mean_mcc_category_24 | float64 | 772508 | 80.15 | 96307 | 0.259, 0.4493, 0.4779, 0.4265, 0.3488, 0.3877, 0.3871, 0.3202, 0.4104, 0.41 |
-| mean_operation_type_13 | float64 | 769082 | 79.8 | 106547 | 0.259, 0.3488, 0.3164, 0.3877, 0.2334, 0.1735, 0.3202, 0.2976, 0.3521, 0.2206 |
-| mean_mcc_category_19 | float64 | 753972 | 78.23 | 114376 | 0.4065, 0.3106, 0.3164, 0.4379, 0.3201, 0.3586, 0.3494, 0.3521, 0.3184, 0.4264 |
-| mean_operation_type_9 | float64 | 724801 | 75.2 | 179308 | 0.3391, 0.3779, 0.2643, 0.3202, 0.3882, 0.3488, 0.2981, 0.3877, 0.4493, 0.3494 |
-| mean_operation_type_10 | float64 | 716430 | 74.33 | 140619 | 0.3877, 0.4779, 0.4265, 0.3488, 0.4493, 0.5168, 0.259, 0.4104, 0.3202, 0.2976 |
-| mean_operation_type_8 | float64 | 702082 | 72.84 | 172737 | 0.3877, 0.4779, 0.3488, 0.4265, 0.4493, 0.5168, 0.4654, 0.259, 0.4104, 0.2976 |
-| mean_mcc_category_16 | float64 | 685905 | 71.17 | 159269 | 0.2307, 0.3488, 0.3877, 0.3202, 0.259, 0.2976, 0.3591, 0.3363, 0.2815, 0.3101 |
-| mean_operation_type_11 | float64 | 678950 | 70.44 | 189748 | 0.3877, 0.4779, 0.4265, 0.3488, 0.4493, 0.5168, 0.259, 0.4104, 0.3202, 0.2976 |
-| mean_mcc_category_17 | float64 | 668350 | 69.34 | 157877 | 0.3488, 0.3202, 0.3877, 0.3363, 0.3591, 0.3979, 0.2976, 0.3289, 0.3101, 0.4104 |
-| mean_operation_type_7 | float64 | 653817 | 67.84 | 200098 | 0.3877, 0.4779, 0.3488, 0.4265, 0.4493, 0.5168, 0.4654, 0.259, 0.4104, 0.2976 |
-| mean_mcc_category_18 | float64 | 623973 | 64.74 | 193357 | 0.3289, 0.3101, 0.3488, 0.3871, 0.3876, 0.2815, 0.3429, 0.3349, 0.3635, 0.3202 |
-| mean_mcc_category_8 | float64 | 575274 | 59.69 | 297602 | 0.3877, 0.4779, 0.4265, 0.3488, 0.4493, 0.5168, 0.259, 0.4104, 0.3202, 0.2976 |
-| mean_mcc_category_14 | float64 | 560771 | 58.18 | 303405 | 0.3488, 0.3877, 0.3202, 0.2976, 0.2815, 0.259, 0.3363, 0.3101, 0.3591, 0.2206 |
-| mean_mcc_category_12 | float64 | 542203 | 56.26 | 274414 | 0.3488, 0.3202, 0.3591, 0.3363, 0.2976, 0.3877, 0.3677, 0.259, 0.3752, 0.2815 |
-| mean_mcc_category_15 | float64 | 531434 | 55.14 | 314926 | 0.4493, 0.3877, 0.4265, 0.4104, 0.4779, 0.3488, 0.2973, 0.3202, 0.3201, 0.3101 |
-| mean_operation_type_6 | float64 | 528380 | 54.82 | 285642 | 0.3877, 0.4779, 0.4265, 0.3488, 0.5168, 0.4493, 0.259, 0.4104, 0.2976, 0.3202 |
-| mean_operation_type_5 | float64 | 471503 | 48.92 | 372215 | 0.3893, 0.3877, 0.3521, 0.3488, 0.4276, 0.393, 0.4779, 0.4265, 0.479, 0.4504 |
-| mean_mcc_category_13 | float64 | 411879 | 42.73 | 408785 | 0.3871, 0.3477, 0.4263, 0.3581, 0.4491, 0.41, 0.3745, 0.2815, 0.3876, 0.3349 |
-| mean_mcc_category_11 | float64 | 409649 | 42.5 | 368231 | 0.259, 0.3488, 0.3202, 0.2976, 0.3877, 0.3363, 0.3591, 0.3289, 0.2815, 0.3101 |
-| mean_mcc_category_10 | float64 | 404443 | 41.96 | 436075 | 0.3202, 0.2976, 0.3101, 0.2815, 0.259, 0.3488, 0.3363, 0.3289, 0.2691, 0.3591 |
-| mean_operation_type_1 | float64 | 344366 | 35.73 | 609941 | 0.259, 0.3488, 0.3877, 0.3202, 0.2976, 0.2206, 0.4265, 0.2815, 0.3363, 0.3591 |
-| mean_mcc_category_9 | float64 | 276339 | 28.67 | 580712 | 0.3876, 0.4265, 0.359, 0.3751, 0.3362, 0.3487, 0.3201, 0.3877, 0.3676, 0.4104 |
-| mean_mcc_category_4 | float64 | 247264 | 25.65 | 643106 | 0.259, 0.2976, 0.2815, 0.2691, 0.3202, 0.2736, 0.3078, 0.2777, 0.2851, 0.2206 |
-| mean_mcc_category_5 | float64 | 247204 | 25.65 | 629440 | 0.3488, 0.3877, 0.259, 0.3202, 0.2976, 0.3363, 0.4104, 0.3591, 0.2206, 0.3677 |
-| mean_operation_type_2 | float64 | 235014 | 24.38 | 668905 | 0.3488, 0.3202, 0.2976, 0.2815, 0.259, 0.3877, 0.3101, 0.2691, 0.3871, 0.3289 |
-| mean_operation_type_4 | float64 | 219025 | 22.72 | 610155 | 0.4779, 0.3877, 0.5168, 0.4265, 0.259, 0.4493, 0.3488, 0.5396, 0.5557, 0.4654 |
-| mean_mcc_category_6 | float64 | 215386 | 22.35 | 666392 | 0.259, 0.3202, 0.2815, 0.3488, 0.2976, 0.2206, 0.3877, 0.3101, 0.3591, 0.3289 |
-| mean_mcc_category_7 | float64 | 202570 | 21.02 | 688766 | 0.3877, 0.3202, 0.2976, 0.3488, 0.2206, 0.3289, 0.4265, 0.259, 0.3677, 0.3591 |
-| mean_mcc_category_3 | float64 | 187372 | 19.44 | 718898 | 0.259, 0.3488, 0.2976, 0.2643, 0.3202, 0.3877, 0.4174, 0.2815, 0.2531, 0.2206 |
-| mean_operation_type_3 | float64 | 153962 | 15.97 | 679292 | 0.5168, 0.6071, 0.3877, 0.4779, 0.4265, 0.4493, 0.3488, 0.5396, 0.5557, 0.5785 |
-| mean_mcc_category_1 | float64 | 102353 | 10.62 | 848425 | 0.2691, 0.259, 0.2531, 0.2561, 0.2617, 0.25, 0.2466, 0.2351, 0.2714, 0.243 |
-| mean_day_of_week_7 | float64 | 50209 | 5.21 | 863146 | 0.4779, 0.3877, 0.4265, 0.4493, 0.5168, 0.4654, 0.4882, 0.3488, 0.259, 0.5396 |
-| mean_day_of_week_2 | float64 | 31715 | 3.29 | 884707 | 0.4779, 0.4493, 0.5168, 0.4265, 0.3877, 0.4654, 0.4882, 0.4968, 0.5396, 0.4104 |
-| mean_day_of_week_6 | float64 | 17993 | 1.87 | 899366 | 0.4779, 0.4265, 0.4493, 0.5168, 0.3877, 0.4654, 0.4882, 0.4968, 0.5396, 0.3488 |
-| mean_day_of_week_5 | float64 | 17877 | 1.85 | 899624 | 0.4779, 0.4493, 0.4265, 0.5168, 0.3877, 0.4654, 0.4882, 0.5396, 0.4968, 0.3488 |
-| mean_day_of_week_3 | float64 | 17718 | 1.84 | 900028 | 0.4779, 0.4493, 0.5168, 0.4265, 0.3877, 0.4654, 0.4882, 0.4968, 0.5396, 0.259 |
-| mean_day_of_week_4 | float64 | 17297 | 1.79 | 900370 | 0.4779, 0.4493, 0.4265, 0.5168, 0.3877, 0.4654, 0.4882, 0.4968, 0.4391, 0.3488 |
-| mean_day_of_week_1 | float64 | 16707 | 1.73 | 903815 | 0.4779, 0.4493, 0.5168, 0.4265, 0.3877, 0.4654, 0.4882, 0.4968, 0.5396, 0.4391 |
-| mean_mcc_category_2 | float64 | 5097 | 0.53 | 947744 | 0.4779, 0.3877, 0.5168, 0.4265, 0.4493, 0.3488, 0.5396, 0.6071, 0.4654, 0.5557 |
-| amnt_mean | float64 | 3 | 0 | 962217 | 0.4779, 0.4882, 0.5168, 0.4493, 0.4654, 0.5007, 0.5109, 0.4968, 0.4265, 0.4843 |
-| amnt_median | float64 | 3 | 0 | 313697 | 0.3877, 0.3488, 0.4779, 0.4265, 0.4493, 0.3202, 0.3363, 0.5168, 0.2976, 0.4654 |
+| mean_rub_operation_type_group_3 | float32 | 963295 | 99.95 | 407 | 5000.0024, 10000.0059, 1280.0005, 1500.0006, 4000.002, 500.0002, 6000.0029, 300… |
+| mean_rub_country_16 | float32 | 955511 | 99.14 | 5677 | 1000.0004, 500.0002, 200.0001, 100.0, 300.0001, 150.0, 5000.0024, 2000.0009, 12… |
+| mean_rub_payment_system_5 | float32 | 954715 | 99.06 | 8739 | 5000.0024, 3000.0015, 500.0002, 10000.0059, 4000.002, 8000.0044, 3500.0017, 200… |
+| mean_rub_operation_type_12 | float32 | 953223 | 98.9 | 10155 | 500.0002, 200.0001, 34.0, 300.0001, 105.0, 100.0, 93.0, 210.0001, 600.0002, 601… |
+| mean_rub_card_type_34 | float32 | 952450 | 98.82 | 11130 | 500.0002, 1000.0004, 5000.0024, 10000.0059, 3000.0015, 2500.0012, 7000.0039, 40… |
+| mean_rub_card_type_28 | float32 | 952289 | 98.8 | 11431 | 1000.0004, 100.0, 5000.0024, 2000.0009, 500.0002, 7500.0039, 4000.002, 4500.002… |
+| mean_rub_card_type_13 | float32 | 951905 | 98.76 | 11789 | 5000.0024, 10000.0059, 300.0001, 15000.0088, 2000.0009, 500.0002, 100.0, 4500.0… |
+| mean_rub_card_type_19 | float32 | 951588 | 98.73 | 12099 | 10000.0059, 5000.0024, 500.0002, 1000.0004, 1500.0006, 59.0, 8000.0044, 6000.00… |
+| mean_rub_currency_4 | float32 | 950123 | 98.58 | 12856 | 12158.0674, 1057.1205, 2113.2109, 3874.9487, 8175.6367, 6009.3608, 15061.0283, … |
+| mean_rub_card_type_17 | float32 | 949025 | 98.47 | 14589 | 500.0002, 1000.0004, 10000.0059, 600.0002, 1200.0005, 1500.0006, 2000.0009, 300… |
+| mean_rub_card_type_22 | float32 | 947017 | 98.26 | 16531 | 10000.0059, 100.0, 1000.0004, 4500.0024, 1500.0006, 12000.0068, 3000.0015, 4000… |
+| mean_rub_card_type_37 | float32 | 946291 | 98.18 | 17150 | 1000.0004, 5000.0024, 100.0, 10000.0059, 500.0002, 3000.0015, 2000.0009, 200.00… |
+| mean_rub_card_type_16 | float32 | 944651 | 98.01 | 18474 | 10000.0059, 1000.0004, 5000.0024, 100000.0703, 50000.0312, 15000.0088, 500.0002… |
+| mean_rub_card_type_27 | float32 | 944195 | 97.96 | 19102 | 1000.0004, 10000.0059, 3000.0015, 500.0002, 30000.0176, 15000.0088, 50000.0312,… |
+| mean_rub_card_type_7 | float32 | 942583 | 97.8 | 21002 | 2000.0009, 1000.0004, 10000.0059, 1200.0005, 1500.0006, 5000.0024, 15000.0088, … |
+| mean_rub_card_type_12 | float32 | 942492 | 97.79 | 20934 | 5000.0024, 1000.0004, 4000.002, 3000.0015, 10000.0059, 100.0, 2000.0009, 8000.0… |
+| mean_rub_card_type_4 | float32 | 941684 | 97.7 | 21930 | 2000.0009, 1000.0004, 3000.0015, 5000.0024, 25000.0156, 4000.002, 10000.0059, 5… |
+| mean_rub_card_type_60 | float32 | 939664 | 97.49 | 23299 | 100.0, 3000.0015, 2000.0009, 500.0002, 5000.0024, 4000.002, 1000.0004, 7000.003… |
+| mean_rub_card_type_54 | float32 | 939349 | 97.46 | 23646 | 100.0, 1000.0004, 10000.0059, 5000.0024, 200.0001, 500.0002, 2000.0009, 3000.00… |
+| mean_rub_card_type_8 | float32 | 938738 | 97.4 | 24060 | 10000.0059, 1000.0004, 5000.0024, 500.0002, 2000.0009, 3000.0015, 100.0, 15000.… |
+| mean_rub_country_6 | float32 | 938523 | 97.38 | 23653 | 990.0004, 490.0002, 250.0001, 3677.0234, 300.0001, 10116.6553, 1834.1887, 2733.… |
+| mean_rub_card_type_52 | float32 | 938220 | 97.34 | 24677 | 10000.0059, 100.0, 5000.0024, 1000.0004, 500.0002, 200.0001, 2000.0009, 25000.0… |
+| mean_rub_card_type_9 | float32 | 937973 | 97.32 | 25007 | 1000.0004, 5000.0024, 10000.0059, 3000.0015, 2000.0009, 1500.0006, 20000.0117, … |
+| mean_rub_card_type_46 | float32 | 936882 | 97.21 | 26621 | 1000.0004, 100.0, 500.0002, 200.0001, 5000.0024, 800.0003, 2000.0009, 1200.0005… |
+| mean_rub_country_7 | float32 | 933178 | 96.82 | 28027 | 4950.0024, 6000.0029, 7000.0039, 7200.0039, 4800.0024, 9450.0049, 3900.002, 525… |
+| mean_rub_card_type_21 | float32 | 933084 | 96.81 | 29460 | 1000.0004, 500.0002, 100.0, 5000.0024, 200.0001, 300.0001, 3000.0015, 2000.0009… |
+| mean_rub_card_type_11 | float32 | 932318 | 96.73 | 31021 | 5000.0024, 100.0, 10000.0059, 200.0001, 1000.0004, 300.0001, 3000.0015, 4000.00… |
+| mean_rub_country_10 | float32 | 930415 | 96.54 | 23198 | 549.0002, 799.0003, 999.0004, 1999.0009, 169.0, 499.0002, 299.0001, 599.0002, 1… |
+| mean_rub_card_type_10 | float32 | 930203 | 96.51 | 32964 | 100.0, 5000.0024, 200.0001, 1000.0004, 500.0002, 10000.0059, 3000.0015, 3500.00… |
+| mean_rub_card_type_26 | float32 | 930192 | 96.51 | 32884 | 5000.0024, 100.0, 2500.0012, 3000.0015, 2000.0009, 1000.0004, 4000.002, 500.000… |
+| mean_rub_card_type_14 | float32 | 923170 | 95.78 | 39070 | 5000.0024, 500.0002, 10000.0059, 1000.0004, 100.0, 4000.002, 3000.0015, 200.000… |
+| mean_rub_country_8 | float32 | 921345 | 95.59 | 29937 | 500.0002, 1000.0004, 300.0001, 100.0, 2000.0009, 5000.0024, 3000.0015, 200.0001… |
+| mean_rub_card_type_23 | float32 | 917537 | 95.2 | 38964 | 1000.0004, 200.0001, 5000.0024, 10000.0059, 500.0002, 2000.0009, 3000.0015, 400… |
+| mean_rub_mcc_27 | float32 | 908873 | 94.3 | 25893 | 100.0, 500.0002, 200.0001, 300.0001, 1000.0004, 400.0002, 150.0, 50.0, 60.0, 60… |
+| mean_rub_card_type_6 | float32 | 903460 | 93.74 | 58723 | 5000.0024, 100.0, 10000.0059, 3000.0015, 1000.0004, 2000.0009, 4000.002, 500.00… |
+| mean_rub_card_type_175 | float32 | 898910 | 93.27 | 48799 | 5000.0024, 3000.0015, 2000.0009, 1000.0004, 4000.002, 10000.0059, 100.0, 2500.0… |
+| mean_rub_operation_type_15 | float32 | 897904 | 93.16 | 29924 | 100.0, 500.0002, 1000.0004, 1.01, 200.0001, 300.0001, 150.0, 400.0002, 2000.000… |
+| mean_rub_operation_kind_6 | float32 | 897372 | 93.11 | 30198 | 100.0, 500.0002, 1000.0004, 1.01, 200.0001, 300.0001, 150.0, 400.0002, 2000.000… |
+| mean_rub_country_5 | float32 | 896175 | 92.98 | 51607 | 149.0, 159.0, 199.0001, 75.0, 139.0, 99.0, 169.0, 299.0001, 200.0001, 150.0 |
+| mean_rub_currency_11 | float32 | 893541 | 92.71 | 65431 | 1834.0209, 2328.011, 1845.6008, 1187.2805, 1319.5405, 2667.6611, 1851.2208, 231… |
+| mean_rub_mcc_category_23 | float32 | 880163 | 91.32 | 35706 | 500.0002, 1000.0004, 100.0, 200.0001, 300.0001, 150.0, 50.0, 1500.0006, 2000.00… |
+| mean_rub_card_type_3 | float32 | 873919 | 90.67 | 85730 | 50000.0312, 1200.0005, 10000.0059, 5000.0024, 1000.0004, 15000.0088, 3000.0015,… |
+| mean_rub_country_9 | float32 | 873707 | 90.65 | 59884 | 59.0, 169.0, 19.0, 75.0, 149.0, 229.0001, 15.0, 379.0001, 299.0001, 150.0 |
+| mean_rub_country_4 | float32 | 862454 | 89.48 | 77723 | 100.0, 99.0, 50.0, 590.0002, 1000.0004, 549.0002, 200.0001, 500.0002, 49.0, 150… |
+| mean_rub_mcc_category_25 | float32 | 861480 | 89.38 | 52264 | 99.0, 85.0, 2320.001, 160.0, 140.0, 5188.6826, 5929.9229, 4076.822, 10377.3652,… |
+| mean_rub_operation_type_14 | float32 | 861139 | 89.35 | 23256 | 5000.0024, 10000.0059, 2000.0009, 3000.0015, 1000.0004, 15000.0088, 4000.002, 2… |
 
-(68 more rows not shown)
+(455 more rows not shown)
 
 </details>
 
@@ -318,86 +317,146 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (126 rows)</summary>
+<summary>Show the table (501 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | issue_month | 963811 | 13.8979 | 6.44445 | 0 | 23 |
-| count_mcc_category_1 | 963811 | 79.6661 | 101.664 | 0 | 3153 |
-| count_mcc_category_2 | 963811 | 49.4961 | 54.5592 | 0 | 7905 |
-| count_mcc_category_3 | 963811 | 31.8607 | 63.8049 | 0 | 2581 |
-| count_mcc_category_4 | 963811 | 33.444 | 69.6744 | 0 | 1751 |
-| count_mcc_category_5 | 963811 | 16.0847 | 32.2878 | 0 | 4593 |
-| count_mcc_category_6 | 963811 | 13.692 | 27.0564 | 0 | 2194 |
-| count_mcc_category_7 | 963811 | 11.4065 | 17.7153 | 0 | 1634 |
-| count_mcc_category_8 | 963811 | 5.94503 | 19.1455 | 0 | 2540 |
-| count_mcc_category_9 | 963811 | 7.58511 | 12.9011 | 0 | 875 |
-| count_mcc_category_10 | 963811 | 4.42547 | 10.2733 | 0 | 827 |
-| count_mcc_category_11 | 963811 | 4.64338 | 10.3776 | 0 | 849 |
-| count_mcc_category_12 | 963811 | 4.36704 | 25.7988 | 0 | 5768 |
-| count_mcc_category_13 | 963811 | 3.05793 | 6.92627 | 0 | 1492 |
-| count_mcc_category_14 | 963811 | 3.21163 | 8.98656 | 0 | 898 |
-| count_mcc_category_15 | 963811 | 2.32162 | 5.72642 | 0 | 904 |
-| count_mcc_category_16 | 963811 | 1.40626 | 7.95675 | 0 | 861 |
-| count_mcc_category_17 | 963811 | 1.30311 | 5.70471 | 0 | 1384 |
-| count_mcc_category_18 | 963811 | 1.19349 | 6.58763 | 0 | 4263 |
-| count_mcc_category_19 | 963811 | 0.99103 | 4.36212 | 0 | 688 |
-| count_mcc_category_20 | 963811 | 1.13357 | 6.27072 | 0 | 1029 |
-| count_mcc_category_21 | 963811 | 0.968843 | 5.18225 | 0 | 1293 |
-| count_mcc_category_22 | 963811 | 0.894925 | 4.18176 | 0 | 731 |
-| count_mcc_category_23 | 963811 | 0.461109 | 7.11835 | 0 | 2386 |
-| count_mcc_category_24 | 963811 | 0.371217 | 1.40938 | 0 | 401 |
-| count_mcc_category_25 | 963811 | 0.283659 | 5.19788 | 0 | 4125 |
-| count_mcc_category_26 | 963811 | 0.222957 | 1.45218 | 0 | 361 |
-| count_mcc_category_27 | 963811 | 0.162607 | 2.40844 | 0 | 542 |
-| count_mcc_category_28 | 963811 | 0.00475301 | 0.222874 | 0 | 52 |
-| mean_mcc_category_1 | 861458 | 0.332365 | 0.0417048 | 0.0227522 | 0.714682 |
-| mean_mcc_category_2 | 958714 | 0.470259 | 0.0520449 | 0.0388952 | 0.764208 |
-| mean_mcc_category_3 | 776439 | 0.310908 | 0.048931 | 0.0227522 | 0.757676 |
-| mean_mcc_category_4 | 716547 | 0.324197 | 0.0411416 | 0.0227522 | 0.73186 |
-| mean_mcc_category_5 | 716607 | 0.354463 | 0.0529567 | 0.0260219 | 0.832471 |
-| mean_mcc_category_6 | 748425 | 0.340191 | 0.0559066 | 0.0208499 | 0.810998 |
-| mean_mcc_category_7 | 761241 | 0.345947 | 0.0541872 | 0.0227522 | 0.839627 |
-| mean_mcc_category_8 | 388537 | 0.438449 | 0.0702543 | 0.0032697 | 0.736291 |
-| mean_mcc_category_9 | 687472 | 0.411805 | 0.0520413 | 0.032983 | 0.809812 |
-| mean_mcc_category_10 | 559368 | 0.372112 | 0.0596157 | 0.032983 | 0.758799 |
-| mean_mcc_category_11 | 554162 | 0.35834 | 0.0680313 | 0.0147223 | 0.857138 |
-| mean_mcc_category_12 | 421608 | 0.368363 | 0.0594656 | 0.0296605 | 0.755511 |
-| mean_mcc_category_13 | 551932 | 0.394727 | 0.0770664 | 0.0147223 | 0.795829 |
-| mean_mcc_category_14 | 403040 | 0.373648 | 0.0641318 | 0.0227522 | 0.836889 |
-| mean_mcc_category_15 | 432377 | 0.37742 | 0.0605769 | 0.0191656 | 0.778487 |
-| mean_mcc_category_16 | 277906 | 0.372654 | 0.0800722 | 0.0227522 | 0.784152 |
-| mean_mcc_category_17 | 295461 | 0.38596 | 0.0664752 | 0.0227522 | 0.795021 |
-| mean_mcc_category_18 | 339838 | 0.411153 | 0.0796121 | 0.0291115 | 0.789964 |
-| mean_mcc_category_19 | 209839 | 0.355699 | 0.0680201 | 0.000558352 | 0.784773 |
-| mean_mcc_category_20 | 164136 | 0.346015 | 0.069039 | 0.0250824 | 0.817103 |
-| mean_mcc_category_21 | 186044 | 0.502313 | 0.0620667 | 0.0388952 | 0.786558 |
-| mean_mcc_category_22 | 165345 | 0.442292 | 0.0787897 | 0.00165866 | 0.875441 |
-| mean_mcc_category_23 | 83648 | 0.38528 | 0.0980373 | 0.00534823 | 0.845328 |
-| mean_mcc_category_24 | 191303 | 0.449467 | 0.0762233 | 0.0188808 | 0.865554 |
-| mean_mcc_category_25 | 102331 | 0.45192 | 0.0810289 | 0.000558352 | 0.799427 |
-| mean_mcc_category_26 | 95455 | 0.490733 | 0.0930184 | 0.0258091 | 0.815442 |
-| mean_mcc_category_27 | 44029 | 0.42342 | 0.0926777 | 0.0388952 | 0.825901 |
-| mean_mcc_category_28 | 1231 | 0.44894 | 0.0844041 | 0.0388952 | 0.634157 |
-| count_day_of_week_1 | 963811 | 45.0134 | 49.9425 | 0 | 1291 |
-| count_day_of_week_2 | 963811 | 41.0368 | 47.3267 | 0 | 1388 |
-| count_day_of_week_3 | 963811 | 40.9382 | 46.2205 | 0 | 1424 |
+| n_transactions | 963811 | 280.605 | 309.929 | 6 | 9580 |
+| share_no_amount | 963811 | 0.00506559 | 0.0197845 | 0 | 1 |
+| rub_sum | 963811 | 1.17172e+06 | 2.97686e+06 | 0 | 4.22199e+08 |
+| rub_mean | 963808 | 5538.63 | 9758.51 | 37.975 | 857144 |
+| rub_median | 963808 | 2109.84 | 6814.6 | 0.4 | 995001 |
+| rub_std | 963808 | 11167.3 | 17069.9 | 0 | 3.27961e+06 |
+| rub_min | 963808 | 158.429 | 1380.55 | 0.01 | 500000 |
+| rub_max | 963808 | 90019.5 | 183849 | 70 | 5.48932e+07 |
+| hour_diff_mean | 963811 | 99.9743 | 152.536 | 0 | 1713.2 |
+| hour_diff_median | 963811 | 61.42 | 148.009 | 0 | 2189 |
+| hour_diff_std | 963811 | 131.141 | 161.392 | 0 | 3612.48 |
+| hour_diff_max | 963811 | 703.319 | 653.93 | 0 | 8453 |
+| days_before_min | 963811 | 10.2249 | 27.5434 | 1 | 357 |
+| days_before_max | 963811 | 322.04 | 70.4774 | 1 | 359 |
+| days_before_mean | 963811 | 158.401 | 47.6649 | 1 | 358 |
+| days_before_median | 963811 | 155.405 | 57.867 | 1 | 359 |
+| hour_mean | 963811 | 13.8663 | 2.05523 | 1 | 22.5 |
+| hour_std | 963811 | 4.14072 | 1.01699 | 0 | 11.8603 |
+| share_night | 963811 | 0.0363844 | 0.0538646 | 0 | 1 |
+| rub_q05 | 963808 | 309.395 | 1739.52 | 0.024 | 503000 |
+| rub_q25 | 963808 | 907.202 | 3590.41 | 0.4 | 752501 |
+| rub_q75 | 963808 | 5334.73 | 13517.9 | 1 | 1.12369e+06 |
+| rub_q95 | 963808 | 21650.9 | 36376.2 | 20 | 1.90901e+06 |
+| hour_diff_q25 | 963811 | 25.3951 | 103.265 | 0 | 1531 |
+| hour_diff_q75 | 963811 | 126.362 | 205.489 | 0 | 3802 |
+| share_hour_diff_0 | 963811 | 0.20959 | 0.0939884 | 0 | 1 |
+| share_hour_diff_1_2 | 963811 | 0.118408 | 0.0733671 | 0 | 0.8 |
+| share_hour_diff_3_10 | 963811 | 0.127828 | 0.0818505 | 0 | 0.8 |
+| share_hour_diff_11_100 | 963811 | 0.351448 | 0.133933 | 0 | 1 |
+| share_hour_diff_over_100 | 963811 | 0.192727 | 0.231777 | 0 | 1 |
+| share_operation_kind_1 | 963811 | 0.660033 | 0.268514 | 0 | 1 |
+| share_operation_kind_2 | 963811 | 0.135952 | 0.16893 | 0 | 1 |
+| share_operation_kind_3 | 963811 | 0.0710948 | 0.12891 | 0 | 1 |
+| share_operation_kind_4 | 963811 | 0.124066 | 0.214843 | 0 | 1 |
+| share_operation_kind_5 | 963811 | 0.00393539 | 0.0127172 | 0 | 0.947368 |
+| share_operation_kind_6 | 963811 | 0.00424556 | 0.0259192 | 0 | 1 |
+| amount_share_operation_kind_1 | 963808 | 0.278047 | 0.197827 | 0 | 1 |
+| amount_share_operation_kind_2 | 963808 | 0.351602 | 0.282262 | 0 | 1 |
+| amount_share_operation_kind_3 | 963808 | 0.118677 | 0.17576 | 0 | 1 |
+| amount_share_operation_kind_4 | 963808 | 0.24521 | 0.254655 | 0 | 1 |
+| amount_share_operation_kind_5 | 963808 | 0.00356551 | 0.0184058 | 0 | 1 |
+| amount_share_operation_kind_6 | 963808 | 0.00124767 | 0.015075 | 0 | 0.933356 |
+| mean_rub_operation_kind_1 | 906156 | 1889.99 | 6937.21 | 0.29 | 3.15e+06 |
+| mean_rub_operation_kind_2 | 842764 | 18387.4 | 30079.6 | 50 | 1.35791e+06 |
+| mean_rub_operation_kind_3 | 684400 | 8432.37 | 11792 | 0.2 | 550000 |
+| mean_rub_operation_kind_4 | 757875 | 20364.4 | 35750.2 | 50 | 1.18295e+06 |
+| mean_rub_operation_kind_5 | 345165 | 3860.35 | 12322.9 | 0.01 | 1.84554e+06 |
+| mean_rub_operation_kind_6 | 66439 | 3238.67 | 15389.7 | 0.01 | 1.24594e+06 |
+| share_operation_type_1 | 963811 | 0.350547 | 0.345203 | 0 | 1 |
+| share_operation_type_2 | 963811 | 0.295668 | 0.33096 | 0 | 1 |
+| share_operation_type_3 | 963811 | 0.103567 | 0.148715 | 0 | 1 |
+| share_operation_type_4 | 963811 | 0.113784 | 0.201124 | 0 | 1 |
+| share_operation_type_5 | 963811 | 0.0224342 | 0.0499719 | 0 | 1 |
+| share_operation_type_6 | 963811 | 0.0233619 | 0.0752004 | 0 | 1 |
+| share_operation_type_7 | 963811 | 0.0170426 | 0.0590073 | 0 | 1 |
+| share_operation_type_8 | 963811 | 0.0147375 | 0.0557542 | 0 | 1 |
+| share_operation_type_9 | 963811 | 0.00648793 | 0.0250735 | 0 | 1 |
+| share_operation_type_10 | 963811 | 0.0122536 | 0.0604285 | 0 | 1 |
+| share_operation_type_11 | 963811 | 0.0108051 | 0.0483756 | 0 | 1 |
 
-(66 more rows not shown)
+(441 more rows not shown)
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (67 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | default | 1 | No | 937234 | 97.24 |
 | default | 2 | Yes | 26577 | 2.76 |
-| product | 1 | 0 | 502629 | 52.15 |
-| product | 2 | 1 | 263464 | 27.34 |
-| product | 3 | 2 | 76485 | 7.94 |
-| product | 4 | 3 | 64478 | 6.69 |
-| product | 5 | 4 | 56755 | 5.89 |
+| last_card_type | 1 | 2 | 89315 | 9.27 |
+| last_card_type | 2 | 5 | 76000 | 7.89 |
+| last_card_type | 3 | 1 | 74827 | 7.76 |
+| last_card_type | 4 | 3 | 54655 | 5.67 |
+| last_card_type | 5 | 6 | 39277 | 4.08 |
+| last_city | 1 | 1 | 260929 | 27.07 |
+| last_city | 2 | 2 | 142819 | 14.82 |
+| last_city | 3 | 3 | 51125 | 5.3 |
+| last_city | 4 | 4 | 27434 | 2.85 |
+| last_city | 5 | 5 | 22335 | 2.32 |
+| last_country | 1 | 1 | 928047 | 96.29 |
+| last_country | 2 | 2 | 6805 | 0.71 |
+| last_country | 3 | 3 | 6432 | 0.67 |
+| last_country | 4 | 24 | 4071 | 0.42 |
+| last_country | 5 | 4 | 3447 | 0.36 |
+| last_mcc | 1 | 2 | 297297 | 30.85 |
+| last_mcc | 2 | 1 | 200559 | 20.81 |
+| last_mcc | 3 | 9 | 50830 | 5.27 |
+| last_mcc | 4 | 4 | 50447 | 5.23 |
+| last_mcc | 5 | 3 | 37966 | 3.94 |
+| last_mcc_category | 1 | 2 | 350457 | 36.36 |
+| last_mcc_category | 2 | 1 | 230786 | 23.95 |
+| last_mcc_category | 3 | 3 | 78772 | 8.17 |
+| last_mcc_category | 4 | 4 | 56547 | 5.87 |
+| last_mcc_category | 5 | 8 | 47029 | 4.88 |
+| last_operation_type | 1 | 1 | 310217 | 32.19 |
+| last_operation_type | 2 | 2 | 242878 | 25.2 |
+| last_operation_type | 3 | 4 | 135375 | 14.05 |
+| last_operation_type | 4 | 3 | 115896 | 12.02 |
+| last_operation_type | 5 | 6 | 30844 | 3.2 |
+| mode_card_type | 1 | 5 | 87001 | 9.03 |
+| mode_card_type | 2 | 1 | 78779 | 8.17 |
+| mode_card_type | 3 | 2 | 74965 | 7.78 |
+| mode_card_type | 4 | 6 | 41276 | 4.28 |
+| mode_card_type | 5 | 3 | 40457 | 4.2 |
+| mode_city | 1 | 1 | 241708 | 25.08 |
+| mode_city | 2 | 2 | 105863 | 10.98 |
+| mode_city | 3 | 3 | 69271 | 7.19 |
+| mode_city | 4 | 4 | 33438 | 3.47 |
+| mode_city | 5 | 5 | 27391 | 2.84 |
+| mode_country | 1 | 1 | 958530 | 99.45 |
+| mode_country | 2 | 3 | 1047 | 0.11 |
+| mode_country | 3 | 24 | 993 | 0.1 |
+| mode_country | 4 | 5 | 448 | 0.05 |
+| mode_country | 5 | 6 | 440 | 0.05 |
+| mode_mcc | 1 | 1 | 417280 | 43.29 |
+| mode_mcc | 2 | 2 | 322555 | 33.47 |
+| mode_mcc | 3 | 4 | 38647 | 4.01 |
+| mode_mcc | 4 | 3 | 35422 | 3.68 |
+| mode_mcc | 5 | 9 | 34380 | 3.57 |
+| mode_mcc_category | 1 | 1 | 412165 | 42.76 |
+| mode_mcc_category | 2 | 2 | 365531 | 37.93 |
+| mode_mcc_category | 3 | 4 | 62369 | 6.47 |
+| mode_mcc_category | 4 | 3 | 59933 | 6.22 |
+| mode_mcc_category | 5 | 8 | 18585 | 1.93 |
+| mode_operation_type | 1 | 1 | 437124 | 45.35 |
+| mode_operation_type | 2 | 2 | 356745 | 37.01 |
+| mode_operation_type | 3 | 4 | 78306 | 8.12 |
+
+(7 more rows not shown)
+
+</details>
 
 ## Build
 

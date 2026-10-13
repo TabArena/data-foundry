@@ -21,16 +21,64 @@ TARGET_FILE = "train_target.csv"
 FEATURES_FILE = "train_features.parquet"
 CALENDAR_FILE = "issue_calendar.csv"
 
-# The organizers' boosting baseline (github.com/smirnovevgeny/AlfaBattle2.0, baseline_boosting/baseline.ipynb):
-# `extract_basic_aggregations(transactions, cat_columns=["mcc_category", "day_of_week", "operation_type"])`. The codes
-# of each column, from the organizers' feature table (Habr 2021): 28, 7 and 22 values, numbered from 1.
-PIVOT_COLUMNS = {"mcc_category": 28, "day_of_week": 7, "operation_type": 22}
-NUMERIC_AGGREGATIONS = {
-    "amnt": ["mean", "median", "sum", "std"],
-    "hour_diff": ["max", "mean", "median", "var", "std"],
-    "days_before": ["min", "max", "median"],
+# The features (curation_comments, "Features"): the aggregates the top solutions of the competition share (1st place
+# and 4th private place slides, 9th place code; see the record), per product over its transactions before the issue.
+RUBLE_SCALE = 17.8209
+"""`amnt` is a scaled log of the amount: exp(amnt * 17.8209) - 1 restores rubles (competition chat, used by the 1st,
+9th and 15th place); 98.8% of the restored amounts are whole rubles."""
+INFLOW_CODE = 2
+"""`income_flag` 2 marks money coming in (8% of the transactions, median 5,600 rubles); 1 is spending."""
+SALARY_RUB = 15_000
+"""An inflow of at least this many rubles counts as salary-like (9th place)."""
+RECENT_DAYS = (30, 90)
+"""Windows before the issue for the recent-activity features (`days_before` runs from 1 to 359)."""
+N_BLOCKS = 12
+"""30-day blocks of the year before the issue, block 0 the newest."""
+NIGHT_HOURS = (23, 0, 1, 2, 3)
+HOUR_DIFF_BINS = {
+    "0": (-0.5, 0.5),
+    "1_2": (0.5, 2.5),
+    "3_10": (2.5, 10.5),
+    "11_100": (10.5, 100.5),
+    "over_100": (100.5, np.inf),
 }
-AGGREGATE_COLUMNS = ["app_id", "amnt", "hour_diff", "days_before", "weekofyear", "transaction_number", *PIVOT_COLUMNS]
+"""Bins of the hours since the previous transaction (9th place)."""
+CATEGORICAL_COLUMNS = [
+    "currency",
+    "operation_kind",
+    "card_type",
+    "operation_type",
+    "operation_type_group",
+    "ecommerce_flag",
+    "payment_system",
+    "income_flag",
+    "mcc",
+    "country",
+    "city",
+    "mcc_category",
+    "day_of_week",
+    "hour",
+]
+PIVOT_COLUMNS = [
+    "operation_kind",
+    "operation_type",
+    "operation_type_group",
+    "mcc_category",
+    "currency",
+    "payment_system",
+    "ecommerce_flag",
+    "income_flag",
+    "country",
+    "day_of_week",
+]
+"""Per value: count share, amount share and mean amount, for the values with at least `PIVOT_MIN_SHARE` of all
+transactions."""
+PIVOT_MIN_SHARE = 0.001
+TOP_PIVOT_COLUMNS = {"mcc": 30, "card_type": 30}
+"""Per value of the most frequent codes: count share and mean amount."""
+MODE_COLUMNS = ["mcc", "mcc_category", "card_type", "operation_type", "city", "country"]
+"""The mode (by count) and the last value, categorical, and the share of the mode."""
+TX_COLUMNS = ["app_id", "transaction_number", "amnt", "hour_diff", "days_before", "weekofyear", *CATEGORICAL_COLUMNS]
 
 # Issue months (curation_comments, "Time"): the week code of the latest transaction along `app_id`.
 N_ISSUE_MONTHS = 24
@@ -63,34 +111,229 @@ LINK_FIELDS = (  # field and bits: two transactions are the same when the day, t
 SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", n_windows=3)
 
 
-def aggregate_transactions(tx: pd.DataFrame) -> pd.DataFrame:
-    """One row per application from its card transactions: the organizers' baseline aggregates.
+def pivot_values(paths: list[Path]) -> dict[str, list[int]]:
+    """The codes that get their own features: by share of all transactions (`PIVOT_COLUMNS`) or by rank."""
+    columns = [*PIVOT_COLUMNS, *TOP_PIVOT_COLUMNS]
+    counts = {column: pd.Series(dtype="int64") for column in columns}
+    total = 0
+    for path in paths:
+        tx = pd.read_parquet(path, columns=columns)
+        total += len(tx)
+        for column in columns:
+            counts[column] = counts[column].add(tx[column].value_counts(), fill_value=0)
+    values = {}
+    for column, n in counts.items():
+        ranked = n.sort_index(kind="stable").sort_values(ascending=False, kind="stable")  # ties: the lower code first
+        keep = (
+            ranked.index[: TOP_PIVOT_COLUMNS[column]]
+            if column in TOP_PIVOT_COLUMNS
+            else ranked.index[ranked >= PIVOT_MIN_SHARE * total]
+        )
+        values[column] = sorted(int(v) for v in keep)
+    return values
 
-    Two codes of the source become missing values before aggregating: `amnt` 0.0 ("0.0 corresponds to missing
-    values", the organizers' feature table) and `hour_diff` -1 (the first transaction of the window, which has no
-    previous one). Counts include transactions without an amount; a mean over no known amount stays missing.
+
+def aggregate_transactions(tx: pd.DataFrame, values: dict[str, list[int]]) -> pd.DataFrame:
+    """One row per application from its card transactions (curation_comments, "Features").
+
+    Two codes of the source become missing values first: `amnt` 0.0 ("0.0 corresponds to missing values", the
+    organizers' feature table) and `hour_diff` -1 (the first transaction of the window). Counts include transactions
+    without an amount; a statistic over no known amount stays missing.
     """
-    tx = tx.sort_values(["app_id", "transaction_number"], kind="stable")
-    tx = tx.assign(
-        amnt=tx["amnt"].where(tx["amnt"] != 0.0),
-        hour_diff=tx["hour_diff"].where(tx["hour_diff"] != -1).astype("float64"),
+    tx = tx.sort_values(["app_id", "transaction_number"], kind="stable").reset_index(drop=True)
+    rub = np.expm1(tx["amnt"].where(tx["amnt"] != 0.0) * RUBLE_SCALE)
+    inflow = tx["income_flag"].eq(INFLOW_CODE)
+    t = pd.DataFrame(
+        {
+            "app_id": tx["app_id"],
+            "rub": rub,
+            "out_rub": rub.where(~inflow),
+            "in_rub": rub.where(inflow),
+            "hour_diff": tx["hour_diff"].where(tx["hour_diff"] != -1).astype("float64"),
+            "days_before": tx["days_before"],
+            "hour": tx["hour"],
+            "night": tx["hour"].isin(NIGHT_HOURS),
+            "no_amount": rub.isna(),
+            "block": (tx["days_before"] - 1) // 30,
+        }
     )
-    by_app = tx.groupby("app_id", sort=True)
-    blocks = []
-    for column, n_codes in PIVOT_COLUMNS.items():
-        codes = list(range(1, n_codes + 1))
-        by_value = tx.groupby(["app_id", column], sort=True)
-        count = by_value.size().unstack(fill_value=0).reindex(columns=codes, fill_value=0)
-        mean = by_value["amnt"].mean().unstack().reindex(columns=codes)
-        count.columns = [f"count_{column}_{code}" for code in codes]
-        mean.columns = [f"mean_{column}_{code}" for code in codes]
-        blocks += [count, mean]
-    numeric = by_app.agg(NUMERIC_AGGREGATIONS)
-    numeric.columns = [f"{column}_{how}" for column, how in numeric.columns]
+    app = t["app_id"]
+    g = t.groupby("app_id", sort=True)
+    apps = g.size().index
+
+    # Statistics of the amount, the gaps, the recency and the hour.
+    stats = g.agg(
+        n_transactions=("rub", "size"),
+        share_no_amount=("no_amount", "mean"),
+        rub_sum=("rub", "sum"),
+        rub_mean=("rub", "mean"),
+        rub_median=("rub", "median"),
+        rub_std=("rub", "std"),
+        rub_min=("rub", "min"),
+        rub_max=("rub", "max"),
+        hour_diff_mean=("hour_diff", "mean"),
+        hour_diff_median=("hour_diff", "median"),
+        hour_diff_std=("hour_diff", "std"),
+        hour_diff_max=("hour_diff", "max"),
+        days_before_min=("days_before", "min"),
+        days_before_max=("days_before", "max"),
+        days_before_mean=("days_before", "mean"),
+        days_before_median=("days_before", "median"),
+        hour_mean=("hour", "mean"),
+        hour_std=("hour", "std"),
+        share_night=("night", "mean"),
+    )
+    quantiles = g["rub"].quantile([0.05, 0.25, 0.75, 0.95]).unstack()
+    quantiles.columns = [f"rub_q{round(q * 100):02d}" for q in quantiles.columns]
+    gap_quantiles = g["hour_diff"].quantile([0.25, 0.75]).unstack()
+    gap_quantiles.columns = [f"hour_diff_q{round(q * 100):02d}" for q in gap_quantiles.columns]
+    known_gap = t["hour_diff"].notna().groupby(app).sum()
+    gap_bins = pd.DataFrame(
+        {
+            f"share_hour_diff_{name}": t["hour_diff"].between(lo, hi, inclusive="right").groupby(app).sum() / known_gap
+            for name, (lo, hi) in HOUR_DIFF_BINS.items()
+        }
+    )
+    blocks = [stats, quantiles, gap_quantiles, gap_bins]
+
+    # Per value of a column: count share, amount share and mean amount.
+    total_rub = stats["rub_sum"].replace(0.0, np.nan)
+    for column in [*PIVOT_COLUMNS, *TOP_PIVOT_COLUMNS]:
+        codes = values[column]
+        by_value = t["rub"].groupby([app, tx[column]], sort=True).agg(["size", "sum", "mean"])
+        by_value = by_value[by_value.index.get_level_values(1).isin(codes)]
+        count = by_value["size"].unstack().reindex(index=apps, columns=codes).fillna(0)
+        part = {"share": count.div(stats["n_transactions"], axis=0)}
+        if column in PIVOT_COLUMNS:
+            amount = by_value["sum"].unstack().reindex(index=apps, columns=codes).fillna(0)
+            part["amount_share"] = amount.div(total_rub, axis=0)
+        part["mean_rub"] = by_value["mean"].unstack().reindex(index=apps, columns=codes)
+        for name, frame in part.items():
+            frame.columns = [f"{name}_{column}_{code}" for code in codes]
+            blocks.append(frame)
+
+    # Diversity: distinct values per column; mode, its share and the last value of the main columns.
+    distinct = tx.groupby("app_id", sort=True)[CATEGORICAL_COLUMNS].nunique()
+    distinct.columns = [f"n_distinct_{column}" for column in CATEGORICAL_COLUMNS]
+    last = tx.groupby("app_id", sort=True)[MODE_COLUMNS].last()
+    last.columns = [f"last_{column}" for column in MODE_COLUMNS]
+    blocks += [distinct, last]
+    for column in MODE_COLUMNS:
+        n = tx.groupby(["app_id", column], sort=True).size().rename("n").reset_index()
+        n = n.sort_values(["app_id", "n", column], ascending=[True, False, True], kind="stable")
+        mode = n.drop_duplicates("app_id").set_index("app_id")
+        blocks.append(
+            pd.DataFrame({f"mode_{column}": mode[column], f"share_mode_{column}": mode["n"] / stats["n_transactions"]})
+        )
+
+    # Money in against money out.
+    flows = g.agg(
+        out_sum=("out_rub", "sum"),
+        out_mean=("out_rub", "mean"),
+        out_max=("out_rub", "max"),
+        out_count=("out_rub", "count"),
+        in_sum=("in_rub", "sum"),
+        in_mean=("in_rub", "mean"),
+        in_max=("in_rub", "max"),
+        in_count=("in_rub", "count"),
+    )
+    flows["out_in_ratio"] = flows["out_sum"] / flows["in_sum"].replace(0.0, np.nan)
+    flows["n_salary_inflows"] = (t["in_rub"] >= SALARY_RUB).groupby(app).sum()
+    # 30-day blocks within the product's history (newer than its oldest transaction): spending and income per block.
+    oldest = stats["days_before_max"].sub(1).floordiv(30).to_numpy()
+    within = np.arange(N_BLOCKS)[None, :] <= oldest[:, None]
+    by_block = {}
+    for side in ("out_rub", "in_rub"):
+        summed = t[side].fillna(0.0).groupby([app, t["block"]], sort=True).sum().unstack()
+        by_block[side] = summed.reindex(index=apps, columns=range(N_BLOCKS)).fillna(0.0).where(within)
+    income = by_block["in_rub"]
+    flows["in_block_mean"] = income.mean(axis=1)
+    flows["in_block_std"] = income.std(axis=1)
+    flows["in_block_max"] = income.max(axis=1)
+    flows["n_blocks_with_income"] = (income > 0).sum(axis=1)
+    spend = by_block["out_rub"]
+    spend_share = spend.div(flows["out_sum"].replace(0.0, np.nan), axis=0)
+    spend.columns = [f"out_sum_block_{b}" for b in range(N_BLOCKS)]
+    spend_share.columns = [f"share_out_block_{b}" for b in range(N_BLOCKS)]
+    blocks += [flows, spend, spend_share]
+
+    # Daily activity: active days, per-day counts and spending, gaps between active days.
+    daily = t.groupby(["app_id", "days_before"], sort=True).agg(n=("rub", "size"), out=("out_rub", "sum"))
+    day_app = daily.index.get_level_values(0)
+    day = pd.Series(daily.index.get_level_values(1), index=daily.index)
+    gap = day.groupby(day_app).diff()
+    by_day = daily.groupby(day_app)
+    activity = pd.DataFrame(
+        {
+            "active_days": by_day.size(),
+            "daily_count_mean": by_day["n"].mean(),
+            "daily_count_max": by_day["n"].max(),
+            "daily_count_std": by_day["n"].std(),
+            "daily_out_mean": by_day["out"].mean(),
+            "daily_out_max": by_day["out"].max(),
+            "daily_out_std": by_day["out"].std(),
+            "gap_days_max": gap.groupby(day_app).max(),
+            "gap_days_mean": gap.groupby(day_app).mean(),
+            "gap_days_std": gap.groupby(day_app).std(),
+            "gap_days_max_30d": gap.where(day <= RECENT_DAYS[0]).groupby(day_app).max(),
+            "active_weeks": (day // 7).groupby(day_app).nunique(),
+        }
+    )
+    for days in RECENT_DAYS:
+        activity[f"active_days_{days}d"] = (day <= days).groupby(day_app).sum()
+    activity["transactions_per_active_week"] = stats["n_transactions"] / activity["active_weeks"]
+    blocks.append(activity)
+
+    # A balance proxy: the running sum of money in less money out, in transaction order.
+    running = (t["in_rub"].fillna(0.0) - t["out_rub"].fillna(0.0)).groupby(app).cumsum()
+    by_running = running.groupby(app)
+    blocks.append(
+        pd.DataFrame(
+            {
+                "balance_min": by_running.min(),
+                "balance_max": by_running.max(),
+                "balance_mean": by_running.mean(),
+                "balance_last": by_running.last(),
+                "balance_min_days_before": t["days_before"].to_numpy()[by_running.idxmin().to_numpy()],
+                "balance_max_days_before": t["days_before"].to_numpy()[by_running.idxmax().to_numpy()],
+            },
+            index=apps,
+        )
+    )
+
+    # The last 30 and 90 days, and how they compare with the year.
+    recent = pd.DataFrame(index=apps)
+    for days in RECENT_DAYS:
+        inside = t["days_before"] <= days
+        r = t[inside].groupby("app_id", sort=True)
+        counts = (
+            pd.DataFrame(
+                {
+                    f"n_transactions_{days}d": r.size(),
+                    f"rub_sum_{days}d": r["rub"].sum(),
+                    f"out_sum_{days}d": r["out_rub"].sum(),
+                    f"in_sum_{days}d": r["in_rub"].sum(),
+                    f"n_distinct_mcc_{days}d": tx.loc[inside, "mcc"].groupby(app[inside]).nunique(),
+                }
+            )
+            .reindex(apps)
+            .fillna(0)
+        )
+        recent = recent.join(counts)
+        recent[f"rub_mean_{days}d"] = r["rub"].mean().reindex(apps)
+        recent[f"rub_max_{days}d"] = r["rub"].max().reindex(apps)
+    recent["out_ratio_30d_90d"] = recent["out_sum_30d"] / recent["out_sum_90d"].replace(0.0, np.nan)
+    recent["out_ratio_90d_year"] = recent["out_sum_90d"] / flows["out_sum"].replace(0.0, np.nan)
+    recent["count_ratio_30d_90d"] = recent["n_transactions_30d"] / recent["n_transactions_90d"].replace(0, np.nan)
+    blocks.append(recent)
+
+    features = pd.concat(blocks, axis=1).drop(columns=["active_weeks"])
+    numeric = [c for c in features.columns if not c.startswith(("mode_", "last_"))]
+    features[numeric] = features[numeric].astype("float32")
     # The latest transaction (highest transaction_number) dates the issue: its week code and days before the issue.
-    latest = by_app[["weekofyear", "days_before"]].last()
-    latest.columns = ["latest_week_code", "latest_days_before"]
-    return pd.concat([*blocks, numeric, latest], axis=1)
+    latest = g[["days_before"]].last().rename(columns={"days_before": "latest_days_before"})
+    latest["latest_week_code"] = tx.groupby("app_id", sort=True)["weekofyear"].last()
+    return pd.concat([features, latest], axis=1)
 
 
 def rolling_months(app_id: pd.Series, week_code: pd.Series, days_before: pd.Series) -> np.ndarray:
@@ -266,10 +509,10 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
         We start with train_target.csv and the 50 train transaction files of AlfaBattle 2.0, task 2 (Alfa-Bank on Boosters.pro, 2020), from the organizer's archive on ODS.ai.
 
         - Prediction point: a credit product is issued. The bank knows the product type and the client's card transactions of the preceding year (Alfa-Bank on Habr, 2021). The target `default` is the source's flag "1 - факт ухода в дефолт" (1: the applicant defaulted), with no horizon stated.
-        - Tabular framing: the source is an event sequence per product. Top teams reached 0.776 private ROC AUC with boosting on aggregates alone and 0.781 with an RNN blended in, so we build the aggregates of the organizers' boosting baseline: `extract_basic_aggregations` with `cat_columns=["mcc_category", "day_of_week", "operation_type"]`, the statistics of `amnt`, `hour_diff` and `days_before`, plus `product`.
-        - The other transaction fields are not aggregated, as in the baseline. Counts and mean amounts per value of all of them except `weekofyear` raise one untuned LightGBM from 0.720 to 0.733 ROC AUC; we keep the baseline's set.
-        - Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a mean amount over no known amount stays missing (the baseline filled 0.0). So `mean_operation_type_20` is missing for every product and is dropped.
-        - Time: the data has no dates, but the applications are numbered so that later applications have a later date. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`). `calendar_months` moves 292 products at the month edges to the neighbouring month whose calendar fits their latest transaction, and `issue_calendar` finds one issue date per calendar month (first decision). The 5 products `app_id` 0-4 fit month 11's calendar but come first in the published order, so they stay in month 0. We keep the month as `issue_month` (0-23), the time column, and drop `app_id` and the latest-transaction fields, which only date the issue.
+        - Features: the source is an event sequence per product; we aggregate it like the competition's top solutions (record), whose boosting reached 0.774-0.780 private ROC AUC against 0.737 public for the organizers' 127-feature baseline. Their label encodings, embeddings and sequence-model scores are modelling steps and stay out.
+        - We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; 98.8% come out whole) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Untuned LightGBM: ROC AUC 0.787 / 0.771 / 0.772 on the windows, 0.774 / 0.757 / 0.763 with the 127.
+        - Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a statistic over no known amount stays missing.
+        - Time: the data has no dates, but later applications have a later `app_id`. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`); `calendar_months` moves 292 products at the month edges to the month whose calendar fits them, and `issue_calendar` finds one issue date per month (first decision; `app_id` 0-4 stay in month 0). We keep `issue_month` (0-23) as the time column and drop `app_id` and the latest-transaction fields, which only date the issue.
         - Repeat clients: there is no client id, but a client's products issued less than a year apart share identical transactions. We link two products by the `LINK_*` rules (at least 3 identical transactions, 80% of the smaller product's, in the 28 days before an issue date) and take connected products as one client (`client_keys`). In the newest window the test products whose client's earlier product defaulted default in 95.6% of cases, the others in 2.5% (second decision). That earlier flag was most likely set after the test product was issued, so it carries the test product's own outcome. `_make_splits` removes from each training side the products of clients with a product in the test window (as in hotel_booking_demand: a training label not known at the prediction point is left out).
         - Note: the default rate rises from 2.0-2.6% (months 1-12) to 3.0-3.4% (months 18-23). The competition labelled 7 later months with the same flag, so we see no sign of right-censoring.
         - No duplicate rows.
@@ -296,7 +539,8 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
     def _prepare_raw_files(self, raw_dir: Path) -> None:
         # every partition holds all transactions of its products, so the partitions are read one by one
         paths = sorted((raw_dir / TRANSACTIONS_DIR).glob("part_*.parquet"))
-        features = pd.concat([aggregate_transactions(pd.read_parquet(p, columns=AGGREGATE_COLUMNS)) for p in paths])
+        values = pivot_values(paths)
+        features = pd.concat([aggregate_transactions(pd.read_parquet(p, columns=TX_COLUMNS), values) for p in paths])
         features = features.sort_index(kind="stable")
         app_ids = features.index.to_numpy()
         latest_code, latest_days = features["latest_week_code"], features["latest_days_before"]
@@ -360,13 +604,13 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
         df.insert(0, "issue_month", df.pop("issue_month"))
         df["default"] = df.pop("flag").map({1: "Yes", 0: "No"})
         # `app_id` only orders the products (now `issue_month`); the latest-transaction fields only date the issue
-        # (`days_before_min` keeps the days since the latest transaction). The mean amount of operation type 20 is
-        # missing for every product: all its amounts are the missing code 0.0. `client_key` stays for `_make_splits`,
+        # (`days_before_min` keeps the days since the latest transaction). `client_key` stays for `_make_splits`,
         # which removes it.
-        return drop_columns(df, ["app_id", "latest_week_code", "latest_days_before", "mean_operation_type_20"])
+        return drop_columns(df, ["app_id", "latest_week_code", "latest_days_before"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["product"])
+        codes = [c for c in df.columns if c.startswith(("mode_", "last_"))]  # transaction codes, not quantities
+        return FeatureTypes(categorical=["product", *codes])
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
         # The declarative windows, then each training side without the products of the window's clients.
