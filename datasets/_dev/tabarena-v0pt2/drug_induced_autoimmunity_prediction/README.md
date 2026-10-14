@@ -2,30 +2,29 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f
+checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
 build:
-  uuid: 01a111fc-d491-7412-a5c5-884df72be349
-  checksum: v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730
-  built_at: '2026-10-06T16:12:25+00:00'
-  path: drug_induced_autoimmunity_prediction/01a111fc-d491-7412-a5c5-884df72be349
+  uuid: 01a13aff-7235-73c3-932c-785cd540127b
+  checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
+  built_at: '2026-10-14T15:19:42+00:00'
+  path: drug_induced_autoimmunity_prediction/01a13aff-7235-73c3-932c-785cd540127b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 597
-  n_features: 177
+  n_rows: 587
+  n_features: 176
   dtypes:
     category: 1
     float64: 82
     int64: 94
-    string: 1
   n_test_dataset_rows: null
 task:
   target: Label
@@ -45,28 +44,28 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 398
-    max: 398
+    min: 391
+    max: 392
   n_test:
-    min: 199
-    max: 199
+    min: 195
+    max: 196
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_identifier_column
+  warnings: []
   infos: []
   accepted: {}
-decisions: []
+decisions:
+- Stereoisomers that share every descriptor are kept once
 ---
 
 # drug_induced_autoimmunity_prediction
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Label`, scored with `roc_auc` on IID splits. 597 rows and 177 features. Source: UCI (2025).
+Binary classification of `Label`, scored with `roc_auc` on IID splits. 587 rows and 176 features. Source: UCI (2025).
 
-Built as `01a111fc-d491-7412-a5c5-884df72be349` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -74,15 +73,15 @@ Built as `01a111fc-d491-7412-a5c5-884df72be349` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a toxicologist screens drug candidates by structure early in development and decides which need closer testing for autoimmune side effects; the source aims at flagging that risk.
 
-**One row.** One drug, given by its chemical structure (597 drugs; InterDIA, Huang et al. 2025).
+**One row.** One drug, given by its chemical structure (587 drugs; InterDIA, Huang et al. 2025).
 
-**Predicted.** Whether the drug is labelled as causing drug-induced autoimmunity (24.79% are); how the positive and negative drugs were chosen is not stated in the definition.
+**Predicted.** Whether the drug is labelled as causing drug-induced autoimmunity (23.85% are); how the positive and negative drugs were chosen is not stated in the definition.
 
-**Known at prediction time.** The structure as a SMILES string and descriptors computed from it with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
+**Known at prediction time.** Descriptors computed from the structure with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
 
 **What the test data stands for.** Random drugs, so the test data stands for drugs not seen in training; close structural relatives of a test drug can be in training.
 
-**Our changes to the source.** We pool the source's training and test sets and split them at random.
+**Our changes to the source.** We pool the source's training and test sets, split them at random and drop the structure's text, keeping the descriptors computed from it; a drug entered twice as two stereoisomers is kept once.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, which is all a screen has before testing, and the test drugs are unseen. The set is small, and a new candidate may differ more from known drugs than a random test drug does.
 
@@ -125,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | huang2025interdia |
-| rows x columns | 597 x 178 |
+| rows x columns | 587 x 177 |
 | task.target | Label |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -133,10 +132,10 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | Label |
 
 <details>
-<summary>Feature types: 1 categorical, 1 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
 - categorical (1): `Label`
-- string (1): `SMILES`
+- string (0): none
 - datetime (0): none
 
 </details>
@@ -160,15 +159,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 597 rows of the final frame (random rows: the frame is shuffled); 12 of 178 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 587 rows of the final frame (random rows: the frame is shuffled); 12 of 177 columns, the target first. Cells are cut at 40 characters.
 
-| Label | SMILES | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v |
+| Label | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v | Chi3n |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | CCO\\N=C(/C(=O)N\[C@H\]1\[C@H\]2SCC(=C(N2C1=… | 1.312 | 1687.67 | 30.888 | 22.063 | 26.223 | 20.446 | 12.12 | 17.216 | 8.704 | 14.025 |
-| 0 | CC(=O)\[C@@H\]1CC\[C@@H\]2\[C@@H\]3CCC4=CC(=O… | 1.67 | 588.649 | 16.405 | 14.86 | 14.86 | 10.86 | 9.604 | 9.604 | 9.254 | 9.254 |
-| 0 | C\[C@\]12C\[C@H\](O)\[C@\]3(F)\[C@H\](CCC4=CC(=… | 1.838 | 806.718 | 20.698 | 16.06 | 16.06 | 12.963 | 9.823 | 9.823 | 9.364 | 9.364 |
-| 0 | N#Cc1ccc(cc1)C(c2ccc(cc2)C#N)n3cncn3 | 2.071 | 776.56 | 15.364 | 11.587 | 11.587 | 10.813 | 6.658 | 6.658 | 4.746 | 4.746 |
-| 0 | CCCNS(=O)(=O)Nc1ncnc(OCCOc2ncc(Br)cn2)c… | 1.807 | 1131.56 | 22.976 | 16.956 | 20.944 | 15.376 | 9.492 | 12.561 | 6.29 | 9.621 |
+| 1 | 1.63 | 746.426 | 17.225 | 15.072 | 16.705 | 12.258 | 9.188 | 11.229 | 6.974 | 8.937 | 5.44 |
+| 0 | 2.307 | 434.153 | 11.544 | 9.042 | 9.798 | 7.703 | 4.839 | 5.217 | 3.228 | 3.586 | 2.054 |
+| 1 | 2.346 | 390.182 | 14.251 | 11.426 | 11.426 | 8.969 | 6.386 | 6.386 | 4.815 | 4.815 | 2.506 |
+| 0 | 3.574 | 855.494 | 24.585 | 17.193 | 23.666 | 14.992 | 9.102 | 12.338 | 6.617 | 9.853 | 4.049 |
+| 0 | 2.462 | 431.802 | 18.656 | 15.257 | 15.257 | 11.952 | 9.546 | 9.546 | 7.053 | 7.053 | 4.911 |
 
 ## Curation notes
 
@@ -176,159 +175,186 @@ We start with the dataset from UCI.
 
 - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
 - We drop the constant columns, and fr_Nhpyrrole, MaxEStateIndex and fr_benzene, which copy other descriptor columns in these drugs.
-- We keep the SMILES code as string for later pipelines to handle.
+- `SMILES` dropped, as in every SMILES dataset (2026-10-14): the source's RDKit descriptors carry the structure, and next to them the SMILES as text (character n-grams) lowers LightGBM's ROC AUC from 0.835 to 0.810, on 15 of 15 splits.
+- Duplicates dropped: without the SMILES, 9 pairs of rows share every descriptor, all stereoisomers, which 2D descriptors do not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 398 rows, test 199 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 391 to 392 rows, test 195 to 196 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 398 | 199 |
-| 0 | 1 | 398 | 199 |
-| 0 | 2 | 398 | 199 |
-| 1 | 0 | 398 | 199 |
-| 1 | 1 | 398 | 199 |
-| 1 | 2 | 398 | 199 |
-| 2 | 0 | 398 | 199 |
-| 2 | 1 | 398 | 199 |
-| 2 | 2 | 398 | 199 |
-| 3 | 0 | 398 | 199 |
-| 3 | 1 | 398 | 199 |
-| 3 | 2 | 398 | 199 |
-| 4 | 0 | 398 | 199 |
-| 4 | 1 | 398 | 199 |
-| 4 | 2 | 398 | 199 |
-| 5 | 0 | 398 | 199 |
-| 5 | 1 | 398 | 199 |
-| 5 | 2 | 398 | 199 |
-| 6 | 0 | 398 | 199 |
-| 6 | 1 | 398 | 199 |
-| 6 | 2 | 398 | 199 |
-| 7 | 0 | 398 | 199 |
-| 7 | 1 | 398 | 199 |
-| 7 | 2 | 398 | 199 |
-| 8 | 0 | 398 | 199 |
-| 8 | 1 | 398 | 199 |
-| 8 | 2 | 398 | 199 |
-| 9 | 0 | 398 | 199 |
-| 9 | 1 | 398 | 199 |
-| 9 | 2 | 398 | 199 |
-| 10 | 0 | 398 | 199 |
-| 10 | 1 | 398 | 199 |
-| 10 | 2 | 398 | 199 |
-| 11 | 0 | 398 | 199 |
-| 11 | 1 | 398 | 199 |
-| 11 | 2 | 398 | 199 |
-| 12 | 0 | 398 | 199 |
-| 12 | 1 | 398 | 199 |
-| 12 | 2 | 398 | 199 |
-| 13 | 0 | 398 | 199 |
-| 13 | 1 | 398 | 199 |
-| 13 | 2 | 398 | 199 |
-| 14 | 0 | 398 | 199 |
-| 14 | 1 | 398 | 199 |
-| 14 | 2 | 398 | 199 |
-| 15 | 0 | 398 | 199 |
-| 15 | 1 | 398 | 199 |
-| 15 | 2 | 398 | 199 |
-| 16 | 0 | 398 | 199 |
-| 16 | 1 | 398 | 199 |
-| 16 | 2 | 398 | 199 |
-| 17 | 0 | 398 | 199 |
-| 17 | 1 | 398 | 199 |
-| 17 | 2 | 398 | 199 |
-| 18 | 0 | 398 | 199 |
-| 18 | 1 | 398 | 199 |
-| 18 | 2 | 398 | 199 |
-| 19 | 0 | 398 | 199 |
-| 19 | 1 | 398 | 199 |
-| 19 | 2 | 398 | 199 |
+| 0 | 0 | 391 | 196 |
+| 0 | 1 | 391 | 196 |
+| 0 | 2 | 392 | 195 |
+| 1 | 0 | 391 | 196 |
+| 1 | 1 | 391 | 196 |
+| 1 | 2 | 392 | 195 |
+| 2 | 0 | 391 | 196 |
+| 2 | 1 | 391 | 196 |
+| 2 | 2 | 392 | 195 |
+| 3 | 0 | 391 | 196 |
+| 3 | 1 | 391 | 196 |
+| 3 | 2 | 392 | 195 |
+| 4 | 0 | 391 | 196 |
+| 4 | 1 | 391 | 196 |
+| 4 | 2 | 392 | 195 |
+| 5 | 0 | 391 | 196 |
+| 5 | 1 | 391 | 196 |
+| 5 | 2 | 392 | 195 |
+| 6 | 0 | 391 | 196 |
+| 6 | 1 | 391 | 196 |
+| 6 | 2 | 392 | 195 |
+| 7 | 0 | 391 | 196 |
+| 7 | 1 | 391 | 196 |
+| 7 | 2 | 392 | 195 |
+| 8 | 0 | 391 | 196 |
+| 8 | 1 | 391 | 196 |
+| 8 | 2 | 392 | 195 |
+| 9 | 0 | 391 | 196 |
+| 9 | 1 | 391 | 196 |
+| 9 | 2 | 392 | 195 |
+| 10 | 0 | 391 | 196 |
+| 10 | 1 | 391 | 196 |
+| 10 | 2 | 392 | 195 |
+| 11 | 0 | 391 | 196 |
+| 11 | 1 | 391 | 196 |
+| 11 | 2 | 392 | 195 |
+| 12 | 0 | 391 | 196 |
+| 12 | 1 | 391 | 196 |
+| 12 | 2 | 392 | 195 |
+| 13 | 0 | 391 | 196 |
+| 13 | 1 | 391 | 196 |
+| 13 | 2 | 392 | 195 |
+| 14 | 0 | 391 | 196 |
+| 14 | 1 | 391 | 196 |
+| 14 | 2 | 392 | 195 |
+| 15 | 0 | 391 | 196 |
+| 15 | 1 | 391 | 196 |
+| 15 | 2 | 392 | 195 |
+| 16 | 0 | 391 | 196 |
+| 16 | 1 | 391 | 196 |
+| 16 | 2 | 392 | 195 |
+| 17 | 0 | 391 | 196 |
+| 17 | 1 | 391 | 196 |
+| 17 | 2 | 392 | 195 |
+| 18 | 0 | 391 | 196 |
+| 18 | 1 | 391 | 196 |
+| 18 | 2 | 392 | 195 |
+| 19 | 0 | 391 | 196 |
+| 19 | 1 | 391 | 196 |
+| 19 | 2 | 392 | 195 |
 
 </details>
 
+## Decisions
+
+### 1. Stereoisomers that share every descriptor are kept once
+
+2D descriptors carry no stereochemistry, so without the SMILES each pair is one feature vector. Quinine and quinidine are two drugs; the other pairs are one drug entered twice with other stereo marks. A pair with one label keeps one row, the pair with both labels (streptomycin) none.
+
+| pair | SMILES | Label | kept |
+|---|---|---|---|
+| 1 | CC(C)n1c(\C=C\[C@H](O)C[C@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | True |
+| 1 | CC(C)n1c(\C=C\[C@@H](O)C[C@@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | False |
+| 2 | NCCCC[C@H](N[C@@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@H]2C(=O)O | 1 | True |
+| 2 | NCCCC[C@H](N[C@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@@H]2C(=O)O | 1 | False |
+| 3 | CN[C@H]1[C@H](O)[C@@H](O)[C@H](CO)O[C@H]1O[C@H]2[C@H](O[C@H]3[C@H](O)[C@@H](O)[… | 1 | False |
+| 3 | CN[C@@H]1[C@H](O)[C@H](O)[C@H](CO)O[C@@H]1O[C@@H]2[C@H](O[C@@H]3[C@H](O)[C@H](O… | 0 | False |
+| 4 | COc1ccc2nccc([C@H](O)[C@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | True |
+| 4 | COc1ccc2nccc([C@@H](O)[C@@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | False |
+| 5 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@H](O)CC(=O)O3… | 1 | True |
+| 5 | CC[C@H](C)C(=O)O[C@H]1C[C@@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@@H](O)CC(=O)O… | 1 | False |
+| 6 | C[C@@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | True |
+| 6 | C[C@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | False |
+| 7 | CCOC(=O)[C@H](CCc1ccccc1)N[C@H](C)C(=O)N2CCC[C@@H]2C(=O)O | 1 | True |
+| 7 | CCOC(=O)[C@H](CCc1ccccc1)N[C@@H](C)C(=O)N2CCC[C@H]2C(=O)O | 1 | False |
+| 8 | CCC(=O)O[C@@]1([C@H](C)C[C@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@]4(C)[C@@]3(F)[C@@… | 0 | True |
+| 8 | CCC(=O)O[C@@]1([C@H](C)C[C@@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@@]4(C)[C@@]3(F)[C… | 0 | False |
+| 9 | CC[C@H](C)C(=O)O[C@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@@H](O)C[C@@H](O)CC(=O)… | 1 | True |
+| 9 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@H](O)C[C@H](O)CC(=O)O… | 1 | False |
+
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_identifier_column`: 1 column(s) have one distinct value per row: ['SMILES']. (hint: Uninformative sample identifiers should be dropped (curation guidelines); keep and process only informative ones (e.g. a time index).)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (178 rows)</summary>
+<summary>Show the table (177 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Label | category | 0 | 0 | 2 | 0, 1 |
-| BalabanJ | float64 | 0 | 0 | 487 | 1.838, 1.735, 2.195, 1.384, 1.85, 2.079, 2.462, 2.218, 1.43, 1.797 |
-| BertzCT | float64 | 0 | 0 | 575 | 138.219, 8.0, 682.154, 649.032, 1053.003, 983.598, 670.244, 1136.74, 939.682, 4… |
-| Chi0 | float64 | 0 | 0 | 449 | 10.836, 20.698, 12.958, 23.859, 12.345, 16.397, 13.828, 11.707, 22.422, 9.5 |
-| Chi0n | float64 | 0 | 0 | 570 | 16.626, 17.935, 16.544, 12.893, 4.331, 15.889, 16.613, 20.6, 19.777, 15.141 |
-| Chi0v | float64 | 0 | 0 | 571 | 13.404, 17.291, 15.889, 12.893, 8.935, 16.626, 20.593, 15.141, 20.6, 16.117 |
-| Chi1 | float64 | 0 | 0 | 515 | 12.963, 14.867, 4.877, 9.075, 6.914, 11.952, 4.164, 9.665, 14.918, 4.5 |
-| Chi1n | float64 | 0 | 0 | 570 | 9.435, 7.771, 10.198, 10.142, 10.569, 11.744, 8.308, 11.19, 9.128, 9.823 |
-| Chi1v | float64 | 0 | 0 | 577 | 12.377, 5.98, 12.729, 9.298, 9.926, 9.912, 11.259, 8.265, 3.683, 10.003 |
-| Chi2n | float64 | 0 | 0 | 565 | 6.974, 5.461, 7.441, 7.662, 5.397, 9.749, 0.512, 6.745, 9.725, 1.254 |
-| Chi2v | float64 | 0 | 0 | 576 | 7.447, 4.764, 10.368, 5.714, 6.101, 11.478, 2.968, 6.974, 7.662, 9.891 |
-| Chi3n | float64 | 0 | 0 | 563 | 0.0, 4.317, 7.798, 2.388, 0.48, 2.097, 5.766, 5.325, 6.305, 4.305 |
-| Chi3v | float64 | 0 | 0 | 567 | 0.0, 4.778, 4.661, 1.285, 5.331, 9.896, 3.925, 2.494, 5.683, 6.305 |
-| Chi4n | float64 | 0 | 0 | 557 | 0.0, 1.276, 2.476, 0.17, 3.735, 7.626, 3.93, 7.261, 2.423, 4.444 |
-| Chi4v | float64 | 0 | 0 | 554 | 0.0, 1.276, 3.735, 4.161, 2.261, 3.409, 6.599, 2.376, 5.08, 3.356 |
-| EState_VSA1 | float64 | 0 | 0 | 251 | 0.0, 6.104, 5.969, 5.601, 11.57, 30.064, 10.023, 12.011, 17.12, 11.939 |
-| EState_VSA10 | float64 | 0 | 0 | 122 | 0.0, 4.795, 9.589, 9.901, 5.107, 14.696, 19.49, 24.597, 19.802, 14.384 |
+| BalabanJ | float64 | 0 | 0 | 486 | 1.838, 1.735, 2.195, 1.43, 1.797, 1.85, 1.384, 2.218, 2.462, 3.735 |
+| BertzCT | float64 | 0 | 0 | 574 | 1136.74, 431.802, 677.309, 42.913, 138.219, 804.749, 400.94, 670.244, 593.895, … |
+| Chi0 | float64 | 0 | 0 | 448 | 10.836, 20.698, 11.707, 23.859, 16.397, 12.958, 13.828, 12.345, 14.656, 15.364 |
+| Chi0n | float64 | 0 | 0 | 569 | 13.404, 17.935, 15.35, 4.331, 20.6, 4.957, 16.613, 14.11, 2.439, 16.544 |
+| Chi0v | float64 | 0 | 0 | 570 | 13.404, 13.542, 17.935, 21.884, 14.221, 20.6, 15.35, 12.893, 3.602, 17.291 |
+| Chi1 | float64 | 0 | 0 | 514 | 12.963, 14.867, 6.914, 9.665, 4.164, 11.952, 4.877, 4.5, 14.918, 9.075 |
+| Chi1n | float64 | 0 | 0 | 569 | 8.304, 11.19, 7.049, 3.857, 7.771, 10.142, 2.745, 5.98, 10.093, 9.128 |
+| Chi1v | float64 | 0 | 0 | 577 | 10.003, 11.19, 9.298, 3.683, 9.973, 7.771, 8.265, 9.912, 9.128, 5.98 |
+| Chi2n | float64 | 0 | 0 | 564 | 7.441, 5.461, 7.094, 8.194, 9.749, 6.56, 6.974, 9.725, 9.707, 8.304 |
+| Chi2v | float64 | 0 | 0 | 575 | 3.622, 4.764, 8.783, 5.714, 6.863, 7.094, 8.484, 7.441, 10.368, 6.101 |
+| Chi3n | float64 | 0 | 0 | 562 | 0.0, 3.86, 8.791, 5.325, 2.506, 8.769, 4.305, 5.766, 1.285, 2.171 |
+| Chi3v | float64 | 0 | 0 | 566 | 0.0, 5.911, 5.683, 4.661, 6.899, 5.998, 1.508, 5.216, 4.229, 5.883 |
+| Chi4n | float64 | 0 | 0 | 556 | 0.0, 7.242, 1.838, 2.793, 6.96, 2.376, 1.904, 1.276, 2.423, 0.167 |
+| Chi4v | float64 | 0 | 0 | 553 | 0.0, 1.838, 6.96, 2.883, 3.645, 5.685, 5.598, 1.527, 2.261, 1.32 |
+| EState_VSA1 | float64 | 0 | 0 | 250 | 0.0, 6.104, 5.969, 5.601, 11.57, 30.064, 10.023, 17.12, 5.415, 24.095 |
+| EState_VSA10 | float64 | 0 | 0 | 121 | 0.0, 4.795, 9.589, 9.901, 5.107, 14.696, 19.49, 24.597, 19.802, 14.384 |
 | EState_VSA11 | float64 | 0 | 0 | 5 | 0.0, 4.39, 8.781, 4.795, 13.575 |
-| EState_VSA2 | float64 | 0 | 0 | 334 | 0.0, 5.907, 6.104, 6.607, 11.949, 6.042, 6.421, 5.918, 5.817, 5.783 |
-| EState_VSA3 | float64 | 0 | 0 | 291 | 0.0, 5.563, 6.421, 6.545, 19.262, 6.607, 5.918, 12.108, 12.842, 25.683 |
-| EState_VSA4 | float64 | 0 | 0 | 284 | 0.0, 5.563, 11.127, 25.683, 6.421, 19.262, 6.076, 5.573, 38.525, 12.842 |
-| EState_VSA5 | float64 | 0 | 0 | 209 | 0.0, 4.9, 5.563, 12.133, 11.127, 6.066, 6.924, 7.11, 6.421, 12.152 |
+| EState_VSA2 | float64 | 0 | 0 | 333 | 0.0, 5.907, 6.104, 6.607, 11.949, 6.421, 5.918, 6.042, 5.817, 5.75 |
+| EState_VSA3 | float64 | 0 | 0 | 291 | 0.0, 5.563, 6.421, 6.545, 19.262, 6.607, 5.918, 12.108, 5.75, 12.463 |
+| EState_VSA4 | float64 | 0 | 0 | 284 | 0.0, 5.563, 11.127, 25.683, 6.421, 19.262, 12.842, 6.076, 38.525, 5.573 |
+| EState_VSA5 | float64 | 0 | 0 | 208 | 0.0, 4.9, 5.563, 12.133, 11.127, 6.924, 6.066, 7.11, 12.842, 18.199 |
 | EState_VSA6 | float64 | 0 | 0 | 147 | 0.0, 12.133, 6.924, 6.066, 24.265, 13.847, 7.11, 4.9, 6.197, 18.199 |
-| EState_VSA7 | float64 | 0 | 0 | 144 | 0.0, 30.332, 13.847, 6.924, 6.066, 12.133, 24.265, 6.076, 18.199, 20.771 |
-| EState_VSA8 | float64 | 0 | 0 | 274 | 0.0, 5.317, 10.634, 6.924, 4.984, 10.301, 9.968, 4.992, 13.847, 4.737 |
-| EState_VSA9 | float64 | 0 | 0 | 148 | 0.0, 4.737, 9.474, 5.734, 5.107, 11.601, 16.338, 9.843, 14.211, 10.471 |
-| ExactMolWt | float64 | 0 | 0 | 570 | 354.241, 434.21, 324.184, 383.151, 415.272, 405.186, 581.266, 352.225, 500.184,… |
-| FractionCSP3 | float64 | 0 | 0 | 195 | 0.5, 1.0, 0.0, 0.333, 0.429, 0.4, 0.75, 0.125, 0.294, 0.667 |
-| HallKierAlpha | float64 | 0 | 0 | 279 | -2.41, -1.59, -2.33, -1.06, -1.3, -2.62, -0.9, -1.1, -1.51, -1.26 |
-| HeavyAtomMolWt | float64 | 0 | 0 | 507 | 320.215, 266.191, 420.248, 238.181, 284.229, 314.235, 403.256, 290.213, 278.202… |
-| Ipc | float64 | 0 | 0 | 554 | 1500075.637, 8427682.936, 88.552, 271685.711, 78.513, 226722.0, 108.951, 995895… |
-| Kappa1 | float64 | 0 | 0 | 553 | 22.001, 11.813, 25.482, 19.007, 24.568, 24.309, 16.313, 23.757, 12.7, 13.715 |
-| Kappa2 | float64 | 0 | 0 | 568 | 6.893, 5.954, 4.242, 5.931, 8.053, 1.065, 8.219, 7.968, 1.544, 6.188 |
-| Kappa3 | float64 | 0 | 0 | 551 | 2.478, 1512.242, 6.654, 7.881, 3.081, 7.103, 3.398, 3.01, 5.203, 4.237 |
-| LabuteASA | float64 | 0 | 0 | 575 | 182.429, 159.237, 89.32, 174.259, 156.137, 110.0, 28.307, 170.622, 46.628, 120.… |
-| MaxAbsEStateIndex | float64 | 0 | 0 | 558 | 12.341, 12.531, 12.3, 10.241, 13.063, 12.866, 12.362, 13.051, 17.219, 2.335 |
-| MaxAbsPartialCharge | float64 | 0 | 0 | 181 | 0.481, 0.508, 0.493, 0.48, 0.394, 0.504, 0.393, 0.462, 0.39, 0.369 |
-| MaxPartialCharge | float64 | 0 | 0 | 247 | 0.326, 0.303, 0.306, 0.119, 0.339, 0.224, 0.336, 0.416, 0.255, 0.174 |
-| MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.013, 0.017, 0.016, 0.008, 0.004, 0.003, 0.054, 0.007, 0.006, 0.045 |
-| MinAbsPartialCharge | float64 | 0 | 0 | 238 | 0.326, 0.303, 0.306, 0.119, 0.339, 0.224, 0.336, 0.255, 0.316, 0.407 |
-| MinEStateIndex | float64 | 0 | 0 | 539 | -0.987, -1.299, -1.02, -0.598, -0.597, -0.594, -1.316, -2.384, -0.87, -0.215 |
-| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.508, -0.493, -0.48, -0.394, -0.504, -0.393, -0.462, -0.39, -0.507 |
-| MolLogP | float64 | 0 | 0 | 565 | 2.44, 3.084, 0.03, 1.605, 1.235, 3.194, 2.548, -8.161, 3.036, 4.196 |
-| MolMR | float64 | 0 | 0 | 586 | 132.919, 56.84, 108.387, 115.634, 120.868, 110.838, 100.153, 98.485, 95.027, 11… |
-| MolWt | float64 | 0 | 0 | 570 | 354.487, 434.504, 324.424, 383.47, 415.574, 405.969, 581.58, 352.471, 500.579, … |
-| PEOE_VSA1 | float64 | 0 | 0 | 246 | 0.0, 9.843, 5.317, 5.107, 10.213, 14.743, 9.637, 4.737, 5.734, 15.32 |
-| PEOE_VSA10 | float64 | 0 | 0 | 179 | 0.0, 5.75, 6.104, 12.084, 6.607, 5.601, 6.042, 5.783, 18.46, 12.208 |
-| PEOE_VSA11 | float64 | 0 | 0 | 97 | 0.0, 11.499, 5.783, 5.96, 11.566, 6.104, 11.384, 23.386, 5.132, 5.694 |
-| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 10.023, 5.783, 5.948, 5.824, 5.429, 5.88, 5.601 |
-| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 11.814, 5.559, 5.687, 10.023, 5.083, 15.93, 11.69, 10.118 |
-| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 6.176, 5.69, 6.031, 17.908, 15.192, 12.146 |
+| EState_VSA7 | float64 | 0 | 0 | 144 | 0.0, 30.332, 6.924, 13.847, 6.066, 12.133, 24.265, 6.076, 18.199, 20.771 |
+| EState_VSA8 | float64 | 0 | 0 | 274 | 0.0, 5.317, 10.634, 6.924, 4.984, 10.301, 9.968, 13.847, 4.992, 4.737 |
+| EState_VSA9 | float64 | 0 | 0 | 147 | 0.0, 4.737, 9.474, 5.734, 5.107, 11.601, 16.338, 9.843, 14.211, 10.471 |
+| ExactMolWt | float64 | 0 | 0 | 569 | 285.136, 263.189, 354.241, 415.272, 434.21, 314.225, 300.067, 365.06, 443.145, … |
+| FractionCSP3 | float64 | 0 | 0 | 195 | 0.5, 1.0, 0.0, 0.333, 0.429, 0.4, 0.125, 0.75, 0.294, 0.667 |
+| HallKierAlpha | float64 | 0 | 0 | 278 | -1.59, -2.41, -1.06, -2.33, -2.62, -1.3, -1.51, -1.26, -0.9, -1.1 |
+| HeavyAtomMolWt | float64 | 0 | 0 | 506 | 320.215, 266.191, 420.248, 238.181, 278.202, 372.294, 403.256, 314.235, 284.229… |
+| Ipc | float64 | 0 | 0 | 553 | 1500075.637, 8427682.936, 88.552, 78.513, 271685.711, 372.422, 43242.95, 4163.2… |
+| Kappa1 | float64 | 0 | 0 | 552 | 22.001, 11.813, 10.912, 21.517, 21.436, 18.922, 6.233, 14.351, 23.757, 16.757 |
+| Kappa2 | float64 | 0 | 0 | 567 | 6.893, 8.434, 1.544, 4.112, 6.725, 5.931, 9.303, 5.954, 4.242, 5.25 |
+| Kappa3 | float64 | 0 | 0 | 550 | 2.478, 1.832, 2.02, 7.103, 1.088, 3.398, 3.227, 4.237, 1.605, 2.913 |
+| LabuteASA | float64 | 0 | 0 | 574 | 182.429, 181.029, 183.524, 46.628, 156.137, 110.0, 178.952, 120.331, 28.307, 89… |
+| MaxAbsEStateIndex | float64 | 0 | 0 | 557 | 12.341, 12.3, 12.61, 12.555, 10.316, 10.241, 10.1, 13.083, 12.399, 13.523 |
+| MaxAbsPartialCharge | float64 | 0 | 0 | 181 | 0.481, 0.508, 0.493, 0.48, 0.394, 0.504, 0.393, 0.369, 0.507, 0.39 |
+| MaxPartialCharge | float64 | 0 | 0 | 246 | 0.303, 0.326, 0.306, 0.119, 0.339, 0.224, 0.416, 0.407, 0.174, 0.255 |
+| MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.017, 0.004, 0.008, 0.013, 0.016, 0.007, 0.045, 0.054, 0.003, 0.006 |
+| MinAbsPartialCharge | float64 | 0 | 0 | 237 | 0.303, 0.326, 0.306, 0.119, 0.339, 0.224, 0.174, 0.407, 0.255, 0.316 |
+| MinEStateIndex | float64 | 0 | 0 | 538 | -1.299, -0.598, -0.594, -1.119, -0.177, -1.269, -0.843, -0.816, -1.031, -1.372 |
+| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.493, -0.508, -0.48, -0.394, -0.504, -0.393, -0.507, -0.39, -0.462 |
+| MolLogP | float64 | 0 | 0 | 564 | 4.03, 2.44, 2.01, 2.548, 2.083, 4.894, -3.493, 3.813, 4.17, 3.723 |
+| MolMR | float64 | 0 | 0 | 585 | 23.325, 98.485, 92.341, 140.483, 119.902, 34.04, 118.541, 255.322, 22.752, 58.45 |
+| MolWt | float64 | 0 | 0 | 569 | 285.343, 263.381, 354.487, 415.574, 434.504, 314.469, 300.745, 365.842, 443.432… |
+| PEOE_VSA1 | float64 | 0 | 0 | 245 | 0.0, 9.843, 5.317, 5.107, 10.213, 4.737, 5.734, 9.637, 14.743, 15.32 |
+| PEOE_VSA10 | float64 | 0 | 0 | 178 | 0.0, 5.75, 6.104, 12.084, 6.607, 5.601, 6.042, 5.783, 18.46, 12.208 |
+| PEOE_VSA11 | float64 | 0 | 0 | 96 | 0.0, 11.499, 5.783, 5.96, 11.566, 11.384, 6.104, 23.386, 5.132, 5.647 |
+| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 5.783, 10.023, 5.948, 5.88, 5.601, 5.429, 5.824 |
+| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 11.814, 5.559, 5.687, 10.023, 5.083, 11.69, 5.239, 17.722 |
+| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 5.69, 6.176, 6.031, 17.908, 15.192, 12.063 |
 | PEOE_VSA2 | float64 | 0 | 0 | 104 | 0.0, 4.795, 9.589, 14.384, 4.9, 9.694, 14.906, 4.567, 9.779, 10.114 |
-| PEOE_VSA3 | float64 | 0 | 0 | 72 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 8.781, 13.575 |
-| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 4.992, 8.418, 12.629, 4.305, 21.952 |
-| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.579, 6.423, 23.202, 23.099 |
-| PEOE_VSA6 | float64 | 0 | 0 | 214 | 0.0, 12.133, 6.066, 30.332, 18.199, 24.265, 11.601, 6.924, 42.465, 13.847 |
-| PEOE_VSA7 | float64 | 0 | 0 | 376 | 0.0, 6.924, 12.133, 18.199, 6.421, 17.696, 12.842, 25.123, 6.066, 30.332 |
-| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 5.563, 12.966, 12.587 |
-| PEOE_VSA9 | float64 | 0 | 0 | 288 | 0.0, 6.104, 6.607, 6.042, 12.208, 6.545, 12.649, 11.375, 5.918, 13.214 |
-| SMR_VSA1 | float64 | 0 | 0 | 247 | 0.0, 4.795, 9.901, 14.638, 9.531, 4.737, 9.589, 24.597, 9.843, 14.696 |
+| PEOE_VSA3 | float64 | 0 | 0 | 71 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 4.992, 9.968 |
+| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 4.992, 12.629, 8.418, 4.305, 21.952 |
+| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.579, 6.423, 23.099, 23.202 |
+| PEOE_VSA6 | float64 | 0 | 0 | 214 | 0.0, 12.133, 6.066, 30.332, 18.199, 11.601, 24.265, 42.465, 6.924, 13.847 |
+| PEOE_VSA7 | float64 | 0 | 0 | 375 | 0.0, 6.924, 12.133, 18.199, 6.421, 17.696, 12.842, 6.066, 30.332, 25.123 |
+| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 12.966, 5.563, 12.587 |
+| PEOE_VSA9 | float64 | 0 | 0 | 287 | 0.0, 6.607, 6.104, 12.208, 6.042, 6.545, 11.375, 12.649, 5.694, 5.918 |
+| SMR_VSA1 | float64 | 0 | 0 | 246 | 0.0, 4.795, 9.901, 14.638, 9.531, 4.737, 9.589, 24.597, 9.843, 14.696 |
 
-(118 more rows not shown)
+(117 more rows not shown)
 
 </details>
 
@@ -336,8 +362,8 @@ Default splits.
 
 | Label | count | pct |
 |---|---|---|
-| 0 | 449 | 75.21 |
-| 1 | 148 | 24.79 |
+| 0 | 447 | 76.15 |
+| 1 | 140 | 23.85 |
 
 ### Numeric features
 
@@ -346,66 +372,66 @@ Default splits.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| BalabanJ | 597 | 2.14311 | 0.724245 | 0.837 | 5.083 |
-| BertzCT | 597 | 752.165 | 404.239 | 2 | 2629.39 |
-| Chi0 | 597 | 18.4426 | 7.35221 | 2 | 50.12 |
-| Chi0n | 597 | 14.631 | 6.15393 | 0.908 | 41.328 |
-| Chi0v | 597 | 15.1323 | 6.20431 | 0.908 | 41.328 |
-| Chi1 | 597 | 12.071 | 4.89513 | 1 | 32.35 |
-| Chi1n | 597 | 8.57337 | 3.77885 | 0.204 | 23.269 |
-| Chi1v | 597 | 9.07657 | 3.83833 | 0.204 | 24.44 |
-| Chi2n | 597 | 6.80018 | 3.32209 | 0 | 19.352 |
-| Chi2v | 597 | 7.35131 | 3.37543 | 0 | 19.615 |
-| Chi3n | 597 | 4.94443 | 2.79989 | 0 | 15.952 |
-| Chi3v | 597 | 5.39591 | 2.84882 | 0 | 15.952 |
-| Chi4n | 597 | 3.62107 | 2.3359 | 0 | 13.236 |
-| Chi4v | 597 | 3.99357 | 2.39521 | 0 | 13.236 |
-| EState_VSA1 | 597 | 18.7593 | 23.9771 | 0 | 155.672 |
-| EState_VSA10 | 597 | 13.5058 | 11.0155 | 0 | 58.719 |
-| EState_VSA11 | 597 | 0.214616 | 1.22402 | 0 | 13.575 |
-| EState_VSA2 | 597 | 15.9981 | 14.0823 | 0 | 96.781 |
-| EState_VSA3 | 597 | 15.3993 | 13.6803 | 0 | 106.949 |
-| EState_VSA4 | 597 | 19.431 | 18.1403 | 0 | 117.806 |
-| EState_VSA5 | 597 | 12.9496 | 14.363 | 0 | 121.996 |
-| EState_VSA6 | 597 | 11.6861 | 13.8684 | 0 | 92.71 |
-| EState_VSA7 | 597 | 16.4066 | 18.7074 | 0 | 93.698 |
-| EState_VSA8 | 597 | 15.9887 | 16.9608 | 0 | 90.83 |
-| EState_VSA9 | 597 | 10.4741 | 10.6194 | 0 | 69.606 |
-| ExactMolWt | 597 | 364.892 | 148.515 | 31.006 | 979.426 |
-| FractionCSP3 | 597 | 0.480771 | 0.259724 | 0 | 1 |
-| HallKierAlpha | 597 | -1.98563 | 1.11689 | -7.06 | 1.74 |
-| HeavyAtomCount | 597 | 25.3786 | 10.2521 | 2 | 67 |
-| HeavyAtomMolWt | 597 | 341.542 | 139.336 | 30.006 | 914.661 |
-| Ipc | 597 | 9.18793e+11 | 1.62035e+13 | 2 | 3.85e+14 |
-| Kappa1 | 597 | 18.5792 | 7.92635 | 1.6 | 55.667 |
-| Kappa2 | 597 | 7.77335 | 3.95701 | 0.6 | 26.62 |
-| Kappa3 | 597 | 9.47023 | 87.2524 | -4.9 | 1512.24 |
-| LabuteASA | 597 | 150.968 | 60.193 | 11.859 | 396.572 |
-| MaxAbsEStateIndex | 597 | 11.4256 | 2.69719 | 2.335 | 17.361 |
-| MaxAbsPartialCharge | 597 | 0.444943 | 0.0992926 | 0.12 | 0.875 |
-| MaxPartialCharge | 597 | 0.25727 | 0.108016 | -0.085 | 0.573 |
-| MinAbsEStateIndex | 597 | 0.241271 | 0.535628 | 0 | 6.578 |
-| MinAbsPartialCharge | 597 | 0.253323 | 0.100741 | 0.002 | 0.493 |
-| MinEStateIndex | 597 | -1.23591 | 1.5327 | -6.625 | 4.5 |
-| MinPartialCharge | 597 | -0.440377 | 0.101839 | -0.875 | -0.12 |
-| MolLogP | 597 | 2.29319 | 2.72054 | -9.358 | 9.868 |
-| MolMR | 597 | 95.7075 | 38.3239 | 5.396 | 255.322 |
-| MolWt | 597 | 365.271 | 148.644 | 31.014 | 980.181 |
-| NHOHCount | 597 | 2.26298 | 2.19583 | 0 | 16 |
-| NOCount | 597 | 5.9531 | 3.55935 | 0 | 23 |
-| NumAliphaticCarbocycles | 597 | 0.693467 | 1.29202 | 0 | 5 |
-| NumAliphaticHeterocycles | 597 | 0.735343 | 0.960795 | 0 | 7 |
-| NumAliphaticRings | 597 | 1.42881 | 1.57275 | 0 | 8 |
-| NumAromaticCarbocycles | 597 | 0.978224 | 0.89996 | 0 | 4 |
-| NumAromaticHeterocycles | 597 | 0.448911 | 0.734678 | 0 | 5 |
-| NumAromaticRings | 597 | 1.42714 | 1.18015 | 0 | 8 |
-| NumHAcceptors | 597 | 5.03853 | 3.16072 | 0 | 21 |
-| NumHDonors | 597 | 1.98995 | 1.8437 | 0 | 12 |
-| NumHeteroatoms | 597 | 6.80067 | 3.79714 | 1 | 25 |
-| NumRotatableBonds | 597 | 6.0268 | 4.61788 | 0 | 28 |
-| NumSaturatedCarbocycles | 597 | 0.490787 | 1.01433 | 0 | 5 |
-| NumSaturatedHeterocycles | 597 | 0.494137 | 0.801874 | 0 | 5 |
-| NumSaturatedRings | 597 | 0.984925 | 1.29069 | 0 | 7 |
+| BalabanJ | 587 | 2.14482 | 0.72901 | 0.837 | 5.083 |
+| BertzCT | 587 | 751.797 | 406.908 | 2 | 2629.39 |
+| Chi0 | 587 | 18.3804 | 7.3679 | 2 | 50.12 |
+| Chi0n | 587 | 14.5875 | 6.17875 | 0.908 | 41.328 |
+| Chi0v | 587 | 15.0959 | 6.23188 | 0.908 | 41.328 |
+| Chi1 | 587 | 12.0358 | 4.91226 | 1 | 32.35 |
+| Chi1n | 587 | 8.54635 | 3.7945 | 0.204 | 23.269 |
+| Chi1v | 587 | 9.05645 | 3.85637 | 0.204 | 24.44 |
+| Chi2n | 587 | 6.77765 | 3.33628 | 0 | 19.352 |
+| Chi2v | 587 | 7.33667 | 3.39161 | 0 | 19.615 |
+| Chi3n | 587 | 4.92545 | 2.81046 | 0 | 15.952 |
+| Chi3v | 587 | 5.38347 | 2.86079 | 0 | 15.952 |
+| Chi4n | 587 | 3.60784 | 2.34501 | 0 | 13.236 |
+| Chi4v | 587 | 3.98534 | 2.40441 | 0 | 13.236 |
+| EState_VSA1 | 587 | 18.3406 | 23.4416 | 0 | 155.672 |
+| EState_VSA10 | 587 | 13.3559 | 10.9551 | 0 | 58.719 |
+| EState_VSA11 | 587 | 0.203313 | 1.18226 | 0 | 13.575 |
+| EState_VSA2 | 587 | 15.948 | 14.0787 | 0 | 96.781 |
+| EState_VSA3 | 587 | 15.3842 | 13.6341 | 0 | 106.949 |
+| EState_VSA4 | 587 | 19.5502 | 18.1839 | 0 | 117.806 |
+| EState_VSA5 | 587 | 12.9895 | 14.4506 | 0 | 121.996 |
+| EState_VSA6 | 587 | 11.7622 | 13.9208 | 0 | 92.71 |
+| EState_VSA7 | 587 | 16.4322 | 18.7899 | 0 | 93.698 |
+| EState_VSA8 | 587 | 16.035 | 17.0592 | 0 | 90.83 |
+| EState_VSA9 | 587 | 10.4069 | 10.5362 | 0 | 69.606 |
+| ExactMolWt | 587 | 363.895 | 148.964 | 31.006 | 979.426 |
+| FractionCSP3 | 587 | 0.478593 | 0.260085 | 0 | 1 |
+| HallKierAlpha | 587 | -1.9837 | 1.12493 | -7.06 | 1.74 |
+| HeavyAtomCount | 587 | 25.3015 | 10.284 | 2 | 67 |
+| HeavyAtomMolWt | 587 | 340.664 | 139.778 | 30.006 | 914.661 |
+| Ipc | 587 | 9.34444e+11 | 1.63408e+13 | 2 | 3.85e+14 |
+| Kappa1 | 587 | 18.5039 | 7.93427 | 1.6 | 55.667 |
+| Kappa2 | 587 | 7.74297 | 3.96945 | 0.6 | 26.62 |
+| Kappa3 | 587 | 9.54761 | 87.9914 | -4.9 | 1512.24 |
+| LabuteASA | 587 | 150.563 | 60.4194 | 11.859 | 396.572 |
+| MaxAbsEStateIndex | 587 | 11.4027 | 2.70568 | 2.335 | 17.361 |
+| MaxAbsPartialCharge | 587 | 0.444649 | 0.0999929 | 0.12 | 0.875 |
+| MaxPartialCharge | 587 | 0.257055 | 0.108521 | -0.085 | 0.573 |
+| MinAbsEStateIndex | 587 | 0.243111 | 0.539842 | 0 | 6.578 |
+| MinAbsPartialCharge | 587 | 0.253041 | 0.101144 | 0.002 | 0.493 |
+| MinEStateIndex | 587 | -1.23359 | 1.54304 | -6.625 | 4.5 |
+| MinPartialCharge | 587 | -0.440005 | 0.10255 | -0.875 | -0.12 |
+| MolLogP | 587 | 2.32317 | 2.66777 | -9.358 | 9.868 |
+| MolMR | 587 | 95.4896 | 38.517 | 5.396 | 255.322 |
+| MolWt | 587 | 364.276 | 149.094 | 31.014 | 980.181 |
+| NHOHCount | 587 | 2.20784 | 2.05082 | 0 | 15 |
+| NOCount | 587 | 5.90971 | 3.50432 | 0 | 23 |
+| NumAliphaticCarbocycles | 587 | 0.688245 | 1.29184 | 0 | 5 |
+| NumAliphaticHeterocycles | 587 | 0.730835 | 0.959479 | 0 | 7 |
+| NumAliphaticRings | 587 | 1.41908 | 1.5746 | 0 | 8 |
+| NumAromaticCarbocycles | 587 | 0.984668 | 0.902085 | 0 | 4 |
+| NumAromaticHeterocycles | 587 | 0.453152 | 0.738347 | 0 | 5 |
+| NumAromaticRings | 587 | 1.43782 | 1.18039 | 0 | 8 |
+| NumHAcceptors | 587 | 5.00511 | 3.13273 | 0 | 21 |
+| NumHDonors | 587 | 1.94719 | 1.75426 | 0 | 12 |
+| NumHeteroatoms | 587 | 6.7632 | 3.75806 | 1 | 25 |
+| NumRotatableBonds | 587 | 5.98978 | 4.6333 | 0 | 28 |
+| NumSaturatedCarbocycles | 587 | 0.49063 | 1.01583 | 0 | 5 |
+| NumSaturatedHeterocycles | 587 | 0.48552 | 0.795279 | 0 | 5 |
+| NumSaturatedRings | 587 | 0.97615 | 1.28901 | 0 | 7 |
 
 (116 more rows not shown)
 
@@ -415,23 +441,17 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Label | 1 | 0 | 449 | 75.21 |
-| Label | 2 | 1 | 148 | 24.79 |
-| SMILES | 1 | COc1cccc(c1)\[C@\]2(O)CCCC\[C@@H\]2CN(C)C | 1 | 0.17 |
-| SMILES | 2 | CCO\\N=C(/C(=O)N\[C@H\]1\[C@H\]2SCC(=C(N2C1=O)C(=O)O)Sc3nc(cs3)c4cc\[n... | 1 | 0.17 |
-| SMILES | 3 | CC(=O)\[C@@H\]1CC\[C@@H\]2\[C@@H\]3CCC4=CC(=O)CC\[C@@\]4(C)\[C@@H\]3CC\[C@\]12C | 1 | 0.17 |
-| SMILES | 4 | C\[C@\]12C\[C@H\](O)\[C@\]3(F)\[C@H\](CCC4=CC(=O)C=C\[C@\]34C)\[C@@H\]1C\[C@H... | 1 | 0.17 |
-| SMILES | 5 | N#Cc1ccc(cc1)C(c2ccc(cc2)C#N)n3cncn3 | 1 | 0.17 |
+| Label | 1 | 0 | 447 | 76.15 |
+| Label | 2 | 1 | 140 | 23.85 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d491-7412-a5c5-884df72be349 |
-| checksum | v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730 |
-| built_at | 2026-10-06T16:12:25+00:00 |
-| path | drug_induced_autoimmunity_prediction/01a111fc-d491-7412-a5c5-884df72be349 |
+| uuid | 01a13aff-7235-73c3-932c-785cd540127b |
+| checksum | v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09 |
+| built_at | 2026-10-14T15:19:42+00:00 |
+| path | drug_induced_autoimmunity_prediction/01a13aff-7235-73c3-932c-785cd540127b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f` |
+| git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -87,6 +87,21 @@ name, `original_source`, `year`, `domain`, `required_split`, `problem_type`, `so
 and its `## Comments` hold the provenance and duplicate-check reasoning already done (do not redo settled work).
 Ask only for what is missing or contradictory. If there is no record, stop and point to `/triage-candidates`.
 
+**Claims.** Never work on a record that someone else has claimed (`claimed_by` is another curator's name): say so
+and skip it. The records you take get `WIP (DF)` and the curator's name in `claimed_by` before the work starts, and
+the claim goes to `main` in its own small PR (the triage skill's claim bullet).
+
+**A batch.** When `$ARGUMENTS` names several records or a dashboard filter (for example "every record with
+`suggestion = Yes`, `data_foundry_status` without `DF: Yes`, `claimed_by` empty, `checked_by` without
+`AI (UNVERIFIED)`"), list the matching records first and group them into units, one per source (records that share a download are one unit). Per
+unit, one agent runs Steps 1-7 with the data in hand (download, definition, `dataset check`, the leak, task and
+group probes), a second agent verifies the result with `/verify-dataset`, and the first applies each finding or
+rejects it with evidence. Nothing is built. The run ends with one run report in the format of
+[`../review-added-datasets/references/run_report_format.md`](../review-added-datasets/references/run_report_format.md)
+(per record: the outcome, the open issues for the curator as numbered items, record fields that disagree with the
+definition; then the issues that span datasets), and the curator reviews it on the page `/review-added-datasets`
+builds.
+
 ## Step 1: Understand the source and map the fields
 
 Follow `source_links` to the original publication (paper, competition page, institution). Then map the fields; the
@@ -221,3 +236,4 @@ working copy's `CHANGELOG.md`, refresh its `README.md` table with
 * What happens next, with paths filled in: fill the TODOs and loop on `dataset check` (Step 6); once it is clean,
   run `/verify-dataset <unique_name>`. Do not run `/verify-dataset` yourself right after scaffolding: there is no
   data to check yet.
+* In a batch (Step 0), the run report instead, and then the review page: `/review-added-datasets <report>`.

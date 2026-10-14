@@ -19,7 +19,7 @@ adding `BeyondArena`/`TabArena (v0.1)`. The same is true for the sibling buckets
 - `_deprecated/` — was used, now deprecated.
 - `_suspended/` — temporarily set aside (these records typically use `DF: Suspended`).
 - `_out_of_scope/` — intentionally excluded, with the reason in the subfolder name
-  (`_iid_version_of_non_iid`, `_too_small_to_add`, `_too_late_to_add`).
+  (`_iid_version_of_non_iid`, `_too_small_to_add`).
 - `_old_collections/` — previously-shipped collections (e.g. `tabarena-v0pt1`).
 
 Datasets actually **shipped today** live under `datasets/beyond_iid/` — their records are tagged

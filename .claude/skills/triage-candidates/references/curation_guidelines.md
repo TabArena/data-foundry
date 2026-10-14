@@ -325,6 +325,10 @@ $K kernels pull <owner>/<kernel> -p <dir> -m      # a notebook's source and meta
 
 Ask the human for a page only when the CLI cannot reach it, and say explicitly when this check was skipped.
 
+PubChem's literature endpoint (`sdq/sdqagent.cgi`, which the ApisTox authors' code calls) answers automated requests
+with a reCAPTCHA page after a few calls. Use PUG REST (`https://pubchem.ncbi.nlm.nih.gov/rest/pug/...`) and PUG-View
+(`.../rest/pug_view/...`) instead, at most 5 requests per second (PubChem's usage policy).
+
 ## Suggestion values
 
 `suggestion` is the include/exclude verdict **as of now** — it is what we suggest for the dataset
@@ -388,6 +392,11 @@ auditing, do **not** flag these:
   the time index.
 * **Dtypes** — object/string → categorical (fixed finite set) or string; dates →
   `YYYY-MM-DD`; everything else numeric.
+* **Molecules (SMILES)** — a molecule's structure ships as RDKit's 2D descriptors (`rdkit_descriptors` of
+  `data_foundry.v2`, one pinned RDKit for every dataset), and the SMILES string is dropped. Descriptors the source
+  ships stay next to them. As text the SMILES adds nothing to descriptors (2026-10-14: -0.025 to +0.010 ROC AUC on
+  apistox, drug_induced_autoimmunity_prediction and qsar_bioconcentration), and the benchmark then needs no
+  chemistry step of its own. Check for rows that become copies once the stereochemistry is gone (stereoisomers).
 * **Temporal tasks/splits** — manually set the prediction horizon and test time points;
   verify every feature was available at prediction time (no future leakage); watch for
   grouped-temporal structure; the first split uses the most recent test point (most

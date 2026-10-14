@@ -6,6 +6,7 @@ checked_by:
 - AI (UNVERIFIED)
 data_foundry_status:
 - WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
@@ -22,7 +23,6 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/african-credit-scoring-challenge/data
-notebook_path: datasets/_maintenance/_out_of_scope/_too_late_to_add/african_credit_scoring_challenge/african_credit_scoring_challenge.ipynb
 v2_path: datasets/_dev/tabarena-v0pt2/african_credit_scoring_challenge/dataset.py
 source_row: 879
 needs_review:

@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 data_foundry_status:
 - WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Wrong Domain / Source Modality

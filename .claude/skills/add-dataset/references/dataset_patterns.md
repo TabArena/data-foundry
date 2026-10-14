@@ -283,6 +283,10 @@ doesn't need.
 #    fixed, finite value set, string for free text / high cardinality, datetime for dates. Everything else
 #    numeric; no `object` column may survive (bundle check + TabArena reject). Cast mid-way with
 #    `cast_dtypes` only when a later step in `_clean` needs the dtype.
+#    A SMILES column (a molecule's structure) is no string feature: add its RDKit descriptors and drop it,
+#       df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)   # `rdkit_*` columns
+#    then check for rows that are now copies (stereoisomers share every 2D descriptor; qsar_bioconcentration,
+#    drug_induced_autoimmunity_prediction).
 # 7. TODO(verify): drop constant columns, all-missing columns, and duplicated columns.
 # 8. TODO(verify): drop leaking features — see §D.1. This is the single most common
 #    preprocessing step in the collection.
@@ -296,8 +300,8 @@ doesn't need.
 #     not shuffle or sort in `_clean`.
 ```
 
-Do **not**: geocode spatial columns, hand-engineer text features, one-hot encode, impute, or
-scale features. Leave that to the pipeline. Feature engineering is only for *removing leaks*
+Do **not**: geocode spatial columns, hand-engineer text features (a SMILES column is the one exception, step 6),
+one-hot encode, impute, or scale features. Leave that to the pipeline. Feature engineering is only for *removing leaks*
 with minimal information loss, or for reconstructing meaning the source destroyed.
 
 **pandas 2 and 3 must build the same container.** pandas 3 reads text as the `str` dtype (missing values stay NaN)

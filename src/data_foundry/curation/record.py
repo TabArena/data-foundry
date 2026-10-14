@@ -78,6 +78,12 @@ FIELDS: tuple[FieldSpec, ...] = (
         help="Integration state (DF: …) and benchmark membership (TabArena (v0.1) / BeyondArena).",
     ),
     FieldSpec(
+        "claimed_by",
+        "Claimed by",
+        "select",
+        help="Who holds the record's WIP claim (WIP (DF) / WIP (Triage)); others leave it alone until it is released.",
+    ),
+    FieldSpec(
         "suggestion",
         "Suggestion",
         "select",
@@ -126,6 +132,8 @@ AI_FILLED_TAG: str = "AI-Filled (Verify)"
 """``tags`` value flagging records whose fields were populated by the AI-review pass."""
 COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 """``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
+WIP_STATUSES: tuple[str, ...] = ("WIP (DF)", "WIP (Triage)")
+"""``data_foundry_status`` values that claim a record: someone is working on it, named in ``claimed_by``."""
 ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
 """``suggestion`` values that count as "accepted for inclusion".
 
@@ -161,6 +169,9 @@ class CurationRecord:
 
     checked_by: list[str] = pydantic.Field(default_factory=list)
     data_foundry_status: list[str] = pydantic.Field(default_factory=list)
+    claimed_by: str | None = None
+    """The curator who holds the record's WIP claim (:data:`WIP_STATUSES`). Set and cleared together with the WIP
+    state; it reaches the main branch on its own, ahead of the work, so other curators see the claim."""
     suggestion: str | None = None
     decision_markers: list[str] = pydantic.Field(default_factory=list)
     tags: list[str] = pydantic.Field(default_factory=list)
@@ -230,7 +241,11 @@ class CurationRecord:
         * ``"ship_conflict"`` — a contradiction: the dataset is shipped in one of our
           collections (:data:`COLLECTION_TAGS`) yet its ``suggestion`` is set to something
           other than an accepted verdict (:data:`ACCEPTED_SUGGESTIONS`) or
-          :data:`RETIRED_SUGGESTION` (which explicitly records a post-shipping change of verdict).
+          :data:`RETIRED_SUGGESTION` (which explicitly records a post-shipping change of verdict);
+        * ``"wip_unclaimed"`` — a WIP state (:data:`WIP_STATUSES`) without a ``claimed_by``, so nobody knows whose
+          work it is;
+        * ``"claim_without_wip"`` — a ``claimed_by`` on a record that is not in a WIP state (a claim left behind
+          after the work was released or finished).
 
         Returned sorted for stable serialization.
         """
@@ -244,6 +259,11 @@ class CurationRecord:
         acceptable = (*ACCEPTED_SUGGESTIONS, RETIRED_SUGGESTION)
         if shipped and self.suggestion and self.suggestion not in acceptable:
             reasons.add("ship_conflict")
+        wip = any(s in WIP_STATUSES for s in (self.data_foundry_status or []))
+        if wip and not self.claimed_by:
+            reasons.add("wip_unclaimed")
+        if self.claimed_by and not wip:
+            reasons.add("claim_without_wip")
         return sorted(reasons)
 
     def describe(self) -> str:

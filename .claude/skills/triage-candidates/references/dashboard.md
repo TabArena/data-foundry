@@ -7,7 +7,11 @@ What to point curators at in the dashboard.
   = blue, ⚠ needs review / untriaged = orange, • other = yellow; first match wins, so 🤖 shows
   even when the AI already filled a Yes/No suggestion, and a `DF: Yes` row shows ✓ whatever its
   verdict). Click the column to sort by it, or the funnel in its header to filter: each status
-  cycles **✓ require → ✕ exclude → off**, so "hide everything rejected" is one click.
+  cycles **✓ require → ✕ exclude → off**, so "hide everything rejected" is one click. A claimed row's
+  status tooltip ends with "claimed by <name>".
+* **Claimed by** (next to *Data Foundry*) names who holds a WIP claim. Its filter on *(empty)*
+  (`#hf.claimed_by=+∅`) shows the records nobody works on; add your name for "free or mine"
+  (`#hf.claimed_by=+∅|+<name>`).
 * **Column filters combine with AND and NOT.** Every dropdown column's header has a filter
   button opening a popover that lists all its values (vocabulary ∪ values actually present ∪
   **(empty)**, each with a count; ⚠ marks a value missing from `vocabularies.yaml`). Clicking a

@@ -71,7 +71,8 @@ build = [
     "python-calamine<0.8",  # 0.8 cannot open the xlsx of gallstone_disease ("Relationship not found")
     "xlrd",
     "matplotlib",
-    # SMILES descriptors of apistox; pinned because descriptor values can change between releases
+    # SMILES descriptors (`data_foundry.v2.rdkit_descriptors`); pinned because descriptor values can change between
+    # releases
     "rdkit==2026.3.6",
 ]
 tests = [
@@ -94,6 +95,8 @@ curation = [
     # Optional: publish the flat snapshot to a read-only Google Sheet.
     # The editing dashboard itself needs no extra dependencies (stdlib server).
     "gspread",
+    # The review page of the review-added-datasets skill renders the run report's markdown.
+    "markdown-it-py",
 ]
 
 [tool.ruff]

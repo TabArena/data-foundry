@@ -6,7 +6,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    drop_columns,
+    rdkit_descriptors,
+)
 
 RAW_FILE = "Grisoni_et_al_2016_EnvInt88.csv"
 """The UCI file: CAS, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the class and logBCF."""
@@ -53,7 +60,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
             "The mechanism class, read from the measured bioconcentration and the measured octanol-water "
             "partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%)."
         ),
-        known="The chemical's structure as a text string and nine descriptors computed from it.",
+        known="The chemical's structure, as the source's nine descriptors and 193 more computed with RDKit.",
         split=(
             "Random chemicals, one row each, as in the source's random split; the file has no chemical families for a"
             " stricter split."
@@ -61,7 +68,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
         changes=(
             "We drop the measured bioconcentration factor the class is read from, swap back the structures of three "
             "pairs of chemicals that carried each other's, and drop three chemicals with another chemical's "
-            "structure."
+            "structure; we replace the structure's text by RDKit's descriptors of it."
         ),
         fit="direct",
         fit_reason=(
@@ -113,7 +120,8 @@ class QsarBioconcentration(AbstractCuratedDataset):
         - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data).
         - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, which the paper models and the 9 descriptors were selected for.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-        - SMILES kept as a string feature: it is the structure the descriptors are computed from, known for a new chemical, and the 9 descriptors do not tell positional isomers apart (decision table).
+        - The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). LightGBM's macro ROC AUC on our splits: 0.735 with the 9, 0.752 with RDKit's added (better on 13 of 15 splits).
+        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowers LightGBM's macro ROC AUC from 0.735 to 0.723.
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
         - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
         - Renamed B02[C-N] and F04[C-O] to B02(C-N) and F04(C-O), since LightGBM and XGBoost refuse square brackets in feature names.
@@ -125,10 +133,6 @@ class QsarBioconcentration(AbstractCuratedDataset):
     # Task
     target = "bioconcentration_mechanism"
     problem_type = "multiclass_classification"
-    accepted_check_warnings = {
-        "dataset_identifier_column": "SMILES is the structure of the chemical, the input the descriptors are computed "
-        "from, not a row id; it is unique per row because every row is a distinct chemical.",
-    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # UTF-8 with a byte-order mark and CRLF line ends; a CAS cell can hold several numbers in quotes
@@ -142,11 +146,14 @@ class QsarBioconcentration(AbstractCuratedDataset):
         # the SMILES of these rows, and the descriptors computed from it, is another chemical than their CAS number
         df = df[~df["CAS"].isin(WRONG_STRUCTURE)]
         df = df.assign(**{self.target: df["Class"].map(CLASS_LABELS)})
+        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry)
+        df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
         # CAS is an identifier, Set the authors' random split, logBCF the measurement the class is read from
-        return drop_columns(df, ["CAS", "Set", "Class", "logBCF"])
+        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(string=["SMILES"])
+        # all features are descriptors (floats and counts); the target becomes a category
+        return FeatureTypes()
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         kept = _swap_back_structures(raw.rename(columns={"B02[C-N]": "B02(C-N)", "F04[C-O]": "F04(C-O)"}))
@@ -176,16 +183,12 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 for cas, (name, other) in WRONG_STRUCTURE.items()
             ]
         ).set_index("CAS")
-        groups = df.groupby(DESCRIPTORS, sort=False)[self.target]
-        size, n_classes = groups.transform("size"), groups.transform("nunique")
-        isomers = pd.Series(
+        rdkit_columns = [column for column in df.columns if column.startswith("rdkit_")]
+        isomers = pd.DataFrame(
             {
-                "chemicals": len(df),
-                "distinct descriptor vectors": int(df[DESCRIPTORS].drop_duplicates().shape[0]),
-                "chemicals sharing their descriptors with another": int(size.gt(1).sum()),
-                "of them in groups with more than one class": int(n_classes.gt(1).sum()),
-            },
-            name="value",
+                "the 9 descriptors": _shared_descriptors(df, DESCRIPTORS, self.target),
+                "with RDKit's descriptors": _shared_descriptors(df, [*DESCRIPTORS, *rdkit_columns], self.target),
+            }
         )
         return [
             Decision(
@@ -206,12 +209,27 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 structure,
             ),
             Decision(
-                "SMILES kept as a string feature",
-                "The 9 descriptors do not tell positional isomers apart; the SMILES does, and it is known for a new "
-                "chemical.",
+                "SMILES replaced by RDKit's descriptors",
+                "The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descriptors of the SMILES "
+                "every chemical has its own values, and the SMILES as text adds nothing next to descriptors "
+                "(CHANGELOG, 2026-10-14).",
                 isomers,
             ),
         ]
+
+
+def _shared_descriptors(df: pd.DataFrame, columns: list[str], target: str) -> pd.Series:
+    """How many chemicals share all of ``columns`` with another chemical, and how many of them differ in class."""
+    groups = df.groupby(columns, sort=False, dropna=False)[target]
+    size, n_classes = groups.transform("size"), groups.transform("nunique")
+    return pd.Series(
+        {
+            "chemicals": len(df),
+            "distinct descriptor vectors": int(df[columns].drop_duplicates().shape[0]),
+            "chemicals sharing their descriptors with another": int(size.gt(1).sum()),
+            "of them in groups with more than one class": int(n_classes.gt(1).sum()),
+        }
+    )
 
 
 def _swap_back_structures(df: pd.DataFrame) -> pd.DataFrame:

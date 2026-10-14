@@ -62,7 +62,7 @@ not accepted in the definition.
 | [`amazon_employee_access`](amazon_employee_access/) | IID | 32,769 | 9 | 3 x 3 | not built | `dataset_pure_feature_value` |
 | [`amex_non_iid_1m`](amex_non_iid_1m/) | grouped (per group: last) | 1,500,000 | 189 | 1 x 3 | `01a111fb-d73e-711b-a490-c684c5c4635d` | `dataset_missing_value_sentinel` |
 | [`anes_voting_2026`](anes_voting_2026/) | temporal | 48,587 | 261 | 9 x 1 | not built |  |
-| [`apistox`](apistox/) | temporal | 1,035 | 205 | 4 x 1 | not built |  |
+| [`apistox`](apistox/) | temporal | 1,035 | 204 | 4 x 1 | `01a13aff-7eeb-7f10-a83c-d760795b95d5` |  |
 | [`aps_failure`](aps_failure/) | IID | 76,000 | 170 | 3 x 3 | not built | `dataset_constant_column`, `dataset_pure_feature_value` |
 | [`ashrae_great_energy_predictor_iii_1m`](ashrae_great_energy_predictor_iii_1m/) | temporal | 2,500,000 | 15 | 3 x 1 | not built |  |
 | [`asp_potassco_classification`](asp_potassco_classification/) | grouped | 1,212 | 136 | 10 x 3 | `01a111fc-9534-79ba-a1c0-efe7268f38e0` | `dataset_constant_column` |
@@ -110,7 +110,7 @@ not accepted in the definition.
 | [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
 | [`digicow_farmer_training_adoption_challenge`](digicow_farmer_training_adoption_challenge/) | temporal | 13,536 | 11 | 4 x 1 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 14 | 3 x 3 | not built |  |
-| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 597 | 177 | 20 x 3 | not built | `dataset_identifier_column` |
+| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 587 | 176 | 20 x 3 | `01a13aff-7235-73c3-932c-785cd540127b` |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
 | [`early_stage_diabetes_risk_prediction`](early_stage_diabetes_risk_prediction/) | IID | 251 | 16 | 20 x 3 | not built |  |
 | [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 6 | 20 x 3 | not built |  |
@@ -194,7 +194,7 @@ not accepted in the definition.
 | [`predict_students_dropout_and_academic_success`](predict_students_dropout_and_academic_success/) | IID | 4,424 | 36 | 3 x 3 | `01a111fc-b7bd-7c0b-a919-1a848957caf4` |  |
 | [`pva_revenue_prediction_kddcup98`](pva_revenue_prediction_kddcup98/) | IID | 191,769 | 477 | 3 x 3 | `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` | `dataset_constant_column`, `dataset_missing_value_label`, `meta_license_unknown` |
 | [`qsar_aquatic_toxicity`](qsar_aquatic_toxicity/) | IID | 546 | 8 | 20 x 3 | `01a111fc-b7f2-70ec-b160-9c69d2d62b73` | `dataset_conflicting_duplicate_rows` |
-| [`qsar_bioconcentration`](qsar_bioconcentration/) | IID | 776 | 10 | 10 x 3 | not built |  |
+| [`qsar_bioconcentration`](qsar_bioconcentration/) | IID | 776 | 202 | 10 x 3 | not built |  |
 | [`qsar_biodeg`](qsar_biodeg/) | IID | 1,055 | 41 | 10 x 3 | `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` |  |
 | [`qsar_fish_toxicity`](qsar_fish_toxicity/) | IID | 908 | 6 | 10 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`qsar_oral_toxicity`](qsar_oral_toxicity/) | IID | 8,493 | 1,024 | 3 x 3 | not built |  |

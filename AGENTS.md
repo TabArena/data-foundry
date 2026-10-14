@@ -60,7 +60,9 @@ checking and maintaining those notebooks and their format-1 containers).
 
 ## High-leverage use cases for an agent
 
-Roughly ordered by how often agents are useful here:
+Roughly ordered by how often agents are useful here. Together they form one pipeline: AI triage (§4) → the curator
+checks it in the dashboard → AI adds the accepted records (§1, one run report for a batch) → the curator reviews what
+would be added on the review page (§3) → the accepted datasets are built (`/rebuild-working-copy`).
 
 ### 1. Processing a dataset — scaffolding its v2 dataset folder from the curation record
 
@@ -102,7 +104,19 @@ feature have been known at prediction time, do the `curation_comments` describe 
 the code actually does, does the BibTeX cite the right work. Verdicts are advisory;
 `cannot-verify` is a valid outcome and must never be reported as `pass`.
 
-### 3. Triaging candidate datasets (curation dashboard + guidelines)
+### 3. Reviewing a batch of added datasets (the review page)
+
+When `/add-dataset` runs on many records at once (a dashboard filter), it writes one run report: per record the
+outcome, the open issues for the curator as numbered items and the record fields that disagree with the definition,
+then the issues that span datasets (format: the skill's `references/run_report_format.md`). The
+`/review-added-datasets` skill ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md))
+turns it into the curator's review page: per record the use case (`task_summary`) first, then tabs for the decisions
+(issues and record fields), the run's report, `dataset.py`, the README and the curation record, and a verdict box (ship / ship after changes / don't ship /
+discuss) with a mark per issue. It is a local HTML file or a Claude artifact whose database holds the marks; the skill
+then reads the marks back and applies them (records, definitions, retirements, the CHANGELOG) and rebuilds the page
+with only what is still open.
+
+### 4. Triaging candidate datasets (curation dashboard + guidelines)
 
 The backlog is **one markdown record per candidate dataset** in `curation/records/`
 (`<unique_name>.md`: YAML front-matter for structured/dropdown fields + a body with
@@ -127,6 +141,9 @@ read these files. The per-record schema is `CurationRecord` (`curation/record.py
 dropdown options live in `curation/vocabularies.yaml`. `curation/_template.md` is a
 copy-me, field-by-field guide.
 
+**A WIP state is a claim:** `claimed_by` names the curator who holds it. Never triage or define a dataset whose
+record someone else has claimed; claims reach `main` in their own small PR, ahead of the work.
+
 **`data_foundry_status` is a merged multi-tag field** holding both work state
 (`DF: Yes` / `WIP (DF)` / `WIP (Triage)` / `DF: Much work` / `DF: Suspended`) and shipped-collection
 membership (`TabArena (v0.1)`, `BeyondArena`). Only datasets under `datasets/beyond_iid/`
@@ -137,7 +154,7 @@ intentional state** — the dataset is in Data Foundry but not in a shipped coll
 `datasets/_maintenance/_deprecated/README.md`. (The separate `collections` field is only
 for *external* benchmarks the dataset also appears in: TabSTAR, TabRed, CARTE/TARTE, ….)
 
-### 4. Extending the package (schema, container, collections, examples)
+### 5. Extending the package (schema, container, collections, examples)
 
 When changing core code:
 
@@ -159,7 +176,7 @@ When changing core code:
   uses `task_metadata.group_on` / `group_labels` / `group_time_on` (views of `grouping` in format 2);
   `container.grouping` raises for format 1.
 
-### 5. Curation tooling work (checks, recommended splits, helpers)
+### 6. Curation tooling work (checks, recommended splits, helpers)
 
 **There are four check layers; put a new check in the right one.**
 
@@ -185,7 +202,7 @@ When changing core code:
   `curation_recommendations.py` holds the v1 helpers of the BeyondArena notebooks; don't use or extend it for new
   work ([`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
 
-### 6. Repo plumbing (CI, packaging, release)
+### 7. Repo plumbing (CI, packaging, release)
 
 `pyproject.toml` carries PyPI metadata. The release flow is documented in
 `README.md` under "Releasing to PyPI" — `uv build` + `uv publish`. Don't

@@ -41,9 +41,11 @@ curator, not verdicts; how to answer each one: ``.claude/skills/verify-dataset/r
   report names each class that falls short with its smallest count in a test fold.
 
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
-the train side (``--no-text`` leaves them out); categoricals enter as codes and datetimes as numbers. Train and test
-sides are capped at ``--max-rows`` random rows (whole groups for a task scored per group). ``--built`` reads the
-container recorded in each ``README.md``'s build record instead of rebuilding the frame from the raw files. The
+the train side (``--no-text`` leaves them out): words for prose, character 2- to 5-grams for strings that are mostly
+one token (a SMILES, a code, a URL), where words would only match whole repeated values. Categoricals enter as codes
+and datetimes as numbers. Train and test sides are capped at ``--max-rows`` random rows (whole groups for a task
+scored per group). ``--built`` reads the container recorded in each ``README.md``'s build record instead of
+rebuilding the frame from the raw files. The
 numbers are indicative (untuned models); a flag is checked against tuned methods before anyone acts on it
 (``tuned_results.py``).
 """
@@ -101,6 +103,8 @@ N_SINGLE = 5
 """Single-feature candidates per split: the features LightGBM uses most on its train side."""
 TEXT_COMPONENTS = 16
 MAX_TEXT_COLUMNS = 30
+ONE_TOKEN_SHARE = 0.9
+"""A text column whose values are a single token in at least this share of rows is encoded by character n-grams."""
 
 
 def load(name: str, root: Path, *, built: bool) -> tuple[CuratedContainer, str]:
@@ -131,6 +135,17 @@ def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str]
     return X, names, text
 
 
+def text_vectorizer(values: np.ndarray) -> TfidfVectorizer:
+    """Word TF-IDF for prose; character 2- to 5-grams when most values are one token (SMILES, codes, URLs)."""
+    sample = pd.Series(values[:5_000], dtype="string").fillna("")
+    one_token = float((~sample.str.strip().str.contains(r"\s")).mean()) if len(sample) else 0.0
+    if one_token >= ONE_TOKEN_SHARE:
+        return TfidfVectorizer(
+            analyzer="char", ngram_range=(2, 5), max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32
+        )
+    return TfidfVectorizer(max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32)
+
+
 def encode_text(
     df: pd.DataFrame, text: list[str], train: np.ndarray, test: np.ndarray
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, list[str]]]:
@@ -139,7 +154,7 @@ def encode_text(
     for k, col in enumerate(text[:MAX_TEXT_COLUMNS]):
         values = df[col].astype("string").fillna("").to_numpy(dtype=object)
         try:
-            vectorizer = TfidfVectorizer(max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32)
+            vectorizer = text_vectorizer(values[train])
             a_train = vectorizer.fit_transform(values[train])
         except ValueError:  # no term occurs twice: nothing to encode
             continue

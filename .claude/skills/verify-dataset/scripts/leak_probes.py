@@ -16,6 +16,9 @@ Fits untuned LightGBM on the first ``--splits`` shipped splits and prints:
 * the share of test rows whose feature vector has an exact copy in train; when the data has string or datetime
   columns, the same share with them included, and for each string column of more than 50 distinct values the share
   of test rows whose value occurs in train (a copy at the level of a SMILES string or a text);
+* each such string column alone, and all features with the string columns, encoded as in the task probes (TF-IDF +
+  SVD fitted on the train side; character n-grams for one-token strings such as a SMILES): a text whose content
+  gives the label away scores close to the full model on its own;
 * the 1-nearest-neighbour label agreement (R^2 for regression) for the closest tenth of the test rows and for
   all of them, against chance;
 * for a binary target, the ROC AUC of a label-free score: each row's distance to its nearest other row.
@@ -33,7 +36,8 @@ distinct patterns are screened the same way. The all-feature, shallow-tree and d
 
 A multiclass ROC AUC is the mean of the one-vs-rest ROC AUCs over the classes present in the test fold (a grouped or
 temporal fold can lack a class); a class the training side lacks gets probability 0. String and datetime columns
-are not model inputs, group columns are not features, and train and test rows are capped at ``--max-rows`` each.
+are not inputs of the other fits, group columns are not features, and train and test rows are capped at
+``--max-rows`` each.
 ``--out DIR`` also writes the numbers to ``DIR/<unique_name>.json``. The numbers are indicative (untuned models, a
 few splits) and meant for comparing the shipped data with a suspected fix. How to read them:
 ``.claude/skills/check-candidate/references/leak_checks.md``. The probes use the shipped target; when the definition
@@ -56,6 +60,7 @@ from data_foundry.v2 import discover_datasets
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.neighbors import NearestNeighbors
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from task_probes import encode_text
 
 BINS = 10
 """Quantile bins of the screen's step function; a categorical of more levels is scored by ``level_score``."""
@@ -86,14 +91,48 @@ def class_proba(model, data: pd.DataFrame, classes: np.ndarray) -> np.ndarray:
 def score(data: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool, n_jobs: int = 8) -> float:
     """Mean ROC AUC (one-vs-rest for multiclass, see ``auc``) or R^2 of an untuned LightGBM over the split pairs."""
     classes = None if regression else np.unique(y.to_numpy())
+    return float(
+        np.nanmean(
+            [
+                fit_score(
+                    data.iloc[tr], data.iloc[te], y.iloc[tr], y.iloc[te], classes, regression=regression, n_jobs=n_jobs
+                )
+                for tr, te in pairs
+            ]
+        )
+    )
+
+
+def fit_score(x_train, x_test, y_train, y_test, classes, *, regression: bool, n_jobs: int) -> float:
+    """One untuned LightGBM fit, scored as in ``score``."""
+    model = (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
+    model.fit(x_train, y_train)
+    if regression:
+        return r2_score(y_test, model.predict(x_test))
+    return auc(y_test.to_numpy(), class_proba(model, x_test, classes), classes)
+
+
+def text_score(
+    df: pd.DataFrame,
+    columns: list[str],
+    base: pd.DataFrame | None,
+    y: pd.Series,
+    pairs: list,
+    *,
+    regression: bool,
+    n_jobs: int,
+) -> float:
+    """``score`` with the string ``columns`` encoded per split on its train side (and ``base`` next to them)."""
+    classes = None if regression else np.unique(y.to_numpy())
     out = []
     for tr, te in pairs:
-        model = (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
-        model.fit(data.iloc[tr], y.iloc[tr])
-        if regression:
-            out.append(r2_score(y.iloc[te], model.predict(data.iloc[te])))
-            continue
-        out.append(auc(y.iloc[te].to_numpy(), class_proba(model, data.iloc[te], classes), classes))
+        t_tr, t_te, blocks = encode_text(df, columns, tr, te)
+        if not blocks:
+            return float("nan")
+        if base is not None:
+            t_tr = pd.concat([base.iloc[tr].reset_index(drop=True), t_tr], axis=1)
+            t_te = pd.concat([base.iloc[te].reset_index(drop=True), t_te], axis=1)
+        out.append(fit_score(t_tr, t_te, y.iloc[tr], y.iloc[te], classes, regression=regression, n_jobs=n_jobs))
     return float(np.nanmean(out))
 
 
@@ -214,6 +253,33 @@ def say(line: str) -> None:
     print(line, flush=True)
 
 
+def string_checks(
+    features: pd.DataFrame, X: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool, n_jobs: int
+) -> dict:
+    """For each string column of more than ``WIDE_STRING`` values: test values seen in train, and the column as text."""
+    tr, te = pairs[0]
+    out: dict = {"string_value_in_train": {}}
+    for col in features.select_dtypes(include=["string", "object"]).columns:
+        values = features[col]
+        distinct = int(values.nunique())
+        if distinct <= WIDE_STRING:
+            continue
+        test_values = values.iloc[te].dropna()
+        share = float(test_values.isin(set(values.iloc[tr].dropna())).mean()) if len(test_values) else float("nan")
+        out["string_value_in_train"][col] = {"distinct": distinct, "share": share}
+        say(f"string column {col} ({distinct:,} distinct values): {share:.1%} of the test values occur in train")
+    wide = list(out["string_value_in_train"])
+    if not wide:
+        return out
+    out["string_alone"] = {
+        col: text_score(features, [col], None, y, pairs, regression=regression, n_jobs=n_jobs) for col in wide
+    }
+    say(f"string column alone, as text: { {c: round(v, 3) for c, v in out['string_alone'].items()} }")
+    out["all_features_with_strings"] = text_score(features, wide, X, y, pairs, regression=regression, n_jobs=n_jobs)
+    say(f"all features with the string columns as text: {out['all_features_with_strings']:.3f}")
+    return out
+
+
 def probe(args: argparse.Namespace) -> dict:
     """Print the probes for one dataset and return their numbers; see the module docstring."""
     started = time.time()
@@ -285,16 +351,7 @@ def probe(args: argparse.Namespace) -> dict:
             f"test rows with an exact copy in train, string and datetime columns included ({len(other)} of them): "
             f"{result['exact_copy_share_all_columns']:.1%}"
         )
-    result["string_value_in_train"] = {}
-    for col in features.select_dtypes(include=["string", "object"]).columns:
-        values = features[col]
-        distinct = int(values.nunique())
-        if distinct <= WIDE_STRING:
-            continue
-        test_values = values.iloc[te].dropna()
-        share = float(test_values.isin(set(values.iloc[tr].dropna())).mean()) if len(test_values) else float("nan")
-        result["string_value_in_train"][col] = {"distinct": distinct, "share": share}
-        say(f"string column {col} ({distinct:,} distinct values): {share:.1%} of the test values occur in train")
+    result.update(string_checks(features, X, y, pairs, regression=regression, n_jobs=args.n_jobs))
 
     Z = neighbour_space(X)
     dist, idx = NearestNeighbors(n_neighbors=1).fit(Z[tr]).kneighbors(Z[te])

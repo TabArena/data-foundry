@@ -24,6 +24,7 @@ source_links:
 source_row: 880
 needs_review:
 - ai_unverified
+- wip_unclaimed
 type_adapter_id: curation-record-v1
 ---
 

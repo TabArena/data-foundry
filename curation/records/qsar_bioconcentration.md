@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 data_foundry_status:
 - WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - New IID
@@ -38,6 +39,10 @@ Data in paper sounds very different to data we have from Kaggle/UCI. We only hav
 Super hard to parse if the dataset could be used but I think we can train a model to do so. Might still have problems and result in leaks but worth including for now
 
 **Assessment (AI, 2026-10-07):** Added as the 3-class task of UCI 510 (458 / 64 / 254 chemicals). The class is read from logBCF and the experimental logKOW (Env. Int. SI Sec. 1); an inferred band of ±0.5 log units around the TGD line reproduces 600 of 607 classes with logKOW ≥ 1. So logBCF is dropped, and no descriptor completes the rule. The 779 are the chemicals of the 2015 table (1,056) with an experimental KOW. Benzene/cyclohexane, naphthalene/tetralin and chlorobenzene/chlorocyclohexane carry each other's SMILES and descriptors: swapped back (2015 SI table); triticonazole and two dioxins dropped. SMILES kept as a string. Alternative target: logBCF regression (random forest R² 0.72).
+
+CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset, and add RDKit's 2D descriptors next to the 9 Dragon descriptors.
+
+**Assessment (AI, 2026-10-14):** LightGBM macro AUC 0.735 with the 9 descriptors, 0.752 with RDKit's 193 added (better on 13 of 15 splits), 0.723 with the SMILES as text instead. With RDKit's descriptors no two chemicals share their values; with the 9 alone 61 did, 14 of them with another class.
 
 ## Reference
 

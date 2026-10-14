@@ -5,6 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Tiny Data

@@ -86,7 +86,8 @@ Then run the three probe scripts (`.venv/bin/python .claude/skills/verify-datase
 which the bundle checks do not cover:
 
 * `leak_probes.py`: what a model learns that it should not (each feature alone, missingness, drop-one, a shallow
-  tree, exact copies across the split with string columns included, nearest neighbours). On wide data it fits only
+  tree, exact copies across the split with string columns included, each wide string column alone as text and all
+  features with them, nearest neighbours). On wide data it fits only
   the `--max-single-features` (300) most informative columns alone and says how many it screened out; `--out DIR`
   writes a JSON per dataset. Read them with
   [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the

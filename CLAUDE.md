@@ -23,11 +23,18 @@ gotchas that look like blockers but aren't — lives in
   * process a decided candidate — scaffold its v2 dataset folder (`dataset.py`
     class + `explore.ipynb` + generated `README.md`, API in `src/data_foundry/v2/`)
     via the `/add-dataset` skill
-    ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)),
+    ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)); on a dashboard filter it adds a
+    whole batch and writes one run report,
+  * let the curator review a batch of added datasets — the `/review-added-datasets` skill
+    ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)) builds the
+    review page (local HTML or a Claude artifact) from the run report and applies the curator's decisions,
   * rebuild the working copy and verify the build — the `/rebuild-working-copy` skill
     ([`.claude/skills/rebuild-working-copy/SKILL.md`](.claude/skills/rebuild-working-copy/SKILL.md)),
   * extend the package (`src/data_foundry/`),
   * update examples (`examples/`) when an API changes.
+* **The pipeline:** AI triage (`/triage-candidates`) → the curator checks it in the dashboard → AI adds the
+  accepted records (`/add-dataset`) → the curator reviews them on the review page (`/review-added-datasets`) →
+  build (`/rebuild-working-copy`).
 * **Before changes land:** `pytest -q && ruff check . && ruff format --check .`
 * **Conventions:** `from __future__ import annotations` is mandatory; lines
   ≤120 chars; Google-style docstrings; no commits/pushes without explicit

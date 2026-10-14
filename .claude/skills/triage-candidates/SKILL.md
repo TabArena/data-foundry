@@ -24,6 +24,10 @@ If the user instead wants to process an already-decided dataset (scaffold its v2
 `dataset.py` folder), use `/add-dataset`; to check a filled-in v2 definition before it ships, use
 `/verify-dataset`.
 
+Triage is the first half of the pipeline: AI triage here, the curator's check of it in the dashboard, then
+`/add-dataset` for the accepted records (a batch run writes one report), then the curator's review of what would be
+added on the page `/review-added-datasets` builds.
+
 ## Step 1 — Start the dashboard
 
 Run the server in the background, then point the user at the URL:
@@ -65,6 +69,14 @@ guidelines as `references/curation_guidelines.md`.
   open (a `TBD -> …` / disputed suggestion) and someone is working on settling it;
   `WIP (DF)` = the verdict is a final `Yes` and the Data Foundry integration (the v2 `dataset.py`) is in
   progress. A record whose suggestion is not yet a final `Yes` must **not** carry `WIP (DF)`.
+* **A WIP value is a claim.** `claimed_by` names the curator who holds it (one value, never the AI), set and
+  cleared together with the WIP value; `review_reasons()` flags `wip_unclaimed` and `claim_without_wip`. Skip
+  records claimed by someone else: no AI triage, no edits, only a note to the curator. When the curator takes
+  records, the claim goes to `main` on its own, ahead of the work: a branch from `main` whose one commit changes
+  only the claim lines (`data_foundry_status`, `claimed_by`) of those records, merged as soon as CI passes, so the
+  published log shows it; then merge `main` into the work branch. The PR that brings the work to `main` sets the
+  final state and clears the claim. The dashboard's *Claimed by* filter on (empty) (`#hf.claimed_by=+∅`) lists
+  what is free.
   Every dataset
   shipped in a collection (`datasets/_maintenance/_old_collections/tabarena-v0pt1`,
   `datasets/beyond_iid`) carries its collection tag(s) **plus `DF: Yes`**; there are 51
@@ -85,7 +97,8 @@ guidelines as `references/curation_guidelines.md`.
   anything; today that means: an empty **required** field (`suggestion` → untriaged), a dropdown
   value not in `vocabularies.yaml`, `ai_unverified` (an AI triaged it, no human has verified —
   see below), or `ship_conflict` (carries a `TabArena (v0.1)`/`BeyondArena` tag but `suggestion`
-  is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`/`No (Retired)`). To add a new automated check,
+  is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`/`No (Retired)`), `wip_unclaimed` or
+  `claim_without_wip` (a WIP value and `claimed_by` not set together). To add a new automated check,
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
 * After editing records, sanity-check with `.venv/bin/python -m data_foundry.curation.cli validate`.

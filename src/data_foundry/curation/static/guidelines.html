@@ -330,6 +330,10 @@
     <li>Convert <strong>date</strong> features to standardized <code>YYYY-MM-DD</code> datetime where possible; for
     numerically-encoded dates, reconstruct as much of the date information as possible.</li>
     <li>Encode all other features as <strong>numerical</strong> types.</li>
+    <li>A molecule's structure (<strong>SMILES</strong>) ships as RDKit's 2D descriptors (<code>rdkit_descriptors</code>
+    of <code>data_foundry.v2</code>, one pinned RDKit for every dataset), and the SMILES string is dropped; descriptors
+    the source ships stay next to them. As text the SMILES adds nothing to descriptors, and the benchmark then needs
+    no chemistry step of its own. Check for rows that become copies once the stereochemistry is gone.</li>
   </ul>
 
   <h2>Creating temporal tasks and splits</h2>
@@ -411,6 +415,15 @@
   <code>WIP (DF)</code> — the verdict is a final <code>Yes</code> and the Data Foundry integration
   (notebook) is in progress. A record without a final <code>Yes</code> must not carry
   <code>WIP (DF)</code>.</p>
+  <p><strong>A WIP state is a claim.</strong> <code>Claimed by</code> names the curator who holds it; it is set and
+  cleared together with the WIP value. Leave a record claimed by someone else alone (no triage, no new
+  definition) until it is released. The claim reaches the main branch on its own, ahead of the work: a small pull
+  request that changes only the claim lines (<code>data_foundry_status</code> and <code>claimed_by</code>) of the
+  records you take, merged as soon as its checks pass, so this log shows it. The work stays on your branch (merge
+  main into it after the claim PR); the pull request that brings the work to main sets the final state and clears
+  the claim, and releasing a claim without the work is another small pull request. The <em>Claimed by</em> filter
+  set to <em>(empty)</em> shows what is free. A WIP record without a claim, or a claim without a WIP state, is in
+  the Review queue (<code>wip_unclaimed</code>, <code>claim_without_wip</code>).</p>
 
   <h2>Decision markers</h2>
   <p><code>decision_markers</code> flag <em>issues</em> (duplicate, trivial, leakage, out-of-scope, …).

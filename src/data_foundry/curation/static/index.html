@@ -382,7 +382,7 @@ const RECORDS_URL = STATIC ? "./records.json" : "/api/records";
 // ----------------------------------------------------------------------------
 // Layout config — tweak freely.
 const PRIMARY = [
-  "checked_by", "unique_name", "data_foundry_status", "suggestion", "decision_markers", "tags",
+  "checked_by", "unique_name", "data_foundry_status", "claimed_by", "suggestion", "decision_markers", "tags",
   "name", "source_links", "comments", "year", "domain", "reference",
 ];
 const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
@@ -648,6 +648,11 @@ function linksFmt(cell) {
 // provisional, so a human must still verify it — that takes precedence over showing
 // the (AI-supplied) suggestion as if it were settled.
 function rowStatus(d) {
+  const st = rowStatusOf(d);
+  // A WIP claim names its holder in the tooltip: others leave the record alone until it is released.
+  return d.claimed_by ? { ...st, t: st.t + " · claimed by " + d.claimed_by } : st;
+}
+function rowStatusOf(d) {
   const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []);
   if (sugg === "Disagreement" || sugg === "Yes (Disagreement)")
     return { m: "⚡", bg: "#7c3aed", fg: "#fff",
@@ -1400,6 +1405,7 @@ function columnDefs() {
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }
     if (name === "data_foundry_status") c.width = 170;  // multiselect: DF state + benchmark tags
+    if (name === "claimed_by") c.width = 110;
     cols.push(c);
   }
   cols.push({

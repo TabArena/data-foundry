@@ -3,6 +3,7 @@ unique_name: _template
 name: 'TEMPLATE — copy this file to <unique_name>.md and fill it in'
 checked_by: []
 data_foundry_status: []
+claimed_by:
 suggestion:
 decision_markers: []
 tags: []
@@ -41,12 +42,16 @@ Field-by-field:
   - work state: `DF: Yes` (in Data Foundry), `WIP (Triage)` (verdict still open, being settled),
     `WIP (DF)` (verdict is a final `Yes`, integration in progress — never valid without one),
     `DF: Much work`, `DF: Suspended`.
+  - a WIP value is a claim and needs **claimed_by** (below).
   - collection: `TabArena (v0.1)`, `BeyondArena` — every shipped dataset carries its
     collection tag(s) **and** `DF: Yes`. Example: `[DF: Yes, BeyondArena]`.
   - `DF: …` with **no** collection tag is valid and intentional: the dataset is in Data Foundry
     but not in a shipped collection (it lives under `datasets/_maintenance/` — deprecated /
     suspended / out-of-scope — or `datasets/_dev/`). Don't add a collection tag to "fix" it.
     See `datasets/_maintenance/_deprecated/README.md`.
+- **claimed_by** — the curator who holds the record's WIP claim (`WIP (Triage)` or `WIP (DF)`): one of
+  `Lennart`, `Andrej`, `Mustafa`, `Alex`, `Gioia`, never the AI. Set and cleared together with the WIP value;
+  others leave a claimed record alone. The claim goes to `main` in its own small PR, ahead of the work.
 - **suggestion** — whether we'd include it: `Yes`, `No`, `No (Retired)`, `TBD -> Yes`,
   `TBD -> 2nd Tier`, `Disagreement`, `Yes (Disagreement)`. (This is the one field that, left empty,
   flags the record for review.) `Yes (Disagreement)` = *shipped on purpose, but with an unresolved

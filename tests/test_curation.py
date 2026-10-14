@@ -104,6 +104,27 @@ def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
     assert "domain" not in unknown  # this value is allowed
 
 
+def test_a_wip_state_and_its_claim_go_together() -> None:
+    """A WIP state without a claim, or a claim without a WIP state, puts the record in the Review queue."""
+    vocab = {"claimed_by": ["Lennart"], "data_foundry_status": ["WIP (DF)"], "suggestion": ["Yes"]}
+    claimed = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
+    unclaimed = _record("b", suggestion="Yes", data_foundry_status=["WIP (DF)"])
+    left_behind = _record("c", suggestion="Yes", claimed_by="Lennart")
+
+    assert claimed.review_reasons(vocab) == []
+    assert unclaimed.review_reasons(vocab) == ["wip_unclaimed"]
+    assert left_behind.review_reasons(vocab) == ["claim_without_wip"]
+
+
+def test_claimed_by_sits_next_to_the_wip_state_in_the_front_matter() -> None:
+    """The claim is written right after the Data Foundry state and survives a round trip."""
+    record = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
+    text = record_to_markdown(record)
+
+    assert text.index("data_foundry_status:") < text.index("claimed_by: Lennart") < text.index("suggestion:")
+    assert markdown_to_record(text).claimed_by == "Lennart"
+
+
 def test_repo_vocabularies_load() -> None:
     vocab = load_vocabularies()
     assert "data_foundry_status" in vocab

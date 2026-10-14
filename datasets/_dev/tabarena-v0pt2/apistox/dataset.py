@@ -4,17 +4,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from data_foundry.v2 import (
     AbstractCuratedDataset,
-    DatasetDefinitionError,
     Decision,
     FeatureTypes,
     TaskSummary,
     Temporal,
     TemporalSplits,
     drop_columns,
+    rdkit_descriptors,
 )
 
 RAW_FILE = "dataset_final.csv"
@@ -28,30 +27,6 @@ DROPPED_AFTER_TEST = ["ppdb_level", "toxicity_type", "source"]
 
 FLAGS = ["herbicide", "fungicide", "insecticide", "other_agrochemical"]
 """The agrochemical-type flags; all four at 0 is the source's "unknown" type and becomes missing."""
-
-RDKIT_VERSION = "2026.03.6"
-"""The RDKit release the descriptors are computed with (pinned in the `build` extra); values can change between
-releases, so another version is an error."""
-
-
-def rdkit_descriptors(smiles: pd.Series) -> pd.DataFrame:
-    """RDKit's 2D descriptors of each SMILES as `rdkit_<name>` columns; non-finite values are missing.
-
-    Descriptors that are constant over the compounds or an exact copy of an earlier one are left out.
-    """
-    import rdkit  # only this definition needs RDKit
-    from rdkit import Chem, RDLogger
-    from rdkit.Chem import Descriptors
-
-    if rdkit.__version__ != RDKIT_VERSION:
-        msg = f"apistox: the descriptors need RDKit {RDKIT_VERSION}, found {rdkit.__version__}."
-        raise DatasetDefinitionError(msg)
-    RDLogger.DisableLog("rdApp.*")
-    rows = [Descriptors.CalcMolDescriptors(Chem.MolFromSmiles(s)) for s in smiles]
-    out = pd.DataFrame(rows, index=smiles.index).astype("float64").add_prefix("rdkit_")
-    out = out.where(np.isfinite(out))
-    out = out.loc[:, out.nunique(dropna=False).gt(1)]
-    return out.loc[:, ~out.T.duplicated()]
 
 
 class Apistox(AbstractCuratedDataset):
@@ -70,8 +45,8 @@ class Apistox(AbstractCuratedDataset):
             " bee (the US EPA threshold); 29% are."
         ),
         known=(
-            "The chemical structure (as text and as 199 descriptors computed from it), whether it is a herbicide, "
-            "fungicide, insecticide or other agrochemical, and the year the compound first appears in the literature."
+            "The chemical structure as 199 descriptors computed from it, whether it is a herbicide, fungicide, "
+            "insecticide or other agrochemical, and the year the compound first appears in the literature."
         ),
         split=(
             "Each test window is a decade of new compounds (2014-2023, 2004-2013, 1994-2003, 1984-1993), with every "
@@ -79,8 +54,8 @@ class Apistox(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the toxicity level, the exposure route and the label's database, all recorded with or after the "
-            "test; we add structure descriptors and set the pesticide type to missing where the source marks it "
-            "unknown."
+            "test; we replace the structure's text by descriptors computed from it and set the pesticide type to "
+            "missing where the source marks it unknown."
         ),
         fit="approximate",
         fit_reason=(
@@ -126,23 +101,20 @@ class Apistox(AbstractCuratedDataset):
         - Target: `toxic_to_bees` is the file's `label`, "Yes" when the LD50 is at most 11 µg per bee, the US EPA threshold (Methods, Eq. 1).
         - Dropped as recorded with or after the test: `ppdb_level` (the same LD50 cut at 1 and 100 µg), `toxicity_type` (the route with the strongest measured toxicity) and `source` (the database the label came from, which a new candidate does not have).
         - Dropped as identifiers: `name`, `CID` and `CAS`.
-        - `SMILES` stays a string column, and we add RDKit's 2D descriptors of it as `rdkit_*` columns (RDKit 2026.03.6, pinned in the build extra): 199 of the 217, the others being constant here or a copy of another; values RDKit cannot compute (partial charges and BCUT descriptors of 107 compounds) are missing. Reason: the default pipeline embeds the SMILES text with a general language model, which carries almost none of the structure. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors.
+        - The structure: RDKit's 2D descriptors of `SMILES` as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6, pinned in the build extra), 199 of the 217, the others being constant here or a copy of another; values RDKit cannot compute (partial charges and BCUT descriptors of 107 compounds) are missing. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors.
+        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): as text (character n-grams) it adds 0.010 ROC AUC to LightGBM next to the descriptors, within the variation between windows (standard error 0.023).
         - The four agrochemical flags stay numeric 0/1. All four at 0 is the source's "'unknown' pesticide type" (Methods), so we set those 55 rows to missing. They are more often toxic (29 of 55, against 27% of the rest), and the flags were read in 2024, not at each compound's year.
         - We rename `year` to `first_publication_year`: the year of the earliest article PubChem links to the CID, else the PubChem record's creation date, so some compounds are dated late. We keep the source's years; dropping the affected compounds moves a window's ROC AUC by at most 0.044.
         - Note: salts and mixtures of one active substance are separate rows, as in the source, so some test compounds have their parent on the training side. Under a temporal split this is the substance's own history; leaving them out costs at most 0.034 ROC AUC.
         - Split: temporal on `first_publication_year`, as the authors' time split (Methods). Their recommended MaxMin split is one test set of diverse compounds, which tests interpolation, and the v2 protocol needs repeated splits.
         - Note: bee tests of old compounds were often published decades later, so a training label is not always known at the window's cutoff. Most test dates are not given, and the acute LD50 is a property of the compound.
-        - Note: the task probes flag `unstable` (LightGBM, the best family with the descriptors, ROC AUC 0.83 on average, standard error of its mean skill 0.065 over the 4 windows), the spread of a small temporal task, as in consumer_complaints_1m.
+        - Note: the task probes flag `unstable` (LightGBM, the best family with the descriptors, ROC AUC 0.82 on average, standard error of its mean skill 0.066 over the 4 windows), the spread of a small temporal task, as in consumer_complaints_1m.
         - Licence: CC BY-NC 4.0; Zenodo version 1, with the identical file, states CC BY 4.0.
     """
 
     # Task
     target = "toxic_to_bees"
     problem_type = "binary_classification"
-    accepted_check_warnings = {
-        "dataset_identifier_column": "SMILES is the structure of the compound, the input of the task, not a row id; it "
-        "is unique per row because the authors removed duplicate structures.",
-    }
 
     # Splits: four ten-year windows of first publication years (every year from 1950 on is in the data, so ten
     # distinct years are ten calendar years).
@@ -166,14 +138,15 @@ class Apistox(AbstractCuratedDataset):
         # is unknown rather than "none of the four" (Methods, ECOTOX processing): a proxy missing value.
         unknown = df[FLAGS].sum(axis=1).eq(0)
         df[FLAGS] = df[FLAGS].astype("float64").where(~unknown, axis=0)
-        # Derived from the measured LD50 values or from the database the label came from, then the identifiers.
-        df = drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS"])
-        # The structure as numbers: RDKit's 2D descriptors next to the SMILES, which stays a string column.
-        return pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
+        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry).
+        df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
+        # Derived from the measured LD50 values or from the database the label came from, the identifiers, the SMILES.
+        return drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The agrochemical flags stay 0/1 and the year an integer; the target becomes a category.
-        return FeatureTypes(string=["SMILES"])
+        # The agrochemical flags stay 0/1, the year an integer and the descriptors floats; the target becomes a
+        # category.
+        return FeatureTypes()
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         toxic = raw["label"].eq(1)

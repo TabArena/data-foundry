@@ -39,7 +39,10 @@ that does not match the task, or a selection that depends on the outcome.
 tree on the label) on a v2 folder, and probe 1 for the three strongest single features (untuned LightGBM on the first
 three shipped splits). With more than 300 columns (`--max-single-features`) it fits only the 300 columns that explain
 the label best alone on the first training side and prints how many it screened out, so a 49,000-column omics dataset
-takes minutes instead of hours; the all-feature, shallow-tree, missing-indicator and drop-one fits still run.
+takes minutes instead of hours; the all-feature, shallow-tree, missing-indicator and drop-one fits still run. A
+string column of more than 50 values (a text, a SMILES) is also fitted alone as text, TF-IDF + SVD on the train side
+(character n-grams for one-token strings), and all features with it: a text that gives the label away scores close to
+the full model on its own (until 2026-10-14 string columns were never model inputs of the probes).
 `--out DIR` also writes the numbers to `DIR/<unique_name>.json`. A multiclass ROC AUC is the mean over the classes
 present in the test fold (a grouped or temporal fold can lack one). The others take a few lines of pandas. Score with
 ROC AUC, log loss or R², never accuracy against the majority class, and say how many splits a number comes from. The

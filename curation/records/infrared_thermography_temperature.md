@@ -22,7 +22,6 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.13026/9ay4-2c37
 - https://physionet.org/content/face-oral-temp-data/1.0.0/
-notebook_path: datasets/_maintenance/_out_of_scope/_too_late_to_add/infrared_thermography_temperature/infrared_thermography_temperature.ipynb
 v2_path: datasets/_dev/tabarena-v0pt2/infrared_thermography_temperature/dataset.py
 source_row: 665
 type_adapter_id: curation-record-v1

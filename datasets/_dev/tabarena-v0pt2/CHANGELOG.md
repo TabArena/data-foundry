@@ -4,6 +4,83 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-14 (claims: `claimed_by` on WIP records)
+
+- A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and
+  `claim_without_wip`); the 51 records of the 2026-10-07 run under Lennart's review carry `claimed_by: Lennart`.
+  These first claims reach `main` with this branch's PR; from now on a claim goes to `main` in a small PR of its own.
+  GETTING_STARTED.md (section 7), the triage, add-dataset and review skills describe the flow: claim on `main`
+  ahead of the work, work on a branch, release with the PR that brings the work to `main`.
+
+## 2026-10-14 (`_too_late_to_add` removed)
+
+- `datasets/_maintenance/_out_of_scope/_too_late_to_add/` is deleted: its three v1 notebooks
+  (african_credit_scoring_challenge, infrared_thermography_temperature, phiusil_phishing) are superseded by their v2
+  definitions in this folder (added on 2026-10-07). Their records no longer carry a `notebook_path`; the notebooks
+  stay in the git history (de9e6ad). `datasets/_maintenance/_deprecated/README.md` no longer lists the bucket.
+
+## 2026-10-14 (rebuild: apistox and drug_induced_autoimmunity_prediction without the SMILES)
+
+- Rebuilt with `build_all.py --only` from the uncommitted tree (`git_sha` de9e6ad-dirty): 2 of 2 ok, both containers
+  reload with their checksums, no new or open warning; a check build from only the traced raw files gives the same
+  checksums. New UUIDs: `apistox` 01a13aff-7eeb-7f10-a83c-d760795b95d5 (its first build),
+  `drug_induced_autoimmunity_prediction` 01a13aff-7235-73c3-932c-785cd540127b. The superseded drug_induced container
+  of 2026-10-06 (01a111fc-d491-7412-a5c5-884df72be349) is deleted; BeyondArena's pinned container is another one.
+  qsar_bioconcentration waits for its shipping verdict and stays unbuilt.
+
+## 2026-10-14 (SMILES become RDKit descriptors; the string is dropped)
+
+Lennart's decision on apistox's issue 1 of the 2026-10-07 review page: one way to ship a molecule, the same for every
+SMILES dataset. A SMILES holds the whole structure (as character n-grams alone it scores ROC AUC 0.69 to 0.77), but next
+to descriptors it adds nothing. Untuned LightGBM on the first 15 splits of each definition (apistox: its 4 windows),
+descriptors only / with the SMILES as character 2-4-grams (TF-IDF, 64 SVD components) / with a Morgan fingerprint (1,024
+counts): drug_induced_autoimmunity_prediction 0.835 / 0.810 (worse on 15 of 15 splits) / 0.849; qsar_bioconcentration
+(macro AUC) 0.735 / 0.723 / 0.743; apistox 0.838 / 0.848 (standard error 0.023 over its 4 windows) / 0.853. TabArena's
+default text embedding of the SMILES scored ROC AUC 0.58 alone on apistox. Fingerprints stay out (a gain of 0.01 to
+0.015 for about 1,000 sparse columns).
+
+- New `data_foundry.v2.rdkit_descriptors` (`src/data_foundry/v2/chemistry.py`, tests in `tests/test_v2_chemistry.py`):
+  RDKit's 2D descriptors of a SMILES column as `rdkit_*` columns, constant and copied descriptors left out, RDKit
+  2026.03.6 pinned in the `build` extra (another version is an error). It was apistox's own function.
+- `apistox`: the descriptors come from the shared helper (same 199 columns) and `SMILES` is dropped, and with
+  it the accepted `dataset_identifier_column` warning. 1,035 rows, 204 features; the task probes still flag `unstable`
+  (LightGBM ROC AUC 0.82, standard error 0.066). Not built yet.
+- `qsar_bioconcentration`: RDKit's descriptors of the repaired SMILES (193 columns) join the source's 9 Dragon
+  descriptors, and `SMILES` is dropped with its accepted warning. Macro AUC with LightGBM 0.735 -> 0.752 (better on 13
+  of 15 splits). The 9 descriptors gave 61 chemicals the values of another (14 of them with another class); with
+  RDKit's, every chemical has its own (decision table). 776 rows, 202 features; no task-probe flag. Not built yet.
+- `drug_induced_autoimmunity_prediction`: `SMILES` dropped; the source's RDKit descriptors stay. Without the SMILES 9
+  pairs of stereoisomers share every descriptor (PubChem names: quinine and quinidine, and lovastatin, fluticasone
+  propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa and streptomycin each entered twice with other
+  stereo marks; 3 pairs across the source's train and test files). One row of each pair with one label is kept, both
+  streptomycin rows (one positive, one negative) are dropped, as for qsar_oral_toxicity: 597 -> 587 drugs, 140
+  positive (decision table). Its open `dataset_identifier_column` warning (the SMILES) is gone. New checksum (rebuilt, next entry
+  above).
+- Curation guidelines (and the dashboard's guidelines page) and the add-dataset patterns: a SMILES column becomes
+  `rdkit_descriptors` and is dropped, then check for stereoisomer copies. The verify-dataset task-probe cases table
+  has apistox's new numbers.
+
+## 2026-10-14 (apistox shipped; string columns in the probes; the review page as a skill)
+
+- `apistox`: Lennart's verdict on the 2026-10-07 review page is ship. Record follow-ups: the reference is the
+  published data descriptor (Scientific Data 12:5, 2025) instead of the preprint, and the licence history is noted
+  (CC BY-NC 4.0 now, CC BY 4.0 in Zenodo v1); `original_source` already said Other. Its task summary joins the
+  task-summary review page for Lennart's marks. Not built yet.
+- Probes: `leak_probes.py` now also fits each string column of more than 50 values alone as text, and all features
+  with those columns (TF-IDF + SVD fitted on the train side), so a text or a SMILES whose content gives the label away
+  shows up; before, string columns were only checked for copies. `task_probes.py` encodes strings that are mostly one
+  token (a SMILES, a code) by character 2- to 5-grams instead of words, which matched only whole repeated values.
+  apistox: the SMILES alone ROC AUC 0.733, all features 0.874, with the SMILES 0.894;
+  drug_induced_autoimmunity_prediction: 0.730, 0.817 and 0.814.
+- New skill `review-added-datasets`: builds the curator's review page for a batch of added datasets from the run
+  report (`build_review_page.py`, template, report format, tests in `tests/test_review_page.py`), locally or as a
+  Claude artifact, and says how to read and apply the decisions. The 2026-10-07 page is now built by it.
+  `markdown-it-py` joins the `curation` extra. CLAUDE.md, AGENTS.md, GETTING_STARTED.md and the add-dataset and
+  triage skills describe the whole pipeline (AI triage, the curator's check, AI adds, the curator reviews, build). GETTING_STARTED.md leads with that
+  workflow as the recommended one (the batch route first, one dataset by hand second).
+- Curation guidelines: PubChem's literature endpoint answers automated requests with a reCAPTCHA; use PUG REST and
+  PUG-View.
+
 ## 2026-10-14 (rebuild: the 15 datasets whose data, splits or score changed in the review)
 
 - Rebuilt with `build_all.py --only` from the uncommitted tree (`git_sha` f93df19-dirty): 15 of 15 ok, every container

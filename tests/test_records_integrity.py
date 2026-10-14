@@ -20,6 +20,7 @@ from data_foundry.curation.record import (
     AI_REVIEWER,
     COLLECTION_TAGS,
     RETIRED_SUGGESTION,
+    WIP_STATUSES,
     load_vocabularies,
 )
 from data_foundry.curation.store import load_all, markdown_to_record
@@ -192,6 +193,23 @@ def test_ai_reviewed_records_follow_convention(records):
         if "AI-FILLED" not in (r.comments or ""):
             bad.append((r.unique_name, "comments missing the UNVERIFIED disclaimer"))
     assert not bad, f"AI-review convention violations: {bad}"
+
+
+def test_claims_belong_to_wip_records(records):
+    """A ``claimed_by`` names a curator, never the AI, and only on a record in a WIP state.
+
+    A WIP record without a claim is allowed but sits in the Review queue (``wip_unclaimed``) until its holder adds
+    their name.
+    """
+    bad = []
+    for r in records:
+        if not r.claimed_by:
+            continue
+        if r.claimed_by == AI_REVIEWER:
+            bad.append((r.unique_name, "claimed by the AI"))
+        if not any(s in WIP_STATUSES for s in (r.data_foundry_status or [])):
+            bad.append((r.unique_name, f"claimed by {r.claimed_by} without a WIP state"))
+    assert not bad, f"claim convention violations: {bad}"
 
 
 def test_tabarena_records_checked_by_lennart_and_andrej(records):
