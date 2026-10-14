@@ -13,7 +13,7 @@ tags:
 - Tiny Data
 collections:
 - FS Benchmark
-original_source: OpenML
+original_source: Other
 year: '2001'
 domain: medical & healthcare
 required_split:
@@ -21,10 +21,11 @@ required_split:
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
-- https://www.openml.org/d/45093
-- 'Can get data from paper website as well and we should: https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials'
+- 'https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials (original: data set A of the paper''s supplement, dataseta_12600gene.xls)'
+- https://www.openml.org/d/45093 (later copy)
 - Contains Dataset A and B, B is subset of A that is only binary classification
 notebook_path: datasets/beyond_iid/new_iid/lung_cancer/lung_cancer.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/lung_cancer/dataset.py
 source_row: 1033
 type_adapter_id: curation-record-v1
 ---
@@ -45,6 +46,8 @@ The way we can make this a real task is to use the info from the original invest
 
 Thus, we use the data not for clustering as in the original work, but re-use for classification of the original data (simulating as if we were to predict this for new patients).
 From the use case, it is unclear if this would really be done, as it is likely not trivial to get the features for an unharmed patient.
+
+**Assessment (AI, 2026-10-14):** the data first appeared as data set A in the supplement of Bhattacharjee et al. (PNAS 2001), which the v2 definition downloads; OpenML 45093 is a later copy. `original_source` is now Other, as in the definition.
 
 ## Reference
 

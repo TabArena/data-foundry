@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=4135
 - https://www.kaggle.com/c/amazon-employee-access-challenge
 notebook_path: datasets/beyond_iid/old_iid/amazon_employee_access/amazon_employee_access.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/amazon_employee_access/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

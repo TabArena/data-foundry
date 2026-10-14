@@ -6,6 +6,7 @@ checked_by:
 - AI (UNVERIFIED)
 data_foundry_status:
 - WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
@@ -22,6 +23,7 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/african-credit-scoring-challenge/data
+v2_path: datasets/_dev/tabarena-v0pt2/african_credit_scoring_challenge/dataset.py
 source_row: 879
 needs_review:
 - ai_unverified
@@ -37,3 +39,5 @@ Predict loan default for an African credit-scoring challenge; this is a canonica
 ---
 
 predict loan default
+
+**Assessment (AI, 2026-10-07):** Added as a temporal task (binary `default`, ROC AUC); the record's Grouped split and tag do not fit, since repeat customers are history known at disbursement. Three leaks are removed: the repay amounts, which grow with penalties after a default (AUC 0.907 with them, 0.639 without); 8,899 rows whose lender funds under one unit, all labelled 0 by construction; and 802 rows whose label was not settled at the data pull. Nine windows: six over the end of the 2022 Type_1 lending, three 30-day windows ending 2024-10-08; each trains only on loans settled 30 days before it starts. Linear AUC 0.649, CatBoost 0.672. Open: the window scheme, and the near-chance 2024 windows.

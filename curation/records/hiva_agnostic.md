@@ -16,6 +16,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1039
 notebook_path: datasets/beyond_iid/old_iid/hiva_agnostic/hiva_agnostic.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/hiva_agnostic/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -32,6 +33,10 @@ Potential issue: Preprocessing
 Lennart: Preprocessing and original data state seem problematic
 
 Andrej: Might consider to restore it to be a 3-class problem
+
+**Assessment (AI, 2026-10-14):** the challenge split the screen's 42,678 compounds into training (3,845, 135 active), validation (384, 14 active) and test (38,449, labels never released), as `hiva.param` lists them. The validation compounds have the same 1,617 descriptors; their labels are in ValidAgnos.zip, which the download already fetched. The fixed list of dropped descriptors removed 99 of the 191 copies in the training file; the definition now drops every descriptor that copies an earlier one over all 4,229 compounds (188).
+
+CC (2026-10-14, Lennart): Add the 384 validation compounds (4,229 compounds, 149 active).
 
 ## Reference
 

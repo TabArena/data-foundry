@@ -1,5 +1,4 @@
-"""Official curated dataset collections (pinned UUIDs) shipped with data_foundry.
-"""
+"""Official curated dataset collections (pinned UUIDs) shipped with data_foundry."""
 
 from __future__ import annotations
 

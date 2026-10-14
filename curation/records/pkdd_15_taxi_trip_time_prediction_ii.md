@@ -3,6 +3,9 @@ unique_name: pkdd_15_taxi_trip_time_prediction_ii
 name: 'ECML/PKDD 15: Taxi Trip Time Prediction (II)'
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
@@ -20,6 +23,7 @@ source_links:
 - https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i
 - https://archive.ics.uci.edu/dataset/339/taxi+service+trajectory+prediction+challenge+ecml+pkdd+2015
 - https://arxiv.org/abs/1508.00021
+v2_path: datasets/_dev/tabarena-v0pt2/pkdd_15_taxi_trip_time_prediction_ii_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -69,3 +73,5 @@ destination, time, call type, stand and taxi, temporal split, taxi as group. Tha
 endpoints and duration, drop empty / single-point trips, meter-left-on outliers, out-of-city starts and
 duplicate IDs, drop the constant `DAY_TYPE`, ignore the unreliable `MISSING_DATA`, and decide how to treat
 the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
+
+**Assessment (AI, 2026-10-07):** Added as `pkdd_15_taxi_trip_time_prediction_ii_1m`: travel time at trip start from origin, destination (last GPS point), Porto local start time, call type, stand and taxi. Log1p target, monthly test windows Apr-Jun 2014, 1,655,983 trips after dropping non-trips, GPS errors and meter misuse. The taxi stays a feature: 99.93-100% of each test month's trips are by taxis seen before. ORIGIN_CALL is dropped: it adds nothing once the destination is known. Open: the challenge page says drivers "do not indicate the final destination of the ride", so the destination framing is ours. Its 2026-09-21 reason, a weak pickup-only signal, no longer holds under task_probes.md rule 2. Pickup-only LightGBM reaches R² 0.11-0.15, against 0.48-0.50 with the destination.

@@ -25,6 +25,7 @@ source_links:
 - https://dataverse.no/dataset.xhtml?persistentId=doi:10.18710/7U6TZP
 - https://dataverse.no/dataset.xhtml;jsessionid=aa0a848e0e843de40284e7be94a9?persistentId=doi%3A10.18710%2F7U6TZP&version=&q=&fileTypeGroupFacet=&fileAccess=&fileSortField=date&tagPresort=false
 notebook_path: datasets/beyond_iid/new_iid/labour_inspection_compliance/labour_inspection_compliance.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/labour_inspection_compliance/dataset.py
 source_row: 659
 type_adapter_id: curation-record-v1
 ---
@@ -49,6 +50,8 @@ distribution where l = 1 means that the target organisation is non-compliant and
 the organisation is compliant." from https://papers.nips.cc/paper_files/paper/2022/file/93e4d161bdd93d1dc0202b4044159edb-Paper-Datasets_and_Benchmarks.pdf
 
 Data is missing timestamps, so it is a forced IID task
+
+**Assessment (AI, 2026-10-14):** The Dataverse description and 00Readme.txt (https://doi.org/10.18710/7U6TZP) say the 63,634 inspections were conducted between 2012-01-01 and 2019-06-01 (timePeriodCovered gives the same). LICD.csv has no date column ('Business Age' is the organisation's age in months), so the range cannot be checked from the data. The definition's note said 'from 2021 to 2019'; it now says January 2012 to June 2019.
 
 ## Reference
 

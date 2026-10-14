@@ -18,6 +18,7 @@ source_links:
 - https://doi.org/10.17632/SPWGRCNJDG.1
 - https://doi.org/10.1007/S10994
 notebook_path: datasets/beyond_iid/old_iid/qsar_tid_11/qsar_tid_11.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/qsar_tid_11/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

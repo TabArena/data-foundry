@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=1494
 - https://doi.org/10.24432/C5H60M
 notebook_path: datasets/beyond_iid/old_iid/qsar_biodeg/qsar_biodeg.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/qsar_biodeg/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

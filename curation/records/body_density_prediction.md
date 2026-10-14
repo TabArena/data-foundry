@@ -17,7 +17,7 @@ tags:
 collections:
 - TabArena Reject
 original_source: Other
-year: '1985'
+year: '1995'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -27,6 +27,7 @@ source_links:
 - https://www.openml.org/d/560
 - https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset
 notebook_path: datasets/beyond_iid/new_iid/body_density_prediction/body_density_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/body_density_prediction/dataset.py
 source_row: 750
 type_adapter_id: curation-record-v1
 ---

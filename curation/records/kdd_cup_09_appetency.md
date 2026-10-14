@@ -17,6 +17,7 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1111
 notebook_path: datasets/beyond_iid/old_iid/kdd_cup_09_appetency/kdd_cup_09_appetency.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/kdd_cup_09_appetency/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

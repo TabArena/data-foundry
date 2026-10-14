@@ -22,6 +22,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/santander-value-prediction-challenge
 notebook_path: datasets/beyond_iid/new_iid/santander_transaction_value/santander_transaction_value.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/santander_transaction_value/dataset.py
 source_row: 663
 type_adapter_id: curation-record-v1
 ---

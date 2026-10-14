@@ -15,7 +15,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
-year: '2008'
+year: '2014'
 domain: education
 required_split:
 - Random (IID)
@@ -26,6 +26,7 @@ source_links:
 - https://doi.org/10.24432/C5TG7T
 - https://www.openml.org/d/44967
 notebook_path: datasets/beyond_iid/new_iid/student_portuguese_performance/student_portuguese_performance.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/student_portuguese_performance/dataset.py
 source_row: 763
 type_adapter_id: curation-record-v1
 ---

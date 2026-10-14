@@ -3,6 +3,7 @@ unique_name: _template
 name: 'TEMPLATE — copy this file to <unique_name>.md and fill it in'
 checked_by: []
 data_foundry_status: []
+claimed_by:
 suggestion:
 decision_markers: []
 tags: []
@@ -41,12 +42,16 @@ Field-by-field:
   - work state: `DF: Yes` (in Data Foundry), `WIP (Triage)` (verdict still open, being settled),
     `WIP (DF)` (verdict is a final `Yes`, integration in progress — never valid without one),
     `DF: Much work`, `DF: Suspended`.
+  - a WIP value is a claim and needs **claimed_by** (below).
   - collection: `TabArena (v0.1)`, `BeyondArena` — every shipped dataset carries its
     collection tag(s) **and** `DF: Yes`. Example: `[DF: Yes, BeyondArena]`.
   - `DF: …` with **no** collection tag is valid and intentional: the dataset is in Data Foundry
     but not in a shipped collection (it lives under `datasets/_maintenance/` — deprecated /
     suspended / out-of-scope — or `datasets/_dev/`). Don't add a collection tag to "fix" it.
     See `datasets/_maintenance/_deprecated/README.md`.
+- **claimed_by** — the curator who holds the record's WIP claim (`WIP (Triage)` or `WIP (DF)`): one of
+  `Lennart`, `Andrej`, `Mustafa`, `Alex`, `Gioia`, never the AI. Set and cleared together with the WIP value;
+  others leave a claimed record alone. The claim goes to `main` in its own small PR, ahead of the work.
 - **suggestion** — whether we'd include it: `Yes`, `No`, `No (Retired)`, `TBD -> Yes`,
   `TBD -> 2nd Tier`, `Disagreement`, `Yes (Disagreement)`. (This is the one field that, left empty,
   flags the record for review.) `Yes (Disagreement)` = *shipped on purpose, but with an unresolved
@@ -67,9 +72,11 @@ Field-by-field:
 - **collections** — *external* benchmarks/collections the dataset appears in (NOT our own):
   `TabSTAR`, `CARTE/TARTE`, `TabRed`, `TableShift`, `TexTabBench`, `New (BeyondArena)`,
   `TabArena Reject`, … (our own membership lives in `data_foundry_status`).
-- **original_source** — where the data was first shared: `OpenML`, `UCI`, `Kaggle`, `Zindi`,
-  `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`.
-- **year** — publication / collection year (free text; e.g. `2014` or `? (2014)`).
+- **original_source** — where the data was first published: `OpenML`, `UCI`, `Kaggle`, `Zindi`,
+  `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`. A re-upload (a Kaggle copy of a government survey,
+  say) takes the original's source; `Kaggle` only when the data first appeared there or no other source is found.
+- **year** — the year the data was first published (free text; e.g. `2014` or `? (2014)`), not the collection
+  year or the year of a later copy.
 - **domain** — real-world application domain, e.g. `medical & healthcare`, `finance`,
   `business & marketing`, `industry & manufacturing`, `environmental science & climate`.
 - **required_split** — appropriate evaluation protocol: `Random (IID)`, `Temporal (NON-IID)`,
@@ -80,7 +87,11 @@ Field-by-field:
   `Database (or multiple to-be-joined tables)`, `Other`.
 - **source_links** — download links / DOIs, one per line (OpenML id URL, Kaggle, DOI, UCI…).
   These double as the dataset's identity for de-duplication, so include the canonical ones.
-- **notebook_path** — repo-relative path of *the* curation notebook behind this dataset, e.g.
+- **v2_path** — repo-relative path of the dataset's definition,
+  `datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py` (or the `<unique_name>_1m/` folder whose class declares
+  `version_of` this record). Every new dataset gets one: `/add-dataset` sets it, and `sync-notebooks` refreshes it.
+- **notebook_path** — only for a dataset curated with Data Foundry v1 (never set for a new one; see
+  `DATA_FOUNDRY_V1.md`): repo-relative path of *the* v1 curation notebook behind it, e.g.
   `datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb`. One dataset, one notebook:
   the pointer lives here so the record names its notebook on its own and keeps doing so if the
   `datasets/` tree is reorganised. Where a dataset has sibling runs, point at the one that
@@ -89,9 +100,8 @@ Field-by-field:
   — `datasets/beyond_iid/` for `BeyondArena`, `datasets/_maintenance/_old_collections/` for
   TabArena v0.1, and never `datasets/_dev/` (work in progress, plus superseded copies of
   notebooks that have since shipped). An unshipped candidate is the opposite: `datasets/_dev/`
-  or `datasets/_maintenance/` is exactly right. Set it when the notebook is created, or refresh
-  every record at once with `data-foundry-curation sync-notebooks` (`--check` reports drift
-  without writing).
+  or `datasets/_maintenance/` is exactly right. Refresh every record at once with
+  `data-foundry-curation sync-notebooks` (`--check` reports drift without writing).
 
 Replace this section with the actual curation discussion: the reasoning behind the
 suggestion and decision markers (curation is manual and human-verified).

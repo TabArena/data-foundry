@@ -9,7 +9,7 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
-year: '2016'
+year: '2007'
 required_split:
 - Random (IID)
 - Temporal (NON-IID)
@@ -18,6 +18,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=42225
 - https://ggplot2.tidyverse.org
 notebook_path: datasets/beyond_iid/old_iid/diamonds/diamonds.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/diamonds/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

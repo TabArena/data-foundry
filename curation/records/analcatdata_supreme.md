@@ -3,7 +3,9 @@ unique_name: analcatdata_supreme
 name: analcatdata_supreme
 checked_by:
 - Lennart
-suggestion: 'Yes'
+suggestion: 'No'
+decision_markers:
+- No Good Target  / Scientific Discovery
 tags:
 - Non-IID (Temporal)
 collections:
@@ -14,7 +16,7 @@ year: '2003'
 domain: social science
 required_split:
 - Temporal (NON-IID)
-problem_type: TBD
+problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/728
@@ -41,6 +43,10 @@ of the number of years of "exposure" is also included (expected, therefore,
 to be directly related to the number of actions taken)."
 
 Correct target seems to be regression number of actions taken. We could overrule to clf as well""
+
+**Assessment (AI, 2026-10-07):** OpenML 504/728/44040 and KEEL use `Log exposure` as the target; the response is the number of actions (original: Simonoff's book page). `Log exposure` leaks: it is shortened when Congress overturned a decision, and all 31 decisions whose exposure contradicts their year by 2+ years, or exceeds it, have an action; the definition uses the year-implied exposure. A temporal split cannot be built validly: every label counts actions in the same 1979-1988 window, known only at its end, and newer decisions have shorter exposures than any training decision. Implemented: IID 3x3, as the book models all decisions together. Small signal on 9/9 folds (LightGBM +0.021, hurdle +0.022; "any action" AUC 0.70, year alone 0.68). Alternative: No.
+
+CC (2026-10-14, Lennart): No, `No Good Target / Scientific Discovery`: the task simulates no decision anyone makes. The label counts Congress's responses in one shared window, 1979-1988, not in a fixed time after each ruling (a 1960 ruling counts responses 19-28 years later, a 1985 ruling 0-3 years later), so the data cannot stand for forecasting the response to a new ruling, although the five attributes are known when a ruling is made. What it measures is which kinds of rulings drew responses in that decade, a look back. The temporal check agrees: on two-year test windows the windows' own mean beat every model. The definition stays in git history.
 
 ## Reference
 

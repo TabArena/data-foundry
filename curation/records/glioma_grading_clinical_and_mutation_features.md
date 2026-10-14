@@ -3,6 +3,9 @@ unique_name: glioma_grading_clinical_and_mutation_features
 name: Glioma Grading Clinical and Mutation Features
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - New IID
@@ -19,6 +22,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=46604
 - https://www.kaggle.com/datasets/vinayjose/glioma-grading-clinical-and-mutation-features
 - https://doi.org/10.24432/C5R62J
+v2_path: datasets/_dev/tabarena-v0pt2/glioma_grading_clinical_and_mutation_features/dataset.py
 source_row: 678
 type_adapter_id: curation-record-v1
 ---
@@ -28,6 +32,8 @@ type_adapter_id: curation-record-v1
 "The main objective is to find the optimal subset of mutation genes and clinical features for the glioma grading process to improve performance and reduce costs." -> mostly a feature selection task?
 
 I think we can still use it (as it is still suggested to be used this way)
+
+**Assessment (AI, 2026-10-07):** A classification task. The paper classifies the grade with 10-fold CV (Tasci et al. 2022, Sec. 2.1; AUC 0.91-0.92, Table 3), and feature selection is its method. `Grade` is the TCGA project (LGG grade II/III vs GBM), and `Primary_Diagnosis` gives it away (dropped). The 20 flags are the GDC's whole-exome calls (17,220 of 17,240 cells match the GDC API). Each tissue site sent patients to one project, yet a by-site split scores like a random one (AUC 0.919 vs 0.918). This is not a duplicate of lgg_low_grade_glioma or glioblastoma: they share patients but have other targets. The label is TCGA-era histology. Under WHO 2021 the 25 IDH-mutant GBMs would be astrocytomas, still grade 4.
 
 ## Reference
 

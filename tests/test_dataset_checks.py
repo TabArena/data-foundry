@@ -112,16 +112,12 @@ def test_df_head_is_at_most_5_rows(base_df):
 def test_run_all_checks_rejects_object_dtype():
     df = pd.DataFrame({"f1": [1, 2], "obj": ["a", "b"], "target": pd.Categorical([0, 1])})
     with pytest.raises(TypeError, match="object dtype"):
-        run_all_checks(
-            data=df, problem_type="binary_classification", target_feature="target", print_report=False
-        )
+        run_all_checks(data=df, problem_type="binary_classification", target_feature="target", print_report=False)
 
 
 def test_run_all_checks_rejects_missing_target(base_df):
     with pytest.raises(ValueError, match="not in the DataFrame"):
-        run_all_checks(
-            data=base_df, problem_type="binary_classification", target_feature="missing", print_report=False
-        )
+        run_all_checks(data=base_df, problem_type="binary_classification", target_feature="missing", print_report=False)
 
 
 def test_run_all_checks_requires_classification_or_problem_type(base_df):

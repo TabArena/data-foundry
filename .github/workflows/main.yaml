@@ -7,6 +7,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # pandas 2 (the lock) and pandas 3 must build and load the same containers
+          - python: "3.10"
+            pandas: ""
+          - python: "3.12"
+            pandas: "pandas>=3,<4"
+    name: test (Python ${{ matrix.python }}${{ matrix.pandas && ', pandas 3' || ', pandas 2' }})
     steps:
       - uses: actions/checkout@v4
 
@@ -14,10 +24,17 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
-        run: uv python install 3.10
+        run: uv python install ${{ matrix.python }}
 
       - name: Install dependencies
-        run: uv sync --extra tests
+        run: |
+          uv sync --extra tests --python ${{ matrix.python }}
+          if [ -n "${{ matrix.pandas }}" ]; then uv pip install "${{ matrix.pandas }}"; fi
 
       - name: Run tests
-        run: uv run pytest tests/
+        run: uv run --no-sync pytest tests/
+
+      - name: Lint v2 dataset definitions
+        run: |
+          uvx ruff@0.15.15 check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py
+          uvx ruff@0.15.15 format --check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py

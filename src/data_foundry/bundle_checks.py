@@ -23,6 +23,12 @@ Usage in a curation notebook — build the container, check it, then save::
 
 Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
 finding on purpose (the notebook then documents the accepted deviation).
+
+The split protocol a bundle is judged by follows its container format
+(:attr:`~data_foundry.curation_container.CuratedContainer.format_version`): format 1 (the v1 notebooks, the shipped
+BeyondArena containers) by the v1 protocol of :mod:`data_foundry.curation_recommendations` (repeat ladder, 250k test
+rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, 500k test
+rows). Every other check is the same for both formats.
 """
 
 from __future__ import annotations
@@ -38,7 +44,10 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.schema import as_column_list
+from data_foundry.utils.checksum import categorical_details
+from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -47,6 +56,7 @@ if TYPE_CHECKING:
         DatasetMetadata,
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
+        PredictiveMLTaskMetadataV2,
     )
 
 Severity = Literal["error", "warning", "info"]
@@ -84,38 +94,56 @@ KNOWN_METRICS: dict[str, set[str]] = {
     },
     "regression": {
         "rmse",
-        "root_mean_squared_error",
         "mae",
-        "mean_absolute_error",
         "mse",
-        "mean_squared_error",
         "r2",
         "rmsle",
-        "root_mean_squared_logarithmic_error",
         "mape",
-        "mean_absolute_percentage_error",
         "median_absolute_error",
         "pearsonr",
         "spearmanr",
     },
 }
-"""Metric names we recognize per problem type (sklearn / AutoGluon spelling).
+"""The canonical metric names per problem type (short, lower-case, as TabArena spells them).
 
 An unrecognized name is not an error — custom competition metrics (e.g.
 ``amex_metric``) are intentional — but it must be registered on the consumer side,
-so it is surfaced as an ``info``.
+so it is surfaced as an ``info``. A known metric spelled another way (an alias in
+:data:`METRIC_ALIASES`, or different casing) is an error: every dataset uses one name.
 """
+
+METRIC_ALIASES: dict[str, str] = {
+    "root_mean_squared_error": "rmse",
+    "mean_absolute_error": "mae",
+    "mean_squared_error": "mse",
+    "root_mean_squared_logarithmic_error": "rmsle",
+    "mean_absolute_percentage_error": "mape",
+    "auc": "roc_auc",
+    "logloss": "log_loss",
+    "cross_entropy": "log_loss",
+}
+"""Other spellings of canonical metric names, mapped to the canonical one."""
 
 TABARENA_DEFAULT_METRICS: dict[str, str] = {
     "binary_classification": "roc_auc",
     "multiclass_classification": "log_loss",
-    "regression": "root_mean_squared_error",
+    "regression": "rmse",
 }
-"""Metric TabArena falls back to when it does not accept ``objective_metric_name``.
+"""The default metric per problem type, and the one TabArena falls back to when it does not accept
+``objective_metric_name``.
 
-Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS``; only used to
-tell the curator which metric a run would *actually* optimize.
+Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS``.
 """
+
+
+def canonical_metric_name(metric: str) -> str:
+    """Map a metric name to its canonical spelling (aliases and casing); unknown names are returned stripped."""
+    name = metric.strip()
+    lowered = METRIC_ALIASES.get(name.lower(), name.lower())
+    if any(lowered in metrics for metrics in KNOWN_METRICS.values()):
+        return lowered
+    return name
+
 
 MISSING_VALUE_SENTINELS: tuple[float, ...] = (-1.0, -9.0, -99.0, -999.0, -9999.0, -99999.0, 999.0, 9999.0, 99999.0)
 """Numeric values that are commonly a proxy for "missing" rather than a real value.
@@ -137,6 +165,33 @@ DUPLICATE_ROW_WARN_SHARE = 0.01
 A handful of duplicates is normal in real-world tabular data; a large share means the
 split protocol will spread copies of the same row across train and test.
 """
+
+PURE_VALUE_MIN_ROWS = 100
+"""A feature value needs at least this many rows (and :data:`PURE_VALUE_MIN_SHARE` of the data) to be checked."""
+
+PURE_VALUE_MIN_SHARE = 0.01
+"""A feature value needs at least this share of the rows to be checked, so rare levels do not flood the report."""
+
+PURE_VALUE_MAX_OTHER_SHARE = 0.005
+"""A value is *pure* when the classes other than its majority class make up at most this share of its rows."""
+
+PURE_VALUE_MIN_EXPECTED_OTHERS = 10
+"""The other classes must be expected at least this many times in the value's rows (from their overall share).
+
+Without it, a rare class makes almost every value look pure: with 0.3% positives, a value with 1,000 rows is
+expected to hold only 3 of them, so seeing none says nothing.
+"""
+
+PURE_VALUE_MAX_NUMERIC_LEVELS = 20
+"""Numeric features with more distinct values than this are skipped as continuous.
+
+Leaks of this kind are codes (a derived status, an outcome-dependent category, a missing-value pattern). A quantile
+bin of a strong continuous feature is often pure in imbalanced data without being a leak, so bins are not checked.
+"""
+
+PURE_VALUE_MAX_LEVELS = 50
+"""Per feature, only the most frequent values (or bins) are checked."""
+
 
 PLACEHOLDER_PATTERNS: tuple[str, ...] = (r"\bTODO\b", r"\bFIXME\b", r"xxx\.csv", r"<unique_name>")
 """Scaffolding markers (regexes) that must not survive into a shipped bundle."""
@@ -288,7 +343,7 @@ class _Ctx:
         return self.container.dataset_metadata
 
     @property
-    def task(self) -> PredictiveMLTaskMetadata:
+    def task(self) -> PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2:
         return self.container.task_metadata
 
     @property
@@ -410,12 +465,12 @@ def _check_dataset_frame(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Duplicate column names: {duplicated_names[:5]}.",
         )
 
-    object_columns = df.select_dtypes(include=["object"]).columns.tolist()
-    if object_columns:
+    objects = object_columns(df)
+    if objects:
         yield CheckResult(
             "dataset_object_dtype",
             "error",
-            f"{len(object_columns)} column(s) have `object` dtype: {object_columns[:5]}.",
+            f"{len(objects)} column(s) have `object` dtype: {objects[:5]}.",
             hint="Cast to `category` (fixed, finite value set), `string` (free text), a numeric dtype, or datetime. "
             "TabArena rejects object columns.",
         )
@@ -581,6 +636,108 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
                 )
 
 
+def _pure_value_keys(series: pd.Series) -> pd.Series | None:
+    """One string key per row (``<NA>`` for missing), or None for a continuous numeric feature."""
+    if (
+        pd.api.types.is_numeric_dtype(series)
+        and not pd.api.types.is_bool_dtype(series)
+        and series.nunique(dropna=True) > PURE_VALUE_MAX_NUMERIC_LEVELS
+    ):
+        return None
+    return series.astype("string").fillna("<NA>")
+
+
+def _pure_values(
+    keys: pd.Series,
+    classes: pd.DataFrame,
+    overall: pd.Series,
+    min_rows: int,
+) -> list[tuple[str, int, str, float]]:
+    """``[(value, n_rows, majority_class, majority_share), ...]`` for the pure values among ``keys``."""
+    counts = keys.value_counts()
+    candidates = counts[counts >= min_rows].head(PURE_VALUE_MAX_LEVELS)
+    if candidates.empty:
+        return []
+    rates = classes.groupby(keys.to_numpy()).mean().loc[candidates.index]
+    pure = []
+    for value, row in rates.iterrows():
+        majority = row.idxmax()
+        n_value = int(candidates[value])
+        expected_others = n_value * (1.0 - overall[majority])
+        if 1.0 - row[majority] <= PURE_VALUE_MAX_OTHER_SHARE and expected_others >= PURE_VALUE_MIN_EXPECTED_OTHERS:
+            pure.append((str(value), n_value, str(majority), float(row[majority])))
+    return pure
+
+
+@_check
+def _check_dataset_pure_feature_values(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Feature values that determine the class on their own: a typical leak (classification only).
+
+    A value is flagged when it covers at least :data:`PURE_VALUE_MIN_ROWS` rows and
+    :data:`PURE_VALUE_MIN_SHARE` of the data, one class makes up all but :data:`PURE_VALUE_MAX_OTHER_SHARE` of
+    its rows, and the other classes would be expected there at least :data:`PURE_VALUE_MIN_EXPECTED_OTHERS` times.
+    Missing values count as a value of their own, and so does "has any value" (``<present>``), which catches a
+    free-text or continuous column that is only filled for one class. Continuous numeric features (more than
+    :data:`PURE_VALUE_MAX_NUMERIC_LEVELS` distinct values) and group columns (a per-group label is pure by design)
+    are skipped.
+    """
+    df = ctx.df
+    task = ctx.task
+    if df is None or ctx.n_rows == 0 or not task.is_classification or not ctx.has_column(ctx.target):
+        return
+    if not ctx.heavy_allowed:
+        yield CheckResult(
+            "dataset_pure_feature_value_skipped",
+            "info",
+            f"Skipped the pure-feature-value check: {df.size:,} cells exceed the budget of {ctx.heavy_cell_budget:,}.",
+            hint="Raise `heavy_cell_budget=` to force it.",
+        )
+        return
+
+    labelled = df[ctx.target].notna().to_numpy()
+    target = df.loc[labelled, ctx.target].astype("string")
+    classes = pd.get_dummies(target).astype("float64")
+    if classes.shape[1] < 2:
+        return
+    overall = classes.mean()
+    min_rows = max(PURE_VALUE_MIN_ROWS, math.ceil(PURE_VALUE_MIN_SHARE * len(target)))
+    time_on = task.time_on if task.time_on and ctx.has_column(task.time_on) else None
+    skip = {ctx.target, *ctx.columns_of(task.group_on)}
+
+    findings: list[str] = []
+    for column in df.columns:
+        if column in skip:
+            continue
+        values = df.loc[labelled, column]
+        keys = _pure_value_keys(values)
+        hits = [] if keys is None else [(hit, keys) for hit in _pure_values(keys, classes, overall, min_rows)]
+        present = values.notna().to_numpy()
+        if 0 < present.sum() < len(present):  # "has a value at all" (e.g. a text only filled after the outcome)
+            presence = pd.Series(np.where(present, "<present>", "<NA>"), index=values.index)
+            seen = {hit[0] for hit, _ in hits}
+            hits += [
+                (hit, presence) for hit in _pure_values(presence, classes, overall, min_rows) if hit[0] not in seen
+            ]
+        for (value, n_value, majority, share), key_series in hits:
+            where = ""
+            if time_on is not None and column != time_on:
+                times = df.loc[labelled, time_on][(key_series == value).to_numpy()]
+                where = f", {time_on} {times.min()}-{times.max()}"
+            findings.append(
+                f"{column} = {value}: {n_value:,} rows, {share:.1%} {ctx.target}={majority} "
+                f"(overall {overall[majority]:.1%}{where})"
+            )
+    if findings:
+        shown = "; ".join(findings[:10]) + (f"; ... ({len(findings) - 10} more)" if len(findings) > 10 else "")
+        yield CheckResult(
+            "dataset_pure_feature_value",
+            "warning",
+            f"{len(findings)} feature value(s) determine the class on their own: {shown}.",
+            hint="Often a leak: a column derived from the outcome or recorded after it. Check the column's "
+            "documentation; drop it if so, otherwise accept the warning with the reason.",
+        )
+
+
 @_check
 def _check_row_order(ctx: _Ctx) -> Iterator[CheckResult]:
     """Row order must not carry signal for IID/grouped data (guidelines: always shuffle)."""
@@ -717,10 +874,18 @@ def _check_metric(ctx: _Ctx) -> Iterator[CheckResult]:
         )
         return
 
+    canonical = canonical_metric_name(metric)
+    if canonical != metric:
+        yield CheckResult(
+            "task_metric_not_canonical",
+            "error",
+            f"Metric {metric!r} is spelled differently from the canonical name {canonical!r}.",
+            hint=f"Set `objective_metric_name={canonical!r}`: every dataset uses one spelling per metric.",
+        )
     known = KNOWN_METRICS[task.problem_type]
-    if metric.lower() in known:
+    if canonical in known:
         return
-    other_problem_types = [p for p, metrics in KNOWN_METRICS.items() if metric.lower() in metrics]
+    other_problem_types = [p for p, metrics in KNOWN_METRICS.items() if canonical in metrics]
     if other_problem_types:
         yield CheckResult(
             "task_metric_problem_type_mismatch",
@@ -1105,11 +1270,11 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Compare the split dimensions against the recommended protocol."""
+    """Compare the split dimensions against the recommended v1 protocol (format 1 only)."""
     from data_foundry.curation_recommendations import get_recommended_splits_dimensions
 
     task = ctx.task
-    if ctx.df is None or task.time_on is not None or not ctx.flat_splits:
+    if ctx.container.format_version != 1 or ctx.df is None or task.time_on is not None or not ctx.flat_splits:
         return
     if isinstance(task.group_on, list):
         # The recommendation helper only understands a single group column.
@@ -1119,6 +1284,10 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
     if len(folds_per_repeat) != 1:
         return
     n_folds = next(iter(folds_per_repeat))
+    if (n_repeats, n_folds) == (1, 1) and len(ctx.flat_splits[0][2]) >= 0.99 * SPLIT_TRAIN_ROW_BUDGET:
+        # A `_1m` split capped at the row budget: whole groups can leave it a few rows short of
+        # train + test budget, which would otherwise drop the frame into the 1x3 size band.
+        return
 
     try:
         recommended = get_recommended_splits_dimensions(
@@ -1139,6 +1308,49 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
             + ".",
             hint="Deviating is allowed when the task demands it — record why in `splits_comment`.",
         )
+
+
+@_check
+def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
+    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k)."""
+    if not ctx.flat_splits:
+        return
+    train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
+    over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
+    over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
+    if ctx.container.format_version != 1:
+        over_test = []  # format 2 has its own test budget: _check_splits_protocol_v2
+    if over_train:
+        largest = max(n for *_, n in over_train)
+        yield CheckResult(
+            "splits_train_over_budget",
+            "error",
+            f"{len(over_train)} split(s) train on more than {train_budget:,} rows (largest: {largest:,}); "
+            f"first: {[(r, f) for r, f, _ in over_train[:5]]}.",
+            hint="Sub-sample each split's train side to the budget, e.g. with "
+            "`curation_recommendations.subsample_temporal(train_cap=1_000_000)`; for grouped splits, sample whole "
+            "groups until the train side fits.",
+        )
+    if over_test:
+        largest = max(n for *_, n in over_test)
+        yield CheckResult(
+            "splits_test_over_budget",
+            "warning",
+            f"{len(over_test)} split(s) test on more than {test_budget:,} rows (largest: {largest:,}); "
+            f"first: {[(r, f) for r, f, _ in over_test[:5]]}.",
+            hint="Cap the test side (e.g. `subsample_temporal(test_cap=250_000)`), or accept it in `ignore=[...]` "
+            "with the reason, e.g. when a grouped split cannot hit the cap without dropping whole groups.",
+        )
+
+
+@_check
+def _check_splits_protocol_v2(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Format 2: the v2 split protocol (:func:`data_foundry.v2.splits.protocol_checks`)."""
+    if ctx.container.format_version < 2:
+        return
+    from data_foundry.v2.splits import protocol_checks  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    yield from protocol_checks(ctx.container)
 
 
 # --- 4. Dataset metadata coherence ---------------------------------------------------
@@ -1566,6 +1778,62 @@ def run_bundle_checks(
     return report
 
 
+def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
+    """The task metadata file a saved container must hold: the container's own format, else whichever is there."""
+    if container is not None:
+        return f"task_metadata.{container.task_metadata.type_adapter_id}.json"
+    found = sorted(f.name for f in path.glob("task_metadata.*.json"))
+    return found[0] if found else "task_metadata.predictive-ml-task-mold-v1.json"
+
+
+def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
+    """The files a saved container must hold (the category and test-set files only when the frames need them)."""
+    files = [
+        "dataset.parquet",
+        "dtypes.json",
+        "container_metadata.json",
+        "dataset_metadata.dataset-mold-v1.json",
+        _task_metadata_file(path, container),
+        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+    ]
+    if container is not None and categorical_details(container.dataset):
+        files.append("categories.json")
+    if container is not None and container.test_dataset is not None:
+        files += ["test_dataset.parquet", "test_dtypes.json"]
+        if categorical_details(container.test_dataset):
+            files.append("test_categories.json")
+    return files
+
+
+def _checksum_results(reloaded: CuratedContainer) -> list[CheckResult]:
+    """The stored checksums (the container's, and the test set's when it is loaded) against the reloaded data."""
+    results: list[CheckResult] = []
+    recomputed = reloaded._create_checksum()
+    if recomputed != reloaded.checksum:
+        results.append(
+            CheckResult(
+                "export_checksum_mismatch",
+                "error",
+                f"Checksum recomputed from disk ({recomputed[:16]}…) differs from the stored one "
+                f"({(reloaded.checksum or '')[:16]}…).",
+                hint="The saved artifact does not match its own metadata — do not ship it. Usually a dtype that "
+                "does not survive parquet (see `export_dtype_changed`).",
+            ),
+        )
+    if reloaded.test_dataset is not None and reloaded.test_dataset_checksum is not None:
+        recomputed_test = reloaded._create_test_checksum()
+        if recomputed_test != reloaded.test_dataset_checksum:
+            results.append(
+                CheckResult(
+                    "export_checksum_mismatch",
+                    "error",
+                    f"The test set's checksum recomputed from disk ({recomputed_test[:16]}…) differs from the stored "
+                    f"one ({reloaded.test_dataset_checksum[:16]}…).",
+                ),
+            )
+    return results
+
+
 def verify_saved_container(
     path: Path | str,
     *,
@@ -1592,16 +1860,7 @@ def verify_saved_container(
     results: list[CheckResult] = []
     unique_name = container.dataset_metadata.unique_name if container is not None else path.parent.name
 
-    expected_files = [
-        "dataset.parquet",
-        "dtypes.json",
-        "container_metadata.json",
-        "dataset_metadata.dataset-mold-v1.json",
-        "task_metadata.predictive-ml-task-mold-v1.json",
-        "experiment_metadata.predictive-ml-splits-mold-v1.json",
-    ]
-    if container is not None and container.test_dataset is not None:
-        expected_files += ["test_dataset.parquet", "test_dtypes.json"]
+    expected_files = _expected_files(path, container)
     missing_files = [name for name in expected_files if not (path / name).is_file()]
     if missing_files:
         results.append(
@@ -1615,18 +1874,7 @@ def verify_saved_container(
     has_test_dataset = container is not None and container.test_dataset is not None
     reloaded = CuratedContainer.load(path, load_dataset=True, load_test_data=has_test_dataset)
 
-    recomputed = reloaded._create_checksum()
-    if recomputed != reloaded.checksum:
-        results.append(
-            CheckResult(
-                "export_checksum_mismatch",
-                "error",
-                f"Checksum recomputed from disk ({recomputed[:16]}…) differs from the stored one "
-                f"({(reloaded.checksum or '')[:16]}…).",
-                hint="The saved artifact does not match its own metadata — do not ship it. Usually a dtype that "
-                "does not survive parquet (see `export_dtype_changed`).",
-            ),
-        )
+    results.extend(_checksum_results(reloaded))
 
     if container is not None:
         if reloaded.uuid != container.uuid:
@@ -1666,14 +1914,60 @@ def verify_saved_container(
     return report
 
 
+def _dtype_key(dtype: object) -> object:
+    """What a dtype has to keep through a save: for a categorical its categories in order, their dtype and
+    ``ordered``; for the ``string`` dtype not its storage (``python`` or ``pyarrow``, which pandas versions choose
+    differently); pandas 3's ``str`` counts as ``object``.
+    """
+    if isinstance(dtype, pd.CategoricalDtype):
+        categories = dtype.categories
+        kind = "object" if is_str_dtype(categories.dtype) else str(categories.dtype)
+        return ("category", tuple(categories.tolist()), kind, bool(dtype.ordered))
+    return "object" if is_str_dtype(dtype) else str(dtype)
+
+
+def _storage_free(df: pd.DataFrame) -> pd.DataFrame:
+    """``df`` with its ``string`` columns as ``object``, so values compare the same whatever the string storage."""
+    text = [c for c, dtype in df.dtypes.items() if isinstance(dtype, pd.StringDtype)]
+    return df.astype(dict.fromkeys(text, object)) if text else df
+
+
 def _compare_frames(before: pd.DataFrame, after: pd.DataFrame, *, label: str) -> list[CheckResult]:
-    """Compare an in-memory frame against its reloaded copy (shape, dtypes, values)."""
+    """Compare an in-memory frame against its reloaded copy (shape, dtypes per column, values)."""
     results: list[CheckResult] = []
     if before.shape != after.shape:
         results.append(
             CheckResult("export_shape_changed", "error", f"`{label}` shape changed: {before.shape} -> {after.shape}."),
         )
         return results
+
+    changed = {
+        column: (str(before[column].dtype), str(after[column].dtype))
+        for column in before.columns
+        if _dtype_key(before[column].dtype) != _dtype_key(after[column].dtype)
+    }
+    if changed:
+        results.append(
+            CheckResult(
+                "export_dtype_changed",
+                "error",
+                f"`{label}` dtypes changed on round-trip (for a category: its categories, their order or `ordered`): "
+                f"{dict(list(changed.items())[:5])}.",
+                hint="Parquet plus `dtypes.json` and `categories.json` could not reproduce the dtype. Use a dtype "
+                "that survives (e.g. `datetime64[ns]` instead of a period).",
+            ),
+        )
+
+    if not _storage_free(before).reset_index(drop=True).equals(_storage_free(after).reset_index(drop=True)):
+        results.append(
+            CheckResult(
+                "export_values_changed",
+                "error",
+                f"`{label}` values differ after the save/load round-trip.",
+                hint="Compare with `before.compare(after)` to find the offending column.",
+            ),
+        )
+    return results
 
     changed = {
         column: (str(before[column].dtype), str(after[column].dtype))

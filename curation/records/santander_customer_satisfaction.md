@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/c/santander-customer-satisfaction
 notebook_path: datasets/beyond_iid/new_iid/santander_customer_satisfaction/santander_customer_satisfaction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/santander_customer_satisfaction/dataset.py
 source_row: 649
 type_adapter_id: curation-record-v1
 ---

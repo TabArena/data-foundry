@@ -27,6 +27,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5T61S
 notebook_path: datasets/beyond_iid/grouped/micro_mass/micro_mass.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/micro_mass/dataset.py
 source_row: 792
 type_adapter_id: curation-record-v1
 ---
@@ -40,6 +41,8 @@ Need to really understand the data and how we can use it, but otherwise sounds g
 From looking at the paper, data, and asking ChatGPT, I think we need to group by strain and hold out all replications.
 
 20 classes.
+
+CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Six species fall below 5 spectra in some strain-grouped test folds (B. thuringiensis: 11 spectra from 8 strains, 2-6 per fold; C. difficile 14 from 7). The grouped split makes fold sizes uneven. The six are 18% of the test rows and 25% of a random forest's log loss (0.88 against 2.94 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
 ## Reference
 

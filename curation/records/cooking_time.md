@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/datasets/pcovkrd84mejm/cooking-time
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#cooking-time
 notebook_path: datasets/beyond_iid/temporal/cooking_time/cooking_time_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/cooking_time_1m/dataset.py
 source_row: 712
 type_adapter_id: curation-record-v1
 ---

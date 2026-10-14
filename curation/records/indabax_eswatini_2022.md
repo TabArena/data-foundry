@@ -2,10 +2,10 @@
 unique_name: indabax_eswatini_2022
 name: indabax-eswatini-2022
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-tags:
-- AI-Filled (Verify)
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Duplicate
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -20,8 +20,6 @@ source_links:
 - https://zindi.africa/competitions/tanzania-ai-conference-2022
 - https://zindi.africa/competitions/indabax-tanzania-2022
 source_row: 996
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -34,3 +32,5 @@ IndabaX Eswatini 2022 asks to predict when an airtime/telecom customer will chur
 ---
 
 predict when an airtime customer will move to another provider
+
+CC (2026-10-12, Lennart): No: duplicate of expresso_churn_prediction. The Zindi API gives `expresso-churn-prediction` as its parent competition, and its Train.csv has the Expresso file's size (129,548,498 bytes), as do its two other links.

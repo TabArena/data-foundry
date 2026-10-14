@@ -13,17 +13,18 @@ tags:
 collections:
 - TabSTAR
 original_source: Kaggle
-year: '2019'
+year: '2020'
 domain: business & marketing
 required_split:
 - Random (IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- https://www.openml.org/search?type=data&id=43342&sort=runs&status=active
-- https://www.kaggle.com/code/shritech1404/german-housing-price-prediction
-- Original source is a deleted dataset from Kaggle
+- https://www.openml.org/search?type=data&id=43342&sort=runs&status=active (copy, uploaded 2022-03-23)
+- https://www.kaggle.com/code/shritech1404/german-housing-price-prediction (Nov 2020 notebook reading the original file)
+- 'Original source is a deleted Kaggle dataset: german-house-prices, file germany_housing_data_14.07.2020.csv, owner unknown'
 notebook_path: datasets/beyond_iid/new_iid/immoscout_german_house_prices/immoscout_german_house_prices.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/immoscout_german_house_prices/dataset.py
 source_row: 684
 type_adapter_id: curation-record-v1
 ---
@@ -33,6 +34,8 @@ type_adapter_id: curation-record-v1
 Missing date column, but as it represents a snapshot of data at a certain time point (when scraped) it represents live data and could be used to fit a model for other houses at the same time
 
 Moreover, this is not sold prices (as immoscout shows only prices you can ask to buy it for and how much it was sold for AFAIK), so the snapshot here represents a task where someone would want to predict the price I should offer for my house given other houses that are currently offered. Thus, it seems like a real task where someone would want to build a model to know how much they should offer the houses at in the current market (with the limitation that past trends are ignored)
+
+**Assessment (AI, 2026-10-14):** the data first appeared on Kaggle as the dataset `german-house-prices` (the 2020 notebook above reads `/kaggle/input/german-house-prices/germany_housing_data_14.07.2020.csv`). It is deleted and its owner could not be found, so the source stays Kaggle and the download stays the OpenML copy (43342, collection date 14-07-2020, the Kaggle card's text). The year is now 2020, the scrape date, instead of 2019.
 
 ## Reference
 

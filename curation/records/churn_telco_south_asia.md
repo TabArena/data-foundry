@@ -3,13 +3,16 @@ unique_name: churn_telco_south_asia
 name: CHURN_TELCO_SOUTH_ASIA
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - New IID
 collections:
 - TabSTAR
 original_source: Kaggle
-year: '2015'
+year: '2017'
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -18,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.openml.org/search?type=data&id=44227
 - https://www.kaggle.com/datasets/mahreen/sato2015
+v2_path: datasets/_dev/tabarena-v0pt2/churn_telco_south_asia/dataset.py
 source_row: 674
 type_adapter_id: curation-record-v1
 ---
@@ -29,6 +33,10 @@ type_adapter_id: curation-record-v1
 "To overcome the class imbalance problem in
 churn data sets, an equal amount of churners and active
 subscribers were collected from the carrier. So the data has 50% churner's information."
+
+**Assessment (AI, 2026-10-07):** The DSN Telecoms Churn 2018 competition files (record churn_telco_nigeria; OpenML 44229, 44230) are this file with the networks renamed (mobilink Mango, ufone Uxaa, ...): all 2,000 rows match on the nine numeric columns and all 1,400 labelled rows agree, so that record is the duplicate. Not trivial: random forest ROC AUC 0.815 against 0.729 for the raw total revenue (30 splits). The 50% churn rate is set by design; ROC AUC does not depend on it. Open: whether churn was observed after the Aug-Sep 2015 window or inside it (then the aggregates end at the churn, as iranian_churn). The paper (doi:10.1109/IntelliSys.2017.8324367) is closed access, and the data do not settle it.
+
+Open (2026-10-12): a paper to get. IntelliSys 2017, doi 10.1109/IntelliSys.2017.8324367 (closed access; no free copy found in the 2026-10-07 run), would settle when churn was observed in this data, which decides whether the usage columns describe the time before the churn.
 
 ## Reference
 

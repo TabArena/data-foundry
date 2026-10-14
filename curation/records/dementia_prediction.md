@@ -19,13 +19,14 @@ original_source: Other
 year: '2010'
 domain: medical & healthcare
 required_split:
-- '?'
-problem_type: TBD
+- Grouped (NON-IID)
+problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset/data
 - https://data.mendeley.com/datasets/tsy6rbc5d4/1
 notebook_path: datasets/beyond_iid/grouped/dementia_prediction/dementia_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/dementia_prediction/dataset.py
 source_row: 4
 type_adapter_id: curation-record-v1
 ---

@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/datasets/pcovkrd84mejm/maps-routing
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#maps-router-eta
 notebook_path: datasets/beyond_iid/temporal/maps_router_eta/maps_router_eta_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/maps_router_eta_1m/dataset.py
 source_row: 714
 type_adapter_id: curation-record-v1
 ---

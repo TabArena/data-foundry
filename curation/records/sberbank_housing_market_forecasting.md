@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/competitions/sberbank-russian-housing-market
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting
 notebook_path: datasets/beyond_iid/temporal/sberbank_housing_market_forecasting/sberbank_housing_market_forecasting.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/sberbank_housing_market_forecasting/dataset.py
 source_row: 711
 type_adapter_id: curation-record-v1
 ---
@@ -36,6 +37,8 @@ TabRed uses 5 and 7 months for splits
 Data splits used by Kaggle experts were grouped/stratified IID ("CV for Investment type model was almost unusable, but CV for OwnerOccupier"). The predicted mean was then off for test data and they used some magic numbers to correct. Thus it sounds like real temporal splits would be better. https://www.kaggle.com/competitions/sberbank-russian-housing-market/discussion/32717
 
 Moreover, it seems that the data is merged from two groups!
+
+CC (2026-10-14, Lennart): Keep all 1,126 sales whose build year is after the year of sale (1,124 look like flats sold before completion). 28,321 rows.
 
 ## Reference
 

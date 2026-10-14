@@ -9,13 +9,14 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
-original_source: Kaggle
-year: '2021'
+original_source: Other
+year: '2018'
 required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc
 notebook_path: datasets/beyond_iid/old_iid/heloc/heloc.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/heloc/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

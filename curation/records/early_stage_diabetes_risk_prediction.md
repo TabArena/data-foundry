@@ -13,7 +13,7 @@ collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
-year: '2019'
+year: '2020'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -24,6 +24,7 @@ source_links:
 - https://www.openml.org/search?type=data&id=43643&sort=runs&status=active
 - https://www.kaggle.com/datasets/ishandutta/early-stage-diabetes-risk-prediction-dataset
 notebook_path: datasets/beyond_iid/new_iid/early_stage_diabetes_risk_prediction/early_stage_diabetes_risk_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/early_stage_diabetes_risk_prediction/dataset.py
 source_row: 765
 type_adapter_id: curation-record-v1
 ---

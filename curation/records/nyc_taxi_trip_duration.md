@@ -3,6 +3,9 @@ unique_name: nyc_taxi_trip_duration
 name: NYC Taxi Trip Duration
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Review Prio 1 (Atlas)
@@ -23,7 +26,7 @@ source_links:
 - https://www.kaggle.com/datasets/wol4aravio/ny-taxi-trip-duration-enriched-by-mathematica
 - https://www.openml.org/d/42729
 - https://www.kaggle.com/datasets/diishasiing/revenue-for-cab-drivers
-- https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii
+v2_path: datasets/_dev/tabarena-v0pt2/nyc_taxi_trip_duration/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +52,13 @@ Task: ETA-at-pickup regression (destination known), temporal split on `pickup_da
 (competition metric was RMSLE). The competition's own test split is a same-period sample (unverified), so its
 leaderboard says nothing about difficulty under a temporal split. Related shipped ETA tasks: `delivery_eta`,
 `maps_router_eta` (TabRed). Kaggle discussion / notebook sweep still to do beyond the notebook above.
+
+**Assessment (AI, 2026-10-07):** Valid; added as `nyc_taxi_trip_duration` (ETA at pickup, 3 weekly test windows in
+June 2016). The competition's test.csv is a random 30% of every day of the same half-year (28.8-31.2% per day), so its
+leaderboard measured interpolation. 8 of 8 sampled training rows match NYC Open Data uacg-pexx; the TLC's current
+Parquet files hold zone IDs only (2012-2016 checked). Sweep: test labels leaked through the public TLC records; about
+0.15% clock-error trips (22-24 h, VeriFone meters) dominated the RMSLE. Dropped: trips under 30 s or over 3 h (0.47%)
+and store_and_fwd_flag; 86 trips across the daylight-saving switch lose the skipped hour. `original_source` could
+read Kaggle: the sample first appeared there (as sdss_17).
+
+Related work, not a source: the PKDD-15 Porto taxi trip-time competition (https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii), which has its own record (pkdd_15_taxi_trip_time_prediction_ii).

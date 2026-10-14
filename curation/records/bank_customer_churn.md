@@ -10,12 +10,13 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: Kaggle
-year: '2020'
+year: '2022'
 required_split:
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset
 notebook_path: datasets/beyond_iid/old_iid/bank_customer_churn/bank_customer_churn.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/bank_customer_churn/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -39,3 +40,5 @@ Potential issue: -
 Lennart: No objection
 
 Andrej: Licence & data source unclear
+
+CC (2026-10-14, Lennart): No licence is known (Kaggle: 'Other (specified in description)', and the description names none), so the definition's licence is None.

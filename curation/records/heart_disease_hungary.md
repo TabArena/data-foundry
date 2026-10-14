@@ -14,7 +14,7 @@ tags:
 collections:
 - TabArena Reject
 original_source: UCI
-year: '1989'
+year: '1988'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -24,6 +24,7 @@ source_links:
 - https://github.com/EpistasisLab/pmlb/blob/master/datasets/heart_disease_cleveland/metadata.yaml
 - https://doi.org/10.24432/C52P4X
 notebook_path: datasets/beyond_iid/new_iid/heart_disease_hungary/heart_disease_hungary.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/heart_disease_hungary/dataset.py
 source_row: 757
 type_adapter_id: curation-record-v1
 ---

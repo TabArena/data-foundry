@@ -3,6 +3,9 @@ unique_name: caracas_cervical_cancer
 name: Caracas Cervical Cancer
 checked_by:
 - Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - New IID
@@ -15,12 +18,13 @@ year: '2017'
 domain: medical & healthcare
 required_split:
 - Random (IID)
-problem_type: TBD
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5Z310
 - https://www.openml.org/search?type=data&id=46592
 - http://vcmi.inescporto.pt/reproducible research/ibpria2017/CervicalCancer/
+v2_path: datasets/_dev/tabarena-v0pt2/caracas_cervical_cancer/dataset.py
 source_row: 688
 type_adapter_id: curation-record-v1
 ---
@@ -30,6 +34,8 @@ type_adapter_id: curation-record-v1
 Some features are multi-categoricals as one-hot encoding. Might want to reverse this.
 
 Has 4 target variables, unsure which one to use. Likely want to use Biopsy as the real ground truth (not just an indicator).
+
+**Assessment (AI, 2026-10-07):** Target: Biopsy. The creators predict it "where only behavioral and demographic information is observable" (Fernandes et al., PeerJ Comput. Sci. 2018, Results), so Hinselmann, Schiller and Citology are dropped as results of the same work-up (Schiller alone: ROC AUC 0.92). The STD and Dx columns are multi-label (43 of 740 patients have 2-4 STD types) and stay binary flags. The 108 patients who skipped the contraceptive question are dropped: they have no positive biopsy, Hinselmann or Schiller result where 8, 5 and 11 are expected, although their answers show no lower risk. Their results look unrecorded. All 55 positives stay. The folder ships the biopsy only; the Multi-target tag stays.
 
 ## Reference
 

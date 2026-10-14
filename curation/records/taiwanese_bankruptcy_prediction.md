@@ -10,13 +10,14 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 original_source: UCI
-year: '2016'
+year: '2020'
 required_split:
 - Random (IID)
 - Temporal (NON-IID)
 source_links:
 - https://doi.org/10.24432/C5004D
 notebook_path: datasets/beyond_iid/old_iid/taiwanese_bankruptcy_prediction/taiwanese_bankruptcy_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/taiwanese_bankruptcy_prediction/dataset.py
 type_adapter_id: curation-record-v1
 ---
 

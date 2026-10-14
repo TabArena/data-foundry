@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+import dataclasses
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,15 +32,26 @@ class CollectionEntry:
     """True if the container was saved under a ``versions/`` subdirectory
     (i.e. the dataset has ``version_from_unique_name`` set in its metadata).
     """
+    name: str | None = None
+    """The dataset's own ``unique_name`` when it differs from the folder :attr:`unique_name`: a version such as
+    ``mercari_price_suggestion_1m`` lives under ``mercari_price_suggestion/versions/``."""
+
+    @property
+    def dataset_name(self) -> str:
+        """The dataset's own ``unique_name`` (:attr:`name`, else the folder name)."""
+        return self.name or self.unique_name
 
     @classmethod
-    def from_relative_path(cls, relative_path: str) -> CollectionEntry:
-        """Parse a warehouse-relative path like ``name/uuid`` or ``name/versions/uuid``."""
+    def from_relative_path(cls, relative_path: str, *, name: str | None = None) -> CollectionEntry:
+        """Parse a warehouse-relative path like ``name/uuid`` or ``name/versions/uuid``.
+
+        ``name`` is the dataset's own name for a version (see :attr:`name`).
+        """
         parts = relative_path.strip("/").split("/")
         if len(parts) == 2:
-            return cls(unique_name=parts[0], uuid=parts[1], is_versioned=False)
+            return cls(unique_name=parts[0], uuid=parts[1], is_versioned=False, name=name)
         if len(parts) == 3 and parts[1] == "versions":
-            return cls(unique_name=parts[0], uuid=parts[2], is_versioned=True)
+            return cls(unique_name=parts[0], uuid=parts[2], is_versioned=True, name=name)
         raise ValueError(
             f"Cannot parse collection entry from {relative_path!r}; "
             "expected '<unique_name>/<uuid>' or '<unique_name>/versions/<uuid>'.",
@@ -97,13 +109,14 @@ class DatasetCollection:
     def __post_init__(self) -> None:
         seen: dict[str, str] = {}
         for entry in self.entries:
-            if entry.unique_name in seen:
-                raise ValueError(
-                    f"Duplicate `unique_name` {entry.unique_name!r} in collection "
-                    f"{self.name!r}: uuids {seen[entry.unique_name]!r} and "
-                    f"{entry.uuid!r} both map to the same name.",
-                )
-            seen[entry.unique_name] = entry.uuid
+            for label in dict.fromkeys((entry.unique_name, entry.dataset_name)):
+                if label in seen:
+                    raise ValueError(
+                        f"Duplicate `unique_name` {label!r} in collection "
+                        f"{self.name!r}: uuids {seen[label]!r} and "
+                        f"{entry.uuid!r} both map to the same name.",
+                    )
+                seen[label] = entry.uuid
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -113,8 +126,15 @@ class DatasetCollection:
 
     @property
     def unique_names(self) -> list[str]:
-        """The dataset ``unique_name`` for each entry, in collection order."""
+        """The warehouse folder name of each entry, in collection order (a version's folder is its base dataset's
+        name; :attr:`dataset_names` has the versions' own names).
+        """
         return [e.unique_name for e in self.entries]
+
+    @property
+    def dataset_names(self) -> list[str]:
+        """Each entry's own dataset name (``<name>_1m`` for a version), in collection order."""
+        return [e.dataset_name for e in self.entries]
 
     @property
     def uuids(self) -> list[str]:
@@ -138,6 +158,7 @@ class DatasetCollection:
         load_dataset: bool = True,
         load_test_data: bool = False,
         force_download: bool = False,
+        verify: bool = False,
     ) -> Iterator[CuratedContainer]:
         """Yield each :class:`CuratedContainer` in the collection.
 
@@ -145,14 +166,16 @@ class DatasetCollection:
         leave it ``None`` to fetch via :attr:`source` (using ``cache_dir`` /
         ``$DATA_FOUNDRY_CACHE``). ``force_download`` is only meaningful when
         loading via :attr:`source` — it bypasses the cache for every entry.
+        ``verify`` checks each container against its checksum (see :meth:`get_dataset`).
         """
         for entry in self.entries:
             if base_dir is not None:
-                yield entry.load(
+                container = entry.load(
                     base_dir,
                     load_dataset=load_dataset,
                     load_test_data=load_test_data,
                 )
+                yield _verified(container, entry) if verify else container
             else:
                 yield self.get_dataset(
                     entry.uuid,
@@ -160,12 +183,13 @@ class DatasetCollection:
                     load_dataset=load_dataset,
                     load_test_data=load_test_data,
                     force_download=force_download,
+                    verify=verify,
                 )
 
     def find_entry(self, name_or_uuid: str) -> CollectionEntry:
-        """Look up an entry by its ``unique_name`` or ``uuid``."""
+        """Look up an entry by its ``uuid``, its own dataset name (``<name>_1m`` for a version) or its folder name."""
         for entry in self.entries:
-            if name_or_uuid in (entry.unique_name, entry.uuid):
+            if name_or_uuid in (entry.unique_name, entry.dataset_name, entry.uuid):
                 return entry
         raise KeyError(
             f"No entry matching {name_or_uuid!r} in collection {self.name!r}.",
@@ -179,11 +203,13 @@ class DatasetCollection:
         load_dataset: bool = True,
         load_test_data: bool = False,
         force_download: bool = False,
+        verify: bool = False,
     ) -> CuratedContainer:
         """Download (if needed) and load one container from this collection.
 
         Args:
-            name_or_uuid: The dataset's ``unique_name`` or its container UUID.
+            name_or_uuid: The dataset's ``unique_name`` (a version's own, such as ``cooking_time_1m``, or its
+                folder name) or its container UUID.
             cache_dir: Override the cache root. Precedence is
                 ``cache_dir`` > ``$DATA_FOUNDRY_CACHE`` > ``~/.cache/data_foundry``.
                 A per-collection subdirectory (``<cache>/<collection.name>``)
@@ -193,6 +219,11 @@ class DatasetCollection:
             force_download: When ``True``, bypass any cached copy and re-fetch
                 from :attr:`source`. Use this to invalidate stale data — e.g.
                 after a known upstream revision change.
+            verify: When ``True``, recompute the checksum (and the test set's, when loaded) and raise if the
+                files do not match it. Needs ``load_dataset=True``.
+
+        Raises:
+            ValueError: ``verify`` and the container does not match its checksum.
         """
         if self.source is None:
             raise RuntimeError(
@@ -202,11 +233,12 @@ class DatasetCollection:
         entry = self.find_entry(name_or_uuid)
         cache_root = resolve_cache_dir(cache_dir, collection_name=self.name)
         container_path = self.source.fetch(entry, cache_root, force_download=force_download)
-        return CuratedContainer.load(
+        container = CuratedContainer.load(
             container_path,
             load_dataset=load_dataset,
             load_test_data=load_test_data,
         )
+        return _verified(container, entry) if verify else container
 
     def prefetch(
         self,
@@ -230,12 +262,13 @@ class DatasetCollection:
         """
         if self.source is None:
             raise RuntimeError(
-                f"Collection {self.name!r} has no `source` configured — "
-                "nothing to prefetch.",
+                f"Collection {self.name!r} has no `source` configured — nothing to prefetch.",
             )
         cache_root = resolve_cache_dir(cache_dir, collection_name=self.name)
         return self.source.fetch_all(
-            self.entries, cache_root, force_download=force_download,
+            self.entries,
+            cache_root,
+            force_download=force_download,
         )
 
     def clear_cache(self, cache_dir: Path | str | None = None) -> Path:
@@ -255,11 +288,32 @@ class DatasetCollection:
         relative_paths: Sequence[str],
         *,
         source: DataSource | None = None,
+        names: Mapping[str, str] | None = None,
     ) -> DatasetCollection:
-        """Build a collection from an iterable of ``<unique_name>/[versions/]<uuid>`` strings."""
+        """Build a collection from an iterable of ``<unique_name>/[versions/]<uuid>`` strings.
+
+        ``names`` maps a version's UUID to its own dataset name (see :attr:`CollectionEntry.name`).
+        """
+        names = names or {}
+        entries = []
+        for p in relative_paths:
+            entry = CollectionEntry.from_relative_path(p)
+            entries.append(dataclasses.replace(entry, name=names.get(entry.uuid)))
         return cls(
             name=name,
             description=description,
-            entries=tuple(CollectionEntry.from_relative_path(p) for p in relative_paths),
+            entries=tuple(entries),
             source=source,
         )
+
+
+def _verified(container: CuratedContainer, entry: CollectionEntry) -> CuratedContainer:
+    """``container`` when it matches its checksum, else a ValueError naming the entry."""
+    if container.dataset is None:
+        raise ValueError("verify=True needs load_dataset=True: the checksum covers the data.")
+    if not container.verify():
+        raise ValueError(
+            f"{entry.relative_path.as_posix()}: the files do not match the container's checksum; "
+            "fetch it again with force_download=True.",
+        )
+    return container

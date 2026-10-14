@@ -1,0 +1,1277 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/* Layout: a curator's review desk, in the family of the TabArena Task Summaries page. The ledger of records on the
+   left, the open case file on the right: the record's facts and links first, then tabs that open on the use
+   case, then the verdict box, the one boxed object that is always in view at the end of the case. */
+:root {
+  --bg: #f5f6f4;
+  --surface: #ffffff;
+  --surface-2: #eceeea;
+  --ink: #1c2420;
+  --ink-2: #4a544f;
+  --ink-3: #7a837e;
+  --rule: #d9ddd8;
+  --accent: #2f5d50;
+  --accent-soft: #e1ece8;
+  --direct: #2e7d4f;
+  --direct-soft: #e2f1e7;
+  --approx: #9a6a00;
+  --approx-soft: #f7eccd;
+  --none: #b23a2e;
+  --none-soft: #f8e1dd;
+  --discuss: #5f4aa0;
+  --discuss-soft: #ebe7f4;
+  /* Verdict colours share the fit colours: ship = direct, change = approximate, stop = none. */
+  --ok: var(--direct);
+  --ok-soft: var(--direct-soft);
+  --change: var(--approx);
+  --change-soft: var(--approx-soft);
+  --stop: var(--none);
+  --stop-soft: var(--none-soft);
+  --font-display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --hdr: 7.25rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141917; --surface: #1b211f; --surface-2: #232a27; --ink: #e6ebe8; --ink-2: #b4bdb8; --ink-3: #87918c;
+    --rule: #2f3834; --accent: #8cc4b2; --accent-soft: #1f3a32; --direct: #79c99a; --direct-soft: #1c3527;
+    --approx: #e2b44e; --approx-soft: #3a3019; --none: #f08d80; --none-soft: #3d221f;
+    --discuss: #bba5f0; --discuss-soft: #2b2440;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1b211f; --surface-2: #232a27; --ink: #e6ebe8; --ink-2: #b4bdb8; --ink-3: #87918c;
+  --rule: #2f3834; --accent: #8cc4b2; --accent-soft: #1f3a32; --direct: #79c99a; --direct-soft: #1c3527;
+  --approx: #e2b44e; --approx-soft: #3a3019; --none: #f08d80; --none-soft: #3d221f;
+  --discuss: #bba5f0; --discuss-soft: #2b2440;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+}
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--bg); border-bottom: 1px solid var(--rule);
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+}
+.top-inner { max-width: 1480px; margin: 0 auto; padding-block: .8rem .6rem; display: grid; gap: .55rem; }
+.title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; }
+.title-row h1 { margin: 0; font: 600 1.35rem/1.2 var(--font-display); text-wrap: balance; }
+.title-row .sub { color: var(--ink-3); font-size: .85rem; }
+.status { margin-left: auto; display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--ink-3); }
+.status .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--ink-3); flex: none; }
+.status[data-s="saved"] .dot, .status[data-s="shared"] .dot { background: var(--ok); }
+.status[data-s="saving"] .dot { background: var(--change); }
+.status[data-s="local"] .dot { background: var(--change); }
+.status[data-s="error"] .dot, .status[data-s="readonly"] .dot { background: var(--stop); }
+.nav-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; }
+.tabs { display: flex; gap: .3rem; }
+.tab {
+  border: 1px solid transparent; background: none; padding: .3rem .7rem; border-radius: 6px; cursor: pointer;
+  font-weight: 500; font-size: .85rem; color: var(--ink-2);
+}
+.tab:hover { color: var(--ink); background: var(--surface-2); }
+.tab[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--rule); }
+.progress { display: flex; align-items: center; gap: .7rem; flex: 1 1 18rem; min-width: 0; font-size: .85rem; color: var(--ink-3); }
+.meter { flex: 1 1 8rem; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; display: flex; max-width: 22rem; }
+.meter span { display: block; height: 100%; }
+.meter .m-ship { background: var(--ok); }
+.meter .m-changes { background: var(--change); }
+.meter .m-dont { background: var(--stop); }
+.meter .m-discuss { background: var(--discuss); }
+.progress b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.banner {
+  max-width: 1480px; margin: .6rem auto 0; padding: .5rem .8rem; border-radius: 6px; font-size: .88rem;
+  background: var(--approx-soft); color: var(--ink); border: 1px solid var(--rule);
+}
+.banner[hidden] { display: none; }
+
+/* Views */
+.view { padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.desk { max-width: 1480px; margin: 0 auto; display: grid; grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); gap: 0 2rem; }
+.rail {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--hdr)); align-self: start;
+  max-height: calc(100dvh - var(--hdr) - env(safe-area-inset-top, 0px)); overflow: auto;
+  padding-block: 1rem 2rem; border-right: 1px solid var(--rule); padding-right: 1rem;
+}
+.search { width: 100%; padding: .4rem .6rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); font-size: .9rem; }
+.filters { display: flex; flex-wrap: wrap; gap: .35rem; margin-block: .6rem .4rem; }
+.chipbtn {
+  border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: .15rem .6rem;
+  font-size: .8rem; font-weight: 500; cursor: pointer; color: var(--ink-2);
+}
+.chipbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chipbtn .n { font-variant-numeric: tabular-nums; opacity: .7; margin-left: .3rem; }
+.toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--ink-2); margin-bottom: .3rem; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .7rem; font-size: .74rem; color: var(--ink-3); margin: 0 0 .6rem; }
+.legend span { display: inline-flex; align-items: center; gap: .3rem; }
+.list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.list li + li { border-top: 1px solid var(--rule); }
+.rowbtn {
+  width: 100%; text-align: left; background: none; border: 0; padding: .45rem .3rem; cursor: pointer;
+  display: grid; grid-template-columns: .75rem minmax(0, 1fr) auto; gap: .55rem; align-items: center;
+}
+.rowbtn:hover { background: var(--surface-2); }
+.rowbtn[aria-current="true"] { background: var(--accent-soft); }
+.vdot { width: .7rem; height: .7rem; border-radius: 50%; border: 1.5px solid var(--ink-3); }
+.vdot[data-v="ship"] { background: var(--ok); border-color: var(--ok); }
+.vdot[data-v="changes"] { background: var(--change); border-color: var(--change); }
+.vdot[data-v="dont"] { background: var(--stop); border-color: var(--stop); }
+.vdot[data-v="discuss"] { background: var(--discuss); border-color: var(--discuss); }
+.rowname { font-family: var(--font-mono); font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rowmeta { font-size: .72rem; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; display: inline-flex; align-items: center; gap: .45rem; }
+/* The use-case fit: a small square, so it never reads as the round verdict dot. */
+.fitmark { display: inline-block; width: .5rem; height: .5rem; border-radius: 2px; background: var(--ink-3); flex: none; }
+.fitmark.direct { background: var(--direct); } .fitmark.approximate { background: var(--approx); } .fitmark.none { background: var(--none); }
+.fitmark.missing { background: transparent; border: 1px dashed var(--ink-3); }
+.tag { display: inline-block; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; font-weight: 600; padding: .05rem .45rem; border-radius: 4px; line-height: 1.5; }
+.tag.added { background: var(--ok-soft); color: var(--ok); }
+.tag.noship { background: var(--stop-soft); color: var(--stop); }
+.tag.notadded { background: var(--surface-2); color: var(--ink-2); }
+.tag.late { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tag.decided { background: var(--surface-2); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.readonly-items .item .seg, .readonly-items .item textarea { display: none; }
+
+/* Case file: the start mirrors the task-summary case view */
+.case { padding-block: 1.25rem 4rem; min-width: 0; max-width: 62rem; }
+.triage, .question, dl.fields dd, .judge p, .srcnote, .missing-note { overflow-wrap: anywhere; }
+.back { display: none; margin-bottom: .8rem; border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: .3rem .7rem; cursor: pointer; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; font-size: .78rem; color: var(--ink-3); }
+.eyebrow .facts { display: inline-flex; flex-wrap: wrap; gap: .1rem .4rem; text-transform: uppercase; letter-spacing: .05em; }
+.eyebrow .facts span + span::before { content: "·"; margin-right: .4rem; }
+.case-name { margin: .35rem 0 .25rem; font: 500 1.2rem/1.3 var(--font-mono); overflow-wrap: anywhere; }
+.links { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; font-size: .82rem; }
+.links a { color: var(--accent); }
+.links .jump { margin-left: auto; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-weight: 500; font-size: .82rem; text-decoration: underline; text-underline-offset: 2px; }
+.case h3 {
+  font: 600 1.12rem/1.3 var(--font-display); margin: 2rem 0 .6rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .8rem;
+}
+.case h3 .count { font-family: var(--font-body); font-weight: 400; font-size: .82rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.triage {
+  margin: 1.1rem 0 0; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface);
+  padding: .75rem 1rem; border-radius: 0 6px 6px 0;
+}
+.case .triage h3, .verdict-box h3, .judge h3 {
+  margin: 0 0 .4rem; font: 600 .78rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3);
+}
+.triage .facts { margin: 0 0 .4rem; color: var(--ink-2); font-size: .9rem; }
+
+/* The use case tab, as on the task-summary page */
+.question { font: 500 1.4rem/1.35 var(--font-display); margin: .4rem 0 1.2rem; max-width: 46ch; text-wrap: balance; }
+dl.fields { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: .65rem 1.2rem; margin: 0; max-width: 820px; }
+dl.fields dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); padding-top: .2rem; }
+dl.fields dd { margin: 0; max-width: 68ch; }
+dt.usecase + dd { font-weight: 500; }
+.judge { margin-top: 1.6rem; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface); padding: .8rem 1rem; border-radius: 0 6px 6px 0; }
+.judge.direct { border-color: var(--direct); } .judge.approximate { border-color: var(--approx); } .judge.none { border-color: var(--none); }
+.judge p { margin: .3rem 0 0; max-width: 68ch; }
+.pill { display: inline-block; font: 600 .8rem var(--font-body); padding: .1rem .55rem; border-radius: 999px; margin-right: .5rem; white-space: nowrap; }
+.pill.direct { background: var(--direct-soft); color: var(--direct); } .pill.approximate { background: var(--approx-soft); color: var(--approx); } .pill.none { background: var(--none-soft); color: var(--none); }
+.pill.missing { background: var(--surface-2); color: var(--ink-3); font-weight: 500; }
+.state { font-size: .78rem; color: var(--ink-3); }
+.srcnote { margin: .9rem 0 0; font-size: .8rem; color: var(--ink-3); max-width: 820px; }
+.missing-note { color: var(--ink-3); font-style: italic; max-width: 68ch; }
+.ctab .fitmark { margin-left: .4rem; vertical-align: .08em; }
+
+/* Verdict box */
+.verdict-box {
+  margin-top: 2rem; max-width: 820px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: .9rem 1rem;
+  scroll-margin-top: calc(var(--hdr) + 1rem);
+}
+.seg { display: flex; flex-wrap: wrap; gap: .35rem; }
+.opt {
+  border: 1px solid var(--rule); background: var(--surface); padding: .32rem .75rem; border-radius: 6px; cursor: pointer;
+  font-size: .85rem; font-weight: 500; color: var(--ink-2); display: inline-flex; align-items: center; gap: .35rem;
+}
+.opt:hover { color: var(--ink); border-color: var(--ink-3); }
+.opt .rec { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; color: var(--accent); }
+.opt[aria-pressed="true"][data-v="ship"], .opt[aria-pressed="true"][data-v="ok"], .opt[aria-pressed="true"][data-v="update"], .opt[aria-pressed="true"][data-v="correct"] { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.opt[aria-pressed="true"][data-v="changes"], .opt[aria-pressed="true"][data-v="change"], .opt[aria-pressed="true"][data-v="leave"], .opt[aria-pressed="true"][data-v="keep"] { background: var(--change-soft); border-color: var(--change); color: var(--change); }
+.opt[aria-pressed="true"][data-v="dont"] { background: var(--stop-soft); border-color: var(--stop); color: var(--stop); }
+.opt[aria-pressed="true"][data-v="discuss"] { background: var(--discuss-soft); border-color: var(--discuss); color: var(--discuss); }
+.opt[aria-pressed="true"] .rec { color: inherit; }
+.seg.small .opt { padding: .2rem .55rem; font-size: .8rem; }
+.notelabel { display: block; font-size: .8rem; color: var(--ink-2); margin: .8rem 0 .25rem; }
+textarea.note {
+  width: 100%; resize: vertical; min-height: 2.2rem; padding: .45rem .6rem; border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--bg); line-height: 1.45; font-size: .88rem;
+}
+textarea.note.big { min-height: 4.2rem; }
+.readonly textarea.note, .readonly .opt { cursor: default; }
+.intro { color: var(--ink-2); margin-bottom: .6rem; }
+.items { list-style: none; margin: 0; padding: 0; }
+.item { padding-block: 1rem; border-top: 1px solid var(--rule); }
+.item.resolved { opacity: .62; }
+.item:last-child { border-bottom: 1px solid var(--rule); }
+.item-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .1rem .7rem; align-items: start; }
+.num {
+  font-family: var(--font-mono); font-size: .78rem; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 4px;
+  min-width: 1.7rem; text-align: center; padding: .05rem .25rem; margin-top: .12rem; font-variant-numeric: tabular-nums;
+}
+.item h4 { margin: 0; font-size: .98rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.item .seg { margin: .55rem 0 0 2.4rem; }
+.item .body { margin: .55rem 0 0 2.4rem; }
+.item .note { margin: .5rem 0 0 2.4rem; width: calc(100% - 2.4rem); }
+.statepill { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .4rem; }
+.statepill[data-v="ok"] { color: var(--ok); }
+.statepill[data-v="change"], .statepill[data-v="leave"] { color: var(--change); }
+.statepill[data-v="discuss"] { color: var(--discuss); }
+.clamp { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
+.more[hidden] { display: none; }
+
+/* Rendered markdown */
+.md { font-size: .92rem; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
+.md > :first-child { margin-top: 0; }
+.md > :last-child { margin-bottom: 0; }
+.md p { margin: .45rem 0; max-width: 78ch; }
+.md ul, .md ol { margin: .35rem 0; padding-left: 1.3rem; }
+.md li { margin: .15rem 0; }
+.md li > p { margin: .2rem 0; }
+.md code, .srcnote code, .missing-note code, .intro code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; font-style: normal; }
+.md strong { font-weight: 600; }
+.md a { color: var(--accent); }
+.tablewrap { overflow-x: auto; margin: .6rem 0; max-width: 100%; }
+.md table { border-collapse: collapse; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.md th, .md td { border: 1px solid var(--rule); padding: .3rem .5rem; vertical-align: top; text-align: left; }
+.md th { background: var(--surface-2); font-weight: 600; }
+
+/* Fields table */
+.fieldtab { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.fieldtab th, .fieldtab td { text-align: left; padding: .5rem .5rem .5rem 0; border-top: 1px solid var(--rule); vertical-align: middle; }
+.fieldtab th { font-weight: 600; color: var(--ink-3); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; border-top: 0; }
+.fieldtab td.v { font-family: var(--font-mono); font-size: .8rem; overflow-wrap: anywhere; }
+
+/* The run's report (Details tab) */
+.panelnav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .82rem; color: var(--ink-3); margin: 0 0 .4rem; }
+.report > h3 { margin-top: .4rem; }
+.rblock { border-top: 1px solid var(--rule); padding: .8rem 0 1rem; }
+.rblock > h4 {
+  margin: 0 0 .45rem; font-size: .76rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3);
+}
+.case h3[id] { scroll-margin-top: calc(var(--hdr) + 1rem); }
+
+/* Record tabs */
+.ctabs { display: flex; flex-wrap: wrap; gap: .25rem; margin: 1.5rem 0 0; border-bottom: 1px solid var(--rule); }
+.ctab {
+  border: 1px solid transparent; border-bottom: 0; background: none; padding: .45rem .85rem; border-radius: 6px 6px 0 0;
+  cursor: pointer; font-weight: 500; color: var(--ink-2); margin-bottom: -1px; font-size: .88rem;
+}
+.ctab:hover { color: var(--ink); }
+.ctab[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--rule); }
+.ctab .n { font-variant-numeric: tabular-nums; color: var(--ink-3); margin-left: .25rem; font-size: .8rem; }
+.cpanel { padding-top: 1.1rem; }
+.cpanel[hidden] { display: none; }
+.srcbar { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .9rem; margin-bottom: .8rem; font-size: .84rem; }
+.srcbar .path { font-family: var(--font-mono); font-size: .8rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.srcbar a { color: var(--accent); font-weight: 500; }
+.srcbar .hint { flex-basis: 100%; color: var(--ink-3); font-size: .8rem; }
+.btn.small { padding: .2rem .6rem; font-size: .8rem; }
+pre.code {
+  margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: .8rem 1rem;
+  font-family: var(--font-mono); font-size: .78rem; line-height: 1.55; tab-size: 4;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+pre.code code { font-family: inherit; background: none; padding: 0; }
+pre.code .hljs-keyword, pre.code .hljs-built_in, pre.code .hljs-literal { color: var(--accent); font-weight: 500; }
+pre.code .hljs-string { color: var(--approx); }
+pre.code .hljs-comment { color: var(--ink-3); font-style: italic; }
+pre.code .hljs-number, pre.code .hljs-meta { color: var(--none); }
+pre.code .hljs-title { color: var(--discuss); }
+.rectab { margin-bottom: 1rem; }
+.rectab td.k { font-family: var(--font-mono); font-size: .78rem; color: var(--ink-2); white-space: nowrap; width: 1%; padding-right: 1rem; }
+.md h1 { font: 600 1.3rem/1.3 var(--font-display); margin: .4rem 0 .6rem; }
+.md img { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; }
+.md details, details.front { margin: .6rem 0; }
+.md summary, details.front summary { cursor: pointer; color: var(--ink-2); font-size: .86rem; }
+.md h2 { font: 600 1.08rem/1.3 var(--font-display); margin: 1.2rem 0 .4rem; }
+.md h3, .md h4 { font-size: .95rem; margin: 1rem 0 .35rem; }
+
+details.block { border-top: 1px solid var(--rule); }
+details.block:last-of-type { border-bottom: 1px solid var(--rule); }
+details.block > summary { cursor: pointer; padding: .6rem 0; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .5rem; }
+details.block > summary::-webkit-details-marker { display: none; }
+details.block > summary::before { content: "+"; font-family: var(--font-mono); color: var(--ink-3); width: 1rem; }
+details.block[open] > summary::before { content: "\2212"; }
+details.block > .md { padding: 0 0 1rem 1.5rem; }
+
+.pager { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
+.pager button { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: .35rem .8rem; cursor: pointer; font-weight: 500; font-size: .85rem; }
+.pager button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.pager button:disabled { opacity: .4; cursor: default; }
+
+/* Across datasets and summary */
+.page { max-width: 62rem; margin: 0 auto; padding-block: 1.5rem 4rem; }
+.page > h2 { font: 600 1.5rem/1.25 var(--font-display); margin: 0 0 .3rem; }
+.page > .lede { color: var(--ink-2); margin: 0 0 1rem; max-width: 70ch; }
+.page h3.sec { font: 600 1.15rem/1.3 var(--font-display); margin: 2rem 0 .3rem; overflow-wrap: anywhere; }
+.page .jump { margin: .7rem 0 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .6rem; margin: 1rem 0 1.5rem; }
+.stat { border: 1px solid var(--rule); border-radius: 8px; padding: .7rem .8rem; background: var(--surface); }
+.stat .k { font-size: .75rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
+.stat .v { font: 600 1.6rem var(--font-display); font-variant-numeric: tabular-nums; }
+.stat.ship .v { color: var(--ok); } .stat.changes .v { color: var(--change); } .stat.dont .v { color: var(--stop); } .stat.discuss .v { color: var(--discuss); }
+.sumwrap { overflow-x: auto; border-top: 1px solid var(--rule); }
+.sumtab { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 46rem; }
+.sumtab th, .sumtab td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.sumtab th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); font-weight: 600; }
+.sumtab td.name button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-family: var(--font-mono); font-size: .8rem; text-align: left; overflow-wrap: anywhere; }
+.sumtab td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vlabel[data-v="ship"] { color: var(--ok); } .vlabel[data-v="changes"] { color: var(--change); } .vlabel[data-v="dont"] { color: var(--stop); } .vlabel[data-v="discuss"] { color: var(--discuss); }
+.vlabel.none { color: var(--ink-3); }
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: 1rem 0; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--bg); padding: .4rem .9rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: .85rem; }
+.btn.ghost { background: var(--surface); color: var(--ink); border-color: var(--rule); }
+.copyout { width: 100%; min-height: 10rem; font-family: var(--font-mono); font-size: .78rem; border: 1px solid var(--rule); border-radius: 6px; padding: .6rem; background: var(--surface); }
+.about { margin-top: 2.5rem; }
+.about > summary { cursor: pointer; font-weight: 600; }
+.about .md { margin-top: .8rem; }
+
+@media (max-width: 860px) {
+  :root { --hdr: 0rem; }
+  .top { position: static; }
+  .desk { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; max-height: none; border-right: 0; padding-right: 0; }
+  .desk.detail-open .rail { display: none; }
+  .desk:not(.detail-open) .case { display: none; }
+  .back { display: inline-block; }
+  .item .seg, .item .body, .more { margin-left: 0; }
+  .item .note { margin-left: 0; width: 100%; }
+  .status { margin-left: 0; }
+}
+@media (max-width: 640px) {
+  dl.fields { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
+  dl.fields dd { margin-bottom: .6rem; }
+  .question { font-size: 1.25rem; }
+  .links .jump { margin-left: 0; flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+
+<header class="top" id="top">
+  <div class="top-inner">
+    <div class="title-row">
+      <h1>__TITLE__</h1>
+      <span class="sub">__SUBTITLE__</span>
+      <span class="status" id="status" data-s="connecting"><span class="dot"></span><span id="statusText">Connecting…</span></span>
+    </div>
+    <div class="nav-row">
+      <div class="tabs" role="tablist" aria-label="Views">
+        <button class="tab" role="tab" id="tab-datasets" data-tab="datasets" aria-selected="true">Datasets</button>
+        <button class="tab" role="tab" id="tab-across" data-tab="across" aria-selected="false">Across datasets</button>
+        <button class="tab" role="tab" id="tab-summary" data-tab="summary" aria-selected="false">Summary</button>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
+  <div class="banner" id="banner" hidden></div>
+</header>
+
+<main>
+  <section class="view" id="view-datasets">
+    <div class="desk" id="desk">
+      <aside class="rail" aria-label="Records">
+        <label class="visually-hidden" for="search">Search records</label>
+        <input class="search" id="search" type="search" placeholder="Search records" autocomplete="off">
+        <div class="filters" id="filters"></div>
+        <label class="toggle" for="hideReviewed"><input type="checkbox" id="hideReviewed"> Hide records with a verdict</label>
+        <p class="legend"><span><span class="vdot" aria-hidden="true"></span>your verdict</span><span><span class="fitmark direct" aria-hidden="true"></span><span class="fitmark approximate" aria-hidden="true"></span><span class="fitmark none" aria-hidden="true"></span>use-case fit</span><span>marks done/total</span></p>
+        <ul class="list" id="list"></ul>
+      </aside>
+      <article class="case" id="case"></article>
+    </div>
+  </section>
+  <section class="view" id="view-across" hidden></section>
+  <section class="view" id="view-summary" hidden></section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const DS = DATA.datasets;
+  const byName = new Map(DS.map((d) => [d.name, d]));
+  const XITEMS = new Map();
+  DATA.crosscut.forEach((s) => s.items.forEach((it) => XITEMS.set(it.id, Object.assign({ section: s.title }, it))));
+
+  const VERDICTS = {
+    standard: [["ship", "Ship"], ["changes", "Ship after changes"], ["dont", "Don't ship"], ["discuss", "Discuss"]],
+    notadded: [["dont", "Leave out"], ["ship", "Add it"], ["discuss", "Discuss"]],
+    decided: [["correct", "Triage update correct"], ["discuss", "Discuss"]],
+  };
+  const VLABEL = { ship: "Ship", changes: "Ship after changes", dont: "Don't ship", discuss: "Discuss" };
+  const VLABEL_NA = { ship: "Add it", dont: "Leave out", discuss: "Discuss" };
+  // A record that already says No: only the triage update is verified (an older "dont" mark counts as correct).
+  const VLABEL_DEC = { correct: "Triage update correct", dont: "Triage update correct", discuss: "Discuss", ship: "Ship (overrules triage)", changes: "Ship after changes (overrules triage)" };
+  const REC = { added: "ship", noship: "dont", notadded: "dont", decided: "correct" };
+  const CAT = { added: "To ship", noship: "Rec. not to ship", notadded: "Not added", decided: "Decided: verify" };
+  const labelsFor = (d) => (d.cat === "decided" ? VLABEL_DEC : d.cat === "notadded" ? VLABEL_NA : VLABEL);
+  const ITEM_OPTS = [["ok", "Keep as is"], ["change", "Change"], ["discuss", "Discuss"]];
+  const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
+  const FIELD_OPTS = [["update", "Update record"], ["keep", "Keep record"]];
+  const OPT_LABEL = { ok: "Keep as is", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Update record", keep: "Keep record" };
+  const X_LABEL = { ok: "Go ahead", leave: "Leave as is", discuss: "Discuss" };
+  // The task summary, labelled and judged as on the TabArena Task Summaries page.
+  const SUM_LABELS = [
+    ["use_case", "Use case"], ["row", "One row"], ["predicted", "Predicted"], ["known", "Known at prediction time"],
+    ["split", "What the test data stands for"], ["changes", "Our changes to the source"],
+  ];
+  const FIT = { direct: "Direct", approximate: "Approximate", none: "None" };
+  const FIT_LONG = {
+    direct: "the rows, features and split mirror the use case",
+    approximate: "a stand-in with a known gap",
+    none: "no decision fits; such a dataset is retired",
+  };
+  const REGIME = { iid: "Random split", grouped: "Grouped split", temporal: "Temporal split" };
+  const PROBLEM = { binary_classification: "Binary classification", multiclass_classification: "Multiclass classification", regression: "Regression" };
+  const CTABS = ["usecase", "decisions", "details", "code", "report", "record"];
+  const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
+
+  const S = { reviews: {}, crosscut: {} };
+  const ui = { view: "datasets", current: DS[0].name, filter: "all", q: "", hideReviewed: false, detailOpen: false };
+  let mode = "connecting";
+  let db = null;
+  let userId = null;
+
+  function store(k, v) { try { localStorage.setItem("ndr-ui:" + k, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+  function recall(k, d) { try { const v = localStorage.getItem("ndr-ui:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  ui.filter = recall("filter", "all");
+  ui.hideReviewed = recall("hideReviewed", false);
+  ui.ctab = recall("ctab", "usecase");
+  ui.showResolved = !!recall("showResolved", "");
+  if (!CTABS.includes(ui.ctab)) ui.ctab = "usecase";
+  // GitHub links: the branch the page was built on; a retired definition at the last commit that still had it.
+  const GH = DATA.github;
+  const ghAt = (commit) => DATA.githubRepo + "/blob/" + commit + "/";
+  const WC = DATA.workingCopy + "/";
+  const savedCurrent = recall("current", null);
+  if (savedCurrent && byName.has(savedCurrent)) ui.current = savedCurrent;
+
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
+
+  function rev(name) {
+    let r = S.reviews[name];
+    if (!r) { r = S.reviews[name] = { items: {}, fields: {} }; }
+    if (!r.items) r.items = {};
+    if (!r.fields) r.fields = {};
+    return r;
+  }
+  function peekRev(name) { return S.reviews[name] || { items: {}, fields: {} }; }
+  function xdoc(id) { return S.crosscut[id] || (S.crosscut[id] = {}); }
+
+  function counts(d) {
+    const r = peekRev(d.name);
+    if (d.cat === "decided") return { done: r.verdict ? 1 : 0, total: 1 };
+    const items = r.items || {}, fields = r.fields || {};
+    // A resolved issue needs no mark; it counts only once it has one.
+    let done = 0, total = d.fields.length;
+    d.items.forEach((it) => {
+      const marked = !!(items[it.n] && items[it.n].d);
+      if (it.resolved && !marked) return;
+      total++;
+      if (marked) done++;
+    });
+    d.fields.forEach((f) => { if (fields[f.key]) done++; });
+    return { done, total };
+  }
+
+  /* ---------- saving ---------- */
+  const dirty = new Set(), inflight = new Set();
+  let flushTimer = null;
+  function setStatus(s, text) {
+    const el = document.getElementById("status");
+    el.dataset.s = s;
+    document.getElementById("statusText").textContent = text;
+  }
+  function modeStatus() {
+    if (mode === "shared") setStatus("shared", "Saved to the shared review");
+    else if (mode === "local") setStatus("local", "Saved in this browser only");
+    else if (mode === "readonly") setStatus("readonly", "Read only: changes are not saved");
+    else setStatus("connecting", "Connecting…");
+  }
+  function banner(text) {
+    const b = document.getElementById("banner");
+    if (!text) { b.hidden = true; b.textContent = ""; } else { b.hidden = false; b.textContent = text; }
+    setHdr();
+  }
+  function setHdr() {
+    const narrow = window.matchMedia("(max-width: 860px)").matches;
+    document.documentElement.style.setProperty("--hdr", narrow ? "0px" : document.getElementById("top").offsetHeight + "px");
+  }
+  window.addEventListener("resize", setHdr);
+  function stable(o) {
+    if (Array.isArray(o)) return "[" + o.map(stable).join(",") + "]";
+    if (o && typeof o === "object") return "{" + Object.keys(o).sort().map((k) => JSON.stringify(k) + ":" + stable(o[k])).join(",") + "}";
+    return JSON.stringify(o);
+  }
+  function touch(coll, id, slow) {
+    if (mode === "readonly") return;
+    const doc = coll === "reviews" ? rev(id) : xdoc(id);
+    doc.updatedAt = new Date().toISOString();
+    if (userId) doc.by = userId;
+    dirty.add(coll + "/" + id);
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, slow ? 700 : 150);
+    if (mode !== "connecting") setStatus("saving", "Saving…");
+  }
+  function cleanDoc(doc) {
+    const out = JSON.parse(JSON.stringify(doc));
+    if (out.items) {
+      Object.keys(out.items).forEach((k) => {
+        const it = out.items[k];
+        if (!it || (!it.d && !(it.note || "").trim())) delete out.items[k];
+      });
+    }
+    if (out.fields) Object.keys(out.fields).forEach((k) => { if (!out.fields[k]) delete out.fields[k]; });
+    return out;
+  }
+  async function persist(path) {
+    const [coll, id] = path.split("/");
+    const doc = cleanDoc(coll === "reviews" ? rev(id) : xdoc(id));
+    if (mode === "shared") {
+      await db.doc(path).set(doc);
+    } else if (mode === "local") {
+      try { localStorage.setItem("ndr-doc:" + path, JSON.stringify(doc)); } catch (e) { /* ignore */ }
+    }
+  }
+  async function flush() {
+    if (mode === "connecting") { flushTimer = setTimeout(flush, 400); return; }
+    const paths = [...dirty];
+    for (const path of paths) {
+      if (inflight.has(path)) continue;
+      dirty.delete(path);
+      inflight.add(path);
+      try {
+        await persist(path);
+      } catch (e) {
+        const code = e && e.code;
+        if (code === "invalid_argument" || code === "not_granted") {
+          mode = "readonly";
+          banner("This view can read the review but not save to it. Your marks on this page are kept until you reload.");
+        } else if (code === "quota_exceeded") {
+          banner("The review store is full, so this change was not saved.");
+        } else {
+          dirty.add(path);
+          setStatus("error", "Could not save, retrying");
+          inflight.delete(path);
+          clearTimeout(flushTimer);
+          flushTimer = setTimeout(flush, 1500 + Math.floor(Math.random() * 1000));
+          return;
+        }
+      } finally {
+        inflight.delete(path);
+      }
+    }
+    if (dirty.size) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 150); } else { modeStatus(); }
+  }
+
+  /* ---------- rendering: header ---------- */
+  function renderProgress() {
+    const tally = { ship: 0, changes: 0, dont: 0, discuss: 0 };
+    let reviewed = 0, done = 0, total = 0;
+    DS.forEach((d) => {
+      const v = peekRev(d.name).verdict;
+      if (v) { reviewed++; tally[v] = (tally[v] || 0) + 1; }
+      const c = counts(d); done += c.done; total += c.total;
+    });
+    let xdone = 0;
+    XITEMS.forEach((_, id) => { if (S.crosscut[id] && S.crosscut[id].d) xdone++; });
+    const pct = (n) => (100 * n / DS.length).toFixed(2) + "%";
+    document.getElementById("progress").innerHTML =
+      '<span><b>' + reviewed + "</b>/" + DS.length + " verdicts</span>" +
+      '<span class="meter" aria-hidden="true">' +
+      ["ship", "changes", "dont", "discuss"].map((k) => '<span class="m-' + k + '" style="width:' + pct(tally[k]) + '"></span>').join("") +
+      "</span>" +
+      "<span><b>" + done + "</b>/" + total + " marks</span>" +
+      "<span><b>" + xdone + "</b>/" + XITEMS.size + " across</span>";
+  }
+
+  /* ---------- rendering: rail ---------- */
+  function visible(d) {
+    if (ui.filter === "late" && !d.late) return false;
+    if (["added", "noship", "notadded", "decided"].includes(ui.filter) && d.cat !== ui.filter) return false;
+    if (ui.hideReviewed && peekRev(d.name).verdict && d.name !== ui.current) return false;
+    if (ui.q) {
+      const q = ui.q.toLowerCase();
+      if (!d.name.toLowerCase().includes(q) && !(d.folder || "").toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }
+  function renderFilters() {
+    const n = (f) => DS.filter((d) => f(d)).length;
+    const defs = [
+      ["all", "All", DS.length],
+      ["added", "To ship", n((d) => d.cat === "added")],
+      ["noship", "Rec. not to ship", n((d) => d.cat === "noship")],
+      ["notadded", "Not added", n((d) => d.cat === "notadded")],
+      ["decided", "Decided: verify", n((d) => d.cat === "decided")],
+      ["late", "Late", n((d) => d.late)],
+    ];
+    document.getElementById("filters").innerHTML = defs.map(([k, label, c]) =>
+      '<button class="chipbtn" data-act="filter" data-f="' + k + '" aria-pressed="' + (ui.filter === k) + '">' + esc(label) + '<span class="n">' + c + "</span></button>").join("");
+    document.getElementById("hideReviewed").checked = ui.hideReviewed;
+  }
+  function fitMark(d) {
+    const f = fitOf(d);
+    const label = f ? "Use case fit: " + FIT[f] : "No task summary";
+    return '<span class="fitmark ' + (f || "missing") + '" role="img" aria-label="' + esc(label) + '" title="' + esc(label) + '"></span>';
+  }
+  function renderList() {
+    const rows = DS.filter(visible).map((d) => {
+      const r = peekRev(d.name), c = counts(d);
+      return '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
+        '<span class="vdot"' + (r.verdict ? ' data-v="' + esc(r.verdict) + '"' : "") + '></span>' +
+        '<span class="rowname">' + esc(d.name) + "</span>" +
+        '<span class="rowmeta">' + fitMark(d) + c.done + "/" + c.total + "</span></button></li>";
+    });
+    document.getElementById("list").innerHTML = rows.length ? rows.join("") : '<li class="rowmeta" style="padding:.6rem .4rem">No record matches.</li>';
+  }
+
+  /* ---------- rendering: case file ---------- */
+  function segHtml(opts, current, act, extra, recommended) {
+    return opts.map(([v, label]) =>
+      '<button class="opt" data-act="' + act + '" data-v="' + v + '"' + extra + ' aria-pressed="' + (current === v) + '">' + esc(label) +
+      (recommended === v ? '<span class="rec">rec.</span>' : "") + "</button>").join("");
+  }
+  function caseLinks(d) {
+    const wc = WC + d.folder + "/";
+    const recPath = "curation/records/" + d.name + ".md";
+    const a = (href, label) => '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + label + "</a>";
+    const out = [];
+    if (d.folder && d.retired && d.retiredCommit) {
+      // The folder is gone from the working copy: link the commit that still holds it.
+      const at = ghAt(d.retiredCommit), tag = " (" + esc(d.retiredCommit) + ")";
+      if (d.meta) out.push(a(at + wc + "README.md", "README on GitHub" + tag));
+      if (d.code) out.push(a(at + wc + "dataset.py", "dataset.py on GitHub" + tag));
+    } else if (d.folder) {
+      if (d.readme) out.push(a(GH + wc + "README.md", "README on GitHub"));
+      if (d.code) out.push(a(GH + wc + "dataset.py", "dataset.py on GitHub"));
+    }
+    out.push(a(GH + recPath, "Curation record on GitHub"));
+    out.push('<span class="jump"><button class="linkbtn" data-act="jump">Skip to your verdict ↓</button></span>');
+    return '<div class="links">' + out.join("") + "</div>";
+  }
+  function useCaseHtml(d) {
+    const s = d.summary;
+    if (!s) {
+      let why;
+      if (!d.folder) why = "this record was not added, so it has no <code>dataset.py</code> with a <code>task_summary</code>.";
+      else if (d.retired) why = "the last committed <code>dataset.py</code> of this retired definition has no <code>task_summary</code>.";
+      else why = "this definition has no <code>task_summary</code>.";
+      return '<p class="missing-note">No summary: ' + why + " The Details tab has the run’s report.</p>";
+    }
+    const handNote = "Hand-written for this page (<code>" + esc(DATA.tldr || "tldr.yaml") + "</code>): the definition has no <code>task_summary</code>.";
+    if (s.html) {
+      return '<div class="md">' + s.html + '</div><p class="srcnote">' + handNote + "</p>";
+    }
+    let h = s.question ? '<p class="question">' + esc(s.question) + "</p>" : "";
+    const f = s.fields || {};
+    h += '<dl class="fields">' + SUM_LABELS.filter(([k]) => f[k]).map(([k, l]) =>
+      "<dt" + (k === "use_case" ? ' class="usecase"' : "") + ">" + esc(l) + "</dt><dd>" + esc(f[k]) + "</dd>").join("") + "</dl>";
+    if (FIT[s.fit]) {
+      h += '<section class="judge ' + esc(s.fit) + '" aria-labelledby="jh"><h3 id="jh">AI judgement (proposed)</h3>' +
+        '<span class="pill ' + esc(s.fit) + '">Use case fit: ' + esc(FIT[s.fit]) + '</span><span class="state">' + esc(FIT_LONG[s.fit]) + "</span>" +
+        (s.fit_reason ? "<p>" + esc(s.fit_reason) + "</p>" : "") + "</section>";
+    }
+    const src = {
+      definition: "From the <code>task_summary</code> in <code>dataset.py</code>, as of this page’s snapshot (" + esc(DATA.snapshot) + ").",
+      retired: "From the <code>task_summary</code> in the last committed <code>dataset.py</code> of this retired definition.",
+      tldr: handNote,
+    }[s.source];
+    if (src) h += '<p class="srcnote">' + src + "</p>";
+    return h;
+  }
+  function renderCase() {
+    const d = byName.get(ui.current);
+    const el = document.getElementById("case");
+    if (!d) { el.innerHTML = ""; return; }
+    const r = peekRev(d.name);
+    const c = counts(d);
+    const nm = esc(d.name);
+    const ro = mode === "readonly" ? " disabled" : "";
+    const opts = d.cat === "decided" ? VERDICTS.decided : d.cat === "notadded" ? VERDICTS.notadded : VERDICTS.standard;
+    let h = '<button class="back" data-act="back">← All records</button>';
+
+    // 1. The start, as on the task-summary page: eyebrow, name, links, then the run's outcome in two lines.
+    h += '<div class="eyebrow"><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
+    if (d.meta) {
+      const m = d.meta;
+      h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
+        (m.problem ? "<span>" + esc(PROBLEM[m.problem] || m.problem) + "</span>" : "") +
+        (m.rows ? "<span>" + Number(m.rows).toLocaleString("en-US") + " rows</span>" : "") +
+        "<span>" + (m.retired ? "retired" : m.built ? "built" : "not built") + "</span></span>";
+    }
+    h += "</div>";
+    h += '<h2 class="case-name">' + nm + "</h2>";
+    h += caseLinks(d);
+    if (d.decided) {
+      const dd = d.decided;
+      h += '<section class="triage"><h3>Already decided in triage: nothing to judge for shipping</h3>' +
+        '<p class="facts">Suggestion <b>' + esc(dd.suggestion) + "</b>" + (dd.markers.length ? " · markers " + esc(dd.markers.join(", ")) : "") +
+        (dd.checkedBy.length ? " · checked by " + esc(dd.checkedBy.join(", ")) : "") + "</p>" +
+        (dd.ccHtml ? '<div class="md">' + dd.ccHtml + "</div>" : "") +
+        "<p class=\"facts\">Only check that the record says what was decided (verdict, markers, dated note); the report in the Details tab is background.</p></section>";
+    }
+
+    // 2. The record tabs: the use case first, then the decisions and the sources.
+    const ctab = (k, label, extra) => '<button class="ctab" role="tab" id="ct-' + k + '" data-act="ctab" data-c="' + k + '" aria-controls="cp-' + k + '" aria-selected="' + (ui.ctab === k) + '">' + label + (extra || "") + "</button>";
+    h += '<div class="ctabs" role="tablist" aria-label="Use case, decisions and sources">' +
+      ctab("usecase", "Use case", fitMark(d)) +
+      ctab("decisions", "Decisions", '<span class="n" id="decCount">' + c.done + "/" + c.total + "</span>") +
+      ctab("details", "Details") +
+      ctab("code", '<span class="mono">dataset.py</span>') +
+      ctab("report", '<span class="mono">README.md</span>') +
+      ctab("record", "Curation record") + "</div>";
+
+    // Decisions: only what the curator decides on, the numbered issues and the record fields; the run's report is
+    // under Details. Resolved and deferred issues are hidden behind the same toggle as on the Across datasets view.
+    const nClosed = d.items.filter((it) => it.resolved).length;
+    const shownItems = d.items.filter((it) => ui.showResolved || !it.resolved);
+    let dec = d.fields.length ? '<nav class="panelnav" aria-label="In this tab"><span>In this tab:</span>' +
+      '<button class="linkbtn" data-act="jumpto" data-to="iss-h">Issues (' + (d.items.length - nClosed) + (nClosed ? " open" : "") + ")</button>" +
+      '<button class="linkbtn" data-act="jumpto" data-to="fld-h">Record fields (' + d.fields.length + ")</button></nav>" : "";
+    let det = '<section class="report" aria-labelledby="rep-h"><h3 id="rep-h">The run\u2019s report</h3>';
+    d.blocks.forEach((b) => { det += '<section class="rblock"><h4>' + esc(b.title) + '</h4><div class="md">' + b.html + "</div></section>"; });
+    d.shared.forEach((s) => {
+      det += '<details class="block"><summary>Shared notes: ' + esc(s.title) + '</summary><div class="md">' + s.html + "</div></details>";
+    });
+    if (!d.blocks.length && !d.shared.length) det += '<p class="intro">The run report has no further details for this record.</p>';
+    det += "</section>";
+    dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "keep, change or discuss each") + "</span></h3>";
+    if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
+    if (d.items.length && d.cat === "decided") dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
+    if (nClosed) {
+      const what = nClosed === 1 ? "the resolved issue" : "the " + nClosed + " resolved issues";
+      dec += '<p class="intro"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide " : "Show ") + what + "</button></p>";
+    }
+    if (d.items.length && !shownItems.length) {
+      dec += '<p class="intro">' + (nClosed === 1 ? "The issue is resolved." : "All " + nClosed + " issues are resolved.") + "</p>";
+    } else if (d.items.length) {
+      dec += '<ol class="items' + (d.cat === "decided" ? " readonly-items" : "") + '">';
+      shownItems.forEach((it) => {
+        const st = (r.items && r.items[it.n]) || {};
+        dec += '<li class="item' + (it.resolved ? " resolved" : "") + '" id="item-' + it.n + '"><div class="item-top"><span class="num">' + it.n + "</span><h4>" + it.titleHtml +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          '<div class="seg small">' + segHtml(ITEM_OPTS, st.d, "item", ' data-n="' + it.n + '"' + ro) + "</div>" +
+          '<div class="body md">' + it.html + "</div>" +
+          '<label class="visually-hidden" for="note-i-' + slug(d.name) + "-" + it.n + '">Note on item ' + it.n + "</label>" +
+          '<textarea class="note" rows="1" id="note-i-' + slug(d.name) + "-" + it.n + '" data-note="item" data-n="' + it.n + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
+      });
+      dec += "</ol>";
+    } else {
+      dec += '<p class="intro">No numbered issues in this section.</p>';
+    }
+    if (d.fields.length) {
+      dec += '<h3 id="fld-h">Record fields that disagree <span class="count">record against definition</span></h3>';
+      dec += '<div class="tablewrap"><table class="fieldtab"><thead><tr><th>Field</th><th>Record</th><th>Definition</th><th><span class="visually-hidden">Decision</span></th></tr></thead><tbody>';
+      d.fields.forEach((f) => {
+        dec += "<tr><td>" + esc(f.field) + '</td><td class="v">' + esc(f.record) + '</td><td class="v">' + esc(f.definition) + '</td><td><div class="seg small">' +
+          segHtml(FIELD_OPTS, r.fields && r.fields[f.key], "field", ' data-k="' + esc(f.key) + '"' + ro) + "</div></td></tr>";
+      });
+      dec += "</tbody></table></div>";
+    }
+
+    let code;
+    // "Retired on <date>": the date of the commit that removed the folder (none when it is removed but not committed).
+    const retiredWhen = d.retiredDate ? "Retired on " + esc(d.retiredDate) : "Retired";
+    if (d.code && d.retired) {
+      const path = WC + d.folder + "/dataset.py";
+      code = '<div class="srcbar"><span class="path">' + esc(path) + "</span>" +
+        '<a href="' + esc(ghAt(d.retiredCommit) + path) + '" target="_blank" rel="noopener">On GitHub ↗</a>' +
+        '<button class="btn ghost small" data-act="copycode">Copy</button><span class="rowmeta" id="codeMsg" role="status"></span>' +
+        '<span class="hint">' + retiredWhen + ", so the folder is gone from the working copy; this is the last committed version (" + esc(d.retiredCommit) + ").</span></div>" +
+        '<pre class="code"><code class="language-python">' + esc(d.code) + "</code></pre>";
+    } else if (d.code) {
+      const path = WC + d.folder + "/dataset.py";
+      code = '<div class="srcbar"><span class="path">' + esc(path) + "</span>" +
+        '<a href="' + esc(GH + path) + '" target="_blank" rel="noopener">On GitHub ↗</a>' +
+        '<button class="btn ghost small" data-act="copycode">Copy</button><span class="rowmeta" id="codeMsg" role="status"></span>' +
+        '<span class="hint">The file as of this page’s snapshot (' + esc(DATA.snapshot) + ').</span></div>' +
+        '<pre class="code"><code class="language-python">' + esc(d.code) + "</code></pre>";
+    } else {
+      code = '<p class="intro">No <code>dataset.py</code>: this record was not added, so it has no folder in the working copy.</p>';
+    }
+
+    let report;
+    if (d.readme) {
+      const rpath = WC + d.folder + "/README.md";
+      report = '<div class="srcbar"><span class="path">' + esc(rpath) + "</span>" +
+        '<a href="' + esc(GH + rpath) + '" target="_blank" rel="noopener">On GitHub ↗</a>' +
+        '<span class="hint">The dataset card that <code>dataset check</code> writes from <code>dataset.py</code>, as of this page’s snapshot (' + esc(DATA.snapshot) + "). Figures are embedded; links go to GitHub.</span></div>" +
+        '<details class="front"><summary>Build record (YAML frontmatter)</summary><pre class="code"><code>' + esc(d.readme.front) + "</code></pre></details>" +
+        '<div class="md readme">' + d.readme.html + "</div>";
+    } else if (d.retired) {
+      report = '<p class="intro">No <code>README.md</code>: ' + (d.retiredDate ? "the definition was retired on " + esc(d.retiredDate) : "the definition was retired") + " and its folder removed from the working copy.</p>";
+    } else {
+      report = '<p class="intro">No <code>README.md</code>: this record was not added, so it has no folder in the working copy.</p>';
+    }
+
+    const recPath = "curation/records/" + d.name + ".md";
+    let rec = '<div class="srcbar"><span class="path">' + esc(recPath) + "</span>" +
+      '<a href="' + esc(GH + recPath) + '" target="_blank" rel="noopener">On GitHub ↗</a>' +
+      '<span class="hint">Below: the record as of this page’s snapshot (' + esc(DATA.snapshot) + '). GitHub shows the last pushed version.</span></div>';
+    rec += '<div class="tablewrap"><table class="fieldtab rectab"><tbody>' +
+      d.record.fields.map(([k, v]) => '<tr><td class="k">' + esc(k) + '</td><td class="v">' + esc(v) + "</td></tr>").join("") +
+      "</tbody></table></div>";
+    rec += '<div class="md">' + d.record.html + "</div>";
+
+    const panel = (k, inner) => '<div class="cpanel" id="cp-' + k + '" role="tabpanel" aria-labelledby="ct-' + k + '"' + (ui.ctab === k ? "" : " hidden") + ">" + inner + "</div>";
+    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
+
+    // 3. Your verdict: below the tabs, whichever tab is open.
+    h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + '</h3><div class="seg">' +
+      segHtml(opts, r.verdict, "verdict", ro, REC[d.cat]) + "</div>" +
+      '<label class="notelabel" for="note-v-' + slug(d.name) + '">Note for Claude</label>' +
+      '<textarea class="note big" id="note-v-' + slug(d.name) + '" data-note="verdict" placeholder="What should change, or why you overrule the recommendation"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(r.note || "") + "</textarea></section>";
+
+    const idx = DS.findIndex((x) => x.name === d.name);
+    h += '<nav class="pager" aria-label="Move between records">' +
+      '<button data-act="prev"' + (idx <= 0 ? " disabled" : "") + ">Previous</button>" +
+      '<button data-act="next"' + (idx >= DS.length - 1 ? " disabled" : "") + ">Next</button>" +
+      '<button class="primary" data-act="nextopen">Next without a verdict</button></nav>';
+
+    el.innerHTML = h;
+    el.classList.toggle("readonly", mode === "readonly");
+    finishMarkdown(el);
+    el.querySelectorAll("textarea.note:not(.big)").forEach(autoGrow);
+    highlightCode();
+  }
+  function highlightCode() {
+    if (ui.ctab !== "code" || !window.hljs) return;
+    const c = document.querySelector("#cp-code code:not([data-highlighted])");
+    if (c) { try { window.hljs.highlightElement(c); } catch (e) { /* plain text stays */ } }
+  }
+  window.addEventListener("load", highlightCode);
+  function showCtab(k) {
+    ui.ctab = k;
+    store("ctab", k);
+    document.querySelectorAll("#case .ctab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.c === k)));
+    document.querySelectorAll("#case .cpanel").forEach((p) => { p.hidden = p.id !== "cp-" + k; });
+    if (k === "decisions") document.querySelectorAll("#cp-decisions textarea.note").forEach(autoGrow);
+    highlightCode();
+  }
+  function finishMarkdown(root) {
+    root.querySelectorAll(".md table").forEach((t) => {
+      if (t.parentElement.classList.contains("tablewrap")) return;
+      const w = document.createElement("div"); w.className = "tablewrap";
+      t.parentNode.insertBefore(w, t); w.appendChild(t);
+    });
+    root.querySelectorAll(".md a").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
+    requestAnimationFrame(() => {
+      root.querySelectorAll(".body.clamp").forEach((b) => {
+        const btn = b.nextElementSibling;
+        if (b.scrollHeight <= b.clientHeight + 12) { b.classList.remove("clamp"); if (btn && btn.classList.contains("more")) btn.hidden = true; }
+      });
+    });
+  }
+  function autoGrow(t) { t.style.height = "auto"; t.style.height = Math.max(t.scrollHeight + 2, 36) + "px"; }
+
+  /* ---------- rendering: across datasets ---------- */
+  function renderAcross() {
+    const el = document.getElementById("view-across");
+    const ro = mode === "readonly" ? " disabled" : "";
+    const nResolved = DATA.crosscut.reduce((n, s) => n + s.items.filter((it) => it.resolved).length, 0);
+    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes.</p>';
+    if (nResolved) {
+      h += '<p class="jump"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide the " + nResolved + " resolved items" : "Show the " + nResolved + " resolved items") + "</button></p>";
+    }
+    DATA.crosscut.forEach((s) => {
+      const shown = s.items.filter((it) => ui.showResolved || !it.resolved);
+      if (!shown.length) return;
+      h += '<h3 class="sec">' + esc(s.title).replace(/`([^`]+)`/g, "<code>$1</code>") + '</h3><ol class="items">';
+      shown.forEach((it) => {
+        const st = S.crosscut[it.id] || {};
+        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
+          '<div class="body md clamp">' + it.html + "</div>" +
+          '<button class="more" data-act="more">Show all</button>' +
+          '<label class="visually-hidden" for="note-x-' + esc(it.id) + '">Note</label>' +
+          '<textarea class="note" rows="1" id="note-x-' + esc(it.id) + '" data-note="x" data-id="' + esc(it.id) + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
+      });
+      h += "</ol>";
+    });
+    h += "</div>";
+    el.innerHTML = h;
+    finishMarkdown(el);
+    el.querySelectorAll("textarea.note").forEach(autoGrow);
+  }
+
+  /* ---------- rendering: summary ---------- */
+  function decisionsText() {
+    const lines = ["# " + DATA.title + ": decisions", ""];
+    DS.forEach((d) => {
+      const r = S.reviews[d.name];
+      if (!r) return;
+      const marks = [];
+      d.items.forEach((it) => {
+        const st = r.items && r.items[it.n];
+        if (st && (st.d || (st.note || "").trim())) {
+          const t = document.createElement("div"); t.innerHTML = it.titleHtml;
+          marks.push("- Item " + it.n + " (" + t.textContent + "): " + (st.d ? OPT_LABEL[st.d] : "no mark") + ((st.note || "").trim() ? ". Note: " + st.note.trim() : ""));
+        }
+      });
+      d.fields.forEach((f) => { const v = r.fields && r.fields[f.key]; if (v) marks.push("- Field " + f.field + " (record " + f.record + ", definition " + f.definition + "): " + OPT_LABEL[v]); });
+      if (!r.verdict && !(r.note || "").trim() && !marks.length) return;
+      const vl = r.verdict ? labelsFor(d)[r.verdict] : "no verdict";
+      lines.push("## " + d.name + ": " + vl);
+      if ((r.note || "").trim()) lines.push("Note: " + r.note.trim());
+      lines.push(...marks, "");
+    });
+    const xs = [];
+    XITEMS.forEach((it, id) => {
+      const st = S.crosscut[id];
+      if (st && (st.d || (st.note || "").trim())) {
+        const t = document.createElement("div"); t.innerHTML = it.titleHtml;
+        xs.push("- " + it.section + " / " + t.textContent + ": " + (st.d ? X_LABEL[st.d] : "no mark") + ((st.note || "").trim() ? ". Note: " + st.note.trim() : ""));
+      }
+    });
+    if (xs.length) lines.push("## Across datasets", ...xs, "");
+    return lines.join("\n");
+  }
+  // Every review and cross-dataset mark in the store's shape (collections reviews and crosscut, by document id),
+  // for a reviewer whose marks live only in this browser.
+  function decisionsJson() {
+    const out = { page: { title: DATA.title, report: DATA.report.path, snapshot: DATA.snapshot }, reviews: {}, crosscut: {} };
+    const hasText = (v) => typeof v === "string" && v.trim() !== "";
+    Object.keys(S.reviews).sort().forEach((name) => {
+      if (!byName.has(name)) return;
+      const doc = cleanDoc(S.reviews[name]);
+      if (doc.verdict || hasText(doc.note) || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
+    });
+    XITEMS.forEach((_, id) => {
+      const doc = S.crosscut[id] && cleanDoc(S.crosscut[id]);
+      if (doc && (doc.d || hasText(doc.note))) out.crosscut[id] = doc;
+    });
+    return JSON.stringify(out, null, 2);
+  }
+  function renderSummary() {
+    const el = document.getElementById("view-summary");
+    const tally = { ship: 0, changes: 0, dont: 0, discuss: 0, correct: 0, none: 0 };
+    let agree = 0, decided = 0;
+    DS.forEach((d) => {
+      let v = peekRev(d.name).verdict;
+      if (!v) { tally.none++; return; }
+      if (d.cat === "decided" && v === "dont") v = "correct";
+      tally[v] = (tally[v] || 0) + 1; decided++;
+      if (v === REC[d.cat]) agree++;
+    });
+    const where = mode === "local"
+      ? "Your marks are kept in this browser only: copy them as JSON (below) and hand them to Claude."
+      : "Claude reads the decisions from this page’s shared store; the text and the JSON below are the same content for pasting elsewhere.";
+    let h = '<div class="page"><h2>Summary</h2><p class="lede">Every record with its recommendation and your verdict. ' + where + "</p>";
+    h += '<div class="stats">' +
+      '<div class="stat ship"><div class="k">Ship / add</div><div class="v">' + tally.ship + "</div></div>" +
+      '<div class="stat changes"><div class="k">Ship after changes</div><div class="v">' + tally.changes + "</div></div>" +
+      '<div class="stat dont"><div class="k">Don’t ship / leave out</div><div class="v">' + tally.dont + "</div></div>" +
+      '<div class="stat discuss"><div class="k">Discuss</div><div class="v">' + tally.discuss + "</div></div>" +
+      '<div class="stat"><div class="k">Triage verified</div><div class="v">' + tally.correct + "</div></div>" +
+      '<div class="stat"><div class="k">No verdict yet</div><div class="v">' + tally.none + "</div></div>" +
+      '<div class="stat"><div class="k">Agree with rec.</div><div class="v">' + agree + "/" + decided + "</div></div></div>";
+    h += '<div class="sumwrap"><table class="sumtab"><thead><tr><th>Record</th><th>Category</th><th>Use case fit</th><th>Recommendation</th><th>Your verdict</th><th>Marks</th><th>Note</th></tr></thead><tbody>';
+    DS.forEach((d) => {
+      const r = peekRev(d.name), c = counts(d);
+      const labels = labelsFor(d);
+      const f = fitOf(d);
+      h += '<tr><td class="name"><button data-act="open" data-name="' + esc(d.name) + '">' + esc(d.name) + "</button></td>" +
+        '<td><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span></td>" +
+        "<td>" + (f ? '<span class="pill ' + f + '">' + esc(FIT[f]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
+        "<td>" + esc(labels[REC[d.cat]]) + "</td>" +
+        "<td>" + (r.verdict ? '<span class="vlabel" data-v="' + esc(r.verdict) + '">' + esc(labels[r.verdict]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
+        '<td class="num">' + c.done + "/" + c.total + "</td>" +
+        "<td>" + esc((r.note || "").trim().slice(0, 140)) + ((r.note || "").trim().length > 140 ? "…" : "") + "</td></tr>";
+    });
+    h += "</tbody></table></div>";
+    h += '<div class="actions"><button class="btn" data-act="copy">Copy decisions as text</button>' +
+      '<button class="btn ghost" data-act="copyjson">Copy decisions (JSON)</button><span id="copyMsg" class="rowmeta" role="status"></span></div>';
+    h += '<p class="intro">Opened as a local file, this page keeps the marks in this browser only; “Copy decisions (JSON)” copies every verdict, mark and note, for Claude to read.</p>';
+    h += '<label class="visually-hidden" for="jsonOut">Decisions as JSON</label><textarea class="copyout" id="jsonOut" readonly hidden></textarea>';
+    h += '<label class="visually-hidden" for="copyOut">Decisions as text</label><textarea class="copyout" id="copyOut" readonly></textarea>';
+    h += '<details class="about"><summary>About this run (from ' + esc(DATA.report.name) + ')</summary><div class="md">' + DATA.headerHtml + "</div></details>";
+    h += "</div>";
+    el.innerHTML = h;
+    document.getElementById("copyOut").value = decisionsText();
+    finishMarkdown(el);
+  }
+
+  /* ---------- view switching ---------- */
+  function showView(v) {
+    ui.view = v;
+    ["datasets", "across", "summary"].forEach((k) => {
+      document.getElementById("view-" + k).hidden = k !== v;
+      document.getElementById("tab-" + k).setAttribute("aria-selected", String(k === v));
+    });
+    if (v === "across") renderAcross();
+    if (v === "summary") renderSummary();
+    setHash(v === "datasets" ? ui.current : v);
+  }
+  function setHash(token) { try { history.replaceState(null, "", "#" + token); } catch (e) { /* ignore */ } }
+  function select(name, openDetail) {
+    if (!byName.has(name)) return;
+    // Every record opens on its use case; a reload keeps the tab of the record it restores.
+    if (name !== ui.current && ui.ctab !== "usecase") { ui.ctab = "usecase"; store("ctab", "usecase"); }
+    ui.current = name;
+    store("current", name);
+    if (openDetail) ui.detailOpen = true;
+    document.getElementById("desk").classList.toggle("detail-open", ui.detailOpen);
+    renderList();
+    renderCase();
+    setHash(name);
+    const top = document.getElementById("case");
+    if (window.matchMedia("(max-width: 860px)").matches) window.scrollTo(0, 0);
+    else if (top.getBoundingClientRect().top < 0) window.scrollTo(0, top.offsetTop - document.getElementById("top").offsetHeight);
+    const row = document.querySelector('.rowbtn[aria-current="true"]');
+    if (row && row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+  }
+  function refreshAll() {
+    renderProgress();
+    renderList();
+    if (ui.view === "summary") renderSummary();
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-act], [data-tab]");
+    if (!b) return;
+    if (b.dataset.tab) { showView(b.dataset.tab); return; }
+    const act = b.dataset.act;
+    const name = ui.current;
+    if (act === "sel") { select(b.dataset.name, true); return; }
+    if (act === "open") { showView("datasets"); select(b.dataset.name, true); return; }
+    if (act === "filter") { ui.filter = b.dataset.f; store("filter", ui.filter); renderFilters(); renderList(); return; }
+    if (act === "back") { ui.detailOpen = false; document.getElementById("desk").classList.remove("detail-open"); window.scrollTo(0, 0); return; }
+    if (act === "ctab") { showCtab(b.dataset.c); return; }
+    if (act === "toggleResolved") {
+      ui.showResolved = !ui.showResolved;
+      store("showResolved", ui.showResolved);
+      const y = window.scrollY;
+      if (ui.view === "across") renderAcross(); else renderCase();
+      window.scrollTo(0, y);
+      return;
+    }
+    if (act === "jump") { const v = document.getElementById("decide"); if (v) v.scrollIntoView({ block: "start" }); return; }
+    if (act === "jumpto") { const t = document.getElementById(b.dataset.to); if (t) t.scrollIntoView({ block: "start" }); return; }
+    if (act === "copycode") {
+      const d = byName.get(name);
+      const msg = document.getElementById("codeMsg");
+      try {
+        navigator.clipboard.writeText(d.code).then(() => { msg.textContent = "Copied."; }, () => { msg.textContent = "Copy failed: select the code instead."; });
+      } catch (e) { msg.textContent = "Copy failed: select the code instead."; }
+      return;
+    }
+    if (act === "more") {
+      const body = b.previousElementSibling;
+      const clamped = body.classList.toggle("clamp");
+      b.textContent = clamped ? "Show all" : "Show less";
+      return;
+    }
+    if (act === "prev" || act === "next") {
+      const i = DS.findIndex((x) => x.name === name) + (act === "next" ? 1 : -1);
+      if (DS[i]) select(DS[i].name, true);
+      return;
+    }
+    if (act === "nextopen") {
+      const i = DS.findIndex((x) => x.name === name);
+      const order = DS.slice(i + 1).concat(DS.slice(0, i));
+      const n = order.find((x) => !peekRev(x.name).verdict);
+      if (n) select(n.name, true);
+      return;
+    }
+    if (act === "copyjson") {
+      const out = document.getElementById("jsonOut");
+      out.value = decisionsJson();
+      const msg = document.getElementById("copyMsg");
+      const fallback = () => { out.hidden = false; out.focus(); out.select(); msg.textContent = "Selected: press Ctrl+C (or ⌘C) to copy."; };
+      try {
+        navigator.clipboard.writeText(out.value).then(() => { msg.textContent = "Copied the decisions as JSON."; }, fallback);
+      } catch (e) { fallback(); }
+      return;
+    }
+    if (act === "copy") {
+      const out = document.getElementById("copyOut");
+      out.value = decisionsText();
+      const msg = document.getElementById("copyMsg");
+      const fallback = () => { out.focus(); out.select(); msg.textContent = "Selected: press Ctrl+C (or ⌘C) to copy."; };
+      try {
+        navigator.clipboard.writeText(out.value).then(() => { msg.textContent = "Copied."; }, fallback);
+      } catch (e) { fallback(); }
+      return;
+    }
+    if (mode === "readonly") return;
+    if (act === "verdict") {
+      const r = rev(name);
+      r.verdict = r.verdict === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      b.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === r.verdict)));
+      refreshAll();
+      return;
+    }
+    if (act === "item") {
+      const r = rev(name);
+      const n = b.dataset.n;
+      const it = r.items[n] || (r.items[n] = {});
+      it.d = it.d === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      updatePill(b, it.d, OPT_LABEL);
+      updateCount();
+      refreshAll();
+      return;
+    }
+    if (act === "field") {
+      const r = rev(name);
+      const k = b.dataset.k;
+      r.fields[k] = r.fields[k] === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      b.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === r.fields[k])));
+      updateCount();
+      refreshAll();
+      return;
+    }
+    if (act === "x") {
+      const id = b.dataset.id;
+      const st = xdoc(id);
+      st.d = st.d === b.dataset.v ? null : b.dataset.v;
+      touch("crosscut", id);
+      updatePill(b, st.d, X_LABEL);
+      renderProgress();
+    }
+  });
+  function updatePill(btn, v, labels) {
+    const item = btn.closest(".item");
+    btn.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === v)));
+    const h4 = item.querySelector("h4");
+    let pill = h4.querySelector(".statepill");
+    if (!v) { if (pill) pill.remove(); return; }
+    if (!pill) { pill = document.createElement("span"); pill.className = "statepill"; h4.appendChild(pill); }
+    pill.dataset.v = v; pill.textContent = labels[v];
+  }
+  function updateCount() {
+    const d = byName.get(ui.current);
+    const c = counts(d);
+    const el = document.getElementById("decCount");
+    if (el) el.textContent = c.done + "/" + c.total;
+  }
+  document.addEventListener("input", (ev) => {
+    const t = ev.target;
+    if (t.id === "search") { ui.q = t.value.trim(); renderList(); return; }
+    if (t.id === "hideReviewed") return;
+    if (!t.dataset || !t.dataset.note) return;
+    if (!t.classList.contains("big")) autoGrow(t);
+    if (mode === "readonly") return;
+    const kind = t.dataset.note;
+    if (kind === "verdict") { rev(ui.current).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "item") { const r = rev(ui.current); const n = t.dataset.n; (r.items[n] || (r.items[n] = {})).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
+  });
+  document.addEventListener("change", (ev) => {
+    if (ev.target.id === "hideReviewed") { ui.hideReviewed = ev.target.checked; store("hideReviewed", ui.hideReviewed); renderList(); }
+  });
+  document.addEventListener("focusout", (ev) => {
+    if (ev.target.dataset && ev.target.dataset.note && dirty.size) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 50); }
+    if (ev.target.dataset && ev.target.dataset.note === "verdict") refreshAll();
+  });
+
+  /* ---------- remote state ---------- */
+  function caseIsBusy() {
+    const a = document.activeElement;
+    return a && a.closest && (a.closest("#case") || a.closest("#view-across")) && a.tagName === "TEXTAREA";
+  }
+  function applyRemote(coll, snap) {
+    const changed = new Set();
+    snap.docChanges().forEach((ch) => {
+      const id = ch.doc.id;
+      const path = coll + "/" + id;
+      if (dirty.has(path) || inflight.has(path)) return;
+      if (ch.type === "removed") { delete S[coll][id]; changed.add(id); return; }
+      const next = JSON.parse(JSON.stringify(ch.doc.data() || {}));
+      if (coll === "reviews") { next.items = next.items || {}; next.fields = next.fields || {}; }
+      const prev = S[coll][id];
+      if (stable(cleanDoc(prev || {})) !== stable(cleanDoc(next))) { S[coll][id] = next; changed.add(id); }
+    });
+    if (!changed.size) return;
+    renderProgress();
+    renderList();
+    if (coll === "reviews" && changed.has(ui.current) && !caseIsBusy()) {
+      const y = window.scrollY; renderCase(); window.scrollTo(0, y);
+    }
+    if (coll === "crosscut" && ui.view === "across" && !caseIsBusy()) { const y = window.scrollY; renderAcross(); window.scrollTo(0, y); }
+    if (ui.view === "summary") renderSummary();
+  }
+  function loadLocal() {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith("ndr-doc:")) continue;
+        const [coll, id] = k.slice(8).split("/");
+        const v = JSON.parse(localStorage.getItem(k));
+        if (coll === "reviews" && byName.has(id)) { v.items = v.items || {}; v.fields = v.fields || {}; S.reviews[id] = v; }
+        if (coll === "crosscut" && XITEMS.has(id)) S.crosscut[id] = v;
+      }
+    } catch (e) { /* ignore */ }
+  }
+  async function connect() {
+    let ns = null;
+    try { ns = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { ns = null; }
+    if (!ns) {
+      mode = "local";
+      loadLocal();
+      banner("The shared review store is not available here, so your marks are kept in this browser only. When you are done, copy them from the Summary view (Copy decisions (JSON)) and hand them to Claude.");
+      modeStatus(); renderProgress(); renderList(); renderCase();
+      if (ui.view === "across") renderAcross();
+      if (dirty.size) flush();
+      return;
+    }
+    db = ns;
+    let canWrite = null;
+    try {
+      const u = await window.claude.use("user");
+      if (u) { userId = await u.id(); canWrite = await u.can("data.write"); }
+    } catch (e) { /* ignore */ }
+    mode = canWrite === false ? "readonly" : "shared";
+    if (mode === "readonly") banner("You can read this review, but your access does not allow saving marks.");
+    modeStatus();
+    ["reviews", "crosscut"].forEach((coll) => {
+      db.collection(coll).onSnapshot((snap) => applyRemote(coll, snap), (err) => {
+        setStatus("error", "Lost the connection to the shared review");
+        if (err && err.code !== "revoked") banner("Live updates stopped. Reload the page to reconnect; marks made since may not be saved.");
+      });
+    });
+    if (mode === "readonly") { renderCase(); if (ui.view === "across") renderAcross(); }
+    if (dirty.size) flush();
+  }
+
+  /* ---------- start ---------- */
+  setHdr();
+  renderFilters();
+  renderProgress();
+  renderList();
+  renderCase();
+  const h = (location.hash || "").slice(1);
+  if (h === "across" || h === "summary") showView(h);
+  else if (h && byName.has(h)) { select(h, true); }
+  connect();
+})();
+</script>

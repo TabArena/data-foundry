@@ -21,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/widsdatathon2021/data?select=TrainingWiDS2021.csv
 notebook_path: datasets/beyond_iid/new_iid/wids_diabetes_mellitus/wids_diabetes_mellitus.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/wids_diabetes_mellitus/dataset.py
 source_row: 652
 type_adapter_id: curation-record-v1
 ---

@@ -23,6 +23,7 @@ source_links:
 - https://www.openml.org/d/45100
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE4115
 notebook_path: datasets/beyond_iid/new_iid/lung_cancer_epithelial_genexp/lung_cancer_epithelial_genexp.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/lung_cancer_epithelial_genexp/dataset.py
 source_row: 1038
 type_adapter_id: curation-record-v1
 ---

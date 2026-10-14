@@ -29,6 +29,7 @@ from pathlib import Path
 
 import numpy as np
 from data_foundry.collections import BEYOND_ARENA
+from data_foundry.schema import as_column_list
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
 
@@ -46,6 +47,9 @@ def main(cache_dir: Path | None, dataset_name: str) -> None:
     df = container.dataset
     splits = container.experiment_metadata.splits
     target_name = container.task_metadata.target_column_name
+    # The group column of a grouped task is split metadata, never a feature: a test group is unseen.
+    # (`task_metadata.group_on` reads the same in both container formats.)
+    not_features = [target_name, *as_column_list(container.task_metadata.group_on)]
 
     # Iterate over every (repeat, fold) split — same shape as the OpenML example.
     rmses: list[float] = []
@@ -54,9 +58,9 @@ def main(cache_dir: Path | None, dataset_name: str) -> None:
         for fold_id, (train_indices, test_indices) in folds.items():
             train_data = df.iloc[train_indices]
             test_data = df.iloc[test_indices]
-            X_train = train_data.drop(columns=target_name)
+            X_train = train_data.drop(columns=not_features)
             y_train = train_data[target_name]
-            X_test = test_data.drop(columns=target_name)
+            X_test = test_data.drop(columns=not_features)
             y_test = test_data[target_name]
 
             model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)

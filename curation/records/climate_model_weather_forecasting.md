@@ -23,6 +23,7 @@ source_links:
 - https://www.kaggle.com/datasets/pcovkrd84mejm/tabred-weather
 - https://github.com/yandex-research/tabred/tree/main/preprocessing#weather
 notebook_path: datasets/beyond_iid/temporal/climate_model_weather_forecasting/climate_model_weather_forecasting_1m.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/climate_model_weather_forecasting_1m/dataset.py
 source_row: 715
 type_adapter_id: curation-record-v1
 ---
