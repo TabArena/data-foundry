@@ -12,6 +12,7 @@ import importlib.util
 import inspect
 import logging
 import sys
+import types
 from pathlib import Path
 
 from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
@@ -62,6 +63,7 @@ def load_definition(definition: Path | str) -> type[AbstractCuratedDataset]:
         obj
         for obj in vars(module).values()
         if inspect.isclass(obj)
+        and not isinstance(obj, types.GenericAlias)  # Python 3.10 counts an alias like `Splits` as a class
         and issubclass(obj, AbstractCuratedDataset)
         and obj.__module__ == name
         and not inspect.isabstract(obj)
