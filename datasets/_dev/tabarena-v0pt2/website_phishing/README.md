@@ -2,34 +2,34 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad
+checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
 build:
-  uuid: 01a111fc-ef84-7289-a58d-5a6ca10a3a3f
-  checksum: v2:487448d9494aab3c3889fdcab0a5f6eca2c0b3fccc6d9d9fefa8a7b1969ca0d7
-  built_at: '2026-10-06T16:12:31+00:00'
-  path: website_phishing/01a111fc-ef84-7289-a58d-5a6ca10a3a3f
+  uuid: 01a13a7d-c2c0-77e5-80e6-a355a6e11902
+  checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: website_phishing/01a13a7d-c2c0-77e5-80e6-a355a6e11902
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 1353
+  n_rows: 1250
   n_features: 9
   dtypes:
     category: 10
   n_test_dataset_rows: null
 task:
-  target: WebsiteType
-  problem_type: multiclass_classification
-  metric: log_loss
+  target: is_phishing
+  problem_type: binary_classification
+  metric: roc_auc
   split_regime: iid
-  stratify_on: WebsiteType
+  stratify_on: is_phishing
   time_on: null
   group_on: null
   group_labels: null
@@ -42,11 +42,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 902
-    max: 902
+    min: 833
+    max: 834
   n_test:
-    min: 451
-    max: 451
+    min: 416
+    max: 417
 bundle_checks:
   ok: true
   errors: []
@@ -54,7 +54,11 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   infos: []
-  accepted: {}
+  accepted:
+    dataset_pure_feature_value: All 167 sites with popUpWidnow = 1 are phishing (in
+      the 3-class data 15 were suspicious, none legitimate). Under the documented
+      coding 1 means legitimate, the same reversed direction as the other signals,
+      so it is a page property, not a leak (Lennart, 2026-10-14).
 decisions: []
 ---
 
@@ -62,25 +66,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `WebsiteType`, scored with `log_loss` on IID splits. 1,353 rows and 9 features. Source: UCI (2016).
+Binary classification of `is_phishing`, scored with `roc_auc` on IID splits. 1,250 rows and 9 features. Source: UCI (2016).
 
-Built as `01a111fc-ef84-7289-a58d-5a6ca10a3a3f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
-**Question.** Is a website phishing, legitimate or suspicious?
+**Question.** Is this website a phishing site or a legitimate one?
 
-**Use case.** For example, a browser's anti-phishing filter rates a site when a user opens it, to warn or block.
+**Use case.** For example, a browser's anti-phishing filter rates a site when a user opens it, to warn the user or block the page.
 
-**One row.** One website: phishing sites from the PhishTank archive, legitimate ones from Yahoo and starting-point directories (1,353 sites; period not stated).
+**One row.** One website: phishing sites from the PhishTank archive, legitimate ones from Yahoo and starting-point directories (1,250 sites; period not stated).
 
-**Predicted.** Phishy (52%), legitimate (40.5%) or suspicious (8%); the data page says a suspicious site "held some legit and phishy features".
+**Predicted.** Whether the site is a phishing site (56%) or a legitimate one (44%), by the list it came from.
 
-**Known at prediction time.** Nine signals, each rated legitimate, suspicious or phishy: the form handler, pop-up windows, the SSL certificate, where requested objects and anchor links point, the site's traffic, URL length, domain age, and an IP address in the URL.
+**Known at prediction time.** Nine signals of the page and its URL, each coded -1, 0 or 1 by the donors: the form handler, pop-up windows, the SSL certificate, where requested objects and anchor links point, the site's traffic, URL length, domain age, and an IP address in the URL. Which code means legitimate is not clear from the data.
 
-**What the test data stands for.** Random sites; about half the rows are duplicates, so identical rows can sit on both sides.
+**What the test data stands for.** Random sites, so the test data stands for other sites from the same lists; about half the rows are exact duplicates, so identical rows can sit on both sides.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Phishing and legitimate sites come from separate lists, and the suspicious class is defined by its mix of signals rather than by what the site turned out to be. The signals themselves are known at a visit.
+**Our changes to the source.** We dropped the 103 sites the donors rated suspicious, a third class judged from the same nine signals rather than from the list a site came from, so the task is phishing against legitimate. The signals keep their raw codes instead of the words legitimate, suspicious and phishy, whose direction does not match the data.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Phishing and legitimate sites come from separate lists rather than from the sites users open, so the class mix (56% phishing) is not what a filter meets. The signals themselves are known at a visit.
 
 ## Files in this folder
 
@@ -123,17 +129,17 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | abdelhamid2014phishing |
-| rows x columns | 1,353 x 10 |
-| task.target | WebsiteType |
-| task.problem_type | multiclass_classification |
-| task.metric | log_loss |
+| rows x columns | 1,250 x 10 |
+| task.target | is_phishing |
+| task.problem_type | binary_classification |
+| task.metric | roc_auc |
 | task.split_regime | iid |
-| task.stratify_on | WebsiteType |
+| task.stratify_on | is_phishing |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
 
-- categorical (10): `SFH`, `popUpWidnow`, `SSLfinal_State`, `Request_URL`, `URL_of_Anchor`, `web_traffic`, `URL_Length`, `age_of_domain`, `having_IP_Address`, `WebsiteType`
+- categorical (10): `SFH`, `popUpWidnow`, `SSLfinal_State`, `Request_URL`, `URL_of_Anchor`, `web_traffic`, `URL_Length`, `age_of_domain`, `having_IP_Address`, `is_phishing`
 - string (0): none
 - datetime (0): none
 
@@ -159,63 +165,70 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,353 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 1,250 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| WebsiteType | SFH | popUpWidnow | SSLfinal_State | Request_URL | URL_of_Anchor | web_traffic | URL_Length | age_of_domain | having_IP_Address |
+| is_phishing | SFH | popUpWidnow | SSLfinal_State | Request_URL | URL_of_Anchor | web_traffic | URL_Length | age_of_domain | having_IP_Address |
 |---|---|---|---|---|---|---|---|---|---|
-| Legitimate | Phishy | Phishy | Phishy | Phishy | Phishy | Suspicious | Legitimate | Legitimate | Suspicious |
-| Legitimate | Phishy | Phishy | Phishy | Suspicious | Phishy | Suspicious | Legitimate | Legitimate | Suspicious |
-| Phishy | Legitimate | Suspicious | Phishy | Legitimate | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
-| Phishy | Legitimate | Legitimate | Legitimate | Phishy | Legitimate | Phishy | Suspicious | Legitimate | Suspicious |
-| Suspicious | Suspicious | Phishy | Suspicious | Suspicious | Suspicious | Suspicious | Phishy | Legitimate | Suspicious |
+| Yes | 1 | 0 | 1 | 1 | 1 | 1 | 1 | -1 | 0 |
+| Yes | 1 | 1 | 1 | 0 | 0 | -1 | 0 | 1 | 1 |
+| Yes | 1 | 0 | 1 | 0 | -1 | 1 | 1 | -1 | 0 |
+| Yes | 1 | -1 | 0 | 0 | -1 | 1 | -1 | -1 | 0 |
+| No | -1 | -1 | 1 | -1 | -1 | -1 | -1 | 1 | 0 |
 
 ## Curation notes
 
-- We reversed the ordinal encoding of the original data.
-- We renamed the target feature to be more meaningful.
-- Anomaly: the data has many duplicates (~50%).
+- Binary since 2026-10-14 (Lennart): phishing (`Result` -1, 702 sites) against legitimate (1, 548 sites). We
+  drop the 103 suspicious sites (0): the data page says such a site "can be either phishy or legitimate", and
+  LightGBM tells them apart from the rest by the nine signals alone with ROC AUC 0.987 (record, 2026-10-14).
+- The class counts match the data page (548 legitimate, 702 phishing), so the target follows its coding: 1
+  legitimate, 0 suspicious, -1 phishy.
+- The features keep their raw codes -1, 0 and 1 as categories. The page gives them the same coding, but in
+  practice their direction is undocumented: under it, 7 of the 9 point away from the label (91% of phishing
+  sites have SFH rated legitimate), and `having_IP_Address` takes only 0 and 1.
+- We renamed the target to `is_phishing` (Yes / No).
+- Anomaly: about half the rows are exact duplicates (47% of the 1,250 rows).
 
 ## Splits
 
 Default splits.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 902 rows, test 451 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 833 to 834 rows, test 416 to 417 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 902 | 451 |
-| 0 | 1 | 902 | 451 |
-| 0 | 2 | 902 | 451 |
-| 1 | 0 | 902 | 451 |
-| 1 | 1 | 902 | 451 |
-| 1 | 2 | 902 | 451 |
-| 2 | 0 | 902 | 451 |
-| 2 | 1 | 902 | 451 |
-| 2 | 2 | 902 | 451 |
-| 3 | 0 | 902 | 451 |
-| 3 | 1 | 902 | 451 |
-| 3 | 2 | 902 | 451 |
-| 4 | 0 | 902 | 451 |
-| 4 | 1 | 902 | 451 |
-| 4 | 2 | 902 | 451 |
-| 5 | 0 | 902 | 451 |
-| 5 | 1 | 902 | 451 |
-| 5 | 2 | 902 | 451 |
-| 6 | 0 | 902 | 451 |
-| 6 | 1 | 902 | 451 |
-| 6 | 2 | 902 | 451 |
-| 7 | 0 | 902 | 451 |
-| 7 | 1 | 902 | 451 |
-| 7 | 2 | 902 | 451 |
-| 8 | 0 | 902 | 451 |
-| 8 | 1 | 902 | 451 |
-| 8 | 2 | 902 | 451 |
-| 9 | 0 | 902 | 451 |
-| 9 | 1 | 902 | 451 |
-| 9 | 2 | 902 | 451 |
+| 0 | 0 | 833 | 417 |
+| 0 | 1 | 833 | 417 |
+| 0 | 2 | 834 | 416 |
+| 1 | 0 | 833 | 417 |
+| 1 | 1 | 833 | 417 |
+| 1 | 2 | 834 | 416 |
+| 2 | 0 | 833 | 417 |
+| 2 | 1 | 833 | 417 |
+| 2 | 2 | 834 | 416 |
+| 3 | 0 | 833 | 417 |
+| 3 | 1 | 833 | 417 |
+| 3 | 2 | 834 | 416 |
+| 4 | 0 | 833 | 417 |
+| 4 | 1 | 833 | 417 |
+| 4 | 2 | 834 | 416 |
+| 5 | 0 | 833 | 417 |
+| 5 | 1 | 833 | 417 |
+| 5 | 2 | 834 | 416 |
+| 6 | 0 | 833 | 417 |
+| 6 | 1 | 833 | 417 |
+| 6 | 2 | 834 | 416 |
+| 7 | 0 | 833 | 417 |
+| 7 | 1 | 833 | 417 |
+| 7 | 2 | 834 | 416 |
+| 8 | 0 | 833 | 417 |
+| 8 | 1 | 833 | 417 |
+| 8 | 2 | 834 | 416 |
+| 9 | 0 | 833 | 417 |
+| 9 | 1 | 833 | 417 |
+| 9 | 2 | 834 | 416 |
 
 </details>
 
@@ -223,8 +236,12 @@ Default splits.
 
 0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_duplicate_rows`: 629 exact duplicate row(s) (46.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **warning** `dataset_conflicting_duplicate_rows`: 48 row(s) (3.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **warning** `dataset_duplicate_rows`: 587 exact duplicate row(s) (47.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **warning** `dataset_conflicting_duplicate_rows`: 38 row(s) (3.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `dataset_pure_feature_value`: All 167 sites with popUpWidnow = 1 are phishing (in the 3-class data 15 were suspicious, none legitimate). Under the documented coding 1 means legitimate, the same reversed direction as the other signals, so it is a page property, not a leak (Lennart, 2026-10-14).
 
 ## Data checks
 
@@ -232,24 +249,23 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| SFH | category | 0 | 0 | 3 | Legitimate, Phishy, Suspicious |
-| popUpWidnow | category | 0 | 0 | 3 | Suspicious, Phishy, Legitimate |
-| SSLfinal_State | category | 0 | 0 | 3 | Legitimate, Phishy, Suspicious |
-| Request_URL | category | 0 | 0 | 3 | Phishy, Suspicious, Legitimate |
-| URL_of_Anchor | category | 0 | 0 | 3 | Phishy, Legitimate, Suspicious |
-| web_traffic | category | 0 | 0 | 3 | Suspicious, Legitimate, Phishy |
-| URL_Length | category | 0 | 0 | 3 | Suspicious, Phishy, Legitimate |
-| age_of_domain | category | 0 | 0 | 2 | Legitimate, Phishy |
-| having_IP_Address | category | 0 | 0 | 2 | Suspicious, Legitimate |
-| WebsiteType | category | 0 | 0 | 3 | Phishy, Legitimate, Suspicious |
+| SFH | category | 0 | 0 | 3 | 1, -1, 0 |
+| popUpWidnow | category | 0 | 0 | 3 | 0, -1, 1 |
+| SSLfinal_State | category | 0 | 0 | 3 | 1, -1, 0 |
+| Request_URL | category | 0 | 0 | 3 | -1, 0, 1 |
+| URL_of_Anchor | category | 0 | 0 | 3 | -1, 1, 0 |
+| web_traffic | category | 0 | 0 | 3 | 0, 1, -1 |
+| URL_Length | category | 0 | 0 | 3 | 0, -1, 1 |
+| age_of_domain | category | 0 | 0 | 2 | 1, -1 |
+| having_IP_Address | category | 0 | 0 | 2 | 0, 1 |
+| is_phishing | category | 0 | 0 | 2 | Yes, No |
 
 ### Target distribution
 
-| WebsiteType | count | pct |
+| is_phishing | count | pct |
 |---|---|---|
-| Phishy | 702 | 51.88 |
-| Legitimate | 548 | 40.5 |
-| Suspicious | 103 | 7.61 |
+| Yes | 702 | 56.16 |
+| No | 548 | 43.84 |
 
 ### Numeric features
 
@@ -258,38 +274,37 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (28 rows)</summary>
+<summary>Show the table (27 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Request_URL | 1 | Phishy | 617 | 45.6 |
-| Request_URL | 2 | Suspicious | 421 | 31.12 |
-| Request_URL | 3 | Legitimate | 315 | 23.28 |
-| SFH | 1 | Legitimate | 767 | 56.69 |
-| SFH | 2 | Phishy | 445 | 32.89 |
-| SFH | 3 | Suspicious | 141 | 10.42 |
-| SSLfinal_State | 1 | Legitimate | 751 | 55.51 |
-| SSLfinal_State | 2 | Phishy | 308 | 22.76 |
-| SSLfinal_State | 3 | Suspicious | 294 | 21.73 |
-| URL_Length | 1 | Suspicious | 563 | 41.61 |
-| URL_Length | 2 | Phishy | 431 | 31.86 |
-| URL_Length | 3 | Legitimate | 359 | 26.53 |
-| URL_of_Anchor | 1 | Phishy | 610 | 45.08 |
-| URL_of_Anchor | 2 | Legitimate | 576 | 42.57 |
-| URL_of_Anchor | 3 | Suspicious | 167 | 12.34 |
-| WebsiteType | 1 | Phishy | 702 | 51.88 |
-| WebsiteType | 2 | Legitimate | 548 | 40.5 |
-| WebsiteType | 3 | Suspicious | 103 | 7.61 |
-| age_of_domain | 1 | Legitimate | 825 | 60.98 |
-| age_of_domain | 2 | Phishy | 528 | 39.02 |
-| having_IP_Address | 1 | Suspicious | 1198 | 88.54 |
-| having_IP_Address | 2 | Legitimate | 155 | 11.46 |
-| popUpWidnow | 1 | Suspicious | 639 | 47.23 |
-| popUpWidnow | 2 | Phishy | 532 | 39.32 |
-| popUpWidnow | 3 | Legitimate | 182 | 13.45 |
-| web_traffic | 1 | Suspicious | 473 | 34.96 |
-| web_traffic | 2 | Legitimate | 440 | 32.52 |
-| web_traffic | 3 | Phishy | 440 | 32.52 |
+| Request_URL | 1 | -1 | 533 | 42.64 |
+| Request_URL | 2 | 0 | 402 | 32.16 |
+| Request_URL | 3 | 1 | 315 | 25.2 |
+| SFH | 1 | 1 | 724 | 57.92 |
+| SFH | 2 | -1 | 399 | 31.92 |
+| SFH | 3 | 0 | 127 | 10.16 |
+| SSLfinal_State | 1 | 1 | 689 | 55.12 |
+| SSLfinal_State | 2 | -1 | 298 | 23.84 |
+| SSLfinal_State | 3 | 0 | 263 | 21.04 |
+| URL_Length | 1 | 0 | 538 | 43.04 |
+| URL_Length | 2 | -1 | 410 | 32.8 |
+| URL_Length | 3 | 1 | 302 | 24.16 |
+| URL_of_Anchor | 1 | -1 | 552 | 44.16 |
+| URL_of_Anchor | 2 | 1 | 549 | 43.92 |
+| URL_of_Anchor | 3 | 0 | 149 | 11.92 |
+| age_of_domain | 1 | 1 | 750 | 60 |
+| age_of_domain | 2 | -1 | 500 | 40 |
+| having_IP_Address | 1 | 0 | 1108 | 88.64 |
+| having_IP_Address | 2 | 1 | 142 | 11.36 |
+| is_phishing | 1 | Yes | 702 | 56.16 |
+| is_phishing | 2 | No | 548 | 43.84 |
+| popUpWidnow | 1 | 0 | 599 | 47.92 |
+| popUpWidnow | 2 | -1 | 484 | 38.72 |
+| popUpWidnow | 3 | 1 | 167 | 13.36 |
+| web_traffic | 1 | 0 | 452 | 36.16 |
+| web_traffic | 2 | 1 | 408 | 32.64 |
+| web_traffic | 3 | -1 | 390 | 31.2 |
 
 </details>
 
@@ -297,11 +312,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-ef84-7289-a58d-5a6ca10a3a3f |
-| checksum | v2:487448d9494aab3c3889fdcab0a5f6eca2c0b3fccc6d9d9fefa8a7b1969ca0d7 |
-| built_at | 2026-10-06T16:12:31+00:00 |
-| path | website_phishing/01a111fc-ef84-7289-a58d-5a6ca10a3a3f |
+| uuid | 01a13a7d-c2c0-77e5-80e6-a355a6e11902 |
+| checksum | v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | website_phishing/01a13a7d-c2c0-77e5-80e6-a355a6e11902 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -21,12 +21,14 @@ class FoodDeliveryTime(AbstractCuratedDataset):
         predicted="The delivery time in minutes (10 to 54, 26 on average).",
         known=(
             "The courier's ID, age and rating, the vehicle (motorcycle, scooter and others), the order type (snack, "
-            "meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address."
+            "meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address, which is the "
+            "restaurant plus one of 12 fixed offsets."
         ),
         split=(
             "Random orders, so the test data stands for other orders of the same couriers and period; a courier's "
             "other orders can be in training."
         ),
+        changes="We correct the sign of 424 restaurant coordinates; restaurants at (0, 0), a missing code, stay.",
         fit="approximate",
         fit_reason=(
             "The release has no order time, so the test orders are a random draw from the period rather than later "
@@ -58,6 +60,9 @@ class FoodDeliveryTime(AbstractCuratedDataset):
     curation_comments = """
         - We dropped entries with a duplicated ID, keeping only the first one.
         - We dropped the ID column.
+        - We flip the sign of the restaurant's latitude in 424 rows (159 also its longitude): the same restaurants appear elsewhere with positive coordinates, as all of India has.
+        - 3,630 rows (8%) have the restaurant at (0, 0), a missing-value code. We keep them as they are: the delivery point is still the offset, so the distance is right, and their mean time (26.1 min) matches the rest (26.3).
+        - The delivery point is always the restaurant plus one of 12 equal offsets in latitude and longitude (0.01 to 0.14 degrees), so the delivery addresses are synthetic and only the distance class carries information.
         - Tagged ForcedIIDFromTemporal: orders arrive over time, but the release has no order date or time, so the split is random.
         - Anomaly: The ID of the delivery person is given as a feature. In some contexts, this feature might not be allowed to use. Moreover, using this information might require considering a temporal split where a cold-start problem is covered.
     """
@@ -74,6 +79,9 @@ class FoodDeliveryTime(AbstractCuratedDataset):
         df = raw
         df = df.drop_duplicates(subset=["ID"])
         df = df.drop(columns=["ID"])
+        # 424 restaurant latitudes (159 longitudes) carry a flipped sign; India lies at positive coordinates
+        for c in ["Restaurant_latitude", "Restaurant_longitude"]:
+            df[c] = df[c].abs()
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

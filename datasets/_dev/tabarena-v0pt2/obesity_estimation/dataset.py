@@ -17,8 +17,8 @@ class ObesityEstimation(AbstractCuratedDataset):
             " identify obesity levels from such habits)."
         ),
         row=(
-            "One respondent to a web questionnaire in Mexico, Peru or Colombia (498 people, the source's real "
-            "answers); the period is not stated."
+            "One respondent to a web questionnaire in Mexico, Peru or Colombia (488 people: the source's 498 real "
+            "answers without 10 repeated submissions); the period is not stated."
         ),
         predicted=(
             "The body mass index (weight over height squared) from the reported weight and height; mean 24.3, range "
@@ -31,8 +31,9 @@ class ObesityEstimation(AbstractCuratedDataset):
         ),
         split="Random respondents of the same survey.",
         changes=(
-            "We drop the 77% synthetic rows the source made by oversampling, and predict the body mass index instead "
-            "of the obesity level built from it; we drop weight and height, which gave the level away."
+            "We drop the 77% synthetic rows the source made by oversampling and 10 repeated submissions, and predict "
+            "the body mass index instead of the obesity level built from it; we drop weight and height, which gave the "
+            "level away."
         ),
         fit="approximate",
         fit_reason=(
@@ -66,6 +67,7 @@ class ObesityEstimation(AbstractCuratedDataset):
     """
     curation_comments = """
         - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
+        - We drop the 10 exact copies among the 498 real rows (8 groups; one answer set appears 4 times), leaving 488. Each copy repeats all 16 answers, age, height to the centimetre and weight to the kilogram, and 4 groups are neighbouring rows, so they are one person sending the form again; Fig. 1 counts them.
         - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
     """
 
@@ -81,6 +83,8 @@ class ObesityEstimation(AbstractCuratedDataset):
         df = raw
         # The first 498 rows are the source's real answers, the SMOTE rows follow (see curation_comments)
         df = df.iloc[:498]
+        # The same answers, height and weight again are one person sending the form twice (see curation_comments)
+        df = df.drop_duplicates(keep="first")
         # Creat real target
         df["BodyMass"] = df["Weight"] / (df["Height"] ** 2)
         df = df.drop(columns=["Height", "Weight", "NObeyesdad"])

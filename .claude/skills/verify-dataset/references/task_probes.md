@@ -122,6 +122,7 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | forensic_glass_identification, ljubljana_primary_tumor, mic, sarcoma | few_minority | kept (12 Oct, rule 8) | rare classes of 9-14 rows, 3-5 per test fold: 0.7-13% of the test rows, 4.8-22% of a random forest's log loss |
 | micro_mass, asp_potassco_classification | few_minority | kept (12 Oct, rule 8) | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss |
 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (12 Oct) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) |
+| hr_analytics | no_spread | kept (14 Oct) | rebuilt from the hackathon's own train file (Kaggle's copy added 2,623 test rows labelled 1 and gave 0.80); the real labels give ROC AUC 0.62-0.63 for every family (LightGBM +0.012 over random forest, paired SE 0.006): a real signal with a low ceiling (rule 3) |
 
 ## Hidden groups (`hidden_groups.py`)
 
@@ -129,8 +130,9 @@ An IID split is wrong when many rows share an entity that new data would not hav
 a random split then rewards recognising the entity. The probe ranks columns with repeated values by how much a row's
 label follows from the other rows with that value, beyond what the value says about unseen values. Among those that
 look like an entity (attributes that stay fixed within a value, or a label the value nearly fixes) it measures
-untuned LightGBM on a random split against a split by the column. It also clusters rows that agree on almost every
-column (near copies) and tests the clusters the same way. Its docstring has the thresholds.
+untuned LightGBM on a random split against a split by the column. It tests the same way keys of all columns but one
+(composite keys) and clusters of rows that agree on almost every column (near copies). Its docstring has the
+thresholds.
 
 **The rule (Lennart, 2026-10-06): a hit is a question.** Re-split a dataset only when the context says the rows share
 an entity that new data would not have (the source calls the column an id, or the use case predicts for new
@@ -154,10 +156,31 @@ and their rows are left single. The output gives the clusters at 0.9, 0.85, 0.8 
 the same random folds with each cluster moved into one fold. Read a near-copy hit as a pointer: find in the source
 what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
 invoices) and take the group key from there, never from the clusters (`leak_checks.md` §5 bars similarity clusters).
-A table with fewer than 10 informative columns has no near copies, so a group defined by a few settings (a
-wind-tunnel run is one chord, angle and velocity) or by no column at all (the target protein of a CASP decoy) still
-does not show up; read what one row is in the source and check the combinations of its settings
-(`df.groupby(settings).ngroup()`, rows per group, blocks in the raw file order).
+A table with fewer than 10 informative columns has no near copies.
+
+**Composite keys cover an entity measured more than once.** Rows identical in every column but one are one entity at
+another age, dose, time or frequency. concrete_compressive_strength's 1,030 tests are 428 mixes (the seven ingredient
+amounts), 182 of them tested at several ages; no single column holds a mix, and 8 columns give no near copies, so the
+probe missed it until 2026-10-14. It now hashes, exactly, the key of all columns but one for each column (two when
+none counts and rows times keys stay within 200M). A key counts when the rows that share it with a differing row are
+at least 10% of the rows and four times the share with every column permuted on its own, when it holds a column of
+at least 20 values, and keys of more than 100 rows are left out. These rules keep out repeats by chance: the all-"No"
+symptom profile of early_stage_diabetes_risk_prediction (binary columns only), tour_travels_churn and website_phishing
+(a few categories), blood_transfusion (common pairs of counts, one column an exact copy of another) and the empty
+customers of expresso_churn_prediction_1m (keys of 16,000 rows). A key's gap may instead raise the error left by a
+quarter: concrete's `(all but Age)` gives R^2 0.923 random against 0.857 grouped, 7% of the skill but nearly twice
+the error. Take a key hit to the source: when the key is what one row's entity is (a mix, a wind-tunnel run), group on
+it with `df.groupby(columns).ngroup()` (`leak_checks.md` §5); when new rows keep the key, it is a feature. A group by
+no column at all (the target protein of a CASP decoy) still does not show up; read what one row is in the source.
+
+Calibration of the composite keys on 2026-10-14 (all 177 definitions, the grouped ones as if IID): three hits,
+concrete `(all but Age)`, airfoil_self_noise `(all but frequency)` (the same groups as its run column) and
+amazon_employee_access `(all but RESOURCE)` (the requester's manager and role columns, next to its `MGR_ID` hit).
+Keys count without a hit in 19 IID or grouped datasets, with gaps of at most 0.035 (coil_2000); the next is fiat_500
+(30% of the rows: one dealer's cars of one model, age and price at other mileages; gap 0.023). In 7 temporal tasks a
+key recurs across the cutoff (rossmann_store_sales `(all but Date)`: 100% of the test rows). The search takes 0.2 s on a
+median dataset and 228 s at most (2.5M rows and 988 columns, 80 of the keys); the sweep with 12 jobs of 2 threads took
+12.5 minutes.
 
 **Temporal tasks get no hit.** The shipped split already keeps the future out, and an entity that recurs across the
 cutoff is part of the task. For the top candidates (the entity-like ones first) and the near copies, the probe
@@ -188,11 +211,12 @@ most 58 s (2.5M rows); a sweep of all 184 definitions with 10 jobs of 2 threads 
 
 | Dataset | Hit | Decision | Evidence |
 |---|---|---|---|
-| amazon_employee_access | `MGR_ID` (4,243 values) | no action (6 Oct) | a request's manager is known when it is made, and managers recur: a feature, not an entity new data lacks |
+| amazon_employee_access | `MGR_ID` (4,243 values) | no action (6 Oct) | a request's manager is known when it is made, and managers recur: a feature, not an entity new data lacks. `(all but RESOURCE)` (14 Oct) is the requester's manager and role columns, the same question |
 | covertype | `Soil_Type` (40 values) | no action (6 Oct) | every location has a known soil type; its two "attributes" are zones derived from it |
 | mutual_funds_india | `sub_category` (38 values) | no action (6 Oct) | a new fund has a known sub-category |
 | superconductivity | `range_atomic_radius` (repeated compositions) | grouped by composition (6 Oct) | the features come from the composition alone and a model is used for compositions without a measured temperature; a random split gave 35% of the test rows an identical row in train. Key: element shares from `unique_m.csv` (15,164 compositions; joins `Dy1Ir2Rh2B4`/`Dy1Rh2Ir2B4` and `V2Zr1`/`V66.6Zr33.3`). Gap on Tc at most 0.009 R², ranking unchanged: the use case decided, not the gap. Not by element set (a new family is a different task) |
-| airfoil_self_noise | none (a run is three columns) | grouped by wind-tunnel run (6 Oct) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random split gave a test row 62% of its run's other bands in train. R² random / by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840. Found by reading the source, not by the probe |
+| airfoil_self_noise | none until 14 Oct (a run is three columns); then `(all but frequency)`, the same groups | grouped by wind-tunnel run (6 Oct) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random split gave a test row 62% of its run's other bands in train. R² random / by run: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840. Found by reading the source, not by the probe |
+| concrete_compressive_strength | `(all but Age)` (428 mixes; 14 Oct) | grouped by mix (14 Oct) | a mix is its seven ingredient amounts and 182 mixes are tested at several ages; a random split gave 73% of the test rows their mix in train at another age. R² random / by mix: LightGBM 0.925 / 0.874, MLP 0.916 / 0.838, ridge 0.816 / 0.804, the ranking changes. The use case designs a new mix. Missed by the column and near-copy checks |
 | account_debt_south_africa | none (the eight municipalities have no column; they show as blocks of the file) | IID kept, tagged `ForcedIIDFromTemporal` (12 Oct) | a municipality scores its own accounts, so its level is known; held out by file position, LightGBM ROC AUC falls from 0.877 to 0.843 (blocks of 2,500 rows) and 0.786 (thirds of the file), recorded in a bullet. One extract without dates: the status at the extract stands in for a forecast |
 
 ## Generated data (`generated_probes.py`)

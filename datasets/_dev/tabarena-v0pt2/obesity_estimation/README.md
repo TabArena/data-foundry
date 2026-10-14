@@ -2,24 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3
+checksum: v2:ed914824ca4ef307976afa2a00fbd0a66b334728e4e282386dff8cdef1232c76
 build:
-  uuid: 01a111fc-b36e-7939-b271-e858cafffee4
-  checksum: v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8
-  built_at: '2026-10-06T16:12:16+00:00'
-  path: obesity_estimation/01a111fc-b36e-7939-b271-e858cafffee4
+  uuid: 01a13a7d-c2ba-7a4d-bb80-1eb0032878a9
+  checksum: v2:ed914824ca4ef307976afa2a00fbd0a66b334728e4e282386dff8cdef1232c76
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: obesity_estimation/01a13a7d-c2ba-7a4d-bb80-1eb0032878a9
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 498
+  n_rows: 488
   n_features: 14
   dtypes:
     category: 13
@@ -43,16 +43,15 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 332
-    max: 332
+    min: 325
+    max: 326
   n_test:
-    min: 166
-    max: 166
+    min: 162
+    max: 163
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_duplicate_rows
+  warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
   accepted: {}
@@ -63,9 +62,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `BodyMass`, scored with `rmse` on IID splits. 498 rows and 14 features. Source: UCI (2019).
+Regression of `BodyMass`, scored with `rmse` on IID splits. 488 rows and 14 features. Source: UCI (2019).
 
-Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -73,7 +72,7 @@ Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a health app or survey estimates a person's body mass index from eating and activity habits, to flag a risk of overweight without asking for weight and height (the source aims at tools that identify obesity levels from such habits).
 
-**One row.** One respondent to a web questionnaire in Mexico, Peru or Colombia (498 people, the source's real answers); the period is not stated.
+**One row.** One respondent to a web questionnaire in Mexico, Peru or Colombia (488 people: the source's 498 real answers without 10 repeated submissions); the period is not stated.
 
 **Predicted.** The body mass index (weight over height squared) from the reported weight and height; mean 24.3, range 13.3 to 49.5.
 
@@ -81,7 +80,7 @@ Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06, but `dataset.py` 
 
 **What the test data stands for.** Random respondents of the same survey.
 
-**Our changes to the source.** We drop the 77% synthetic rows the source made by oversampling, and predict the body mass index instead of the obesity level built from it; we drop weight and height, which gave the level away.
+**Our changes to the source.** We drop the 77% synthetic rows the source made by oversampling and 10 repeated submissions, and predict the body mass index instead of the obesity level built from it; we drop weight and height, which gave the level away.
 
 > **Use case fit: approximate (a stand-in with a known gap).** A body mass index is measured with a scale and a tape in a minute, so estimating it from habits only fits a setting that cannot ask for weight and height. The respondents are web volunteers, and the habits are reported at the same time as the weight.
 
@@ -125,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | palechor2019dataset |
-| rows x columns | 498 x 15 |
+| rows x columns | 488 x 15 |
 | task.target | BodyMass |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -159,100 +158,100 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 498 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 488 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
 
 | BodyMass | Gender | Age | family_history_with_overweight | FAVC | FCVC | NCP | CAEC | SMOKE | CH2O | SCC | FAF |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 21.4844 | Female | 18 | no | yes | 2 | 4 | Frequently | no | 2 | no | 2 |
-| 29.4118 | Male | 24 | yes | yes | 2 | 3 | Frequently | no | 3 | no | 0 |
-| 24.4857 | Male | 19 | yes | yes | 3 | 3 | Frequently | no | 2 | no | 2 |
-| 22.6422 | Male | 19 | yes | no | 2 | 3 | Frequently | no | 2 | no | 1 |
-| 31.25 | Male | 44 | yes | no | 2 | 3 | Sometimes | yes | 3 | no | 0 |
+| 24.114 | Male | 20 | yes | no | 3 | 1 | Sometimes | no | 2 | no | 0 |
+| 29.3848 | Female | 36 | yes | yes | 2 | 3 | Sometimes | no | 1 | no | 0 |
+| 24.4857 | Male | 26 | no | yes | 2 | 3 | Always | no | 2 | no | 1 |
+| 25.565 | Male | 19 | yes | no | 1 | 3 | Sometimes | no | 2 | no | 3 |
+| 24.6094 | Female | 23 | yes | no | 3 | 3 | Frequently | no | 2 | no | 3 |
 
 ## Curation notes
 
 - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
+- We drop the 10 exact copies among the 498 real rows (8 groups; one answer set appears 4 times), leaving 488. Each copy repeats all 16 answers, age, height to the centimetre and weight to the kilogram, and 4 groups are neighbouring rows, so they are one person sending the form again; Fig. 1 counts them.
 - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 332 rows, test 166 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 325 to 326 rows, test 162 to 163 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 332 | 166 |
-| 0 | 1 | 332 | 166 |
-| 0 | 2 | 332 | 166 |
-| 1 | 0 | 332 | 166 |
-| 1 | 1 | 332 | 166 |
-| 1 | 2 | 332 | 166 |
-| 2 | 0 | 332 | 166 |
-| 2 | 1 | 332 | 166 |
-| 2 | 2 | 332 | 166 |
-| 3 | 0 | 332 | 166 |
-| 3 | 1 | 332 | 166 |
-| 3 | 2 | 332 | 166 |
-| 4 | 0 | 332 | 166 |
-| 4 | 1 | 332 | 166 |
-| 4 | 2 | 332 | 166 |
-| 5 | 0 | 332 | 166 |
-| 5 | 1 | 332 | 166 |
-| 5 | 2 | 332 | 166 |
-| 6 | 0 | 332 | 166 |
-| 6 | 1 | 332 | 166 |
-| 6 | 2 | 332 | 166 |
-| 7 | 0 | 332 | 166 |
-| 7 | 1 | 332 | 166 |
-| 7 | 2 | 332 | 166 |
-| 8 | 0 | 332 | 166 |
-| 8 | 1 | 332 | 166 |
-| 8 | 2 | 332 | 166 |
-| 9 | 0 | 332 | 166 |
-| 9 | 1 | 332 | 166 |
-| 9 | 2 | 332 | 166 |
-| 10 | 0 | 332 | 166 |
-| 10 | 1 | 332 | 166 |
-| 10 | 2 | 332 | 166 |
-| 11 | 0 | 332 | 166 |
-| 11 | 1 | 332 | 166 |
-| 11 | 2 | 332 | 166 |
-| 12 | 0 | 332 | 166 |
-| 12 | 1 | 332 | 166 |
-| 12 | 2 | 332 | 166 |
-| 13 | 0 | 332 | 166 |
-| 13 | 1 | 332 | 166 |
-| 13 | 2 | 332 | 166 |
-| 14 | 0 | 332 | 166 |
-| 14 | 1 | 332 | 166 |
-| 14 | 2 | 332 | 166 |
-| 15 | 0 | 332 | 166 |
-| 15 | 1 | 332 | 166 |
-| 15 | 2 | 332 | 166 |
-| 16 | 0 | 332 | 166 |
-| 16 | 1 | 332 | 166 |
-| 16 | 2 | 332 | 166 |
-| 17 | 0 | 332 | 166 |
-| 17 | 1 | 332 | 166 |
-| 17 | 2 | 332 | 166 |
-| 18 | 0 | 332 | 166 |
-| 18 | 1 | 332 | 166 |
-| 18 | 2 | 332 | 166 |
-| 19 | 0 | 332 | 166 |
-| 19 | 1 | 332 | 166 |
-| 19 | 2 | 332 | 166 |
+| 0 | 0 | 325 | 163 |
+| 0 | 1 | 325 | 163 |
+| 0 | 2 | 326 | 162 |
+| 1 | 0 | 325 | 163 |
+| 1 | 1 | 325 | 163 |
+| 1 | 2 | 326 | 162 |
+| 2 | 0 | 325 | 163 |
+| 2 | 1 | 325 | 163 |
+| 2 | 2 | 326 | 162 |
+| 3 | 0 | 325 | 163 |
+| 3 | 1 | 325 | 163 |
+| 3 | 2 | 326 | 162 |
+| 4 | 0 | 325 | 163 |
+| 4 | 1 | 325 | 163 |
+| 4 | 2 | 326 | 162 |
+| 5 | 0 | 325 | 163 |
+| 5 | 1 | 325 | 163 |
+| 5 | 2 | 326 | 162 |
+| 6 | 0 | 325 | 163 |
+| 6 | 1 | 325 | 163 |
+| 6 | 2 | 326 | 162 |
+| 7 | 0 | 325 | 163 |
+| 7 | 1 | 325 | 163 |
+| 7 | 2 | 326 | 162 |
+| 8 | 0 | 325 | 163 |
+| 8 | 1 | 325 | 163 |
+| 8 | 2 | 326 | 162 |
+| 9 | 0 | 325 | 163 |
+| 9 | 1 | 325 | 163 |
+| 9 | 2 | 326 | 162 |
+| 10 | 0 | 325 | 163 |
+| 10 | 1 | 325 | 163 |
+| 10 | 2 | 326 | 162 |
+| 11 | 0 | 325 | 163 |
+| 11 | 1 | 325 | 163 |
+| 11 | 2 | 326 | 162 |
+| 12 | 0 | 325 | 163 |
+| 12 | 1 | 325 | 163 |
+| 12 | 2 | 326 | 162 |
+| 13 | 0 | 325 | 163 |
+| 13 | 1 | 325 | 163 |
+| 13 | 2 | 326 | 162 |
+| 14 | 0 | 325 | 163 |
+| 14 | 1 | 325 | 163 |
+| 14 | 2 | 326 | 162 |
+| 15 | 0 | 325 | 163 |
+| 15 | 1 | 325 | 163 |
+| 15 | 2 | 326 | 162 |
+| 16 | 0 | 325 | 163 |
+| 16 | 1 | 325 | 163 |
+| 16 | 2 | 326 | 162 |
+| 17 | 0 | 325 | 163 |
+| 17 | 1 | 325 | 163 |
+| 17 | 2 | 326 | 162 |
+| 18 | 0 | 325 | 163 |
+| 18 | 1 | 325 | 163 |
+| 18 | 2 | 326 | 162 |
+| 19 | 0 | 325 | 163 |
+| 19 | 1 | 325 | 163 |
+| 19 | 2 | 326 | 162 |
 
 </details>
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_duplicate_rows`: 10 exact duplicate row(s) (2.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 4 row(s) (0.8%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
@@ -277,8 +276,8 @@ Default splits.
 | TUE | category | 0 | 0 | 3 | 0.0, 1.0, 2.0 |
 | CALC | category | 0 | 0 | 4 | Sometimes, no, Frequently, Always |
 | MTRANS | category | 0 | 0 | 5 | Public_Transportation, Automobile, Walking, Motorbike, Bike |
-| Age | float64 | 0 | 0 | 35 | 18.0, 21.0, 23.0, 19.0, 20.0, 22.0, 17.0, 24.0, 25.0, 26.0 |
-| BodyMass | float64 | 0 | 0 | 392 | 29.3848, 22.0386, 24.4898, 26.9896, 22.2222, 24.2215, 21.7738, 22.4913, 26.6728… |
+| Age | float64 | 0 | 0 | 35 | 18.0, 21.0, 23.0, 19.0, 20.0, 22.0, 17.0, 24.0, 26.0, 25.0 |
+| BodyMass | float64 | 0 | 0 | 392 | 22.0386, 29.3848, 22.4913, 24.2215, 22.2222, 21.7738, 26.9896, 24.4898, 21.875,… |
 
 </details>
 
@@ -286,14 +285,14 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.037 | 0.394 | 22.775 | 0.035 | log | 4589.4 | 4341.1 | lognormal |
+| 0 | 0 | 0 | 1.035 | 0.394 | 22.987 | 0.035 | log | 4496.7 | 4243.2 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Age | 498 | 23.1466 | 6.72158 | 14 | 61 |
-| BodyMass | 498 | 24.3135 | 4.77227 | 13.2916 | 49.4724 |
+| Age | 488 | 23.2008 | 6.77056 | 14 | 61 |
+| BodyMass | 488 | 24.3446 | 4.79447 | 13.2916 | 49.4724 |
 
 ### Categorical features
 
@@ -302,45 +301,45 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| CAEC | 1 | Sometimes | 289 | 58.03 |
-| CAEC | 2 | Frequently | 136 | 27.31 |
-| CAEC | 3 | Always | 53 | 10.64 |
-| CAEC | 4 | no | 20 | 4.02 |
-| CALC | 1 | Sometimes | 273 | 54.82 |
-| CALC | 2 | no | 179 | 35.94 |
-| CALC | 3 | Frequently | 45 | 9.04 |
+| CAEC | 1 | Sometimes | 285 | 58.4 |
+| CAEC | 2 | Frequently | 133 | 27.25 |
+| CAEC | 3 | Always | 53 | 10.86 |
+| CAEC | 4 | no | 17 | 3.48 |
+| CALC | 1 | Sometimes | 266 | 54.51 |
+| CALC | 2 | no | 176 | 36.07 |
+| CALC | 3 | Frequently | 45 | 9.22 |
 | CALC | 4 | Always | 1 | 0.2 |
-| CH2O | 1 | 2.0 | 266 | 53.41 |
-| CH2O | 2 | 1.0 | 135 | 27.11 |
-| CH2O | 3 | 3.0 | 97 | 19.48 |
-| FAF | 1 | 0.0 | 162 | 32.53 |
-| FAF | 2 | 1.0 | 158 | 31.73 |
-| FAF | 3 | 2.0 | 113 | 22.69 |
-| FAF | 4 | 3.0 | 65 | 13.05 |
-| FAVC | 1 | yes | 348 | 69.88 |
-| FAVC | 2 | no | 150 | 30.12 |
-| FCVC | 1 | 2.0 | 272 | 54.62 |
-| FCVC | 2 | 3.0 | 194 | 38.96 |
-| FCVC | 3 | 1.0 | 32 | 6.43 |
-| Gender | 1 | Male | 271 | 54.42 |
-| Gender | 2 | Female | 227 | 45.58 |
-| MTRANS | 1 | Public_Transportation | 326 | 65.46 |
-| MTRANS | 2 | Automobile | 99 | 19.88 |
-| MTRANS | 3 | Walking | 55 | 11.04 |
-| MTRANS | 4 | Motorbike | 11 | 2.21 |
-| MTRANS | 5 | Bike | 7 | 1.41 |
-| NCP | 1 | 3.0 | 344 | 69.08 |
-| NCP | 2 | 1.0 | 108 | 21.69 |
-| NCP | 3 | 4.0 | 46 | 9.24 |
-| SCC | 1 | no | 443 | 88.96 |
-| SCC | 2 | yes | 55 | 11.04 |
-| SMOKE | 1 | no | 466 | 93.57 |
-| SMOKE | 2 | yes | 32 | 6.43 |
-| TUE | 1 | 0.0 | 243 | 48.8 |
-| TUE | 2 | 1.0 | 181 | 36.35 |
-| TUE | 3 | 2.0 | 74 | 14.86 |
-| family_history_with_overweight | 1 | yes | 300 | 60.24 |
-| family_history_with_overweight | 2 | no | 198 | 39.76 |
+| CH2O | 1 | 2.0 | 263 | 53.89 |
+| CH2O | 2 | 1.0 | 131 | 26.84 |
+| CH2O | 3 | 3.0 | 94 | 19.26 |
+| FAF | 1 | 0.0 | 159 | 32.58 |
+| FAF | 2 | 1.0 | 152 | 31.15 |
+| FAF | 3 | 2.0 | 112 | 22.95 |
+| FAF | 4 | 3.0 | 65 | 13.32 |
+| FAVC | 1 | yes | 340 | 69.67 |
+| FAVC | 2 | no | 148 | 30.33 |
+| FCVC | 1 | 2.0 | 264 | 54.1 |
+| FCVC | 2 | 3.0 | 192 | 39.34 |
+| FCVC | 3 | 1.0 | 32 | 6.56 |
+| Gender | 1 | Male | 266 | 54.51 |
+| Gender | 2 | Female | 222 | 45.49 |
+| MTRANS | 1 | Public_Transportation | 318 | 65.16 |
+| MTRANS | 2 | Automobile | 98 | 20.08 |
+| MTRANS | 3 | Walking | 54 | 11.07 |
+| MTRANS | 4 | Motorbike | 11 | 2.25 |
+| MTRANS | 5 | Bike | 7 | 1.43 |
+| NCP | 1 | 3.0 | 340 | 69.67 |
+| NCP | 2 | 1.0 | 102 | 20.9 |
+| NCP | 3 | 4.0 | 46 | 9.43 |
+| SCC | 1 | no | 433 | 88.73 |
+| SCC | 2 | yes | 55 | 11.27 |
+| SMOKE | 1 | no | 456 | 93.44 |
+| SMOKE | 2 | yes | 32 | 6.56 |
+| TUE | 1 | 0.0 | 237 | 48.57 |
+| TUE | 2 | 1.0 | 178 | 36.48 |
+| TUE | 3 | 2.0 | 73 | 14.96 |
+| family_history_with_overweight | 1 | yes | 296 | 60.66 |
+| family_history_with_overweight | 2 | no | 192 | 39.34 |
 
 </details>
 
@@ -348,11 +347,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-b36e-7939-b271-e858cafffee4 |
-| checksum | v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8 |
-| built_at | 2026-10-06T16:12:16+00:00 |
-| path | obesity_estimation/01a111fc-b36e-7939-b271-e858cafffee4 |
+| uuid | 01a13a7d-c2ba-7a4d-bb80-1eb0032878a9 |
+| checksum | v2:ed914824ca4ef307976afa2a00fbd0a66b334728e4e282386dff8cdef1232c76 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | obesity_estimation/01a13a7d-c2ba-7a4d-bb80-1eb0032878a9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

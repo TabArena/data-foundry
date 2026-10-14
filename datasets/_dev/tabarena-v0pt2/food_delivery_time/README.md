@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: food_delivery_time
 container_format: 2
-checksum: v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778
+checksum: v2:643ec8f9b8359259070ebd4bee6a3c93bf775c40455d60056c9e7af788384202
 build:
-  uuid: 01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae
-  checksum: v2:18643db11fcad191f6039bce281ec8cc88b4a68a122193dd364af0b0073f3c0c
-  built_at: '2026-10-06T16:12:25+00:00'
-  path: food_delivery_time/01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae
+  uuid: 01a13a7d-c2cc-70a6-b90d-08296c319c01
+  checksum: v2:643ec8f9b8359259070ebd4bee6a3c93bf775c40455d60056c9e7af788384202
+  built_at: '2026-10-14T12:58:03+00:00'
+  path: food_delivery_time/01a13a7d-c2cc-70a6-b90d-08296c319c01
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 45451
   n_features: 9
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `Time_taken(min)`, scored with `rmse` on IID splits. 45,451 rows and 9 features. Source: Kaggle (2023).
 
-Built as `01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2cc-70a6-b90d-08296c319c01` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -78,9 +78,11 @@ Built as `01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The delivery time in minutes (10 to 54, 26 on average).
 
-**Known at prediction time.** The courier's ID, age and rating, the vehicle (motorcycle, scooter and others), the order type (snack, meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address.
+**Known at prediction time.** The courier's ID, age and rating, the vehicle (motorcycle, scooter and others), the order type (snack, meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address, which is the restaurant plus one of 12 fixed offsets.
 
 **What the test data stands for.** Random orders, so the test data stands for other orders of the same couriers and period; a courier's other orders can be in training.
+
+**Our changes to the source.** We correct the sign of 424 restaurant coordinates; restaurants at (0, 0), a missing code, stay.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The release has no order time, so the test orders are a random draw from the period rather than later orders, and time of day, traffic and weather are missing. Whether a courier's rating includes later orders is not stated.
 
@@ -159,16 +161,19 @@ The first 5 of 45,451 rows of the final frame (random rows: the frame is shuffle
 
 | Time_taken(min) | Delivery_person_ID | Delivery_person_Age | Delivery_person_Ratings | Restaurant_latitude | Restaurant_longitude | Delivery_location_latitude | Delivery_location_longitude | Type_of_order | Type_of_vehicle |
 |---|---|---|---|---|---|---|---|---|---|
-| 45 | JAPRES08DEL03 | 29 | 4.5 | 26.9103 | 75.783 | 27.0003 | 75.873 | Meal | motorcycle |
-| 36 | MUMRES14DEL02 | 22 | 4.6 | 19.1813 | 72.8362 | 19.2613 | 72.9162 | Meal | scooter |
-| 19 | MUMRES010DEL02 | 28 | 4.7 | 19.0035 | 72.8277 | 19.0535 | 72.8777 | Meal | motorcycle |
-| 30 | BANGRES12DEL03 | 22 | 4.7 | 12.9395 | 77.626 | 13.0295 | 77.716 | Drinks | motorcycle |
-| 31 | HYDRES12DEL02 | 35 | 4 | 17.4296 | 78.3926 | 17.5096 | 78.4726 | Drinks | motorcycle |
+| 17 | BANGRES13DEL02 | 34 | 4.6 | 12.9357 | 77.6141 | 12.9557 | 77.6341 | Buffet | motorcycle |
+| 27 | CHENRES02DEL01 | 29 | 4.8 | 13.0864 | 80.2207 | 13.1564 | 80.2907 | Buffet | scooter |
+| 18 | JAPRES11DEL02 | 29 | 4.9 | 26.9029 | 75.793 | 26.9829 | 75.873 | Meal | motorcycle |
+| 25 | RANCHIRES15DEL02 | 28 | 4.6 | 23.3697 | 85.3398 | 23.3897 | 85.3598 | Snack | motorcycle |
+| 35 | BANGRES19DEL02 | 24 | 4.9 | 12.9143 | 77.6784 | 12.9943 | 77.7584 | Buffet | motorcycle |
 
 ## Curation notes
 
 - We dropped entries with a duplicated ID, keeping only the first one.
 - We dropped the ID column.
+- We flip the sign of the restaurant's latitude in 424 rows (159 also its longitude): the same restaurants appear elsewhere with positive coordinates, as all of India has.
+- 3,630 rows (8%) have the restaurant at (0, 0), a missing-value code. We keep them as they are: the delivery point is still the offset, so the distance is right, and their mean time (26.1 min) matches the rest (26.3).
+- The delivery point is always the restaurant plus one of 12 equal offsets in latitude and longitude (0.01 to 0.14 degrees), so the delivery addresses are synthetic and only the distance class carries information.
 - Tagged ForcedIIDFromTemporal: orders arrive over time, but the release has no order date or time, so the split is random.
 - Anomaly: The ID of the delivery person is given as a feature. In some contexts, this feature might not be allowed to use. Moreover, using this information might require considering a temporal split where a cold-start problem is covered.
 
@@ -195,7 +200,7 @@ Default splits.
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 12 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 197 row(s) (0.4%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_conflicting_duplicate_rows`: 213 row(s) (0.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
@@ -207,10 +212,10 @@ Default splits.
 | Type_of_order | category | 0 | 0 | 4 | Snack , Meal , Drinks , Buffet |
 | Type_of_vehicle | category | 0 | 0 | 4 | motorcycle , scooter , electric_scooter , bicycle |
 | Delivery_person_Ratings | float64 | 0 | 0 | 28 | 4.6, 4.8, 4.7, 4.9, 5.0, 4.5, 4.1, 4.2, 4.3, 4.4 |
-| Restaurant_latitude | float64 | 0 | 0 | 653 | 0.0, 26.9114, 26.9141, 26.8923, 26.9029, 26.9029, 26.8884, 26.9137, 26.9053, 26… |
-| Restaurant_longitude | float64 | 0 | 0 | 515 | 0.0, 75.8057, 75.789, 75.7929, 75.793, 75.8069, 75.8007, 75.7528, 75.7946, 75.8… |
-| Delivery_location_latitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.09, 0.02, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
-| Delivery_location_longitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.09, 0.02, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
+| Restaurant_latitude | float64 | 0 | 0 | 389 | 0.0, 26.9141, 26.9114, 26.9029, 26.9029, 26.8923, 26.9137, 26.9053, 26.8884, 26… |
+| Restaurant_longitude | float64 | 0 | 0 | 389 | 0.0, 75.8057, 75.789, 75.793, 75.7929, 75.8069, 75.7528, 75.7946, 75.8007, 75.8… |
+| Delivery_location_latitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.02, 0.09, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
+| Delivery_location_longitude | float64 | 0 | 0 | 4373 | 0.13, 0.06, 0.02, 0.09, 0.07, 0.04, 0.05, 0.11, 0.01, 0.08 |
 | Delivery_person_Age | int64 | 0 | 0 | 22 | 29, 35, 36, 37, 30, 38, 24, 32, 22, 33 |
 | Time_taken(min) | int64 | 0 | 0 | 45 | 26, 25, 27, 28, 29, 19, 15, 18, 16, 17 |
 
@@ -226,8 +231,8 @@ Default splits.
 |---|---|---|---|---|---|
 | Delivery_person_Age | 45451 | 29.5422 | 5.69505 | 15 | 50 |
 | Delivery_person_Ratings | 45451 | 4.63236 | 0.327424 | 1 | 6 |
-| Restaurant_latitude | 45451 | 17.0224 | 8.17732 | -30.9056 | 30.9141 |
-| Restaurant_longitude | 45451 | 70.2372 | 22.8606 | -88.3662 | 88.4335 |
+| Restaurant_latitude | 45451 | 17.4019 | 7.335 | 0 | 30.9141 |
+| Restaurant_longitude | 45451 | 70.7795 | 21.1219 | 0 | 88.4335 |
 | Delivery_location_latitude | 45451 | 17.4655 | 7.33637 | 0.01 | 31.0541 |
 | Delivery_location_longitude | 45451 | 70.8431 | 21.1221 | 0.01 | 88.5635 |
 | Time_taken(min) | 45451 | 26.2906 | 9.38174 | 10 | 54 |
@@ -259,11 +264,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae |
-| checksum | v2:18643db11fcad191f6039bce281ec8cc88b4a68a122193dd364af0b0073f3c0c |
-| built_at | 2026-10-06T16:12:25+00:00 |
-| path | food_delivery_time/01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae |
+| uuid | 01a13a7d-c2cc-70a6-b90d-08296c319c01 |
+| checksum | v2:643ec8f9b8359259070ebd4bee6a3c93bf775c40455d60056c9e7af788384202 |
+| built_at | 2026-10-14T12:58:03+00:00 |
+| path | food_delivery_time/01a13a7d-c2cc-70a6-b90d-08296c319c01 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -62,6 +62,10 @@ Also in a real life scenario images would be used as well for such task
 
 CC (2026-10-06, Lennart): Kept after the task-probe review (flag `one_feature`: `Listed Price`). The listing price is the natural core of predicting a sale price and is known before the sale, so its dominance is expected. On the three temporal windows of v0.2, predicting the sold price as the listed price gives R^2 0.89-0.91 (the 39 listings priced at $0 get the train mean), any curve rising with it (isotonic) 0.92, LightGBM on all numeric features 0.93, and BeyondArena's best with the text (on the old address-order split) 0.945: the methods cut the remaining error by about a fifth, so the task is not trivial. What is left to predict is the sale-to-list ratio (75% of homes sell within 10% of their list price). Data notes: 921 sales (2.2%) closed at under half or over twice their list price, some apparently one transaction booked on several houses (four listings at $1.1-1.45M each with a sold price of $8.75M).
 
+**Assessment (AI, 2026-10-14):** 2,480 homes (6.0%) have a last sale on or after their listing date, so the listing describes an earlier sale; 125 of them give the predicted price as the last sale price. They are 5-6% of each test window but 50-54% of its squared error. LightGBM RMSE on the shipped windows: 0.196 with them, 0.140 without; also dropping 2,601 listings older than 6 months before the sale gives 0.117.
+
+CC (2026-10-14, Lennart): Drop the 37 rows whose last sale is the sale itself and the 2,480 whose listing predates their last sale (the 37 are among them); keep listings older than 6 months. 39,048 rows.
+
 ## Reference
 
 Kaggle

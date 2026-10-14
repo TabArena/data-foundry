@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084
+checksum: v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81
 build:
   uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
   checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -76,7 +76,7 @@ Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, the Norwegian labour inspection authority decides which organisations to inspect, and with which checklist, by predicting where an inspection would find a breach (the source's non-compliance task).
 
-**One row.** One inspection of a Norwegian organisation with one checklist (63,634 rows); the data has no dates.
+**One row.** One inspection of a Norwegian organisation with one checklist, January 2012 to June 2019 (63,634 rows); the data has no dates.
 
 **Predicted.** Whether the organisation was found non-compliant with any regulation the checklist covers, which is known only when the inspection is completed.
 
@@ -180,7 +180,7 @@ We start with the data from dataverse. We create a task for the Non-compliance C
 - We remove two rows with missing values for IsRegisteredVATregister, as these seem to be data artifact given the data state.
 - The data has spatial information (County).
 - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
-- As it turns out, the data does not contain temporal information, although it is clearly a temporal task and has data from 2021 to 2019. It seems the curators have removed the temporal information. This can mean that there is not temporal leakage or relevance for the task, or that it was forgotten. In any case, we must treat the task as IID now.
+- The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
 
 ## Splits
 
@@ -425,4 +425,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084` |
+| stale | yes: the definition now gives checksum `v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81` |

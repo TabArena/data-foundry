@@ -10,10 +10,10 @@ this file is the short version for the benchmark team and the tech report.
 - 40 of the 142 datasets needed action: 12 are removed, 21 changed (features, rows or split), 7 kept as they are with
   a documented note. The other 103 showed no leak.
 - By severity: 21 large, 9 medium, 7 small or no leak, and 3 kept although they affect results (below).
-- The working copy now holds 125 datasets, 40 of them from TabArena v0.1: after the audit, the task-probe review
+- The working copy now holds 124 of them, 40 from TabArena v0.1: after the audit, the task-probe review
   retired `fitness_club` (trivial) and `parkinsons_biomedical_voice_measurements` (too small), and on 2026-10-06
   `healthcare_insurance_expenses` and `churn` (simulated data) and `physiochemical_protein` (groups that cannot be
-  recovered) were retired; the evidence is in their records and [`CHANGELOG.md`](CHANGELOG.md).
+  recovered) were retired, and on 2026-10-14 `mutual_funds_india` (no use case); the evidence is in their records and [`CHANGELOG.md`](CHANGELOG.md).
 - Built on 2026-10-02 as container format 2: every dataset of the working copy has a new container and UUID (the table in
   [`README.md`](README.md)); the shipped BeyondArena containers are unchanged. Results on the changed datasets are not
   comparable with earlier TabArena v0.1 or BeyondArena results.
@@ -80,9 +80,9 @@ BeyondArena); BeyondArena means BeyondArena only.
 
 ## What changes for TabArena v0.2
 
-- 125 datasets: the 142 BeyondArena datasets minus the 12 removed here, the 2 retired by the task-probe review
+- 124 datasets: the 142 BeyondArena datasets minus the 12 removed here, the 2 retired by the task-probe review
   (`fitness_club`, `parkinsons_biomedical_voice_measurements`) and the 3 retired on 2026-10-06
-  (`healthcare_insurance_expenses`, `churn`, `physiochemical_protein`). 40 of the 51 TabArena v0.1 datasets remain (6
+  (`healthcare_insurance_expenses`, `churn`, `physiochemical_protein`) and `mutual_funds_india` (2026-10-14). 40 of the 51 TabArena v0.1 datasets remain (6
   removed, 2 never in BeyondArena, 3 retired on 2026-10-06).
 - 21 datasets changed through the audit, 7 of them from TabArena v0.1 (the 6 above plus `diabetes_130_us`). Their
   v0.2 results are not comparable with earlier results.
@@ -107,7 +107,7 @@ BeyondArena); BeyondArena means BeyondArena only.
 | `santander_customer_transaction_prediction` | BeyondArena | 400 `has_one`/`has_zero` features computed from the labels of all rows, test folds included | dropped (AUC 0.903 → 0.896) |
 | `diabetes_130_us` | TabArena v0.1 | 1,545 encounters ended in death or hospice and cannot be readmitted | the paper's cohort (71,518 → 69,973 rows) |
 | `coffee_rating_prediction` | BeyondArena | the oldest of 5 six-month windows trained on 44% of the rows | 13 two-month windows, train ≥ 50% |
-| `cirrhosis_patient_survival_prediction` | BeyondArena | the target uses deaths only | kept: survival time without censoring, by design |
+| `cirrhosis_patient_survival_prediction` | BeyondArena | the target uses deaths only | kept then; on 2026-10-14 found to be right truncation and replaced by death or transplant within 5 years (304 patients) |
 | `home_credit_default_risk` | BeyondArena | the feature selection ran on the full labelled set | kept (slight optimism); definition restructured, same data |
 | `ieee_fraud_detection` | BeyondArena | `uid` carries earlier fraud labels forward | kept: legitimate history under the temporal split; dropping it costs 0.001-0.007 AUC |
 | `south_africa_coronary_heart_disease` | BeyondArena | measurements were taken after the heart attack | kept: this weakens the signal (dropping them: AUC 0.774 → 0.778) |
@@ -134,12 +134,12 @@ BeyondArena); BeyondArena means BeyondArena only.
 ### C. Open
 
 - Flagged in the audit, not fixed yet (no leak):
-  - `santander_transaction_value` stores the target as log1p and scores it with rmsle, so the log is applied twice;
-  - `heart_disease_va_long_beach` codes missing values as `chol = 0` (about 28% of rows) and `trestbps = 0`;
   - `thyroid_discordant` has an `age` of 455;
-  - `heloc` has 588 rows that are -9 in every feature (no bureau record);
-  - `sberbank_housing_market_forecasting` cites the Home Credit competition, and
-    `cirrhosis_patient_survival_prediction` has "IID" as its licence.
+  - `heloc` has 588 rows that are -9 in every feature (no bureau record).
+- Fixed on 2026-10-14 (CHANGELOG): `santander_transaction_value` scored its log1p target with rmsle (now rmse);
+  `heart_disease_va_long_beach` coded missing values as `chol = 0` and `trestbps = 0` (now missing);
+  `sberbank_housing_market_forecasting` cited the Home Credit competition; `cirrhosis_patient_survival_prediction` had
+  "IID" as its licence.
 - `homesite_quote_conversion`: 2 bundle-check warnings (13 columns constant after -1 → missing; a `' '` level in
   `GeographicField63`).
 - `online_shoppers_purchasing_intention_dataset`: 40 exact duplicate rows remain after the month filter.

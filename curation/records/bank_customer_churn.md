@@ -40,3 +40,5 @@ Potential issue: -
 Lennart: No objection
 
 Andrej: Licence & data source unclear
+
+CC (2026-10-14, Lennart): No licence is known (Kaggle: 'Other (specified in description)', and the description names none), so the definition's licence is None.

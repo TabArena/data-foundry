@@ -60,7 +60,7 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
         We start with the data from UCI.
 
         - We encode missing values as np.nan instead of "?".
-        - We reverse the discretization of several numeric features and make them integers again.
+        - We turn the bands of age, tumour size and number of affected lymph nodes (e.g. "40-49") into numbers: each band becomes its midpoint (age 24.5 to 74.5, tumour size 2 to 52, nodes 1 to 25). The source gives only the bands, so the exact values cannot be recovered.
         - We keep duplicates as they seem naturally occurring.
     """
 
@@ -88,7 +88,7 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
         df = raw
 
         def interval_midpoint(x):
-            """Convert strings like '10-19' -> 14 (mean of boundaries, rounded),
+            """Convert strings like '10-19' -> 14.5 (mean of the bounds, not rounded),
             '?' / NaN -> NaN, already-numeric -> as-is.
             """
             if pd.isna(x):

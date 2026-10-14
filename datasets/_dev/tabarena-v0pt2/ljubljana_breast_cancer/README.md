@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_breast_cancer
 container_format: 2
-checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
+checksum: v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725
 build:
   uuid: 01a111fc-e2f6-79bc-bc94-8e4779cb09a2
   checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 286
   n_features: 9
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows and 9 features. Source: UCI (1988).
 
-Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -173,7 +173,7 @@ The first 5 of 286 rows of the final frame (random rows: the frame is shuffled).
 We start with the data from UCI.
 
 - We encode missing values as np.nan instead of "?".
-- We reverse the discretization of several numeric features and make them integers again.
+- We turn the bands of age, tumour size and number of affected lymph nodes (e.g. "40-49") into numbers: each band becomes its midpoint (age 24.5 to 74.5, tumour size 2 to 52, nodes 1 to 25). The source gives only the bands, so the exact values cannot be recovered.
 - We keep duplicates as they seem naturally occurring.
 
 ## Splits
@@ -328,3 +328,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725` |

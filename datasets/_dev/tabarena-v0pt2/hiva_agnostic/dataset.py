@@ -17,11 +17,18 @@ class HivaAgnostic(AbstractCuratedDataset):
         ),
         row=(
             "One compound of the US National Cancer Institute's AIDS antiviral screen, as prepared for the 2007 "
-            "Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training compounds)."
+            "Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training and 384 validation compounds)."
         ),
-        predicted="Whether the compound is active in the screen (3.51% are).",
-        known=("1,617 anonymous yes/no descriptors of the molecule's structure, without the duplicated ones."),
+        predicted="Whether the compound is active in the screen (3.52% are).",
+        known=(
+            "1,429 anonymous yes/no descriptors of the molecule's structure (the challenge's 1,617 without the 188 that "
+            "copy another)."
+        ),
         split="Random compounds, so the test data stands for other compounds of the same screen.",
+        changes=(
+            "We add the challenge's 384 validation compounds, whose labels it released, and drop the descriptors that "
+            "copy another."
+        ),
         fit="direct",
         fit_reason=(
             "The features come from the structure alone, as for an untested compound, and the test compounds are "
@@ -52,18 +59,28 @@ class HivaAgnostic(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 135 of the 3,845 training compounds are active.
-        - We use only the challenge's training file. The download also fetches the validation labels the challenge released afterwards (hiva_valid.labels, 384 compounds, 14 active), but they are not used; the challenge site offers no test labels.
+        - The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 149 of the 4,229 compounds are active.
+        - We use the challenge's training (3,845 compounds, 135 active) and validation compounds (384, 14 active; labels in ValidAgnos.zip), as `hiva.param` lists them. The test labels (38,449 compounds) were never released. The validation compounds were added on 2026-10-14.
+        - We drop the 188 descriptors that copy an earlier one; until 2026-10-14 a fixed list dropped 99 of them. 23 compounds repeat another's descriptors, always with the same label (3 of them across training and validation), and stay.
     """
 
     # Task
     target = "CompoundActive"
     problem_type = "binary_classification"
 
-    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        # train data
-        df = pd.read_csv(raw_dir / "HIVA/hiva_train.data", header=None, sep=" ")
-        y = pd.read_csv(raw_dir / "HIVA/hiva_train.labels", header=None)
+    def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
+        # The challenge's training and validation compounds; it never released the test labels
+        df = pd.concat(
+            [pd.read_csv(raw_dir / f"HIVA/hiva_{part}.data", header=None, sep=" ") for part in ("train", "valid")],
+            ignore_index=True,
+        )
+        y = pd.concat(
+            [
+                pd.read_csv(raw_dir / "HIVA/hiva_train.labels", header=None),
+                pd.read_csv(raw_dir / "Agnostic/hiva_valid.labels", header=None),
+            ],
+            ignore_index=True,
+        )
         return {"df": df, "y": y}
 
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -71,111 +88,7 @@ class HivaAgnostic(AbstractCuratedDataset):
         df.columns = [f"molecule_structure_property_{i + 1}" for i in range(len(df.columns))]
         # Remove trailing whitespace column
         df = df.drop(columns=["molecule_structure_property_1618"])
-        target_feature = "CompoundActive"
-        df[target_feature] = y[0]
-        df = df.astype("category")
-        # Drop duplicated columns
-        df = df.drop(
-            columns=[
-                "molecule_structure_property_710",
-                "molecule_structure_property_1079",
-                "molecule_structure_property_1398",
-                "molecule_structure_property_1024",
-                "molecule_structure_property_829",
-                "molecule_structure_property_1615",
-                "molecule_structure_property_724",
-                "molecule_structure_property_732",
-                "molecule_structure_property_410",
-                "molecule_structure_property_509",
-                "molecule_structure_property_1035",
-                "molecule_structure_property_811",
-                "molecule_structure_property_686",
-                "molecule_structure_property_1386",
-                "molecule_structure_property_59",
-                "molecule_structure_property_1493",
-                "molecule_structure_property_542",
-                "molecule_structure_property_1500",
-                "molecule_structure_property_376",
-                "molecule_structure_property_765",
-                "molecule_structure_property_970",
-                "molecule_structure_property_1011",
-                "molecule_structure_property_1127",
-                "molecule_structure_property_701",
-                "molecule_structure_property_1114",
-                "molecule_structure_property_1390",
-                "molecule_structure_property_1194",
-                "molecule_structure_property_925",
-                "molecule_structure_property_797",
-                "molecule_structure_property_1373",
-                "molecule_structure_property_1223",
-                "molecule_structure_property_1457",
-                "molecule_structure_property_1342",
-                "molecule_structure_property_1314",
-                "molecule_structure_property_1272",
-                "molecule_structure_property_1322",
-                "molecule_structure_property_1576",
-                "molecule_structure_property_633",
-                "molecule_structure_property_1430",
-                "molecule_structure_property_574",
-                "molecule_structure_property_519",
-                "molecule_structure_property_937",
-                "molecule_structure_property_734",
-                "molecule_structure_property_320",
-                "molecule_structure_property_1344",
-                "molecule_structure_property_175",
-                "molecule_structure_property_544",
-                "molecule_structure_property_533",
-                "molecule_structure_property_746",
-                "molecule_structure_property_1104",
-                "molecule_structure_property_1138",
-                "molecule_structure_property_322",
-                "molecule_structure_property_402",
-                "molecule_structure_property_757",
-                "molecule_structure_property_784",
-                "molecule_structure_property_1472",
-                "molecule_structure_property_1599",
-                "molecule_structure_property_791",
-                "molecule_structure_property_1205",
-                "molecule_structure_property_1031",
-                "molecule_structure_property_1074",
-                "molecule_structure_property_1455",
-                "molecule_structure_property_1475",
-                "molecule_structure_property_287",
-                "molecule_structure_property_748",
-                "molecule_structure_property_1175",
-                "molecule_structure_property_1191",
-                "molecule_structure_property_1582",
-                "molecule_structure_property_264",
-                "molecule_structure_property_1050",
-                "molecule_structure_property_554",
-                "molecule_structure_property_1449",
-                "molecule_structure_property_1140",
-                "molecule_structure_property_407",
-                "molecule_structure_property_1341",
-                "molecule_structure_property_1124",
-                "molecule_structure_property_1049",
-                "molecule_structure_property_1325",
-                "molecule_structure_property_667",
-                "molecule_structure_property_851",
-                "molecule_structure_property_1523",
-                "molecule_structure_property_525",
-                "molecule_structure_property_1208",
-                "molecule_structure_property_1556",
-                "molecule_structure_property_933",
-                "molecule_structure_property_1356",
-                "molecule_structure_property_1209",
-                "molecule_structure_property_964",
-                "molecule_structure_property_989",
-                "molecule_structure_property_1028",
-                "molecule_structure_property_1458",
-                "molecule_structure_property_842",
-                "molecule_structure_property_1468",
-                "molecule_structure_property_1419",
-                "molecule_structure_property_1367",
-                "molecule_structure_property_112",
-                "molecule_structure_property_699",
-                "molecule_structure_property_796",
-                "molecule_structure_property_478",
-            ]
-        )
-        return df
+        # Drop the descriptors that copy an earlier one (188 of 1,617)
+        df = df.loc[:, ~df.T.duplicated().to_numpy()]
+        df["CompoundActive"] = y[0]
+        return df.astype("category")

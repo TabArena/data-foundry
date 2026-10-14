@@ -16,15 +16,19 @@ class Fiat500(AbstractCuratedDataset):
             "listing is overpriced, by comparison with current listings."
         ),
         row=(
-            "One used Fiat 500 listed on the Italian site automobile.it (1,538 listings, uploaded to Kaggle in 2020; "
-            "the date of the crawl is not stated)."
+            "One used Fiat 500 listed on the Italian site automobile.it (1,434 cars from 1,538 listings, uploaded to "
+            "Kaggle in 2020; the date of the crawl is not stated)."
         ),
         predicted="The listed price, from 2,500 to 11,100; the currency is not stated.",
         known=(
             "The trim (lounge, pop or sport), engine power, age in days, mileage, number of previous owners, and the "
             "location as latitude and longitude."
         ),
-        split="Random listings of the same crawl, standing for new listings in the same market.",
+        split="Random cars of the same crawl, standing for new listings in the same market.",
+        changes=(
+            "We keep one row per car: 104 listings repeat the trim, engine power, age, mileage and owners of another, "
+            "the same car scraped twice or listed at several places."
+        ),
         fit="direct",
         fit_reason=(
             "The features are what a listing shows, and a held-out listing is a car to price. The target is the "
@@ -52,12 +56,13 @@ class Fiat500(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from Kaggle and use it as is.
+        We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from Kaggle.
 
         - One row is one used Fiat 500 listed for sale in Italy, from "a query done on an website specialized in used cars" (data card); the file name names automobile.it. The target is the listed price.
         - Currency: not stated.
         - Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
         - Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
+        - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
     """
 
     # Task
@@ -67,6 +72,12 @@ class Fiat500(AbstractCuratedDataset):
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv")
         return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        # One row per car: the same model, power, age, mileage and owners again is the same car listed again
+        return raw.drop_duplicates(
+            subset=["model", "engine_power", "age_in_days", "km", "previous_owners"], keep="first"
+        )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

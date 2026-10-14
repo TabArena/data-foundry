@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: jm1
 container_format: 2
-checksum: v2:b7756d636f5d7cd315cbb6edcf0d2ee1880b597ff111bd88e0e7077881ca0c06
+checksum: v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be
 build:
   uuid: 01a111fc-b2fb-721e-9fd2-4f7373b53bca
   checksum: v2:bc8ba9ad339045c44c01315e91b4c963a87914574576a3c1bd368d478f4efd5e
@@ -64,7 +64,7 @@ decisions: []
 
 Binary classification of `defects`, scored with `roc_auc` on IID splits. 8,736 rows and 21 features. Source: Other (2004).
 
-Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b7756d636f5d7cd315cbb6edcf0d2ee1880b597ff111bd88e0e7077881ca0c06`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -101,7 +101,17 @@ Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` 
 `dataset.py` reads its raw files from `local-data-warehouse/jm1/`. To get them:
 
 ```text
-We download the data from OpenML inside the notebook.
+`_load_raw` reads OpenML dataset 1053 with openml-python, which downloads the file to its own cache
+(~/.cache/openml), not to local-data-warehouse/jm1/. To fetch it before a check or build:
+
+.venv/bin/python -c "import openml; openml.datasets.get_dataset(1053, download_data=True).get_data()"
+
+OpenML 1053 is a copy of jm1.arff from the PROMISE repository (the source URL). The ARFF on OpenML
+(https://api.openml.org/data/v1/download/53936/jm1.arff) is byte-identical to the PROMISE file (md5
+0c19aefce52ccb955d0de57e4c0fe8bf), and the parquet that openml-python 0.15 reads
+(https://data.openml.org/datasets/0000/1053/dataset_1053.pq) holds the same 10,885 rows and values. The
+PROMISE file answers over plain http only; the Wayback Machine holds the same file:
+https://web.archive.org/web/20240126152134id_/http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff
 ```
 
 Then, from the repository root:
@@ -171,6 +181,7 @@ The first 5 of 8,736 rows of the final frame (random rows: the frame is shuffled
 
 - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.
 - We drop duplicates. 25% of the rows share their code-metric vector with another row (669 groups, mostly trivial modules such as 173 copies of a 4-line, complexity-1 function), so a random split puts copies on both sides. We drop exact duplicate rows (1,973) and then every copy of a metric vector that appears with both labels (88 vectors, 176 rows): 10,885 -> 8,736 rows.
+- The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
 
 ## Splits
 
@@ -285,4 +296,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b7756d636f5d7cd315cbb6edcf0d2ee1880b597ff111bd88e0e7077881ca0c06` |
+| stale | yes: the definition now gives checksum `v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be` |

@@ -2,26 +2,27 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3
+checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
 build:
-  uuid: 01a111fc-cee4-7ba9-97fd-b7a0365aad44
-  checksum: v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d
-  built_at: '2026-10-06T16:12:23+00:00'
-  path: concrete_compressive_strength/01a111fc-cee4-7ba9-97fd-b7a0365aad44
+  uuid: 01a13a7d-c2ed-79de-abb8-3476f95e6667
+  checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
+  built_at: '2026-10-14T12:58:03+00:00'
+  path: concrete_compressive_strength/01a13a7d-c2ed-79de-abb8-3476f95e6667
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1030
   n_features: 8
   dtypes:
+    category: 1
     float64: 8
     int64: 1
   n_test_dataset_rows: null
@@ -29,13 +30,20 @@ task:
   target: ConcreteCompressiveStrength
   problem_type: regression
   metric: rmse
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: mix
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 428
+    test_groups_per_fold:
+      min: 142
+      max: 143
 splits:
   n_repeats: 10
   n_folds: 3
@@ -43,11 +51,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 686
-    max: 687
+    min: 652
+    max: 731
   n_test:
-    min: 343
-    max: 344
+    min: 299
+    max: 378
 bundle_checks:
   ok: true
   errors: []
@@ -63,25 +71,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1,030 rows and 8 features. Source: UCI (2007).
+Regression of `ConcreteCompressiveStrength`, scored with `rmse` on grouped splits by `mix`. 1,030 rows and 8 features. Source: UCI (2007).
 
-Built as `01a111fc-cee4-7ba9-97fd-b7a0365aad44` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
-**Question.** How strong will a concrete mix be after a given number of days?
+**Question.** How strong will a new concrete mix be after a given number of days?
 
-**Use case.** For example, a civil engineer designing a high-performance concrete mix estimates its compressive strength at a given age before casting and testing specimens.
+**Use case.** A civil engineer designing a high-performance concrete mix estimates its compressive strength at a given age before casting and testing specimens; the data's author used such models to design mixes (Yeh 1999).
 
-**One row.** One laboratory test of one concrete mix at one age (1,030 tests, published by I-Cheng Yeh in 1998); many mixes are tested at several ages.
+**One row.** One laboratory test of one concrete mix at one age (1,030 tests of 428 mixes, published by I-Cheng Yeh in 1998); 182 mixes are tested at several ages, up to 20 times.
 
 **Predicted.** The compressive strength, in megapascals (2 to 83 in the data).
 
 **Known at prediction time.** The amount of each of seven ingredients per cubic metre (cement, blast-furnace slag, fly ash, water, superplasticizer, coarse and fine aggregate) and the age at the test, 1 to 365 days.
 
-**What the test data stands for.** Random tests, so a test mix can be in training at another age; the test data stands for new mixes only in part.
+**What the test data stands for.** Whole mixes are held out, so the test data stands for mixes never tested, at every age; mixes that share some ingredient amounts can be on both sides.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The inputs are what an engineer chooses, but the random split puts tests of the same mix at other ages in training, so the score mixes designing new mixes with filling in known ones; a split by mix would match the use case.
+**Our changes to the source.** We added the mix as a group column and split by it; with random tests, 73% of the test rows had their mix in training at another age.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The inputs are what an engineer chooses, and a held-out mix is a design not yet tested. The task is narrow (one laboratory's family of high-performance mixes) but real.
 
 ## Files in this folder
 
@@ -122,18 +132,20 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | yeh1998modeling |
-| rows x columns | 1,030 x 9 |
+| rows x columns | 1,030 x 10 |
 | task.target | ConcreteCompressiveStrength |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | mix |
+| task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
-- categorical (0): none
+- categorical (1): `mix`
 - string (0): none
 - datetime (0): none
 
@@ -161,61 +173,88 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 1,030 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| ConcreteCompressiveStrength | Cement | BlastFurnaceSlag | FlyAsh | Water | Superplasticizer | CoarseAggregate | FineAggregate | Age |
-|---|---|---|---|---|---|---|---|---|
-| 22.8354 | 233.81 | 0 | 94.58 | 197.89 | 4.567 | 947.04 | 852.16 | 28 |
-| 55.6476 | 397 | 17.2 | 158 | 167 | 20.8 | 967 | 633 | 28 |
-| 11.9576 | 203.5 | 135.7 | 0 | 185.7 | 0 | 1076.2 | 759.3 | 7 |
-| 26.2277 | 153 | 145 | 113 | 178 | 8 | 867 | 824 | 28 |
-| 28.6822 | 249.1 | 0 | 98.75 | 158.11 | 12.8 | 987.76 | 889.01 | 14 |
+| ConcreteCompressiveStrength | Cement | BlastFurnaceSlag | FlyAsh | Water | Superplasticizer | CoarseAggregate | FineAggregate | Age | mix |
+|---|---|---|---|---|---|---|---|---|---|
+| 35.2253 | 140 | 164 | 128 | 237 | 6 | 869 | 656 | 28 | mix_260 |
+| 29.7261 | 143 | 169.4 | 142.7 | 190.7 | 8.4 | 967.4 | 643.5 | 28 | mix_355 |
+| 6.26734 | 385 | 0 | 0 | 186 | 0 | 966 | 763 | 1 | mix_206 |
+| 16.8894 | 157 | 236 | 0 | 192 | 0 | 935.4 | 781.2 | 7 | mix_176 |
+| 18.0298 | 165 | 0 | 150 | 182 | 12 | 1023 | 729 | 28 | mix_247 |
 
 ## Curation notes
 
 - We rename features to be shorter while similar to the original names.
+- The 1,030 tests are 428 mixes: a mix is its amounts of the seven ingredients, and 182 mixes are tested at several ages (up to 20 tests). We add the mix as the group column `mix`, built from identical values in all seven ingredient columns; it is no feature.
+- Grouped by mix since 2026-10-14 (IID before, the split shipped in TabArena v0.1 and BeyondArena): a model is used for a mix that was not tested, while a random split gave 73% of the test rows their mix in training at another age. Mixes carry 65% of the target variance. R^2, random against grouped by mix: LightGBM 0.925 / 0.874, extra trees 0.912 / 0.881, random forest 0.901 / 0.856, MLP 0.916 / 0.838, kNN 0.882 / 0.826, ridge 0.816 / 0.804; the ranking of the models changes.
+- Note: 34 rows repeat the features of another row, a mix tested again at the same age (25 with the same strength, 9 with another); they stay, and the grouped split keeps them in the fold of their mix.
 
 ## Splits
 
-Default splits.
+Grouped splits on the mix: all tests of one mix stay on one side, so a model predicts the strength of a mix it has not seen, at any age. Mixes that share some ingredient amounts can be on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 686 to 687 rows, test 343 to 344 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 652 to 731 rows, test 299 to 378 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 686 | 344 |
-| 0 | 1 | 687 | 343 |
-| 0 | 2 | 687 | 343 |
-| 1 | 0 | 686 | 344 |
-| 1 | 1 | 687 | 343 |
-| 1 | 2 | 687 | 343 |
-| 2 | 0 | 686 | 344 |
-| 2 | 1 | 687 | 343 |
-| 2 | 2 | 687 | 343 |
-| 3 | 0 | 686 | 344 |
-| 3 | 1 | 687 | 343 |
-| 3 | 2 | 687 | 343 |
-| 4 | 0 | 686 | 344 |
-| 4 | 1 | 687 | 343 |
-| 4 | 2 | 687 | 343 |
-| 5 | 0 | 686 | 344 |
-| 5 | 1 | 687 | 343 |
-| 5 | 2 | 687 | 343 |
-| 6 | 0 | 686 | 344 |
-| 6 | 1 | 687 | 343 |
-| 6 | 2 | 687 | 343 |
-| 7 | 0 | 686 | 344 |
-| 7 | 1 | 687 | 343 |
-| 7 | 2 | 687 | 343 |
-| 8 | 0 | 686 | 344 |
+| 0 | 0 | 680 | 350 |
+| 0 | 1 | 680 | 350 |
+| 0 | 2 | 700 | 330 |
+| 1 | 0 | 665 | 365 |
+| 1 | 1 | 702 | 328 |
+| 1 | 2 | 693 | 337 |
+| 2 | 0 | 684 | 346 |
+| 2 | 1 | 665 | 365 |
+| 2 | 2 | 711 | 319 |
+| 3 | 0 | 677 | 353 |
+| 3 | 1 | 652 | 378 |
+| 3 | 2 | 731 | 299 |
+| 4 | 0 | 695 | 335 |
+| 4 | 1 | 700 | 330 |
+| 4 | 2 | 665 | 365 |
+| 5 | 0 | 704 | 326 |
+| 5 | 1 | 657 | 373 |
+| 5 | 2 | 699 | 331 |
+| 6 | 0 | 655 | 375 |
+| 6 | 1 | 707 | 323 |
+| 6 | 2 | 698 | 332 |
+| 7 | 0 | 668 | 362 |
+| 7 | 1 | 703 | 327 |
+| 7 | 2 | 689 | 341 |
+| 8 | 0 | 681 | 349 |
 | 8 | 1 | 687 | 343 |
-| 8 | 2 | 687 | 343 |
-| 9 | 0 | 686 | 344 |
-| 9 | 1 | 687 | 343 |
-| 9 | 2 | 687 | 343 |
+| 8 | 2 | 692 | 338 |
+| 9 | 0 | 678 | 352 |
+| 9 | 1 | 706 | 324 |
+| 9 | 2 | 676 | 354 |
 
 </details>
+
+## Group structure
+
+One group is a concrete mix: one set of amounts of the seven ingredients (kg per m3 of cement, blast-furnace slag, fly ash, water, superplasticizer, coarse and fine aggregate), identical in all seven columns; its rows are the laboratory tests of that mix, each at one age (1 to 20 tests, 428 mixes). The UCI page describes a row as the strength "for a given mixture under a specific age", and the data's author used such models to design new mixtures (Yeh 1999, "Design of High Performance Concrete Mixture Using Neural Networks"). A new prediction is for a mix not tested before, so the test mixes are new to the model. Each row is one prediction, made from the mix and the age.
+
+| field | value |
+|---|---|
+| group column | `mix` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 428 |
+| rows per group (min / median / max) | 1 / 1.0 / 20 |
+| largest group | 1.9% of the rows |
+| test groups per fold | 142 to 143 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 45.9% of the rows (chance: 0.3%) |
+| label variance explained by the group | 0.65 (shuffled groups: 0.44) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -230,14 +269,15 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Cement | float64 | 0 | 0 | 280 | 362.6, 425.0, 251.37, 310.0, 446.0, 250.0, 475.0, 331.0, 387.0, 349.0 |
-| BlastFurnaceSlag | float64 | 0 | 0 | 187 | 0.0, 189.0, 106.3, 24.0, 20.0, 145.0, 19.0, 22.0, 26.0, 190.0 |
-| FlyAsh | float64 | 0 | 0 | 163 | 0.0, 141.0, 118.27, 79.0, 94.0, 174.24, 100.52, 121.62, 95.69, 125.18 |
-| Water | float64 | 0 | 0 | 205 | 192.0, 228.0, 185.7, 203.5, 186.0, 162.0, 164.9, 185.0, 153.5, 178.0 |
-| Superplasticizer | float64 | 0 | 0 | 155 | 0.0, 8.0, 11.6, 7.0, 6.0, 9.0, 16.5, 10.0, 11.0, 11.66 |
-| CoarseAggregate | float64 | 0 | 0 | 284 | 932.0, 852.1, 944.7, 968.0, 1125.0, 1047.0, 967.0, 938.0, 942.0, 974.0 |
-| FineAggregate | float64 | 0 | 0 | 304 | 594.0, 755.8, 670.0, 613.0, 801.0, 746.6, 887.1, 845.0, 712.0, 750.0 |
-| ConcreteCompressiveStrength | float64 | 0 | 0 | 938 | 33.3982, 35.3012, 79.2966, 31.3505, 71.2987, 77.2972, 55.8958, 65.1969, 64.3005… |
+| mix | category | 0 | 0 | 428 | mix_028, mix_019, mix_203, mix_115, mix_129, mix_204, mix_217, mix_159, mix_162… |
+| Cement | float64 | 0 | 0 | 280 | 362.6, 425.0, 251.37, 310.0, 446.0, 475.0, 331.0, 250.0, 349.0, 387.0 |
+| BlastFurnaceSlag | float64 | 0 | 0 | 187 | 0.0, 189.0, 106.3, 24.0, 20.0, 145.0, 19.0, 26.0, 22.0, 116.0 |
+| FlyAsh | float64 | 0 | 0 | 163 | 0.0, 141.0, 118.27, 79.0, 94.0, 98.75, 121.62, 95.69, 174.24, 125.18 |
+| Water | float64 | 0 | 0 | 205 | 192.0, 228.0, 185.7, 203.5, 186.0, 164.9, 162.0, 153.5, 185.0, 178.0 |
+| Superplasticizer | float64 | 0 | 0 | 155 | 0.0, 8.0, 11.6, 7.0, 6.0, 9.0, 16.5, 10.0, 11.0, 7.48 |
+| CoarseAggregate | float64 | 0 | 0 | 284 | 932.0, 852.1, 944.7, 968.0, 1125.0, 967.0, 1047.0, 974.0, 942.0, 822.0 |
+| FineAggregate | float64 | 0 | 0 | 304 | 755.8, 594.0, 670.0, 613.0, 801.0, 746.6, 887.1, 845.0, 712.0, 750.0 |
+| ConcreteCompressiveStrength | float64 | 0 | 0 | 938 | 33.3982, 71.2987, 79.2966, 31.3505, 35.3012, 77.2972, 65.1969, 18.1263, 55.8958… |
 | Age | int64 | 0 | 0 | 14 | 28, 3, 7, 56, 14, 90, 100, 180, 91, 365 |
 
 ### Target distribution
@@ -262,17 +302,22 @@ Default splits.
 
 ### Categorical features
 
-No categorical/object features to summarize.
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| mix | 1 | mix_028 | 20 | 1.94 |
+| mix | 2 | mix_019 | 15 | 1.46 |
+| mix | 3 | mix_203 | 8 | 0.78 |
+| mix | 4 | mix_115 | 8 | 0.78 |
+| mix | 5 | mix_129 | 8 | 0.78 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-cee4-7ba9-97fd-b7a0365aad44 |
-| checksum | v2:9f7dfa7f14ea2887cf5364eb64208ed4b57e3cca5abd874a68112f23e9a8859d |
-| built_at | 2026-10-06T16:12:23+00:00 |
-| path | concrete_compressive_strength/01a111fc-cee4-7ba9-97fd-b7a0365aad44 |
+| uuid | 01a13a7d-c2ed-79de-abb8-3476f95e6667 |
+| checksum | v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a |
+| built_at | 2026-10-14T12:58:03+00:00 |
+| path | concrete_compressive_strength/01a13a7d-c2ed-79de-abb8-3476f95e6667 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,24 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b
+checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
 build:
-  uuid: 01a111fc-67ad-73f9-9657-30238d911c5b
-  checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
-  built_at: '2026-10-06T16:12:02+00:00'
-  path: sberbank_housing_market_forecasting/01a111fc-67ad-73f9-9657-30238d911c5b
+  uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
+  checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
+  built_at: '2026-10-14T12:58:08+00:00'
+  path: sberbank_housing_market_forecasting/01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 27195
+  n_rows: 28321
   n_features: 386
   dtypes:
     category: 23
@@ -47,10 +47,10 @@ splits:
   time_horizon_unit: months
   n_train:
     min: 5053
-    max: 24412
+    max: 25257
   n_test:
-    min: 2783
-    max: 6241
+    min: 3051
+    max: 6434
 bundle_checks:
   ok: true
   errors: []
@@ -66,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 27,195 rows and 386 features. Source: Kaggle (2017).
+Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -76,7 +76,7 @@ Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` 
 
 **Use case.** Sberbank predicts the price of a flat when it is sold, so that renters, developers and lenders can be more confident when they sign (the Kaggle competition's purpose).
 
-**One row.** One sale of a flat in Moscow, August 2011 to June 2015 (27,195 sales), either an owner-occupier purchase or an investment.
+**One row.** One sale of a flat in Moscow, August 2011 to June 2015 (28,321 sales), either an owner-occupier purchase or an investment.
 
 **Predicted.** The sale price per square metre of total area, on a logarithmic scale.
 
@@ -84,7 +84,7 @@ Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` 
 
 **What the test data stands for.** Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every earlier sale, as for a model refit every half year.
 
-**Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, flats of 5 square metres or less, and flats built after their sale.
+**Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and the half-year windows match a model refit twice a year. Whether every macroeconomic indicator joined on the sale date was already published then is not stated.
 
@@ -131,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | license | Kaggle Competition Rules |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | Matveev2017SberbankRussianHousingMarket |
-| rows x columns | 27,195 x 387 |
+| rows x columns | 28,321 x 387 |
 | task.target | price_doc |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -164,7 +164,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 27,195 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 387 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 28,321 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 387 columns, the target first. Cells are cut at 40 characters.
 
 | price_doc | timestamp | full_sq | life_sq | floor | max_floor | material | build_year | num_room | kitch_sq | state | product_type |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -192,27 +192,27 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
 - We drop the ID column as it does not provide information.
 - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
-- We drop the 1,126 sales whose build_year is later than the year of sale. The column is described as "year built", not "year to be finished", so we treat them as errors. Only 2 of them have a build_year coded from a range such as "2000-2005"; the other 1,124 were sold 0 to 4 years before it, which may be flats sold before completion.
+- We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
 
 ## Splits
 
 We always use 6 month of the data as test data and all prior data as training data. This simulate a model that is refit every half year. We create 5 splits going back 6 months each, starting from the newest date.
 
-5 repeat(s) x 1 fold(s) with seed 4267; train 5,053 to 24,412 rows, test 2,783 to 6,241 rows. Prediction horizon: 6 months.
+5 repeat(s) x 1 fold(s) with seed 4267; train 5,053 to 25,257 rows, test 3,051 to 6,434 rows. Prediction horizon: 6 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 24412 | 2783 | 2011-08-20 00:00:00 | 2014-12-31 00:00:00 | 2015-01-05 00:00:00 | 2015-06-30 00:00:00 |
-| 1 | 0 | 18627 | 5785 | 2011-08-20 00:00:00 | 2014-06-30 00:00:00 | 2014-07-01 00:00:00 | 2014-12-31 00:00:00 |
-| 2 | 0 | 12386 | 6241 | 2011-08-20 00:00:00 | 2013-12-31 00:00:00 | 2014-01-09 00:00:00 | 2014-06-30 00:00:00 |
-| 3 | 0 | 8103 | 4283 | 2011-08-20 00:00:00 | 2013-06-29 00:00:00 | 2013-07-01 00:00:00 | 2013-12-31 00:00:00 |
-| 4 | 0 | 5053 | 3050 | 2011-08-20 00:00:00 | 2012-12-30 00:00:00 | 2013-01-09 00:00:00 | 2013-06-29 00:00:00 |
+| 0 | 0 | 25257 | 3064 | 2011-08-20 00:00:00 | 2014-12-31 00:00:00 | 2015-01-05 00:00:00 | 2015-06-30 00:00:00 |
+| 1 | 0 | 18969 | 6288 | 2011-08-20 00:00:00 | 2014-06-30 00:00:00 | 2014-07-01 00:00:00 | 2014-12-31 00:00:00 |
+| 2 | 0 | 12535 | 6434 | 2011-08-20 00:00:00 | 2013-12-31 00:00:00 | 2014-01-09 00:00:00 | 2014-06-30 00:00:00 |
+| 3 | 0 | 8104 | 4431 | 2011-08-20 00:00:00 | 2013-06-29 00:00:00 | 2013-07-01 00:00:00 | 2013-12-31 00:00:00 |
+| 4 | 0 | 5053 | 3051 | 2011-08-20 00:00:00 | 2012-12-30 00:00:00 | 2013-01-09 00:00:00 | 2013-06-29 00:00:00 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 8 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_duplicate_rows`: 9 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 11 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
@@ -224,9 +224,9 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| state | category | 12636 | 46.46 | 4 | 3.0, 2.0, 1.0, 4.0 |
-| material | category | 8851 | 32.55 | 6 | 1.0, 2.0, 5.0, 4.0, 6.0, 3.0 |
-| ID_railroad_station_walk | category | 22 | 0.08 | 132 | 24.0, 47.0, 75.0, 42.0, 39.0, 33.0, 4.0, 18.0, 2.0, 28.0 |
+| state | category | 12701 | 44.85 | 5 | 3.0, 2.0, 1.0, 4.0, 33.0 |
+| material | category | 8851 | 31.25 | 6 | 1.0, 2.0, 5.0, 4.0, 6.0, 3.0 |
+| ID_railroad_station_walk | category | 24 | 0.08 | 132 | 24.0, 47.0, 75.0, 39.0, 42.0, 4.0, 33.0, 2.0, 18.0, 28.0 |
 | product_type | category | 0 | 0 | 2 | Investment, OwnerOccupier |
 | sub_area | category | 0 | 0 | 145 | Poselenie Sosenskoe, Nekrasovka, Poselenie Vnukovskoe, Poselenie Moskovskij, Po… |
 | culture_objects_top_25 | category | 0 | 0 | 2 | no, yes |
@@ -238,52 +238,52 @@ We always use 6 month of the data as test data and all prior data as training da
 | big_market_raion | category | 0 | 0 | 2 | no, yes |
 | nuclear_reactor_raion | category | 0 | 0 | 2 | no, yes |
 | detention_facility_raion | category | 0 | 0 | 2 | no, yes |
-| ID_railroad_station_avto | category | 0 | 0 | 132 | 75, 105, 19, 4, 39, 42, 73, 24, 47, 28 |
+| ID_railroad_station_avto | category | 0 | 0 | 132 | 75, 105, 19, 4, 39, 24, 42, 73, 47, 2 |
 | water_1line | category | 0 | 0 | 2 | no, yes |
-| ID_big_road1 | category | 0 | 0 | 48 | 1, 2, 13, 38, 4, 14, 11, 5, 3, 16 |
+| ID_big_road1 | category | 0 | 0 | 48 | 1, 2, 38, 13, 4, 14, 11, 5, 3, 16 |
 | big_road1_1line | category | 0 | 0 | 2 | no, yes |
-| ID_big_road2 | category | 0 | 0 | 58 | 1, 4, 27, 38, 55, 13, 39, 7, 10, 23 |
+| ID_big_road2 | category | 0 | 0 | 58 | 1, 4, 27, 38, 55, 13, 39, 7, 10, 17 |
 | railroad_1line | category | 0 | 0 | 2 | no, yes |
 | ID_railroad_terminal | category | 0 | 0 | 8 | 32, 50, 5, 83, 121, 101, 97, 113 |
-| ID_bus_terminal | category | 0 | 0 | 14 | 8, 1, 9, 5, 3, 14, 4, 7, 13, 6 |
+| ID_bus_terminal | category | 0 | 0 | 14 | 8, 1, 9, 5, 3, 14, 4, 7, 13, 2 |
 | ecology | category | 0 | 0 | 5 | no data, poor, good, satisfactory, excellent |
 | timestamp | datetime64\[ns\] | 0 | 0 | 1158 | 2014-12-16 00:00:00, 2014-12-09 00:00:00, 2014-06-30 00:00:00, 2014-12-18 00:00… |
-| modern_education_share | float32 | 5053 | 18.58 | 3 | 93.08, 90.92, 95.4918 |
-| old_education_build_share | float32 | 5053 | 18.58 | 3 | 25.47, 23.14, 8.2517 |
-| child_on_acc_pre_school | float32 | 3411 | 12.54 | 3 | 16.765, 3.013, 7.311 |
-| provision_retail_space_sqm | float64 | 22142 | 81.42 | 2 | 794.0, 741.0 |
-| load_of_teachers_preschool_per_teacher | float64 | 14809 | 54.45 | 3 | 863.3948, 856.7305, 793.3196 |
-| theaters_viewers_per_1000_cap | float64 | 14809 | 54.45 | 3 | 627.0, 603.0, 565.0 |
-| museum_visitis_per_100_cap | float64 | 14809 | 54.45 | 3 | 1440.0, 1309.0, 1240.0 |
-| students_reg_sports_share | float64 | 14809 | 54.45 | 3 | 76.2, 67.85, 64.12 |
-| hospital_beds_raion | float64 | 12965 | 47.67 | 79 | 540.0, 30.0, 1046.0, 240.0, 2300.0, 1084.0, 750.0, 1183.0, 645.0, 1406.0 |
-| build_year | float64 | 12853 | 47.26 | 113 | 2014.0, 0.0, 2013.0, 1970.0, 1968.0, 1969.0, 1.0, 1967.0, 1965.0, 1974.0 |
-| cafe_sum_500_min_price_avg | float64 | 11944 | 43.92 | 633 | 500.0, 1000.0, 300.0, 1500.0, 750.0, 400.0, 650.0, 954.84, 600.0, 666.67 |
-| cafe_sum_500_max_price_avg | float64 | 11944 | 43.92 | 433 | 1000.0, 1500.0, 500.0, 2500.0, 1250.0, 750.0, 1166.67, 1750.0, 1564.52, 1333.33 |
-| cafe_avg_price_500 | float64 | 11944 | 43.92 | 833 | 750.0, 1250.0, 400.0, 2000.0, 575.0, 1000.0, 825.0, 1259.68, 1375.0, 800.0 |
-| max_floor | float64 | 8851 | 32.55 | 48 | 17.0, 9.0, 5.0, 12.0, 14.0, 16.0, 1.0, 22.0, 25.0, 0.0 |
-| num_room | float64 | 8851 | 32.55 | 13 | 2.0, 1.0, 3.0, 4.0, 5.0, 0.0, 6.0, 8.0, 10.0, 19.0 |
-| kitch_sq | float64 | 8851 | 32.55 | 69 | 1.0, 8.0, 5.0, 6.0, 10.0, 9.0, 0.0, 7.0, 12.0, 11.0 |
-| life_sq | float64 | 6195 | 22.78 | 171 | 19.0, 30.0, 18.0, 20.0, 28.0, 29.0, 32.0, 17.0, 44.0, 27.0 |
-| preschool_quota | float64 | 6081 | 22.36 | 121 | 2395.0, 6839.0, 5278.0, 10175.0, 11926.0, 1503.0, 3953.0, 1874.0, 3092.0, 5088.0 |
-| school_quota | float64 | 6078 | 22.35 | 125 | 7377.0, 17063.0, 10529.0, 21892.0, 24750.0, 5782.0, 9700.0, 6772.0, 12721.0, 55… |
-| cafe_sum_1000_min_price_avg | float64 | 5918 | 21.76 | 1570 | 500.0, 1000.0, 750.0, 600.0, 700.0, 300.0, 400.0, 666.67, 660.0, 650.0 |
-| cafe_sum_1000_max_price_avg | float64 | 5918 | 21.76 | 1008 | 1000.0, 1500.0, 1750.0, 1250.0, 1166.67, 750.0, 500.0, 1100.0, 1125.0, 833.33 |
-| cafe_avg_price_1000 | float64 | 5918 | 21.76 | 2047 | 750.0, 1375.0, 1250.0, 1000.0, 400.0, 800.0, 575.0, 916.67, 1207.26, 880.0 |
-| raion_build_count_with_material_info | float64 | 4514 | 16.6 | 112 | 43.0, 1.0, 458.0, 2.0, 372.0, 352.0, 244.0, 217.0, 1681.0, 314.0 |
-| build_count_block | float64 | 4514 | 16.6 | 76 | 3.0, 0.0, 9.0, 58.0, 55.0, 52.0, 8.0, 25.0, 14.0, 41.0 |
-| build_count_wood | float64 | 4514 | 16.6 | 34 | 0.0, 1.0, 2.0, 51.0, 5.0, 146.0, 4.0, 607.0, 11.0, 352.0 |
-| build_count_frame | float64 | 4514 | 16.6 | 21 | 0.0, 1.0, 4.0, 12.0, 11.0, 19.0, 3.0, 79.0, 25.0, 5.0 |
-| build_count_brick | float64 | 4514 | 16.6 | 101 | 0.0, 10.0, 4.0, 16.0, 124.0, 28.0, 2.0, 65.0, 105.0, 66.0 |
-| build_count_monolith | float64 | 4514 | 16.6 | 33 | 0.0, 2.0, 4.0, 3.0, 9.0, 7.0, 5.0, 8.0, 1.0, 16.0 |
-| build_count_panel | float64 | 4514 | 16.6 | 91 | 0.0, 28.0, 111.0, 123.0, 60.0, 201.0, 30.0, 124.0, 41.0, 328.0 |
-| build_count_foam | float64 | 4514 | 16.6 | 4 | 0.0, 1.0, 11.0, 2.0 |
-| build_count_slag | float64 | 4514 | 16.6 | 21 | 0.0, 1.0, 2.0, 9.0, 4.0, 17.0, 84.0, 5.0, 23.0, 3.0 |
-| build_count_mix | float64 | 4514 | 16.6 | 9 | 0.0, 1.0, 2.0, 5.0, 4.0, 9.0, 8.0, 3.0, 6.0 |
-| raion_build_count_with_builddate_info | float64 | 4514 | 16.6 | 114 | 41.0, 1.0, 459.0, 2.0, 373.0, 352.0, 1680.0, 175.0, 222.0, 244.0 |
-| build_count_before_1920 | float64 | 4514 | 16.6 | 29 | 0.0, 1.0, 2.0, 4.0, 13.0, 47.0, 6.0, 34.0, 23.0, 5.0 |
-| build_count_1921-1945 | float64 | 4514 | 16.6 | 47 | 0.0, 1.0, 2.0, 4.0, 20.0, 3.0, 24.0, 5.0, 299.0, 14.0 |
-| build_count_1946-1970 | float64 | 4514 | 16.6 | 100 | 7.0, 0.0, 1.0, 14.0, 40.0, 184.0, 2.0, 439.0, 246.0, 153.0 |
+| modern_education_share | float32 | 5053 | 17.84 | 3 | 93.08, 90.92, 95.4918 |
+| old_education_build_share | float32 | 5053 | 17.84 | 3 | 25.47, 23.14, 8.2517 |
+| child_on_acc_pre_school | float32 | 3692 | 13.04 | 3 | 16.765, 3.013, 7.311 |
+| provision_retail_space_sqm | float64 | 23268 | 82.16 | 2 | 794.0, 741.0 |
+| load_of_teachers_preschool_per_teacher | float64 | 15786 | 55.74 | 3 | 863.3948, 856.7305, 793.3196 |
+| theaters_viewers_per_1000_cap | float64 | 15786 | 55.74 | 3 | 627.0, 603.0, 565.0 |
+| museum_visitis_per_100_cap | float64 | 15786 | 55.74 | 3 | 1440.0, 1309.0, 1240.0 |
+| students_reg_sports_share | float64 | 15786 | 55.74 | 3 | 76.2, 67.85, 64.12 |
+| hospital_beds_raion | float64 | 13665 | 48.25 | 79 | 540.0, 30.0, 1046.0, 2300.0, 240.0, 1084.0, 750.0, 229.0, 645.0, 1183.0 |
+| build_year | float64 | 12853 | 45.38 | 118 | 2014.0, 2015.0, 0.0, 2013.0, 1970.0, 2016.0, 1968.0, 1969.0, 1.0, 1967.0 |
+| cafe_sum_500_min_price_avg | float64 | 12687 | 44.8 | 634 | 500.0, 1000.0, 300.0, 1500.0, 750.0, 400.0, 650.0, 954.84, 600.0, 666.67 |
+| cafe_sum_500_max_price_avg | float64 | 12687 | 44.8 | 434 | 1000.0, 1500.0, 500.0, 2500.0, 1250.0, 750.0, 1166.67, 1750.0, 1564.52, 1333.33 |
+| cafe_avg_price_500 | float64 | 12687 | 44.8 | 835 | 750.0, 1250.0, 400.0, 2000.0, 575.0, 1000.0, 825.0, 1259.68, 1375.0, 800.0 |
+| max_floor | float64 | 8851 | 31.25 | 48 | 17.0, 9.0, 12.0, 5.0, 14.0, 16.0, 1.0, 25.0, 22.0, 0.0 |
+| num_room | float64 | 8851 | 31.25 | 13 | 2.0, 1.0, 3.0, 4.0, 5.0, 0.0, 6.0, 8.0, 10.0, 19.0 |
+| kitch_sq | float64 | 8851 | 31.25 | 72 | 1.0, 8.0, 5.0, 10.0, 6.0, 9.0, 0.0, 7.0, 12.0, 11.0 |
+| preschool_quota | float64 | 6629 | 23.41 | 121 | 2395.0, 6839.0, 5278.0, 10175.0, 11926.0, 1503.0, 3953.0, 1874.0, 3092.0, 5088.0 |
+| school_quota | float64 | 6626 | 23.4 | 125 | 7377.0, 17063.0, 10529.0, 21892.0, 24750.0, 5782.0, 9700.0, 6772.0, 12721.0, 62… |
+| cafe_sum_1000_min_price_avg | float64 | 6385 | 22.55 | 1574 | 500.0, 1000.0, 750.0, 600.0, 400.0, 700.0, 300.0, 666.67, 660.0, 914.53 |
+| cafe_sum_1000_max_price_avg | float64 | 6385 | 22.55 | 1009 | 1000.0, 1500.0, 1750.0, 1250.0, 1166.67, 750.0, 1100.0, 500.0, 1125.0, 833.33 |
+| cafe_avg_price_1000 | float64 | 6385 | 22.55 | 2052 | 750.0, 1375.0, 1250.0, 1000.0, 575.0, 400.0, 800.0, 916.67, 1207.26, 880.0 |
+| life_sq | float64 | 6363 | 22.47 | 174 | 19.0, 30.0, 18.0, 20.0, 28.0, 29.0, 44.0, 17.0, 32.0, 27.0 |
+| raion_build_count_with_material_info | float64 | 4960 | 17.51 | 112 | 43.0, 1.0, 458.0, 2.0, 372.0, 352.0, 244.0, 314.0, 217.0, 1681.0 |
+| build_count_block | float64 | 4960 | 17.51 | 76 | 3.0, 0.0, 9.0, 58.0, 55.0, 52.0, 8.0, 25.0, 14.0, 78.0 |
+| build_count_wood | float64 | 4960 | 17.51 | 34 | 0.0, 1.0, 2.0, 51.0, 5.0, 146.0, 4.0, 607.0, 11.0, 352.0 |
+| build_count_frame | float64 | 4960 | 17.51 | 21 | 0.0, 1.0, 12.0, 4.0, 11.0, 3.0, 19.0, 79.0, 25.0, 5.0 |
+| build_count_brick | float64 | 4960 | 17.51 | 101 | 0.0, 10.0, 4.0, 124.0, 16.0, 28.0, 2.0, 65.0, 105.0, 66.0 |
+| build_count_monolith | float64 | 4960 | 17.51 | 33 | 0.0, 2.0, 4.0, 3.0, 9.0, 7.0, 5.0, 8.0, 1.0, 16.0 |
+| build_count_panel | float64 | 4960 | 17.51 | 91 | 0.0, 28.0, 201.0, 123.0, 111.0, 60.0, 30.0, 41.0, 124.0, 328.0 |
+| build_count_foam | float64 | 4960 | 17.51 | 4 | 0.0, 1.0, 11.0, 2.0 |
+| build_count_slag | float64 | 4960 | 17.51 | 21 | 0.0, 1.0, 2.0, 9.0, 17.0, 4.0, 5.0, 84.0, 23.0, 3.0 |
+| build_count_mix | float64 | 4960 | 17.51 | 9 | 0.0, 1.0, 2.0, 5.0, 4.0, 9.0, 8.0, 3.0, 6.0 |
+| raion_build_count_with_builddate_info | float64 | 4960 | 17.51 | 114 | 41.0, 1.0, 459.0, 2.0, 373.0, 244.0, 352.0, 1680.0, 213.0, 175.0 |
+| build_count_before_1920 | float64 | 4960 | 17.51 | 29 | 0.0, 1.0, 2.0, 4.0, 13.0, 47.0, 6.0, 34.0, 23.0, 5.0 |
+| build_count_1921-1945 | float64 | 4960 | 17.51 | 47 | 0.0, 1.0, 2.0, 4.0, 20.0, 24.0, 3.0, 5.0, 299.0, 14.0 |
+| build_count_1946-1970 | float64 | 4960 | 17.51 | 100 | 7.0, 0.0, 1.0, 14.0, 40.0, 184.0, 2.0, 153.0, 439.0, 246.0 |
 
 (327 more rows not shown)
 
@@ -293,7 +293,7 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.974 | -1.205 | 0.155 | 0.001 | log | 238496 | 2.50209e+16 | exponential |
+| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.72491e+17 | exponential |
 
 ### Numeric features
 
@@ -302,66 +302,66 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| full_sq | 27195 | 54.3179 | 23.2213 | 6 | 729 |
-| life_sq | 21000 | 34.0404 | 20.5577 | 0 | 802 |
-| floor | 27044 | 7.67989 | 5.32188 | 0 | 77 |
-| max_floor | 18344 | 12.4647 | 6.7191 | 0 | 99 |
-| build_year | 14342 | 1863.95 | 472.16 | 0 | 2015 |
-| num_room | 18344 | 1.91883 | 0.858212 | 0 | 19 |
-| kitch_sq | 18344 | 6.27006 | 26.3425 | 0 | 2014 |
-| area_m | 27195 | 1.81751e+07 | 2.0912e+07 | 2.08163e+06 | 2.06072e+08 |
-| raion_popul | 27195 | 82843.8 | 58704.2 | 2546 | 247469 |
-| green_zone_part | 27195 | 0.222889 | 0.176581 | 0.00187937 | 0.852923 |
-| indust_part | 27195 | 0.120686 | 0.11851 | 0 | 0.521867 |
-| children_preschool | 27195 | 5072.87 | 3858.44 | 175 | 19223 |
-| preschool_quota | 21114 | 3288.68 | 2177.68 | 0 | 11926 |
-| preschool_education_centers_raion | 27195 | 4.021 | 3.03869 | 0 | 13 |
-| children_school | 27195 | 5242.97 | 4031.66 | 168 | 19083 |
-| school_quota | 21117 | 8347.55 | 4292.76 | 1012 | 24750 |
-| school_education_centers_raion | 27195 | 4.65005 | 3.48744 | 0 | 14 |
-| school_education_centers_top_20_raion | 27195 | 0.0903843 | 0.310385 | 0 | 2 |
-| hospital_beds_raion | 14230 | 1190.72 | 1063.2 | 0 | 4849 |
-| healthcare_centers_raion | 27195 | 1.2674 | 1.49025 | 0 | 6 |
-| university_top_20_raion | 27195 | 0.0991726 | 0.360061 | 0 | 3 |
-| sport_objects_raion | 27195 | 6.06523 | 5.77628 | 0 | 29 |
-| additional_education_raion | 27195 | 2.63148 | 2.74702 | 0 | 16 |
-| culture_objects_top_25_raion | 27195 | 0.0870013 | 0.629733 | 0 | 10 |
-| shopping_centers_raion | 27195 | 3.76547 | 3.96261 | 0 | 23 |
-| office_raion | 27195 | 5.50252 | 14.2568 | 0 | 141 |
-| full_all | 27195 | 146993 | 284827 | 2546 | 1.71673e+06 |
-| male_f | 27195 | 67546.6 | 130289 | 1208 | 774585 |
-| female_f | 27195 | 79446.6 | 154589 | 1341 | 942145 |
-| young_all | 27195 | 10988.8 | 8381.25 | 365 | 40692 |
-| young_male | 27195 | 5632.4 | 4323.29 | 189 | 20977 |
-| young_female | 27195 | 5356.47 | 4065.67 | 177 | 19715 |
-| work_all | 27195 | 53011.1 | 38000.9 | 1633 | 161290 |
-| work_male | 27195 | 26927.8 | 19200.1 | 863 | 79622 |
-| work_female | 27195 | 26083.4 | 18899 | 771 | 81668 |
-| ekder_all | 27195 | 18843.8 | 13374.2 | 548 | 57086 |
-| ekder_male | 27195 | 5686.62 | 4131.53 | 156 | 19275 |
-| ekder_female | 27195 | 13157.3 | 9285.22 | 393 | 37811 |
-| 0_6_male | 27195 | 2599.16 | 1994.85 | 91 | 9987 |
-| 0_6_female | 27195 | 2473.85 | 1866.68 | 85 | 9236 |
-| 7_14_male | 27195 | 2689.4 | 2076.12 | 87 | 9761 |
-| 7_14_female | 27195 | 2553.72 | 1961.69 | 82 | 9322 |
-| 0_17_all | 27195 | 12329.4 | 9357.6 | 411 | 45170 |
-| 0_17_male | 27195 | 6321.28 | 4822.79 | 214 | 23233 |
-| 0_17_female | 27195 | 6008.28 | 4542.71 | 198 | 21937 |
-| 16_29_all | 27195 | 31512.8 | 60765.9 | 575 | 367659 |
-| 16_29_male | 27195 | 15470.7 | 29494.4 | 308 | 172958 |
-| 16_29_female | 27195 | 16042.3 | 31297.6 | 253 | 194701 |
-| 0_13_all | 27195 | 9674.85 | 7373.32 | 322 | 36035 |
-| 0_13_male | 27195 | 4957.15 | 3803.53 | 166 | 18574 |
-| 0_13_female | 27195 | 4717.71 | 3577.22 | 156 | 17461 |
-| raion_build_count_with_material_info | 22681 | 321.579 | 278.476 | 1 | 1681 |
-| build_count_block | 22681 | 49.7023 | 47.0932 | 0 | 223 |
-| build_count_wood | 22681 | 41.6738 | 128.366 | 0 | 793 |
-| build_count_frame | 22681 | 5.07561 | 15.3889 | 0 | 97 |
-| build_count_brick | 22681 | 100.944 | 119.527 | 0 | 664 |
-| build_count_monolith | 22681 | 11.6893 | 19.2843 | 0 | 127 |
-| build_count_panel | 22681 | 107.262 | 88.9718 | 0 | 431 |
-| build_count_foam | 22681 | 0.161721 | 1.10759 | 0 | 11 |
-| build_count_slag | 22681 | 4.48944 | 13.3038 | 0 | 84 |
+| full_sq | 28321 | 54.5183 | 23.4276 | 6 | 729 |
+| life_sq | 21958 | 34.9188 | 54.5749 | 0 | 7478 |
+| floor | 28170 | 7.74388 | 5.3549 | 0 | 77 |
+| max_floor | 19470 | 12.61 | 6.79235 | 0 | 99 |
+| build_year | 15468 | 3171.4 | 161214 | 0 | 2.0052e+07 |
+| num_room | 19470 | 1.91418 | 0.857557 | 0 | 19 |
+| kitch_sq | 19470 | 6.25336 | 25.6483 | 0 | 2014 |
+| area_m | 28321 | 1.86006e+07 | 2.14579e+07 | 2.08163e+06 | 2.06072e+08 |
+| raion_popul | 28321 | 81667 | 58953.7 | 2546 | 247469 |
+| green_zone_part | 28321 | 0.225532 | 0.17728 | 0.00187937 | 0.852923 |
+| indust_part | 28321 | 0.119776 | 0.11789 | 0 | 0.521867 |
+| children_preschool | 28321 | 5011.23 | 3875.09 | 175 | 19223 |
+| preschool_quota | 21692 | 3286.58 | 2170.01 | 0 | 11926 |
+| preschool_education_centers_raion | 28321 | 3.96833 | 3.05384 | 0 | 13 |
+| children_school | 28321 | 5178.64 | 4050.26 | 168 | 19083 |
+| school_quota | 21695 | 8356.94 | 4293.91 | 1012 | 24750 |
+| school_education_centers_raion | 28321 | 4.59479 | 3.50874 | 0 | 14 |
+| school_education_centers_top_20_raion | 28321 | 0.08785 | 0.306096 | 0 | 2 |
+| hospital_beds_raion | 14656 | 1174.88 | 1056.22 | 0 | 4849 |
+| healthcare_centers_raion | 28321 | 1.24205 | 1.48374 | 0 | 6 |
+| university_top_20_raion | 28321 | 0.0971364 | 0.355534 | 0 | 3 |
+| sport_objects_raion | 28321 | 5.99251 | 5.81124 | 0 | 29 |
+| additional_education_raion | 28321 | 2.60888 | 2.72472 | 0 | 16 |
+| culture_objects_top_25_raion | 28321 | 0.0892271 | 0.623332 | 0 | 10 |
+| shopping_centers_raion | 28321 | 3.7165 | 3.9539 | 0 | 23 |
+| office_raion | 28321 | 5.39953 | 14.1225 | 0 | 141 |
+| full_all | 28321 | 143610 | 279983 | 2546 | 1.71673e+06 |
+| male_f | 28321 | 65991 | 128075 | 1208 | 774585 |
+| female_f | 28321 | 77619 | 151957 | 1341 | 942145 |
+| young_all | 28321 | 10855 | 8420.08 | 365 | 40692 |
+| young_male | 28321 | 5563.33 | 4341.84 | 189 | 20977 |
+| young_female | 28321 | 5291.74 | 4085.7 | 177 | 19715 |
+| work_all | 28321 | 52271.3 | 38171 | 1633 | 161290 |
+| work_male | 28321 | 26553.4 | 19285.2 | 863 | 79622 |
+| work_female | 28321 | 25717.9 | 18981.5 | 771 | 81668 |
+| ekder_all | 28321 | 18540.8 | 13398.6 | 548 | 57086 |
+| ekder_male | 28321 | 5595.8 | 4138 | 156 | 19275 |
+| ekder_female | 28321 | 12945.1 | 9301.58 | 393 | 37811 |
+| 0_6_male | 28321 | 2567.04 | 2001.99 | 91 | 9987 |
+| 0_6_female | 28321 | 2444.34 | 1876.11 | 85 | 9236 |
+| 7_14_male | 28321 | 2656.48 | 2085.95 | 87 | 9761 |
+| 7_14_female | 28321 | 2522.32 | 1970.27 | 82 | 9322 |
+| 0_17_all | 28321 | 12179.3 | 9403.42 | 411 | 45170 |
+| 0_17_male | 28321 | 6244.38 | 4845.38 | 214 | 23233 |
+| 0_17_female | 28321 | 5935.13 | 4565.66 | 198 | 21937 |
+| 16_29_all | 28321 | 30789.4 | 59742.2 | 575 | 367659 |
+| 16_29_male | 28321 | 15118.3 | 28998.5 | 308 | 172958 |
+| 16_29_female | 28321 | 15671.3 | 30769.2 | 253 | 194701 |
+| 0_13_all | 28321 | 9556.57 | 7405.93 | 322 | 36035 |
+| 0_13_male | 28321 | 4896.02 | 3818.87 | 166 | 18574 |
+| 0_13_female | 28321 | 4660.55 | 3594.26 | 156 | 17461 |
+| raion_build_count_with_material_info | 23361 | 319.492 | 277.089 | 1 | 1681 |
+| build_count_block | 23361 | 49.2684 | 46.89 | 0 | 223 |
+| build_count_wood | 23361 | 41.0973 | 126.944 | 0 | 793 |
+| build_count_frame | 23361 | 5.07179 | 15.3519 | 0 | 97 |
+| build_count_brick | 23361 | 100.581 | 119.689 | 0 | 664 |
+| build_count_monolith | 23361 | 11.7904 | 19.2783 | 0 | 127 |
+| build_count_panel | 23361 | 106.505 | 88.525 | 0 | 431 |
+| build_count_foam | 23361 | 0.159582 | 1.10325 | 0 | 11 |
+| build_count_slag | 23361 | 4.43859 | 13.1373 | 0 | 84 |
 
 (303 more rows not shown)
 
@@ -374,66 +374,66 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ID_big_road1 | 1 | 1 | 4274 | 15.72 |
-| ID_big_road1 | 2 | 2 | 3306 | 12.16 |
-| ID_big_road1 | 3 | 13 | 2537 | 9.33 |
-| ID_big_road1 | 4 | 38 | 2464 | 9.06 |
-| ID_big_road1 | 5 | 4 | 2038 | 7.49 |
-| ID_big_road2 | 1 | 1 | 3965 | 14.58 |
-| ID_big_road2 | 2 | 4 | 2334 | 8.58 |
-| ID_big_road2 | 3 | 27 | 1940 | 7.13 |
-| ID_big_road2 | 4 | 38 | 1124 | 4.13 |
-| ID_big_road2 | 5 | 55 | 1083 | 3.98 |
-| ID_bus_terminal | 1 | 8 | 6486 | 23.85 |
-| ID_bus_terminal | 2 | 1 | 3651 | 13.43 |
-| ID_bus_terminal | 3 | 9 | 3175 | 11.67 |
-| ID_bus_terminal | 4 | 5 | 2529 | 9.3 |
-| ID_bus_terminal | 5 | 3 | 2083 | 7.66 |
-| ID_railroad_station_avto | 1 | 75 | 1590 | 5.85 |
-| ID_railroad_station_avto | 2 | 105 | 1489 | 5.48 |
-| ID_railroad_station_avto | 3 | 19 | 1470 | 5.41 |
-| ID_railroad_station_avto | 4 | 4 | 1197 | 4.4 |
-| ID_railroad_station_avto | 5 | 39 | 1185 | 4.36 |
-| ID_railroad_station_walk | 1 | 24.0 | 2445 | 8.99 |
-| ID_railroad_station_walk | 2 | 47.0 | 2079 | 7.64 |
-| ID_railroad_station_walk | 3 | 75.0 | 1590 | 5.85 |
-| ID_railroad_station_walk | 4 | 42.0 | 1198 | 4.41 |
-| ID_railroad_station_walk | 5 | 39.0 | 1185 | 4.36 |
-| ID_railroad_terminal | 1 | 32 | 8419 | 30.96 |
-| ID_railroad_terminal | 2 | 50 | 5073 | 18.65 |
-| ID_railroad_terminal | 3 | 5 | 4961 | 18.24 |
-| ID_railroad_terminal | 4 | 83 | 3463 | 12.73 |
-| ID_railroad_terminal | 5 | 121 | 1823 | 6.7 |
-| big_market_raion | 1 | no | 24550 | 90.27 |
-| big_market_raion | 2 | yes | 2645 | 9.73 |
-| big_road1_1line | 1 | no | 26488 | 97.4 |
-| big_road1_1line | 2 | yes | 707 | 2.6 |
-| culture_objects_top_25 | 1 | no | 26106 | 96 |
-| culture_objects_top_25 | 2 | yes | 1089 | 4 |
-| detention_facility_raion | 1 | no | 25004 | 91.94 |
-| detention_facility_raion | 2 | yes | 2191 | 8.06 |
-| ecology | 1 | no data | 7239 | 26.62 |
-| ecology | 2 | poor | 7174 | 26.38 |
-| ecology | 3 | good | 6559 | 24.12 |
-| ecology | 4 | satisfactory | 3265 | 12.01 |
-| ecology | 5 | excellent | 2958 | 10.88 |
-| incineration_raion | 1 | no | 24968 | 91.81 |
-| incineration_raion | 2 | yes | 2227 | 8.19 |
-| material | 1 | 1.0 | 12677 | 46.62 |
-| material | 2 | &lt;NA> | 8851 | 32.55 |
-| material | 3 | 2.0 | 2661 | 9.78 |
-| material | 4 | 5.0 | 1377 | 5.06 |
-| material | 5 | 4.0 | 1090 | 4.01 |
-| nuclear_reactor_raion | 1 | no | 26426 | 97.17 |
-| nuclear_reactor_raion | 2 | yes | 769 | 2.83 |
-| oil_chemistry_raion | 1 | no | 26930 | 99.03 |
-| oil_chemistry_raion | 2 | yes | 265 | 0.97 |
-| product_type | 1 | Investment | 17377 | 63.9 |
-| product_type | 2 | OwnerOccupier | 9818 | 36.1 |
-| radiation_raion | 1 | no | 18051 | 66.38 |
-| radiation_raion | 2 | yes | 9144 | 33.62 |
-| railroad_1line | 1 | no | 26391 | 97.04 |
-| railroad_1line | 2 | yes | 804 | 2.96 |
+| ID_big_road1 | 1 | 1 | 4430 | 15.64 |
+| ID_big_road1 | 2 | 2 | 3455 | 12.2 |
+| ID_big_road1 | 3 | 38 | 2721 | 9.61 |
+| ID_big_road1 | 4 | 13 | 2704 | 9.55 |
+| ID_big_road1 | 5 | 4 | 2169 | 7.66 |
+| ID_big_road2 | 1 | 1 | 4136 | 14.6 |
+| ID_big_road2 | 2 | 4 | 2376 | 8.39 |
+| ID_big_road2 | 3 | 27 | 2040 | 7.2 |
+| ID_big_road2 | 4 | 38 | 1204 | 4.25 |
+| ID_big_road2 | 5 | 55 | 1167 | 4.12 |
+| ID_bus_terminal | 1 | 8 | 6966 | 24.6 |
+| ID_bus_terminal | 2 | 1 | 3787 | 13.37 |
+| ID_bus_terminal | 3 | 9 | 3328 | 11.75 |
+| ID_bus_terminal | 4 | 5 | 2604 | 9.19 |
+| ID_bus_terminal | 5 | 3 | 2085 | 7.36 |
+| ID_railroad_station_avto | 1 | 75 | 1702 | 6.01 |
+| ID_railroad_station_avto | 2 | 105 | 1653 | 5.84 |
+| ID_railroad_station_avto | 3 | 19 | 1583 | 5.59 |
+| ID_railroad_station_avto | 4 | 4 | 1308 | 4.62 |
+| ID_railroad_station_avto | 5 | 39 | 1301 | 4.59 |
+| ID_railroad_station_walk | 1 | 24.0 | 2677 | 9.45 |
+| ID_railroad_station_walk | 2 | 47.0 | 2196 | 7.75 |
+| ID_railroad_station_walk | 3 | 75.0 | 1702 | 6.01 |
+| ID_railroad_station_walk | 4 | 39.0 | 1301 | 4.59 |
+| ID_railroad_station_walk | 5 | 42.0 | 1221 | 4.31 |
+| ID_railroad_terminal | 1 | 32 | 8859 | 31.28 |
+| ID_railroad_terminal | 2 | 50 | 5419 | 19.13 |
+| ID_railroad_terminal | 3 | 5 | 5077 | 17.93 |
+| ID_railroad_terminal | 4 | 83 | 3640 | 12.85 |
+| ID_railroad_terminal | 5 | 121 | 1839 | 6.49 |
+| big_market_raion | 1 | no | 25547 | 90.21 |
+| big_market_raion | 2 | yes | 2774 | 9.79 |
+| big_road1_1line | 1 | no | 27602 | 97.46 |
+| big_road1_1line | 2 | yes | 719 | 2.54 |
+| culture_objects_top_25 | 1 | no | 27097 | 95.68 |
+| culture_objects_top_25 | 2 | yes | 1224 | 4.32 |
+| detention_facility_raion | 1 | no | 26120 | 92.23 |
+| detention_facility_raion | 2 | yes | 2201 | 7.77 |
+| ecology | 1 | no data | 7813 | 27.59 |
+| ecology | 2 | poor | 7274 | 25.68 |
+| ecology | 3 | good | 6806 | 24.03 |
+| ecology | 4 | satisfactory | 3364 | 11.88 |
+| ecology | 5 | excellent | 3064 | 10.82 |
+| incineration_raion | 1 | no | 25982 | 91.74 |
+| incineration_raion | 2 | yes | 2339 | 8.26 |
+| material | 1 | 1.0 | 13291 | 46.93 |
+| material | 2 | &lt;NA> | 8851 | 31.25 |
+| material | 3 | 2.0 | 2714 | 9.58 |
+| material | 4 | 5.0 | 1386 | 4.89 |
+| material | 5 | 4.0 | 1305 | 4.61 |
+| nuclear_reactor_raion | 1 | no | 27550 | 97.28 |
+| nuclear_reactor_raion | 2 | yes | 771 | 2.72 |
+| oil_chemistry_raion | 1 | no | 28055 | 99.06 |
+| oil_chemistry_raion | 2 | yes | 266 | 0.94 |
+| product_type | 1 | Investment | 17379 | 61.36 |
+| product_type | 2 | OwnerOccupier | 10942 | 38.64 |
+| radiation_raion | 1 | no | 19059 | 67.3 |
+| radiation_raion | 2 | yes | 9262 | 32.7 |
+| railroad_1line | 1 | no | 27485 | 97.05 |
+| railroad_1line | 2 | yes | 836 | 2.95 |
 
 (21 more rows not shown)
 
@@ -443,11 +443,10 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-67ad-73f9-9657-30238d911c5b |
-| checksum | v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc |
-| built_at | 2026-10-06T16:12:02+00:00 |
-| path | sberbank_housing_market_forecasting/01a111fc-67ad-73f9-9657-30238d911c5b |
+| uuid | 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7 |
+| checksum | v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c |
+| built_at | 2026-10-14T12:58:08+00:00 |
+| path | sberbank_housing_market_forecasting/01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

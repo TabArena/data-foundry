@@ -2,27 +2,27 @@
 report_format: data-foundry-report-v2
 unique_name: hiva_agnostic
 container_format: 2
-checksum: v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30
+checksum: v2:ce9fc12404d0aa0571b58de3e58925c06ff333bba14ab50bdfcba71338248ce4
 build:
-  uuid: 01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8
-  checksum: v2:5174c84f62010de75b63b9d191838ac13977971a4d3c68beb28f548bacbbff43
-  built_at: '2026-10-06T16:11:58+00:00'
-  path: hiva_agnostic/01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8
+  uuid: 01a13a7d-c4ee-761a-9292-ce1cd880e6c6
+  checksum: v2:ce9fc12404d0aa0571b58de3e58925c06ff333bba14ab50bdfcba71338248ce4
+  built_at: '2026-10-14T12:58:13+00:00'
+  path: hiva_agnostic/01a13a7d-c4ee-761a-9292-ce1cd880e6c6
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 3845
-  n_features: 1518
+  n_rows: 4229
+  n_features: 1429
   dtypes:
-    category: 1519
+    category: 1430
   n_test_dataset_rows: null
 task:
   target: CompoundActive
@@ -42,16 +42,15 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 2563
-    max: 2564
+    min: 2819
+    max: 2820
   n_test:
-    min: 1281
-    max: 1282
+    min: 1409
+    max: 1410
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_pure_feature_value
+  warnings: []
   infos:
   - dataset_duplicate_rows
   accepted: {}
@@ -62,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `CompoundActive`, scored with `roc_auc` on IID splits. 3,845 rows and 1,518 features. Source: Other (2007).
+Binary classification of `CompoundActive`, scored with `roc_auc` on IID splits. 4,229 rows and 1,429 features. Source: Other (2007).
 
-Built as `01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -72,13 +71,15 @@ Built as `01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a drug-discovery team ranks untested compounds by computer and decides which to send to the laboratory screen.
 
-**One row.** One compound of the US National Cancer Institute's AIDS antiviral screen, as prepared for the 2007 Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training compounds).
+**One row.** One compound of the US National Cancer Institute's AIDS antiviral screen, as prepared for the 2007 Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training and 384 validation compounds).
 
-**Predicted.** Whether the compound is active in the screen (3.51% are).
+**Predicted.** Whether the compound is active in the screen (3.52% are).
 
-**Known at prediction time.** 1,617 anonymous yes/no descriptors of the molecule's structure, without the duplicated ones.
+**Known at prediction time.** 1,429 anonymous yes/no descriptors of the molecule's structure (the challenge's 1,617 without the 188 that copy another).
 
 **What the test data stands for.** Random compounds, so the test data stands for other compounds of the same screen.
+
+**Our changes to the source.** We add the challenge's 384 validation compounds, whose labels it released, and drop the descriptors that copy another.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, as for an untested compound, and the test compounds are unseen. The descriptors are anonymous, so their meaning cannot be checked.
 
@@ -123,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | license | Public Domain |
 | data_tags | IID |
 | reference | guyon2007agnostic |
-| rows x columns | 3,845 x 1,519 |
+| rows x columns | 4,229 x 1,430 |
 | task.target | CompoundActive |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -157,52 +158,52 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 3,845 rows of the final frame (random rows: the frame is shuffled); 12 of 1,519 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,229 rows of the final frame (random rows: the frame is shuffled); 12 of 1,430 columns, the target first. Cells are cut at 40 characters.
 
 | CompoundActive | molecule_structure_property_1 | molecule_structure_property_2 | molecule_structure_property_3 | molecule_structure_property_4 | molecule_structure_property_5 | molecule_structure_property_6 | molecule_structure_property_7 | molecule_structure_property_8 | molecule_structure_property_9 | molecule_structure_property_10 | molecule_structure_property_11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| -1 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
-- The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 135 of the 3,845 training compounds are active.
-- We use only the challenge's training file. The download also fetches the validation labels the challenge released afterwards (hiva_valid.labels, 384 compounds, 14 active), but they are not used; the challenge site offers no test labels.
+- The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 149 of the 4,229 compounds are active.
+- We use the challenge's training (3,845 compounds, 135 active) and validation compounds (384, 14 active; labels in ValidAgnos.zip), as `hiva.param` lists them. The test labels (38,449 compounds) were never released. The validation compounds were added on 2026-10-14.
+- We drop the 188 descriptors that copy an earlier one; until 2026-10-14 a fixed list dropped 99 of them. 23 compounds repeat another's descriptors, always with the same label (3 of them across training and validation), and stay.
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 2,563 to 2,564 rows, test 1,281 to 1,282 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 2,819 to 2,820 rows, test 1,409 to 1,410 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 2563 | 1282 |
-| 0 | 1 | 2563 | 1282 |
-| 0 | 2 | 2564 | 1281 |
-| 1 | 0 | 2563 | 1282 |
-| 1 | 1 | 2563 | 1282 |
-| 1 | 2 | 2564 | 1281 |
-| 2 | 0 | 2563 | 1282 |
-| 2 | 1 | 2563 | 1282 |
-| 2 | 2 | 2564 | 1281 |
+| 0 | 0 | 2819 | 1410 |
+| 0 | 1 | 2819 | 1410 |
+| 0 | 2 | 2820 | 1409 |
+| 1 | 0 | 2819 | 1410 |
+| 1 | 1 | 2819 | 1410 |
+| 1 | 2 | 2820 | 1409 |
+| 2 | 0 | 2819 | 1410 |
+| 2 | 1 | 2819 | 1410 |
+| 2 | 2 | 2820 | 1409 |
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_pure_feature_value`: 1 feature value(s) determine the class on their own: molecule_structure_property_621 = 1: 420 rows, 99.5% CompoundActive=-1 (overall 96.5%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
-- **info** `dataset_duplicate_rows`: 20 exact duplicate row(s) (0.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_duplicate_rows`: 23 exact duplicate row(s) (0.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (1,519 rows)</summary>
+<summary>Show the table (1,430 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -267,7 +268,7 @@ Default splits.
 | molecule_structure_property_60 | category | 0 | 0 | 2 | 0, 1 |
 | molecule_structure_property_61 | category | 0 | 0 | 2 | 0, 1 |
 
-(1,459 more rows not shown)
+(1,370 more rows not shown)
 
 </details>
 
@@ -275,8 +276,8 @@ Default splits.
 
 | CompoundActive | count | pct |
 |---|---|---|
-| -1 | 3710 | 96.49 |
-| 1 | 135 | 3.51 |
+| -1 | 4080 | 96.48 |
+| 1 | 149 | 3.52 |
 
 ### Numeric features
 
@@ -285,72 +286,72 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (3,038 rows)</summary>
+<summary>Show the table (2,860 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| CompoundActive | 1 | -1 | 3710 | 96.49 |
-| CompoundActive | 2 | 1 | 135 | 3.51 |
-| molecule_structure_property_1 | 1 | 0 | 3808 | 99.04 |
-| molecule_structure_property_1 | 2 | 1 | 37 | 0.96 |
-| molecule_structure_property_10 | 1 | 0 | 3778 | 98.26 |
-| molecule_structure_property_10 | 2 | 1 | 67 | 1.74 |
-| molecule_structure_property_100 | 1 | 0 | 3798 | 98.78 |
-| molecule_structure_property_100 | 2 | 1 | 47 | 1.22 |
-| molecule_structure_property_1000 | 1 | 0 | 3831 | 99.64 |
-| molecule_structure_property_1000 | 2 | 1 | 14 | 0.36 |
-| molecule_structure_property_1001 | 1 | 0 | 2612 | 67.93 |
-| molecule_structure_property_1001 | 2 | 1 | 1233 | 32.07 |
-| molecule_structure_property_1002 | 1 | 0 | 3562 | 92.64 |
-| molecule_structure_property_1002 | 2 | 1 | 283 | 7.36 |
-| molecule_structure_property_1003 | 1 | 0 | 3762 | 97.84 |
-| molecule_structure_property_1003 | 2 | 1 | 83 | 2.16 |
-| molecule_structure_property_1004 | 1 | 0 | 3743 | 97.35 |
-| molecule_structure_property_1004 | 2 | 1 | 102 | 2.65 |
-| molecule_structure_property_1005 | 1 | 0 | 3587 | 93.29 |
-| molecule_structure_property_1005 | 2 | 1 | 258 | 6.71 |
-| molecule_structure_property_1006 | 1 | 0 | 3685 | 95.84 |
-| molecule_structure_property_1006 | 2 | 1 | 160 | 4.16 |
-| molecule_structure_property_1007 | 1 | 0 | 3571 | 92.87 |
-| molecule_structure_property_1007 | 2 | 1 | 274 | 7.13 |
-| molecule_structure_property_1008 | 1 | 0 | 3654 | 95.03 |
-| molecule_structure_property_1008 | 2 | 1 | 191 | 4.97 |
-| molecule_structure_property_1009 | 1 | 0 | 3373 | 87.72 |
-| molecule_structure_property_1009 | 2 | 1 | 472 | 12.28 |
-| molecule_structure_property_101 | 1 | 0 | 3762 | 97.84 |
-| molecule_structure_property_101 | 2 | 1 | 83 | 2.16 |
-| molecule_structure_property_1010 | 1 | 0 | 3768 | 98 |
-| molecule_structure_property_1010 | 2 | 1 | 77 | 2 |
-| molecule_structure_property_1012 | 1 | 0 | 3659 | 95.16 |
-| molecule_structure_property_1012 | 2 | 1 | 186 | 4.84 |
-| molecule_structure_property_1013 | 1 | 0 | 3721 | 96.78 |
-| molecule_structure_property_1013 | 2 | 1 | 124 | 3.22 |
-| molecule_structure_property_1014 | 1 | 0 | 3630 | 94.41 |
-| molecule_structure_property_1014 | 2 | 1 | 215 | 5.59 |
-| molecule_structure_property_1015 | 1 | 0 | 3344 | 86.97 |
-| molecule_structure_property_1015 | 2 | 1 | 501 | 13.03 |
-| molecule_structure_property_1016 | 1 | 0 | 3664 | 95.29 |
-| molecule_structure_property_1016 | 2 | 1 | 181 | 4.71 |
-| molecule_structure_property_1017 | 1 | 0 | 3675 | 95.58 |
-| molecule_structure_property_1017 | 2 | 1 | 170 | 4.42 |
-| molecule_structure_property_1018 | 1 | 0 | 2848 | 74.07 |
-| molecule_structure_property_1018 | 2 | 1 | 997 | 25.93 |
-| molecule_structure_property_1019 | 1 | 0 | 3604 | 93.73 |
-| molecule_structure_property_1019 | 2 | 1 | 241 | 6.27 |
-| molecule_structure_property_102 | 1 | 0 | 3752 | 97.58 |
-| molecule_structure_property_102 | 2 | 1 | 93 | 2.42 |
-| molecule_structure_property_1020 | 1 | 0 | 3615 | 94.02 |
-| molecule_structure_property_1020 | 2 | 1 | 230 | 5.98 |
-| molecule_structure_property_1021 | 1 | 0 | 3717 | 96.67 |
-| molecule_structure_property_1021 | 2 | 1 | 128 | 3.33 |
-| molecule_structure_property_1022 | 1 | 0 | 3636 | 94.56 |
-| molecule_structure_property_1022 | 2 | 1 | 209 | 5.44 |
-| molecule_structure_property_1023 | 1 | 0 | 3788 | 98.52 |
-| molecule_structure_property_1023 | 2 | 1 | 57 | 1.48 |
-| molecule_structure_property_1025 | 1 | 0 | 3750 | 97.53 |
-| molecule_structure_property_1025 | 2 | 1 | 95 | 2.47 |
+| CompoundActive | 1 | -1 | 4080 | 96.48 |
+| CompoundActive | 2 | 1 | 149 | 3.52 |
+| molecule_structure_property_1 | 1 | 0 | 4184 | 98.94 |
+| molecule_structure_property_1 | 2 | 1 | 45 | 1.06 |
+| molecule_structure_property_10 | 1 | 0 | 4158 | 98.32 |
+| molecule_structure_property_10 | 2 | 1 | 71 | 1.68 |
+| molecule_structure_property_100 | 1 | 0 | 4178 | 98.79 |
+| molecule_structure_property_100 | 2 | 1 | 51 | 1.21 |
+| molecule_structure_property_1001 | 1 | 0 | 2872 | 67.91 |
+| molecule_structure_property_1001 | 2 | 1 | 1357 | 32.09 |
+| molecule_structure_property_1002 | 1 | 0 | 3920 | 92.69 |
+| molecule_structure_property_1002 | 2 | 1 | 309 | 7.31 |
+| molecule_structure_property_1003 | 1 | 0 | 4135 | 97.78 |
+| molecule_structure_property_1003 | 2 | 1 | 94 | 2.22 |
+| molecule_structure_property_1004 | 1 | 0 | 4117 | 97.35 |
+| molecule_structure_property_1004 | 2 | 1 | 112 | 2.65 |
+| molecule_structure_property_1005 | 1 | 0 | 3951 | 93.43 |
+| molecule_structure_property_1005 | 2 | 1 | 278 | 6.57 |
+| molecule_structure_property_1007 | 1 | 0 | 3930 | 92.93 |
+| molecule_structure_property_1007 | 2 | 1 | 299 | 7.07 |
+| molecule_structure_property_1008 | 1 | 0 | 4021 | 95.08 |
+| molecule_structure_property_1008 | 2 | 1 | 208 | 4.92 |
+| molecule_structure_property_1009 | 1 | 0 | 3703 | 87.56 |
+| molecule_structure_property_1009 | 2 | 1 | 526 | 12.44 |
+| molecule_structure_property_101 | 1 | 0 | 4135 | 97.78 |
+| molecule_structure_property_101 | 2 | 1 | 94 | 2.22 |
+| molecule_structure_property_1010 | 1 | 0 | 4144 | 97.99 |
+| molecule_structure_property_1010 | 2 | 1 | 85 | 2.01 |
+| molecule_structure_property_1012 | 1 | 0 | 4026 | 95.2 |
+| molecule_structure_property_1012 | 2 | 1 | 203 | 4.8 |
+| molecule_structure_property_1013 | 1 | 0 | 4095 | 96.83 |
+| molecule_structure_property_1013 | 2 | 1 | 134 | 3.17 |
+| molecule_structure_property_1014 | 1 | 0 | 3992 | 94.4 |
+| molecule_structure_property_1014 | 2 | 1 | 237 | 5.6 |
+| molecule_structure_property_1015 | 1 | 0 | 3673 | 86.85 |
+| molecule_structure_property_1015 | 2 | 1 | 556 | 13.15 |
+| molecule_structure_property_1016 | 1 | 0 | 4027 | 95.22 |
+| molecule_structure_property_1016 | 2 | 1 | 202 | 4.78 |
+| molecule_structure_property_1017 | 1 | 0 | 4035 | 95.41 |
+| molecule_structure_property_1017 | 2 | 1 | 194 | 4.59 |
+| molecule_structure_property_1018 | 1 | 0 | 3126 | 73.92 |
+| molecule_structure_property_1018 | 2 | 1 | 1103 | 26.08 |
+| molecule_structure_property_1019 | 1 | 0 | 3954 | 93.5 |
+| molecule_structure_property_1019 | 2 | 1 | 275 | 6.5 |
+| molecule_structure_property_102 | 1 | 0 | 4127 | 97.59 |
+| molecule_structure_property_102 | 2 | 1 | 102 | 2.41 |
+| molecule_structure_property_1020 | 1 | 0 | 3972 | 93.92 |
+| molecule_structure_property_1020 | 2 | 1 | 257 | 6.08 |
+| molecule_structure_property_1021 | 1 | 0 | 4090 | 96.71 |
+| molecule_structure_property_1021 | 2 | 1 | 139 | 3.29 |
+| molecule_structure_property_1022 | 1 | 0 | 4002 | 94.63 |
+| molecule_structure_property_1022 | 2 | 1 | 227 | 5.37 |
+| molecule_structure_property_1023 | 1 | 0 | 4165 | 98.49 |
+| molecule_structure_property_1023 | 2 | 1 | 64 | 1.51 |
+| molecule_structure_property_1025 | 1 | 0 | 4125 | 97.54 |
+| molecule_structure_property_1025 | 2 | 1 | 104 | 2.46 |
+| molecule_structure_property_1026 | 1 | 0 | 3960 | 93.64 |
+| molecule_structure_property_1026 | 2 | 1 | 269 | 6.36 |
+| molecule_structure_property_1027 | 1 | 0 | 4120 | 97.42 |
+| molecule_structure_property_1027 | 2 | 1 | 109 | 2.58 |
 
-(2,978 more rows not shown)
+(2,800 more rows not shown)
 
 </details>
 
@@ -358,11 +359,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8 |
-| checksum | v2:5174c84f62010de75b63b9d191838ac13977971a4d3c68beb28f548bacbbff43 |
-| built_at | 2026-10-06T16:11:58+00:00 |
-| path | hiva_agnostic/01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8 |
+| uuid | 01a13a7d-c4ee-761a-9292-ce1cd880e6c6 |
+| checksum | v2:ce9fc12404d0aa0571b58de3e58925c06ff333bba14ab50bdfcba71338248ce4 |
+| built_at | 2026-10-14T12:58:13+00:00 |
+| path | hiva_agnostic/01a13a7d-c4ee-761a-9292-ce1cd880e6c6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

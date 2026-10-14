@@ -96,7 +96,7 @@ Reading the probes:
 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
 | Batch noise across the whole feature space, no batch id | retire; a feature subset does not help when it also separates same-label groups | prostate_cancer_detection (the paper's 7 features: Benign vs NED 0.92-0.97, the label 0.62-0.70) |
 | Cohort holds rows that cannot have the outcome | follow the paper's cohort | diabetes_130_us: encounters ending in death (1,084) or hospice (461) removed (Strack et al. 2014, Sec. 2.3) |
-| Selection on the outcome that the task states | keep it and record it | cirrhosis_patient_survival_prediction (time to death, deaths only, by design) |
+| Only rows with the event, follow-up ending on one date (right truncation) | an outcome within a fixed horizon, over the rows followed that long | cirrhosis_patient_survival_prediction (time to death over deaths only until 2026-10-14; now death or transplant within 5 years) |
 | Right-censored target in the newest periods | cut where follow-up is complete, or re-source from an archive with settled labels; check a newer download first | sf_permit_time (permits filed before 2024); consumer_complaints (CFPB FOIA archive) |
 | "No event" mixed with "not recorded" | a censoring bias: retire unless the recording process can be recovered | ghanas_indigenous_intel |
 | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date in `_make_splits` | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 → 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
@@ -131,7 +131,9 @@ Reading the probes:
 * Reposts identical except an id or a location: drop them, as the source paper did (emscad, Vidros et al. 2017, Sec. 5).
 * Group on a true group id, or on one constructed exactly from the data: identical profile text or a poster-specific
   masked contact (emscad, 4,441 groups), consecutive blocks of identical person-level answers in the raw file order
-  (in_vehicle_coupon_recommendation, 587 respondents). No similarity-threshold clusters (the first emscad suggestion,
+  (in_vehicle_coupon_recommendation, 587 respondents), identical values in the columns that define the entity
+  (concrete_compressive_strength: a mix is its seven ingredient amounts, tested at several ages; airfoil_self_noise:
+  a run is one chord, angle and velocity). No similarity-threshold clusters (the first emscad suggestion,
   TF-IDF cosine ≥ 0.95), and no hash of the feature vector standing in for an unknown entity (the first
   maternal_health_risk suggestion).
 * When the real groups matter and cannot be recovered, retire the dataset and note in its record that the authors

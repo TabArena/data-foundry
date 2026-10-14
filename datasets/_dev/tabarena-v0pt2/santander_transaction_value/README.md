@@ -4,20 +4,20 @@ unique_name: santander_transaction_value
 container_format: 2
 checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
 build:
-  uuid: 01a111fb-c8c5-7b20-b3a0-528353375933
-  checksum: v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4
-  built_at: '2026-10-06T16:11:17+00:00'
-  path: santander_transaction_value/01a111fb-c8c5-7b20-b3a0-528353375933
+  uuid: 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
+  checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
+  built_at: '2026-10-14T12:58:28+00:00'
+  path: santander_transaction_value/01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 4447
   n_features: 540
@@ -63,7 +63,7 @@ decisions: []
 
 Regression of `target`, scored with `rmse` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c8c5-7b20-b3a0-528353375933` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2`, so the build is stale. See [Build](#build).
+Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -365,11 +365,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-c8c5-7b20-b3a0-528353375933 |
-| checksum | v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4 |
-| built_at | 2026-10-06T16:11:17+00:00 |
-| path | santander_transaction_value/01a111fb-c8c5-7b20-b3a0-528353375933 |
+| uuid | 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b |
+| checksum | v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2 |
+| built_at | 2026-10-14T12:58:28+00:00 |
+| path | santander_transaction_value/01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

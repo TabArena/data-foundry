@@ -35,6 +35,10 @@ Lennart: impact of spatial data can be likely ignored, otherwise dataset fits cr
 
 Andrej: Is crawled data, but one could imagine people to be interested in estimating whether some cars are overpriced
 
+**Assessment (AI, 2026-10-14):** the duplicates are not natural. Most of the 18 exact copies sit 12-14 rows after their first copy (one results page), so the crawler saw the listing twice. The same car (model, age in days, an odd km reading such as 9,248, owners) appears at up to 9 places a median 396 km apart, mostly at one price: 104 rows repeat another car (78 at the same price); among the 753 rows with a non-round km reading, 681 distinct age-km pairs, so a shared odd reading by chance is very unlikely.
+
+CC (2026-10-14, Lennart): Keep one row per car, its first listing (1,434 rows).
+
 ## Reference
 
 https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows

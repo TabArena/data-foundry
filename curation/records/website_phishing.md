@@ -13,6 +13,7 @@ original_source: UCI
 year: '2016'
 required_split:
 - '?'
+problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5B301
 notebook_path: datasets/beyond_iid/old_iid/website_phishing/website_phishing.ipynb
@@ -33,6 +34,10 @@ Lennart: Unsure as this seems to be older than other datasets and am missing dom
 Andrej: Following logic of other, more extensive phishing websites task (10.24432/C51W2X)
 
 **Assessment (AI, 2026-10-14):** no leak in the audit's sense, but the Suspicious class (103 sites) is the donors' judgement of the same nine signals (UCI 379), not an outcome: LightGBM separates it from the rest with AUC 0.987, a depth-6 tree with 0.942. Phishy against Legitimate, from the source lists, scores 0.973 without those rows. Under the documented coding (1/0/-1 = legitimate/suspicious/phishy), 7 of the 9 features point opposite to the label (91% of Phishy sites have SFH rated legitimate), and having_IP_Address takes only 0 and 1, so the definition's renaming of the codes misleads.
+
+CC (2026-10-14, Lennart): Binary, Phishy against Legitimate: the Suspicious class is the donors' judgement of the same signals. Raw feature codes kept.
+
+CC (2026-10-14, Lennart): Accept `dataset_pure_feature_value` (all 167 sites with popUpWidnow = 1 are phishing): the same reversed coding as the other signals, a page property, not a leak.
 
 ## Reference
 

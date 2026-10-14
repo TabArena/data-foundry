@@ -1,4 +1,4 @@
-"""Hidden groups: columns and near-copy rows whose shared values carry the label, and what a random split gains.
+"""Hidden groups: columns, keys of all columns but one and near copies that carry the label, and a random split's gain.
 
 Usage::
 
@@ -7,8 +7,8 @@ Usage::
 
 An IID split assumes the rows are independent. When many rows share an entity (a patient, a customer, a product)
 and the entity carries the label, a random split puts rows of one entity on both sides, and a model can score by
-recognising the entity instead of learning the task. This probe looks for such entities among the columns, and among
-clusters of rows that agree on almost every column.
+recognising the entity instead of learning the task. This probe looks for such entities among the columns, among rows
+identical in all columns but one, and among clusters of rows that agree on almost every column.
 
 1. **Candidates**: columns with repeated values (at least ``MIN_GROUPS`` values, a mean of at least
    ``MIN_MEAN_SIZE`` rows per value, at least ``MIN_REPEATED_SHARE`` of the rows sharing their value with another
@@ -36,8 +36,8 @@ clusters of rows that agree on almost every column.
    fingerprint bits that are mostly 0 the similarity is the Tanimoto coefficient. Two rows are near copies when
    their token sets have a Jaccard similarity of at least ``COPY_SIMILARITY`` (0.85: 92% of the columns agree when
    no value is dominant) and share at least ``COPY_MIN_SHARED`` tokens, so a table with fewer informative columns
-   has no near copies (its groups are combinations of a few columns, which the column candidates and a look at the
-   source cover). The clusters are the connected components; a cluster of more than ``COPY_MAX_CLUSTER`` rows is a
+   has no near copies (its groups are combinations of a few columns, which step 6 covers). The clusters are the
+   connected components; a cluster of more than ``COPY_MAX_CLUSTER`` rows is a
    common profile (empty records, a default customer) or a chain of neighbours, not one entity, and its rows count
    as singletons (``rows_in_large_clusters``). Pairs are found by MinHash (``MINHASH_BANDS`` bands of
    ``MINHASH_ROWS`` hashes; all pairs of a bucket of up to ``BUCKET_WINDOW`` rows, in a larger bucket each row with
@@ -47,28 +47,48 @@ clusters of rows that agree on almost every column.
    of ``COPY_LADDER``, and, when at least ``COPY_MIN_SHARE`` of the rows are in a cluster of two or more, the split
    gap of step 4 with grouped folds that are the random folds with each cluster moved into the fold of its first
    row, so the two splits differ only in the clustered rows.
+6. **Composite keys** (``(all but Age)``, the ``composite_keys`` entry of the JSON): rows identical in every column
+   but one are repeated measurements of one entity at another age, dose, time or position (a concrete mix tested at
+   several ages, a wind-tunnel run measured at several frequencies), a group that no single column holds and that a
+   table of a few columns cannot show as near copies. Each key is all columns but the left-out ones (the target and
+   a known group column are never part of it, constant columns do not count, a missing value is a value), hashed
+   exactly. The rows that share a key of at most ``COPY_MAX_CLUSTER`` rows with a row that differs are the
+   ``varying_share`` (a larger key is a common profile, such as a customer with every column empty). A key counts
+   when it holds a column of at least ``MIN_GROUPS`` values (a key of only coarse columns, such as binary symptoms,
+   is a profile that new rows share by chance), at least ``MIN_GROUPS`` keys hold differing rows, the
+   ``varying_share`` is at least ``KEY_MIN_SHARE`` and at least ``1 / KEY_CHANCE`` times the share with every column
+   permuted on its own (``baseline_share``: repeats by chance, as in a factorial design of a few categories), and no
+   key holds more than ``MAX_TOP_SHARE`` of the rows. The probe first leaves out one column; only when no key counts,
+   two (a time column and one derived from it), if the number of keys times the rows stays within ``KEY_BUDGET`` (a
+   wide table checks a random subset of the one-column keys, ``keys_checked``). The ``N_KEYS`` keys with the most
+   rows above chance get ``s_id`` and the split gap of step 4 with folds by key.
 
 A column candidate is **eligible** when its value carries the label (``s_id - s_smooth >= MIN_IDENTITY``) and it
 looks like an entity: at least ``MIN_STATIC`` attributes, or a label that its value nearly fixes
 (``s_id >= STRONG_ID``: a molecule's conformations, the samples of one mouse). The near copies are eligible when at
 least ``COPY_ELIGIBLE_SHARE`` of the rows are in a cluster of two or more and the clusters carry the label
-(``s_id >= MIN_IDENTITY``; they have no smooth part and share most columns by construction). A candidate is a
-**hit** when it is eligible, ``gap >= MIN_GAP`` and ``gap >= MIN_RELATIVE_GAP * skill(random)``. A hit is a
-question, not a verdict: re-split a dataset by a column only when the context says the rows share an entity that
-new data would not have (the source describes the column as an id, or the use case predicts for new entities), or
-the evidence is very strong; then the use case decides, not the size of the gap. A near-copy cluster is never the
-group key itself: it points to an entity, and the key comes from the source. How to read the output:
-``.claude/skills/verify-dataset/references/task_probes.md`` (hidden groups).
+(``s_id >= MIN_IDENTITY``; they have no smooth part and share most columns by construction). A composite key is
+eligible when it counts (step 6) and carries the label (``s_id >= MIN_IDENTITY``). A candidate is a
+**hit** when it is eligible, ``gap >= MIN_GAP`` and ``gap >= MIN_RELATIVE_GAP * skill(random)``. A composite key is
+evidence of an entity by itself, so its gap may instead raise the error left by ``KEY_ERROR_RISE``
+(``gap >= KEY_ERROR_RISE * (1 - skill(random))``): concrete's mixes cost 7% of the skill but nearly double the
+error (R^2 0.923 against 0.857). A hit is a question, not a verdict: re-split a dataset by a column only when the
+context says the rows share an entity that new data would not have (the source describes the column as an id, or
+the use case predicts for new entities), or the evidence is very strong; then the use case decides, not the size of
+the gap. A near-copy cluster is never the group key itself: it points to an entity, and the key comes from the
+source. How to read the output: ``.claude/skills/verify-dataset/references/task_probes.md`` (hidden groups).
 
 **Temporal tasks** get no gap and no hit: the shipped splits already hold out the future, and an entity that recurs
 across the cutoff is part of the task (a customer's next month). Instead, for the ``N_TESTED`` top candidates (the
-eligible ones, listed as ``entity_like``, first) and the near copies, the probe reports the share of test rows whose
-value (or cluster) occurs among the training rows of each shipped split (``test_rows_seen``, with its range over the
-splits): how often the entities recur across the cutoff. The time column is no candidate and no near-copy token, and
-only the scored candidates are turned into model inputs.
+eligible ones, listed as ``entity_like``, first), the composite keys and the near copies, the probe reports the share
+of test rows whose value (or cluster, or key) occurs among the training rows of each shipped split
+(``test_rows_seen``, with its range over the splits): how often the entities recur across the cutoff. The time column
+is no candidate and no near-copy token (a composite key can leave it out), and only the scored candidates are turned
+into model inputs.
 
 ``--include-grouped`` also runs the grouped datasets as if they were IID (their known group column is marked, and
-left out of the near-copy tokens): the positive controls for the thresholds.
+left out of the near-copy tokens and the composite keys; a key with the same groups is marked as the known group):
+the positive controls for the thresholds.
 """
 
 from __future__ import annotations
@@ -78,6 +98,8 @@ import json
 import os
 import sys
 import time
+from itertools import combinations
+from math import comb
 from pathlib import Path
 
 os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -130,6 +152,20 @@ BUCKET_WINDOW = 20
 MAX_COPY_CELLS = 30_000_000
 COPY_SIZES = ((2, 2), (3, 5), (6, 20), (21, None))
 """The cluster sizes counted in ``cluster_sizes``."""
+
+KEY_MIN_SHARE = 0.1
+"""Composite keys: the least share of the rows in keys whose rows differ."""
+KEY_CHANCE = 0.25
+"""Composite keys: the most that share may be with independent columns, relative to the share observed."""
+KEY_ERROR_RISE = 0.25
+"""Composite keys: a gap that raises the error left (``1 - skill``) by this share is large enough."""
+KEY_MAX_LEFT_OUT = 2
+KEY_BUDGET = 200_000_000
+"""Rows times keys hashed by the composite-key search."""
+KEY_CACHE_CELLS = 10_000_000
+"""Frames up to this many cells keep the column hashes in memory."""
+N_KEYS = 2
+"""Composite keys that get ``s_id`` and the split gap."""
 
 
 def constant_share(groups: np.ndarray, codes: np.ndarray) -> float:
@@ -489,6 +525,173 @@ def copy_candidate(
     return cand
 
 
+def column_hash(values: pd.Series, seed: int, *, permute: bool) -> np.ndarray:
+    """A random 64-bit number per distinct value of a column (missing is a value), one per row; with ``permute``, in
+    a random row order that ``seed`` fixes.
+    """
+    rng = np.random.default_rng(seed)
+    codes = pd.factorize(values, use_na_sentinel=False)[0]
+    hashed = rng.integers(1, np.iinfo(np.uint64).max, size=int(codes.max()) + 1, dtype=np.uint64)[codes]
+    return hashed[rng.permutation(len(hashed))] if permute else hashed
+
+
+def key_stats(key: np.ndarray, rows: np.ndarray) -> tuple[np.ndarray, dict]:
+    """The group id of each row by ``key``, and the counts of step 6 (``rows``: an id per distinct whole row)."""
+    groups = pd.factorize(key)[0].astype(np.int64)
+    sizes = np.bincount(groups)
+    width = int(rows.max()) + 1
+    distinct = np.bincount(pd.unique(groups * width + rows) // width, minlength=len(sizes))
+    varying = (distinct >= 2) & (sizes <= COPY_MAX_CLUSTER)
+    return groups, {
+        "values": len(sizes),
+        "repeated_share": round(float(np.mean(sizes[groups] >= 2)), 4),
+        "varying_share": round(float(np.mean(varying[groups])), 4),
+        "varying_keys": int(varying.sum()),
+        "rows_in_large_keys": int(np.sum(sizes[groups] > COPY_MAX_CLUSTER)),
+        "largest": int(sizes.max()),
+    }
+
+
+def key_name(left_out: list[str]) -> str:
+    """The name of a composite key in the output."""
+    return f"(all but {', '.join(left_out)})"
+
+
+class KeyHashes:
+    """Exact hashes of the composite keys of step 6: a column's hash per row, as is or with the column's rows permuted
+    on their own (the baseline), and their sum over all columns; a key is the sum minus its left-out columns.
+    """
+
+    def __init__(self, df: pd.DataFrame, columns: list[str]) -> None:
+        """Hash ``columns`` of ``df``."""
+        self.df, self.columns = df, columns
+        self.keep = len(df) * len(columns) <= KEY_CACHE_CELLS
+        self.store: dict = {}
+        self.total: dict = {}
+        self.rows: dict = {}
+
+    def summed(self, *, permute: bool) -> tuple[np.ndarray, np.ndarray]:
+        """The sum of all column hashes per row and an id per distinct row (computed on first use)."""
+        if permute not in self.total:
+            total = np.zeros(len(self.df), dtype=np.uint64)
+            for j in range(len(self.columns)):
+                total += self.column(j, permute=permute)
+            self.total[permute] = total
+            self.rows[permute] = pd.factorize(total)[0].astype(np.int64)
+        return self.total[permute], self.rows[permute]
+
+    def column(self, j: int, *, permute: bool) -> np.ndarray:
+        """The hash of column ``j`` per row (kept when the frame is small)."""
+        if (j, permute) in self.store:
+            return self.store[(j, permute)]
+        hashed = column_hash(self.df[self.columns[j]], j, permute=permute)
+        if self.keep:
+            self.store[(j, permute)] = hashed
+        return hashed
+
+    def stats(self, left: tuple[int, ...], *, permute: bool = False) -> tuple[np.ndarray, dict]:
+        """:func:`key_stats` of the key of all columns but ``left``."""
+        total, rows = self.summed(permute=permute)
+        key = total.copy()
+        for j in left:
+            key -= self.column(j, permute=permute)  # uint64 arithmetic wraps, so this is the others' sum
+        return key_stats(key, rows)
+
+
+def key_sets(p: int, k: int, n: int, rng: np.random.Generator) -> list[tuple[int, ...]] | None:
+    """The sets of ``k`` of ``p`` columns to leave out (a random subset when one column at a time exceeds the
+    budget), or None when the key would have fewer than two columns or ``k > 1`` exceeds the budget.
+    """
+    if p - k < 2 or (k > 1 and n * comb(p, k) > KEY_BUDGET):
+        return None
+    sets = list(combinations(range(p), k))
+    if n * len(sets) > KEY_BUDGET:
+        sets = [sets[i] for i in np.sort(rng.choice(len(sets), max(1, KEY_BUDGET // n), replace=False))]
+    return sets
+
+
+def repeats(stats: dict, n: int) -> bool:
+    """Whether a key's rows repeat enough to count (step 6), before the comparison with chance."""
+    return (
+        stats["varying_keys"] >= MIN_GROUPS
+        and stats["varying_share"] >= KEY_MIN_SHARE
+        and stats["largest"] <= MAX_TOP_SHARE * n
+    )
+
+
+def composite_keys(df: pd.DataFrame, columns: list[str], rng: np.random.Generator) -> tuple[list[dict], dict]:
+    """The composite keys of step 6 that count, most rows above chance first, with their group ids, and the search."""
+    started = time.time()
+    n = len(df)
+    columns = [c for c in columns if pd.factorize(df[c], use_na_sentinel=False)[0].max() > 0]
+    fine = np.array([df[c].nunique() >= MIN_GROUPS for c in columns], dtype=bool)
+    hashes = KeyHashes(df, columns)
+    found, best, searched, checked, possible = [], ((), -1.0), [], 0, 0
+    for k in range(1, KEY_MAX_LEFT_OUT + 1):
+        sets = key_sets(len(columns), k, n, rng)
+        if sets is None:
+            break
+        searched.append(k)
+        possible += comb(len(columns), k)
+        checked += len(sets)
+        for left in sets:
+            stats = hashes.stats(left)[1]
+            best = max(best, (left, stats["varying_share"]), key=lambda b: b[1])
+            if not fine.sum() > fine[list(left)].sum() or not repeats(stats, n):
+                continue
+            baseline = hashes.stats(left, permute=True)[1]["varying_share"]
+            if baseline <= KEY_CHANCE * stats["varying_share"]:
+                found.append({"left": left, **stats, "baseline_share": baseline})
+        if found:
+            break
+    found.sort(key=lambda c: -(c["varying_share"] - c["baseline_share"]))
+    keys = []
+    for c in found[:N_KEYS]:
+        left = c.pop("left")
+        left_out = [columns[j] for j in left]
+        keys.append({"column": key_name(left_out), "left_out": left_out, **c, "_groups": hashes.stats(left)[0]})
+    search = {
+        "left_out": searched,
+        "columns": len(columns),
+        "keys_checked": checked,
+        "keys": possible,
+        "counted": len(found),
+        "best": key_name([columns[j] for j in best[0]]) if best[0] else None,
+        "best_varying_share": best[1] if best[0] else None,
+        "seconds": round(time.time() - started, 1),
+    }
+    return keys, search
+
+
+def key_candidates(
+    df: pd.DataFrame,
+    columns: list[str],
+    y: np.ndarray,
+    n_classes: int,
+    known: list[str],
+    rng: np.random.Generator,
+) -> tuple[list[dict], dict]:
+    """The composite keys (step 6), shaped like column candidates, with ``s_id`` and eligibility, and the search."""
+    keys, search = composite_keys(df, columns, rng)
+    known_groups = df.groupby(known, sort=False, dropna=False, observed=True).ngroup().to_numpy() if known else None
+    for cand in keys:
+        groups = cand["_groups"]
+        rows, pred = leave_one_out(groups, y, n_classes)
+        cand["s_id"] = skill(y[rows], pred, n_classes) if len(rows) >= 2 else float("nan")
+        cand["s_smooth"] = 0.0
+        cand["s_identity"] = cand["s_id"]
+        cand["dtype"] = "composite key"
+        cand["key_columns"] = search["columns"] - len(cand["left_out"])
+        cand["mean_rows_per_value"] = round(len(groups) / max(cand["values"], 1), 2)
+        cand["known_group"] = bool(
+            known_groups is not None
+            and len(np.unique(known_groups)) == cand["values"] == len(pd.unique(groups * len(groups) + known_groups))
+        )
+        cand["eligible"] = bool(np.nan_to_num(cand["s_id"], nan=-1) >= MIN_IDENTITY)
+        cand["_rows"] = rows
+    return keys, search
+
+
 def column_candidates(df: pd.DataFrame, y: np.ndarray, n_classes: int, skip: list[str], known: list[str]) -> list:
     """The candidate columns (step 1) with their ``s_id`` (step 2), best first."""
     scored = []
@@ -570,9 +773,10 @@ def split_gap(
     cand["gap"] = cand["skill_random"] - cand["skill_grouped"]
     cand["gap_fold_sd"] = float(np.nanstd(np.subtract(random_folds, group_folds)))
     cand["rows_tested"] = len(keep)
-    cand["hit"] = bool(
-        cand["eligible"] and cand["gap"] >= MIN_GAP and cand["gap"] >= MIN_RELATIVE_GAP * cand["skill_random"]
-    )
+    large = cand["gap"] >= MIN_RELATIVE_GAP * cand["skill_random"]
+    if "left_out" in cand:  # a composite key: or a gap that raises the error left by KEY_ERROR_RISE
+        large = large or cand["gap"] >= KEY_ERROR_RISE * (1.0 - cand["skill_random"])
+    cand["hit"] = bool(cand["eligible"] and cand["gap"] >= MIN_GAP and large)
 
 
 def recurrence(cand: dict, shipped: list[tuple[np.ndarray, np.ndarray]]) -> None:
@@ -614,6 +818,8 @@ def probe(name: str, root: Path, *, built: bool, n_jobs: int, include_grouped: b
     ranked = rank(scored[:MAX_SCORED], df, X, by_name, y, n_classes, task.target_column_name, n_jobs, rng)
     tokens = [c for c in df.columns if c not in skip and c not in known]
     copies = copy_candidate(df, tokens, y, n_classes, np.random.default_rng(1))
+    key_columns = [c for c in df.columns if c != task.target_column_name and c not in known]
+    keys, search = key_candidates(df, key_columns, y, n_classes, known, np.random.default_rng(2))
 
     if regime == "temporal":
         shipped = [
@@ -621,21 +827,25 @@ def probe(name: str, root: Path, *, built: bool, n_jobs: int, include_grouped: b
             for folds in container.experiment_metadata.splits.values()
             for train, test in folds.values()
         ]
-        for cand in [*ranked[:N_TESTED], copies]:
+        for cand in [*ranked[:N_TESTED], *keys, copies]:
             recurrence(cand, shipped)
     else:
         cache: dict = {}
         for cand in ranked[:N_TESTED]:
             split_gap(cand, X, y, n_classes, n_jobs, rng, cache)
+        for cand in keys:
+            split_gap(cand, X, y, n_classes, n_jobs, np.random.default_rng(2), cache)
         if copies["testable"]:
             split_gap(copies, X, y, n_classes, n_jobs, np.random.default_rng(1), cache)
-    for cand in [*scored, copies]:
+    for cand in [*scored, *keys, copies]:
         cand.pop("_groups"), cand.pop("_rows")
     result["candidates"] = len(scored)
     result["scored"] = ranked
+    result["composite_keys"] = keys
+    result["composite_search"] = search
     result["near_copies"] = copies
-    result["hits"] = [c["column"] for c in [*ranked, copies] if c.get("hit")]
-    result["entity_like"] = [c["column"] for c in ranked if c["eligible"]]
+    result["hits"] = [c["column"] for c in [*ranked, *keys, copies] if c.get("hit")]
+    result["entity_like"] = [c["column"] for c in [*ranked, *keys] if c["eligible"]]
     result["seconds"] = round(time.time() - started)
     return result
 
@@ -648,6 +858,37 @@ def _outcome(c: dict) -> str:
         low, high = c["test_rows_seen_range"]
         return f", test rows seen in train {c['test_rows_seen']:.1%} ({low:.1%}-{high:.1%}, {c['splits']} splits)"
     return ""
+
+
+def _key_lines(result: dict) -> list[str]:
+    """The composite keys of one dataset, or what the search checked when none counts."""
+    search = result.get("composite_search")
+    if not search:
+        return []
+    lines = []
+    for c in result["composite_keys"]:
+        mark = " [known group]" if c["known_group"] else ""
+        lines.append(
+            f"   {c['column']}{mark}: {c['values']} keys of {c['key_columns']} columns, "
+            f"{c['mean_rows_per_value']} rows each, {c['varying_share']:.1%} of the rows share a key with a row "
+            f"that differs ({c['baseline_share']:.1%} with independent columns), s_id {c['s_id']:.3f}{_outcome(c)}"
+            + (
+                f"; {c['rows_in_large_keys']} rows of keys over {COPY_MAX_CLUSTER} left out"
+                if c["rows_in_large_keys"]
+                else ""
+            )
+        )
+    if search["left_out"]:
+        scope = {1: "one column", 2: "one or two columns"}.get(max(search["left_out"]), "a few columns")
+        best = f"; best {search['best']} {search['best_varying_share']:.1%}" if search["best"] else ""
+        found = f"{search['counted']} count" if search["counted"] else "none counts"
+        lines.append(
+            f"   (keys of all but {scope}): {found} ({search['keys_checked']} of {search['keys']} keys, "
+            f"{search['columns']} columns{best}), {search['seconds']} s"
+        )
+    else:
+        lines.append(f"   (keys of all but one column): not searched ({search['columns']} columns)")
+    return lines
 
 
 def render(result: dict) -> str:
@@ -666,6 +907,7 @@ def render(result: dict) -> str:
             f"s_id {c['s_id']:.3f}, s_smooth {c['s_smooth']:.3f}, "
             f"{c['static']} attributes {c['static_columns'][:4]}{_outcome(c)}"
         )
+    lines.extend(_key_lines(result))
     c = result["near_copies"]
     ladder = ", ".join(f"{s['similarity']}: {s['clusters']} ({s['repeated_share']:.1%})" for s in c["ladder"])
     sizes = ", ".join(f"{k}: {v}" for k, v in c["cluster_sizes"].items() if v)
@@ -696,7 +938,7 @@ def _summary_row(r: dict) -> str:
         top = r.get("skipped") or r.get("error", "")
     else:
         parts = []
-        for c in [*r["scored"][:1], r["near_copies"]]:
+        for c in [*r["scored"][:1], *r.get("composite_keys", [])[:1], r["near_copies"]]:
             if "gap" in c:
                 parts.append(f"{c['column']} gap {c['gap']:+.3f}")
             elif "test_rows_seen" in c:
@@ -731,7 +973,8 @@ def main(argv: list[str] | None = None) -> int:
         args.out.mkdir(parents=True, exist_ok=True)
         for result in results:
             (args.out / f"{result['name']}.json").write_text(json.dumps(result, indent=1, default=str))
-        header = "| dataset | regime | candidates | hits | top candidate; near copies |\n|---|---|---|---|---|\n"
+        header = "| dataset | regime | candidates | hits | top candidate; composite key; near copies |\n"
+        header += "|---|---|---|---|---|\n"
         (args.out / "summary.md").write_text(header + "\n".join(_summary_row(r) for r in results) + "\n")
     return 0
 

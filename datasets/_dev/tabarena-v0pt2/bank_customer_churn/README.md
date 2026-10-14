@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782
+checksum: v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866
 build:
   uuid: 01a111fc-c45b-7b5e-b6fe-7f527899d692
   checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
@@ -54,7 +54,9 @@ bundle_checks:
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_license_unknown: Kaggle gives the licence as 'Other (specified in description)',
+      but the description names none; no other licence is known (Lennart, 2026-10-14).
 decisions: []
 ---
 
@@ -64,7 +66,7 @@ decisions: []
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2022).
 
-Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -120,7 +122,7 @@ Only curators run `build`, when the dataset ships.
 | source | Kaggle: https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset |
 | year | 2022 |
 | domain | business & marketing |
-| license | Public Domain |
+| license |  |
 | data_tags | IID |
 | reference | Topre2022BankCustomerChurn |
 | rows x columns | 10,000 x 11 |
@@ -192,6 +194,10 @@ Default splits.
 
 0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `meta_license_unknown`: Kaggle gives the licence as 'Other (specified in description)', but the description names none; no other licence is known (Lennart, 2026-10-14).
 
 ## Data checks
 
@@ -266,4 +272,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782` |
+| stale | yes: the definition now gives checksum `v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866` |

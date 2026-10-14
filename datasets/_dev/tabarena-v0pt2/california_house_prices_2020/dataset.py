@@ -17,8 +17,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             " sell for, to set or judge an offer."
         ),
         row=(
-            "One home sold in California around 2020, as scraped from Redfin; Arizona homes and older copies of "
-            "repeated homes are dropped."
+            "One home sold in California around 2020, as scraped from Redfin; Arizona homes, older copies of "
+            "repeated homes and homes whose listing predates their last sale are dropped."
         ),
         predicted="The sale price in US dollars, on a log scale.",
         known=(
@@ -31,8 +31,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             "order comes from the Kaggle row ID, as the data has no sale dates."
         ),
         changes=(
-            "We drop 5,413 listings whose description states the sold price, and order and split the sales by the "
-            "Kaggle ID, which follows the sale order."
+            "We drop 5,413 listings whose description states the sold price and 2,480 whose listing describes an "
+            "earlier sale, and order and split the sales by the Kaggle ID, which follows the sale order."
         ),
         fit="approximate",
         fit_reason=(
@@ -83,6 +83,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - We drop all entries from the State of Arizona (AZ) as they are only a small fraction (n=431 after our preprocessing). The dataset is specified to be for California house prices.
         - We treat ZIP codes as strings. But we add a new categorical features that puts zip code in to approximate relevant buckets of regions.
         - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
+        - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
         - After all the above preprocessing, there exist 63 houses that appear multiple times in the dataset (same address, zip code, year built). We only keep the newest entry to avoid group-related target leakage.
     """
 
@@ -213,6 +214,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         assert (
             n_data - len(df) == 67
         )  # We have 63 houses with multiple entries (either 2 or 3) for a total of 130 entire. We keep one entry per house, thus 130 - 63 = 67
+        # Drop homes whose listing predates their last sale: it describes an earlier sale (see curation_comments)
+        df = df[~(pd.to_datetime(df["Last Sold On"]) >= pd.to_datetime(df["Listed On"]))]
         # Log scale target as it is exp distributed
         df[self.task_metadata.target_column_name] = np.log1p(df[self.task_metadata.target_column_name])
         # Rest time_index (to avoid gaps from dropping rows)

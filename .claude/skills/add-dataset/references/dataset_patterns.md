@@ -1,7 +1,7 @@
 # Dataset patterns for the `add-dataset` skill
 
 Reference for writing a v2 `dataset.py`, distilled from the curation practice of the collection (the BeyondArena
-datasets and their 125 v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
+datasets and their v2 definitions in the TabArena v0.2 working copy). §A maps the curation record to
 the attributes; §B and §C are what to *write*; §D is what to *flag*; §E maps each automated check to the action
 that pre-empts it; §F shows how to record decisions with their evidence.
 
@@ -563,8 +563,10 @@ artefact runs through every feature (prostate_cancer_detection).
 
 **14. Cohort and selection.** Follow the source's cohort definition: diabetes_130_us removes encounters that ended
 in death or hospice, as Strack et al. 2014 (Sec. 2.3) do, because those patients cannot be readmitted. A selection on
-the outcome that the task states (cirrhosis_patient_survival_prediction: time to death, deaths only) stays, with a
-bullet saying it is by design.
+the outcome is right truncation when follow-up ends on one date for all: cirrhosis_patient_survival_prediction
+regressed the time to death over the patients who died, but a late patient entered only with an early death. Turn it
+into an outcome within a fixed horizon over the rows followed that long (since 2026-10-14: death or transplant within 5
+years, over the patients registered early enough).
 
 **15. Training rows whose label is not yet known.** In a temporal task, a row's label must be known at the
 prediction point to be in train. hotel_booking_demand kept bookings arriving after the prediction date that were

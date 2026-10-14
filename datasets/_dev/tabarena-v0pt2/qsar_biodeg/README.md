@@ -4,20 +4,20 @@ unique_name: qsar_biodeg
 container_format: 2
 checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
 build:
-  uuid: 01a111fc-bbf4-7a48-86aa-22bfb52b8d59
-  checksum: v2:d0a0fa13d4751eb442b2643321abd35397ed955e7becde71803798b4008d87a1
-  built_at: '2026-10-06T16:12:18+00:00'
-  path: qsar_biodeg/01a111fc-bbf4-7a48-86aa-22bfb52b8d59
+  uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
+  checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: qsar_biodeg/01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1055
   n_features: 41
@@ -65,7 +65,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,055 rows and 41 features. Source: UCI (2013).
 
-Built as `01a111fc-bbf4-7a48-86aa-22bfb52b8d59` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -363,11 +363,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-bbf4-7a48-86aa-22bfb52b8d59 |
-| checksum | v2:d0a0fa13d4751eb442b2643321abd35397ed955e7becde71803798b4008d87a1 |
-| built_at | 2026-10-06T16:12:18+00:00 |
-| path | qsar_biodeg/01a111fc-bbf4-7a48-86aa-22bfb52b8d59 |
+| uuid | 01a13a7d-c2bf-742d-b04d-f9b569da1f3d |
+| checksum | v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | qsar_biodeg/01a13a7d-c2bf-742d-b04d-f9b569da1f3d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

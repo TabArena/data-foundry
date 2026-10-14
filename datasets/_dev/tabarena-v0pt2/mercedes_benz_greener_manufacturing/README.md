@@ -4,20 +4,20 @@ unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
 checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
 build:
-  uuid: 01a111fc-ad75-71b3-a65b-bf31e51792f6
-  checksum: v2:115e6497b0dd4b2e109029b3c73c5a219075c5f5e7290fff3c034bdf0af7da41
-  built_at: '2026-10-06T16:12:17+00:00'
-  path: mercedes_benz_greener_manufacturing/01a111fc-ad75-71b3-a65b-bf31e51792f6
+  uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
+  checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
+  built_at: '2026-10-14T12:58:03+00:00'
+  path: mercedes_benz_greener_manufacturing/01a13a7d-bd39-75dc-a072-0eebbfca32cb
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 4204
   n_features: 371
@@ -66,7 +66,7 @@ decisions: []
 
 Regression of `y`, scored with `rmse` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a111fc-ad75-71b3-a65b-bf31e51792f6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -372,11 +372,10 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-ad75-71b3-a65b-bf31e51792f6 |
-| checksum | v2:115e6497b0dd4b2e109029b3c73c5a219075c5f5e7290fff3c034bdf0af7da41 |
-| built_at | 2026-10-06T16:12:17+00:00 |
-| path | mercedes_benz_greener_manufacturing/01a111fc-ad75-71b3-a65b-bf31e51792f6 |
+| uuid | 01a13a7d-bd39-75dc-a072-0eebbfca32cb |
+| checksum | v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58 |
+| built_at | 2026-10-14T12:58:03+00:00 |
+| path | mercedes_benz_greener_manufacturing/01a13a7d-bd39-75dc-a072-0eebbfca32cb |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

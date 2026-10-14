@@ -4,20 +4,20 @@ unique_name: heart_disease_va_long_beach
 container_format: 2
 checksum: v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2
 build:
-  uuid: 01a111fc-aa5f-797c-b591-225fad0157b7
-  checksum: v2:981f69495bd48c76790a92ad3fc1369b083446c626e61c4621bdc731faa6f2d2
-  built_at: '2026-10-06T16:12:13+00:00'
-  path: heart_disease_va_long_beach/01a111fc-aa5f-797c-b591-225fad0157b7
+  uuid: 01a13a7d-c2bc-7803-9ff6-e0e192d554de
+  checksum: v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: heart_disease_va_long_beach/01a13a7d-c2bc-7803-9ff6-e0e192d554de
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 200
   n_features: 13
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 200 rows and 13 features. Source: UCI (1988).
 
-Built as `01a111fc-aa5f-797c-b591-225fad0157b7` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bc-7803-9ff6-e0e192d554de` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -346,11 +346,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-aa5f-797c-b591-225fad0157b7 |
-| checksum | v2:981f69495bd48c76790a92ad3fc1369b083446c626e61c4621bdc731faa6f2d2 |
-| built_at | 2026-10-06T16:12:13+00:00 |
-| path | heart_disease_va_long_beach/01a111fc-aa5f-797c-b591-225fad0157b7 |
+| uuid | 01a13a7d-c2bc-7803-9ff6-e0e192d554de |
+| checksum | v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | heart_disease_va_long_beach/01a13a7d-c2bc-7803-9ff6-e0e192d554de |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

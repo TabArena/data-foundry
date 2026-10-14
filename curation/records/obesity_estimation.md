@@ -44,6 +44,10 @@ TODO: remove height / weight, make regression task, remove SMOTE samples
 
 **Assessment (AI, 2026-10-14):** the first 498 rows are the real answers. Their class counts (34/287/58/58/47/11/3) equal Fig. 1 of Palechor & De la Hoz 2019, all 287 Normal_Weight rows are among them, and the later rows come in per-class blocks whose totals match Fig. 2 (2,111 rows). 1,598 of the 1,613 later rows have values with 3 or more decimals; the other 15 are whole-number SMOTE rows between identical neighbours, so a filter on values would let them in. The 498 rows hold 10 exact duplicates (488 distinct).
 
+**Assessment (AI, 2026-10-14):** the 498 real rows hold 10 exact copies in 8 groups (rows 97/98, 105/106, 208/209, 466/467, 295/309, 282/460, 443/496, and 145/174/179/184). Each repeats all 16 answers, age, height to the centimetre and weight to the kilogram. Of the 14 rows that repeat another row's answers, 10 also repeat height and weight, which different people would almost never do, and two more are neighbouring rows that differ only in height (rows 420/421: 1.85 and 1.84 m), like a corrected resubmission. So they are the same person sending the web form again.
+
+CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
+
 ## Reference
 
 @article{palechor2019dataset,

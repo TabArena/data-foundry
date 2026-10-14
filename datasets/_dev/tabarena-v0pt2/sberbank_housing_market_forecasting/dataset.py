@@ -21,7 +21,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
             "more confident when they sign (the Kaggle competition's purpose)."
         ),
         row=(
-            "One sale of a flat in Moscow, August 2011 to June 2015 (27,195 sales), either an owner-occupier purchase"
+            "One sale of a flat in Moscow, August 2011 to June 2015 (28,321 sales), either an owner-occupier purchase"
             " or an investment."
         ),
         predicted="The sale price per square metre of total area, on a logarithmic scale.",
@@ -36,8 +36,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         ),
         changes=(
             "Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up"
-            " to 1 million rubles or of exactly 2 or 3 million, flats of 5 square metres or less, and flats built "
-            "after their sale."
+            " to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less."
         ),
         fit="direct",
         fit_reason=(
@@ -87,7 +86,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
-        - We drop the 1,126 sales whose build_year is later than the year of sale. The column is described as "year built", not "year to be finished", so we treat them as errors. Only 2 of them have a build_year coded from a range such as "2000-2005"; the other 1,124 were sold 0 to 4 years before it, which may be flats sold before completion.
+        - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
     """
 
     # Task
@@ -144,7 +143,6 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         data = data.with_columns((pl.col("price_doc") / pl.col("full_sq")).log().alias("price_doc"))
         data = data.to_pandas()
         data = data.drop(columns=["0_6_all", "7_14_all", "id"])
-        data = data[~(data["build_year"] > data["timestamp"].dt.year)]
         data = data.reset_index(drop=True)
         df = data
         return df
@@ -153,7 +151,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 # 1-4; the one row with 33 (id 10092, likely a typo for 3) also has the range-coded build_year
-                # 20052009 and is dropped by the build-year filter
+                # 20052009; both values are kept as they are
                 "state",
                 "ID_railroad_station_walk",
                 "ID_railroad_station_avto",

@@ -2,24 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790
+checksum: v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6
 build:
-  uuid: 01a111fc-e13c-73b1-a5b6-46586d1602ca
-  checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: hr_analytics/01a111fc-e13c-73b1-a5b6-46586d1602ca
+  uuid: 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
+  checksum: v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6
+  built_at: '2026-10-14T12:58:03+00:00'
+  path: hr_analytics/01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 19158
+  n_rows: 18359
   n_features: 12
   dtypes:
     category: 11
@@ -44,11 +44,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 12772
-    max: 12772
+    min: 12239
+    max: 12240
   n_test:
-    min: 6386
-    max: 6386
+    min: 6119
+    max: 6120
 bundle_checks:
   ok: true
   errors: []
@@ -56,7 +56,13 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  accepted: {}
+  accepted:
+    meta_license_unknown: 'Neither contest page (The Data Supremacy, 2018; JanataHack:
+      HR Analytics, 2020) states a licence: they give participation rules only ("Use
+      of external dataset is not allowed for creating model", "In case of any dispute,
+      decision of Analytics Vidhya shall be final") and link the site''s general Terms
+      & Conditions. Kaggle''s 2020 copy is marked CC0 by its uploader, who did not
+      make the data.'
 decisions: []
 ---
 
@@ -64,25 +70,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2020).
+Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 18,359 rows and 12 features. Source: Other (2018).
 
-Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
-**Question.** Will a person who signed up for a company's data-science training look for a new job?
+**Question.** Is a person who signed up for a data-science training looking for a new job?
 
-**Use case.** A company that trains data scientists wants to know, from sign-up information, which candidates will work for it after the training and which will look for another job, to plan its courses and cut training costs (the data card's framing).
+**Use case.** A training institute for data science that also recruits for its clients wants to know which of the people signing up for its trainings are really looking for a new job, before it puts them in touch with clients hiring data scientists (the contest's framing).
 
-**One row.** One candidate who enrolled in the company's training (19,158 candidates, Kaggle 2020); company, place and period not stated.
+**One row.** One person enrolled in the institute's trainings, from an Analytics Vidhya hackathon of July 2018 (18,359 enrollees); institute, place and period not stated.
 
-**Predicted.** Whether the candidate is looking for a job change (24.93% are); how and when this was recorded is not stated.
+**Predicted.** Whether the enrollee is looking for a job change (13.21% are); how and when this was recorded is not stated.
 
-**Known at prediction time.** City (coded) and its development index, gender, education level and field, university enrolment, years of experience and whether it is relevant, current company size and type, years since the last job change, and training hours completed.
+**Known at prediction time.** City (coded) and its development index, gender, education level and field, university enrolment, years of experience and whether it is relevant, current employer's size and type, years between the previous and the current job, and training hours completed.
 
-**What the test data stands for.** Random candidates, so the test data stands for other candidates of the same programme.
+**What the test data stands for.** Random enrollees, so the test data stands for other enrollees of the same trainings.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The label has no stated source or timing (a stated intention or an actual move), and training hours completed are only known after sign-up. The use case is plausible, but the data does not show when each fact was recorded.
+**Our changes to the source.** We use the hackathon's own train file instead of Kaggle's 2020 copy, which adds 2,623 rows of the hackathon's unlabelled test file, all labelled as looking for a job change.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label has no stated source or timing (a stated intention or an actual search), and training hours completed are only known some time after sign-up. The use case is plausible, but the data does not show when each fact was recorded.
 
 ## Files in this folder
 
@@ -93,7 +101,7 @@ Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` 
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/hr_analytics.md`](../../../../curation/records/hr_analytics.md)
-- The original source: <https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists>
+- The original source: <https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -101,7 +109,14 @@ Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` 
 `dataset.py` reads its raw files from `local-data-warehouse/hr_analytics/`. To get them:
 
 ```text
-mkdir -p local-data-warehouse/hr_analytics && cd local-data-warehouse/hr_analytics && kaggle datasets download arashnic/hr-analytics-job-change-of-data-scientists && unzip hr-analytics-job-change-of-data-scientists.zip && rm hr-analytics-job-change-of-data-scientists.zip && cd ../../
+We download the train file of Analytics Vidhya's Student DataFest 2018: The Data Supremacy (DataHack, 6 to 22
+July 2018) from the link on the contest page; the page of JanataHack: HR Analytics (May 2020) links the same
+file. The contest's test file (test_GYi4Gz5.csv, 15,021 enrollees) has no labels and is not used.
+train_jqd04QH.csv: md5 17c9aca783a7f53040e7498c20be5729,
+sha256 591b300fcc58356f4b142f4b978ad42168f0a76663596d086a9592ccbb3a946c
+
+mkdir -p local-data-warehouse/hr_analytics && cd local-data-warehouse/hr_analytics
+curl -fLO https://datahack-prod.s3.amazonaws.com/train_file/train_jqd04QH.csv
 ```
 
 Then, from the repository root:
@@ -117,13 +132,13 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| source | Kaggle: https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists |
-| year | 2020 |
+| source | Other: https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy |
+| year | 2018 |
 | domain | business & marketing |
-| license | CC0: Public Domain |
+| license |  |
 | data_tags | IID, Spatial |
-| reference | arashnic2021hr |
-| rows x columns | 19,158 x 13 |
+| reference | analyticsvidhya2018datasupremacy |
+| rows x columns | 18,359 x 13 |
 | task.target | LookingForJobChange |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -143,12 +158,14 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
-@misc{arashnic2021hr,
-  author       = {Kaggle User Arashnic},
-  title        = {HR Analytics: Job Change of Data Scientists},
-  year         = {2021},
-  howpublished = {\url{https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists}},
-  note         = {Kaggle dataset},
+@misc{analyticsvidhya2018datasupremacy,
+  author = {{Analytics Vidhya}},
+  title = {Student DataFest 2018: The Data Supremacy},
+  year = {2018},
+  howpublished = {\url{https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy}},
+  note = {DataHack hackathon, 6--22 July 2018; the files ran again as JanataHack: HR Analytics in May 2020.
+          Kaggle's 2020 copy (HR Analytics: Job Change of Data Scientists) adds rows of the unlabelled test
+          file, all labelled 1}
 }
 ```
 
@@ -156,52 +173,72 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 19,158 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 18,359 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
 | LookingForJobChange | city | city_development_index | gender | relevent_experience | enrolled_university | education_level | major_discipline | experience | company_size | company_type | last_new_job |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | city_173 | 0.878 | nan | Has relevent experience | no_enrollment | Masters | Arts | 7 | nan | nan | never |
-| Yes | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 9 | nan | nan | 3 |
-| No | city_57 | 0.866 | Male | Has relevent experience | Part time course | High School | nan | 4 | 50-99 | Pvt Ltd | 1 |
-| No | city_28 | 0.939 | Male | Has relevent experience | no_enrollment | Masters | STEM | >20 | 5000-9999 | Pvt Ltd | 4 |
-| No | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 100-500 | Public Sector | 2 |
+| Yes | city_16 | 0.91 | Male | Has relevent experience | no_enrollment | Graduate | STEM | >20 | &lt;10 | Funded Startup | 2 |
+| No | city_72 | 0.795 | Male | Has relevent experience | Part time course | Graduate | STEM | 9 | 100-500 | Pvt Ltd | 4 |
+| No | city_67 | 0.855 | nan | Has relevent experience | no_enrollment | Masters | STEM | >20 | 50-99 | Pvt Ltd | 2 |
+| No | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 11 | 50-99 | Pvt Ltd | 2 |
+| No | city_72 | 0.795 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 1000-4999 | NGO | 1 |
 
 ## Curation notes
 
-- We renamed the target feature and its values to be more descriptive.
-- We drop the ID column.
-- The rows come from Analytics Vidhya's Student DataFest 2018: The Data Supremacy (July 2018; the same files
-  ran again as JanataHack: HR Analytics in May 2020, which the Kaggle card names as its source). Features are
-  unchanged; the uploader does not say what "aug" means.
-- Anomaly: `aug_train.csv` is 16,535 rows of the hackathon's train file (labels unchanged) plus 2,623 rows of
-  its unlabelled test file, all labelled 1 (55% of the positives). They do not look like real positives (89%
-  of city_21's test rows against 27% positives there in the train file) and lift a quick model's CV AUC from
-  0.66 to 0.80 (record, 2026-10-14).
+We start with train_jqd04QH.csv, the train file of Analytics Vidhya's Student DataFest 2018: The Data
+Supremacy (DataHack, July 2018). The same files ran again as JanataHack: HR Analytics (May 2020).
+
+- Source: the record links Kaggle's "HR Analytics: Job Change of Data Scientists" (arashnic, 2020). Its
+  `aug_train.csv` is 16,535 rows of this file (labels unchanged) plus 2,623 rows of the contest's unlabelled
+  test file, all labelled 1. We use the contest's file instead (Lennart, 2026-10-14).
+- Why: the added labels look made up. 89% of city_21's test rows became positives against 27% in this file,
+  and a model trained on this file separates the added rows from the other test rows with ROC AUC 0.93. They
+  lift a quick model's CV ROC AUC from 0.66 to 0.80 (record, 2026-10-14).
+- Prediction point: sign-up for the training. The contest asks for "the probability of an enrollee to look for
+  a new job" from "the current credentials/demographics/experience"; how and when the label was recorded is
+  not stated.
+- We drop `enrollee_id`, unique per row; JanataHack's rules forbid it as a feature.
+- `training_hours` is the training completed, so it is known only some time after sign-up. Kept, as in the
+  contest.
+- Features as published: city and the answers stay categories, including `experience`, `company_size` and
+  `last_new_job` (values such as "<1", ">20", "10/49", "never"). The target is renamed `LookingForJobChange`
+  and maps 0/1 to No/Yes.
+- Missing values stay missing (company type 27%, company size 26%, gender 22%, major 15%).
+- Duplicates: without the ID, 45 rows repeat an earlier row and 17 feature vectors carry both labels. They
+  belong to different enrollees and stay.
+- IID split: one row per enrollee and no dates. The contest also scored ROC AUC.
+- Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
+  +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
+  2026-10-14).
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 12,772 rows, test 6,386 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 12,239 to 12,240 rows, test 6,119 to 6,120 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 12772 | 6386 |
-| 0 | 1 | 12772 | 6386 |
-| 0 | 2 | 12772 | 6386 |
-| 1 | 0 | 12772 | 6386 |
-| 1 | 1 | 12772 | 6386 |
-| 1 | 2 | 12772 | 6386 |
-| 2 | 0 | 12772 | 6386 |
-| 2 | 1 | 12772 | 6386 |
-| 2 | 2 | 12772 | 6386 |
+| 0 | 0 | 12239 | 6120 |
+| 0 | 1 | 12239 | 6120 |
+| 0 | 2 | 12240 | 6119 |
+| 1 | 0 | 12239 | 6120 |
+| 1 | 1 | 12239 | 6120 |
+| 1 | 2 | 12240 | 6119 |
+| 2 | 0 | 12239 | 6120 |
+| 2 | 1 | 12239 | 6120 |
+| 2 | 2 | 12240 | 6119 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 49 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 25 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 45 exact duplicate row(s) (0.2% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 17 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `meta_license_unknown`: Neither contest page (The Data Supremacy, 2018; JanataHack: HR Analytics, 2020) states a licence: they give participation rules only ("Use of external dataset is not allowed for creating model", "In case of any dispute, decision of Analytics Vidhya shall be final") and link the site's general Terms & Conditions. Kaggle's 2020 copy is marked CC0 by its uploader, who did not make the data.
 
 ## Data checks
 
@@ -212,19 +249,19 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| company_type | category | 6140 | 32.05 | 6 | Pvt Ltd, Funded Startup, Public Sector, Early Stage Startup, NGO, Other |
-| company_size | category | 5938 | 30.99 | 8 | 50-99, 100-500, 10000+, 10/49, 1000-4999, &lt;10, 500-999, 5000-9999 |
-| gender | category | 4508 | 23.53 | 3 | Male, Female, Other |
-| major_discipline | category | 2813 | 14.68 | 6 | STEM, Humanities, Other, Business Degree, Arts, No Major |
-| education_level | category | 460 | 2.4 | 5 | Graduate, Masters, High School, Phd, Primary School |
-| last_new_job | category | 423 | 2.21 | 6 | 1, >4, 2, never, 4, 3 |
-| enrolled_university | category | 386 | 2.01 | 3 | no_enrollment, Full time course, Part time course |
-| experience | category | 65 | 0.34 | 22 | >20, 5, 4, 3, 6, 2, 7, 10, 9, 8 |
+| company_type | category | 5039 | 27.45 | 6 | Pvt Ltd, Funded Startup, Public Sector, Early Stage Startup, NGO, Other |
+| company_size | category | 4779 | 26.03 | 8 | 50-99, 100-500, 10000+, 10/49, 1000-4999, &lt;10, 500-999, 5000-9999 |
+| gender | category | 4098 | 22.32 | 3 | Male, Female, Other |
+| major_discipline | category | 2838 | 15.46 | 6 | STEM, Humanities, Other, Business Degree, Arts, No Major |
+| education_level | category | 457 | 2.49 | 5 | Graduate, Masters, High School, Phd, Primary School |
+| last_new_job | category | 367 | 2 | 6 | 1, >4, 2, never, 4, 3 |
+| enrolled_university | category | 342 | 1.86 | 3 | no_enrollment, Full time course, Part time course |
+| experience | category | 59 | 0.32 | 22 | >20, 5, 4, 3, 6, 2, 9, 10, 7, 8 |
 | city | category | 0 | 0 | 123 | city_103, city_21, city_16, city_114, city_160, city_136, city_67, city_75, cit… |
 | relevent_experience | category | 0 | 0 | 2 | Has relevent experience, No relevent experience |
 | LookingForJobChange | category | 0 | 0 | 2 | No, Yes |
-| city_development_index | float64 | 0 | 0 | 93 | 0.92, 0.624, 0.91, 0.926, 0.698, 0.897, 0.939, 0.855, 0.804, 0.924 |
-| training_hours | int64 | 0 | 0 | 241 | 28, 12, 18, 22, 50, 20, 17, 24, 6, 34 |
+| city_development_index | float64 | 0 | 0 | 93 | 0.92, 0.624, 0.91, 0.926, 0.698, 0.897, 0.939, 0.855, 0.924, 0.804 |
+| training_hours | int64 | 0 | 0 | 241 | 28, 12, 18, 20, 22, 24, 50, 23, 34, 17 |
 
 </details>
 
@@ -232,15 +269,15 @@ Default splits.
 
 | LookingForJobChange | count | pct |
 |---|---|---|
-| No | 14381 | 75.07 |
-| Yes | 4777 | 24.93 |
+| No | 15934 | 86.79 |
+| Yes | 2425 | 13.21 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| city_development_index | 19158 | 0.828848 | 0.123362 | 0.448 | 0.949 |
-| training_hours | 19158 | 65.3669 | 60.0585 | 1 | 336 |
+| city_development_index | 18359 | 0.84714 | 0.110189 | 0.448 | 0.949 |
+| training_hours | 18359 | 65.899 | 60.8853 | 1 | 336 |
 
 ### Categorical features
 
@@ -249,53 +286,53 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| LookingForJobChange | 1 | No | 14381 | 75.07 |
-| LookingForJobChange | 2 | Yes | 4777 | 24.93 |
-| city | 1 | city_103 | 4355 | 22.73 |
-| city | 2 | city_21 | 2702 | 14.1 |
-| city | 3 | city_16 | 1533 | 8 |
-| city | 4 | city_114 | 1336 | 6.97 |
-| city | 5 | city_160 | 845 | 4.41 |
-| company_size | 1 | &lt;NA> | 5938 | 30.99 |
-| company_size | 2 | 50-99 | 3083 | 16.09 |
-| company_size | 3 | 100-500 | 2571 | 13.42 |
-| company_size | 4 | 10000+ | 2019 | 10.54 |
-| company_size | 5 | 10/49 | 1471 | 7.68 |
-| company_type | 1 | Pvt Ltd | 9817 | 51.24 |
-| company_type | 2 | &lt;NA> | 6140 | 32.05 |
-| company_type | 3 | Funded Startup | 1001 | 5.22 |
-| company_type | 4 | Public Sector | 955 | 4.98 |
-| company_type | 5 | Early Stage Startup | 603 | 3.15 |
-| education_level | 1 | Graduate | 11598 | 60.54 |
-| education_level | 2 | Masters | 4361 | 22.76 |
-| education_level | 3 | High School | 2017 | 10.53 |
-| education_level | 4 | &lt;NA> | 460 | 2.4 |
-| education_level | 5 | Phd | 414 | 2.16 |
-| enrolled_university | 1 | no_enrollment | 13817 | 72.12 |
-| enrolled_university | 2 | Full time course | 3757 | 19.61 |
-| enrolled_university | 3 | Part time course | 1198 | 6.25 |
-| enrolled_university | 4 | &lt;NA> | 386 | 2.01 |
-| experience | 1 | >20 | 3286 | 17.15 |
-| experience | 2 | 5 | 1430 | 7.46 |
-| experience | 3 | 4 | 1403 | 7.32 |
-| experience | 4 | 3 | 1354 | 7.07 |
-| experience | 5 | 6 | 1216 | 6.35 |
-| gender | 1 | Male | 13221 | 69.01 |
-| gender | 2 | &lt;NA> | 4508 | 23.53 |
-| gender | 3 | Female | 1238 | 6.46 |
-| gender | 4 | Other | 191 | 1 |
-| last_new_job | 1 | 1 | 8040 | 41.97 |
-| last_new_job | 2 | >4 | 3290 | 17.17 |
-| last_new_job | 3 | 2 | 2900 | 15.14 |
-| last_new_job | 4 | never | 2452 | 12.8 |
-| last_new_job | 5 | 4 | 1029 | 5.37 |
-| major_discipline | 1 | STEM | 14492 | 75.64 |
-| major_discipline | 2 | &lt;NA> | 2813 | 14.68 |
-| major_discipline | 3 | Humanities | 669 | 3.49 |
-| major_discipline | 4 | Other | 381 | 1.99 |
-| major_discipline | 5 | Business Degree | 327 | 1.71 |
-| relevent_experience | 1 | Has relevent experience | 13792 | 71.99 |
-| relevent_experience | 2 | No relevent experience | 5366 | 28.01 |
+| LookingForJobChange | 1 | No | 15934 | 86.79 |
+| LookingForJobChange | 2 | Yes | 2425 | 13.21 |
+| city | 1 | city_103 | 4358 | 23.74 |
+| city | 2 | city_21 | 1672 | 9.11 |
+| city | 3 | city_16 | 1654 | 9.01 |
+| city | 4 | city_114 | 1472 | 8.02 |
+| city | 5 | city_160 | 827 | 4.5 |
+| company_size | 1 | &lt;NA> | 4779 | 26.03 |
+| company_size | 2 | 50-99 | 3120 | 16.99 |
+| company_size | 3 | 100-500 | 2698 | 14.7 |
+| company_size | 4 | 10000+ | 2044 | 11.13 |
+| company_size | 5 | 10/49 | 1466 | 7.99 |
+| company_type | 1 | Pvt Ltd | 10051 | 54.75 |
+| company_type | 2 | &lt;NA> | 5039 | 27.45 |
+| company_type | 3 | Funded Startup | 1038 | 5.65 |
+| company_type | 4 | Public Sector | 996 | 5.43 |
+| company_type | 5 | Early Stage Startup | 582 | 3.17 |
+| education_level | 1 | Graduate | 10769 | 58.66 |
+| education_level | 2 | Masters | 4319 | 23.53 |
+| education_level | 3 | High School | 2032 | 11.07 |
+| education_level | 4 | Phd | 459 | 2.5 |
+| education_level | 5 | &lt;NA> | 457 | 2.49 |
+| enrolled_university | 1 | no_enrollment | 13659 | 74.4 |
+| enrolled_university | 2 | Full time course | 3187 | 17.36 |
+| enrolled_university | 3 | Part time course | 1171 | 6.38 |
+| enrolled_university | 4 | &lt;NA> | 342 | 1.86 |
+| experience | 1 | >20 | 3437 | 18.72 |
+| experience | 2 | 5 | 1309 | 7.13 |
+| experience | 3 | 4 | 1250 | 6.81 |
+| experience | 4 | 3 | 1159 | 6.31 |
+| experience | 5 | 6 | 1125 | 6.13 |
+| gender | 1 | Male | 12884 | 70.18 |
+| gender | 2 | &lt;NA> | 4098 | 22.32 |
+| gender | 3 | Female | 1188 | 6.47 |
+| gender | 4 | Other | 189 | 1.03 |
+| last_new_job | 1 | 1 | 7567 | 41.22 |
+| last_new_job | 2 | >4 | 3339 | 18.19 |
+| last_new_job | 3 | 2 | 2835 | 15.44 |
+| last_new_job | 4 | never | 2186 | 11.91 |
+| last_new_job | 5 | 4 | 1038 | 5.65 |
+| major_discipline | 1 | STEM | 13738 | 74.83 |
+| major_discipline | 2 | &lt;NA> | 2838 | 15.46 |
+| major_discipline | 3 | Humanities | 688 | 3.75 |
+| major_discipline | 4 | Other | 343 | 1.87 |
+| major_discipline | 5 | Business Degree | 307 | 1.67 |
+| relevent_experience | 1 | Has relevent experience | 13596 | 74.06 |
+| relevent_experience | 2 | No relevent experience | 4763 | 25.94 |
 
 </details>
 
@@ -303,11 +340,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e13c-73b1-a5b6-46586d1602ca |
-| checksum | v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11 |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | hr_analytics/01a111fc-e13c-73b1-a5b6-46586d1602ca |
+| uuid | 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4 |
+| checksum | v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6 |
+| built_at | 2026-10-14T12:58:03+00:00 |
+| path | hr_analytics/01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

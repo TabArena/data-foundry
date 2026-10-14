@@ -4,20 +4,20 @@ unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
 checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
 build:
-  uuid: 01a111fb-cc18-7704-b06a-adfc58623727
-  checksum: v2:d2d3bca5b13de00bd61a14131112143f51f3fd9594e33352c0cdf491674f4e5a
-  built_at: '2026-10-06T16:11:21+00:00'
-  path: pva_revenue_prediction_kddcup98/01a111fb-cc18-7704-b06a-adfc58623727
+  uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
+  checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
+  built_at: '2026-10-14T12:58:20+00:00'
+  path: pva_revenue_prediction_kddcup98/01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 191769
   n_features: 477
@@ -71,7 +71,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a111fb-cc18-7704-b06a-adfc58623727` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
@@ -452,11 +452,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-cc18-7704-b06a-adfc58623727 |
-| checksum | v2:d2d3bca5b13de00bd61a14131112143f51f3fd9594e33352c0cdf491674f4e5a |
-| built_at | 2026-10-06T16:11:21+00:00 |
-| path | pva_revenue_prediction_kddcup98/01a111fb-cc18-7704-b06a-adfc58623727 |
+| uuid | 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e |
+| checksum | v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c |
+| built_at | 2026-10-14T12:58:20+00:00 |
+| path | pva_revenue_prediction_kddcup98/01a13a7d-f16c-7ca9-ac9e-41670aefdb4e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -18,7 +18,10 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
             "which checklist, by predicting where an inspection would find a breach (the source's non-compliance "
             "task)."
         ),
-        row=("One inspection of a Norwegian organisation with one checklist (63,634 rows); the data has no dates."),
+        row=(
+            "One inspection of a Norwegian organisation with one checklist, January 2012 to June 2019 (63,634 rows); "
+            "the data has no dates."
+        ),
         predicted=(
             "Whether the organisation was found non-compliant with any regulation the checklist covers, which is "
             "known only when the inspection is completed."
@@ -66,7 +69,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         - We remove two rows with missing values for IsRegisteredVATregister, as these seem to be data artifact given the data state.
         - The data has spatial information (County).
         - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
-        - As it turns out, the data does not contain temporal information, although it is clearly a temporal task and has data from 2021 to 2019. It seems the curators have removed the temporal information. This can mean that there is not temporal leakage or relevance for the task, or that it was forgotten. In any case, we must treat the task as IID now.
+        - The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
     """
 
     # Task

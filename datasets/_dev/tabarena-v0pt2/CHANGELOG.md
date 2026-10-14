@@ -4,6 +4,95 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-14 (rebuild: the 15 datasets whose data, splits or score changed in the review)
+
+- Rebuilt with `build_all.py --only` from the uncommitted tree (`git_sha` f93df19-dirty): 15 of 15 ok, every container
+  reloads with its checksum, no new warning against the committed READMEs; 101 s of build time, peak 6.2 GB. A check
+  build from only the traced raw files gives the same checksums for all 15. New UUIDs:
+  `california_house_prices_2020` 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a, `cirrhosis_patient_survival_prediction`
+  01a13a7d-c2bd-721a-88c1-f86443866b1e, `concrete_compressive_strength` 01a13a7d-c2ed-79de-abb8-3476f95e6667,
+  `fiat_500` 01a13a7d-c2b9-7b23-b0e5-6674aebfe128, `food_delivery_time` 01a13a7d-c2cc-70a6-b90d-08296c319c01,
+  `heart_disease_va_long_beach` 01a13a7d-c2bc-7803-9ff6-e0e192d554de, `hiva_agnostic`
+  01a13a7d-c4ee-761a-9292-ce1cd880e6c6, `hr_analytics` 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4,
+  `mercedes_benz_greener_manufacturing` 01a13a7d-bd39-75dc-a072-0eebbfca32cb, `obesity_estimation`
+  01a13a7d-c2ba-7a4d-bb80-1eb0032878a9, `pva_revenue_prediction_kddcup98` 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e,
+  `qsar_biodeg` 01a13a7d-c2bf-742d-b04d-f9b569da1f3d, `santander_transaction_value`
+  01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b, `sberbank_housing_market_forecasting` 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7,
+  `website_phishing` 01a13a7d-c2c0-77e5-80e6-a355a6e11902.
+- Task probes on the 15 built containers: no flag except `hr_analytics` `no_spread` (accepted above).
+- The superseded containers of these 15 (about 100 MB) were deleted once the checks above passed (Lennart). 76 of
+  the 124 built definitions are still stale (notes, tags or summaries changed since their build), so the table shows
+  "not built" for them.
+
+## 2026-10-14 (concrete_compressive_strength grouped by mix; the hidden-group probe checks composite keys)
+
+- `concrete_compressive_strength`: grouped by mix (was IID, the split shipped in TabArena v0.1 and BeyondArena;
+  rebuild needed). The 1,030 tests are 428 mixes, a mix being its amounts of the seven ingredients; 182 mixes are
+  tested at several ages (up to 20 tests), and on the shipped random splits 73% of the test rows had their mix in
+  training at another age. The new group column `mix` is built from identical values in the seven ingredient
+  columns and is no feature; 10 x 3 grouped splits, 142-143 test mixes per fold. R^2 random against grouped:
+  LightGBM 0.925 / 0.874, MLP 0.916 / 0.838, ridge 0.816 / 0.804; the ranking changes. Decision: Lennart, record
+  `concrete_compressive_strength.md`. `dataset check`: 0 errors. Regime updated in `README.md`.
+- Probes: `hidden_groups.py` missed concrete because it only tests single columns (the fractional ingredient amounts
+  are no candidates) and its near copies need 10 informative columns. It now also checks keys of all columns but one
+  (two when none counts and the data is small enough): rows identical except in an age, a time or a frequency. A key
+  counts when its rows that differ are at least 10% of the rows and four times the share with independent columns,
+  it holds a column of at least 20 values, and keys over 100 rows are left out. Over all 177 definitions the keys hit
+  concrete `(all but Age)`, airfoil `(all but frequency)` (its run) and amazon_employee_access `(all but RESOURCE)`
+  (next to its `MGR_ID` hit, no action on 6 Oct); details in the verify-dataset skill's `references/task_probes.md`
+  (hidden groups).
+
+## 2026-10-14 (task summaries review: Lennart's decisions on the open questions)
+
+- `mutual_funds_india` retired (record `No (Retired)`, `No Good Target / Scientific Discovery`; folder removed,
+  `v2_path` cleared; the definition stays in git history at f93df19). The label is the trailing 3-year return at one
+  snapshot (April 2023), a window all funds share, so no decision uses the prediction. 124 of the 125 datasets built
+  on 2026-10-06 remain, 177 definitions in all; counts updated in `README.md`, `LEAK_AUDIT.md`, `datasets/README.md`.
+- Changes to rows, labels or splits (rebuild needed):
+  - `obesity_estimation`: the 10 exact copies among the 498 real answers are dropped (488 rows). Each repeats all 16
+    answers, age, height and weight, and 4 of the 8 groups are neighbouring rows: one person sending the form again.
+  - `hiva_agnostic`: the challenge's 384 labelled validation compounds are added (4,229 compounds, 149 active); every
+    descriptor that copies an earlier one is dropped (188; a fixed list dropped 99 of them before). The
+    `dataset_pure_feature_value` warning is gone.
+  - `california_house_prices_2020`: the 2,480 homes whose last sale is on or after their listing date are dropped
+    (the listing describes an earlier sale; 125 give the predicted price as the last sale price). 39,048 rows; LightGBM
+    RMSE on the shipped windows 0.196 before, 0.140 after. Listings older than 6 months stay.
+  - `sberbank_housing_market_forecasting`: the 1,126 sales whose build year is after the sale stay (1,124 look like
+    flats sold before completion). 28,321 rows.
+  - `food_delivery_time`: 424 restaurant latitudes (159 longitudes) get their sign fixed; the 3,630 restaurants at
+    (0, 0) stay; the notes say the delivery point is the restaurant plus one of 12 fixed offsets.
+  - `website_phishing`: binary, phishing (702) against legitimate (548); the 103 suspicious sites are dropped (the
+    donors' judgement of the same nine signals, ROC AUC 0.987 from them). The signals keep their raw codes -1/0/1,
+    whose documented direction does not match the data. Metric `roc_auc`. `dataset_pure_feature_value` (all 167
+    sites with `popUpWidnow` = 1 are phishing) is accepted: the same reversed coding, a page property.
+  - `cirrhosis_patient_survival_prediction`: a new task. It regressed the log time to death over the 161 patients
+    who died; with follow-up ending in July 1986 for all, a late patient entered only with an early death (right
+    truncation). Now binary, death or liver transplant within 5 years of registration (`roc_auc`), over the 304
+    patients registered early enough to be followed 5 years (107 events), with the registration order taken from the
+    IDs. Untuned ROC AUC 0.87-0.89; registration order alone 0.52. Back on the review page for Lennart's marks; the
+    precedent in the add-dataset patterns (§D.14), the leak-check table and `LEAK_AUDIT.md` now describe it as right
+    truncation.
+  - `hr_analytics`: built from the train file of Analytics Vidhya's Student DataFest 2018: The Data Supremacy
+    (18,359 enrollees, 13.2% looking for a job change; source Other, the contest page, year 2018, licence unknown).
+    Kaggle's `aug_train.csv` (19,158 rows, 24.9%) adds 2,623 rows of the hackathon's unlabelled test file, all
+    labelled 1, whose labels do not behave like real ones. Untuned ROC AUC 0.62-0.63 instead of 0.80; the task probes
+    flag `no_spread` (LightGBM +0.012 over random forest), accepted by Lennart (a real signal with a low
+    ceiling; row in the task-probes cases table).
+  - `fiat_500`: one row per car, its first listing (1,434 of 1,538 rows). 104 rows repeat the model, engine power,
+    age, mileage and owners of another: 18 exact copies, most one results page after the first, and cars with an odd
+    mileage listed at up to 9 places a median 396 km apart.
+- Metadata and notes only:
+  - `emscad`: the `ForcedIIDFromTemporal` tag of the previous entry is removed again (the grouped split marks the task
+    as Non-IID); a note says the lost dates could also have served modelling.
+  - `bank_customer_churn`: licence `None` (Kaggle names none), `meta_license_unknown` accepted.
+  - `jm1`: the source URL is the right PROMISE page (it serves the file over http, 404 over https); the download is
+    OpenML 1053, byte-identical to it, with a tested command.
+  - `labour_inspection_compliance`: the notes say January 2012 to June 2019 (the Dataverse description).
+  - `lending_club`: the always-empty joint-applicant fields are no longer built; same data (609,544 x 82). Typos.
+  - `ljubljana_breast_cancer`: the notes say the bands become their midpoints.
+- Nothing of these is open on the review page any more; `hr_analytics` and `cirrhosis_patient_survival_prediction` got
+  Lennart's agreement on their new versions.
+
 ## 2026-10-14 (task summaries review: the side findings fixed)
 
 Lennart's marks and notes on the review page (scope: the 125 built datasets and the 2026-10-07 run's `ship` verdicts,

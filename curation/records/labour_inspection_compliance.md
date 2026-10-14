@@ -51,6 +51,8 @@ the organisation is compliant." from https://papers.nips.cc/paper_files/paper/20
 
 Data is missing timestamps, so it is a forced IID task
 
+**Assessment (AI, 2026-10-14):** The Dataverse description and 00Readme.txt (https://doi.org/10.18710/7U6TZP) say the 63,634 inspections were conducted between 2012-01-01 and 2019-06-01 (timePeriodCovered gives the same). LICD.csv has no date column ('Business Age' is the organisation's age in months), so the range cannot be checked from the data. The definition's note said 'from 2021 to 2019'; it now says January 2012 to June 2019.
+
 ## Reference
 
 A dataset for efforts towards achieving the sustainable development goal of safe working environments

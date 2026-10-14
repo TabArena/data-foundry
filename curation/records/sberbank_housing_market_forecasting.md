@@ -38,6 +38,8 @@ Data splits used by Kaggle experts were grouped/stratified IID ("CV for Investme
 
 Moreover, it seems that the data is merged from two groups!
 
+CC (2026-10-14, Lennart): Keep all 1,126 sales whose build year is after the year of sale (1,124 look like flats sold before completion). 28,321 rows.
+
 ## Reference
 
 Alex Matveev, Anastasia_Sidorova_50806198, and DataCanary. Sberbank Russian Housing Market. https://kaggle.com/competitions/sberbank-russian-housing-market, 2017. Kaggle.

@@ -39,7 +39,7 @@ class BankCustomerChurn(AbstractCuratedDataset):
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset"
-    license = "Public Domain"
+    license = None  # Kaggle says "Other (specified in description)", and the description names none
     download_description = """
         We download the data from Kaggle to a .csv file in a predefined folder.
 
@@ -57,6 +57,13 @@ class BankCustomerChurn(AbstractCuratedDataset):
     curation_comments = """
         - We remove the customer_id column.
     """
+
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "Kaggle gives the licence as 'Other (specified in description)', but the description names none; no other "
+            "licence is known (Lennart, 2026-10-14)."
+        ),
+    }
 
     # Task
     target = "churn"

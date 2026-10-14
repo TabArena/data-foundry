@@ -42,6 +42,8 @@ Original source website seems down, dataset is very imbalanced, but seems like a
 
 Also contains non-English text (at least German, didn't check yet for more); title contains a lot of information as well
 
+CC (2026-10-14, Lennart): No ForcedIIDFromTemporal tag: the grouped split already marks the task as Non-IID. The dates are lost, though they could have been used for modelling too.
+
 ## Reference
 
 https://doi.org/10.3390/fi9010006

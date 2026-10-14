@@ -105,10 +105,11 @@ which the bundle checks do not cover:
   are the marks of simulated data (items 1 and 13). Read a flag with the "Generated data" section of
   [`references/task_probes.md`](references/task_probes.md).
 * `hidden_groups.py` (`--built`), for an IID task: columns whose repeated values carry the label and look like an
-  entity, and clusters of near-copy rows (rows that agree on almost every column, for a group no single column holds,
-  as in a table of fingerprint bits), each with how much a random split gains over a split by them (item 4). For a
-  temporal task it flags nothing and reports how many test rows have their entity (the value of each entity-like
-  column, or a near copy) on the training side. Read a hit with the "Hidden groups" section of
+  entity, keys of all columns but one (rows identical except in an age, a time or a frequency: a concrete mix tested
+  at several ages), and clusters of near-copy rows (rows that agree on almost every column, for a group no single
+  column holds, as in a table of fingerprint bits), each with how much a random split gains over a split by them
+  (item 4). For a temporal task it flags nothing and reports how many test rows have their entity (the value of each
+  entity-like column, a key or a near copy) on the training side. Read a hit with the "Hidden groups" section of
   [`references/task_probes.md`](references/task_probes.md): the context decides, not the gap.
 
 ## Step 2 — Work the judgment rubric

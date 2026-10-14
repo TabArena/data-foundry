@@ -50,11 +50,21 @@ class Jm1(AbstractCuratedDataset):
     unique_name = "jm1"
     year = "2004"
     domain = "technology & internet"
-    source = "Other"  # the PROMISE repository; OpenML 1053 is a copy
-    source_url = "http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff"
+    source = "Other"  # the PROMISE repository (from the NASA Metrics Data Program); OpenML 1053 is a copy
+    source_url = "http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff"  # plain http only; https gives 404
     license = "Public Domain"
     download_description = """
-        We download the data from OpenML inside the notebook.
+        `_load_raw` reads OpenML dataset 1053 with openml-python, which downloads the file to its own cache
+        (~/.cache/openml), not to local-data-warehouse/jm1/. To fetch it before a check or build:
+
+        .venv/bin/python -c "import openml; openml.datasets.get_dataset(1053, download_data=True).get_data()"
+
+        OpenML 1053 is a copy of jm1.arff from the PROMISE repository (the source URL). The ARFF on OpenML
+        (https://api.openml.org/data/v1/download/53936/jm1.arff) is byte-identical to the PROMISE file (md5
+        0c19aefce52ccb955d0de57e4c0fe8bf), and the parquet that openml-python 0.15 reads
+        (https://data.openml.org/datasets/0000/1053/dataset_1053.pq) holds the same 10,885 rows and values. The
+        PROMISE file answers over plain http only; the Wayback Machine holds the same file:
+        https://web.archive.org/web/20240126152134id_/http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff
     """
     bibtex = """
         @inproceedings{menzies2004good,
@@ -69,6 +79,7 @@ class Jm1(AbstractCuratedDataset):
     curation_comments = """
         - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.
         - We drop duplicates. 25% of the rows share their code-metric vector with another row (669 groups, mostly trivial modules such as 173 copies of a 4-line, complexity-1 function), so a random split puts copies on both sides. We drop exact duplicate rows (1,973) and then every copy of a metric vector that appears with both labels (88 vectors, 176 rows): 10,885 -> 8,736 rows.
+        - The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
     """
 
     # Task

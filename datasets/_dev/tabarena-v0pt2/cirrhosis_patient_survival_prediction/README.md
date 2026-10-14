@@ -2,36 +2,36 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294
+checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
 build:
-  uuid: 01a111fc-cd63-7ce2-90cc-a28712493bda
-  checksum: v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7
-  built_at: '2026-10-06T16:12:22+00:00'
-  path: cirrhosis_patient_survival_prediction/01a111fc-cd63-7ce2-90cc-a28712493bda
+  uuid: 01a13a7d-c2bd-721a-88c1-f86443866b1e
+  checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: cirrhosis_patient_survival_prediction/01a13a7d-c2bd-721a-88c1-f86443866b1e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 161
+  n_rows: 304
   n_features: 17
   dtypes:
-    category: 7
-    float64: 10
+    category: 8
+    float64: 9
     int64: 1
   n_test_dataset_rows: null
 task:
-  target: log_days_to_death
-  problem_type: regression
-  metric: rmse
+  target: death_or_transplant_within_5y
+  problem_type: binary_classification
+  metric: roc_auc
   split_regime: iid
-  stratify_on: null
+  stratify_on: death_or_transplant_within_5y
   time_on: null
   group_on: null
   group_labels: null
@@ -44,46 +44,46 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 107
-    max: 108
+    min: 202
+    max: 203
   n_test:
-    min: 53
-    max: 54
+    min: 101
+    max: 102
 bundle_checks:
-  ok: false
-  errors:
-  - definition_no_use_case
+  ok: true
+  errors: []
   warnings: []
   infos: []
   accepted: {}
-decisions: []
+decisions:
+- Only patients registered early enough to be followed 5 years
 ---
 
 # cirrhosis_patient_survival_prediction
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_days_to_death`, scored with `rmse` on IID splits. 161 rows and 17 features. Source: Other (1991).
+Binary classification of `death_or_transplant_within_5y`, scored with `roc_auc` on IID splits. 304 rows and 17 features. Source: Other (1991).
 
-Built as `01a111fc-cd63-7ce2-90cc-a28712493bda` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14. See [Build](#build).
 
 ## In brief
 
-**Question.** How long after entering the study will a patient with primary biliary cirrhosis die, given that the patient dies before the study ends?
+**Question.** Will a patient with primary biliary cirrhosis die or receive a liver transplant within 5 years of registration?
 
-**Use case.** Closest: when a patient with primary biliary cirrhosis is first seen, a hepatologist estimates the time left to live, for example to time a liver transplant. The data cannot serve it: it holds only the patients who died before the follow-up ended.
+**Use case.** When a patient with primary biliary cirrhosis is referred, a hepatologist estimates the risk of death or transplant in the next years from routine findings, to decide whether and when to evaluate the patient for a liver transplant. Dickson et al. (1989) built the Mayo risk model on this cohort for that decision.
 
-**One row.** One patient of the Mayo Clinic primary biliary cirrhosis study (referred 1974 to 1984) who died before the follow-up ended in July 1986; 161 patients, 36 of them outside the drug trial.
+**One row.** One patient referred to the Mayo Clinic with primary biliary cirrhosis and registered from 1974 to about mid-1981, early enough to be followed 5 years before the July 1986 analysis: 304 patients, 238 in a drug trial and 66 outside it.
 
-**Predicted.** The time from registration to death, in days on a logarithmic scale.
+**Predicted.** Whether the patient died or received a liver transplant within 5 years (1,826 days) of registration: 107 of 304 did (35%), 103 deaths and 4 transplants.
 
-**Known at prediction time.** Age, sex, the trial drug (D-penicillamine or placebo; missing outside the trial), physical signs (fluid in the abdomen, enlarged liver, spider veins, swelling), blood and urine tests (bilirubin, cholesterol, albumin, copper, liver enzymes, triglycerides, platelets, clotting time) and the histologic stage.
+**Known at prediction time.** Age, sex, the trial drug (D-penicillamine or placebo; missing outside the trial), physical signs (fluid in the abdomen, enlarged liver, spider veins, swelling), blood and urine tests (bilirubin, cholesterol, albumin, copper, liver enzymes, triglycerides, platelets, clotting time) and the histologic stage, all taken at registration. Patients outside the trial lack the signs and several tests.
 
-**What the test data stands for.** Random patients among those who died.
+**What the test data stands for.** Random patients, stratified by the outcome, so the test data stands for new patients referred to the same clinic in the same years.
 
-**Our changes to the source.** We keep only the patients who died and predict their time to death, dropping the patients censored at a transplant or at the end of follow-up; the source is a survival study that counts them.
+**Our changes to the source.** The source is a survival study with the time to death, transplant or the end of follow-up. We turn it into a 5-year outcome: we keep the patients registered early enough to be followed 5 years, drop 5 lost to follow-up before then, and drop the follow-up time and status.
 
-> **Use case fit: none (no decision fits).** The patients are chosen by their outcome: only deaths before July 1986 are in, so a patient registered in 1984 enters only with a short survival. At registration nobody knows whether a patient belongs to this group, so no decision fits. The curator kept the deaths-only target on purpose (2026-09-30).
+> **Use case fit: approximate (a stand-in with a known gap).** The outcome, its 5-year horizon and the findings at registration match the decision. The patients were treated 1974-1986, before ursodeoxycholic acid became the standard drug and while transplants were rare (4 of 107 events), so the data stand for an earlier treatment era. The registration year shows no trend in the label (ROC AUC 0.52), so a random split fits.
 
 ## Files in this folder
 
@@ -126,16 +126,17 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | dickson1989prognosis |
-| rows x columns | 161 x 18 |
-| task.target | log_days_to_death |
-| task.problem_type | regression |
-| task.metric | rmse |
+| rows x columns | 304 x 18 |
+| task.target | death_or_transplant_within_5y |
+| task.problem_type | binary_classification |
+| task.metric | roc_auc |
 | task.split_regime | iid |
+| task.stratify_on | death_or_transplant_within_5y |
 
 <details>
-<summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
 
-- categorical (7): `Drug`, `Ascites`, `Hepatomegaly`, `Spiders`, `Edema`, `Stage`, `Sex`
+- categorical (8): `Drug`, `Ascites`, `Hepatomegaly`, `Spiders`, `Edema`, `Stage`, `Sex`, `death_or_transplant_within_5y`
 - string (0): none
 - datetime (0): none
 
@@ -161,104 +162,118 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 161 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 304 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
 
-| log_days_to_death | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
+| death_or_transplant_within_5y | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5.51745 | nan | 22280 | F | nan | nan | nan | N | 1.3 | nan | 3.01 | nan |
-| 5.77144 | Placebo | 15116 | F | N | Y | Y | N | 3.6 | 260 | 2.54 | 172 |
-| 6.65673 | nan | 23376 | F | nan | nan | nan | N | 1.8 | nan | 3.15 | nan |
-| 6.32615 | nan | 25568 | F | nan | nan | nan | S | 0.6 | nan | 3.81 | nan |
-| 5.57595 | Placebo | 15857 | F | N | Y | Y | S | 8.5 | nan | 3.34 | 161 |
+| 0 | D-penicillamine | 15031 | F | N | N | N | N | 5.5 | 528 | 4.18 | 77 |
+| 1 | nan | 23011 | F | nan | nan | nan | N | 0.7 | nan | 3.4 | nan |
+| 1 | Placebo | 13736 | F | N | Y | N | N | 11 | 674 | 3.55 | 358 |
+| 1 | Placebo | 19098 | F | N | Y | N | S | 28 | 556 | 3.26 | 152 |
+| 0 | D-penicillamine | 22960 | F | N | N | N | N | 1.1 | 399 | 3.6 | 79 |
 
 ## Curation notes
 
-We start with the UCI data.
+We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrington 1991, appendix D): 418 patients, 312 in the D-penicillamine trial and 106 outside it who agreed to be followed.
 
-We note that this is a survival prediction task. But the way we split the data and score the task, it is not treated correctly as a survival prediction task. At the same time, it is randomized control data based on the Drug column. We treat it as a regression task to predict the time-to-death for non-censored patients, including the drug column into the modelling.
-
-- We drop ID and Status column as they have no relevance after filtering to only non-censored patients.
-- We log transform N_days and rename it to the target "log_days_to_death".
+- The source is a survival study: N_Days runs from registration to death, liver transplant or the July 1986 analysis, and Status says which. The label is death or transplant within 5 years (5 * 365.25 days, so day 1,826 or earlier), the transplant-free survival that the GLOBE score predicts (Lammers et al. 2015, Gastroenterology), against 5 years of follow-up without either.
+- We keep only the patients registered early enough for 5 years of follow-up, up to about mid-1981. A later patient could enter only with an early death or transplant (25 of the 109 did, the rest are censored), so keeping them would select on the outcome.
+- The data have no registration date. IDs follow the registration order within the trial and within the other patients, so a patient counts as registered in time when someone registered at or after them in the same group was followed 5 years.
+- We drop the 5 patients lost to follow-up before 5 years. 304 patients remain, 107 with the event (103 deaths, 4 transplants).
+- We drop ID, and N_Days and Status, which define the label.
+- The other columns are the baseline values taken at registration (the follow-up visits are in the separate pbcseq file), so all stay. The 66 patients outside the trial have no drug, ascites, hepatomegaly, spiders, copper, alkaline phosphatase or SGOT; these stay missing.
+- Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 107 to 108 rows, test 53 to 54 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 202 to 203 rows, test 101 to 102 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 107 | 54 |
-| 0 | 1 | 107 | 54 |
-| 0 | 2 | 108 | 53 |
-| 1 | 0 | 107 | 54 |
-| 1 | 1 | 107 | 54 |
-| 1 | 2 | 108 | 53 |
-| 2 | 0 | 107 | 54 |
-| 2 | 1 | 107 | 54 |
-| 2 | 2 | 108 | 53 |
-| 3 | 0 | 107 | 54 |
-| 3 | 1 | 107 | 54 |
-| 3 | 2 | 108 | 53 |
-| 4 | 0 | 107 | 54 |
-| 4 | 1 | 107 | 54 |
-| 4 | 2 | 108 | 53 |
-| 5 | 0 | 107 | 54 |
-| 5 | 1 | 107 | 54 |
-| 5 | 2 | 108 | 53 |
-| 6 | 0 | 107 | 54 |
-| 6 | 1 | 107 | 54 |
-| 6 | 2 | 108 | 53 |
-| 7 | 0 | 107 | 54 |
-| 7 | 1 | 107 | 54 |
-| 7 | 2 | 108 | 53 |
-| 8 | 0 | 107 | 54 |
-| 8 | 1 | 107 | 54 |
-| 8 | 2 | 108 | 53 |
-| 9 | 0 | 107 | 54 |
-| 9 | 1 | 107 | 54 |
-| 9 | 2 | 108 | 53 |
-| 10 | 0 | 107 | 54 |
-| 10 | 1 | 107 | 54 |
-| 10 | 2 | 108 | 53 |
-| 11 | 0 | 107 | 54 |
-| 11 | 1 | 107 | 54 |
-| 11 | 2 | 108 | 53 |
-| 12 | 0 | 107 | 54 |
-| 12 | 1 | 107 | 54 |
-| 12 | 2 | 108 | 53 |
-| 13 | 0 | 107 | 54 |
-| 13 | 1 | 107 | 54 |
-| 13 | 2 | 108 | 53 |
-| 14 | 0 | 107 | 54 |
-| 14 | 1 | 107 | 54 |
-| 14 | 2 | 108 | 53 |
-| 15 | 0 | 107 | 54 |
-| 15 | 1 | 107 | 54 |
-| 15 | 2 | 108 | 53 |
-| 16 | 0 | 107 | 54 |
-| 16 | 1 | 107 | 54 |
-| 16 | 2 | 108 | 53 |
-| 17 | 0 | 107 | 54 |
-| 17 | 1 | 107 | 54 |
-| 17 | 2 | 108 | 53 |
-| 18 | 0 | 107 | 54 |
-| 18 | 1 | 107 | 54 |
-| 18 | 2 | 108 | 53 |
-| 19 | 0 | 107 | 54 |
-| 19 | 1 | 107 | 54 |
-| 19 | 2 | 108 | 53 |
+| 0 | 0 | 202 | 102 |
+| 0 | 1 | 203 | 101 |
+| 0 | 2 | 203 | 101 |
+| 1 | 0 | 202 | 102 |
+| 1 | 1 | 203 | 101 |
+| 1 | 2 | 203 | 101 |
+| 2 | 0 | 202 | 102 |
+| 2 | 1 | 203 | 101 |
+| 2 | 2 | 203 | 101 |
+| 3 | 0 | 202 | 102 |
+| 3 | 1 | 203 | 101 |
+| 3 | 2 | 203 | 101 |
+| 4 | 0 | 202 | 102 |
+| 4 | 1 | 203 | 101 |
+| 4 | 2 | 203 | 101 |
+| 5 | 0 | 202 | 102 |
+| 5 | 1 | 203 | 101 |
+| 5 | 2 | 203 | 101 |
+| 6 | 0 | 202 | 102 |
+| 6 | 1 | 203 | 101 |
+| 6 | 2 | 203 | 101 |
+| 7 | 0 | 202 | 102 |
+| 7 | 1 | 203 | 101 |
+| 7 | 2 | 203 | 101 |
+| 8 | 0 | 202 | 102 |
+| 8 | 1 | 203 | 101 |
+| 8 | 2 | 203 | 101 |
+| 9 | 0 | 202 | 102 |
+| 9 | 1 | 203 | 101 |
+| 9 | 2 | 203 | 101 |
+| 10 | 0 | 202 | 102 |
+| 10 | 1 | 203 | 101 |
+| 10 | 2 | 203 | 101 |
+| 11 | 0 | 202 | 102 |
+| 11 | 1 | 203 | 101 |
+| 11 | 2 | 203 | 101 |
+| 12 | 0 | 202 | 102 |
+| 12 | 1 | 203 | 101 |
+| 12 | 2 | 203 | 101 |
+| 13 | 0 | 202 | 102 |
+| 13 | 1 | 203 | 101 |
+| 13 | 2 | 203 | 101 |
+| 14 | 0 | 202 | 102 |
+| 14 | 1 | 203 | 101 |
+| 14 | 2 | 203 | 101 |
+| 15 | 0 | 202 | 102 |
+| 15 | 1 | 203 | 101 |
+| 15 | 2 | 203 | 101 |
+| 16 | 0 | 202 | 102 |
+| 16 | 1 | 203 | 101 |
+| 16 | 2 | 203 | 101 |
+| 17 | 0 | 202 | 102 |
+| 17 | 1 | 203 | 101 |
+| 17 | 2 | 203 | 101 |
+| 18 | 0 | 202 | 102 |
+| 18 | 1 | 203 | 101 |
+| 18 | 2 | 203 | 101 |
+| 19 | 0 | 202 | 102 |
+| 19 | 1 | 203 | 101 |
+| 19 | 2 | 203 | 101 |
 
 </details>
 
+## Decisions
+
+### 1. Only patients registered early enough to be followed 5 years
+
+Follow-up ended in July 1986 for everyone, so a patient registered after about mid-1981 could only be seen with an event within 5 years, never without one. Keeping them would add positives chosen by their outcome.
+
+| registered | censored before 5 years (dropped) | death or transplant within 5 years | followed 5 years without event | All |
+|---|---|---|---|---|
+| early enough for 5 years of follow-up (kept) | 5 | 107 | 197 | 309 |
+| too late (dropped) | 84 | 25 | 0 | 109 |
+| All | 89 | 132 | 197 | 418 |
+
 ## Bundle checks
 
-1 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **error** `definition_no_use_case`: `TaskSummary(fit='none')`: The patients are chosen by their outcome: only deaths before July 1986 are in, so a patient registered in 1984 enters only with a short survival. At registration nobody knows whether a patient belongs to this group, so no decision fits. The curator kept the deaths-only target on purpose (2026-09-30). (hint: A dataset that simulates no decision is retired (`No Good Target / Scientific Discovery`), not shipped.)
 
 ## Data checks
 
@@ -269,83 +284,80 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Drug | category | 36 | 22.36 | 2 | D-penicillamine, Placebo |
-| Ascites | category | 36 | 22.36 | 2 | N, Y |
-| Hepatomegaly | category | 36 | 22.36 | 2 | Y, N |
-| Spiders | category | 36 | 22.36 | 2 | N, Y |
-| Stage | category | 4 | 2.48 | 4 | 4.0, 3.0, 2.0, 1.0 |
+| Drug | category | 66 | 21.71 | 2 | D-penicillamine, Placebo |
+| Ascites | category | 66 | 21.71 | 2 | N, Y |
+| Hepatomegaly | category | 66 | 21.71 | 2 | Y, N |
+| Spiders | category | 66 | 21.71 | 2 | N, Y |
+| Stage | category | 6 | 1.97 | 4 | 3.0, 4.0, 2.0, 1.0 |
 | Sex | category | 0 | 0 | 2 | F, M |
 | Edema | category | 0 | 0 | 3 | N, S, Y |
-| Tryglicerides | float64 | 48 | 29.81 | 90 | 91.0, 118.0, 63.0, 99.0, 112.0, 84.0, 155.0, 88.0, 140.0, 104.0 |
-| Cholesterol | float64 | 47 | 29.19 | 99 | 260.0, 175.0, 178.0, 408.0, 426.0, 257.0, 222.0, 259.0, 674.0, 374.0 |
-| Copper | float64 | 37 | 22.98 | 97 | 58.0, 52.0, 50.0, 20.0, 75.0, 94.0, 172.0, 161.0, 111.0, 262.0 |
-| Alk_Phos | float64 | 36 | 22.36 | 122 | 2276.0, 944.0, 1790.0, 1428.0, 1056.0, 705.0, 746.0, 11320.2, 11552.0, 2132.0 |
-| SGOT | float64 | 36 | 22.36 | 92 | 151.9, 119.35, 128.65, 198.4, 137.95, 170.5, 165.85, 134.85, 97.65, 77.5 |
-| Platelets | float64 | 6 | 3.73 | 125 | 165.0, 190.0, 200.0, 268.0, 160.0, 319.0, 233.0, 123.0, 224.0, 195.0 |
-| Prothrombin | float64 | 1 | 0.62 | 43 | 11.0, 10.6, 11.1, 9.9, 11.5, 12.0, 11.7, 10.0, 10.3, 10.1 |
-| Bilirubin | float64 | 0 | 0 | 83 | 0.8, 1.3, 1.1, 0.7, 1.4, 3.2, 2.1, 1.8, 2.3, 4.5 |
-| Albumin | float64 | 0 | 0 | 103 | 3.26, 3.19, 3.08, 3.5, 3.6, 3.4, 3.01, 3.12, 3.63, 3.35 |
-| log_days_to_death | float64 | 0 | 0 | 156 | 3.7136, 5.5759, 7.4325, 6.3919, 7.0825, 6.3261, 7.9417, 4.2627, 4.9416, 6.6567 |
-| Age | int64 | 0 | 0 | 148 | 18628, 19724, 20454, 16802, 24472, 21550, 23011, 17532, 23376, 25568 |
+| death_or_transplant_within_5y | category | 0 | 0 | 2 | 0, 1 |
+| Tryglicerides | float64 | 93 | 30.59 | 125 | 118.0, 101.0, 90.0, 68.0, 56.0, 58.0, 135.0, 114.0, 88.0, 99.0 |
+| Cholesterol | float64 | 92 | 30.26 | 158 | 260.0, 259.0, 248.0, 236.0, 263.0, 448.0, 302.0, 316.0, 257.0, 360.0 |
+| Copper | float64 | 68 | 22.37 | 134 | 67.0, 58.0, 20.0, 52.0, 50.0, 51.0, 75.0, 57.0, 13.0, 74.0 |
+| Alk_Phos | float64 | 66 | 21.71 | 229 | 1052.0, 1828.0, 7277.0, 1345.0, 559.0, 2276.0, 1790.0, 944.0, 1009.0, 1215.0 |
+| SGOT | float64 | 66 | 21.71 | 128 | 71.3, 97.65, 137.95, 120.9, 170.5, 151.9, 74.4, 106.95, 134.85, 128.65 |
+| Platelets | float64 | 11 | 3.62 | 201 | 344.0, 265.0, 224.0, 181.0, 213.0, 165.0, 268.0, 311.0, 226.0, 269.0 |
+| Prothrombin | float64 | 2 | 0.66 | 48 | 11.0, 10.6, 10.1, 9.9, 10.0, 10.3, 9.8, 11.1, 10.4, 11.5 |
+| Bilirubin | float64 | 0 | 0 | 87 | 0.6, 0.7, 0.9, 0.8, 0.5, 1.3, 1.1, 1.8, 1.2, 1.4 |
+| Albumin | float64 | 0 | 0 | 135 | 3.35, 3.6, 3.26, 3.63, 3.7, 3.4, 3.55, 3.5, 3.34, 3.76 |
+| Age | int64 | 0 | 0 | 267 | 19724, 23011, 22646, 23376, 20454, 17897, 21915, 17532, 18628, 16071 |
 
 </details>
 
 ### Target distribution
 
-| index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.971 | -1.44 | 1.1 | 0.03 | log | 1073.8 | 7.65666e+14 | exponential |
+| death_or_transplant_within_5y | count | pct |
+|---|---|---|
+| 0 | 197 | 64.8 |
+| 1 | 107 | 35.2 |
 
 ### Numeric features
 
-<details>
-<summary>Show the table (11 rows)</summary>
-
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Age | 161 | 19694.5 | 3584.65 | 11273 | 28018 |
-| Bilirubin | 161 | 5.53913 | 5.8371 | 0.3 | 28 |
-| Cholesterol | 114 | 415.754 | 275.031 | 127 | 1775 |
-| Albumin | 161 | 3.36056 | 0.468747 | 1.96 | 4.52 |
-| Copper | 124 | 135.411 | 98.4989 | 13 | 588 |
-| Alk_Phos | 125 | 2594.35 | 2677.11 | 516 | 13862.4 |
-| SGOT | 125 | 141.931 | 58.3795 | 28.38 | 338 |
-| Tryglicerides | 113 | 140.487 | 79.2582 | 49 | 598 |
-| Platelets | 155 | 242.49 | 107.876 | 62 | 721 |
-| Prothrombin | 160 | 11.1906 | 1.04904 | 9 | 15.2 |
-| log_days_to_death | 161 | 6.82759 | 1.04886 | 3.71357 | 8.34069 |
-
-</details>
+| Age | 304 | 18632.8 | 3665.7 | 10550 | 28018 |
+| Bilirubin | 304 | 3.43059 | 4.81671 | 0.3 | 28 |
+| Cholesterol | 212 | 372.736 | 241.013 | 120 | 1775 |
+| Albumin | 304 | 3.54727 | 0.425293 | 1.96 | 4.64 |
+| Copper | 236 | 98.9873 | 91.0543 | 4 | 588 |
+| Alk_Phos | 238 | 2180.79 | 2374.2 | 310 | 13862.4 |
+| SGOT | 238 | 122.714 | 56.663 | 26.35 | 457.25 |
+| Tryglicerides | 211 | 123.137 | 67.7786 | 44 | 598 |
+| Platelets | 293 | 261.386 | 105.958 | 70 | 721 |
+| Prothrombin | 302 | 10.8447 | 1.10545 | 9 | 18 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (22 rows)</summary>
+<summary>Show the table (24 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Ascites | 1 | N | 102 | 63.35 |
-| Ascites | 2 | &lt;NA> | 36 | 22.36 |
-| Ascites | 3 | Y | 23 | 14.29 |
-| Drug | 1 | D-penicillamine | 65 | 40.37 |
-| Drug | 2 | Placebo | 60 | 37.27 |
-| Drug | 3 | &lt;NA> | 36 | 22.36 |
-| Edema | 1 | N | 116 | 72.05 |
-| Edema | 2 | S | 26 | 16.15 |
-| Edema | 3 | Y | 19 | 11.8 |
-| Hepatomegaly | 1 | Y | 88 | 54.66 |
-| Hepatomegaly | 2 | N | 37 | 22.98 |
-| Hepatomegaly | 3 | &lt;NA> | 36 | 22.36 |
-| Sex | 1 | F | 137 | 85.09 |
-| Sex | 2 | M | 24 | 14.91 |
-| Spiders | 1 | N | 73 | 45.34 |
-| Spiders | 2 | Y | 52 | 32.3 |
-| Spiders | 3 | &lt;NA> | 36 | 22.36 |
-| Stage | 1 | 4.0 | 84 | 52.17 |
-| Stage | 2 | 3.0 | 48 | 29.81 |
-| Stage | 3 | 2.0 | 23 | 14.29 |
-| Stage | 4 | &lt;NA> | 4 | 2.48 |
-| Stage | 5 | 1.0 | 2 | 1.24 |
+| Ascites | 1 | N | 218 | 71.71 |
+| Ascites | 2 | &lt;NA> | 66 | 21.71 |
+| Ascites | 3 | Y | 20 | 6.58 |
+| Drug | 1 | D-penicillamine | 120 | 39.47 |
+| Drug | 2 | Placebo | 118 | 38.82 |
+| Drug | 3 | &lt;NA> | 66 | 21.71 |
+| Edema | 1 | N | 254 | 83.55 |
+| Edema | 2 | S | 33 | 10.86 |
+| Edema | 3 | Y | 17 | 5.59 |
+| Hepatomegaly | 1 | Y | 123 | 40.46 |
+| Hepatomegaly | 2 | N | 115 | 37.83 |
+| Hepatomegaly | 3 | &lt;NA> | 66 | 21.71 |
+| Sex | 1 | F | 271 | 89.14 |
+| Sex | 2 | M | 33 | 10.86 |
+| Spiders | 1 | N | 167 | 54.93 |
+| Spiders | 2 | Y | 71 | 23.36 |
+| Spiders | 3 | &lt;NA> | 66 | 21.71 |
+| Stage | 1 | 3.0 | 108 | 35.53 |
+| Stage | 2 | 4.0 | 103 | 33.88 |
+| Stage | 3 | 2.0 | 71 | 23.36 |
+| Stage | 4 | 1.0 | 16 | 5.26 |
+| Stage | 5 | &lt;NA> | 6 | 1.97 |
+| death_or_transplant_within_5y | 1 | 0 | 197 | 64.8 |
+| death_or_transplant_within_5y | 2 | 1 | 107 | 35.2 |
 
 </details>
 
@@ -353,11 +365,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-cd63-7ce2-90cc-a28712493bda |
-| checksum | v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7 |
-| built_at | 2026-10-06T16:12:22+00:00 |
-| path | cirrhosis_patient_survival_prediction/01a111fc-cd63-7ce2-90cc-a28712493bda |
+| uuid | 01a13a7d-c2bd-721a-88c1-f86443866b1e |
+| checksum | v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | cirrhosis_patient_survival_prediction/01a13a7d-c2bd-721a-88c1-f86443866b1e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294` |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

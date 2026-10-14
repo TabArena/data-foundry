@@ -70,15 +70,16 @@ class LendingClub(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start withe data from Sanz-Guerrero et al. (2025). This data is already well preprocessed and curated for the task and used for tabular-text learning. However, we noticed a lot variables from the original data are missing that can be added to the task without invalidating the task or introducing data leakage. Thus, we also merge new features from the original data into the version from Sanz-Guerrero et al. (2025).
+        We start with the data from Sanz-Guerrero et al. (2025), which is already preprocessed for this task and used for tabular-text learning. It lacks many variables of the original data that can be added without changing the task or leaking the label, so we merge them in from the original data.
 
-        - This is a datasets where the description is very often empty or a standard phrase. So the model needs to be able to handle cases with a lot of missing data in the text modality, and also cases where the text is rarely informative. This is a common case in real-world tabular-text datasets, and it is important to have it represented in our benchmark.
+        - The description is often empty or a standard phrase, so a model must handle text that is mostly missing or uninformative. This is common in real-world tabular-text data, and we want it in the benchmark.
         - We reverse the ordinal encoding of the target.
         - We reverse the name change of "revenue" back to "annual_inc".
-        - We also create a sec_app_fico_n like the fico_n from anz-Guerrero et al. (2025).
-        - We drop rows where "application_type" is missing as these rows have consistent missing values across features and likely represent some data loading artifact.
-        - We keep only the 36-month loans issued up to 2015, the only loans whose labels are complete. The data of Sanz-Guerrero et al. (2025) holds the loans that had finished (fully paid or charged off) by the 2018Q4 snapshot of the original data, so a loan still being repaid is missing. In accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans are finished up to 2015Q4, but only 57-93% per quarter in 2016; of the 60-month loans only 63-97% per quarter are finished from 2014 on. The missing loans are mostly good ones, so later or longer loans would leave the labels skewed towards early defaults and early payoffs (default rate among finished loans: 15-16% in 2013, 20% in 2015, 24-26% in 2016). We drop the 60-month loans (about a third of the 2014-2015 volume) and all loans issued from 2016 on. `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
-        - We drop the joint-applicant fields (sec_app_*, *_joint): they are only filled from 2017 on, so they are empty for the loans we keep.
+        - We drop rows where "application_type" is missing, as these rows have consistent missing values across features and likely are a data loading artifact.
+        - We keep only the 36-month loans issued up to 2015, the only loans whose labels are complete, and drop the 60-month loans (about a third of the 2014-2015 volume) and all loans issued from 2016 on. The data of Sanz-Guerrero et al. (2025) holds only the loans that had finished (fully paid or charged off) by the 2018Q4 snapshot, so a loan still being repaid is missing.
+        - In accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans up to 2015Q4 are finished, but only 57-93% per quarter in 2016, and only 63-97% per quarter of the 60-month loans from 2014 on. The missing loans are mostly good ones, so later or longer loans would skew the labels towards early defaults and early payoffs (default rate among finished loans: 15-16% in 2013, 20% in 2015, 24-26% in 2016).
+        - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
+        - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
     """
 
     # Task
@@ -110,10 +111,6 @@ class LendingClub(AbstractCuratedDataset):
         # 0 for fully paid loans and a 1 for defaulted loans.
         df["Default"] = df["Default"].map({0: "Fully Paid", 1: "Defaulted"})
         df = df.rename(columns={"revenue": "annual_inc"})
-        # Transform     "sec_app_fico_range_low"    "sec_app_fico_range_high", to sec_app_fico_n
-        original_df["sec_app_fico_n"] = (
-            original_df["sec_app_fico_range_low"] + original_df["sec_app_fico_range_high"]
-        ) / 2
         new_features_from_original = original_df[
             [
                 "id",
@@ -135,7 +132,6 @@ class LendingClub(AbstractCuratedDataset):
                 "acc_now_delinq",
                 "acc_open_past_24mths",
                 "all_util",
-                "sec_app_fico_n",
                 # annual_inc	annual_inc_joint -> were already merged by prior work
                 # fico_range_high fico_range_low -> transformed before into avg fico
                 "application_type",
@@ -203,19 +199,9 @@ class LendingClub(AbstractCuratedDataset):
                 "total_cu_tl",
                 "total_il_high_credit_limit",
                 "total_rev_hi_lim",
-                "revol_bal_joint",
-                "sec_app_earliest_cr_line",
-                "sec_app_inq_last_6mths",
-                "sec_app_mort_acc",
-                "sec_app_open_acc",
-                "sec_app_revol_util",
-                "sec_app_open_act_il",
-                "sec_app_num_rev_accts",
-                "sec_app_chargeoff_within_12_mths",
-                "sec_app_collections_12_mths_ex_med",
-                "sec_app_mths_since_last_major_derog",
-                "sec_app_fico_range_low",
-                "sec_app_fico_range_high",  # dti dti_joint -> already merged by prior work via max
+                # dti dti_joint -> already merged by prior work via max
+                # Not merged: the joint-applicant fields (revol_bal_joint, sec_app_*) are filled only from 2017 on,
+                #   so they are empty for the 36-month loans issued up to 2015 that we keep.
             ]
         ]
         # Merge new features into the curated version of the dataset.
@@ -227,8 +213,6 @@ class LendingClub(AbstractCuratedDataset):
         # finished by the 2018Q4 snapshot, so later or longer loans are missing while they were being repaid.
         issued = pd.to_datetime(df["issue_d"], format="%b-%Y")
         df = df[(df["term"].str.strip() == "36 months") & (issued < "2016-01-01")]
-        # The joint-applicant fields (sec_app_*, *_joint) are only filled from 2017 on, so here they are empty.
-        empty = [c for c in df.columns if df[c].isna().all()]
         df = drop_columns(
             df,
             [
@@ -236,7 +220,6 @@ class LendingClub(AbstractCuratedDataset):
                 "experience_c",  # constant after preprocessing
                 "term",  # used only for the selection above
                 "disbursement_method",  # a single value ("Cash") for the loans we keep
-                *empty,
             ],
         )
         return df
@@ -251,5 +234,5 @@ class LendingClub(AbstractCuratedDataset):
                 "purpose",
             ),
             string=("emp_title", "addr_state", "zip_code", "title", "desc"),
-            datetime={"issue_d": "%b-%Y", "earliest_cr_line": "%b-%Y"},  # sec_app_earliest_cr_line is dropped
+            datetime={"issue_d": "%b-%Y", "earliest_cr_line": "%b-%Y"},  # sec_app_earliest_cr_line is not merged
         )
