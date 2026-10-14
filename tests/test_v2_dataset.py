@@ -288,6 +288,14 @@ def test_discover_datasets_and_skip_broken(tmp_path: Path) -> None:
     assert list(discover_datasets(root, strict=False)) == ["toy_ds"]
 
 
+def test_discover_skips_a_type_alias_next_to_the_class(tmp_path: Path) -> None:
+    # Python 3.10 counts `dict[...]` as a class and `issubclass` raises on it (sf_permit_time imports `Splits`)
+    root = tmp_path / "datasets"
+    write_definition(root, body=DEFINITION.format(name="toy_ds", comment="x") + "\nAlias = dict[int, list[int]]\n")
+
+    assert list(discover_datasets(root)) == ["toy_ds"]
+
+
 def test_discover_raises_when_every_definition_is_broken(tmp_path: Path) -> None:
     broken = tmp_path / "datasets" / "broken_ds"
     broken.mkdir(parents=True)
@@ -987,9 +995,14 @@ def test_a_multi_line_splits_comment_is_dedented(tmp_path: Path, warehouse: Path
 
 def test_report_lists_feature_types_read_from_dtypes(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    body = DEFINITION.format(name="toy_ds", comment="x").replace(
-        'return FeatureTypes(categorical=["colour"])',
-        "return FeatureTypes(categorical=[c for c in df.columns if df[c].dtype == object])",
+    # object_columns counts pandas 3's `str` text, which `dtype == object` misses
+    body = (
+        DEFINITION.format(name="toy_ds", comment="x")
+        .replace(
+            'return FeatureTypes(categorical=["colour"])',
+            "return FeatureTypes(categorical=object_columns(df))",
+        )
+        .replace("import AbstractCuratedDataset,", "import object_columns, AbstractCuratedDataset,")
     )
     folder = write_definition(tmp_path / "datasets", body=body)
     get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
