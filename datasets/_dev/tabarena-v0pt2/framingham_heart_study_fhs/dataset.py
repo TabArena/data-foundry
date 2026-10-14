@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 TEN_YEARS = 3652
 """Days in 10 years (10 x 365.25, rounded down). No event, death or censor date of the cohort falls on days
@@ -98,6 +98,37 @@ def _mit_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 
 class FraminghamHeartStudyFhs(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Will a person without coronary heart disease have a first coronary event within ten years?"),
+        use_case=(
+            "At a routine exam, a physician estimates the 10-year risk of a first coronary heart disease event for a "
+            "patient free of it, to decide on prevention, for example blood pressure or cholesterol treatment."
+        ),
+        row=(
+            "One participant of the Framingham Heart Study (Massachusetts) at the baseline exam, free of coronary "
+            "heart disease (4,224 participants of the teaching version of the data; period not stated)."
+        ),
+        predicted=(
+            "Whether a first coronary heart disease event (angina, heart attack, coronary insufficiency or death from"
+            " it) occurs within 10 years of the exam; 9.0% have one."
+        ),
+        known=(
+            "Age, sex, education, smoking and cigarettes per day, blood pressure medication, earlier stroke, "
+            "hypertension, diabetes, total cholesterol, systolic and diastolic blood pressure, BMI, heart rate and "
+            "glucose."
+        ),
+        split=("Random participants, so the test data stands for new patients examined in the same way."),
+        changes=(
+            "We rebuild the label from the event dates; in the common copy, 265 of 644 positives had no coronary "
+            "event within 10 years. We drop the 16 participants whose follow-up ended early without an event."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything is measured at the exam and the outcome follows within a fixed ten years, as in use. The "
+            "teaching data was anonymized by undocumented methods, so values may be slightly perturbed."
+        ),
+    )
+
     # Dataset
     unique_name = "framingham_heart_study_fhs"
     year = "2004"

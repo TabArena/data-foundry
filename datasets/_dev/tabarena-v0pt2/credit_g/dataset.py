@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class CreditG(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a loan applicant a good or a bad credit risk?",
+        use_case=(
+            "A bank, when a loan application arrives, decides whether to grant the credit; the source scores errors "
+            "with a cost matrix that penalises accepting a bad customer most."
+        ),
+        row=(
+            "One applicant of a German bank, with amounts in Deutsche Mark (1,000 applicants, released in 1994; the "
+            "period of the loans is not stated)."
+        ),
+        predicted=(
+            "Whether the customer was rated good or bad (30% bad); the source defines neither the rating nor when it "
+            "was made."
+        ),
+        known=(
+            "The application: checking and savings balances, loan duration, amount, purpose and instalment rate, "
+            "credit history, other loans, employment, personal status and sex, age, housing, property, job, "
+            "dependants, guarantors, telephone and whether a foreign worker."
+        ),
+        split="Random applicants of the same bank and period.",
+        fit="approximate",
+        fit_reason=(
+            "The features are what a bank knows at the application, but the source gives no dates and no definition "
+            "or horizon of a bad customer, so the random split stands in for scoring later applicants. The data are "
+            "old."
+        ),
+    )
+
     # Dataset
     unique_name = "credit_g"
     year = "1994"

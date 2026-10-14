@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class StudentPortuguesePerformance(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What final grade in Portuguese will a secondary-school student get?",
+        use_case=(
+            "For example, a school predicts each student's final Portuguese grade early in the year from background "
+            "and habits, to offer extra support to those likely to fail."
+        ),
+        row=(
+            "One student of the Portuguese-language course at two Portuguese secondary schools (649 students), from "
+            "school reports and questionnaires; the school year is not stated."
+        ),
+        predicted="The final grade, from 0 to 20 (mean 11.9).",
+        known=(
+            "School, sex, age, home (urban or rural, family size, parents' education, jobs and cohabitation), the "
+            "reason for the school, study time, past class failures, support and paid classes, activities, plans for "
+            "higher education, internet, free time, going out, alcohol, health and school absences."
+        ),
+        split="Random students of the same two schools.",
+        changes=(
+            "We drop the first- and second-period grades, so the grade is predicted from background and habits alone."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Most features are background known early, but the absences and the habits questionnaire cover the same "
+            "school year as the grade, and when they were recorded is not stated, so some may come after an early "
+            "prediction point."
+        ),
+    )
+
     # Dataset
     unique_name = "student_portuguese_performance"
     year = "2014"

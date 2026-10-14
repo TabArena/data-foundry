@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
 
 
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a patient with heart failure die during follow-up?",
+        use_case=(
+            "For example, a cardiologist estimates a heart-failure patient's risk of dying in the coming months from "
+            "routine findings and blood tests, to decide on closer follow-up or treatment."
+        ),
+        row=(
+            "One patient with heart failure, aged 40 or older, at the Faisalabad Institute of Cardiology or the "
+            "Allied Hospital in Faisalabad, Pakistan, April-December 2015 (299 patients)."
+        ),
+        predicted=("Whether the patient died during a follow-up of 4 to 285 days that differs by patient (32% did)."),
+        known=(
+            "Age, sex, smoking, anaemia, diabetes, high blood pressure, the heart's ejection fraction, and blood "
+            "values (creatinine phosphokinase, platelets, serum creatinine, serum sodium)."
+        ),
+        split=("Random patients, so the test data stands for new patients of the same hospitals and year."),
+        changes=("We drop the length of follow-up: it ends at death, so a short follow-up gives the outcome away."),
+        fit="approximate",
+        fit_reason=(
+            "The outcome has no fixed horizon: a patient whose follow-up ended early counts as a survivor, and some "
+            "may have died later. Whether follow-up ended on one date for all is not stated (the censored times fit "
+            "mid-January 2016). When the measurements were taken is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "heart_failure_followup_survival"
     year = "2017"

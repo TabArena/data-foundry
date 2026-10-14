@@ -6,10 +6,33 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Diamonds(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What is the price of a diamond with these grading characteristics?",
+        use_case=(
+            "For example, an online diamond seller prices a newly listed stone from its grading (weight, cut, colour,"
+            " clarity, proportions), in line with the rest of its catalogue."
+        ),
+        row=(
+            "One diamond with its price, from the diamonds data of the ggplot2 R package (53,940 stones); the seller "
+            "and the date of the prices are not stated."
+        ),
+        predicted="The price in US dollars, on a log scale.",
+        known=(
+            "Weight in carats, cut quality, colour grade, clarity grade, total depth and table width in percent, and "
+            "length, width and depth in millimetres."
+        ),
+        split="Random stones, so the test data stands for other stones of the same price list.",
+        fit="direct",
+        fit_reason=(
+            "The features are the grading a seller has before pricing a stone, and random stones of one price list "
+            "match pricing new stock against it. Neither the seller nor the date of the prices is stated."
+        ),
+    )
+
     # Dataset
     unique_name = "diamonds"
     year = "2007"

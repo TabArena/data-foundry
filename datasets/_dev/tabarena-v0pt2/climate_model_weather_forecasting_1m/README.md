@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: climate_model_weather_forecasting_1m
 container_format: 2
-checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
+checksum: v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86
 build:
   uuid: 01a111fb-bc63-7614-a137-a3fd390bc4f1
   checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 2115283
   n_features: 99
@@ -67,7 +67,25 @@ decisions: []
 
 Regression of `fact_temperature`, scored with `rmse` on temporal splits by `fact_time`. 2,115,283 rows and 99 features. Source: Kaggle (2024).
 
-Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** What temperature will a weather station measure at a given time, given the weather models' forecasts for that place and time?
+
+**Use case.** For example, a weather service corrects the raw forecasts of global weather models at each station, to publish a more accurate local temperature forecast (Yandex station data, released with the TabReD benchmark).
+
+**One row.** One temperature measurement at one of 1,864 weather stations, July 2022 to July 2023, as filtered and sub-sampled by TabReD.
+
+**Predicted.** The temperature measured at the station; the unit is not stated.
+
+**Known at prediction time.** The station, its location and the time; the forecasts of two global weather models (CMC and GFS) for that place and time, with their lead times (temperature at several heights, wind, humidity, pressure, cloud, precipitation); and the station's climate averages of temperature and pressure.
+
+**What the test data stands for.** Each of the last three weeks of July 2023 is a test window; training is a random million of all earlier measurements, as for a model refit every week.
+
+**Our changes to the source.** We test on one-week windows instead of TabReD's one month, which the curator judged long for weather.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are forecasts and climate averages available before the measurement, and later weeks stand for the forecasts to come. The meaning of one time column of TabReD's release is unclear.
 
 ## Files in this folder
 
@@ -157,7 +175,9 @@ The first 5 of 2,115,283 rows of the final frame (the oldest rows: the frame is 
 
 We start with data from TabRed, which already comes preprocessed.
 
-- This data is similar to data from https://arxiv.org/abs/2406.19380. This paper also describes the feature in more detail. The column `apply_time_rl` is new and might relate to a rolling lag/window indicator.
+- The data comes from TabReD (https://arxiv.org/abs/2406.19380), which calls it similar to the Shifts weather data (Malinin et al. 2021, https://arxiv.org/abs/2107.07455) but larger and with a time-based split; the Shifts appendix describes the features.
+- Note: Neither paper explains `apply_time_rl`, which Shifts does not have. It holds epoch seconds between 3 minutes and 3.1 days before `fact_time` in every row; we keep it as a number.
+- Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
 - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
 - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
 
@@ -370,3 +390,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86` |

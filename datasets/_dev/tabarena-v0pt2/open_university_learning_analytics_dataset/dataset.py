@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 PREDICTION_DAY = 60
 """The day of the module-presentation (0 = its official start) on which the model predicts."""
@@ -84,6 +84,38 @@ def _click_features(raw: dict[str, pd.DataFrame], day: int) -> pd.DataFrame:
 
 
 class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("On day 60 of an online course, will a student finish with distinction, pass, fail or withdraw?"),
+        use_case=(
+            "On day 60 of a running module presentation, the Open University looks for students at risk, for example "
+            "to offer tutor support; it trains its model on other presentations of the same module."
+        ),
+        row=(
+            "One student's registration on one of 22 presentations of 7 modules of the UK Open University, 2013-2014,"
+            " still active on day 60 (26,395 registrations)."
+        ),
+        predicted="The final result of the registration: distinction, pass, fail or withdrawn.",
+        known=(
+            "The student's profile (sex, region, prior education, deprivation band of the area, age band, "
+            "disability), the registration date, the assessment results and submission timing known by day 60, and "
+            "the daily activity in the online learning environment before day 60."
+        ),
+        split=(
+            "Whole presentations are held out in three folds, so the test data stands for a presentation the model "
+            "has not seen; training can include later and concurrent presentations."
+        ),
+        changes=(
+            "We fix day 60 as the prediction point, build the features from what is known by then, drop the "
+            "registrations that ended before day 60, and hold out whole presentations."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Deployment trains on earlier presentations only, but four start dates do not allow a split by time, so "
+            "training also holds later and concurrent ones; 12.9% of a test fold's rows have the same student in "
+            "training, kept on purpose (about 0.0025 of log loss)."
+        ),
+    )
+
     # Dataset
     unique_name = "open_university_learning_analytics_dataset"
     year = "2015"

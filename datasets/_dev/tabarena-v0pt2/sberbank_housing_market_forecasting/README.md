@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e
+checksum: v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b
 build:
   uuid: 01a111fc-67ad-73f9-9657-30238d911c5b
   checksum: v2:c18d68c83ec756f1f78d03272b894acfe494ec37c8a0fd34eba8d34b3f4b95fc
@@ -68,7 +68,25 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 27,195 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-67ad-73f9-9657-30238d911c5b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** What will a Moscow flat sell for, per square metre?
+
+**Use case.** Sberbank predicts the price of a flat when it is sold, so that renters, developers and lenders can be more confident when they sign (the Kaggle competition's purpose).
+
+**One row.** One sale of a flat in Moscow, August 2011 to June 2015 (27,195 sales), either an owner-occupier purchase or an investment.
+
+**Predicted.** The sale price per square metre of total area, on a logarithmic scale.
+
+**Known at prediction time.** The flat (areas, floor, number of floors, rooms, build year, material, condition, purchase type), its district's population, schools, facilities, ecology and distances to points of interest, and the macroeconomic indicators of the sale date.
+
+**What the test data stands for.** Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every earlier sale, as for a model refit every half year.
+
+**Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, flats of 5 square metres or less, and flats built after their sale.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and the half-year windows match a model refit twice a year. Whether every macroeconomic indicator joined on the sale date was already published then is not stated.
 
 ## Files in this folder
 
@@ -112,7 +130,7 @@ Only curators run `build`, when the dataset ships.
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
 | data_tags | Non-IID, Temporal, Spatial |
-| reference | Herman2024HomeCreditCreditRiskModelStability |
+| reference | Matveev2017SberbankRussianHousingMarket |
 | rows x columns | 27,195 x 387 |
 | task.target | price_doc |
 | task.problem_type | regression |
@@ -133,11 +151,11 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
-@misc{Herman2024HomeCreditCreditRiskModelStability,
-  author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
-  title  = {Home Credit - Credit Risk Model Stability},
-  year   = {2024},
-  howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
+@misc{Matveev2017SberbankRussianHousingMarket,
+  author = {Alex Matveev and Anastasia Sidorova and DataCanary},
+  title  = {Sberbank Russian Housing Market},
+  year   = {2017},
+  howpublished = {\url{https://kaggle.com/competitions/sberbank-russian-housing-market}},
   note   = {Kaggle competition}
 }
 ```
@@ -160,10 +178,21 @@ The first 5 of 27,195 rows of the final frame (the oldest rows: the frame is sor
 
 We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
+- The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
+  after the first-place solution).
+- Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
+  smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
+  (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
+- As TabReD, we drop sales at 1 million rubles or less or at exactly 2 or 3 million (fake low prices, by the
+  first-place report often set to avoid tax), and flats with a total area of 5 m2 or less or of 5326 m2 (a
+  typo for 53).
+- We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily; monthly,
+  quarterly and annual statistics change on the first day of their period, and `gdp_annual` on a 2014 sale is
+  Russia's 2013 GDP. The source does not say when each figure was published, so some may postdate the sale.
 - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
 - We drop the ID column as it does not provide information.
 - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
-- We drop all rows that have a build_year higher than their own timestamp of being sold. It is unclear from the original data what kind of house market data this comes from. The description for the column is "year built" and not "year to be finished" so we assume these are all data errors. Plus this drops around 150 samples for which the build_year is incorrectly encoded as integer derived from a range like "2000-2005".
+- We drop the 1,126 sales whose build_year is later than the year of sale. The column is described as "year built", not "year to be finished", so we treat them as errors. Only 2 of them have a build_year coded from a range such as "2000-2005"; the other 1,124 were sold 0 to 4 years before it, which may be flats sold before completion.
 
 ## Splits
 
@@ -421,4 +450,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:83dfe32a005879a84942985064fa61a0f4ca063e41eab0da5384ce2d84532c4e` |
+| stale | yes: the definition now gives checksum `v2:d43592dd9a7c44f9efe8e9260ddb6b6f975e217a54cd0841f9510f2b481fe70b` |

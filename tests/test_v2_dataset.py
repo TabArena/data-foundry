@@ -18,6 +18,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
     Grouping,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     cast_dtypes,
@@ -42,10 +43,21 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
 
 
 class Toy(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a generated row positive?",
+        use_case="A tester checks that the pipeline runs end to end.",
+        row="One generated row.",
+        predicted="A random yes/no label.",
+        known="A number and a colour.",
+        split="Random rows.",
+        fit="direct",
+        fit_reason="The data is generated for the test.",
+    )
+
     unique_name = "{name}"
     year = "2024"
     domain = "handcrafted"
@@ -173,6 +185,7 @@ def test_readme_explains_the_folder(tmp_path: Path, warehouse: Path) -> None:
 
     headings = [line for line in text.splitlines() if line.startswith("## ")]
     assert headings == [
+        "## In brief",
         "## Files in this folder",
         "## Rebuild",
         "## Dataset and task",
@@ -594,8 +607,9 @@ def temporal_version_body() -> str:
     return (
         DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, "
+            "drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -652,8 +666,8 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
     body = (
         DEFINITION.format(name="toy_ds", comment="x")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -889,7 +903,7 @@ def test_prepared_raw_files_are_rewritten_when_their_code_changes(tmp_path: Path
     assert json.loads(marker.read_text())["files"] == ["prepared.csv"]
     marker.write_text(json.dumps({"code_hash": "written by other code"}))
     ds.prepare_raw_files()
-    assert len(module.RUNS) == 2  # noqa: PLR2004
+    assert len(module.RUNS) == 2
     edited = PREPARING.format(name="toy_ds", comment="x").replace("RUNS.append(1)", "RUNS.append(2)")
     assert (
         _prepare_code_hash(load_definition_from_text(edited, "toy_ds")) != json.loads(marker.read_text())["code_hash"]
@@ -980,3 +994,48 @@ def test_report_lists_feature_types_read_from_dtypes(tmp_path: Path, warehouse: 
     folder = write_definition(tmp_path / "datasets", body=body)
     get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
     assert "Feature types: 2 categorical" in (folder / "README.md").read_text()  # colour and the target y
+
+
+def test_the_summary_comes_first_in_the_report(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    folder = write_definition(tmp_path / "datasets")
+    get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    text = (folder / "README.md").read_text()
+    assert text.index("## In brief") < text.index("## Files in this folder")
+    assert "**Question.** Is a generated row positive?" in text
+    # the description first, then the judgement of the use case
+    assert text.index("**What the test data stands for.**") < text.index("**Use case fit: direct")
+
+
+@pytest.mark.parametrize(
+    ("replace", "slug", "severity"),
+    [
+        (
+            ("    task_summary = TaskSummary(", "    task_summary_draft = TaskSummary("),
+            "definition_summary_missing",
+            "error",
+        ),
+        (('fit="direct"', 'fit="none"'), "definition_no_use_case", "error"),
+        (('row="One generated row."', 'row="' + "word " * 80 + '"'), "definition_summary_long", "warning"),
+    ],
+)
+def test_summary_findings(tmp_path: Path, warehouse: Path, replace: tuple[str, str], slug: str, severity: str) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(*replace)
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
+    found = {r.slug: r.severity for r in result.bundle_report.results}
+    assert found.get(slug) == severity
+
+
+@pytest.mark.parametrize(
+    ("summary", "match"),
+    [
+        ("x", "must be a `TaskSummary"),
+        (TaskSummary("q", "u", "r", "p", "k", "s", fit="maybe", fit_reason="w"), "is one of direct"),
+        (TaskSummary("q", "", "r", "p", "k", "s", fit="direct", fit_reason="w"), "needs text in: use_case"),
+    ],
+)
+def test_class_validation_checks_the_summary(summary: object, match: str) -> None:
+    with pytest.raises(DatasetDefinitionError, match=match):
+        _define(task_summary=summary)

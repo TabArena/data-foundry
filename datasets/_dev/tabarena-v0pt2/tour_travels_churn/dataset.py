@@ -5,10 +5,32 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class TourTravelsChurn(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a customer of a tour and travel company churn?",
+        use_case=(
+            "A tour and travel company predicts which customers will churn (the data card's task), for example to "
+            "target them with retention offers."
+        ),
+        row=(
+            "One customer of an unnamed tour and travel company (954 customers); the place and period are not stated."
+        ),
+        predicted="Whether the customer churned; the time frame is not stated.",
+        known=(
+            "Age, whether the customer is a frequent flyer, annual income class, the number of services used, whether"
+            " the account is linked to social media, and whether the customer booked a hotel."
+        ),
+        split="Random customers.",
+        fit="approximate",
+        fit_reason=(
+            "The churn has no stated time frame and the features no stated timing; where the data comes from is "
+            "unknown, and the curator would not be surprised if it were artificial."
+        ),
+    )
+
     # Dataset
     unique_name = "tour_travels_churn"
     year = "2021"

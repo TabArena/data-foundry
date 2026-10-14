@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class RossmannStoreSales(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How much will a Rossmann store sell on each day of the next six weeks?",
+        use_case=(
+            "Rossmann store managers forecast their daily sales up to six weeks ahead, to plan staff schedules (the "
+            "competition's description)."
+        ),
+        row=("One day of one open Rossmann drug store in Germany (1,115 stores, January 2013 to July 2015)."),
+        predicted="The store's turnover that day; the currency is not stated.",
+        known=(
+            "The store, the date and weekday, whether a promotion runs, state and school holidays, the store type and"
+            " assortment, the nearest competitor's distance and opening date, and the store's recurring promotion "
+            "scheme."
+        ),
+        split=(
+            "Three windows of six weeks from late March to July 2015, each trained on all earlier days with a one-day"
+            " gap."
+        ),
+        changes=(
+            "We drop closed days, which all have zero sales, and the day's number of customers, known only afterwards."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Promotions, holidays and opening days are planned in advance, and six-week windows match the managers' "
+            "horizon. Closed days are left out, so the model assumes the store's opening days are known."
+        ),
+    )
+
     # Dataset
     unique_name = "rossmann_store_sales"
     year = "2015"

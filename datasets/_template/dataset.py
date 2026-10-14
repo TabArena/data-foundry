@@ -5,10 +5,24 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns  # noqa: F401
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns  # noqa: F401
 
 
 class ClassName(AbstractCuratedDataset):
+    # In brief: the task in plain words, for a reader who has not seen the source (first in the README). One or two
+    # plain sentences per field; the house format and examples are in the add-dataset patterns ("In brief").
+    task_summary = TaskSummary(
+        question="TODO(verify): the prediction as a one-line question.",
+        use_case="TODO(verify): who uses the prediction, when, and the decision it informs.",
+        row="TODO(verify): what one row is.",
+        predicted="TODO(verify): the target in plain words, by when after the prediction point.",
+        known="TODO(verify): what the model knows then, in plain words.",
+        split="TODO(verify): what the test data stands for (new customers, the next weeks, unseen patients).",
+        changes="",  # our changes to the source a reader needs to know
+        fit="direct",  # TODO(verify): "direct", "approximate" (a stand-in with a known gap) or "none" (retire)
+        fit_reason="TODO(verify): why the data simulates the use case this closely.",
+    )
+
     # Dataset
     unique_name = "<unique_name>"
     year = "TODO"

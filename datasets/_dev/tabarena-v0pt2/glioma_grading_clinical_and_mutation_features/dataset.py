@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 DEMOGRAPHICS = ("Gender", "Age_at_diagnosis", "Race")
 """The three clinical columns of the file; the 20 gene columns follow them."""
@@ -23,6 +23,40 @@ def age_in_years(text: pd.Series) -> pd.Series:
 
 
 class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Is a diffuse glioma a lower-grade glioma or a glioblastoma, judging from its gene mutations and the "
+            "patient's age, sex and race?"
+        ),
+        use_case=(
+            "After a glioma has been removed or biopsied and its DNA sequenced, the care team assigns the tumour's "
+            "grade class from the mutations, for example as a check on the tissue diagnosis (the source's task)."
+        ),
+        row=(
+            "One patient of the US Cancer Genome Atlas glioma projects (lower-grade glioma and glioblastoma), 862 "
+            "patients diagnosed between 1989 and 2013."
+        ),
+        predicted=(
+            "Whether the tumour is a lower-grade glioma (WHO grade II or III) or a glioblastoma (grade IV), as "
+            "diagnosed from the tissue."
+        ),
+        known=(
+            "Whether each of the 20 genes mutated most often in these patients carries a mutation (from whole-exome "
+            "sequencing), and the patient's sex, race and age at diagnosis."
+        ),
+        split=("Random patients, so the test data stands for new patients like those of the two projects."),
+        changes=(
+            "We drop the project and the primary diagnosis, which give the label, and the patient code, whose site "
+            "part also gives it; we keep the patients without a clinical record or race, whom the authors' own file "
+            "drops."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The mutations and the patient's facts are known once the tumour is sequenced. The grades follow the "
+            "histological criteria of 1989-2013; WHO 2021 regrades some of these tumours with markers the data lacks."
+        ),
+    )
+
     # Dataset
     unique_name = "glioma_grading_clinical_and_mutation_features"
     year = "2022"

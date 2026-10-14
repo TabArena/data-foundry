@@ -5,10 +5,40 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Mic(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a heart attack patient die in hospital, and of what?",
+        use_case=(
+            "At the admission of a heart attack patient, the cardiologists estimate the risk of each lethal "
+            "complication, to choose monitoring and preventive treatment (the source's first prediction time)."
+        ),
+        row=(
+            "One patient admitted with a heart attack to a hospital in Krasnoyarsk, Russia, 1992-1995 (1,700 patients)."
+        ),
+        predicted=(
+            "Whether the patient dies in hospital and of which of seven causes, such as cardiogenic shock (6%) or "
+            "heart rupture (3%); 84% survive."
+        ),
+        known=(
+            "Age, sex, medical history, complications present on admission, the infarct's location and the ECG, blood"
+            " pressure and blood tests on admission, the time to hospital, and the drugs of the emergency team and "
+            "the intensive care unit that the source counts as admission inputs."
+        ),
+        split="Random patients.",
+        changes=(
+            "We predict at admission and drop the nine records of days one to three in intensive care: a patient who "
+            "died early has none, so their absence reveals the death."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The inputs are those the source allows at admission, and the outcome follows during the stay. The care "
+            "is that of one hospital in 1992-1995."
+        ),
+    )
+
     # Dataset
     unique_name = "mic"
     year = "2020"

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
+checksum: v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6
 build:
   uuid: 01a111fc-cedf-7a16-9575-fb28a8d57db5
   checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 690
   n_features: 15
@@ -64,7 +64,23 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 15 features. Source: UCI (1987).
 
-Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Should this credit card application be approved?
+
+**Use case.** For example, when a credit card application arrives, the lender decides whether to approve it, here by imitating its past decisions.
+
+**One row.** One credit card application (690, published by Quinlan in 1987); the lender, country and period are not stated.
+
+**Predicted.** Its class, + or - (44% are +), usually read as approved or rejected; the source gives no meaning.
+
+**Known at prediction time.** Fifteen attributes of the applicant and the application, six numeric and nine categorical, whose names and values were replaced by symbols to keep the data confidential.
+
+**What the test data stands for.** Random applications, so the test data stands for new applications to the same lender in the same period.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The attributes are disguised, so we cannot check that each is known when an application arrives, and the label is a past decision of unstated meaning rather than repayment.
 
 ## Files in this folder
 
@@ -157,6 +173,7 @@ The first 5 of 690 rows of the final frame (random rows: the frame is shuffled);
 
 We get the data from UCI.
 
+- Provenance: `crx.data` of UCI Credit Approval (id 27, Quinlan 1987; the source is confidential, so lender and country are unknown). The same 690 applications are UCI's Statlog (Australian Credit Approval) (id 143) with recoded values and filled-in missing values; the Japanese Credit Screening data (id 28, 125 rows) in the same zip is a different dataset we do not use.
 - We encode A14 as numeric, following the description of it being a continuous feature.
 
 ## Splits
@@ -337,3 +354,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6` |

@@ -5,10 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a person have diabetes, judging from a symptom questionnaire?",
+        use_case=(
+            "For example, a doctor or a screening app decides from a short symptom questionnaire whether a person "
+            "should have a blood-sugar test (the source paper predicts the likelihood of diabetes at an early stage)."
+        ),
+        row=(
+            "One patient of Sylhet Diabetes Hospital, Bangladesh, newly diabetic or at risk, who answered a direct "
+            "questionnaire (251 rows after dropping repeated rows; the period is not stated)."
+        ),
+        predicted=(
+            "Whether the patient is diabetic (69% of the rows); how and when this was established is not stated."
+        ),
+        known=(
+            "Age, sex, obesity and 13 yes/no symptoms, such as frequent urination, excessive thirst, sudden weight "
+            "loss, weakness, blurred vision and slow healing."
+        ),
+        split="Random patients, so the test data stands for other patients of the same hospital.",
+        changes="We drop exact repeated rows, half of the file.",
+        fit="approximate",
+        fit_reason=(
+            "The rows are patients of a diabetes hospital, 69% of them diabetic, not the people a screening "
+            "questionnaire is meant for, and the source does not state how or when the label was set."
+        ),
+    )
+
     # Dataset
     unique_name = "early_stage_diabetes_risk_prediction"
     year = "2020"
@@ -32,9 +58,9 @@ class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We use the data as is from UCI.
+        We start with diabetes_data_upload.csv from UCI.
 
-        - Note, the dataset contains a lot of naturally occurring duplicates (50%). We drop them to avoid too extreme duplicated-based data leakage biasing the evaluation.
+        - We drop exact duplicate rows: 269 of 520 (51.7%) repeat another row, and 107 profiles of age, gender and 14 symptoms occur 2 to 16 times. Distinct patients would rarely agree on all 16 answers, so we treat the copies as a collection artifact (no copies conflict on the label).
     """
 
     # Task

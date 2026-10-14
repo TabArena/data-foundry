@@ -60,6 +60,24 @@ Regression of `log_price`, scored with `rmse` on temporal splits by `Date`. 21,2
 
 Not built yet. The current definition gives checksum `v2:6d58d4bd70e971ed80ce86d5394ba3f0979d184b9900d499f066ba6c6bb6889e`.
 
+## In brief
+
+**Question.** At what price will a Melbourne property listed for auction sell?
+
+**Use case.** When a property is listed for auction, a price model refit on all earlier sales estimates its sale price, for example for a buyer or an agent setting expectations.
+
+**One row.** One sale of a property listed for auction in Melbourne, January 2016 to March 2018, from the weekly result sheets of Domain.com.au (21,266 sales).
+
+**Predicted.** The sale price, as the natural log of Australian dollars.
+
+**Known at prediction time.** The address, suburb, postcode, council area, region, coordinates, distance to the centre and the suburb's number of properties; the property type, rooms, agent and auction date; and six attributes scraped from realestate.com.au (bedrooms, bathrooms, car spaces, land and building size, year built).
+
+**What the test data stands for.** Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all earlier sales.
+
+**Our changes to the source.** We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after the auction, and test on later weekly sheets instead of random sales.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The listing and the earlier sales are what a price model has before the auction, and later sheets stand for the coming auctions. The scraped attributes were looked up after the sale; blanking them for the 495 sales of 2016 whose bedroom count differs from the sheet changes the error by 0.0004.
+
 ## Files in this folder
 
 | file | what it is |

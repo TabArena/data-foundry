@@ -5,10 +5,48 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class ApsFailure(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Is a heavy truck's failure in one specific component of its air pressure system, rather than in another "
+            "part?"
+        ),
+        use_case=(
+            "From a truck's operational data, a workshop decides whether a mechanic should check the air pressure "
+            "system, which drives braking and gear changes: a needless check costs 10 and a missed faulty truck, "
+            "which may break down, costs 500 (the challenge's costs)."
+        ),
+        row=(
+            "One heavy Scania truck in everyday use with a component failure, read from its operational data; a "
+            "subset of the available data chosen by experts (76,000 trucks, IDA 2016 Industrial Challenge). The "
+            "period is not stated."
+        ),
+        predicted=(
+            "Whether the failure is in the specific air pressure system component (1.8% of the rows) or in a "
+            "component unrelated to that system. How long before or after the failure the data were read is not "
+            "stated."
+        ),
+        known=(
+            "170 anonymised readings of the truck's operation: single counters and seven histograms whose bins count "
+            "values in different ranges of a measured condition; many readings are missing."
+        ),
+        split=(
+            "Random trucks, so the test data stands for new trucks like those in training. The challenge held out its"
+            " last 16,000 rows, which may be later in time; the file has no dates to check."
+        ),
+        changes="We merge the challenge's training and test files and split at random.",
+        fit="approximate",
+        fit_reason=(
+            "The challenge's test rows may be later readings; with no dates to check, a random split stands in for a "
+            "split by time (the dataset is tagged as a forced random split of temporal data). When the data were read"
+            " relative to the failure is not stated, so whether the model warns before a breakdown or diagnoses after"
+            " it is unclear."
+        ),
+    )
+
     # Dataset
     unique_name = "aps_failure"
     year = "2016"

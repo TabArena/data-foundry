@@ -5,14 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class ClockProteinToxicity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a newly designed small molecule toxic?",
+        use_case=(
+            "For example, a medicinal chemist screens molecules designed to act on the clock protein CRY1 and decides"
+            " which ones are worth making and testing."
+        ),
+        row=(
+            "One small molecule designed for the functional domains of CRY1, a core protein of the circadian clock "
+            "(171 molecules, Gul et al. 2021)."
+        ),
+        predicted=(
+            "Whether the molecule was found toxic (56 of the 171 were); the data page does not say how toxicity was "
+            "tested."
+        ),
+        known="1,117 molecular descriptors computed from the molecule's structure.",
+        split=("Random molecules, so the test data stands for other molecules of the same design study."),
+        fit="direct",
+        fit_reason=(
+            "The descriptors come from the structure alone, which is all a chemist has before testing, and a held-out"
+            " molecule is an untested design. The task is tiny and its signal small."
+        ),
+    )
+
     # Dataset
     unique_name = "clock_protein_toxicity"
     year = "2022"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C59313"
     license = "CC BY 4.0"

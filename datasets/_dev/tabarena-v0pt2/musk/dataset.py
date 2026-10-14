@@ -5,10 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
 
 
 class Musk(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a new molecule smell of musk, judging from the shapes it can take?",
+        use_case=(
+            "A fragrance chemist screens candidate molecules and decides which to make and test, from shape features "
+            "computed for each molecule's low-energy conformations (Dietterich et al.)."
+        ),
+        row=(
+            "One low-energy conformation (3D shape) of one of 102 molecules, with 1 to 1,044 conformations per "
+            "molecule (6,598 rows)."
+        ),
+        predicted=(
+            "Whether the molecule is a musk, as judged by human experts (39 musks, 63 not); a molecule counts as a "
+            "musk if any of its conformations is scored as one, and scores are per molecule."
+        ),
+        known=(
+            "166 numbers describing the conformation's shape: distances from its centre to its surface along fixed "
+            "rays, and the position of an oxygen atom. All conformations of the molecule can be used."
+        ),
+        split=(
+            "Whole molecules are held out (20 repeats of 3 folds), so the test data stands for molecules never tested."
+        ),
+        changes=(
+            "We rename the molecules, whose names gave the label away, drop the conformation names, and score per "
+            "molecule instead of per conformation."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The shapes can be computed from a molecule's structure before it is made, and a held-out molecule is a "
+            "new candidate. The task is tiny: 102 molecules, 34 per test fold."
+        ),
+    )
+
     # Dataset
     unique_name = "musk"
     year = "1994"
@@ -49,7 +81,7 @@ class Musk(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create stratified grouped 20-repeated 3-fold split. This creates ca. 30 group members (500-3000 samples) per test set.
+        We create stratified grouped 20-repeated 3-fold split. Each test set holds 34 molecules, 675 to 5,046 conformations, as the molecules have 1 to 1,044 conformations each.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

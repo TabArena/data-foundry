@@ -5,10 +5,48 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 
 class EarlyLearningPredictors(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "What score will a preschool child at a facility not seen before reach on a standard early learning test?"
+        ),
+        use_case=(
+            "The source asks which features of early learning programmes predict better outcomes, a study looking "
+            "back. As a prediction, for example, a programme funder estimates the scores of children at a new "
+            "facility from facility, staff and family surveys, to find children at risk without a full assessment."
+        ),
+        row=(
+            "One child aged 50 to 69 months assessed at an early learning facility in South Africa, 2016 to 2023 "
+            "(DataDrive2030 merged surveys, 18,874 children); a few children per facility."
+        ),
+        predicted=(
+            "The child's total score on the Early Learning Outcomes Measure: 23 items over five areas (gross and fine"
+            " motor development, numeracy, cognition and executive function, literacy and language)."
+        ),
+        known=(
+            "743 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
+            "the facility's registration, staff, building, equipment and observed practice; teacher and parent "
+            "questionnaires; and the person who did the assessment. Many are missing for whole survey rounds."
+        ),
+        split=(
+            "Whole facilities are held out, so the test data stands for facilities never surveyed; the source's "
+            "competition split children at random."
+        ),
+        changes=(
+            "We drop the parts and other versions of the score, another child assessment, the home-learning survey "
+            "(mostly missing) and the survey year, and split by facility."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, the "
+            "assessor is kept as a feature though known only at the assessment, and the rows mix survey rounds with "
+            "different questions."
+        ),
+    )
+
     # Dataset
     unique_name = "early_learning_predictors"
     year = "2024"

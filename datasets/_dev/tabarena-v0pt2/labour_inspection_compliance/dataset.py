@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class LabourInspectionCompliance(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will an inspection find an organisation in breach of the working-environment rules on a given checklist?"
+        ),
+        use_case=(
+            "For example, the Norwegian labour inspection authority decides which organisations to inspect, and with "
+            "which checklist, by predicting where an inspection would find a breach (the source's non-compliance "
+            "task)."
+        ),
+        row=("One inspection of a Norwegian organisation with one checklist (63,634 rows); the data has no dates."),
+        predicted=(
+            "Whether the organisation was found non-compliant with any regulation the checklist covers, which is "
+            "known only when the inspection is completed."
+        ),
+        known=(
+            "The organisation's industry, county, age and number of employees, whether it is in the VAT and employer "
+            "registers, its accounting type and currency, the checklist's text, and several hundred figures, many "
+            "from its accounts, that the source does not describe one by one."
+        ),
+        split="Random inspections, so training and test inspections come from the same period.",
+        fit="approximate",
+        fit_reason=(
+            "Inspections are targeted ahead of time, but the data has no dates, so the split cannot keep later "
+            "inspections for testing; the meaning of most numbers is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "labour_inspection_compliance"
     year = "2022"

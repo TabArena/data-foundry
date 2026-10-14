@@ -65,6 +65,24 @@ Binary classification of `target`, scored with `roc_auc` on IID splits. 200,000 
 
 Built as `01a111fa-f277-7533-bac1-a15ddbf6a38d` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a bank customer make a specific transaction in the future?
+
+**Use case.** For example, Santander decides which customers to target with an offer by predicting which ones will make a specific transaction, irrespective of the amount (the competition's question).
+
+**One row.** One Santander customer (200,000 customers; country and period not stated).
+
+**Predicted.** Whether the customer makes the transaction; 10.05% do. Neither the transaction nor the time frame is stated.
+
+**Known at prediction time.** 200 anonymized numbers, most of them close to normally distributed; their meaning is not stated.
+
+**What the test data stands for.** Random customers.
+
+**Our changes to the source.** We drop the 400 value-presence features of an earlier version, which were computed from the labels of all rows, test rows included.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are anonymized and look generated or transformed for the competition, and the source names neither the transaction nor the time frame, so the task stands for customer targeting only in outline.
+
 ## Files in this folder
 
 | file | what it is |

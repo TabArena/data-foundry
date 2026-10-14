@@ -5,10 +5,33 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class CreditCardClientsDefault(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a credit card holder miss next month's payment?",
+        use_case=(
+            "For example, a card issuer at the end of a month estimates each client's chance of defaulting on the "
+            "next payment, to adjust credit limits or start collection early."
+        ),
+        row=(
+            "One credit card client of a bank in Taiwan, with six months of history from April to September 2005 "
+            "(30,000 clients)."
+        ),
+        predicted="Whether the client defaults on the payment of the following month (22% do).",
+        known=(
+            "The credit limit, sex, education, marital status and age, and for each of the six months the repayment "
+            "status (paid on time or months of delay), the bill amount and the amount paid."
+        ),
+        split="Random clients of the same bank and the same months.",
+        fit="approximate",
+        fit_reason=(
+            "The file is one snapshot: every client is scored for the same month, so training and test share that "
+            "month's conditions, where a bank trains on earlier months and scores the next."
+        ),
+    )
+
     # Dataset
     unique_name = "credit_card_clients_default"
     year = "2016"

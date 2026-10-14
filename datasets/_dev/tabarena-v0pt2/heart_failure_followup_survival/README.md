@@ -66,6 +66,24 @@ Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299
 
 Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a patient with heart failure die during follow-up?
+
+**Use case.** For example, a cardiologist estimates a heart-failure patient's risk of dying in the coming months from routine findings and blood tests, to decide on closer follow-up or treatment.
+
+**One row.** One patient with heart failure, aged 40 or older, at the Faisalabad Institute of Cardiology or the Allied Hospital in Faisalabad, Pakistan, April-December 2015 (299 patients).
+
+**Predicted.** Whether the patient died during a follow-up of 4 to 285 days that differs by patient (32% did).
+
+**Known at prediction time.** Age, sex, smoking, anaemia, diabetes, high blood pressure, the heart's ejection fraction, and blood values (creatinine phosphokinase, platelets, serum creatinine, serum sodium).
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same hospitals and year.
+
+**Our changes to the source.** We drop the length of follow-up: it ends at death, so a short follow-up gives the outcome away.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The outcome has no fixed horizon: a patient whose follow-up ended early counts as a survivor, and some may have died later. Whether follow-up ended on one date for all is not stated (the censored times fit mid-January 2016). When the measurements were taken is not stated.
+
 ## Files in this folder
 
 | file | what it is |

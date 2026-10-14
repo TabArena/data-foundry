@@ -66,6 +66,24 @@ Multiclass classification of `Category`, scored with `log_loss` on IID splits. 6
 
 Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e5ffa736903c2357041ba9801a90a0ac2720e5eacd7a698db514668a245d0aaf`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Does a person's blood panel show hepatitis C liver disease, and at which stage?
+
+**Use case.** For example, a laboratory physician reads a standard blood panel and flags whether the person is healthy or has hepatitis C with inflammation, fibrosis or cirrhosis, to decide on further tests (the source paper builds laboratory diagnostic pathways).
+
+**One row.** One person, either a blood donor or a hepatitis C patient (608 people); the place and period are not stated in the definition.
+
+**Predicted.** One of four classes: blood donor (88%), hepatitis (4%), fibrosis (3%) or cirrhosis (5%).
+
+**Known at prediction time.** Age, sex and nine blood values: albumin, total protein, bilirubin, three liver enzymes, cholinesterase, cholesterol and creatinine.
+
+**What the test data stands for.** Random people of the same collection.
+
+**Our changes to the source.** We drop the 'suspect blood donor' class. Donor and patient rows were recorded with different precision, which gave the class away, so we round seven values to whole numbers and drop alkaline phosphatase, missing only for patients.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The rows join two groups recorded apart, healthy blood donors and hepatitis C patients, a mixture no single laboratory sees; the format differences we removed show that the groups were recorded differently, and other such differences may remain. The stage task within the patients is real.
+
 ## Files in this folder
 
 | file | what it is |

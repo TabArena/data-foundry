@@ -61,6 +61,24 @@ Binary classification of `biopsy`, scored with `roc_auc` on IID splits. 750 rows
 
 Not built yet. The current definition gives checksum `v2:48ca4a3428951fe1323dbafed55f95723750c838a9f60448e8064bf0d2ebf985`.
 
+## In brief
+
+**Question.** Will a woman's cervical biopsy be positive, judged from her answers to a risk questionnaire alone?
+
+**Use case.** For example, a gynecology service where only the risk questionnaire is available ranks women by their answers to decide whom to send for colposcopy and biopsy first; the creators study this setting.
+
+**One row.** One woman at the gynecology service of Hospital Universitario de Caracas, Venezuela, 2012-2013 (750 patients kept).
+
+**Predicted.** Whether the biopsy of her screening work-up is positive (55 of 750, 7%).
+
+**Known at prediction time.** Her answers: age, sexual and reproductive history, smoking, hormonal contraceptive and IUD use with their years, sexually transmitted diseases (types, number, years since diagnosis) and earlier cervical diagnoses; unanswered questions are missing.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same service and years.
+
+**Our changes to the source.** We drop the three other tests of the same work-up (Hinselmann, Schiller, cytology) and the 108 patients who skipped the contraceptive question, whose test results look unrecorded; values the source filled in before release are missing again.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The answers come before any test, and the biopsy is the outcome of the work-up that follows. One hospital, two years and 55 positives make the task small.
+
 ## Files in this folder
 
 | file | what it is |

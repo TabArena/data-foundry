@@ -5,10 +5,41 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class MutualFundsIndia(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What was an Indian mutual fund's return over the past three years?",
+        use_case=(
+            "None that we can find: an investor choosing a fund wants its future return, while this label is the "
+            "published return of the three years before the snapshot."
+        ),
+        row=(
+            "One mutual fund scheme on Indian investment portals, as scraped in April 2023 (793 funds with a "
+            "three-year return)."
+        ),
+        predicted=(
+            "The fund's return over the three years up to the snapshot; the unit and whether it is per year are not "
+            "stated."
+        ),
+        known=(
+            "The fund's name, company, manager, category and sub-category, risk level, expense ratio, size, age and "
+            "minimum investments, all as of the snapshot."
+        ),
+        split="Random funds of the same snapshot.",
+        changes=(
+            "We drop the risk and return measures computed from the fund's past returns, including its 1- and 5-year "
+            "returns, and its star rating, which is partly computed from the 3-year return."
+        ),
+        fit="none",
+        fit_reason=(
+            "The label is the return over one calendar window shared by all funds, ending when the features are "
+            "recorded, so the task explains past returns rather than forecasting; fund size also grows with those "
+            "returns. A future return would make it a task."
+        ),
+    )
+
     # Dataset
     unique_name = "mutual_funds_india"
     year = "2023"

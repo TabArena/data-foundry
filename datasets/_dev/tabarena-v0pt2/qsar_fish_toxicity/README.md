@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
+checksum: v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152
 build:
   uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
   checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 908
   n_features: 6
@@ -65,7 +65,23 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 908 rows and 6 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How toxic is a chemical to fish, judging from its molecular structure?
+
+**Use case.** For example, a regulatory toxicologist estimates the acute fish toxicity of an untested chemical, to decide whether it needs testing or a hazard label.
+
+**One row.** One chemical tested for 96-hour toxicity to fathead minnows (908 chemicals, Cassotti et al. 2015).
+
+**Predicted.** The concentration that kills half the test fish within 96 hours, as minus the log of moles per litre, so higher means more toxic.
+
+**Known at prediction time.** Six molecular descriptors computed from the structure: an information index, a matrix-based index, an autocorrelation of ionisation potential, two counts of carbon atom types, and the predicted octanol-water partition coefficient.
+
+**What the test data stands for.** Random chemicals, so the test data stands for chemicals not yet tested.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, which is all a toxicologist has for an untested chemical. 24% of the rows share all six descriptors with another row: isomers whose toxicity differs but which look identical to the model.
 
 ## Files in this folder
 
@@ -156,7 +172,8 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
 ## Curation notes
 
 - We assigned descriptive column names following the original dataset documentation.
-- Anomaly: the data contains a lot of duplicates (15%) when ignoring the target feature.
+- 24% of the rows share all six descriptors with another row, but LC50 differs within every shared vector: they are distinct chemicals (isomers) the descriptors cannot tell apart, not repeated measurements, so we keep them.
+- The six descriptors were chosen by a genetic algorithm on the paper's training set (726 of the 908 chemicals), which overlaps our test folds: a mild optimism we cannot measure. No descriptor is derived from the target.
 
 ## Splits
 
@@ -256,3 +273,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152` |

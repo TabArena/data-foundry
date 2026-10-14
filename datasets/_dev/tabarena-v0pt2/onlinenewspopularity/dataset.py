@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 # The URL path holds the publication date: http://mashable.com/YYYY/MM/DD/<slug>/
 URL_PATTERN = r"^http://mashable\.com/(\d{4})/(\d{2})/(\d{2})/([^/]+)/$"
@@ -78,6 +86,39 @@ def _channels(df: pd.DataFrame) -> np.ndarray:
 
 
 class Onlinenewspopularity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How often will a Mashable article be shared?",
+        use_case=(
+            "Before publishing, a news editor estimates an article's shares and tries changes to the article and its "
+            "publication day, as the source's decision-support system does (Fernandes et al. 2015)."
+        ),
+        row=("One article published on Mashable from 7 January 2013 to 27 December 2014 (39,643 articles)."),
+        predicted=(
+            "The number of shares at the crawl of 8 January 2015, on a log scale; the source's popular/unpopular task"
+            " cuts this count at 1,400."
+        ),
+        known=(
+            "Statistics of the text and page (word counts, title length, links, images, videos, sentiment, "
+            "subjectivity, keywords), the channel (business, tech and others), the shares of earlier Mashable "
+            "articles it links to or shares keywords with, and the publication date."
+        ),
+        split=(
+            "Each test window is two weeks of articles (24 August to 27 December 2014); training is every article "
+            "published at least a week before, as for a model refit every two weeks."
+        ),
+        changes=(
+            "We take the publication date from the URL and drop the weekday flags and the age column, which follow a "
+            "later date for 24% of the articles, and the topic scores, fitted on all texts including the test ones."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Two potential leaks are kept on purpose: keyword statistics that, for a quarter of the articles, include"
+            " same-day articles published later, and links possibly added after publication (R² 0.158 with both; "
+            "0.135 and 0.143 without each). Shares are counted up to one crawl date, though the newest articles show "
+            "no deficit."
+        ),
+    )
+
     # Dataset
     unique_name = "onlinenewspopularity"
     year = "2015"

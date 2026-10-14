@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
+checksum: v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1279
   n_features: 14
@@ -64,7 +64,23 @@ decisions: []
 
 Regression of `Price`, scored with `rmse` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** What does a bottle of wine cost, given its description?
+
+**Use case.** For example, a wine merchant sets the shelf price of a newly listed wine from its attributes and tasting notes, or checks a supplier's price against similar wines.
+
+**One row.** One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines; most likely Majestic Wine, which 78 descriptions name).
+
+**Predicted.** The price of one bottle in pounds, on a log scale.
+
+**Known at prediction time.** The wine's name and the shop's description, grapes, country, region and appellation, colour, style, tasting characteristics, closure, bottle size, alcohol content and vintage year.
+
+**What the test data stands for.** Random wines of the same shop and time.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The attributes and the description exist when a wine is listed, and no description states the wine's own price (its price wording adds 0.003 R²). The task covers one shop's range at one time.
 
 ## Files in this folder
 
@@ -160,6 +176,7 @@ We start with the Kaggle version. We resolve several issues from the web scrappe
 - We parse the ABV to a numeric value
 - We parse the vintage to a numeric date value, ensuring that each wine maps to the oldest year in its special syntax.
 - We log scale the target, as the price distribution is very skewed.
+- No description states the wine's own price. Removing every sentence with price or value words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
 
 ## Splits
 
@@ -327,3 +344,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d` |

@@ -73,6 +73,24 @@ Regression of `scaled-sound-pressure`, scored with `rmse` on grouped splits by `
 
 Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e8245f4280ad36526f49d46e8eaabb5152b97f1e523f5e9481e7031fd6549258`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** How loud is an airfoil's own noise at a given sound frequency, for a wind-tunnel setting that was not measured?
+
+**Use case.** An aerodynamics engineer estimates the noise spectrum of an airfoil configuration (size, angle, wind speed) before, or instead of, measuring it in a wind tunnel.
+
+**One row.** One frequency band of one wind-tunnel run, that is one airfoil size at one angle and one wind speed (106 runs of 8 to 19 bands, NASA 1989).
+
+**Predicted.** The sound pressure level in that band, in decibels.
+
+**Known at prediction time.** The band's frequency and the run's settings (chord length, angle of attack, wind speed) plus a boundary-layer thickness computed from them.
+
+**What the test data stands for.** Whole runs are held out, so the test data stands for configurations never measured; runs with the same size, angle or speed in other combinations can be in training.
+
+**Our changes to the source.** We added the run as a group column and split by it; with random rows, models filled gaps in spectra they had already seen.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are the settings an engineer chooses, and a held-out run is an unmeasured configuration. The task is narrow (one airfoil shape, one wind tunnel) but real.
+
 ## Files in this folder
 
 | file | what it is |

@@ -5,10 +5,44 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class DementiaPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("How severe is an older adult's dementia, judging from a short cognitive test and a brain scan?"),
+        use_case=(
+            "The source defines no task. For example, at a first visit a memory clinic estimates a person's clinical "
+            "dementia rating from a short cognitive test and a brain MRI, before or instead of the full clinical "
+            "interview."
+        ),
+        row=(
+            "One visit of an older adult in the OASIS-2 study, which scanned 150 people on two or more visits at "
+            "least a year apart (370 visits; Marcus et al. 2010)."
+        ),
+        predicted=(
+            "The visit's clinical dementia rating: no dementia (56%), very mild (33%) or mild (11%) Alzheimer's "
+            "dementia."
+        ),
+        known=(
+            "Sex, age, years of education, socioeconomic status, the visit's Mini-Mental State Examination score, and"
+            " three brain-size measures from the visit's MRI scan."
+        ),
+        split=(
+            "Whole people are held out, so the test data stands for people not seen before; each of their visits is "
+            "scored on its own."
+        ),
+        changes=(
+            "We drop the group label (derived from the ratings of all visits), the visit number and the time since "
+            "the first visit, and the 3 visits rated moderate dementia."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The use case is ours, as the source states none. Follow-up visits of test people are scored as if each "
+            "were a first visit, and the MRI enters as three summary numbers of an imaging study."
+        ),
+    )
+
     # Dataset
     unique_name = "dementia_prediction"
     year = "2010"
@@ -56,7 +90,7 @@ class DementiaPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create stratified grouped 20-repeated 3-fold split. This creates ca. 50 group members (ca. 120-150 samples) per test set.
+        We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

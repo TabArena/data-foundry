@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     SplitPlan,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     drop_columns,
@@ -473,6 +474,33 @@ def client_keys(app_ids: np.ndarray, links: pd.DataFrame) -> np.ndarray:
 
 
 class AlfaBattle20Task2(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a client default on a credit product the bank has just issued?",
+        use_case=(
+            "When a bank issues a credit product, it scores the client's default risk from the client's card "
+            "transactions, to decide on the product and its terms."
+        ),
+        row="One issued credit product, with the client's card transactions of the year before.",
+        predicted="Whether the client defaulted on it (2.8% did); the source states no horizon.",
+        known=(
+            "The product type and 513 summaries of the year's card transactions (amounts, timing, merchants, money in"
+            " and out, recent activity)."
+        ),
+        split=(
+            "Each test window is two months of issues at the end of the period; training is every earlier issue, "
+            "without the products of clients who also have one in the test window."
+        ),
+        changes=(
+            "We reconstruct the issue month from the transactions, as the data has no dates, and summarise the "
+            "transactions like the competition's top solutions."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The issue months are reconstructed rather than given, and the default has no stated horizon, so the "
+            "newest training products may not yet show a default that will come."
+        ),
+    )
+
     # Dataset
     unique_name = "alfa_battle_2_0_task_2"
     year = "2020"

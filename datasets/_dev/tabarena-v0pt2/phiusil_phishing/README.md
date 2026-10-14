@@ -71,6 +71,24 @@ Binary classification of `label`, scored with `roc_auc` on IID splits. 235,370 r
 
 Not built yet. The current definition gives checksum `v2:b9492e3f53b669adb3a9c594c62bb1d590a0b1e14537207798691d595f2c4554`.
 
+## In brief
+
+**Question.** Is the web page behind this URL a phishing page?
+
+**Use case.** A phishing detector fetches the page of a URL and decides whether it is phishing before the user opens it.
+
+**One row.** One URL with features of its fetched page: 134,850 legitimate and 100,520 phishing URLs, published in 2023; the collection period is not stated.
+
+**Predicted.** Whether the URL is phishing or legitimate (43% phishing).
+
+**Known at prediction time.** The URL text and its top-level domain, counts and ratios computed from the URL, and features of the page such as its lines, title, links, forms, password fields, images and scripts.
+
+**What the test data stands for.** Random URLs; hosts are not held out, as a deployed detector meets both known and new hosts. There is no time column.
+
+**Our changes to the source.** We drop columns that encode how the rows were collected: the file name, a similarity to the list the legitimate rows came from, and a title rebuilt from the URL with the scores computed from it.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The classes were collected in different forms: every legitimate URL is the bare homepage of a ranked site, and the phishing pages were fetched later, so a fixed rule reaches ROC AUC 0.9998. The curation notes recommend excluding the dataset.
+
 ## Files in this folder
 
 | file | what it is |

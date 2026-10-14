@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision
+from data_foundry.v2 import AbstractCuratedDataset, Decision, TaskSummary
 
 OMICS = {"exp": "mRNA", "methy": "Methy", "mirna": "miRNA"}
 """The omic files of the benchmark (features x samples) and the prefix their columns get."""
@@ -61,6 +61,34 @@ def submitted_types(clinical: pd.DataFrame) -> pd.Series:
 
 
 class Sarcoma(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Which type of soft-tissue sarcoma is this tumour, judged from its molecular profiles?",
+        use_case=(
+            "For example, a molecular pathology lab types a sarcoma from the tumour's expression and methylation "
+            "profiles, to support or check a hard diagnosis; TabPFN-Wide uses the task as a benchmark."
+        ),
+        row=(
+            "The primary tumour of one patient of the TCGA sarcoma study whose type expert pathologists confirmed "
+            "(201 patients; period not stated)."
+        ),
+        predicted=(
+            "The reviewed histological type: leiomyosarcoma (40%), dedifferentiated liposarcoma, undifferentiated "
+            "pleomorphic sarcoma, myxofibrosarcoma or synovial sarcoma (5%)."
+        ),
+        known=("25,971 measurements of the tumour: gene expression, DNA methylation and microRNA expression."),
+        split="Random patients, so the test data stands for new patients' tumours.",
+        changes=(
+            "The source is a clustering benchmark without a label; we add the expert-reviewed type of the TCGA study "
+            "instead of the submitted diagnosis, and drop the 5 nerve-sheath tumours."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The profiles exist before the typing, and the label is the reviewed pathology diagnosis. The study left "
+            "out uncertain cases, so the test tumours are cleaner than a lab's, and few labs measure all three "
+            "profiles."
+        ),
+    )
+
     # Dataset
     unique_name = "sarcoma"
     year = "2018"

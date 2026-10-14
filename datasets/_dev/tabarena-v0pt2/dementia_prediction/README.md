@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:a7afc607a6f29920eabc3dd101f8f20a36ea7f0480d408a9ee88fc73edfa9733
+checksum: v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -71,7 +71,25 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a7afc607a6f29920eabc3dd101f8f20a36ea7f0480d408a9ee88fc73edfa9733`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How severe is an older adult's dementia, judging from a short cognitive test and a brain scan?
+
+**Use case.** The source defines no task. For example, at a first visit a memory clinic estimates a person's clinical dementia rating from a short cognitive test and a brain MRI, before or instead of the full clinical interview.
+
+**One row.** One visit of an older adult in the OASIS-2 study, which scanned 150 people on two or more visits at least a year apart (370 visits; Marcus et al. 2010).
+
+**Predicted.** The visit's clinical dementia rating: no dementia (56%), very mild (33%) or mild (11%) Alzheimer's dementia.
+
+**Known at prediction time.** Sex, age, years of education, socioeconomic status, the visit's Mini-Mental State Examination score, and three brain-size measures from the visit's MRI scan.
+
+**What the test data stands for.** Whole people are held out, so the test data stands for people not seen before; each of their visits is scored on its own.
+
+**Our changes to the source.** We drop the group label (derived from the ratings of all visits), the visit number and the time since the first visit, and the 3 visits rated moderate dementia.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The use case is ours, as the source states none. Follow-up visits of test people are scored as if each were a first visit, and the MRI enters as three summary numbers of an imaging study.
 
 ## Files in this folder
 
@@ -171,7 +189,7 @@ We start with the data from Mendeley.
 
 ## Splits
 
-We create stratified grouped 20-repeated 3-fold split. This creates ca. 50 group members (ca. 120-150 samples) per test set.
+We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 232 to 258 rows, test 112 to 138 rows.
 
@@ -335,4 +353,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a7afc607a6f29920eabc3dd101f8f20a36ea7f0480d408a9ee88fc73edfa9733` |
+| stale | yes: the definition now gives checksum `v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a` |

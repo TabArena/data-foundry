@@ -8,7 +8,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 RAW_ZIP = "College_Scorecard_Raw_Data_06102026.zip"
 FIRST_COHORT = 2001  # first fall with admissions and test scores (documentation p. 12)
@@ -126,6 +134,46 @@ def to_labels(series: pd.Series, labels: dict, missing: tuple = ()) -> pd.Series
 
 
 class CollegeScorecard(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "What share of the students entering a US four-year college this fall will graduate within six years?"
+        ),
+        use_case=(
+            "For example, when a new class enters, a state agency, an accreditor or the college itself estimates its "
+            "six-year completion rate from the college's published data, to plan support or review colleges likely to"
+            " fall short."
+        ),
+        row=(
+            "One four-year US institution and the first-time, full-time class that entered it in one fall, 2001 to "
+            "2018, with at least 30 students (34,431 rows, U.S. Department of Education's College Scorecard)."
+        ),
+        predicted=(
+            "The share of the class that completes within 150% of normal time (six years for a four-year degree), "
+            "published six years after entry; a rate from 0 to 1."
+        ),
+        known=(
+            "The college's figures in the Scorecard file of the entry year: type, control, state and region, degrees,"
+            " admission rate and ACT scores, cost and net price, aid and loan shares, enrollment by race and field of"
+            " study, spending and faculty, and its latest published completion and retention rates of older classes."
+        ),
+        split=(
+            "Each of four test windows is one entering class (2015 to 2018, newest first); training is every class "
+            "that entered at least six years before, whose rate was published by then. About 92% of the test colleges"
+            " also appear in training with older classes."
+        ),
+        changes=(
+            "We rebuilt the task from the Department of Education's files: features from the entry year, the rate "
+            "from six years later, and a five-year gap before each test class. The TableShift copy binarises the rate"
+            " and takes features from the year it is reported. We drop the SAT scores, rescaled from 2017 on."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is published in the entry year and the rate follows six years later, as in "
+            "use; each test class comes after every class with a published rate. State and region carry their newest "
+            "value in old files, a small exception."
+        ),
+    )
+
     # Dataset
     unique_name = "college_scorecard"
     year = "2026"

@@ -5,10 +5,30 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Splice(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is the middle of this 60-base stretch of DNA a splice junction, and of which kind?",
+        use_case=(
+            "For example, a gene-annotation tool scans a primate DNA sequence and marks where exons and introns meet,"
+            " to predict how a gene's RNA is spliced."
+        ),
+        row=("One 60-nucleotide window of primate DNA around a candidate site (3,190 windows, UCI 1992)."),
+        predicted=("The site type: exon-to-intron junction (24%), intron-to-exon junction (24%), or neither (52%)."),
+        known=(
+            "The base at each of the 60 positions, 30 on each side of the site: A, C, G, T or a code for an ambiguous"
+            " base."
+        ),
+        split="Random windows, so the test data stands for other windows of the same collection.",
+        fit="approximate",
+        fit_reason=(
+            "The windows are a curated set in which about half are junctions, a share set by how the examples were "
+            "chosen rather than by how often junctions occur along a gene."
+        ),
+    )
+
     # Dataset
     unique_name = "splice"
     year = "1992"

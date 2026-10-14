@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 RAW_FILE = "BankChurners.csv"
 """The one file of the Kaggle dataset sakshigoyal7/credit-card-customers (version 1, 2020-11-19)."""
@@ -17,6 +17,35 @@ CATEGORICAL = ["Gender", "Education_Level", "Marital_Status", "Income_Category",
 
 
 class CreditCardCustomers(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a bank's credit card customer close the card account?",
+        use_case=(
+            "At a snapshot date, a bank scores each credit card customer for the risk of closing the account, from "
+            "the profile and the last 12 months of card activity, so that a manager can contact the customer first."
+        ),
+        row=(
+            "One credit card customer of a bank at one snapshot (10,127 customers), from a teaching case of "
+            "Analyttica's LEAPS training platform; the bank, place and period are not stated."
+        ),
+        predicted=(
+            "Whether the customer closed the account (16% did). When the closing happened relative to the 12-month "
+            "window is not stated."
+        ),
+        known=(
+            "Age, gender, dependents, education, marital status, income band, card type, months with the bank, number"
+            " of products, and the last 12 months of activity: inactive months, contacts with the bank, credit limit,"
+            " revolving balance, transaction amounts and counts, and their change between quarters."
+        ),
+        split=("Random customers of the same snapshot; the file has no dates and each customer appears once."),
+        changes=("We drop the two columns of a naive Bayes classifier fitted with the label, which the file ships."),
+        fit="approximate",
+        fit_reason=(
+            "A potential leak kept on purpose: if the activity window ends at the closure, the activity describes the"
+            " closing itself (ROC AUC 0.980 from the activity alone, 0.994 from all columns). The columns also show "
+            "marks of generated data, and the source cannot be traced."
+        ),
+    )
+
     # Dataset
     unique_name = "credit_card_customers"
     year = "2020"

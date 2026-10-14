@@ -7,13 +7,46 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 if TYPE_CHECKING:
     import pandas as pd
 
 
 class SberbankHousingMarketForecasting(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What will a Moscow flat sell for, per square metre?",
+        use_case=(
+            "Sberbank predicts the price of a flat when it is sold, so that renters, developers and lenders can be "
+            "more confident when they sign (the Kaggle competition's purpose)."
+        ),
+        row=(
+            "One sale of a flat in Moscow, August 2011 to June 2015 (27,195 sales), either an owner-occupier purchase"
+            " or an investment."
+        ),
+        predicted="The sale price per square metre of total area, on a logarithmic scale.",
+        known=(
+            "The flat (areas, floor, number of floors, rooms, build year, material, condition, purchase type), its "
+            "district's population, schools, facilities, ecology and distances to points of interest, and the "
+            "macroeconomic indicators of the sale date."
+        ),
+        split=(
+            "Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every "
+            "earlier sale, as for a model refit every half year."
+        ),
+        changes=(
+            "Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up"
+            " to 1 million rubles or of exactly 2 or 3 million, flats of 5 square metres or less, and flats built "
+            "after their sale."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The flat's and district's figures are known at the sale, and the half-year windows match a model refit "
+            "twice a year. Whether every macroeconomic indicator joined on the sale date was already published then "
+            "is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "sberbank_housing_market_forecasting"
     year = "2017"
@@ -29,21 +62,32 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/sberbank_housing_market_forecasting && mv sberbank-russian-housing-market.zip local-data-warehouse/sberbank_housing_market_forecasting/ && cd local-data-warehouse/sberbank_housing_market_forecasting/ && unzip sberbank-russian-housing-market.zip && rm test.csv.zip sample_submission.csv.zip data_dictionary.txt sberbank-russian-housing-market.zip
     """
     bibtex = r"""
-        @misc{Herman2024HomeCreditCreditRiskModelStability,
-          author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
-          title  = {Home Credit - Credit Risk Model Stability},
-          year   = {2024},
-          howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
+        @misc{Matveev2017SberbankRussianHousingMarket,
+          author = {Alex Matveev and Anastasia Sidorova and DataCanary},
+          title  = {Sberbank Russian Housing Market},
+          year   = {2017},
+          howpublished = {\url{https://kaggle.com/competitions/sberbank-russian-housing-market}},
           note   = {Kaggle competition}
         }
     """
     curation_comments = """
         We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
+        - The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
+          after the first-place solution).
+        - Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
+          smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
+          (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
+        - As TabReD, we drop sales at 1 million rubles or less or at exactly 2 or 3 million (fake low prices, by the
+          first-place report often set to avoid tax), and flats with a total area of 5 m2 or less or of 5326 m2 (a
+          typo for 53).
+        - We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily; monthly,
+          quarterly and annual statistics change on the first day of their period, and `gdp_annual` on a 2014 sale is
+          Russia's 2013 GDP. The source does not say when each figure was published, so some may postdate the sale.
         - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
-        - We drop all rows that have a build_year higher than their own timestamp of being sold. It is unclear from the original data what kind of house market data this comes from. The description for the column is "year built" and not "year to be finished" so we assume these are all data errors. Plus this drops around 150 samples for which the build_year is incorrectly encoded as integer derived from a range like "2000-2005".
+        - We drop the 1,126 sales whose build_year is later than the year of sale. The column is described as "year built", not "year to be finished", so we treat them as errors. Only 2 of them have a build_year coded from a range such as "2000-2005"; the other 1,124 were sold 0 to 4 years before it, which may be flats sold before completion.
     """
 
     # Task

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
 
 RAW_FILE = "diabetes_012_health_indicators_BRFSS2015.csv"
 """Teboul's three-class file; the two binary files of the same Kaggle dataset are not used."""
@@ -15,6 +15,37 @@ LABELS = {0: "No diabetes", 1: "Prediabetes", 2: "Diabetes"}
 
 
 class CdcDiabetesHealthIndicators(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Has this adult been told they have diabetes or prediabetes, judging from their other answers to a health"
+            " survey?"
+        ),
+        use_case=(
+            "A screening questionnaire, as the notes set it: for example, a health service decides from a few survey "
+            "answers which adults to send for a diabetes blood test."
+        ),
+        row=(
+            "One adult interviewed in the CDC's 2015 BRFSS health survey who answered all 22 selected questions "
+            "(253,680 of 441,456 respondents, unweighted)."
+        ),
+        predicted=(
+            "Which answer the adult gave: diabetes (13.9%), prediabetes (1.8%) or neither (84.2%). Diabetes only "
+            "during pregnancy counts as neither, and prediabetes holds only those who volunteered it."
+        ),
+        known=(
+            "21 other answers: blood pressure, cholesterol and its last check, body-mass index, smoking, stroke, "
+            "heart disease, exercise, fruit and vegetables, heavy drinking, health cover and cost barriers, general, "
+            "mental and physical health, difficulty walking, sex, age group, education and income."
+        ),
+        split="Random respondents of the same survey year, standing for new respondents.",
+        fit="approximate",
+        fit_reason=(
+            "The label is a diagnosis received a median of 10 years before the interview, so the answers mostly "
+            "describe life after it, not the undiagnosed adults a screening looks for. Without the answers most "
+            "affected, the ROC AUC of diabetes against the rest drops by at most 0.0014."
+        ),
+    )
+
     # Dataset
     unique_name = "cdc_diabetes_health_indicators"
     year = "2016"

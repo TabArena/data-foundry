@@ -5,10 +5,32 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class KddCup09Appetency(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a customer of the French telecom operator Orange buy a new product or service?",
+        use_case=(
+            "Orange's marketing decides which customers to approach with an offer for a new product or service (the "
+            "customer-relationship task of the KDD Cup 2009)."
+        ),
+        row="One Orange customer (50,000 customers, the competition's small training set, 2009).",
+        predicted=(
+            "Whether the customer bought the new product or service (1.8% did); the source states no time window."
+        ),
+        known=(
+            "The competition's 230 unnamed features less 18 empty ones, numeric and categorical, with hidden meanings"
+            " and many missing values."
+        ),
+        split="Random customers of the same database extract.",
+        fit="approximate",
+        fit_reason=(
+            "The features are anonymised, so it cannot be checked that they were known before the purchase, and the "
+            "label has no stated window."
+        ),
+    )
+
     # Dataset
     unique_name = "kdd_cup_09_appetency"
     year = "2009"

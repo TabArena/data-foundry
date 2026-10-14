@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class Heloc(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will an applicant for a home equity line of credit fall seriously behind on payments within two years?"
+        ),
+        use_case=(
+            "A lender, when an application for a home equity line of credit arrives, decides from the applicant's "
+            "credit report whether to approve it (FICO's Explainable Machine Learning Challenge)."
+        ),
+        row=(
+            "One anonymised application for a credit line of $5,000 to $150,000 secured by the applicant's home, from"
+            " FICO's 2018 challenge (10,459 applications; lender, place and period not stated)."
+        ),
+        predicted=(
+            "Whether the borrower was 90 days or more past due at least once in the 24 months after the account "
+            'opened ("Bad", 52%).'
+        ),
+        known=(
+            "23 summaries of the credit report: an external risk estimate, the age of the credit history, numbers of "
+            "accounts and of delinquent ones, recent delinquencies, recent credit inquiries and the debt burden; "
+            "negative codes mark a missing report or a condition not met."
+        ),
+        split="Random applications.",
+        fit="direct",
+        fit_reason=(
+            "Everything comes from the credit report at the application, and the outcome covers the first two years "
+            "of the account. The rows are opened accounts, as in any credit scoring data."
+        ),
+    )
+
     # Dataset
     unique_name = "heloc"
     year = "2018"
@@ -31,6 +60,8 @@ class Heloc(AbstractCuratedDataset):
         }
     """
     curation_comments = """
+        - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
+        - The applicants requested a credit line of $5,000 to $150,000 (same source).
         - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
     """
 

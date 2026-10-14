@@ -6,10 +6,36 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class VideoTranscodingTimePrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How long will it take to transcode a video into a given output format?",
+        use_case=(
+            "A video service predicts the transcoding time of new videos to spread the jobs across a transcoding "
+            "cluster (Deneke et al. 2014)."
+        ),
+        row=(
+            "One transcoding job with ffmpeg on one Intel i7 machine: a YouTube video converted to one output setting"
+            " (68,784 jobs of 1,099 videos; 80 videos have the full grid of 841 settings, the rest mostly one job)."
+        ),
+        predicted="The total transcoding time, on a log scale; the unit is not stated.",
+        known=(
+            "The input video's properties (duration, codec, bitrate, resolution, frame rate, the numbers and sizes of"
+            " its frame types) and the output codec, bitrate, frame rate and resolution."
+        ),
+        split="Whole videos are held out, so the test data stands for videos never transcoded before.",
+        changes=(
+            "We group the jobs by video and split by it, and drop the memory a job used, measured along with the time."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features are known before a job starts, and held-out videos match new requests. The jobs ran on one "
+            "machine with one ffmpeg setup, so the times hold for that setup only."
+        ),
+    )
+
     # Dataset
     unique_name = "video_transcoding_time_prediction"
     year = "2015"

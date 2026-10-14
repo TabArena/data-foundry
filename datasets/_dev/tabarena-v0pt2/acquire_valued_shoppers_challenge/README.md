@@ -71,6 +71,24 @@ Binary classification of `target`, scored with `roc_auc` on temporal splits by `
 
 Built as `01a111fd-7588-73e4-bf55-26fb6336c1f4` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a shopper who gets a discount on a product come back and buy that product again?
+
+**Use case.** A consumer brand, when it offers a shopper a discount on one of its products, wants to know whether the shopper will become a repeat buyer, to aim its offers at shoppers who stay (the competition's framing).
+
+**One row.** One shopper given an offer on one product between 1 March and 30 April 2013 (160,057 shoppers, Kaggle's Acquire Valued Shoppers Challenge, 2014).
+
+**Predicted.** Whether the shopper bought the offered product again after the offer (27.14% did); the period in which a repeat purchase counts is not stated.
+
+**Known at prediction time.** The offer's value and date, the shopper's total spend, and how often, how many and for how much they had bought from the offered product's company, category and brand, in the 3 to 180 days before the offer and overall; not which product it is.
+
+**What the test data stands for.** Each test window is five days of offers, five windows from 6 to 30 April 2013; training is every earlier offer from 1 March 2013.
+
+**Our changes to the source.** Following TabReD and a top competition solution, each shopper's purchase records are summarised into one row per shopper and offer.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is from before the offer, and later offers are tested. But the source states no period for the repeat purchase, so in use the newest offers' outcomes would not yet be known at a refit, while here every earlier offer comes with its final label.
+
 ## Files in this folder
 
 | file | what it is |

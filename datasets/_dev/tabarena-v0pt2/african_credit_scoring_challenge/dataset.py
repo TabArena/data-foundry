@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, SplitPlan, Temporal, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    SplitPlan,
+    TaskSummary,
+    Temporal,
+    drop_columns,
+)
 
 LABEL_SETTLED_DAYS = 30
 """A loan's label counts as known this many days after its due date (curation comments, "Unsettled labels")."""
@@ -44,6 +52,44 @@ def _labelled_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 
 class AfricanCreditScoringChallenge(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a borrower in Kenya default on a loan that has just been paid out?",
+        use_case=(
+            "When a loan is disbursed, a lender scores the customer's risk of default from the loan's terms and the "
+            "customer's settled earlier loans, and refits the model at least once a month on the loans whose outcome "
+            "it knows."
+        ),
+        row=(
+            "One lender's part of one loan in Kenya, 2022 to 2024 (a loan with two lenders gives two rows); 54,163 of"
+            " the 58,953 rows are from July to November 2022, mostly 7-day loans of one product."
+        ),
+        predicted=(
+            "Whether that lender's part of the loan defaulted, as recorded when the data was pulled (about 2% of "
+            "rows). A label counts as settled 30 days after the due date; the source states no other horizon."
+        ),
+        known=(
+            "The customer (as an id, so the same customer's settled earlier loans can be in training), new or repeat "
+            "customer, the lender, the loan product, amount and duration, the disbursement and due dates, the "
+            "lender's funded amount and share, and whether another lender shares the loan."
+        ),
+        split=(
+            "Nine test windows of at most 30 days: six at the end of the 2022 lending of the main product and three "
+            "at the end of the data in 2024. Each trains on the loans whose label had settled before the window "
+            "starts."
+        ),
+        changes=(
+            "We drop the amounts to repay, which grow after a default, the rows of lenders funding less than one unit"
+            " (labelled no default whatever happened) and the loans not settled at the data pull, and we split by "
+            "disbursement date where the competition split rows at random."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The lender's funded amount and share and the count of other lenders are values at the data pull, and "
+            "lenders can buy each other out; they are kept on purpose, as they show no link to the outcome (ROC AUC "
+            "0.639 with the share columns, 0.635 without). How the loans were sampled is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "african_credit_scoring_challenge"
     year = "2024"

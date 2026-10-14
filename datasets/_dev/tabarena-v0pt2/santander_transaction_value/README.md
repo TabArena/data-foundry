@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_transaction_value
 container_format: 2
-checksum: v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4
+checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
 build:
   uuid: 01a111fb-c8c5-7b20-b3a0-528353375933
   checksum: v2:5300d74bcdc679cc55301eaed8ab4570b454de1779e353e3eb732e3f455e05a4
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 4447
   n_features: 540
@@ -28,7 +28,7 @@ data:
 task:
   target: target
   problem_type: regression
-  metric: rmsle
+  metric: rmse
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -61,9 +61,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `target`, scored with `rmsle` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
+Regression of `target`, scored with `rmse` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c8c5-7b20-b3a0-528353375933` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c8c5-7b20-b3a0-528353375933` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How much will a potential Santander customer transact?
+
+**Use case.** Santander estimates the value of transactions of each potential customer, to personalise its service (the competition's stated aim).
+
+**One row.** One customer in the training file of the 2018 Kaggle competition; the country, period and units are not stated.
+
+**Predicted.** The customer's transaction value, on a log scale; its unit and time window are not stated.
+
+**Known at prediction time.** 540 summaries (maximum, mean, minimum, median, sum, spread, first and last non-zero value, counts) of the customer's anonymised values, over groups of columns that competitors found to form time series.
+
+**What the test data stands for.** Random customers of the competition's training file.
+
+**Our changes to the source.** We replace the raw columns by summaries over groups of columns, following Tschalzev et al. 2024, and use only the training file, so the competition's test-file leak is out of reach.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The values are anonymised, the prediction point and the window of the transaction value are not stated, and the data hide a time structure that the random split cannot respect.
 
 ## Files in this folder
 
@@ -105,12 +123,12 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | finance |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized |
+| data_tags | IID, Anonymized, ForcedIIDFromTemporal |
 | reference | McDonald2018SantanderValuePredictionChallenge |
 | rows x columns | 4,447 x 541 |
 | task.target | target |
 | task.problem_type | regression |
-| task.metric | rmsle |
+| task.metric | rmse |
 | task.split_regime | iid |
 
 <details>
@@ -158,6 +176,11 @@ We start with the train.csv from Kaggle.
 - Since we restrict to the train.csv, we do not exploit the test leak of the competition.
 - The expert preprocessing aggregates over feature groups per row to create the new features for the final dataset. Feature groups for aggregation are found by searching for chains of features (?).
 - The data contains a very small number of duplicates. We remove them to avoid leakage in our own splits.
+- We store log1p of the competition's target and score it with RMSE, which equals the competition's RMSLE on
+  the raw value (until 2026-10-14 the metric was `rmsle`, which logged the stored target a second time).
+- ForcedIIDFromTemporal: the columns form time series (the 40 ordered columns the code starts from are
+  successive steps), and rows chain in time: in train.csv, 1,415 row pairs hold the same 40 values shifted by
+  one step. The file has no date, so the split stays random and chained rows can fall on both sides.
 
 ## Splits
 
@@ -349,3 +372,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2` |

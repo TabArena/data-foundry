@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
+checksum: v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 10317
   n_features: 23
@@ -62,9 +62,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `LogPrice`, scored with `rmse` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2019).
+Regression of `LogPrice`, scored with `rmse` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** At what price will a house for sale in Germany be listed?
+
+**Use case.** A seller or agent sets the asking price of a house from the other houses currently on the market.
+
+**One row.** One house listed for sale on the German property portal ImmoScout24, from one scrape of 14 July 2020 (10,317 houses across the 16 states).
+
+**Predicted.** The asking price in euros, on a log scale; the sale price is not in the data.
+
+**Known at prediction time.** The house type, living space, lot and usable area, rooms, bedrooms, bathrooms, floors, year built and renovated, furnishing quality, condition, heating, energy certificate, class and source, garages, and the state, city and place.
+
+**What the test data stands for.** Random listings of the same snapshot, so the test data stands for other houses on the market at the same time.
+
+**Our changes to the source.** We drop listings priced under 10,000 euros (mostly 0, likely "price on request") or with under 10 square metres of living space, and listings repeated with identical features.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are what a seller knows when listing, and the other listings of the same snapshot are the market the price is set in. Price trends over time are not covered.
 
 ## Files in this folder
 
@@ -105,11 +123,11 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.openml.org/d/43342 |
-| year | 2019 |
+| year | 2020 |
 | domain | business & marketing |
 | license | CC BY-NC-SA 4.0 |
 | data_tags | IID |
-| reference | Shritech2019GermanHousingPricePrediction,OpenML43342Dataset |
+| reference | Shritech2020GermanHousingPricePrediction,OpenML43342Dataset |
 | rows x columns | 10,317 x 24 |
 | task.target | LogPrice |
 | task.problem_type | regression |
@@ -136,10 +154,10 @@ Only curators run `build`, when the dataset ships.
   howpublished = {\url{https://www.openml.org/d/43342}},
   note   = {OpenML dataset}
 }
-@misc{Shritech2019GermanHousingPricePrediction,
+@misc{Shritech2020GermanHousingPricePrediction,
   author = {shritech1404},
   title  = {German Housing Price Prediction},
-  year   = {2019},
+  year   = {2020},
   howpublished = {\url{https://www.kaggle.com/code/shritech1404/german-housing-price-prediction}},
   note   = {Kaggle notebook}
 }
@@ -161,6 +179,7 @@ The first 5 of 10,317 rows of the final frame (random rows: the frame is shuffle
 
 ## Curation notes
 
+- The data first appeared on Kaggle as the dataset `german-house-prices` (file `germany_housing_data_14.07.2020.csv`, scraped from ImmoScout24 on 14 July 2020). It has since been deleted and its owner is unknown, so `source` is Kaggle and `source_url` points to the copy on OpenML (43342, uploaded 2022-03-23), which carries the Kaggle card's text.
 We treat this as an IID time-independent task, because the prices is not sold prices but instead the offer price, so the snapshot here represents a task where someone would want to predict the price they should offer for their house given other houses that are currently on the market. Thus, it seems like a real IID task where someone would want to build a model to know how much they should offer their houses at in the current market (with the limitation that past trends are ignored)
 
 - We log scale it, as is appropriate for house price prediction tasks. We do not normalize by lot or living space, as both houses with a lot of land and small living space and houses with a lot of living space and small land are interesting to predict the price of, and normalization would bias towards one of them, as both cannot be homogenised.
@@ -334,3 +353,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607` |

@@ -67,6 +67,22 @@ Regression of `price`, scored with `rmse` on IID splits. 53,940 rows and 9 featu
 
 Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What is the price of a diamond with these grading characteristics?
+
+**Use case.** For example, an online diamond seller prices a newly listed stone from its grading (weight, cut, colour, clarity, proportions), in line with the rest of its catalogue.
+
+**One row.** One diamond with its price, from the diamonds data of the ggplot2 R package (53,940 stones); the seller and the date of the prices are not stated.
+
+**Predicted.** The price in US dollars, on a log scale.
+
+**Known at prediction time.** Weight in carats, cut quality, colour grade, clarity grade, total depth and table width in percent, and length, width and depth in millimetres.
+
+**What the test data stands for.** Random stones, so the test data stands for other stones of the same price list.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are the grading a seller has before pricing a stone, and random stones of one price list match pricing new stock against it. Neither the seller nor the date of the prices is stated.
+
 ## Files in this folder
 
 | file | what it is |

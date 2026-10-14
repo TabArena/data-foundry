@@ -66,6 +66,22 @@ Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits
 
 Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1ed77d9939cb7907364bf7c588617819e9be9dec2a9ceaa782b252b0acd60c8c`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Does an outpatient have gallstone disease?
+
+**Use case.** An internal-medicine clinic screens outpatients for gallstone disease from a body-composition scan and routine blood tests, for example to decide who goes on to imaging (the source paper's aim is early prediction).
+
+**One row.** One person seen at the Internal Medicine Outpatient Clinic of Ankara VM Medical Park Hospital, Turkey, June 2022 to June 2023 (319 people).
+
+**Predicted.** Whether the person was diagnosed with gallstone disease (161 of 319, about half); how it was diagnosed is not stated.
+
+**Known at prediction time.** Age, sex, other illnesses (coronary disease, hypothyroidism, high blood lipids, diabetes), height and weight, body composition from bioimpedance (water, fat, muscle, bone, visceral and liver fat), and blood tests (sugar, lipids, liver and kidney values, inflammation, haemoglobin, vitamin D).
+
+**What the test data stands for.** Random people, so the test data stands for new patients of the same clinic and year.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The values are measured at the visit where the diagnosis is made, as in screening. The base is narrow (one clinic, one year, half with gallstones), and how the people were chosen is not stated, so another clinic's mix may differ.
+
 ## Files in this folder
 
 | file | what it is |

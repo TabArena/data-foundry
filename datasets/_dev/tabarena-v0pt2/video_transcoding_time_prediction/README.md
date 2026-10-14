@@ -74,6 +74,24 @@ Regression of `log_transcoding_time`, scored with `rmse` on grouped splits by `v
 
 Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** How long will it take to transcode a video into a given output format?
+
+**Use case.** A video service predicts the transcoding time of new videos to spread the jobs across a transcoding cluster (Deneke et al. 2014).
+
+**One row.** One transcoding job with ffmpeg on one Intel i7 machine: a YouTube video converted to one output setting (68,784 jobs of 1,099 videos; 80 videos have the full grid of 841 settings, the rest mostly one job).
+
+**Predicted.** The total transcoding time, on a log scale; the unit is not stated.
+
+**Known at prediction time.** The input video's properties (duration, codec, bitrate, resolution, frame rate, the numbers and sizes of its frame types) and the output codec, bitrate, frame rate and resolution.
+
+**What the test data stands for.** Whole videos are held out, so the test data stands for videos never transcoded before.
+
+**Our changes to the source.** We group the jobs by video and split by it, and drop the memory a job used, measured along with the time.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are known before a job starts, and held-out videos match new requests. The jobs ran on one machine with one ffmpeg setup, so the times hold for that setup only.
+
 ## Files in this folder
 
 | file | what it is |

@@ -58,6 +58,22 @@ Multiclass classification of `Diabetes`, scored with `log_loss` on IID splits. 2
 
 Not built yet. The current definition gives checksum `v2:67327fcb44ae9ceae5e82411cdb118fac06849c347feb9f018a35548e6e1a03e`.
 
+## In brief
+
+**Question.** Has this adult been told they have diabetes or prediabetes, judging from their other answers to a health survey?
+
+**Use case.** A screening questionnaire, as the notes set it: for example, a health service decides from a few survey answers which adults to send for a diabetes blood test.
+
+**One row.** One adult interviewed in the CDC's 2015 BRFSS health survey who answered all 22 selected questions (253,680 of 441,456 respondents, unweighted).
+
+**Predicted.** Which answer the adult gave: diabetes (13.9%), prediabetes (1.8%) or neither (84.2%). Diabetes only during pregnancy counts as neither, and prediabetes holds only those who volunteered it.
+
+**Known at prediction time.** 21 other answers: blood pressure, cholesterol and its last check, body-mass index, smoking, stroke, heart disease, exercise, fruit and vegetables, heavy drinking, health cover and cost barriers, general, mental and physical health, difficulty walking, sex, age group, education and income.
+
+**What the test data stands for.** Random respondents of the same survey year, standing for new respondents.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label is a diagnosis received a median of 10 years before the interview, so the answers mostly describe life after it, not the undiagnosed adults a screening looks for. Without the answers most affected, the ROC AUC of diabetes against the rest drops by at most 0.0014.
+
 ## Files in this folder
 
 | file | what it is |

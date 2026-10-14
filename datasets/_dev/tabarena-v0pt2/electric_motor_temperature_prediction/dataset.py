@@ -6,10 +6,45 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "How hot are the permanent magnets in an electric motor's rotor right now, given the readings a vehicle "
+            "can measure?"
+        ),
+        use_case=(
+            "The motor control of an electric vehicle estimates the rotor magnet temperature in real time, as it is "
+            "not reliably and economically measurable in a commercial vehicle, to use the motor fully without "
+            "overheating it."
+        ),
+        row=(
+            "One half-second sample of one of 69 test-bench sessions of a prototype permanent magnet synchronous "
+            "motor at Paderborn University (1,296,316 samples)."
+        ),
+        predicted="The permanent magnet temperature at that sample, in degrees Celsius.",
+        known=(
+            "The motor's voltages, currents and speed and the coolant and ambient temperatures at that sample, "
+            "quantities derived from them (power, magnitudes), and their running averages and spreads over the "
+            "session so far."
+        ),
+        split=(
+            "Whole sessions are held out, so the test data stands for driving cycles not seen in training, on the "
+            "same motor."
+        ),
+        changes=(
+            "We drop the stator temperatures and the torque, as the study does, add the study's derived inputs and "
+            "their running averages over four window lengths, and drop each session's first 500 samples as warm-up."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The inputs are sensor readings a vehicle has, smoothed over the past only, and a held-out session is a "
+            "new driving cycle. The task covers one prototype motor on a test bench."
+        ),
+    )
+
     # Dataset
     unique_name = "electric_motor_temperature_prediction"
     year = "2021"

@@ -65,6 +65,22 @@ Multiclass classification of `target`, scored with `log_loss` on IID splits. 61,
 
 Built as `01a111fc-7288-72b4-8ceb-e6f796d2a623` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Which of nine main product categories does a product belong to?
+
+**Use case.** The Otto Group, a large e-commerce company, assigns its products to their main categories, as identical products are often classified differently across its subsidiaries, which weakens its product analysis.
+
+**One row.** One product of the Otto Group (61,878 products, the competition's training file, 2015).
+
+**Predicted.** The product's main category, one of nine anonymized classes (such as fashion or electronics); the largest holds 26% of the products.
+
+**Known at prediction time.** 93 anonymized counts of different events for the product.
+
+**What the test data stands for.** Random products, as the competition chose its training and test products at random.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Existing products and a random split match the cleanup of a catalogue. The features are anonymized counts, so what they record and when cannot be checked.
+
 ## Files in this folder
 
 | file | what it is |

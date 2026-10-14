@@ -69,6 +69,24 @@ Regression of `median_wine_quality`, scored with `rmse` on IID splits. 5,320 row
 
 Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** What quality score would expert tasters give a Vinho Verde wine, judging from its lab analysis?
+
+**Use case.** A wine certification body or producer estimates the tasting panel's score from routine lab tests, to support the tasters' evaluation (Cortez et al. 2009).
+
+**One row.** One red or white Vinho Verde wine sample from the Portuguese certification body, May 2004 to February 2007 (5,320 samples).
+
+**Predicted.** The median of at least three expert scores, on a scale of 0 to 10.
+
+**Known at prediction time.** Eleven lab measurements (fixed and volatile acidity, citric acid, residual sugar, chlorides, free and total sulphur dioxide, density, pH, sulphates, alcohol) and the wine's colour.
+
+**What the test data stands for.** Random wine samples, so the test data stands for new samples of the same region and years.
+
+**Our changes to the source.** We drop 1,177 exact repeated rows (18%), most likely repeated records from the export, which put a row's twin in training.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The lab values are measured as part of certification alongside the tasting, and random samples of the same years match scoring new wines of the same process.
+
 ## Files in this folder
 
 | file | what it is |

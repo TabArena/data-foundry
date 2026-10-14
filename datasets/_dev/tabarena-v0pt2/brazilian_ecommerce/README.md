@@ -61,6 +61,24 @@ Regression of `log_delivery_days`, scored with `rmse` on temporal splits by `ord
 
 Not built yet. The current definition gives checksum `v2:5e1ee3972e813b04922506338f41bf55285982afd186d1ced925733cd7471d39`.
 
+## In brief
+
+**Question.** How many days will an online order in Brazil take to reach the customer?
+
+**Use case.** At checkout, the Brazilian sales platform Olist estimates how long an order will take to arrive, for example to inform the customer or to flag orders likely to be late.
+
+**One row.** One delivered order with a single seller, placed through Olist from 2016 to July 2018 (88,721 orders); the release is a random sample of the orders whose customer answered a review survey.
+
+**Predicted.** The days from purchase to delivery at the customer, on a log scale (median 7.5 to 9 days in May-July 2018).
+
+**Known at prediction time.** The purchase time, the customer's and the seller's location, the seller, the product's category, size, weight, photo count and text lengths, the item count, price and freight, the payment method and instalments, and the delivery date Olist promises at checkout.
+
+**What the test data stands for.** Each test window is one month of orders, March to July 2018; training is the orders placed at least a month earlier and delivered before the window starts, as for a model refit every month.
+
+**Our changes to the source.** We predict the delivery time instead of the review score the uploader's notebook predicts, keep orders placed before August 2018 (later ones lack their slow deliveries), and leave a one-month gap before each test month.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at checkout, and the windows mirror a monthly refit with the deliveries known by then. Only orders with an answered review are in the release; if slow orders get more answers, the mix differs from all orders.
+
 ## Files in this folder
 
 | file | what it is |

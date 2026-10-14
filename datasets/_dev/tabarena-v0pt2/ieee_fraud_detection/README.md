@@ -69,6 +69,24 @@ Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by 
 
 Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:593f7439a41d4a034f84c84bd228f5a9638f04dbdef90e6f961bc669ef31e6c3`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Is an online card payment fraudulent?
+
+**Use case.** When an online payment arrives, a payment processor (Vesta, the source of the data) decides whether to accept it or decline it as fraud; once a card is charged back, the client's later payments count as fraud.
+
+**One row.** One e-commerce card payment processed by Vesta, December 2017 to May 2018, with dates from an assumed start day (590,540 payments).
+
+**Predicted.** Whether the payment is fraud (3.5%): a payment on a card reported as charged back, or a later payment linked to it by account, email or billing address.
+
+**Known at prediction time.** The amount and product, card and address details, email domains, device and browser data, counts and time gaps from the processor's records (mostly anonymized), and a client key rebuilt by the competition's winners.
+
+**What the test data stands for.** Each of March, April and May 2018 is a test month, trained on all payments up to one month before it, as in the competition's gap.
+
+**Our changes to the source.** We split by month with a one-month gap and add the client key of the first-place solution, which links the payments of one client.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features describe the payment and its history, and later months stand for the payments to come. The calendar rests on an assumed start day, and the anonymized features cannot be checked one by one.
+
 ## Files in this folder
 
 | file | what it is |

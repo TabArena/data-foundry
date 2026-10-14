@@ -64,6 +64,24 @@ Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 
 
 Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Is a patient's hearing normal, or is the hearing loss sensorineural, or conductive or mixed?
+
+**Use case.** For example, an audiologist classifies the type of a patient's hearing loss from the case history and the hearing tests, as decision support; the source built an expert system (Protos) that learns such diagnoses from cases.
+
+**One row.** One patient case of the audiology data used to teach the Protos system (published 1987), without repeated cases and diagnoses that are not a type of hearing loss (195 cases).
+
+**Predicted.** The type of hearing loss in three classes: normal (19 cases), sensorineural (142), conductive or mixed (34).
+
+**Known at prediction time.** The case history (age over 60, noise exposure, ringing, dizziness, nausea and other complaints) and the test results: the audiogram's pattern by frequency, air and bone conduction and the gap between them, the speech test, the tympanogram, the acoustic reflexes and brainstem response findings.
+
+**What the test data stands for.** Random cases, so the test data stands for new patients like those in the collection.
+
+**Our changes to the source.** We replace the 24 original diagnoses, most with 4 or fewer cases, by the standard type of hearing loss, and drop repeated cases and the facial-nerve and central diagnoses.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The cases were collected to teach an expert system rather than drawn as a series of patients (only 19 normal ears), and the type of loss is partly read off the tests that define it, such as the air-bone gap. The findings are those an audiologist has at the diagnosis.
+
 ## Files in this folder
 
 | file | what it is |

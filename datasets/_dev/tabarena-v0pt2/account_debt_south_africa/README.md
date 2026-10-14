@@ -63,6 +63,24 @@ Binary classification of `BadDebt`, scored with `roc_auc` on IID splits. 101,871
 
 Not built yet. The current definition gives checksum `v2:14c792e2c2d96a1827828705eea01f800aae07fd2defe288a22b4d49a3d0817a`.
 
+## In brief
+
+**Question.** Has a municipal billing account turned into bad debt?
+
+**Use case.** A South African municipality scores its accounts to forecast how many, and how much, will turn into bad debt, and where to direct collection.
+
+**One row.** One billing account of one of eight municipalities, summarised over two years.
+
+**Predicted.** Whether the account is a bad debt (debt overdue 90 days or more, or written off) at the end of those two years; 56% are.
+
+**Known at prediction time.** The account type, the property's value and size, whether an ID number is on file, and what was billed over the two years (in total, per bill, for electricity), not what was paid.
+
+**What the test data stands for.** Random accounts of the same municipalities at the same time.
+
+**Our changes to the source.** We drop the three debt columns that define the label, the payments of the same two years, and stretches of the file where no debt was recorded.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The file is one snapshot: the status at its date stands in for the forecast the data card describes (fit on one snapshot, score the next), and the features cover the same two years as the label.
+
 ## Files in this folder
 
 | file | what it is |

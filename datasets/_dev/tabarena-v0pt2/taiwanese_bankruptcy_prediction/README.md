@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1
+checksum: v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73
 build:
   uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
   checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
@@ -64,7 +64,23 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a listed Taiwanese company go bankrupt?
+
+**Use case.** For example, a lender or investor screens companies on their published financial ratios and decides whether to extend credit or invest.
+
+**One row.** One company in the Taiwan Economic Journal's data for 1999-2009 (6,819 rows); whether a company can appear in more than one year is not stated.
+
+**Predicted.** Whether the company went bankrupt under the Taiwan Stock Exchange's rules (3.2%); the time between the ratios and the bankruptcy is not stated.
+
+**Known at prediction time.** The company's financial ratios: profitability, margins, growth, per-share figures, liquidity, debt, turnover and cash flow.
+
+**What the test data stands for.** Random companies of the whole period, as the years are not given.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The ratios are what a lender sees, but the source states neither the year of each row nor the gap between the statements and the bankruptcy, so the random split stands in for scoring companies before they fail.
 
 ## Files in this folder
 
@@ -105,7 +121,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | finance |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | liang2016financial |
 | rows x columns | 6,819 x 93 |
 | task.target | Bankrupt |
@@ -161,6 +177,8 @@ The first 5 of 6,819 rows of the final frame (random rows: the frame is shuffled
 - We drop two duplicated features (same values as other features).
 - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
 - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
+- ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
+  year, so the split stays random.
 
 ## Splits
 
@@ -356,4 +374,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:837068cf883d4a29c99543b2102613af8e50bec8be0019fb13e3f7e7d6d4aba1` |
+| stale | yes: the definition now gives checksum `v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73` |

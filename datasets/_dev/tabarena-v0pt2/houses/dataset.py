@@ -6,10 +6,38 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class Houses(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("What is the typical house value in a California neighbourhood, judging from its census figures?"),
+        use_case=(
+            "For example, a lender or housing agency estimates the median home value of a neighbourhood from its "
+            "income, housing stock, population and location, where no value is recorded."
+        ),
+        row=(
+            "One California block group, a compact neighbourhood of the 1990 census (19,675 block groups, Pace and "
+            "Barry 1997)."
+        ),
+        predicted="The block group's median house value, on a logarithmic scale as in the source.",
+        known=(
+            "The median income, the median age of the houses, the totals of rooms, bedrooms, people and households, "
+            "and the block group's latitude and longitude."
+        ),
+        split="Random block groups across the state; neighbouring block groups can be in training.",
+        changes=(
+            "We drop the block groups whose value sits at the cap of 500,001 dollars, a censored value, so the most "
+            "expensive neighbourhoods are not in the data."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The value and the features come from the same census, which reports the value for every block group, so "
+            "the task stands in for valuing areas where no value is known. Dropping the capped rows leaves out the "
+            "most expensive areas, which such a use would meet."
+        ),
+    )
+
     # Dataset
     unique_name = "houses"
     year = "1999"

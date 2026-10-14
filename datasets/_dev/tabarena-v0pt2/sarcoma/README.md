@@ -54,6 +54,24 @@ Multiclass classification of `histological_type`, scored with `log_loss` on IID 
 
 Not built yet. The current definition gives checksum `v2:d6e7dbbcc07620c9d3088ec5d80d2792d2ade070786e88b380dc660bd24dcc4d`.
 
+## In brief
+
+**Question.** Which type of soft-tissue sarcoma is this tumour, judged from its molecular profiles?
+
+**Use case.** For example, a molecular pathology lab types a sarcoma from the tumour's expression and methylation profiles, to support or check a hard diagnosis; TabPFN-Wide uses the task as a benchmark.
+
+**One row.** The primary tumour of one patient of the TCGA sarcoma study whose type expert pathologists confirmed (201 patients; period not stated).
+
+**Predicted.** The reviewed histological type: leiomyosarcoma (40%), dedifferentiated liposarcoma, undifferentiated pleomorphic sarcoma, myxofibrosarcoma or synovial sarcoma (5%).
+
+**Known at prediction time.** 25,971 measurements of the tumour: gene expression, DNA methylation and microRNA expression.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients' tumours.
+
+**Our changes to the source.** The source is a clustering benchmark without a label; we add the expert-reviewed type of the TCGA study instead of the submitted diagnosis, and drop the 5 nerve-sheath tumours.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The profiles exist before the typing, and the label is the reviewed pathology diagnosis. The study left out uncertain cases, so the test tumours are cleaner than a lab's, and few labs measure all three profiles.
+
 ## Files in this folder
 
 | file | what it is |

@@ -5,10 +5,34 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary, drop_columns
 
 
 class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a bank customer make a specific transaction in the future?",
+        use_case=(
+            "For example, Santander decides which customers to target with an offer by predicting which ones will "
+            "make a specific transaction, irrespective of the amount (the competition's question)."
+        ),
+        row="One Santander customer (200,000 customers; country and period not stated).",
+        predicted=(
+            "Whether the customer makes the transaction; 10.05% do. Neither the transaction nor the time frame is "
+            "stated."
+        ),
+        known=("200 anonymized numbers, most of them close to normally distributed; their meaning is not stated."),
+        split="Random customers.",
+        changes=(
+            "We drop the 400 value-presence features of an earlier version, which were computed from the labels of "
+            "all rows, test rows included."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features are anonymized and look generated or transformed for the competition, and the source names "
+            "neither the transaction nor the time frame, so the task stands for customer targeting only in outline."
+        ),
+    )
+
     # Dataset
     unique_name = "santander_customer_transaction_prediction"
     year = "2019"

@@ -5,10 +5,41 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will a student drop out, still be enrolled, or graduate by the end of the normal length of the course?"
+        ),
+        use_case=(
+            "A higher-education institution identifies students at risk of dropping out or failing, early in their "
+            "studies, to offer them support (the source's aim); as the data holds first-year results, the prediction "
+            "point is the end of the first year."
+        ),
+        row=(
+            "One student of 17 undergraduate degrees at one Portuguese higher-education institution (4,424 students);"
+            " enrolment years not stated."
+        ),
+        predicted=(
+            "The student's status at the end of the normal length of the course: graduated (49.93%), dropped out "
+            "(32.12%) or still enrolled (17.95%)."
+        ),
+        known=(
+            "Background at enrolment (course, day or evening classes, application route and choice rank, previous "
+            "schooling and grades, age, nationality, parents' education and jobs, scholarship, special needs), fee "
+            "and debt status, national unemployment, inflation and GDP, and the units taken, passed and grades of the"
+            " first two semesters."
+        ),
+        split="Random students, so the test data stands for other students of the same cohorts.",
+        fit="approximate",
+        fit_reason=(
+            "The file has no enrolment year, so the test students come from the same cohorts rather than later ones, "
+            "and when the fee and debt status and the economic figures were recorded is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "predict_students_dropout_and_academic_success"
     year = "2021"

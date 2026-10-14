@@ -5,10 +5,33 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Fiat500(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="At what price is a used Fiat 500 listed?",
+        use_case=(
+            "For example, a seller in Italy sets the asking price of a used Fiat 500, or a buyer checks whether a "
+            "listing is overpriced, by comparison with current listings."
+        ),
+        row=(
+            "One used Fiat 500 listed on the Italian site automobile.it (1,538 listings, uploaded to Kaggle in 2020; "
+            "the date of the crawl is not stated)."
+        ),
+        predicted="The listed price, from 2,500 to 11,100; the currency is not stated.",
+        known=(
+            "The trim (lounge, pop or sport), engine power, age in days, mileage, number of previous owners, and the "
+            "location as latitude and longitude."
+        ),
+        split="Random listings of the same crawl, standing for new listings in the same market.",
+        fit="direct",
+        fit_reason=(
+            "The features are what a listing shows, and a held-out listing is a car to price. The target is the "
+            "asking price, not the sale price, and the listings come from one crawl."
+        ),
+    )
+
     # Dataset
     unique_name = "fiat_500"
     year = "2020"
@@ -28,7 +51,14 @@ class Fiat500(AbstractCuratedDataset):
           note         = {Kaggle dataset},
         }
     """
-    curation_comments = "N/A"
+    curation_comments = """
+        We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from Kaggle and use it as is.
+
+        - One row is one used Fiat 500 listed for sale in Italy, from "a query done on an website specialized in used cars" (data card); the file name names automobile.it. The target is the listed price.
+        - Currency: not stated.
+        - Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
+        - Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
+    """
 
     # Task
     target = "price"

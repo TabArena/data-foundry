@@ -7,10 +7,45 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class IeeeFraudDetection(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is an online card payment fraudulent?",
+        use_case=(
+            "When an online payment arrives, a payment processor (Vesta, the source of the data) decides whether to "
+            "accept it or decline it as fraud; once a card is charged back, the client's later payments count as "
+            "fraud."
+        ),
+        row=(
+            "One e-commerce card payment processed by Vesta, December 2017 to May 2018, with dates from an assumed "
+            "start day (590,540 payments)."
+        ),
+        predicted=(
+            "Whether the payment is fraud (3.5%): a payment on a card reported as charged back, or a later payment "
+            "linked to it by account, email or billing address."
+        ),
+        known=(
+            "The amount and product, card and address details, email domains, device and browser data, counts and "
+            "time gaps from the processor's records (mostly anonymized), and a client key rebuilt by the "
+            "competition's winners."
+        ),
+        split=(
+            "Each of March, April and May 2018 is a test month, trained on all payments up to one month before it, as"
+            " in the competition's gap."
+        ),
+        changes=(
+            "We split by month with a one-month gap and add the client key of the first-place solution, which links "
+            "the payments of one client."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features describe the payment and its history, and later months stand for the payments to come. The "
+            "calendar rests on an assumed start day, and the anonymized features cannot be checked one by one."
+        ),
+    )
+
     # Dataset
     unique_name = "ieee_fraud_detection"
     year = "2019"

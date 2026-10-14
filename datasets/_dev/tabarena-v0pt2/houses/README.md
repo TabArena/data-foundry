@@ -64,6 +64,24 @@ Regression of `LnMedianHouseValue`, scored with `rmse` on IID splits. 19,675 row
 
 Built as `01a111fc-e060-707f-b68e-7c2be9c5182f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bf2746f47adc7a4d105605216a602b6908120af9f151ae55d827d28e41e1e01c`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What is the typical house value in a California neighbourhood, judging from its census figures?
+
+**Use case.** For example, a lender or housing agency estimates the median home value of a neighbourhood from its income, housing stock, population and location, where no value is recorded.
+
+**One row.** One California block group, a compact neighbourhood of the 1990 census (19,675 block groups, Pace and Barry 1997).
+
+**Predicted.** The block group's median house value, on a logarithmic scale as in the source.
+
+**Known at prediction time.** The median income, the median age of the houses, the totals of rooms, bedrooms, people and households, and the block group's latitude and longitude.
+
+**What the test data stands for.** Random block groups across the state; neighbouring block groups can be in training.
+
+**Our changes to the source.** We drop the block groups whose value sits at the cap of 500,001 dollars, a censored value, so the most expensive neighbourhoods are not in the data.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The value and the features come from the same census, which reports the value for every block group, so the task stands in for valuing areas where no value is known. Dropping the capped rows leaves out the most expensive areas, which such a use would meet.
+
 ## Files in this folder
 
 | file | what it is |

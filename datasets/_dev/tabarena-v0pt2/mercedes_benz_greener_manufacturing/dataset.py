@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How long will a car with a given set of options take to pass the test bench?",
+        use_case=(
+            "For example, Mercedes-Benz plans its test bench by predicting how long each car configuration will take "
+            "to pass testing; the competition aimed to cut the time cars spend on the bench."
+        ),
+        row=("One Mercedes-Benz car that passed the test bench, ordered by its ID (4,204 cars; dates not stated)."),
+        predicted="The time the car took to pass testing, in seconds (72 to 170, mean about 101).",
+        known=(
+            "The car's options, anonymized, as three coded categories and several hundred yes/no options (the "
+            "source's examples are four-wheel drive or a head-up display)."
+        ),
+        split=(
+            "The first 1,000 cars are always in training; the rest form 9 test windows of 320 cars in ID order, each "
+            "trained on all earlier cars."
+        ),
+        changes=(
+            "We order the cars by ID and test on later ones; we drop the coded category that marks time groups, other"
+            " coded categories of unknown meaning, 4 unusual rows and one outlier testing time."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The car ID stands in for the order of testing, which the source does not confirm, and without dates the "
+            "time a test window spans is unknown."
+        ),
+    )
+
     # Dataset
     unique_name = "mercedes_benz_greener_manufacturing"
     year = "2017"
@@ -16,7 +43,7 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing"
     license = "Kaggle Competition Rules"
-    data_tags = ("Non-IID", "Anonymized")
+    data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -42,7 +69,7 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         - We tread the ID as a time_index.
         - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
         - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
-        - We drop other constructed features from up to X10 for which we have no information about them and they may leak group information across rows.
+        - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
     """
 
     # Task

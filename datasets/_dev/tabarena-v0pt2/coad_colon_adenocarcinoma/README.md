@@ -52,6 +52,24 @@ Multiclass classification of `subtype`, scored with `log_loss` on IID splits. 25
 
 Not built yet. The current definition gives checksum `v2:e209b3e1ec8b8d244d3f977313606ebb8888dbe82a03f0a9b8557de9e3da9473`.
 
+## In brief
+
+**Question.** Which molecular subtype does a colon tumour belong to, given its gene expression and DNA methylation?
+
+**Use case.** For example, a lab that has measured a resected colon tumour's RNA and DNA methylation, but not the DNA mutations and copy-number changes that define the subtypes, assigns the tumour its TCGA molecular subtype.
+
+**One row.** One primary colon adenocarcinoma of one patient of The Cancer Genome Atlas (256 patients, MLOmics release).
+
+**Predicted.** The subtype the TCGA PanCancer Atlas gave the tumour, chromosomal instability (CIN, 68%), microsatellite instability (MSI, 19%) or genomically stable (GS, 13%).
+
+**Known at prediction time.** 36,355 measurements of the tumour (gene expression, microRNA expression and DNA methylation), each standardised over the cohort by the release.
+
+**What the test data stands for.** Random patients, so the test data stands for new tumours; holding out tissue source sites scores the same.
+
+**Our changes to the source.** We drop the copy-number block, which defines CIN against GS, and the 4 hypermutated tumours of a fourth class.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The measurements exist before the subtype is called, and the DNA data that define it are left out, as in the lab of the use case. The cohort is small, and the release standardised each feature over all patients, test rows included.
+
 ## Files in this folder
 
 | file | what it is |

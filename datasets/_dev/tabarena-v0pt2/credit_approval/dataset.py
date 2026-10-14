@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class CreditApproval(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Should this credit card application be approved?",
+        use_case=(
+            "For example, when a credit card application arrives, the lender decides whether to approve it, here by "
+            "imitating its past decisions."
+        ),
+        row=(
+            "One credit card application (690, published by Quinlan in 1987); the lender, country and period are not "
+            "stated."
+        ),
+        predicted=("Its class, + or - (44% are +), usually read as approved or rejected; the source gives no meaning."),
+        known=(
+            "Fifteen attributes of the applicant and the application, six numeric and nine categorical, whose names "
+            "and values were replaced by symbols to keep the data confidential."
+        ),
+        split=(
+            "Random applications, so the test data stands for new applications to the same lender in the same period."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The attributes are disguised, so we cannot check that each is known when an application arrives, and the"
+            " label is a past decision of unstated meaning rather than repayment."
+        ),
+    )
+
     # Dataset
     unique_name = "credit_approval"
     year = "1987"
@@ -36,6 +61,7 @@ class CreditApproval(AbstractCuratedDataset):
     curation_comments = """
         We get the data from UCI.
 
+        - Provenance: `crx.data` of UCI Credit Approval (id 27, Quinlan 1987; the source is confidential, so lender and country are unknown). The same 690 applications are UCI's Statlog (Australian Credit Approval) (id 143) with recoded values and filled-in missing values; the Japanese Credit Screening data (id 28, 125 rows) in the same zip is a different dataset we do not use.
         - We encode A14 as numeric, following the description of it being a continuous feature.
     """
 

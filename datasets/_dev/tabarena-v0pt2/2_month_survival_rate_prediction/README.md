@@ -60,6 +60,24 @@ Binary classification of `death_within_2_months`, scored with `roc_auc` on IID s
 
 Not built yet. The current definition gives checksum `v2:90eec931c9102abbfa6e9f22d82028b3276f116ead7587aa3fdf32b12ca0367e`.
 
+## In brief
+
+**Question.** Will a seriously ill hospital patient die within two months?
+
+**Use case.** On the third day in hospital, the care team estimates a patient's chance of dying within two months, to discuss prognosis and the goals of care.
+
+**One row.** One adult patient of five US teaching hospitals (1989-1994) with one of eight serious diagnoses, such as heart failure, COPD or lung cancer, alive at the end of study day 3.
+
+**Predicted.** Whether the patient dies within 60 days of study entry (33% do).
+
+**Known at prediction time.** Age, sex, diagnosis, other illnesses, the day-3 vital signs and lab values, and a few background facts (education, income, function before admission).
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same hospitals and years.
+
+**Our changes to the source.** In the public file the day-3 measurements of most phase II patients belong to other patients; we moved them back to their own rows with the study's archive. We drop the scores, physician estimates and orders made from or after these values.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the model is used. The care is that of 1989-1994.
+
 ## Files in this folder
 
 | file | what it is |

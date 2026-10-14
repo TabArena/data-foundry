@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary
 
 
 def composition_labels(elements: pd.DataFrame) -> pd.Series:
@@ -28,6 +28,30 @@ def composition_labels(elements: pd.DataFrame) -> pd.Series:
 
 
 class Superconductivity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Below what temperature does a material with this chemical composition become superconducting?"),
+        use_case=("A materials scientist screens candidate compositions and decides which to synthesize and measure."),
+        row="One measured entry of the SuperCon database; a composition can have several entries.",
+        predicted="The critical temperature, in kelvin.",
+        known=(
+            "81 numbers computed from the chemical formula alone (statistics of the elements' atomic properties, "
+            "weighted by their shares)."
+        ),
+        split=(
+            "Whole compositions are held out, so the test data stands for compositions never measured; other "
+            "proportions of the same elements can be in training."
+        ),
+        changes=(
+            "We group the entries by composition; with random rows, 35% of the test rows had an identical row in "
+            "training."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features come from the formula, which is all a scientist has before synthesis, and the held-out "
+            "compositions match screening new ones."
+        ),
+    )
+
     # Dataset
     unique_name = "superconductivity"
     year = "2018"

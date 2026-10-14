@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class WineQuality(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("What quality score would expert tasters give a Vinho Verde wine, judging from its lab analysis?"),
+        use_case=(
+            "A wine certification body or producer estimates the tasting panel's score from routine lab tests, to "
+            "support the tasters' evaluation (Cortez et al. 2009)."
+        ),
+        row=(
+            "One red or white Vinho Verde wine sample from the Portuguese certification body, May 2004 to February "
+            "2007 (5,320 samples)."
+        ),
+        predicted="The median of at least three expert scores, on a scale of 0 to 10.",
+        known=(
+            "Eleven lab measurements (fixed and volatile acidity, citric acid, residual sugar, chlorides, free and "
+            "total sulphur dioxide, density, pH, sulphates, alcohol) and the wine's colour."
+        ),
+        split=("Random wine samples, so the test data stands for new samples of the same region and years."),
+        changes=(
+            "We drop 1,177 exact repeated rows (18%), most likely repeated records from the export, which put a row's"
+            " twin in training."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The lab values are measured as part of certification alongside the tasting, and random samples of the "
+            "same years match scoring new wines of the same process."
+        ),
+    )
+
     # Dataset
     unique_name = "wine_quality"
     year = "2009"

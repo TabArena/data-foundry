@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b
+checksum: v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10
 build:
   uuid: 01a111fc-dbca-7d8e-ab0c-322d3d816ede
   checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
@@ -63,7 +63,23 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1988).
 
-Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b`, so the build is stale. See [Build](#build).
+Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a patient with hepatitis die?
+
+**Use case.** For example, a physician estimates a hepatitis patient's prognosis from the examination, blood tests and liver biopsy, to decide on treatment and follow-up.
+
+**One row.** One patient with hepatitis (155 patients, described by Efron and Gong in 1981; place and period not stated).
+
+**Predicted.** Whether the patient died (21%) or lived; the follow-up period is not stated.
+
+**Known at prediction time.** Age and sex, treatment with steroids or antivirals, symptoms and findings (fatigue, malaise, loss of appetite, liver size and firmness, spleen, spider veins, ascites, varices), blood tests (bilirubin, liver enzymes, albumin, clotting time) and the biopsy's histology.
+
+**What the test data stands for.** Random patients of the same study, standing for new patients.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The source states neither the follow-up period nor when the findings were recorded relative to the outcome, and two inputs are treatments whose timing is not stated.
 
 ## Files in this folder
 
@@ -156,6 +172,8 @@ We start with the data from UCI.
 
 - We encode missing values as NaN.
 - We convert numeric features to float and categorical features to category dtype.
+- The target stays coded as in the UCI file: 1 = died (32 patients), 2 = lived (123); the names file lists the classes as "DIE, LIVE" in this order.
+- Prediction point: not stated. The inputs (examination, blood tests, biopsy histology) imply the patient's work-up; the UCI names file gives neither when they were recorded nor the follow-up period for death.
 
 ## Splits
 
@@ -345,4 +363,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:24d5507bc856766ed1059429906b51e0ee277d520f3542389f838297c4f5647b` |
+| stale | yes: the definition now gives checksum `v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10` |

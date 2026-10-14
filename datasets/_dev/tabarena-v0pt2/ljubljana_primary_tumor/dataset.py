@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class LjubljanaPrimaryTumor(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Where in the body did a patient's cancer start, judged from its metastases?",
+        use_case=(
+            "For example, an oncologist facing metastases of unknown origin estimates where the primary tumour is, to"
+            " decide which organs to examine first."
+        ),
+        row=(
+            "One cancer patient of the Institute of Oncology, University Medical Centre Ljubljana (data donated 1988;"
+            " 302 patients kept)."
+        ),
+        predicted=(
+            "The site of the primary tumour, one of 11: lung (28%), stomach, ovary, pancreas, kidney, breast, head "
+            "and neck, gallbladder, colon, thyroid or prostate (3%)."
+        ),
+        known=(
+            "Age group, sex, the tumour's tissue type and degree of differentiation, and where metastases were found "
+            "(bone, bone marrow, lung, pleura, peritoneum, liver, brain, skin, neck, above the collarbone, armpit, "
+            "mediastinum, abdomen)."
+        ),
+        split="Random patients.",
+        changes="We drop the primary sites with fewer than 10 patients.",
+        fit="direct",
+        fit_reason=(
+            "The tissue type and the metastasis sites are known before the primary is found, and the label is the "
+            "site found. A model in use would also meet the rare sites we left out."
+        ),
+    )
+
     # Dataset
     unique_name = "ljubljana_primary_tumor"
     year = "1988"  # UCI names file: "Date: November 1988"

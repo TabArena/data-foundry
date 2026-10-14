@@ -66,6 +66,24 @@ Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 feature
 
 Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:05f0b8988049a6c38cad7ab1b89cabaec1490df62fb542cf6708ff12398b4100`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** How much alcohol does a man drink per day, judging from five blood tests?
+
+**Use case.** For example, a doctor estimates a patient's daily drinking from blood tests that respond to alcohol, as a check when the patient's own account is in doubt.
+
+**One row.** One man (345 men from BUPA Medical Research, donated to UCI in 1990); how the men were chosen, where and when, is not stated.
+
+**Predicted.** The number of half-pint equivalents of alcoholic drinks he drinks per day, modelled on a log scale; how the number was recorded is not stated.
+
+**Known at prediction time.** Five blood tests thought to respond to heavy drinking: mean red-cell volume, alkaline phosphatase, two liver enzymes (ALT, AST) and gamma-GT.
+
+**What the test data stands for.** Random men, so the test data stands for other men of the same sample.
+
+**Our changes to the source.** We predict the number of drinks, since the file holds no liver-disorder label despite its name, and drop the source's train/test marker, which is not a diagnosis.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Blood markers are used to check drinking when an account is doubted, but the label is a recorded amount of unstated origin; if it is the men's own account, the model learns to reproduce what it should check. The reviewers doubted that any decision rests on it; men only, population and period unknown.
+
 ## Files in this folder
 
 | file | what it is |

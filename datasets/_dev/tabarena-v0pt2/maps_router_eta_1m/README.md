@@ -68,6 +68,22 @@ Regression of `target_log_spkm`, scored with `rmse` on temporal splits by `times
 
 Built as `01a111ff-5cb6-76bc-bc05-231ccdac19d0` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** How long will a car take per kilometre on a requested route, given the current road conditions?
+
+**Use case.** A car navigation service, when a driver requests a route, predicts the travel time from the current road conditions (TabReD's description).
+
+**One row.** One car route of a navigation service from 1 November to 10 December 2023, from TabReD's 2.5% random sample of the log; service and region not stated.
+
+**Predicted.** The travel time per kilometre, as the log of seconds per kilometre.
+
+**Known at prediction time.** Anonymous numeric, categorical and yes/no features that summarise the route's road graph, its current traffic and road details such as speed limits, plus the time of the request.
+
+**What the test data stands for.** Each test window is one week (20 November to 10 December 2023); training is a random million earlier routes from 1 November, as for a model refit every week.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features describe the route and the road conditions at the request, and later weeks are tested. They are anonymous, so their timing cannot be checked one by one.
+
 ## Files in this folder
 
 | file | what it is |

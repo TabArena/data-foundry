@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 GPS_STEP_SECONDS = 15
 """One GPS point every 15 seconds; the challenge defines the travel time as (points - 1) x 15 s."""
@@ -63,6 +71,33 @@ def _row_filters(raw: pd.DataFrame) -> list[tuple[str, pd.Series]]:
 
 
 class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How long will a Porto taxi trip take, from its start to its destination?",
+        use_case=(
+            "For example, at pickup a taxi company estimates the trip's duration from the start, the destination and "
+            "the time, to plan when the taxi will be free again."
+        ),
+        row="One trip of a Porto taxi fleet, July 2013 to June 2014 (ECML/PKDD 2015 challenge).",
+        predicted=("The travel time in seconds, from the trip's GPS points (one every 15 seconds), on a log scale."),
+        known=(
+            "The local start time, the start point and the last GPS point as the destination, how the taxi was hired "
+            "(dispatch call, taxi stand or street), the stand, and the taxi."
+        ),
+        split=(
+            "Each of April, May and June 2014 is a test month; training is a random million earlier trips, as for a "
+            "model refit monthly."
+        ),
+        changes=(
+            "The challenge asked for the remaining time of a trip under way; we predict the whole trip at pickup with"
+            " its end point, and drop non-trips, GPS jumps, meters left running and the caller's phone number."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The challenge page says drivers do not enter the destination, so a destination known at pickup is our "
+            "assumption, read from the trip's last GPS point. Without it the signal is weak (R² 0.11 to 0.15)."
+        ),
+    )
+
     # Dataset
     unique_name = "pkdd_15_taxi_trip_time_prediction_ii_1m"
     version_of = "pkdd_15_taxi_trip_time_prediction_ii"

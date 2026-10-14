@@ -6,10 +6,40 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class CoffeeRatingPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What overall score will Coffee Review give a coffee?",
+        use_case=(
+            "For example, a roaster or importer predicts the overall score one specific rating service, here Coffee "
+            "Review, would give a coffee, to decide which coffees to submit for review, stock or feature; the model "
+            "learns that service's scoring, not a general measure of quality."
+        ),
+        row="One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to October 2023.",
+        predicted="The review's overall score on a 100-point scale (82 to 98 here, mean 93).",
+        known=(
+            "The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, "
+            "the price per gram in US dollars, the review month, and two passages of the review that describe the "
+            "coffee's taste and sum it up."
+        ),
+        split=(
+            "Thirteen test periods of two months, walking back from the newest review, each with every earlier review"
+            " for training, as for a model refit every two months."
+        ),
+        changes=(
+            "We drop the scores for aroma, acidity, body, flavour, aftertaste and with milk, which make up the "
+            "overall score, and the review notes, which can mention awards."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The two text passages are written by the reviewer together with the score and carry the reviewer's "
+            "judgement, whereas a roaster predicting the score before the review would have only its own description "
+            "of the coffee."
+        ),
+    )
+
     # Dataset
     unique_name = "coffee_rating_prediction"
     year = "2023"

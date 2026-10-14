@@ -66,6 +66,24 @@ Multiclass classification of `CancerType`, scored with `log_loss` on IID splits.
 
 Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Which type of lung tissue, tumour or normal, does a specimen's gene expression profile show?
+
+**Use case.** For example, a pathology lab assigns a lung specimen to its tissue type from its gene expression profile, as a check on the microscope reading.
+
+**One row.** One lung tissue specimen of a 2001 study (Bhattacharjee et al., its Dataset A without the 6 small-cell carcinomas: 197 specimens); the place and period are not stated in the definition.
+
+**Predicted.** The tissue type by histology: adenocarcinoma (71%, including 12 suspected metastases of adenocarcinomas from other organs), squamous cell carcinoma (11%), pulmonary carcinoid (10%) or normal lung (9%).
+
+**Known at prediction time.** The expression of 12,600 gene probes measured by microarray on the specimen.
+
+**What the test data stands for.** Random specimens, so the test data stands for new specimens of the same study.
+
+**Our changes to the source.** We drop the 6 small-cell carcinomas. The source already merges lung adenocarcinomas with 12 suspected metastases from other organs, which we cannot separate.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label is the histology pathologists already read under the microscope, so the profile reproduces a known diagnosis; the adenocarcinoma class mixes lung tumours with metastases, and whether expression would be measured for this purpose is unclear (record). The study itself used the data to find subclasses.
+
 ## Files in this folder
 
 | file | what it is |

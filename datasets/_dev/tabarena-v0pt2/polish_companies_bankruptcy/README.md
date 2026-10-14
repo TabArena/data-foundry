@@ -65,6 +65,24 @@ Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits
 
 Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a Polish company go bankrupt within a year of its financial statement?
+
+**Use case.** For example, a lender or investor reads a company's annual financial statement and assesses the risk that it goes bankrupt within a year, to decide on credit or investment.
+
+**One row.** One financial statement of a Polish company from the Emerging Markets Information Service, from the fifth year of the source's forecasting period (5,790 statements); bankrupt companies are from 2000-2012, operating ones from 2007-2013.
+
+**Predicted.** Whether the company is bankrupt one year after the statement (7.0% are).
+
+**Known at prediction time.** 64 financial ratios computed from the statement: profitability, debt, liquidity, turnover, working capital, size and sales growth.
+
+**What the test data stands for.** Random statements; the file has no dates.
+
+**Our changes to the source.** We use only the source's fifth-year file, whose label is bankruptcy one year later, and drop duplicate rows.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The ratios come from the statement and the label follows a year later, as in use. But the bankrupt and the surviving companies were taken from different periods (2000-2012 against 2007-2013) and the file has no dates, so part of the signal may be the period rather than the company.
+
 ## Files in this folder
 
 | file | what it is |

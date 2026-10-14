@@ -34,6 +34,10 @@ def test_definition_has_its_report(name: str) -> None:
     assert ds.folder.name == name
     if "TODO(verify)" in (ds.folder / "dataset.py").read_text():
         pytest.skip("dataset.py has TODO(verify) markers: pending its rebuild")
+    if ds.task_summary is not None and ds.task_summary.fit == "none":
+        pytest.skip(
+            "`task_summary` fit is none: pending the curator's retirement decision (`dataset check` refuses it)"
+        )
     report = read_report(ds.report_path)
     assert report, (
         f"{ds.report_path} is missing: run `.venv/bin/python -m data_foundry.curation.cli dataset check {ds.folder}`"

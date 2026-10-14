@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class ThyroidDiscordant(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Are a patient's thyroid test results discordant?",
+        use_case=(
+            "For example, a laboratory's interpretation system flags thyroid results that an expert would call "
+            "discordant, so that a specialist reviews them before the report goes out."
+        ),
+        row=(
+            "One patient referred for thyroid tests, from records the Garvan Institute in Sydney supplied to Quinlan "
+            "(released 1987; 3,711 patients after removing repeats)."
+        ),
+        predicted=(
+            "Whether the case is labelled discordant (1.56%); the source does not say what makes a case discordant or"
+            " who labelled it."
+        ),
+        known=(
+            "Age, sex, medication (thyroxine, antithyroid drugs, lithium), conditions and history (pregnancy, "
+            "illness, thyroid surgery, radioiodine treatment, goitre, tumour), the referring doctor's suspicion of an"
+            " under- or overactive thyroid, and five thyroid test results with flags for which were measured."
+        ),
+        split=("Random patients, so the test data stands for other patients of the same clinic and period."),
+        changes="We drop the referral source, which marks where a request came from.",
+        fit="approximate",
+        fit_reason=(
+            "The label is an undefined reading of these same test results, so the model reproduces that reading "
+            "rather than predicting an outcome, which serves only to automate it. The data are from the 1980s and the"
+            " curators found the task close to trivial."
+        ),
+    )
+
     # Dataset
     unique_name = "thyroid_discordant"
     year = "1987"

@@ -67,6 +67,24 @@ Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 
 
 Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** How much will a Rossmann store sell on each day of the next six weeks?
+
+**Use case.** Rossmann store managers forecast their daily sales up to six weeks ahead, to plan staff schedules (the competition's description).
+
+**One row.** One day of one open Rossmann drug store in Germany (1,115 stores, January 2013 to July 2015).
+
+**Predicted.** The store's turnover that day; the currency is not stated.
+
+**Known at prediction time.** The store, the date and weekday, whether a promotion runs, state and school holidays, the store type and assortment, the nearest competitor's distance and opening date, and the store's recurring promotion scheme.
+
+**What the test data stands for.** Three windows of six weeks from late March to July 2015, each trained on all earlier days with a one-day gap.
+
+**Our changes to the source.** We drop closed days, which all have zero sales, and the day's number of customers, known only afterwards.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Promotions, holidays and opening days are planned in advance, and six-week windows match the managers' horizon. Closed days are left out, so the model assumes the store's opening days are known.
+
 ## Files in this folder
 
 | file | what it is |

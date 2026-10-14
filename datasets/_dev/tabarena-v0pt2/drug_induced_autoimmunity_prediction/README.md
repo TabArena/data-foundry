@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730
+checksum: v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f
 build:
   uuid: 01a111fc-d491-7412-a5c5-884df72be349
   checksum: v2:d397415cefcaf5f8e46c6c72a3ae6fec9db4dfdc4f225bcb405e5b3d268aa730
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 597
   n_features: 177
@@ -66,7 +66,25 @@ decisions: []
 
 Binary classification of `Label`, scored with `roc_auc` on IID splits. 597 rows and 177 features. Source: UCI (2025).
 
-Built as `01a111fc-d491-7412-a5c5-884df72be349` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d491-7412-a5c5-884df72be349` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Can a drug cause an autoimmune reaction, judging from its chemical structure?
+
+**Use case.** For example, a toxicologist screens drug candidates by structure early in development and decides which need closer testing for autoimmune side effects; the source aims at flagging that risk.
+
+**One row.** One drug, given by its chemical structure (597 drugs; InterDIA, Huang et al. 2025).
+
+**Predicted.** Whether the drug is labelled as causing drug-induced autoimmunity (24.79% are); how the positive and negative drugs were chosen is not stated in the definition.
+
+**Known at prediction time.** The structure as a SMILES string and descriptors computed from it with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
+
+**What the test data stands for.** Random drugs, so the test data stands for drugs not seen in training; close structural relatives of a test drug can be in training.
+
+**Our changes to the source.** We pool the source's training and test sets and split them at random.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, which is all a screen has before testing, and the test drugs are unseen. The set is small, and a new candidate may differ more from known drugs than a random test drug does.
 
 ## Files in this folder
 
@@ -156,7 +174,8 @@ The first 5 of 597 rows of the final frame (random rows: the frame is shuffled);
 
 We start with the dataset from UCI.
 
-- We drop the constant columns.
+- We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
+- We drop the constant columns, and fr_Nhpyrrole, MaxEStateIndex and fr_benzene, which copy other descriptor columns in these drugs.
 - We keep the SMILES code as string for later pipelines to handle.
 
 ## Splits
@@ -415,3 +434,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:307f19ef5be17eb9d32068451eaf028310b241bc19614fc04f1a8e7fc3c6354f` |

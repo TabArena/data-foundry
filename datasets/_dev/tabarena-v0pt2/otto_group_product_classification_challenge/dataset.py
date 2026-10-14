@@ -5,10 +5,30 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Which of nine main product categories does a product belong to?",
+        use_case=(
+            "The Otto Group, a large e-commerce company, assigns its products to their main categories, as identical "
+            "products are often classified differently across its subsidiaries, which weakens its product analysis."
+        ),
+        row=("One product of the Otto Group (61,878 products, the competition's training file, 2015)."),
+        predicted=(
+            "The product's main category, one of nine anonymized classes (such as fashion or electronics); the "
+            "largest holds 26% of the products."
+        ),
+        known="93 anonymized counts of different events for the product.",
+        split="Random products, as the competition chose its training and test products at random.",
+        fit="direct",
+        fit_reason=(
+            "Existing products and a random split match the cleanup of a catalogue. The features are anonymized "
+            "counts, so what they record and when cannot be checked."
+        ),
+    )
+
     # Dataset
     unique_name = "otto_group_product_classification_challenge"
     year = "2015"

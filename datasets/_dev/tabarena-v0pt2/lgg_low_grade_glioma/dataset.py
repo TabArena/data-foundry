@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary, drop_columns
 
 # Three of the four omics files of MLOmics (genes x patients; all list the patients in one order, as does the label
 # file). The methylation file is left out: its profiles do not match these patients (see curation_comments).
@@ -15,6 +15,42 @@ SUBTYPES = {0: "IDHmut-codel", 1: "IDHmut-non-codel", 2: "IDHwt"}
 
 
 class LggLowGradeGlioma(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Which molecular class does a lower-grade glioma belong to, given its gene expression and copy-number "
+            "profile?"
+        ),
+        use_case=(
+            "For example, a lab that has profiled a resected brain tumour by RNA sequencing and a copy-number array, "
+            "but not tested its IDH mutation and 1p/19q codeletion, assigns the molecular class TCGA gave such "
+            "tumours."
+        ),
+        row=(
+            "One primary lower-grade glioma of one patient of The Cancer Genome Atlas (247 patients, MLOmics release)."
+        ),
+        predicted=(
+            "The tumour's class, IDH-mutant with 1p/19q codeletion (31%), IDH-mutant without it (51%) or IDH-wildtype"
+            " (19%)."
+        ),
+        known=(
+            "21,076 measurements of the tumour (gene expression, microRNA expression and DNA copy number), named by "
+            "their position in the release, since its gene names do not describe the values."
+        ),
+        split=(
+            "Random patients, so the test data stands for new tumours; holding out tissue source sites scores the same."
+        ),
+        changes=(
+            "We leave out the methylation block, whose profiles belong to other patients, and name the features by "
+            "position."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The 1p/19q codeletion that defines one class is a copy-number loss the data measure, so two columns come"
+            " close to the full model (log loss 0.194 against 0.149). The release is also faulty (wrong gene names, "
+            "one disputed label), and the definition recommends not shipping it."
+        ),
+    )
+
     # Dataset
     unique_name = "lgg_low_grade_glioma"
     year = "2024"

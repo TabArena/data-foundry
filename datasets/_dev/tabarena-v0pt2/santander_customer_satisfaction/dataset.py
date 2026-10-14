@@ -6,10 +6,33 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class SantanderCustomerSatisfaction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a bank customer dissatisfied?",
+        use_case=(
+            "Santander wants to identify dissatisfied customers early in their relationship, to act before they leave"
+            " (the competition's stated aim)."
+        ),
+        row=("One customer of Santander bank (71,080 customers); the country and period are not stated."),
+        predicted=("Whether the customer is dissatisfied (3.8% are); how and when this was measured is not stated."),
+        known=(
+            "About 300 anonymised numbers whose meanings are not given, plus the count of zeros in the row, which we "
+            "add."
+        ),
+        split="Random customers, so the test data stands for other customers of the same time.",
+        changes=(
+            "We add the count of zeros per row, as top competition solutions did, and drop repeated rows and columns."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The label has no stated definition or horizon, and whether the anonymised features were recorded before "
+            "it is not stated. The competition's winners used a random split, as here."
+        ),
+    )
+
     # Dataset
     unique_name = "santander_customer_satisfaction"
     year = "2016"

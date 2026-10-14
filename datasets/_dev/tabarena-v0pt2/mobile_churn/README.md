@@ -59,6 +59,24 @@ Binary classification of `churn`, scored with `roc_auc` on IID splits. 54,207 ro
 
 Not built yet. The current definition gives checksum `v2:fc8127efa38225e2cd9d46640436122a9a618a21fb708c217334c0ed7d0c4b27`.
 
+## In brief
+
+**Question.** Will a prepaid mobile customer churn?
+
+**Use case.** At the end of each month, a mobile operator scores its activated prepaid accounts for churn, for example to decide whom to target with retention offers.
+
+**One row.** One activated prepaid account of one unnamed mobile operator at the end of June, July or August 2013 (54,207 accounts, each once).
+
+**Predicted.** Whether the account churned (9.9%); the source defines neither churn nor its time window, but the data place it after the month's end.
+
+**Known at prediction time.** The account's tenure and balance, its calls, text messages, data use, spending and top-ups in the month and the last 100 days, and the days since each kind of activity.
+
+**What the test data stands for.** Random accounts; the July and August rows are the accounts that joined in those months.
+
+**Our changes to the source.** We drop the 12,262 SIM cards never activated, which held 61% of the churners and whose label only says the card was never used.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Every input describes the account up to the scoring date, as when the model is used, but churn has no stated definition or horizon and the operator is unknown.
+
 ## Files in this folder
 
 | file | what it is |

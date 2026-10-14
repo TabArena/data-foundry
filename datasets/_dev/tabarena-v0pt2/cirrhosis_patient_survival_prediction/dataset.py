@@ -6,17 +6,50 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "How long after entering the study will a patient with primary biliary cirrhosis die, given that the "
+            "patient dies before the study ends?"
+        ),
+        use_case=(
+            "Closest: when a patient with primary biliary cirrhosis is first seen, a hepatologist estimates the time "
+            "left to live, for example to time a liver transplant. The data cannot serve it: it holds only the "
+            "patients who died before the follow-up ended."
+        ),
+        row=(
+            "One patient of the Mayo Clinic primary biliary cirrhosis study (referred 1974 to 1984) who died before "
+            "the follow-up ended in July 1986; 161 patients, 36 of them outside the drug trial."
+        ),
+        predicted="The time from registration to death, in days on a logarithmic scale.",
+        known=(
+            "Age, sex, the trial drug (D-penicillamine or placebo; missing outside the trial), physical signs (fluid "
+            "in the abdomen, enlarged liver, spider veins, swelling), blood and urine tests (bilirubin, cholesterol, "
+            "albumin, copper, liver enzymes, triglycerides, platelets, clotting time) and the histologic stage."
+        ),
+        split="Random patients among those who died.",
+        changes=(
+            "We keep only the patients who died and predict their time to death, dropping the patients censored at a "
+            "transplant or at the end of follow-up; the source is a survival study that counts them."
+        ),
+        fit="none",
+        fit_reason=(
+            "The patients are chosen by their outcome: only deaths before July 1986 are in, so a patient registered "
+            "in 1984 enters only with a short survival. At registration nobody knows whether a patient belongs to "
+            "this group, so no decision fits. The curator kept the deaths-only target on purpose (2026-09-30)."
+        ),
+    )
+
     # Dataset
     unique_name = "cirrhosis_patient_survival_prediction"
     year = "1991"
     domain = "medical & healthcare"
     source = "Other"  # the Mayo Clinic PBC trial data (Fleming and Harrington 1991); UCI 878 is a later copy
     source_url = "https://www.mayo.edu/research/documents/pbchtml/doc-10027635"
-    license = "IID"
+    license = "CC BY 4.0"  # stated on UCI 878, the copy we download
     download_description = """
         We get the UCI data.
 

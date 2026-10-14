@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
 
 N_BITS = 1024
 """The UCI file holds 1,024 fingerprint bits, then the class."""
@@ -15,6 +15,41 @@ N_TRAINING_ROWS = 6744
 
 
 class QsarOralToxicity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a chemical very toxic when swallowed, judged from its structure alone?",
+        use_case=(
+            "A regulator or a chemical maker screens chemicals without animal test data and flags the very toxic "
+            "ones, to set priorities and labels without new animal tests (the US ICCVAM project behind the CATMoS "
+            "models)."
+        ),
+        row=(
+            "One chemical of the calibration set of the US ICCVAM acute oral toxicity project, with rat test data "
+            "(8,493 chemicals after removing salt forms and copies)."
+        ),
+        predicted=(
+            "Whether the swallowed dose that kills half of the rats is below 50 mg per kg of body weight (8% are very"
+            " toxic)."
+        ),
+        known=(
+            "1,024 on/off fingerprint bits computed from the chemical's structure, with salts, solvents and "
+            "stereochemistry removed."
+        ),
+        split=(
+            "Random chemicals; salt forms and hydrates of one compound share a fingerprint and are kept once, so a "
+            "test chemical never has its parent structure in training."
+        ),
+        changes=(
+            "We drop exact copies of a fingerprint and the 22 rows of fingerprints that occur with both classes; the "
+            "source kept them and fixed one training and test set."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features come from the structure, which exists before any test. The score depends on how close a new"
+            " chemical is to the reference set (random forest ROC AUC 0.681 for distant chemicals, 0.954 for close "
+            "ones)."
+        ),
+    )
+
     # Dataset
     unique_name = "qsar_oral_toxicity"
     year = "2019"

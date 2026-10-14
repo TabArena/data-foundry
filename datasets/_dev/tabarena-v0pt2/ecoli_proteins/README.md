@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
+checksum: v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d
 build:
   uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
   checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 327
   n_features: 6
@@ -63,7 +63,25 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 6 features. Source: UCI (1996).
 
-Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Where in an E. coli cell does a protein reside?
+
+**Use case.** For example, a biologist predicts where a newly sequenced bacterial protein sits in the cell from its amino-acid sequence, before or instead of testing it in the lab.
+
+**One row.** One protein of the bacterium E. coli with a known location (327 proteins, UCI 1996).
+
+**Predicted.** The location: cytoplasm (44%), inner membrane without a signal sequence (24%), periplasm (16%), inner membrane with an uncleavable signal sequence (11%) or outer membrane (6%).
+
+**Known at prediction time.** Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal score, an amino-acid content score and two membrane-spanning region predictions.
+
+**What the test data stands for.** Random proteins, so the test data stands for proteins of unknown location.
+
+**Our changes to the source.** We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a cleavable signal sequence), each with fewer than 10 proteins.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The scores come from the sequence alone, which is known before any experiment, and a held-out protein is one of unknown location. The data is small and from 1996.
 
 ## Files in this folder
 
@@ -155,7 +173,7 @@ The first 5 of 327 rows of the final frame (random rows: the frame is shuffled).
 We start with the dataset from UCI.
 
 - We drop the sequence name column, which is a unique identifier.
-- We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (3).
+- We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
 - We drop "chg", which becomes constant after our preprocessing steps.
 
 ## Splits
@@ -294,3 +312,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d` |

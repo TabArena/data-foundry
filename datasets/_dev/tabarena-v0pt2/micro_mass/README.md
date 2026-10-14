@@ -72,6 +72,24 @@ Multiclass classification of `Species`, scored with `log_loss` on grouped splits
 
 Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Which bacterial species does the mass spectrum of an isolated colony come from?
+
+**Use case.** A clinical microbiology laboratory identifies the species of an isolated bacterial colony from one MALDI-TOF mass spectrum (Mahé et al. 2014).
+
+**One row.** One MALDI-TOF mass spectrum of a bacterial strain, a technical replicate (571 spectra of 213 strains, 1 to 6 per strain, 20 species); the place and period are not stated.
+
+**Predicted.** The species, one of 20.
+
+**Known at prediction time.** The spectrum as peak intensities in mass bins (1,300 bins in the source, without the constant and repeated ones).
+
+**What the test data stands for.** Whole strains are held out, as in Vervier et al. 2015, so the test data stands for isolates never measured; other strains of the same species are in training.
+
+**Our changes to the source.** We use the spectra of single species (the source also has mixtures) and split by strain.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** A spectrum is all the laboratory has when identifying a colony, and a held-out strain is a new isolate. Some species have few strains, so their share of a test fold is small and uneven.
+
 ## Files in this folder
 
 | file | what it is |

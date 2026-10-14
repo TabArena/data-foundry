@@ -54,6 +54,24 @@ Binary classification of `Grade`, scored with `roc_auc` on IID splits. 862 rows 
 
 Not built yet. The current definition gives checksum `v2:057682cd8bcd2b4068ce4626a21b189c98b1cf8060baf8efe3a59c78bb47fe88`.
 
+## In brief
+
+**Question.** Is a diffuse glioma a lower-grade glioma or a glioblastoma, judging from its gene mutations and the patient's age, sex and race?
+
+**Use case.** After a glioma has been removed or biopsied and its DNA sequenced, the care team assigns the tumour's grade class from the mutations, for example as a check on the tissue diagnosis (the source's task).
+
+**One row.** One patient of the US Cancer Genome Atlas glioma projects (lower-grade glioma and glioblastoma), 862 patients diagnosed between 1989 and 2013.
+
+**Predicted.** Whether the tumour is a lower-grade glioma (WHO grade II or III) or a glioblastoma (grade IV), as diagnosed from the tissue.
+
+**Known at prediction time.** Whether each of the 20 genes mutated most often in these patients carries a mutation (from whole-exome sequencing), and the patient's sex, race and age at diagnosis.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients like those of the two projects.
+
+**Our changes to the source.** We drop the project and the primary diagnosis, which give the label, and the patient code, whose site part also gives it; we keep the patients without a clinical record or race, whom the authors' own file drops.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The mutations and the patient's facts are known once the tumour is sequenced. The grades follow the histological criteria of 1989-2013; WHO 2021 regrades some of these tumours with markers the data lacks.
+
 ## Files in this folder
 
 | file | what it is |

@@ -5,10 +5,40 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class NaticusdroidAndroidPermissionsDataset(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Is an Android app that is already released malware, judged from the permissions it requests?"),
+        use_case=(
+            "For example, an app store or security scanner sweeps apps already released for malware, judged from the "
+            "permissions they declare, to find the malware among apps not yet labelled; the record frames the task as"
+            " classifying apps released in the past."
+        ),
+        row=(
+            "One distinct combination of permissions and label from more than 29,000 benign and malware Android apps "
+            "released 2010-2019; 7,491 rows remain after removing exact repeats."
+        ),
+        predicted="Whether the app is malware (35% of the rows are).",
+        known="Whether the app declares each of 85 Android permissions, native and custom.",
+        split=(
+            "Random rows, so the test data stands for released apps of the same decade that are not yet labelled; "
+            "release dates are not in the data."
+        ),
+        changes=(
+            "We drop exact repeated rows, 75% of the file, which the paper does not mention; otherwise identical rows"
+            " would sit on both sides of the split."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The permissions are declared by each app and known without running it, and random apps of the same "
+            "decade stand for released apps not yet labelled. With exact repeats dropped, each permission set counts "
+            "once, so apps whose exact set is already labelled, easy cases in use, are not in the test data. New apps"
+            " would need a split by release date, which the data lacks."
+        ),
+    )
+
     # Dataset
     unique_name = "naticusdroid_android_permissions_dataset"
     year = "2022"

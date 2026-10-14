@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
 
 # The file's headers and the names we give them, in the file's column order. The names spell out the authors' own
 # headers in the 2002 version of the file (age sex bmi map tc ldl hdl tch tg glu y), checked in `_decisions`.
@@ -26,6 +26,31 @@ COLUMN_NAMES = {
 
 
 class Diabetes3(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How far will a diabetes patient's disease progress over the next year?",
+        use_case=(
+            "At a patient's baseline visit, a physician predicts the disease progression one year later from routine "
+            "measurements; the paper aims at accurate baseline predictions for future patients, for example to plan "
+            "follow-up."
+        ),
+        row=("One diabetes patient at the baseline visit (442 patients; clinic, place and period not stated)."),
+        predicted=(
+            "A quantitative measure of disease progression one year after baseline, from 25 to 346; the source does "
+            "not say what it measures."
+        ),
+        known=(
+            "Age, sex, body mass index, mean arterial blood pressure and six blood measurements (total, LDL and HDL "
+            "cholesterol, the total-to-HDL ratio, triglycerides and glucose)."
+        ),
+        split="Random patients, so the test data stands for new patients of the same clinic.",
+        fit="direct",
+        fit_reason=(
+            "The features are taken at baseline and the outcome a fixed year later, as the paper describes. The "
+            "measure, the clinic and the units are not documented, and the glucose values look low for diabetes "
+            "patients."
+        ),
+    )
+
     # Dataset
     unique_name = "diabetes_3"
     year = "2002"

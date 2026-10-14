@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 
 def sales_files() -> dict[str, str]:
@@ -53,6 +61,41 @@ CODE_COLUMNS = (
 
 
 class ZillowPrize(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("How far will Zillow's automated home value estimate be from the price a home sells for this month?"),
+        use_case=(
+            "Before a month starts, Zillow predicts for each home how far its value estimate (the Zestimate) will "
+            "miss the sale price, to improve the estimate (Kaggle Zillow Prize, round 1)."
+        ),
+        row=(
+            "One home sale in Los Angeles, Orange or Ventura county, California, January 2016 to July 2017 (153,108 "
+            "sales)."
+        ),
+        predicted=(
+            "The log of the Zestimate minus the log of the sale price, as Zillow records it; near zero for most "
+            "sales, with 2.1% beyond 0.4 either way, mostly data errors."
+        ),
+        known=(
+            "The sale month and the home's facts from the county property file of the sale's year: location (county, "
+            "city, ZIP code, neighbourhood, coordinates), size, rooms, building type, quality and age, lot, pool, "
+            "garage, assessed tax values and tax delinquency."
+        ),
+        split=(
+            "Each test window is one month of sales (nine windows, November 2016 to July 2017, newest first); "
+            "training is every sale before the preceding month, since Zillow receives sales with a delay."
+        ),
+        changes=(
+            "Each sale takes the property file of its own year, which keeps later edits out. We drop August and "
+            "September 2017, which Zillow released only in part, and split by sale month."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The prediction is made before the sale month from facts on file, as Zillow asks. The tax delinquency "
+            "snapshot postdates some 2016 training sales; it is kept since dropping it changes nothing. The signal is"
+            " small but beats the training mean in all nine windows."
+        ),
+    )
+
     # Dataset
     unique_name = "zillow_prize"
     year = "2017"

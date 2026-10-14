@@ -54,6 +54,24 @@ Binary classification of `very_toxic`, scored with `roc_auc` on IID splits. 8,49
 
 Not built yet. The current definition gives checksum `v2:675ec5252ca622d83a3262931371af667faeab7400b230e4c2bb7cc69da424a6`.
 
+## In brief
+
+**Question.** Is a chemical very toxic when swallowed, judged from its structure alone?
+
+**Use case.** A regulator or a chemical maker screens chemicals without animal test data and flags the very toxic ones, to set priorities and labels without new animal tests (the US ICCVAM project behind the CATMoS models).
+
+**One row.** One chemical of the calibration set of the US ICCVAM acute oral toxicity project, with rat test data (8,493 chemicals after removing salt forms and copies).
+
+**Predicted.** Whether the swallowed dose that kills half of the rats is below 50 mg per kg of body weight (8% are very toxic).
+
+**Known at prediction time.** 1,024 on/off fingerprint bits computed from the chemical's structure, with salts, solvents and stereochemistry removed.
+
+**What the test data stands for.** Random chemicals; salt forms and hydrates of one compound share a fingerprint and are kept once, so a test chemical never has its parent structure in training.
+
+**Our changes to the source.** We drop exact copies of a fingerprint and the 22 rows of fingerprints that occur with both classes; the source kept them and fixed one training and test set.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure, which exists before any test. The score depends on how close a new chemical is to the reference set (random forest ROC AUC 0.681 for distant chemicals, 0.954 for close ones).
+
 ## Files in this folder
 
 | file | what it is |

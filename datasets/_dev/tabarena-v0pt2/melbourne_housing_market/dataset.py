@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 FULL_FILE = "Melbourne_housing_FULL.csv"
 LESS_FILE = "MELBOURNE_HOUSE_PRICES_LESS.csv"
@@ -88,6 +96,38 @@ def _result_key(df: pd.DataFrame, columns: list[str]) -> pd.Series:
 
 
 class MelbourneHousingMarket(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="At what price will a Melbourne property listed for auction sell?",
+        use_case=(
+            "When a property is listed for auction, a price model refit on all earlier sales estimates its sale "
+            "price, for example for a buyer or an agent setting expectations."
+        ),
+        row=(
+            "One sale of a property listed for auction in Melbourne, January 2016 to March 2018, from the weekly "
+            "result sheets of Domain.com.au (21,266 sales)."
+        ),
+        predicted="The sale price, as the natural log of Australian dollars.",
+        known=(
+            "The address, suburb, postcode, council area, region, coordinates, distance to the centre and the "
+            "suburb's number of properties; the property type, rooms, agent and auction date; and six attributes "
+            "scraped from realestate.com.au (bedrooms, bathrooms, car spaces, land and building size, year built)."
+        ),
+        split=(
+            "Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all"
+            " earlier sales."
+        ),
+        changes=(
+            "We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after "
+            "the auction, and test on later weekly sheets instead of random sales."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The listing and the earlier sales are what a price model has before the auction, and later sheets stand "
+            "for the coming auctions. The scraped attributes were looked up after the sale; blanking them for the 495"
+            " sales of 2016 whose bedroom count differs from the sheet changes the error by 0.0004."
+        ),
+    )
+
     # Dataset
     unique_name = "melbourne_housing_market"
     year = "2018"

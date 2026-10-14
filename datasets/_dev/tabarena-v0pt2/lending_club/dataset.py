@@ -5,10 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
 
 
 class LendingClub(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a three-year LendingClub loan be repaid?",
+        use_case=(
+            "When a loan application arrives at LendingClub, a model scores the borrower's default risk before the "
+            "company sets its own grade and interest rate, to decide whether to grant the loan."
+        ),
+        row=("One 36-month loan issued by LendingClub in the US, April 2008 to December 2015 (609,544 loans)."),
+        predicted="Whether the loan defaulted (14%) or was fully paid over its three-year term.",
+        known=(
+            "The borrower's income, debt-to-income ratio, FICO score, job title and years employed, home ownership, "
+            "state and partial zip code; the loan amount, purpose and free-text description; and the credit-bureau "
+            "history (accounts, balances, delinquencies, inquiries)."
+        ),
+        split=("Each of the last three quarters of 2015 is a test window, trained on all loans issued before it."),
+        changes=(
+            "We keep only the 36-month loans issued up to 2015, whose outcomes are all known; we add credit-bureau "
+            "fields from LendingClub's full file and leave out the company's grade and interest rate."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features are known at application, but the training side holds outcomes of loans issued just before "
+            "each window, which a model refit then would not yet have; a full three-year gap would leave too little "
+            "data."
+        ),
+    )
+
     # Dataset
     unique_name = "lending_club"
     year = "2018"

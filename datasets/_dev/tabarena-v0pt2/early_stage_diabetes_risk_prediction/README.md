@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_stage_diabetes_risk_prediction
 container_format: 2
-checksum: v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113
+checksum: v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30
 build:
   uuid: 01a111fc-d514-780d-9d44-d5ec9c6d44d3
   checksum: v2:0b8f6e7383d176e7de0df96ac97ce13cd123e9a0727212f315d38b92a3a72b2a
@@ -63,7 +63,25 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2020).
 
-Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Does a person have diabetes, judging from a symptom questionnaire?
+
+**Use case.** For example, a doctor or a screening app decides from a short symptom questionnaire whether a person should have a blood-sugar test (the source paper predicts the likelihood of diabetes at an early stage).
+
+**One row.** One patient of Sylhet Diabetes Hospital, Bangladesh, newly diabetic or at risk, who answered a direct questionnaire (251 rows after dropping repeated rows; the period is not stated).
+
+**Predicted.** Whether the patient is diabetic (69% of the rows); how and when this was established is not stated.
+
+**Known at prediction time.** Age, sex, obesity and 13 yes/no symptoms, such as frequent urination, excessive thirst, sudden weight loss, weakness, blurred vision and slow healing.
+
+**What the test data stands for.** Random patients, so the test data stands for other patients of the same hospital.
+
+**Our changes to the source.** We drop exact repeated rows, half of the file.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The rows are patients of a diabetes hospital, 69% of them diabetic, not the people a screening questionnaire is meant for, and the source does not state how or when the label was set.
 
 ## Files in this folder
 
@@ -152,9 +170,9 @@ The first 5 of 251 rows of the final frame (random rows: the frame is shuffled);
 
 ## Curation notes
 
-We use the data as is from UCI.
+We start with diabetes_data_upload.csv from UCI.
 
-- Note, the dataset contains a lot of naturally occurring duplicates (50%). We drop them to avoid too extreme duplicated-based data leakage biasing the evaluation.
+- We drop exact duplicate rows: 269 of 520 (51.7%) repeat another row, and 107 profiles of age, gender and 14 symptoms occur 2 to 16 times. Distinct patients would rarely agree on all 16 answers, so we treat the copies as a collection artifact (no copies conflict on the label).
 
 ## Splits
 
@@ -330,4 +348,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:84c8e374be16d42a8cc0760402430a2e2798561dfc20e8d66b58e9f8cfefa113` |
+| stale | yes: the definition now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30` |

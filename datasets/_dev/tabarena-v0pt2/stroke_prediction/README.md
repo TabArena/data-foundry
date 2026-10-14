@@ -61,6 +61,24 @@ Binary classification of `stroke`, scored with `roc_auc` on IID splits. 43,400 r
 
 Not built yet. The current definition gives checksum `v2:8cabd420c0eeb02940559ff3238f349a3a910a42b4b827c159cea3ee5a9154fd`.
 
+## In brief
+
+**Question.** Has a patient had a stroke, judged from a few facts of the health record?
+
+**Use case.** For example, a hospital chain screens its patients' records for a high stroke risk, to offer prevention; the contest asked whether a patient has had a stroke.
+
+**One row.** One patient record of a hospital chain, from the McKinsey Analytics Online Hackathon of 2018 (43,400 patients; place and period not stated).
+
+**Predicted.** Whether the patient has had a stroke (1.8%), at a time not stated, before or after the record.
+
+**Known at prediction time.** Age, sex, high blood pressure, heart disease, average blood glucose, smoking status, whether ever married, work type and urban or rural residence.
+
+**What the test data stands for.** Random patients.
+
+**Our changes to the source.** We use the contest's whole training file instead of the Kaggle cut, and drop the body-mass index, whose missing values follow a stroke.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The record has no dates, so the label is a stroke at any time rather than within a fixed time after the record, and some facts may be recorded after it. Marriage, work type and residence look generated: they carry nothing beyond age.
+
 ## Files in this folder
 
 | file | what it is |

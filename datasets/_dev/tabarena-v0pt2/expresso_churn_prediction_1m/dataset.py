@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 TARGET = "CHURN"
 
@@ -28,6 +28,40 @@ ACTIVITY = [
 
 
 class ExpressoChurnPrediction1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a mobile phone customer in Senegal stop using the service for the next 90 days?",
+        use_case=(
+            "At the end of an observation window of about three months, the telecom operator Expresso scores each "
+            "customer active in it for the risk of churning, for example to target retention offers."
+        ),
+        row=(
+            "One Expresso customer in Senegal who was active in the observation window: a random 1.5 million of the "
+            "2,154,048 customers of the competition file, whose dates are not published."
+        ),
+        predicted=(
+            "Whether the customer churns, that is makes no transaction for 90 days after the window (18.75% do)."
+        ),
+        known=(
+            "The tenure band and the window's activity: top-up amounts and counts, revenue, data volume, calls within"
+            " the network, to other operators and to other zones, the most used package, and the number of active "
+            "days."
+        ),
+        split=(
+            "Random customers of the same snapshot, as in the competition, whose test set is a random 15% of the "
+            "extract; each fold trains on 1 million and tests on 500,000 customers."
+        ),
+        changes=(
+            "We drop the region, whose missing values follow the outcome and were most likely filled in after the "
+            "window, and sub-sample 1.5 million customers."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Everything the model sees is from the window and churn follows it. But the release is one snapshot "
+            "without dates: training and test customers share one window, while a deployed model is trained on an "
+            "earlier one, and the label's timing is inferred, not published."
+        ),
+    )
+
     # Dataset
     unique_name = "expresso_churn_prediction_1m"
     version_of = "expresso_churn_prediction"

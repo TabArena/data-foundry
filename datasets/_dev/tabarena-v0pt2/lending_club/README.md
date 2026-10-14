@@ -68,6 +68,24 @@ Binary classification of `Default`, scored with `roc_auc` on temporal splits by 
 
 Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aeab7194944986fd852ab5a300121442c77d4d8b86d60e3001625c14506fcf08`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a three-year LendingClub loan be repaid?
+
+**Use case.** When a loan application arrives at LendingClub, a model scores the borrower's default risk before the company sets its own grade and interest rate, to decide whether to grant the loan.
+
+**One row.** One 36-month loan issued by LendingClub in the US, April 2008 to December 2015 (609,544 loans).
+
+**Predicted.** Whether the loan defaulted (14%) or was fully paid over its three-year term.
+
+**Known at prediction time.** The borrower's income, debt-to-income ratio, FICO score, job title and years employed, home ownership, state and partial zip code; the loan amount, purpose and free-text description; and the credit-bureau history (accounts, balances, delinquencies, inquiries).
+
+**What the test data stands for.** Each of the last three quarters of 2015 is a test window, trained on all loans issued before it.
+
+**Our changes to the source.** We keep only the 36-month loans issued up to 2015, whose outcomes are all known; we add credit-bureau fields from LendingClub's full file and leave out the company's grade and interest rate.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are known at application, but the training side holds outcomes of loans issued just before each window, which a model refit then would not yet have; a full three-year gap would leave too little data.
+
 ## Files in this folder
 
 | file | what it is |

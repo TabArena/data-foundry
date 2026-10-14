@@ -68,6 +68,22 @@ Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows 
 
 Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a woman's breast cancer come back?
+
+**Use case.** For example, after surgery an oncologist estimates the chance that the cancer recurs, to plan follow-up and further treatment.
+
+**One row.** One breast cancer patient of the University Medical Centre, Institute of Oncology, Ljubljana (286 patients, published 1988); the period is not stated.
+
+**Predicted.** Whether the cancer recurred (30% did); the source states no time window.
+
+**Known at prediction time.** Age, tumour size and number of affected lymph nodes in bands (given as band midpoints), menopausal status, whether the tumour broke through a node's capsule, malignancy grade (1-3), breast and quadrant, and whether radiotherapy was given.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic and period.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The recurrence has no stated time window, so patients followed for different times are compared. Whether radiotherapy is known at the prediction point depends on when the estimate is made.
+
 ## Files in this folder
 
 | file | what it is |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8
+checksum: v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3
 build:
   uuid: 01a111fc-b36e-7939-b271-e858cafffee4
   checksum: v2:06cca1f04bccba32c0e1087a71a26c71a6b5d4c9c1d3060d42ec68d2699f60e8
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 498
   n_features: 14
@@ -65,7 +65,25 @@ decisions: []
 
 Regression of `BodyMass`, scored with `rmse` on IID splits. 498 rows and 14 features. Source: UCI (2019).
 
-Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b36e-7939-b271-e858cafffee4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** What is a person's body mass index, judged from eating habits and lifestyle alone?
+
+**Use case.** For example, a health app or survey estimates a person's body mass index from eating and activity habits, to flag a risk of overweight without asking for weight and height (the source aims at tools that identify obesity levels from such habits).
+
+**One row.** One respondent to a web questionnaire in Mexico, Peru or Colombia (498 people, the source's real answers); the period is not stated.
+
+**Predicted.** The body mass index (weight over height squared) from the reported weight and height; mean 24.3, range 13.3 to 49.5.
+
+**Known at prediction time.** Sex, age, family history of overweight, and answers on eating (high-calorie food, vegetables, main meals, snacking, water, alcohol, calorie counting), smoking, physical activity, screen time and usual transport.
+
+**What the test data stands for.** Random respondents of the same survey.
+
+**Our changes to the source.** We drop the 77% synthetic rows the source made by oversampling, and predict the body mass index instead of the obesity level built from it; we drop weight and height, which gave the level away.
+
+> **Use case fit: approximate (a stand-in with a known gap).** A body mass index is measured with a scale and a tape in a minute, so estimating it from habits only fits a setting that cannot ask for weight and height. The respondents are web volunteers, and the habits are reported at the same time as the weight.
 
 ## Files in this folder
 
@@ -153,7 +171,7 @@ The first 5 of 498 rows of the final frame (random rows: the frame is shuffled);
 
 ## Curation notes
 
-- We use only the real data, throwing away the SMOTE samples.
+- We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
 - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
 
 ## Splits
@@ -337,3 +355,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:1f0094cc650773c238a5b39c7bf8f29f3295efc011eb3087de27e3476d971eb3` |

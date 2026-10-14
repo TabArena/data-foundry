@@ -60,6 +60,24 @@ Regression of `target_ender_20`, scored with `rmse` on temporal splits by `era`.
 
 Not built yet. The current definition gives checksum `v2:985f08ba6f45aaaaf88bd2d8825d5318cc45aa30e2c2634dafd6e3bceefd3c2d`.
 
+## In brief
+
+**Question.** How will a stock's return over the next 20 market days rank against the other stocks of the same week?
+
+**Use case.** Every Friday after the market close, a participant of the Numerai tournament scores each stock from its features as of that day and submits the scores, which Numerai combines for its trading.
+
+**One row.** One stock in one weekly era of Numerai's v5.2 tournament data; dates and stock names are hidden.
+
+**Predicted.** The stock's own return over the next 20 market days, ranked within the week and binned into five levels from 0 to 1; it is known about four weeks later.
+
+**Known at prediction time.** 780 disguised features of the stock as of that Friday (Numerai's medium set), each binned into five levels within the week.
+
+**What the test data stands for.** Three test years of 52 weekly eras, the newest first. Training is a random 1M rows of the earlier eras, leaving out the last four before the test year, whose targets are not yet known.
+
+**Our changes to the source.** We set the values Numerai fills in for a feature without data in a week to missing, and use the medium feature set (780 of 2,748).
+
+> **Use case fit: approximate (a stand-in with a known gap).** Numerai designed some features with the targets of the test years (75 released at era 1192), and they are kept on purpose because every method sees them. Everything else is known on the Friday.
+
 ## Files in this folder
 
 | file | what it is |

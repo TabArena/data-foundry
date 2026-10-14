@@ -59,6 +59,24 @@ Regression of `log_price`, scored with `rmse` on temporal splits by `date`. 20,9
 
 Not built yet. The current definition gives checksum `v2:55d7d8e7d76005ead16ec7a59b60f5478831e3609f47f29c5728db25152a04bc`.
 
+## In brief
+
+**Question.** What price will a house in King County, Washington, sell for?
+
+**Use case.** An automated valuation model, as lenders or property sites run, estimates a house's price on the day it sells from the county assessor's record and its location, trained on all earlier sales.
+
+**One row.** One sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 (20,967 sales).
+
+**Predicted.** The sale price, on a log scale; prices range from $75,000 to $7.7 million.
+
+**Known at prediction time.** The sale date, the location (coordinates and ZIP code) and the assessor's record of the house on the sale day: living, basement and lot area, bedrooms, bathrooms, floors, year built and renovated, grade and condition. A view index, waterfront and the neighbours' areas are as of July 2015.
+
+**What the test data stands for.** Each test window is three weeks of sales, nine windows from late October 2014 to April 2015, newest first; training is all earlier sales.
+
+**Our changes to the source.** The file holds the assessor's record of July 2015, after every sale; we rebuild each house as of its sale day from the county's change log. We drop May 2015, which the extract cut short, and split by sale date.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features describe the house as it was sold, and the windows follow a model refit every three weeks. A few values (view, waterfront, neighbours' areas) are still from July 2015, and the 1,225 sales the county flags as changed since the sale stay as noise.
+
 ## Files in this folder
 
 | file | what it is |

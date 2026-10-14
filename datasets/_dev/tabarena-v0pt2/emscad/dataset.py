@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -63,6 +63,40 @@ def poster_groups(df: pd.DataFrame) -> pd.Series:
 
 
 class Emscad(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is this job ad a scam?",
+        use_case=(
+            "Before a job ad is published, the recruiting platform's classifier flags it as fraudulent, to keep scams"
+            " away from job seekers (Vidros et al. 2017)."
+        ),
+        row=(
+            "One job ad posted through Workable's recruiting software, 2012-2014, after removing duplicates, reposts "
+            "and non-English ads."
+        ),
+        predicted=(
+            "Whether the ad is fraudulent (4.6% are), as Workable labelled the posting client after reviewing its "
+            "activity, contact details and candidate complaints."
+        ),
+        known=(
+            "The ad's title, location, department, salary range, company profile, description, requirements and "
+            "benefits, the employment type, required experience and education, industry and job function, and whether"
+            " it offers remote work, shows a company logo and asks screening questions."
+        ),
+        split=(
+            "All ads of one poster, matched by company profile or a shared contact, stay on one side, so the test "
+            "data stands for posters never seen before."
+        ),
+        changes=(
+            "We drop exact duplicates and reposts and group the ads by poster; with random rows, models recognised "
+            "posters they had already seen."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The ads carry no dates, so the test posters come from the same 2012-2014 period rather than later, while"
+            " scams change over time. About 335 lightly edited reposts may remain across groups."
+        ),
+    )
+
     # Dataset
     unique_name = "emscad"
     year = "2017"
@@ -72,7 +106,7 @@ class Emscad(AbstractCuratedDataset):
     license = (
         "CC0: Public Domain"  # from Kaggle, paper does not state anything, website is down to check -> so maybe None...
     )
-    data_tags = ("Spatial",)
+    data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
         The original website (http://icsdweb.aegean.gr/emscad) has been down for a while.
         Thus, we us an alternative source from Kaggle (https://www.kaggle.com/datasets/shivamb/real-or-fake-fake-jobposting-prediction/data).
@@ -101,6 +135,7 @@ class Emscad(AbstractCuratedDataset):
         No details are given on how the subsampling was done. Moreover, duplicates were skipped, but no details are given on how duplicates were identified.
 
         - The dataset was collected from 2012 to 2014. But the data contains no feature to identify the time of a sample. So we can expect that some bias from temporal leakage. Ads of the same poster are grouped (see below).
+        - Tagged ForcedIIDFromTemporal: scams change over time, but without dates the split cannot be temporal, so it is grouped by poster only.
         - Following the original paper, we drop all duplicates (when ignoring the job_id column) to avoid data leakage. We also drop reposts, which the paper describes as "fraudsters can quickly and repeatedly try to post the same job ad in identical or different locations" (Sec. 5): rows identical in every field except job_id and location (1,343 more rows, 115 of them fraudulent).
         - The labels were assigned per client ("based on client's suspicious activity on the system, false contact or company information, candidate complaints and periodic meticulous analysis of the clientele", Sec. 5), and ads of the same client appear several times. We group them exactly, without similarity thresholds: same non-empty company_profile (the client's own company text; none of the 1,708 profiles mixes labels), or a shared masked e-mail, phone or URL that occurs within at most one company profile (contacts shared by several companies, e.g. job-board links, are generic and not used). This gives about 4,500 groups (largest 539 ads, a legitimate recruiter); ads without a profile or shared contact are their own group. Random splits scored ROC AUC 0.99 because the model recognises known clients; grouped splits score about 0.93 (leak audit 2026-09-24, re-checked 2026-09-30).
         - Residual: about 335 ads without profile or shared contact still have a near-identical text (TF-IDF cosine >= 0.95) in another group, likely lightly edited reposts. Dropping them at thresholds 0.95 to 0.7 did not change the grouped AUC measurably, so we keep them.

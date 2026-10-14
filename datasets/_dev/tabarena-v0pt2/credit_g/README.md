@@ -65,6 +65,22 @@ Binary classification of `good_or_bad_customer`, scored with `roc_auc` on IID sp
 
 Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Is a loan applicant a good or a bad credit risk?
+
+**Use case.** A bank, when a loan application arrives, decides whether to grant the credit; the source scores errors with a cost matrix that penalises accepting a bad customer most.
+
+**One row.** One applicant of a German bank, with amounts in Deutsche Mark (1,000 applicants, released in 1994; the period of the loans is not stated).
+
+**Predicted.** Whether the customer was rated good or bad (30% bad); the source defines neither the rating nor when it was made.
+
+**Known at prediction time.** The application: checking and savings balances, loan duration, amount, purpose and instalment rate, credit history, other loans, employment, personal status and sex, age, housing, property, job, dependants, guarantors, telephone and whether a foreign worker.
+
+**What the test data stands for.** Random applicants of the same bank and period.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are what a bank knows at the application, but the source gives no dates and no definition or horizon of a bad customer, so the random split stands in for scoring later applicants. The data are old.
+
 ## Files in this folder
 
 | file | what it is |

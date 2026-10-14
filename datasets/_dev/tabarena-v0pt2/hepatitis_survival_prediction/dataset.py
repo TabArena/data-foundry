@@ -6,10 +6,34 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a patient with hepatitis die?",
+        use_case=(
+            "For example, a physician estimates a hepatitis patient's prognosis from the examination, blood tests and"
+            " liver biopsy, to decide on treatment and follow-up."
+        ),
+        row=(
+            "One patient with hepatitis (155 patients, described by Efron and Gong in 1981; place and period not "
+            "stated)."
+        ),
+        predicted="Whether the patient died (21%) or lived; the follow-up period is not stated.",
+        known=(
+            "Age and sex, treatment with steroids or antivirals, symptoms and findings (fatigue, malaise, loss of "
+            "appetite, liver size and firmness, spleen, spider veins, ascites, varices), blood tests (bilirubin, "
+            "liver enzymes, albumin, clotting time) and the biopsy's histology."
+        ),
+        split="Random patients of the same study, standing for new patients.",
+        fit="approximate",
+        fit_reason=(
+            "The source states neither the follow-up period nor when the findings were recorded relative to the "
+            "outcome, and two inputs are treatments whose timing is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "hepatitis_survival_prediction"
     year = "1988"
@@ -37,6 +61,8 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
 
         - We encode missing values as NaN.
         - We convert numeric features to float and categorical features to category dtype.
+        - The target stays coded as in the UCI file: 1 = died (32 patients), 2 = lived (123); the names file lists the classes as "DIE, LIVE" in this order.
+        - Prediction point: not stated. The inputs (examination, blood tests, biopsy histology) imply the patient's work-up; the UCI names file gives neither when they were recorded nor the follow-up period for death.
     """
 
     # Task

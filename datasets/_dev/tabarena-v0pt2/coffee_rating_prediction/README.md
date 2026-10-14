@@ -69,6 +69,24 @@ Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 
 
 Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5ce0d3a7162adfe415021d3257d6b85b057aaf7bab5559d8ce9c4f02615560a0`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What overall score will Coffee Review give a coffee?
+
+**Use case.** For example, a roaster or importer predicts the overall score one specific rating service, here Coffee Review, would give a coffee, to decide which coffees to submit for review, stock or feature; the model learns that service's scoring, not a general measure of quality.
+
+**One row.** One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to October 2023.
+
+**Predicted.** The review's overall score on a 100-point scale (82 to 98 here, mean 93).
+
+**Known at prediction time.** The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, the price per gram in US dollars, the review month, and two passages of the review that describe the coffee's taste and sum it up.
+
+**What the test data stands for.** Thirteen test periods of two months, walking back from the newest review, each with every earlier review for training, as for a model refit every two months.
+
+**Our changes to the source.** We drop the scores for aroma, acidity, body, flavour, aftertaste and with milk, which make up the overall score, and the review notes, which can mention awards.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The two text passages are written by the reviewer together with the score and carry the reviewer's judgement, whereas a roaster predicting the score before the review would have only its own description of the coffee.
+
 ## Files in this folder
 
 | file | what it is |

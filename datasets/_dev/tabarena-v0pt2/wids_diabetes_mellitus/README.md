@@ -66,6 +66,22 @@ Binary classification of `diabetes_mellitus`, scored with `roc_auc` on IID split
 
 Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Does a patient admitted to intensive care have diabetes?
+
+**Use case.** In the first day of an ICU stay, when the patient's verified medical history is often not at hand, the care team estimates whether the patient has diabetes, to inform treatment (WiDS Datathon 2021).
+
+**One row.** One admission to an intensive care unit of 204 hospitals in MIT's GOSSIS data (127,358 admissions; period not stated).
+
+**Predicted.** Whether the patient has been diagnosed with diabetes mellitus; 21.6% have.
+
+**Known at prediction time.** Age, sex, ethnicity, height, weight and BMI, how and why the patient was admitted, other chronic conditions, the vital signs and lab values of the first hour and day, the worst first-day values of a standard severity score, and the hospital and unit.
+
+**What the test data stands for.** Random admissions, so the test data stands for new patients of the same hospitals and units.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded within the first day in the ICU, and the label is a condition the patient already has but the team may not know of. The test patients come from the same hospitals as the training ones.
+
 ## Files in this folder
 
 | file | what it is |

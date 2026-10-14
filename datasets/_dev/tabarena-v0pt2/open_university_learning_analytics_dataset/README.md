@@ -70,6 +70,24 @@ Multiclass classification of `final_result`, scored with `log_loss` on grouped s
 
 Not built yet. The current definition gives checksum `v2:66dd2c979b53dbaa21a2178108ce2d084165530004114d78a654c71f49601d12`.
 
+## In brief
+
+**Question.** On day 60 of an online course, will a student finish with distinction, pass, fail or withdraw?
+
+**Use case.** On day 60 of a running module presentation, the Open University looks for students at risk, for example to offer tutor support; it trains its model on other presentations of the same module.
+
+**One row.** One student's registration on one of 22 presentations of 7 modules of the UK Open University, 2013-2014, still active on day 60 (26,395 registrations).
+
+**Predicted.** The final result of the registration: distinction, pass, fail or withdrawn.
+
+**Known at prediction time.** The student's profile (sex, region, prior education, deprivation band of the area, age band, disability), the registration date, the assessment results and submission timing known by day 60, and the daily activity in the online learning environment before day 60.
+
+**What the test data stands for.** Whole presentations are held out in three folds, so the test data stands for a presentation the model has not seen; training can include later and concurrent presentations.
+
+**Our changes to the source.** We fix day 60 as the prediction point, build the features from what is known by then, drop the registrations that ended before day 60, and hold out whole presentations.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Deployment trains on earlier presentations only, but four start dates do not allow a split by time, so training also holds later and concurrent ones; 12.9% of a test fold's rows have the same student in training, kept on purpose (about 0.0025 of log loss).
+
 ## Files in this folder
 
 | file | what it is |

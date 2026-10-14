@@ -15,7 +15,7 @@ collections:
 original_source: UCI
 year: '2014'
 domain: biology & life sciences
-problem_type: Binary Classification
+problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://doi.org/10.24432/C5SG7H
@@ -38,6 +38,8 @@ Check if any of the qsar fish datasets are used in tabaren already
 Other version in TabArena "QSAR_fish_toxicity"
 
 Generally fine to add, but we need to decide whether we allow two datasets that similar in the benchmark
+
+**Assessment (AI, 2026-10-14):** the quoted sentence about the fathead minnow and 908 chemicals is UCI's summary of QSAR fish toxicity (UCI 504), pasted by mistake into the summary of this dataset (UCI 505). This dataset is 546 chemicals with the 48-hour LC50 for Daphnia magna, a regression target (UCI 505 abstract; Cassotti et al. 2014).
 
 ## Reference
 

@@ -63,6 +63,24 @@ Regression of `log_PRICE`, scored with `rmse` on temporal splits by `DATE_SOLD`.
 
 Not built yet. The current definition gives checksum `v2:562faf8c911b5b8461ec06f745b2173b205ad9ce18ce89f085ee455e90fbd236`.
 
+## In brief
+
+**Question.** What price will a house in Perth sell for this month?
+
+**Use case.** A valuation model, refit at the start of each month on all earlier sales, estimates the price of a house sold that month, for example for a lender or an agent.
+
+**One row.** One house sale in Perth, Western Australia, from a property website scraped in January 2021; each property's latest sale only, dated by month from 1988 to 2020 (33,090 sales).
+
+**Predicted.** The sale price in Australian dollars, as its natural logarithm; sales above about $2.44M are missing from the data.
+
+**Known at prediction time.** The sale month, the address, suburb, postcode and coordinates, the house (bedrooms, bathrooms, garage, land and floor area, build year), the distances to the city centre, the nearest station and school, and that school's rank.
+
+**What the test data stands for.** Each test window is one month of April to December 2020, trained on all earlier sales, as for a model refit at the start of each month.
+
+**Our changes to the source.** We drop 563 sales dated before the house was built, whose house record describes a later building.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known when a house sells, and each month is predicted from earlier sales only. Sales above about $2.44M are missing, and in the test months the site's house record is often older than the sale, which adds noise.
+
 ## Files in this folder
 
 | file | what it is |

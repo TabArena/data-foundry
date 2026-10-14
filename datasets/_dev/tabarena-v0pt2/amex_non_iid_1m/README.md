@@ -82,6 +82,22 @@ Binary classification of `target`, scored with `amex_metric` on grouped splits b
 
 Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a credit card customer fail to pay within 18 months of the latest monthly statement?
+
+**Use case.** At a customer's latest monthly statement, the card issuer estimates whether the customer will default in the next 18 months, to manage its lending risk, for example the credit it extends.
+
+**One row.** One monthly statement of an American Express credit card customer; a customer has 1 to 13 statements, and the prediction is made once per customer, at the latest one (124,466 customers).
+
+**Predicted.** Whether the customer defaults on a payment in the 18 months after the latest statement. The source kept only 5% of the customers who paid, so defaulters' statements are 24.9% of the rows.
+
+**Known at prediction time.** All of the customer's statements up to the latest, with their dates, each with anonymized, normalized variables that the source groups into delinquency, spending, payments, balances and risk.
+
+**What the test data stands for.** Whole customers are held out, so the test data stands for other customers of the same months, each scored at the latest statement.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Every statement is in the past at the prediction point, and the label covers a fixed 18 months after it, as in use. The test customers come from the same months as the training ones, and the features are anonymized.
+
 ## Files in this folder
 
 | file | what it is |

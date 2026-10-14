@@ -68,6 +68,22 @@ Binary classification of `FinancialDistressNextTwoYears`, scored with `roc_auc` 
 
 Built as `01a111fc-8c6a-7513-9b7c-cd856ad168b6` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a borrower fall 90 days or more behind on a payment within the next two years?
+
+**Use case.** A bank, deciding whether to grant a loan and on what terms, estimates the probability that the borrower will be in financial distress within two years (the competition's framing).
+
+**One row.** One borrower (150,000 in the training file of Kaggle's Give Me Some Credit, 2011); lender, place and period not stated.
+
+**Predicted.** Whether the borrower is 90 days or more past due within two years (6.68% are).
+
+**Known at prediction time.** Age, monthly income, dependents, debt ratio, the used share of credit-card and personal credit limits, the numbers of open credit lines and real-estate loans, and how often the borrower was 30-59, 60-89 and 90 or more days late before.
+
+**What the test data stands for.** Random borrowers, so the test data stands for other borrowers of the same lender and period.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are a credit file at the scoring date and the outcome follows within two years, as when a lender scores an applicant. The test borrowers come from the same undated period, so the task does not measure change over time.
+
 ## Files in this folder
 
 | file | what it is |

@@ -74,6 +74,24 @@ Binary classification of `adopted_within_07_days`, scored with `roc_auc` on temp
 
 Not built yet. The current definition gives checksum `v2:b4b3d220f659a1c2616046805776d525daaca79c784ec6d41390bb7cfd4bb905`.
 
+## In brief
+
+**Question.** Will a farmer who attended a DigiCow training adopt within seven days, as DigiCow records adoption?
+
+**Use case.** At the end of a farmer's training day, DigiCow scores the farmer's chance of adopting within seven days from the profile, the trainers and the day's topics, for example to plan follow-up.
+
+**One row.** One farmer with one training day, the one the challenge kept per farmer, March 2024 to December 2025 (13,536 farmers); the country of the counties and wards is not named in the definition.
+
+**Predicted.** Whether the farmer adopted within 7 days of the training (1.1% did). What counts as adoption is not stated, and a 0 mixes 'did not adopt' with 'not recorded'.
+
+**Known at prediction time.** Gender, age band, registration method, cooperative membership, group, county, sub-county and ward, the day's trainers and the topics of its sessions, and the training date.
+
+**What the test data stands for.** Each test window is four calendar months of trainings (four windows, September 2024 to December 2025, newest first); training is all earlier trainings, whose 7-day outcome is known by then.
+
+**Our changes to the source.** We swap back the day and month of the stored dates, drop the 90- and 120-day labels, which contain the 7-day one, and drop a topic flag that two trainers recorded with the adoption; the topics still partly carry it.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The prediction point and horizon fit, but adoption is recorded only for some trainers and months, so a 0 mixes non-adopters with farmers never followed up and the model partly learns who recorded. The test windows hold 9 to 103 adopters from 1 to 7 trainers; the dataset is recommended for retirement.
+
 ## Files in this folder
 
 | file | what it is |

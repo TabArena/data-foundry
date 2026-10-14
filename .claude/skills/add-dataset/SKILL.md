@@ -97,6 +97,10 @@ equal to the folder), `year`, `domain`, `source` (where the data *first appeared
 task, also write down the use case from the source: what one real-world prediction is (a row, or a whole group with
 an aggregation), and what is known about a new group when predicting (patterns §C).
 
+Write down the use case first, in `task_summary` (patterns, "In brief"): who uses the prediction, when, and the
+decision it informs, then what one row is, what is predicted and what is known then. A dataset no decision fits
+(`fit="none"`) is not added: it goes back to triage as `No Good Target / Scientific Discovery`.
+
 Write down the prediction point in the first `curation_comments` bullet: when the model is used and what is known
 then (at launch, at admission, at quote time, before the stay ends). Every column, filter and split decision below
 is checked against it. In the 2026 leak audit it found columns no probe flagged (kickstarter's `staff_pick`, awarded
@@ -123,7 +127,7 @@ Read the closest reference in full before writing (paths under `datasets/_dev/ta
 This copies `datasets/_template/{dataset.py,explore.ipynb}`, names the class, and pre-fills year, link and
 problem type from the record. Then fill in, following `references/dataset_patterns.md`:
 
-1. **Attributes:** every field from Step 1; `"TODO"` where the data must be seen first.
+1. **Attributes:** `task_summary` first, then every field from Step 1; `"TODO"` where the data must be seen first.
 2. **`_load_raw(self, raw_dir)`:** only reading (and a join along the source's own keys). It is cached, so edits to
    the cleaning never re-read the files. Return one frame, or a dict of frames for multi-table sources.
 3. **`_clean(self, raw)`:** the §B recipe as ordered, commented steps with `TODO(verify)` markers — renames,

@@ -56,6 +56,24 @@ Regression of `log_shares`, scored with `rmse` on temporal splits by `publicatio
 
 Not built yet. The current definition gives checksum `v2:5fbe4b4a2b3a987566e324c2e6bcfef97d3be709812fd524e8026a93463c799f`.
 
+## In brief
+
+**Question.** How often will a Mashable article be shared?
+
+**Use case.** Before publishing, a news editor estimates an article's shares and tries changes to the article and its publication day, as the source's decision-support system does (Fernandes et al. 2015).
+
+**One row.** One article published on Mashable from 7 January 2013 to 27 December 2014 (39,643 articles).
+
+**Predicted.** The number of shares at the crawl of 8 January 2015, on a log scale; the source's popular/unpopular task cuts this count at 1,400.
+
+**Known at prediction time.** Statistics of the text and page (word counts, title length, links, images, videos, sentiment, subjectivity, keywords), the channel (business, tech and others), the shares of earlier Mashable articles it links to or shares keywords with, and the publication date.
+
+**What the test data stands for.** Each test window is two weeks of articles (24 August to 27 December 2014); training is every article published at least a week before, as for a model refit every two weeks.
+
+**Our changes to the source.** We take the publication date from the URL and drop the weekday flags and the age column, which follow a later date for 24% of the articles, and the topic scores, fitted on all texts including the test ones.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Two potential leaks are kept on purpose: keyword statistics that, for a quarter of the articles, include same-day articles published later, and links possibly added after publication (R² 0.158 with both; 0.135 and 0.143 without each). Shares are counted up to one crawl date, though the newest articles show no deficit.
+
 ## Files in this folder
 
 | file | what it is |

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 YEARS = (2019, 2020)
 """One file per year: the same 15,873 transformers in the same row order, labelled with that year's burns."""
@@ -80,6 +80,32 @@ def failure_history(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 
 class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Which distribution transformers will burn out during the coming year?",
+        use_case=(
+            "At the start of 2020, the grid operator in Cauca, Colombia, ranks its transformers by the risk that they"
+            " burn during the year, to plan maintenance and protection."
+        ),
+        row=(
+            "One distribution transformer of the Cauca department (15,873 transformers), with the attributes of one "
+            "inventory taken after the 2020 burns."
+        ),
+        predicted="Whether the transformer burned during 2020 (629 did, 4%).",
+        known=(
+            "Urban or rural, rated power, mounting, number and type of customers, the low-voltage network (length, "
+            "overhead or not, end of circuit), the area's lightning density and criticality, and the failure history "
+            "before 2020."
+        ),
+        split=("Random transformers of 2020; the 2019 file holds the same transformers and is not stacked."),
+        changes="We drop a self-protection flag that, in the data, marks units installed after a burn.",
+        fit="approximate",
+        fit_reason=(
+            "The inventory postdates the 2020 burns, so rated power and mounting may show a replacement unit (power "
+            "raises the ROC AUC by 0.107 for the self-protected positives); both are kept on purpose. With one year, "
+            "the split is random rather than by time."
+        ),
+    )
+
     # Dataset
     unique_name = "distribution_transformers_at_cauca_department"
     year = "2021"

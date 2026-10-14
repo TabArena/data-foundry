@@ -54,6 +54,22 @@ Binary classification of `churn_status`, scored with `roc_auc` on IID splits. 2,
 
 Not built yet. The current definition gives checksum `v2:9303d469772a29893138c0d136591ab1efad82766cd61f2617eec6eff1d4e879`.
 
+## In brief
+
+**Question.** Will a mobile subscriber leave the operator?
+
+**Use case.** After two months of usage, a South Asian mobile operator scores each subscriber for the risk of leaving, to target retention offers.
+
+**One row.** One subscriber of a South Asian wireless operator, with usage over August and September 2015: 1,000 who left and 1,000 who stayed, chosen by design (Ahmed et al. 2017).
+
+**Predicted.** Whether the subscriber churned (half did, by design); when the churn was observed is not documented.
+
+**Known at prediction time.** Time on the network and the two months' totals of revenue (overall, SMS, data, within and outside the network), data volume, calls and complaints, plus each month's service type (2G, 3G) and the other network called most.
+
+**What the test data stands for.** Random subscribers, so the test data stands for other subscribers of the same operator over the same two months.
+
+> **Use case fit: approximate (a stand-in with a known gap).** We read the churn as following the two months, but the source does not say; if it fell inside them, the usage totals end at the outcome. The 50% churn share is set by design.
+
 ## Files in this folder
 
 | file | what it is |

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -120,6 +120,34 @@ STRING_COLUMNS = [
 
 
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a lapsed donor give to a veterans' charity in response to its renewal mailing?",
+        use_case=(
+            "Before a renewal mailing, the Paralyzed Veterans of America decides which lapsed donors to mail, where "
+            "each piece costs $0.68 (KDD Cup 1998)."
+        ),
+        row=(
+            "One lapsed donor (last gift 13 to 24 months earlier) who received the June 1997 renewal mailing, from "
+            "the KDD Cup's learning and validation files."
+        ),
+        predicted="Whether the donor responded with a gift (5.1% of the whole mailing did).",
+        known=(
+            "The donor's age, sex, household and neighbourhood data bought from outside sources, interests, how the "
+            "donor was acquired, and up to 24 months of mailing and giving history (dates, amounts, recency, "
+            "frequency and amount codes)."
+        ),
+        split="Random donors of the same mailing, as in the KDD Cup's learning and validation files.",
+        changes=(
+            "We predict whether a donor gives instead of the amount given (the KDD Cup scored the mailing's net "
+            "revenue) and drop the amount."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Everything the model sees precedes the mailing, but one mailing stands in for the next: training and "
+            "test donors come from the same June 1997 mailing, whereas the charity would score the next one."
+        ),
+    )
+
     # Dataset
     unique_name = "pva_revenue_prediction_kddcup98"
     year = "1998"
@@ -154,6 +182,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         - We remove a faulty postfix ("-") in the ZIP code.
         - We drop rows with PVASTATE='E' as this represent a group of donors represent by a different organization chapter. These are 8 rows only.
         - The data contains two entries with a faulty day of birth (born in month 00). We drop both rows, as we assume this is indicative of faulty data.
+        - DOB 0 means no birth date on file (47,677 donors): these rows stay, with DOB missing (fixed 2026-10-14; the month-00 filter had dropped them too).
         - We noticed that nan values and dtypes mismatch for NOEXCH do correlate with the target. We add these cases as their own categories.
         - We resolve the ordinal encoding and nan encoding for all columns.
         - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
@@ -305,10 +334,9 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             "3": "Lowest SES",
             "4": "Lower Lowest SES in Urban communities",  # weird name to show it is lower as otherwise we would need to rename 2 and 3 only for urban cases, but this should be fine.
         }
-        # Handle DOB
-        df = df[
-            ~df["DOB"].replace(np.nan, 1111).astype(float).astype(int).astype(str).str.zfill(4).str.endswith("00")
-        ]  # drop 2 rows with month 00
+        # Handle DOB (YYMM; 0 = no birth date on file)
+        dob = df["DOB"].fillna(0).astype(int)
+        df = df[(dob == 0) | (dob % 100 != 0)]  # drop the 2 rows with month 00; DOB 0 becomes missing below
         df["DOB"] = df["DOB"].replace(0, np.nan)
         dob_nan_mask = df["DOB"].isna()
         df.loc[dob_nan_mask, "DOB"] = 0

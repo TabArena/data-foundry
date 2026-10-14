@@ -67,6 +67,24 @@ Binary classification of `MobileHomePolicy`, scored with `roc_auc` on IID splits
 
 Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Does a customer of an insurer hold a caravan insurance policy?
+
+**Use case.** An insurer selects customers for a direct-mail offer of caravan (mobile home) insurance, the question of the CoIL Challenge 2000: who would be interested in buying such a policy.
+
+**One row.** One customer of an insurance company (CoIL Challenge 2000, data from a Dutch data-mining company; 9,822 customers).
+
+**Predicted.** Whether the customer holds a caravan insurance policy (6% do).
+
+**Known at prediction time.** 43 socio-demographic figures shared by all customers of the same postal area (customer type, household, religion, education, occupation, social class, income, cars, home ownership), and the customer's number of, and contributions to, 21 other insurance products.
+
+**What the test data stands for.** Random customers.
+
+**Our changes to the source.** We pool the challenge's training and evaluation customers instead of keeping its fixed held-out set.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Holding a policy now stands in for interest in buying one, and the other products are recorded at the same time as the label. The area figures are shared by neighbours, and 15% of the rows are duplicates.
+
 ## Files in this folder
 
 | file | what it is |

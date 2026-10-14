@@ -62,6 +62,24 @@ Regression of `logerror`, scored with `rmse` on temporal splits by `transaction_
 
 Not built yet. The current definition gives checksum `v2:a2c311358472b5f18c9dbe70aca23f3ed6a6377946f1e9deaa71d5eab54a22e8`.
 
+## In brief
+
+**Question.** How far will Zillow's automated home value estimate be from the price a home sells for this month?
+
+**Use case.** Before a month starts, Zillow predicts for each home how far its value estimate (the Zestimate) will miss the sale price, to improve the estimate (Kaggle Zillow Prize, round 1).
+
+**One row.** One home sale in Los Angeles, Orange or Ventura county, California, January 2016 to July 2017 (153,108 sales).
+
+**Predicted.** The log of the Zestimate minus the log of the sale price, as Zillow records it; near zero for most sales, with 2.1% beyond 0.4 either way, mostly data errors.
+
+**Known at prediction time.** The sale month and the home's facts from the county property file of the sale's year: location (county, city, ZIP code, neighbourhood, coordinates), size, rooms, building type, quality and age, lot, pool, garage, assessed tax values and tax delinquency.
+
+**What the test data stands for.** Each test window is one month of sales (nine windows, November 2016 to July 2017, newest first); training is every sale before the preceding month, since Zillow receives sales with a delay.
+
+**Our changes to the source.** Each sale takes the property file of its own year, which keeps later edits out. We drop August and September 2017, which Zillow released only in part, and split by sale month.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The prediction is made before the sale month from facts on file, as Zillow asks. The tax delinquency snapshot postdates some 2016 training sales; it is kept since dropping it changes nothing. The signal is small but beats the training mean in all nine windows.
+
 ## Files in this folder
 
 | file | what it is |

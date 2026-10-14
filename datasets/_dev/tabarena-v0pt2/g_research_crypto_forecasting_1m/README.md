@@ -56,6 +56,24 @@ Regression of `Target`, scored with `rmse` on temporal splits by `timestamp`. 2,
 
 Not built yet. The current definition gives checksum `v2:6450e85d08f4c7dafec386034f0a6af35a1a42a9462007a17c87f397f8745761`.
 
+## In brief
+
+**Question.** How will a cryptocurrency's price move over the next 15 minutes, compared with the market?
+
+**Use case.** At the close of each minute, a trading firm forecasts each coin's return over the next 15 minutes relative to the market, to decide its positions (the G-Research competition).
+
+**One row.** One coin at one minute: 14 cryptocurrencies, January 2018 to September 2021.
+
+**Predicted.** The coin's return from one to 16 minutes ahead, minus the part that follows the market's return (a weighted mean of the 14 coins); values sit close to zero.
+
+**Known at prediction time.** The coin and the minute, the minute's trading summary (open, high, low and close prices, volume, average price, number of trades) and the price trends of the past hour, 5 hours and 15 hours, for the coin and for the market.
+
+**What the test data stands for.** Each test window is 91 days at the end of the period, newest first; training is a random million earlier minutes, with a one-day gap.
+
+**Our changes to the source.** We add the price-trend features of the third-place solution, as the minute itself carries no signal, and drop the minutes without a target.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at the minute and the target covers the next 15 minutes, as in trading. The signal is tiny (R² +0.0007, +0.0012 and -0.0003 in the three windows), and RMSE replaces the competition's weighted correlation.
+
 ## Files in this folder
 
 | file | what it is |

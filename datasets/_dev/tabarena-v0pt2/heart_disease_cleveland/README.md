@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_cleveland
 container_format: 2
-checksum: v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9
+checksum: v2:57121a30f2649379c99d19492d692be356bde5a00ecc6cd32276c779fdc62248
 build:
   uuid: 01a111fc-a515-7938-a082-7add803d38c2
   checksum: v2:8d4a937491bd16e76ae454ce79a7ecee677b56b973a5f99d1e04bda71b7a2f95
@@ -63,7 +63,25 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 303 rows and 13 features. Source: UCI (1988).
 
-Built as `01a111fc-a515-7938-a082-7add803d38c2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a515-7938-a082-7add803d38c2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:57121a30f2649379c99d19492d692be356bde5a00ecc6cd32276c779fdc62248`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Does a patient with suspected heart disease have narrowed coronary arteries?
+
+**Use case.** A cardiologist estimates a patient's chance of coronary artery disease from history and non-invasive tests, to decide on a coronary angiography (Detrano et al. 1989).
+
+**One row.** One of 303 patients of the Cleveland Clinic whose coronary arteries were examined by angiography (data donated in 1988).
+
+**Predicted.** Whether the angiography shows a narrowing of more than 50% of the diameter in any major vessel (46% do).
+
+**Known at prediction time.** Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, an exercise test (peak heart rate, chest pain on exercise, the ECG's ST depression and its slope), the number of major coronary arteries with calcium seen on cardiac fluoroscopy (0-3) and an exercise thallium scan.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic and years.
+
+**Our changes to the source.** We merge the four grades of disease into one class, as the experiments on this data do.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from history and tests that precede the angiography setting the label, including the fluoroscopy and the thallium scan, noninvasive tests done before it (Detrano et al. 1986). The patients are 303 of one clinic, 1988 or earlier.
 
 ## Files in this folder
 
@@ -157,6 +175,7 @@ The first 5 of 303 rows of the final frame (random rows: the frame is shuffled);
 We start with the processed version and the subset of 14 attributes used in the study and clinical practice.
 
 - We encode missing values as np.nan instead of "?".
+- The vessel count `ca` is the number of major coronary arteries with calcium seen on cardiac cinefluoroscopy and `thal` an exercise thallium scan, both noninvasive tests before the angiography that sets the label (Detrano et al. 1986, PMID 3698241 and 3706156). Our data reproduces those papers' sensitivity and specificity (`ca` at least 1: 66.7% and 80.7%), so neither is read from the angiogram.
 - We make the target binary (0=no heart disease, 1=heart disease). This follows the original study in attempting to distinguish presence (values 1,2,3,4) from absence (value 0).
 
 ## Splits
@@ -325,4 +344,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:12b1ec81f2cdb412c3ca93705557b708171de98930e6f4f2111752dc7d5a1cf9` |
+| stale | yes: the definition now gives checksum `v2:57121a30f2649379c99d19492d692be356bde5a00ecc6cd32276c779fdc62248` |

@@ -75,6 +75,24 @@ Binary classification of `default`, scored with `roc_auc` on temporal splits by 
 
 Not built yet. The current definition gives checksum `v2:8a4e8ac7f426ea06a5be478e213565b3b6096602528e9ab5495f7d04e5af29a2`.
 
+## In brief
+
+**Question.** Will a borrower in Kenya default on a loan that has just been paid out?
+
+**Use case.** When a loan is disbursed, a lender scores the customer's risk of default from the loan's terms and the customer's settled earlier loans, and refits the model at least once a month on the loans whose outcome it knows.
+
+**One row.** One lender's part of one loan in Kenya, 2022 to 2024 (a loan with two lenders gives two rows); 54,163 of the 58,953 rows are from July to November 2022, mostly 7-day loans of one product.
+
+**Predicted.** Whether that lender's part of the loan defaulted, as recorded when the data was pulled (about 2% of rows). A label counts as settled 30 days after the due date; the source states no other horizon.
+
+**Known at prediction time.** The customer (as an id, so the same customer's settled earlier loans can be in training), new or repeat customer, the lender, the loan product, amount and duration, the disbursement and due dates, the lender's funded amount and share, and whether another lender shares the loan.
+
+**What the test data stands for.** Nine test windows of at most 30 days: six at the end of the 2022 lending of the main product and three at the end of the data in 2024. Each trains on the loans whose label had settled before the window starts.
+
+**Our changes to the source.** We drop the amounts to repay, which grow after a default, the rows of lenders funding less than one unit (labelled no default whatever happened) and the loans not settled at the data pull, and we split by disbursement date where the competition split rows at random.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The lender's funded amount and share and the count of other lenders are values at the data pull, and lenders can buy each other out; they are kept on purpose, as they show no link to the outcome (ROC AUC 0.639 with the share columns, 0.635 without). How the loans were sampled is not stated.
+
 ## Files in this folder
 
 | file | what it is |

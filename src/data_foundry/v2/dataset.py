@@ -166,6 +166,51 @@ class Decision:
     evidence: Any = None
 
 
+USE_CASE_FITS = ("direct", "approximate", "none")
+"""How closely a dataset simulates its use case (:attr:`TaskSummary.fit`)."""
+
+SUMMARY_MAX_WORDS = 70
+"""A field of :class:`TaskSummary` above this many words is flagged (`definition_summary_long`)."""
+
+
+@dataclass(frozen=True)
+class TaskSummary:
+    """What the dataset simulates, in plain words, for a reader who has not seen the source.
+
+    Shown first in the generated ``README.md`` ("In brief"): the description, then the judgement of the use case.
+    Not stored in the container. The house format and examples are in the add-dataset skill
+    (``references/dataset_patterns.md``, "In brief").
+
+    Attributes:
+        question: The prediction as a one-line question ("Will this loan default within a year of its issue?").
+        use_case: Who uses the prediction, when, and the decision it informs.
+        row: What one row is.
+        predicted: The target in plain words: what, by when after the prediction point, its classes or unit.
+        known: What the model knows at the prediction point, in plain words (no column names).
+        split: What the test data stands for (new customers, the next two weeks, unseen patients) and how it is
+            drawn.
+        fit: The judgement: ``"direct"`` (rows, features and split mirror the use case), ``"approximate"`` (a
+            stand-in with a known gap) or ``"none"`` (no decision fits; such a dataset is retired, not shipped).
+        fit_reason: Why, in one or two sentences: the gap for ``"approximate"``, what is missing for ``"none"``.
+        changes: Our changes to the source a reader needs to know, in plain words ("" when there are none).
+    """
+
+    question: str
+    use_case: str
+    row: str
+    predicted: str
+    known: str
+    split: str
+    fit: str
+    fit_reason: str
+    changes: str = ""
+
+    def fields(self) -> dict[str, str]:
+        """The text fields, dedented, in display order."""
+        names = ("question", "use_case", "row", "predicted", "known", "split", "changes", "fit_reason")
+        return {name: clean_text(getattr(self, name)) or "" for name in names}
+
+
 @dataclass
 class CurationResult:
     """The outcome of :meth:`AbstractCuratedDataset.check` or :meth:`AbstractCuratedDataset.build`.
@@ -213,6 +258,10 @@ class AbstractCuratedDataset(ABC):
     declaration. The metadata objects saved with the container are built from the attributes and are
     available as ``dataset_metadata`` and ``task_metadata``.
     """
+
+    # --- in brief ---------------------------------------------------------------------------------
+    task_summary: ClassVar[TaskSummary | None] = None
+    """What the dataset simulates, in plain words, and how closely (:class:`TaskSummary`); first in the README."""
 
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
@@ -802,6 +851,44 @@ class AbstractCuratedDataset(ABC):
             print(report.summary())
         return report
 
+    def _summary_checks(self) -> list[CheckResult]:
+        """Findings about :attr:`task_summary`: missing, no use case, or too long to read at a glance."""
+        summary = self.task_summary
+        if summary is None:
+            return [
+                CheckResult(
+                    "definition_summary_missing",
+                    "error",
+                    "`task_summary` is not set: the README has no plain-language summary of the task.",
+                    hint="Add `task_summary = TaskSummary(...)` at the top of the class (add-dataset patterns, "
+                    '"In brief").',
+                ),
+            ]
+        findings = []
+        if summary.fit == "none":
+            findings.append(
+                CheckResult(
+                    "definition_no_use_case",
+                    "error",
+                    f"`TaskSummary(fit='none')`: {clean_text(summary.fit_reason)}",
+                    hint="A dataset that simulates no decision is retired (`No Good Target / Scientific Discovery`), "
+                    "not shipped.",
+                ),
+            )
+        long = {
+            name: len(text.split()) for name, text in summary.fields().items() if len(text.split()) > SUMMARY_MAX_WORDS
+        }
+        if long:
+            findings.append(
+                CheckResult(
+                    "definition_summary_long",
+                    "warning",
+                    f"`task_summary` field(s) over {SUMMARY_MAX_WORDS} words: {long}.",
+                    hint="Keep each field to one or two plain sentences; the evidence belongs in `curation_comments`.",
+                ),
+            )
+        return findings
+
     def _definition_checks(self) -> list[CheckResult]:
         """Findings about ``dataset.py`` itself: scaffold markers, a placeholder license, nondeterministic code."""
         text = Path(inspect.getfile(type(self))).read_text()
@@ -817,6 +904,7 @@ class AbstractCuratedDataset(ABC):
                     hint="Resolve each marker (check the data, then write the step or delete the stub).",
                 ),
             )
+        findings += self._summary_checks()
         if re.search(r"\bTODO\b", str(self.license)):
             findings.append(
                 CheckResult(
@@ -1177,6 +1265,15 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     for slug, reason in cls.accepted_check_warnings.items():
         if not str(reason).strip():
             fail(f"accepted check warning {slug!r} needs a reason.")
+
+    if cls.task_summary is not None:
+        if not isinstance(cls.task_summary, TaskSummary):
+            fail("`task_summary` must be a `TaskSummary(...)`.")
+        if cls.task_summary.fit not in USE_CASE_FITS:
+            fail(f"`TaskSummary(fit=...)` is one of {', '.join(USE_CASE_FITS)}, not {cls.task_summary.fit!r}.")
+        empty = [name for name, text in cls.task_summary.fields().items() if name != "changes" and not text]
+        if empty:
+            fail(f"`TaskSummary` needs text in: {', '.join(empty)}.")
 
     custom_splits = cls._make_splits is not AbstractCuratedDataset._make_splits
     if cls.temporal is not None:

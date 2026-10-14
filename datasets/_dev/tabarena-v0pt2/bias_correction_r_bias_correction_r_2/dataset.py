@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 RAW_FILE = "Bias_correction_ucl.csv"
 
@@ -35,6 +43,38 @@ def _station_mos(past: pd.DataFrame, future: pd.DataFrame, target: str, inputs: 
 
 
 class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What will tomorrow's lowest air temperature be at a Seoul weather station?",
+        use_case=(
+            "Each evening, once the Korea Meteorological Administration's regional model run of 9 pm is out, a "
+            "forecaster corrects the model's forecast of the next day's minimum temperature for each station's local "
+            "bias (Cho et al. 2020)."
+        ),
+        row=(
+            "One station on one summer day: 25 automatic weather stations in Seoul, June 30 to August 30 of each year"
+            " 2013-2017."
+        ),
+        predicted="The station's minimum air temperature on the next day, in degrees Celsius.",
+        known=(
+            "The station with its location, elevation and slope, the day's incoming solar radiation, the highest and "
+            "lowest temperatures observed that day up to 9 pm, and the model's forecasts for the next day "
+            "(temperature, humidity, wind, latent heat, cloud cover, rain)."
+        ),
+        split=(
+            "Nine test weeks cover the last summer (2017-06-30 to 2017-08-30); each trains on every earlier "
+            "station-day up to one day before the week, as for a correction refit weekly."
+        ),
+        changes=(
+            "We keep one of the two targets, the next day's minimum, and drop the maximum, observed after the "
+            "prediction point; we split by date instead of at random, as the stations of one day share its weather."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is out by the evening, and each test week follows its training days as in "
+            "operation. The task is narrow: 25 stations of one city, summers only."
+        ),
+    )
+
     # Dataset
     unique_name = "bias_correction_r_bias_correction_r_2"
     year = "2020"

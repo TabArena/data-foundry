@@ -6,10 +6,41 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
 
 
 class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="From which of nine European populations does a person's DNA come?",
+        use_case=(
+            "A forensic DNA lab estimates the population of origin of the unknown donor of a trace from a panel of "
+            "ancestry markers, to give investigators a lead; the marker panel was built for this forensic use."
+        ),
+        row=(
+            "One reference person of nine European populations, typed at 102 ancestry markers of the VISAGE forensic "
+            "panel (607 people from the 1000 Genomes and HGDP projects)."
+        ),
+        predicted=(
+            "The population: British, Finnish, Iberian, Tuscan, Utah residents of northern and western European "
+            "ancestry, Russian, Basque, French or Sardinian (the five 1000 Genomes groups 15-18% each, the four "
+            "others 4-5%)."
+        ),
+        known=(
+            "The person's genotype, the pair of DNA letters, at each of the 102 marker positions; failed calls are "
+            "missing."
+        ),
+        split=("Random people, so the test data stands for new people of the same reference populations."),
+        changes=(
+            "We drop the Turkey class (28 people): its source has a typing artefact that alone separates it. Two "
+            "markers, constant without it, go too, and failed calls become missing."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Each population comes from a single reference project, so project differences coincide with the label "
+            "(failed calls occur only in the HGDP groups), while a case sample is typed with another assay."
+        ),
+    )
+
     # Dataset
     unique_name = "biogeographical_ancestry_prediction"
     year = "2023"

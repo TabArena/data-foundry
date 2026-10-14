@@ -6,10 +6,34 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class WebsitePhishing(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a website phishing, legitimate or suspicious?",
+        use_case=("For example, a browser's anti-phishing filter rates a site when a user opens it, to warn or block."),
+        row=(
+            "One website: phishing sites from the PhishTank archive, legitimate ones from Yahoo and starting-point "
+            "directories (1,353 sites; period not stated)."
+        ),
+        predicted=(
+            'Phishy (52%), legitimate (40.5%) or suspicious (8%); the data page says a suspicious site "held some '
+            'legit and phishy features".'
+        ),
+        known=(
+            "Nine signals, each rated legitimate, suspicious or phishy: the form handler, pop-up windows, the SSL "
+            "certificate, where requested objects and anchor links point, the site's traffic, URL length, domain age,"
+            " and an IP address in the URL."
+        ),
+        split=("Random sites; about half the rows are duplicates, so identical rows can sit on both sides."),
+        fit="approximate",
+        fit_reason=(
+            "Phishing and legitimate sites come from separate lists, and the suspicious class is defined by its mix "
+            "of signals rather than by what the site turned out to be. The signals themselves are known at a visit."
+        ),
+    )
+
     # Dataset
     unique_name = "website_phishing"
     year = "2016"

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
+checksum: v2:2d5deb3e6fff9b31d9fa58287239c34fb9325cbdd4025497d2e681353c8685b7
 build:
   uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
   checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 69973
   n_features: 44
@@ -63,7 +63,25 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2d5deb3e6fff9b31d9fa58287239c34fb9325cbdd4025497d2e681353c8685b7`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a diabetic patient be readmitted to hospital within 30 days of discharge?
+
+**Use case.** For example, at discharge a hospital decides which diabetic patients get extra follow-up, such as a call or an early visit, to prevent an early readmission.
+
+**One row.** The first hospital stay of one diabetic patient at one of 130 US hospitals, 1999-2008 (69,973 patients).
+
+**Predicted.** Whether the patient is readmitted within 30 days of discharge (9% are); a later readmission counts as no.
+
+**Known at prediction time.** Age, sex, race, payer, admission type and source, discharge destination, admitting specialty, three diagnoses, length of stay, counts of lab tests, procedures and medications in the stay and of visits in the year before, glucose and HbA1c results, and the diabetes drugs and their changes.
+
+**What the test data stands for.** Random patients, one stay each, so the test data stands for new patients of the same hospitals and years.
+
+**Our changes to the source.** We keep each patient's first stay and drop stays that ended in death or discharge to a hospice, as the paper does.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by discharge and the outcome follows within 30 days, as when the model is used. The stays carry no dates, so the test data mixes care from all of 1999-2008.
 
 ## Files in this folder
 
@@ -156,11 +174,12 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 
 - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).
 - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
-- We set "?" and "NULL" to missing values.
+- We set "?" (race, weight, payer code, specialty, diagnoses) and the "NULL" code of the three ID columns to missing values; pandas also reads the "None" (test not taken) of max_glu_serum and A1Cresult as missing.
 - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
 - We created the target from the "readmitted" column following the original task description: "<30" becomes "Yes", everything else "No".
 - We dropped "encounter_id" and "patient_nbr", which are both unique identifiers for each row.
-- We keep original "?", NULL-codes, and NaN values because they exist in different ways across the columns.
+- The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
+- We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
 - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
 
 ## Splits
@@ -346,3 +365,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:2d5deb3e6fff9b31d9fa58287239c34fb9325cbdd4025497d2e681353c8685b7` |

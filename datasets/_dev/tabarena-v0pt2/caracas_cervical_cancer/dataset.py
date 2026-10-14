@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 SCREENING_TESTS = ["Hinselmann", "Schiller", "Citology"]
 """The three screening results besides the biopsy: outcomes of the same work-up, not features."""
@@ -54,6 +54,35 @@ RENAME = {
 
 
 class CaracasCervicalCancer(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Will a woman's cervical biopsy be positive, judged from her answers to a risk questionnaire alone?"),
+        use_case=(
+            "For example, a gynecology service where only the risk questionnaire is available ranks women by their "
+            "answers to decide whom to send for colposcopy and biopsy first; the creators study this setting."
+        ),
+        row=(
+            "One woman at the gynecology service of Hospital Universitario de Caracas, Venezuela, 2012-2013 (750 "
+            "patients kept)."
+        ),
+        predicted="Whether the biopsy of her screening work-up is positive (55 of 750, 7%).",
+        known=(
+            "Her answers: age, sexual and reproductive history, smoking, hormonal contraceptive and IUD use with "
+            "their years, sexually transmitted diseases (types, number, years since diagnosis) and earlier cervical "
+            "diagnoses; unanswered questions are missing."
+        ),
+        split=("Random patients, so the test data stands for new patients of the same service and years."),
+        changes=(
+            "We drop the three other tests of the same work-up (Hinselmann, Schiller, cytology) and the 108 patients "
+            "who skipped the contraceptive question, whose test results look unrecorded; values the source filled in "
+            "before release are missing again."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The answers come before any test, and the biopsy is the outcome of the work-up that follows. One "
+            "hospital, two years and 55 positives make the task small."
+        ),
+    )
+
     # Dataset
     unique_name = "caracas_cervical_cancer"
     year = "2017"

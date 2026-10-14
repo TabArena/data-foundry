@@ -4,6 +4,98 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-14 (task summaries review: the side findings fixed)
+
+Lennart's marks and notes on the review page (scope: the 125 built datasets and the 2026-10-07 run's `ship` verdicts,
+129 definitions). The findings of 54 datasets are settled, most by a fix in the definition, the record or both;
+`dataset check` gives 0 errors on each edited definition. Nothing is rebuilt.
+
+- Changes to data or scores (rebuild needed):
+  - `pva_revenue_prediction_kddcup98`: the birth-date filter (`.str.endswith("00")` on the zero-padded DOB) dropped
+    every donor without a birth date (DOB 0); now only the 2 rows with birth month 00 go and a missing DOB stays
+    missing. 191,769 rows instead of 144,095.
+  - `qsar_biodeg`: `biodeg.csv` has no header row and the first chemical was read as one; now `header=None`, 1,055
+    rows with 356 readily biodegradable, as UCI lists.
+  - `heart_disease_va_long_beach`: cholesterol 0 (49 rows) and resting blood pressure 0 (1 row), an undocumented
+    missing code, become missing; scores unchanged.
+  - `santander_transaction_value`: metric `rmse` instead of `rmsle`. The stored target is already log1p, so `rmsle`
+    logged it a second time; RMSE on the stored target equals the competition's RMSLE. This dataset's scores change.
+  - `mercedes_benz_greener_manufacturing`: `data_tags` listed `Non-IID` by hand, which turns off the automatic
+    regime tags, so the metadata missed `Temporal`; now `("Anonymized",)`.
+- Tags: `ForcedIIDFromTemporal` for `home_credit_default_risk` (the `DAYS_` columns are relative to the
+  application), `santander_transaction_value` (1,415 row pairs hold the same series shifted by one step),
+  `taiwanese_bankruptcy_prediction` (1999-2009, no year per row) and `emscad` (no dates, grouped by poster).
+  `sepsis_prediction_1m` keeps its hand-written regime tags, with a code comment why.
+- Sources and metadata:
+  - `miami_housing`: source OpenML (43093, 2021-09-24, the first upload); the Mayer et al. 2021 citation OpenML
+    asks for is added.
+  - `sberbank_housing_market_forecasting`: it cited the Home Credit competition, now the Sberbank one.
+  - `immoscout_german_house_prices`: year 2020 (the scrape date); a note names the first upload, the deleted Kaggle
+    dataset `german-house-prices`.
+  - `cirrhosis_patient_survival_prediction`: licence CC BY 4.0 (it said `IID`).
+  - `bank_customer_churn` year 2022; `cardiotocography` source_url as a DOI link; `clock_protein_toxicity` domain
+    chemistry & material science.
+- Notes or summaries now match the code, or state what it does: `5g_energy_consumption`, `anes_voting_2026`,
+  `bad_customer_detection`, `climate_model_weather_forecasting_1m`, `consumer_complaints_1m`, `cooking_time_1m`,
+  `credit_approval`, `delivery_eta_1m`, `dementia_prediction`, `diabetes_130_us`,
+  `drug_induced_autoimmunity_prediction`, `early_stage_diabetes_risk_prediction`, `ecoli_proteins`,
+  `eryhemato_squamous_disease`, `fiat_500` (notes written; they were `N/A`), `forest_fires`,
+  `garments_worker_productivity`, `heloc`, `hepatitis_survival_prediction`, `hiva_agnostic`,
+  `home_credit_default_stability_1m`, `hotel_booking_demand`, `mercedes_benz_greener_manufacturing`, `musk`,
+  `naticusdroid_android_permissions_dataset`, `porto_seguro`, `qsar_tid_11` (names the target, human thrombin),
+  `sberbank_housing_market_forecasting`, `sepsis_prediction_1m`, `coffee_rating_prediction`.
+- Checks the review asked for, with no change to data:
+  - `heart_disease_cleveland`: `ca` and `thal` come from noninvasive tests before the angiography (Detrano et al.
+    1986), so no leak.
+  - `wine_world_cost`: no description states the wine's price; removing every sentence with price or value words
+    moves R² from 0.724 to 0.721.
+  - `qsar_fish_toxicity`: the 24% of rows that share their descriptors are isomers with different LC50; one row
+    per vector gives R² 0.571 against 0.577. The record's "might have a leak" is removed.
+  - `obesity_estimation`: the first 498 rows are the real answers (their class counts equal Fig. 1 of the data
+    paper).
+  - `heart_failure_followup_survival`: whether follow-up ended on one date for all cannot be determined; the
+    summary says so.
+- Records: `lung_cancer` (original source: the PNAS 2001 supplement), `qsar_aquatic_toxicity` (problem type
+  Regression), `regensburg_pediatric_appendicitis` (source Other, Zenodo first), `sf_permit_time` (the CC's windows),
+  `otto_group_product_classification_challenge`, `credit_approval`, `eryhemato_squamous_disease`, and the records
+  of the datasets above, plus assessments for `hr_analytics`, `website_phishing` and `mutual_funds_india`.
+- Open, on the review page with evidence and a proposal: `mutual_funds_india` (retire), `hr_analytics` (build from
+  the hackathon's train file), `website_phishing` (binary, raw codes), `sberbank_housing_market_forecasting` (keep
+  the 1,124 presales), `immoscout_german_house_prices` (confirm the source reading), and from before
+  `california_house_prices_2020`, `concrete_compressive_strength`, `food_delivery_time`,
+  `cirrhosis_patient_survival_prediction`, `emscad`, `fiat_500` and the `bank_customer_churn` licence.
+- 90 of the 125 built definitions no longer match their build (64 before), so the table shows "not built" for them
+  until the rebuild.
+
+## 2026-10-14 (task summaries: `task_summary` in every definition)
+
+- New in Data Foundry v2: `task_summary = TaskSummary(...)`, the first attribute of a definition and the first README
+  section ("In brief"): the question, the use case (who uses the prediction, when, for which decision), one row, what
+  is predicted, what is known then, what the test data stands for and our changes, then the judgement `fit`
+  (`direct`, `approximate` or `none`) with its reason. Not stored in the container, so no checksum changes.
+  `dataset check` reports `definition_summary_missing` and `definition_no_use_case` (errors) and
+  `definition_summary_long` (warning, a field over 70 words). The format, field rules and examples are in the
+  add-dataset patterns ("In brief"); verify-dataset checks it as rubric item 16; the template scaffolds it.
+- All 178 definitions have one: seven pilots written by hand, the rest by nine writers from each definition, its
+  notes, README and record, checked field by field against the definition. Proposed fits: 82 direct, 94 approximate,
+  2 none (mutual_funds_india: the label is the trailing 3-year return of one shared window; cirrhosis_patient_survival_
+  prediction: only patients who died before follow-up ended are in, which the 2026-09-30 decision kept on purpose).
+  The two `none` definitions fail `dataset check` until Lennart decides. The review page:
+  https://claude.ai/artifact/JFjHwm9PKaVQYjHWrHHHkG (summary first, then the proposed judgement, then the marks).
+- The writers' side findings (two bugs that change data: qsar_biodeg reads its first chemical as the header row,
+  pva_revenue_prediction_kddcup98 drops every donor without a birth date; about seventy mismatches between notes,
+  code, record and README, and unstated facts) are listed per dataset on the review page; the next entry lists the
+  fixes.
+- All READMEs regenerated with `dataset check` (no build), so each now opens with its summary.
+
+## 2026-10-14 (analcatdata_supreme retired: no use case)
+
+- `analcatdata_supreme` retired (record `No`, `No Good Target / Scientific Discovery`; folder removed, `v2_path`
+  cleared; the definition stays in git history at 86272ac). Its label counts Congress's responses to a Supreme Court
+  ruling in one calendar window, 1979-1988, shared by rulings of 1953-1988, not in a fixed time after each ruling, so
+  the task cannot stand for forecasting the response to a new ruling; it only looks back at which rulings drew
+  responses. The rule is now in criterion 3 of the curation guidelines. 178 definitions remain, 53 of them unbuilt.
+
 ## 2026-10-13 (alfa_battle_2_0_task_2: features of the top solutions)
 
 - The organizers' 127-feature baseline is replaced by the aggregates the competition's top solutions share (1st place

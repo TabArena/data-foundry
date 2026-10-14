@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
+checksum: v2:84f5dd2076130e544d27e620373b1f67298d57fabe86dd5b1058846ec91cfb6c
 build:
   uuid: 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
   checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1723
   n_features: 13
@@ -63,7 +63,23 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:84f5dd2076130e544d27e620373b1f67298d57fabe86dd5b1058846ec91cfb6c`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a customer who takes a consumer loan turn out to be a bad customer?
+
+**Use case.** The source states no use case; it presents the data as an example of imbalanced classes. For example, a lender decides when an application arrives whether to grant a loan for a phone, an appliance or a service.
+
+**One row.** One consumer loan, with the kind of product or service it pays for (1,723 loans; the lender, country and period are not stated).
+
+**Predicted.** Whether the customer is marked a bad client (11% are); what makes a client bad, and by when, is not stated.
+
+**Known at prediction time.** The loan (amount, term, a month number, the kind of product bought) and the customer (age, sex, education, income, family status, children, region, phone operator, and whether already a client).
+
+**What the test data stands for.** Random loans, so the test data stands for new customers of the same lender and period.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are what an application holds, but the label has no stated definition or horizon, and the source names no lender, place or period.
 
 ## Files in this folder
 
@@ -152,6 +168,7 @@ The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled
 ## Curation notes
 
 - We renamed the values of the target variable to be more descriptive.
+- Note: The original source of the data is still to be clarified (open item in the curation record).
 
 ## Splits
 
@@ -295,3 +312,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:84f5dd2076130e544d27e620373b1f67298d57fabe86dd5b1058846ec91cfb6c` |

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -442,6 +442,39 @@ CATEGORICAL = [
 
 
 class HomeCreditDefaultRisk(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a loan applicant have trouble repaying the loan?",
+        use_case=(
+            "When a client applies for a loan, a consumer lender scores the risk of payment difficulties from the "
+            "application and the client's earlier credits, to decide whether to lend (the Home Credit competition's "
+            "task)."
+        ),
+        row=(
+            "One loan application to Home Credit, with the client's earlier credits at Home Credit and at the credit "
+            "bureau; the release gives no dates and no country."
+        ),
+        predicted=(
+            "Whether the client paid late, by more than a number of days the source does not state, on at least one "
+            "of the loan's first installments."
+        ),
+        known=(
+            "504 features: the application (contract type, amounts, income, family, job, housing, documents and three"
+            " external scores) and summaries of the client's credit bureau loans, earlier Home Credit applications "
+            "and their installment, card and cash-loan payment records."
+        ),
+        split="Random applications; the data has no application dates.",
+        changes=(
+            "We build the features as a popular public competition notebook does, keeping categories as categories, "
+            "and keep the features it selected."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features are known at the application and the label follows within the first installments, but "
+            "without application dates the test applications come from the same period as the training ones, whereas "
+            "a lender scores later applicants."
+        ),
+    )
+
     # Dataset
     unique_name = "home_credit_default_risk"
     year = "2018"
@@ -449,6 +482,7 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/c/home-credit-default-risk"
     license = "Kaggle Competition Rules"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the files from the Kaggle data. This dataset starts as a SQL database with multiple tables, so it has multiple files.
 
@@ -472,6 +506,7 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - We do not follow the script exactly. We do not ordinal encode binary features. Moreover, we do not apply one-hot encoding to all categorical columns. Instead, we do it only when need for aggregations and otherwise keep the categorical column with the original semantics. Moreover, we fix some bugs in the original script that cause it to crash when run out of the box.
         - We drop a duplicated column after preprocessing.
         - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
+        - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
     """
 
     # Task

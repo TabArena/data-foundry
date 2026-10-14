@@ -16,6 +16,7 @@ from data_foundry.v2.dataset import (
     DatasetDefinitionError,
     Decision,
     FeatureTypes,
+    TaskSummary,
     clean_text,
 )
 from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, drop_columns, order_rows
@@ -34,6 +35,7 @@ __all__ = [
     "Grouping",
     "SplitPlan",
     "Splits",
+    "TaskSummary",
     "Temporal",
     "TemporalSplits",
     "anonymize_ids",

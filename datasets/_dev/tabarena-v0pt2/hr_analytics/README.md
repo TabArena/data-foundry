@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd
+checksum: v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790
 build:
   uuid: 01a111fc-e13c-73b1-a5b6-46586d1602ca
   checksum: v2:6bf1eb28b9d57bcf4d527bc086cb57317d1396fdcae0854bf81d615b12c42e11
@@ -66,7 +66,23 @@ decisions: []
 
 Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 19,158 rows and 12 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e13c-73b1-a5b6-46586d1602ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a person who signed up for a company's data-science training look for a new job?
+
+**Use case.** A company that trains data scientists wants to know, from sign-up information, which candidates will work for it after the training and which will look for another job, to plan its courses and cut training costs (the data card's framing).
+
+**One row.** One candidate who enrolled in the company's training (19,158 candidates, Kaggle 2020); company, place and period not stated.
+
+**Predicted.** Whether the candidate is looking for a job change (24.93% are); how and when this was recorded is not stated.
+
+**Known at prediction time.** City (coded) and its development index, gender, education level and field, university enrolment, years of experience and whether it is relevant, current company size and type, years since the last job change, and training hours completed.
+
+**What the test data stands for.** Random candidates, so the test data stands for other candidates of the same programme.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label has no stated source or timing (a stated intention or an actual move), and training hours completed are only known after sign-up. The use case is plausible, but the data does not show when each fact was recorded.
 
 ## Files in this folder
 
@@ -154,6 +170,13 @@ The first 5 of 19,158 rows of the final frame (random rows: the frame is shuffle
 
 - We renamed the target feature and its values to be more descriptive.
 - We drop the ID column.
+- The rows come from Analytics Vidhya's Student DataFest 2018: The Data Supremacy (July 2018; the same files
+  ran again as JanataHack: HR Analytics in May 2020, which the Kaggle card names as its source). Features are
+  unchanged; the uploader does not say what "aug" means.
+- Anomaly: `aug_train.csv` is 16,535 rows of the hackathon's train file (labels unchanged) plus 2,623 rows of
+  its unlabelled test file, all labelled 1 (55% of the positives). They do not look like real positives (89%
+  of city_21's test rows against 27% positives there in the train file) and lift a quick model's CV AUC from
+  0.66 to 0.80 (record, 2026-10-14).
 
 ## Splits
 
@@ -287,4 +310,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fd4fbf7f728a6266233d9b23d3ef1f4cbfe00a80c68a45da25af4bccfdd49ccd` |
+| stale | yes: the definition now gives checksum `v2:f667d0932a0578e36ddc5fedd77fa0dd5cdeb6dff77959017631a985b308d790` |

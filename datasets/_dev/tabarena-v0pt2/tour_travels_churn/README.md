@@ -68,6 +68,22 @@ Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows
 
 Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a customer of a tour and travel company churn?
+
+**Use case.** A tour and travel company predicts which customers will churn (the data card's task), for example to target them with retention offers.
+
+**One row.** One customer of an unnamed tour and travel company (954 customers); the place and period are not stated.
+
+**Predicted.** Whether the customer churned; the time frame is not stated.
+
+**Known at prediction time.** Age, whether the customer is a frequent flyer, annual income class, the number of services used, whether the account is linked to social media, and whether the customer booked a hotel.
+
+**What the test data stands for.** Random customers.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The churn has no stated time frame and the features no stated timing; where the data comes from is unknown, and the curator would not be surprised if it were artificial.
+
 ## Files in this folder
 
 | file | what it is |

@@ -62,6 +62,24 @@ Binary classification of `burned`, scored with `roc_auc` on IID splits. 15,873 r
 
 Not built yet. The current definition gives checksum `v2:814a210692f3c2cc3fb15cfa491907cdb79ac3af6b7af56d92a76b434ff693d8`.
 
+## In brief
+
+**Question.** Which distribution transformers will burn out during the coming year?
+
+**Use case.** At the start of 2020, the grid operator in Cauca, Colombia, ranks its transformers by the risk that they burn during the year, to plan maintenance and protection.
+
+**One row.** One distribution transformer of the Cauca department (15,873 transformers), with the attributes of one inventory taken after the 2020 burns.
+
+**Predicted.** Whether the transformer burned during 2020 (629 did, 4%).
+
+**Known at prediction time.** Urban or rural, rated power, mounting, number and type of customers, the low-voltage network (length, overhead or not, end of circuit), the area's lightning density and criticality, and the failure history before 2020.
+
+**What the test data stands for.** Random transformers of 2020; the 2019 file holds the same transformers and is not stacked.
+
+**Our changes to the source.** We drop a self-protection flag that, in the data, marks units installed after a burn.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The inventory postdates the 2020 burns, so rated power and mounting may show a replacement unit (power raises the ROC AUC by 0.107 for the self-protected positives); both are kept on purpose. With one year, the split is random rather than by time.
+
 ## Files in this folder
 
 | file | what it is |

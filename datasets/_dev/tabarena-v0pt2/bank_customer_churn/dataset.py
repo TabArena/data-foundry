@@ -5,13 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class BankCustomerChurn(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a bank customer leave the bank?",
+        use_case=(
+            "For example, a retail bank scores its current customers to decide whom to approach with a retention "
+            "offer before they leave."
+        ),
+        row=(
+            "One customer of a bank in France, Germany or Spain (10,000 customers); the bank, the period and the "
+            "original source are not stated."
+        ),
+        predicted=("Whether the customer left the bank (20% did); the time window for leaving is not stated."),
+        known=(
+            "Credit score, country, gender, age, years with the bank, account balance, number of products, whether "
+            "the customer has a credit card and is an active member, and an estimated salary."
+        ),
+        split=("Random customers, so the test data stands for other customers of the same bank at the same time."),
+        fit="approximate",
+        fit_reason=(
+            "The file is one snapshot with no stated horizon, and it is not stated whether the balance and activity "
+            "were recorded before the customer left. It most likely comes from a data science course, and its origin "
+            "is unclear."
+        ),
+    )
+
     # Dataset
     unique_name = "bank_customer_churn"
-    year = "2020"
+    year = "2022"
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset"

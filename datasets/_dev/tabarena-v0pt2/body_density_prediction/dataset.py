@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class BodyDensityPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "What is a man's body density, and so his body fat, judging from tape measurements, age, weight and height?"
+        ),
+        use_case=(
+            "A gym or clinic estimates a person's body density, and from it the body fat, from simple measurements "
+            "instead of weighing the person under water (the curator's notes)."
+        ),
+        row=("One of 252 men measured for a study of body-composition equations (Penrose et al. 1985)."),
+        predicted=(
+            "Body density measured by underwater weighing; the body-fat percentage follows from it by a fixed formula."
+        ),
+        known=(
+            "Age, weight, height and ten circumferences (neck, chest, abdomen, hip, thigh, knee, ankle, biceps, "
+            "forearm and wrist)."
+        ),
+        split="Random men, so the test data stands for new men like those of the study.",
+        changes="We drop the body-fat percentage, which is computed from the density.",
+        fit="direct",
+        fit_reason=(
+            "The features are the cheap measurements the use case has, and the label is the costly test they replace."
+            " The sample is small and narrow: 252 men of one study published in 1985."
+        ),
+    )
+
     # Dataset
     unique_name = "body_density_prediction"
     year = "1995"

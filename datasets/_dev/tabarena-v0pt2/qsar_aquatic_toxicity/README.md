@@ -66,6 +66,22 @@ Regression of `LC50`, scored with `rmse` on IID splits. 546 rows and 8 features.
 
 Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** How toxic is a chemical to water fleas, judging from its molecular structure?
+
+**Use case.** For example, a chemist or regulator estimates the acute toxicity of a chemical to the water flea Daphnia magna before, or instead of, an animal test (the source paper builds such a model).
+
+**One row.** One of 546 chemicals with a measured toxicity (Cassotti et al. 2014).
+
+**Predicted.** The concentration that kills half of the water fleas within 48 hours, as minus the log of moles per litre (higher is more toxic).
+
+**Known at prediction time.** Eight molecular descriptors computed from the structure, such as polar surface area, a fat-solubility estimate, the number of nitrogen atoms and counts of atom fragments.
+
+**What the test data stands for.** Random chemicals, so the test data stands for new chemicals like those measured.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The descriptors come from the structure alone, as in screening, but the authors chose these eight from a larger set by their fit to the toxicity values, which may carry information on the test chemicals into the features.
+
 ## Files in this folder
 
 | file | what it is |

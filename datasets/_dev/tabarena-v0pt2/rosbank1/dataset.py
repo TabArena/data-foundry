@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 TRANSACTIONS_FILE = "train.csv.gz"
 TIME_FORMAT = "%d%b%y:%H:%M:%S"  # TRDATETIME, e.g. 21OCT17:00:00:00
@@ -110,6 +118,41 @@ def aggregate_transactions(tx: pd.DataFrame) -> pd.DataFrame:
 
 
 class Rosbank1(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Will a bank client stop using the bank's card in the three months after its introductory period?"),
+        use_case=(
+            "At the end of a client's three-month introductory period on a Rosbank card, the bank scores the risk "
+            "that the client stops using it, for example to make a retention offer; the model is refit every month."
+        ),
+        row=(
+            "One client of Rosbank, a Russian bank, whose introductory period ended by December 2017, with the card "
+            "transactions of that period (4,791 clients)."
+        ),
+        predicted=(
+            "Whether the client makes no card purchases in the three months after the period (churn); in the October "
+            "2017 window 179 of 515 clients did."
+        ),
+        known=(
+            "Summaries of the client's card transactions up to the end of the period (counts, sums, means and spreads"
+            " by transaction type, currency and the 97 most frequent merchant categories), the dates of the first and"
+            " last transaction, and how the client was acquired."
+        ),
+        split=(
+            "Each test window is one month of period ends (October, November, December 2017); training holds the "
+            "clients whose three-month outcome was known before the window starts."
+        ),
+        changes=(
+            "We summarise the transactions, rebuild each period's end date from the first and last transactions, and "
+            "split by it, where the competition split clients at random; periods ending from January 2018 on are left"
+            " out as their outcome window was not complete."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The period end dates are reconstructed from the transactions, as the data has no dates, and when the "
+            "labels were drawn is not published. The test windows are small (63 to 515 clients)."
+        ),
+    )
+
     # Dataset
     unique_name = "rosbank1"
     year = "2018"

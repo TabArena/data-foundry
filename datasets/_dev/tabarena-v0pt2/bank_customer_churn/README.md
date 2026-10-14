@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
+checksum: v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782
 build:
   uuid: 01a111fc-c45b-7b5e-b6fe-7f527899d692
   checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 10000
   n_features: 10
@@ -62,9 +62,25 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2020).
+Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2022).
 
-Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a bank customer leave the bank?
+
+**Use case.** For example, a retail bank scores its current customers to decide whom to approach with a retention offer before they leave.
+
+**One row.** One customer of a bank in France, Germany or Spain (10,000 customers); the bank, the period and the original source are not stated.
+
+**Predicted.** Whether the customer left the bank (20% did); the time window for leaving is not stated.
+
+**Known at prediction time.** Credit score, country, gender, age, years with the bank, account balance, number of products, whether the customer has a credit card and is an active member, and an estimated salary.
+
+**What the test data stands for.** Random customers, so the test data stands for other customers of the same bank at the same time.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The file is one snapshot with no stated horizon, and it is not stated whether the balance and activity were recorded before the customer left. It most likely comes from a data science course, and its origin is unclear.
 
 ## Files in this folder
 
@@ -102,7 +118,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset |
-| year | 2020 |
+| year | 2022 |
 | domain | business & marketing |
 | license | Public Domain |
 | data_tags | IID |
@@ -250,3 +266,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:02b034c85af735cdc61aa8ab3f0fec8aa0f2c32925b9bb8f65b7a22df878c782` |

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 TARGET = "cancer_within_one_year"
 
@@ -44,6 +44,43 @@ YES_NO_MISSING = [  # 0 = no, 1 = yes, 9 = missing
 
 
 class BreastCancerPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will a woman whose screening mammogram has just been read be diagnosed with breast cancer within a year?"
+        ),
+        use_case=(
+            "Once a screening mammogram has been read, the screening programme estimates the woman's chance of a "
+            "breast cancer diagnosis within a year from her risk factors and the radiologist's assessment (the "
+            "source's own question), for example to decide on follow-up."
+        ),
+        row=(
+            "One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 "
+            "to 2008 (39,998 exams of 36,714 women)."
+        ),
+        predicted=(
+            "Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.65% of the "
+            "exams."
+        ),
+        known=(
+            "Age, BMI, family history, earlier biopsy and mammogram, hormone therapy, whether an earlier mammogram "
+            "was at hand for comparison, film or digital imaging, the breast density and the radiologist's "
+            "assessment."
+        ),
+        split=(
+            "Whole women are held out, so the test data stands for the exams of other women; 3,133 women have 2 to 4 "
+            "exams."
+        ),
+        changes=(
+            "We drop the cancer type, which is recorded at diagnosis and encodes the label, and hold out whole women."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known once the mammogram is read, and the label covers a fixed year after "
+            "it. The radiologist's assessment carries most of the signal (ROC AUC 0.907 alone, about 0.02 less than "
+            "the models), as in screening."
+        ),
+    )
+
     # Dataset
     unique_name = "breast_cancer_prediction"
     year = "2014"

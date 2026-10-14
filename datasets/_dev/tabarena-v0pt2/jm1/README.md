@@ -66,6 +66,24 @@ Binary classification of `defects`, scored with `roc_auc` on IID splits. 8,736 r
 
 Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b7756d636f5d7cd315cbb6edcf0d2ee1880b597ff111bd88e0e7077881ca0c06`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Does a function of a NASA software system have a reported defect?
+
+**Use case.** For example, a verification team decides which modules of a large C program to inspect by hand first, from static code measures that are cheap to collect (the use the source describes).
+
+**One row.** One module (a C function) of JM1, a NASA real-time ground system that simulates missions, from the NASA Metrics Data Program (8,736 modules after removing duplicates); the period is not stated.
+
+**Predicted.** Whether the module has one or more reported defects (22% do). Over which period the defects were reported is not stated.
+
+**Known at prediction time.** 21 static measures of the module's code: line counts (code, comments, blank lines), McCabe measures of the complexity of its control paths, and Halstead measures from counts of operators and operands.
+
+**What the test data stands for.** Random modules of the same program, so the test data stands for modules of this program not yet inspected.
+
+**Our changes to the source.** We drop exact duplicate rows and every copy of a code-measure profile that appears with both labels (10,885 to 8,736 rows); 25% of the rows shared their profile with another row.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Inspecting the riskiest modules first is a real decision, but the label has no stated horizon and when the code was measured relative to the defect reports and their fixes is not stated, so the measures may describe the fixed code.
+
 ## Files in this folder
 
 | file | what it is |

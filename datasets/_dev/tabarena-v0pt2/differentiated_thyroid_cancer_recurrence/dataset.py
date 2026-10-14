@@ -5,10 +5,41 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 
 class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a patient's thyroid cancer come back after surgery?",
+        use_case=(
+            "After thyroid surgery, at the initial staging, the endocrinologist estimates the risk of recurrence to "
+            "plan further treatment and how closely to follow the patient."
+        ),
+        row=(
+            "One patient with well-differentiated thyroid cancer after thyroid removal in Hamadan, Iran, followed for"
+            " at least 10 years (383 patients)."
+        ),
+        predicted=(
+            "Whether the cancer recurred during follow-up (28% did); the label seems to count persistent disease as "
+            "well."
+        ),
+        known=(
+            "Age, sex, smoking, thyroid function, examination findings, swollen lymph nodes, the tumour's pathology "
+            "and focality, its T, N and M stage and overall stage, and the initial risk class of the American Thyroid"
+            " Association."
+        ),
+        split="Random patients, so the test data stands for new patients of the same clinic.",
+        changes=(
+            "We drop the response to therapy, assessed in the first two years of follow-up and partly the outcome "
+            "itself, and an undefined, undated radiotherapy column."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at the initial staging, and the outcome follows over the follow-up. A"
+            " few metastases may have been found after staging, and one clinic's patients make a small task."
+        ),
+    )
+
     # Dataset
     unique_name = "differentiated_thyroid_cancer_recurrence"
     year = "2023"

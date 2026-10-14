@@ -41,6 +41,10 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
    deterministic rule from the columns: drop the rule's inputs when the rest still makes a
    real task (account_debt_south_africa); when the inputs are the whole task it is `Trivial`
    (central_international_medical_college_and_hospital_health_risk_prediction, NEWS2).
+   The task must simulate a decision someone makes with the prediction. A label counted over one calendar window
+   shared by all rows, instead of a fixed time after each row, only supports a look back at which rows drew the
+   outcome: `No Good Target / Scientific Discovery` (Lennart, 2026-10-14: analcatdata_supreme, Congress's responses
+   in 1979-1988 to Supreme Court rulings of 1953-1988).
 4. **Representative of a real tabular-ML application** — exclude datasets that are:
    (A) from a non-tabular modality where modality-specific models are clearly superior
    (judged per-dataset; vectorized image/text/audio/time-series is OK if tabular models

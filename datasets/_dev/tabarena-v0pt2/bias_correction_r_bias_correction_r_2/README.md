@@ -58,6 +58,24 @@ Regression of `Next_Tmin`, scored with `rmse` on temporal splits by `Date`. 7,72
 
 Not built yet. The current definition gives checksum `v2:190c2d0b5fb27dde39cdd2790b8bb2d2efc89d7fc938306536516bec3145d0cc`.
 
+## In brief
+
+**Question.** What will tomorrow's lowest air temperature be at a Seoul weather station?
+
+**Use case.** Each evening, once the Korea Meteorological Administration's regional model run of 9 pm is out, a forecaster corrects the model's forecast of the next day's minimum temperature for each station's local bias (Cho et al. 2020).
+
+**One row.** One station on one summer day: 25 automatic weather stations in Seoul, June 30 to August 30 of each year 2013-2017.
+
+**Predicted.** The station's minimum air temperature on the next day, in degrees Celsius.
+
+**Known at prediction time.** The station with its location, elevation and slope, the day's incoming solar radiation, the highest and lowest temperatures observed that day up to 9 pm, and the model's forecasts for the next day (temperature, humidity, wind, latent heat, cloud cover, rain).
+
+**What the test data stands for.** Nine test weeks cover the last summer (2017-06-30 to 2017-08-30); each trains on every earlier station-day up to one day before the week, as for a correction refit weekly.
+
+**Our changes to the source.** We keep one of the two targets, the next day's minimum, and drop the maximum, observed after the prediction point; we split by date instead of at random, as the stations of one day share its weather.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is out by the evening, and each test week follows its training days as in operation. The task is narrow: 25 stations of one city, summers only.
+
 ## Files in this folder
 
 | file | what it is |

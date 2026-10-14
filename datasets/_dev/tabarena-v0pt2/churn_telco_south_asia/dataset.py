@@ -5,13 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""
 
 
 class ChurnTelcoSouthAsia(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a mobile subscriber leave the operator?",
+        use_case=(
+            "After two months of usage, a South Asian mobile operator scores each subscriber for the risk of leaving,"
+            " to target retention offers."
+        ),
+        row=(
+            "One subscriber of a South Asian wireless operator, with usage over August and September 2015: 1,000 who "
+            "left and 1,000 who stayed, chosen by design (Ahmed et al. 2017)."
+        ),
+        predicted=(
+            "Whether the subscriber churned (half did, by design); when the churn was observed is not documented."
+        ),
+        known=(
+            "Time on the network and the two months' totals of revenue (overall, SMS, data, within and outside the "
+            "network), data volume, calls and complaints, plus each month's service type (2G, 3G) and the other "
+            "network called most."
+        ),
+        split=(
+            "Random subscribers, so the test data stands for other subscribers of the same operator over the same two"
+            " months."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "We read the churn as following the two months, but the source does not say; if it fell inside them, the "
+            "usage totals end at the outcome. The 50% churn share is set by design."
+        ),
+    )
+
     # Dataset
     unique_name = "churn_telco_south_asia"
     year = "2017"

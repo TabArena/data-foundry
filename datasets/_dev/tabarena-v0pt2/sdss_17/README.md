@@ -66,6 +66,24 @@ Multiclass classification of `ObjectType`, scored with `log_loss` on IID splits.
 
 Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:979dfc139c021d320e6730f843a4ec3f1c93be7d5d42625f23cc324f929e1873`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Is a sky object a galaxy, a star or a quasar, judging from its images alone?
+
+**Use case.** For example, an astronomer classifies objects that have images but no spectrum, to choose targets for spectroscopy or to build catalogues.
+
+**One row.** One object with a spectrum in the Sloan Digital Sky Survey's Data Release 17 (99,999 objects of a 100,000-object sample shared on Kaggle).
+
+**Predicted.** The class the survey's spectroscopic pipeline assigned: galaxy (59.44%), star (21.59%) or quasar (18.96%).
+
+**Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, and the camera column that took them.
+
+**What the test data stands for.** Random objects, so the test data stands for other objects chosen for spectra in the same way.
+
+**Our changes to the source.** We drop the redshift, fitted together with the class from the spectrum, and the plate and fibre, which record how the object was chosen for spectroscopy; the task is to classify from the images alone.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features exist before a spectrum, but every row is an object the survey's targeting programmes already picked by its colours for a spectrum, so the mix of classes and colours is not that of the objects one would classify without one.
+
 ## Files in this folder
 
 | file | what it is |

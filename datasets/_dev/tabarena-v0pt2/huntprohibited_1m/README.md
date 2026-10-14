@@ -61,6 +61,24 @@ Binary classification of `is_blocked`, scored with `roc_auc` on IID splits. 1,50
 
 Not built yet. The current definition gives checksum `v2:01e23fe30d64d119e370586f6827ae0357792d18ff398388390f97f02af2c9bf`.
 
+## In brief
+
+**Question.** Will a moderator block a classified ad on Avito for illicit content?
+
+**Use case.** When an ad is submitted to Avito, a Russian classifieds site, the site scores it to decide which ads moderators check or block.
+
+**One row.** One closed ad posted on Avito.ru from December 2013 to March 2014; 1.5 million ads sampled from 3,963,488 after dropping duplicates.
+
+**Predicted.** Whether a moderator blocked the ad for illicit content.
+
+**Known at prediction time.** The ad as posted: its title, description and form fields (Russian text), category and subcategory, price, and the counts of phone numbers, e-mails and links masked in the description.
+
+**What the test data stands for.** Random ads of the same four months; the file has no dates, so the competition's split by month cannot be repeated.
+
+**Our changes to the source.** We drop how long the ad was live and the flag set only for blocked ads, both known after the decision, and drop exact reposts and ads whose features occur with both labels.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is known when the ad is submitted, but the split is random over four months, while moderation scores the next ads; the competition tested on the following month.
+
 ## Files in this folder
 
 | file | what it is |

@@ -67,6 +67,22 @@ Binary classification of `Selector`, scored with `roc_auc` on IID splits. 583 ro
 
 Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Does a patient have liver disease, judging from age, sex and routine blood tests?
+
+**Use case.** For example, a doctor reads a patient's liver blood tests to decide whether to refer the patient for a liver work-up.
+
+**One row.** One patient record from the north-east of Andhra Pradesh, India (416 liver patients and 167 others); the period is not stated.
+
+**Predicted.** Whether the record is of a liver patient (71%); how the diagnosis was made is not stated.
+
+**Known at prediction time.** Age, sex, total and direct bilirubin, alkaline phosphatase, two liver enzymes (ALT and AST), total protein, albumin and the albumin-to-globulin ratio.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients from the same collection.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Liver patients and others were collected as two groups (71% patients), not as the patients a doctor sees, and the basis of the diagnosis is not stated.
+
 ## Files in this folder
 
 | file | what it is |

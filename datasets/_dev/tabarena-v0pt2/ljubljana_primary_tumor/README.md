@@ -66,6 +66,24 @@ Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 
 
 Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Where in the body did a patient's cancer start, judged from its metastases?
+
+**Use case.** For example, an oncologist facing metastases of unknown origin estimates where the primary tumour is, to decide which organs to examine first.
+
+**One row.** One cancer patient of the Institute of Oncology, University Medical Centre Ljubljana (data donated 1988; 302 patients kept).
+
+**Predicted.** The site of the primary tumour, one of 11: lung (28%), stomach, ovary, pancreas, kidney, breast, head and neck, gallbladder, colon, thyroid or prostate (3%).
+
+**Known at prediction time.** Age group, sex, the tumour's tissue type and degree of differentiation, and where metastases were found (bone, bone marrow, lung, pleura, peritoneum, liver, brain, skin, neck, above the collarbone, armpit, mediastinum, abdomen).
+
+**What the test data stands for.** Random patients.
+
+**Our changes to the source.** We drop the primary sites with fewer than 10 patients.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. A model in use would also meet the rare sites we left out.
+
 ## Files in this folder
 
 | file | what it is |

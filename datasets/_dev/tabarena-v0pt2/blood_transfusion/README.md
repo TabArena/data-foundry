@@ -67,6 +67,22 @@ Binary classification of `DonatedBloodInMarch2007`, scored with `roc_auc` on IID
 
 Built as `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a past blood donor give blood at the next collection?
+
+**Use case.** Before a blood drive, a blood transfusion service decides which donors in its database to contact, from their donation history (the source studies such targeting with a recency-frequency model).
+
+**One row.** One donor of the Blood Transfusion Service Center in Hsin-Chu City, Taiwan, drawn at random from its donor database (748 donors); its bus collects blood at a university about every three months.
+
+**Predicted.** Whether the donor gave blood in March 2007.
+
+**Known at prediction time.** Months since the last and since the first donation, the number of donations and the total volume of blood donated.
+
+**What the test data stands for.** Random donors of the same database and the same month.
+
+> **Use case fit: approximate (a stand-in with a known gap).** One month's outcome stands in for a forecast: the model is trained and tested on donors of the same March 2007 collection, whereas a service would train on earlier drives. With four history counts, 29% of the rows repeat another row, some with the other label.
+
 ## Files in this folder
 
 | file | what it is |

@@ -71,6 +71,24 @@ Regression of `lgd`, scored with `rmse` on grouped splits by `borrower_block`. 2
 
 Not built yet. The current definition gives checksum `v2:d5cc7ce32a34cceb43be5d2bdb2e4d035778d914f0e02628077e484d563efc57`.
 
+## In brief
+
+**Question.** What share of a defaulted loan's outstanding amount will the bank lose?
+
+**Use case.** When a loan has just defaulted, the bank estimates the share of the outstanding amount it will lose (the task of the book's chapter 10).
+
+**One row.** One defaulted loan of a European bank, "slightly modified and anonymized", from the book Credit Risk Analytics (2,545 loans, 2016; period not stated).
+
+**Predicted.** The loss as a share of the outstanding amount, from 0 to 1; 28.6% of the loans lose nothing and 5.6% lose everything.
+
+**Known at prediction time.** Only the loan-to-value ratio and whether the loan's purpose is renting, as in the book's models.
+
+**What the test data stands for.** Groups of loans that most likely belong to one borrower are held out whole, so each test loan comes from a borrower the model has not seen, as for a new default.
+
+**Our changes to the source.** We drop the transformations of the loss and the flag that marks loans without loss, and group the loans by borrower (runs of rows with one loan-to-value ratio) instead of the record's random split.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The file has no dates, though its row order shows a drift in the losses, so the split cannot place new defaults after old ones. Reading the zero-loss loans as defaults that ended without loss follows the book's code but is not verified.
+
 ## Files in this folder
 
 | file | what it is |

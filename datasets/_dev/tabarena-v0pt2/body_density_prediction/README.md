@@ -65,6 +65,24 @@ Regression of `Density`, scored with `rmse` on IID splits. 252 rows and 13 featu
 
 Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:af8b7dec4ed75e31a4974e0ec15e63898d2face9bb0c1d157c7c65206eb07403`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What is a man's body density, and so his body fat, judging from tape measurements, age, weight and height?
+
+**Use case.** A gym or clinic estimates a person's body density, and from it the body fat, from simple measurements instead of weighing the person under water (the curator's notes).
+
+**One row.** One of 252 men measured for a study of body-composition equations (Penrose et al. 1985).
+
+**Predicted.** Body density measured by underwater weighing; the body-fat percentage follows from it by a fixed formula.
+
+**Known at prediction time.** Age, weight, height and ten circumferences (neck, chest, abdomen, hip, thigh, knee, ankle, biceps, forearm and wrist).
+
+**What the test data stands for.** Random men, so the test data stands for new men like those of the study.
+
+**Our changes to the source.** We drop the body-fat percentage, which is computed from the density.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are the cheap measurements the use case has, and the label is the costly test they replace. The sample is small and narrow: 252 men of one study published in 1985.
+
 ## Files in this folder
 
 | file | what it is |

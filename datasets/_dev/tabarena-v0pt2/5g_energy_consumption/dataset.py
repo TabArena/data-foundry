@@ -5,10 +5,49 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class Dataset5gEnergyConsumption(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "How much energy does a 5G base station use in a given hour, for a station without energy measurements in"
+            " that week?"
+        ),
+        use_case=(
+            "A network operator estimates the hourly energy use of base stations without energy measurements in a "
+            "period, from their hardware, traffic load and energy-saving settings in the same hours, filling the gap "
+            "left by the stations it measured."
+        ),
+        row=(
+            "One hour of one base station, with its first and, where present, second cell; 92,629 hours of 923 "
+            "stations over one week of January 2023, released by Huawei for an ITU challenge on Zindi."
+        ),
+        predicted=(
+            "The station's energy consumption in that hour, in a unit the source does not state (values from 0.7 to "
+            "100)."
+        ),
+        known=(
+            "The station's hardware (radio unit type, mode, frequency, bandwidth, antennas, transmit power), the "
+            "hour's traffic load and active energy-saving modes of its cells, and the day of the month, weekday and "
+            "hour."
+        ),
+        split=(
+            "Whole stations are held out, so the test data stands for stations without measurements in the same week,"
+            " of hardware types already seen."
+        ),
+        changes=(
+            "We hold out whole stations; the competition's test set held mostly stations seen in training and "
+            "weighted the unseen ones higher."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The inputs are what an operator knows or sets for a station in those hours, and a held-out station is "
+            "one without measurements in the same week, as when filling the gap. The challenge aimed at new station "
+            "products, which a split by station and time would test better; the data size did not allow it."
+        ),
+    )
+
     # Dataset
     unique_name = "5g_energy_consumption"
     year = "2023"
@@ -43,6 +82,9 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
         - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
         - We drop constant columns.
+        - Anomaly: The raw files cover one week only, 2023-01-01 01:00 to 2023-01-08 00:00 (168 hours).
+        - Anomaly: The source does not state the energy unit. `Energy` runs from 0.75 to exactly 100, and every value is a multiple of 100/669, so the values were rescaled to a maximum of 100.
+        - Note: The station id `BS` stays in the data as the group column, which is split metadata, not a model feature. Every test station is unseen in training, so as a feature it would be an unknown category without information.
     """
 
     # Task

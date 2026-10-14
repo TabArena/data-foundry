@@ -6,10 +6,41 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Which of six scaly red skin diseases does a patient have, judged from the clinical examination?"),
+        use_case=(
+            "A dermatologist examines a patient with red, scaly skin and makes a differential diagnosis among six "
+            "similar diseases before taking a biopsy, the first of the source's two steps."
+        ),
+        row=(
+            "One patient diagnosed with one of the six diseases (366 patients, published 1998; place and period not "
+            "stated)."
+        ),
+        predicted=(
+            "The diagnosis: psoriasis (31%), seborrheic dermatitis, lichen planus, pityriasis rosea, chronic "
+            "dermatitis or pityriasis rubra pilaris (5%)."
+        ),
+        known=(
+            "Ten clinical findings graded 0 to 3 (redness, scaling, definite borders, itching, the Koebner "
+            "phenomenon, polygonal and follicular papules, and involvement of the mouth, knees and elbows, and "
+            "scalp), family history and age."
+        ),
+        split="Random patients.",
+        changes=(
+            "We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is "
+            "close to solved."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is "
+            "the differential the source describes. It is small and old."
+        ),
+    )
+
     # Dataset
     unique_name = "eryhemato_squamous_disease"
     year = "1998"
@@ -38,7 +69,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI.
 
-        - We keep only the clinical features: the 11 clinical findings, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
+        - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
     """

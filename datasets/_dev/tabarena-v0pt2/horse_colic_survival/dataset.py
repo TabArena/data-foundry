@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class HorseColicSurvival(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a horse with colic live, die or be put down?",
+        use_case=(
+            "For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, "
+            "to advise the owner on surgery, treatment or euthanasia."
+        ),
+        row=(
+            "One horse with colic at its first visit to a veterinary hospital (344 horses; place and period not "
+            "stated)."
+        ),
+        predicted=("What eventually happened to the horse; it lived (62.5%), died (23%) or was euthanized (14.5%)."),
+        known=(
+            "Age group, rectal temperature, pulse and breathing rate, the state of the legs, gums and gut (pain, gut "
+            "sounds, distension, rectal exam, abdomen), stomach-tube reflux and its acidity, and blood and "
+            "belly-fluid values (packed cell volume, total protein)."
+        ),
+        split="Random horses, so the test data stands for new cases of the same hospital.",
+        changes=(
+            "We drop whether the horse had surgery and the lesion found, which come after the examination, and keep "
+            "each horse's first visit only."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "One of the three outcomes, euthanasia, is a decision by owner and vet that the prediction would inform, "
+            "and the source states neither when the examination values were taken nor how long the horses were "
+            "followed."
+        ),
+    )
+
     # Dataset
     unique_name = "horse_colic_survival"
     year = "1989"

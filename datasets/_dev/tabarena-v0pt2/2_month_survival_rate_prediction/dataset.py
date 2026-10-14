@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 # Columns of support2.csv that are not features at the prediction point (study day 3), with the reason.
 DROPPED_COLUMNS = {
@@ -195,6 +195,34 @@ def _alive_after_day_3(df: pd.DataFrame) -> pd.Series:
 
 
 class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a seriously ill hospital patient die within two months?",
+        use_case=(
+            "On the third day in hospital, the care team estimates a patient's chance of dying within two months, to "
+            "discuss prognosis and the goals of care."
+        ),
+        row=(
+            "One adult patient of five US teaching hospitals (1989-1994) with one of eight serious diagnoses, such as"
+            " heart failure, COPD or lung cancer, alive at the end of study day 3."
+        ),
+        predicted="Whether the patient dies within 60 days of study entry (33% do).",
+        known=(
+            "Age, sex, diagnosis, other illnesses, the day-3 vital signs and lab values, and a few background facts "
+            "(education, income, function before admission)."
+        ),
+        split=("Random patients, so the test data stands for new patients of the same hospitals and years."),
+        changes=(
+            "In the public file the day-3 measurements of most phase II patients belong to other patients; we moved "
+            "them back to their own rows with the study's archive. We drop the scores, physician estimates and orders"
+            " made from or after these values."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the "
+            "model is used. The care is that of 1989-1994."
+        ),
+    )
+
     # Dataset
     unique_name = "2_month_survival_rate_prediction"
     year = "2000"

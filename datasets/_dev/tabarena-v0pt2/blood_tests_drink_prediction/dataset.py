@@ -6,10 +6,41 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class BloodTestsDrinkPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How much alcohol does a man drink per day, judging from five blood tests?",
+        use_case=(
+            "For example, a doctor estimates a patient's daily drinking from blood tests that respond to alcohol, as "
+            "a check when the patient's own account is in doubt."
+        ),
+        row=(
+            "One man (345 men from BUPA Medical Research, donated to UCI in 1990); how the men were chosen, where and"
+            " when, is not stated."
+        ),
+        predicted=(
+            "The number of half-pint equivalents of alcoholic drinks he drinks per day, modelled on a log scale; how "
+            "the number was recorded is not stated."
+        ),
+        known=(
+            "Five blood tests thought to respond to heavy drinking: mean red-cell volume, alkaline phosphatase, two "
+            "liver enzymes (ALT, AST) and gamma-GT."
+        ),
+        split="Random men, so the test data stands for other men of the same sample.",
+        changes=(
+            "We predict the number of drinks, since the file holds no liver-disorder label despite its name, and drop"
+            " the source's train/test marker, which is not a diagnosis."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Blood markers are used to check drinking when an account is doubted, but the label is a recorded amount "
+            "of unstated origin; if it is the men's own account, the model learns to reproduce what it should check. "
+            "The reviewers doubted that any decision rests on it; men only, population and period unknown."
+        ),
+    )
+
     # Dataset
     unique_name = "blood_tests_drink_prediction"
     year = "1990"

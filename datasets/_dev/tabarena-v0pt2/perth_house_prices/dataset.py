@@ -6,13 +6,45 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 RAW_FILE = "all_perth_310121.csv"
 COORDINATE_COLUMNS = ["LATITUDE", "LONGITUDE", "NEAREST_SCH_DIST"]  # the school distance is computed from them
 
 
 class PerthHousePrices(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What price will a house in Perth sell for this month?",
+        use_case=(
+            "A valuation model, refit at the start of each month on all earlier sales, estimates the price of a house"
+            " sold that month, for example for a lender or an agent."
+        ),
+        row=(
+            "One house sale in Perth, Western Australia, from a property website scraped in January 2021; each "
+            "property's latest sale only, dated by month from 1988 to 2020 (33,090 sales)."
+        ),
+        predicted=(
+            "The sale price in Australian dollars, as its natural logarithm; sales above about $2.44M are missing "
+            "from the data."
+        ),
+        known=(
+            "The sale month, the address, suburb, postcode and coordinates, the house (bedrooms, bathrooms, garage, "
+            "land and floor area, build year), the distances to the city centre, the nearest station and school, and "
+            "that school's rank."
+        ),
+        split=(
+            "Each test window is one month of April to December 2020, trained on all earlier sales, as for a model "
+            "refit at the start of each month."
+        ),
+        changes=("We drop 563 sales dated before the house was built, whose house record describes a later building."),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known when a house sells, and each month is predicted from earlier sales "
+            "only. Sales above about $2.44M are missing, and in the test months the site's house record is often "
+            "older than the sale, which adds noise."
+        ),
+    )
+
     # Dataset
     unique_name = "perth_house_prices"
     year = "2021"

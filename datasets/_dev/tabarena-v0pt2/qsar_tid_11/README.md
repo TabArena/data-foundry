@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
+checksum: v2:8115cf62fc52b57263025f2860ba01da0894c84366102b4cad153d8827f039f6
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 5741
   n_features: 1024
@@ -64,7 +64,25 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,741 rows and 1,024 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8115cf62fc52b57263025f2860ba01da0894c84366102b4cad153d8827f039f6`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How potent will a molecule be against one drug target?
+
+**Use case.** In drug discovery, a medicinal chemist screens candidate molecules for activity on one protein target before making and testing them (the Meta-QSAR project builds one such model per target).
+
+**One row.** One compound measured against human thrombin (ChEMBL target 11, CHEMBL204; ChEMBL version 17, Meta-QSAR project 2015; 5,741 compounds).
+
+**Predicted.** The compound's median measured potency, as the negative log of the concentration that gives half the effect; higher means more potent.
+
+**Known at prediction time.** A 1,024-bit fingerprint of the molecule's structure (which circular substructures it contains).
+
+**What the test data stands for.** Random compounds, so close relatives of a test compound can be in training. The file is roughly in ChEMBL ID order, with the mean activity drifting along it; the shuffle removes this order.
+
+**Our changes to the source.** We drop one row with a negative activity value, judged a data error.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The fingerprint comes from the structure alone, which is all a chemist has before synthesis, and held-out compounds stand for unmeasured ones. The activities are medians over measurements of many sources.
 
 ## Files in this folder
 
@@ -153,8 +171,12 @@ The first 5 of 5,741 rows of the final frame (random rows: the frame is shuffled
 
 ## Curation notes
 
+- The target is ChEMBL target 11, human prothrombin (thrombin, CHEMBL204), named by OpenML's original data URL.
+- OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
+  (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
 - We drop the "MOLECULE_CHEMBL_ID" column.
-- We shuffle the data as it has an original distribution shift.
+- The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
+  first tenth, 5.6 in the ninth); the standard shuffle removes this order.
 - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
 - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
 
@@ -350,3 +372,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:8115cf62fc52b57263025f2860ba01da0894c84366102b4cad153d8827f039f6` |

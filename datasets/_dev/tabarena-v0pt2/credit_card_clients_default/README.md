@@ -67,6 +67,22 @@ Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on I
 
 Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:73bc7ee5a2a741ededdbe3c54add41764f5153033b7c581bc7c5cadaa23d9649`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a credit card holder miss next month's payment?
+
+**Use case.** For example, a card issuer at the end of a month estimates each client's chance of defaulting on the next payment, to adjust credit limits or start collection early.
+
+**One row.** One credit card client of a bank in Taiwan, with six months of history from April to September 2005 (30,000 clients).
+
+**Predicted.** Whether the client defaults on the payment of the following month (22% do).
+
+**Known at prediction time.** The credit limit, sex, education, marital status and age, and for each of the six months the repayment status (paid on time or months of delay), the bill amount and the amount paid.
+
+**What the test data stands for.** Random clients of the same bank and the same months.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The file is one snapshot: every client is scored for the same month, so training and test share that month's conditions, where a bank trains on earlier months and scores the next.
+
 ## Files in this folder
 
 | file | what it is |

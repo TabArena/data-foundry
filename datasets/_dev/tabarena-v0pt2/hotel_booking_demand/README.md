@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad
+checksum: v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -72,7 +72,25 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a booking that arrives in the next three months be cancelled?
+
+**Use case.** For example, on the first of each month a hotel's revenue manager estimates which bookings arriving in the next three months will be cancelled, to set overbooking and forecast occupancy.
+
+**One row.** One booking at a resort hotel or a city hotel in Portugal, arrivals from July 2015 to August 2017; repeated records and same-day bookings are removed.
+
+**Predicted.** Whether the booking is cancelled (29% of all bookings, 12.5% of the test bookings of the newest split).
+
+**Known at prediction time.** The booking: hotel, booking and arrival dates, nights, guests, meal plan, country, market segment, channel, agent or company, room type, deposit type, customer type, daily rate, special requests, days on the waiting list, and the guest's earlier bookings and cancellations.
+
+**What the test data stands for.** Nine prediction dates, the first of each month from September 2016 to May 2017. The test data is the bookings made by then that arrive within three months and are not yet cancelled; training is the bookings that arrived before the date.
+
+**Our changes to the source.** Training holds only bookings that arrived before the prediction date (the future bookings known then are all cancelled) and none cancelled over three months ahead; we drop fields recorded up to check-in (booking changes, assigned room, parking).
+
+> **Use case fit: approximate (a stand-in with a known gap).** The values are a snapshot of the day before arrival, up to three months after the prediction date, so changes made in between may remain; the hotels often learn the country only at check-in.
 
 ## Files in this folder
 
@@ -174,7 +192,7 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 - To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data.
 - To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available.
 - To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance.
-- Bookings that have arrival dates in the future, but were already canceled at the given prediction point are included in the train data.
+- Training holds only bookings that arrived before the prediction point. Future bookings already cancelled at that point are left out: the future bookings known then are all cancelled ones, so they would teach "future arrival = cancelled" (see the splits comment).
 - After splitting, we remove "ReservationStatus" and "ReservationStatusDate" to avoid data leakage.
 - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
 
@@ -367,4 +385,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:390a88d261b7c4ccbec6cf8404518c391b241be30c72ac0ecb588916f6b68aad` |
+| stale | yes: the definition now gives checksum `v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004` |

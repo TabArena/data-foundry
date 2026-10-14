@@ -6,10 +6,43 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class LungCancerEpithelialGenexp(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Does a smoker with suspected lung cancer have it, judging from gene activity in cells brushed from the "
+            "airway?"
+        ),
+        use_case=(
+            "During bronchoscopy for suspected lung cancer, a pulmonologist brushes cells from the normal-looking "
+            "airway and uses their gene expression to judge whether the patient has cancer and needs further invasive"
+            " tests (Spira et al. 2007)."
+        ),
+        row=(
+            "One smoker undergoing bronchoscopy for suspected lung cancer (187 patients of the extended GEO release "
+            "GSE4115)."
+        ),
+        predicted=(
+            "Whether the patient was finally diagnosed with lung cancer (52% were); the time to the final diagnosis "
+            "is not stated."
+        ),
+        known=(
+            "The measured activity of about 22,000 gene probes (Affymetrix microarrays) in the brushed airway cells."
+        ),
+        split="Random patients, standing for new patients examined the same way.",
+        changes=(
+            "We use the extended release of 192 patients rather than the paper's 129 and drop the 5 whose diagnosis "
+            "was still open."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The sample is taken at the bronchoscopy, before the diagnosis is known, and a held-out patient is a new "
+            "one. The task is small, with 187 patients and far more genes than patients."
+        ),
+    )
+
     # Dataset
     unique_name = "lung_cancer_epithelial_genexp"
     year = "2006"

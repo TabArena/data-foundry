@@ -67,6 +67,24 @@ Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 r
 
 Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Is a bank customer dissatisfied?
+
+**Use case.** Santander wants to identify dissatisfied customers early in their relationship, to act before they leave (the competition's stated aim).
+
+**One row.** One customer of Santander bank (71,080 customers); the country and period are not stated.
+
+**Predicted.** Whether the customer is dissatisfied (3.8% are); how and when this was measured is not stated.
+
+**Known at prediction time.** About 300 anonymised numbers whose meanings are not given, plus the count of zeros in the row, which we add.
+
+**What the test data stands for.** Random customers, so the test data stands for other customers of the same time.
+
+**Our changes to the source.** We add the count of zeros per row, as top competition solutions did, and drop repeated rows and columns.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label has no stated definition or horizon, and whether the anonymised features were recorded before it is not stated. The competition's winners used a random split, as here.
+
 ## Files in this folder
 
 | file | what it is |

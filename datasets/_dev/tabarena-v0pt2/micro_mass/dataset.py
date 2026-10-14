@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class MicroMass(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Which bacterial species does the mass spectrum of an isolated colony come from?",
+        use_case=(
+            "A clinical microbiology laboratory identifies the species of an isolated bacterial colony from one "
+            "MALDI-TOF mass spectrum (Mahé et al. 2014)."
+        ),
+        row=(
+            "One MALDI-TOF mass spectrum of a bacterial strain, a technical replicate (571 spectra of 213 strains, 1 "
+            "to 6 per strain, 20 species); the place and period are not stated."
+        ),
+        predicted="The species, one of 20.",
+        known=(
+            "The spectrum as peak intensities in mass bins (1,300 bins in the source, without the constant and "
+            "repeated ones)."
+        ),
+        split=(
+            "Whole strains are held out, as in Vervier et al. 2015, so the test data stands for isolates never "
+            "measured; other strains of the same species are in training."
+        ),
+        changes=("We use the spectra of single species (the source also has mixtures) and split by strain."),
+        fit="direct",
+        fit_reason=(
+            "A spectrum is all the laboratory has when identifying a colony, and a held-out strain is a new isolate. "
+            "Some species have few strains, so their share of a test fold is small and uneven."
+        ),
+    )
+
     # Dataset
     unique_name = "micro_mass"
     year = "2013"

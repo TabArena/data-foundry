@@ -65,6 +65,24 @@ Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,7
 
 Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:111ce6b5bf10d768e44a1a1540397eeaa9a387536b1c4d438862e24eb06969a9`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a heart attack patient die in hospital, and of what?
+
+**Use case.** At the admission of a heart attack patient, the cardiologists estimate the risk of each lethal complication, to choose monitoring and preventive treatment (the source's first prediction time).
+
+**One row.** One patient admitted with a heart attack to a hospital in Krasnoyarsk, Russia, 1992-1995 (1,700 patients).
+
+**Predicted.** Whether the patient dies in hospital and of which of seven causes, such as cardiogenic shock (6%) or heart rupture (3%); 84% survive.
+
+**Known at prediction time.** Age, sex, medical history, complications present on admission, the infarct's location and the ECG, blood pressure and blood tests on admission, the time to hospital, and the drugs of the emergency team and the intensive care unit that the source counts as admission inputs.
+
+**What the test data stands for.** Random patients.
+
+**Our changes to the source.** We predict at admission and drop the nine records of days one to three in intensive care: a patient who died early has none, so their absence reveals the death.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The inputs are those the source allows at admission, and the outcome follows during the stay. The care is that of one hospital in 1992-1995.
+
 ## Files in this folder
 
 | file | what it is |

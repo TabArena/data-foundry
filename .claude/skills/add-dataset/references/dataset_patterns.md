@@ -87,6 +87,68 @@ Keep `print` diagnostics out of the definition: `README.md` already records spli
 `explore.ipynb` or `_decisions` is the place for evidence. Keep `assert`s that guard custom logic. Run
 `ruff check --fix` and `ruff format` on the file: they fix quoting (always double quotes) and import order.
 
+## In brief: `task_summary`
+
+The first attribute of the class, and the first section of the README ("In brief"): what the dataset simulates, in
+plain words, for a reader who has not seen the source, followed by our judgement of how closely it does. It is not
+stored in the container, so it never changes a checksum. `dataset check` reports `definition_summary_missing` (error)
+without it, `definition_no_use_case` (error) for `fit="none"`, and `definition_summary_long` (warning) for a field
+over 70 words. The format came out of Lennart's review of 2026-10-14: what is predicted and who acts on it were
+unclear in a first draft, and the use case turned out to be the most important point.
+
+```python
+task_summary = TaskSummary(
+    question="How loud is an airfoil's own noise at a given sound frequency, for a wind-tunnel setting that was not measured?",
+    use_case="An aerodynamics engineer estimates the noise spectrum of an airfoil configuration (size, angle, wind speed) before, or instead of, measuring it in a wind tunnel.",
+    row="One frequency band of one wind-tunnel run, that is one airfoil size at one angle and one wind speed (106 runs of 8 to 19 bands, NASA 1989).",
+    predicted="The sound pressure level in that band, in decibels.",
+    known="The band's frequency and the run's settings (chord length, angle of attack, wind speed) plus a boundary-layer thickness computed from them.",
+    split="Whole runs are held out, so the test data stands for configurations never measured; runs with the same size, angle or speed in other combinations can be in training.",
+    changes="We added the run as a group column and split by it; with random rows, models filled gaps in spectra they had already seen.",
+    fit="direct",
+    fit_reason="The features are the settings an engineer chooses, and a held-out run is an unmeasured configuration. The task is narrow (one airfoil shape, one wind tunnel) but real.",
+)
+```
+
+(Written with implicit string concatenation in the file, so no line passes 120 characters.)
+
+Field by field:
+
+* **`use_case`**, settled first: an actor, a moment and a decision ("a lender, when an application arrives,
+  decides whether to approve it"). Take it from the source (paper, competition, data card) when it states one;
+  otherwise write the most plausible one and say "for example". Every other field is checked against it.
+* **`question`**: the prediction as the actor would ask it, one line.
+* **`row`**: what one row is, with its population, place and period.
+* **`predicted`**: the outcome in plain words, by when after the prediction point, its classes or unit, and the
+  share of the positive class or the typical scale when it helps the reader.
+* **`known`**: what the model has at the prediction point, grouped in plain words; never column names, never a
+  value recorded later.
+* **`split`**: what the test data stands for in the use case (new customers, the next two weeks, configurations
+  never measured, unseen patients) and how it is drawn.
+* **`changes`**: only our changes that alter the task for a reader (a dropped leak, a re-split, a rebuilt target, a
+  restored column); routine cleaning stays in `curation_comments`. Empty when there are none.
+* **`fit`** and **`fit_reason`**, the judgement, read after the description:
+  * `"direct"`: the rows, the features, the label's timing and the split mirror the use case
+    (airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction).
+  * `"approximate"`: a stand-in with a known gap, named in `fit_reason`: one snapshot standing in for a forecast
+    (account_debt_south_africa), a potential leak kept on purpose (kick), a reconstructed time axis or a label without
+    a stated horizon (alfa_battle_2_0_task_2).
+  * Before settling on `"approximate"`, ask whether the data as shipped mirrors another well-defined use case, one
+    that practitioners have, where the features are known and the label is not. If it does, that is the use case and
+    the fit is `"direct"` (Lennart, 2026-10-14: 5g_energy_consumption's split by station within one week is filling the
+    gap for stations without measurements, not a weak stand-in for a forecast). Do not rephrase a use case only to
+    excuse a gap: a credit model scores future applicants, so a random split of undated applications stays
+    `"approximate"`.
+  * `"none"`: no decision fits. The label counts outcomes over one calendar window shared by all rows rather than a
+    fixed time after each row (analcatdata_supreme), comes from clustering, or serves only a study looking back.
+    Such a dataset is retired as `No Good Target / Scientific Discovery` (curation guidelines, criterion 3), and
+    `dataset check` refuses it.
+
+Write for a reader outside the domain: one or two sentences per field, no "IID", "log1p", "skill" or metric names
+except in `fit_reason` when a number decides. Only facts from the definition, its notes, the record and the source;
+write "not stated" rather than guess. Keep it in step with `curation_comments`: a change to the task (target,
+split, a dropped column) updates both.
+
 ## §A Field mapping (curation record → metadata)
 
 **`unique_name`**: Convert "Name" (the record's `name`) to snake_case — lowercase, replace spaces/hyphens/special chars with underscores, collapse multiple underscores, strip leading/trailing underscores. (Enforced: `DatasetMetadata` rejects anything else.)

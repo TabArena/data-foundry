@@ -67,6 +67,22 @@ Regression of `ConcreteCompressiveStrength`, scored with `rmse` on IID splits. 1
 
 Built as `01a111fc-cee4-7ba9-97fd-b7a0365aad44` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f16e07c98cb145598585972882235a4080344bf5d8fa76900439ba8acb35dbe3`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** How strong will a concrete mix be after a given number of days?
+
+**Use case.** For example, a civil engineer designing a high-performance concrete mix estimates its compressive strength at a given age before casting and testing specimens.
+
+**One row.** One laboratory test of one concrete mix at one age (1,030 tests, published by I-Cheng Yeh in 1998); many mixes are tested at several ages.
+
+**Predicted.** The compressive strength, in megapascals (2 to 83 in the data).
+
+**Known at prediction time.** The amount of each of seven ingredients per cubic metre (cement, blast-furnace slag, fly ash, water, superplasticizer, coarse and fine aggregate) and the age at the test, 1 to 365 days.
+
+**What the test data stands for.** Random tests, so a test mix can be in training at another age; the test data stands for new mixes only in part.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The inputs are what an engineer chooses, but the random split puts tests of the same mix at other ages in training, so the score mixes designing new mixes with filling in known ones; a split by mix would match the use case.
+
 ## Files in this folder
 
 | file | what it is |

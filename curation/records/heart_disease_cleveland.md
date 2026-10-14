@@ -37,6 +37,8 @@ We take all datasets from this repo as they all represent real tasks. We use the
 
 CC (2026-10-06, Lennart): Kept after the task-probe review (flag `no_spread`). A real, classic task with clear signal (best ROC AUC 0.913 on BeyondArena) and little room between methods: they spread from 0.913 to about 0.89, 15 of 29 are tied with the best, and the ranks vary across folds more than on any other BeyondArena dataset (Kendall's W 0.15). With 303 patients this is the noise of a small task, not a reason to act.
 
+**Assessment (AI, 2026-10-14):** No leak in `ca` or `thal`: `ca` counts major coronary arteries with calcium on cardiac cinefluoroscopy and `thal` is an exercise thallium scan, noninvasive tests done before the angiography that sets the label (Detrano et al. 1986, Circulation 73:970, PMID 3698241; Detrano et al. 1986, Am J Cardiol 57:1041, PMID 3706156). The data reproduces their sensitivity and specificity (`ca` >= 1: 66.7% / 80.7%).
+
 ## Reference
 
 @article{detrano1989international,

@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Can a drug cause an autoimmune reaction, judging from its chemical structure?",
+        use_case=(
+            "For example, a toxicologist screens drug candidates by structure early in development and decides which "
+            "need closer testing for autoimmune side effects; the source aims at flagging that risk."
+        ),
+        row="One drug, given by its chemical structure (597 drugs; InterDIA, Huang et al. 2025).",
+        predicted=(
+            "Whether the drug is labelled as causing drug-induced autoimmunity (24.79% are); how the positive and "
+            "negative drugs were chosen is not stated in the definition."
+        ),
+        known=(
+            "The structure as a SMILES string and descriptors computed from it with RDKit (size, shape and "
+            "connectivity indices, charge and polarity measures, counts of rings and chemical groups)."
+        ),
+        split=(
+            "Random drugs, so the test data stands for drugs not seen in training; close structural relatives of a "
+            "test drug can be in training."
+        ),
+        changes="We pool the source's training and test sets and split them at random.",
+        fit="direct",
+        fit_reason=(
+            "The features come from the structure alone, which is all a screen has before testing, and the test drugs"
+            " are unseen. The set is small, and a new candidate may differ more from known drugs than a random test "
+            "drug does."
+        ),
+    )
+
     # Dataset
     unique_name = "drug_induced_autoimmunity_prediction"
     year = "2025"
@@ -33,7 +61,8 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
     curation_comments = """
         We start with the dataset from UCI.
 
-        - We drop the constant columns.
+        - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
+        - We drop the constant columns, and fr_Nhpyrrole, MaxEStateIndex and fr_benzene, which copy other descriptor columns in these drugs.
         - We keep the SMILES code as string for later pipelines to handle.
     """
 

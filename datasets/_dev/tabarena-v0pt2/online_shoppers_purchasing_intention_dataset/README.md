@@ -67,6 +67,24 @@ Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 r
 
 Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d37f00cf9d97c3b99dcb3578ccf389931909eed14112fc5700ccf189daddf059`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a visit to an online shop end in a purchase?
+
+**Use case.** While a visitor browses, the online shop estimates whether the visit will end in a purchase, to decide whether to show an offer or other content (the source's "real-time prediction").
+
+**One row.** One visit to an online shop, each by a different user, sampled over one year; we keep June to December (6,875 visits).
+
+**Predicted.** Whether the visit ended in a purchase (1,348 of 6,875 visits, 20%).
+
+**Known at prediction time.** How many administrative, informational and product pages the visit opened and how long it spent on them, the pages' bounce, exit and value figures from the shop's analytics, the month, weekend, new or returning visitor, operating system, browser, region and traffic source.
+
+**What the test data stands for.** Random visits of the same months.
+
+**Our changes to the source.** We keep only June to December: before June every buyer's page value is above zero and alone separates buyers almost perfectly, which suggests it counts the visit's own purchase.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Each row summarises the finished visit, while the shop must act during it, and whether the page values still carry the visits' own purchases cannot be proven (alone they reach ROC AUC 0.814 on the kept months).
+
 ## Files in this folder
 
 | file | what it is |

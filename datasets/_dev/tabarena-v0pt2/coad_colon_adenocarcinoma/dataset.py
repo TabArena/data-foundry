@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary, drop_columns
 
 # The four omics files of MLOmics, genes x patients; all of them and the label file list the patients in one order.
 OMICS = ("mRNA", "miRNA", "Methy", "CNV")
@@ -14,6 +14,42 @@ SUBTYPES = {0: "CIN", 1: "MSI", 2: "GS", 3: "HM-SNV"}
 
 
 class CoadColonAdenocarcinoma(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Which molecular subtype does a colon tumour belong to, given its gene expression and DNA methylation?"
+        ),
+        use_case=(
+            "For example, a lab that has measured a resected colon tumour's RNA and DNA methylation, but not the DNA "
+            "mutations and copy-number changes that define the subtypes, assigns the tumour its TCGA molecular "
+            "subtype."
+        ),
+        row=(
+            "One primary colon adenocarcinoma of one patient of The Cancer Genome Atlas (256 patients, MLOmics "
+            "release)."
+        ),
+        predicted=(
+            "The subtype the TCGA PanCancer Atlas gave the tumour, chromosomal instability (CIN, 68%), microsatellite"
+            " instability (MSI, 19%) or genomically stable (GS, 13%)."
+        ),
+        known=(
+            "36,355 measurements of the tumour (gene expression, microRNA expression and DNA methylation), each "
+            "standardised over the cohort by the release."
+        ),
+        split=(
+            "Random patients, so the test data stands for new tumours; holding out tissue source sites scores the same."
+        ),
+        changes=(
+            "We drop the copy-number block, which defines CIN against GS, and the 4 hypermutated tumours of a fourth "
+            "class."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The measurements exist before the subtype is called, and the DNA data that define it are left out, as in"
+            " the lab of the use case. The cohort is small, and the release standardised each feature over all "
+            "patients, test rows included."
+        ),
+    )
+
     # Dataset
     unique_name = "coad_colon_adenocarcinoma"
     year = "2024"

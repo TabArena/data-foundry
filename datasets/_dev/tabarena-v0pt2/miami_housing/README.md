@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:e1a0efc76a27228ab06c2a846d76788b810de9c513998d6e2449c9d0a8ffa371
+checksum: v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d
 build:
   uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
   checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
@@ -61,9 +61,25 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `SALE_PRC`, scored with `rmse` on IID splits. 13,776 rows and 15 features. Source: Kaggle (2021).
+Regression of `SALE_PRC`, scored with `rmse` on IID splits. 13,776 rows and 15 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e1a0efc76a27228ab06c2a846d76788b810de9c513998d6e2449c9d0a8ffa371`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** What price will a single-family home in Miami sell for?
+
+**Use case.** For example, a property appraiser or a lender estimates the market value of a home from its property record and location, using the sales of the same year.
+
+**One row.** One single-family home sold in Miami in 2016 (13,776 after removing repeated parcels).
+
+**Predicted.** The sale price in US dollars, on a log scale.
+
+**Known at prediction time.** Latitude and longitude, land and living area, the value of special features such as pools, the age and structure quality, the month of sale, airplane noise above a threshold, and distances to the ocean, water, rail line, highway, the city centre and the nearest sub-centre.
+
+**What the test data stands for.** Random homes, so the test data stands for other homes sold in the same year.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are property records and location facts known before a sale, and other homes of the same year match valuing unsold homes as of that year. The source paper studies price drivers rather than prediction.
 
 ## Files in this folder
 
@@ -98,12 +114,12 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| source | Kaggle: https://www.openml.org/d/43093 |
+| source | OpenML: https://www.openml.org/d/43093 |
 | year | 2021 |
 | domain | finance |
 | license | CC BY-NC-SA |
 | data_tags | IID, Spatial |
-| reference | bourassa2021big |
+| reference | mayer2021structured,bourassa2021big |
 | rows x columns | 13,776 x 16 |
 | task.target | SALE_PRC |
 | task.problem_type | regression |
@@ -123,6 +139,13 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
+@misc{mayer2021structured,
+  title={Structured Additive Regression and Tree Boosting},
+  author={Mayer, Michael and Bourassa, Steven C and Hoesli, Martin and Scognamiglio, Donato},
+  year={2021},
+  howpublished={SSRN preprint, \url{https://doi.org/10.2139/ssrn.3924412}},
+  note={Cited by the data's first upload, OpenML 43093}
+}
 @article{bourassa2021big,
   title={Big data, accessibility and urban house prices},
   author={Bourassa, Steven C and Hoesli, Martin and Merlin, Louis and Renne, John},
@@ -155,6 +178,9 @@ The first 5 of 13,776 rows of the final frame (random rows: the frame is shuffle
 - We drop duplicated homes (non-unique identifiers and location) (~1% of the data).
 - We drop the ID column "PARCELNO".
 - Anomaly: while the original paper describes data with 57k samples, we only have 13k on OpenML or Kaggle.
+- The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
+  al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
+  source, and OpenML 44983 (2022) copies Kaggle.
 
 ## Splits
 
@@ -256,4 +282,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e1a0efc76a27228ab06c2a846d76788b810de9c513998d6e2449c9d0a8ffa371` |
+| stale | yes: the definition now gives checksum `v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d` |

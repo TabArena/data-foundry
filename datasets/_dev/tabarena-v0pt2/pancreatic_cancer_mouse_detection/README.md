@@ -73,6 +73,24 @@ Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by 
 
 Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Does a mouse have preinvasive pancreatic lesions, judged from one blood serum sample?
+
+**Use case.** For example, a doctor screens a person at risk with a blood test for the preinvasive stage of pancreatic cancer; in this mouse study (Hingorani et al. 2003) each sample of an unseen mouse stands for a new patient's test.
+
+**One row.** One serum mass spectrum of one mouse, from 1 to 6 blood samples per mouse taken at least 5 days apart (181 spectra of 73 mice).
+
+**Predicted.** Whether the mouse is a mutant with pancreatic intraepithelial neoplasia, preinvasive lesions without invasive cancer, or a littermate control (44% of the spectra are mutants).
+
+**Known at prediction time.** The intensities of the serum's mass spectrum at about 6,770 mass-to-charge values.
+
+**What the test data stands for.** Whole mice are held out, so the test data stands for new individuals, each sample read on its own.
+
+**Our changes to the source.** We split by mouse; the paper split the samples at random, so samples of one mouse sat on both sides.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Mice of one lab stand in for patients. A file marker of unknown meaning separates some control spectra from the rest and may mark a processing batch; it cannot explain the whole signal, but what it marks needs the authors.
+
 ## Files in this folder
 
 | file | what it is |

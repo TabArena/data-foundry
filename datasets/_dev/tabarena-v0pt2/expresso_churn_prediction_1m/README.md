@@ -62,6 +62,24 @@ Binary classification of `CHURN`, scored with `roc_auc` on IID splits. 1,500,000
 
 Not built yet. The current definition gives checksum `v2:055456177016393045fd8ef6808c5349488dc46b4617f42d4793091b81a2afd6`.
 
+## In brief
+
+**Question.** Will a mobile phone customer in Senegal stop using the service for the next 90 days?
+
+**Use case.** At the end of an observation window of about three months, the telecom operator Expresso scores each customer active in it for the risk of churning, for example to target retention offers.
+
+**One row.** One Expresso customer in Senegal who was active in the observation window: a random 1.5 million of the 2,154,048 customers of the competition file, whose dates are not published.
+
+**Predicted.** Whether the customer churns, that is makes no transaction for 90 days after the window (18.75% do).
+
+**Known at prediction time.** The tenure band and the window's activity: top-up amounts and counts, revenue, data volume, calls within the network, to other operators and to other zones, the most used package, and the number of active days.
+
+**What the test data stands for.** Random customers of the same snapshot, as in the competition, whose test set is a random 15% of the extract; each fold trains on 1 million and tests on 500,000 customers.
+
+**Our changes to the source.** We drop the region, whose missing values follow the outcome and were most likely filled in after the window, and sub-sample 1.5 million customers.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is from the window and churn follows it. But the release is one snapshot without dates: training and test customers share one window, while a deployed model is trained on an earlier one, and the label's timing is inferred, not published.
+
 ## Files in this folder
 
 | file | what it is |

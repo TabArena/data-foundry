@@ -59,6 +59,24 @@ Regression of `rating_notch`, scored with `rmse` on IID splits. 197 rows and 6 f
 
 Not built yet. The current definition gives checksum `v2:2c17de69a7583f3e2c8c067204c3f65a9950f1c07f393bc9542b17ed9e8642f1`.
 
+## In brief
+
+**Question.** Which credit rating would a financial institution get, judged from its financial ratios?
+
+**Use case.** For example, a bank or investor estimates the agency rating of an institution that has none from its financial statements, as the book's chapter on low-default portfolios does.
+
+**One row.** One rated financial institution, most likely a bank, from the book Credit Risk Analytics (197 institutions, 2016); the agency, the years and the country are not stated.
+
+**Predicted.** The rating code from 1 (AAA) to 10, read as notches of the agency's scale and predicted as a number.
+
+**Known at prediction time.** Six ratios from the financial statements: equity to assets, loan-loss provisions to loans, costs to income, return on equity, liquid assets to assets, and size (log of total assets).
+
+**What the test data stands for.** Random institutions, so the test data stands for other institutions of the same unknown period.
+
+**Our changes to the source.** We use the book's 197 rows, not the 5,000-row OpenML version generated from them, and predict the code as a number instead of 10 classes.
+
+> **Use case fit: approximate (a stand-in with a known gap).** It is unknown whether the statements precede the rating, and reading the codes as notches rather than letter grades is not verified: the data page gives only "1 = AAA".
+
 ## Files in this folder
 
 | file | what it is |

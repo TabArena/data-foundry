@@ -57,6 +57,24 @@ Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits b
 
 Not built yet. The current definition gives checksum `v2:d04fe7bd09b54a3a909051d0bb8b2cda51f71244fab77cffb8a9349bd095483c`.
 
+## In brief
+
+**Question.** Will a US domestic flight arrive 15 minutes or more late?
+
+**Use case.** Shortly before departure, an airline or airport estimates which of the coming flights will arrive late, from the schedule and the weather.
+
+**One row.** One completed US domestic flight of 2023-2024.
+
+**Predicted.** Whether it arrives at least 15 minutes after its scheduled arrival (the US DOT definition); about one flight in five does.
+
+**Known at prediction time.** The date, airline, flight number, route, scheduled times and duration, the airports' locations, and the weather at both airports a few hours before departure.
+
+**What the test data stands for.** Each test window is two weeks at the end of 2024; training is a random million earlier flights from 2023 on, as for a model refit every two weeks.
+
+**Our changes to the source.** We use the history from 2023 on (the release starts in 2016) and two-week windows, so only one window falls in the holiday peak.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known before departure, except the destination weather of 2% of the flights, read up to about an hour later. Cancelled and diverted flights are not in the release, so the task is the delay of a flight that operates.
+
 ## Files in this folder
 
 | file | what it is |

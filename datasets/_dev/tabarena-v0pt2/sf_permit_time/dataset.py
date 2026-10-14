@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Splits, Temporal, TemporalSplits
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Splits,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 SECONDS_PER_DAY = 86_400
 # Half-year test windows; train is the permits filed at least six months before the window starts
@@ -53,6 +61,37 @@ def _label_known_windows(df: pd.DataFrame) -> tuple[Splits, pd.DataFrame]:
 
 
 class SfPermitTime(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("How many days will San Francisco take to issue a building permit that has just been filed?"),
+        use_case=(
+            "For example, at filing the city's permit office or the applicant estimates how long the permit will "
+            "take, to plan staff or the construction schedule."
+        ),
+        row=(
+            "One building permit filed in San Francisco from 2015 to 2023 and issued by the download in February "
+            "2026, without the quick miscellaneous permits (99,847 permits)."
+        ),
+        predicted=("The days from filing to issue, on a log scale; one permit in ten takes more than 315 days."),
+        known=(
+            "The permit type and description, the address and location, the existing and proposed use, occupancy and "
+            "construction type, stories and units, the estimated cost, the plan sets, how it was submitted, and flags"
+            " such as site permit or fire-only."
+        ),
+        split=(
+            "Each test window is a half-year of filings, 2020 to 2023; training is the permits filed at least six "
+            "months earlier and issued before the window starts, as for a model refit every six months."
+        ),
+        changes=(
+            "We keep filings before 2024, as later ones still miss their slow permits, drop dates and fields recorded"
+            " after filing, and leave a six-month gap before each test window."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at filing, and the windows mirror a refit with the permits issued by "
+            "then. Permits never issued are not in the data, so the task is the wait of a permit that gets issued."
+        ),
+    )
+
     # Dataset
     unique_name = "sf_permit_time"
     year = "2026"  # the snapshot we pin; the source grows over time

@@ -67,6 +67,22 @@ Regression of `price`, scored with `rmse` on IID splits. 1,482,486 rows and 6 fe
 
 Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87dd74d2b2fffad29d1e96c500ab12f74f5d377c6017605f1fd4dbbfd5e7f9eb`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What price will a second-hand item sell for on the Mercari app?
+
+**Use case.** When a seller lists an item on Mercari, the app suggests a price from the listing (the competition's stated aim).
+
+**One row.** One item listing on Mercari, a shopping app for second-hand goods (1,482,486 listings); the place and period are not stated.
+
+**Predicted.** The price the item sold for, in US dollars, on a log scale.
+
+**Known at prediction time.** The item's name, condition, category, brand, whether the seller pays shipping, and the seller's free-text description.
+
+**What the test data stands for.** Random listings, as in the competition, so the test data stands for other listings of the same period.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is what a seller enters when listing, and the label is the price a suggestion should hit. The release has no dates, so the split cannot follow time.
+
 ## Files in this folder
 
 | file | what it is |

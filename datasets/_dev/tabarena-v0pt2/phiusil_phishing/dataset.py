@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 TEMPLATE_URL = r"https://www\.[^/?#]+"
 """The form of every legitimate URL in the file: a ranked domain written as ``https://www.<host>``, without a path."""
@@ -96,6 +96,36 @@ def overlap_score(title: str, target: str) -> float:
 
 
 class PhiusilPhishing(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is the web page behind this URL a phishing page?",
+        use_case=(
+            "A phishing detector fetches the page of a URL and decides whether it is phishing before the user opens it."
+        ),
+        row=(
+            "One URL with features of its fetched page: 134,850 legitimate and 100,520 phishing URLs, published in "
+            "2023; the collection period is not stated."
+        ),
+        predicted="Whether the URL is phishing or legitimate (43% phishing).",
+        known=(
+            "The URL text and its top-level domain, counts and ratios computed from the URL, and features of the page"
+            " such as its lines, title, links, forms, password fields, images and scripts."
+        ),
+        split=(
+            "Random URLs; hosts are not held out, as a deployed detector meets both known and new hosts. There is no "
+            "time column."
+        ),
+        changes=(
+            "We drop columns that encode how the rows were collected: the file name, a similarity to the list the "
+            "legitimate rows came from, and a title rebuilt from the URL with the scores computed from it."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The classes were collected in different forms: every legitimate URL is the bare homepage of a ranked "
+            "site, and the phishing pages were fetched later, so a fixed rule reaches ROC AUC 0.9998. The curation "
+            "notes recommend excluding the dataset."
+        ),
+    )
+
     # Dataset
     unique_name = "phiusil_phishing"
     year = "2023"

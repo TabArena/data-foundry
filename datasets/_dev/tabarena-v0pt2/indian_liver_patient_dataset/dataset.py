@@ -5,10 +5,33 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class IndianLiverPatientDataset(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a patient have liver disease, judging from age, sex and routine blood tests?",
+        use_case=(
+            "For example, a doctor reads a patient's liver blood tests to decide whether to refer the patient for a "
+            "liver work-up."
+        ),
+        row=(
+            "One patient record from the north-east of Andhra Pradesh, India (416 liver patients and 167 others); the"
+            " period is not stated."
+        ),
+        predicted=("Whether the record is of a liver patient (71%); how the diagnosis was made is not stated."),
+        known=(
+            "Age, sex, total and direct bilirubin, alkaline phosphatase, two liver enzymes (ALT and AST), total "
+            "protein, albumin and the albumin-to-globulin ratio."
+        ),
+        split="Random patients, so the test data stands for new patients from the same collection.",
+        fit="approximate",
+        fit_reason=(
+            "Liver patients and others were collected as two groups (71% patients), not as the patients a doctor "
+            "sees, and the basis of the diagnosis is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "indian_liver_patient_dataset"
     year = "2012"

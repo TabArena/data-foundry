@@ -69,6 +69,22 @@ Binary classification of `Response`, scored with `roc_auc` on IID splits. 2,240 
 
 Built as `01a111fc-b058-7ad2-9e81-45d916a3052c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:adb9aa089f94f3aa1ea63bad8099c50b24a8dbbc45c55e0496ed03f55338fd96`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a customer accept the offer of the company's next marketing campaign?
+
+**Use case.** Before a campaign, a company decides which customers to send the offer to, to maximise the campaign's profit (the data card's task, from a SAS textbook).
+
+**One row.** One customer of a company (not named) selling wine, meat, fish, fruit, sweets and gold products in stores, by catalogue and on its website (2,240 customers).
+
+**Predicted.** Whether the customer accepted the offer of the last campaign.
+
+**Known at prediction time.** Birth year, education, marital status, income, children at home, date of joining, days since the last purchase, spending per product type and purchases per channel over two years, website visits in the last month, a complaint flag, and whether the customer accepted each of five earlier campaigns.
+
+**What the test data stands for.** Random customers of the same campaign.
+
+> **Use case fit: approximate (a stand-in with a known gap).** One campaign stands in for the next, and the source does not say whether spending and visits were counted before the campaign. How the data was obtained is not documented; the curators suspect it may be artificial.
+
 ## Files in this folder
 
 | file | what it is |

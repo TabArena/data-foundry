@@ -67,6 +67,24 @@ Multiclass classification of `lithology`, scored with `log_loss` on grouped spli
 
 Not built yet. The current definition gives checksum `v2:f0aa6ed77377c284624211049a86e319660fa29599b7d37d337a467884ecd54b`.
 
+## In brief
+
+**Question.** Which rock type lies at each depth of a newly drilled well, judging from its well logs?
+
+**Use case.** After a well has been drilled and logged, a geologist interprets the rock type along the whole well from its wireline logs, its position and the official stratigraphic picks (the FORCE 2020 competition's task).
+
+**One row.** One depth sample (every 0.152 m) of one of 118 wells in the Norwegian North Sea.
+
+**Predicted.** The rock type at that depth as interpreted by hand, one of 11 classes such as shale, sandstone or limestone.
+
+**Known at prediction time.** The well's logs at that depth (gamma ray, resistivity, density, neutron, sonic, caliper and others, some missing), the depth and position, drilling data (bit size, mud weight, rate of penetration) and the stratigraphic group and formation; the same well's other depths may be used.
+
+**What the test data stands for.** Whole wells are held out in three folds, so the test data stands for wells never interpreted.
+
+**Our changes to the source.** We pool the competition's training, open-test and blind wells and split by well across all 118; we drop the interpreter's confidence in the label and the basement class, found in one well only.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once a well is logged, and a held-out well is a new well. The stratigraphic picks come from the national register (NPD) rather than the interpreters, as the competition gave them.
+
 ## Files in this folder
 
 | file | what it is |

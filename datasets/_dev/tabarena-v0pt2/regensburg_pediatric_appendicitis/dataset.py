@@ -5,10 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a child's appendicitis complicated (gangrenous, perforated or abscessed)?",
+        use_case=(
+            "For example, a paediatric surgeon, after the examination, blood tests and ultrasound of a child with "
+            "suspected appendicitis, judges how severe it is, to choose between surgery and conservative treatment."
+        ),
+        row=(
+            "One child admitted with abdominal pain and suspected appendicitis to the Children's Hospital St. Hedwig "
+            "in Regensburg, Germany, 2016-2021, who had an ultrasound (763 children)."
+        ),
+        predicted=(
+            "Whether the appendicitis was complicated (15.07%); the rest, among them children without appendicitis, "
+            "count as uncomplicated."
+        ),
+        known=(
+            "Age, sex, height and weight, symptoms and examination signs, body temperature, blood and urine tests, "
+            "two clinical appendicitis scores, and the ultrasound findings (appendix diameter, free fluid, wall "
+            "layers, perfusion, signs of perforation or abscess, and others)."
+        ),
+        split=("Random children, so the test data stands for other children of the same hospital and years."),
+        changes=(
+            "We keep the children who had an ultrasound and drop the diagnosis, the surgeon's management decision and"
+            " the length of stay."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features are known at the decision, but the curators suspect some of them leak the severity and "
+            "could not rule it out; ultrasound signs of perforation or abscess come close to the label's own "
+            "definition. How severity was set for children not operated on is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "regensburg_pediatric_appendicitis"
     year = "2023"
@@ -37,6 +69,8 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     curation_comments = """
         We start with the tabular meta-data used in the paper. We create only one task out of the dataset using one of the three available classes. We note that the main use case of the paper was image-based modelling and comparing to tabular baselines with image-to-tabular-radiometric. The authors also published the tabular data, which we use here.
 
+        - The data first appeared on Zenodo (v1.0, 2023-02-23, five days before the paper's preprint), hence source
+          Other; UCI 938 is a copy that names the Zenodo DOI as its source.
         - Note, for this dataset is was hard to choose the label given the tabular data. We picked "Severity" in the end. "Diagnosis" is a noisy ground truth for all cases but the ones that had surgery. It was either deterministically determined by the AS score, or during surgery. "Management" reflects the decision and opinion of senior pediatric surgeon. Only "Severity" represents a ground truth as all cases that were server, were either clearly servery or did not even have appendicitis.
          - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
         - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.

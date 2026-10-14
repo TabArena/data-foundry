@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 STATUS = {0: "active", 1: "default", 2: "payoff"}
 """The source's `status_time` codes ("Default (1), payoff (2), and nondefault/nonpayoff (0)") and our labels."""
@@ -39,6 +47,41 @@ def deduplicated(raw: pd.DataFrame) -> pd.DataFrame:
 
 
 class Mortgage(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a mortgage default, be paid off, or stay active in the coming quarter?",
+        use_case=(
+            "At the start of each quarter, a lender scores every mortgage it holds for whether, during the quarter, "
+            "it defaults, is paid off or stays active, as in the book's own out-of-time backtest."
+        ),
+        row=(
+            "One US mortgage in one quarter, for 50,000 borrowers observed from 2000 Q2 to 2015 Q1 (Credit Risk "
+            "Analytics, Baesens et al. 2016)."
+        ),
+        predicted=(
+            "The loan's status at the end of the quarter: active (93.29%), paid off (4.27%) or defaulted (2.44%)."
+        ),
+        known=(
+            "The quarter, the loan's dates (origination, first observation, maturity) and terms at origination "
+            "(balance, rate, loan-to-value, credit score, property type, investor), its balance, rate and "
+            "loan-to-value at the previous quarter, and unemployment, GDP growth and house prices as published by the"
+            " quarter's start."
+        ),
+        split=(
+            "Each test window is one quarter (2014 Q3, 2014 Q4, 2015 Q1), trained on every earlier quarter; a test "
+            "loan's earlier quarters are in training, as for a lender scoring the loans it holds."
+        ),
+        changes=(
+            "We use each loan's balance, rate and loan-to-value of the previous quarter and the economic figures as "
+            "published by the quarter's start; the source's own-quarter values partly record the event or come out "
+            "later."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known when the quarter starts, the outcome falls within the quarter, and "
+            "later quarters are tested, as in the book's backtest."
+        ),
+    )
+
     # Dataset
     unique_name = "mortgage"
     year = "2016"

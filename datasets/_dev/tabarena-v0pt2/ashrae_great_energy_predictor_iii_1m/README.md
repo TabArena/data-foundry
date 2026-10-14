@@ -57,6 +57,24 @@ Regression of `log1p_meter_reading`, scored with `rmse` on temporal splits by `t
 
 Not built yet. The current definition gives checksum `v2:96da125d823c02aabd996287b96bd57dcf5d173550cd7973d3cac99da9178dd7`.
 
+## In brief
+
+**Question.** How much energy would a building's meter have used in a given hour, given the building, the time and the weather?
+
+**Use case.** After an energy-efficiency retrofit, an engineer or investor estimates what the building would have used without it, from a model fit on the readings before, and credits the difference as savings (the competition's purpose).
+
+**One row.** One hourly reading of one meter (electricity, chilled water, steam or hot water) of one building of the competition, 2016-2017; the 2,500,000 of 40.1M readings that the splits use.
+
+**Predicted.** The meter's reading in that hour, in kWh (kWh equivalent for the heating and cooling meters), scored on a logarithmic scale as in the competition.
+
+**Known at prediction time.** The building (site, primary use, floor area, year built, floors), the meter type, the local date and hour, and the site's weather in that hour (temperature, dew point, cloud, rain, pressure, wind); no reading after the cutoff.
+
+**What the test data stands for.** Three four-month windows tile 2017, newest first, each trained on a random million of all earlier readings; the oldest window is the competition's setting, train on 2016 and predict early 2017.
+
+**Our changes to the source.** We add the competition's 2017 readings, which its organisers released later, to split by time. Electricity readings of 0 and site 0's recording gap in early 2016 are dropped as meters not recording.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** As in measuring retrofit savings, the model sees only the building, the time and the observed weather of each hour, never a later reading, and is fit on earlier readings. Recording errors stay as the competition shipped them, such as one steam meter at about 1,000 times its usual level.
+
 ## Files in this folder
 
 | file | what it is |

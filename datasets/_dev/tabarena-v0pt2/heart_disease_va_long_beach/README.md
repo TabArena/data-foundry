@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_va_long_beach
 container_format: 2
-checksum: v2:7187cdfb80d6ef65ca93c1c1f3c5247cf9030bd742865dc177ba0189602a2442
+checksum: v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2
 build:
   uuid: 01a111fc-aa5f-797c-b591-225fad0157b7
   checksum: v2:981f69495bd48c76790a92ad3fc1369b083446c626e61c4621bdc731faa6f2d2
@@ -66,7 +66,25 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 200 rows and 13 features. Source: UCI (1988).
 
-Built as `01a111fc-aa5f-797c-b591-225fad0157b7` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7187cdfb80d6ef65ca93c1c1f3c5247cf9030bd742865dc177ba0189602a2442`, so the build is stale. See [Build](#build).
+Built as `01a111fc-aa5f-797c-b591-225fad0157b7` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Does a patient with suspected heart disease have narrowed coronary arteries?
+
+**Use case.** For example, after the exercise test, a cardiologist estimates whether a patient has coronary artery disease, to decide on coronary angiography; the source built a probability algorithm for this diagnosis (Detrano et al. 1989).
+
+**One row.** One patient examined for coronary artery disease at the Veterans Administration Medical Center in Long Beach, California (200 patients; period not stated).
+
+**Predicted.** Whether the angiogram shows coronary artery disease, a narrowing of more than 50% in a major vessel; 74.5% of these patients have it.
+
+**Known at prediction time.** Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG and the exercise test (maximum heart rate, angina during exercise, ST depression and its slope); fluoroscopy and thallium-scan results are missing for most patients.
+
+**What the test data stands for.** Random patients of the same hospital.
+
+**Our changes to the source.** We merge the four grades of disease into present or absent, as the study does.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the examination and the noninvasive tests done before angiography, and the label is the angiogram. The sample is small, and the share with disease is high, as among patients sent to angiography.
 
 ## Files in this folder
 
@@ -149,17 +167,18 @@ The first 5 of 200 rows of the final frame (random rows: the frame is shuffled);
 
 | heart_disease_diagnosis | age | sex | cp | trestbps | chol | fbs | restecg | thalach | exang | oldpeak | slope |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 35 | 1 | 3 | nan | 161 | 0 | 1 | nan | nan | nan | nan |
-| 0 | 55 | 1 | 4 | 150 | 160 | 0 | 1 | 150 | 0 | 0 | nan |
-| 1 | 57 | 1 | 4 | 130 | 311 | nan | 1 | 148 | 1 | 2 | 2 |
-| 1 | 54 | 0 | 4 | 138 | 274 | 0 | 0 | 105 | 1 | 1.5 | 2 |
-| 1 | 69 | 1 | 4 | 140 | 208 | 0 | 1 | 140 | 1 | 2 | nan |
+| 1 | 48 | 1 | 3 | 102 | nan | nan | 1 | 110 | 1 | 1 | 3 |
+| 1 | 58 | 1 | 4 | nan | 203 | 1 | 0 | nan | nan | nan | nan |
+| 1 | 67 | 1 | 1 | 142 | 270 | 1 | 0 | 125 | 0 | 2.5 | 1 |
+| 1 | 61 | 1 | 1 | 142 | 200 | 1 | 1 | 100 | 0 | 1.5 | 3 |
+| 1 | 56 | 1 | 4 | nan | nan | 0 | 2 | nan | nan | nan | nan |
 
 ## Curation notes
 
 We start with the processed version and the subset of 14 attributes used in the study and clinical practice.
 
 - We encode missing values as np.nan instead of "?".
+- Proxy missing values: cholesterol is 0 in 49 of 200 rows and resting blood pressure in 1, both impossible and undocumented (the names file lists only -9); the zeros sit in one block of records (1984-85 exercise tests) and do not relate to the label (75.5% disease against 73.6%), so they become missing.
 - We make the target binary (0=no heart disease, 1=heart disease). This follows the original study in attempting to distinguish presence (values 1,2,3,4) from absence (value 0).
 - The dataset has one naturally occurring duplicate, which we do not drop.
 
@@ -262,11 +281,11 @@ Default splits.
 | restecg | category | 0 | 0 | 3 | 1, 0, 2 |
 | heart_disease_diagnosis | category | 0 | 0 | 2 | 1, 0 |
 | ca | float64 | 198 | 99 | 1 | 0.0 |
-| trestbps | float64 | 56 | 28 | 40 | 120.0, 130.0, 140.0, 150.0, 110.0, 160.0, 122.0, 142.0, 134.0, 136.0 |
+| trestbps | float64 | 57 | 28.5 | 39 | 120.0, 130.0, 140.0, 110.0, 150.0, 160.0, 122.0, 142.0, 134.0, 144.0 |
+| chol | float64 | 56 | 28 | 98 | 203.0, 258.0, 220.0, 216.0, 223.0, 218.0, 186.0, 219.0, 236.0, 254.0 |
 | oldpeak | float64 | 56 | 28 | 14 | 0.0, 2.0, 1.5, 1.0, 3.0, 2.5, 0.5, 4.0, 1.3, 1.7 |
-| thalach | float64 | 53 | 26.5 | 59 | 140.0, 120.0, 110.0, 112.0, 130.0, 128.0, 105.0, 100.0, 160.0, 118.0 |
-| chol | float64 | 7 | 3.5 | 99 | 0.0, 203.0, 220.0, 258.0, 240.0, 223.0, 214.0, 310.0, 186.0, 236.0 |
-| age | int64 | 0 | 0 | 39 | 63, 62, 55, 61, 58, 60, 57, 64, 56, 59 |
+| thalach | float64 | 53 | 26.5 | 59 | 120.0, 140.0, 110.0, 130.0, 112.0, 160.0, 150.0, 105.0, 100.0, 128.0 |
+| age | int64 | 0 | 0 | 39 | 63, 62, 55, 60, 58, 61, 57, 56, 64, 59 |
 
 </details>
 
@@ -282,8 +301,8 @@ Default splits.
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | age | 200 | 59.35 | 7.8117 | 35 | 77 |
-| trestbps | 144 | 133.764 | 21.5377 | 0 | 190 |
-| chol | 193 | 178.746 | 114.035 | 0 | 458 |
+| trestbps | 143 | 134.699 | 18.446 | 96 | 190 |
+| chol | 144 | 239.569 | 52.7888 | 100 | 458 |
 | thalach | 147 | 122.796 | 21.9903 | 69 | 180 |
 | oldpeak | 144 | 1.32083 | 1.10624 | -0.5 | 4 |
 | ca | 2 | 0 | 0 | 0 | 0 |
@@ -334,4 +353,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7187cdfb80d6ef65ca93c1c1f3c5247cf9030bd742865dc177ba0189602a2442` |
+| stale | yes: the definition now gives checksum `v2:a03245caa28c9ffe701b3db75c17c3b31e0340680d1a19d01b849b8faa2ffea2` |

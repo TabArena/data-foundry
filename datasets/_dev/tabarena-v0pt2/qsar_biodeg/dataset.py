@@ -5,10 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class QsarBiodeg(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a chemical readily biodegradable, judging from its molecular structure?",
+        use_case=(
+            "For example, a regulator or a chemical manufacturer screens a chemical's structure to decide whether it "
+            "needs a ready-biodegradability test, or to rank candidates before one."
+        ),
+        row=(
+            "One chemical with a known ready-biodegradability test result, from the data set of Mansouri et al. 2013 "
+            "(1,055 chemicals)."
+        ),
+        predicted="Whether the chemical is readily biodegradable in the standard test; 33.7% are.",
+        known=(
+            "41 molecular descriptors computed from the chemical structure (counts of atoms and groups, and "
+            "topological and electronic indices)."
+        ),
+        split=(
+            "Random chemicals, so the test data stands for new chemicals; structurally similar ones can be on both "
+            "sides."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The descriptors come from the structure alone, which is all a screener has before testing, and the test "
+            "chemicals stand for new ones."
+        ),
+    )
+
     # Dataset
     unique_name = "qsar_biodeg"
     year = "2013"
@@ -33,6 +59,8 @@ class QsarBiodeg(AbstractCuratedDataset):
     """
     curation_comments = """
         - We added semantic meaningful feature names.
+        - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
+          356 readily biodegradable, as on UCI.
         - Anomaly: several features are numeric-ordinal in nature but it is unclear if they are categorical features.
     """
 
@@ -41,7 +69,7 @@ class QsarBiodeg(AbstractCuratedDataset):
     problem_type = "binary_classification"
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        df = pd.read_csv(f"{raw_dir}/biodeg.csv", sep=";")
+        df = pd.read_csv(f"{raw_dir}/biodeg.csv", sep=";", header=None)  # no header row; names set in `_clean`
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:

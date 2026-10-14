@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
+checksum: v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548
 build:
   uuid: 01a111fc-a4a0-72df-82ce-c3f0eed0000e
   checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 517
   n_features: 12
@@ -66,7 +66,23 @@ decisions: []
 
 Regression of `area`, scored with `rmse` on IID splits. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How large an area will a forest fire burn?
+
+**Use case.** When a fire breaks out in the Montesinho natural park, the fire service estimates from the weather how large it will grow, to decide where to send air tankers and ground crews (the paper's stated use).
+
+**One row.** One forest fire in the Montesinho natural park in northeast Portugal, 2000-2003 (517 fires).
+
+**Predicted.** The burned area in hectares, on a log scale; 48% of the fires burned 0 ha.
+
+**Known at prediction time.** The fire's square on a grid map of the park, the month and weekday, four components of the Canadian fire weather index, and the temperature, humidity, wind and rain.
+
+**What the test data stands for.** Random fires, so the test data stands for other fires of the same years; the year is not in the data.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Fires from several years are split at random because the data holds only month and weekday, so a split by time is impossible. When the weather values were read relative to the fire is not stated. The signal is small.
 
 ## Files in this folder
 
@@ -155,7 +171,7 @@ The first 5 of 517 rows of the final frame (random rows: the frame is shuffled);
 
 We start with the data from UCI.
 
-- The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month/day over 3 years. Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
+- The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
 - We log1p scale the target as suggest by the authors.
 - The data contains naturally occurring duplicates.
 
@@ -318,3 +334,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548` |

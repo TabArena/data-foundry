@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, anonymize_ids, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    TaskSummary,
+    anonymize_ids,
+    drop_columns,
+)
 
 TARGET = "all_star_score"
 
@@ -72,6 +80,40 @@ def last_name_order(names: pd.Series) -> pd.Series:
 
 
 class NbaPlayers20162019(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How high will an NBA player rank in a season's All-Star vote, given his season?",
+        use_case=(
+            "For example, while the All-Star vote is open, a team's marketing staff estimates where its players will "
+            "rank from their statistics, salary and popularity, to decide whom to campaign for."
+        ),
+        row="One NBA player in one regular season, 2016-17 to 2018-19 (1,408 rows of 660 players).",
+        predicted=(
+            "The player's All-Star score for the season, half his rank in the fan vote plus a quarter each of his "
+            "ranks in the player and media votes, within his conference and ballot position; lower is better."
+        ),
+        known=(
+            "The season's statistics (games, minutes, points, rebounds, assists, shooting), age, position, team, "
+            "conference and ballot position, salary, and mean daily Wikipedia page views; the statistics cover the "
+            "whole season."
+        ),
+        split=(
+            "Whole players are held out with all their seasons, so the test data stands for players never seen; the "
+            "real use, a new season of mostly known players, would need a split by season, which three seasons cannot"
+            " give."
+        ),
+        changes=(
+            "We recompute the score of 2017-18 and 2018-19 with the NBA's formula, as the shipped one penalised "
+            "players without player or media votes, and drop the votes and ranks behind it and whether the player "
+            "played in the game."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The vote closes in mid-January, but 25 of the 34 features cover the whole season; statistics as of the "
+            "vote's close predict as well (R^2 0.772 against 0.741). Held-out players stand in for a new season of "
+            "mostly known players."
+        ),
+    )
+
     # Dataset
     unique_name = "nba_players_2016_2019"
     year = "2019"

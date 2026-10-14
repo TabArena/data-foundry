@@ -5,12 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 TARGET = "is_blocked"
 
 
 class Huntprohibited1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a moderator block a classified ad on Avito for illicit content?",
+        use_case=(
+            "When an ad is submitted to Avito, a Russian classifieds site, the site scores it to decide which ads "
+            "moderators check or block."
+        ),
+        row=(
+            "One closed ad posted on Avito.ru from December 2013 to March 2014; 1.5 million ads sampled from "
+            "3,963,488 after dropping duplicates."
+        ),
+        predicted="Whether a moderator blocked the ad for illicit content.",
+        known=(
+            "The ad as posted: its title, description and form fields (Russian text), category and subcategory, "
+            "price, and the counts of phone numbers, e-mails and links masked in the description."
+        ),
+        split=(
+            "Random ads of the same four months; the file has no dates, so the competition's split by month cannot be"
+            " repeated."
+        ),
+        changes=(
+            "We drop how long the ad was live and the flag set only for blocked ads, both known after the decision, "
+            "and drop exact reposts and ads whose features occur with both labels."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Everything the model sees is known when the ad is submitted, but the split is random over four months, "
+            "while moderation scores the next ads; the competition tested on the following month."
+        ),
+    )
+
     # Dataset
     unique_name = "huntprohibited_1m"
     version_of = "huntprohibited"

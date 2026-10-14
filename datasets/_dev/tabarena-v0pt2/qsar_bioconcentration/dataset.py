@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 RAW_FILE = "Grisoni_et_al_2016_EnvInt88.csv"
 """The UCI file: CAS, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the class and logBCF."""
@@ -36,6 +36,41 @@ file's SMILES encodes in PubChem). Checked on 2026-10-07 for every row, on the c
 
 
 class QsarBioconcentration(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "How does an organic chemical build up in fish: stored in fat, held in additional sites, or broken down "
+            "and eliminated?"
+        ),
+        use_case=(
+            "Before a fish test, a chemical assessor estimates the bioconcentration mechanism of an untested organic "
+            "chemical from its structure, for example to decide whether the usual estimate from its octanol-water "
+            "partitioning (how readily it dissolves in fat rather than water) can be trusted."
+        ),
+        row=(
+            "One organic chemical with a measured bioconcentration factor in fish (776 chemicals, Grisoni et al. 2016)."
+        ),
+        predicted=(
+            "The mechanism class, read from the measured bioconcentration and the measured octanol-water "
+            "partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%)."
+        ),
+        known="The chemical's structure as a text string and nine descriptors computed from it.",
+        split=(
+            "Random chemicals, one row each, as in the source's random split; the file has no chemical families for a"
+            " stricter split."
+        ),
+        changes=(
+            "We drop the measured bioconcentration factor the class is read from, swap back the structures of three "
+            "pairs of chemicals that carried each other's, and drop three chemicals with another chemical's "
+            "structure."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The structure and its descriptors are known before a fish test, and a held-out chemical is an untested "
+            "one. The authors chose the nine descriptors on chemicals that also sit in our test folds, which may "
+            "favour those slightly."
+        ),
+    )
+
     # Dataset
     unique_name = "qsar_bioconcentration"
     year = "2016"

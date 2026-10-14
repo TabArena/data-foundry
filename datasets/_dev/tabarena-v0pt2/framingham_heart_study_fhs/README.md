@@ -56,6 +56,24 @@ Binary classification of `chd_within_10_years`, scored with `roc_auc` on IID spl
 
 Not built yet. The current definition gives checksum `v2:99d1c1a7451916cf4f4ea00e4a498aa707afbd4260f4d25263f738d2c8eb9975`.
 
+## In brief
+
+**Question.** Will a person without coronary heart disease have a first coronary event within ten years?
+
+**Use case.** At a routine exam, a physician estimates the 10-year risk of a first coronary heart disease event for a patient free of it, to decide on prevention, for example blood pressure or cholesterol treatment.
+
+**One row.** One participant of the Framingham Heart Study (Massachusetts) at the baseline exam, free of coronary heart disease (4,224 participants of the teaching version of the data; period not stated).
+
+**Predicted.** Whether a first coronary heart disease event (angina, heart attack, coronary insufficiency or death from it) occurs within 10 years of the exam; 9.0% have one.
+
+**Known at prediction time.** Age, sex, education, smoking and cigarettes per day, blood pressure medication, earlier stroke, hypertension, diabetes, total cholesterol, systolic and diastolic blood pressure, BMI, heart rate and glucose.
+
+**What the test data stands for.** Random participants, so the test data stands for new patients examined in the same way.
+
+**Our changes to the source.** We rebuild the label from the event dates; in the common copy, 265 of 644 positives had no coronary event within 10 years. We drop the 16 participants whose follow-up ended early without an event.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything is measured at the exam and the outcome follows within a fixed ten years, as in use. The teaching data was anonymized by undocumented methods, so values may be slightly perturbed.
+
 ## Files in this folder
 
 | file | what it is |

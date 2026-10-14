@@ -74,6 +74,24 @@ Regression of `permanent_magnet_temperature`, scored with `rmse` on grouped spli
 
 Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** How hot are the permanent magnets in an electric motor's rotor right now, given the readings a vehicle can measure?
+
+**Use case.** The motor control of an electric vehicle estimates the rotor magnet temperature in real time, as it is not reliably and economically measurable in a commercial vehicle, to use the motor fully without overheating it.
+
+**One row.** One half-second sample of one of 69 test-bench sessions of a prototype permanent magnet synchronous motor at Paderborn University (1,296,316 samples).
+
+**Predicted.** The permanent magnet temperature at that sample, in degrees Celsius.
+
+**Known at prediction time.** The motor's voltages, currents and speed and the coolant and ambient temperatures at that sample, quantities derived from them (power, magnitudes), and their running averages and spreads over the session so far.
+
+**What the test data stands for.** Whole sessions are held out, so the test data stands for driving cycles not seen in training, on the same motor.
+
+**Our changes to the source.** We drop the stator temperatures and the torque, as the study does, add the study's derived inputs and their running averages over four window lengths, and drop each session's first 500 samples as warm-up.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The inputs are sensor readings a vehicle has, smoothed over the past only, and a held-out session is a new driving cycle. The task covers one prototype motor on a test bench.
+
 ## Files in this folder
 
 | file | what it is |

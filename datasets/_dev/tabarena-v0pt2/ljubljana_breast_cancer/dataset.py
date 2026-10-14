@@ -7,10 +7,34 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class LjubljanaBreastCancer(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a woman's breast cancer come back?",
+        use_case=(
+            "For example, after surgery an oncologist estimates the chance that the cancer recurs, to plan follow-up "
+            "and further treatment."
+        ),
+        row=(
+            "One breast cancer patient of the University Medical Centre, Institute of Oncology, Ljubljana (286 "
+            "patients, published 1988); the period is not stated."
+        ),
+        predicted="Whether the cancer recurred (30% did); the source states no time window.",
+        known=(
+            "Age, tumour size and number of affected lymph nodes in bands (given as band midpoints), menopausal "
+            "status, whether the tumour broke through a node's capsule, malignancy grade (1-3), breast and quadrant, "
+            "and whether radiotherapy was given."
+        ),
+        split=("Random patients, so the test data stands for new patients of the same clinic and period."),
+        fit="approximate",
+        fit_reason=(
+            "The recurrence has no stated time window, so patients followed for different times are compared. Whether"
+            " radiotherapy is known at the prediction point depends on when the estimate is made."
+        ),
+    )
+
     # Dataset
     unique_name = "ljubljana_breast_cancer"
     year = "1988"

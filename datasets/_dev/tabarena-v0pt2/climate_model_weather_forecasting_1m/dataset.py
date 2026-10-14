@@ -6,10 +6,44 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "What temperature will a weather station measure at a given time, given the weather models' forecasts for"
+            " that place and time?"
+        ),
+        use_case=(
+            "For example, a weather service corrects the raw forecasts of global weather models at each station, to "
+            "publish a more accurate local temperature forecast (Yandex station data, released with the TabReD "
+            "benchmark)."
+        ),
+        row=(
+            "One temperature measurement at one of 1,864 weather stations, July 2022 to July 2023, as filtered and "
+            "sub-sampled by TabReD."
+        ),
+        predicted="The temperature measured at the station; the unit is not stated.",
+        known=(
+            "The station, its location and the time; the forecasts of two global weather models (CMC and GFS) for "
+            "that place and time, with their lead times (temperature at several heights, wind, humidity, pressure, "
+            "cloud, precipitation); and the station's climate averages of temperature and pressure."
+        ),
+        split=(
+            "Each of the last three weeks of July 2023 is a test window; training is a random million of all earlier "
+            "measurements, as for a model refit every week."
+        ),
+        changes=(
+            "We test on one-week windows instead of TabReD's one month, which the curator judged long for weather."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features are forecasts and climate averages available before the measurement, and later weeks stand "
+            "for the forecasts to come. The meaning of one time column of TabReD's release is unclear."
+        ),
+    )
+
     # Dataset
     unique_name = "climate_model_weather_forecasting_1m"
     version_of = "climate_model_weather_forecasting"
@@ -37,7 +71,9 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
 
-        - This data is similar to data from https://arxiv.org/abs/2406.19380. This paper also describes the feature in more detail. The column `apply_time_rl` is new and might relate to a rolling lag/window indicator.
+        - The data comes from TabReD (https://arxiv.org/abs/2406.19380), which calls it similar to the Shifts weather data (Malinin et al. 2021, https://arxiv.org/abs/2107.07455) but larger and with a time-based split; the Shifts appendix describes the features.
+        - Note: Neither paper explains `apply_time_rl`, which Shifts does not have. It holds epoch seconds between 3 minutes and 3.1 days before `fact_time` in every row; we keep it as a number.
+        - Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
         - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
         - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
     """

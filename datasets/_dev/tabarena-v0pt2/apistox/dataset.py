@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     DatasetDefinitionError,
     Decision,
     FeatureTypes,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     drop_columns,
@@ -54,6 +55,41 @@ def rdkit_descriptors(smiles: pd.Series) -> pd.DataFrame:
 
 
 class Apistox(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a new agrochemical toxic to honey bees, before it has been tested on bees?",
+        use_case=(
+            "A company developing an agrochemical, or a regulator, screens a candidate compound for acute honey bee "
+            "toxicity before the bee test, the use the dataset's authors name."
+        ),
+        row=(
+            "One pesticide or related compound with a measured acute toxicity to honey bees (1,035 compounds from "
+            "public databases, ApisTox 2024)."
+        ),
+        predicted=(
+            "Whether the compound is toxic to bees: the dose that kills half of the bees is at most 11 micrograms per"
+            " bee (the US EPA threshold); 29% are."
+        ),
+        known=(
+            "The chemical structure (as text and as 199 descriptors computed from it), whether it is a herbicide, "
+            "fungicide, insecticide or other agrochemical, and the year the compound first appears in the literature."
+        ),
+        split=(
+            "Each test window is a decade of new compounds (2014-2023, 2004-2013, 1994-2003, 1984-1993), with every "
+            "compound dated earlier for training, like the authors' time split."
+        ),
+        changes=(
+            "We drop the toxicity level, the exposure route and the label's database, all recorded with or after the "
+            "test; we add structure descriptors and set the pesticide type to missing where the source marks it "
+            "unknown."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The year is that of the first article PubChem links to the compound, so some compounds are dated late; "
+            "the pesticide types were read in 2024, and bee tests of old compounds were often published decades "
+            "later, so some training labels were not known at the cutoff."
+        ),
+    )
+
     # Dataset
     unique_name = "apistox"
     year = "2024"

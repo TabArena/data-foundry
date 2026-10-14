@@ -71,6 +71,22 @@ Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID sp
 
 Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a customer buy the home-insurance policy they were quoted?
+
+**Use case.** Homesite, a home insurer, estimates which quotes will turn into purchases, to judge the effect of price changes and keep the customer mix it wants (the competition's stated aim).
+
+**One row.** One quote Homesite gave a customer for a home-insurance policy (260,753 quotes).
+
+**Predicted.** Whether the customer bought the quoted policy (19% did).
+
+**Known at prediction time.** The quote date and about 300 anonymised fields on the coverage, the sale, the customer, the property and its area.
+
+**What the test data stands for.** Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by date instead.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC AUC 0.965 with them, 0.915 without).
+
 ## Files in this folder
 
 | file | what it is |
@@ -121,9 +137,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | QuoteConversion_Flag |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 27 categorical, 0 string, 1 datetime</summary>
 
-- categorical (1): `QuoteConversion_Flag`
+- categorical (27): `Field6`, `Field12`, `CoverageField8`, `CoverageField9`, `SalesField7`, `PersonalField7`, `PersonalField16`, `PersonalField17`, `PersonalField18`, `PersonalField19`, `PropertyField3`, `PropertyField4`, `PropertyField5`, `PropertyField7`, `PropertyField14`, `PropertyField28`, `PropertyField30`, `PropertyField31`, `PropertyField32`, `PropertyField33`, `PropertyField34`, `PropertyField36`, `PropertyField37`, `PropertyField38`, `GeographicField63`, `GeographicField64`, `QuoteConversion_Flag`
 - string (0): none
 - datetime (1): `Original_Quote_Date`
 

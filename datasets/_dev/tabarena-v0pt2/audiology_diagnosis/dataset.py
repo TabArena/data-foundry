@@ -5,10 +5,43 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class AudiologyDiagnosis(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Is a patient's hearing normal, or is the hearing loss sensorineural, or conductive or mixed?"),
+        use_case=(
+            "For example, an audiologist classifies the type of a patient's hearing loss from the case history and "
+            "the hearing tests, as decision support; the source built an expert system (Protos) that learns such "
+            "diagnoses from cases."
+        ),
+        row=(
+            "One patient case of the audiology data used to teach the Protos system (published 1987), without "
+            "repeated cases and diagnoses that are not a type of hearing loss (195 cases)."
+        ),
+        predicted=(
+            "The type of hearing loss in three classes: normal (19 cases), sensorineural (142), conductive or mixed "
+            "(34)."
+        ),
+        known=(
+            "The case history (age over 60, noise exposure, ringing, dizziness, nausea and other complaints) and the "
+            "test results: the audiogram's pattern by frequency, air and bone conduction and the gap between them, "
+            "the speech test, the tympanogram, the acoustic reflexes and brainstem response findings."
+        ),
+        split="Random cases, so the test data stands for new patients like those in the collection.",
+        changes=(
+            "We replace the 24 original diagnoses, most with 4 or fewer cases, by the standard type of hearing loss, "
+            "and drop repeated cases and the facial-nerve and central diagnoses."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The cases were collected to teach an expert system rather than drawn as a series of patients (only 19 "
+            "normal ears), and the type of loss is partly read off the tests that define it, such as the air-bone "
+            "gap. The findings are those an audiologist has at the diagnosis."
+        ),
+    )
+
     # Dataset
     unique_name = "audiology_diagnosis"
     year = "1987"

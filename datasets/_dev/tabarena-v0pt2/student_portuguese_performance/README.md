@@ -65,6 +65,24 @@ Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. 
 
 Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cef2cd8cd896c2846c102b5f41908f348f56dbccf3d120ee9505a2a9261089fe`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What final grade in Portuguese will a secondary-school student get?
+
+**Use case.** For example, a school predicts each student's final Portuguese grade early in the year from background and habits, to offer extra support to those likely to fail.
+
+**One row.** One student of the Portuguese-language course at two Portuguese secondary schools (649 students), from school reports and questionnaires; the school year is not stated.
+
+**Predicted.** The final grade, from 0 to 20 (mean 11.9).
+
+**Known at prediction time.** School, sex, age, home (urban or rural, family size, parents' education, jobs and cohabitation), the reason for the school, study time, past class failures, support and paid classes, activities, plans for higher education, internet, free time, going out, alcohol, health and school absences.
+
+**What the test data stands for.** Random students of the same two schools.
+
+**Our changes to the source.** We drop the first- and second-period grades, so the grade is predicted from background and habits alone.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Most features are background known early, but the absences and the habits questionnaire cover the same school year as the grade, and when they were recorded is not stated, so some may come after an early prediction point.
+
 ## Files in this folder
 
 | file | what it is |

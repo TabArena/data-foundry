@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd
+checksum: v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -76,7 +76,25 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a client default on the loan Home Credit is deciding on?
+
+**Use case.** When a loan application arrives, Home Credit, a consumer lender for people with little or no credit history, scores the client's default risk to decide on the loan; its scorecard is refit regularly and should stay stable over time.
+
+**One row.** One loan application decided between January 2019 and early October 2020 (the frame keeps 1,224,927 of them).
+
+**Predicted.** Whether the client defaulted (3.1% did); the time span in which a default counts is not stated.
+
+**Known at prediction time.** The application, the client's personal data, earlier applications to Home Credit, credit-bureau and tax-registry records, deposits and debit cards, summarised over the client's history, and the decision date; the categories are anonymized codes.
+
+**What the test data stands for.** Three two-month test windows from May to early October 2020; each trains on a random million of all earlier applications, as for a model refit every two months.
+
+**Our changes to the source.** We split TabReD's test period into three two-month windows and keep columns TabReD dropped (the decision month and week, categories with many values).
+
+> **Use case fit: approximate (a stand-in with a known gap).** The default has no stated time span, and the applications decided just before a window train with their outcomes, which a lender refitting then would not yet know.
 
 ## Files in this folder
 
@@ -173,7 +191,7 @@ We start with the data from Kaggle and follow the preprocessing from TabRed (htt
 
 - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
 - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
-- We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we do not sub-sample the data, (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
+- We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
 - We drop case_id as it is already collapsed and thus does not contain extra information.
 - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
 - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
@@ -439,4 +457,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:97c33e78c77a90736cc01e7343c0c1660e76b6ed651a381391fbd8cf2a0f4ffd` |
+| stale | yes: the definition now gives checksum `v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094` |

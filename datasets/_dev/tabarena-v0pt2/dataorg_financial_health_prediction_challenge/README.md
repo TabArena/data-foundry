@@ -54,6 +54,24 @@ Multiclass classification of `financial_health`, scored with `log_loss` on IID s
 
 Not built yet. The current definition gives checksum `v2:0bd839620f9aed1d280508ca3e9fa0bd9eaf2b682c6d33d5b025f5828dbb3584`.
 
+## In brief
+
+**Question.** Is a small business's financial health low, medium or high?
+
+**Use case.** An institution, such as a lender, assesses a small business from what its owner reports in one interview, the prediction point the definition sets for data.org's Zindi competition (2025).
+
+**One row.** One small or micro business in Eswatini (2023), Malawi (2019) or Zimbabwe (2022), from FinMark Trust's FinScope surveys of business owners (7,674 businesses).
+
+**Predicted.** The class of the business's Financial Health Index at the interview: Low (66.54%), Medium (27.42%) or High (6.05%).
+
+**Known at prediction time.** The country, the owner's age and sex, the business's age, turnover and expenses, the owner's income (local currency), and answers on finance held (accounts, cards, loans, mobile money, insurance), record keeping, tax, problems, risks and attitudes.
+
+**What the test data stands for.** Random businesses, as in the competition, so the test data stands for other businesses of the same surveys.
+
+**Our changes to the source.** We drop Lesotho's 1,944 businesses, whose label runs against the index's own parts and against the other countries.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The index comes from an unpublished formula over survey answers, among them the insurance and credit products that are features, so the task partly recovers that formula (a small tree on those columns: log loss 0.285; all columns: 0.260). The countries asked different questions, so some columns are missing for whole countries.
+
 ## Files in this folder
 
 | file | what it is |

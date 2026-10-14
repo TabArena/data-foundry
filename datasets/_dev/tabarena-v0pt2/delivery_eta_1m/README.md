@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
+checksum: v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce
 build:
   uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
   checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 2500000
   n_features: 221
@@ -65,7 +65,23 @@ decisions: []
 
 Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How long will it take to deliver an order from an online grocery store?
+
+**Use case.** When an order is placed, the grocery service estimates its delivery time, for example to show the customer an arrival time and to plan couriers; the model is refit every week (TabReD).
+
+**One row.** One order of an online grocery store between 20 October 2023 and 7 January 2024 (TabReD release; the store is not named).
+
+**Predicted.** The time the delivery took, in minutes on a logarithmic scale; orders under one minute are left out.
+
+**Known at prediction time.** 221 anonymised features built from courier availability, navigation data and other aggregates (TabReD), including the time of the order.
+
+**What the test data stands for.** Each test window is one of the last three weeks (18 December 2023 to 7 January 2024), up to 500,000 orders each; training is a random million of all earlier orders, as for a model refit every week.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Courier availability and route data are known when an order is placed, and the windows follow a weekly refit. The features are anonymised, so their timing cannot be checked.
 
 ## Files in this folder
 
@@ -155,6 +171,8 @@ The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is 
 
 We start with data from TabRed, which already comes preprocessed.
 
+- We drop orders with a delivery time under one minute (386k of 17.0M, 2.3%), as TabReD's preprocessing does.
+- The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
 - We drop a duplicated column `cat_2` in the preprocessing.
 - We drop `num_29`, `num_36` and `num_71`, which are constant except in the same 2 of 16.7M rows (both hold 5.199 in all three columns), and `num_101`, which has a single value and is missing in exactly the rows where 19 other columns are missing, so it carries no information of its own.
 
@@ -368,3 +386,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce` |

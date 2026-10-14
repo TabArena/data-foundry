@@ -65,6 +65,22 @@ Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 feat
 
 Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** How much will an insurance claim cost?
+
+**Use case.** Allstate, a US personal insurer, estimates the cost of a claim when it is filed, to improve its claims service (the competition's description); for example, to send costly claims to experienced handlers.
+
+**One row.** One insurance claim at Allstate (188,317 claims, the competition's training file; the period is not stated).
+
+**Predicted.** The cost of the claim, on a log scale; the currency is not stated.
+
+**Known at prediction time.** 130 anonymized attributes of the claim, 116 categorical and 14 numeric; their meaning and when they are recorded are not given.
+
+**What the test data stands for.** Random claims, so the test data stands for other claims of the same period; the file has no claim dates.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The attributes are anonymized, so we cannot check that each is known when a claim is filed, and without claim dates random claims stand in for the claims to come.
+
 ## Files in this folder
 
 | file | what it is |

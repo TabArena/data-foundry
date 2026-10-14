@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class BadCustomerDetection(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a customer who takes a consumer loan turn out to be a bad customer?",
+        use_case=(
+            "The source states no use case; it presents the data as an example of imbalanced classes. For example, a "
+            "lender decides when an application arrives whether to grant a loan for a phone, an appliance or a "
+            "service."
+        ),
+        row=(
+            "One consumer loan, with the kind of product or service it pays for (1,723 loans; the lender, country and"
+            " period are not stated)."
+        ),
+        predicted=(
+            "Whether the customer is marked a bad client (11% are); what makes a client bad, and by when, is not "
+            "stated."
+        ),
+        known=(
+            "The loan (amount, term, a month number, the kind of product bought) and the customer (age, sex, "
+            "education, income, family status, children, region, phone operator, and whether already a client)."
+        ),
+        split="Random loans, so the test data stands for new customers of the same lender and period.",
+        fit="approximate",
+        fit_reason=(
+            "The features are what an application holds, but the label has no stated definition or horizon, and the "
+            "source names no lender, place or period."
+        ),
+    )
+
     # Dataset
     unique_name = "bad_customer_detection"
     year = "2020"
@@ -32,6 +59,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
     """
     curation_comments = """
         - We renamed the values of the target variable to be more descriptive.
+        - Note: The original source of the data is still to be clarified (open item in the curation record).
     """
 
     # Task

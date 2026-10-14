@@ -66,6 +66,22 @@ Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID sp
 
 Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a student drop out, still be enrolled, or graduate by the end of the normal length of the course?
+
+**Use case.** A higher-education institution identifies students at risk of dropping out or failing, early in their studies, to offer them support (the source's aim); as the data holds first-year results, the prediction point is the end of the first year.
+
+**One row.** One student of 17 undergraduate degrees at one Portuguese higher-education institution (4,424 students); enrolment years not stated.
+
+**Predicted.** The student's status at the end of the normal length of the course: graduated (49.93%), dropped out (32.12%) or still enrolled (17.95%).
+
+**Known at prediction time.** Background at enrolment (course, day or evening classes, application route and choice rank, previous schooling and grades, age, nationality, parents' education and jobs, scholarship, special needs), fee and debt status, national unemployment, inflation and GDP, and the units taken, passed and grades of the first two semesters.
+
+**What the test data stands for.** Random students, so the test data stands for other students of the same cohorts.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The file has no enrolment year, so the test students come from the same cohorts rather than later ones, and when the fee and debt status and the economic figures were recorded is not stated.
+
 ## Files in this folder
 
 | file | what it is |

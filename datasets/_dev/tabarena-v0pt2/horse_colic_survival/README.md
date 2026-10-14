@@ -68,6 +68,24 @@ Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 34
 
 Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a horse with colic live, die or be put down?
+
+**Use case.** For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, to advise the owner on surgery, treatment or euthanasia.
+
+**One row.** One horse with colic at its first visit to a veterinary hospital (344 horses; place and period not stated).
+
+**Predicted.** What eventually happened to the horse; it lived (62.5%), died (23%) or was euthanized (14.5%).
+
+**Known at prediction time.** Age group, rectal temperature, pulse and breathing rate, the state of the legs, gums and gut (pain, gut sounds, distension, rectal exam, abdomen), stomach-tube reflux and its acidity, and blood and belly-fluid values (packed cell volume, total protein).
+
+**What the test data stands for.** Random horses, so the test data stands for new cases of the same hospital.
+
+**Our changes to the source.** We drop whether the horse had surgery and the lesion found, which come after the examination, and keep each horse's first visit only.
+
+> **Use case fit: approximate (a stand-in with a known gap).** One of the three outcomes, euthanasia, is a decision by owner and vet that the prediction would inform, and the source states neither when the examination values were taken nor how long the horses were followed.
+
 ## Files in this folder
 
 | file | what it is |

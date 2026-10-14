@@ -183,6 +183,7 @@ def render_report(
     fm = report_frontmatter(result, previous=previous)
     out: list[str] = ["---", yaml.safe_dump(fm, sort_keys=False, allow_unicode=True).rstrip(), "---", ""]
     out += _header(result, fm)
+    out += _brief_section(result.dataset)
     out += _files_section(result.dataset, has_figures=bool(figures))
     out += _rebuild_section(result.dataset)
     out += _dataset_section(result, fm)
@@ -229,6 +230,34 @@ def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         _status_line(fm),
         "",
     ]
+
+
+BRIEF_LABELS = {
+    "question": "Question",
+    "use_case": "Use case",
+    "row": "One row",
+    "predicted": "Predicted",
+    "known": "Known at prediction time",
+    "split": "What the test data stands for",
+    "changes": "Our changes to the source",
+}
+FIT_LABELS = {
+    "direct": "direct (the rows, features and split mirror the use case)",
+    "approximate": "approximate (a stand-in with a known gap)",
+    "none": "none (no decision fits)",
+}
+
+
+def _brief_section(ds: AbstractCuratedDataset) -> list[str]:
+    """The plain-language summary of ``task_summary``: the description first, then the judgement of the use case."""
+    summary = ds.task_summary
+    if summary is None:
+        return []
+    texts = summary.fields()
+    out = ["## In brief", ""]
+    out += [f"**{label}.** {texts[name]}" + "\n" for name, label in BRIEF_LABELS.items() if texts[name]]
+    out += [f"> **Use case fit: {FIT_LABELS[summary.fit]}.** {texts['fit_reason']}", ""]
+    return out
 
 
 def _status_line(fm: dict[str, Any]) -> str:

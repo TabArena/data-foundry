@@ -66,6 +66,24 @@ Binary classification of `Malware`, scored with `roc_auc` on IID splits. 7,491 r
 
 Built as `01a111fc-e77d-7818-aca7-ffb8763af26a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:819eef4ce887a52723ea5a65938e344e5d97ca802664a39376a1c16921387a18`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Is an Android app that is already released malware, judged from the permissions it requests?
+
+**Use case.** For example, an app store or security scanner sweeps apps already released for malware, judged from the permissions they declare, to find the malware among apps not yet labelled; the record frames the task as classifying apps released in the past.
+
+**One row.** One distinct combination of permissions and label from more than 29,000 benign and malware Android apps released 2010-2019; 7,491 rows remain after removing exact repeats.
+
+**Predicted.** Whether the app is malware (35% of the rows are).
+
+**Known at prediction time.** Whether the app declares each of 85 Android permissions, native and custom.
+
+**What the test data stands for.** Random rows, so the test data stands for released apps of the same decade that are not yet labelled; release dates are not in the data.
+
+**Our changes to the source.** We drop exact repeated rows, 75% of the file, which the paper does not mention; otherwise identical rows would sit on both sides of the split.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The permissions are declared by each app and known without running it, and random apps of the same decade stand for released apps not yet labelled. With exact repeats dropped, each permission set counts once, so apps whose exact set is already labelled, easy cases in use, are not in the test data. New apps would need a split by release date, which the data lacks.
+
 ## Files in this folder
 
 | file | what it is |

@@ -63,6 +63,24 @@ Regression of `all_star_score`, scored with `rmse` on grouped splits by `player_
 
 Not built yet. The current definition gives checksum `v2:64b80d33f233a39ea90eb1a3dec37ec15eb1a40ca98583e837b24b85f7b032c5`.
 
+## In brief
+
+**Question.** How high will an NBA player rank in a season's All-Star vote, given his season?
+
+**Use case.** For example, while the All-Star vote is open, a team's marketing staff estimates where its players will rank from their statistics, salary and popularity, to decide whom to campaign for.
+
+**One row.** One NBA player in one regular season, 2016-17 to 2018-19 (1,408 rows of 660 players).
+
+**Predicted.** The player's All-Star score for the season, half his rank in the fan vote plus a quarter each of his ranks in the player and media votes, within his conference and ballot position; lower is better.
+
+**Known at prediction time.** The season's statistics (games, minutes, points, rebounds, assists, shooting), age, position, team, conference and ballot position, salary, and mean daily Wikipedia page views; the statistics cover the whole season.
+
+**What the test data stands for.** Whole players are held out with all their seasons, so the test data stands for players never seen; the real use, a new season of mostly known players, would need a split by season, which three seasons cannot give.
+
+**Our changes to the source.** We recompute the score of 2017-18 and 2018-19 with the NBA's formula, as the shipped one penalised players without player or media votes, and drop the votes and ranks behind it and whether the player played in the game.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The vote closes in mid-January, but 25 of the 34 features cover the whole season; statistics as of the vote's close predict as well (R^2 0.772 against 0.741). Held-out players stand in for a new season of mostly known players.
+
 ## Files in this folder
 
 | file | what it is |

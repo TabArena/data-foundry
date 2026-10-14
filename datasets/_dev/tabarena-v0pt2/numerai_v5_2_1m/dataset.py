@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, TaskSummary, Temporal, TemporalSplits, drop_columns
 
 FEATURE_SET = "medium"
 """Numerai's feature set in features.json: 780 basic features of the 2,748 in v5.2."""
@@ -22,6 +22,38 @@ MISSING_BIN = 2
 
 
 class NumeraiV521m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "How will a stock's return over the next 20 market days rank against the other stocks of the same week?"
+        ),
+        use_case=(
+            "Every Friday after the market close, a participant of the Numerai tournament scores each stock from its "
+            "features as of that day and submits the scores, which Numerai combines for its trading."
+        ),
+        row=("One stock in one weekly era of Numerai's v5.2 tournament data; dates and stock names are hidden."),
+        predicted=(
+            "The stock's own return over the next 20 market days, ranked within the week and binned into five levels "
+            "from 0 to 1; it is known about four weeks later."
+        ),
+        known=(
+            "780 disguised features of the stock as of that Friday (Numerai's medium set), each binned into five "
+            "levels within the week."
+        ),
+        split=(
+            "Three test years of 52 weekly eras, the newest first. Training is a random 1M rows of the earlier eras, "
+            "leaving out the last four before the test year, whose targets are not yet known."
+        ),
+        changes=(
+            "We set the values Numerai fills in for a feature without data in a week to missing, and use the medium "
+            "feature set (780 of 2,748)."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Numerai designed some features with the targets of the test years (75 released at era 1192), and they "
+            "are kept on purpose because every method sees them. Everything else is known on the Friday."
+        ),
+    )
+
     # Dataset
     unique_name = "numerai_v5_2_1m"
     version_of = "numerai_v5_2"

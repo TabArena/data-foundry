@@ -67,6 +67,22 @@ Binary classification of `sepsis_outcome_after9pt5_days_in_hospital`, scored wit
 
 Built as `01a111fc-94f7-7c86-b795-2ecaea21d5dd` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e4634006e84c7a4aeb04976e7e86f2a5f13bec69df288b6192d7b867cb18a14f`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a patient admitted with an infection or sepsis survive the hospital stay, judging from age, sex and the episode number alone?
+
+**Use case.** Within minutes of admission, a clinician estimates the patient's risk of dying from three facts known at once, as sepsis can kill before lab results arrive (the source's motivation).
+
+**One row.** One hospital admission in Norway, 2011-2012, of a patient diagnosed with an infection, systemic inflammation, sepsis or septic shock (110,204 admissions of 84,811 patients).
+
+**Predicted.** Whether the patient was alive or dead at the end of the stay, about 9 days after the record per the data card (7.4% died).
+
+**Known at prediction time.** Age, sex and the number of the patient's sepsis episode.
+
+**What the test data stands for.** Random admissions of the same years; a patient with several admissions can be on both sides, but the three features hardly tell patients apart.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The three facts are known at admission and the outcome follows in hospital, as in the source's question. The task is narrow by design, and the care is that of Norway in 2011-2012.
+
 ## Files in this folder
 
 | file | what it is |

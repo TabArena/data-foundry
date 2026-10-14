@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: clock_protein_toxicity
 container_format: 2
-checksum: v2:32cc4c184ec004c136f8bcc27552b42735277416961db8003997864dfbf06eba
+checksum: v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698
 build:
   uuid: 01a111fc-9673-778e-85dd-8d3026178022
   checksum: v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2
@@ -64,7 +64,23 @@ decisions: []
 
 Binary classification of `Toxic`, scored with `roc_auc` on IID splits. 171 rows and 1,117 features. Source: UCI (2022).
 
-Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:32cc4c184ec004c136f8bcc27552b42735277416961db8003997864dfbf06eba`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Is a newly designed small molecule toxic?
+
+**Use case.** For example, a medicinal chemist screens molecules designed to act on the clock protein CRY1 and decides which ones are worth making and testing.
+
+**One row.** One small molecule designed for the functional domains of CRY1, a core protein of the circadian clock (171 molecules, Gul et al. 2021).
+
+**Predicted.** Whether the molecule was found toxic (56 of the 171 were); the data page does not say how toxicity was tested.
+
+**Known at prediction time.** 1,117 molecular descriptors computed from the molecule's structure.
+
+**What the test data stands for.** Random molecules, so the test data stands for other molecules of the same design study.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, which is all a chemist has before testing, and a held-out molecule is an untested design. The task is tiny and its signal small.
 
 ## Files in this folder
 
@@ -103,7 +119,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | UCI: https://doi.org/10.24432/C59313 |
 | year | 2022 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | gul2021structure |
@@ -407,4 +423,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:32cc4c184ec004c136f8bcc27552b42735277416961db8003997864dfbf06eba` |
+| stale | yes: the definition now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698` |

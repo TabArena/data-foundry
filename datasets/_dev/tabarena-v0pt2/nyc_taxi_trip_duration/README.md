@@ -61,6 +61,24 @@ Regression of `log1p_trip_duration`, scored with `rmse` on temporal splits by `p
 
 Not built yet. The current definition gives checksum `v2:e0a70451b6ecb59f686b54251b0bd43110ed6fc78e2c14b36e4ae5b94daace7c`.
 
+## In brief
+
+**Question.** How long will a New York taxi ride take, from pickup to drop-off?
+
+**Use case.** When a passenger gets in and names the destination, the taxi's system estimates the arrival time with a model refit every week on the latest trips.
+
+**One row.** One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine Commission's trip records (1,451,706 trips).
+
+**Predicted.** The trip's duration in seconds, on a log scale.
+
+**Known at prediction time.** The pickup time and point, the drop-off point taken as the destination, the number of passengers and the company of the cab's meter system.
+
+**What the test data stands for.** Each of the last three weeks of June 2016 is a test window; training is a random million earlier trips, as for a model refit weekly.
+
+**Our changes to the source.** We split by week instead of the competition's random sample of the same days, drop a flag set only after the trip, non-rides under 30 seconds and broken clocks over 3 hours, and correct trips across the daylight-saving switch.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at pickup once the passenger names the destination; the recorded drop-off point stands in for it.
+
 ## Files in this folder
 
 | file | what it is |

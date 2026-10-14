@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     drop_columns,
@@ -63,6 +64,36 @@ ABSENT_LEVELS = {
 
 
 class HousePricesNominal(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What price will a house in Ames, Iowa sell for?",
+        use_case=(
+            "For example, a lender or a valuation service estimates the sale price of a house from the assessor's "
+            "record, with a model refit every two months on the latest sales."
+        ),
+        row=(
+            "One sale of residential property in Ames, Iowa, January 2006 to June 2010, from the city assessor's "
+            "office (2,919 sales)."
+        ),
+        predicted="The sale price in US dollars, on a log scale.",
+        known=(
+            "The assessor's record of the property (neighbourhood, lot, building type, areas, rooms, quality and "
+            "condition grades, year built and remodelled, basement, garage) and the sale's month, type and condition."
+        ),
+        split=(
+            "Each test window is two calendar months, 13 windows from May-June 2008 to May-June 2010; training is "
+            "every earlier sale."
+        ),
+        changes=(
+            "We use De Cock's full file instead of the Kaggle competition's random half, split by sale month instead "
+            "of at random, and drop his three partial sales of very large new houses."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The record describes the house at the sale and the windows follow time, as for a model in use. De Cock "
+            "kept only the latest sale of a home sold twice, so the older months miss about 100 sales."
+        ),
+    )
+
     # Dataset
     unique_name = "house_prices_nominal"
     year = "2011"

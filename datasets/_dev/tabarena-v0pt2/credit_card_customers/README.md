@@ -55,6 +55,24 @@ Binary classification of `Attrition_Flag`, scored with `roc_auc` on IID splits. 
 
 Not built yet. The current definition gives checksum `v2:f44150270782bd9c6ff2f70d72a1c50f9d762b4c5d6098a89822688db806f940`.
 
+## In brief
+
+**Question.** Will a bank's credit card customer close the card account?
+
+**Use case.** At a snapshot date, a bank scores each credit card customer for the risk of closing the account, from the profile and the last 12 months of card activity, so that a manager can contact the customer first.
+
+**One row.** One credit card customer of a bank at one snapshot (10,127 customers), from a teaching case of Analyttica's LEAPS training platform; the bank, place and period are not stated.
+
+**Predicted.** Whether the customer closed the account (16% did). When the closing happened relative to the 12-month window is not stated.
+
+**Known at prediction time.** Age, gender, dependents, education, marital status, income band, card type, months with the bank, number of products, and the last 12 months of activity: inactive months, contacts with the bank, credit limit, revolving balance, transaction amounts and counts, and their change between quarters.
+
+**What the test data stands for.** Random customers of the same snapshot; the file has no dates and each customer appears once.
+
+**Our changes to the source.** We drop the two columns of a naive Bayes classifier fitted with the label, which the file ships.
+
+> **Use case fit: approximate (a stand-in with a known gap).** A potential leak kept on purpose: if the activity window ends at the closure, the activity describes the closing itself (ROC AUC 0.980 from the activity alone, 0.994 from all columns). The columns also show marks of generated data, and the source cannot be traced.
+
 ## Files in this folder
 
 | file | what it is |

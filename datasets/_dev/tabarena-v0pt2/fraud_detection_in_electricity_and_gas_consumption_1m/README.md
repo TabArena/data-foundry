@@ -67,6 +67,24 @@ Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `cl
 
 Not built yet. The current definition gives checksum `v2:6e92005ef1aa84f533f7cef708b3886f2f6448921a73f8526017ead1bd470318`.
 
+## In brief
+
+**Question.** Will the Tunisian utility STEG find that this client commits electricity or gas meter fraud?
+
+**Use case.** On 2013-01-01, STEG scores each client from the client record and the invoices so far, to decide whom to inspect for meter fraud.
+
+**One row.** One invoice (2005-2012) of a STEG client billed both before and after 2013, joined with the client's record; the prediction is one per client, the mean over its invoices.
+
+**Predicted.** Whether STEG found the client fraudulent (7.8% of the clients billed before and after the cut); the finding falls in 2013-2019 without a date.
+
+**Known at prediction time.** The client's district, region, category and account creation date, and per invoice its date, tariff, meter number, status, code and type (electricity or gas), reading remarks, consumption by tier, meter readings and months covered.
+
+**What the test data stands for.** Whole clients are held out in three folds, so the test data stands for other clients over the same years, as in the challenge.
+
+**Our changes to the source.** We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels, keep clients billed before and after that date, and sample 1.5M invoices by whole clients.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The finding has no date or stated horizon, and the cut date is read off the data rather than documented by STEG or Zindi.
+
 ## Files in this folder
 
 | file | what it is |

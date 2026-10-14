@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Coil2000(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a customer of an insurer hold a caravan insurance policy?",
+        use_case=(
+            "An insurer selects customers for a direct-mail offer of caravan (mobile home) insurance, the question of"
+            " the CoIL Challenge 2000: who would be interested in buying such a policy."
+        ),
+        row=(
+            "One customer of an insurance company (CoIL Challenge 2000, data from a Dutch data-mining company; 9,822 "
+            "customers)."
+        ),
+        predicted="Whether the customer holds a caravan insurance policy (6% do).",
+        known=(
+            "43 socio-demographic figures shared by all customers of the same postal area (customer type, household, "
+            "religion, education, occupation, social class, income, cars, home ownership), and the customer's number "
+            "of, and contributions to, 21 other insurance products."
+        ),
+        split="Random customers.",
+        changes=(
+            "We pool the challenge's training and evaluation customers instead of keeping its fixed held-out set."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Holding a policy now stands in for interest in buying one, and the other products are recorded at the "
+            "same time as the label. The area figures are shared by neighbours, and 15% of the rows are duplicates."
+        ),
+    )
+
     # Dataset
     unique_name = "coil_2000"
     year = "2000"

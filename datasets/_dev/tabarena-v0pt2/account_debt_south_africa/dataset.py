@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 # The columns the bad-debt label is set from: debt aged 90 days or more, write-offs, and their ratio to the billing.
 DEBT_COLUMNS = ["total90debt", "totalwriteoff", "debtbillingratio"]
@@ -56,6 +56,33 @@ def in_no_debt_run(raw: pd.DataFrame) -> np.ndarray:
 
 
 class AccountDebtSouthAfrica(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Has a municipal billing account turned into bad debt?",
+        use_case=(
+            "A South African municipality scores its accounts to forecast how many, and how much, will turn into bad "
+            "debt, and where to direct collection."
+        ),
+        row="One billing account of one of eight municipalities, summarised over two years.",
+        predicted=(
+            "Whether the account is a bad debt (debt overdue 90 days or more, or written off) at the end of those two"
+            " years; 56% are."
+        ),
+        known=(
+            "The account type, the property's value and size, whether an ID number is on file, and what was billed "
+            "over the two years (in total, per bill, for electricity), not what was paid."
+        ),
+        split="Random accounts of the same municipalities at the same time.",
+        changes=(
+            "We drop the three debt columns that define the label, the payments of the same two years, and stretches "
+            "of the file where no debt was recorded."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The file is one snapshot: the status at its date stands in for the forecast the data card describes (fit"
+            " on one snapshot, score the next), and the features cover the same two years as the label."
+        ),
+    )
+
     # Dataset
     unique_name = "account_debt_south_africa"
     year = "2020"

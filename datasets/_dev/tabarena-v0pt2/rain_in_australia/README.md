@@ -58,6 +58,24 @@ Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal split
 
 Not built yet. The current definition gives checksum `v2:db5fa75a51eb416242d14e0028986aea909f0a686686271a980328060361a087`.
 
+## In brief
+
+**Question.** Will it rain more than 1 mm at this Australian weather station in the next 24 hours?
+
+**Use case.** For example, each morning at 9 am a farmer or local forecaster estimates from a station's observations whether more than 1 mm of rain will fall there by 9 am the next day.
+
+**One row.** One day at one of 49 Australian weather stations of the Bureau of Meteorology, November 2007 to January 2026 (264,562 station-days).
+
+**Predicted.** Whether more than 1 mm of rain falls in the 24 hours from 9 am that day (22% of days).
+
+**Known at prediction time.** The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust and 3 pm observations, the station and the date.
+
+**What the test data stands for.** Nine test windows of 14 days, one every six weeks from February 2025 to January 2026, newest first; each trains on every earlier day, as for a model refit every two weeks.
+
+**Our changes to the source.** We replace the ten values recorded after 9 am (the afternoon readings, the day's maximum temperature, sunshine and gust) by the previous day's, drop the rain amount that defines the label, and drop rows whose next record is more than a day later.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Every input is read by 9 am, the label covers the next 24 hours, and each window follows its training days, as in daily use. A forecaster would also have weather-model output, which the data lack.
+
 ## Files in this folder
 
 | file | what it is |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9
+checksum: v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb
 build:
   uuid: 01a111fc-f194-75a8-92f0-489647625f28
   checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
@@ -67,7 +67,25 @@ decisions: []
 
 Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2026).
 
-Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a company close a consumer's complaint with an explanation only, or with non-monetary or monetary relief?
+
+**Use case.** For example, when a complaint about a financial product reaches the US Consumer Financial Protection Bureau (CFPB), the bureau or the company estimates how it will be closed, to spot complaints likely to end in relief.
+
+**One row.** One complaint to the CFPB from a US state, received from 24 April 2017 to 31 December 2025, whose consumer agreed to publish the written account.
+
+**Predicted.** How the company closed it (companies have 180 days to respond): with an explanation (64.89%), with non-monetary relief (33.08%) or with monetary relief (2.03%).
+
+**Known at prediction time.** The date received, the product and issue with their sub-categories, the company, the state and ZIP code (masked for small places), whether the consumer is an older American or a servicemember, and the consumer's written complaint.
+
+**What the test data stands for.** Each test window is one quarter of 2025 (April-June, July-September, October-December); training is a random million earlier complaints from April 2017 on, as for a model refit every three months.
+
+**Our changes to the source.** We drop the company's public response, which leaks the outcome, keep complaints with a published text from after consumer disputes ended (April 2017), and build from the CFPB's archive, in which every 2025 label is settled.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is in the complaint when it is filed, every label is settled, and later quarters are tested. Only complaints whose consumer agreed to publish the text are included, a narrower group than all complaints.
 
 ## Files in this folder
 
@@ -174,9 +192,9 @@ The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complain
 - "Company public response" is not free text but selected "from a set list of options".
 - Following TexTabBench, we focus on predicting the type of closure a complaint got, that is the "Company response to consumer" column. We want to predict if a complaint will be closed with just an explanation, with non-monetary relief, or with monetary relief.
 - We filter the data to only include entries after consumer disputations were discontinued as this represent a shift in protocol. This filters all data before April 24th 2017.
-- We filter all cases where the "Consumer consent provided?" is in progress or got an untimely response.
+- We keep only complaints whose "Company response to consumer" is one of the three closure types, dropping those still "In progress", marked "Untimely response" or without a response (0.2% of the complaints with a published narrative).
 - We filter all rows without a published complaint narrative (only complaints whose consumer consented to sharing it have one; the archive has no consent column). This ensures the data contains text sentences.
-- We drop "Company public response" as it leaks the target variable.
+- We drop "Company public response" and "Timely response?": both are recorded when the company responds, at the same time as the closure type we predict.
 - We only allow complaints from US states (no territories or international complaints) and remove cases with missing states.
 - The data has unresolved spatial information in the ZIP code. Some ZIPs are censored (ending in "XXX" or full removed "XXXXXX").
 - We add a feature for "Low population area", which determines that the ZIP is censored.
@@ -330,4 +348,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:32f04a0dde5fa222e9aca99bb11df3cf9a5cd3762d4f9effe9712c6e3ef3dae9` |
+| stale | yes: the definition now gives checksum `v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb` |

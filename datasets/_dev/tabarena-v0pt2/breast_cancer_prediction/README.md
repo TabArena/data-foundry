@@ -72,6 +72,24 @@ Binary classification of `cancer_within_one_year`, scored with `roc_auc` on grou
 
 Not built yet. The current definition gives checksum `v2:c3f56997e6423b1035adc7dc61e06bd75458b2e1e3134039505f7815f74a6244`.
 
+## In brief
+
+**Question.** Will a woman whose screening mammogram has just been read be diagnosed with breast cancer within a year?
+
+**Use case.** Once a screening mammogram has been read, the screening programme estimates the woman's chance of a breast cancer diagnosis within a year from her risk factors and the radiologist's assessment (the source's own question), for example to decide on follow-up.
+
+**One row.** One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 to 2008 (39,998 exams of 36,714 women).
+
+**Predicted.** Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.65% of the exams.
+
+**Known at prediction time.** Age, BMI, family history, earlier biopsy and mammogram, hormone therapy, whether an earlier mammogram was at hand for comparison, film or digital imaging, the breast density and the radiologist's assessment.
+
+**What the test data stands for.** Whole women are held out, so the test data stands for the exams of other women; 3,133 women have 2 to 4 exams.
+
+**Our changes to the source.** We drop the cancer type, which is recorded at diagnosis and encodes the label, and hold out whole women.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once the mammogram is read, and the label covers a fixed year after it. The radiologist's assessment carries most of the signal (ROC AUC 0.907 alone, about 0.02 less than the models), as in screening.
+
 ## Files in this folder
 
 | file | what it is |

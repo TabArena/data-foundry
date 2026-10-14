@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class WidsDiabetesMellitus(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a patient admitted to intensive care have diabetes?",
+        use_case=(
+            "In the first day of an ICU stay, when the patient's verified medical history is often not at hand, the "
+            "care team estimates whether the patient has diabetes, to inform treatment (WiDS Datathon 2021)."
+        ),
+        row=(
+            "One admission to an intensive care unit of 204 hospitals in MIT's GOSSIS data (127,358 admissions; "
+            "period not stated)."
+        ),
+        predicted="Whether the patient has been diagnosed with diabetes mellitus; 21.6% have.",
+        known=(
+            "Age, sex, ethnicity, height, weight and BMI, how and why the patient was admitted, other chronic "
+            "conditions, the vital signs and lab values of the first hour and day, the worst first-day values of a "
+            "standard severity score, and the hospital and unit."
+        ),
+        split=("Random admissions, so the test data stands for new patients of the same hospitals and units."),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is recorded within the first day in the ICU, and the label is a condition the "
+            "patient already has but the team may not know of. The test patients come from the same hospitals as the "
+            "training ones."
+        ),
+    )
+
     # Dataset
     unique_name = "wids_diabetes_mellitus"
     year = "2021"

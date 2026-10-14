@@ -58,6 +58,24 @@ Regression of `log_SalePrice`, scored with `rmse` on temporal splits by `Month S
 
 Not built yet. The current definition gives checksum `v2:d6ff2f753c51febf5eb298ed77875f78cfb97ac92e03fa2709d17a10350dabe7`.
 
+## In brief
+
+**Question.** What price will a house in Ames, Iowa sell for?
+
+**Use case.** For example, a lender or a valuation service estimates the sale price of a house from the assessor's record, with a model refit every two months on the latest sales.
+
+**One row.** One sale of residential property in Ames, Iowa, January 2006 to June 2010, from the city assessor's office (2,919 sales).
+
+**Predicted.** The sale price in US dollars, on a log scale.
+
+**Known at prediction time.** The assessor's record of the property (neighbourhood, lot, building type, areas, rooms, quality and condition grades, year built and remodelled, basement, garage) and the sale's month, type and condition.
+
+**What the test data stands for.** Each test window is two calendar months, 13 windows from May-June 2008 to May-June 2010; training is every earlier sale.
+
+**Our changes to the source.** We use De Cock's full file instead of the Kaggle competition's random half, split by sale month instead of at random, and drop his three partial sales of very large new houses.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The record describes the house at the sale and the windows follow time, as for a model in use. De Cock kept only the latest sale of a home sold twice, so the older months miss about 100 sales.
+
 ## Files in this folder
 
 | file | what it is |

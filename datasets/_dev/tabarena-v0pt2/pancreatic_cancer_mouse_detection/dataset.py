@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class PancreaticCancerMouseDetection(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a mouse have preinvasive pancreatic lesions, judged from one blood serum sample?",
+        use_case=(
+            "For example, a doctor screens a person at risk with a blood test for the preinvasive stage of pancreatic"
+            " cancer; in this mouse study (Hingorani et al. 2003) each sample of an unseen mouse stands for a new "
+            "patient's test."
+        ),
+        row=(
+            "One serum mass spectrum of one mouse, from 1 to 6 blood samples per mouse taken at least 5 days apart "
+            "(181 spectra of 73 mice)."
+        ),
+        predicted=(
+            "Whether the mouse is a mutant with pancreatic intraepithelial neoplasia, preinvasive lesions without "
+            "invasive cancer, or a littermate control (44% of the spectra are mutants)."
+        ),
+        known="The intensities of the serum's mass spectrum at about 6,770 mass-to-charge values.",
+        split=("Whole mice are held out, so the test data stands for new individuals, each sample read on its own."),
+        changes=(
+            "We split by mouse; the paper split the samples at random, so samples of one mouse sat on both sides."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Mice of one lab stand in for patients. A file marker of unknown meaning separates some control spectra "
+            "from the rest and may mark a processing batch; it cannot explain the whole signal, but what it marks "
+            "needs the authors."
+        ),
+    )
+
     # Dataset
     unique_name = "pancreatic_cancer_mouse_detection"
     year = "2003"

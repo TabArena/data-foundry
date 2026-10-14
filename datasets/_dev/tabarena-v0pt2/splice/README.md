@@ -66,6 +66,22 @@ Multiclass classification of `SiteType`, scored with `log_loss` on IID splits. 3
 
 Built as `01a111fc-bcd5-72b6-a429-8e9aea326bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aecc7c72c3ee5caaffce1b46993c907dbacaa8bb3aeb0529480f2e62a40b8d5b`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Is the middle of this 60-base stretch of DNA a splice junction, and of which kind?
+
+**Use case.** For example, a gene-annotation tool scans a primate DNA sequence and marks where exons and introns meet, to predict how a gene's RNA is spliced.
+
+**One row.** One 60-nucleotide window of primate DNA around a candidate site (3,190 windows, UCI 1992).
+
+**Predicted.** The site type: exon-to-intron junction (24%), intron-to-exon junction (24%), or neither (52%).
+
+**Known at prediction time.** The base at each of the 60 positions, 30 on each side of the site: A, C, G, T or a code for an ambiguous base.
+
+**What the test data stands for.** Random windows, so the test data stands for other windows of the same collection.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The windows are a curated set in which about half are junctions, a share set by how the examples were chosen rather than by how often junctions occur along a gene.
+
 ## Files in this folder
 
 | file | what it is |

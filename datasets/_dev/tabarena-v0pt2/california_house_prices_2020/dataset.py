@@ -6,10 +6,42 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What price will a California home sell for, given its listing?",
+        use_case=(
+            "For example, when a home is listed, a buyer, an agent or a valuation website estimates the price it will"
+            " sell for, to set or judge an offer."
+        ),
+        row=(
+            "One home sold in California around 2020, as scraped from Redfin; Arizona homes and older copies of "
+            "repeated homes are dropped."
+        ),
+        predicted="The sale price in US dollars, on a log scale.",
+        known=(
+            "The listing (list price, listing date, description), the home's facts (type, year built, size, lot, "
+            "rooms, heating, cooling, parking, appliances), its previous sale, tax assessment, address, region, and "
+            "nearby schools with ratings and distances."
+        ),
+        split=(
+            "Three test sets, each a quarter of the sales in sale order, with all earlier sales for training. The "
+            "order comes from the Kaggle row ID, as the data has no sale dates."
+        ),
+        changes=(
+            "We drop 5,413 listings whose description states the sold price, and order and split the sales by the "
+            "Kaggle ID, which follows the sale order."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The time axis is the order of the Kaggle IDs, checked on Redfin for some homes rather than given, and "
+            "each test set is a count of sales rather than a calendar period. The listing facts are known before the "
+            "sale."
+        ),
+    )
+
     # Dataset
     unique_name = "california_house_prices_2020"
     year = "2021"

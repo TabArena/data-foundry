@@ -6,10 +6,45 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan, Temporal
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan, TaskSummary, Temporal
 
 
 class HotelBookingDemand(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a booking that arrives in the next three months be cancelled?",
+        use_case=(
+            "For example, on the first of each month a hotel's revenue manager estimates which bookings arriving in "
+            "the next three months will be cancelled, to set overbooking and forecast occupancy."
+        ),
+        row=(
+            "One booking at a resort hotel or a city hotel in Portugal, arrivals from July 2015 to August 2017; "
+            "repeated records and same-day bookings are removed."
+        ),
+        predicted=(
+            "Whether the booking is cancelled (29% of all bookings, 12.5% of the test bookings of the newest split)."
+        ),
+        known=(
+            "The booking: hotel, booking and arrival dates, nights, guests, meal plan, country, market segment, "
+            "channel, agent or company, room type, deposit type, customer type, daily rate, special requests, days on"
+            " the waiting list, and the guest's earlier bookings and cancellations."
+        ),
+        split=(
+            "Nine prediction dates, the first of each month from September 2016 to May 2017. The test data is the "
+            "bookings made by then that arrive within three months and are not yet cancelled; training is the "
+            "bookings that arrived before the date."
+        ),
+        changes=(
+            "Training holds only bookings that arrived before the prediction date (the future bookings known then are"
+            " all cancelled) and none cancelled over three months ahead; we drop fields recorded up to check-in "
+            "(booking changes, assigned room, parking)."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The values are a snapshot of the day before arrival, up to three months after the prediction date, so "
+            "changes made in between may remain; the hotels often learn the country only at check-in."
+        ),
+    )
+
     # Dataset
     unique_name = "hotel_booking_demand"
     year = "2018"
@@ -45,7 +80,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
         - To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data.
         - To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available.
         - To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance.
-        - Bookings that have arrival dates in the future, but were already canceled at the given prediction point are included in the train data.
+        - Training holds only bookings that arrived before the prediction point. Future bookings already cancelled at that point are left out: the future bookings known then are all cancelled ones, so they would teach "future arrival = cancelled" (see the splits comment).
         - After splitting, we remove "ReservationStatus" and "ReservationStatusDate" to avoid data leakage.
         - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
     """
@@ -173,7 +208,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
                 (df_use["arrival_date"] > pred_date) & (df_use["arrival_date"] < pred_date + pd.DateOffset(months=3))
             ].copy()
 
-            # Remove all cancelations from the test data that were made prior to the prediction point and use them as train data.
+            # Remove all cancelations from the test data that were made prior to the prediction point (training leaves
+            # them out too, see c).
             test_df = test_df.loc[test_df["ReservationStatusDate"] > pred_date]
 
             # c) Define the train set.

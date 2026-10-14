@@ -65,6 +65,24 @@ Binary classification of `discordant`, scored with `roc_auc` on IID splits. 3,71
 
 Built as `01a111fc-bea0-79f8-b0a4-5d00de089637` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3e04b30c7f27dce464a2428991f866d69df3ac33a0e6f6a2c21cd532b8db3c0e`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Are a patient's thyroid test results discordant?
+
+**Use case.** For example, a laboratory's interpretation system flags thyroid results that an expert would call discordant, so that a specialist reviews them before the report goes out.
+
+**One row.** One patient referred for thyroid tests, from records the Garvan Institute in Sydney supplied to Quinlan (released 1987; 3,711 patients after removing repeats).
+
+**Predicted.** Whether the case is labelled discordant (1.56%); the source does not say what makes a case discordant or who labelled it.
+
+**Known at prediction time.** Age, sex, medication (thyroxine, antithyroid drugs, lithium), conditions and history (pregnancy, illness, thyroid surgery, radioiodine treatment, goitre, tumour), the referring doctor's suspicion of an under- or overactive thyroid, and five thyroid test results with flags for which were measured.
+
+**What the test data stands for.** Random patients, so the test data stands for other patients of the same clinic and period.
+
+**Our changes to the source.** We drop the referral source, which marks where a request came from.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The label is an undefined reading of these same test results, so the model reproduces that reading rather than predicting an outcome, which serves only to automate it. The data are from the 1980s and the curators found the task close to trivial.
+
 ## Files in this folder
 
 | file | what it is |

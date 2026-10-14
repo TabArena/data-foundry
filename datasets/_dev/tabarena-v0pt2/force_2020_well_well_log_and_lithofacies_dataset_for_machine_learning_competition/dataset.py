@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 LABEL = "FORCE_2020_LITHOFACIES_LITHOLOGY"
 """The lithology code of the competition files."""
@@ -65,6 +65,36 @@ def las_nulls(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Which rock type lies at each depth of a newly drilled well, judging from its well logs?"),
+        use_case=(
+            "After a well has been drilled and logged, a geologist interprets the rock type along the whole well from"
+            " its wireline logs, its position and the official stratigraphic picks (the FORCE 2020 competition's "
+            "task)."
+        ),
+        row="One depth sample (every 0.152 m) of one of 118 wells in the Norwegian North Sea.",
+        predicted=(
+            "The rock type at that depth as interpreted by hand, one of 11 classes such as shale, sandstone or "
+            "limestone."
+        ),
+        known=(
+            "The well's logs at that depth (gamma ray, resistivity, density, neutron, sonic, caliper and others, some"
+            " missing), the depth and position, drilling data (bit size, mud weight, rate of penetration) and the "
+            "stratigraphic group and formation; the same well's other depths may be used."
+        ),
+        split=("Whole wells are held out in three folds, so the test data stands for wells never interpreted."),
+        changes=(
+            "We pool the competition's training, open-test and blind wells and split by well across all 118; we drop "
+            "the interpreter's confidence in the label and the basement class, found in one well only."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known once a well is logged, and a held-out well is a new well. The "
+            "stratigraphic picks come from the national register (NPD) rather than the interpreters, as the "
+            "competition gave them."
+        ),
+    )
+
     # Dataset
     unique_name = "force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition"
     year = "2020"

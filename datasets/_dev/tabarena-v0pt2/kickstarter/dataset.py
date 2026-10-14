@@ -7,10 +7,43 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class Kickstarter(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a Kickstarter project reach its funding goal?",
+        use_case=(
+            "For example, Kickstarter, when a campaign launches, estimates whether it will reach its goal, to decide "
+            "which projects to feature."
+        ),
+        row=(
+            "One Kickstarter project that ended funded or failed, created from 2009 to 2025, from Web Robots' monthly"
+            " scrapes (pinned January 2026; 187,117 projects)."
+        ),
+        predicted="Whether it reached its funding goal by its deadline (62.61% did).",
+        known=(
+            "The goal in US dollars, the creation, launch and deadline dates, the category and subcategory, the "
+            "location, the project's name and short description, the creator's name, and whether it had a pre-launch "
+            "page."
+        ),
+        split=(
+            "Each test window is one year of projects by creation date (2023, 2024, 2025); training is every project "
+            "created before, as for a model refit every year."
+        ),
+        changes=(
+            "We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, "
+            "which only funded projects have), convert goals to US dollars at each project's own rate, and remove "
+            "projects repeated across scrapes (20%)."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at launch, and later years are tested. Projects created shortly "
+            "before a test year can end in it, so a few training labels would not yet be known at the refit; how "
+            "fully the scrapes cover all projects is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "kickstarter"
     year = "2026"  # the snapshot we pin; the source grows over time

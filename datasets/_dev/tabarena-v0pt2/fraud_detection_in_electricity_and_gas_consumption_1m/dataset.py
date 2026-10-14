@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 CUT = "2013-01-01"
 """The prediction date: the features are the invoices before it, and the fraud labels look recorded from it on."""
@@ -33,6 +33,40 @@ def first_seen_by_quarter(raw: pd.DataFrame, events: pd.Series, *, nth: int = 1)
 
 
 class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Will the Tunisian utility STEG find that this client commits electricity or gas meter fraud?"),
+        use_case=(
+            "On 2013-01-01, STEG scores each client from the client record and the invoices so far, to decide whom to"
+            " inspect for meter fraud."
+        ),
+        row=(
+            "One invoice (2005-2012) of a STEG client billed both before and after 2013, joined with the client's "
+            "record; the prediction is one per client, the mean over its invoices."
+        ),
+        predicted=(
+            "Whether STEG found the client fraudulent (7.8% of the clients billed before and after the cut); the "
+            "finding falls in 2013-2019 without a date."
+        ),
+        known=(
+            "The client's district, region, category and account creation date, and per invoice its date, tariff, "
+            "meter number, status, code and type (electricity or gas), reading remarks, consumption by tier, meter "
+            "readings and months covered."
+        ),
+        split=(
+            "Whole clients are held out in three folds, so the test data stands for other clients over the same "
+            "years, as in the challenge."
+        ),
+        changes=(
+            "We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels,"
+            " keep clients billed before and after that date, and sample 1.5M invoices by whole clients."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The finding has no date or stated horizon, and the cut date is read off the data rather than documented "
+            "by STEG or Zindi."
+        ),
+    )
+
     # Dataset
     unique_name = "fraud_detection_in_electricity_and_gas_consumption_1m"
     version_of = "fraud_detection_in_electricity_and_gas_consumption"

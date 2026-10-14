@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     cast_dtypes,
@@ -51,6 +52,38 @@ AFTER_9AM = (
 
 
 class RainInAustralia(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will it rain more than 1 mm at this Australian weather station in the next 24 hours?",
+        use_case=(
+            "For example, each morning at 9 am a farmer or local forecaster estimates from a station's observations "
+            "whether more than 1 mm of rain will fall there by 9 am the next day."
+        ),
+        row=(
+            "One day at one of 49 Australian weather stations of the Bureau of Meteorology, November 2007 to January "
+            "2026 (264,562 station-days)."
+        ),
+        predicted="Whether more than 1 mm of rain falls in the 24 hours from 9 am that day (22% of days).",
+        known=(
+            "The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and "
+            "evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust "
+            "and 3 pm observations, the station and the date."
+        ),
+        split=(
+            "Nine test windows of 14 days, one every six weeks from February 2025 to January 2026, newest first; each"
+            " trains on every earlier day, as for a model refit every two weeks."
+        ),
+        changes=(
+            "We replace the ten values recorded after 9 am (the afternoon readings, the day's maximum temperature, "
+            "sunshine and gust) by the previous day's, drop the rain amount that defines the label, and drop rows "
+            "whose next record is more than a day later."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Every input is read by 9 am, the label covers the next 24 hours, and each window follows its training "
+            "days, as in daily use. A forecaster would also have weather-model output, which the data lack."
+        ),
+    )
+
     # Dataset
     unique_name = "rain_in_australia"
     year = "2026"

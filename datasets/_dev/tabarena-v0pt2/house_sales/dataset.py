@@ -7,7 +7,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 SALES_FILE = "kc_house_data.csv"
 CHANGE_LOG_ZIP = "Change History Detail.zip"
@@ -128,6 +136,38 @@ def _as_of_sale(sales: pd.DataFrame, changes: pd.DataFrame, bath_counts: pd.Data
 
 
 class HouseSales(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What price will a house in King County, Washington, sell for?",
+        use_case=(
+            "An automated valuation model, as lenders or property sites run, estimates a house's price on the day it "
+            "sells from the county assessor's record and its location, trained on all earlier sales."
+        ),
+        row=(
+            "One sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 (20,967 sales)."
+        ),
+        predicted="The sale price, on a log scale; prices range from $75,000 to $7.7 million.",
+        known=(
+            "The sale date, the location (coordinates and ZIP code) and the assessor's record of the house on the "
+            "sale day: living, basement and lot area, bedrooms, bathrooms, floors, year built and renovated, grade "
+            "and condition. A view index, waterfront and the neighbours' areas are as of July 2015."
+        ),
+        split=(
+            "Each test window is three weeks of sales, nine windows from late October 2014 to April 2015, newest "
+            "first; training is all earlier sales."
+        ),
+        changes=(
+            "The file holds the assessor's record of July 2015, after every sale; we rebuild each house as of its "
+            "sale day from the county's change log. We drop May 2015, which the extract cut short, and split by sale "
+            "date."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features describe the house as it was sold, and the windows follow a model refit every three weeks. "
+            "A few values (view, waterfront, neighbours' areas) are still from July 2015, and the 1,225 sales the "
+            "county flags as changed since the sale stay as noise."
+        ),
+    )
+
     # Dataset
     unique_name = "house_sales"
     year = "2015"

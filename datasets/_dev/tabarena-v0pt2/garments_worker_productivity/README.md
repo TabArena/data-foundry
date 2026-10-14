@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: garments_worker_productivity
 container_format: 2
-checksum: v2:17818fabb07f08abc226664c27369956b1382d7275bc29442b81abcd1b10bc41
+checksum: v2:22b76e8f1d13b43bcfc1a045200d61cc97e0b28fd9580f0e093475b89c54c04a
 build:
   uuid: 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
   checksum: v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc
@@ -65,7 +65,25 @@ decisions: []
 
 Regression of `actual_productivity`, scored with `rmse` on temporal splits by `date`. 1,197 rows and 15 features. Source: UCI (2020).
 
-Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:17818fabb07f08abc226664c27369956b1382d7275bc29442b81abcd1b10bc41`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:22b76e8f1d13b43bcfc1a045200d61cc97e0b28fd9580f0e093475b89c54c04a`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How productive will a garment-factory team be today?
+
+**Use case.** At the start of each working day, a production manager estimates each team's productivity, for example to plan staffing or adjust targets; the curators set this prediction point, as the paper studied drivers of productivity.
+
+**One row.** One team of the sewing or finishing department of a garment factory on one working day, January to March 2015 (1,197 team-days).
+
+**Predicted.** The team's actual productivity that day, a ratio from the factory's daily efficiency report (0.23 to 1.12 in the data).
+
+**Known at prediction time.** The quarter, weekday, department and team, the day's productivity target, workers and style changes, and the previous recorded day's standard minutes, work in progress, overtime, idle time, idle workers and incentive, with the days since that record.
+
+**What the test data stands for.** Each of 30 test windows is one working day between 4 February and 11 March 2015 (17 to 24 team-days), with every earlier day for training.
+
+**Our changes to the source.** We lag the values recorded during the day (work in progress, overtime, idle time and workers, standard minutes, incentive) to the team's previous working day; the paper used the same day's values, and the incentive is paid for the day's output.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Every input is set or known at the start of the day, and each test day follows its training days. The numbers of workers and style changes showed no same-day link, but the source does not say when every value is recorded.
 
 ## Files in this folder
 
@@ -164,7 +182,7 @@ The first 5 of 1,197 rows of the final frame (the oldest rows: the frame is sort
 - We set the target variable to "actual_productivity", and use the targeted_productivity as an input feature.
 - We do not include all features directly for prediction, because some can't be expected to be available at the decision point in time: "smv", "wip", "over_time", "idle_time", "idle_men", "incentive". To still keep as much information as possible, we impute the value of the previous recorded working day (by department and team).
 - "incentive" is a structured incentive, i.e. "higher pay for achieving the milestone or targeted performance", which "depends on the performance, so it fluctuates with the change in performance level" (Al Imran et al. 2021, Sec. 3.1). It is paid for the day's achieved output and recorded in the end-of-day efficiency report. In sewing, day-to-day changes in the incentive follow the same day's productivity (Spearman 0.53 within teams) and not the previous day's (0.07). We therefore use the previous day's value.
-- Because the timestamps are irregularly spaced, we additionally include the days passed sind the last recording per department and team.
+- Because the timestamps are irregularly spaced, we additionally include the days passed since the last recording per department and team.
 - Note that we try to keep feature engineering minimalistic and only with the sole purpose to prevent leaks with minimal loss of information.
 - It can be expected that feature engineering exposing the non-iid properties of the dataset will be crucial for good predictive performance.
 - We cannot fully exclude the possibility of leaks, since not enough information about the date of collection for some features is given.
@@ -317,4 +335,4 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:17818fabb07f08abc226664c27369956b1382d7275bc29442b81abcd1b10bc41` |
+| stale | yes: the definition now gives checksum `v2:22b76e8f1d13b43bcfc1a045200d61cc97e0b28fd9580f0e093475b89c54c04a` |

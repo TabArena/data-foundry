@@ -6,10 +6,39 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class PolishCompaniesBankruptcy(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a Polish company go bankrupt within a year of its financial statement?",
+        use_case=(
+            "For example, a lender or investor reads a company's annual financial statement and assesses the risk "
+            "that it goes bankrupt within a year, to decide on credit or investment."
+        ),
+        row=(
+            "One financial statement of a Polish company from the Emerging Markets Information Service, from the "
+            "fifth year of the source's forecasting period (5,790 statements); bankrupt companies are from 2000-2012,"
+            " operating ones from 2007-2013."
+        ),
+        predicted="Whether the company is bankrupt one year after the statement (7.0% are).",
+        known=(
+            "64 financial ratios computed from the statement: profitability, debt, liquidity, turnover, working "
+            "capital, size and sales growth."
+        ),
+        split="Random statements; the file has no dates.",
+        changes=(
+            "We use only the source's fifth-year file, whose label is bankruptcy one year later, and drop duplicate "
+            "rows."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The ratios come from the statement and the label follows a year later, as in use. But the bankrupt and "
+            "the surviving companies were taken from different periods (2000-2012 against 2007-2013) and the file has"
+            " no dates, so part of the signal may be the period rather than the company."
+        ),
+    )
+
     # Dataset
     unique_name = "polish_companies_bankruptcy"
     year = "2016"

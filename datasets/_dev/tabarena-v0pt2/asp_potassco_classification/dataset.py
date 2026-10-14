@@ -6,10 +6,45 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
 
 
 class AspPotasscoClassification(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Which of 11 configurations of the solver clasp solves a given logic-programming problem fastest?"),
+        use_case=(
+            "A user of answer set programming (a way to state and solve search problems in logic) picks the solver "
+            "configuration for each new problem instance, as the algorithm selector claspfolio 2 does; here for a "
+            "kind of problem not seen before."
+        ),
+        row=(
+            "One instance of the Potassco benchmark set that at least one configuration solved within the time limit "
+            "(1,212 instances from 96 problem classes, ASlib, 2014)."
+        ),
+        predicted=(
+            "The fastest of the 11 configurations; the most common one is fastest on 19.8% of the instances, and for "
+            "62% the second-best is within 1 second."
+        ),
+        known=(
+            "Statistics of the instance's program (numbers of rules, atoms and constraints of each kind) and of a few"
+            " short probing runs of the solver (choices, conflicts, learnt constraints, backjumps)."
+        ),
+        split=(
+            "Whole problem classes are held out (27 to 36 per fold), so the test data stands for a kind of problem "
+            "never seen in training, as for a user with a new encoding."
+        ),
+        changes=(
+            "We drop instances that no configuration solved within the time limit, and hold out whole problem classes"
+            " where claspfolio 2 and ASlib split instances at random."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features exist before solving, and a held-out class matches a new encoding. But the label counts a "
+            "pick 0.05 s slower as wrong as a timeout, while the user cares about the time lost, and instances that "
+            "no configuration solved are dropped, which a user cannot know in advance."
+        ),
+    )
+
     # Dataset
     unique_name = "asp_potassco_classification"
     year = "2014"

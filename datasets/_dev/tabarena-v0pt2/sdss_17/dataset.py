@@ -6,10 +6,40 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class Sdss17(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a sky object a galaxy, a star or a quasar, judging from its images alone?",
+        use_case=(
+            "For example, an astronomer classifies objects that have images but no spectrum, to choose targets for "
+            "spectroscopy or to build catalogues."
+        ),
+        row=(
+            "One object with a spectrum in the Sloan Digital Sky Survey's Data Release 17 (99,999 objects of a "
+            "100,000-object sample shared on Kaggle)."
+        ),
+        predicted=(
+            "The class the survey's spectroscopic pipeline assigned: galaxy (59.44%), star (21.59%) or quasar (18.96%)."
+        ),
+        known=(
+            "The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, and the "
+            "camera column that took them."
+        ),
+        split=("Random objects, so the test data stands for other objects chosen for spectra in the same way."),
+        changes=(
+            "We drop the redshift, fitted together with the class from the spectrum, and the plate and fibre, which "
+            "record how the object was chosen for spectroscopy; the task is to classify from the images alone."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The features exist before a spectrum, but every row is an object the survey's targeting programmes "
+            "already picked by its colours for a spectrum, so the mix of classes and colours is not that of the "
+            "objects one would classify without one."
+        ),
+    )
+
     # Dataset
     unique_name = "sdss_17"
     year = "2021"

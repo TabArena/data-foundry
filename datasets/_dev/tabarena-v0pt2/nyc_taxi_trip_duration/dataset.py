@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 MIN_SECONDS = 30
 """Shorter records are not rides: most start and end at one point (the meter engaged and disengaged in place)."""
@@ -52,6 +60,37 @@ def haversine_km(df: pd.DataFrame) -> pd.Series:
 
 
 class NycTaxiTripDuration(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How long will a New York taxi ride take, from pickup to drop-off?",
+        use_case=(
+            "When a passenger gets in and names the destination, the taxi's system estimates the arrival time with a "
+            "model refit every week on the latest trips."
+        ),
+        row=(
+            "One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine "
+            "Commission's trip records (1,451,706 trips)."
+        ),
+        predicted="The trip's duration in seconds, on a log scale.",
+        known=(
+            "The pickup time and point, the drop-off point taken as the destination, the number of passengers and the"
+            " company of the cab's meter system."
+        ),
+        split=(
+            "Each of the last three weeks of June 2016 is a test window; training is a random million earlier trips, "
+            "as for a model refit weekly."
+        ),
+        changes=(
+            "We split by week instead of the competition's random sample of the same days, drop a flag set only after"
+            " the trip, non-rides under 30 seconds and broken clocks over 3 hours, and correct trips across the "
+            "daylight-saving switch."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at pickup once the passenger names the destination; the recorded "
+            "drop-off point stands in for it."
+        ),
+    )
+
     # Dataset
     unique_name = "nyc_taxi_trip_duration"
     year = "2016"

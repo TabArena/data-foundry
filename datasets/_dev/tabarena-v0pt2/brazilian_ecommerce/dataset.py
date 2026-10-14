@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     SplitPlan,
+    TaskSummary,
     Temporal,
     TemporalSplits,
     drop_columns,
@@ -38,6 +39,42 @@ def _days(delta: pd.Series) -> pd.Series:
 
 
 class BrazilianEcommerce(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How many days will an online order in Brazil take to reach the customer?",
+        use_case=(
+            "At checkout, the Brazilian sales platform Olist estimates how long an order will take to arrive, for "
+            "example to inform the customer or to flag orders likely to be late."
+        ),
+        row=(
+            "One delivered order with a single seller, placed through Olist from 2016 to July 2018 (88,721 orders); "
+            "the release is a random sample of the orders whose customer answered a review survey."
+        ),
+        predicted=(
+            "The days from purchase to delivery at the customer, on a log scale (median 7.5 to 9 days in May-July "
+            "2018)."
+        ),
+        known=(
+            "The purchase time, the customer's and the seller's location, the seller, the product's category, size, "
+            "weight, photo count and text lengths, the item count, price and freight, the payment method and "
+            "instalments, and the delivery date Olist promises at checkout."
+        ),
+        split=(
+            "Each test window is one month of orders, March to July 2018; training is the orders placed at least a "
+            "month earlier and delivered before the window starts, as for a model refit every month."
+        ),
+        changes=(
+            "We predict the delivery time instead of the review score the uploader's notebook predicts, keep orders "
+            "placed before August 2018 (later ones lack their slow deliveries), and leave a one-month gap before each"
+            " test month."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at checkout, and the windows mirror a monthly refit with the "
+            "deliveries known by then. Only orders with an answered review are in the release; if slow orders get "
+            "more answers, the mix differs from all orders."
+        ),
+    )
+
     # Dataset
     unique_name = "brazilian_ecommerce"
     year = "2018"

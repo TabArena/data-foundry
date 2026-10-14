@@ -7,10 +7,46 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
 
 
 class Sat11HandAlgoRuntime(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How long will each of ten SAT solvers take on a new problem instance?",
+        use_case=(
+            "Algorithm selection: given a new satisfiability problem, a portfolio predicts the runtime of each of its"
+            " ten solvers and runs the one predicted fastest (ASlib, Bischl et al. 2016)."
+        ),
+        row=(
+            "One run of one of 10 SAT solvers on one handcrafted instance of the 2011 SAT competition, stopped at "
+            "5,000 seconds (184 instances, 1,840 runs)."
+        ),
+        predicted=(
+            "The run's time in seconds, on a log scale; a run stopped at the 5,000-second limit counts as 5,000 (666 "
+            "runs)."
+        ),
+        known=(
+            "Statistics of the instance's formula (size, clause and variable structure, graph measures, results of "
+            "short probing runs) and of the solver's source code (size, complexity, code-graph measures); not the "
+            "solver's name."
+        ),
+        split=(
+            "Whole instances are held out, as in ASlib's folds, so the test data stands for new problems; other "
+            "instances of the same family can be in training, on purpose."
+        ),
+        changes=(
+            "We drop the 112 of 296 instances on which every solver hits the limit: their labels are only lower "
+            "bounds and leave the choice open. One model covers all solvers, with the solver described by its "
+            "features."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features are known before any solver runs, and a held-out instance is a new problem. Counting a "
+            "timeout as the limit keeps the order of the solvers within an instance, which is what the selection "
+            "needs."
+        ),
+    )
+
     # Dataset
     unique_name = "sat11_hand_algo_runtime"
     year = "2011"

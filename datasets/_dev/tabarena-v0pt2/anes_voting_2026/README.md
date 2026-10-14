@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
+checksum: v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 48587
   n_features: 261
@@ -66,7 +66,25 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a survey respondent vote in the coming US national election?
+
+**Use case.** For example, a pollster estimates after the pre-election interview whether each respondent will turn out, to weight the poll towards likely voters.
+
+**One row.** One respondent of the American National Election Studies who completed both the pre-election and the post-election interview of a presidential or midterm election, 1948-2024.
+
+**Predicted.** Whether the respondent says in the post-election interview that they voted (78% say so).
+
+**Known at prediction time.** The year and the pre-election answers: background (age, gender, race, education, income, region), party identification, interest in the campaign, likes and dislikes of parties and candidates, opinions on issues and the economy, and the stated intention to vote.
+
+**What the test data stands for.** Each of the last nine studies (1996 to 2024) is the test data once, with every earlier study for training, as for a model built before the next election.
+
+**Our changes to the source.** We keep only respondents with both interviews and drop the questions the codebook ties to the post-election interview, among them an item built from the respondent's House vote.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The questions are not marked as pre- or post-election; we drop those the codebook ties to the post-election interview, so a few later answers may remain. The label is the respondent's own report of voting, not a checked record.
 
 ## Files in this folder
 
@@ -120,9 +138,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | VCF0004 |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 245 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `VCF0110`, `VCF0702`
+- categorical (245): `VCF0110`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0111`, `VCF0112`, `VCF0113`, `VCF0114`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0130`, `VCF0130a`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0138`, `VCF0138a`, `VCF0138b`, `VCF0138c`, `VCF0138d`, `VCF0140`, `VCF0140a`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0155`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0301`, `VCF0302`, `VCF0303`, `VCF0305`, `VCF0310`, `VCF0311`, `VCF0314`, `VCF0315`, `VCF0316`, `VCF0317`, `VCF0318`, `VCF0319`, `VCF0320`, `VCF0321`, `VCF0322`, `VCF0323`, `VCF0324`, `VCF0338`, `VCF0339`, `VCF0341`, `VCF0350`, `VCF0351`, `VCF0353`, `VCF0354`, `VCF0355`, `VCF0356`, `VCF0357`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0362`, `VCF0365`, `VCF0366`, `VCF0367`, `VCF0368`, `VCF0369`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0401`, `VCF0402`, `VCF0403`, `VCF0404`, `VCF0405`, `VCF0406`, `VCF0407`, `VCF0408`, `VCF0409`, `VCF0410`, `VCF0411`, `VCF0450`, `VCF0451`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF0834`, `VCF0839`, `VCF0842`, `VCF0843`, `VCF0850`, `VCF0870`, `VCF0871`, `VCF0872`, `VCF9001`, `VCF9002`, `VCF9009`, `VCF9028`, `VCF9029`, `VCF9033`, `VCF9035`, `VCF9044`, `VCF9044a`, `VCF9045`, `VCF9073`, `VCF9077`, `VCF9081`, `VCF9085`, `VCF9086`, `VCF9089`, `VCF9093`, `VCF9094`, `VCF9122`, `VCF9209`, `VCF9210`, `VCF9211`, `VCF9212`, `VCF9213`, `VCF9214`, `VCF9215`, `VCF9216`, `VCF9217`, `VCF9218`, `VCF9220`, `VCF9222`, `VCF9224`, `VCF9225`, `VCF9226`, `VCF9238`, `VCF9239`, `VCF9243`, `VCF9244`, `VCF9265`, `VCF9266`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
 - string (0): none
 - datetime (0): none
 
@@ -168,7 +186,7 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - Although there are several ways to further preprocess features, we leave the preprocessing minimal to enable the development of models that can handle even complex preprocessing on their own.
 - Note: Alternative target could be constructed using who the candidate voted for (VCF0704). This could be a multi-class target with [Democrat, Republican, Other Party, Did not vote, Voted but unknown who]. However, the last category is less useful to predict, and might introduce problems. We therefore stick to predicting whether someone voted or not.
 - Note: While the data was also used in the TableShift benchmark, we define an entirely different task, with a temporal split and more features.
-- Note: Some information is represented across multiple columns, e.g.,  ['VCF0009x', 'VCF0009y', 'VCF0009z', 'VCF0010x', 'VCF0010y', 'VCF0010z', 'VCF0011x', 'VCF0011y', 'VCF0011z'] all correspond to weight. We keep all of these columns, even though some might be redundant, because we want to keep the data as close to the original as possible leaving the challenge to the model.
+- We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
 - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
 - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
 
@@ -389,3 +407,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a` |

@@ -65,6 +65,22 @@ Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits
 
 Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:33b7f74c684f284bac870ca69d0f906cd31a52e3177d14937d459b10377fff59`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will an employee's request for access to a company resource be granted?
+
+**Use case.** When an Amazon employee asks for access to a computer resource, the company predicts from the employee's role whether access would be granted, to cut manual grants and revokes (the competition's stated aim).
+
+**One row.** One access request of an Amazon employee, from the competition's labelled file (32,769 requests, collected 2010-2011 as the competition states).
+
+**Predicted.** Whether the request was approved (94% were).
+
+**Known at prediction time.** The requested resource, the employee's manager, and the employee's role (two levels of role grouping, department, title, role family and role code), all as anonymous codes.
+
+**What the test data stands for.** Random requests, so the test data stands for new requests within the same organisation; the same manager, role or resource can appear on both sides.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The role and the resource are known when a request arrives, and approval is the decision to automate. The requests carry no dates, so the split cannot follow time; the competition's test held other employees.
+
 ## Files in this folder
 
 | file | what it is |

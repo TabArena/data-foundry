@@ -70,6 +70,22 @@ Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 6
 
 Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c6697ab7cfbc741f3affbbcc000afeb840e85e1f4f15e9a04ddeba5f7cbc084`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will an inspection find an organisation in breach of the working-environment rules on a given checklist?
+
+**Use case.** For example, the Norwegian labour inspection authority decides which organisations to inspect, and with which checklist, by predicting where an inspection would find a breach (the source's non-compliance task).
+
+**One row.** One inspection of a Norwegian organisation with one checklist (63,634 rows); the data has no dates.
+
+**Predicted.** Whether the organisation was found non-compliant with any regulation the checklist covers, which is known only when the inspection is completed.
+
+**Known at prediction time.** The organisation's industry, county, age and number of employees, whether it is in the VAT and employer registers, its accounting type and currency, the checklist's text, and several hundred figures, many from its accounts, that the source does not describe one by one.
+
+**What the test data stands for.** Random inspections, so training and test inspections come from the same period.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Inspections are targeted ahead of time, but the data has no dates, so the split cannot keep later inspections for testing; the meaning of most numbers is not stated.
+
 ## Files in this folder
 
 | file | what it is |

@@ -63,7 +63,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`alfa_battle_2_0_task_1`](#alfa_battle_2_0_task_1) | not added | The task-1 files are gone from every source. `No` unless Alfa-Bank shares them. |
 | [`alfa_battle_2_0_task_2`](#alfa_battle_2_0_task_2) | added | The products of a test window's clients are dropped from each training side. The features are the organizers' 127 baseline aggregates. Window length is open. |
 | [`alvin_smart_money_management_classification_challenge`](#alvin_smart_money_management_classification_challenge) | added; `No` (`Too Small`) on 2026-10-12, folder removed | 350 rows, 27-41 test purchases per window. Payees who are private persons are masked (142 rows); `Ethical Issue` is the alternative to masking. |
-| [`analcatdata_supreme`](#analcatdata_supreme) | added | IID: a temporal split is invalid because the label window ends in 1988. Keep or retire; target scale. |
+| [`analcatdata_supreme`](#analcatdata_supreme) | added; `No` (Scientific Discovery) on 2026-10-14, folder removed | IID: a temporal split is invalid because the label window ends in 1988. Keep or retire; target scale. |
 | [`apistox`](#apistox) | added | The molecule is only a SMILES string. Under the default pipeline (Qwen3 text embedding, 32 dimensions) a model learns from the agrochemical type and the year, not from the structure (ECFP4 or MACCS would add 0.03-0.05 AUC). Four 10-year windows on a noisy first-publication year; 8 windows are the alternative. |
 | [`ashrae_great_energy_predictor_iii`](#ashrae_great_energy_predictor_iii) | added as `ashrae_great_energy_predictor_iii_1m` | The test year comes from a second source (BDG2 2017). Forecasting scope; temporal or grouped by building. |
 | [`bias_correction_r_bias_correction_r_2`](#bias_correction_r_bias_correction_r_2) | added | One target (`Next_Tmin`) under the record's Multi-target tag. Per-station MOS is the baseline to beat: the mean of three models beats it on 7 of 9 windows. |
@@ -1134,6 +1134,9 @@ is IID: the temporal split the record asks for cannot be built validly (issue 1)
    - My view: the IID version is valid by the source's design, and its signal is small but holds on 9/9 folds for
      every regularised model, so by rule 2 it stays. I withdraw the earlier `No` recommendation: it rested on the
      temporal no-signal result, which the label window explains.
+
+   **Resolved (Lennart, 2026-10-14):** retired, `No` with `No Good Target / Scientific Discovery`. The label counts responses in one calendar window shared by all decisions, not in a fixed time after each decision, so the task stands for no forecast anyone makes, only a look back at which rulings drew responses. Folder removed (in git history at 86272ac); the rule is in criterion 3 of the curation guidelines.
+
 2. **Target scale.**
    - Implemented: regression on log1p(count). The record says "Correct target seems to be regression number of
      actions taken. We could overrule to clf as well".

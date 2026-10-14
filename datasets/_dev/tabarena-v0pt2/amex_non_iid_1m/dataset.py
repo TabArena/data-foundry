@@ -5,10 +5,40 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
 
 
 class AmexNonIid1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Will a credit card customer fail to pay within 18 months of the latest monthly statement?"),
+        use_case=(
+            "At a customer's latest monthly statement, the card issuer estimates whether the customer will default in"
+            " the next 18 months, to manage its lending risk, for example the credit it extends."
+        ),
+        row=(
+            "One monthly statement of an American Express credit card customer; a customer has 1 to 13 statements, "
+            "and the prediction is made once per customer, at the latest one (124,466 customers)."
+        ),
+        predicted=(
+            "Whether the customer defaults on a payment in the 18 months after the latest statement. The source kept "
+            "only 5% of the customers who paid, so defaulters' statements are 24.9% of the rows."
+        ),
+        known=(
+            "All of the customer's statements up to the latest, with their dates, each with anonymized, normalized "
+            "variables that the source groups into delinquency, spending, payments, balances and risk."
+        ),
+        split=(
+            "Whole customers are held out, so the test data stands for other customers of the same months, each "
+            "scored at the latest statement."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Every statement is in the past at the prediction point, and the label covers a fixed 18 months after it,"
+            " as in use. The test customers come from the same months as the training ones, and the features are "
+            "anonymized."
+        ),
+    )
+
     # Dataset
     unique_name = "amex_non_iid_1m"
     version_of = "amex_non_iid"

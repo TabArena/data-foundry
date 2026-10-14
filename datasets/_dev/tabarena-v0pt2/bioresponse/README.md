@@ -66,6 +66,22 @@ Binary classification of `MoleculeElicitsResponse`, scored with `roc_auc` on IID
 
 Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a molecule produce the biological response that the company's assay measures?
+
+**Use case.** For example, a medicinal chemist at Boehringer Ingelheim screens candidate molecules on properties computed from their structure and decides which to synthesize and test in the lab.
+
+**One row.** One molecule tested by Boehringer Ingelheim (3,751 molecules, released for a 2012 Kaggle competition).
+
+**Predicted.** Whether the molecule elicited the response (54% did); the source names neither the response nor the assay.
+
+**Known at prediction time.** 1,776 numbers computed from the molecule's structure (descriptors of size, shape, elemental make-up and the like), already normalised and with hidden names.
+
+**What the test data stands for.** Random molecules, so the test data stands for new candidates; close analogues of a test molecule can be in training, as no structure is given to group them.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, which is all a chemist has before synthesis. Without structures the split cannot keep a chemical series together, so scores may be higher than on a truly new series.
+
 ## Files in this folder
 
 | file | what it is |

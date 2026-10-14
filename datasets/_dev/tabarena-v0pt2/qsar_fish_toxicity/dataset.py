@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class QsarFishToxicity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How toxic is a chemical to fish, judging from its molecular structure?",
+        use_case=(
+            "For example, a regulatory toxicologist estimates the acute fish toxicity of an untested chemical, to "
+            "decide whether it needs testing or a hazard label."
+        ),
+        row=("One chemical tested for 96-hour toxicity to fathead minnows (908 chemicals, Cassotti et al. 2015)."),
+        predicted=(
+            "The concentration that kills half the test fish within 96 hours, as minus the log of moles per litre, so"
+            " higher means more toxic."
+        ),
+        known=(
+            "Six molecular descriptors computed from the structure: an information index, a matrix-based index, an "
+            "autocorrelation of ionisation potential, two counts of carbon atom types, and the predicted "
+            "octanol-water partition coefficient."
+        ),
+        split="Random chemicals, so the test data stands for chemicals not yet tested.",
+        fit="direct",
+        fit_reason=(
+            "The descriptors come from the structure alone, which is all a toxicologist has for an untested chemical."
+            " 24% of the rows share all six descriptors with another row: isomers whose toxicity differs but which "
+            "look identical to the model."
+        ),
+    )
+
     # Dataset
     unique_name = "qsar_fish_toxicity"
     year = "2015"
@@ -35,7 +60,8 @@ class QsarFishToxicity(AbstractCuratedDataset):
     """
     curation_comments = """
         - We assigned descriptive column names following the original dataset documentation.
-        - Anomaly: the data contains a lot of duplicates (15%) when ignoring the target feature.
+        - 24% of the rows share all six descriptors with another row, but LC50 differs within every shared vector: they are distinct chemicals (isomers) the descriptors cannot tell apart, not repeated measurements, so we keep them.
+        - The six descriptors were chosen by a genetic algorithm on the paper's training set (726 of the 908 chemicals), which overlaps our test folds: a mild optimism we cannot measure. No descriptor is derived from the target.
     """
 
     # Task

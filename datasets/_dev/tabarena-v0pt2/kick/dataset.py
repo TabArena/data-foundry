@@ -5,10 +5,46 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 
 class Kick(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question='Is a used car bought at auction a "kick", a purchase with serious problems?',
+        use_case=(
+            "A used-car dealer decides at the auction whether to buy a car, avoiding cars that would have to be "
+            "returned or resold at a loss."
+        ),
+        row="One car bought at a US auction in 2009-2010.",
+        predicted="Whether the purchase turned out to be a bad buy.",
+        known=(
+            "The car (age, make, model, trim, mileage, colour, wheel type), its auction and retail price guides, the "
+            "purchase price, the auction, the buyer and the warranty cost."
+        ),
+        split=(
+            "The test data is the most recent purchases, in nine windows of purchase dates, with every earlier "
+            "purchase for training."
+        ),
+        changes=(
+            "We split by purchase date instead of the competition's random split, in which both sides cover the same "
+            "two years."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Everything else is known at the auction, but a missing wheel type marks 25% of the bad buys and 1.5% of "
+            "the others and may be filled in after a car is returned. It is kept as the company released it (ROC AUC "
+            "0.757 with it, 0.691 without)."
+        ),
+    )
+
     # Dataset
     unique_name = "kick"
     year = "2011"

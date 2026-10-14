@@ -6,10 +6,36 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class BiomechanicalOrthopaedicPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Does a patient's lower spine show a disc hernia, a slipped vertebra (spondylolisthesis), or neither?"
+        ),
+        use_case=(
+            "For example, an orthopaedist uses six measures of the shape and orientation of a patient's pelvis and "
+            "lower spine to support the diagnosis of a back disorder."
+        ),
+        row=(
+            "One patient of an orthopaedics research group in Lyon, France (310 patients, as listed in a 2006 "
+            "master's thesis); the period is not stated."
+        ),
+        predicted="The diagnosis: spondylolisthesis (48%), normal (32%) or disc hernia (19%).",
+        known=(
+            "Six measures derived from the shape and orientation of the pelvis and lower spine: pelvic incidence, "
+            "pelvic tilt, lumbar lordosis angle, sacral slope, pelvic radius and the degree of the vertebra's slip."
+        ),
+        split="Random patients, so the test data stands for new patients of the same group.",
+        fit="approximate",
+        fit_reason=(
+            "The measures suit a diagnostic aid, but a diagnosis today rests on imaging and symptoms that the data "
+            "lack (record). The class mix, half spondylolisthesis, is unlikely to be that of a clinic's patients, and"
+            " how the patients were chosen is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "biomechanical_orthopaedic_prediction"
     year = "2006"

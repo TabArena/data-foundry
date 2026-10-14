@@ -66,6 +66,22 @@ Multiclass classification of `WebsiteType`, scored with `log_loss` on IID splits
 
 Built as `01a111fc-ef84-7289-a58d-5a6ca10a3a3f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:369be20c61e2320b76f4a0bdaceea7421a0f5f7f799847cad08678f58eee5fad`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Is a website phishing, legitimate or suspicious?
+
+**Use case.** For example, a browser's anti-phishing filter rates a site when a user opens it, to warn or block.
+
+**One row.** One website: phishing sites from the PhishTank archive, legitimate ones from Yahoo and starting-point directories (1,353 sites; period not stated).
+
+**Predicted.** Phishy (52%), legitimate (40.5%) or suspicious (8%); the data page says a suspicious site "held some legit and phishy features".
+
+**Known at prediction time.** Nine signals, each rated legitimate, suspicious or phishy: the form handler, pop-up windows, the SSL certificate, where requested objects and anchor links point, the site's traffic, URL length, domain age, and an IP address in the URL.
+
+**What the test data stands for.** Random sites; about half the rows are duplicates, so identical rows can sit on both sides.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Phishing and legitimate sites come from separate lists, and the suspicious class is defined by its mix of signals rather than by what the site turned out to be. The signals themselves are known at a visit.
+
 ## Files in this folder
 
 | file | what it is |

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
 
 # The class of each letter grade in the file. CCC, CC and C form one class, as in the rating table the uploader
 # follows (notebook cell 15, from Investopedia: "CCC/CC/C ... Highest Risk"); AAA (7 rows) is dropped, as the uploader
@@ -30,6 +30,36 @@ def _rating_class(raw: pd.DataFrame) -> pd.Series:
 
 
 class CorporateCreditRating(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Which letter grade would a rating agency give this company, judging from its financial statements?"),
+        use_case=(
+            "An analyst estimates the grade an agency would give a company that has no rating of its own (a shadow "
+            "rating), from its financial statements and sector (the uploader's question)."
+        ),
+        row=(
+            "One credit rating of a US company by one of five agencies, 2005-2016, with the company's financial "
+            "ratios of that fiscal year (2,020 ratings of 592 companies, at most one per company and year)."
+        ),
+        predicted=("The letter grade, one of six classes from AA to a merged CCC/CC/C; BBB is the most common (33%)."),
+        known=(
+            "25 financial ratios (liquidity, profitability, debt, cash flow, per-share values), the sector, the "
+            "agency and the rating date."
+        ),
+        split=(
+            "Whole companies are held out, so the test data stands for companies whose ratings the model has not seen."
+        ),
+        changes=(
+            "We split by company instead of at random, as a rated company's current grade is public and repeats in "
+            "72% of its next ratings. We merge CCC, CC and C and drop the 7 AAA ratings and the two defaults."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Statements and sector are what an analyst has for an unrated company, and held-out companies match that."
+            " Each row's agency and date are an arbitrary pick among the company's ratings of that year, and "
+            "companies delisted before June 2020 are missing."
+        ),
+    )
+
     # Dataset
     unique_name = "corporate_credit_rating"
     year = "2020"

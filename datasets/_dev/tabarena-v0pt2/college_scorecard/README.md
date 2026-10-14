@@ -60,6 +60,24 @@ Regression of `completion_rate_150pct`, scored with `rmse` on temporal splits by
 
 Not built yet. The current definition gives checksum `v2:5f66dd12396e466a9a34005c3de91e0ecee041409268b31a648a8ce32ae08a5a`.
 
+## In brief
+
+**Question.** What share of the students entering a US four-year college this fall will graduate within six years?
+
+**Use case.** For example, when a new class enters, a state agency, an accreditor or the college itself estimates its six-year completion rate from the college's published data, to plan support or review colleges likely to fall short.
+
+**One row.** One four-year US institution and the first-time, full-time class that entered it in one fall, 2001 to 2018, with at least 30 students (34,431 rows, U.S. Department of Education's College Scorecard).
+
+**Predicted.** The share of the class that completes within 150% of normal time (six years for a four-year degree), published six years after entry; a rate from 0 to 1.
+
+**Known at prediction time.** The college's figures in the Scorecard file of the entry year: type, control, state and region, degrees, admission rate and ACT scores, cost and net price, aid and loan shares, enrollment by race and field of study, spending and faculty, and its latest published completion and retention rates of older classes.
+
+**What the test data stands for.** Each of four test windows is one entering class (2015 to 2018, newest first); training is every class that entered at least six years before, whose rate was published by then. About 92% of the test colleges also appear in training with older classes.
+
+**Our changes to the source.** We rebuilt the task from the Department of Education's files: features from the entry year, the rate from six years later, and a five-year gap before each test class. The TableShift copy binarises the rate and takes features from the year it is reported. We drop the SAT scores, rescaled from 2017 on.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is published in the entry year and the rate follows six years later, as in use; each test class comes after every class with a published rate. State and region carry their newest value in old files, a small exception.
+
 ## Files in this folder
 
 | file | what it is |

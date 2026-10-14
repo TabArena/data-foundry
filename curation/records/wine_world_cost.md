@@ -34,3 +34,5 @@ type_adapter_id: curation-record-v1
 Need to check description for leakage; need to preprocess price; need to preprocess capacity; make secondary grape a description?; fix/normalize by unit; think about multi-cat column like characteristics; filter to per bottle price, make percentage a percentage, handle double year and parse to be number/date
 
 Scraped from the web
+
+**Assessment (AI, 2026-10-14):** the description check asked above is done. No description states the wine's own price (one quotes a stale price of the same wine, 17 compare with other wines). R² over the 9 splits: all text and tabular columns 0.724; with every sentence holding price or value words removed 0.721; everything except the description 0.700. The shop is most likely Majestic Wine (UK): 78 descriptions and 18 titles name it.

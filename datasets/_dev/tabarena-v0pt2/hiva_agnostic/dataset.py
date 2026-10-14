@@ -5,10 +5,30 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class HivaAgnostic(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Is a chemical compound active against HIV in a laboratory screen?",
+        use_case=(
+            "For example, a drug-discovery team ranks untested compounds by computer and decides which to send to the"
+            " laboratory screen."
+        ),
+        row=(
+            "One compound of the US National Cancer Institute's AIDS antiviral screen, as prepared for the 2007 "
+            "Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training compounds)."
+        ),
+        predicted="Whether the compound is active in the screen (3.51% are).",
+        known=("1,617 anonymous yes/no descriptors of the molecule's structure, without the duplicated ones."),
+        split="Random compounds, so the test data stands for other compounds of the same screen.",
+        fit="direct",
+        fit_reason=(
+            "The features come from the structure alone, as for an untested compound, and the test compounds are "
+            "unseen. The descriptors are anonymous, so their meaning cannot be checked."
+        ),
+    )
+
     # Dataset
     unique_name = "hiva_agnostic"
     year = "2007"
@@ -32,8 +52,8 @@ class HivaAgnostic(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - We take the original data with the original labels with three classes.
-        - We only take the training data from the challenge, as the original labels are not available for the validation data.
+        - The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 135 of the 3,845 training compounds are active.
+        - We use only the challenge's training file. The download also fetches the validation labels the challenge released afterwards (hiva_valid.labels, 384 compounds, 14 active), but they are not used; the challenge site offers no test labels.
     """
 
     # Task

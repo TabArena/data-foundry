@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:2005fecd2d30b1632f6a58dd35e66007385c0e3fdc7cd06b252d850d3c054cfe
+checksum: v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4
 build:
   uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
   checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
@@ -72,7 +72,25 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2005fecd2d30b1632f6a58dd35e66007385c0e3fdc7cd06b252d850d3c054cfe`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How much energy does a 5G base station use in a given hour, for a station without energy measurements in that week?
+
+**Use case.** A network operator estimates the hourly energy use of base stations without energy measurements in a period, from their hardware, traffic load and energy-saving settings in the same hours, filling the gap left by the stations it measured.
+
+**One row.** One hour of one base station, with its first and, where present, second cell; 92,629 hours of 923 stations over one week of January 2023, released by Huawei for an ITU challenge on Zindi.
+
+**Predicted.** The station's energy consumption in that hour, in a unit the source does not state (values from 0.7 to 100).
+
+**Known at prediction time.** The station's hardware (radio unit type, mode, frequency, bandwidth, antennas, transmit power), the hour's traffic load and active energy-saving modes of its cells, and the day of the month, weekday and hour.
+
+**What the test data stands for.** Whole stations are held out, so the test data stands for stations without measurements in the same week, of hardware types already seen.
+
+**Our changes to the source.** We hold out whole stations; the competition's test set held mostly stations seen in training and weighted the unseen ones higher.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The inputs are what an operator knows or sets for a station in those hours, and a held-out station is one without measurements in the same week, as when filling the gap. The challenge aimed at new station products, which a split by station and time would test better; the data size did not allow it.
 
 ## Files in this folder
 
@@ -173,6 +191,9 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
 - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
 - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
 - We drop constant columns.
+- Anomaly: The raw files cover one week only, 2023-01-01 01:00 to 2023-01-08 00:00 (168 hours).
+- Anomaly: The source does not state the energy unit. `Energy` runs from 0.75 to exactly 100, and every value is a multiple of 100/669, so the values were rescaled to a maximum of 100.
+- Note: The station id `BS` stays in the data as the group column, which is split metadata, not a model feature. Every test station is unseen in training, so as a feature it would be an unknown category without information.
 
 ## Splits
 
@@ -323,4 +344,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2005fecd2d30b1632f6a58dd35e66007385c0e3fdc7cd06b252d850d3c054cfe` |
+| stale | yes: the definition now gives checksum `v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4` |

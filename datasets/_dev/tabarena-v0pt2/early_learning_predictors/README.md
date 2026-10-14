@@ -76,6 +76,24 @@ Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_fa
 
 Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:df5a08fc7e18d317ef27c4115050d5dbf07219c752cd0a0cdd51a9b85a9091be`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What score will a preschool child at a facility not seen before reach on a standard early learning test?
+
+**Use case.** The source asks which features of early learning programmes predict better outcomes, a study looking back. As a prediction, for example, a programme funder estimates the scores of children at a new facility from facility, staff and family surveys, to find children at risk without a full assessment.
+
+**One row.** One child aged 50 to 69 months assessed at an early learning facility in South Africa, 2016 to 2023 (DataDrive2030 merged surveys, 18,874 children); a few children per facility.
+
+**Predicted.** The child's total score on the Early Learning Outcomes Measure: 23 items over five areas (gross and fine motor development, numeracy, cognition and executive function, literacy and language).
+
+**Known at prediction time.** 743 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; the facility's registration, staff, building, equipment and observed practice; teacher and parent questionnaires; and the person who did the assessment. Many are missing for whole survey rounds.
+
+**What the test data stands for.** Whole facilities are held out, so the test data stands for facilities never surveyed; the source's competition split children at random.
+
+**Our changes to the source.** We drop the parts and other versions of the score, another child assessment, the home-learning survey (mostly missing) and the survey year, and split by facility.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The source's question is explanatory. As a forecast, some surveys were made after the assessment, the assessor is kept as a feature though known only at the assessment, and the rows mix survey rounds with different questions.
+
 ## Files in this folder
 
 | file | what it is |
@@ -232,7 +250,7 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 59.3% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 59.4% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.40 (shuffled groups: 0.14) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.

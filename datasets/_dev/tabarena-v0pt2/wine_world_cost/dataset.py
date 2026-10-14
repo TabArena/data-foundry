@@ -6,10 +6,33 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class WineWorldCost(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What does a bottle of wine cost, given its description?",
+        use_case=(
+            "For example, a wine merchant sets the shelf price of a newly listed wine from its attributes and tasting"
+            " notes, or checks a supplier's price against similar wines."
+        ),
+        row=(
+            "One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines;"
+            " most likely Majestic Wine, which 78 descriptions name)."
+        ),
+        predicted="The price of one bottle in pounds, on a log scale.",
+        known=(
+            "The wine's name and the shop's description, grapes, country, region and appellation, colour, style, "
+            "tasting characteristics, closure, bottle size, alcohol content and vintage year."
+        ),
+        split="Random wines of the same shop and time.",
+        fit="direct",
+        fit_reason=(
+            "The attributes and the description exist when a wine is listed, and no description states the wine's own"
+            " price (its price wording adds 0.003 R²). The task covers one shop's range at one time."
+        ),
+    )
+
     # Dataset
     unique_name = "wine_world_cost"
     year = "2023"
@@ -41,6 +64,7 @@ class WineWorldCost(AbstractCuratedDataset):
         - We parse the ABV to a numeric value
         - We parse the vintage to a numeric date value, ensuring that each wine maps to the oldest year in its special syntax.
         - We log scale the target, as the price distribution is very skewed.
+        - No description states the wine's own price. Removing every sentence with price or value words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
     """
 
     # Task

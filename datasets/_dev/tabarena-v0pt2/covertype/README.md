@@ -65,6 +65,22 @@ Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits.
 
 Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Which tree cover dominates a 30 x 30 m patch of forest, given its terrain and soil?
+
+**Use case.** A forest manager maps the cover type of land in the studied areas that has no inventory, from cartographic data alone instead of a field survey.
+
+**One row.** One 30 x 30 m cell of four wilderness areas of the Roosevelt National Forest, northern Colorado (581,012 cells; period not stated).
+
+**Predicted.** The cell's cover type in US Forest Service maps, one of seven, lodgepole pine (49%), spruce/fir (36%), ponderosa pine, krummholz, Douglas-fir, aspen or cottonwood/willow.
+
+**Known at prediction time.** Elevation, slope and aspect, distances to the nearest water, road and wildfire ignition point, hill shade at three times of day, the wilderness area, and the soil type with its climatic and geologic zone.
+
+**What the test data stands for.** Random cells of the four areas, as in the source; a test cell usually has cells of its own forest stand (20 to 900 neighbouring cells with the same label) in training.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Land without an inventory comes in whole stands and areas rather than scattered cells, so random cells give an optimistic estimate; the data has no coordinates to hold out regions.
+
 ## Files in this folder
 
 | file | what it is |

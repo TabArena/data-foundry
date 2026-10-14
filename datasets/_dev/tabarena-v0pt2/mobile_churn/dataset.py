@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 RAW_FILE = "mobile-churn-data.xlsx"
 """The one file of the Kaggle dataset dimitaryanev/mobilechurndataxlsx; one sheet, "Churn prediction data"."""
@@ -42,6 +42,36 @@ def never_activated(raw: pd.DataFrame) -> pd.Series:
 
 
 class MobileChurn(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a prepaid mobile customer churn?",
+        use_case=(
+            "At the end of each month, a mobile operator scores its activated prepaid accounts for churn, for example"
+            " to decide whom to target with retention offers."
+        ),
+        row=(
+            "One activated prepaid account of one unnamed mobile operator at the end of June, July or August 2013 "
+            "(54,207 accounts, each once)."
+        ),
+        predicted=(
+            "Whether the account churned (9.9%); the source defines neither churn nor its time window, but the data "
+            "place it after the month's end."
+        ),
+        known=(
+            "The account's tenure and balance, its calls, text messages, data use, spending and top-ups in the month "
+            "and the last 100 days, and the days since each kind of activity."
+        ),
+        split=("Random accounts; the July and August rows are the accounts that joined in those months."),
+        changes=(
+            "We drop the 12,262 SIM cards never activated, which held 61% of the churners and whose label only says "
+            "the card was never used."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Every input describes the account up to the scoring date, as when the model is used, but churn has no "
+            "stated definition or horizon and the operator is unknown."
+        ),
+    )
+
     # Dataset
     unique_name = "mobile_churn"
     year = "2019"

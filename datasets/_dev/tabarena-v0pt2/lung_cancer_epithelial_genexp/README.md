@@ -65,6 +65,24 @@ Binary classification of `DiagnosedCancer`, scored with `roc_auc` on IID splits.
 
 Built as `01a111fa-e441-7be0-b4cb-2b1c80c2c167` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Does a smoker with suspected lung cancer have it, judging from gene activity in cells brushed from the airway?
+
+**Use case.** During bronchoscopy for suspected lung cancer, a pulmonologist brushes cells from the normal-looking airway and uses their gene expression to judge whether the patient has cancer and needs further invasive tests (Spira et al. 2007).
+
+**One row.** One smoker undergoing bronchoscopy for suspected lung cancer (187 patients of the extended GEO release GSE4115).
+
+**Predicted.** Whether the patient was finally diagnosed with lung cancer (52% were); the time to the final diagnosis is not stated.
+
+**Known at prediction time.** The measured activity of about 22,000 gene probes (Affymetrix microarrays) in the brushed airway cells.
+
+**What the test data stands for.** Random patients, standing for new patients examined the same way.
+
+**Our changes to the source.** We use the extended release of 192 patients rather than the paper's 129 and drop the 5 whose diagnosis was still open.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The sample is taken at the bronchoscopy, before the diagnosis is known, and a held-out patient is a new one. The task is small, with 187 patients and far more genes than patients.
+
 ## Files in this folder
 
 | file | what it is |

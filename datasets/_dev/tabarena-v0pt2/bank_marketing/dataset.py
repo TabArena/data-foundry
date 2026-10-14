@@ -5,10 +5,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class BankMarketing(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a bank client subscribe to a term deposit after the bank's telemarketing calls?",
+        use_case=(
+            "A Portuguese bank's marketing team picks which clients to call in a term-deposit campaign, to spend its "
+            "calls on the likely buyers (Moro et al. 2014)."
+        ),
+        row=(
+            "One client contacted in a phone campaign of a Portuguese bank, May 2008 to November 2010 (45,211 clients)."
+        ),
+        predicted=("Whether the client subscribed to a term deposit by the end of the campaign's calls; 11.7% did."),
+        known=(
+            "Age, job, marital status, education, whether the client has defaulted on credit, the account balance, "
+            "housing and personal loans, the phone type, the number of calls in this campaign, and the contacts with "
+            "and outcome of earlier campaigns."
+        ),
+        split=("Random clients, so the test data stands for other clients of the same campaigns and years."),
+        changes=(
+            "We drop the duration of the last call, which the source says is unknown before the call and ends with "
+            "the outcome, and the day and month of the last contact."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The calls span two and a half years, but the dates are dropped and the split is random, so the test "
+            "clients do not stand for a later campaign. The number of calls in this campaign counts up to the last "
+            "one, so it partly reflects how the campaign ended."
+        ),
+    )
+
     # Dataset
     unique_name = "bank_marketing"
     year = "2012"

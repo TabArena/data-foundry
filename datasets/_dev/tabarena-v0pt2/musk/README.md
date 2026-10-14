@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: musk
 container_format: 2
-checksum: v2:283329229ac08b4da123a0835f1f03055174cdef3a9c1129bd44d25fea53594f
+checksum: v2:82dc733e772e8185d70824aca7c6e610c29328ab4f24c7457614af8a5e58ebe7
 build:
   uuid: 01a111fc-e484-7212-b264-ac00bcffbd4d
   checksum: v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b
@@ -72,7 +72,25 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on grouped splits by `molecule_name`, one prediction per group (any). 6,598 rows and 166 features. Source: UCI (1994).
 
-Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:283329229ac08b4da123a0835f1f03055174cdef3a9c1129bd44d25fea53594f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:82dc733e772e8185d70824aca7c6e610c29328ab4f24c7457614af8a5e58ebe7`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Does a new molecule smell of musk, judging from the shapes it can take?
+
+**Use case.** A fragrance chemist screens candidate molecules and decides which to make and test, from shape features computed for each molecule's low-energy conformations (Dietterich et al.).
+
+**One row.** One low-energy conformation (3D shape) of one of 102 molecules, with 1 to 1,044 conformations per molecule (6,598 rows).
+
+**Predicted.** Whether the molecule is a musk, as judged by human experts (39 musks, 63 not); a molecule counts as a musk if any of its conformations is scored as one, and scores are per molecule.
+
+**Known at prediction time.** 166 numbers describing the conformation's shape: distances from its centre to its surface along fixed rays, and the position of an oxygen atom. All conformations of the molecule can be used.
+
+**What the test data stands for.** Whole molecules are held out (20 repeats of 3 folds), so the test data stands for molecules never tested.
+
+**Our changes to the source.** We rename the molecules, whose names gave the label away, drop the conformation names, and score per molecule instead of per conformation.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The shapes can be computed from a molecule's structure before it is made, and a held-out molecule is a new candidate. The task is tiny: 102 molecules, 34 per test fold.
 
 ## Files in this folder
 
@@ -165,7 +183,7 @@ The first 5 of 6,598 rows of the final frame (random rows: the frame is shuffled
 
 ## Splits
 
-We create stratified grouped 20-repeated 3-fold split. This creates ca. 30 group members (500-3000 samples) per test set.
+We create stratified grouped 20-repeated 3-fold split. Each test set holds 34 molecules, 675 to 5,046 conformations, as the molecules have 1 to 1,044 conformations each.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 1,552 to 5,923 rows, test 675 to 5,046 rows.
 
@@ -444,4 +462,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:283329229ac08b4da123a0835f1f03055174cdef3a9c1129bd44d25fea53594f` |
+| stale | yes: the definition now gives checksum `v2:82dc733e772e8185d70824aca7c6e610c29328ab4f24c7457614af8a5e58ebe7` |

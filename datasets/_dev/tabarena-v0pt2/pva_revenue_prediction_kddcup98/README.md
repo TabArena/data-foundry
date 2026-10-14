@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5
+checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
 build:
   uuid: 01a111fb-cc18-7704-b06a-adfc58623727
   checksum: v2:d2d3bca5b13de00bd61a14131112143f51f3fd9594e33352c0cdf491674f4e5a
@@ -19,7 +19,7 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 144095
+  n_rows: 191769
   n_features: 477
   dtypes:
     category: 51
@@ -46,11 +46,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 96063
-    max: 96064
+    min: 127846
+    max: 127846
   n_test:
-    min: 48031
-    max: 48032
+    min: 63923
+    max: 63923
 bundle_checks:
   ok: true
   errors: []
@@ -69,9 +69,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 144,095 rows and 477 features. Source: Other (1998).
+Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a111fb-cc18-7704-b06a-adfc58623727` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cc18-7704-b06a-adfc58623727` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a lapsed donor give to a veterans' charity in response to its renewal mailing?
+
+**Use case.** Before a renewal mailing, the Paralyzed Veterans of America decides which lapsed donors to mail, where each piece costs $0.68 (KDD Cup 1998).
+
+**One row.** One lapsed donor (last gift 13 to 24 months earlier) who received the June 1997 renewal mailing, from the KDD Cup's learning and validation files.
+
+**Predicted.** Whether the donor responded with a gift (5.1% of the whole mailing did).
+
+**Known at prediction time.** The donor's age, sex, household and neighbourhood data bought from outside sources, interests, how the donor was acquired, and up to 24 months of mailing and giving history (dates, amounts, recency, frequency and amount codes).
+
+**What the test data stands for.** Random donors of the same mailing, as in the KDD Cup's learning and validation files.
+
+**Our changes to the source.** We predict whether a donor gives instead of the amount given (the KDD Cup scored the mailing's net revenue) and drop the amount.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees precedes the mailing, but one mailing stands in for the next: training and test donors come from the same June 1997 mailing, whereas the charity would score the next one.
 
 ## Files in this folder
 
@@ -114,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | license |  |
 | data_tags | IID |
 | reference | Parsa1998KDDCup1998 |
-| rows x columns | 144,095 x 478 |
+| rows x columns | 191,769 x 478 |
 | task.target | TARGET_B |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -147,15 +165,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 144,095 rows of the final frame (random rows: the frame is shuffled); 12 of 478 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 191,769 rows of the final frame (random rows: the frame is shuffled); 12 of 478 columns, the target first. Cells are cut at 40 characters.
 
 | TARGET_B | ODATEDW | OSOURCE | STATE | ZIP | MAILCODE | PVASTATE | DOB | NOEXCH | RECINHSE | RECP3 | RECPGVG |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1992-01-01 00:00:00 | SSS | FL | 34653 | Address is OK | nan | 1923-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1995-01-01 00:00:00 | CNT | MN | 56308 | Address is OK | nan | 1942-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1995-01-01 00:00:00 | SIG | AZ | 85208 | Address is OK | nan | 1950-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1994-01-01 00:00:00 | USB | TX | 76044 | Address is OK | nan | 1955-09-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1986-01-01 00:00:00 | DUR | SC | 29405 | Address is OK | nan | 1918-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1990-01-01 00:00:00 | WKB | FL | 33980 | Address is OK | P | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1988-01-01 00:00:00 | LIS | WA | 98685 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1988-01-01 00:00:00 | LIS | CA | 93446 | Address is OK | nan | 1925-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1996-01-01 00:00:00 | HFH | CA | 92843 | Address is OK | nan | 1920-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1986-01-01 00:00:00 | DRK | CA | 90712 | Address is OK | nan | 1954-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
 
 ## Curation notes
 
@@ -171,6 +189,7 @@ We start with the train and validation data from the KDD Cup 1998 website and co
 - We remove a faulty postfix ("-") in the ZIP code.
 - We drop rows with PVASTATE='E' as this represent a group of donors represent by a different organization chapter. These are 8 rows only.
 - The data contains two entries with a faulty day of birth (born in month 00). We drop both rows, as we assume this is indicative of faulty data.
+- DOB 0 means no birth date on file (47,677 donors): these rows stay, with DOB missing (fixed 2026-10-14; the month-00 filter had dropped them too).
 - We noticed that nan values and dtypes mismatch for NOEXCH do correlate with the target. We add these cases as their own categories.
 - We resolve the ordinal encoding and nan encoding for all columns.
 - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
@@ -180,19 +199,19 @@ We start with the train and validation data from the KDD Cup 1998 website and co
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 96,063 to 96,064 rows, test 48,031 to 48,032 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 127,846 rows, test 63,923 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 96063 | 48032 |
-| 0 | 1 | 96063 | 48032 |
-| 0 | 2 | 96064 | 48031 |
-| 1 | 0 | 96063 | 48032 |
-| 1 | 1 | 96063 | 48032 |
-| 1 | 2 | 96064 | 48031 |
-| 2 | 0 | 96063 | 48032 |
-| 2 | 1 | 96063 | 48032 |
-| 2 | 2 | 96064 | 48031 |
+| 0 | 0 | 127846 | 63923 |
+| 0 | 1 | 127846 | 63923 |
+| 0 | 2 | 127846 | 63923 |
+| 1 | 0 | 127846 | 63923 |
+| 1 | 1 | 127846 | 63923 |
+| 1 | 2 | 127846 | 63923 |
+| 2 | 0 | 127846 | 63923 |
+| 2 | 1 | 127846 | 63923 |
+| 2 | 2 | 127846 | 63923 |
 
 ## Bundle checks
 
@@ -201,8 +220,8 @@ Default splits.
 - **warning** `dataset_constant_column`: 22 constant column(s) (1 distinct non-null value): ['PVASTATE', 'COLLECT1', 'VETERANS', 'BIBLE', 'CATLG']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_missing_value_label`: 2 label column(s) contain missing-value-looking levels: OSOURCE=['NAN'], AGEFLAG=[' ']. (hint: Convert proxy missing values to explicit `pd.NA` (curation guidelines).)
 - **warning** `meta_license_unknown`: `license` is None (unknown or missing). (hint: Record the license if one exists — downstream users need it to redistribute the data.)
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 68,877,410 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 68,877,410 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 91,665,582 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 91,665,582 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 ## Data checks
 
@@ -213,50 +232,50 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| PLATES | category | 143127 | 99.33 | 1 | Yes |
-| HOMEE | category | 142525 | 98.91 | 1 | Yes |
-| CARDS | category | 142376 | 98.81 | 1 | Yes |
-| CHILD03 | category | 142045 | 98.58 | 3 | Male, Female, Both |
-| PVASTATE | category | 142028 | 98.57 | 1 | P |
-| KIDSTUFF | category | 141519 | 98.21 | 1 | Yes |
-| CHILD07 | category | 141179 | 97.98 | 3 | Male, Female, Both |
-| CHILD12 | category | 140711 | 97.65 | 3 | Male, Female, Both |
-| BOATS | category | 140572 | 97.56 | 1 | Yes |
-| CHILD18 | category | 138863 | 96.37 | 3 | Male, Female, Both |
-| PHOTO | category | 135522 | 94.05 | 1 | Yes |
-| COLLECT1 | category | 135032 | 93.71 | 1 | Yes |
-| FISHER | category | 131363 | 91.16 | 1 | Yes |
-| CATLG | category | 130031 | 90.24 | 1 | Yes |
-| CRAFTS | category | 129614 | 89.95 | 1 | Yes |
-| BIBLE | category | 128646 | 89.28 | 1 | Yes |
-| VETERANS | category | 125434 | 87.05 | 1 | Yes |
-| PCOWNERS | category | 125427 | 87.04 | 1 | Yes |
-| WALKER | category | 125250 | 86.92 | 1 | Yes |
-| CDPLAY | category | 122224 | 84.82 | 1 | Yes |
-| STEREO | category | 121268 | 84.16 | 1 | Yes |
-| GARDENIN | category | 119897 | 83.21 | 1 | Yes |
-| PETS | category | 118539 | 82.26 | 1 | Yes |
-| PEPSTRFL | category | 73709 | 51.15 | 1 | Has PEP Star RFA Status |
-| LIFESRC | category | 72459 | 50.29 | 3 | MATCHED ON POLK ONLY, MATCHED BOTH MM AND POLK, MATCHED ON METRO MAIL ONLY |
-| HOMEOWNR | category | 18107 | 12.57 | 2 | Homeowner, Unknown |
-| DATASRCE | category | 16464 | 11.43 | 3 | Both, Polk, MetroMail |
-| CLUSTER | category | 2986 | 2.07 | 53 | 40, 24, 35, 27, 36, 12, 18, 49, 13, 30 |
-| DOMAIN_urbanicity | category | 2986 | 2.07 | 5 | Suburban, City, Town, Rural, Urban |
-| DOMAIN_ses | category | 2986 | 2.07 | 4 | Average SES, Highest SES, Lowest SES, Lower Lowest SES in Urban communities |
-| GENDER | category | 2337 | 1.62 | 6 | Female, Male, Unknown, Joint Account, unknown gender, A, C |
-| GEOCODE2 | category | 261 | 0.18 | 4 | A, B, C, D |
-| CLUSTER2 | category | 139 | 0.1 | 62 | 13.0, 5.0, 15.0, 59.0, 57.0, 2.0, 11.0, 38.0, 32.0, 12.0 |
+| PLATES | category | 190646 | 99.41 | 1 | Yes |
+| HOMEE | category | 189973 | 99.06 | 1 | Yes |
+| CARDS | category | 189737 | 98.94 | 1 | Yes |
+| CHILD03 | category | 189414 | 98.77 | 3 | Male, Female, Both |
+| PVASTATE | category | 188843 | 98.47 | 1 | P |
+| KIDSTUFF | category | 188738 | 98.42 | 1 | Yes |
+| CHILD07 | category | 188626 | 98.36 | 3 | Male, Female, Both |
+| CHILD12 | category | 188192 | 98.13 | 3 | Male, Female, Both |
+| BOATS | category | 187767 | 97.91 | 1 | Yes |
+| CHILD18 | category | 186188 | 97.09 | 3 | Male, Female, Both |
+| PHOTO | category | 182122 | 94.97 | 1 | Yes |
+| COLLECT1 | category | 181436 | 94.61 | 1 | Yes |
+| FISHER | category | 177349 | 92.48 | 1 | Yes |
+| CATLG | category | 175889 | 91.72 | 1 | Yes |
+| CRAFTS | category | 175506 | 91.52 | 1 | Yes |
+| BIBLE | category | 174062 | 90.77 | 1 | Yes |
+| VETERANS | category | 170808 | 89.07 | 1 | Yes |
+| WALKER | category | 170761 | 89.05 | 1 | Yes |
+| PCOWNERS | category | 170744 | 89.04 | 1 | Yes |
+| CDPLAY | category | 167092 | 87.13 | 1 | Yes |
+| STEREO | category | 166000 | 86.56 | 1 | Yes |
+| GARDENIN | category | 164746 | 85.91 | 1 | Yes |
+| PETS | category | 162914 | 84.95 | 1 | Yes |
+| LIFESRC | category | 108819 | 56.74 | 3 | MATCHED ON POLK ONLY, MATCHED BOTH MM AND POLK, MATCHED ON METRO MAIL ONLY |
+| PEPSTRFL | category | 100866 | 52.6 | 1 | Has PEP Star RFA Status |
+| HOMEOWNR | category | 44734 | 23.33 | 2 | Homeowner, Unknown |
+| DATASRCE | category | 42781 | 22.31 | 3 | Both, Polk, MetroMail |
+| GENDER | category | 5912 | 3.08 | 6 | Female, Male, Unknown, Joint Account, unknown gender, C, A |
+| CLUSTER | category | 4727 | 2.46 | 53 | 40, 35, 24, 36, 27, 49, 12, 18, 13, 45 |
+| DOMAIN_urbanicity | category | 4727 | 2.46 | 5 | Suburban, Rural, City, Town, Urban |
+| DOMAIN_ses | category | 4727 | 2.46 | 4 | Average SES, Highest SES, Lowest SES, Lower Lowest SES in Urban communities |
+| GEOCODE2 | category | 614 | 0.32 | 4 | A, B, D, C |
+| CLUSTER2 | category | 260 | 0.14 | 62 | 13.0, 5.0, 57.0, 59.0, 15.0, 2.0, 38.0, 55.0, 11.0, 58.0 |
 | MAILCODE | category | 0 | 0 | 2 | Address is OK, Bad Address |
 | NOEXCH | category | 0 | 0 | 4 | 0-nan-case, 1-nan-case, cannot be exchanged, can be exchanged |
 | RECINHSE | category | 0 | 0 | 2 | Not an In House Record, Donor has given to PVA's In House program |
 | RECP3 | category | 0 | 0 | 2 | Not a P3 Record, Donor has given to PVA's P3 program |
 | RECPGVG | category | 0 | 0 | 2 | Not a Planned Giving Record, Planned Giving Record |
 | RECSWEEP | category | 0 | 0 | 2 | Not a Sweepstakes Record, Sweepstakes Record |
-| AGEFLAG | category | 0 | 0 | 3 | Exact, Inferred from Date of Birth Field, |
+| AGEFLAG | category | 0 | 0 | 3 | Exact, , Inferred from Date of Birth Field |
 | SOLP3 | category | 0 | 0 | 5 | can be mailed (Default), Do Not Solicit or Mail, twelve solicitations per year,… |
 | SOLIH | category | 0 | 0 | 9 | can be mailed (Default), twelve solicitations per year, Do Not Solicit, one sol… |
 | MAJOR | category | 0 | 0 | 2 | Not a Major Donor, Major Donor |
-| GEOCODE | category | 0 | 0 | 8 | No code has been assigned or did not match at any level, 12, 03, 05, 14, 04, 02… |
+| GEOCODE | category | 0 | 0 | 8 | No code has been assigned or did not match at any level, 12, 03, 14, 05, 04, 02… |
 | TARGET_B | category | 0 | 0 | 2 | 0, 1 |
 | HPHONE_D | category | 0 | 0 | 2 | 1, 0 |
 | RFA_2F | category | 0 | 0 | 4 | 1, 2, 3, 4 |
@@ -264,15 +283,15 @@ Default splits.
 | MDMAUD_recency | category | 0 | 0 | 5 | Not applicable, Current Donor, Lapsed Donor, Dormant Donor, Inactive Donor |
 | MDMAUD_frequency | category | 0 | 0 | 4 | Not applicable, One gift in the period of recency, Two-Four gifts in the period… |
 | MDMAUD_amount | category | 0 | 0 | 5 | Not applicable, $100-499 (Core), Less than $100 (Low Dollar), $500-999 (Major),… |
-| RDATE_5 | datetime64\[ns\] | 144078 | 99.99 | 6 | 1996-04-01 00:00:00, 1998-03-01 00:00:00, 1997-03-01 00:00:00, 1996-05-01 00:00… |
-| RDATE_3 | datetime64\[ns\] | 143770 | 99.77 | 17 | 1996-06-01 00:00:00, 1996-07-01 00:00:00, 1997-04-01 00:00:00, 1996-05-01 00:00… |
-| RDATE_4 | datetime64\[ns\] | 143659 | 99.7 | 24 | 1996-05-01 00:00:00, 1996-04-01 00:00:00, 1996-01-01 00:00:00, 1996-06-01 00:00… |
-| RDATE_6 | datetime64\[ns\] | 143042 | 99.27 | 19 | 1996-03-01 00:00:00, 1996-04-01 00:00:00, 1996-02-01 00:00:00, 1995-12-01 00:00… |
-| RDATE_15 | datetime64\[ns\] | 133136 | 92.39 | 16 | 1995-05-01 00:00:00, 1995-06-01 00:00:00, 1995-07-01 00:00:00, 1995-08-01 00:00… |
-| RDATE_23 | datetime64\[ns\] | 131794 | 91.46 | 17 | 1994-08-01 00:00:00, 1994-07-01 00:00:00, 1994-09-01 00:00:00, 1994-10-01 00:00… |
-| RDATE_20 | datetime64\[ns\] | 131617 | 91.34 | 10 | 1994-12-01 00:00:00, 1994-11-01 00:00:00, 1995-01-01 00:00:00, 1995-02-01 00:00… |
-| RDATE_7 | datetime64\[ns\] | 130791 | 90.77 | 9 | 1996-03-01 00:00:00, 1996-02-01 00:00:00, 1996-01-01 00:00:00, 1996-04-01 00:00… |
-| RDATE_17 | datetime64\[ns\] | 130159 | 90.33 | 11 | 1995-03-01 00:00:00, 1995-02-01 00:00:00, 1995-04-01 00:00:00, 1995-05-01 00:00… |
+| RDATE_5 | datetime64\[ns\] | 191743 | 99.99 | 7 | 1996-04-01 00:00:00, 1997-03-01 00:00:00, 1996-06-01 00:00:00, 1996-05-01 00:00… |
+| RDATE_3 | datetime64\[ns\] | 191312 | 99.76 | 18 | 1996-06-01 00:00:00, 1996-07-01 00:00:00, 1997-04-01 00:00:00, 1996-08-01 00:00… |
+| RDATE_4 | datetime64\[ns\] | 191183 | 99.69 | 24 | 1996-05-01 00:00:00, 1996-04-01 00:00:00, 1996-06-01 00:00:00, 1996-01-01 00:00… |
+| RDATE_6 | datetime64\[ns\] | 190168 | 99.17 | 21 | 1996-03-01 00:00:00, 1995-12-01 00:00:00, 1996-04-01 00:00:00, 1995-11-01 00:00… |
+| RDATE_15 | datetime64\[ns\] | 177341 | 92.48 | 16 | 1995-05-01 00:00:00, 1995-06-01 00:00:00, 1995-07-01 00:00:00, 1995-08-01 00:00… |
+| RDATE_23 | datetime64\[ns\] | 176186 | 91.87 | 17 | 1994-08-01 00:00:00, 1994-07-01 00:00:00, 1994-09-01 00:00:00, 1994-10-01 00:00… |
+| RDATE_20 | datetime64\[ns\] | 175909 | 91.73 | 10 | 1994-12-01 00:00:00, 1994-11-01 00:00:00, 1995-01-01 00:00:00, 1995-02-01 00:00… |
+| RDATE_7 | datetime64\[ns\] | 173962 | 90.71 | 13 | 1996-03-01 00:00:00, 1996-02-01 00:00:00, 1996-01-01 00:00:00, 1996-04-01 00:00… |
+| RDATE_17 | datetime64\[ns\] | 173028 | 90.23 | 11 | 1995-03-01 00:00:00, 1995-02-01 00:00:00, 1995-04-01 00:00:00, 1995-05-01 00:00… |
 
 (418 more rows not shown)
 
@@ -282,8 +301,8 @@ Default splits.
 
 | TARGET_B | count | pct |
 |---|---|---|
-| 0 | 136639 | 94.83 |
-| 1 | 7456 | 5.17 |
+| 0 | 182053 | 94.93 |
+| 1 | 9716 | 5.07 |
 
 ### Numeric features
 
@@ -293,65 +312,65 @@ Default splits.
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | AGE | 144091 | 61.6289 | 16.6652 | 1 | 98 |
-| NUMCHLD | 22728 | 1.53388 | 0.811377 | 1 | 7 |
-| INCOME | 127618 | 3.96024 | 1.84341 | 1 | 7 |
-| WEALTH1 | 88574 | 5.41714 | 2.7343 | 0 | 9 |
-| HIT | 144095 | 4.07021 | 9.79003 | 0 | 242 |
-| MBCRAFT | 76918 | 0.156348 | 0.478916 | 0 | 6 |
-| MBGARDEN | 76918 | 0.060467 | 0.264614 | 0 | 4 |
-| MBBOOKS | 76918 | 1.15502 | 1.7022 | 0 | 9 |
-| MBCOLECT | 76819 | 0.0656348 | 0.300941 | 0 | 6 |
-| MAGFAML | 76918 | 0.461218 | 0.829841 | 0 | 9 |
-| MAGFEM | 76918 | 0.127811 | 0.382824 | 0 | 5 |
-| MAGMALE | 76918 | 0.0682545 | 0.281375 | 0 | 4 |
-| PUBGARDN | 76918 | 0.144934 | 0.495888 | 0 | 6 |
-| PUBCULIN | 76918 | 0.151655 | 0.438562 | 0 | 6 |
-| PUBHLTH | 76918 | 0.739541 | 1.27944 | 0 | 9 |
-| PUBDOITY | 76918 | 0.24322 | 0.740493 | 0 | 9 |
-| PUBNEWFN | 76918 | 0.390234 | 0.970412 | 0 | 9 |
-| PUBPHOTO | 76918 | 0.00616241 | 0.0800658 | 0 | 2 |
-| PUBOPP | 76918 | 0.248914 | 0.902146 | 0 | 9 |
-| MALEMILI | 144095 | 0.967535 | 4.3737 | 0 | 99 |
-| MALEVET | 144095 | 31.0458 | 11.1777 | 0 | 99 |
-| VIETVETS | 144095 | 30.0511 | 15.0844 | 0 | 99 |
-| WWIIVETS | 144095 | 33.0507 | 17.6479 | 0 | 99 |
-| LOCALGOV | 144095 | 6.93395 | 4.34679 | 0 | 76 |
-| STATEGOV | 144095 | 4.57414 | 5.13672 | 0 | 99 |
-| FEDGOV | 144095 | 3.10356 | 4.05892 | 0 | 99 |
-| WEALTH2 | 84720 | 5.06951 | 2.79645 | 0 | 9 |
-| POP901 | 144095 | 3051.01 | 5365.6 | 0 | 100286 |
-| POP902 | 144095 | 816.052 | 1378.07 | 0 | 23766 |
-| POP903 | 144095 | 1148.43 | 2000.23 | 0 | 35403 |
-| POP90C1 | 144095 | 60.5318 | 47.0407 | 0 | 99 |
-| POP90C2 | 144095 | 13.5213 | 31.303 | 0 | 99 |
-| POP90C3 | 144095 | 24.5704 | 39.2489 | 0 | 99 |
-| POP90C4 | 144095 | 48.2687 | 4.89254 | 0 | 99 |
-| POP90C5 | 144095 | 51.1531 | 5.06032 | 0 | 99 |
-| ETH1 | 144095 | 85.2333 | 20.8189 | 0 | 99 |
-| ETH2 | 144095 | 7.60605 | 17.2717 | 0 | 99 |
-| ETH3 | 144095 | 0.69119 | 3.02908 | 0 | 99 |
-| ETH4 | 144095 | 2.82645 | 6.86306 | 0 | 95 |
-| ETH5 | 144095 | 7.29646 | 13.5053 | 0 | 99 |
-| ETH6 | 144095 | 0.217627 | 0.680446 | 0 | 22 |
-| ETH7 | 144095 | 0.381471 | 2.16536 | 0 | 72 |
-| ETH8 | 144095 | 0.595211 | 2.43429 | 0 | 87 |
-| ETH9 | 144095 | 0.544641 | 2.29314 | 0 | 67 |
-| ETH10 | 144095 | 0.238322 | 0.951146 | 0 | 46 |
-| ETH11 | 144095 | 0.206933 | 1.03437 | 0 | 47 |
-| ETH12 | 144095 | 0.0593844 | 1.01506 | 0 | 79 |
-| ETH13 | 144095 | 5.02577 | 11.1648 | 0 | 96 |
-| ETH14 | 144095 | 0.306312 | 1.28081 | 0 | 57 |
-| ETH15 | 144095 | 0.334946 | 3.26027 | 0 | 81 |
-| ETH16 | 144095 | 1.45261 | 3.09301 | 0 | 86 |
-| AGE901 | 144095 | 34.6763 | 8.20312 | 0 | 84 |
-| AGE902 | 144095 | 42.1194 | 7.97171 | 0 | 84 |
-| AGE903 | 144095 | 45.2882 | 7.7862 | 0 | 84 |
-| AGE904 | 144095 | 36.057 | 7.06594 | 0 | 81 |
-| AGE905 | 144095 | 44.8659 | 6.56802 | 0 | 81 |
-| AGE906 | 144095 | 48.0419 | 6.43405 | 0 | 81 |
-| AGE907 | 144095 | 24.5987 | 7.37338 | 0 | 71 |
-| CHIL1 | 144095 | 39.632 | 7.88207 | 0 | 99 |
-| CHIL2 | 144095 | 38.5205 | 5.99445 | 0 | 99 |
+| NUMCHLD | 24716 | 1.53083 | 0.810449 | 1 | 7 |
+| INCOME | 148971 | 3.89297 | 1.85211 | 1 | 7 |
+| WEALTH1 | 101829 | 5.35028 | 2.74719 | 0 | 9 |
+| HIT | 191769 | 3.31684 | 9.1041 | 0 | 242 |
+| MBCRAFT | 85565 | 0.150669 | 0.470677 | 0 | 6 |
+| MBGARDEN | 85565 | 0.0590545 | 0.261758 | 0 | 4 |
+| MBBOOKS | 85565 | 1.12867 | 1.68254 | 0 | 9 |
+| MBCOLECT | 85452 | 0.0633455 | 0.296577 | 0 | 6 |
+| MAGFAML | 85565 | 0.445042 | 0.817356 | 0 | 9 |
+| MAGFEM | 85565 | 0.124478 | 0.378084 | 0 | 5 |
+| MAGMALE | 85565 | 0.0656226 | 0.275886 | 0 | 4 |
+| PUBGARDN | 85565 | 0.143563 | 0.493097 | 0 | 6 |
+| PUBCULIN | 85565 | 0.147467 | 0.43204 | 0 | 6 |
+| PUBHLTH | 85565 | 0.725285 | 1.26299 | 0 | 9 |
+| PUBDOITY | 85565 | 0.238707 | 0.733485 | 0 | 9 |
+| PUBNEWFN | 85565 | 0.37818 | 0.954969 | 0 | 9 |
+| PUBPHOTO | 85565 | 0.0058552 | 0.0779622 | 0 | 2 |
+| PUBOPP | 85565 | 0.240227 | 0.886407 | 0 | 9 |
+| MALEMILI | 191769 | 1.04639 | 5.07504 | 0 | 99 |
+| MALEVET | 191769 | 30.505 | 11.4986 | 0 | 99 |
+| VIETVETS | 191769 | 29.7119 | 15.1052 | 0 | 99 |
+| WWIIVETS | 191769 | 32.6567 | 17.6979 | 0 | 99 |
+| LOCALGOV | 191769 | 6.83301 | 4.3627 | 0 | 99 |
+| STATEGOV | 191769 | 4.57277 | 5.12607 | 0 | 99 |
+| FEDGOV | 191769 | 3.12038 | 4.17505 | 0 | 99 |
+| WEALTH2 | 103717 | 4.94657 | 2.80809 | 0 | 9 |
+| POP901 | 191769 | 3265.8 | 5756.63 | 0 | 100286 |
+| POP902 | 191769 | 868.613 | 1466.81 | 0 | 23766 |
+| POP903 | 191769 | 1227.52 | 2137.22 | 0 | 35403 |
+| POP90C1 | 191769 | 58.4574 | 47.4654 | 0 | 99 |
+| POP90C2 | 191769 | 13.6609 | 31.2447 | 0 | 99 |
+| POP90C3 | 191769 | 26.2342 | 40.083 | 0 | 99 |
+| POP90C4 | 191769 | 48.2154 | 5.58601 | 0 | 99 |
+| POP90C5 | 191769 | 50.9461 | 5.7878 | 0 | 99 |
+| ETH1 | 191769 | 84.8465 | 21.0761 | 0 | 99 |
+| ETH2 | 191769 | 7.49003 | 16.7975 | 0 | 99 |
+| ETH3 | 191769 | 0.76468 | 3.38349 | 0 | 99 |
+| ETH4 | 191769 | 2.91593 | 7.17196 | 0 | 99 |
+| ETH5 | 191769 | 7.43459 | 13.739 | 0 | 99 |
+| ETH6 | 191769 | 0.214127 | 0.672391 | 0 | 29 |
+| ETH7 | 191769 | 0.400247 | 2.25695 | 0 | 72 |
+| ETH8 | 191769 | 0.615131 | 2.55245 | 0 | 99 |
+| ETH9 | 191769 | 0.570692 | 2.384 | 0 | 67 |
+| ETH10 | 191769 | 0.247146 | 0.984522 | 0 | 46 |
+| ETH11 | 191769 | 0.211004 | 1.05406 | 0 | 49 |
+| ETH12 | 191769 | 0.0716174 | 1.18216 | 0 | 79 |
+| ETH13 | 191769 | 5.11932 | 11.2911 | 0 | 97 |
+| ETH14 | 191769 | 0.300732 | 1.25463 | 0 | 57 |
+| ETH15 | 191769 | 0.331122 | 3.24942 | 0 | 81 |
+| ETH16 | 191769 | 1.50571 | 3.32829 | 0 | 86 |
+| AGE901 | 191769 | 34.5092 | 8.35436 | 0 | 84 |
+| AGE902 | 191769 | 41.9384 | 8.27143 | 0 | 84 |
+| AGE903 | 191769 | 45.1255 | 8.12939 | 0 | 84 |
+| AGE904 | 191769 | 35.9372 | 7.2728 | 0 | 84 |
+| AGE905 | 191769 | 44.7097 | 6.97046 | 0 | 84 |
+| AGE906 | 191769 | 47.8989 | 6.89346 | 0 | 84 |
+| AGE907 | 191769 | 24.494 | 7.50701 | 0 | 75 |
+| CHIL1 | 191769 | 39.5943 | 8.21835 | 0 | 99 |
+| CHIL2 | 191769 | 38.3615 | 6.38461 | 0 | 99 |
 
 (287 more rows not shown)
 
@@ -364,66 +383,66 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ADATE_10 | 1 | 1995-10-01 00:00:00 | 89357 | 62.01 |
-| ADATE_10 | 2 | &lt;NA> | 47015 | 32.63 |
-| ADATE_10 | 3 | 1995-11-01 00:00:00 | 7723 | 5.36 |
-| ADATE_11 | 1 | 1995-10-01 00:00:00 | 91054 | 63.19 |
-| ADATE_11 | 2 | 1995-09-01 00:00:00 | 33554 | 23.29 |
-| ADATE_11 | 3 | &lt;NA> | 12971 | 9 |
-| ADATE_11 | 4 | 1995-11-01 00:00:00 | 6419 | 4.45 |
-| ADATE_11 | 5 | 1995-08-01 00:00:00 | 97 | 0.07 |
-| ADATE_12 | 1 | 1995-08-01 00:00:00 | 75249 | 52.22 |
-| ADATE_12 | 2 | 1995-09-01 00:00:00 | 55585 | 38.58 |
-| ADATE_12 | 3 | &lt;NA> | 12089 | 8.39 |
-| ADATE_12 | 4 | 1995-10-01 00:00:00 | 1081 | 0.75 |
-| ADATE_12 | 5 | 1995-07-01 00:00:00 | 91 | 0.06 |
-| ADATE_13 | 1 | 1995-07-01 00:00:00 | 84821 | 58.86 |
-| ADATE_13 | 2 | &lt;NA> | 58488 | 40.59 |
-| ADATE_13 | 3 | 1995-02-01 00:00:00 | 457 | 0.32 |
-| ADATE_13 | 4 | 1995-06-01 00:00:00 | 329 | 0.23 |
-| ADATE_14 | 1 | 1995-06-01 00:00:00 | 118345 | 82.13 |
-| ADATE_14 | 2 | &lt;NA> | 25486 | 17.69 |
-| ADATE_14 | 3 | 1995-04-01 00:00:00 | 264 | 0.18 |
-| ADATE_15 | 1 | &lt;NA> | 97416 | 67.61 |
-| ADATE_15 | 2 | 1995-04-01 00:00:00 | 46679 | 32.39 |
-| ADATE_16 | 1 | 1995-03-01 00:00:00 | 114362 | 79.37 |
-| ADATE_16 | 2 | &lt;NA> | 27280 | 18.93 |
-| ADATE_16 | 3 | 1995-04-01 00:00:00 | 2282 | 1.58 |
-| ADATE_16 | 4 | 1995-02-01 00:00:00 | 171 | 0.12 |
-| ADATE_17 | 1 | 1995-02-01 00:00:00 | 98597 | 68.42 |
-| ADATE_17 | 2 | &lt;NA> | 38072 | 26.42 |
-| ADATE_17 | 3 | 1995-01-01 00:00:00 | 7388 | 5.13 |
-| ADATE_17 | 4 | 1995-03-01 00:00:00 | 38 | 0.03 |
-| ADATE_18 | 1 | 1995-01-01 00:00:00 | 68964 | 47.86 |
-| ADATE_18 | 2 | 1994-12-01 00:00:00 | 45140 | 31.33 |
-| ADATE_18 | 3 | &lt;NA> | 29751 | 20.65 |
-| ADATE_18 | 4 | 1994-11-01 00:00:00 | 151 | 0.1 |
-| ADATE_18 | 5 | 1994-09-01 00:00:00 | 41 | 0.03 |
-| ADATE_19 | 1 | 1994-11-01 00:00:00 | 108829 | 75.53 |
-| ADATE_19 | 2 | &lt;NA> | 32966 | 22.88 |
-| ADATE_19 | 3 | 1994-09-01 00:00:00 | 2187 | 1.52 |
-| ADATE_19 | 4 | 1994-10-01 00:00:00 | 113 | 0.08 |
-| ADATE_2 | 1 | 1997-06-01 00:00:00 | 144085 | 99.99 |
-| ADATE_2 | 2 | 1997-04-01 00:00:00 | 10 | 0.01 |
-| ADATE_20 | 1 | &lt;NA> | 72258 | 50.15 |
-| ADATE_20 | 2 | 1994-11-01 00:00:00 | 71818 | 49.84 |
-| ADATE_20 | 3 | 1994-12-01 00:00:00 | 19 | 0.01 |
-| ADATE_21 | 1 | 1994-10-01 00:00:00 | 89068 | 61.81 |
-| ADATE_21 | 2 | &lt;NA> | 48782 | 33.85 |
-| ADATE_21 | 3 | 1994-09-01 00:00:00 | 6245 | 4.33 |
-| ADATE_22 | 1 | 1994-09-01 00:00:00 | 101345 | 70.33 |
-| ADATE_22 | 2 | &lt;NA> | 35016 | 24.3 |
-| ADATE_22 | 3 | 1994-08-01 00:00:00 | 6371 | 4.42 |
-| ADATE_22 | 4 | 1995-06-01 00:00:00 | 1335 | 0.93 |
-| ADATE_22 | 5 | 1994-11-01 00:00:00 | 16 | 0.01 |
-| ADATE_23 | 1 | &lt;NA> | 81245 | 56.38 |
-| ADATE_23 | 2 | 1994-07-01 00:00:00 | 62451 | 43.34 |
-| ADATE_23 | 3 | 1994-06-01 00:00:00 | 366 | 0.25 |
-| ADATE_23 | 4 | 1993-12-01 00:00:00 | 33 | 0.02 |
-| ADATE_24 | 1 | 1994-06-01 00:00:00 | 92213 | 63.99 |
-| ADATE_24 | 2 | &lt;NA> | 51446 | 35.7 |
-| ADATE_24 | 3 | 1994-05-01 00:00:00 | 436 | 0.3 |
-| ADATE_3 | 1 | 1996-06-01 00:00:00 | 142403 | 98.83 |
+| ADATE_10 | 1 | 1995-10-01 00:00:00 | 115671 | 60.32 |
+| ADATE_10 | 2 | &lt;NA> | 65845 | 34.34 |
+| ADATE_10 | 3 | 1995-11-01 00:00:00 | 10253 | 5.35 |
+| ADATE_11 | 1 | 1995-10-01 00:00:00 | 117870 | 61.46 |
+| ADATE_11 | 2 | 1995-09-01 00:00:00 | 44623 | 23.27 |
+| ADATE_11 | 3 | &lt;NA> | 20750 | 10.82 |
+| ADATE_11 | 4 | 1995-11-01 00:00:00 | 8385 | 4.37 |
+| ADATE_11 | 5 | 1995-08-01 00:00:00 | 141 | 0.07 |
+| ADATE_12 | 1 | 1995-08-01 00:00:00 | 98946 | 51.6 |
+| ADATE_12 | 2 | 1995-09-01 00:00:00 | 73470 | 38.31 |
+| ADATE_12 | 3 | &lt;NA> | 17777 | 9.27 |
+| ADATE_12 | 4 | 1995-10-01 00:00:00 | 1444 | 0.75 |
+| ADATE_12 | 5 | 1995-07-01 00:00:00 | 132 | 0.07 |
+| ADATE_13 | 1 | 1995-07-01 00:00:00 | 109718 | 57.21 |
+| ADATE_13 | 2 | &lt;NA> | 81030 | 42.25 |
+| ADATE_13 | 3 | 1995-02-01 00:00:00 | 581 | 0.3 |
+| ADATE_13 | 4 | 1995-06-01 00:00:00 | 440 | 0.23 |
+| ADATE_14 | 1 | 1995-06-01 00:00:00 | 153428 | 80.01 |
+| ADATE_14 | 2 | &lt;NA> | 37972 | 19.8 |
+| ADATE_14 | 3 | 1995-04-01 00:00:00 | 369 | 0.19 |
+| ADATE_15 | 1 | &lt;NA> | 131792 | 68.72 |
+| ADATE_15 | 2 | 1995-04-01 00:00:00 | 59977 | 31.28 |
+| ADATE_16 | 1 | 1995-03-01 00:00:00 | 147705 | 77.02 |
+| ADATE_16 | 2 | &lt;NA> | 40840 | 21.3 |
+| ADATE_16 | 3 | 1995-04-01 00:00:00 | 2971 | 1.55 |
+| ADATE_16 | 4 | 1995-02-01 00:00:00 | 253 | 0.13 |
+| ADATE_17 | 1 | 1995-02-01 00:00:00 | 125248 | 65.31 |
+| ADATE_17 | 2 | &lt;NA> | 55687 | 29.04 |
+| ADATE_17 | 3 | 1995-01-01 00:00:00 | 10783 | 5.62 |
+| ADATE_17 | 4 | 1995-03-01 00:00:00 | 51 | 0.03 |
+| ADATE_18 | 1 | 1995-01-01 00:00:00 | 87407 | 45.58 |
+| ADATE_18 | 2 | 1994-12-01 00:00:00 | 61180 | 31.9 |
+| ADATE_18 | 3 | &lt;NA> | 42817 | 22.33 |
+| ADATE_18 | 4 | 1994-11-01 00:00:00 | 221 | 0.12 |
+| ADATE_18 | 5 | 1994-09-01 00:00:00 | 53 | 0.03 |
+| ADATE_19 | 1 | 1994-11-01 00:00:00 | 139331 | 72.66 |
+| ADATE_19 | 2 | &lt;NA> | 49172 | 25.64 |
+| ADATE_19 | 3 | 1994-09-01 00:00:00 | 3091 | 1.61 |
+| ADATE_19 | 4 | 1994-10-01 00:00:00 | 175 | 0.09 |
+| ADATE_2 | 1 | 1997-06-01 00:00:00 | 191748 | 99.99 |
+| ADATE_2 | 2 | 1997-04-01 00:00:00 | 21 | 0.01 |
+| ADATE_20 | 1 | &lt;NA> | 100968 | 52.65 |
+| ADATE_20 | 2 | 1994-11-01 00:00:00 | 90779 | 47.34 |
+| ADATE_20 | 3 | 1994-12-01 00:00:00 | 22 | 0.01 |
+| ADATE_21 | 1 | 1994-10-01 00:00:00 | 112489 | 58.66 |
+| ADATE_21 | 2 | &lt;NA> | 70549 | 36.79 |
+| ADATE_21 | 3 | 1994-09-01 00:00:00 | 8731 | 4.55 |
+| ADATE_22 | 1 | 1994-09-01 00:00:00 | 128411 | 66.96 |
+| ADATE_22 | 2 | &lt;NA> | 51406 | 26.81 |
+| ADATE_22 | 3 | 1994-08-01 00:00:00 | 10240 | 5.34 |
+| ADATE_22 | 4 | 1995-06-01 00:00:00 | 1667 | 0.87 |
+| ADATE_22 | 5 | 1994-11-01 00:00:00 | 27 | 0.01 |
+| ADATE_23 | 1 | &lt;NA> | 113473 | 59.17 |
+| ADATE_23 | 2 | 1994-07-01 00:00:00 | 77741 | 40.54 |
+| ADATE_23 | 3 | 1994-06-01 00:00:00 | 510 | 0.27 |
+| ADATE_23 | 4 | 1993-12-01 00:00:00 | 45 | 0.02 |
+| ADATE_24 | 1 | 1994-06-01 00:00:00 | 116700 | 60.85 |
+| ADATE_24 | 2 | &lt;NA> | 74476 | 38.84 |
+| ADATE_24 | 3 | 1994-05-01 00:00:00 | 593 | 0.31 |
+| ADATE_3 | 1 | 1996-06-01 00:00:00 | 187810 | 97.94 |
 
 (467 more rows not shown)
 
@@ -440,4 +459,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a89bc179469a9a669ffb5d2fbfc630d85f275720042f4d00136aa918093c7ef5` |
+| stale | yes: the definition now gives checksum `v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c` |

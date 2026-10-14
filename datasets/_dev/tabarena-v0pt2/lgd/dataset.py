@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, anonymize_ids, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    TaskSummary,
+    anonymize_ids,
+    drop_columns,
+)
 
 TARGET_COPIES = ["Recovery_rate", "y_logistic", "lnrr", "Y_probit"]
 """Transformations of `lgd_time` that the source ships for the book's models: 1 - LGD, logit, log(1 - LGD), probit."""
@@ -24,6 +32,37 @@ def ltv_runs(ltv: pd.Series) -> pd.Series:
 
 
 class Lgd(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What share of a defaulted loan's outstanding amount will the bank lose?",
+        use_case=(
+            "When a loan has just defaulted, the bank estimates the share of the outstanding amount it will lose (the"
+            " task of the book's chapter 10)."
+        ),
+        row=(
+            'One defaulted loan of a European bank, "slightly modified and anonymized", from the book Credit Risk '
+            "Analytics (2,545 loans, 2016; period not stated)."
+        ),
+        predicted=(
+            "The loss as a share of the outstanding amount, from 0 to 1; 28.6% of the loans lose nothing and 5.6% "
+            "lose everything."
+        ),
+        known=("Only the loan-to-value ratio and whether the loan's purpose is renting, as in the book's models."),
+        split=(
+            "Groups of loans that most likely belong to one borrower are held out whole, so each test loan comes from"
+            " a borrower the model has not seen, as for a new default."
+        ),
+        changes=(
+            "We drop the transformations of the loss and the flag that marks loans without loss, and group the loans "
+            "by borrower (runs of rows with one loan-to-value ratio) instead of the record's random split."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The file has no dates, though its row order shows a drift in the losses, so the split cannot place new "
+            "defaults after old ones. Reading the zero-loss loans as defaults that ended without loss follows the "
+            "book's code but is not verified."
+        ),
+    )
+
     # Dataset
     unique_name = "lgd"
     year = "2016"

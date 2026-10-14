@@ -7,13 +7,41 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="At what price will a house for sale in Germany be listed?",
+        use_case=("A seller or agent sets the asking price of a house from the other houses currently on the market."),
+        row=(
+            "One house listed for sale on the German property portal ImmoScout24, from one scrape of 14 July 2020 "
+            "(10,317 houses across the 16 states)."
+        ),
+        predicted="The asking price in euros, on a log scale; the sale price is not in the data.",
+        known=(
+            "The house type, living space, lot and usable area, rooms, bedrooms, bathrooms, floors, year built and "
+            "renovated, furnishing quality, condition, heating, energy certificate, class and source, garages, and "
+            "the state, city and place."
+        ),
+        split=(
+            "Random listings of the same snapshot, so the test data stands for other houses on the market at the same"
+            " time."
+        ),
+        changes=(
+            'We drop listings priced under 10,000 euros (mostly 0, likely "price on request") or with under 10 square'
+            " metres of living space, and listings repeated with identical features."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features are what a seller knows when listing, and the other listings of the same snapshot are the "
+            "market the price is set in. Price trends over time are not covered."
+        ),
+    )
+
     # Dataset
     unique_name = "immoscout_german_house_prices"
-    year = "2019"
+    year = "2020"
     domain = "business & marketing"
     source = "Kaggle"  # original source Kaggle, download source OpenML.
     source_url = "https://www.openml.org/d/43342"
@@ -34,16 +62,17 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
           howpublished = {\url{https://www.openml.org/d/43342}},
           note   = {OpenML dataset}
         }
-        @misc{Shritech2019GermanHousingPricePrediction,
+        @misc{Shritech2020GermanHousingPricePrediction,
           author = {shritech1404},
           title  = {German Housing Price Prediction},
-          year   = {2019},
+          year   = {2020},
           howpublished = {\url{https://www.kaggle.com/code/shritech1404/german-housing-price-prediction}},
           note   = {Kaggle notebook}
         }
     """
-    bibtex_key = "Shritech2019GermanHousingPricePrediction,OpenML43342Dataset"
+    bibtex_key = "Shritech2020GermanHousingPricePrediction,OpenML43342Dataset"
     curation_comments = """
+        - The data first appeared on Kaggle as the dataset `german-house-prices` (file `germany_housing_data_14.07.2020.csv`, scraped from ImmoScout24 on 14 July 2020). It has since been deleted and its owner is unknown, so `source` is Kaggle and `source_url` points to the copy on OpenML (43342, uploaded 2022-03-23), which carries the Kaggle card's text.
         We treat this as an IID time-independent task, because the prices is not sold prices but instead the offer price, so the snapshot here represents a task where someone would want to predict the price they should offer for their house given other houses that are currently on the market. Thus, it seems like a real IID task where someone would want to build a model to know how much they should offer their houses at in the current market (with the limitation that past trends are ignored)
 
         - We log scale it, as is appropriate for house price prediction tasks. We do not normalize by lot or living space, as both houses with a lot of land and small living space and houses with a lot of living space and small land are interesting to predict the price of, and normalization would bias towards one of them, as both cannot be homogenised.

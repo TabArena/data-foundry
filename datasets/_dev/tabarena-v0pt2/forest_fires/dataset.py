@@ -6,10 +6,31 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class ForestFires(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How large an area will a forest fire burn?",
+        use_case=(
+            "When a fire breaks out in the Montesinho natural park, the fire service estimates from the weather how "
+            "large it will grow, to decide where to send air tankers and ground crews (the paper's stated use)."
+        ),
+        row=("One forest fire in the Montesinho natural park in northeast Portugal, 2000-2003 (517 fires)."),
+        predicted="The burned area in hectares, on a log scale; 48% of the fires burned 0 ha.",
+        known=(
+            "The fire's square on a grid map of the park, the month and weekday, four components of the Canadian fire"
+            " weather index, and the temperature, humidity, wind and rain."
+        ),
+        split=("Random fires, so the test data stands for other fires of the same years; the year is not in the data."),
+        fit="approximate",
+        fit_reason=(
+            "Fires from several years are split at random because the data holds only month and weekday, so a split "
+            "by time is impossible. When the weather values were read relative to the fire is not stated. The signal "
+            "is small."
+        ),
+    )
+
     # Dataset
     unique_name = "forest_fires"
     year = "2008"
@@ -35,7 +56,7 @@ class ForestFires(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI.
 
-        - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month/day over 3 years. Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
+        - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
         - We log1p scale the target as suggest by the authors.
         - The data contains naturally occurring duplicates.
     """

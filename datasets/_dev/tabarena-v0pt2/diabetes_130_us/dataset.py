@@ -5,10 +5,41 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class Diabetes130Us(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a diabetic patient be readmitted to hospital within 30 days of discharge?",
+        use_case=(
+            "For example, at discharge a hospital decides which diabetic patients get extra follow-up, such as a call"
+            " or an early visit, to prevent an early readmission."
+        ),
+        row=(
+            "The first hospital stay of one diabetic patient at one of 130 US hospitals, 1999-2008 (69,973 patients)."
+        ),
+        predicted=(
+            "Whether the patient is readmitted within 30 days of discharge (9% are); a later readmission counts as no."
+        ),
+        known=(
+            "Age, sex, race, payer, admission type and source, discharge destination, admitting specialty, three "
+            "diagnoses, length of stay, counts of lab tests, procedures and medications in the stay and of visits in "
+            "the year before, glucose and HbA1c results, and the diabetes drugs and their changes."
+        ),
+        split=(
+            "Random patients, one stay each, so the test data stands for new patients of the same hospitals and years."
+        ),
+        changes=(
+            "We keep each patient's first stay and drop stays that ended in death or discharge to a hospice, as the "
+            "paper does."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is recorded by discharge and the outcome follows within 30 days, as when the "
+            "model is used. The stays carry no dates, so the test data mixes care from all of 1999-2008."
+        ),
+    )
+
     # Dataset
     unique_name = "diabetes_130_us"
     year = "2014"
@@ -36,11 +67,12 @@ class Diabetes130Us(AbstractCuratedDataset):
     curation_comments = """
         - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).
         - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
-        - We set "?" and "NULL" to missing values.
+        - We set "?" (race, weight, payer code, specialty, diagnoses) and the "NULL" code of the three ID columns to missing values; pandas also reads the "None" (test not taken) of max_glu_serum and A1Cresult as missing.
         - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
         - We created the target from the "readmitted" column following the original task description: "<30" becomes "Yes", everything else "No".
         - We dropped "encounter_id" and "patient_nbr", which are both unique identifiers for each row.
-        - We keep original "?", NULL-codes, and NaN values because they exist in different ways across the columns.
+        - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
+        - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
         - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
     """
 

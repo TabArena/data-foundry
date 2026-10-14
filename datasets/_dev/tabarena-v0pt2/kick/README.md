@@ -69,6 +69,24 @@ Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by
 
 Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Is a used car bought at auction a "kick", a purchase with serious problems?
+
+**Use case.** A used-car dealer decides at the auction whether to buy a car, avoiding cars that would have to be returned or resold at a loss.
+
+**One row.** One car bought at a US auction in 2009-2010.
+
+**Predicted.** Whether the purchase turned out to be a bad buy.
+
+**Known at prediction time.** The car (age, make, model, trim, mileage, colour, wheel type), its auction and retail price guides, the purchase price, the auction, the buyer and the warranty cost.
+
+**What the test data stands for.** The test data is the most recent purchases, in nine windows of purchase dates, with every earlier purchase for training.
+
+**Our changes to the source.** We split by purchase date instead of the competition's random split, in which both sides cover the same two years.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Everything else is known at the auction, but a missing wheel type marks 25% of the bad buys and 1.5% of the others and may be filled in after a car is returned. It is kept as the company released it (ROC AUC 0.757 with it, 0.691 without).
+
 ## Files in this folder
 
 | file | what it is |

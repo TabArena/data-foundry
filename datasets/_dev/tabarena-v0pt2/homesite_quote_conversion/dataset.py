@@ -6,10 +6,34 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a customer buy the home-insurance policy they were quoted?",
+        use_case=(
+            "Homesite, a home insurer, estimates which quotes will turn into purchases, to judge the effect of price "
+            "changes and keep the customer mix it wants (the competition's stated aim)."
+        ),
+        row="One quote Homesite gave a customer for a home-insurance policy (260,753 quotes).",
+        predicted="Whether the customer bought the quoted policy (19% did).",
+        known=(
+            "The quote date and about 300 anonymised fields on the coverage, the sale, the customer, the property and"
+            " its area."
+        ),
+        split=(
+            "Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by "
+            "date instead."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% "
+            "buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC"
+            " AUC 0.965 with them, 0.915 without)."
+        ),
+    )
+
     # Dataset
     unique_name = "homesite_quote_conversion"
     year = "2015"

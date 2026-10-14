@@ -58,6 +58,22 @@ Regression of `disease_progression_one_year`, scored with `rmse` on IID splits. 
 
 Not built yet. The current definition gives checksum `v2:933c916c69933e8ce0bf7c25f73798e9128f72af493afcc6ba0123de801a7dac`.
 
+## In brief
+
+**Question.** How far will a diabetes patient's disease progress over the next year?
+
+**Use case.** At a patient's baseline visit, a physician predicts the disease progression one year later from routine measurements; the paper aims at accurate baseline predictions for future patients, for example to plan follow-up.
+
+**One row.** One diabetes patient at the baseline visit (442 patients; clinic, place and period not stated).
+
+**Predicted.** A quantitative measure of disease progression one year after baseline, from 25 to 346; the source does not say what it measures.
+
+**Known at prediction time.** Age, sex, body mass index, mean arterial blood pressure and six blood measurements (total, LDL and HDL cholesterol, the total-to-HDL ratio, triglycerides and glucose).
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are taken at baseline and the outcome a fixed year later, as the paper describes. The measure, the clinic and the units are not documented, and the glucose values look low for diabetes patients.
+
 ## Files in this folder
 
 | file | what it is |

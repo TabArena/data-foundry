@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sepsis_prediction_1m
 container_format: 2
-checksum: v2:6ae0bce7ae9f880c97d9dac8c0ab3519b01818545a80988ffe2ff5f8567109d2
+checksum: v2:b95a1a6dd3ce0aedffe4b5ddea9dbda805c8a5595f361ba6bb0cbd5cbdfb10bd
 build:
   uuid: 01a111fc-109e-7d32-85ac-ecdf6eea551e
   checksum: v2:769367d731628622c049583f09643ea1b9bdb7e895abf45055be614366c5815d
@@ -77,7 +77,25 @@ decisions: []
 
 Binary classification of `SepsisLabel`, scored with `PhysioNet2019UtilityFunction` on grouped splits by `Patient_ID`. 1,499,997 rows and 42 features. Source: Other (2019).
 
-Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ae0bce7ae9f880c97d9dac8c0ab3519b01818545a80988ffe2ff5f8567109d2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b95a1a6dd3ce0aedffe4b5ddea9dbda805c8a5595f361ba6bb0cbd5cbdfb10bd`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will an intensive-care patient develop sepsis within the next six hours?
+
+**Use case.** Every hour of an intensive-care stay, an early-warning system scores the patient's risk of sepsis in the next six hours, so the care team can start treatment early (PhysioNet/Computing in Cardiology Challenge 2019).
+
+**One row.** One hour of one intensive-care stay at one of two US hospitals; 1.5 million hours of whole stays sampled from the challenge's public data.
+
+**Predicted.** Whether sepsis begins within six hours or has already begun: the label turns on six hours before onset and stays on.
+
+**Known at prediction time.** That hour's measurements only: vital signs, lab values (most missing in a given hour), age, sex, the care unit, the time since hospital admission, the hours since intensive-care admission, and the hospital.
+
+**What the test data stands for.** Whole stays are held out in three folds, so the test data stands for new patients of the same two hospitals; each patient is scored over its ordered hours.
+
+**Our changes to the source.** Each hour is predicted from its own row only, where the challenge allowed the earlier hours, and the challenge's hidden third hospital is not available, so no shift to a new hospital is tested.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Each hour's measurements are known at that hour and the label looks six hours ahead, as for an early-warning system; seeing only the current hour is stricter than the challenge. New patients come from the same two hospitals.
 
 ## Files in this folder
 
@@ -184,7 +202,9 @@ In the original competition, one had to predict for unseen patients from the exi
 - We reverse the ordinal encoding of Gender.
 - We mark features as categorical where appropriate.
 - For each patient, we predict the sepsis status over time. So it is more or less a transformed survival task (also in the original challenge).
-- Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Each hour is predicted from its own row only: no feature may combine a patient's rows (record length, last Hour/ICULOS, aggregates over the stay). Scoring uses the PhysioNet 2019 utility per patient over its ordered hours, not independent rows. Patient_ID is group metadata, not a model feature.
+- Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Each hour is predicted from its own row only: no feature may combine a patient's rows (record length, last Hour/ICULOS, aggregates over the stay). Scoring uses the PhysioNet 2019 utility per patient over its ordered hours, not independent rows.
+- Patient_ID is the group column. We store it as a category, so the README's list of column types shows it
+  (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
 
 Version of `sepsis_prediction`: We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
 
@@ -385,4 +405,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ae0bce7ae9f880c97d9dac8c0ab3519b01818545a80988ffe2ff5f8567109d2` |
+| stale | yes: the definition now gives checksum `v2:b95a1a6dd3ce0aedffe4b5ddea9dbda805c8a5595f361ba6bb0cbd5cbdfb10bd` |

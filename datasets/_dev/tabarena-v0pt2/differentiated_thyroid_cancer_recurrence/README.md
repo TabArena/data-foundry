@@ -62,6 +62,24 @@ Binary classification of `Recurred`, scored with `roc_auc` on IID splits. 383 ro
 
 Not built yet. The current definition gives checksum `v2:7d8cc1ff95176206be097909ff1a66e6f1fd969152e21bd1b44032049582b829`.
 
+## In brief
+
+**Question.** Will a patient's thyroid cancer come back after surgery?
+
+**Use case.** After thyroid surgery, at the initial staging, the endocrinologist estimates the risk of recurrence to plan further treatment and how closely to follow the patient.
+
+**One row.** One patient with well-differentiated thyroid cancer after thyroid removal in Hamadan, Iran, followed for at least 10 years (383 patients).
+
+**Predicted.** Whether the cancer recurred during follow-up (28% did); the label seems to count persistent disease as well.
+
+**Known at prediction time.** Age, sex, smoking, thyroid function, examination findings, swollen lymph nodes, the tumour's pathology and focality, its T, N and M stage and overall stage, and the initial risk class of the American Thyroid Association.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic.
+
+**Our changes to the source.** We drop the response to therapy, assessed in the first two years of follow-up and partly the outcome itself, and an undefined, undated radiotherapy column.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at the initial staging, and the outcome follows over the follow-up. A few metastases may have been found after staging, and one clinic's patients make a small task.
+
 ## Files in this folder
 
 | file | what it is |

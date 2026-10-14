@@ -6,7 +6,15 @@ import ast
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 TARGET = "adopted_within_07_days"
 """The challenge's main target: adoption within 7 days of the training (most of the leaderboard weight)."""
@@ -43,6 +51,43 @@ def topics_text(cell: str) -> str:
 
 
 class DigicowFarmerTrainingAdoptionChallenge(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will a farmer who attended a DigiCow training adopt within seven days, as DigiCow records adoption?"
+        ),
+        use_case=(
+            "At the end of a farmer's training day, DigiCow scores the farmer's chance of adopting within seven days "
+            "from the profile, the trainers and the day's topics, for example to plan follow-up."
+        ),
+        row=(
+            "One farmer with one training day, the one the challenge kept per farmer, March 2024 to December 2025 "
+            "(13,536 farmers); the country of the counties and wards is not named in the definition."
+        ),
+        predicted=(
+            "Whether the farmer adopted within 7 days of the training (1.1% did). What counts as adoption is not "
+            "stated, and a 0 mixes 'did not adopt' with 'not recorded'."
+        ),
+        known=(
+            "Gender, age band, registration method, cooperative membership, group, county, sub-county and ward, the "
+            "day's trainers and the topics of its sessions, and the training date."
+        ),
+        split=(
+            "Each test window is four calendar months of trainings (four windows, September 2024 to December 2025, "
+            "newest first); training is all earlier trainings, whose 7-day outcome is known by then."
+        ),
+        changes=(
+            "We swap back the day and month of the stored dates, drop the 90- and 120-day labels, which contain the "
+            "7-day one, and drop a topic flag that two trainers recorded with the adoption; the topics still partly "
+            "carry it."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The prediction point and horizon fit, but adoption is recorded only for some trainers and months, so a 0"
+            " mixes non-adopters with farmers never followed up and the model partly learns who recorded. The test "
+            "windows hold 9 to 103 adopters from 1 to 7 trainers; the dataset is recommended for retirement."
+        ),
+    )
+
     # Dataset
     unique_name = "digicow_farmer_training_adoption_challenge"
     year = "2026"

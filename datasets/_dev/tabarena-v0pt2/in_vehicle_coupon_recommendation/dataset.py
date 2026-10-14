@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -26,6 +26,35 @@ RESPONDENT_COLUMNS = [
 
 
 class InVehicleCouponRecommendation(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a driver accept a coupon for a nearby venue offered in the car?",
+        use_case=(
+            "An in-vehicle recommender decides whether to show a driver a coupon for a nearby bar, coffee house, "
+            "take-away or restaurant, for a new user it has no history for."
+        ),
+        row=(
+            "One imagined driving scenario with a coupon offer, answered by one Amazon Mechanical Turk respondent "
+            "(12,684 answers of 587 respondents, mostly 22 each)."
+        ),
+        predicted="Whether the respondent says they would accept the coupon; 56.8% say yes.",
+        known=(
+            "The scenario (destination, passengers, weather, temperature, time of day, coupon type and expiry, "
+            "distance to the venue and whether it lies on the way), the person's profile (sex, age, family, "
+            "education, job, income) and how often they say they visit such venues."
+        ),
+        split="Whole respondents are held out, so the test data stands for new users.",
+        changes=(
+            "We rebuild the respondent from the file's blocks of identical profiles and hold out whole respondents; "
+            "with random rows a model learned each person's habit of saying yes (ROC AUC 0.83 against 0.76)."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The answers are stated intentions about imagined trips, given in one survey sitting, not coupons "
+            "accepted while driving, and the respondents are rebuilt from the file order (587 against the paper's 652"
+            " surveys)."
+        ),
+    )
+
     # Dataset
     unique_name = "in_vehicle_coupon_recommendation"
     year = "2017"

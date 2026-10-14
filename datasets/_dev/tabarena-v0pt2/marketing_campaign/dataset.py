@@ -5,10 +5,35 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class MarketingCampaign(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a customer accept the offer of the company's next marketing campaign?",
+        use_case=(
+            "Before a campaign, a company decides which customers to send the offer to, to maximise the campaign's "
+            "profit (the data card's task, from a SAS textbook)."
+        ),
+        row=(
+            "One customer of a company (not named) selling wine, meat, fish, fruit, sweets and gold products in "
+            "stores, by catalogue and on its website (2,240 customers)."
+        ),
+        predicted="Whether the customer accepted the offer of the last campaign.",
+        known=(
+            "Birth year, education, marital status, income, children at home, date of joining, days since the last "
+            "purchase, spending per product type and purchases per channel over two years, website visits in the last"
+            " month, a complaint flag, and whether the customer accepted each of five earlier campaigns."
+        ),
+        split="Random customers of the same campaign.",
+        fit="approximate",
+        fit_reason=(
+            "One campaign stands in for the next, and the source does not say whether spending and visits were "
+            "counted before the campaign. How the data was obtained is not documented; the curators suspect it may be"
+            " artificial."
+        ),
+    )
+
     # Dataset
     unique_name = "marketing_campaign"
     year = "2019"

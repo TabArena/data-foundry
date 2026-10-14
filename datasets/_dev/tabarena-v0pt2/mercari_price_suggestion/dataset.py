@@ -6,10 +6,35 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class MercariPriceSuggestion(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What price will a second-hand item sell for on the Mercari app?",
+        use_case=(
+            "When a seller lists an item on Mercari, the app suggests a price from the listing (the competition's "
+            "stated aim)."
+        ),
+        row=(
+            "One item listing on Mercari, a shopping app for second-hand goods (1,482,486 listings); the place and "
+            "period are not stated."
+        ),
+        predicted="The price the item sold for, in US dollars, on a log scale.",
+        known=(
+            "The item's name, condition, category, brand, whether the seller pays shipping, and the seller's "
+            "free-text description."
+        ),
+        split=(
+            "Random listings, as in the competition, so the test data stands for other listings of the same period."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is what a seller enters when listing, and the label is the price a suggestion "
+            "should hit. The release has no dates, so the split cannot follow time."
+        ),
+    )
+
     # Dataset
     unique_name = "mercari_price_suggestion"
     year = "2017"

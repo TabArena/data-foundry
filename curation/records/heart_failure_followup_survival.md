@@ -32,6 +32,8 @@ CC (2026-09-30, Lennart): **Leak fixed: dropped `time` (follow-up days), which i
 
 Looks good
 
+**Assessment (AI, 2026-10-14):** whether follow-up ended on one date for all patients cannot be determined: Ahmad et al. 2017 and Chicco & Jurman 2020 do not say, and neither file has dates. The censored follow-ups (12 to 285 days) fit a common end around mid-January 2016 but do not prove it. Each patient's window starts at their own admission, so the task stays as it is (Lennart's instruction).
+
 ## Reference
 
 @article{chicco2020machine,

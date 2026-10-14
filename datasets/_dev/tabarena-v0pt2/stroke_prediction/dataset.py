@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 RAW_FILE = "train_ajEneEa.csv"
 """The contest's training file: 43,400 patients, 783 of them with a stroke."""
@@ -19,6 +19,34 @@ AGE_LABELS = ["under 40", "40-59", "60-69", "70-82"]
 
 
 class StrokePrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Has a patient had a stroke, judged from a few facts of the health record?",
+        use_case=(
+            "For example, a hospital chain screens its patients' records for a high stroke risk, to offer prevention;"
+            " the contest asked whether a patient has had a stroke."
+        ),
+        row=(
+            "One patient record of a hospital chain, from the McKinsey Analytics Online Hackathon of 2018 (43,400 "
+            "patients; place and period not stated)."
+        ),
+        predicted=("Whether the patient has had a stroke (1.8%), at a time not stated, before or after the record."),
+        known=(
+            "Age, sex, high blood pressure, heart disease, average blood glucose, smoking status, whether ever "
+            "married, work type and urban or rural residence."
+        ),
+        split="Random patients.",
+        changes=(
+            "We use the contest's whole training file instead of the Kaggle cut, and drop the body-mass index, whose "
+            "missing values follow a stroke."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The record has no dates, so the label is a stroke at any time rather than within a fixed time after the "
+            "record, and some facts may be recorded after it. Marriage, work type and residence look generated: they "
+            "carry nothing beyond age."
+        ),
+    )
+
     # Dataset
     unique_name = "stroke_prediction"
     year = "2018"

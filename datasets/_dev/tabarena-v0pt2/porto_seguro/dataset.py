@@ -6,10 +6,33 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class PortoSeguro(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a car-insurance customer file a claim within the next year?",
+        use_case=(
+            "The Brazilian insurer Porto Seguro, when pricing a policy, estimates the probability that the driver "
+            "will file a claim in the next year, to set fairer prices (the Kaggle competition's goal)."
+        ),
+        row=(
+            "One policy holder of Porto Seguro (595,206 of the competition's training rows; the period is not stated)."
+        ),
+        predicted="Whether the driver filed a claim (3.6% did).",
+        known=(
+            "The insurer's anonymised features about the driver, the car and the region, whose meanings are hidden."
+        ),
+        split="Random policy holders of the same period.",
+        changes=("We drop a block of engineered features that the top competition solutions also dropped."),
+        fit="direct",
+        fit_reason=(
+            "The insurer built the task to score drivers ahead of the next year, so the features should be known at "
+            "pricing; their meanings are hidden, so this cannot be checked. The policies carry no dates, so test and "
+            "training drivers come from the same period."
+        ),
+    )
+
     # Dataset
     unique_name = "porto_seguro"
     year = "2017"
@@ -37,6 +60,7 @@ class PortoSeguro(AbstractCuratedDataset):
         We start with the train.csv from Kaggle.
 
         - The data has been anonymized, so feature meanings are unknown.
+        - We turn -1 into a missing value: "Values of -1 indicate that the feature was missing from the observation" (the competition's data description).
         - Following the expert solutions on Kaggle, we drop *calc features.
         - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
         - We drop the index as it seems to be uninformative for this dataset.

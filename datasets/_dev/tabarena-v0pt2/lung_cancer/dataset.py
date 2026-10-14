@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class LungCancer(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("Which type of lung tissue, tumour or normal, does a specimen's gene expression profile show?"),
+        use_case=(
+            "For example, a pathology lab assigns a lung specimen to its tissue type from its gene expression "
+            "profile, as a check on the microscope reading."
+        ),
+        row=(
+            "One lung tissue specimen of a 2001 study (Bhattacharjee et al., its Dataset A without the 6 small-cell "
+            "carcinomas: 197 specimens); the place and period are not stated in the definition."
+        ),
+        predicted=(
+            "The tissue type by histology: adenocarcinoma (71%, including 12 suspected metastases of adenocarcinomas "
+            "from other organs), squamous cell carcinoma (11%), pulmonary carcinoid (10%) or normal lung (9%)."
+        ),
+        known="The expression of 12,600 gene probes measured by microarray on the specimen.",
+        split="Random specimens, so the test data stands for new specimens of the same study.",
+        changes=(
+            "We drop the 6 small-cell carcinomas. The source already merges lung adenocarcinomas with 12 suspected "
+            "metastases from other organs, which we cannot separate."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The label is the histology pathologists already read under the microscope, so the profile reproduces a "
+            "known diagnosis; the adenocarcinoma class mixes lung tumours with metastases, and whether expression "
+            "would be measured for this purpose is unclear (record). The study itself used the data to find "
+            "subclasses."
+        ),
+    )
+
     # Dataset
     unique_name = "lung_cancer"
     year = "2001"

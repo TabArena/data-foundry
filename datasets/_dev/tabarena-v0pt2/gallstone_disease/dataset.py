@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class GallstoneDisease(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does an outpatient have gallstone disease?",
+        use_case=(
+            "An internal-medicine clinic screens outpatients for gallstone disease from a body-composition scan and "
+            "routine blood tests, for example to decide who goes on to imaging (the source paper's aim is early "
+            "prediction)."
+        ),
+        row=(
+            "One person seen at the Internal Medicine Outpatient Clinic of Ankara VM Medical Park Hospital, Turkey, "
+            "June 2022 to June 2023 (319 people)."
+        ),
+        predicted=(
+            "Whether the person was diagnosed with gallstone disease (161 of 319, about half); how it was diagnosed "
+            "is not stated."
+        ),
+        known=(
+            "Age, sex, other illnesses (coronary disease, hypothyroidism, high blood lipids, diabetes), height and "
+            "weight, body composition from bioimpedance (water, fat, muscle, bone, visceral and liver fat), and blood"
+            " tests (sugar, lipids, liver and kidney values, inflammation, haemoglobin, vitamin D)."
+        ),
+        split="Random people, so the test data stands for new patients of the same clinic and year.",
+        fit="direct",
+        fit_reason=(
+            "The values are measured at the visit where the diagnosis is made, as in screening. The base is narrow "
+            "(one clinic, one year, half with gallstones), and how the people were chosen is not stated, so another "
+            "clinic's mix may differ."
+        ),
+    )
+
     # Dataset
     unique_name = "gallstone_disease"
     year = "2025"

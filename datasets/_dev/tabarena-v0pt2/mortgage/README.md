@@ -58,6 +58,24 @@ Multiclass classification of `status`, scored with `log_loss` on temporal splits
 
 Not built yet. The current definition gives checksum `v2:b44e6d5ee31c0922f7018ab79b433bc73e73eadbaef770a5b84dc8a5b504f824`.
 
+## In brief
+
+**Question.** Will a mortgage default, be paid off, or stay active in the coming quarter?
+
+**Use case.** At the start of each quarter, a lender scores every mortgage it holds for whether, during the quarter, it defaults, is paid off or stays active, as in the book's own out-of-time backtest.
+
+**One row.** One US mortgage in one quarter, for 50,000 borrowers observed from 2000 Q2 to 2015 Q1 (Credit Risk Analytics, Baesens et al. 2016).
+
+**Predicted.** The loan's status at the end of the quarter: active (93.29%), paid off (4.27%) or defaulted (2.44%).
+
+**Known at prediction time.** The quarter, the loan's dates (origination, first observation, maturity) and terms at origination (balance, rate, loan-to-value, credit score, property type, investor), its balance, rate and loan-to-value at the previous quarter, and unemployment, GDP growth and house prices as published by the quarter's start.
+
+**What the test data stands for.** Each test window is one quarter (2014 Q3, 2014 Q4, 2015 Q1), trained on every earlier quarter; a test loan's earlier quarters are in training, as for a lender scoring the loans it holds.
+
+**Our changes to the source.** We use each loan's balance, rate and loan-to-value of the previous quarter and the economic figures as published by the quarter's start; the source's own-quarter values partly record the event or come out later.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known when the quarter starts, the outcome falls within the quarter, and later quarters are tested, as in the book's backtest.
+
 ## Files in this folder
 
 | file | what it is |

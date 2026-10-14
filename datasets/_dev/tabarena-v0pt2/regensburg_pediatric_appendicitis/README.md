@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce
+checksum: v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -64,7 +64,25 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Is a child's appendicitis complicated (gangrenous, perforated or abscessed)?
+
+**Use case.** For example, a paediatric surgeon, after the examination, blood tests and ultrasound of a child with suspected appendicitis, judges how severe it is, to choose between surgery and conservative treatment.
+
+**One row.** One child admitted with abdominal pain and suspected appendicitis to the Children's Hospital St. Hedwig in Regensburg, Germany, 2016-2021, who had an ultrasound (763 children).
+
+**Predicted.** Whether the appendicitis was complicated (15.07%); the rest, among them children without appendicitis, count as uncomplicated.
+
+**Known at prediction time.** Age, sex, height and weight, symptoms and examination signs, body temperature, blood and urine tests, two clinical appendicitis scores, and the ultrasound findings (appendix diameter, free fluid, wall layers, perfusion, signs of perforation or abscess, and others).
+
+**What the test data stands for.** Random children, so the test data stands for other children of the same hospital and years.
+
+**Our changes to the source.** We keep the children who had an ultrasound and drop the diagnosis, the surgeon's management decision and the length of stay.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are known at the decision, but the curators suspect some of them leak the severity and could not rule it out; ultrasound signs of perforation or abscess come close to the label's own definition. How severity was set for children not operated on is not stated.
 
 ## Files in this folder
 
@@ -158,6 +176,8 @@ The first 5 of 763 rows of the final frame (random rows: the frame is shuffled);
 
 We start with the tabular meta-data used in the paper. We create only one task out of the dataset using one of the three available classes. We note that the main use case of the paper was image-based modelling and comparing to tabular baselines with image-to-tabular-radiometric. The authors also published the tabular data, which we use here.
 
+- The data first appeared on Zenodo (v1.0, 2023-02-23, five days before the paper's preprint), hence source
+  Other; UCI 938 is a copy that names the Zenodo DOI as its source.
 - Note, for this dataset is was hard to choose the label given the tabular data. We picked "Severity" in the end. "Diagnosis" is a noisy ground truth for all cases but the ones that had surgery. It was either deterministically determined by the AS score, or during surgery. "Management" reflects the decision and opinion of senior pediatric surgeon. Only "Severity" represents a ground truth as all cases that were server, were either clearly servery or did not even have appendicitis.
  - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
@@ -392,4 +412,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:28862d40c8891da081cc0e73ec146ac08d44ce68c44384fa63278ac1c3c361ce` |
+| stale | yes: the definition now gives checksum `v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b` |

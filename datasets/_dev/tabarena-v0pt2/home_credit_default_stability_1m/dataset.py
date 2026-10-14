@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 def set_table_dtypes(df):
@@ -146,6 +146,38 @@ def aggregate_features(df):
 
 
 class HomeCreditDefaultStability1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a client default on the loan Home Credit is deciding on?",
+        use_case=(
+            "When a loan application arrives, Home Credit, a consumer lender for people with little or no credit "
+            "history, scores the client's default risk to decide on the loan; its scorecard is refit regularly and "
+            "should stay stable over time."
+        ),
+        row=(
+            "One loan application decided between January 2019 and early October 2020 (the frame keeps 1,224,927 of "
+            "them)."
+        ),
+        predicted=("Whether the client defaulted (3.1% did); the time span in which a default counts is not stated."),
+        known=(
+            "The application, the client's personal data, earlier applications to Home Credit, credit-bureau and "
+            "tax-registry records, deposits and debit cards, summarised over the client's history, and the decision "
+            "date; the categories are anonymized codes."
+        ),
+        split=(
+            "Three two-month test windows from May to early October 2020; each trains on a random million of all "
+            "earlier applications, as for a model refit every two months."
+        ),
+        changes=(
+            "We split TabReD's test period into three two-month windows and keep columns TabReD dropped (the decision"
+            " month and week, categories with many values)."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The default has no stated time span, and the applications decided just before a window train with their "
+            "outcomes, which a lender refitting then would not yet know."
+        ),
+    )
+
     # Dataset
     unique_name = "home_credit_default_stability_1m"
     version_of = "home_credit_default_stability"
@@ -177,7 +209,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
         - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
         - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
-        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we do not sub-sample the data, (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
+        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.

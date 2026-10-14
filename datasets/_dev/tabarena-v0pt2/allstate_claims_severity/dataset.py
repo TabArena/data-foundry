@@ -6,10 +6,35 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class AllstateClaimsSeverity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How much will an insurance claim cost?",
+        use_case=(
+            "Allstate, a US personal insurer, estimates the cost of a claim when it is filed, to improve its claims "
+            "service (the competition's description); for example, to send costly claims to experienced handlers."
+        ),
+        row=(
+            "One insurance claim at Allstate (188,317 claims, the competition's training file; the period is not "
+            "stated)."
+        ),
+        predicted="The cost of the claim, on a log scale; the currency is not stated.",
+        known=(
+            "130 anonymized attributes of the claim, 116 categorical and 14 numeric; their meaning and when they are "
+            "recorded are not given."
+        ),
+        split=(
+            "Random claims, so the test data stands for other claims of the same period; the file has no claim dates."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The attributes are anonymized, so we cannot check that each is known when a claim is filed, and without "
+            "claim dates random claims stand in for the claims to come."
+        ),
+    )
+
     # Dataset
     unique_name = "allstate_claims_severity"
     year = "2016"

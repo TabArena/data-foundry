@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
 
 FACIAL = (
     "Max1R13_",
@@ -100,6 +100,40 @@ def day_effect(values: pd.Series, day: pd.Series) -> dict[str, float]:
 
 
 class InfraredThermographyTemperature(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="What is a person's oral temperature, estimated from one thermal image of the face?",
+        use_case=(
+            "At an entrance, a fever-screening thermal camera images a person once and estimates the oral "
+            "temperature, to decide whether to send the person to a second check (the FDA study's setting)."
+        ),
+        row=(
+            "One person in an FDA clinical study of infrared fever screening, imaged once and measured by mouth "
+            "(1,018 people; place and years not stated)."
+        ),
+        predicted=(
+            "The oral temperature, the mean of two thermometer readings in monitor mode, in °C; the typical spread is"
+            " about 0.5 °C."
+        ),
+        known=(
+            "The first image's temperatures at 26 places of the face and the camera's reference offset, the room "
+            "temperature and humidity, the distance to the camera, the time of day, and sex, age group, ethnicity and"
+            " whether cosmetics are worn."
+        ),
+        split=(
+            "Random people, so the test data stands for new people screened with the same set-up; people measured on "
+            "the same day fall on both sides."
+        ),
+        changes=(
+            "We keep only the first image, taken before the thermometer, and drop the fast-mode oral reading, a "
+            "second measurement of the target."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The camera has all these values at one look, and the oral reading is the reference it is calibrated to. "
+            "The task covers one study's cameras and rooms."
+        ),
+    )
+
     # Dataset
     unique_name = "infrared_thermography_temperature"
     year = "2023"

@@ -65,6 +65,24 @@ Binary classification of `churn`, scored with `roc_auc` on temporal splits by `p
 
 Not built yet. The current definition gives checksum `v2:c0af59d48490dc2daf95eca45c97463e9fd218527067397a9d35947f7842cec6`.
 
+## In brief
+
+**Question.** Will a bank client stop using the bank's card in the three months after its introductory period?
+
+**Use case.** At the end of a client's three-month introductory period on a Rosbank card, the bank scores the risk that the client stops using it, for example to make a retention offer; the model is refit every month.
+
+**One row.** One client of Rosbank, a Russian bank, whose introductory period ended by December 2017, with the card transactions of that period (4,791 clients).
+
+**Predicted.** Whether the client makes no card purchases in the three months after the period (churn); in the October 2017 window 179 of 515 clients did.
+
+**Known at prediction time.** Summaries of the client's card transactions up to the end of the period (counts, sums, means and spreads by transaction type, currency and the 97 most frequent merchant categories), the dates of the first and last transaction, and how the client was acquired.
+
+**What the test data stands for.** Each test window is one month of period ends (October, November, December 2017); training holds the clients whose three-month outcome was known before the window starts.
+
+**Our changes to the source.** We summarise the transactions, rebuild each period's end date from the first and last transactions, and split by it, where the competition split clients at random; periods ending from January 2018 on are left out as their outcome window was not complete.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The period end dates are reconstructed from the transactions, as the data has no dates, and when the labels were drawn is not published. The test windows are small (63 to 515 clients).
+
 ## Files in this folder
 
 | file | what it is |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
+checksum: v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a
 build:
   uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
   checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 595206
   n_features: 37
@@ -65,7 +65,25 @@ decisions: []
 
 Binary classification of `target`, scored with `normalized_gini_coefficient` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a car-insurance customer file a claim within the next year?
+
+**Use case.** The Brazilian insurer Porto Seguro, when pricing a policy, estimates the probability that the driver will file a claim in the next year, to set fairer prices (the Kaggle competition's goal).
+
+**One row.** One policy holder of Porto Seguro (595,206 of the competition's training rows; the period is not stated).
+
+**Predicted.** Whether the driver filed a claim (3.6% did).
+
+**Known at prediction time.** The insurer's anonymised features about the driver, the car and the region, whose meanings are hidden.
+
+**What the test data stands for.** Random policy holders of the same period.
+
+**Our changes to the source.** We drop a block of engineered features that the top competition solutions also dropped.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The insurer built the task to score drivers ahead of the next year, so the features should be known at pricing; their meanings are hidden, so this cannot be checked. The policies carry no dates, so test and training drivers come from the same period.
 
 ## Files in this folder
 
@@ -157,6 +175,7 @@ The first 5 of 595,206 rows of the final frame (random rows: the frame is shuffl
 We start with the train.csv from Kaggle.
 
 - The data has been anonymized, so feature meanings are unknown.
+- We turn -1 into a missing value: "Values of -1 indicate that the feature was missing from the observation" (the competition's data description).
 - Following the expert solutions on Kaggle, we drop *calc features.
 - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
 - We drop the index as it seems to be uninformative for this dataset.
@@ -342,3 +361,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a` |

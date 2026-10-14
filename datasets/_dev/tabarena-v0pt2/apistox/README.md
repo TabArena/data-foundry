@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:98eb77ea959e220f78b5ffb2998b95a43e2ef835e810bb0058404c370c137fee
+checksum: v2:442f9524aaef630a73dab1fbd7f2735baf74ab8ed4086b37888ab1adbe615363
 build: null
 build_stale: false
 data:
@@ -58,7 +58,25 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 205 features. Source: Other (2024).
 
-Not built yet. The current definition gives checksum `v2:98eb77ea959e220f78b5ffb2998b95a43e2ef835e810bb0058404c370c137fee`.
+Not built yet. The current definition gives checksum `v2:442f9524aaef630a73dab1fbd7f2735baf74ab8ed4086b37888ab1adbe615363`.
+
+## In brief
+
+**Question.** Is a new agrochemical toxic to honey bees, before it has been tested on bees?
+
+**Use case.** A company developing an agrochemical, or a regulator, screens a candidate compound for acute honey bee toxicity before the bee test, the use the dataset's authors name.
+
+**One row.** One pesticide or related compound with a measured acute toxicity to honey bees (1,035 compounds from public databases, ApisTox 2024).
+
+**Predicted.** Whether the compound is toxic to bees: the dose that kills half of the bees is at most 11 micrograms per bee (the US EPA threshold); 29% are.
+
+**Known at prediction time.** The chemical structure (as text and as 199 descriptors computed from it), whether it is a herbicide, fungicide, insecticide or other agrochemical, and the year the compound first appears in the literature.
+
+**What the test data stands for.** Each test window is a decade of new compounds (2014-2023, 2004-2013, 1994-2003, 1984-1993), with every compound dated earlier for training, like the authors' time split.
+
+**Our changes to the source.** We drop the toxicity level, the exposure route and the label's database, all recorded with or after the test; we add structure descriptors and set the pesticide type to missing where the source marks it unknown.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The year is that of the first article PubChem links to the compound, so some compounds are dated late; the pesticide types were read in 2024, and bee tests of old compounds were often published decades later, so some training labels were not known at the cutoff.
 
 ## Files in this folder
 
@@ -341,7 +359,7 @@ Accepted on purpose:
 | rdkit_BCUT2D_LOGPLOW | 928 | -2.23062 | 0.23998 | -3.11427 | 0.6482 |
 | rdkit_BCUT2D_MRHI | 928 | 6.8117 | 1.245 | 4.42753 | 14.1137 |
 | rdkit_BCUT2D_MRLOW | 928 | 0.0687941 | 0.447728 | -0.927207 | 7.591 |
-| rdkit_AvgIpc | 1035 | 2.40386 | 0.562163 | 0 | 3.9322 |
+| rdkit_AvgIpc | 1035 | 2.40386 | 0.562162 | 0 | 3.9322 |
 | rdkit_BalabanJ | 1035 | 2.19341 | 1.08683 | -5e-07 | 6.91014 |
 | rdkit_BertzCT | 1035 | 568.908 | 393.54 | 0 | 3922.14 |
 | rdkit_Chi0 | 1035 | 15.0521 | 7.57417 | 0 | 88.6374 |

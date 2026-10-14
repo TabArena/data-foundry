@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8
+checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
 build:
   uuid: 01a111fc-ad75-71b3-a65b-bf31e51792f6
   checksum: v2:115e6497b0dd4b2e109029b3c73c5a219075c5f5e7290fff3c034bdf0af7da41
@@ -55,7 +55,6 @@ bundle_checks:
   warnings:
   - dataset_constant_column
   - dataset_duplicate_columns
-  - meta_tags_missing_regime
   infos: []
   accepted: {}
 decisions: []
@@ -67,7 +66,25 @@ decisions: []
 
 Regression of `y`, scored with `rmse` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a111fc-ad75-71b3-a65b-bf31e51792f6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ad75-71b3-a65b-bf31e51792f6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How long will a car with a given set of options take to pass the test bench?
+
+**Use case.** For example, Mercedes-Benz plans its test bench by predicting how long each car configuration will take to pass testing; the competition aimed to cut the time cars spend on the bench.
+
+**One row.** One Mercedes-Benz car that passed the test bench, ordered by its ID (4,204 cars; dates not stated).
+
+**Predicted.** The time the car took to pass testing, in seconds (72 to 170, mean about 101).
+
+**Known at prediction time.** The car's options, anonymized, as three coded categories and several hundred yes/no options (the source's examples are four-wheel drive or a head-up display).
+
+**What the test data stands for.** The first 1,000 cars are always in training; the rest form 9 test windows of 320 cars in ID order, each trained on all earlier cars.
+
+**Our changes to the source.** We order the cars by ID and test on later ones; we drop the coded category that marks time groups, other coded categories of unknown meaning, 4 unusual rows and one outlier testing time.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The car ID stands in for the order of testing, which the source does not confirm, and without dates the time a test window spans is unknown.
 
 ## Files in this folder
 
@@ -109,7 +126,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2017 |
 | domain | industry & manufacturing |
 | license | Kaggle Competition Rules |
-| data_tags | Non-IID, Anonymized |
+| data_tags | Non-IID, Temporal, Anonymized |
 | reference | Novy2017MercedesBenzGreenerManufacturing |
 | rows x columns | 4,204 x 372 |
 | task.target | y |
@@ -165,7 +182,7 @@ We start with the train.csv from Kaggle.
 - We tread the ID as a time_index.
 - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
 - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
-- We drop other constructed features from up to X10 for which we have no information about them and they may leak group information across rows.
+- Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
 
 ## Splits
 
@@ -187,11 +204,10 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 
 ## Bundle checks
 
-0 error(s), 3 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 11 constant column(s) (1 distinct non-null value): ['X93', 'X107', 'X233', 'X235', 'X268']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_duplicate_columns`: 45 duplicated column pair(s): [('X31', 'X35'), ('X31', 'X37'), ('X33', 'X39'), ('X54', 'X76'), ('X71', 'X84')]. (hint: Keep one of each pair.)
-- **warning** `meta_tags_missing_regime`: Task defines a temporal split but `data_tags=['Anonymized', 'Non-IID']` lacks `Temporal`.
 
 ## Data checks
 
@@ -363,4 +379,4 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c5cd03acc6bda1ba74e885636f2dcb5c8692c312c05474ba1a8f6dd7059f26c8` |
+| stale | yes: the definition now gives checksum `v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58` |

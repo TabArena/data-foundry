@@ -68,6 +68,24 @@ Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID sp
 
 Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** Will a bank client subscribe to a term deposit after the bank's telemarketing calls?
+
+**Use case.** A Portuguese bank's marketing team picks which clients to call in a term-deposit campaign, to spend its calls on the likely buyers (Moro et al. 2014).
+
+**One row.** One client contacted in a phone campaign of a Portuguese bank, May 2008 to November 2010 (45,211 clients).
+
+**Predicted.** Whether the client subscribed to a term deposit by the end of the campaign's calls; 11.7% did.
+
+**Known at prediction time.** Age, job, marital status, education, whether the client has defaulted on credit, the account balance, housing and personal loans, the phone type, the number of calls in this campaign, and the contacts with and outcome of earlier campaigns.
+
+**What the test data stands for.** Random clients, so the test data stands for other clients of the same campaigns and years.
+
+**Our changes to the source.** We drop the duration of the last call, which the source says is unknown before the call and ends with the outcome, and the day and month of the last contact.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The calls span two and a half years, but the dates are dropped and the split is random, so the test clients do not stand for a later campaign. The number of calls in this campaign counts up to the last one, so it partly reflects how the campaign ended.
+
 ## Files in this folder
 
 | file | what it is |

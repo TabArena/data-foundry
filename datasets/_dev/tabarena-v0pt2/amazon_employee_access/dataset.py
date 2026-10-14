@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class AmazonEmployeeAccess(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will an employee's request for access to a company resource be granted?",
+        use_case=(
+            "When an Amazon employee asks for access to a computer resource, the company predicts from the employee's"
+            " role whether access would be granted, to cut manual grants and revokes (the competition's stated aim)."
+        ),
+        row=(
+            "One access request of an Amazon employee, from the competition's labelled file (32,769 requests, "
+            "collected 2010-2011 as the competition states)."
+        ),
+        predicted="Whether the request was approved (94% were).",
+        known=(
+            "The requested resource, the employee's manager, and the employee's role (two levels of role grouping, "
+            "department, title, role family and role code), all as anonymous codes."
+        ),
+        split=(
+            "Random requests, so the test data stands for new requests within the same organisation; the same "
+            "manager, role or resource can appear on both sides."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The role and the resource are known when a request arrives, and approval is the decision to automate. "
+            "The requests carry no dates, so the split cannot follow time; the competition's test held other "
+            "employees."
+        ),
+    )
+
     # Dataset
     unique_name = "amazon_employee_access"
     year = "2013"

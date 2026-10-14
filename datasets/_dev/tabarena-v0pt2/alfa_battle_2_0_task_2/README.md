@@ -61,6 +61,24 @@ Binary classification of `default`, scored with `roc_auc` on temporal splits by 
 
 Not built yet. The current definition gives checksum `v2:0329b6741a3b4557f47165077b97cf7e0298c9edaecbd459f1de39041db5ece1`.
 
+## In brief
+
+**Question.** Will a client default on a credit product the bank has just issued?
+
+**Use case.** When a bank issues a credit product, it scores the client's default risk from the client's card transactions, to decide on the product and its terms.
+
+**One row.** One issued credit product, with the client's card transactions of the year before.
+
+**Predicted.** Whether the client defaulted on it (2.8% did); the source states no horizon.
+
+**Known at prediction time.** The product type and 513 summaries of the year's card transactions (amounts, timing, merchants, money in and out, recent activity).
+
+**What the test data stands for.** Each test window is two months of issues at the end of the period; training is every earlier issue, without the products of clients who also have one in the test window.
+
+**Our changes to the source.** We reconstruct the issue month from the transactions, as the data has no dates, and summarise the transactions like the competition's top solutions.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The issue months are reconstructed rather than given, and the default has no stated horizon, so the newest training products may not yet show a default that will come.
+
 ## Files in this folder
 
 | file | what it is |

@@ -5,10 +5,39 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a visit to an online shop end in a purchase?",
+        use_case=(
+            "While a visitor browses, the online shop estimates whether the visit will end in a purchase, to decide "
+            'whether to show an offer or other content (the source\'s "real-time prediction").'
+        ),
+        row=(
+            "One visit to an online shop, each by a different user, sampled over one year; we keep June to December "
+            "(6,875 visits)."
+        ),
+        predicted="Whether the visit ended in a purchase (1,348 of 6,875 visits, 20%).",
+        known=(
+            "How many administrative, informational and product pages the visit opened and how long it spent on them,"
+            " the pages' bounce, exit and value figures from the shop's analytics, the month, weekend, new or "
+            "returning visitor, operating system, browser, region and traffic source."
+        ),
+        split="Random visits of the same months.",
+        changes=(
+            "We keep only June to December: before June every buyer's page value is above zero and alone separates "
+            "buyers almost perfectly, which suggests it counts the visit's own purchase."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "Each row summarises the finished visit, while the shop must act during it, and whether the page values "
+            "still carry the visits' own purchases cannot be proven (alone they reach ROC AUC 0.814 on the kept "
+            "months)."
+        ),
+    )
+
     # Dataset
     unique_name = "online_shoppers_purchasing_intention_dataset"
     year = "2018"

@@ -5,10 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class MapsRouterEta1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("How long will a car take per kilometre on a requested route, given the current road conditions?"),
+        use_case=(
+            "A car navigation service, when a driver requests a route, predicts the travel time from the current road"
+            " conditions (TabReD's description)."
+        ),
+        row=(
+            "One car route of a navigation service from 1 November to 10 December 2023, from TabReD's 2.5% random "
+            "sample of the log; service and region not stated."
+        ),
+        predicted="The travel time per kilometre, as the log of seconds per kilometre.",
+        known=(
+            "Anonymous numeric, categorical and yes/no features that summarise the route's road graph, its current "
+            "traffic and road details such as speed limits, plus the time of the request."
+        ),
+        split=(
+            "Each test window is one week (20 November to 10 December 2023); training is a random million earlier "
+            "routes from 1 November, as for a model refit every week."
+        ),
+        fit="direct",
+        fit_reason=(
+            "The features describe the route and the road conditions at the request, and later weeks are tested. They"
+            " are anonymous, so their timing cannot be checked one by one."
+        ),
+    )
+
     # Dataset
     unique_name = "maps_router_eta_1m"
     version_of = "maps_router_eta"

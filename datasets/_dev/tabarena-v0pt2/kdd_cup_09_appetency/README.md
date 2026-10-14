@@ -68,6 +68,22 @@ Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,00
 
 Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:193bf8f2d2397d878c6f1695ed90acae11782766f1de30e26fc691fcaf8f53d5`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a customer of the French telecom operator Orange buy a new product or service?
+
+**Use case.** Orange's marketing decides which customers to approach with an offer for a new product or service (the customer-relationship task of the KDD Cup 2009).
+
+**One row.** One Orange customer (50,000 customers, the competition's small training set, 2009).
+
+**Predicted.** Whether the customer bought the new product or service (1.8% did); the source states no time window.
+
+**Known at prediction time.** The competition's 230 unnamed features less 18 empty ones, numeric and categorical, with hidden meanings and many missing values.
+
+**What the test data stands for.** Random customers of the same database extract.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are anonymised, so it cannot be checked that they were known before the purchase, and the label has no stated window.
+
 ## Files in this folder
 
 | file | what it is |

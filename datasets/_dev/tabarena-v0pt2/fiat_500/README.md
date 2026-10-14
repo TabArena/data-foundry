@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: v2:60b349a2272b66227a23c9e835a94bc82b1fb16c3d807c29e8b56732eb31f5f7
+checksum: v2:436e8a5b7c2b927cd7a97e32bde954224b042152505a7e5a798d198f5e665815
 build:
   uuid: 01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780
   checksum: v2:60b349a2272b66227a23c9e835a94bc82b1fb16c3d807c29e8b56732eb31f5f7
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1538
   n_features: 7
@@ -66,7 +66,23 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,538 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a2a5-7dc8-a4bd-97f6a8bb5780` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:436e8a5b7c2b927cd7a97e32bde954224b042152505a7e5a798d198f5e665815`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** At what price is a used Fiat 500 listed?
+
+**Use case.** For example, a seller in Italy sets the asking price of a used Fiat 500, or a buyer checks whether a listing is overpriced, by comparison with current listings.
+
+**One row.** One used Fiat 500 listed on the Italian site automobile.it (1,538 listings, uploaded to Kaggle in 2020; the date of the crawl is not stated).
+
+**Predicted.** The listed price, from 2,500 to 11,100; the currency is not stated.
+
+**Known at prediction time.** The trim (lounge, pop or sport), engine power, age in days, mileage, number of previous owners, and the location as latitude and longitude.
+
+**What the test data stands for.** Random listings of the same crawl, standing for new listings in the same market.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are what a listing shows, and a held-out listing is a car to price. The target is the asking price, not the sale price, and the listings come from one crawl.
 
 ## Files in this folder
 
@@ -151,7 +167,12 @@ The first 5 of 1,538 rows of the final frame (random rows: the frame is shuffled
 
 ## Curation notes
 
-N/A
+We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from Kaggle and use it as is.
+
+- One row is one used Fiat 500 listed for sale in Italy, from "a query done on an website specialized in used cars" (data card); the file name names automobile.it. The target is the listed price.
+- Currency: not stated.
+- Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
+- Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
 
 ## Splits
 
@@ -256,3 +277,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:436e8a5b7c2b927cd7a97e32bde954224b042152505a7e5a798d198f5e665815` |

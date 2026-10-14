@@ -60,6 +60,24 @@ Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss
 
 Not built yet. The current definition gives checksum `v2:b65e85bcdef9d5dbf1cc284c3315c252d989973967f6b3850899ededd2696245`.
 
+## In brief
+
+**Question.** How does an organic chemical build up in fish: stored in fat, held in additional sites, or broken down and eliminated?
+
+**Use case.** Before a fish test, a chemical assessor estimates the bioconcentration mechanism of an untested organic chemical from its structure, for example to decide whether the usual estimate from its octanol-water partitioning (how readily it dissolves in fat rather than water) can be trusted.
+
+**One row.** One organic chemical with a measured bioconcentration factor in fish (776 chemicals, Grisoni et al. 2016).
+
+**Predicted.** The mechanism class, read from the measured bioconcentration and the measured octanol-water partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%).
+
+**Known at prediction time.** The chemical's structure as a text string and nine descriptors computed from it.
+
+**What the test data stands for.** Random chemicals, one row each, as in the source's random split; the file has no chemical families for a stricter split.
+
+**Our changes to the source.** We drop the measured bioconcentration factor the class is read from, swap back the structures of three pairs of chemicals that carried each other's, and drop three chemicals with another chemical's structure.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure and its descriptors are known before a fish test, and a held-out chemical is an untested one. The authors chose the nine descriptors on chemicals that also sit in our test folds, which may favour those slightly.
+
 ## Files in this folder
 
 | file | what it is |

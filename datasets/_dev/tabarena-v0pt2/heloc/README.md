@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: v2:18f1fb2436e04513799a9cc24a2b7fe57b0f6a7f1393824b7109b2d4c763af0e
+checksum: v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949
 build:
   uuid: 01a111fc-afbf-7df2-bc38-76e6a79a64eb
   checksum: v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba
@@ -66,7 +66,23 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 10,459 rows and 23 features. Source: Other (2018).
 
-Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:18f1fb2436e04513799a9cc24a2b7fe57b0f6a7f1393824b7109b2d4c763af0e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will an applicant for a home equity line of credit fall seriously behind on payments within two years?
+
+**Use case.** A lender, when an application for a home equity line of credit arrives, decides from the applicant's credit report whether to approve it (FICO's Explainable Machine Learning Challenge).
+
+**One row.** One anonymised application for a credit line of $5,000 to $150,000 secured by the applicant's home, from FICO's 2018 challenge (10,459 applications; lender, place and period not stated).
+
+**Predicted.** Whether the borrower was 90 days or more past due at least once in the 24 months after the account opened ("Bad", 52%).
+
+**Known at prediction time.** 23 summaries of the credit report: an external risk estimate, the age of the credit history, numbers of accounts and of delinquent ones, recent delinquencies, recent credit inquiries and the debt burden; negative codes mark a missing report or a condition not met.
+
+**What the test data stands for.** Random applications.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything comes from the credit report at the application, and the outcome covers the first two years of the account. The rows are opened accounts, as in any credit scoring data.
 
 ## Files in this folder
 
@@ -154,6 +170,8 @@ The first 5 of 10,459 rows of the final frame (random rows: the frame is shuffle
 
 ## Curation notes
 
+- Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
+- The applicants requested a credit line of $5,000 to $150,000 (same source).
 - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
 
 ## Splits
@@ -276,4 +294,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:18f1fb2436e04513799a9cc24a2b7fe57b0f6a7f1393824b7109b2d4c763af0e` |
+| stale | yes: the definition now gives checksum `v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949` |

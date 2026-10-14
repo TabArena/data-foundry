@@ -6,10 +6,50 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 
 class ConsumerComplaints1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=(
+            "Will a company close a consumer's complaint with an explanation only, or with non-monetary or monetary "
+            "relief?"
+        ),
+        use_case=(
+            "For example, when a complaint about a financial product reaches the US Consumer Financial Protection "
+            "Bureau (CFPB), the bureau or the company estimates how it will be closed, to spot complaints likely to "
+            "end in relief."
+        ),
+        row=(
+            "One complaint to the CFPB from a US state, received from 24 April 2017 to 31 December 2025, whose "
+            "consumer agreed to publish the written account."
+        ),
+        predicted=(
+            "How the company closed it (companies have 180 days to respond): with an explanation (64.89%), with "
+            "non-monetary relief (33.08%) or with monetary relief (2.03%)."
+        ),
+        known=(
+            "The date received, the product and issue with their sub-categories, the company, the state and ZIP code "
+            "(masked for small places), whether the consumer is an older American or a servicemember, and the "
+            "consumer's written complaint."
+        ),
+        split=(
+            "Each test window is one quarter of 2025 (April-June, July-September, October-December); training is a "
+            "random million earlier complaints from April 2017 on, as for a model refit every three months."
+        ),
+        changes=(
+            "We drop the company's public response, which leaks the outcome, keep complaints with a published text "
+            "from after consumer disputes ended (April 2017), and build from the CFPB's archive, in which every 2025 "
+            "label is settled."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is in the complaint when it is filed, every label is settled, and later "
+            "quarters are tested. Only complaints whose consumer agreed to publish the text are included, a narrower "
+            "group than all complaints."
+        ),
+    )
+
     # Dataset
     unique_name = "consumer_complaints_1m"
     version_of = "consumer_complaints"
@@ -67,9 +107,9 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - "Company public response" is not free text but selected "from a set list of options".
         - Following TexTabBench, we focus on predicting the type of closure a complaint got, that is the "Company response to consumer" column. We want to predict if a complaint will be closed with just an explanation, with non-monetary relief, or with monetary relief.
         - We filter the data to only include entries after consumer disputations were discontinued as this represent a shift in protocol. This filters all data before April 24th 2017.
-        - We filter all cases where the "Consumer consent provided?" is in progress or got an untimely response.
+        - We keep only complaints whose "Company response to consumer" is one of the three closure types, dropping those still "In progress", marked "Untimely response" or without a response (0.2% of the complaints with a published narrative).
         - We filter all rows without a published complaint narrative (only complaints whose consumer consented to sharing it have one; the archive has no consent column). This ensures the data contains text sentences.
-        - We drop "Company public response" as it leaks the target variable.
+        - We drop "Company public response" and "Timely response?": both are recorded when the company responds, at the same time as the closure type we predict.
         - We only allow complaints from US states (no territories or international complaints) and remove cases with missing states.
         - The data has unresolved spatial information in the ZIP code. Some ZIPs are censored (ending in "XXX" or full removed "XXXXXX").
         - We add a feature for "Low population area", which determines that the ZIP is censored.

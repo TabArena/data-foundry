@@ -1,6 +1,6 @@
 ---
 name: verify-dataset
-description: Verify a v2 dataset definition before it ships. Runs the automated checks (`dataset check` on its `dataset.py`, plus the leak, task and group probes), then works a 15-item judgment rubric (original source, uniqueness, scope, split regime, prediction-time availability, leakage, comments vs code, dtypes, metric, citation, record pointers) and reports pass / concern / cannot-verify with evidence. Use when a definition is filled in and checks run clean, before a PR, or when a dataset of the working copy is suspected of leakage, a wrong split or wrong provenance ("is X ready / correct / leaky?"). v2 only: a shipped BeyondArena (v1) notebook is checked as DATA_FOUNDRY_V1.md describes.
+description: Verify a v2 dataset definition before it ships. Runs the automated checks (`dataset check` on its `dataset.py`, plus the leak, task and group probes), then works a 16-item judgment rubric (original source, uniqueness, scope, split regime, prediction-time availability, leakage, comments vs code, dtypes, metric, citation, record pointers, the in-brief summary and its use-case fit) and reports pass / concern / cannot-verify with evidence. Use when a definition is filled in and checks run clean, before a PR, or when a dataset of the working copy is suspected of leakage, a wrong split or wrong provenance ("is X ready / correct / leaky?"). v2 only: a shipped BeyondArena (v1) notebook is checked as DATA_FOUNDRY_V1.md describes.
 argument-hint: <unique_name | dataset folder>
 user-invocable: true
 ---
@@ -134,6 +134,7 @@ source page, a line of `dataset.py`, a number from the check output or the READM
 | 13 | **Trivial or empty** | Read the task-probe flags and answer each one with [`references/task_probes.md`](references/task_probes.md): check it against tuned methods first (`tuned_results.py`). A small but real signal is no reason to retire; if tuned methods spread, the task stays; `Trivial` needs the raw feature to match or beat the methods fold by fold, after reading what the feature means (a listed price for a sale price is expected to dominate); `Too Small` means a handful of units of a class per test fold. A `solved` or `one_feature` task is first a leak suspect (leak probes, shallow tree). The cheap findings (`splits_test_single_class`, `splits_test_minority_few`, `splits_test_target_constant`, `task_target_value_dominant`) say whether every fold can be scored. |
 | 14 | **Record pointer** | Does the record's `v2_path` name this dataset's `dataset.py` in `datasets/_dev/tabarena-v0pt2/` (a `_1m` folder only when its class declares `version_of` the record), and does its `README.md` carry the UUID once built (`build.uuid`, `build_stale` false)? `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` must be clean; evidence is the UUID string itself. |
 | 15 | **Template conformance** | The class validates on import (`dataset list` shows it), follows the current [`datasets/_template/dataset.py`](../../../datasets/_template/dataset.py), keeps diagnostics out of `dataset.py` (they belong in `explore.ipynb`), and `README.md` was regenerated after the last edit (`build_stale` is false when built). Report each drift as a concrete edit. |
+| 16 | **In brief** | Does `task_summary` say what the definition does: the use case (an actor, a moment, a decision), what one row is, what is predicted and by when, what is known then, what the test data stands for? Is the `fit` honest (add-dataset patterns, "In brief"): `approximate` names its gap, and a task no decision fits is `none` and goes back to triage? Read it as someone outside the domain would; a summary that needs the notes to be understood fails. |
 
 Read the selection criteria and processing conventions in [`.claude/skills/triage-candidates/references/curation_guidelines.md`](../../../.claude/skills/triage-candidates/references/curation_guidelines.md) before judging items 1–4 and
 12–13; they encode decisions you would otherwise guess at.
@@ -142,7 +143,7 @@ Read the selection criteria and processing conventions in [`.claude/skills/triag
 
 1. **Verdict** — one of: *ready*, *ready with noted concerns*, *needs changes*, *should not ship*.
 2. **Automated** — error/warning counts, each error, and the per-warning call from Step 1.
-3. **Rubric** — a compact table of the 15 items with verdict + evidence. Put `concern` and
+3. **Rubric** — a compact table of the 16 items with verdict + evidence. Put `concern` and
    `cannot-verify` rows first; the passes can be one line each.
 4. **Proposed fixes** — concrete edits (`dataset.py` attribute or hook, accepted-warning entry with its
    reason). Apply them only if the user asks.

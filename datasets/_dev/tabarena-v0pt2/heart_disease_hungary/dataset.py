@@ -6,10 +6,35 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class HeartDiseaseHungary(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a patient examined for heart disease have narrowed coronary arteries?",
+        use_case=(
+            "For example, a cardiologist decides from routine and exercise-test results whether a patient needs "
+            "coronary angiography, the invasive test that gives the diagnosis."
+        ),
+        row=(
+            "One patient examined for coronary artery disease at the Hungarian Institute of Cardiology in Budapest "
+            "(294 patients; published 1988, period not stated)."
+        ),
+        predicted=("Whether angiography shows more than 50% narrowing in any major coronary vessel (36% do)."),
+        known=(
+            "Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, and "
+            "the exercise test (maximum heart rate, angina, ST depression and, often missing, its slope); the "
+            "fluoroscopy and thallium-scan results are missing for nearly all patients."
+        ),
+        split=("Random patients, so the test data stands for new patients of the same clinic and period."),
+        changes="We merge the four disease grades into disease or none, as the original study did.",
+        fit="direct",
+        fit_reason=(
+            "All features come from tests done before angiography, whose result is the label, as when deciding whom "
+            "to refer. The data is small and old."
+        ),
+    )
+
     # Dataset
     unique_name = "heart_disease_hungary"
     year = "1988"

@@ -68,6 +68,24 @@ Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index
 
 Built as `01a111fc-8933-7ac4-8766-8038342d53f2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c3da4aa54b8eda07b3f55e1a7eb8acb512127736e539c058845d614c80a3a4f1`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** What price will a California home sell for, given its listing?
+
+**Use case.** For example, when a home is listed, a buyer, an agent or a valuation website estimates the price it will sell for, to set or judge an offer.
+
+**One row.** One home sold in California around 2020, as scraped from Redfin; Arizona homes and older copies of repeated homes are dropped.
+
+**Predicted.** The sale price in US dollars, on a log scale.
+
+**Known at prediction time.** The listing (list price, listing date, description), the home's facts (type, year built, size, lot, rooms, heating, cooling, parking, appliances), its previous sale, tax assessment, address, region, and nearby schools with ratings and distances.
+
+**What the test data stands for.** Three test sets, each a quarter of the sales in sale order, with all earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates.
+
+**Our changes to the source.** We drop 5,413 listings whose description states the sold price, and order and split the sales by the Kaggle ID, which follows the sale order.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The time axis is the order of the Kaggle IDs, checked on Redfin for some homes rather than given, and each test set is a count of sales rather than a calendar period. The listing facts are known before the sale.
+
 ## Files in this folder
 
 | file | what it is |

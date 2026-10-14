@@ -5,10 +5,34 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class QsarAquaticToxicity(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How toxic is a chemical to water fleas, judging from its molecular structure?",
+        use_case=(
+            "For example, a chemist or regulator estimates the acute toxicity of a chemical to the water flea Daphnia"
+            " magna before, or instead of, an animal test (the source paper builds such a model)."
+        ),
+        row="One of 546 chemicals with a measured toxicity (Cassotti et al. 2014).",
+        predicted=(
+            "The concentration that kills half of the water fleas within 48 hours, as minus the log of moles per "
+            "litre (higher is more toxic)."
+        ),
+        known=(
+            "Eight molecular descriptors computed from the structure, such as polar surface area, a fat-solubility "
+            "estimate, the number of nitrogen atoms and counts of atom fragments."
+        ),
+        split="Random chemicals, so the test data stands for new chemicals like those measured.",
+        fit="approximate",
+        fit_reason=(
+            "The descriptors come from the structure alone, as in screening, but the authors chose these eight from a"
+            " larger set by their fit to the toxicity values, which may carry information on the test chemicals into "
+            "the features."
+        ),
+    )
+
     # Dataset
     unique_name = "qsar_aquatic_toxicity"
     year = "2014"

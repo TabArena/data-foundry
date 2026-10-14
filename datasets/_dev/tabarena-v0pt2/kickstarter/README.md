@@ -67,6 +67,24 @@ Binary classification of `state`, scored with `roc_auc` on temporal splits by `c
 
 Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Will a Kickstarter project reach its funding goal?
+
+**Use case.** For example, Kickstarter, when a campaign launches, estimates whether it will reach its goal, to decide which projects to feature.
+
+**One row.** One Kickstarter project that ended funded or failed, created from 2009 to 2025, from Web Robots' monthly scrapes (pinned January 2026; 187,117 projects).
+
+**Predicted.** Whether it reached its funding goal by its deadline (62.61% did).
+
+**Known at prediction time.** The goal in US dollars, the creation, launch and deadline dates, the category and subcategory, the location, the project's name and short description, the creator's name, and whether it had a pre-launch page.
+
+**What the test data stands for.** Each test window is one year of projects by creation date (2023, 2024, 2025); training is every project created before, as for a model refit every year.
+
+**Our changes to the source.** We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, which only funded projects have), convert goals to US dollars at each project's own rate, and remove projects repeated across scrapes (20%).
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at launch, and later years are tested. Projects created shortly before a test year can end in it, so a few training labels would not yet be known at the refit; how fully the scrapes cover all projects is not stated.
+
 ## Files in this folder
 
 | file | what it is |

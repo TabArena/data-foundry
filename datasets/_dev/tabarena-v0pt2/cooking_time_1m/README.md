@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cooking_time_1m
 container_format: 2
-checksum: v2:cc6a96ce8c78e4f50b384a14bb6f6311cc1a6487adbd843d57cc06b5dddf5259
+checksum: v2:e540ff4e366b6bf571aa542ef75bc4b49294454e7b01d025c878db1e21f41b26
 build:
   uuid: 01a111fc-29b5-72ce-95a1-e99f6874a4ee
   checksum: v2:cc6a96ce8c78e4f50b384a14bb6f6311cc1a6487adbd843d57cc06b5dddf5259
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 2500000
   n_features: 196
@@ -65,7 +65,23 @@ decisions: []
 
 Regression of `cooking_time_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 196 features. Source: Kaggle (2024).
 
-Built as `01a111fc-29b5-72ce-95a1-e99f6874a4ee` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-29b5-72ce-95a1-e99f6874a4ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e540ff4e366b6bf571aa542ef75bc4b49294454e7b01d025c878db1e21f41b26`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How long will a restaurant take to cook an order placed through a food delivery app?
+
+**Use case.** When an order is placed, the delivery service estimates the restaurant's cooking time, for example to time the courier and the delivery estimate shown to the customer; the model is refit every week (TabReD).
+
+**One row.** One order placed through a food delivery app between 15 November 2023 and 3 January 2024 (TabReD release; the service is not named).
+
+**Predicted.** The time the restaurant took to cook the order, in minutes on a logarithmic scale; orders under one minute are left out.
+
+**Known at prediction time.** 196 anonymised features built from the order's contents and the restaurant's past cooking times (TabReD), including the time of the order.
+
+**What the test data stands for.** Each test window is one of the last three weeks (14 December 2023 to 3 January 2024), up to 500,000 orders each; training is a random million of all earlier orders, as for a model refit every week.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Order contents and past cooking times are known when an order is placed, and the windows follow a weekly refit. The features are anonymised, so their timing cannot be checked.
 
 ## Files in this folder
 
@@ -155,6 +171,9 @@ The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is 
 ## Curation notes
 
 We start with data from TabRed, which already comes preprocessed.
+
+- We drop orders with a cooking time under one minute (168 of 12.8M, 26 of them zero or negative), as TabReD's preprocessing does.
+- The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
 
 Version of `cooking_time`: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
 
@@ -388,3 +407,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:e540ff4e366b6bf571aa542ef75bc4b49294454e7b01d025c878db1e21f41b26` |

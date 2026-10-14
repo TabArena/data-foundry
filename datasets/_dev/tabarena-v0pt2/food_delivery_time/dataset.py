@@ -5,10 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class FoodDeliveryTime(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How many minutes will a food delivery take?",
+        use_case=(
+            "For example, a food-delivery platform, when it assigns an order to a courier, estimates the delivery "
+            "time to show the customer and to plan the courier's next orders."
+        ),
+        row=(
+            "One delivered order of a food-delivery platform (45,451 orders, Kaggle 2023); place and period not stated."
+        ),
+        predicted="The delivery time in minutes (10 to 54, 26 on average).",
+        known=(
+            "The courier's ID, age and rating, the vehicle (motorcycle, scooter and others), the order type (snack, "
+            "meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address."
+        ),
+        split=(
+            "Random orders, so the test data stands for other orders of the same couriers and period; a courier's "
+            "other orders can be in training."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The release has no order time, so the test orders are a random draw from the period rather than later "
+            "orders, and time of day, traffic and weather are missing. Whether a courier's rating includes later "
+            "orders is not stated."
+        ),
+    )
+
     # Dataset
     unique_name = "food_delivery_time"
     year = "2023"
@@ -16,6 +42,7 @@ class FoodDeliveryTime(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time"
     license = "Database Contents License (DbCL) v1.0"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         kaggle datasets download -d rajatkumar30/food-delivery-time -p local-data-warehouse/food_delivery_time/ --unzip
     """
@@ -31,6 +58,7 @@ class FoodDeliveryTime(AbstractCuratedDataset):
     curation_comments = """
         - We dropped entries with a duplicated ID, keeping only the first one.
         - We dropped the ID column.
+        - Tagged ForcedIIDFromTemporal: orders arrive over time, but the release has no order date or time, so the split is random.
         - Anomaly: The ID of the delivery person is given as a feature. In some contexts, this feature might not be allowed to use. Moreover, using this information might require considering a temporal split where a cold-start problem is covered.
     """
 

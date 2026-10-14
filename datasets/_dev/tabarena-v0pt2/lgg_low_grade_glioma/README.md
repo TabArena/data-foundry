@@ -52,6 +52,24 @@ Multiclass classification of `subtype`, scored with `log_loss` on IID splits. 24
 
 Not built yet. The current definition gives checksum `v2:25d8b63fbee612020875c16f63a18408c9bf7ae5494ea17f55c0817232c35d08`.
 
+## In brief
+
+**Question.** Which molecular class does a lower-grade glioma belong to, given its gene expression and copy-number profile?
+
+**Use case.** For example, a lab that has profiled a resected brain tumour by RNA sequencing and a copy-number array, but not tested its IDH mutation and 1p/19q codeletion, assigns the molecular class TCGA gave such tumours.
+
+**One row.** One primary lower-grade glioma of one patient of The Cancer Genome Atlas (247 patients, MLOmics release).
+
+**Predicted.** The tumour's class, IDH-mutant with 1p/19q codeletion (31%), IDH-mutant without it (51%) or IDH-wildtype (19%).
+
+**Known at prediction time.** 21,076 measurements of the tumour (gene expression, microRNA expression and DNA copy number), named by their position in the release, since its gene names do not describe the values.
+
+**What the test data stands for.** Random patients, so the test data stands for new tumours; holding out tissue source sites scores the same.
+
+**Our changes to the source.** We leave out the methylation block, whose profiles belong to other patients, and name the features by position.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The 1p/19q codeletion that defines one class is a copy-number loss the data measure, so two columns come close to the full model (log loss 0.194 against 0.149). The release is also faulty (wrong gene names, one disputed label), and the definition recommends not shipping it.
+
 ## Files in this folder
 
 | file | what it is |

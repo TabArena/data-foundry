@@ -56,6 +56,24 @@ Regression of `log1p_travel_time`, scored with `rmse` on temporal splits by `sta
 
 Not built yet. The current definition gives checksum `v2:c2fcc81b460a5e7b3870f8aaedac6110775da07c72d3f80ec14fc21733921da2`.
 
+## In brief
+
+**Question.** How long will a Porto taxi trip take, from its start to its destination?
+
+**Use case.** For example, at pickup a taxi company estimates the trip's duration from the start, the destination and the time, to plan when the taxi will be free again.
+
+**One row.** One trip of a Porto taxi fleet, July 2013 to June 2014 (ECML/PKDD 2015 challenge).
+
+**Predicted.** The travel time in seconds, from the trip's GPS points (one every 15 seconds), on a log scale.
+
+**Known at prediction time.** The local start time, the start point and the last GPS point as the destination, how the taxi was hired (dispatch call, taxi stand or street), the stand, and the taxi.
+
+**What the test data stands for.** Each of April, May and June 2014 is a test month; training is a random million earlier trips, as for a model refit monthly.
+
+**Our changes to the source.** The challenge asked for the remaining time of a trip under way; we predict the whole trip at pickup with its end point, and drop non-trips, GPS jumps, meters left running and the caller's phone number.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The challenge page says drivers do not enter the destination, so a destination known at pickup is our assumption, read from the trip's last GPS point. Without it the signal is weak (R² 0.11 to 0.15).
+
 ## Files in this folder
 
 | file | what it is |

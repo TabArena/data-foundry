@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
 LAGS = (60, 300, 900)
 """The look-back windows (minutes) of the 3rd-place solution's features."""
@@ -48,6 +48,38 @@ def history_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class GResearchCryptoForecasting1m(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question=("How will a cryptocurrency's price move over the next 15 minutes, compared with the market?"),
+        use_case=(
+            "At the close of each minute, a trading firm forecasts each coin's return over the next 15 minutes "
+            "relative to the market, to decide its positions (the G-Research competition)."
+        ),
+        row="One coin at one minute: 14 cryptocurrencies, January 2018 to September 2021.",
+        predicted=(
+            "The coin's return from one to 16 minutes ahead, minus the part that follows the market's return (a "
+            "weighted mean of the 14 coins); values sit close to zero."
+        ),
+        known=(
+            "The coin and the minute, the minute's trading summary (open, high, low and close prices, volume, average"
+            " price, number of trades) and the price trends of the past hour, 5 hours and 15 hours, for the coin and "
+            "for the market."
+        ),
+        split=(
+            "Each test window is 91 days at the end of the period, newest first; training is a random million earlier"
+            " minutes, with a one-day gap."
+        ),
+        changes=(
+            "We add the price-trend features of the third-place solution, as the minute itself carries no signal, and"
+            " drop the minutes without a target."
+        ),
+        fit="direct",
+        fit_reason=(
+            "Everything the model sees is known at the minute and the target covers the next 15 minutes, as in "
+            "trading. The signal is tiny (R² +0.0007, +0.0012 and -0.0003 in the three windows), and RMSE replaces "
+            "the competition's weighted correlation."
+        ),
+    )
+
     # Dataset
     unique_name = "g_research_crypto_forecasting_1m"
     version_of = "g_research_crypto_forecasting"

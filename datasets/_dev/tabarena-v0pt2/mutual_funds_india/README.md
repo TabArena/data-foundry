@@ -51,8 +51,9 @@ splits:
     min: 264
     max: 265
 bundle_checks:
-  ok: true
-  errors: []
+  ok: false
+  errors:
+  - definition_no_use_case
   warnings: []
   infos: []
   accepted: {}
@@ -66,6 +67,24 @@ decisions: []
 Regression of `returns_3yr`, scored with `rmse` on IID splits. 793 rows and 11 features. Source: Kaggle (2023).
 
 Built as `01a111fc-b2ce-7d31-a579-1f6e9371eade` on 2026-10-06. See [Build](#build).
+
+## In brief
+
+**Question.** What was an Indian mutual fund's return over the past three years?
+
+**Use case.** None that we can find: an investor choosing a fund wants its future return, while this label is the published return of the three years before the snapshot.
+
+**One row.** One mutual fund scheme on Indian investment portals, as scraped in April 2023 (793 funds with a three-year return).
+
+**Predicted.** The fund's return over the three years up to the snapshot; the unit and whether it is per year are not stated.
+
+**Known at prediction time.** The fund's name, company, manager, category and sub-category, risk level, expense ratio, size, age and minimum investments, all as of the snapshot.
+
+**What the test data stands for.** Random funds of the same snapshot.
+
+**Our changes to the source.** We drop the risk and return measures computed from the fund's past returns, including its 1- and 5-year returns, and its star rating, which is partly computed from the 3-year return.
+
+> **Use case fit: none (no decision fits).** The label is the return over one calendar window shared by all funds, ending when the features are recorded, so the task explains past returns rather than forecasting; fund size also grows with those returns. A future return would make it a task.
 
 ## Files in this folder
 
@@ -202,8 +221,9 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+1 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
+- **error** `definition_no_use_case`: `TaskSummary(fit='none')`: The label is the return over one calendar window shared by all funds, ending when the features are recorded, so the task explains past returns rather than forecasting; fund size also grows with those returns. A future return would make it a task. (hint: A dataset that simulates no decision is retired (`No Good Target / Scientific Discovery`), not shipped.)
 
 ## Data checks
 

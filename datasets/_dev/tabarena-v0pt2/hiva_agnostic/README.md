@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hiva_agnostic
 container_format: 2
-checksum: v2:5174c84f62010de75b63b9d191838ac13977971a4d3c68beb28f548bacbbff43
+checksum: v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30
 build:
   uuid: 01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8
   checksum: v2:5174c84f62010de75b63b9d191838ac13977971a4d3c68beb28f548bacbbff43
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 3845
   n_features: 1518
@@ -64,7 +64,23 @@ decisions: []
 
 Binary classification of `CompoundActive`, scored with `roc_auc` on IID splits. 3,845 rows and 1,518 features. Source: Other (2007).
 
-Built as `01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-4ac0-7d5e-ace0-8fd1e51ccbd8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Is a chemical compound active against HIV in a laboratory screen?
+
+**Use case.** For example, a drug-discovery team ranks untested compounds by computer and decides which to send to the laboratory screen.
+
+**One row.** One compound of the US National Cancer Institute's AIDS antiviral screen, as prepared for the 2007 Agnostic Learning vs. Prior Knowledge challenge (its 3,845 training compounds).
+
+**Predicted.** Whether the compound is active in the screen (3.51% are).
+
+**Known at prediction time.** 1,617 anonymous yes/no descriptors of the molecule's structure, without the duplicated ones.
+
+**What the test data stands for.** Random compounds, so the test data stands for other compounds of the same screen.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, as for an untested compound, and the test compounds are unseen. The descriptors are anonymous, so their meaning cannot be checked.
 
 ## Files in this folder
 
@@ -153,8 +169,8 @@ The first 5 of 3,845 rows of the final frame (random rows: the frame is shuffled
 
 ## Curation notes
 
-- We take the original data with the original labels with three classes.
-- We only take the training data from the challenge, as the original labels are not available for the validation data.
+- The target is binary, as the challenge made it: the screen's three classes (active, moderately active, inactive) were "brought back to a two-class classification problem (active vs. inactive)" (challenge description, copied on OpenML 1039); 135 of the 3,845 training compounds are active.
+- We use only the challenge's training file. The download also fetches the validation labels the challenge released afterwards (hiva_valid.labels, 384 compounds, 14 active), but they are not used; the challenge site offers no test labels.
 
 ## Splits
 
@@ -349,3 +365,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:1461e79240fa244a84b977852b388bee7453761551c0b9d2aae2e377b4078b30` |

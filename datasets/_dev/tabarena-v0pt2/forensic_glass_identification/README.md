@@ -66,6 +66,22 @@ Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID spli
 
 Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06. See [Build](#build).
 
+## In brief
+
+**Question.** What kind of glass does a fragment come from, judging from its chemical make-up?
+
+**Use case.** A forensic scientist identifies the type of a glass fragment left at a crime scene, so that it can be used as evidence (the source's motivation).
+
+**One row.** One glass sample of the US Forensic Science Service, 1987 (214 samples).
+
+**Predicted.** The glass type, one of six: building windows, float-processed (33%) or not (36%), float-processed vehicle windows, containers, tableware or headlamps.
+
+**Known at prediction time.** The refractive index and the weight percent of the oxides of eight elements (sodium, magnesium, aluminium, silicon, potassium, calcium, barium, iron).
+
+**What the test data stands for.** Random samples, so the test data stands for new fragments of the same types.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are measurements made on a fragment, and the label is what the investigator wants to know. The data is small and from 1987; two classes have 9 and 13 samples.
+
 ## Files in this folder
 
 | file | what it is |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: food_delivery_time
 container_format: 2
-checksum: v2:18643db11fcad191f6039bce281ec8cc88b4a68a122193dd364af0b0073f3c0c
+checksum: v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778
 build:
   uuid: 01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae
   checksum: v2:18643db11fcad191f6039bce281ec8cc88b4a68a122193dd364af0b0073f3c0c
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 45451
   n_features: 9
@@ -66,7 +66,23 @@ decisions: []
 
 Regression of `Time_taken(min)`, scored with `rmse` on IID splits. 45,451 rows and 9 features. Source: Kaggle (2023).
 
-Built as `01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-d7f1-7b0c-9bd0-d3f8b8afcfae` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How many minutes will a food delivery take?
+
+**Use case.** For example, a food-delivery platform, when it assigns an order to a courier, estimates the delivery time to show the customer and to plan the courier's next orders.
+
+**One row.** One delivered order of a food-delivery platform (45,451 orders, Kaggle 2023); place and period not stated.
+
+**Predicted.** The delivery time in minutes (10 to 54, 26 on average).
+
+**Known at prediction time.** The courier's ID, age and rating, the vehicle (motorcycle, scooter and others), the order type (snack, meal, drinks, buffet), and the coordinates of the restaurant and of the delivery address.
+
+**What the test data stands for.** Random orders, so the test data stands for other orders of the same couriers and period; a courier's other orders can be in training.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The release has no order time, so the test orders are a random draw from the period rather than later orders, and time of day, traffic and weather are missing. Whether a courier's rating includes later orders is not stated.
 
 ## Files in this folder
 
@@ -105,7 +121,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | business & marketing |
 | license | Database Contents License (DbCL) v1.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | rajatkumar302023food |
 | rows x columns | 45,451 x 10 |
 | task.target | Time_taken(min) |
@@ -153,6 +169,7 @@ The first 5 of 45,451 rows of the final frame (random rows: the frame is shuffle
 
 - We dropped entries with a duplicated ID, keeping only the first one.
 - We dropped the ID column.
+- Tagged ForcedIIDFromTemporal: orders arrive over time, but the release has no order date or time, so the split is random.
 - Anomaly: The ID of the delivery person is given as a feature. In some contexts, this feature might not be allowed to use. Moreover, using this information might require considering a temporal split where a cold-start problem is covered.
 
 ## Splits
@@ -249,3 +266,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:fd446a715a1f29bb49965c376957945be915a392b394684b65acacc3fd8c5778` |

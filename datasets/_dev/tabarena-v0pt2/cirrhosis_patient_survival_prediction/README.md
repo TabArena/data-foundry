@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:6ce27a95b45a5be4db33b21e92b644c1531515f77814fdfa945bd24178196c9e
+checksum: v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294
 build:
   uuid: 01a111fc-cd63-7ce2-90cc-a28712493bda
   checksum: v2:5593ffe2f42c0b467649c9aa2337a154115998bf889fb4d0316bfc28ff9902b7
@@ -50,8 +50,9 @@ splits:
     min: 53
     max: 54
 bundle_checks:
-  ok: true
-  errors: []
+  ok: false
+  errors:
+  - definition_no_use_case
   warnings: []
   infos: []
   accepted: {}
@@ -64,7 +65,25 @@ decisions: []
 
 Regression of `log_days_to_death`, scored with `rmse` on IID splits. 161 rows and 17 features. Source: Other (1991).
 
-Built as `01a111fc-cd63-7ce2-90cc-a28712493bda` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ce27a95b45a5be4db33b21e92b644c1531515f77814fdfa945bd24178196c9e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cd63-7ce2-90cc-a28712493bda` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How long after entering the study will a patient with primary biliary cirrhosis die, given that the patient dies before the study ends?
+
+**Use case.** Closest: when a patient with primary biliary cirrhosis is first seen, a hepatologist estimates the time left to live, for example to time a liver transplant. The data cannot serve it: it holds only the patients who died before the follow-up ended.
+
+**One row.** One patient of the Mayo Clinic primary biliary cirrhosis study (referred 1974 to 1984) who died before the follow-up ended in July 1986; 161 patients, 36 of them outside the drug trial.
+
+**Predicted.** The time from registration to death, in days on a logarithmic scale.
+
+**Known at prediction time.** Age, sex, the trial drug (D-penicillamine or placebo; missing outside the trial), physical signs (fluid in the abdomen, enlarged liver, spider veins, swelling), blood and urine tests (bilirubin, cholesterol, albumin, copper, liver enzymes, triglycerides, platelets, clotting time) and the histologic stage.
+
+**What the test data stands for.** Random patients among those who died.
+
+**Our changes to the source.** We keep only the patients who died and predict their time to death, dropping the patients censored at a transplant or at the end of follow-up; the source is a survival study that counts them.
+
+> **Use case fit: none (no decision fits).** The patients are chosen by their outcome: only deaths before July 1986 are in, so a patient registered in 1984 enters only with a short survival. At registration nobody knows whether a patient belongs to this group, so no decision fits. The curator kept the deaths-only target on purpose (2026-09-30).
 
 ## Files in this folder
 
@@ -104,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | source | Other: https://www.mayo.edu/research/documents/pbchtml/doc-10027635 |
 | year | 1991 |
 | domain | medical & healthcare |
-| license | IID |
+| license | CC BY 4.0 |
 | data_tags | IID |
 | reference | dickson1989prognosis |
 | rows x columns | 161 x 18 |
@@ -237,8 +256,9 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+1 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
+- **error** `definition_no_use_case`: `TaskSummary(fit='none')`: The patients are chosen by their outcome: only deaths before July 1986 are in, so a patient registered in 1984 enters only with a short survival. At registration nobody knows whether a patient belongs to this group, so no decision fits. The curator kept the deaths-only target on purpose (2026-09-30). (hint: A dataset that simulates no decision is retired (`No Good Target / Scientific Discovery`), not shipped.)
 
 ## Data checks
 
@@ -340,4 +360,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ce27a95b45a5be4db33b21e92b644c1531515f77814fdfa945bd24178196c9e` |
+| stale | yes: the definition now gives checksum `v2:21e2d82037980fd672132215f2ffd8cb5e43cacb411e12997bf09a747aa0c294` |

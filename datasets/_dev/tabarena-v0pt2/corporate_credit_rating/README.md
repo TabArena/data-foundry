@@ -63,6 +63,24 @@ Multiclass classification of `Rating`, scored with `log_loss` on grouped splits 
 
 Not built yet. The current definition gives checksum `v2:de9ef1968a15d223b97dd833068758033f8b6e15bc727b3cc8212fdc0e9b452a`.
 
+## In brief
+
+**Question.** Which letter grade would a rating agency give this company, judging from its financial statements?
+
+**Use case.** An analyst estimates the grade an agency would give a company that has no rating of its own (a shadow rating), from its financial statements and sector (the uploader's question).
+
+**One row.** One credit rating of a US company by one of five agencies, 2005-2016, with the company's financial ratios of that fiscal year (2,020 ratings of 592 companies, at most one per company and year).
+
+**Predicted.** The letter grade, one of six classes from AA to a merged CCC/CC/C; BBB is the most common (33%).
+
+**Known at prediction time.** 25 financial ratios (liquidity, profitability, debt, cash flow, per-share values), the sector, the agency and the rating date.
+
+**What the test data stands for.** Whole companies are held out, so the test data stands for companies whose ratings the model has not seen.
+
+**Our changes to the source.** We split by company instead of at random, as a rated company's current grade is public and repeats in 72% of its next ratings. We merge CCC, CC and C and drop the 7 AAA ratings and the two defaults.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** Statements and sector are what an analyst has for an unrated company, and held-out companies match that. Each row's agency and date are an arbitrary pick among the company's ratings of that year, and companies delisted before June 2020 are missing.
+
 ## Files in this folder
 
 | file | what it is |

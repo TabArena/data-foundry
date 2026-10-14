@@ -5,12 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
 
 ROUNDED_LABS = ["ALB", "ALT", "AST", "BIL", "CREA", "GGT", "PROT"]
 
 
 class HepatitisCPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Does a person's blood panel show hepatitis C liver disease, and at which stage?",
+        use_case=(
+            "For example, a laboratory physician reads a standard blood panel and flags whether the person is healthy"
+            " or has hepatitis C with inflammation, fibrosis or cirrhosis, to decide on further tests (the source "
+            "paper builds laboratory diagnostic pathways)."
+        ),
+        row=(
+            "One person, either a blood donor or a hepatitis C patient (608 people); the place and period are not "
+            "stated in the definition."
+        ),
+        predicted=("One of four classes: blood donor (88%), hepatitis (4%), fibrosis (3%) or cirrhosis (5%)."),
+        known=(
+            "Age, sex and nine blood values: albumin, total protein, bilirubin, three liver enzymes, cholinesterase, "
+            "cholesterol and creatinine."
+        ),
+        split="Random people of the same collection.",
+        changes=(
+            "We drop the 'suspect blood donor' class. Donor and patient rows were recorded with different precision, "
+            "which gave the class away, so we round seven values to whole numbers and drop alkaline phosphatase, "
+            "missing only for patients."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The rows join two groups recorded apart, healthy blood donors and hepatitis C patients, a mixture no "
+            "single laboratory sees; the format differences we removed show that the groups were recorded "
+            "differently, and other such differences may remain. The stage task within the patients is real."
+        ),
+    )
+
     # Dataset
     unique_name = "hepatitis_c_prediction"
     year = "2020"

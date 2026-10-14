@@ -76,6 +76,24 @@ Regression of `critical_temp`, scored with `rmse` on grouped splits by `composit
 
 Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Below what temperature does a material with this chemical composition become superconducting?
+
+**Use case.** A materials scientist screens candidate compositions and decides which to synthesize and measure.
+
+**One row.** One measured entry of the SuperCon database; a composition can have several entries.
+
+**Predicted.** The critical temperature, in kelvin.
+
+**Known at prediction time.** 81 numbers computed from the chemical formula alone (statistics of the elements' atomic properties, weighted by their shares).
+
+**What the test data stands for.** Whole compositions are held out, so the test data stands for compositions never measured; other proportions of the same elements can be in training.
+
+**Our changes to the source.** We group the entries by composition; with random rows, 35% of the test rows had an identical row in training.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones.
+
 ## Files in this folder
 
 | file | what it is |

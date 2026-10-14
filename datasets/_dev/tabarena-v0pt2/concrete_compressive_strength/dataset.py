@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class ConcreteCompressiveStrength(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="How strong will a concrete mix be after a given number of days?",
+        use_case=(
+            "For example, a civil engineer designing a high-performance concrete mix estimates its compressive "
+            "strength at a given age before casting and testing specimens."
+        ),
+        row=(
+            "One laboratory test of one concrete mix at one age (1,030 tests, published by I-Cheng Yeh in 1998); many"
+            " mixes are tested at several ages."
+        ),
+        predicted="The compressive strength, in megapascals (2 to 83 in the data).",
+        known=(
+            "The amount of each of seven ingredients per cubic metre (cement, blast-furnace slag, fly ash, water, "
+            "superplasticizer, coarse and fine aggregate) and the age at the test, 1 to 365 days."
+        ),
+        split=(
+            "Random tests, so a test mix can be in training at another age; the test data stands for new mixes only "
+            "in part."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The inputs are what an engineer chooses, but the random split puts tests of the same mix at other ages "
+            "in training, so the score mixes designing new mixes with filling in known ones; a split by mix would "
+            "match the use case."
+        ),
+    )
+
     # Dataset
     unique_name = "concrete_compressive_strength"
     year = "2007"

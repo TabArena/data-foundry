@@ -68,6 +68,24 @@ Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID
 
 Built as `01a111fc-a844-7407-8ace-a685fd00b279` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c0afcff708bf310c7fb50586a677a9e71c2dd3cb0eaeeec030e1f727dacf430`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Does a patient examined for heart disease have narrowed coronary arteries?
+
+**Use case.** For example, a cardiologist decides from routine and exercise-test results whether a patient needs coronary angiography, the invasive test that gives the diagnosis.
+
+**One row.** One patient examined for coronary artery disease at the Hungarian Institute of Cardiology in Budapest (294 patients; published 1988, period not stated).
+
+**Predicted.** Whether angiography shows more than 50% narrowing in any major coronary vessel (36% do).
+
+**Known at prediction time.** Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, and the exercise test (maximum heart rate, angina, ST depression and, often missing, its slope); the fluoroscopy and thallium-scan results are missing for nearly all patients.
+
+**What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic and period.
+
+**Our changes to the source.** We merge the four disease grades into disease or none, as the original study did.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** All features come from tests done before angiography, whose result is the label, as when deciding whom to refer. The data is small and old.
+
 ## Files in this folder
 
 | file | what it is |

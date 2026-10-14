@@ -6,10 +6,42 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Temporal, TemporalSplits, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, object_columns
 
 
 class AnesVoting2026(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a survey respondent vote in the coming US national election?",
+        use_case=(
+            "For example, a pollster estimates after the pre-election interview whether each respondent will turn "
+            "out, to weight the poll towards likely voters."
+        ),
+        row=(
+            "One respondent of the American National Election Studies who completed both the pre-election and the "
+            "post-election interview of a presidential or midterm election, 1948-2024."
+        ),
+        predicted=("Whether the respondent says in the post-election interview that they voted (78% say so)."),
+        known=(
+            "The year and the pre-election answers: background (age, gender, race, education, income, region), party "
+            "identification, interest in the campaign, likes and dislikes of parties and candidates, opinions on "
+            "issues and the economy, and the stated intention to vote."
+        ),
+        split=(
+            "Each of the last nine studies (1996 to 2024) is the test data once, with every earlier study for "
+            "training, as for a model built before the next election."
+        ),
+        changes=(
+            "We keep only respondents with both interviews and drop the questions the codebook ties to the "
+            "post-election interview, among them an item built from the respondent's House vote."
+        ),
+        fit="approximate",
+        fit_reason=(
+            "The questions are not marked as pre- or post-election; we drop those the codebook ties to the "
+            "post-election interview, so a few later answers may remain. The label is the respondent's own report of "
+            "voting, not a checked record."
+        ),
+    )
+
     # Dataset
     unique_name = "anes_voting_2026"
     year = "2026"
@@ -45,7 +77,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         - Although there are several ways to further preprocess features, we leave the preprocessing minimal to enable the development of models that can handle even complex preprocessing on their own.
         - Note: Alternative target could be constructed using who the candidate voted for (VCF0704). This could be a multi-class target with [Democrat, Republican, Other Party, Did not vote, Voted but unknown who]. However, the last category is less useful to predict, and might introduce problems. We therefore stick to predicting whether someone voted or not.
         - Note: While the data was also used in the TableShift benchmark, we define an entirely different task, with a temporal split and more features.
-        - Note: Some information is represented across multiple columns, e.g.,  ['VCF0009x', 'VCF0009y', 'VCF0009z', 'VCF0010x', 'VCF0010y', 'VCF0010z', 'VCF0011x', 'VCF0011y', 'VCF0011z'] all correspond to weight. We keep all of these columns, even though some might be redundant, because we want to keep the data as close to the original as possible leaving the challenge to the model.
+        - We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
     """

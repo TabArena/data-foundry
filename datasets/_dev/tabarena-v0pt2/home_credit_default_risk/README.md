@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
+checksum: v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 307507
   n_features: 504
@@ -69,7 +69,25 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 504 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** Will a loan applicant have trouble repaying the loan?
+
+**Use case.** When a client applies for a loan, a consumer lender scores the risk of payment difficulties from the application and the client's earlier credits, to decide whether to lend (the Home Credit competition's task).
+
+**One row.** One loan application to Home Credit, with the client's earlier credits at Home Credit and at the credit bureau; the release gives no dates and no country.
+
+**Predicted.** Whether the client paid late, by more than a number of days the source does not state, on at least one of the loan's first installments.
+
+**Known at prediction time.** 504 features: the application (contract type, amounts, income, family, job, housing, documents and three external scores) and summaries of the client's credit bureau loans, earlier Home Credit applications and their installment, card and cash-loan payment records.
+
+**What the test data stands for.** Random applications; the data has no application dates.
+
+**Our changes to the source.** We build the features as a popular public competition notebook does, keeping categories as categories, and keep the features it selected.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are known at the application and the label follows within the first installments, but without application dates the test applications come from the same period as the training ones, whereas a lender scores later applicants.
 
 ## Files in this folder
 
@@ -111,7 +129,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | finance |
 | license | Kaggle Competition Rules |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | Montoya2018HomeCreditDefaultRisk |
 | rows x columns | 307,507 x 505 |
 | task.target | TARGET |
@@ -165,6 +183,7 @@ We start from this file.
 - We do not follow the script exactly. We do not ordinal encode binary features. Moreover, we do not apply one-hot encoding to all categorical columns. Instead, we do it only when need for aggregations and otherwise keep the categorical column with the original semantics. Moreover, we fix some bugs in the original script that cause it to crash when run out of the box.
 - We drop a duplicated column after preprocessing.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
+- Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
 
 ## Splits
 
@@ -431,3 +450,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed` |

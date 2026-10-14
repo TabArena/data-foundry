@@ -66,6 +66,22 @@ Binary classification of `chd`, scored with `roc_auc` on IID splits. 462 rows an
 
 Built as `01a111fc-ed62-786a-ac41-9c1deb571902` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0bf69bc56065cc3a7e973e088c636fbfdeb6dff0bbb8ca75069e82435801fe00`, so the build is stale. See [Build](#build).
 
+## In brief
+
+**Question.** Does a man from a high-risk region have coronary heart disease, judging from his risk factors?
+
+**Use case.** For example, a doctor screening men in a high-risk region estimates their risk of coronary heart disease from routine risk factors, to decide on prevention.
+
+**One row.** One man from a high-risk region of the Western Cape, South Africa, in a retrospective sample of the CORIS study with about two men without heart disease per man with it (462 men).
+
+**Predicted.** Whether the man has coronary heart disease; 34.6% do. There is no time frame, as the cases had their event before the measurements.
+
+**Known at prediction time.** Age, family history of heart disease, systolic blood pressure, lifetime tobacco use, LDL cholesterol, adiposity, obesity, alcohol use and a type-A behaviour score, for the cases measured after their heart attack.
+
+**What the test data stands for.** Random men of the same sample.
+
+> **Use case fit: approximate (a stand-in with a known gap).** A case-control sample measured after the cases' heart attacks stands in for predicting heart disease before it happens; some cases had already improved their risk factors. Per the leak audit this weakens rather than leaks the signal (ROC AUC 0.774 with, 0.778 without blood pressure and obesity).
+
 ## Files in this folder
 
 | file | what it is |

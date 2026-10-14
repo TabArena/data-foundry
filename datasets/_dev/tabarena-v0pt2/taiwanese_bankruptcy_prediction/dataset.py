@@ -5,10 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
+    task_summary = TaskSummary(
+        question="Will a listed Taiwanese company go bankrupt?",
+        use_case=(
+            "For example, a lender or investor screens companies on their published financial ratios and decides "
+            "whether to extend credit or invest."
+        ),
+        row=(
+            "One company in the Taiwan Economic Journal's data for 1999-2009 (6,819 rows); whether a company can "
+            "appear in more than one year is not stated."
+        ),
+        predicted=(
+            "Whether the company went bankrupt under the Taiwan Stock Exchange's rules (3.2%); the time between the "
+            "ratios and the bankruptcy is not stated."
+        ),
+        known=(
+            "The company's financial ratios: profitability, margins, growth, per-share figures, liquidity, debt, "
+            "turnover and cash flow."
+        ),
+        split="Random companies of the whole period, as the years are not given.",
+        fit="approximate",
+        fit_reason=(
+            "The ratios are what a lender sees, but the source states neither the year of each row nor the gap "
+            "between the statements and the bankruptcy, so the random split stands in for scoring companies before "
+            "they fail."
+        ),
+    )
+
     # Dataset
     unique_name = "taiwanese_bankruptcy_prediction"
     year = "2020"
@@ -16,6 +43,7 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5004D"
     license = "CC BY 4.0"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -40,6 +68,8 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         - We drop two duplicated features (same values as other features).
         - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
         - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
+        - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
+          year, so the split stays random.
     """
 
     # Task
