@@ -4,6 +4,16 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (cdc_diabetes_health_indicators retired: wrong task)
+
+- `cdc_diabetes_health_indicators` retired (record `No`, `No Good Target / Scientific Discovery`; folder removed,
+  `v2_path` cleared; the definition stays in git history at bb3baa3; it was never built). The label is "ever told you
+  have diabetes", a diagnosis made a median of 10 years before the interview, predicted from answers of the same
+  interview: no decision is made with that prediction. The use the sources name is screening, which needs undiagnosed
+  adults as positives; BRFSS cannot identify them, so they sit in the negative class. The rule is now in criterion 3
+  of the curation guidelines. A screening task on NHANES, with lab-measured undiagnosed diabetes as the label, is
+  checked as the new candidate `nhanes_undiagnosed_diabetes`. 176 definitions remain.
+
 ## 2026-10-15 (caracas_cervical_cancer and breast_cancer_prediction ship)
 
 Lennart's marks on the review page of the 2026-10-07 run. Not built.

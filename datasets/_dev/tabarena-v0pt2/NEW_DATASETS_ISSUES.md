@@ -71,7 +71,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`brca_breast_cancer`](#brca_breast_cancer) | added; `No` on 2026-10-12, folder removed | The PAM50 label is computed from the shipped expression values, so the expression block is dropped (methylation and miRNA remain). Alternative: retire as `Trivial`. |
 | [`breast_cancer_prediction`](#breast_cancer_prediction) | added | The full BCSC file, grouped by woman (the record says IID). Does the image-scoring rule (breast_w) cover the BI-RADS readings? |
 | [`caracas_cervical_cancer`](#caracas_cervical_cancer) | added | 108 patients who skipped the contraceptive question are dropped. Target: Biopsy. |
-| [`cdc_diabetes_health_indicators`](#cdc_diabetes_health_indicators) | added | Three classes; binary "ever told diabetes" is the alternative. The dropped blanks are partly a skip pattern. |
+| [`cdc_diabetes_health_indicators`](#cdc_diabetes_health_indicators) | added; `No` (Scientific Discovery) on 2026-10-15, folder removed | Three classes; binary "ever told diabetes" is the alternative. The dropped blanks are partly a skip pattern. |
 | [`central_international_medical_college_and_hospital_health_risk_prediction`](#central_international_medical_college_and_hospital_health_risk_prediction) | added; `No` (`Trivial`) on 2026-10-12, folder removed | The label is the NEWS2 band of the eight features, and the vital signs look generated. |
 | [`churn_telco_europa`](#churn_telco_europa) | not added; `No` (`Data Quality Issue`, `Ethical Issue`) on 2026-10-12 | Active lines and churners were recorded differently (an irreversible leak, as in iranian_churn). The files hold Chilean national ids and phone numbers. |
 | [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
@@ -1811,7 +1811,7 @@ TODO is left.
 
 ### cdc_diabetes_health_indicators
 
-**Outcome:** added and checked
+**Outcome:** added and checked. Retired as `No` (`No Good Target / Scientific Discovery`) on 2026-10-15: the task predicts a diagnosis the respondent already has (issues 1 and 4); the folder is removed and stays in git history at bb3baa3.
 
 **Record judgment:** valid with concerns. The provenance is clear and verified. The file is Alex Teboul's Kaggle cut
 (files of 2021-11-08, CC0) of the CDC's BRFSS 2015 telephone survey. His public notebook, run on the CDC's 2015.csv
@@ -1914,6 +1914,7 @@ of at most 50k rows.
    - Implemented: 3 classes, as the record decided.
    - Alternative (my recommendation, the verifier's too): binary "ever told diabetes" against the rest, prediabetes
      counted as no diabetes. ROC AUC 0.829-0.830; one clean survey question. Or Xie's cohort: 235,826 rows, AUC 0.827.
+   **Resolved (Lennart, 2026-10-15):** neither: retired as `No`, `No Good Target / Scientific Discovery` (Outcome). The label is a diagnosis the respondent already has, in either version.
 2. **The cohort: the drop of blanks is partly a skip pattern, not refusals.** The record accepted the drop as keeping
    "only cases that answer the questions truthfully and fully".
    - TOLDHI2 is not asked when cholesterol was never checked (p. 17). All 49,673 never-checked respondents are
@@ -1926,6 +1927,7 @@ of at most 50k rows.
    - Implemented: as published, with the cohort now named in the prediction-point bullet.
    - Alternative: a version rebuilt from 2015.csv, with "never checked" and "income unknown" as categories. The notebook
      reproduction makes this easy; the record wants a domain expert first.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome); a cohort rebuilt from the raw file keeps the same label.
 3. **Duplicates kept (accepted warning).** 23,899 exact duplicate rows, all distinct respondents.
    - Precedent: sepsis_survival keeps natural repeats. wine_quality and jm1 drop copies, but theirs are one entity or an
      artifact. The verifier agrees (§D.4, "few features, plausible repeats: keep").
@@ -1933,6 +1935,7 @@ of at most 50k rows.
      profiles.
    - Implemented: keep.
    - Alternative: drop exact copies and conflicting vectors.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome).
 4. **The design is cross-sectional (note, no action proposed).** The label is a lifetime diagnosis.
    - Kept diabetics were told a median of 10 years before the interview (75% at least 5 years).
    - Without the care-contact, lifestyle or complication answers, the ROC AUC of diabetes against the rest drops by at
@@ -1942,6 +1945,7 @@ of at most 50k rows.
      unaware".
    - The Kaggle notebook jabr1one/the-problems-of-this-dataset (2025) raises this. Xie et al. use the same
      cross-sectional design.
+   **Resolved (Lennart, 2026-10-15):** this decides it: the task is retired (Outcome). The screening use needs the undiagnosed as positives, which BRFSS cannot identify; NHANES can (new candidate `nhanes_undiagnosed_diabetes`).
 5. **Source convention (minor).** `source = "Kaggle"` stays, by §A ("where the data first appeared").
    - This table first appeared on Kaggle; the CDC publishes only the raw survey.
    - Same call as `sdss_17`: a Kaggle user's cut of the SDSS DR17 release, with source "Kaggle" and BibTeX citing the
@@ -1950,6 +1954,7 @@ of at most 50k rows.
      `"GOV Website"`) would be "Kaggle" too. That folder is not mine; one rule for both is Lennart's call.
    - BibTeX: Teboul's dataset, with BRFSS in the note. Alternative: the CDC's BRFSS 2015 citation, as sdss_17 cites
      DR17.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome).
 
 **Verification:** the independent verifier found no blocker ("ready with noted concerns"), and every number
 reproduces.

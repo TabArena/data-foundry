@@ -141,6 +141,9 @@ Field by field:
     `"approximate"`.
   * `"none"`: no decision fits. The label counts outcomes over one calendar window shared by all rows rather than a
     fixed time after each row (analcatdata_supreme), comes from clustering, or serves only a study looking back.
+    It is also `"none"` when the subject already knows the label when the features are recorded: a past diagnosis
+    asked in the same interview, which a screening use case cannot stand on, since its positives are the people who
+    do not know yet (cdc_diabetes_health_indicators, whose summary said `"approximate"`; Lennart, 2026-10-15).
     Such a dataset is retired as `No Good Target / Scientific Discovery` (curation guidelines, criterion 3), and
     `dataset check` refuses it.
 

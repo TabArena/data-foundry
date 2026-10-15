@@ -45,6 +45,10 @@ Whether a dataset is IID or non-IID is decided by the **appropriate train–test
    shared by all rows, instead of a fixed time after each row, only supports a look back at which rows drew the
    outcome: `No Good Target / Scientific Discovery` (Lennart, 2026-10-14: analcatdata_supreme, Congress's responses
    in 1979-1988 to Supreme Court rulings of 1953-1988).
+   The same holds for a label the respondent already knows, asked in the same interview as the features (a past
+   diagnosis): nobody predicts it. A screening task needs positives that do not know yet, found by an independent
+   measurement such as a lab test (Lennart, 2026-10-15: cdc_diabetes_health_indicators, BRFSS "ever told you have
+   diabetes", told a median of 10 years earlier; the undiagnosed sat in the negative class).
 4. **Representative of a real tabular-ML application** — exclude datasets that are:
    (A) from a non-tabular modality where modality-specific models are clearly superior
    (judged per-dataset; vectorized image/text/audio/time-series is OK if tabular models
