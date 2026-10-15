@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: churn_telco_south_asia
 container_format: 2
-checksum: v2:9303d469772a29893138c0d136591ab1efad82766cd61f2617eec6eff1d4e879
+checksum: v2:e757733211036e34e9b2814a2db901694f9c3be6100fec2e7bb35e32c616579e
 build: null
 build_stale: false
 data:
@@ -52,7 +52,7 @@ decisions:
 
 Binary classification of `churn_status`, scored with `roc_auc` on IID splits. 2,000 rows and 13 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:9303d469772a29893138c0d136591ab1efad82766cd61f2617eec6eff1d4e879`.
+Not built yet. The current definition gives checksum `v2:e757733211036e34e9b2814a2db901694f9c3be6100fec2e7bb35e32c616579e`.
 
 ## In brief
 
@@ -176,7 +176,7 @@ We start with South Asian Wireless Telecom Operator (SATO 2015).csv (2,000 rows,
 - Anomaly: the raw file is a concatenation of extracts, each sorted by network_age, and six short runs hold churners only (54 rows). No extract is out of line (a random forest trained on the other rows scores each run of 60 rows or more at ROC AUC 0.757 to 0.888), so the split stays IID.
 - Anomaly: aug_fav_a is "0" for 59 subscribers, an undocumented code. All 59 have off-net revenue and at least 8 calls, so it does not mean "no call to another network"; we keep it as its own category.
 - Note: the September favourite network moves towards ufone in both classes, the active subscribers more (decision table). We read it as a change between the months, not a recording that differs by class, and keep both columns.
-- Note: churn_telco_nigeria (DSN Telecoms Churn 2018) is this file with the networks renamed and a customer id and a tenure added; its rows and labels match these.
+- Note: churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018) is this file with the networks renamed and a customer id and a tenure added; its rows and labels match these.
 - Year: 2017, the first publication (the IntelliSys paper and the Kaggle upload); the data were collected in 2015.
 
 ## Splits

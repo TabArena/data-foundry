@@ -90,6 +90,11 @@ starts with `N. ` at the start of a line; the indented and blank lines after it 
 the next label. A paragraph that is not indented after the last issue also belongs to that issue, so close the block
 with the next label.
 
+An issue is a decision for the curator, with the evidence from our own splits, probes and sources. Scores that
+other benchmarks published for the dataset (TALENT, leaderboards) are no issue and no evidence: their random splits
+are wrong for most of our tasks (Lennart, 2026-10-15). Name another benchmark only where it identifies the source or
+the record's name.
+
 The title is the bold text at the start of the issue (`1. **Keep the target in decibels?** The source ...`), or else
 the first sentence. The number is the key under which the curator's mark is stored (`items.<N>`): numbers are unique
 within a record, and a published page's issues are never renumbered.
@@ -167,7 +172,7 @@ A test run of `/add-dataset` on two records: one added, one left out.
 | Record | Outcome | Main points for the curator |
 |---|---|---|
 | [`airfoil_self_noise`](#airfoil_self_noise) | added | The target is in decibels; keep it? |
-| [`churn_telco_nigeria`](#churn_telco_nigeria) | not added; duplicate | The rows of `churn_telco_south_asia` with renamed values. |
+| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The rows of `churn_telco_south_asia` with renamed values. |
 
 ## Record fields that disagree with the definition
 
@@ -193,7 +198,7 @@ A test run of `/add-dataset` on two records: one added, one left out.
 1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
    alternative.
 
-### churn_telco_nigeria
+### churn_telco_south_asia_duplicate
 
 **Outcome:** not added. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
 ```

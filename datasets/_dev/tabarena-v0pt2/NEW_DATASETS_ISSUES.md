@@ -46,7 +46,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
   - `lgg_low_grade_glioma`;
   - `phiusil_phishing`.
 - **Not added:** 9 records.
-  - Duplicates: `churn_telco_nigeria`, `myocardial_infarction_complications`, `numerai28_6`,
+  - Duplicates: `churn_telco_south_asia_duplicate`, `myocardial_infarction_complications`, `numerai28_6`,
     `sasol_customer_retention_recruitment_competition`.
   - Data gone: `alfa_battle_2_0_task_1`.
   - Generated or injected data: `hepatitis_c_egypt`, `high_storage_system_data_for_energy_optimization`.
@@ -74,7 +74,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`cdc_diabetes_health_indicators`](#cdc_diabetes_health_indicators) | added | Three classes; binary "ever told diabetes" is the alternative. The dropped blanks are partly a skip pattern. |
 | [`central_international_medical_college_and_hospital_health_risk_prediction`](#central_international_medical_college_and_hospital_health_risk_prediction) | added; `No` (`Trivial`) on 2026-10-12, folder removed | The label is the NEWS2 band of the eight features, and the vital signs look generated. |
 | [`churn_telco_europa`](#churn_telco_europa) | not added; `No` (`Data Quality Issue`, `Ethical Issue`) on 2026-10-12 | Active lines and churners were recorded differently (an irreversible leak, as in iranian_churn). The files hold Chilean national ids and phone numbers. |
-| [`churn_telco_nigeria`](#churn_telco_nigeria) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
+| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
 | [`churn_telco_south_asia`](#churn_telco_south_asia) | added | When churn was observed is open; the IntelliSys 2017 paper would settle it. The 50% base rate is artificial. |
 | [`coad_colon_adenocarcinoma`](#coad_colon_adenocarcinoma) | added | Multiclass CIN/MSI/GS (the record says binary). 49,283 features, 2.2 times the widest dataset in the copy; mRNA only is the alternative. The label is not a rule on a shipped block. |
 | [`college_scorecard`](#college_scorecard) | added | Are the institution's published outcomes (latest completion rate, retention) features? SAT columns are dropped at the 2017 scale change. The source should be the Scorecard, not OpenML 46674. |
@@ -359,7 +359,7 @@ the schema's `Other`. Tags are listed when a `Non-IID` tag names another regime.
 
   **Resolved (Lennart, 2026-10-12):** kept; it never leaves the local warehouse.
 - **Raw copies of datasets not added**: `local-data-warehouse/` holds myocardial_infarction_complications (0.9 MB),
-  churn_telco_europa (21 MB), churn_telco_nigeria (0.2 MB), hepatitis_c_egypt (0.2 MB),
+  churn_telco_europa (21 MB), churn_telco_south_asia_duplicate (0.2 MB), hepatitis_c_egypt (0.2 MB),
   high_storage_system_data_for_energy_optimization (7.2 MB) and numerai28_6 (35 MB).
 
   **Resolved (Lennart, 2026-10-12):** kept for now; `minimal_inputs.py` of the rebuild skill collects what the builds need.
@@ -1497,9 +1497,11 @@ After the changes: `dataset check` 0 errors, 0 warnings, 1 info (the same accept
    rows without present-day observations (32 in the 2017 test windows) are kept as NaN. The paper does not say how it
    handled them (it mentions 135 complete days only for its maps, Sec. 4.3, p. 12). Alternative: drop the 75 LDAPS-less
    rows, which would not change any test row.
+   **Resolved (Lennart, 2026-10-15):** the task corrects the LDAPS forecast, so a row without one has nothing to correct: the 75 rows of the three days without an LDAPS run are dropped (no test row changes; 7,648 rows remain). The 60 rows without present-day observations stay. The mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on 7 of 9 windows (0.785 against 0.823, paired SE 0.022). The probes now flag `unstable` again: LightGBM falls just below the training mean in the oldest window (2017-06-30 to 07-06, skill -0.07, dummy RMSE 1.11) and beats it on the other 8 (0.61-0.96); kept, as noted in `curation_comments`.
 5. **TALENT's numbers for this dataset are inflated (information).** TALENT splits both tasks at random. Its best RMSEs
    (TabR 0.57 for the maximum, 0.45 for the minimum) are far below what folds that keep each day's stations together
    give (LightGBM 1.54 and 1.00), because the other stations of a test day are in train.
+   **Answer (2026-10-15):** TALENT came up only because the record's two names are its task names; its random-split scores say nothing about this task and are not used anywhere.
 6. **Framework notes.**
    - (a) Earlier in this run a fresh scaffold with `problem_type = "TODO"` (`perth_house_prices`) broke `pytest`
      collection for every folder. It is fixed now; `problem_type` belongs on the list with `domain` and `source`.
@@ -1507,7 +1509,9 @@ After the changes: `dataset check` 0 errors, 0 warnings, 1 info (the same accept
    - (c) `task_probes.py` flags `unstable` on temporal tasks whose dummy error varies strongly between windows even when
      every window beats the dummy (here 9 of 9). A paired criterion would separate drift from instability, as in the
      consumer_complaints precedent.
+   **Resolved (Lennart, 2026-10-15), applied:** (a) `tests/test_v2_datasets.py` discovers leniently and checks each folder's import in its own test, so a scaffold with a `TODO` in `problem_type`, `domain` or `source` fails one test, not the collection; (b) the dedent gap was fixed on 2026-10-12, so `splits_comment` is a text block again; (c) `task_probes.py` counts the standard-error part of `unstable` on a temporal task only when the best family loses to the dummy on a window, and its JSON now lists the skill and the dummy's loss per split.
 7. **Pending (orchestrator):** the record's `v2_path` is unset (`sync-notebooks`); the container is not built.
+   **Resolved (Lennart, 2026-10-15):** `v2_path` is set; the container is built with the next rebuild.
 
 **Verification** (independent verifier, 2026-10-07: "ready with noted concerns"; no leak, no wrong split, no blocker;
 report in `verify/verify.md`). Each finding and what I did:
@@ -1534,6 +1538,8 @@ report in `verify/verify.md`). Each finding and what I did:
 6. **Multi-target (Lennart's call): stated** as issue 1, no change.
 7. **Pending:** record pointer and build are the orchestrator's steps.
 
+**Resolved (Lennart, 2026-10-15):** ship.
+
 ### brazilian_ecommerce
 **Outcome:** added and checked
 
@@ -1553,12 +1559,18 @@ report in `verify/verify.md`). Each finding and what I did:
 
 **Issues for Lennart:**
 1. **Which task?** The record's problem type is TBD and names "predict future sales, optimize delivery times". Implemented: delivery time at checkout, the data card's "Delivery Performance: ... optimize delivery times". Sales prediction ("With purchase date information you'll be able to predict future sales") is time-series forecasting, out of scope. Alternatives, measured with untuned LightGBM on the same 5 windows and features: (a) late delivery (delivered after the promised date; binary): ROC AUC 0.62-0.70 (mean 0.663), late share per window 1.4% (June, 83 orders) to 21.6% (March, 1,491); it is a threshold of the shipped target against a feature, so it would be a `_clf` variant, not a new task. (b) review score 1-5, predicted after delivery and before the customer answers. This is the task the uploader framed: "Lets create a model to predict what's the score a customer will give for an order", with "data from each order up to delivery phase", and "we need to predict the score before a customer writes it" (Andre Sionek of Olist, kaggle.com/code/andresionek/predicting-customer-satisfaction, cells 0, 4 and 5, last run 2018-10-24, 299 votes; it reads the older single-table release `olist_public_dataset_v2.csv`, splits at random and scores on its training set; Kaggle keyword "multiclass classification"). The data card's "Delivery Performance" bullet is framed as analysis. Numbers with the delivery outcome as features (days to delivery, days late): a low score (1-2, 12.6% of orders) reaches ROC AUC 0.66-0.83 (mean 0.717; 0.596 from the checkout features alone); an untuned 5-class LightGBM loses to the class shares in 4 of 5 windows (log loss 1.11-1.25 against 1.05-1.34). With the review score as the target, the release's selection on answered surveys (issue 7) would be the task's own population, and the review text written with the score would be dropped. Kept as implemented: delivery time. Switching is your call.
+   **Answer (AI, 2026-10-15):** the use case is the delivery date shown at checkout. Olist promises a date when the order is placed ("informed to customer at the purchase moment"); a better prediction of the actual days lets it promise a tighter date (its promise is 23.5 days at the median against 9.7 delivered; 6.9% of the shipped orders arrive late) and warn or expedite orders likely to be late. Late delivery is a threshold of the same target against the promise, so it would be a `_clf` variant of this task, not a second one. The review score is, as you say, closer to a satisfaction or recommender task driven by the delivery outcome and the product, and its signal is weak (a 5-class LightGBM loses to the class shares in 4 of 5 windows). Recommendation: keep the regression.
 2. **End of the review sample.** The last survey in the reviews file was sent on 2018-08-31, and a survey goes out at delivery or at the promised date, so orders placed in August 2018 are only in the sample when they arrived by then (August p90 13.1 days against 16.0 in July; the last week's maximum 3.6 days). Implemented: orders placed before 2018-08-01 whose promised date is on or before 2018-08-24 (drops 6,351 August and 243 June/July orders, 78 of the 591 orders of 30-31 July). Alternative: cut at 2018-07-01 without the promise rule; that removes the July window (5,828 test rows).
 3. **Training rows when labels arrive late.** A model refit on the first of the month only knows the deliveries made by then. Implemented: a one-month gap before each window plus dropping the 32-353 older orders still in transit (`_make_splits`, after the hotel_booking_demand rule). The delivered orders of the last month are the fast ones (27-53% of that month still in transit at the refit; for April, median 9.1 days delivered against 13.4 for all), and the bias matters for a model that sees the purchase time as a number. Mean R^2 of untuned LightGBM on the 5 shipped windows (verifier's run, `verify/v7_gap.log`, `v7b_gap_ag.log`), with the gap / without it (as-of labels) / without it, also training on later deliveries (a leak): purchase time as a number 0.353 / -0.054 (bias -0.26 to -0.62 in every window) / 0.429; number plus date parts as AutoGluon emits them 0.320 / 0.064 / -; date parts only 0.331 / 0.392 / 0.395; no time feature 0.310 / 0.347 / 0.349. So the gap protects the numeric-timestamp models that benchmark pipelines feed, and costs 0.04-0.06 R^2 for a model without a usable time axis. Question: is the gap the fix you want for duration targets with late labels? sf_permit_time (6-month windows on the filing date, durations of months) trains on permits issued after its windows start, so the same question applies there.
+   **Answer (AI, 2026-10-15):** yes. The gap simulates a refit that knows only the deliveries completed by then; without it, a model that sees the purchase time as a number is biased (R^2 0.353 with the gap, -0.054 without). sf_permit_time has had the same treatment since 2026-10-12 (training rows are permits issued before each window starts, with a 6-month gap).
 4. **Window count.** Monthly windows with the gap give 5 windows above the 50% floor, not the convention's 9. Alternative: 14-day windows with a 30-day gap give 9 windows (test 1,997-3,469 rows, oldest from 2018-03-28); 21-day windows give 8. Implemented: monthly, as a monthly refit is the plainer cadence.
+   **Resolved (Lennart, 2026-10-15):** monthly windows stay.
 5. **Order-level construction.** Implemented: drop orders with several sellers (one delivery date for several shipments; 1,155); the first item's product attributes (98.0% of the kept orders hold one distinct product); item and payment aggregates; shipping_limit_date not used (set at payment approval, after checkout); geolocation not joined (median lat/lng per zip prefix changes LightGBM R^2 from 0.366 to 0.367). Olist's promised date is kept as `estimated_delivery_days`: known at checkout ("informed to customer at the purchase moment"), single-feature R^2 0.132, removing it lowers R^2 from 0.366 to 0.332 (most in July: 0.35 to 0.06). Alternative: drop it, so the task is predicting without the company's own estimate.
+   **Answer (AI, 2026-10-15):** it is the date Olist promised the customer at checkout; the release does not say how Olist computes it. It is not a fixed route table: seller state x customer state explains 38% of its variance, with the purchase month 58%, and it is padded (median 23.5 days against 9.7 delivered). It cannot leak, since it is fixed at checkout, before the label. Kept as an input known at checkout, as bias_correction keeps the LDAPS forecast it corrects: the model refines the company's own estimate. Dropping it makes the task "predict without the company's estimate" and lowers LightGBM's R^2 from 0.366 to 0.332.
 6. **Record fields.** The record says year 2019; Kaggle's Croissant metadata gives datePublished 2018-09-21 (the uploader's Q&A thread opens the same day), so the definition uses 2018. `problem_type` becomes regression with this task. Licence CC BY-NC-SA 4.0, noted only.
+   **Resolved (Lennart, 2026-10-15):** the record's year is now 2018 (Kaggle's datePublished 2018-09-21); its problem type was already Regression.
 7. **Selection on answered reviews.** Every order in the release has an answered survey (646 delivered orders have no review row, which the release does not explain). If customers with slow deliveries answer more often, slow deliveries are over-represented. We assume the effect is the same in every month (the release holds no unanswered surveys to check it), so it is an `Anomaly:` bullet, not a fix. With the review score as the target (issue 1), this selection would be the task's own population.
+   **Answer (AI, 2026-10-15):** the reviews file gives only its survey dates, to cut the end of the sample (issue 2); no review field is a feature. The selection decides which orders are in the data: Olist released only orders with an answered survey, so if customers with slow deliveries answer more often, slow deliveries are over-represented, in train and test alike. It changes the population, not the features, and cannot be checked (the release holds no unanswered orders), so it stays an `Anomaly:` bullet.
 
 **Verification:** (independent verifier, verdict "ready with noted concerns"; `verify/verify.md`)
 1. Review score is the source's own predictive task: applied as an issue for Lennart. I read the notebook (cells 0, 4, 5) and its date (`kaggle kernels list --user andresionek`: last run 2018-10-24); it is cited in issue 1, in a new "Task choice" bullet of `curation_comments` and in the record comment, with the note on the answered-survey selection. Delivery time stays implemented.
@@ -1566,6 +1578,8 @@ report in `verify/verify.md`). Each finding and what I did:
 3. "96.7% of the orders hold one distinct product": applied, recomputed on the shipped frame (86,903 of 88,721 = 97.95%) -> "98.0% of the kept orders" (in `curation_comments` and issue 5).
 4. "the effect is the same in every month" stated as fact: applied -> "We assume ...; the release holds no unanswered surveys to check it."
 After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted warning and info); checksum now v2:5e0a3d4e... (the comment text is part of the metadata), the same under pandas 2.3.3 and 3.0.6; `pytest tests/test_v2_datasets.py -k brazilian_ecommerce` with `DATA_FOUNDRY_V2_DATA_CHECKS=1`: 2 passed. Data, rows and splits unchanged.
+
+**Resolved (Lennart, 2026-10-15):** ship as implemented: delivery time at checkout, the one-month gap, Olist's promised date as an input, the answered-review selection as an `Anomaly:` bullet (issues 1, 3, 5 and 7 as answered above).
 
 ### breast_cancer_prediction
 
@@ -2046,6 +2060,8 @@ The vital signs also look generated (criterion 4B, Issue 2). The record's commen
    - (a) `generated_probes.py` (and the other `--root` probes) load every definition under the root and abort the whole run when any folder fails to import. Here that was another agent's fresh scaffold. Loading by name would isolate the failure.
    - (b) `leak_probes.py` reports `Consciousness` alone at macro AUC 0.500, although all 86 patients who are not alert are Medium or High. Untuned LightGBM cannot split off a categorical group of fewer than `min_data_per_group=100` rows. With `min_data_per_group=1` or one-hot encoding the same splits give 0.571. The probe can therefore miss the signal of rare categories.
 
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, `Trivial`: the label is the NEWS2 chart applied to the vital signs the data ship. The folder is removed.
+
 ### churn_telco_europa
 **Outcome:** not added (irreversible leak of the iranian_churn kind: active lines and churners were recorded on
 different dates, with no follow-up after extraction and no dates to re-anchor them). No folder in the working copy.
@@ -2211,7 +2227,9 @@ cleaning.
 
    **Verification:** not checked.
 
-### churn_telco_nigeria
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, with `Missing source information`, `Ethical Issue` and `Data Quality Issue`: WOM Chile's customers under a European name, with personal data and no prediction point.
+
+### churn_telco_south_asia_duplicate
 **Outcome:** not added (duplicate of churn_telco_south_asia: the DSN files are the 2,000 rows of the SATO 2015 file with renamed values, and the DSN train/test cut is selected on the label and total spend)
 
 **Record judgment:** do not add: the same underlying data as `churn_telco_south_asia` of this run, which is the original
@@ -2239,13 +2257,13 @@ too"). Neither the record's comments nor any other record weigh this.
 
 **Data:** Kaggle InClass competition dsntelecomschurn2018 (`uvx --from kaggle==2.2.2 kaggle competitions download -c
 dsntelecomschurn2018`): TRAIN.csv 1,400 x 16 (with `Customer ID` and `Churn Status`), TEST.csv 600 x 15 (labels not
-published), sample submission.csv; in `local-data-warehouse/churn_telco_nigeria/`. No licence is stated on the
+published), sample submission.csv; in `local-data-warehouse/churn_telco_nigeria/` (deleted 2026-10-15). No licence is stated on the
 competition's pages (rules page: base rules only). For the comparison, the SATO csv (2,000 x 14, CC0-1.0 in the Kaggle
 metadata) sits in my scratch folder only. OpenML 44230 (this record's link) is TRAIN.csv with its blank line (1,401
 rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 
 **Definition:** none in the working copy. Two probe vehicles in `<scratch>/root/`, not for shipping:
-`churn_telco_nigeria` (DSN TRAIN.csv without the blank line, `Customer ID` and the tenure copy: 1,400 x 13) and
+`churn_telco_south_asia_duplicate` (DSN TRAIN.csv without the blank line, `Customer ID` and the tenure copy: 1,400 x 13) and
 `churn_telco_south_asia` (the SATO file as it is: 2,000 x 13); both IID with the default 10 x 3 splits.
 
 **Checks:** scratch only: `dataset check` 0 errors, 0 warnings on both.
@@ -2267,7 +2285,7 @@ rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 
 **Issues for Lennart:**
 1. Verdict. Question: which record ships the SATO data? Evidence above. Implemented: nothing added for
-   churn_telco_nigeria. Proposal: No + Duplicate for this record (by the convention it becomes
+   churn_telco_south_asia_duplicate. Proposal: No + Duplicate for this record (by the convention it becomes
    `churn_telco_south_asia_duplicate`), and the data ships once, as `churn_telco_south_asia` (original source, all
    2,000 rows labelled, original operator names). Alternative: ship the DSN cut; not recommended: 1,400 labelled rows,
    340 of them (24%) in spend bands whose labels the test selection made pure.
@@ -2285,6 +2303,8 @@ rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 5. Housekeeping: `local-data-warehouse/churn_telco_nigeria/` (the DSN zip and its three csv files, 0.24 MB) can be
    deleted if the record goes to No (ask).
 
+**Resolved (Lennart, 2026-10-15):** No + `Duplicate` (replacing `Trivial`); the data ship once, as `churn_telco_south_asia`. The record is renamed from `churn_telco_nigeria` to `churn_telco_south_asia_duplicate` (the `_duplicate` convention), and its local download is deleted.
+
 ### churn_telco_south_asia
 
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/churn_telco_south_asia/`), revised after verification.
@@ -2297,7 +2317,7 @@ churn dataset and private dataset". The Kaggle upload mahreen/sato2015 (2017-10-
 44227 lists the creator as MAHREENAHMED) is where the data first became public. Uniqueness:
 - Nothing in the working copy is this data (its two churn folders, bank_customer_churn and tour_travels_churn, are
   unrelated).
-- churn_telco_nigeria (DSN Telecoms Churn 2018, Kaggle InClass) is this file renamed (issue 2). That makes Nigeria
+- churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018, Kaggle InClass) is this file renamed (issue 2). That makes Nigeria
   the duplicate, not this one.
 - churn_telco_europa (Kaggle raumonsa11, OpenML 44228) is different data: 190,776 + 86,907 rows and other columns.
 - mobile_churn (OpenML 44231) is also different data: 66,469 rows and 66 columns.
@@ -2404,7 +2424,7 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - Alternative: retire as iranian_churn if the paper's data section places the churn inside August-September.
    - Please read the paper's data section. A Google search for "MCS: Multiple classifier system to predict the
      churners in the telecom industry" pdf should find it; the data card links ResearchGate 320331663.
-2. **churn_telco_nigeria is this data.** The DSN 2018 files (TRAIN 1,400 + TEST 600) are these 2,000 rows:
+2. **churn_telco_south_asia_duplicate is this data.** The DSN 2018 files (TRAIN 1,400 + TEST 600) are these 2,000 rows:
    - all rows match one to one on the nine numeric columns;
    - all 1,400 TRAIN labels agree;
    - the networks are renamed one to one: mobilink Mango, ptcl PQza, telenor ToCall, ufone Uxaa, warid Weematel,
@@ -5319,7 +5339,7 @@ real"), so the dataset is added; the counter-argument is issue 1. None of the do
     each, in both classes.
   - The churn definition itself is undocumented (issue 1).
 - **No copy of another churn file** (the DSN/SATO pattern). The rows were compared with SATO 2015
-  (churn_telco_south_asia), DSN TRAIN (churn_telco_nigeria), the Europa train file (numeric non-id columns only),
+  (churn_telco_south_asia), DSN TRAIN (churn_telco_south_asia_duplicate), the Europa train file (numeric non-id columns only),
   iranian_churn, churn (MLC++), tour_travels_churn, bank_customer_churn and 300k rows of expresso (`explore/e2`).
   - No continuous column matches.
   - The best two-column row match is SATO's at 9.5%. With one column shuffled across rows it is 11.2%, so it is
@@ -7258,6 +7278,8 @@ probes cover them.
 - Finding 1 (blocker, label is the PAM50 rule): applied. Reproduced 347 of 381 and the rule beating the forest on 9 of 9 splits; the `mRNA_` block is no longer a feature (exp only selects the patients). Retirement is alternative 1a.
 - Finding 6 (comment, licence): applied. The comment explains the 440 TabPFN-Wide samples; the licence string quotes the page's "All rights reserved" footer. The suspension stays an open point.
 - Finding 5 (site): the site check was rerun on the new features: no gap (0.939 vs 0.943).
+
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, `No Good Target / Scientific Discovery`: the PAM50 subtype is a clustering taxonomy assigned by a centroid rule on 50 genes. The folder is removed.
 
 ### glioblastoma
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/glioblastoma/`), revised after verification: the expression block is no longer a feature.

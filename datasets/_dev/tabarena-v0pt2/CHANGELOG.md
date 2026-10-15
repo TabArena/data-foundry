@@ -4,6 +4,37 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (review verdicts: bias_correction and brazilian_ecommerce ship; churn_telco_nigeria renamed)
+
+Lennart's verdicts on the review page of the 2026-10-07 run, none built yet:
+
+- `bias_correction_r_bias_correction_r_2` and `brazilian_ecommerce` ship. brazilian_ecommerce ships as implemented
+  (delivery time at checkout, a one-month label gap, Olist's promised date as an input); its record's year is now
+  2018.
+- `churn_telco_nigeria` is `No` + `Duplicate` (the DSN files are the SATO 2015 rows of `churn_telco_south_asia`) and
+  is renamed `churn_telco_south_asia_duplicate`; `churn_telco_south_asia`'s note names the new record (its checksum
+  changes, `v2:e7577332…`; not built). The local downloads of `churn_telco_nigeria` and `churn_telco_europa` (which
+  held customers' national ids and phone numbers) are deleted.
+- brca_breast_cancer, central_international_medical_college_and_hospital_health_risk_prediction and
+  churn_telco_europa: their `No` of 2026-10-12 is confirmed.
+
+## 2026-10-15 (bias_correction_r_bias_correction_r_2: rows without an LDAPS forecast dropped; probe and test fixes)
+
+Lennart's review of the 2026-10-07 run (issues 4, 6 and 7 of NEW_DATASETS_ISSUES.md). Edited `dataset.py`, not
+built (checksum `v2:07d8e9f7…`, was `v2:41fdfb3c…`); `dataset check` 0 errors, 0 warnings.
+
+- The 75 station-days of the three days without an LDAPS run (2013-08-10, 2016-07-31, 2016-08-20, all on the
+  training side) are dropped: the task corrects the LDAPS forecast, and without one there is nothing to correct.
+  7,648 rows remain. The mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on 7 of 9 windows
+  (RMSE 0.785 against 0.823); the decision text gives the new numbers.
+- `splits_comment` is a text block again (it was one string to avoid the dedent gap fixed on 2026-10-12).
+- The task probes flag `no_spread` and `unstable`: LightGBM falls just below the training mean in the oldest window
+  (skill -0.07) and beats it on the other 8; kept, as `curation_comments` says.
+- Tooling: `tests/test_v2_datasets.py` checks each folder's import in its own test, so a half-filled scaffold no
+  longer stops the collection of all; `task_probes.py` counts the standard-error part of `unstable` on a temporal
+  task only when the best family loses to the dummy on a window, and its JSON lists the skill and the dummy's loss
+  per split.
+
 ## 2026-10-15 (ashrae_great_energy_predictor_iii_1m: readings in kWh, recording errors dropped)
 
 Lennart's review of the 2026-10-07 run (issues 2, 3, 4 and 8 of NEW_DATASETS_ISSUES.md): ship, as one temporal

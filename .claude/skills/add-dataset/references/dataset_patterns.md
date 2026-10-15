@@ -295,7 +295,16 @@ doesn't need.
 #     counts): `df[target] = np.log(df[target])` / `np.log1p(...)`. Rename the column when you
 #     do (e.g. `log_days_to_death`). Skip it if the source already log-scaled the target.
 # 11. TODO(verify): drop implausible rows (data errors) and censored/capped target values.
-# 12. The row order and the index are the base class's job: the rows in the order of their content, then a
+# 12. TODO(verify): rows the use case never sees. A row that lacks the input the prediction acts on is no task
+#     row: drop it rather than keep it as missing (bias_correction: the three days without an LDAPS run, the
+#     forecast the task corrects; Lennart, 2026-10-15). Missing values of the other inputs stay missing.
+# 13. TODO(verify): clean recording errors to the state an expert would ship. Read what the source's top
+#     solutions and the data owners did (unit fixes, removed anomalies, a published list of bad rows), adopt the
+#     rules that hold for the train and the test period alike, and check them against such a list where one
+#     exists. Keep what a model can learn (a plant switched off for the season). ashrae (2026-10-15): readings
+#     in kWh from the data owners' release, meters at 0 in their operating season and readings stuck for a week
+#     dropped; 94.5% of the 2016 rows dropped are on the 1st place team's hand-made list.
+# 14. The row order and the index are the base class's job: the rows in the order of their content, then a
 #     stable sort by the time column for temporal tasks, else a shuffle with seed 42, then `reset_index`. Do
 #     not shuffle or sort in `_clean`.
 ```
@@ -405,6 +414,14 @@ Calendar windows end on unit boundaries (day, month start, year start); `min_tra
 whose train side is smaller than that share (of the distinct values for `"unique"`, of the rows otherwise) and, with
 `window=None` and `unit="unique"`, sizes the windows so they cover the newest `1 - min_train_fraction` of the
 values. Only a split that also filters rows by an as-of date (hotel_booking_demand) needs `_make_splits`.
+
+**Labels that arrive late.** When the label is known only some time after the row (a duration such as delivery
+days or permit processing time, an outcome after a follow-up), a model refit at a window's start knows only the
+rows whose label had arrived. Simulate that: train on the rows whose outcome is known by the window's start, with a
+gap of about the label's delay, in `_make_splits` (brazilian_ecommerce: one month, deliveries made before the
+window; sf_permit_time: 6 months). Without it the newest training rows are the fast ones, and a model that sees
+the time as a number is biased (brazilian_ecommerce: R^2 0.353 with the gap, -0.054 without; Lennart,
+2026-10-15).
 
 **Training history and the season of the test windows.** When the source defines the split (a competition's or the
 paper's official periods: delivery_eta_1m, consumer_complaints_1m), follow it. Otherwise decide what the train side

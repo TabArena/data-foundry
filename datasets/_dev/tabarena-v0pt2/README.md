@@ -70,7 +70,7 @@ not accepted in the definition.
 | [`bad_customer_detection`](bad_customer_detection/) | IID | 1,723 | 13 | 10 x 3 | not built |  |
 | [`bank_customer_churn`](bank_customer_churn/) | IID | 10,000 | 10 | 3 x 3 | not built |  |
 | [`bank_marketing`](bank_marketing/) | IID | 45,211 | 13 | 3 x 3 | `01a111fc-7c2d-7441-b859-646c9bfbf380` | `dataset_missing_value_sentinel` |
-| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,723 | 23 | 9 x 1 | not built |  |
+| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,648 | 23 | 9 x 1 | not built |  |
 | [`biogeographical_ancestry_prediction`](biogeographical_ancestry_prediction/) | IID | 607 | 102 | 20 x 3 | not built |  |
 | [`biomechanical_orthopaedic_prediction`](biomechanical_orthopaedic_prediction/) | IID | 310 | 6 | 20 x 3 | not built |  |
 | [`bioresponse`](bioresponse/) | IID | 3,751 | 1,776 | 3 x 3 | `01a111fc-4c0b-76f4-b01d-a4db8e120e35` |  |

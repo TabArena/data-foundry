@@ -36,7 +36,9 @@ curator, not verdicts; how to answer each one: ``.claude/skills/verify-dataset/r
 * ``drift_baseline``: for a temporal task, the drift baseline's loss (log loss, or squared error) is within 2% of
   the best family's;
 * ``unstable``: the best family beats the dummy on fewer than 80% of the splits, or the standard error of its mean
-  skill is above 0.05;
+  skill is above 0.05. For a temporal task the standard error counts only when the best family loses to the dummy on
+  a window: windows are not exchangeable, and a level that drifts between them moves every model's skill with the
+  dummy's error (paired by window, a model that beats the dummy on every window is not unstable);
 * ``few_minority``: a probed test fold holds fewer than 5 rows (or groups) of a class, binary or multiclass; the
   report names each class that falls short with its smallest count in a test fold.
 
@@ -431,7 +433,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
             best_loss, drift_loss = best_loss**2, drift_loss**2
         if drift_loss <= DRIFT_MARGIN * best_loss:
             flags.append("drift_baseline")
-    if above < UNSTABLE_SHARE or se > UNSTABLE_SE:
+    drift_only = times is not None and above == 1.0  # the skill moves with the dummy's error between windows
+    if above < UNSTABLE_SHARE or (se > UNSTABLE_SE and not drift_only):
         flags.append("unstable")
     smallest = np.min(class_counts, axis=0) if class_counts else np.array([], dtype=int)
     few = {str(classes[k]): int(smallest[k]) for k in np.argsort(smallest, kind="stable") if smallest[k] < FEW_MINORITY}
@@ -453,6 +456,10 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         "best": best,
         "best_skill_se": se,
         "best_beats_dummy_share": above,
+        "per_split": {
+            "best_skill": [round(float(v), 4) for v in best_skill],
+            "dummy_loss": [round(float(r["log_loss" if n_classes else "rmse"]), 4) for r in results["dummy"]],
+        },
         "single_feature": {"skill": single_skill, "chosen": {str(k): int(v) for k, v in counts.items()}},
         "smallest_class_per_test_fold": int(smallest.min()) if len(smallest) else None,
         "few_minority_classes": few,

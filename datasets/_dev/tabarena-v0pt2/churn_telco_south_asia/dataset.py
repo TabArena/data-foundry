@@ -83,7 +83,7 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
         - Anomaly: the raw file is a concatenation of extracts, each sorted by network_age, and six short runs hold churners only (54 rows). No extract is out of line (a random forest trained on the other rows scores each run of 60 rows or more at ROC AUC 0.757 to 0.888), so the split stays IID.
         - Anomaly: aug_fav_a is "0" for 59 subscribers, an undocumented code. All 59 have off-net revenue and at least 8 calls, so it does not mean "no call to another network"; we keep it as its own category.
         - Note: the September favourite network moves towards ufone in both classes, the active subscribers more (decision table). We read it as a change between the months, not a recording that differs by class, and keep both columns.
-        - Note: churn_telco_nigeria (DSN Telecoms Churn 2018) is this file with the networks renamed and a customer id and a tenure added; its rows and labels match these.
+        - Note: churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018) is this file with the networks renamed and a customer id and a tenure added; its rows and labels match these.
         - Year: 2017, the first publication (the IntelliSys paper and the Kaggle upload); the data were collected in 2015.
     """
 
