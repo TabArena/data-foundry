@@ -214,7 +214,7 @@ def test_claims_belong_to_wip_records(records):
 
 
 def test_better_data_flag_names_an_existing_record(records):
-    """A record tagged ``Better Data Available (Review)`` names the better dataset's record in its comments."""
+    """A record tagged ``Better Data Available`` names the better dataset's record in its comments."""
     names = {r.unique_name for r in records}
     bad = [
         r.unique_name

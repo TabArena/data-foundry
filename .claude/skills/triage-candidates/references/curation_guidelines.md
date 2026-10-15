@@ -248,7 +248,7 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
 * **Small or dated, and the task is still done today** → before settling the verdict, look for a larger or newer
   public source of the same task: same target and use case, features of the same kind (`/check-candidate` step 5).
   A hit becomes its own record, not a `Duplicate`. The old record is not rejected automatically: it gets a pointer
-  comment and the tag `Better Data Available (Review)`, which keeps it in the Review queue until a curator decides
+  comment and the tag `Better Data Available`, which keeps it in the Review queue until a curator decides
   its verdict and removes the tag (`body_density_prediction` → `nhanes_dxa_body_fat`).
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a

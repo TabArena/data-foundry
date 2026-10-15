@@ -69,7 +69,7 @@ Do every step; skip only when an earlier step settles the verdict and say so.
    features need not match column for column. Government surveys, registries and newer studies are the usual
    places. For a hit, load it and report its size after cleaning and a quick baseline. Add it as its own record (a
    different source is not a `Duplicate`). On the old record, add a comment naming the new record in backticks and
-   the tag `Better Data Available (Review)`, which puts it in the Review queue (`better_data_review`). Do not
+   the tag `Better Data Available`, which puts it in the Review queue (`better_data_review`). Do not
    change its verdict: the curator decides whether it still holds, then removes the tag. Precedent:
    `body_density_prediction` (252 men, 1985) → `nhanes_dxa_body_fat` (21,768 people, DXA percent fat).
 6. **Write into the record only substance.** Add the source links you verified. Add one dated comment

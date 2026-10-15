@@ -130,7 +130,7 @@ AI_REVIEWER: str = "AI (UNVERIFIED)"
 """``checked_by`` value meaning "an AI triaged this; a human still must verify it"."""
 AI_FILLED_TAG: str = "AI-Filled (Verify)"
 """``tags`` value flagging records whose fields were populated by the AI-review pass."""
-BETTER_DATA_TAG: str = "Better Data Available (Review)"
+BETTER_DATA_TAG: str = "Better Data Available"
 """``tags`` value: a larger or newer dataset for the same task exists (its record is named in the comments)."""
 COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 """``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
