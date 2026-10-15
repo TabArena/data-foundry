@@ -1643,17 +1643,20 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
    - Fallback if you rule against the readings: the readings-free task (patient and exam facts only), close to the BCSC's risk-model framing. Logistic regression reaches 0.578 there, above 0.5 on 9 of 9 splits: a small, real signal (rule 2), not a `No`.
    - Either way a dated `CC` decision in the record would settle it.
 
+   **Resolved (Lennart, 2026-10-15):** kept. The readings are valid tabular inputs: screening programmes run tabular risk models on BI-RADS readings and risk factors, so the image-scoring rule does not apply; the real-world use decides. The exception is now in the curation guidelines (and their dashboard copy).
 2. **Grouped by woman, or IID as the record says?**
    - `ptid` is the source's patient id. 3,133 of 36,714 women have 2-4 exams, and only the 20 with cancer have a positive exam, their last.
    - A random split gains nothing (0.906 against 0.914 grouped).
    - Now: grouped. The exams are a random sample of the BCSC's screening mammograms, so a model is used for other women, and your comment flagged the repeated women.
    - Alternative: IID, with the same scores. The verifier agrees with grouped.
 
+   **Resolved (Lennart, 2026-10-15):** IID with one exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order): 36,714 rows, 239 of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest, 0.923 latest, 0.925 all exams grouped; script in the run folder of 2026-10-15). Regularised LightGBM 0.929 and a random forest 0.927 beat the assessment alone (0.914) on 8 of 9 splits. The repeated feature vectors (52.2% of the rows, different women) are now an accepted `dataset_duplicate_rows` warning.
 3. **Print the BCSC's direct download link?**
    - `https://www.bcsc-research.org/download_file/view/33/347` (HTTP 200 today; on the post-form page in Wayback 2021 and 2024) returns the original zip without the name / institution / e-mail form.
    - Now: `download_description` describes the form route (zip and CSV sha256, `unzip -p`), keeps the GitHub copy as a pinned mirror, and does not print the link.
    - Alternative: print it, which makes the original download scriptable.
 
+   **Resolved (2026-10-15, Lennart left it open):** not printed. The BCSC asks users to register before downloading; the pinned GitHub copy (same sha256) already makes the download scriptable.
 4. **Terms (noted, not a verdict reason).** "Recommended for use as a teaching tool only; they should not be used to conduct primary research". The P01CA154292 acknowledgement ("must be cited when reproducing this data") is now in the bibtex note, with the download date 10/07/2026.
 
 5. **Target.** Now binary any-cancer (the source's question 4). The alternative is three classes from `CaTypeO` (none / DCIS 56 / invasive 203), about 19 DCIS per test fold.
@@ -1665,12 +1668,15 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
    - `required_split` and `tags` per issue 2;
    - `v2_path`.
 
+   **Resolved (Lennart, 2026-10-15):** applied: `year` 2014, the dead datahub link replaced by the BCSC page; `original_source` was already GOV Website; `required_split` and `tags` stay IID (issue 2); `v2_path` is set. The review page's labels now say what a mark does ("take definition's value" / "keep record's value"), and record fields go only into the field table, never into a numbered issue (review-added-datasets skill).
 7. **For comparisons with TabSTAR.** TabSTAR's version (`BIN_HEALTHCARE_BREAST_CANCER_MAMMOGRAM.py`, `COLS_TO_DROP = []`) keeps `Cancer_Type`, which gives the label away.
 
+   **Resolved (Lennart, 2026-10-15):** noted only; another collection's version of the data is no reference (now a rule in the skills).
 8. **Framework.**
    - (a) `leak_probes.py` used the group column as a feature; the orchestrator has fixed it.
    - (b) `generated_probes.py --root` fails when any folder does not import.
    - (c) The task and group probes' linear models read categories as codes. With plain BCSC labels the linear probe scored 0.587; with the BI-RADS-number prefix it scores 0.80.
+   **Resolved (Lennart, 2026-10-15), applied:** (a) fixed on 2026-10-07; (b) the probes load only the named folder, and `--all` skips folders that do not import; (c) the linear models of the task and group probes one-hot encode categories (at most 64 levels each): the linear probe now scores ROC AUC 0.922 here.
 
 **Verification:** (verifier, 2026-10-07: needs changes, text only; container correct)
 - Finding 1 (image rule, major): applied. Now issue 1, with both sides, the heart_disease_cleveland precedent and the readings-free fallback. A short pointer to the precedent is in the assessment bullet of `curation_comments`.

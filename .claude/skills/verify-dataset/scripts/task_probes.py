@@ -69,15 +69,16 @@ import numpy as np
 import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
-from data_foundry.v2 import discover_datasets, read_report
+from data_foundry.v2 import discover_datasets, load_definition, read_report
 from joblib import Parallel, delayed
+from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 SOLVED = 0.995
 """ROC AUC, macro ROC AUC or R^2 from which a task counts as solved."""
@@ -115,7 +116,7 @@ def load(name: str, root: Path, *, built: bool) -> tuple[CuratedContainer, str]:
         build = (read_report(root / name / "README.md") or {}).get("build") or {}
         if build.get("path"):
             return CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built"
-    return discover_datasets(root)[name]().to_container(), "rebuilt"
+    return load_definition(Path(root) / name / "dataset.py")().to_container(), "rebuilt"  # this folder only
 
 
 def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str], list[str]]:
@@ -173,18 +174,30 @@ def encode_text(
     return pd.concat(tr_parts, axis=1), pd.concat(te_parts, axis=1), blocks
 
 
-def models(*, regression: bool, n_jobs: int) -> dict:
-    """The three untuned model families."""
+def linear_inputs(categorical: list[str]) -> ColumnTransformer:
+    """The linear family's inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled.
+
+    A category's code is no number: read as one, a linear model ranks the levels by their arbitrary order.
+    """
+    return ColumnTransformer(
+        [("categories", OneHotEncoder(handle_unknown="infrequent_if_exist", max_categories=64), categorical)],
+        remainder=StandardScaler(),
+    )
+
+
+def models(*, regression: bool, n_jobs: int, categorical: list[str] | None = None) -> dict:
+    """The three untuned model families; ``categorical`` names the columns the linear family one-hot encodes."""
+    categorical = categorical or []
     if regression:
         return {
-            "linear": lambda: make_pipeline(StandardScaler(), Ridge(alpha=1.0)),
+            "linear": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
             "random_forest": lambda: RandomForestRegressor(
                 n_estimators=200, min_samples_leaf=2, max_features="sqrt", n_jobs=n_jobs, random_state=0
             ),
             "lightgbm": lambda: lgb.LGBMRegressor(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
         }
     return {
-        "linear": lambda: make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=2000)),
+        "linear": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=1.0, max_iter=2000)),
         "random_forest": lambda: RandomForestClassifier(
             n_estimators=200, min_samples_leaf=2, n_jobs=n_jobs, random_state=0
         ),
@@ -307,7 +320,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         pairs.append((train, test, full_train))
 
     results: dict[str, list[dict]] = {}
-    candidates = models(regression=regression, n_jobs=n_jobs)
+    categorical = [f"f{i}" for i, name in enumerate(names) if isinstance(df[name].dtype, pd.CategoricalDtype)]
+    candidates = models(regression=regression, n_jobs=n_jobs, categorical=categorical)
     chosen_single: list[str] = []
     class_counts: list[np.ndarray] = []  # the units of each class, per probed test fold
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
@@ -530,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
     args = parser.parse_args(argv)
 
-    names = sorted(discover_datasets(args.root)) if args.all else args.names
+    names = sorted(discover_datasets(args.root, strict=False)) if args.all else args.names
     if not names:
         parser.error("name at least one dataset, or pass --all")
     kwargs = {

@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from pathlib import Path
 
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 
@@ -35,15 +36,16 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from data_foundry.schema import as_column_list
-from data_foundry.v2 import discover_datasets
+from data_foundry.v2 import load_definition
 from joblib import Parallel, delayed
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def features(df: pd.DataFrame, drop: list[str]) -> pd.DataFrame:
@@ -60,11 +62,20 @@ def features(df: pd.DataFrame, drop: list[str]) -> pd.DataFrame:
     return X
 
 
-def models(*, regression: bool) -> dict:
-    """Untuned models of four families."""
+def linear_inputs(categorical: list[str]) -> ColumnTransformer:
+    """The linear models' inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled."""
+    return ColumnTransformer(
+        [("categories", OneHotEncoder(handle_unknown="infrequent_if_exist", max_categories=64), categorical)],
+        remainder=StandardScaler(),
+    )
+
+
+def models(*, regression: bool, categorical: list[str] | None = None) -> dict:
+    """Untuned models of four families; ``categorical`` names the columns the linear models one-hot encode."""
+    categorical = categorical or []
     if regression:
         return {
-            "ridge": lambda: make_pipeline(StandardScaler(), Ridge(alpha=1.0)),
+            "ridge": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
             "random_forest": lambda: RandomForestRegressor(
                 n_estimators=300, min_samples_leaf=2, n_jobs=1, random_state=0
             ),
@@ -72,7 +83,7 @@ def models(*, regression: bool) -> dict:
             "knn5": lambda: make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=5)),
         }
     return {
-        "logreg": lambda: make_pipeline(StandardScaler(), LogisticRegression(C=0.1, max_iter=5000)),
+        "logreg": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=0.1, max_iter=5000)),
         "random_forest": lambda: RandomForestClassifier(n_estimators=300, n_jobs=1, random_state=0),
         "lightgbm": lambda: lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=1),
         "knn5": lambda: make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=5)),
@@ -134,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--n-jobs", type=int, default=8)
     args = parser.parse_args(argv)
 
-    ds = discover_datasets(args.root)[args.name]()
+    ds = load_definition(Path(args.root) / args.name / "dataset.py")()  # this folder only
     task = ds.task_metadata
     if task.grouping is None:
         print(f"{args.name} is not a grouped task.")
@@ -186,7 +197,14 @@ def main(argv: list[str] | None = None) -> int:
 
     baseline = 0.0 if regression else 0.5
     print(f"learnability across groups (baseline {baseline:.1f}), per row" + (" / per group" if by_group else ""))
-    candidates = models(regression=regression)
+    categorical = [
+        f"f{i}"
+        for i, name in enumerate(
+            df.drop(columns=[task.target_column_name, *group_cols]).select_dtypes(exclude=["string", "object"]).columns
+        )
+        if isinstance(df[name].dtype, pd.CategoricalDtype)
+    ]
+    candidates = models(regression=regression, categorical=categorical)
     results = Parallel(n_jobs=min(args.n_jobs, len(candidates)))(
         delayed(evaluate)(make, X, y, groups, repeats, n_classes, by_group=by_group) for make in candidates.values()
     )

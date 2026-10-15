@@ -78,7 +78,7 @@ not accepted in the definition.
 | [`blood_transfusion`](blood_transfusion/) | IID | 748 | 4 | 20 x 3 | `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`body_density_prediction`](body_density_prediction/) | IID | 252 | 13 | 20 x 3 | not built |  |
 | [`brazilian_ecommerce`](brazilian_ecommerce/) | temporal | 88,721 | 24 | 5 x 1 | not built |  |
-| [`breast_cancer_prediction`](breast_cancer_prediction/) | grouped | 39,998 | 10 | 3 x 3 | not built |  |
+| [`breast_cancer_prediction`](breast_cancer_prediction/) | IID | 36,714 | 10 | 3 x 3 | not built |  |
 | [`california_house_prices_2020`](california_house_prices_2020/) | temporal | 39,048 | 41 | 3 x 1 | `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` |  |
 | [`caracas_cervical_cancer`](caracas_cervical_cancer/) | IID | 750 | 30 | 10 x 3 | not built |  |
 | [`cardiotocography`](cardiotocography/) | grouped | 2,126 | 22 | 10 x 3 | not built | `dataset_constant_column` |

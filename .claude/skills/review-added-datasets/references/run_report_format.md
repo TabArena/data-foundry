@@ -92,8 +92,9 @@ with the next label.
 
 An issue is a decision for the curator, with the evidence from our own splits, probes and sources. Scores that
 other benchmarks published for the dataset (TALENT, leaderboards) are no issue and no evidence: their random splits
-are wrong for most of our tasks (Lennart, 2026-10-15). Name another benchmark only where it identifies the source or
-the record's name.
+are wrong for most of our tasks (Lennart, 2026-10-15). The same holds for another collection's version of the data
+(TabSTAR's column choices, an OpenML copy's target): do not over-index on it, and name it only where it identifies
+the source, a duplicate or the record's name.
 
 The title is the bold text at the start of the issue (`1. **Keep the target in decibels?** The source ...`), or else
 the first sentence. The number is the key under which the curator's mark is stored (`items.<N>`): numbers are unique
@@ -125,8 +126,14 @@ separated by `; `, the bullet ending with a period:
 ```
 
 Field names are lower case with `_` (`problem_type`, `required_split`, `original_source`, `domain`, `year`, `tag`).
-The curator marks each one "update record" or "keep record", stored under the field name, so a field appears once
-per record. A bullet can wrap onto indented lines; lines that are not bullets (an intro) are not shown.
+The curator marks each one "take definition's value" (stored as `update`) or "keep record's value" (`keep`), under
+the field name, so a field appears once per record. A bullet can wrap onto indented lines; lines that are not
+bullets (an intro) are not shown.
+
+Record fields go only here, never into a numbered issue: an issue's marks (as implemented / change / discuss) do not
+say which value the record takes, and the curator found such issues confusing (Lennart, 2026-10-15,
+breast_cancer_prediction). Record changes that are not a disagreement with the definition (a dead source link, a
+missing `v2_path`) need no mark: Claude makes them when it applies the verdict and says so in the outcome.
 
 ## Across datasets
 

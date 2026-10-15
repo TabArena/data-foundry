@@ -484,7 +484,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel.")
     parser.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
     args = parser.parse_args(argv)
-    names = sorted(discover_datasets(args.root)) if args.all else args.names
+    names = sorted(discover_datasets(args.root, strict=False)) if args.all else args.names
     if not names:
         parser.error("name at least one dataset, or pass --all")
     results = Parallel(n_jobs=args.jobs)(delayed(_safe)(n, args.root, built=args.built) for n in names)

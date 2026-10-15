@@ -4,6 +4,22 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (breast_cancer_prediction: one exam per woman, IID; probe fixes)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1, 2, 3, 6 and 8), verdict still open. Edited
+`dataset.py`, not built (checksum changes); `dataset check` 0 errors, 0 warnings (two accepted), 1 info.
+
+- One exam per woman, her earliest in the sample, with IID folds instead of grouping by woman: 36,714 rows and 239
+  of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned
+  LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped).
+  `dataset_duplicate_rows` (repeated coarse profiles of different women) is accepted with that reason.
+- The BI-RADS readings stay features: tabular risk models use them in practice. The curation guidelines (and
+  `guidelines.html`) now carry that exception to the image-scoring rule.
+- Record: `year` 2014; the dead datahub link replaced by the BCSC page.
+- Tooling: the leak, group and task probes load only the named folder (`--all` skips folders that do not import);
+  the linear models of the task and group probes one-hot encode categories. The review page labels its marks by what
+  they do, and record-field disagreements go only into its field table.
+
 ## 2026-10-15 (review verdicts: bias_correction and brazilian_ecommerce ship; churn_telco_nigeria renamed)
 
 Lennart's verdicts on the review page of the 2026-10-07 run, none built yet:

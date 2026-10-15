@@ -263,7 +263,13 @@
       the URL/alt-text tokens do <strong>not</strong> make it a carve-in; (2) <strong>a human <em>scoring what they see
       in an image</em></strong> is still an image feature — <code>breast_w</code>'s 1–10 cytology grades are a
       pathologist's scoring of cell morphology under a microscope → image-derived, and "assigned by eye" does not rescue
-      it when the thing being scored is an image.
+      it when the thing being scored is an image. <strong>Exception:</strong> a reading that real tabular models take
+      as an input in practice stays in scope — the BI-RADS assessment and density of a screening mammogram, which risk
+      models such as the BCSC Risk Calculator combine with risk factors (<code>breast_cancer_prediction</code>), or the
+      thallium-scan result of <code>heart_disease_cleveland</code>. The rule stands in for the real-world use: when it
+      seems to exclude a dataset, check how the prediction is made in practice, and let the use case decide
+      (Lennart, 2026-10-15). <code>breast_w</code> stays out: its grades describe the slide for a call that pathology
+      makes from the image itself.
       <br><em>Narrow carve-in (stays in-scope):</em> attributes that are <strong>not</strong> a description / scoring of
       image (or other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
       entity directly (lab values, sensor readings, questionnaire responses, transaction fields), not read off a photo /

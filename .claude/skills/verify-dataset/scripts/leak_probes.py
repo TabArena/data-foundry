@@ -56,7 +56,7 @@ from pathlib import Path
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import discover_datasets
+from data_foundry.v2 import load_definition
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.neighbors import NearestNeighbors
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -283,7 +283,7 @@ def string_checks(
 def probe(args: argparse.Namespace) -> dict:
     """Print the probes for one dataset and return their numbers; see the module docstring."""
     started = time.time()
-    ds = discover_datasets(args.root)[args.name]()
+    ds = load_definition(Path(args.root) / args.name / "dataset.py")()  # this folder only
     plan = ds.make_splits()
     df, regression = plan.df, ds.problem_type == "regression"
     y = df[ds.target]

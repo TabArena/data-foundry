@@ -84,7 +84,9 @@ task scored per group) and the first 5 otherwise, encodes
 text columns (TF-IDF + SVD), and reports each family's skill, the single feature chosen per split and the smallest
 class per test fold. Flags from sweeps before 6 October 2026 used weaker rules (one feature chosen once on the first
 split, an unpaired spread test, the standard deviation for `unstable`, text left out) and are not comparable. Before
-12 October 2026, `few_minority` checked binary tasks only.
+12 October 2026, `few_minority` checked binary tasks only. Before 15 October 2026 the linear family read categories
+as integer codes (breast_cancer_prediction's linear probe: ROC AUC 0.80 with codes, 0.92 one-hot), and `unstable`
+counted the standard error on temporal tasks that beat the dummy on every window.
 
 ## Cases (the v0.2 review)
 

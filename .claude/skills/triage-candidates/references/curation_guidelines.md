@@ -185,6 +185,14 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
       instrument. `breast_w`'s 1–10 cytology grades (clump thickness, cell-size uniformity, …) are a
       pathologist's scoring of cell morphology seen under a microscope → image-derived → **No**. "A human
       assigned it by eye" does **not** rescue it when *the thing being scored is an image*.
+    * **Exception: readings that real tabular models take as inputs.** When the human reading is the established
+      clinical or operational result that tabular models are used on in practice, the task is a real tabular task
+      and stays in scope: the BI-RADS assessment and density of a screening mammogram, which risk models such as the
+      BCSC Risk Calculator combine with risk factors (`breast_cancer_prediction`), or the thallium-scan result of
+      `heart_disease_cleveland`. The rule stands in for the real-world use, so when a rule seems to exclude a
+      dataset, check how the prediction is made in practice: if tabular models on such data are used, the use case
+      decides (Lennart, 2026-10-15). `breast_w` stays out: its grades describe the slide for a call that pathology
+      makes from the image itself.
   * **Narrow carve-in (stay in-scope):** attributes that are *not* a description / scoring of image (or
     other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
     entity directly (lab values, sensor readings, questionnaire responses, transaction fields), **not**

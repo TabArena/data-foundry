@@ -47,8 +47,10 @@ Keep the output under `local-data-warehouse/`: it is never committed.
 
 Either way the curator sets a verdict per record (ship / ship after changes / don't ship / discuss; for a record that
 was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a
-mark per numbered issue (keep as is / change / discuss) with optional notes, a mark per record-field disagreement
-(update the record / keep it), and a mark per cross-dataset item (go ahead / leave as is / discuss).
+mark per numbered issue (as implemented / change / discuss) with optional notes, a mark per record-field
+disagreement (take the definition's value / keep the record's value), and a mark per cross-dataset item (go ahead /
+leave as is / discuss). Record-field disagreements belong in the field table, never in a numbered issue
+(`references/run_report_format.md`).
 
 * **Local file.** Open `review_page.html` in a browser. The marks are kept in that browser only (localStorage). When
   done, the curator copies them from the Summary view ("Copy decisions (JSON)") and pastes them to Claude or saves

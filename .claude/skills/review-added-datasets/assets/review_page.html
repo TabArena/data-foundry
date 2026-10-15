@@ -428,10 +428,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const REC = { added: "ship", noship: "dont", notadded: "dont", decided: "correct" };
   const CAT = { added: "To ship", noship: "Rec. not to ship", notadded: "Not added", decided: "Decided: verify" };
   const labelsFor = (d) => (d.cat === "decided" ? VLABEL_DEC : d.cat === "notadded" ? VLABEL_NA : VLABEL);
-  const ITEM_OPTS = [["ok", "Keep as is"], ["change", "Change"], ["discuss", "Discuss"]];
+  const ITEM_OPTS = [["ok", "As implemented"], ["change", "Change"], ["discuss", "Discuss"]];
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
-  const FIELD_OPTS = [["update", "Update record"], ["keep", "Keep record"]];
-  const OPT_LABEL = { ok: "Keep as is", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Update record", keep: "Keep record" };
+  const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
+  const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
   const X_LABEL = { ok: "Go ahead", leave: "Leave as is", discuss: "Discuss" };
   // The task summary, labelled and judged as on the TabArena Task Summaries page.
   const SUM_LABELS = [
@@ -760,7 +760,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     });
     if (!d.blocks.length && !d.shared.length) det += '<p class="intro">The run report has no further details for this record.</p>';
     det += "</section>";
-    dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "keep, change or discuss each") + "</span></h3>";
+    dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
+    if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented: keep what the definition does now. Change: do what your note says. Discuss: Claude answers on the page first. Record fields are marked in their own table below.</p>';
     if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
     if (d.items.length && d.cat === "decided") dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
     if (nClosed) {
@@ -786,6 +787,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     }
     if (d.fields.length) {
       dec += '<h3 id="fld-h">Record fields that disagree <span class="count">record against definition</span></h3>';
+      dec += '<p class="intro">Take definition\'s value: the curation record is changed to the definition\'s value. Keep record\'s value: the record stays as it is (add a note if the definition should change instead).</p>';
       dec += '<div class="tablewrap"><table class="fieldtab"><thead><tr><th>Field</th><th>Record</th><th>Definition</th><th><span class="visually-hidden">Decision</span></th></tr></thead><tbody>';
       d.fields.forEach((f) => {
         dec += "<tr><td>" + esc(f.field) + '</td><td class="v">' + esc(f.record) + '</td><td class="v">' + esc(f.definition) + '</td><td><div class="seg small">' +

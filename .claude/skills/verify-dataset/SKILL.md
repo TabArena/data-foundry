@@ -170,4 +170,5 @@ Read the selection criteria and processing conventions in [`.claude/skills/triag
   "verified, looks good".
 * Evidence comes from our own splits, probes and the sources. Never report scores another benchmark published for
   the dataset (TALENT, a leaderboard) as a finding or as evidence: their random splits are wrong for most of our
-  tasks (Lennart, 2026-10-15).
+  tasks (Lennart, 2026-10-15). Another collection's version of the data (TabSTAR's columns) is no reference either;
+  name it only for provenance or a duplicate.
