@@ -245,6 +245,11 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   kept as a tiny-data task). In a multiclass task a rare class counts when its rows decide the score (alvin: 8 rows
   of the rarest classes carry half of a window's log loss; retired 2026-10-12); a rare class of the source's own
   labels among well-filled ones stays (mic: 12 rows, 4 per fold, 5% of the loss; kept 2026-10-12).
+* **Small or dated, and the task is still done today** → before settling the verdict, look for a larger or newer
+  public source of the same task: same target and use case, features of the same kind (`/check-candidate` step 5).
+  A hit becomes its own record, not a `Duplicate`. The old record is not rejected automatically: it gets a pointer
+  comment and the tag `Better Data Available`, which keeps it in the Review queue until a curator decides
+  its verdict and removes the tag (`body_density_prediction` → `nhanes_dxa_body_fat`).
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a
   reason** and no marker: write it down as a note in `## Comments` and triage the data on its merits.
