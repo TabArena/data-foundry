@@ -9,6 +9,7 @@ claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- Anonymized
 collections:
 - New (BeyondArena)
 original_source: Github

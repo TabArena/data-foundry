@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- Anonymized
 collections:
 - New (BeyondArena)
 original_source: Kaggle

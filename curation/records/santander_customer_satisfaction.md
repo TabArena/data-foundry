@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- Anonymized
 collections:
 - TabArena Reject
 original_source: Kaggle

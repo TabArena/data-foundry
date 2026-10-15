@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- Anonymized
 collections:
 - TabArena Reject
 - TabSTAR

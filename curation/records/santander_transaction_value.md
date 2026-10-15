@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
+- Anonymized
 collections:
 - TabArena Reject
 - TabSTAR
