@@ -2445,6 +2445,9 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - Alternative: retire as iranian_churn if the paper's data section places the churn inside August-September.
    - Please read the paper's data section. A Google search for "MCS: Multiple classifier system to predict the
      churners in the telecom industry" pdf should find it; the data card links ResearchGate 320331663.
+   **Follow-up (AI, 2026-10-15):** Lennart added Ahmed et al., Neural Computing and Applications 32:3237-3251 (online 2018, doi 10.1007/s00521-018-3678-8). It does not settle the timing: "The subscriber data is extracted from the time interval of two months, i.e., August and September 2015" (Sec. 3.1, p. 3241), and "class labeling (for SATO dataset)" is a preprocessing step without a definition (Sec. 3.2). The record's second quote is not in this paper, so it comes from the IntelliSys 2017 paper, the one source left. If that says nothing either: keep as implemented (fit `approximate`, the unknown timing named).
+   **Follow-up (AI, 2026-10-15):** Lennart added the IntelliSys 2017 paper too. Its data section does not say it either: "The subscriber data was extracted from the time interval of two months, i.e. August and September 2015. To overcome the class imbalance problem in churn data sets, an equal amount of churners and active subscribers were collected from the carrier" (Sec. III, p. 680); "class labeling" is a preprocessing step (Sec. IV, p. 681). No source is left. Recommendation: keep as implemented, fit `approximate` with the unknown timing named.
+   **Resolved (Lennart, 2026-10-15):** ship, kept for now as possibly problematic: the definition states the unknown timing as a potential leak kept on purpose (curation_comments, task summary), to revisit if the churn can be dated.
 2. **churn_telco_south_asia_duplicate is this data.** The DSN 2018 files (TRAIN 1,400 + TEST 600) are these 2,000 rows:
    - all rows match one to one on the nine numeric columns;
    - all 1,400 TRAIN labels agree;
@@ -2458,6 +2461,7 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    forest AUC 0.815 against 0.729 for the raw total revenue, on 30 splits. Side note: OpenML 44229 is titled
    "Churn_Telco_Europa" (version 2) but holds the DSN data. The churn_telco_europa record links 44228, which is
    different data.
+   **Resolved (Lennart, 2026-10-15):** marked: the DSN record is now `churn_telco_south_asia_duplicate`, `No` + `Duplicate` of this record.
 3. **The 50% base rate is artificial, and the classes were drawn from several extracts.** The record quotes "an
    equal amount of churners and active subscribers were collected from the carrier".
    - ROC AUC does not depend on the class shares. Log loss and predicted probabilities do, and the operator's churn
@@ -2470,6 +2474,7 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - All but 6 subscribers have a network age of 91 days or more, so the sample looks restricted to subscribers of
      at least three months.
    - Implemented: kept as published, with bullets saying so.
+   **Resolved (Lennart, 2026-10-15):** as implemented.
 4. **Year: docstring against practice.** Implemented: `year = "2015"`, the collection year and the record's year.
    - Of the 125 committed definitions, 94 keep their record's year.
    - Those that move away from the publication year move to the data's year: amazon_employee_access 2010 for a
@@ -2478,12 +2483,14 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - The v2 docstring says "Year the data was published", which would give 2017 (the paper and the Kaggle upload).
      The working copy is mixed: airfoil_self_noise uses its UCI year, 2014, for a 1989 experiment.
    - The docstring or the practice should change. It is the same question as pkdd's (ORCH_NOTES).
+   **Resolved (Lennart, 2026-10-15):** as implemented (`year = "2017"`).
 5. **The paper's 86% accuracy is not reached.** The abstract reports 86% accuracy for MCS on this "private dataset".
    An untuned random forest reaches 0.738 (0.706-0.763) on the 30 splits here, and the public Kaggle notebooks
    report 0.74-0.76.
    - This may mean the published file differs from the paper's data, or that the paper's protocol was optimistic.
      It cannot be checked without the paper.
    - Implemented: nothing; noted in `curation_comments`. Low priority.
+   **Resolved (Lennart, 2026-10-15):** as implemented. The papers explain part of the gap: "Package Name" is one of their features (IntelliSys 2017, Sec. III.A) and among the top five (Neural Computing and Applications, Sec. 4, p. 3249), and the public file lacks it.
 6. **Anomalies kept as published** (low priority):
    - `Aggregate_ONNET_REV + Aggregate_OFFNET_REV` is a median 22 times `Aggregate_Total_Rev`, so these are not
      rupees. 206 of the 1,944 positive off-net values are multiples of 179 (179 alone: 65 rows), which suggests a
@@ -2496,6 +2503,8 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - The favourite network shifts to ufone in September for both classes: active subscribers from 223 to 786,
      churners from 223 to 426. I read this as a month effect, not a recording that differs by class. Dropping
      `sep_fav_a` costs 0.006 AUC, and dropping both September columns 0.005.
+   **Answer (AI, 2026-10-15):** Lennart asked which are natural and which a human should fix. Fixed, as caracas_cervical_cancer's impossible answers: the 5 negative `network_age` values become missing (days on the network cannot be negative), and `aug_fav_a` "0" becomes missing (an undocumented placeholder, absent in September, for subscribers who did call other networks: an unknown network). Natural, kept: the on-net and off-net unit (undocumented, the scale does not matter to the models), complaint counts from 1 (an offset or the cohort), and the September shift to ufone, which follows activity in both classes (share by fifth of calls, lowest to highest: 0.40 to 0.93 active, 0.18 to 0.80 churned; at equal calls both keep their August network equally often: 0.56/0.66 lowest fifth, 0.17/0.19 highest). `dataset check` 0 errors, 0 warnings; leak probes: all features 0.813, missing indicators 0.50-0.51; checksum `v2:28d5013a…`.
+   **Resolved (Lennart, 2026-10-15):** as applied; ship.
 
 ### college_scorecard
 **Outcome:** added and checked

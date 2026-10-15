@@ -4,6 +4,19 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (churn_telco_south_asia ships: impossible values missing; churn timing unknown)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1 and 6) and his verdict: ship. Edited `dataset.py`,
+not built (checksum `v2:4708a007…`); `dataset check` 0 errors, 0 warnings.
+
+- `network_age` is missing for the 5 churners with a negative value (-8 to -2 days), and `aug_fav_a` "0" (59
+  subscribers, an undocumented code absent in September) is missing. The undocumented on-net and off-net unit,
+  complaint counts from 1 and the September shift to ufone (it follows activity in both classes) stay as published.
+- Both papers of the authors (IntelliSys 2017, Neural Computing and Applications 2020) are read; neither says when
+  churn was observed. The task may be problematic and is kept for now: the notes state it as a potential leak kept on
+  purpose (churn inside August-September would make the usage totals end at the outcome, as in iranian_churn), the
+  task summary's fit stays `approximate`, and it is to be revisited if the churn can be dated.
+
 ## 2026-10-15 (cdc_diabetes_health_indicators retired: wrong task)
 
 - `cdc_diabetes_health_indicators` retired (record `No`, `No Good Target / Scientific Discovery`; folder removed,

@@ -38,6 +38,10 @@ subscribers were collected from the carrier. So the data has 50% churner's infor
 
 Open (2026-10-12): a paper to get. IntelliSys 2017, doi 10.1109/IntelliSys.2017.8324367 (closed access; no free copy found in the 2026-10-07 run), would settle when churn was observed in this data, which decides whether the usage columns describe the time before the churn.
 
+**Assessment (AI, 2026-10-15):** The authors' journal paper (Ahmed et al., Neural Computing and Applications 32:3237-3251, doi 10.1007/s00521-018-3678-8) does not say when churn was observed either: "The subscriber data is extracted from the time interval of two months, i.e., August and September 2015" (Sec. 3.1, p. 3241); "class labeling (for SATO dataset)" is listed as a preprocessing step without a definition (Sec. 3.2). Nor does the IntelliSys 2017 paper (Sec. III, p. 680, the source of the quotes above; "class labeling" is a preprocessing step, Sec. IV), so no source settles it; the definition keeps churn after the window, with fit `approximate`. Both papers list "Package Name" as a feature (among the top five in the journal paper, Sec. 4), which the public file lacks.
+
+CC (2026-10-15, Lennart): ship, kept for now although the task may be problematic: neither paper says when churn was observed, and if the churners left inside August-September, the usage totals end at the outcome (the iranian_churn reason). The definition states this as a potential leak kept on purpose; revisit if the churn can be dated. The impossible negative `network_age` values and the undocumented `aug_fav_a` "0" are missing; the other anomalies stay as published.
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,
