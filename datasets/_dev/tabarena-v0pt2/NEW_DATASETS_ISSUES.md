@@ -1774,7 +1774,7 @@ TODO is left.
 3. **One-hot reversal not done.** The STD and Dx blocks are multi-label: 43 of 740 patients have 2-4 STD types, and
    16 of 18 previous cancer diagnoses carry HPV. Alternative: combination categoricals, with 14 STD levels (9 of them
    with 1-3 rows) and 5 Dx levels.
-   **Answer (AI, 2026-10-15), open:** kept as one yes/no category per flag. Each flag is a question of the questionnaire, and they are multi-label: 9 patients have two or three STD types (the 43 above counted condylomatosis twice: `std_condylomatosis` is exactly the OR of the vaginal and vulvo-perineal types, and `stds_number` is the sum of all ten flags). A single category would need 14 levels, 9 of them with 1-3 patients (issue 3 above), and a string column would be read as free text. `stds` and `stds_number` are derived from the flags and stay as the source counts them.
+   **Answer (AI, 2026-10-15):** kept as one yes/no category per flag. Each flag is a question of the questionnaire, and they are multi-label: 9 patients have two or three STD types (the 43 above counted condylomatosis twice: `std_condylomatosis` is exactly the OR of the vaginal and vulvo-perineal types, and `stds_number` is the sum of all ten flags). A single category would need 14 levels, 9 of them with 1-3 patients (issue 3 above), and a string column would be read as free text. `stds` and `stds_number` are derived from the flags and stay as the source counts them.
 4. **Repeated answer profiles kept** (21 exact copies plus 1 copy with the other label). The alternative, dropping
    them as in wine_quality, would leave 729 rows.
    **Resolved (Lennart, 2026-10-15):** kept, as implemented.
@@ -1806,6 +1806,8 @@ TODO is left.
 - Finding 5 (wording): applied. The expected counts are now "8, 5 and 11", and the record comment no longer claims
   an answered-or-not signal for this question.
 - Finding 6 (Multi-target tag): applied. Issue 5 now keeps the tag and says the folder ships the biopsy only.
+
+**Resolved (Lennart, 2026-10-15):** ship as implemented (issues 3 and 6 as answered above).
 
 ### cdc_diabetes_health_indicators
 

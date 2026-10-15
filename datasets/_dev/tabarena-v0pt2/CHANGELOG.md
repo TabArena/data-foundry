@@ -4,11 +4,11 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
-## 2026-10-15 (caracas_cervical_cancer: impossible answers missing; breast_cancer_prediction ships)
+## 2026-10-15 (caracas_cervical_cancer and breast_cancer_prediction ship)
 
 Lennart's marks on the review page of the 2026-10-07 run. Not built.
 
-- `caracas_cervical_cancer` (verdict open): impossible answers become missing, the rows stay (2 first intercourses
+- `caracas_cervical_cancer` ships: impossible answers become missing, the rows stay (2 first intercourses
   after the current age, 2 STD diagnoses longer ago than the patient's age); the other contradictions stay as
   recorded. The STD flags stay one yes/no category each (multi-label; 9 patients have two or three types, not 43:
   `std_condylomatosis` is the parent of two subtypes). Rows and splits unchanged; `dataset check` 0 errors,

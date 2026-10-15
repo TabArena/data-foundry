@@ -40,6 +40,8 @@ CC (2026-10-15, Lennart): No `Multi-target` tag: the four test results come from
 
 **Assessment (AI, 2026-10-15):** The STD flags are one questionnaire question each and multi-label (9 patients have two or three types; `std_condylomatosis` is the parent of two subtypes, which `stds_number` counts twice), so they stay yes/no categories rather than one combined category. Impossible answers become missing (2 first intercourses after the current age, 2 STD diagnoses longer ago than the patient's age); the other contradictions (5 `dx_*` flags with `dx` 0, 7 STDs with no diagnosis counted) are not impossible and stay.
 
+CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags stay one yes/no category each, impossible answers become missing.
+
 ## Reference
 
 @inproceedings{fernandes2017transfer,
