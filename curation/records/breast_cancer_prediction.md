@@ -39,6 +39,8 @@ CC (2026-10-15, Lennart): The BI-RADS readings are valid tabular inputs: screeni
 
 **Assessment (AI, 2026-10-15):** One exam per woman keeps 36,714 rows and 239 of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped). Regularised LightGBM 0.929 and a random forest 0.927 beat the assessment alone (0.914) on 8 of 9 splits.
 
+CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
+
 ## Reference
 
 Other

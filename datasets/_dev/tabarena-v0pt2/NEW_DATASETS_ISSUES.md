@@ -1687,6 +1687,8 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
 - Finding 6 (record fields): left to the orchestrator (issue 6).
 - Finding 7 (leak probe): re-ran the fixed `leak_probes.py`: 10 features, 49.4% exact copies. The leak-probes bullet now says what the copies are: distinct women with identical coarse profiles, never the same woman across the grouped split, 1-NN agreement at chance.
 
+**Resolved (Lennart, 2026-10-15):** ship.
+
 ### caracas_cervical_cancer
 **Outcome:** added and checked (revised after verification: 108 patients dropped, source fills set to NA)
 
@@ -1761,28 +1763,34 @@ TODO is left.
      not cover this question, and that the creators expected higher risk.
    - Open for the whole file: whether a 0 means "test not done". 6 positive biopsies have all three screening tests
      negative, so biopsies were not taken only after a positive screen. The first author (INESC TEC) could be asked.
+   **Resolved (Lennart, 2026-10-15):** dropped, as implemented.
 2. **Target: biopsy, as the record suggests.** The creators' own 2018 target, and the strongest signal from the
    questionnaire. Alternatives, as LightGBM / logistic AUC on 858 rows:
    - Schiller: 74 positives, 0.64 / 0.63.
    - Hinselmann: 0.55 / 0.60.
    - Citology: 0.55 / 0.58.
    - Any test positive: 0.62 / 0.67.
+   **Resolved (Lennart, 2026-10-15):** the biopsy, as implemented.
 3. **One-hot reversal not done.** The STD and Dx blocks are multi-label: 43 of 740 patients have 2-4 STD types, and
    16 of 18 previous cancer diagnoses carry HPV. Alternative: combination categoricals, with 14 STD levels (9 of them
    with 1-3 rows) and 5 Dx levels.
+   **Answer (AI, 2026-10-15), open:** kept as one yes/no category per flag. Each flag is a question of the questionnaire, and they are multi-label: 9 patients have two or three STD types (the 43 above counted condylomatosis twice: `std_condylomatosis` is exactly the OR of the vaginal and vulvo-perineal types, and `stds_number` is the sum of all ten flags). A single category would need 14 levels, 9 of them with 1-3 patients (issue 3 above), and a string column would be read as free text. `stds` and `stds_number` are derived from the flags and stay as the source counts them.
 4. **Repeated answer profiles kept** (21 exact copies plus 1 copy with the other label). The alternative, dropping
    them as in wine_quality, would leave 729 rows.
+   **Resolved (Lennart, 2026-10-15):** kept, as implemented.
 5. **Record fields.**
    - `problem_type: TBD` should become Binary Classification.
    - `v2_path` gets filled by `sync-notebooks`.
    - The `Multi-target` tag stays: the four tests can be modelled jointly (IbPRIA Table 2). The folder ships the
      biopsy only.
+   **Resolved (Lennart, 2026-10-15):** the `Multi-target` tag is removed: the four results come from one work-up and the folder predicts the biopsy alone. `problem_type` was already Binary Classification and `v2_path` is set.
 6. **Anomalies, kept as recorded.**
    - 2 patients report a first intercourse after their current age.
    - 2 patients report an STD diagnosis longer ago than their age.
    - 5 patients have a `dx_*` flag set while `dx` is 0.
    - 7 patients report an STD with no STD diagnosis counted.
    - `smokes_packs_per_year` keeps the source's name, although it reads as pack-years.
+   **Answer (AI, 2026-10-15), applied:** impossible answers become missing, the rows stay: the 2 first intercourses after the current age (ages 23 and 14 with 27 and 16) and the 2 STD diagnoses longer ago than the patient's age (21 years at 20, 19 at 18); the age is the clinic's record. The other contradictions are not impossible and stay as recorded: `dx` (undefined by the source) is 0 for 5 patients with a `dx_*` flag, and 7 report an STD with 0 diagnoses counted, which may count clinical diagnoses where the flags are self-reports. Rows and splits are unchanged.
 
 **Verification:**
 - Finding 1 (major, drop the 108): applied. I re-checked the counts and P-values, the covariates and the 4 of 16, and
