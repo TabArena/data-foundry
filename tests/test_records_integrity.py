@@ -18,6 +18,7 @@ from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
     AI_FILLED_TAG,
     AI_REVIEWER,
+    BETTER_DATA_TAG,
     COLLECTION_TAGS,
     RETIRED_SUGGESTION,
     WIP_STATUSES,
@@ -210,6 +211,18 @@ def test_claims_belong_to_wip_records(records):
         if not any(s in WIP_STATUSES for s in (r.data_foundry_status or [])):
             bad.append((r.unique_name, f"claimed by {r.claimed_by} without a WIP state"))
     assert not bad, f"claim convention violations: {bad}"
+
+
+def test_better_data_flag_names_an_existing_record(records):
+    """A record tagged ``Better Data Available (Review)`` names the better dataset's record in its comments."""
+    names = {r.unique_name for r in records}
+    bad = [
+        r.unique_name
+        for r in records
+        if BETTER_DATA_TAG in (r.tags or [])
+        and not any(f"`{n}`" in (r.comments or "") for n in names - {r.unique_name})
+    ]
+    assert not bad, f"{BETTER_DATA_TAG!r} without a pointer to an existing record in the comments: {bad}"
 
 
 def test_tabarena_records_checked_by_lennart_and_andrej(records):
