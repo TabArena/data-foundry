@@ -506,13 +506,18 @@ def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
 def _last_commit_with(repo: Path, path: str) -> tuple[str, str | None] | None:
     """The last commit that still had ``path``, and the date of the commit that removed it.
 
-    A file removed only in the working tree gives HEAD and no date; a file never committed gives None.
+    A file removed only in the working tree gives HEAD and no date; a file never committed gives None. A file added
+    and removed on a branch that was squash-merged is not in HEAD's history, so the other refs are searched last.
     """
-    gone = _git(repo, "log", "-1", "--format=%H %ad", "--date=short", "--diff-filter=D", "--", path).stdout.split()
+    removed = ["log", "-1", "--format=%H %ad", "--date=short", "--diff-filter=D"]
+    gone = _git(repo, *removed, "--", path).stdout.split()
     if gone:
         return _git(repo, "rev-parse", f"{gone[0]}^").stdout.strip(), gone[1]
     if _git(repo, "cat-file", "-e", f"HEAD:{path}", check=False).returncode == 0:
         return _git(repo, "rev-parse", "HEAD").stdout.strip(), None
+    gone = _git(repo, *removed, "--all", "--", path).stdout.split()
+    if gone:
+        return _git(repo, "rev-parse", f"{gone[0]}^").stdout.strip(), gone[1]
     return None
 
 

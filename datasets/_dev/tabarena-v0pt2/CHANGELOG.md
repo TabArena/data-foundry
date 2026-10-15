@@ -4,6 +4,27 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (ashrae_great_energy_predictor_iii_1m: readings in kWh, recording errors dropped)
+
+Lennart's review of the 2026-10-07 run (issues 2, 3, 4 and 8 of NEW_DATASETS_ISSUES.md): ship, as one temporal
+task, cleaned to the state an expert would ship. Edited `dataset.py`, not built (checksum `v2:67c30a35…`, was
+`v2:858c1cad…`); `dataset check` 0 errors, 0 warnings.
+
+- The readings come in kWh from BDG2's raw meter files (four new raw files and BDG2's building metadata, pinned to
+  the commit of kaggle.csv). The competition kept each site's own unit (ton-hours, pounds of steam, mmBTU, kBTU);
+  BDG2's values are the Kaggle reading over one constant factor per meter in 99.9% of the hours. Site 0's kBTU
+  conversion is part of it, so `KBTU_TO_KWH` is gone.
+- `recording_errors` drops, besides site 0's 2016 gap and the electricity zeros: a cooling or heating plant at 0 for
+  48 hours or more in its season (383,406 hours), the repeats of a reading stuck for a week or more (618,666 hours,
+  mostly site 5's electricity in March-November 2017) and building 1099's steam unit error (3,332 hours). 1,701,150
+  hours dropped (4.2%), 39,062,170 kept. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list
+  of bad readings. A decision table counts the meters per unit, another the hours per rule.
+- Issue 2 (scope): LightGBM with 1,000 trees beats the best naive forecast (each meter's hour-of-week profile from
+  the same month a year earlier) by 0.10-0.14 RMSE per window, and one model per site only matches one large model,
+  so the meter types and sites stay one task. The record holds the numbers.
+- The record lists only the temporal regime (`tags`, `required_split`). The suspended v1 notebook
+  (`datasets/_maintenance/_suspended/ashrae_energy_predictor/`) is removed; the definition here replaces it.
+
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and
