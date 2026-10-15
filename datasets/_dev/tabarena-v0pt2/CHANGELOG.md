@@ -4,6 +4,20 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (credit_g: corrected code table)
+
+- `credit_g`: the categories now carry the labels of Grömping's (2019) corrected code table; the Statlog `german.doc`
+  mixes up the levels of 8 features and reverses people_liable. Example: "no checking account" was the safest group
+  (11.7% bad) and is in fact a balance of at least 200 DM; "foreign worker = yes" held 96.3% of the rows and is in fact
+  3.7%. Matched on duration, amount and age, 990 rows agree with UCI's South German Credit in every column except the
+  typos Grömping reports (A14 34, A15 1, A20 10). The typos stay, as a data-quality issue that real data has too.
+  Only the labels change: columns, dtypes and values are as before (installment_rate_percent, residence_since,
+  existing_credits_count and people_liable stay integer band codes; their bands are in `curation_comments`).
+  `task_summary` names the period (1973 to 1975), the granted-loans sample, the oversampling and the label definition;
+  `curation_comments` give the sources. Andrej's review in
+  [`curation/records/credit_g.md`](../../../curation/records/credit_g.md) keeps it with the corrected table. Not
+  rebuilt; the build stays stale.
+
 ## 2026-10-15 (credit_approval: `Anonymized` tag)
 
 - `credit_approval`: `data_tags = ("Anonymized",)`. Quinlan replaced all attribute names and values by symbols to keep
