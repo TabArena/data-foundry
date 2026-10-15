@@ -90,6 +90,12 @@ starts with `N. ` at the start of a line; the indented and blank lines after it 
 the next label. A paragraph that is not indented after the last issue also belongs to that issue, so close the block
 with the next label.
 
+An issue is a decision for the curator, with the evidence from our own splits, probes and sources. Scores that
+other benchmarks published for the dataset (TALENT, leaderboards) are no issue and no evidence: their random splits
+are wrong for most of our tasks (Lennart, 2026-10-15). The same holds for another collection's version of the data
+(TabSTAR's column choices, an OpenML copy's target): do not over-index on it, and name it only where it identifies
+the source, a duplicate or the record's name.
+
 The title is the bold text at the start of the issue (`1. **Keep the target in decibels?** The source ...`), or else
 the first sentence. The number is the key under which the curator's mark is stored (`items.<N>`): numbers are unique
 within a record, and a published page's issues are never renumbered.
@@ -120,8 +126,14 @@ separated by `; `, the bullet ending with a period:
 ```
 
 Field names are lower case with `_` (`problem_type`, `required_split`, `original_source`, `domain`, `year`, `tag`).
-The curator marks each one "update record" or "keep record", stored under the field name, so a field appears once
-per record. A bullet can wrap onto indented lines; lines that are not bullets (an intro) are not shown.
+The curator marks each one "take definition's value" (stored as `update`) or "keep record's value" (`keep`), under
+the field name, so a field appears once per record. A bullet can wrap onto indented lines; lines that are not
+bullets (an intro) are not shown.
+
+Record fields go only here, never into a numbered issue: an issue's marks (as implemented / change / discuss) do not
+say which value the record takes, and the curator found such issues confusing (Lennart, 2026-10-15,
+breast_cancer_prediction). Record changes that are not a disagreement with the definition (a dead source link, a
+missing `v2_path`) need no mark: Claude makes them when it applies the verdict and says so in the outcome.
 
 ## Across datasets
 
@@ -167,7 +179,7 @@ A test run of `/add-dataset` on two records: one added, one left out.
 | Record | Outcome | Main points for the curator |
 |---|---|---|
 | [`airfoil_self_noise`](#airfoil_self_noise) | added | The target is in decibels; keep it? |
-| [`churn_telco_nigeria`](#churn_telco_nigeria) | not added; duplicate | The rows of `churn_telco_south_asia` with renamed values. |
+| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The rows of `churn_telco_south_asia` with renamed values. |
 
 ## Record fields that disagree with the definition
 
@@ -193,7 +205,7 @@ A test run of `/add-dataset` on two records: one added, one left out.
 1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
    alternative.
 
-### churn_telco_nigeria
+### churn_telco_south_asia_duplicate
 
 **Outcome:** not added. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
 ```

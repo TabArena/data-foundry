@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
 
 TARGET = "cancer_within_one_year"
 
@@ -55,11 +55,11 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         ),
         row=(
             "One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 "
-            "to 2008 (39,998 exams of 36,714 women)."
+            "to 2008: each of 36,714 women once, with her earliest exam in the sample."
         ),
         predicted=(
             "Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.65% of the "
-            "exams."
+            "women."
         ),
         known=(
             "Age, BMI, family history, earlier biopsy and mammogram, hormone therapy, whether an earlier mammogram "
@@ -67,16 +67,17 @@ class BreastCancerPrediction(AbstractCuratedDataset):
             "assessment."
         ),
         split=(
-            "Whole women are held out, so the test data stands for the exams of other women; 3,133 women have 2 to 4 "
+            "Random folds over the women: every row is a different woman, so the test data stands for other women's "
             "exams."
         ),
         changes=(
-            "We drop the cancer type, which is recorded at diagnosis and encodes the label, and hold out whole women."
+            "We drop the cancer type, which is recorded at diagnosis and encodes the label, and keep one exam per "
+            "woman, her earliest (3,133 women have 2 to 4)."
         ),
         fit="direct",
         fit_reason=(
             "Everything the model sees is known once the mammogram is read, and the label covers a fixed year after "
-            "it. The radiologist's assessment carries most of the signal (ROC AUC 0.907 alone, about 0.02 less than "
+            "it. The radiologist's assessment carries most of the signal (ROC AUC 0.914 alone, about 0.015 less than "
             "the models), as in screening."
         ),
     )
@@ -128,49 +129,42 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         We start with the BCSC Digital Mammography Dataset (`mammography.csv`, 40,000 rows) from the Breast Cancer Surveillance Consortium: a random sample of 20,000 digital and 20,000 film screening mammograms of women aged 60-89, January 2005 to December 2008.
 
         - Prediction point: the screening mammogram has just been read, so the radiologist's BI-RADS assessment and density, the intake answers and the exam facts are known. This is the source's own question (BCSC exam question 4): a model "to predict occurrence of any cancer using patient characteristics and mammography assessment".
-        - Target: `cancer_c` as `cancer_within_one_year` (Yes / No), a breast cancer diagnosis (DCIS or invasive) within one year after the exam: 259 cancers in 39,998 exams (0.65%). We drop `CaTypeO` (cancer type), which is recorded at the diagnosis and encodes the label (8 = no cancer).
+        - Target: `cancer_c` as `cancer_within_one_year` (Yes / No), a breast cancer diagnosis (DCIS or invasive) within one year after the exam: 239 cancers in 36,714 women (0.65%). We drop `CaTypeO` (cancer type), which is recorded at the diagnosis and encodes the label (8 = no cancer).
         - The BI-RADS assessment stays a feature: the radiologist gives it at the exam, and the source's question uses it as a predictor. It is categorical because assessment 0 (needs additional imaging) is a positive screen; its values are the codebook's labels prefixed with the BI-RADS number ("4: Suspicious abnormality").
-        - The assessment carries most of the signal (task probe flag `one_feature`, decision table): alone it reaches ROC AUC 0.907. We keep it as the core of the task, and the task is not `Trivial`: regularised LightGBM, CatBoost and a random forest beat it on 9 of 9 splits, by 0.019-0.023 (task_probes.md, rule 4).
+        - The assessment carries most of the signal (task probe flag `one_feature`, decision table): alone it reaches ROC AUC 0.914. We keep it as the core of the task, and the task is not `Trivial`: regularised LightGBM and a random forest beat it on 8 of 9 splits, by 0.015 and 0.013 (task_probes.md, rule 4). The readings are valid tabular inputs: screening programmes run tabular risk models on BI-RADS readings and risk factors (the BCSC Risk Calculator takes the BI-RADS density), so the image-scoring rule does not apply (Lennart, 2026-10-15).
         - `birads_breast_density` 1-4 stays numeric, since the order is the meaning (1 almost entirely fatty, 4 extremely dense).
         - The codebook's 9 = missing in the five yes/no answers and -99 = missing in `bmi` become NaN. `mammogram_type` 1 and 2 become film and digital. `RENAME` maps the codebook names to ours.
-        - Duplicates: we drop the second of two exact copies, the woman's id included (`ptid` 19408 and 34035), as the Kaggle and OpenML copies did. The other repeated feature vectors (52.8% of the exams) stay: the features are coarse, and these are different women with the same profile.
-        - Grouped by woman (`patient_id`, the BCSC's `ptid`): 3,133 of the 36,714 women contribute 2-4 exams. Rows are no closer to their own woman than chance (`groups_not_clustered`), so the use case decides: the model is used for other women (Grouping definition). Each label belongs to its exam: the 20 women with cancer and several exams have only their last exam positive.
+        - One exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order), so the folds are IID (Lennart, 2026-10-15): 3,133 of the 36,714 women contribute 2-4 exams, and the use case is one woman's screening read. The 20 women with cancer and several exams are positive only on their last exam, so 20 of the 259 cancers go. Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped by woman). The file's two exact copies go with it.
+        - Duplicates: repeated feature vectors (52.2% of the rows, the `dataset_duplicate_rows` warning) stay: the features are coarse, and these are different women with the same profile (49.6% of the test rows have a copy in train), whose outcomes are independent.
         - Anomaly: the BCSC recommends the data "for use as a teaching tool only; they should not be used to conduct primary research". We use it to compare learning methods, not to estimate clinical effects.
     """
 
     accepted_check_warnings = {
         "dataset_pure_feature_value": (
-            "BI-RADS 1 (Negative: 26,031 exams, 20 cancers), BI-RADS 2 (Benign finding(s): 10,717, 12) and density 1 "
-            "(almost entirely fatty: 5,429) are the low-risk results of the screening read, given at the exam before "
+            "BI-RADS 1 (Negative: 23,856 women, 15 cancers), BI-RADS 2 (Benign finding(s): 9,823, 12) and density 1 "
+            "(almost entirely fatty: 4,961) are the low-risk results of the screening read, given at the exam before "
             "the outcome; at a 99.35% base rate of no cancer they are ordinary category effects, not a leak."
         ),
-        "groups_labels_constant": (
-            "Labels are per exam by construction (a cancer diagnosis within one year of that exam). The 20 women with "
-            "two labels are the 20 women with cancer and several exams, each with only her last exam positive; the "
-            "other 3,113 women with several exams had no cancer."
+        "dataset_duplicate_rows": (
+            "Each row is a different woman (one exam per woman); the ten features are coarse (age in years, BI-RADS "
+            "categories, yes/no answers), so many women share a profile; their outcomes are independent, so a copy "
+            "in train tells nothing about the test woman beyond her profile."
         ),
     }
 
     # Task
     target = TARGET
     problem_type = "binary_classification"
-    grouping = Grouping(
-        on="patient_id",
-        labels="per_sample",
-        prediction_unit="row",
-        context="none",
-        definition="""
-            One group is a woman, identified by the BCSC's patient study id (`ptid`). The source says "Some women contribute multiple examinations to the data" and offers the data for "statistical methods for binary outcomes or correlated data" (BCSC, Digital Mammography Dataset page); its exam question adds that women "are recommended to undergo mammography screening annually or biennially, so some women have multiple mammograms included in the data set". 3,133 of the 36,714 women have 2-4 exams. The 40,000 exams are a random sample of the BCSC's screening mammograms, so a model built on them is used for the exams of other women: the test women are new. Each exam is one prediction, made from that exam alone.
-        """,
-    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "mammography.csv")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw.rename(columns=RENAME)
-        # two exact copies, the woman's id included; the Kaggle and OpenML copies drop them too
-        df = df.drop_duplicates(keep="first")
+        # One exam per woman, her earliest in the sample (lowest age; ties keep the file's order): the use case is a
+        # woman's screening read, and 91.5% of the women have one exam. This also drops the file's two exact copies.
+        df = df.sort_values(["patient_id", "age"], kind="stable").drop_duplicates("patient_id", keep="first")
+        df = drop_columns(df, ["patient_id"])
         # cancer type is recorded at the diagnosis: 8 = no cancer, so it encodes the label
         df = drop_columns(df, ["cancer_type"])
         df[TARGET] = df[TARGET].map({0: "No", 1: "Yes"})
@@ -185,19 +179,28 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         return FeatureTypes(categorical=["birads_assessment", "mammogram_type"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
-        del raw
         by_assessment = (
             df.groupby("birads_assessment", observed=True)[TARGET]
             .agg(exams="size", cancers=lambda s: int((s == "Yes").sum()))
             .assign(cancer_rate=lambda t: (t["cancers"] / t["exams"]).round(4))
             .reindex(list(ASSESSMENT.values()))  # BI-RADS 0 to 5
         )
-        exams = df.groupby("patient_id").size()
-        cancers = df[TARGET].eq("Yes").groupby(df["patient_id"]).sum()
+        exams = raw.rename(columns=RENAME).drop_duplicates()
+        exams["cancer"] = exams[TARGET].eq(1)
+        exams["earliest"] = exams["age"].eq(exams.groupby("patient_id")["age"].transform("min"))
         by_count = (
-            pd.DataFrame({"exams": exams, "cancers": cancers})
+            exams.groupby("patient_id")
+            .agg(
+                exams=("cancer", "size"),
+                cancers=("cancer", "sum"),
+                cancer_on_earliest=("cancer", lambda c: bool(c[exams.loc[c.index, "earliest"]].any())),
+            )
             .groupby("exams")
-            .agg(women=("cancers", "size"), women_with_cancer=("cancers", lambda s: int((s > 0).sum())))
+            .agg(
+                women=("cancers", "size"),
+                women_with_cancer=("cancers", lambda c: int((c > 0).sum())),
+                cancer_on_the_earliest_exam=("cancer_on_earliest", "sum"),
+            )
         )
         return [
             Decision(
@@ -207,9 +210,10 @@ class BreastCancerPrediction(AbstractCuratedDataset):
                 by_assessment,
             ),
             Decision(
-                "Grouped by woman",
-                "Some women contribute several exams; the model is used for women outside the sample, and each "
-                "woman with cancer has one positive exam, her last.",
+                "One exam per woman, her earliest",
+                "Some women contribute several exams. Each woman counts once, with her earliest exam in the sample, "
+                "so the folds are IID; the women with cancer and several exams are positive only on their last exam, "
+                "so their cancers are not in the data. Women by number of exams in the file.",
                 by_count,
             ),
         ]

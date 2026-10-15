@@ -45,7 +45,7 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     data = json.loads((tmp_path / "data.json").read_text())
     page = (tmp_path / "review_page.html").read_text()
 
-    assert [d["name"] for d in data["datasets"]] == ["airfoil_self_noise", "churn_telco_nigeria"]
+    assert [d["name"] for d in data["datasets"]] == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
     added, other = data["datasets"]
     assert (added["cat"], added["folder"], added["retired"]) == ("added", "airfoil_self_noise", False)
     assert added["code"] == (ROOT / "airfoil_self_noise" / "dataset.py").read_text()
@@ -62,7 +62,7 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     assert added["summary"]["fields"]["use_case"] == expected["use_case"]
 
     # Not added: no folder, no definition. A record that triage has since set to No is shown as "decided".
-    record = (REPO / "curation" / "records" / "churn_telco_nigeria.md").read_text().split("---")[1]
+    record = (REPO / "curation" / "records" / "churn_telco_south_asia_duplicate.md").read_text().split("---")[1]
     suggestion = str(yaml.safe_load(record).get("suggestion") or "")
     assert other["cat"] == ("decided" if suggestion.startswith("No") else "notadded")
     assert (other["folder"], other["code"], other["summary"], other["items"]) == (None, None, None, [])
@@ -83,10 +83,10 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     ("old", "new", "line_of", "message"),
     [
         (
-            "### churn_telco_nigeria\n",
+            "### churn_telco_south_asia_duplicate\n",
             "",
-            "| [`churn_telco_nigeria`]",
-            "no `### churn_telco_nigeria` section",
+            "| [`churn_telco_south_asia_duplicate`]",
+            "no `### churn_telco_south_asia_duplicate` section",
         ),
         ("year `2014`, definition `1989`.", "year 2014.", "- `airfoil_self_noise`", "field not understood"),
         ("### Framework (`src/data_foundry/v2/`)\n", "### Framework\nSome intro.\n", "Some intro.", "before the first"),
@@ -109,12 +109,13 @@ def test_report_format_errors_name_the_line(brp, tmp_path, old, new, line_of, me
 def test_shared_notes_follow_the_records_line(brp, tmp_path):
     """A shared section covers the records its `Records:` line names, and the line is not shown."""
     text = (
-        FIXTURE.read_text() + "\n### Notes on both\nRecords: `airfoil_self_noise`, `churn_telco_nigeria`\n\nShared.\n"
+        FIXTURE.read_text()
+        + "\n### Notes on both\nRecords: `airfoil_self_noise`, `churn_telco_south_asia_duplicate`\n\nShared.\n"
     )
     path = tmp_path / "report.md"
     path.write_text(text)
     shared = brp.parse_report(path)["shared"]
-    assert sorted(shared) == ["airfoil_self_noise", "churn_telco_nigeria"]
+    assert sorted(shared) == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
     assert shared["airfoil_self_noise"] == [{"title": "Notes on both", "md": "\nShared."}]
 
 
@@ -129,3 +130,31 @@ def test_new_datasets_issues_parses(brp):
     ids = [it["id"] for s in report["crosscut"] for it in s["items"]]
     assert len(ids) == len(set(ids))
     assert set(report["fields"]) <= set(names)
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_a_definition_removed_on_a_squash_merged_branch_is_found(brp, tmp_path):
+    """A folder added and removed on a side branch (squash-merged into main) is not in HEAD's history."""
+
+    def git(*args):
+        brp._git(tmp_path, *args)
+
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "test@example.com")
+    git("config", "user.name", "Test")
+    (tmp_path / "keep.txt").write_text("main\n")
+    git("add", "keep.txt")
+    git("commit", "-q", "-m", "start")
+    git("checkout", "-q", "-b", "side")
+    (tmp_path / "gone").mkdir()
+    (tmp_path / "gone" / "dataset.py").write_text("code\n")
+    git("add", "gone/dataset.py")
+    git("commit", "-q", "-m", "add")
+    git("rm", "-q", "gone/dataset.py")
+    git("commit", "-q", "-m", "remove")
+    git("checkout", "-q", "main")
+
+    commit, removed_on = brp._last_commit_with(tmp_path, "gone/dataset.py")
+    assert brp._show(tmp_path, commit, "gone/dataset.py") == "code\n"
+    assert removed_on is not None
+    assert brp._last_commit_with(tmp_path, "never/dataset.py") is None

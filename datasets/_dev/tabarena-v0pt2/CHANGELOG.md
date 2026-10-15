@@ -4,6 +4,108 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (churn_telco_south_asia ships: impossible values missing; churn timing unknown)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1 and 6) and his verdict: ship. Edited `dataset.py`,
+not built (checksum `v2:4708a007…`); `dataset check` 0 errors, 0 warnings.
+
+- `network_age` is missing for the 5 churners with a negative value (-8 to -2 days), and `aug_fav_a` "0" (59
+  subscribers, an undocumented code absent in September) is missing. The undocumented on-net and off-net unit,
+  complaint counts from 1 and the September shift to ufone (it follows activity in both classes) stay as published.
+- Both papers of the authors (IntelliSys 2017, Neural Computing and Applications 2020) are read; neither says when
+  churn was observed. The task may be problematic and is kept for now: the notes state it as a potential leak kept on
+  purpose (churn inside August-September would make the usage totals end at the outcome, as in iranian_churn), the
+  task summary's fit stays `approximate`, and it is to be revisited if the churn can be dated.
+
+## 2026-10-15 (cdc_diabetes_health_indicators retired: wrong task)
+
+- `cdc_diabetes_health_indicators` retired (record `No`, `No Good Target / Scientific Discovery`; folder removed,
+  `v2_path` cleared; the definition stays in git history at bb3baa3; it was never built). The label is "ever told you
+  have diabetes", a diagnosis made a median of 10 years before the interview, predicted from answers of the same
+  interview: no decision is made with that prediction. The use the sources name is screening, which needs undiagnosed
+  adults as positives; BRFSS cannot identify them, so they sit in the negative class. The rule is now in criterion 3
+  of the curation guidelines. A screening task on NHANES, with lab-measured undiagnosed diabetes as the label, is
+  checked as the new candidate `nhanes_undiagnosed_diabetes`. 176 definitions remain.
+
+## 2026-10-15 (caracas_cervical_cancer and breast_cancer_prediction ship)
+
+Lennart's marks on the review page of the 2026-10-07 run. Not built.
+
+- `caracas_cervical_cancer` ships: impossible answers become missing, the rows stay (2 first intercourses
+  after the current age, 2 STD diagnoses longer ago than the patient's age); the other contradictions stay as
+  recorded. The STD flags stay one yes/no category each (multi-label; 9 patients have two or three types, not 43:
+  `std_condylomatosis` is the parent of two subtypes). Rows and splits unchanged; `dataset check` 0 errors,
+  0 warnings. The record loses the `Multi-target` tag.
+- `breast_cancer_prediction` ships.
+
+## 2026-10-15 (breast_cancer_prediction: one exam per woman, IID; probe fixes)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1, 2, 3, 6 and 8), verdict still open. Edited
+`dataset.py`, not built (checksum changes); `dataset check` 0 errors, 0 warnings (two accepted), 1 info.
+
+- One exam per woman, her earliest in the sample, with IID folds instead of grouping by woman: 36,714 rows and 239
+  of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned
+  LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped).
+  `dataset_duplicate_rows` (repeated coarse profiles of different women) is accepted with that reason.
+- The BI-RADS readings stay features: tabular risk models use them in practice. The curation guidelines (and
+  `guidelines.html`) now carry that exception to the image-scoring rule.
+- Record: `year` 2014; the dead datahub link replaced by the BCSC page.
+- Tooling: the leak, group and task probes load only the named folder (`--all` skips folders that do not import);
+  the linear models of the task and group probes one-hot encode categories. The review page labels its marks by what
+  they do, and record-field disagreements go only into its field table.
+
+## 2026-10-15 (review verdicts: bias_correction and brazilian_ecommerce ship; churn_telco_nigeria renamed)
+
+Lennart's verdicts on the review page of the 2026-10-07 run, none built yet:
+
+- `bias_correction_r_bias_correction_r_2` and `brazilian_ecommerce` ship. brazilian_ecommerce ships as implemented
+  (delivery time at checkout, a one-month label gap, Olist's promised date as an input); its record's year is now
+  2018.
+- `churn_telco_nigeria` is `No` + `Duplicate` (the DSN files are the SATO 2015 rows of `churn_telco_south_asia`) and
+  is renamed `churn_telco_south_asia_duplicate`; `churn_telco_south_asia`'s note names the new record (its checksum
+  changes, `v2:e7577332…`; not built). The local downloads of `churn_telco_nigeria` and `churn_telco_europa` (which
+  held customers' national ids and phone numbers) are deleted.
+- brca_breast_cancer, central_international_medical_college_and_hospital_health_risk_prediction and
+  churn_telco_europa: their `No` of 2026-10-12 is confirmed.
+
+## 2026-10-15 (bias_correction_r_bias_correction_r_2: rows without an LDAPS forecast dropped; probe and test fixes)
+
+Lennart's review of the 2026-10-07 run (issues 4, 6 and 7 of NEW_DATASETS_ISSUES.md). Edited `dataset.py`, not
+built (checksum `v2:07d8e9f7…`, was `v2:41fdfb3c…`); `dataset check` 0 errors, 0 warnings.
+
+- The 75 station-days of the three days without an LDAPS run (2013-08-10, 2016-07-31, 2016-08-20, all on the
+  training side) are dropped: the task corrects the LDAPS forecast, and without one there is nothing to correct.
+  7,648 rows remain. The mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on 7 of 9 windows
+  (RMSE 0.785 against 0.823); the decision text gives the new numbers.
+- `splits_comment` is a text block again (it was one string to avoid the dedent gap fixed on 2026-10-12).
+- The task probes flag `no_spread` and `unstable`: LightGBM falls just below the training mean in the oldest window
+  (skill -0.07) and beats it on the other 8; kept, as `curation_comments` says.
+- Tooling: `tests/test_v2_datasets.py` checks each folder's import in its own test, so a half-filled scaffold no
+  longer stops the collection of all; `task_probes.py` counts the standard-error part of `unstable` on a temporal
+  task only when the best family loses to the dummy on a window, and its JSON lists the skill and the dummy's loss
+  per split.
+
+## 2026-10-15 (ashrae_great_energy_predictor_iii_1m: readings in kWh, recording errors dropped)
+
+Lennart's review of the 2026-10-07 run (issues 2, 3, 4 and 8 of NEW_DATASETS_ISSUES.md): ship, as one temporal
+task, cleaned to the state an expert would ship. Edited `dataset.py`, not built (checksum `v2:67c30a35…`, was
+`v2:858c1cad…`); `dataset check` 0 errors, 0 warnings.
+
+- The readings come in kWh from BDG2's raw meter files (four new raw files and BDG2's building metadata, pinned to
+  the commit of kaggle.csv). The competition kept each site's own unit (ton-hours, pounds of steam, mmBTU, kBTU);
+  BDG2's values are the Kaggle reading over one constant factor per meter in 99.9% of the hours. Site 0's kBTU
+  conversion is part of it, so `KBTU_TO_KWH` is gone.
+- `recording_errors` drops, besides site 0's 2016 gap and the electricity zeros: a cooling or heating plant at 0 for
+  48 hours or more in its season (383,406 hours), the repeats of a reading stuck for a week or more (618,666 hours,
+  mostly site 5's electricity in March-November 2017) and building 1099's steam unit error (3,332 hours). 1,701,150
+  hours dropped (4.2%), 39,062,170 kept. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list
+  of bad readings. A decision table counts the meters per unit, another the hours per rule.
+- Issue 2 (scope): LightGBM with 1,000 trees beats the best naive forecast (each meter's hour-of-week profile from
+  the same month a year earlier) by 0.10-0.14 RMSE per window, and one model per site only matches one large model,
+  so the meter types and sites stay one task. The record holds the numbers.
+- The record lists only the temporal regime (`tags`, `required_split`). The suspended v1 notebook
+  (`datasets/_maintenance/_suspended/ashrae_energy_predictor/`) is removed; the definition here replaces it.
+
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and

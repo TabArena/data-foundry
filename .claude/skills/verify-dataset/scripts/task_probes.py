@@ -36,7 +36,9 @@ curator, not verdicts; how to answer each one: ``.claude/skills/verify-dataset/r
 * ``drift_baseline``: for a temporal task, the drift baseline's loss (log loss, or squared error) is within 2% of
   the best family's;
 * ``unstable``: the best family beats the dummy on fewer than 80% of the splits, or the standard error of its mean
-  skill is above 0.05;
+  skill is above 0.05. For a temporal task the standard error counts only when the best family loses to the dummy on
+  a window: windows are not exchangeable, and a level that drifts between them moves every model's skill with the
+  dummy's error (paired by window, a model that beats the dummy on every window is not unstable);
 * ``few_minority``: a probed test fold holds fewer than 5 rows (or groups) of a class, binary or multiclass; the
   report names each class that falls short with its smallest count in a test fold.
 
@@ -67,15 +69,16 @@ import numpy as np
 import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
-from data_foundry.v2 import discover_datasets, read_report
+from data_foundry.v2 import discover_datasets, load_definition, read_report
 from joblib import Parallel, delayed
+from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 SOLVED = 0.995
 """ROC AUC, macro ROC AUC or R^2 from which a task counts as solved."""
@@ -113,7 +116,7 @@ def load(name: str, root: Path, *, built: bool) -> tuple[CuratedContainer, str]:
         build = (read_report(root / name / "README.md") or {}).get("build") or {}
         if build.get("path"):
             return CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built"
-    return discover_datasets(root)[name]().to_container(), "rebuilt"
+    return load_definition(Path(root) / name / "dataset.py")().to_container(), "rebuilt"  # this folder only
 
 
 def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str], list[str]]:
@@ -171,18 +174,30 @@ def encode_text(
     return pd.concat(tr_parts, axis=1), pd.concat(te_parts, axis=1), blocks
 
 
-def models(*, regression: bool, n_jobs: int) -> dict:
-    """The three untuned model families."""
+def linear_inputs(categorical: list[str]) -> ColumnTransformer:
+    """The linear family's inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled.
+
+    A category's code is no number: read as one, a linear model ranks the levels by their arbitrary order.
+    """
+    return ColumnTransformer(
+        [("categories", OneHotEncoder(handle_unknown="infrequent_if_exist", max_categories=64), categorical)],
+        remainder=StandardScaler(),
+    )
+
+
+def models(*, regression: bool, n_jobs: int, categorical: list[str] | None = None) -> dict:
+    """The three untuned model families; ``categorical`` names the columns the linear family one-hot encodes."""
+    categorical = categorical or []
     if regression:
         return {
-            "linear": lambda: make_pipeline(StandardScaler(), Ridge(alpha=1.0)),
+            "linear": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
             "random_forest": lambda: RandomForestRegressor(
                 n_estimators=200, min_samples_leaf=2, max_features="sqrt", n_jobs=n_jobs, random_state=0
             ),
             "lightgbm": lambda: lgb.LGBMRegressor(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
         }
     return {
-        "linear": lambda: make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=2000)),
+        "linear": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=1.0, max_iter=2000)),
         "random_forest": lambda: RandomForestClassifier(
             n_estimators=200, min_samples_leaf=2, n_jobs=n_jobs, random_state=0
         ),
@@ -305,7 +320,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         pairs.append((train, test, full_train))
 
     results: dict[str, list[dict]] = {}
-    candidates = models(regression=regression, n_jobs=n_jobs)
+    categorical = [f"f{i}" for i, name in enumerate(names) if isinstance(df[name].dtype, pd.CategoricalDtype)]
+    candidates = models(regression=regression, n_jobs=n_jobs, categorical=categorical)
     chosen_single: list[str] = []
     class_counts: list[np.ndarray] = []  # the units of each class, per probed test fold
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
@@ -431,7 +447,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
             best_loss, drift_loss = best_loss**2, drift_loss**2
         if drift_loss <= DRIFT_MARGIN * best_loss:
             flags.append("drift_baseline")
-    if above < UNSTABLE_SHARE or se > UNSTABLE_SE:
+    drift_only = times is not None and above == 1.0  # the skill moves with the dummy's error between windows
+    if above < UNSTABLE_SHARE or (se > UNSTABLE_SE and not drift_only):
         flags.append("unstable")
     smallest = np.min(class_counts, axis=0) if class_counts else np.array([], dtype=int)
     few = {str(classes[k]): int(smallest[k]) for k in np.argsort(smallest, kind="stable") if smallest[k] < FEW_MINORITY}
@@ -453,6 +470,10 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         "best": best,
         "best_skill_se": se,
         "best_beats_dummy_share": above,
+        "per_split": {
+            "best_skill": [round(float(v), 4) for v in best_skill],
+            "dummy_loss": [round(float(r["log_loss" if n_classes else "rmse"]), 4) for r in results["dummy"]],
+        },
         "single_feature": {"skill": single_skill, "chosen": {str(k): int(v) for k, v in counts.items()}},
         "smallest_class_per_test_fold": int(smallest.min()) if len(smallest) else None,
         "few_minority_classes": few,
@@ -523,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
     args = parser.parse_args(argv)
 
-    names = sorted(discover_datasets(args.root)) if args.all else args.names
+    names = sorted(discover_datasets(args.root, strict=False)) if args.all else args.names
     if not names:
         parser.error("name at least one dataset, or pass --all")
     kwargs = {

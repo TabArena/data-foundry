@@ -46,7 +46,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
   - `lgg_low_grade_glioma`;
   - `phiusil_phishing`.
 - **Not added:** 9 records.
-  - Duplicates: `churn_telco_nigeria`, `myocardial_infarction_complications`, `numerai28_6`,
+  - Duplicates: `churn_telco_south_asia_duplicate`, `myocardial_infarction_complications`, `numerai28_6`,
     `sasol_customer_retention_recruitment_competition`.
   - Data gone: `alfa_battle_2_0_task_1`.
   - Generated or injected data: `hepatitis_c_egypt`, `high_storage_system_data_for_energy_optimization`.
@@ -71,10 +71,10 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`brca_breast_cancer`](#brca_breast_cancer) | added; `No` on 2026-10-12, folder removed | The PAM50 label is computed from the shipped expression values, so the expression block is dropped (methylation and miRNA remain). Alternative: retire as `Trivial`. |
 | [`breast_cancer_prediction`](#breast_cancer_prediction) | added | The full BCSC file, grouped by woman (the record says IID). Does the image-scoring rule (breast_w) cover the BI-RADS readings? |
 | [`caracas_cervical_cancer`](#caracas_cervical_cancer) | added | 108 patients who skipped the contraceptive question are dropped. Target: Biopsy. |
-| [`cdc_diabetes_health_indicators`](#cdc_diabetes_health_indicators) | added | Three classes; binary "ever told diabetes" is the alternative. The dropped blanks are partly a skip pattern. |
+| [`cdc_diabetes_health_indicators`](#cdc_diabetes_health_indicators) | added; `No` (Scientific Discovery) on 2026-10-15, folder removed | Three classes; binary "ever told diabetes" is the alternative. The dropped blanks are partly a skip pattern. |
 | [`central_international_medical_college_and_hospital_health_risk_prediction`](#central_international_medical_college_and_hospital_health_risk_prediction) | added; `No` (`Trivial`) on 2026-10-12, folder removed | The label is the NEWS2 band of the eight features, and the vital signs look generated. |
 | [`churn_telco_europa`](#churn_telco_europa) | not added; `No` (`Data Quality Issue`, `Ethical Issue`) on 2026-10-12 | Active lines and churners were recorded differently (an irreversible leak, as in iranian_churn). The files hold Chilean national ids and phone numbers. |
-| [`churn_telco_nigeria`](#churn_telco_nigeria) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
+| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
 | [`churn_telco_south_asia`](#churn_telco_south_asia) | added | When churn was observed is open; the IntelliSys 2017 paper would settle it. The 50% base rate is artificial. |
 | [`coad_colon_adenocarcinoma`](#coad_colon_adenocarcinoma) | added | Multiclass CIN/MSI/GS (the record says binary). 49,283 features, 2.2 times the widest dataset in the copy; mRNA only is the alternative. The label is not a rule on a shipped block. |
 | [`college_scorecard`](#college_scorecard) | added | Are the institution's published outcomes (latest completion rate, retention) features? SAT columns are dropped at the 2017 scale change. The source should be the Scorecard, not OpenML 46674. |
@@ -359,7 +359,7 @@ the schema's `Other`. Tags are listed when a `Non-IID` tag names another regime.
 
   **Resolved (Lennart, 2026-10-12):** kept; it never leaves the local warehouse.
 - **Raw copies of datasets not added**: `local-data-warehouse/` holds myocardial_infarction_complications (0.9 MB),
-  churn_telco_europa (21 MB), churn_telco_nigeria (0.2 MB), hepatitis_c_egypt (0.2 MB),
+  churn_telco_europa (21 MB), churn_telco_south_asia_duplicate (0.2 MB), hepatitis_c_egypt (0.2 MB),
   high_storage_system_data_for_energy_optimization (7.2 MB) and numerai28_6 (35 MB).
 
   **Resolved (Lennart, 2026-10-12):** kept for now; `minimal_inputs.py` of the rebuild skill collects what the builds need.
@@ -1374,21 +1374,26 @@ After the changes: `dataset check` 0 errors, 0 warnings, 1 info (the same accept
      - no lagged readings are inputs; across a panel of 2,380 meters, building and weather drive the reading;
      - in the copy, rossmann_store_sales is a precedent for in-scope; appliances_energy_prediction and combined_cycle_power_plant (single series) are precedents for No.
    - Now: in scope, as the record already accepts. Alternative: `Time-series (Forecasting)` and No.
+   **Follow-up (AI, 2026-10-15):** Lennart asked whether a naive time-series model beats LightGBM and whether splitting the task helps. RMSE on log1p(kWh), full test windows W1 / W2 / W3, after the new cleaning (issue 4). Best naive forecast, each meter's hour-of-week profile from the same month a year earlier: 1.393 / 1.273 / 1.372 (the same hour 52 weeks earlier: 1.563 / 1.436 / 1.546). Default LightGBM (100 trees) loses to it: 1.444 / 1.403 / 1.448. LightGBM with 1,000 trees and 255 leaves wins: 1.265 / 1.177 / 1.235 on the full history, 1.261 / 1.176 / 1.223 on 1M rows (the shipped train size, where the naive profiles drop to 1.46-1.49). Split models: per site 1.238 / 1.178 / 1.222, per meter type 1.278 / 1.225 / 1.281, per building and meter (the 5th place approach) 1.368 / 1.265 / 1.337. The weather adds 0.01-0.05. Unseen buildings (every fifth held out, W1): LightGBM without building_id 1.709, a site x use x meter profile 2.012, LightGBM with their 2016 history 1.430. The top five teams used no lagged readings (GEPIII overview, Table 2). Recommendation: in scope as one task.
+   **Resolved (Lennart, 2026-10-15):** in scope as one task; ship.
 3. **Temporal or grouped.**
    - The record lists both regimes. The competition's test years hold the same buildings, and M&V predicts "the building's pre-retrofit energy use rate in the post-retrofit period" (Sec. 2.2).
    - Now: temporal, with building_id as a feature (warm start).
    - Alternative: hold out whole buildings (new buildings, a benchmarking use case the source does not pose), or grouped-temporal.
+   **Resolved (Lennart, 2026-10-15):** temporal; the record's `tags` and `required_split` no longer list the grouped regime.
 4. **How much to clean.**
    - Now: drop electricity zeros and site 0's recording gap; keep the thermal zeros and all other anomalies. The competition page itself calls this "real data with measurement error". The top teams removed anomalies by hand, building by building.
    - Alternative A: BDG2's full rule also removes zero runs of more than 24 h, which drops 1,766,800 thermal rows (4.4%; 882,158 in 2017). Most of these are seasonal shut-downs: chilled-water runs hold 158,774 rows in January and 20,009 in August.
    - Alternative B: keep the electricity zeros too, as the competition scored them.
    - Known unit errors stay (BDG2 p. 8: fixed in BDG2, "left as-is in the Kaggle data set"). Building 1099's steam is in train only (2016).
+   **Resolved (Lennart, 2026-10-15):** clean to an expert state, as the top teams and the data owners did. Applied: readings in kWh from BDG2's raw files (the competition kept each site's own unit: 360 chilled-water meters in ton-hours, 312 steam meters in pounds of steam, 198 in mmBTU, 148 in kBTU, 27 at site 7 at 3,600 times kWh); dropped as not recorded, besides the electricity zeros and site 0's gap: a cooling or heating plant at 0 for 48 hours or more in its season (chilled water May-October, steam and hot water November-April; 383,406 hours), the repeats of a reading stuck for a week or more (618,666 hours, 365k of them site 5's electricity at about 0.0004 kWh from March to November 2017) and building 1099's steam above 10 times its median (3,332 hours). In all 1,701,150 hours (4.2%), 39,062,170 kept. Of the 2016 hours dropped, 94.5% are on the 1st place team's hand-made bad-reading list (`solutions/rank-1/input/bad_meter_readings.zip`); the rules cover 64% of that list. The rest of the list is mostly zeros of thermal meters outside their season (the team removed about a third of these by eye), which stay. Alternatives A (BDG2's 24-hour zero rule) and B are not taken. Not built.
 5. **Window length.**
    - Now: 3 x 4 months. The oldest train side holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, 0.9 points under the 50% floor by rows. It is kept because it is the competition's setting; `splits_comment` now says both shares.
    - Alternative: 3 x 3 months (Apr-Jun, Jul-Sep, Oct-Dec 2017), with train shares of 61.7%, 74.4% and 87.2%.
 6. **Daylight saving time: closed, no change to the data.** The meters of 8 sites (0, 3, 4, 6, 8, 9, 10, 15) skip the spring-forward hour, so 34% of the rows (33.79%) get weather one hour late. The verifier rebuilt the join with BDG2's per-site time zones and refit LightGBM with hour and weekday: RMSE moved by -0.007 to +0.005 per window, no consistent gain. The fixed offsets stay, and `curation_comments` now says so with these numbers.
 7. **Hour of day in the harness: closed.** TabArena v0.2's `tabarena_default` preprocessing encodes `timestamp` with skrub's `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, which keeps the hour and the weekday. With them LightGBM's RMSE is 3-6% lower (verifier). No extra column is needed. It would matter only if the v0.1 `default` pipeline ran this dataset.
 8. **Housekeeping.** The record is `DF: Suspended` and points at the v1 notebook in `_maintenance/_suspended/`. Once the `_1m` folder is accepted, `sync-notebooks` should set `v2_path` to it, and the status and the suspended v1 notebook need updating. The download lives in `local-data-warehouse/ashrae_great_energy_predictor_iii/` (1.6 GB). The curator's v1 copy is in `ashrae_energy_predictor/` (2.6 GB).
+   **Resolved (Lennart, 2026-10-15):** drop the suspended v1 copy; `v2_path` already points at the `_1m` folder and the record is `WIP (DF)`. `datasets/_maintenance/_suspended/ashrae_energy_predictor/` is removed (it stays in the git history), and so is the curator's local v1 copy of the raw files (`local-data-warehouse/ashrae_energy_predictor/`, the same files as the download).
 
 ### bias_correction_r_bias_correction_r_2
 
@@ -1492,9 +1497,11 @@ After the changes: `dataset check` 0 errors, 0 warnings, 1 info (the same accept
    rows without present-day observations (32 in the 2017 test windows) are kept as NaN. The paper does not say how it
    handled them (it mentions 135 complete days only for its maps, Sec. 4.3, p. 12). Alternative: drop the 75 LDAPS-less
    rows, which would not change any test row.
+   **Resolved (Lennart, 2026-10-15):** the task corrects the LDAPS forecast, so a row without one has nothing to correct: the 75 rows of the three days without an LDAPS run are dropped (no test row changes; 7,648 rows remain). The 60 rows without present-day observations stay. The mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on 7 of 9 windows (0.785 against 0.823, paired SE 0.022). The probes now flag `unstable` again: LightGBM falls just below the training mean in the oldest window (2017-06-30 to 07-06, skill -0.07, dummy RMSE 1.11) and beats it on the other 8 (0.61-0.96); kept, as noted in `curation_comments`.
 5. **TALENT's numbers for this dataset are inflated (information).** TALENT splits both tasks at random. Its best RMSEs
    (TabR 0.57 for the maximum, 0.45 for the minimum) are far below what folds that keep each day's stations together
    give (LightGBM 1.54 and 1.00), because the other stations of a test day are in train.
+   **Answer (2026-10-15):** TALENT came up only because the record's two names are its task names; its random-split scores say nothing about this task and are not used anywhere.
 6. **Framework notes.**
    - (a) Earlier in this run a fresh scaffold with `problem_type = "TODO"` (`perth_house_prices`) broke `pytest`
      collection for every folder. It is fixed now; `problem_type` belongs on the list with `domain` and `source`.
@@ -1502,7 +1509,9 @@ After the changes: `dataset check` 0 errors, 0 warnings, 1 info (the same accept
    - (c) `task_probes.py` flags `unstable` on temporal tasks whose dummy error varies strongly between windows even when
      every window beats the dummy (here 9 of 9). A paired criterion would separate drift from instability, as in the
      consumer_complaints precedent.
+   **Resolved (Lennart, 2026-10-15), applied:** (a) `tests/test_v2_datasets.py` discovers leniently and checks each folder's import in its own test, so a scaffold with a `TODO` in `problem_type`, `domain` or `source` fails one test, not the collection; (b) the dedent gap was fixed on 2026-10-12, so `splits_comment` is a text block again; (c) `task_probes.py` counts the standard-error part of `unstable` on a temporal task only when the best family loses to the dummy on a window, and its JSON now lists the skill and the dummy's loss per split.
 7. **Pending (orchestrator):** the record's `v2_path` is unset (`sync-notebooks`); the container is not built.
+   **Resolved (Lennart, 2026-10-15):** `v2_path` is set; the container is built with the next rebuild.
 
 **Verification** (independent verifier, 2026-10-07: "ready with noted concerns"; no leak, no wrong split, no blocker;
 report in `verify/verify.md`). Each finding and what I did:
@@ -1529,6 +1538,8 @@ report in `verify/verify.md`). Each finding and what I did:
 6. **Multi-target (Lennart's call): stated** as issue 1, no change.
 7. **Pending:** record pointer and build are the orchestrator's steps.
 
+**Resolved (Lennart, 2026-10-15):** ship.
+
 ### brazilian_ecommerce
 **Outcome:** added and checked
 
@@ -1548,12 +1559,18 @@ report in `verify/verify.md`). Each finding and what I did:
 
 **Issues for Lennart:**
 1. **Which task?** The record's problem type is TBD and names "predict future sales, optimize delivery times". Implemented: delivery time at checkout, the data card's "Delivery Performance: ... optimize delivery times". Sales prediction ("With purchase date information you'll be able to predict future sales") is time-series forecasting, out of scope. Alternatives, measured with untuned LightGBM on the same 5 windows and features: (a) late delivery (delivered after the promised date; binary): ROC AUC 0.62-0.70 (mean 0.663), late share per window 1.4% (June, 83 orders) to 21.6% (March, 1,491); it is a threshold of the shipped target against a feature, so it would be a `_clf` variant, not a new task. (b) review score 1-5, predicted after delivery and before the customer answers. This is the task the uploader framed: "Lets create a model to predict what's the score a customer will give for an order", with "data from each order up to delivery phase", and "we need to predict the score before a customer writes it" (Andre Sionek of Olist, kaggle.com/code/andresionek/predicting-customer-satisfaction, cells 0, 4 and 5, last run 2018-10-24, 299 votes; it reads the older single-table release `olist_public_dataset_v2.csv`, splits at random and scores on its training set; Kaggle keyword "multiclass classification"). The data card's "Delivery Performance" bullet is framed as analysis. Numbers with the delivery outcome as features (days to delivery, days late): a low score (1-2, 12.6% of orders) reaches ROC AUC 0.66-0.83 (mean 0.717; 0.596 from the checkout features alone); an untuned 5-class LightGBM loses to the class shares in 4 of 5 windows (log loss 1.11-1.25 against 1.05-1.34). With the review score as the target, the release's selection on answered surveys (issue 7) would be the task's own population, and the review text written with the score would be dropped. Kept as implemented: delivery time. Switching is your call.
+   **Answer (AI, 2026-10-15):** the use case is the delivery date shown at checkout. Olist promises a date when the order is placed ("informed to customer at the purchase moment"); a better prediction of the actual days lets it promise a tighter date (its promise is 23.5 days at the median against 9.7 delivered; 6.9% of the shipped orders arrive late) and warn or expedite orders likely to be late. Late delivery is a threshold of the same target against the promise, so it would be a `_clf` variant of this task, not a second one. The review score is, as you say, closer to a satisfaction or recommender task driven by the delivery outcome and the product, and its signal is weak (a 5-class LightGBM loses to the class shares in 4 of 5 windows). Recommendation: keep the regression.
 2. **End of the review sample.** The last survey in the reviews file was sent on 2018-08-31, and a survey goes out at delivery or at the promised date, so orders placed in August 2018 are only in the sample when they arrived by then (August p90 13.1 days against 16.0 in July; the last week's maximum 3.6 days). Implemented: orders placed before 2018-08-01 whose promised date is on or before 2018-08-24 (drops 6,351 August and 243 June/July orders, 78 of the 591 orders of 30-31 July). Alternative: cut at 2018-07-01 without the promise rule; that removes the July window (5,828 test rows).
 3. **Training rows when labels arrive late.** A model refit on the first of the month only knows the deliveries made by then. Implemented: a one-month gap before each window plus dropping the 32-353 older orders still in transit (`_make_splits`, after the hotel_booking_demand rule). The delivered orders of the last month are the fast ones (27-53% of that month still in transit at the refit; for April, median 9.1 days delivered against 13.4 for all), and the bias matters for a model that sees the purchase time as a number. Mean R^2 of untuned LightGBM on the 5 shipped windows (verifier's run, `verify/v7_gap.log`, `v7b_gap_ag.log`), with the gap / without it (as-of labels) / without it, also training on later deliveries (a leak): purchase time as a number 0.353 / -0.054 (bias -0.26 to -0.62 in every window) / 0.429; number plus date parts as AutoGluon emits them 0.320 / 0.064 / -; date parts only 0.331 / 0.392 / 0.395; no time feature 0.310 / 0.347 / 0.349. So the gap protects the numeric-timestamp models that benchmark pipelines feed, and costs 0.04-0.06 R^2 for a model without a usable time axis. Question: is the gap the fix you want for duration targets with late labels? sf_permit_time (6-month windows on the filing date, durations of months) trains on permits issued after its windows start, so the same question applies there.
+   **Answer (AI, 2026-10-15):** yes. The gap simulates a refit that knows only the deliveries completed by then; without it, a model that sees the purchase time as a number is biased (R^2 0.353 with the gap, -0.054 without). sf_permit_time has had the same treatment since 2026-10-12 (training rows are permits issued before each window starts, with a 6-month gap).
 4. **Window count.** Monthly windows with the gap give 5 windows above the 50% floor, not the convention's 9. Alternative: 14-day windows with a 30-day gap give 9 windows (test 1,997-3,469 rows, oldest from 2018-03-28); 21-day windows give 8. Implemented: monthly, as a monthly refit is the plainer cadence.
+   **Resolved (Lennart, 2026-10-15):** monthly windows stay.
 5. **Order-level construction.** Implemented: drop orders with several sellers (one delivery date for several shipments; 1,155); the first item's product attributes (98.0% of the kept orders hold one distinct product); item and payment aggregates; shipping_limit_date not used (set at payment approval, after checkout); geolocation not joined (median lat/lng per zip prefix changes LightGBM R^2 from 0.366 to 0.367). Olist's promised date is kept as `estimated_delivery_days`: known at checkout ("informed to customer at the purchase moment"), single-feature R^2 0.132, removing it lowers R^2 from 0.366 to 0.332 (most in July: 0.35 to 0.06). Alternative: drop it, so the task is predicting without the company's own estimate.
+   **Answer (AI, 2026-10-15):** it is the date Olist promised the customer at checkout; the release does not say how Olist computes it. It is not a fixed route table: seller state x customer state explains 38% of its variance, with the purchase month 58%, and it is padded (median 23.5 days against 9.7 delivered). It cannot leak, since it is fixed at checkout, before the label. Kept as an input known at checkout, as bias_correction keeps the LDAPS forecast it corrects: the model refines the company's own estimate. Dropping it makes the task "predict without the company's estimate" and lowers LightGBM's R^2 from 0.366 to 0.332.
 6. **Record fields.** The record says year 2019; Kaggle's Croissant metadata gives datePublished 2018-09-21 (the uploader's Q&A thread opens the same day), so the definition uses 2018. `problem_type` becomes regression with this task. Licence CC BY-NC-SA 4.0, noted only.
+   **Resolved (Lennart, 2026-10-15):** the record's year is now 2018 (Kaggle's datePublished 2018-09-21); its problem type was already Regression.
 7. **Selection on answered reviews.** Every order in the release has an answered survey (646 delivered orders have no review row, which the release does not explain). If customers with slow deliveries answer more often, slow deliveries are over-represented. We assume the effect is the same in every month (the release holds no unanswered surveys to check it), so it is an `Anomaly:` bullet, not a fix. With the review score as the target (issue 1), this selection would be the task's own population.
+   **Answer (AI, 2026-10-15):** the reviews file gives only its survey dates, to cut the end of the sample (issue 2); no review field is a feature. The selection decides which orders are in the data: Olist released only orders with an answered survey, so if customers with slow deliveries answer more often, slow deliveries are over-represented, in train and test alike. It changes the population, not the features, and cannot be checked (the release holds no unanswered orders), so it stays an `Anomaly:` bullet.
 
 **Verification:** (independent verifier, verdict "ready with noted concerns"; `verify/verify.md`)
 1. Review score is the source's own predictive task: applied as an issue for Lennart. I read the notebook (cells 0, 4, 5) and its date (`kaggle kernels list --user andresionek`: last run 2018-10-24); it is cited in issue 1, in a new "Task choice" bullet of `curation_comments` and in the record comment, with the note on the answered-survey selection. Delivery time stays implemented.
@@ -1561,6 +1578,8 @@ report in `verify/verify.md`). Each finding and what I did:
 3. "96.7% of the orders hold one distinct product": applied, recomputed on the shipped frame (86,903 of 88,721 = 97.95%) -> "98.0% of the kept orders" (in `curation_comments` and issue 5).
 4. "the effect is the same in every month" stated as fact: applied -> "We assume ...; the release holds no unanswered surveys to check it."
 After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted warning and info); checksum now v2:5e0a3d4e... (the comment text is part of the metadata), the same under pandas 2.3.3 and 3.0.6; `pytest tests/test_v2_datasets.py -k brazilian_ecommerce` with `DATA_FOUNDRY_V2_DATA_CHECKS=1`: 2 passed. Data, rows and splits unchanged.
+
+**Resolved (Lennart, 2026-10-15):** ship as implemented: delivery time at checkout, the one-month gap, Olist's promised date as an input, the answered-review selection as an `Anomaly:` bullet (issues 1, 3, 5 and 7 as answered above).
 
 ### breast_cancer_prediction
 
@@ -1624,17 +1643,20 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
    - Fallback if you rule against the readings: the readings-free task (patient and exam facts only), close to the BCSC's risk-model framing. Logistic regression reaches 0.578 there, above 0.5 on 9 of 9 splits: a small, real signal (rule 2), not a `No`.
    - Either way a dated `CC` decision in the record would settle it.
 
+   **Resolved (Lennart, 2026-10-15):** kept. The readings are valid tabular inputs: screening programmes run tabular risk models on BI-RADS readings and risk factors, so the image-scoring rule does not apply; the real-world use decides. The exception is now in the curation guidelines (and their dashboard copy).
 2. **Grouped by woman, or IID as the record says?**
    - `ptid` is the source's patient id. 3,133 of 36,714 women have 2-4 exams, and only the 20 with cancer have a positive exam, their last.
    - A random split gains nothing (0.906 against 0.914 grouped).
    - Now: grouped. The exams are a random sample of the BCSC's screening mammograms, so a model is used for other women, and your comment flagged the repeated women.
    - Alternative: IID, with the same scores. The verifier agrees with grouped.
 
+   **Resolved (Lennart, 2026-10-15):** IID with one exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order): 36,714 rows, 239 of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest, 0.923 latest, 0.925 all exams grouped; script in the run folder of 2026-10-15). Regularised LightGBM 0.929 and a random forest 0.927 beat the assessment alone (0.914) on 8 of 9 splits. The repeated feature vectors (52.2% of the rows, different women) are now an accepted `dataset_duplicate_rows` warning.
 3. **Print the BCSC's direct download link?**
    - `https://www.bcsc-research.org/download_file/view/33/347` (HTTP 200 today; on the post-form page in Wayback 2021 and 2024) returns the original zip without the name / institution / e-mail form.
    - Now: `download_description` describes the form route (zip and CSV sha256, `unzip -p`), keeps the GitHub copy as a pinned mirror, and does not print the link.
    - Alternative: print it, which makes the original download scriptable.
 
+   **Resolved (2026-10-15, Lennart left it open):** not printed. The BCSC asks users to register before downloading; the pinned GitHub copy (same sha256) already makes the download scriptable.
 4. **Terms (noted, not a verdict reason).** "Recommended for use as a teaching tool only; they should not be used to conduct primary research". The P01CA154292 acknowledgement ("must be cited when reproducing this data") is now in the bibtex note, with the download date 10/07/2026.
 
 5. **Target.** Now binary any-cancer (the source's question 4). The alternative is three classes from `CaTypeO` (none / DCIS 56 / invasive 203), about 19 DCIS per test fold.
@@ -1646,12 +1668,15 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
    - `required_split` and `tags` per issue 2;
    - `v2_path`.
 
+   **Resolved (Lennart, 2026-10-15):** applied: `year` 2014, the dead datahub link replaced by the BCSC page; `original_source` was already GOV Website; `required_split` and `tags` stay IID (issue 2); `v2_path` is set. The review page's labels now say what a mark does ("take definition's value" / "keep record's value"), and record fields go only into the field table, never into a numbered issue (review-added-datasets skill).
 7. **For comparisons with TabSTAR.** TabSTAR's version (`BIN_HEALTHCARE_BREAST_CANCER_MAMMOGRAM.py`, `COLS_TO_DROP = []`) keeps `Cancer_Type`, which gives the label away.
 
+   **Resolved (Lennart, 2026-10-15):** noted only; another collection's version of the data is no reference (now a rule in the skills).
 8. **Framework.**
    - (a) `leak_probes.py` used the group column as a feature; the orchestrator has fixed it.
    - (b) `generated_probes.py --root` fails when any folder does not import.
    - (c) The task and group probes' linear models read categories as codes. With plain BCSC labels the linear probe scored 0.587; with the BI-RADS-number prefix it scores 0.80.
+   **Resolved (Lennart, 2026-10-15), applied:** (a) fixed on 2026-10-07; (b) the probes load only the named folder, and `--all` skips folders that do not import; (c) the linear models of the task and group probes one-hot encode categories (at most 64 levels each): the linear probe now scores ROC AUC 0.922 here.
 
 **Verification:** (verifier, 2026-10-07: needs changes, text only; container correct)
 - Finding 1 (image rule, major): applied. Now issue 1, with both sides, the heart_disease_cleveland precedent and the readings-free fallback. A short pointer to the precedent is in the assessment bullet of `curation_comments`.
@@ -1661,6 +1686,8 @@ After the edits: ruff clean; `dataset check` 0 errors, 0 warnings (same accepted
 - Finding 5 (record comment, minor): applied. It now says the 20 women with cancer are positive only on their last exam, and that the file is the BCSC's own.
 - Finding 6 (record fields): left to the orchestrator (issue 6).
 - Finding 7 (leak probe): re-ran the fixed `leak_probes.py`: 10 features, 49.4% exact copies. The leak-probes bullet now says what the copies are: distinct women with identical coarse profiles, never the same woman across the grouped split, 1-NN agreement at chance.
+
+**Resolved (Lennart, 2026-10-15):** ship.
 
 ### caracas_cervical_cancer
 **Outcome:** added and checked (revised after verification: 108 patients dropped, source fills set to NA)
@@ -1736,28 +1763,34 @@ TODO is left.
      not cover this question, and that the creators expected higher risk.
    - Open for the whole file: whether a 0 means "test not done". 6 positive biopsies have all three screening tests
      negative, so biopsies were not taken only after a positive screen. The first author (INESC TEC) could be asked.
+   **Resolved (Lennart, 2026-10-15):** dropped, as implemented.
 2. **Target: biopsy, as the record suggests.** The creators' own 2018 target, and the strongest signal from the
    questionnaire. Alternatives, as LightGBM / logistic AUC on 858 rows:
    - Schiller: 74 positives, 0.64 / 0.63.
    - Hinselmann: 0.55 / 0.60.
    - Citology: 0.55 / 0.58.
    - Any test positive: 0.62 / 0.67.
+   **Resolved (Lennart, 2026-10-15):** the biopsy, as implemented.
 3. **One-hot reversal not done.** The STD and Dx blocks are multi-label: 43 of 740 patients have 2-4 STD types, and
    16 of 18 previous cancer diagnoses carry HPV. Alternative: combination categoricals, with 14 STD levels (9 of them
    with 1-3 rows) and 5 Dx levels.
+   **Answer (AI, 2026-10-15):** kept as one yes/no category per flag. Each flag is a question of the questionnaire, and they are multi-label: 9 patients have two or three STD types (the 43 above counted condylomatosis twice: `std_condylomatosis` is exactly the OR of the vaginal and vulvo-perineal types, and `stds_number` is the sum of all ten flags). A single category would need 14 levels, 9 of them with 1-3 patients (issue 3 above), and a string column would be read as free text. `stds` and `stds_number` are derived from the flags and stay as the source counts them.
 4. **Repeated answer profiles kept** (21 exact copies plus 1 copy with the other label). The alternative, dropping
    them as in wine_quality, would leave 729 rows.
+   **Resolved (Lennart, 2026-10-15):** kept, as implemented.
 5. **Record fields.**
    - `problem_type: TBD` should become Binary Classification.
    - `v2_path` gets filled by `sync-notebooks`.
    - The `Multi-target` tag stays: the four tests can be modelled jointly (IbPRIA Table 2). The folder ships the
      biopsy only.
+   **Resolved (Lennart, 2026-10-15):** the `Multi-target` tag is removed: the four results come from one work-up and the folder predicts the biopsy alone. `problem_type` was already Binary Classification and `v2_path` is set.
 6. **Anomalies, kept as recorded.**
    - 2 patients report a first intercourse after their current age.
    - 2 patients report an STD diagnosis longer ago than their age.
    - 5 patients have a `dx_*` flag set while `dx` is 0.
    - 7 patients report an STD with no STD diagnosis counted.
    - `smokes_packs_per_year` keeps the source's name, although it reads as pack-years.
+   **Answer (AI, 2026-10-15), applied:** impossible answers become missing, the rows stay: the 2 first intercourses after the current age (ages 23 and 14 with 27 and 16) and the 2 STD diagnoses longer ago than the patient's age (21 years at 20, 19 at 18); the age is the clinic's record. The other contradictions are not impossible and stay as recorded: `dx` (undefined by the source) is 0 for 5 patients with a `dx_*` flag, and 7 report an STD with 0 diagnoses counted, which may count clinical diagnoses where the flags are self-reports. Rows and splits are unchanged.
 
 **Verification:**
 - Finding 1 (major, drop the 108): applied. I re-checked the counts and P-values, the covariates and the 4 of 16, and
@@ -1774,9 +1807,11 @@ TODO is left.
   an answered-or-not signal for this question.
 - Finding 6 (Multi-target tag): applied. Issue 5 now keeps the tag and says the folder ships the biopsy only.
 
+**Resolved (Lennart, 2026-10-15):** ship as implemented (issues 3 and 6 as answered above).
+
 ### cdc_diabetes_health_indicators
 
-**Outcome:** added and checked
+**Outcome:** added and checked. Retired as `No` (`No Good Target / Scientific Discovery`) on 2026-10-15: the task predicts a diagnosis the respondent already has (issues 1 and 4); the folder is removed and stays in git history at bb3baa3.
 
 **Record judgment:** valid with concerns. The provenance is clear and verified. The file is Alex Teboul's Kaggle cut
 (files of 2021-11-08, CC0) of the CDC's BRFSS 2015 telephone survey. His public notebook, run on the CDC's 2015.csv
@@ -1879,6 +1914,7 @@ of at most 50k rows.
    - Implemented: 3 classes, as the record decided.
    - Alternative (my recommendation, the verifier's too): binary "ever told diabetes" against the rest, prediabetes
      counted as no diabetes. ROC AUC 0.829-0.830; one clean survey question. Or Xie's cohort: 235,826 rows, AUC 0.827.
+   **Resolved (Lennart, 2026-10-15):** neither: retired as `No`, `No Good Target / Scientific Discovery` (Outcome). The label is a diagnosis the respondent already has, in either version.
 2. **The cohort: the drop of blanks is partly a skip pattern, not refusals.** The record accepted the drop as keeping
    "only cases that answer the questions truthfully and fully".
    - TOLDHI2 is not asked when cholesterol was never checked (p. 17). All 49,673 never-checked respondents are
@@ -1891,6 +1927,7 @@ of at most 50k rows.
    - Implemented: as published, with the cohort now named in the prediction-point bullet.
    - Alternative: a version rebuilt from 2015.csv, with "never checked" and "income unknown" as categories. The notebook
      reproduction makes this easy; the record wants a domain expert first.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome); a cohort rebuilt from the raw file keeps the same label.
 3. **Duplicates kept (accepted warning).** 23,899 exact duplicate rows, all distinct respondents.
    - Precedent: sepsis_survival keeps natural repeats. wine_quality and jm1 drop copies, but theirs are one entity or an
      artifact. The verifier agrees (§D.4, "few features, plausible repeats: keep").
@@ -1898,6 +1935,7 @@ of at most 50k rows.
      profiles.
    - Implemented: keep.
    - Alternative: drop exact copies and conflicting vectors.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome).
 4. **The design is cross-sectional (note, no action proposed).** The label is a lifetime diagnosis.
    - Kept diabetics were told a median of 10 years before the interview (75% at least 5 years).
    - Without the care-contact, lifestyle or complication answers, the ROC AUC of diabetes against the rest drops by at
@@ -1907,6 +1945,7 @@ of at most 50k rows.
      unaware".
    - The Kaggle notebook jabr1one/the-problems-of-this-dataset (2025) raises this. Xie et al. use the same
      cross-sectional design.
+   **Resolved (Lennart, 2026-10-15):** this decides it: the task is retired (Outcome). The screening use needs the undiagnosed as positives, which BRFSS cannot identify; NHANES can (new candidate `nhanes_undiagnosed_diabetes`).
 5. **Source convention (minor).** `source = "Kaggle"` stays, by §A ("where the data first appeared").
    - This table first appeared on Kaggle; the CDC publishes only the raw survey.
    - Same call as `sdss_17`: a Kaggle user's cut of the SDSS DR17 release, with source "Kaggle" and BibTeX citing the
@@ -1915,6 +1954,7 @@ of at most 50k rows.
      `"GOV Website"`) would be "Kaggle" too. That folder is not mine; one rule for both is Lennart's call.
    - BibTeX: Teboul's dataset, with BRFSS in the note. Alternative: the CDC's BRFSS 2015 citation, as sdss_17 cites
      DR17.
+   **Resolved (Lennart, 2026-10-15):** moot: retired (Outcome).
 
 **Verification:** the independent verifier found no blocker ("ready with noted concerns"), and every number
 reproduces.
@@ -2040,6 +2080,8 @@ The vital signs also look generated (criterion 4B, Issue 2). The record's commen
 4. **Two probe and framework notes:**
    - (a) `generated_probes.py` (and the other `--root` probes) load every definition under the root and abort the whole run when any folder fails to import. Here that was another agent's fresh scaffold. Loading by name would isolate the failure.
    - (b) `leak_probes.py` reports `Consciousness` alone at macro AUC 0.500, although all 86 patients who are not alert are Medium or High. Untuned LightGBM cannot split off a categorical group of fewer than `min_data_per_group=100` rows. With `min_data_per_group=1` or one-hot encoding the same splits give 0.571. The probe can therefore miss the signal of rare categories.
+
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, `Trivial`: the label is the NEWS2 chart applied to the vital signs the data ship. The folder is removed.
 
 ### churn_telco_europa
 **Outcome:** not added (irreversible leak of the iranian_churn kind: active lines and churners were recorded on
@@ -2206,7 +2248,9 @@ cleaning.
 
    **Verification:** not checked.
 
-### churn_telco_nigeria
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, with `Missing source information`, `Ethical Issue` and `Data Quality Issue`: WOM Chile's customers under a European name, with personal data and no prediction point.
+
+### churn_telco_south_asia_duplicate
 **Outcome:** not added (duplicate of churn_telco_south_asia: the DSN files are the 2,000 rows of the SATO 2015 file with renamed values, and the DSN train/test cut is selected on the label and total spend)
 
 **Record judgment:** do not add: the same underlying data as `churn_telco_south_asia` of this run, which is the original
@@ -2234,13 +2278,13 @@ too"). Neither the record's comments nor any other record weigh this.
 
 **Data:** Kaggle InClass competition dsntelecomschurn2018 (`uvx --from kaggle==2.2.2 kaggle competitions download -c
 dsntelecomschurn2018`): TRAIN.csv 1,400 x 16 (with `Customer ID` and `Churn Status`), TEST.csv 600 x 15 (labels not
-published), sample submission.csv; in `local-data-warehouse/churn_telco_nigeria/`. No licence is stated on the
+published), sample submission.csv; in `local-data-warehouse/churn_telco_nigeria/` (deleted 2026-10-15). No licence is stated on the
 competition's pages (rules page: base rules only). For the comparison, the SATO csv (2,000 x 14, CC0-1.0 in the Kaggle
 metadata) sits in my scratch folder only. OpenML 44230 (this record's link) is TRAIN.csv with its blank line (1,401
 rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 
 **Definition:** none in the working copy. Two probe vehicles in `<scratch>/root/`, not for shipping:
-`churn_telco_nigeria` (DSN TRAIN.csv without the blank line, `Customer ID` and the tenure copy: 1,400 x 13) and
+`churn_telco_south_asia_duplicate` (DSN TRAIN.csv without the blank line, `Customer ID` and the tenure copy: 1,400 x 13) and
 `churn_telco_south_asia` (the SATO file as it is: 2,000 x 13); both IID with the default 10 x 3 splits.
 
 **Checks:** scratch only: `dataset check` 0 errors, 0 warnings on both.
@@ -2262,7 +2306,7 @@ rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 
 **Issues for Lennart:**
 1. Verdict. Question: which record ships the SATO data? Evidence above. Implemented: nothing added for
-   churn_telco_nigeria. Proposal: No + Duplicate for this record (by the convention it becomes
+   churn_telco_south_asia_duplicate. Proposal: No + Duplicate for this record (by the convention it becomes
    `churn_telco_south_asia_duplicate`), and the data ships once, as `churn_telco_south_asia` (original source, all
    2,000 rows labelled, original operator names). Alternative: ship the DSN cut; not recommended: 1,400 labelled rows,
    340 of them (24%) in spend bands whose labels the test selection made pure.
@@ -2280,6 +2324,8 @@ rows); OpenML 44229, named "Churn_Telco_Europa" version 2, holds the same rows.
 5. Housekeeping: `local-data-warehouse/churn_telco_nigeria/` (the DSN zip and its three csv files, 0.24 MB) can be
    deleted if the record goes to No (ask).
 
+**Resolved (Lennart, 2026-10-15):** No + `Duplicate` (replacing `Trivial`); the data ship once, as `churn_telco_south_asia`. The record is renamed from `churn_telco_nigeria` to `churn_telco_south_asia_duplicate` (the `_duplicate` convention), and its local download is deleted.
+
 ### churn_telco_south_asia
 
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/churn_telco_south_asia/`), revised after verification.
@@ -2292,7 +2338,7 @@ churn dataset and private dataset". The Kaggle upload mahreen/sato2015 (2017-10-
 44227 lists the creator as MAHREENAHMED) is where the data first became public. Uniqueness:
 - Nothing in the working copy is this data (its two churn folders, bank_customer_churn and tour_travels_churn, are
   unrelated).
-- churn_telco_nigeria (DSN Telecoms Churn 2018, Kaggle InClass) is this file renamed (issue 2). That makes Nigeria
+- churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018, Kaggle InClass) is this file renamed (issue 2). That makes Nigeria
   the duplicate, not this one.
 - churn_telco_europa (Kaggle raumonsa11, OpenML 44228) is different data: 190,776 + 86,907 rows and other columns.
 - mobile_churn (OpenML 44231) is also different data: 66,469 rows and 66 columns.
@@ -2399,7 +2445,10 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - Alternative: retire as iranian_churn if the paper's data section places the churn inside August-September.
    - Please read the paper's data section. A Google search for "MCS: Multiple classifier system to predict the
      churners in the telecom industry" pdf should find it; the data card links ResearchGate 320331663.
-2. **churn_telco_nigeria is this data.** The DSN 2018 files (TRAIN 1,400 + TEST 600) are these 2,000 rows:
+   **Follow-up (AI, 2026-10-15):** Lennart added Ahmed et al., Neural Computing and Applications 32:3237-3251 (online 2018, doi 10.1007/s00521-018-3678-8). It does not settle the timing: "The subscriber data is extracted from the time interval of two months, i.e., August and September 2015" (Sec. 3.1, p. 3241), and "class labeling (for SATO dataset)" is a preprocessing step without a definition (Sec. 3.2). The record's second quote is not in this paper, so it comes from the IntelliSys 2017 paper, the one source left. If that says nothing either: keep as implemented (fit `approximate`, the unknown timing named).
+   **Follow-up (AI, 2026-10-15):** Lennart added the IntelliSys 2017 paper too. Its data section does not say it either: "The subscriber data was extracted from the time interval of two months, i.e. August and September 2015. To overcome the class imbalance problem in churn data sets, an equal amount of churners and active subscribers were collected from the carrier" (Sec. III, p. 680); "class labeling" is a preprocessing step (Sec. IV, p. 681). No source is left. Recommendation: keep as implemented, fit `approximate` with the unknown timing named.
+   **Resolved (Lennart, 2026-10-15):** ship, kept for now as possibly problematic: the definition states the unknown timing as a potential leak kept on purpose (curation_comments, task summary), to revisit if the churn can be dated.
+2. **churn_telco_south_asia_duplicate is this data.** The DSN 2018 files (TRAIN 1,400 + TEST 600) are these 2,000 rows:
    - all rows match one to one on the nine numeric columns;
    - all 1,400 TRAIN labels agree;
    - the networks are renamed one to one: mobilink Mango, ptcl PQza, telenor ToCall, ufone Uxaa, warid Weematel,
@@ -2412,6 +2461,7 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    forest AUC 0.815 against 0.729 for the raw total revenue, on 30 splits. Side note: OpenML 44229 is titled
    "Churn_Telco_Europa" (version 2) but holds the DSN data. The churn_telco_europa record links 44228, which is
    different data.
+   **Resolved (Lennart, 2026-10-15):** marked: the DSN record is now `churn_telco_south_asia_duplicate`, `No` + `Duplicate` of this record.
 3. **The 50% base rate is artificial, and the classes were drawn from several extracts.** The record quotes "an
    equal amount of churners and active subscribers were collected from the carrier".
    - ROC AUC does not depend on the class shares. Log loss and predicted probabilities do, and the operator's churn
@@ -2424,6 +2474,7 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - All but 6 subscribers have a network age of 91 days or more, so the sample looks restricted to subscribers of
      at least three months.
    - Implemented: kept as published, with bullets saying so.
+   **Resolved (Lennart, 2026-10-15):** as implemented.
 4. **Year: docstring against practice.** Implemented: `year = "2015"`, the collection year and the record's year.
    - Of the 125 committed definitions, 94 keep their record's year.
    - Those that move away from the publication year move to the data's year: amazon_employee_access 2010 for a
@@ -2432,12 +2483,14 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - The v2 docstring says "Year the data was published", which would give 2017 (the paper and the Kaggle upload).
      The working copy is mixed: airfoil_self_noise uses its UCI year, 2014, for a 1989 experiment.
    - The docstring or the practice should change. It is the same question as pkdd's (ORCH_NOTES).
+   **Resolved (Lennart, 2026-10-15):** as implemented (`year = "2017"`).
 5. **The paper's 86% accuracy is not reached.** The abstract reports 86% accuracy for MCS on this "private dataset".
    An untuned random forest reaches 0.738 (0.706-0.763) on the 30 splits here, and the public Kaggle notebooks
    report 0.74-0.76.
    - This may mean the published file differs from the paper's data, or that the paper's protocol was optimistic.
      It cannot be checked without the paper.
    - Implemented: nothing; noted in `curation_comments`. Low priority.
+   **Resolved (Lennart, 2026-10-15):** as implemented. The papers explain part of the gap: "Package Name" is one of their features (IntelliSys 2017, Sec. III.A) and among the top five (Neural Computing and Applications, Sec. 4, p. 3249), and the public file lacks it.
 6. **Anomalies kept as published** (low priority):
    - `Aggregate_ONNET_REV + Aggregate_OFFNET_REV` is a median 22 times `Aggregate_Total_Rev`, so these are not
      rupees. 206 of the 1,944 positive off-net values are multiples of 179 (179 alone: 65 rows), which suggests a
@@ -2450,6 +2503,8 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - The favourite network shifts to ufone in September for both classes: active subscribers from 223 to 786,
      churners from 223 to 426. I read this as a month effect, not a recording that differs by class. Dropping
      `sep_fav_a` costs 0.006 AUC, and dropping both September columns 0.005.
+   **Answer (AI, 2026-10-15):** Lennart asked which are natural and which a human should fix. Fixed, as caracas_cervical_cancer's impossible answers: the 5 negative `network_age` values become missing (days on the network cannot be negative), and `aug_fav_a` "0" becomes missing (an undocumented placeholder, absent in September, for subscribers who did call other networks: an unknown network). Natural, kept: the on-net and off-net unit (undocumented, the scale does not matter to the models), complaint counts from 1 (an offset or the cohort), and the September shift to ufone, which follows activity in both classes (share by fifth of calls, lowest to highest: 0.40 to 0.93 active, 0.18 to 0.80 churned; at equal calls both keep their August network equally often: 0.56/0.66 lowest fifth, 0.17/0.19 highest). `dataset check` 0 errors, 0 warnings; leak probes: all features 0.813, missing indicators 0.50-0.51; checksum `v2:28d5013a…`.
+   **Resolved (Lennart, 2026-10-15):** as applied; ship.
 
 ### college_scorecard
 **Outcome:** added and checked
@@ -5314,7 +5369,7 @@ real"), so the dataset is added; the counter-argument is issue 1. None of the do
     each, in both classes.
   - The churn definition itself is undocumented (issue 1).
 - **No copy of another churn file** (the DSN/SATO pattern). The rows were compared with SATO 2015
-  (churn_telco_south_asia), DSN TRAIN (churn_telco_nigeria), the Europa train file (numeric non-id columns only),
+  (churn_telco_south_asia), DSN TRAIN (churn_telco_south_asia_duplicate), the Europa train file (numeric non-id columns only),
   iranian_churn, churn (MLC++), tour_travels_churn, bank_customer_churn and 300k rows of expresso (`explore/e2`).
   - No continuous column matches.
   - The best two-column row match is SATO's at 9.5%. With one column shuffled across rows it is 11.2%, so it is
@@ -7253,6 +7308,8 @@ probes cover them.
 - Finding 1 (blocker, label is the PAM50 rule): applied. Reproduced 347 of 381 and the rule beating the forest on 9 of 9 splits; the `mRNA_` block is no longer a feature (exp only selects the patients). Retirement is alternative 1a.
 - Finding 6 (comment, licence): applied. The comment explains the 440 TabPFN-Wide samples; the licence string quotes the page's "All rights reserved" footer. The suspension stays an open point.
 - Finding 5 (site): the site check was rerun on the new features: no gap (0.939 vs 0.943).
+
+**Resolved (Lennart, 2026-10-12; confirmed on the review page 2026-10-15):** No, `No Good Target / Scientific Discovery`: the PAM50 subtype is a clustering taxonomy assigned by a centroid rule on 50 genes. The folder is removed.
 
 ### glioblastoma
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/glioblastoma/`), revised after verification: the expression block is no longer a feature.

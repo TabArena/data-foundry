@@ -131,4 +131,6 @@ what the record missed or got wrong, what it had right, and what could not be ch
 changed in which files, and whether anything is uncommitted. Counts and scores go in a short table, not
 in the prose. Do not restate the record. Say which evidence proves a mechanism and which is only
 circumstantial, and report a borderline case as a possible leak for the curator to decide rather than
-clearing it.
+clearing it. Scores that other benchmarks published for the dataset (TALENT, leaderboards) are no evidence: their
+random splits are wrong for most of our tasks, so leave them out, and do not over-index on another collection's
+version of the data (TabSTAR's columns); name it only for provenance or a duplicate (Lennart, 2026-10-15).

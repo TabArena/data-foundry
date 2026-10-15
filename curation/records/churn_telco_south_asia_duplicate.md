@@ -1,11 +1,11 @@
 ---
-unique_name: churn_telco_nigeria
+unique_name: churn_telco_south_asia_duplicate
 name: CHURN_TELCO_NIGERIA
 checked_by:
 - Lennart
-suggestion: 'Yes'
+suggestion: 'No'
 decision_markers:
-- Trivial
+- Duplicate
 tags:
 - New IID
 collections:
@@ -31,6 +31,8 @@ type_adapter_id: curation-record-v1
 The discussion and state of the competition is a bit hard to parse. I would say yes for now and we can test if the train data is trivial later.
 
 **Assessment (AI, 2026-10-07):** Duplicate of churn_telco_south_asia. TRAIN.csv and TEST.csv are the 2,000 rows of the SATO 2015 file (kaggle.com/datasets/mahreen/sato2015): every row matches on the nine numeric columns, all 1,400 train labels agree, and the competitor networks are renamed one to one (ufone → Uxaa, ptcl → PQza, ...). The 100% scores come from DSN's cut: TEST holds the actives with total spend 1,282-3,491 and the churners with 226-604, so "spend < 1000 → churned" is perfect, and TRAIN keeps 340 rows in those bands with the opposite labels only. On the 2,000 SATO rows the task is not trivial (30 splits: random forest AUC 0.815, best single feature 0.681). Suggest No + Duplicate; ship the SATO file as churn_telco_south_asia.
+
+CC (2026-10-15, Lennart): No, Duplicate: the DSN 2018 files are the 2,000 rows of the SATO 2015 file with the operators renamed and a train/test cut selected on the label and the total spend; the data ship once, as churn_telco_south_asia (review page, issue 1). The 100% scores came from that cut, not from the data, so `Trivial` gives way to `Duplicate` (issue 2).
 
 ## Reference
 

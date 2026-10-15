@@ -70,7 +70,7 @@ not accepted in the definition.
 | [`bad_customer_detection`](bad_customer_detection/) | IID | 1,723 | 13 | 10 x 3 | not built |  |
 | [`bank_customer_churn`](bank_customer_churn/) | IID | 10,000 | 10 | 3 x 3 | not built |  |
 | [`bank_marketing`](bank_marketing/) | IID | 45,211 | 13 | 3 x 3 | `01a111fc-7c2d-7441-b859-646c9bfbf380` | `dataset_missing_value_sentinel` |
-| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,723 | 23 | 9 x 1 | not built |  |
+| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,648 | 23 | 9 x 1 | not built |  |
 | [`biogeographical_ancestry_prediction`](biogeographical_ancestry_prediction/) | IID | 607 | 102 | 20 x 3 | not built |  |
 | [`biomechanical_orthopaedic_prediction`](biomechanical_orthopaedic_prediction/) | IID | 310 | 6 | 20 x 3 | not built |  |
 | [`bioresponse`](bioresponse/) | IID | 3,751 | 1,776 | 3 x 3 | `01a111fc-4c0b-76f4-b01d-a4db8e120e35` |  |
@@ -78,11 +78,10 @@ not accepted in the definition.
 | [`blood_transfusion`](blood_transfusion/) | IID | 748 | 4 | 20 x 3 | `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`body_density_prediction`](body_density_prediction/) | IID | 252 | 13 | 20 x 3 | not built |  |
 | [`brazilian_ecommerce`](brazilian_ecommerce/) | temporal | 88,721 | 24 | 5 x 1 | not built |  |
-| [`breast_cancer_prediction`](breast_cancer_prediction/) | grouped | 39,998 | 10 | 3 x 3 | not built |  |
+| [`breast_cancer_prediction`](breast_cancer_prediction/) | IID | 36,714 | 10 | 3 x 3 | not built |  |
 | [`california_house_prices_2020`](california_house_prices_2020/) | temporal | 39,048 | 41 | 3 x 1 | `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` |  |
 | [`caracas_cervical_cancer`](caracas_cervical_cancer/) | IID | 750 | 30 | 10 x 3 | not built |  |
 | [`cardiotocography`](cardiotocography/) | grouped | 2,126 | 22 | 10 x 3 | not built | `dataset_constant_column` |
-| [`cdc_diabetes_health_indicators`](cdc_diabetes_health_indicators/) | IID | 253,680 | 21 | 3 x 3 | not built |  |
 | [`churn_telco_south_asia`](churn_telco_south_asia/) | IID | 2,000 | 13 | 10 x 3 | not built |  |
 | [`cirrhosis_patient_survival_prediction`](cirrhosis_patient_survival_prediction/) | IID | 304 | 17 | 20 x 3 | `01a13a7d-c2bd-721a-88c1-f86443866b1e` |  |
 | [`climate_model_weather_forecasting_1m`](climate_model_weather_forecasting_1m/) | temporal | 2,115,283 | 99 | 3 x 1 | not built |  |
