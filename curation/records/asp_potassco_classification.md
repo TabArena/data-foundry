@@ -3,6 +3,7 @@ unique_name: asp_potassco_classification
 name: ASP-POTASSCO-classification from aslib_data
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena

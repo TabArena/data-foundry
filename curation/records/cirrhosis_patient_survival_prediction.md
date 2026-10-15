@@ -3,10 +3,13 @@ unique_name: cirrhosis_patient_survival_prediction
 name: Cirrhosis Prediction Dataset
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Outdated
 tags:
 - Tiny Data
 collections:
@@ -51,6 +54,12 @@ We treat it as an uncensored time to death prediction task or similar as we do n
 CC (2026-10-14, Lennart): New task: death or liver transplant within 5 years of registration, over the patients followed 5 years; replaces the deaths-only time to death.
 
 CC (2026-10-14, Lennart): The 5-year task has a good target: marker `No Good Target (yet)` and the open `?` in required_split removed.
+
+CC (2026-10-15, Andrej): Keep `Yes`; marker `Outdated` added. A real, non-trivial task whose risk ranking still holds today; no issue below leaks the outcome. Potential reasons to exclude, and why none is severe enough to act on:
+- Outdated: the patients were treated 1974-86. Since the 1990s the liver disease (primary biliary cholangitis, PBC) is treated with a drug (ursodeoxycholic acid) that slows it, and liver transplants became common (here only 4 of 107 events). So the share of patients who die or get a transplant within 5 years (35% here) is much lower today. Not severe: ROC AUC only scores the ranking of patients by risk, and that ranking still holds today. The risk formula built on this cohort in 1989 (the Mayo score) ranks drug-treated patients about as well as the newer formulas built on them (GLOBE, UK-PBC): concordance (ROC AUC for survival) 0.76 vs 0.80 and 0.74 in 1,100 patients, differences not significant. Reference: Goet JC, Murillo Perez CF, Harms MH, Floreani A, Cazzagon N, Bruns T, et al. A Comparison of Prognostic Scores (Mayo, UK-PBC, and GLOBE) in Primary Biliary Cholangitis. Am J Gastroenterol. 2021;116(7):1514-1522. doi:10.14309/ajg.0000000000001285.
+- Trivial (criterion 4C): the fixed 1989 Mayo formula (5 inputs: bilirubin, a blood marker of liver function; albumin; age; blood clotting time; fluid retention) reaches ROC AUC 0.901, and bilirubin alone 0.863. Not severe: TabPFN 3.5 reaches 0.907 and beats logistic regression (0.896) and random forest (0.893) by about 0.012 in 85% of splits (stratified 3-fold x 20), so better models are still rewarded; the gaps are small next to the fold SD of 0.027.
+- Features a clinic would not have today: Stage (how scarred the liver is) needs a liver biopsy, a tissue sample that is rarely taken for this disease today; alone it gives ROC AUC 0.73. Drug is the arm of the 1970s trial (D-penicillamine or placebo), a drug no longer used for this disease. Not severe: both were recorded when the patient entered the study, so neither leaks the outcome, and Drug carries no signal (positive rate 0.317 on the drug, 0.347 on placebo).
+- Drift: the blood clotting time (Prothrombin) is about 1 s lower for patients entering after 1977. Not severe for the random split: it is a change in the lab's measurement scale, not in the patients (within each period it predicts the label equally well, ROC AUC 0.72-0.73), and the label has no time trend (positive rate 0.33 / 0.39 / 0.34 by third of the entry years).
 
 ## Reference
 

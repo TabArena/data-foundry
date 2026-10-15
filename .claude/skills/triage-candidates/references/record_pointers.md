@@ -54,7 +54,7 @@ report as a shipped record missing its notebook.
   data_foundry.curation.cli sync-notebooks --check` prints every drifted record and exits non-zero, and plain
   `sync-notebooks` writes the fixes;
 * a 📓 link opens something unexpected (the wrong tree, the wrong variant, a 404);
-* you are verifying a dataset — `/verify-dataset` carries this as rubric item 14: `v2_path` names the dataset's
+* you are verifying a dataset — `/verify-dataset` carries this as rubric item 15: `v2_path` names the dataset's
   `dataset.py` and its `README.md` carries the build UUID; for a shipped dataset, `notebook_path` names the notebook
   whose container the collection pins.
 
