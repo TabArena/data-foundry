@@ -7,9 +7,10 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Tiny Data
-- Anonymized
 collections:
 - New (BeyondArena)
 original_source: Github

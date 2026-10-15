@@ -7,9 +7,10 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Larger IID Data
-- Anonymized
 collections:
 - TabArena Reject
 - TabRed

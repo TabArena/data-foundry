@@ -9,10 +9,10 @@ claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
+- Anonymized
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
-- Anonymized
 collections:
 - New (BeyondArena)
 original_source: Company
