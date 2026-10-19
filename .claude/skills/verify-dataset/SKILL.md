@@ -112,12 +112,6 @@ which the bundle checks do not cover:
   (item 4). For a temporal task it flags nothing and reports how many test rows have their entity (the value of each
   entity-like column, a key or a near copy) on the training side. Read a hit with the "Hidden groups" section of
   [`references/task_probes.md`](references/task_probes.md): the context decides, not the gap.
-* `explore_page.py <unique_name>` (`--built`, or `--shipped` for the cached BeyondArena container when the raw files
-  are not local): one self-contained HTML page for the curator to look at a dataset without writing code, written to
-  `~/.cache/data_foundry/explore/<unique_name>.html`. Target and classes per test fold; per feature its statistics,
-  distribution by class and skill alone (fitted on each split's training side) against a noise band from shuffled
-  labels; the most correlated pairs; and the three model families of `task_probes.py` against shuffled labels on the
-  same splits, with p-values (the best family against the best on each shuffle). Not a flag source; it is for looking.
 
 ## Step 2 — Work the judgment rubric
 
