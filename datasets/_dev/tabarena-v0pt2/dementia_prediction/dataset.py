@@ -12,9 +12,9 @@ class DementiaPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=("How severe is an older adult's dementia, judging from a short cognitive test and a brain scan?"),
         use_case=(
-            "The source defines no task. For example, at a first visit a memory clinic estimates a person's clinical "
-            "dementia rating from a short cognitive test and a brain MRI, before or instead of the full clinical "
-            "interview."
+            "The source defines no task. For example, a memory clinic or a research study estimates a person's "
+            "clinical dementia rating from a short cognitive test and a brain MRI, before or instead of the full "
+            "clinical interview with the person and an informant."
         ),
         row=(
             "One visit of an older adult in the OASIS-2 study, which scanned 150 people on two or more visits at "
@@ -29,8 +29,8 @@ class DementiaPrediction(AbstractCuratedDataset):
             " three brain-size measures from the visit's MRI scan."
         ),
         split=(
-            "Whole people are held out, so the test data stands for people not seen before; each of their visits is "
-            "scored on its own."
+            "Whole people are held out, so the test data stands for people not seen before; each of their visits "
+            "(first or follow-up) is scored on its own, without the earlier visits."
         ),
         changes=(
             "We drop the group label (derived from the ratings of all visits), the visit number and the time since "
@@ -38,8 +38,10 @@ class DementiaPrediction(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The use case is ours, as the source states none. Follow-up visits of test people are scored as if each "
-            "were a first visit, and the MRI enters as three summary numbers of an imaging study."
+            "The use case is ours, as the source states none. The cohort is research volunteers, not clinic "
+            "patients: the people without dementia stayed so over about three years, and only 14 of 150 convert, so "
+            "borderline cases are rarer than in a clinic. 220 of the 370 visits are follow-ups, scored without the "
+            "earlier visits, and the MRI enters as three summary numbers of an imaging study."
         ),
     )
 
@@ -49,7 +51,9 @@ class DementiaPrediction(AbstractCuratedDataset):
     domain = "medical & healthcare"
     source = "Other"
     source_url = "https://sites.wustl.edu/oasisbrains/"  # OASIS-2; the Mendeley deposit is a later copy
-    license = "CC BY NC 3.0"
+    # OASIS Data Use Terms (https://sites.wustl.edu/oasisbrains/). The Mendeley re-upload (Battineni et al.) is marked
+    # CC BY NC 3.0, but a re-uploader cannot relicense OASIS data.
+    license = "OASIS Data Use Terms: non-commercial, academic research purposes only"
     data_tags = ("WrongDomain",)
     download_description = """
         We get the data from Mendeley version of another paper (https://www.sciencedirect.com/science/article/pii/S2352914819300917?via%3Dihub).
@@ -73,6 +77,9 @@ class DementiaPrediction(AbstractCuratedDataset):
         - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
         - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
         - We also drop the constant hand column.
+        - Sampling: the participants are volunteers of the Washington University Alzheimer's Disease Research Center, recruited mainly through media appeals, with at least two MRI visits (Marcus et al. 2010). The 'Nondemented' group stayed CDR 0 over all visits and only 14 subjects convert, so few visits sit near the boundary of no and very mild dementia. Demented subjects have fewer visits (mean 2.2 vs 2.6) and shorter follow-up, so the people without dementia weigh slightly more in a per-visit score (51% of the visits, 48% of the people).
+        - Missing values are informative: the 19 visits without SES (8 subjects) and the 2 without MMSE (1 subject) are all rated very mild or mild dementia. SES comes from the clinical interview, which impaired participants may not complete, so a clinic would see the same pattern; we keep the missing values.
+        - The source's group labels are not fully consistent with the per-visit rating (2 'Nondemented' subjects are rated 0.5 at a later visit, 1 'Converted' subject goes from 0.5 to 0); this does not affect the task, since the group label is dropped.
     """
 
     # Task
@@ -84,7 +91,7 @@ class DementiaPrediction(AbstractCuratedDataset):
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a subject of OASIS-2: older adults scanned on two or more visits at least a year apart, each visit with its own clinical dementia rating (Marcus et al. 2010). Each visit is one prediction, made from that visit alone, for a subject not seen in training: a first-visit framing, since a follow-up visit would know the earlier ratings. The source defines no prediction task.
+            One group is a subject of OASIS-2: older adults scanned on two or more visits at least a year apart, each visit with its own clinical dementia rating (Marcus et al. 2010). Each visit is one prediction, made from that visit alone, for a subject not seen in training. Using the earlier visits instead would be trivial: carrying the previous rating forward is right for 85% of the 220 follow-up visits. The source defines no prediction task.
         """,
     )
 

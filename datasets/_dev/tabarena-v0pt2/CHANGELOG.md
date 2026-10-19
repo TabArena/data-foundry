@@ -28,6 +28,18 @@ record, audit or PR that motivated it.
   Andrej's review of the record [`curation/records/ecoli_proteins.md`](../../../curation/records/ecoli_proteins.md);
   evidence in `~/claude_jobs/ecoli_headroom/`. Checked, not rebuilt; the build stays stale.
 
+## 2026-10-19 (dementia_prediction: licence, sampling notes)
+
+- `dementia_prediction`: the licence is now the OASIS Data Use Terms (non-commercial, academic research only), not
+  `CC BY NC 3.0`, which was the label of a third-party Mendeley re-upload (Battineni et al. 2019) that does not name
+  OASIS. `task_summary` and the grouping definition drop the first-visit framing (220 of 370 visits are follow-ups) and
+  name the sampling: research volunteers, stable controls, 14 of 150 converters. `curation_comments` add the sampling,
+  that the missing SES (19 visits, 8 subjects) and MMSE (2 visits) occur only in demented visits (kept, as a clinic
+  would see them too), and the source's inconsistent group labels (dropped anyway). Frame and splits unchanged. Follows
+  Andrej's review of the record
+  [`curation/records/dementia_prediction.md`](../../../curation/records/dementia_prediction.md); evidence in
+  `~/claude_jobs/dementia_baselines/`. Checked, not rebuilt; the build stays stale.
+
 ## 2026-10-15 (credit_g: corrected code table)
 
 - `credit_g`: the categories now carry the labels of Grömping's (2019) corrected code table; the Statlog `german.doc`
