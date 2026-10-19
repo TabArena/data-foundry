@@ -3,12 +3,14 @@ unique_name: drug_induced_autoimmunity_prediction
 name: Drug Induced Autoimmunity Prediction
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- Non-IID (Grouped)
 collections:
 - New (BeyondArena)
 original_source: UCI
@@ -49,8 +51,26 @@ CC (2026-10-19, Andrej): Split changed to scaffold-grouped; keep.
   - Huang K, Fu T, Gao W, Zhao Y, Roohani Y, Leskovec J, Coley CW, Xiao C, Sun J, Zitnik M. Therapeutics Data Commons: Machine Learning Datasets and Tasks for Drug Discovery and Development. Proc Neural Inf Process Syst Track Datasets Benchmarks. 2021. arXiv:2102.09548
   - Bemis GW, Murcko MA. The Properties of Known Drugs. 1. Molecular Frameworks. J Med Chem. 1996;39(15):2887-2893. doi:10.1021/jm9602928
 - Groups: 443 (390 ring scaffolds plus the 53 ring-free drugs, each a group of its own: they share no skeleton, and their nearest neighbour's label agrees only at the base rate, 0.925).
-- Record: `required_split` set to `Grouped (NON-IID)` (was `Random (IID)`, `?`).
-To do: rebuild (the build is stale).
+- Record: `required_split` set to `Grouped (NON-IID)` (was `Random (IID)`, `?`); tag `Non-IID (Grouped)` added.
+
+CC (2026-10-19, Andrej): The source's descriptors lose structure; add MACCS keys before shipping. **For discussion with Lennart**, as it revisits his 2026-10-14 call for every SMILES dataset.
+- Scaffold-grouped ROC AUC, mean of 30 splits (`~/claude_jobs/dia_review/`), by what the SMILES contributes next to the source's 176 descriptors:
+
+  | features | LR | RF | boosting | TabPFN 3.5 |
+  |---|---|---|---|---|
+  | descriptors (shipped) | 0.717 | 0.770 | 0.774 | 0.803 |
+  | + reactive-metabolite alerts (14) | 0.707 | 0.775 | 0.773 | 0.807 |
+  | **+ MACCS keys (166)** | 0.715 | 0.795 | 0.790 | **0.826** |
+  | + Morgan counts (1,024) | 0.771 | 0.816 | 0.780 | 0.816 |
+  | MACCS keys alone | 0.678 | 0.826 | 0.794 | 0.825 |
+  | Morgan counts alone | 0.742 | 0.753 | 0.764 | 0.788 |
+
+- Dropping the SMILES costs accuracy. MACCS keys (166 yes/no flags for standard substructures, computed from the SMILES with RDKit) next to the source's descriptors lift the scaffold-grouped ROC AUC: TabPFN 3.5 0.803 -> 0.826 (better on 27 of 30 splits), random forest 0.770 -> 0.795, LightGBM-style boosting 0.774 -> 0.790. MACCS alone matches the descriptors (random forest 0.826). So the 2026-10-14 finding that the SMILES adds nothing holds only for the raw string as text, not for the structure in it.
+- Reactive-metabolite alerts (14 SMARTS from Wu et al. 2021, aromatic amine, hydrazine, thiophene, ...) add nothing next to the descriptors (TabPFN +0.003): those descriptors already count such groups.
+- Morgan counts are not the answer: for the best model they help less than MACCS (TabPFN 0.816 vs 0.826, worse on 20 of 30 splits) at six times the columns, and alone they are worse than the descriptors alone.
+- Suggestion (pending Lennart): `Yes`, after `_clean` adds the MACCS keys as `maccs_*` columns from the SMILES (alongside `rdkit_descriptors`, before the SMILES is dropped) and the stereoisomer de-duplication is re-checked on the wider frame. 166 dense binary columns, unlike the ~1,000 sparse Morgan columns the 2026-10-14 round ruled out for a gain of 0.01-0.015.
+  - Durant JL, Leland BA, Henry DR, Nourse JG. Reoptimization of MDL Keys for Use in Drug Discovery. J Chem Inf Comput Sci. 2002;42(6):1273-1280. doi:10.1021/ci010132r
+To do: add the MACCS keys to `dataset.py` (a framework helper, as `rdkit_descriptors`), then rebuild (the build is stale).
 
 ## Reference
 
