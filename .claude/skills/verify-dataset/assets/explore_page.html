@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__ · explore</title>
+<style>
+:root {
+  --bg: #fbfbfa; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e4e3df; --accent: #2f6fdb;
+  --good: #1f8a4c; --bad: #c2412d; --band: rgba(194, 65, 45, 0.10); --hover: #f2f1ee;
+  --c0: #2f6fdb; --c1: #e0702b; --c2: #1f8a4c; --c3: #9b4fd1; --c4: #c2412d; --c5: #138d9c; --c6: #b8892a;
+  --c7: #d1478f; --c8: #5b6b7a; --c9: #6f9c2c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161615; --panel: #1f1f1d; --ink: #ecebe7; --muted: #9c9b95; --line: #34332f; --accent: #6e9ef0;
+    --good: #4cc27c; --bad: #ef7a64; --band: rgba(239, 122, 100, 0.14); --hover: #2a2a27;
+    --c0: #6e9ef0; --c1: #f0995c; --c2: #4cc27c; --c3: #bb86ea; --c4: #ef7a64; --c5: #45bccb; --c6: #dcb35a;
+    --c7: #ec7ab5; --c8: #94a3b2; --c9: #9fca5c;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161615; --panel: #1f1f1d; --ink: #ecebe7; --muted: #9c9b95; --line: #34332f; --accent: #6e9ef0;
+  --good: #4cc27c; --bad: #ef7a64; --band: rgba(239, 122, 100, 0.14); --hover: #2a2a27;
+  --c0: #6e9ef0; --c1: #f0995c; --c2: #4cc27c; --c3: #bb86ea; --c4: #ef7a64; --c5: #45bccb; --c6: #dcb35a;
+  --c7: #ec7ab5; --c8: #94a3b2; --c9: #9fca5c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 18px 24px 0; }
+h1 { font-size: 20px; margin: 0 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+h2 { font-size: 15px; margin: 0 0 10px; }
+h3 { font-size: 13px; margin: 14px 0 6px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.sub { color: var(--muted); font-size: 13px; }
+nav { display: flex; gap: 4px; padding: 14px 24px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+nav button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 8px 12px; font: inherit; cursor: pointer; }
+nav button.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+main { padding: 18px 24px 40px; }
+section { display: none; }
+section.on { display: block; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 12px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); cursor: pointer; user-select: none; }
+td.num, th.num { text-align: right; }
+tr.row:hover { background: var(--hover); cursor: pointer; }
+tr.sel { background: var(--hover); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.pill { display: inline-block; padding: 0 6px; border-radius: 9px; font-size: 11px; border: 1px solid var(--line); color: var(--muted); }
+.good { color: var(--good); } .bad { color: var(--bad); } .muted { color: var(--muted); }
+.split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+.scroll { max-height: 70vh; overflow: auto; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+input, select { font: inherit; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+input[type=search] { min-width: 220px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+svg text { fill: var(--muted); font-size: 11px; }
+.note { color: var(--muted); font-size: 12.5px; max-width: 900px; }
+.bar { height: 8px; background: var(--accent); border-radius: 2px; display: inline-block; vertical-align: middle; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 0; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; }
+.theme { float: right; }
+</style>
+</head>
+<body>
+<header>
+  <button class="theme" id="theme" title="Switch theme">◐</button>
+  <h1 id="title"></h1>
+  <div class="sub" id="subtitle"></div>
+</header>
+<nav id="tabs"></nav>
+<main>
+  <section id="overview"></section>
+  <section id="target"></section>
+  <section id="features"></section>
+  <section id="correlations"></section>
+  <section id="signal"></section>
+</main>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fmt = (v, d = 3) => v == null ? "–" : (typeof v === "number" ? (Math.abs(v) >= 1e5 || (Math.abs(v) < 1e-3 && v !== 0) ? v.toExponential(2) : +v.toFixed(d)).toString() : esc(v));
+const pct = v => v == null ? "–" : (100 * v).toFixed(v > 0 && v < 0.01 ? 2 : 1) + "%";
+const color = i => `var(--c${i % 10})`;
+const classes = D.target.classes;
+const isClf = classes.length > 0;
+const noise = D.noise;
+
+// Theme toggle
+$("#theme").onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+};
+
+$("#title").textContent = D.name;
+$("#subtitle").textContent = `${D.task.problem_type.replace("_", " ")} of ${D.task.target} · ${D.task.n_rows.toLocaleString()} rows · ${D.task.n_columns.toLocaleString()} columns · generated ${D.generated} from the ${D.origin} container`;
+
+const TABS = [["overview", "Overview"], ["target", "Target & splits"], ["features", "Features"], ["correlations", "Correlations"], ["signal", "Signal check"]];
+TABS.forEach(([id, label], i) => {
+  const b = document.createElement("button");
+  b.textContent = label; b.dataset.id = id;
+  b.onclick = () => show(id);
+  $("#tabs").appendChild(b);
+});
+function show(id) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.id === id));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === id));
+  try { localStorage.setItem("explore-tab", id); } catch (e) {}
+}
+
+// ---------- charts ----------
+function bars(groups, labels, opts = {}) {
+  // groups: one array of values per bar position, stacked (or one value)
+  const W = opts.width || 520, H = opts.height || 180, P = {l: 44, r: 8, t: 8, b: opts.rotate ? 70 : 34};
+  const n = groups.length;
+  const totals = groups.map(g => Array.isArray(g) ? g.reduce((a, b) => a + b, 0) : g);
+  const max = Math.max(1e-12, ...totals);
+  const bw = (W - P.l - P.r) / Math.max(n, 1);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">`;
+  for (let k = 0; k <= 4; k++) {
+    const y = P.t + (H - P.t - P.b) * (1 - k / 4);
+    s += `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${P.l - 4}" y="${y + 3}" text-anchor="end">${fmt(max * k / 4, 2)}</text>`;
+  }
+  groups.forEach((g, i) => {
+    const vals = Array.isArray(g) ? g : [g];
+    let y0 = H - P.b;
+    vals.forEach((v, j) => {
+      const h = (H - P.t - P.b) * v / max;
+      y0 -= h;
+      s += `<rect x="${P.l + i * bw + 1}" y="${y0}" width="${Math.max(bw - 2, 1)}" height="${h}" fill="${opts.colors ? opts.colors[j] : color(j)}"><title>${esc(labels[i])}: ${vals.map(fmt).join(" / ")}</title></rect>`;
+    });
+  });
+  const every = Math.ceil(n / (opts.rotate ? 30 : 8));
+  labels.forEach((l, i) => {
+    if (i % every) return;
+    const x = P.l + i * bw + bw / 2;
+    s += opts.rotate
+      ? `<text transform="translate(${x},${H - P.b + 6}) rotate(45)">${esc(String(l).slice(0, 14))}</text>`
+      : `<text x="${x}" y="${H - P.b + 14}" text-anchor="middle">${esc(l)}</text>`;
+  });
+  return s + "</svg>";
+}
+
+function dots(values, opts = {}) {
+  // a strip of values against 0 and the noise band
+  const W = opts.width || 520, H = 70, P = {l: 10, r: 10};
+  const all = values.concat([0, opts.band || 0]).filter(v => v != null);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (hi - lo < 0.05) { lo -= 0.025; hi += 0.025; }
+  const x = v => P.l + (W - P.l - P.r) * (v - lo) / (hi - lo);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">`;
+  if (opts.band != null) s += `<rect x="${x(lo)}" y="8" width="${Math.max(0, x(opts.band) - x(lo))}" height="34" fill="var(--band)"/>`;
+  s += `<line x1="${x(0)}" x2="${x(0)}" y1="4" y2="46" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+  values.forEach((v, i) => {
+    if (v == null) return;
+    s += `<circle cx="${x(v)}" cy="${25 + ((i * 7) % 15) - 7}" r="3.5" fill="var(--accent)" fill-opacity=".7"><title>split ${i}: ${fmt(v)}</title></circle>`;
+  });
+  s += `<text x="${x(0)}" y="60" text-anchor="middle">0</text><text x="${x(lo)}" y="60">${fmt(lo, 2)}</text><text x="${x(hi)}" y="60" text-anchor="end">${fmt(hi, 2)}</text>`;
+  return s + "</svg>";
+}
+
+function nullHist(nulls, truth, label) {
+  // histogram of the shuffled-label scores with a line at the true score
+  const W = 520, H = 150, P = {l: 10, r: 10, t: 10, b: 30};
+  const all = nulls.concat([truth]);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (hi - lo < 0.02) { lo -= 0.01; hi += 0.01; }
+  const nb = 20, w = (hi - lo) / nb;
+  const counts = new Array(nb).fill(0);
+  nulls.forEach(v => counts[Math.min(nb - 1, Math.floor((v - lo) / w))]++);
+  const max = Math.max(1, ...counts);
+  const x = v => P.l + (W - P.l - P.r) * (v - lo) / (hi - lo);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px">`;
+  counts.forEach((c, i) => {
+    const h = (H - P.t - P.b) * c / max;
+    s += `<rect x="${x(lo + i * w) + 1}" y="${H - P.b - h}" width="${Math.max(1, x(lo + w) - x(lo) - 2)}" height="${h}" fill="var(--muted)" fill-opacity=".45"/>`;
+  });
+  s += `<line x1="${x(truth)}" x2="${x(truth)}" y1="${P.t}" y2="${H - P.b}" stroke="var(--accent)" stroke-width="2.5"/>`;
+  s += `<line x1="${x(0)}" x2="${x(0)}" y1="${P.t}" y2="${H - P.b}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+  s += `<text x="${x(truth)}" y="${H - 6}" text-anchor="middle" style="fill:var(--accent)">${esc(label)} ${fmt(truth)}</text>`;
+  s += `<text x="${P.l}" y="${H - 6}">${fmt(lo, 2)}</text><text x="${W - P.r}" y="${H - 6}" text-anchor="end">${fmt(hi, 2)}</text>`;
+  return s + "</svg>";
+}
+
+function safe(id, fn) {
+  try { fn(); } catch (e) {
+    document.getElementById(id).innerHTML = `<p class="bad">This tab failed to render: ${esc(e.message)}</p>`;
+    console.error(e);
+  }
+}
+
+const legend = () => isClf ? `<div class="legend">${classes.map((c, i) => `<span><i style="background:${color(i)}"></i>${esc(c)}</span>`).join("")}</div>` : "";
+
+// ---------- overview ----------
+safe("overview", function overview() {
+  const t = D.task, f = D.features;
+  const scored = f.filter(r => r.skill != null);
+  const aboveNoise = noise.q99 == null ? null : scored.filter(r => r.skill > noise.q99).length;
+  const best = scored.slice().sort((a, b) => b.skill - a.skill)[0];
+  const sig = D.signal;
+  let html = `<div class="grid">
+    <div class="stat"><b>${t.n_rows.toLocaleString()}</b><span>rows</span></div>
+    <div class="stat"><b>${t.n_columns.toLocaleString()}</b><span>columns (${Object.entries(t.kinds).map(([k, v]) => `${v} ${k}`).join(", ")})</span></div>
+    <div class="stat"><b>${esc(t.metric || "–")}</b><span>metric · ${esc(t.problem_type)}</span></div>
+    <div class="stat"><b>${t.n_splits_total}</b><span>shipped splits (${t.n_splits_used} used here)</span></div>
+    ${isClf ? `<div class="stat"><b>${pct(Math.min(...D.target.counts) / t.n_rows)}</b><span>smallest class (${esc(classes[D.target.counts.indexOf(Math.min(...D.target.counts))])})</span></div>` : ""}
+    <div class="stat"><b>${aboveNoise == null ? "–" : aboveNoise.toLocaleString()}</b><span>features above the noise band (of ${scored.length.toLocaleString()}; ~${Math.round(0.01 * scored.length)} by chance)</span></div>
+    ${sig ? `<div class="stat"><b class="${sig.best.p != null && sig.best.p <= 0.05 ? "good" : "bad"}">${sig.best.p == null ? fmt(sig.best.mean) : "p = " + fmt(sig.best.p, 3)}</b><span>best model family vs. shuffled labels</span></div>` : ""}
+  </div>`;
+  if (D.summary) {
+    const s = D.summary;
+    html += `<div class="card" style="margin-top:14px"><h2>In brief</h2><dl class="kv">
+      ${[["Question", s.question], ["Use case", s.use_case], ["One row", s.row], ["Predicted", s.predicted], ["Known", s.known], ["Test data", s.split], ["Fit", s.fit ? `${s.fit}: ${s.fit_reason || ""}` : null]]
+        .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl></div>`;
+  }
+  html += `<div class="card"><h2>Task</h2><dl class="kv">
+    <dt>Target</dt><dd class="mono">${esc(t.target)}</dd>
+    <dt>Groups</dt><dd class="mono">${t.group_on.length ? esc(t.group_on.join(", ")) : "–"}</dd>
+    <dt>Time column</dt><dd class="mono">${esc(t.time_on || "–")}</dd>
+    <dt>Best single feature</dt><dd>${best ? `<span class="mono">${esc(best.name)}</span>, skill ${fmt(best.skill)}; the best feature on shuffled labels scores ${fmt(Math.min(...noise.best))}–${fmt(Math.max(...noise.best))} (${noise.shuffles} shuffles)${best.skill > Math.max(...noise.best) ? "" : " <b class=\"bad\">so the best feature is within chance</b>"}` : "–"}</dd>
+  </dl></div>
+  <p class="note">Skill is ${esc(D.skill_name)}: 0 is the dummy, 1 is perfect. Single-feature skills are fitted on each split's training side only. The noise band is the same scoring with shuffled labels (${noise.shuffles} shuffles; 95th–99th percentile over features: ${fmt(noise.q95)}–${fmt(noise.q99)}). With 1% of features above the 99th percentile by chance, about ${Math.round(0.01 * D.features.filter(r => r.skill != null).length)} of them are expected above the band even with no signal. All models are untuned and the numbers are indicative.</p>`;
+  $("#overview").innerHTML = html;
+});
+
+// ---------- target & splits ----------
+safe("target", function target() {
+  let html = `<div class="card"><h2>Target: <span class="mono">${esc(D.target.name)}</span></h2>`;
+  if (isClf) {
+    html += legend() + bars(D.target.counts.map((c, i) => { const a = new Array(classes.length).fill(0); a[i] = c; return a; }), classes, {rotate: classes.length > 8});
+    html += `<table style="max-width:420px;margin-top:8px"><tr><th>class</th><th class="num">rows</th><th class="num">share</th></tr>${classes.map((c, i) => `<tr><td><i style="display:inline-block;width:9px;height:9px;background:${color(i)};margin-right:6px"></i>${esc(c)}</td><td class="num">${D.target.counts[i].toLocaleString()}</td><td class="num">${pct(D.target.counts[i] / D.task.n_rows)}</td></tr>`).join("")}</table>`;
+  } else {
+    const h = D.target.hist, st = D.target.stats;
+    html += bars(h.bins.map(b => b[0]), h.type === "range" ? h.edges.slice(0, -1).map(e => fmt(e, 2)) : h.labels, {rotate: h.type === "levels" && h.labels.length > 8});
+    html += `<dl class="kv" style="margin-top:8px">${["mean", "std", "min", "q25", "median", "q75", "max", "zeros"].map(k => `<dt>${k}</dt><dd>${k === "zeros" ? pct(st[k]) : fmt(st[k])}</dd>`).join("")}</dl>`;
+  }
+  html += `</div><div class="card"><h2>Splits</h2><p class="note">All ${D.splits.length} shipped splits. ${isClf ? "The classes in each test fold; the smallest count is the one to watch." : "The target's mean in each test fold."}</p><div class="scroll"><table><tr><th>split</th><th class="num">train</th><th class="num">test</th>${D.splits[0]?.test_groups != null ? `<th class="num">test groups</th>` : ""}${isClf ? classes.map((c, i) => `<th class="num" style="color:${color(i)}">${esc(c)}</th>`).join("") + `<th class="num">smallest</th>` : `<th class="num">test mean</th>`}${D.splits[0]?.test_time ? "<th>train time</th><th>test time</th>" : ""}</tr>`;
+  D.splits.forEach(s => {
+    html += `<tr><td>${s.i}${s.i < D.task.n_splits_used ? "" : ' <span class="pill">not used here</span>'}</td><td class="num">${s.n_train.toLocaleString()}</td><td class="num">${s.n_test.toLocaleString()}</td>${s.test_groups != null ? `<td class="num">${s.test_groups}</td>` : ""}`;
+    html += isClf ? s.test_classes.map(c => `<td class="num">${c}</td>`).join("") + `<td class="num ${Math.min(...s.test_classes) < 5 ? "bad" : ""}">${Math.min(...s.test_classes)}</td>` : `<td class="num">${fmt(s.test_mean)}</td>`;
+    if (s.test_time) html += `<td class="mono">${esc(s.train_time.join(" → "))}</td><td class="mono">${esc(s.test_time.join(" → "))}</td>`;
+    html += "</tr>";
+  });
+  $("#target").innerHTML = html + "</table></div></div>";
+});
+
+// ---------- features ----------
+safe("features", function featuresTab() {
+  const F = D.features;
+  const kinds = [...new Set(F.map(f => f.kind))];
+  $("#features").innerHTML = `<div class="split"><div class="card">
+      <div class="controls"><input type="search" id="q" placeholder="Filter by name (regex)"><select id="kind"><option value="">all types</option>${kinds.map(k => `<option>${k}</option>`).join("")}</select>
+      <label class="sub"><input type="checkbox" id="above"> above noise band only</label><span class="sub" id="count"></span></div>
+      <div class="scroll" id="ftable"></div></div>
+    <div class="card" id="detail"><p class="muted">Click a feature to see its distribution${isClf ? " by class" : ""} and its skill on each split.</p></div></div>`;
+  const cols = [["name", "feature"], ["kind", "type"], ["missing", "missing", 1], ["unique", "distinct", 1], ["skill", "skill alone", 1], ["skill_above", "splits > 0", 1]];
+  let sortKey = "skill", sortDir = -1, limit = 400, selected = null;
+  function render() {
+    let re = null;
+    try { re = new RegExp($("#q").value, "i"); } catch (e) { re = null; }
+    const kind = $("#kind").value, above = $("#above").checked;
+    let rows = F.filter(f => (!re || re.test(f.name)) && (!kind || f.kind === kind) && (!above || (f.skill != null && noise.q99 != null && f.skill > noise.q99)));
+    rows.sort((a, b) => {
+      const x = a[sortKey], y = b[sortKey];
+      if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+      return (x < y ? -1 : x > y ? 1 : 0) * sortDir;
+    });
+    $("#count").textContent = `${rows.length.toLocaleString()} of ${F.length.toLocaleString()}`;
+    const maxSkill = Math.max(0.01, ...F.map(f => f.skill || 0));
+    let html = `<table><tr>${cols.map(([k, l, n]) => `<th class="${n ? "num" : ""}" data-k="${k}">${l}${sortKey === k ? (sortDir < 0 ? " ↓" : " ↑") : ""}</th>`).join("")}</tr>`;
+    rows.slice(0, limit).forEach(f => {
+      const cls = f.skill == null ? "muted" : (noise.q99 != null && f.skill > noise.q99 ? "good" : "muted");
+      html += `<tr class="row ${selected === f.name ? "sel" : ""}" data-n="${esc(f.name)}"><td class="mono">${esc(f.name)}${f.role ? ` <span class="pill">${f.role}</span>` : ""}</td><td>${f.kind}</td><td class="num">${pct(f.missing)}</td><td class="num">${f.unique.toLocaleString()}</td>
+        <td class="num ${cls}">${f.skill == null ? "–" : `<span class="bar" style="width:${Math.max(0, 40 * f.skill / maxSkill)}px;opacity:.5"></span> ${fmt(f.skill)}`}</td><td class="num">${pct(f.skill_above)}</td></tr>`;
+    });
+    html += "</table>";
+    if (rows.length > limit) html += `<p><button id="more">Show ${Math.min(400, rows.length - limit)} more</button></p>`;
+    $("#ftable").innerHTML = html;
+    $("#ftable").querySelectorAll("th").forEach(th => th.onclick = () => { const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : (k === "name" || k === "kind" ? 1 : -1); sortKey = k; render(); });
+    $("#ftable").querySelectorAll("tr.row").forEach(tr => tr.onclick = () => { selected = tr.dataset.n; detail(F.find(f => f.name === selected)); render(); });
+    if ($("#more")) $("#more").onclick = () => { limit += 400; render(); };
+  }
+  function detail(f) {
+    let html = `<h2 class="mono">${esc(f.name)}</h2><div class="sub">${f.kind} · ${esc(f.dtype)} · ${pct(f.missing)} missing · ${f.unique.toLocaleString()} distinct${f.role ? ` · ${f.role} column` : ""}</div>`;
+    if (f.skills) {
+      html += `<h3>Skill alone, per split</h3><div class="sub">mean ${fmt(f.skill)} ± ${fmt(f.skill_sd)} · above 0 on ${pct(f.skill_above)} of splits · shaded: noise band (shuffled labels, 99th percentile ${fmt(noise.q99)})</div>${dots(f.skills, {band: noise.q99})}`;
+    }
+    if (f.hist) {
+      const h = f.hist;
+      const labels = h.type === "range" ? h.edges.slice(0, -1).map(e => fmt(e, 3)) : h.labels;
+      html += `<h3>Distribution${isClf ? " by class" : ""}</h3>`;
+      if (isClf) {
+        const totals = classes.map((_, j) => h.bins.reduce((a, b) => a + b[j], 0) + (h.missing ? h.missing[j] : 0));
+        html += legend() + bars(h.bins, labels, {rotate: h.type === "levels"});
+        html += `<h3>Share of each class per bin (each class sums to 1)</h3>` + bars(h.bins.map(b => b.map((v, j) => totals[j] ? v / totals[j] : 0)), labels, {rotate: h.type === "levels", height: 150});
+        if (h.missing) html += `<div class="sub">missing: ${h.missing.map((v, j) => `${esc(classes[j])} ${v}`).join(", ")}</div>`;
+      } else {
+        html += bars(h.bins.map(b => b[0]), labels, {rotate: h.type === "levels"});
+        html += `<h3>Target mean per bin</h3>` + bars(h.bins.map(b => b[1] ?? 0), labels, {rotate: h.type === "levels", height: 150, colors: ["var(--c1)"]});
+        if (h.missing) html += `<div class="sub">missing: ${h.missing[0]} rows, target mean ${fmt(h.missing[1])}</div>`;
+      }
+    } else if (f.kind !== "text" && f.skills) {
+      html += `<p class="note">No drill-down: only the ${"top features by skill"} have one (<span class="mono">--max-detail</span>).</p>`;
+    }
+    const stats = ["mean", "std", "min", "q25", "median", "q75", "max"].filter(k => f[k] !== undefined);
+    if (stats.length) html += `<h3>Statistics</h3><dl class="kv">${stats.map(k => `<dt>${k}</dt><dd>${fmt(f[k])}</dd>`).join("")}${f.zeros != null ? `<dt>zeros</dt><dd>${pct(f.zeros)}</dd>` : ""}</dl>`;
+    if (f.top) html += `<h3>Most frequent values</h3><table>${f.top.map(([v, c]) => `<tr><td class="mono">${esc(v)}</td><td class="num">${c.toLocaleString()}</td></tr>`).join("")}</table>${f.mean_length != null ? `<div class="sub">mean length ${fmt(f.mean_length, 1)} characters</div>` : ""}`;
+    const pairs = D.correlations.pairs.filter(p => p[0] === f.name || p[1] === f.name);
+    if (pairs.length) html += `<h3>Among the most correlated pairs</h3><table>${pairs.map(p => `<tr><td class="mono">${esc(p[0] === f.name ? p[1] : p[0])}</td><td class="num">${fmt(p[2])}</td></tr>`).join("")}</table>`;
+    $("#detail").innerHTML = html;
+  }
+  $("#q").oninput = render; $("#kind").onchange = render; $("#above").onchange = render;
+  render();
+});
+
+// ---------- correlations ----------
+safe("correlations", function corrTab() {
+  const C = D.correlations;
+  let html = `<div class="grid"><div class="stat"><b>${C.n_features.toLocaleString()}</b><span>features compared</span></div>
+    <div class="stat"><b>${C.above_099.toLocaleString()}</b><span>pairs with |ρ| ≥ 0.99</span></div>
+    <div class="stat"><b>${C.above_09.toLocaleString()}</b><span>pairs with |ρ| ≥ 0.9</span></div></div>
+    <div class="card" style="margin-top:14px"><h2>Most correlated pairs (Spearman)</h2><p class="note">On up to 5,000 rows. Pairs near ±1 carry the same information twice.</p>
+    <div class="scroll"><table><tr><th>feature</th><th>feature</th><th class="num">ρ</th></tr>${C.pairs.map(p => `<tr><td class="mono">${esc(p[0])}</td><td class="mono">${esc(p[1])}</td><td class="num">${fmt(p[2])}</td></tr>`).join("")}</table></div></div>`;
+  $("#correlations").innerHTML = html;
+});
+
+// ---------- signal ----------
+safe("signal", function signalTab() {
+  const S = D.signal;
+  if (!S) { $("#signal").innerHTML = `<p class="note">Skipped (<span class="mono">--no-signal</span>).</p>`; return; }
+  const P = S.n_permutations;
+  let html = `<p class="note">Three untuned model families on ${D.task.n_splits_used} shipped splits (train and test sides capped at ${D.task.signal_rows.toLocaleString()} rows), first with the true labels, then with ${P} shuffles of them on the same splits. If the true score sits inside the shuffled scores, the models find nothing that chance does not. Skill is ${esc(D.skill_name)}.</p>`;
+  html += `<div class="card"><table><tr><th>family</th><th class="num">mean skill</th><th class="num">splits > 0</th>${P ? `<th class="num">shuffled: 95th pct</th><th class="num">shuffled: splits > 0 (95th pct)</th><th class="num">p</th>` : ""}</tr>`;
+  Object.entries(S.families).forEach(([name, f]) => {
+    html += `<tr><td>${esc(name.replace("_", " "))}</td><td class="num">${fmt(f.mean)}</td><td class="num">${pct(f.above_zero)}</td>${P ? `<td class="num">${fmt(f.null_q95)}</td><td class="num">${pct(f.null_above_q95)}</td><td class="num ${f.p <= 0.05 ? "good" : "bad"}">${fmt(f.p)}</td>` : ""}</tr>`;
+  });
+  if (P) html += `<tr><td><b>best family</b></td><td class="num"><b>${fmt(S.best.mean)}</b></td><td></td><td class="num">${fmt(S.best.null_q95)}</td><td></td><td class="num ${S.best.p <= 0.05 ? "good" : "bad"}"><b>${fmt(S.best.p)}</b></td></tr>`;
+  html += "</table>";
+  if (P) html += `<p class="note">p = (1 + shuffles scoring at least as well) / (1 + ${P}); the smallest possible is ${fmt(1 / (1 + P))}. The best-family row compares the best of the three on the true labels with the best of the three on each shuffle, so picking the best is accounted for.</p>`;
+  html += "</div>";
+  if (P) {
+    html += `<div class="card"><h2>True score against shuffled labels</h2>`;
+    html += `<h3>best family</h3>` + nullHist(S.best.null_means, S.best.mean, "true");
+    Object.entries(S.families).forEach(([name, f]) => { html += `<h3>${esc(name.replace("_", " "))}</h3>` + nullHist(f.null_means, f.mean, "true"); });
+    html += "</div>";
+  }
+  html += `<div class="card"><h2>Skill per split, true labels</h2>${Object.entries(S.families).map(([name, f]) => `<h3>${esc(name.replace("_", " "))}</h3>${dots(f.skills)}`).join("")}</div>`;
+  $("#signal").innerHTML = html;
+});
+
+let start = "overview";
+try { start = localStorage.getItem("explore-tab") || start; } catch (e) {}
+show(TABS.some(([id]) => id === start) ? start : "overview");
+</script>
+</body>
+</html>
