@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_stage_diabetes_risk_prediction
 container_format: 2
-checksum: v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30
+checksum: v2:900b80f2da6516eec4a0035f291589ce055c83fb43d9082a9a32a04f78254d26
 build:
   uuid: 01a111fc-d514-780d-9d44-d5ec9c6d44d3
   checksum: v2:0b8f6e7383d176e7de0df96ac97ce13cd123e9a0727212f315d38b92a3a72b2a
@@ -63,7 +63,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2020).
 
-Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:900b80f2da6516eec4a0035f291589ce055c83fb43d9082a9a32a04f78254d26`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -173,6 +173,7 @@ The first 5 of 251 rows of the final frame (random rows: the frame is shuffled);
 We start with diabetes_data_upload.csv from UCI.
 
 - We drop exact duplicate rows: 269 of 520 (51.7%) repeat another row, and 107 profiles of age, gender and 14 symptoms occur 2 to 16 times. Distinct patients would rarely agree on all 16 answers, so we treat the copies as a collection artifact (no copies conflict on the label).
+- Note: the copies are uneven by class (61% of the 200 negative rows repeat another row, 46% of the 320 positive rows), so dropping them moves the positive share from 62% to 69% and leaves 78 negatives. 74% of rows 260 to 519 repeat a row from 0 to 259; which rows are the original patients is unknown.
 
 ## Splits
 
@@ -348,4 +349,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30` |
+| stale | yes: the definition now gives checksum `v2:900b80f2da6516eec4a0035f291589ce055c83fb43d9082a9a32a04f78254d26` |

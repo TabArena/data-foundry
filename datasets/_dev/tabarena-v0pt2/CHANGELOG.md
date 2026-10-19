@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (early_stage_diabetes_risk_prediction: duplicates note)
+
+- `early_stage_diabetes_risk_prediction`: a curation note says the dropped duplicates are uneven by class (61% of the
+  negative rows repeat another row, 46% of the positive rows), so dropping them moves the positive share from 62% to
+  69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged. Follows Andrej's
+  review of the record
+  [`curation/records/early_stage_diabetes_risk_prediction.md`](../../../curation/records/early_stage_diabetes_risk_prediction.md),
+  now `Yes (Disagreement)`; evidence in `~/claude_jobs/esd_review/`. Checked, not rebuilt; the build is stale.
+
 ## 2026-10-19 (forest_fires: day-grouped splits)
 
 - `forest_fires`: grouped splits by day instead of random ones. The data has no date, but the station computes the
