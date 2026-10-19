@@ -158,6 +158,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "random_state": splits_meta.split_random_state,
             "time_horizon": splits_meta.time_horizon,
             "time_horizon_unit": splits_meta.time_horizon_unit,
+            "time_gap": splits_meta.time_gap,
+            "time_gap_unit": splits_meta.time_gap_unit,
             "n_train": {"min": int(sizes["n_train"].min()), "max": int(sizes["n_train"].max())},
             "n_test": {"min": int(sizes["n_test"].min()), "max": int(sizes["n_test"].max())},
         },
@@ -409,6 +411,8 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     )
     if sp["time_horizon"] is not None:
         shape += f" Prediction horizon: {sp['time_horizon']} {sp['time_horizon_unit'] or ''}".rstrip() + "."
+    if sp.get("time_gap") is not None:
+        shape += f" Gap between train and test: {sp['time_gap']} {sp['time_gap_unit']}."
     table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
     return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table))

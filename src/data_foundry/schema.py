@@ -676,12 +676,21 @@ class PredictiveMLSplitsMetadata:
     splits were built with the default seed) and for splits not produced by those builders.
     """
 
+    time_gap: int | float | None = None
+    """The gap between the end of each training side and the start of its test window, for temporal splits: a
+    positive number of ``time_gap_unit``. No row of that span is in either side, usually because its labels were not
+    known yet when the model is refit (a completion rate published six years after entry). ``None`` when the splits
+    leave no gap, and for splits recorded before this field existed.
+    """
+    time_gap_unit: Literal["steps", "days", "weeks", "months", "years"] | None = None
+    """The unit of ``time_gap``, read as ``time_horizon_unit`` is."""
+
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state",)
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state", "time_gap", "time_gap_unit")
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
-    container saved before ``split_random_state`` existed keeps verifying."""
+    container saved before they existed keeps verifying."""
 
     def __post_init__(self):
         """Validate the shape of the splits container and the horizon fields.
@@ -726,6 +735,12 @@ class PredictiveMLSplitsMetadata:
                 ) from None
             if horizon <= 0:
                 raise ValueError(f"time_horizon must be positive, got {self.time_horizon!r}.")
+        if (self.time_gap is None) != (self.time_gap_unit is None):
+            raise ValueError(
+                f"time_gap ({self.time_gap!r}) and time_gap_unit ({self.time_gap_unit!r}) must be set together.",
+            )
+        if self.time_gap is not None and self.time_gap <= 0:
+            raise ValueError(f"time_gap must be positive (None for no gap), got {self.time_gap!r}.")
 
     def _check_split_ids(self) -> None:
         """Repeat ids ``0..R-1``, and fold ids ``0..F-1`` in every repeat (consumers index them by position)."""
@@ -761,6 +776,7 @@ class PredictiveMLSplitsMetadata:
             f"  total splits:        {total_splits}",
             f"  time_horizon:        {self.time_horizon}",
             f"  time_horizon_unit:   {self.time_horizon_unit}",
+            f"  time_gap:            {self.time_gap} {self.time_gap_unit or ''}".rstrip(),
             f"  splits_comment:      {self.splits_comment}",
         ]
 

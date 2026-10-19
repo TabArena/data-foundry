@@ -12,6 +12,7 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadataV2,
     resolve_warehouse_dir,
 )
+from data_foundry.utils.checksum import encode_pydantic_metadata
 
 
 @pytest.fixture
@@ -349,6 +350,15 @@ def test_predictive_splits_metadata_all_time_units(unit):
     assert sm.time_horizon_unit == unit
 
 
+def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_unset():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    plain = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits)
+    gapped = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=5, time_gap_unit="years")
+    assert (gapped.time_gap, gapped.time_gap_unit) == (5, "years")
+    assert encode_pydantic_metadata(plain) != encode_pydantic_metadata(gapped)
+    assert b"time_gap" not in encode_pydantic_metadata(plain)
+
+
 def test_predictive_splits_metadata_multi_fold():
     splits = {
         0: {0: ([0, 1, 2], [3, 4]), 1: ([0, 3, 4], [1, 2])},
@@ -377,6 +387,8 @@ def test_predictive_splits_metadata_defaults_are_none():
         ({"splits": {0: {0: ([0], [1])}}, "time_horizon": 6}, "must be set together"),
         ({"splits": {0: {0: ([0], [1])}}, "time_horizon_unit": "days"}, "must be set together"),
         ({"splits": {0: {0: ([0], [1])}}, "time_horizon": 0, "time_horizon_unit": "days"}, "must be positive"),
+        ({"splits": {0: {0: ([0], [1])}}, "time_gap": 5}, "must be set together"),
+        ({"splits": {0: {0: ([0], [1])}}, "time_gap": 0, "time_gap_unit": "years"}, "must be positive"),
     ],
 )
 def test_predictive_splits_metadata_invalid_shapes_raise(splits_kwargs, match):

@@ -744,12 +744,15 @@ class AbstractCuratedDataset(ABC):
         df, test = self.process()
         plan = self.make_splits(df)
         horizon, unit = _horizon(type(self))
+        gap, gap_unit = _gap(type(self))
         splits_metadata = PredictiveMLSplitsMetadata(
             splits_comment=plan.comment,
             splits=plan.splits,
             split_random_state=self.SPLIT_RANDOM_STATE,
             time_horizon=horizon,
             time_horizon_unit=unit,
+            time_gap=gap,
+            time_gap_unit=gap_unit,
         )
         with _quiet():
             return CuratedContainer(
@@ -1130,6 +1133,10 @@ def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
 
 def _horizon(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
     return cls.temporal.resolved_horizon if cls.temporal is not None else (None, None)
+
+
+def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
+    return cls.temporal.resolved_gap if cls.temporal is not None else (None, None)
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:

@@ -71,7 +71,9 @@ remains. Say so in your report.
   aggregation=..., context=..., definition=...)`, stored in the container; the `definition` (what a group is, why it
   is held out, the use case with its source) is required. A temporal task declares `temporal = Temporal(on=...,
   splits=TemporalSplits(...))`; a window of fixed length (calendar or rows) is the horizon, and only windows that do
-  not fix one (`unit="unique"`, `window=None`, `_make_splits`) add `horizon=..., horizon_unit=...`. Neither is an IID
+  not fix one (`unit="unique"`, `window=None`, `_make_splits`) add `horizon=..., horizon_unit=...`. A gap between
+  train and test (`TemporalSplits(gap=...)`) is stored as well: in the windows' unit for a calendar unit or rows, and
+  as `gap=..., gap_unit=...` on `Temporal` for `unit="unique"` or a gap built in `_make_splits`. Neither is an IID
   task. The flat `time_on`,
   `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon` and `time_horizon_unit` attributes no
   longer import (patterns, "The definition file").
@@ -208,7 +210,8 @@ Then check that the task is worth benchmarking:
 .venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py <unique_name>
 ```
 
-It sets dummy baselines against three untuned model families on the shipped splits (per group for a group-unit task
+It sets dummy baselines against three untuned model families (a fourth on wide data: the linear model on the 500
+inputs a univariate test picks on each train side) on the shipped splits (per group for a group-unit task
 with `mean`, `any` or `last`; per row for `select_*`) and flags what needs a decision: `no_signal`, `solved`,
 `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. A flag is a question. Answer it as
 [`../verify-dataset/references/task_probes.md`](../verify-dataset/references/task_probes.md) says (its rules came

@@ -401,6 +401,13 @@ def test_time_horizon_without_time_on_is_an_error():
     assert "meta_time_horizon_without_time_on" in slugs_of(make_container(experiment_metadata=splits))
 
 
+def test_time_gap_without_time_on_is_an_error():
+    splits = PredictiveMLSplitsMetadata(
+        splits_comment="s", splits=make_iid_splits(), time_gap=1, time_gap_unit="months"
+    )
+    assert "meta_time_gap_without_time_on" in slugs_of(make_container(experiment_metadata=splits))
+
+
 def test_temporal_leakage_is_an_error():
     splits = PredictiveMLSplitsMetadata(
         splits_comment="s",

@@ -86,14 +86,12 @@ not accepted in the definition.
 | [`cirrhosis_patient_survival_prediction`](cirrhosis_patient_survival_prediction/) | IID | 304 | 17 | 20 x 3 | `01a13a7d-c2bd-721a-88c1-f86443866b1e` |  |
 | [`climate_model_weather_forecasting_1m`](climate_model_weather_forecasting_1m/) | temporal | 2,115,283 | 99 | 3 x 1 | not built |  |
 | [`clock_protein_toxicity`](clock_protein_toxicity/) | IID | 171 | 1,117 | 20 x 3 | not built |  |
-| [`coad_colon_adenocarcinoma`](coad_colon_adenocarcinoma/) | IID | 256 | 36,355 | 20 x 3 | not built |  |
 | [`coffee_rating_prediction`](coffee_rating_prediction/) | temporal | 2,369 | 12 | 13 x 1 | not built | `dataset_constant_column` |
 | [`coil_2000`](coil_2000/) | IID | 9,822 | 85 | 3 x 3 | `01a111fc-ceb4-7695-8b34-df7a285cfcb6` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 89 | 4 x 1 | not built |  |
 | [`concrete_compressive_strength`](concrete_compressive_strength/) | grouped | 1,030 | 8 | 10 x 3 | `01a13a7d-c2ed-79de-abb8-3476f95e6667` | `dataset_duplicate_rows` |
 | [`consumer_complaints_1m`](consumer_complaints_1m/) | temporal | 1,811,452 | 12 | 3 x 1 | not built |  |
 | [`cooking_time_1m`](cooking_time_1m/) | temporal | 2,500,000 | 196 | 3 x 1 | not built |  |
-| [`corporate_credit_rating`](corporate_credit_rating/) | grouped | 2,020 | 28 | 10 x 3 | not built |  |
 | [`corporate_credit_rating_cat_data_set_ratings_raitings`](corporate_credit_rating_cat_data_set_ratings_raitings/) | IID | 197 | 6 | 20 x 3 | not built |  |
 | [`covertype`](covertype/) | IID | 581,012 | 14 | 1 x 3 | `01a111fc-5b2f-72b3-983a-85ec312c2e8f` |  |
 | [`credit_approval`](credit_approval/) | IID | 690 | 15 | 20 x 3 | not built |  |
@@ -159,7 +157,6 @@ not accepted in the definition.
 | [`labour_inspection_compliance`](labour_inspection_compliance/) | IID | 63,634 | 376 | 3 x 3 | not built | `dataset_constant_column` |
 | [`lending_club`](lending_club/) | temporal | 609,544 | 81 | 3 x 1 | not built |  |
 | [`lgd`](lgd/) | grouped | 2,545 | 2 | 10 x 3 | not built |  |
-| [`lgg_low_grade_glioma`](lgg_low_grade_glioma/) | IID | 247 | 21,076 | 20 x 3 | not built |  |
 | [`ljubljana_breast_cancer`](ljubljana_breast_cancer/) | IID | 286 | 9 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`ljubljana_primary_tumor`](ljubljana_primary_tumor/) | IID | 302 | 17 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`lung_cancer`](lung_cancer/) | IID | 197 | 12,600 | 20 x 3 | `01a111fa-f2d2-7673-a757-142728cdfd4c` | `dataset_missing_value_sentinel` |

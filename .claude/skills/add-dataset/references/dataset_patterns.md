@@ -316,6 +316,19 @@ Do **not**: geocode spatial columns, hand-engineer text features (a SMILES colum
 one-hot encode, impute, or scale features. Leave that to the pipeline. Feature engineering is only for *removing leaks*
 with minimal information loss, or for reconstructing meaning the source destroyed.
 
+**Check that the source did not scale over all rows.** Values the source standardised, min-max scaled, binned by
+quantiles, ranked, projected (PCA) or batch-corrected over the whole table depend on the test rows, a transductive
+leak even without labels (Lennart, 2026-10-16: coad_colon_adenocarcinoma, z-scored over all 260 patients, retired).
+Every column of a block with mean 0 and SD 1, or min 0 and max 1, is the sign. Take the unprocessed values when the
+source has them (a per-row unit such as TPM is fine); otherwise the record goes back to the curator. Our own `_clean`
+never computes a statistic over all rows into a feature.
+
+**Keep every relevant feature, however wide the table.** Width is no reason to drop a block or to propose a narrower
+version, and no model's input limit or runtime (Mitra's feature cap or any other) is an argument in a curation
+decision or a probe (Lennart, 2026-10-15: coad_colon_adenocarcinoma ships 36,355 features; its report had weighed a
+50,000-feature cap). Columns leave for what they are (a leak, an identifier, a copy, the measurement that defines the
+label), never for how many there are.
+
 **pandas 2 and 3 must build the same container.** pandas 3 reads text as the `str` dtype (missing values stay NaN)
 and parses dates to `us` or `s`. The base class stores dates in nanoseconds and `str` text as `object`, so a
 definition only has to avoid code whose result depends on the version (all found in the v0.2 copy, 2026-10-06):
@@ -386,7 +399,11 @@ to six weeks in advance", the competition's own test window, the refit cadence),
 write the reasoning in `splits_comment`. A window of fixed length is the horizon: `window` `unit` for a calendar
 unit, `window` steps for `unit="rows"`, and declaring it again is an error. Add `horizon=..., horizon_unit=...` only
 when the windows do not fix it: `unit="unique"` (distinct values have no unit of their own: anes counts election
-years, garments days), `window=None` (california, kick), or `_make_splits` (hotel). The data arrives sorted by the time column (stable), and `TemporalSplits`
+years, garments days), `window=None` (california, kick), or `_make_splits` (hotel). The gap between train and test
+is part of the task as well and is stored next to the horizon (`time_gap`, `time_gap_unit`): `gap` of a calendar or
+row window states it, while a gap of distinct time values (`unit="unique"`: college_scorecard's five cohorts, numerai's
+four weekly eras) or one built in `_make_splits` (brazilian_ecommerce, sf_permit_time) is declared as `Temporal(...,
+gap=..., gap_unit=...)`; a `unique` window with a gap and no declared unit does not import (Lennart, 2026-10-16). The data arrives sorted by the time column (stable), and `TemporalSplits`
 builds the collection's convention, which the bundle checks verify:
 
 * one repeat per time window, always fold `0` (`splits_temporal_layout`);

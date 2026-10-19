@@ -76,9 +76,9 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`churn_telco_europa`](#churn_telco_europa) | not added; `No` (`Data Quality Issue`, `Ethical Issue`) on 2026-10-12 | Active lines and churners were recorded differently (an irreversible leak, as in iranian_churn). The files hold Chilean national ids and phone numbers. |
 | [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The DSN files are the 2,000 rows of churn_telco_south_asia with renamed values. |
 | [`churn_telco_south_asia`](#churn_telco_south_asia) | added | When churn was observed is open; the IntelliSys 2017 paper would settle it. The 50% base rate is artificial. |
-| [`coad_colon_adenocarcinoma`](#coad_colon_adenocarcinoma) | added | Multiclass CIN/MSI/GS (the record says binary). 49,283 features, 2.2 times the widest dataset in the copy; mRNA only is the alternative. The label is not a rule on a shipped block. |
+| [`coad_colon_adenocarcinoma`](#coad_colon_adenocarcinoma) | added; `No` (Data Quality Issue) on 2026-10-16, folder removed; rebuild record `tcga_coad_molecular_subtype` | Multiclass CIN/MSI/GS (the record says binary). 49,283 features, 2.2 times the widest dataset in the copy; mRNA only is the alternative. The label is not a rule on a shipped block. |
 | [`college_scorecard`](#college_scorecard) | added | Are the institution's published outcomes (latest completion rate, retention) features? SAT columns are dropped at the 2017 scale change. The source should be the Scorecard, not OpenML 46674. |
-| [`corporate_credit_rating`](#corporate_credit_rating) | added | Grouped by company (the shadow-rating use) instead of the record's temporal tag: on the temporal split, carrying a company's last rating forward beats the models. Which classes to predict is open. |
+| [`corporate_credit_rating`](#corporate_credit_rating) | added; `No` (Data Quality Issue) on 2026-10-16, folder removed; rebuild record `corporate_issuer_credit_rating` | Grouped by company (the shadow-rating use) instead of the record's temporal tag: on the temporal split, carrying a company's last rating forward beats the models. Which classes to predict is open. |
 | [`corporate_credit_rating_cat_data_set_ratings_raitings`](#corporate_credit_rating_cat_data_set_ratings_raitings) | added | The book's 197 rows as a regression on the rating notch. OpenML 46372 (5,000 rows) is generated from them. |
 | [`credit_card_customers`](#credit_card_customers) | added; recommended `No` (`AHDS`, `Missing source information`) | The data looks constructed: the 12-month transaction count equals Q1 + Q4 in every row, and months inactive are unrelated to activity. |
 | [`dataorg_financial_health_prediction_challenge`](#dataorg_financial_health_prediction_challenge) | added | Lesotho (1,944 rows) is dropped: its label runs against the index (models trained on the other countries score it at AUC 0.46). The label is a rule on the 11 product columns plus a residual; dropping those columns is the alternative. |
@@ -100,7 +100,7 @@ mirrors), and the follow-ups of 2026-10-12 are in `_crosscut_2026-10-12/`.
 | [`house_sales`](#house_sales) | added | Each house's record is rebuilt as of its sale from the county's change log: a new 1.8 GB raw input that the county updates weekly. View and waterfront stay as in the file. |
 | [`huntprohibited`](#huntprohibited) | added as `huntprohibited_1m` | IID, because the file has no time index (the record asks for temporal). Text carries most of the signal. |
 | [`lgd`](#lgd) | added | A grouped regression on LGD (the record says binary and IID), with two features only. Whether `event` = 0 is a cure is unsettled. |
-| [`lgg_low_grade_glioma`](#lgg_low_grade_glioma) | added; recommended `No` (`Data Quality Issue`) | The MLOmics files are defective: the methylation profiles belong to other patients, and the gene names do not describe their values. The label is close to a two-column rule: one CNV column gives codeletion at AUC 0.995. |
+| [`lgg_low_grade_glioma`](#lgg_low_grade_glioma) | added; `No` (Data Quality Issue) on 2026-10-16, folder removed | The MLOmics files are defective: the methylation profiles belong to other patients, and the gene names do not describe their values. The label is close to a two-column rule: one CNV column gives codeletion at AUC 0.995. |
 | [`melbourne_housing_market`](#melbourne_housing_market) | added | Only sale prices are kept (passed-in and vendor bids dropped). The scraped attributes are kept, checked against the auction sheets. `melbourne_housing_snapshot` is a duplicate. |
 | [`mobile_churn`](#mobile_churn) | added | Never-activated SIM cards are dropped in every month (12,262 rows). The source and the churn definition are unknown. |
 | [`mortgage`](#mortgage) | added | Three classes (active, default, payoff) in one-quarter windows. The book's balance and LTV record the event itself, and its macro columns are the quarter's own values (published after it): both lagged to what is known at the quarter's start. The windows mostly score the quarter's overall event rate; default-only AUC or four-quarter windows are the alternatives. |
@@ -141,7 +141,7 @@ the schema's `Other`. Tags are listed when a `Non-IID` tag names another regime.
 - `brazilian_ecommerce`: year `2019`, definition `2018`.
 - `brca_breast_cancer`: problem_type `Binary Classification`, definition `Multiclass Classification`.
 - `breast_cancer_prediction`: required_split `Random (IID)`, definition `Grouped (NON-IID)`; original_source `Kaggle`, definition source `GOV Website`; year `2020`, definition `2014`.
-- `coad_colon_adenocarcinoma`: problem_type `Binary Classification`, definition `Multiclass Classification`; original_source `Github`, definition source `HuggingFace`.
+- `coad_colon_adenocarcinoma`: problem_type `Binary Classification`, definition `Multiclass Classification`.
 - `college_scorecard`: tag `Non-IID (Grouped)`, definition `Temporal (NON-IID)`.
 - `corporate_credit_rating`: tag `Non-IID (Temporal)`, definition `Grouped (NON-IID)`.
 - `corporate_credit_rating_cat_data_set_ratings_raitings`: problem_type `Multiclass Classification`, definition `Regression`.
@@ -2543,21 +2543,33 @@ code (`fix/recheck.py`, `fix/blocks.py`, `fix/lobo.py`, `fix/years.py`, `fix/yea
    - the carried-forward rate alone: 0.734/0.759/0.753/0.742.
 
    Other history columns could be added as well and are not: C100_4 and C200_4 (other completion rates), TRANS_4 (transfer rate), and the 8-year outcome measures from 2015-16.
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 2. **SAT columns: drop (implemented) or convert?** The College Board publishes official concordance tables, new SAT to old SAT ("SAT Concordance Tables for Higher Education", 2016):
    - SATMT25/75 can go through the Math table and SAT_AVG through the total-score table;
    - SATVR25/75 (Evidence-Based Reading and Writing from 2017) have no one-to-one table to the old Critical Reading section.
 
    So a conversion would bring back four of the five columns, and SATVR would need an approximation.
+   **Answer (AI, 2026-10-16):** the SAT scores are a good feature and no leak; the problem is their scale. The College Board redesigned the test in 2016, so from the 2017 cohort on the same institution's scores are higher (median jump +45 SATVR25, +30 SATMT25, +70 SAT_AVG, against at most 7 points between other years) while its students are the same. Every training side ends with the 2012 cohort (the label lag), so models learn the old scale only and read the jump in the 2017 and 2018 windows as stronger students: with the columns as published, untuned LightGBM scores R² 0.779/0.810 on 2018/2017, against 0.797/0.814 without them. An analyst in 2017 would not use them as published: the College Board's concordance tables for higher education put new scores on the old scale. So the real-world choice is to convert, not to keep two scales in one column. Proposal: convert SATMT25/75 (Math table) and SAT_AVG (total-score table) and measure; SATVR25/75 (the new reading-and-writing section) has no table to the old Critical Reading section and stays dropped. The ACT columns keep one scale throughout.
+   **Resolved (Lennart, 2026-10-16):** convert.
+   **Follow-up (AI, 2026-10-16):** done. SATMT25, SATMT75 and SAT_AVG of the cohorts from 2017 on go through the College Board's Table 3 (math) and Table 2 (total, critical reading plus math), linear between the 10-point steps; the tables are `sat_concordance.csv` in the folder. The median 2016-2017 change within an institution is then 0 for both math percentiles and -5 for SAT_AVG (+30, +20 and +70 before). Untuned LightGBM R² on the 2018 and 2017 windows: 0.783 and 0.802 as published, 0.798 and 0.808 converted, 0.796 and 0.809 without SAT. The conversion repairs the damage but adds little, since the ACT columns cover most of the same institutions (500 of 12,021 four-year institution-years of 2010-2018 have an SAT average but no ACT). `dataset check`: 0 errors, 0 warnings.
 3. **Target.** Implemented: C150_4 as a regression (the record notes that TableShift binarized it). Alternatives in the same files:
    - median earnings 10 years after entry (MD_EARN_WNE_P10: only 7 files, two-year pooled cohorts, measured 2007-2021);
    - the 3-year cohort default rate (CDR3: files 2011-12 to 2024-25);
    - TableShift's binary C150_4 > 0.5.
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 4. **Gap and number of windows.** Train ends six cohorts before the test cohort, because a cohort's rate is published six files after entry. Without the gap, untuned LightGBM reaches R² 0.86 instead of 0.81 (mean of 4 windows), because it trains on rates that are not yet published. With the gap and the 50% train rule there are 4 windows instead of 9. Alternative: start in 1996 instead of 2001, which adds 8,692 rows of cohorts 1996-2000 (without admissions or test scores) and gives 6 windows (2013-2018).
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 5. **Cohort-size filter.** Implemented: D150_4 >= 30, the Scorecard's suppression threshold for its pooled rates; it drops 3,926 of 38,357 institution-cohorts. Alternative: keep all cohorts, where a single student moves the rate of a 1-29 student cohort by 3-100 points.
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 6. **Download.** The official URL answers 403 from our servers; the definition downloads the Internet Archive snapshot (its MD5 equals the official ETag). Worth fetching the zip once from another network and keeping a backup.
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 7. **`colleges` record (OpenML 42727, TBD -> 2nd Tier, "cannot find origin").** It is a one-year College Scorecard snapshot: UNITID and Scorecard columns (admission_rate, sat_*_midrange, completion_rate, carnegie_*, earnings), "about 7800 different US colleges", target `percent_pell_grant`. It has the same source, so once college_scorecard ships it is a duplicate cut with a descriptive target (`Duplicate` / `No Good Target`).
+   **Resolved (Lennart, 2026-10-16):** as implemented: `colleges` becomes `No` + `Duplicate` once college_scorecard ships.
 8. **Selection of scored cohorts.** 15,900 of the 54,257 four-year institution-years (2001-2018) have no rate six files later. 6,980 have no row then (closed, merged, or out of the Scorecard), and most of the others enroll no first-time undergraduates (5,570 are graduate-only). Cohorts at institutions that close within six years cannot be scored, and the benchmark inherits that.
+   **Resolved (Lennart, 2026-10-16):** as implemented.
 9. **Framework note (no action needed for the data).** The split metadata stores `time_horizon` (1 year here) but not the gap, so the 5-cohort label lag shows only in the splits themselves and in `splits_comment`.
+   **Resolved (Lennart, 2026-10-16):** add the gap to the metadata, also for the other tasks with a gap.
+   **Follow-up (AI, 2026-10-16):** done. The split metadata has `time_gap` / `time_gap_unit`, left out of the checksum while unset, so containers without a gap keep theirs. A calendar or row window states its gap; a `unit="unique"` window or a gap built in `_make_splits` declares it as `Temporal(gap=..., gap_unit=...)`, and a `unique` window with a gap but no unit does not import. The README shows it next to the horizon. 12 definitions have one: college_scorecard 5 years, numerai_v5_2_1m 4 weeks, sf_permit_time 6 months, rosbank1 3 months, brazilian_ecommerce, ieee_fraud_detection and zillow_prize 1 month, onlinenewspopularity 1 week, aeolus_1m, bias_correction_r_bias_correction_r_2, g_research_crypto_forecasting_1m and rossmann_store_sales 1 day. Their containers get new checksums at the next build.
 
 ### corporate_credit_rating
 **Outcome:** added and checked (`datasets/_dev/tabarena-v0pt2/corporate_credit_rating/`). The fix round of 2026-10-07
@@ -2639,6 +2651,7 @@ switched the regime from temporal to grouped by company.
      - (b) A rating-migration variant: temporal, plus the company's previous rating and the days since it as features.
        RF skill 0.460 (SE 0.020) against 0.285 without them, better in 9 of 9 windows. This is the realistic
        monitoring task.
+   **Answer (AI, 2026-10-16):** Both happen, and most rating actions are on companies already rated: agencies review every rating at least once a year, and here 72% of the ratings with an earlier one repeat its class. For those the previous rating is public and the model must have it: variant (b), temporal with the previous rating as a feature (random forest skill 0.460 against 0.285 without it, better in 9 of 9 windows; carrying the last rating forward alone 0.39). A company without a rating is the cold start: a bank's shadow rating of a borrower, or a first bond issue. The grouped split already is that cold start, since every test company is unseen. One row per company makes it IID, as you say, but loses rows and signal (random forest, 10 x 3 folds): the latest rating per company, 592 rows, skill 0.112 (macro AUC 0.728); the first, 0.102 (0.733); all 2,020 ratings grouped by company, 0.158 (0.769). AA would have 22 companies, 7 per test fold. "Not rated before" cannot be read from this file either: it starts in 2010-2012, and most of these companies were rated long before. The agencies' own histories (issue 5) mark each action as new, upgrade, downgrade or withdrawal, so a rebuild can frame either task cleanly. My proposal for the rebuild: one row per company, agency and annual statement, features from the statement and the rating in force when it was filed, target the issuer rating in force 12 months later, temporal split (the rating-migration task); new issuers simply have no previous rating. Until then the grouped version stands.
 2. **Which classes to predict** (the record's "minor ones"). The file holds letter grades only, because the script
    strips the notches. The rare grades are AAA 7, CC 5, C 2 and D 1. Implemented: 6 letter classes, with CCC/CC/C
    merged and AAA plus the defaults dropped (2,020 rows); grouped RF skill 0.157 on the shipped splits.
@@ -2648,6 +2661,7 @@ switched the regime from temporal to grouped by company.
      - (b) investment vs speculative grade (1,158 / 862): ROC AUC 0.829 (LightGBM 0.835);
      - (c) notch level: this needs `ratings-history.csv` as a second input. 1,749 of 2,029 rows have a single long-term
        notch from that agency on that day. Moody's notches are biased by issue 5.
+   **Resolved (Lennart, 2026-10-16):** as implemented (6 letter classes).
 3. **The agency mix changes with the year** (a collection artifact of the ratings history).
    - S&P has 68 of the 69 rows up to 2011. Moody's has 251 of the 357 rows of 2012. Egan-Jones has 602 of its 603
      rows in 2013-2015. S&P and Moody's have 404 of the 428 rows of 2016.
@@ -2655,12 +2669,14 @@ switched the regime from temporal to grouped by company.
    - Under grouped CV the years are pooled, and the agency and date are features, so this matters less than it did
      for the temporal version.
    - Alternative: one consistent label source, S&P only (739 rows) or S&P + Moody's (1,315 rows).
+   **Answer (AI, 2026-10-16):** Yes: the rating the company has from the agency in question. The agency is an input, so the model answers "which grade would this agency give"; their scales differ (Egan-Jones rates A or above for 46% of its rows, Moody's 19%, S&P 11%). The problem is only which agency the file covers when, and that comes from the file the uploader used, not from the market: it holds 46% of the S&P and 74% of the Moody's issuer-name/date/grade triples of the agencies' own published histories for those years, and the full histories cover each agency continuously from 2010-2012 to 2021-2025. A rebuild removes it; in the current file the grouped split pools the years, so it matters less.
 4. **Label noise from instrument ratings.** In 171 rows (8.4%; 168 after our drops) the agency gave the company's debt
    2-3 letters that day, and the script kept the first in file order. Within the 12-month window, the verifier counts
    239 rows (11.8%), an upper bound.
    - Grouped RF skill: 0.157 with these rows, 0.152 without them.
    - Implemented: labels kept as published. Alternative: drop the rows, with `ratings-history.csv` (31 MB) as a second
      input.
+   **Answer (AI, 2026-10-16):** An agency rates the company and each of its debt instruments separately, and on the day of an action it often publishes several: the issuer rating plus its secured, senior or subordinated debt, which sit above or below the issuer rating by seniority. The uploader's ratings history keeps only agency, name, date and grade, so the script took the first in file order. Examples from the agencies' full histories: Ball Corp, S&P, 2016-07-05: issuer rating BB+, label BBB, which is its secured bank loans' BBB-; AMC Networks, Moody's, 2012-06-15: Corporate Family Rating Ba3, but the script's mapping bug dropped Ba3, so the label BB came from the Ba2 bank facilities. The real-world target is the issuer credit rating (S&P issuer credit rating, Moody's Corporate Family Rating, Fitch Issuer Default Rating). It is broader than the 171 rows: of the 1,594 labels I could compare with the agency's issuer rating in force on that date, 277 (17%) have another letter. This file cannot fix it (no rating type); the agencies' histories label every row's type.
 5. **Data-quality quirks of the uploader's build** (informational; noted as Anomaly bullets, not fixable without
    rebuilding the file):
    - Moody's Aa3, Ba3, B3 and Caa3 are dropped by a tab and Unicode minus signs in the mapping;
@@ -2669,13 +2685,18 @@ switched the regime from temporal to grouped by company.
    - 223 rows dated 2012-06-15 are ratings outstanding when the Moody's and Fitch histories start;
    - the committed script cannot have produced the file as it stands (a missing comma in its drop list, a `rename`
      without `columns=`), though every row traces back.
+   **Answer (AI, 2026-10-16):** Checked: a rebuild from the original sources is feasible and fixes all of the build problems. Ratings: the histories every agency must publish under SEC Rule 17g-7(b), converted to CSV with 32 columns (rating type, action class, LEI or CIK, CUSIP) by ratingshistory.info, no login: Moody's to 2023-12, Fitch to 2025-09, Egan-Jones to 2025-10; S&P to 2021-07 only from an archived copy (S&P's own page refuses scripts). Statements: SEC EDGAR XBRL, each fact with its filing date, so a row uses only statements filed before the rating, with delisted companies included. It fixes instrument against issuer ratings, the dropped Moody's notches (notch labels become possible), survivorship (Sears Holdings, Windstream, Weatherford are in the histories and in EDGAR), the agency mix by year, the June rule for the fiscal year, and the script that cannot have produced the file. It does not give: enterpriseValueMultiple (needs share prices; 24 of the 25 ratios come from the statements), the NASDAQ sector (SIC codes instead), Egan-Jones without name matching (no LEI or CIK). Size: by a lower-bound name match, about 1,200 S&P, 900 Moody's and 1,400 Egan-Jones issuers, against 593 companies now. Needs from you: an organisation name and contact address for the SEC's User-Agent (its bulk files refuse requests without one). Effort: about 1.5-2.5 weeks of agent work, the matching of issuers to SEC filers being the main risk. It would be a new dataset; as with coad, I would retire this version and open a record for the rebuild, if you agree.
+   **Resolved (Lennart, 2026-10-16):** retire this version and open a record for the rebuild.
+   **Follow-up (AI, 2026-10-16):** record `No` + `Data Quality Issue`, folder removed (in git at 2475ea2); new record `corporate_issuer_credit_rating` with the sources, the issuer-rating rule per agency and the proposed rating-migration task. The SEC User-Agent contact is still needed when the rebuild starts.
 6. **`source` = "Kaggle", although the identical file was on the uploader's GitHub 17 days earlier** (2020-07-07,
    against 2020-07-24 on Kaggle; an earlier version on 2020-07-05).
    - I chose Kaggle: it is the dataset release with the data card and licence, and the record's first link. The pinned
      GitHub URL is in `download_description`.
    - Alternative: `source = "GitHub"`.
+   **Answer (AI, 2026-10-16):** Yes. A rebuild's origin is the agencies' Rule 17g-7(b) disclosures and SEC EDGAR, not Kaggle or GitHub, and the record and the definition would say so (with the ratingshistory.info files and the archived S&P copy pinned as the download).
 7. **Framework (known):** the README renders `splits_comment` without dedenting it. This is the gap the orchestrator
    logged (`dataset.py:677`); I did not patch it.
+   **Answer (AI, 2026-10-16):** Already fixed: `make_splits` dedents `splits_comment` since the v2 format PR (#6), and the current README renders it flush (checked 2026-10-16). The issue text predates that.
 
 **Verification (fix round, 2026-10-07):** the verifier's verdict was "ready with noted concerns", with one major
 finding. I checked each finding before acting on it.
@@ -7425,27 +7446,38 @@ probes cover them.
 **Issues for Lennart:**
 1. **Problem type.** All three records say Binary Classification. TabPFN-Wide reads `{C}_label_num.csv` unchanged (`load_mm_data.py`) and scores macro AUROC.
    - For the orchestrator: set `problem_type` to Multiclass Classification on `coad_colon_adenocarcinoma`, `lgg_low_grade_glioma` and `ov_ovarian_cancer`.
+   **Resolved (Lennart, 2026-10-15):** multiclass; the record's `problem_type` is now Multiclass Classification.
 2. **HM-SNV dropped** (4 tumours, 1-2 per test fold).
    - Alternative: merge them with MSI into one hypermutated class, as TCGA 2012 did (abstract quoted in the comments).
+   **Resolved (Lennart, 2026-10-15):** as implemented (dropped).
 3. **Labels from data that do not ship.**
    - MSI is defined from exome indel density: tumour mutation burden separates it at AUC 1.000; MSIsensor 0.993, MANTIS 0.999.
    - CIN against GS is a clonal deletion score > 0.0249 (Liu et al. 2018, quote corrected in the comments). A label-free copy-number burden from the CNV block separates CIN from GS at AUC 0.891 (cBioPortal fraction of genome altered 0.878, aneuploidy score 0.914).
    - No rule reproduces the label (probes above), so it stays a subtype-calling task.
    - Kept: the CNV block. Dropping it as the measurement behind CIN/GS: L2 logistic regression 0.931 / 0.398 against 0.934 / 0.412 with it. Lennart's call; I recommend keeping it.
+   **Resolved (Lennart, 2026-10-15):** as implemented: the copy-number block is dropped (Lennart, 2026-10-12, in the record); the text above predates that decision.
 4. **Width: 49,283 features.**
    - 2.2x the widest dataset of the copy before this run (`lung_cancer_epithelial_genexp`, 22,215).
    - 717 under Mitra-v2's 50,000-feature cap (`tabarena/.../models/mitra_v2/model.py`). Task probes take 50 min at 2 threads.
    - Alternative: mRNA only (17,261 features): L2 logistic regression 0.926 / 0.402 against 0.934 / 0.412 with all blocks. The source task (MLOmics, TabPFN-Wide) uses all four blocks.
    - Lennart's call.
+   **Resolved (Lennart, 2026-10-15):** all three remaining blocks stay (36,355 features). Keep every relevant feature however wide; a model's feature cap or runtime is no argument (rule in the add-dataset patterns and this report format). No Mitra model was run: the probes are the untuned linear, forest and LightGBM families.
 5. **Scaling.** MLOmics standardised every feature over all 260 patients (repository issues #3, #7, #9). The scaling uses no labels but includes the test rows. Kept.
+   **Answer (AI, 2026-10-15):** not from the release: all four blocks are z-scores over the 260 patients (mean 0, SD 1 per feature), and MLOmics published neither the unscaled values nor the means and SDs (GitHub issue #3 asked; closed without). Undoing it means rebuilding the features from TCGA's files at the GDC with MLOmics' pipeline (paper, Methods: RSEM to FPKM, log; promoter averages for methylation). It carries no label: each feature is shifted and scaled by two numbers shared by every row, computed without labels. Tree models, and models that standardise or rank-transform their inputs on the train side, predict exactly the same on these values as on unscaled ones. Recommendation: keep, as the curation notes state.
+   **Resolved (Lennart, 2026-10-16):** a transductive leak: the test rows are in every scaling, and a deployed model never has them. coad_colon_adenocarcinoma is retired for now (`No`, `Data Quality Issue`), and a new record, `tcga_coad_molecular_subtype`, is to rebuild the task from the GDC's per-sample files with the same task decisions.
+   **Follow-up (AI, 2026-10-16):** my answer above was wrong to call it no leak. It uses no labels, and tree models predict the same, but the training rows alone give each test fold's mean of every feature (minus n_train/n_test times their own mean z-score) and its variance, so the test distribution is known at training time. The rule is now in the leak checks (§3, §7) and the add-dataset patterns (§B). The record is updated and the folder removed (Lennart confirmed, 2026-10-16).
 6. **Trust in the source.** GS-LGG and GS-OV of the same release carry fabricated gene names, and GS-LGG's methylation does not match its patients. GS-COAD passes every check.
+   **Answer (AI, 2026-10-15):** the same release ships LGG and OV, and their files are broken (gene names that do not describe their values; LGG's methylation profiles belong to other patients), so the source makes mistakes and COAD is trusted only as far as our checks reach. COAD passes them: its gene names hold and each patient's four profiles belong to the same patient. No action.
 7. **`DF: Suspended` has no recorded reason.**
+   **Resolved (Lennart, 2026-10-15):** as is.
 8. **Framework.** `leak_probes.py` fits one LightGBM per feature (about 5 h on 50k features), so I ran it through a scratch wrapper. Probe discovery breaks on other agents' half-written folders, so the probes ran on a scratch root of symlinks.
+   **Answer (AI, 2026-10-15):** done. On more than 1,000 inputs `task_probes.py` adds `selected_linear`: the linear model on the 500 inputs a univariate F-test picks inside each training fold. Here, 30 splits, 36,355 features: skill 0.381 (macro AUC 0.919, log loss 0.522) against 0.111 (0.917, 0.750) for the linear model on all inputs; random forest 0.404 (0.913, 0.503), LightGBM 0.238 (0.921, 0.644), best single feature -0.095 (0.714). No flags. The leak probe already screens wide data (`--max-single-features`, 2026-10-12).
 
 ### lgg_low_grade_glioma
 **Outcome:** added and checked, repaired: the methylation block is left out, every feature is named by its omics and file row, and the dataset is tagged `Anonymized`.
 - Recommended not to ship: record `No` + `Data Quality Issue`. Whether `Trivial` is a second marker is Lennart's call.
 - The folder stays for Lennart's decision; the evidence is in `curation_comments`.
+- **Resolved (Lennart, 2026-10-16):** retired, record `No` + `Data Quality Issue`, folder removed (in git at 2475ea2). Its mRNA and miRNA values also look standardised across patients by the release (per-feature mean -0.45 to 0.45, SD 0.82-1.21 over the 247 patients). No rebuild for now (2026-10-12).
 
 **Record judgment:** do not ship this release. It is faulty in all four blocks, in all three MLOmics revisions (2025-04 `122c748f`, 2025-05 `d7c22395`, 2026-09 `74b9385f`).
 - Methylation does not match the patients: patient-similarity r with mRNA -0.005, against 0.59 for miRNA and 0.45 for CNV. No methylation gene separates a class beyond chance, although IDH-mutant gliomas carry G-CIMP.

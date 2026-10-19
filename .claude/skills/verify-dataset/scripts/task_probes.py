@@ -15,7 +15,9 @@ with untuned models:
   temporal task also a drift baseline, the same from the newest rows of the train side (as many as the test window
   holds, at most a fifth of the train side);
 * three model families: a regularised linear model, a random forest and LightGBM (regression predictions are clipped
-  to the train side's target range);
+  to the train side's target range); on wide data (more than 1,000 model inputs) a fourth, ``selected_linear``: the
+  500 inputs with the strongest univariate F-test on the train side, then the same linear model, so that a linear
+  model is not judged by its fit to tens of thousands of columns;
 * the best single feature, chosen on each split's training side: of the five features LightGBM uses most there, the
   one that scores best alone on an inner hold-out of the train side (whole groups for a grouped task, the newest rows
   for a temporal one); it is then refitted on the train side and scored on the test side;
@@ -75,6 +77,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.pipeline import make_pipeline
@@ -103,6 +106,10 @@ SMALL_UNITS = 5_000
 SMALL_SPLITS = 30
 DEFAULT_SPLITS = 5
 N_SINGLE = 5
+WIDE_INPUTS = 1_000
+"""Above this many model inputs the probe adds ``selected_linear``."""
+SELECTED_INPUTS = 500
+"""The inputs ``selected_linear`` keeps, chosen by a univariate F-test on each train side."""
 """Single-feature candidates per split: the features LightGBM uses most on its train side."""
 TEXT_COMPONENTS = 16
 MAX_TEXT_COLUMNS = 30
@@ -185,24 +192,36 @@ def linear_inputs(categorical: list[str]) -> ColumnTransformer:
     )
 
 
-def models(*, regression: bool, n_jobs: int, categorical: list[str] | None = None) -> dict:
-    """The three untuned model families; ``categorical`` names the columns the linear family one-hot encodes."""
+def models(*, regression: bool, n_jobs: int, categorical: list[str] | None = None, n_inputs: int = 0) -> dict:
+    """The untuned model families; ``categorical`` names the columns the linear family one-hot encodes.
+
+    With more than ``WIDE_INPUTS`` inputs, ``selected_linear`` joins them: the linear model on the
+    ``SELECTED_INPUTS`` inputs of the strongest univariate F-test, chosen inside the pipeline on the train side.
+    """
     categorical = categorical or []
     if regression:
-        return {
+        out = {
             "linear": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
             "random_forest": lambda: RandomForestRegressor(
                 n_estimators=200, min_samples_leaf=2, max_features="sqrt", n_jobs=n_jobs, random_state=0
             ),
             "lightgbm": lambda: lgb.LGBMRegressor(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
         }
-    return {
-        "linear": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=1.0, max_iter=2000)),
-        "random_forest": lambda: RandomForestClassifier(
-            n_estimators=200, min_samples_leaf=2, n_jobs=n_jobs, random_state=0
-        ),
-        "lightgbm": lambda: lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
-    }
+        select, linear = f_regression, lambda: Ridge(alpha=1.0)
+    else:
+        out = {
+            "linear": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=1.0, max_iter=2000)),
+            "random_forest": lambda: RandomForestClassifier(
+                n_estimators=200, min_samples_leaf=2, n_jobs=n_jobs, random_state=0
+            ),
+            "lightgbm": lambda: lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
+        }
+        select, linear = f_classif, lambda: LogisticRegression(C=1.0, max_iter=2000)
+    if n_inputs > WIDE_INPUTS:
+        out["selected_linear"] = lambda: make_pipeline(
+            linear_inputs(categorical), SelectKBest(select, k=SELECTED_INPUTS), linear()
+        )
+    return out
 
 
 def predict(model, X_test: pd.DataFrame, n_classes: int) -> np.ndarray:
@@ -321,7 +340,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
 
     results: dict[str, list[dict]] = {}
     categorical = [f"f{i}" for i, name in enumerate(names) if isinstance(df[name].dtype, pd.CategoricalDtype)]
-    candidates = models(regression=regression, n_jobs=n_jobs, categorical=categorical)
+    n_inputs = X.shape[1] + TEXT_COMPONENTS * len(text_cols[:MAX_TEXT_COLUMNS])
+    candidates = models(regression=regression, n_jobs=n_jobs, categorical=categorical, n_inputs=n_inputs)
     chosen_single: list[str] = []
     class_counts: list[np.ndarray] = []  # the units of each class, per probed test fold
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
@@ -495,10 +515,10 @@ def render(result: dict) -> str:
         + f", {result['splits_probed']} of {result['splits_shipped']} splits, {result['seconds']} s"
     )
     lines = [head]
-    for key in ["dummy", "drift", "linear", "random_forest", "lightgbm", "single_feature"]:
+    for key in ["dummy", "drift", "linear", "selected_linear", "random_forest", "lightgbm", "single_feature"]:
         if key in t:
             cells = ", ".join(f"{k} {t[key][f'{k}_mean']:.3f}" for k in keys)
-            lines.append(f"  {key:>14}: skill {t[key]['skill_mean']:+.3f} +- {t[key]['skill_std']:.3f} | {cells}")
+            lines.append(f"  {key:>15}: skill {t[key]['skill_mean']:+.3f} +- {t[key]['skill_std']:.3f} | {cells}")
     lines.append(
         f"  best family {result['best']}: beats the dummy on {result['best_beats_dummy_share']:.0%} of the splits, "
         f"standard error of its mean skill {result['best_skill_se']:.3f}"

@@ -93,9 +93,11 @@ which the bundle checks do not cover:
   [`../check-candidate/references/leak_checks.md`](../check-candidate/references/leak_checks.md), which also lists the
   probes to run by hand and what the 2026 leak audit decided for each kind of leak. Evidence for items 4, 5, 6, 9, 13.
 * `task_probes.py` (`--built` reads the built container): whether the task is worth benchmarking. Dummy baselines
-  against three untuned model families on the shipped splits, the best single feature chosen per split, and flags
-  (`no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`). Evidence for
-  item 13; answer each flag as [`references/task_probes.md`](references/task_probes.md) says, starting with
+  against three untuned model families on the shipped splits (on more than 1,000 inputs also `selected_linear`, the
+  linear model on the 500 inputs a univariate F-test picks on each train side), the best single feature chosen per
+  split, and flags (`no_signal`, `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`,
+  `few_minority`). Evidence for item 13; answer each flag as
+  [`references/task_probes.md`](references/task_probes.md) says, starting with
   `tuned_results.py <unique_name> [--feature auto]`, which sets the flag against the benchmark's tuned methods.
 * `group_probes.py`, for a grouped task: the IID vs grouped gap and a permutation test across groups (item 4).
 * `generated_probes.py` (`--built`): whether the target is a formula of the features (`formula`, regression: the

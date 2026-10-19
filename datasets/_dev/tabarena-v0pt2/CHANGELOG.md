@@ -4,6 +4,46 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-16 (the gap between train and test is stored; coad, corporate_credit_rating and lgg retired; college_scorecard SAT back on one scale)
+
+- Split metadata: new `time_gap` / `time_gap_unit` next to the horizon (Lennart's mark on college_scorecard, issue 9).
+  A calendar or row window states its gap (`TemporalSplits(gap=...)`); a `unit="unique"` window or a gap built in
+  `_make_splits` declares it as `Temporal(gap=..., gap_unit=...)`. Unset fields stay out of the checksum and the saved
+  JSON, so containers without a gap keep their checksums; the README shows the gap with the horizon, and the bundle
+  check `meta_time_gap_without_time_on` refuses a gap without a time column. Declared on college_scorecard (5 years),
+  numerai_v5_2_1m (4 weeks), brazilian_ecommerce (1 month) and sf_permit_time (6 months); stated by their windows on
+  rosbank1 (3 months), ieee_fraud_detection and zillow_prize (1 month), onlinenewspopularity (1 week), aeolus_1m,
+  bias_correction_r_bias_correction_r_2, g_research_crypto_forecasting_1m and rossmann_store_sales (1 day). These 12
+  get new checksums at the next build; their rows and splits do not change.
+- Retired by Lennart (records `No`, `Data Quality Issue`; folders removed, `v2_path` cleared; the definitions stay in
+  git at 2475ea2; none was built). 173 definitions remain.
+  - `coad_colon_adenocarcinoma`: the MLOmics release z-scored every feature over all 260 patients, test rows
+    included, a transductive leak. New record `tcga_coad_molecular_subtype` for a rebuild from the GDC's per-sample
+    files with the same task decisions. The rule (source-side statistics over all rows are a leak, labels or not) is
+    in the leak checks and the add-dataset patterns.
+  - `corporate_credit_rating`: 17% of the labels that could be checked against the agencies' own histories are a
+    bond's or loan's rating, not the company's, and the uploader's build drops Moody's grades and delisted
+    companies. New record `corporate_issuer_credit_rating` for a rebuild from the agencies' Rule 17g-7(b) histories
+    and SEC EDGAR.
+  - `lgg_low_grade_glioma`: stays `No` as decided on 2026-10-12 (methylation of other patients, gene names that do
+    not describe the values); its expression values also look standardised across patients.
+- `college_scorecard`: SATMT25, SATMT75 and SAT_AVG are back (Lennart). From the 2017 cohort on they are on the
+  redesigned SAT; the College Board's concordance tables (`sat_concordance.csv`, May 2016) put them back on the old
+  scale. Untuned LightGBM R² on the 2018/2017 windows: 0.798/0.808 converted, 0.783/0.802 as published, 0.796/0.809
+  without SAT. Record: the `Non-IID (Grouped)` tag removed (the task is temporal). Not built; `dataset check` clean.
+
+## 2026-10-15 (coad_colon_adenocarcinoma: review marks; a feature-selection task probe)
+
+Lennart's marks on the review page of the 2026-10-07 run, verdict still open. No change to the definition.
+
+- Record: `problem_type` Multiclass Classification. The three blocks stay (36,355 features): every relevant feature is
+  kept however wide the table, and a model's feature cap is no argument (rule in the add-dataset patterns and the
+  run report format). The release's standardisation over all 260 patients cannot be undone from the release (open
+  on the review page).
+- `task_probes.py`: on more than 1,000 model inputs a fourth family, `selected_linear` (the linear model on the 500
+  inputs of the strongest univariate F-test, chosen inside each training fold). On coad it scores skill 0.381
+  against 0.111 for the linear model on all inputs (random forest 0.404); no flags.
+
 ## 2026-10-15 (churn_telco_south_asia ships: impossible values missing; churn timing unknown)
 
 Lennart's marks on the review page of the 2026-10-07 run (issues 1 and 6) and his verdict: ship. Edited `dataset.py`,

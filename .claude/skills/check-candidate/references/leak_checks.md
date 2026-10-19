@@ -95,6 +95,7 @@ Reading the probes:
 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |
 | Label-aware features computed over all rows, test folds included | drop them; recommend the technique inside a pipeline, per fold | santander_customer_transaction_prediction `has_one`, `has_zero` (+0.003-0.004 AUC) |
 | Supervised feature selection on the full labelled set | measure it; keep with a note when small | home_credit_default_risk |
+| Features the source transformed with statistics over all rows, test rows included (z-scores, min-max, quantile bins, ranks, PCA, batch correction, a variance filter): a transductive leak, labels or not | rebuild from unprocessed values; retire while the source has none. Per-row transforms (a log, a ratio within the row, per-sample TPM or beta values) and fixed published scales are fine | coad_colon_adenocarcinoma (MLOmics z-scored every feature over the 260 patients: retired 2026-10-16, rebuilt from the GDC as tcga_coad_molecular_subtype) |
 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |
 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
 | Batch noise across the whole feature space, no batch id | retire; a feature subset does not help when it also separates same-label groups | prostate_cancer_detection (the paper's 7 features: Benign vs NED 0.92-0.97, the label 0.62-0.70) |
@@ -204,6 +205,7 @@ The audit's first suggestion was revised for most of the 38 cases. The patterns 
 * Re-check a comment's claim with data: kick's "grouped" Kaggle split came from a buggy check, and california's
   "temporal" split ran on alphabetical order.
 * Report a borderline case as "maybe leak" for the human to decide, not as "no leak".
+* A transformation without labels can still leak. coad's z-scores over all patients were first called harmless (no labels; tree predictions unchanged), but every stored value depends on the test rows: the training rows alone give each test fold's mean of every feature (minus n_train/n_test times their own mean z-score). Lennart, 2026-10-16: "this is clearly a leak (transductive), we would not know all test rows".
 * Do not call a small grouped task unlearnable from one quick model. mice_protein, parkinsons and pancreatic were first
   suggested as having no signal across groups from one untuned LightGBM run; several models and a permutation test
   showed real signal in the first two, and the BeyondArena results kept the third (2026-10-01). Real signal did not

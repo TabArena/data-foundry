@@ -95,6 +95,9 @@ other benchmarks published for the dataset (TALENT, leaderboards) are no issue a
 are wrong for most of our tasks (Lennart, 2026-10-15). The same holds for another collection's version of the data
 (TabSTAR's column choices, an OpenML copy's target): do not over-index on it, and name it only where it identifies
 the source, a duplicate or the record's name.
+Nor is a model's limit (a feature cap such as Mitra's, a runtime): the table keeps every relevant feature however
+wide it is, so its width is no issue and a narrower version no alternative (Lennart, 2026-10-15,
+coad_colon_adenocarcinoma).
 
 The title is the bold text at the start of the issue (`1. **Keep the target in decibels?** The source ...`), or else
 the first sentence. The number is the key under which the curator's mark is stored (`items.<N>`): numbers are unique
