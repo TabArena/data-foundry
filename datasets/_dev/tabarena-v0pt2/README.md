@@ -113,7 +113,7 @@ not accepted in the definition.
 | [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 587 | 176 | 20 x 3 | `01a13aff-7235-73c3-932c-785cd540127b` |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
 | [`early_stage_diabetes_risk_prediction`](early_stage_diabetes_risk_prediction/) | IID | 251 | 16 | 20 x 3 | not built |  |
-| [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 6 | 20 x 3 | not built |  |
+| [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 5 | 20 x 3 | not built |  |
 | [`electric_motor_temperature_prediction`](electric_motor_temperature_prediction/) | grouped | 1,296,316 | 109 | 1 x 3 | `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` |  |
 | [`emscad`](emscad/) | grouped | 16,116 | 17 | 3 x 3 | not built |  |
 | [`eryhemato_squamous_disease`](eryhemato_squamous_disease/) | IID | 366 | 12 | 20 x 3 | not built |  |

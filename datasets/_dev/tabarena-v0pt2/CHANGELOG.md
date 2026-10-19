@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (ecoli_proteins: `aac` dropped)
+
+- `ecoli_proteins`: `aac` is dropped (5 features, not 6). It is the score of a discriminant analysis fitted to the
+  labels of the authors' protein database, the predecessor of this dataset (Nakai & Kanehisa 1991), so it leaks the
+  labels (the leak `yeast` was rejected for). Without it, outer-membrane recall falls from 0.90 to 0.02
+  (TabPFN, stratified 3-fold x 20). `task_summary` and `curation_comments` say so; rows and splits unchanged. Follows
+  Andrej's review of the record [`curation/records/ecoli_proteins.md`](../../../curation/records/ecoli_proteins.md);
+  evidence in `~/claude_jobs/ecoli_headroom/`. Checked, not rebuilt; the build stays stale.
+
 ## 2026-10-15 (credit_g: corrected code table)
 
 - `credit_g`: the categories now carry the labels of Grömping's (2019) corrected code table; the Statlog `german.doc`
