@@ -37,3 +37,12 @@ CC (2026-09-21, Lennart): **Version case of the NYC TLC trip records → `Duplic
 (uploaded 2020-11-18) is green-cab trips of Dec 2016 with target `tip_amount`; 581,835 rows, 19 features; the
 uploader kept only `payment_type == 1` and removed `trip_distance` and `fare_amount`. Same source data as
 `nyc_taxi_trip_duration` (yellow cabs, 2016, trip-duration task), which is the one NYC taxi dataset we keep.
+
+**AI note (two-regime-zero audit, 2026-10-19):** the two-regime-zero workbook
+(`curation/inputs/two_regime_zero_datasets_v4.xlsx`, Master rows 28 "Taxi tip amount / NYC TLC" and 29 "Taxi green/NYC
+tip-percentage subsets") lists NYC TLC tips as a zero-inflated regression candidate. Both rows are the TLC trip
+records this record and `nyc_taxi_trip_duration` already cover, so no new record was made, and nothing here changes
+the Duplicate verdict. The workbook's caveat that a zero tip may be an unrecorded cash tip holds for the full TLC
+files, not for OpenML 42729: its description says the uploader kept only `payment_type == 1` (credit card) "as tips
+are not included for most other payment types". Measured on the OpenML parquet: 581,835 trips, 15.2% with `tip_amount`
+exactly 0, which are card trips without a tip rather than missing values.
