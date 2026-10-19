@@ -122,7 +122,7 @@ not accepted in the definition.
 | [`food_delivery_time`](food_delivery_time/) | IID | 45,451 | 9 | 3 x 3 | `01a13a7d-c2cc-70a6-b90d-08296c319c01` |  |
 | [`force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`](force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/) | grouped | 1,429,591 | 26 | 1 x 3 | not built |  |
 | [`forensic_glass_identification`](forensic_glass_identification/) | IID | 214 | 9 | 20 x 3 | `01a111fc-a27d-7f21-999e-eb82f18aaf21` |  |
-| [`forest_fires`](forest_fires/) | IID | 517 | 12 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
+| [`forest_fires`](forest_fires/) | grouped | 517 | 12 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`framingham_heart_study_fhs`](framingham_heart_study_fhs/) | IID | 4,224 | 15 | 3 x 3 | not built |  |
 | [`fraud_detection_in_electricity_and_gas_consumption_1m`](fraud_detection_in_electricity_and_gas_consumption_1m/) | grouped (per group: mean) | 1,500,000 | 18 | 1 x 3 | not built |  |
 | [`g_research_crypto_forecasting_1m`](g_research_crypto_forecasting_1m/) | temporal | 2,501,039 | 27 | 3 x 1 | not built |  |

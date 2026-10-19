@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (forest_fires: day-grouped splits)
+
+- `forest_fires`: grouped splits by day instead of random ones. The data has no date, but the station computes the
+  Fire Weather Index values FFMC, DMC, DC and ISI once a day, so fires with the same four values burned on the same day:
+  517 fires on 227 days (the largest 10 fires), 78% sharing their day. On random splits TabPFN-3.5 beats the training
+  mean a little (R^2 0.012, above all 200 shuffles of the labels, p = 0.005); split by day it does not (R^2 -0.002;
+  p = 0.16 against shuffles on the same splits). The use case sizes a fire from that day's weather, with no fire of
+  that day in training. The new `fire_day` column (anonymised) holds the groups and is not a feature;
+  `ForcedIIDFromTemporal` is dropped, and `task_summary`, `curation_comments` and the grouping definition say why.
+  Rows and features unchanged. Follows Andrej's review of the record
+  [`curation/records/forest_fires.md`](../../../curation/records/forest_fires.md), which suggests retiring it for no
+  signal under this split; evidence in `~/claude_jobs/forest_fires_review/`. The task-probe rule on small signals
+  (`.claude/skills/verify-dataset/references/task_probes.md`) now asks for shuffled labels on the use case's split.
+  Checked, not rebuilt; the build is stale.
+
 ## 2026-10-19 (ecoli_proteins: `aac` dropped)
 
 - `ecoli_proteins`: `aac` is dropped (5 features, not 6). It is the score of a discriminant analysis fitted to the

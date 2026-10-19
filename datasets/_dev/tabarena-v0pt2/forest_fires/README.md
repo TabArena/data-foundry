@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548
+checksum: v2:c8e61f12626360c4d3c45166a8d982bcbdf8344ecd6bdaaea089ae48e9a87e76
 build:
   uuid: 01a111fc-a4a0-72df-82ce-c3f0eed0000e
   checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
@@ -22,7 +22,7 @@ data:
   n_rows: 517
   n_features: 12
   dtypes:
-    category: 2
+    category: 3
     float64: 8
     int64: 3
   n_test_dataset_rows: null
@@ -30,13 +30,20 @@ task:
   target: area
   problem_type: regression
   metric: rmse
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: fire_day
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 227
+    test_groups_per_fold:
+      min: 75
+      max: 76
 splits:
   n_repeats: 20
   n_folds: 3
@@ -44,11 +51,11 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 344
-    max: 345
+    min: 316
+    max: 377
   n_test:
-    min: 172
-    max: 173
+    min: 140
+    max: 201
 bundle_checks:
   ok: true
   errors: []
@@ -64,9 +71,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `area`, scored with `rmse` on IID splits. 517 rows and 12 features. Source: UCI (2008).
+Regression of `area`, scored with `rmse` on grouped splits by `fire_day`. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c8e61f12626360c4d3c45166a8d982bcbdf8344ecd6bdaaea089ae48e9a87e76`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -80,9 +87,9 @@ Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** The fire's square on a grid map of the park, the month and weekday, four components of the Canadian fire weather index, and the temperature, humidity, wind and rain.
 
-**What the test data stands for.** Random fires, so the test data stands for other fires of the same years; the year is not in the data.
+**What the test data stands for.** Whole fire days are held out (fires sharing the day's fire weather index values), so the test data stands for fires on days the model has not seen; the year is not in the data.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Fires from several years are split at random because the data holds only month and weekday, so a split by time is impossible. When the weather values were read relative to the fire is not stated. The signal is small.
+> **Use case fit: approximate (a stand-in with a known gap).** The days are reconstructed from the daily fire weather index values, since the data has no date, and test days come from the same years rather than later ones. Under this split the models do not beat the training mean.
 
 ## Files in this folder
 
@@ -124,18 +131,20 @@ Only curators run `build`, when the dataset ships.
 | year | 2008 |
 | domain | environmental science & climate |
 | license | CC BY 4.0 |
-| data_tags | IID, Spatial, ForcedIIDFromTemporal |
+| data_tags | Non-IID, Grouped, Spatial |
 | reference | cortez2007data |
-| rows x columns | 517 x 13 |
+| rows x columns | 517 x 14 |
 | task.target | area |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | fire_day |
+| task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `month`, `day`
+- categorical (3): `fire_day`, `month`, `day`
 - string (0): none
 - datetime (0): none
 
@@ -157,97 +166,123 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 517 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 517 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
 
 | area | X | Y | month | day | FFMC | DMC | DC | ISI | temp | RH | wind |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2 | 2 | aug | mon | 91.1 | 103.2 | 638.8 | 5.8 | 23.1 | 31 | 3.1 |
-| 3.41707 | 4 | 4 | sep | sun | 92.4 | 124.1 | 680.7 | 8.5 | 16.9 | 60 | 1.3 |
-| 2.39425 | 7 | 4 | feb | mon | 84.7 | 9.5 | 58.3 | 4.1 | 7.5 | 71 | 6.3 |
-| 0 | 5 | 4 | apr | sun | 91 | 14.6 | 25.6 | 12.3 | 17.6 | 27 | 5.8 |
-| 2.12346 | 4 | 3 | jul | sun | 93.7 | 101.3 | 423.4 | 14.7 | 26.1 | 45 | 4 |
+| 1.86253 | 8 | 6 | oct | mon | 84.9 | 32.8 | 664.2 | 3 | 19.1 | 32 | 4 |
+| 2.68785 | 8 | 6 | oct | wed | 91.4 | 37.9 | 673.8 | 5.2 | 20.2 | 37 | 2.7 |
+| 0 | 3 | 5 | mar | tue | 88.1 | 25.7 | 67.6 | 3.8 | 14.9 | 38 | 2.7 |
+| 0 | 8 | 6 | mar | fri | 91.7 | 33.3 | 77.5 | 9 | 8.3 | 97 | 4 |
+| 0 | 1 | 2 | sep | thu | 92.9 | 137 | 706.4 | 9.2 | 25.4 | 27 | 2.2 |
 
 ## Curation notes
 
 We start with the data from UCI.
 
-- The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
+- The original paper used random 10-fold cross-validation. The data does not contain dates, only month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2), so a split by time is impossible. A split by day is possible, and we use it (see below), which marks the task as Non-IID, so there is no ForcedIIDFromTemporal tag. The task in the paper was also about feature selection (so scientific discovery).
+- Day-grouped splits (2026-10-19), not random ones. FFMC, DMC, DC and ISI are the station's daily values of the Canadian Fire Weather Index (moisture codes of the fine fuel, the duff layer and deep drought, each carried over from the previous day, and the spread index computed from FFMC and the day's wind), so fires with the same four values burned on the same day: 517 fires on 227 days, the largest 10 fires, 402 fires sharing their day. Within a day the four values never differ, while temperature, humidity and wind differ on 95-96% of the days with several fires and the map square on 81-86%, so these are separate fires with their own readings. 9 of the 227 days carry two weekdays and 2 of them two months (entry errors or codes carried over); grouping on the codes keeps them together. On random splits TabPFN-3.5 beats the training mean (R^2 0.012, above all 200 shuffles of the labels, p = 0.005), on day-grouped splits it does not (R^2 -0.002 on 60 splits; on 12 of them +0.001, p = 0.16 against 200 shuffles on the same splits): the signal came from fires of the same day on both sides of the split. The use case sizes a fire from that day's weather, and no fire of that day is in the training data. Evidence: `~/claude_jobs/forest_fires_review/`, curation record (Andrej, 2026-10-19).
+- The source itself finds no method better than the mean on RMSE: "The best RMSE was attained by the naive mean predictor" (UCI notes on Cortez and Morais 2007); the paper's best model wins on the mean absolute deviation by predicting small fires better.
 - We log1p scale the target as suggest by the authors.
 - The data contains naturally occurring duplicates.
 
 ## Splits
 
-Default splits.
+Grouped splits on fire_day: all fires of one day (same daily fire weather index values) stay on one side, so a model predicts fires on days it has not seen. Days of the same season can be on both sides. The paper uses random 10-fold cross-validation.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 344 to 345 rows, test 172 to 173 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 316 to 377 rows, test 140 to 201 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 344 | 173 |
-| 0 | 1 | 345 | 172 |
-| 0 | 2 | 345 | 172 |
-| 1 | 0 | 344 | 173 |
-| 1 | 1 | 345 | 172 |
-| 1 | 2 | 345 | 172 |
-| 2 | 0 | 344 | 173 |
-| 2 | 1 | 345 | 172 |
-| 2 | 2 | 345 | 172 |
-| 3 | 0 | 344 | 173 |
-| 3 | 1 | 345 | 172 |
-| 3 | 2 | 345 | 172 |
-| 4 | 0 | 344 | 173 |
-| 4 | 1 | 345 | 172 |
-| 4 | 2 | 345 | 172 |
-| 5 | 0 | 344 | 173 |
-| 5 | 1 | 345 | 172 |
-| 5 | 2 | 345 | 172 |
-| 6 | 0 | 344 | 173 |
-| 6 | 1 | 345 | 172 |
-| 6 | 2 | 345 | 172 |
-| 7 | 0 | 344 | 173 |
-| 7 | 1 | 345 | 172 |
-| 7 | 2 | 345 | 172 |
-| 8 | 0 | 344 | 173 |
-| 8 | 1 | 345 | 172 |
-| 8 | 2 | 345 | 172 |
-| 9 | 0 | 344 | 173 |
-| 9 | 1 | 345 | 172 |
-| 9 | 2 | 345 | 172 |
-| 10 | 0 | 344 | 173 |
-| 10 | 1 | 345 | 172 |
-| 10 | 2 | 345 | 172 |
-| 11 | 0 | 344 | 173 |
-| 11 | 1 | 345 | 172 |
-| 11 | 2 | 345 | 172 |
-| 12 | 0 | 344 | 173 |
-| 12 | 1 | 345 | 172 |
-| 12 | 2 | 345 | 172 |
-| 13 | 0 | 344 | 173 |
-| 13 | 1 | 345 | 172 |
-| 13 | 2 | 345 | 172 |
-| 14 | 0 | 344 | 173 |
-| 14 | 1 | 345 | 172 |
-| 14 | 2 | 345 | 172 |
-| 15 | 0 | 344 | 173 |
-| 15 | 1 | 345 | 172 |
-| 15 | 2 | 345 | 172 |
-| 16 | 0 | 344 | 173 |
-| 16 | 1 | 345 | 172 |
-| 16 | 2 | 345 | 172 |
-| 17 | 0 | 344 | 173 |
-| 17 | 1 | 345 | 172 |
-| 17 | 2 | 345 | 172 |
-| 18 | 0 | 344 | 173 |
-| 18 | 1 | 345 | 172 |
-| 18 | 2 | 345 | 172 |
-| 19 | 0 | 344 | 173 |
-| 19 | 1 | 345 | 172 |
-| 19 | 2 | 345 | 172 |
+| 0 | 0 | 353 | 164 |
+| 0 | 1 | 316 | 201 |
+| 0 | 2 | 365 | 152 |
+| 1 | 0 | 342 | 175 |
+| 1 | 1 | 335 | 182 |
+| 1 | 2 | 357 | 160 |
+| 2 | 0 | 354 | 163 |
+| 2 | 1 | 334 | 183 |
+| 2 | 2 | 346 | 171 |
+| 3 | 0 | 341 | 176 |
+| 3 | 1 | 338 | 179 |
+| 3 | 2 | 355 | 162 |
+| 4 | 0 | 340 | 177 |
+| 4 | 1 | 363 | 154 |
+| 4 | 2 | 331 | 186 |
+| 5 | 0 | 341 | 176 |
+| 5 | 1 | 344 | 173 |
+| 5 | 2 | 349 | 168 |
+| 6 | 0 | 320 | 197 |
+| 6 | 1 | 377 | 140 |
+| 6 | 2 | 337 | 180 |
+| 7 | 0 | 319 | 198 |
+| 7 | 1 | 356 | 161 |
+| 7 | 2 | 359 | 158 |
+| 8 | 0 | 321 | 196 |
+| 8 | 1 | 361 | 156 |
+| 8 | 2 | 352 | 165 |
+| 9 | 0 | 365 | 152 |
+| 9 | 1 | 330 | 187 |
+| 9 | 2 | 339 | 178 |
+| 10 | 0 | 317 | 200 |
+| 10 | 1 | 340 | 177 |
+| 10 | 2 | 377 | 140 |
+| 11 | 0 | 363 | 154 |
+| 11 | 1 | 354 | 163 |
+| 11 | 2 | 317 | 200 |
+| 12 | 0 | 353 | 164 |
+| 12 | 1 | 361 | 156 |
+| 12 | 2 | 320 | 197 |
+| 13 | 0 | 350 | 167 |
+| 13 | 1 | 330 | 187 |
+| 13 | 2 | 354 | 163 |
+| 14 | 0 | 351 | 166 |
+| 14 | 1 | 356 | 161 |
+| 14 | 2 | 327 | 190 |
+| 15 | 0 | 321 | 196 |
+| 15 | 1 | 364 | 153 |
+| 15 | 2 | 349 | 168 |
+| 16 | 0 | 335 | 182 |
+| 16 | 1 | 357 | 160 |
+| 16 | 2 | 342 | 175 |
+| 17 | 0 | 338 | 179 |
+| 17 | 1 | 341 | 176 |
+| 17 | 2 | 355 | 162 |
+| 18 | 0 | 368 | 149 |
+| 18 | 1 | 329 | 188 |
+| 18 | 2 | 337 | 180 |
+| 19 | 0 | 324 | 193 |
+| 19 | 1 | 351 | 166 |
+| 19 | 2 | 359 | 158 |
 
 </details>
+
+## Group structure
+
+One group is a day: the fires with the same daily fire weather index values (FFMC, DMC, DC, ISI), which the park's weather station computes once a day (Cortez and Morais 2007, Sec. 2). The data has no date, so the day is reconstructed from these values. The use case is sizing a new fire from that day's weather to send crews, and no fire of the same day is known then, so whole days are held out; the paper split fires at random. Each fire is one prediction, made from its own row.
+
+| field | value |
+|---|---|
+| group column | `fire_day` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 227 |
+| rows per group (min / median / max) | 1 / 1.0 / 10 |
+| largest group | 1.9% of the rows |
+| test groups per fold | 75 to 76 |
+| groups of two or more rows with a single label | 16.1% |
+| nearest neighbour in the same group | 25.7% of the rows (chance: 0.5%) |
+| label variance explained by the group | 0.43 (shuffled groups: 0.38) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -261,23 +296,24 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | month | category | 0 | 0 | 12 | aug, sep, mar, jul, feb, jun, oct, apr, dec, jan |
 | day | category | 0 | 0 | 7 | sun, fri, sat, mon, tue, thu, wed |
-| FFMC | float64 | 0 | 0 | 106 | 92.1, 91.6, 91.0, 91.7, 93.7, 92.4, 92.5, 94.8, 90.1, 90.2 |
-| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 142.4, 231.1, 126.5, 35.8, 108.4, 108.3, 137.0, 152.6 |
-| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 601.4, 715.1, 692.3, 698.6, 686.5, 706.4, 764.0, 647.1 |
-| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 9.0, 8.1 |
-| temp | float64 | 0 | 0 | 192 | 19.6, 17.4, 20.6, 15.4, 21.9, 15.2, 18.2, 23.4, 20.1, 19.1 |
-| wind | float64 | 0 | 0 | 21 | 3.1, 2.2, 4.0, 4.9, 2.7, 5.4, 4.5, 3.6, 1.8, 5.8 |
-| rain | float64 | 0 | 0 | 7 | 0.0, 0.8, 0.2, 1.4, 6.4, 1.0, 0.4 |
-| area | float64 | 0 | 0 | 251 | 0.0, 1.0784, 2.3943, 3.3898, 0.6419, 1.5497, 0.9708, 1.0818, 0.4187, 2.0055 |
+| fire_day | category | 0 | 0 | 227 | ccf91ee8a91f, 15d5b1d937eb, 5a2b537da7d6, d537d01ab1fe, 4ec3594f402e, 50d572cbf… |
+| FFMC | float64 | 0 | 0 | 106 | 91.6, 92.1, 91.0, 91.7, 93.7, 92.4, 92.5, 94.8, 90.1, 92.9 |
+| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 142.4, 231.1, 108.3, 35.8, 137.0, 126.5, 108.4, 85.1 |
+| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 692.3, 601.4, 715.1, 698.6, 686.5, 80.8, 706.4, 764.0 |
+| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 8.1, 9.0 |
+| temp | float64 | 0 | 0 | 192 | 19.6, 17.4, 20.6, 15.4, 20.7, 21.6, 20.1, 19.1, 4.6, 15.2 |
+| wind | float64 | 0 | 0 | 21 | 2.2, 3.1, 4.0, 4.9, 2.7, 4.5, 5.4, 3.6, 1.8, 5.8 |
+| rain | float64 | 0 | 0 | 7 | 0.0, 0.2, 0.8, 1.4, 1.0, 6.4, 0.4 |
+| area | float64 | 0 | 0 | 251 | 0.0, 1.0784, 2.4899, 2.3943, 0.5188, 0.94, 0.4187, 1.1442, 1.1569, 2.0055 |
 | X | int64 | 0 | 0 | 9 | 4, 6, 2, 8, 7, 3, 1, 5, 9 |
 | Y | int64 | 0 | 0 | 7 | 4, 5, 6, 3, 2, 9, 8 |
-| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 34, 45, 33, 40, 46 |
+| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 34, 45, 40, 33, 46 |
 
 </details>
 
@@ -310,6 +346,9 @@ Default splits.
 
 ### Categorical features
 
+<details>
+<summary>Show the table (15 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | day | 1 | sun | 95 | 18.38 |
@@ -317,11 +356,18 @@ Default splits.
 | day | 3 | sat | 84 | 16.25 |
 | day | 4 | mon | 74 | 14.31 |
 | day | 5 | tue | 64 | 12.38 |
+| fire_day | 1 | ccf91ee8a91f | 10 | 1.93 |
+| fire_day | 2 | 15d5b1d937eb | 9 | 1.74 |
+| fire_day | 3 | 5a2b537da7d6 | 8 | 1.55 |
+| fire_day | 4 | d537d01ab1fe | 8 | 1.55 |
+| fire_day | 5 | 4ec3594f402e | 7 | 1.35 |
 | month | 1 | aug | 184 | 35.59 |
 | month | 2 | sep | 172 | 33.27 |
 | month | 3 | mar | 54 | 10.44 |
 | month | 4 | jul | 32 | 6.19 |
 | month | 5 | feb | 20 | 3.87 |
+
+</details>
 
 ## Build
 
@@ -334,4 +380,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a5a9706f93338733e9895ffae46a6873a1b81fd075679d747404ffcf83745548` |
+| stale | yes: the definition now gives checksum `v2:c8e61f12626360c4d3c45166a8d982bcbdf8344ecd6bdaaea089ae48e9a87e76` |
