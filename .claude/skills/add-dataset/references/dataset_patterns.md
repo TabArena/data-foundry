@@ -320,8 +320,13 @@ with minimal information loss, or for reconstructing meaning the source destroye
 quantiles, ranked, projected (PCA) or batch-corrected over the whole table depend on the test rows, a transductive
 leak even without labels (Lennart, 2026-10-16: coad_colon_adenocarcinoma, z-scored over all 260 patients, retired).
 Every column of a block with mean 0 and SD 1, or min 0 and max 1, is the sign. Take the unprocessed values when the
-source has them (a per-row unit such as TPM is fine); otherwise the record goes back to the curator. Our own `_clean`
-never computes a statistic over all rows into a feature.
+source has them (a per-row unit such as TPM is fine); otherwise keep the data with a `Potential leak, kept on purpose:`
+bullet. It is a reason for `No` only when a strong leak is suspected (Lennart, 2026-10-19: bioresponse,
+taiwanese_bankruptcy_prediction and the TabReD datasets kept). Our own `_clean` never computes a feature value from a
+statistic over all rows; take it from the history before the oldest test window, or drop it (sf_permit_time,
+home_credit_default_risk). Choosing which columns or categories to keep by counts over the whole table (the most
+frequent codes, columns asked in one year only) is ordinary cleaning; in a temporal task, say in the notes that it is a
+pipeline choice that approximates the task (rosbank1, alfa_battle_2_0_task_2, anes_voting_2026).
 
 **Keep every relevant feature, however wide the table.** Width is no reason to drop a block or to propose a narrower
 version, and no model's input limit or runtime (Mitra's feature cap or any other) is an argument in a curation

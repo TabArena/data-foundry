@@ -66,6 +66,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
 
+        - Potential leak, kept on purpose: TabReD releases the 217 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 152 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a delivery time under one minute (386k of 17.0M, 2.3%), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
         - We drop a duplicated column `cat_2` in the preprocessing.

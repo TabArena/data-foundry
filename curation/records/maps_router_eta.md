@@ -36,6 +36,8 @@ TabRed, 1 week horizon.
 
 Not much more, need to follow preprocessing from TabRed most likely.
 
+CC (2026-10-19, Lennart): TabReD's quantile transform of the numeric features may be fit on all rows (undocumented); kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
+
 ## Reference
 
 TabRed

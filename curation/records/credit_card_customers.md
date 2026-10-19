@@ -41,6 +41,8 @@ Remove NB features
 
 **Assessment (AI, 2026-10-07):** Recommend No + AHDS + Missing source information; the curator has the call. The data is a teaching case of Analyttica's LEAPS platform (sample case 11; material not archived; the platform calls another case's data "a dummy dataset"). The activity columns do not come from one transaction history. The 12-month count equals the Q4 plus the Q1 count in every row (shuffled totals: about 550 of 10,127; Home Credit card statements: 9 of 8,920). Inactive months are unrelated to it (Spearman -0.05; Home Credit -0.60). Education carries nothing beyond the label. Tenure in months tracks age in years (r 0.89), and no woman earns above $60K (0 of 5,358).
 
+CC (2026-10-19, Lennart): Credit_Limit and Total_Revolving_Bal are clipped at percentiles of the whole file; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
+
 ## Reference
 
 Kaggle / Broken Website

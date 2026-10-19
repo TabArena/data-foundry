@@ -39,6 +39,8 @@ Lennart: Not time-based features, thus could be usable
 
 Andrej: Need to verify correct lag between features and target
 
+CC (2026-10-19, Lennart): 67 numeric columns are min-max scaled over all companies; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
+
 ## Reference
 
 Liang, D., Lu, C.-C., Tsai, C.-F., and Shih, G.-A. (2016) Financial Ratios and Corporate Governance Indicators in Bankruptcy Prediction: A Comprehensive Study. European Journal of Operational Research, vol. 252, no. 2, pp. 561-572

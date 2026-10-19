@@ -251,6 +251,10 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   train/test split, so it leaks the test distribution irreversibly. E.g. `yeast` ships a column *"Score of
   discriminant analysis of the amino acid content of vacuolar and extracellular proteins"* — a DA fit on
   the full dataset, already baked in and unfixable → leak → **No**.
+  An *unsupervised* scaling over all rows (z-scores, min-max, a quantile transform, RMA) also carries the test
+  rows into every value, but it is a weak leak that real data often come with: rebuild from unprocessed values
+  when the source has them (coad_colon_adenocarcinoma, retired for a GDC rebuild), otherwise keep the dataset
+  with a note. It is a reason for **No** only when a strong leak is suspected (Lennart, 2026-10-19).
 * **Too small** to evaluate meaningfully → `Too Small` → **No** or `TBD -> 2nd Tier`. That means a handful of
   units of a class per test fold and in total, counted in the unit the task is scored on (parkinsons: 8 healthy
   people, 2-3 per fold; retired 2026-10-05), not a small dataset as such (musk: 102 molecules, 13 musk per fold;

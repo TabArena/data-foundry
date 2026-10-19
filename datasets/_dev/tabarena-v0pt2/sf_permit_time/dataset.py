@@ -19,6 +19,9 @@ from data_foundry.v2 import (
 SECONDS_PER_DAY = 86_400
 # Half-year test windows; train is the permits filed at least six months before the window starts
 WINDOWS = TemporalSplits(window=6, unit="months", gap=6, min_train_fraction=0.5)
+# The start of the oldest test window: descriptions are counted over the permits filed before it, known in every window
+PHRASE_HISTORY_END = pd.Timestamp("2020-01-01")
+STANDARD_PHRASE_COUNT = 100  # a description filed more than this many times by then is a standard phrase
 
 
 def _issued(df: pd.DataFrame) -> pd.Series:
@@ -128,7 +131,7 @@ class SfPermitTime(AbstractCuratedDataset):
         - Cohort: no miscellaneous permits (numbers starting with "M"); they are approved automatically or very fast and shift the distribution.
         - Cohort: issued or complete permits (Current Status), one per primary address (Primary Address Flag, as in the portal's deduplicated table) and with a location; a permit without one is a data error.
         - We drop the dates recorded after filing (Issued, Completed, First Construction Document, approved_date, Current Status and Last Permit Activity dates), Current Status, Revised Cost (most likely set at plan review), the ordinal codes of Permit Type and the construction types, Permit Creation Date (a system log date), ADU (deprecated from 2025), Record ID, Permit Number and the portal's load metadata.
-        - Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions that occur more than 100 times. Nearly empty columns (some with 20 values) stay for the pipeline to handle.
+        - Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions filed more than 100 times before 2020, the start of the oldest test window, so it counts no filing of a test window (until 2026-10-19 it counted the whole table). Nearly empty columns (some with 20 values) stay for the pipeline to handle.
         - Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
         - Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
     """
@@ -164,9 +167,10 @@ class SfPermitTime(AbstractCuratedDataset):
         df = df[df["Current Status"].isin(["issued", "complete"])]
         df = df[df["Primary Address Flag"] == "Y"]
         df = df[~df["Location"].isna()]
-        df["DescriptionIsStandardPhrase"] = df["Description"].isin(
-            df["Description"].value_counts(dropna=False)[df["Description"].value_counts(dropna=False) > 100].index
-        )
+        # Standard phrases: descriptions filed more than 100 times before the oldest test window, so no window's flag
+        # depends on its own or later filings
+        counts = df.loc[pd.to_datetime(df["Filed Date"]) < PHRASE_HISTORY_END, "Description"].value_counts(dropna=False)
+        df["DescriptionIsStandardPhrase"] = df["Description"].isin(counts.index[counts > STANDARD_PHRASE_COUNT])
         # Location is WKT "POINT (longitude latitude)"
         df["Location_Longitude"] = df["Location"].apply(lambda x: str(x).split("(")[-1].split(" ")[0]).astype(float)
         df["Location_Latitude"] = (
@@ -242,7 +246,9 @@ class SfPermitTime(AbstractCuratedDataset):
 
     def _make_splits(self, df: pd.DataFrame) -> Splits:
         """Half-year windows after a six-month gap; train keeps only the permits issued before the window starts."""
-        splits, _ = _label_known_windows(df)
+        splits, windows = _label_known_windows(df)
+        oldest = pd.Timestamp(windows.index.min())
+        assert oldest >= PHRASE_HISTORY_END, f"the oldest window starts {oldest:%Y-%m}, before the phrase history ends"
         return splits
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:

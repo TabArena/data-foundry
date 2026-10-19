@@ -4,6 +4,32 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (scaling over all rows: two definitions fixed, the rest kept with notes)
+
+Lennart's marks on the scan of 2026-10-16 (review page, "Scaling over all rows"). A scaling over all rows is a weak
+leak: rebuild from unprocessed values when the source has them, otherwise keep with a `Potential leak, kept on
+purpose:` note; a reason for `No` only when a strong leak is suspected (rule in the curation guidelines, the leak checks
+and the add-dataset patterns). Edited definitions, not built: their READMEs are stale until the next build.
+
+- `sf_permit_time`: `DescriptionIsStandardPhrase` counts the descriptions filed before 2020, the start of the oldest
+  test window, instead of the whole table (0.66% of the rows flagged instead of 0.77%; `_make_splits` asserts the
+  cutoff). `dataset check`: 0 errors, 0 warnings.
+- `home_credit_default_risk`: no statistic over all rows. The kernel's `NEW_INC_BY_ORG` is dropped, `NEW_SCORES_STD`
+  stays missing instead of its mean, and the kernel's importance-based feature selection (LightGBM on all labelled
+  rows) is removed, so 709 features ship instead of 504. Constant columns and exact copies are dropped (mostly shares
+  of the one-hot "nan" category), min/max of one-hot flags become 0/1, inf becomes missing in every numeric column,
+  and `FLAG_OWN_CAR` is categorical. The kernel's transductive setting may be revisited. Its 43 normalised building
+  columns are kept with a note.
+- Kept with a `Potential leak, kept on purpose:` note: `bioresponse` and `taiwanese_bankruptcy_prediction` (min-max
+  over all rows), `credit_card_customers` (clipped at whole-file percentiles), `cooking_time_1m`, `delivery_eta_1m`
+  and `maps_router_eta_1m` (TabReD's quantile transform, fit rows undocumented), `lung_cancer_epithelial_genexp` (RMA).
+- `rosbank1`, `alfa_battle_2_0_task_2`, `anes_voting_2026`: the notes say that choosing codes or questions over all
+  rows is a pipeline choice that approximates the task.
+- `ieee_fraud_detection` and `kdd_cup_09_appetency` tagged `Anonymized` (their features are masked), as the other
+  datasets with undocumented transforms are.
+- `sarcoma` record: rebuild the methylation block from the GDC in the next pass.
+- `college_scorecard` ships (Lennart's verdict on the review page; record `CC` line). Not built yet.
+
 ## 2026-10-16 (the gap between train and test is stored; coad, corporate_credit_rating and lgg retired; college_scorecard SAT back on one scale)
 
 - Split metadata: new `time_gap` / `time_gap_unit` next to the horizon (Lennart's mark on college_scorecard, issue 9).

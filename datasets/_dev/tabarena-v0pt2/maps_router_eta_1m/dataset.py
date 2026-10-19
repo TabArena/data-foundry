@@ -63,6 +63,8 @@ class MapsRouterEta1m(AbstractCuratedDataset):
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
         We perform no additional preprocessing steps.
+
+        - Potential leak, kept on purpose: TabReD releases the 984 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 624 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
     """
 
     # Task

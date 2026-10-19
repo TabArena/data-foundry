@@ -67,6 +67,7 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         - We drop the constant column "Net_Income_Flag".
         - We drop two duplicated features (same values as other features).
         - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
+        - Potential leak, kept on purpose: 67 of the 91 non-binary numeric columns have a minimum of exactly 0 and a maximum of exactly 1 over the 6,819 companies, a min-max scaling over all rows that UCI does not document; the Taiwan Economic Journal's raw data are commercial. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if unscaled data appear.
         - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
         - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
           year, so the split stays random.

@@ -291,7 +291,11 @@
       encoding, or a model's own prediction). Such a feature bakes label / whole-set information into every row and
       cannot be recomputed per train/test split, so the leak is irreversible. Example: <code>yeast</code> ships a
       "Score of discriminant analysis of the amino acid content of vacuolar and extracellular proteins" column — a DA
-      fit on the full dataset, baked in and unfixable.</li>
+      fit on the full dataset, baked in and unfixable. An <em>unsupervised</em> scaling over all rows (z-scores,
+      min-max, a quantile transform, RMA) also carries the test rows into every value, but it is a weak leak that real
+      data often come with: rebuild from unprocessed values when the source has them (<code>coad_colon_adenocarcinoma</code>,
+      retired for a GDC rebuild), otherwise keep the dataset with a note. It is a reason for exclusion only when a
+      strong leak is suspected (2026-10-19).</li>
       <li><strong>(E) Insufficient information</strong> — when a prolonged investigation fails to find source
       information needed to judge the criteria, it is the curation team's call whether to use it.</li>
     </ul>
