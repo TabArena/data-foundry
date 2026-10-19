@@ -91,6 +91,18 @@ SELECTED_INPUTS = 500
 """The inputs ``selected_linear`` keeps, chosen by a univariate F-test on each train side."""
 
 
+FLAG_RULES = {
+    "no_signal": "TP-1, TP-2",
+    "solved": "TP-6, TP-4",
+    "no_spread": "TP-3",
+    "one_feature": "TP-4",
+    "drift_baseline": "TP-1, TP-2",
+    "unstable": "TP-1, TP-5",
+    "few_minority": "TP-5, TP-8",
+}
+"""The rules of ``task_probes.md`` that answer each flag; its readings, highest rank first, are in ``evidence.md``."""
+
+
 def linear_inputs(categorical: list[str]) -> ColumnTransformer:
     """The linear family's inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled.
 
@@ -429,4 +441,5 @@ def run(  # noqa: C901, PLR0912, PLR0913
         "smallest_class_per_test_fold": int(smallest.min()) if len(smallest) else None,
         "few_minority_classes": few,
         "flags": flags,
+        "flag_rules": {flag: FLAG_RULES[flag] for flag in flags},
     }

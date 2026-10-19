@@ -2,8 +2,8 @@
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/minimal_inputs.py <out_dir> links <warehouse_dir>
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/minimal_inputs.py <out_dir> zip <out.zip>
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/minimal_inputs.py <out_dir> links <warehouse_dir>
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/minimal_inputs.py <out_dir> zip <out.zip>
 
 ``<out_dir>`` is a full ``build_all.py`` run: the inputs are the files each build read (``read``) plus what the
 ``_prepare_raw_files`` steps read (``prepare_read``), so the prepared files can be regenerated from the archive too.

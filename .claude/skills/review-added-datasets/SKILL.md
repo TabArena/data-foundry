@@ -1,23 +1,27 @@
 ---
 name: review-added-datasets
-description: Build the curator's review page from the open review issues of the working copy (each dataset folder's REVIEW.md, the open-issue blocks of records without a folder, the cross-dataset REVIEW.md), with one verdict per dataset, marks per open issue, the use case first, then the decisions, dataset.py, README and curation record, as a local HTML file or a Claude artifact; then read the curator's decisions back and apply them. Use after a batch run of /add-dataset, when the curator wants to review the open issues of the working copy, or when they ask to apply, rebuild or republish such a review page.
+description: "The curator's review of what /add-dataset did: builds the review page from the open review issues of the working copy (each dataset folder's REVIEW.md with its review-panel reports, the open-issue blocks of records without a folder, the cross-dataset REVIEW.md), with one verdict per dataset and marks per open issue, as a local HTML file or a Claude artifact; then reads the curator's decisions back, checks each against the rules and similar past decisions (asking the curator to reflect when one looks inconsistent) and applies them. Use after /add-dataset, when the curator wants to review the open issues of the working copy, or asks to apply, rebuild or republish such a review page."
 argument-hint: "[--names a,b]"
 user-invocable: true
 ---
 
 # Review added datasets
 
-The last step before anything is built or shipped. `/add-dataset` leaves the questions it cannot settle for the
-curator in the dataset folder's `REVIEW.md` (a record it did not add keeps them in an open-issues block of the record).
-This skill collects all open issues into one page, the curator decides on the page, and Claude applies the decisions;
-only then are the accepted datasets built (`/rebuild-working-copy`). The format of the review files, and of the report
+Stage 2, the curator's half ([pipeline.md](../knowledge-data-foundry/references/pipeline.md)), and the last step before
+anything is built or shipped. `/add-dataset` leaves the questions it cannot settle for the curator in the dataset
+folder's `REVIEW.md`, ranked, with the review panel's reports below them (a record it did not add keeps its questions
+in an open-issues block of the record). This skill collects all open issues into one page, the curator decides on the
+page, and Claude checks and applies the decisions; only then are the accepted datasets built, when the curator asks
+([rebuild.md](../knowledge-data-foundry/references/rebuild.md)). How decisions are ranked and when an exception is
+reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the review files, and of the report
 the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files live
 and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
 The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; the
 tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
-disagree with the definition), Details (the outcome and the record judgment), `dataset.py`, the generated `README.md`
-and the curation record; below the tabs, the verdict box. Other views: the issues that span datasets, and a summary
+disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the
+record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
+recommendation and the verdict box. Other views: the issues that span datasets, and a summary
 of all verdicts. The page embeds a snapshot of every file at build time.
 
 ## Step 1: Build the page
@@ -78,8 +82,20 @@ again before each round; the curator keeps working while Claude applies. Read th
 back (an `updatedAt` filter is enough): a verdict set while Claude applied the item marks would otherwise go unseen
 (caracas_cervical_cancer, 2026-10-15). Write Claude's notes with `if_version`, so a newer mark is never overwritten.
 
-## Step 4: Apply them
+## Step 4: Check, then apply them
 
+**First, the consistency check** ([principles.md](../knowledge-curation/references/principles.md), "Consistent
+judgement"). Run `.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/decision_register.py` and give the
+`precedent-checker` agent the marks of this round (the verdicts, the item marks with their notes) with the register's
+output. A mark that departs from a rule without a fact that sets the case apart, contradicts a similar precedent,
+drifts from the curator's earlier calls on the same rule, or is the third exception of its kind gets the short
+reflection prompt: on the page as an `**Answer (AI, <date>):**` in the issue (Step 5) and in chat, one per decision.
+Apply that mark only once the curator has answered; apply the others now. Never change a mark yourself.
+
+* **A departure the curator confirms** is written as `**Exception to <ID> (<date>, <curator>):**` with the fact that sets
+  the case apart and the higher principle it serves, in the record and in the dataset's notes, and as a row of kind
+  `exception` in the Cases table of the rule's file. A departure the curator calls general is an amendment: the rule's
+  text changes in its knowledge file. A precedent the curator reopens gets an issue of its own.
 * **Every mark:** do what the mark and its note say; when a note asks a question, answer it on the page (Step 5)
   before changing anything. A settled issue's decision goes into `dataset.py` (code and `curation_comments`) and into
   the record: the curator's decision as a dated `CC (<date>, <curator>):` line (the curator's words or a faithful
@@ -105,7 +121,8 @@ back (an `updatedAt` filter is enough): a verdict set while Claude applied the i
 
 Every change to the working copy gets its dated `CHANGELOG.md` entry, and a removed dataset leaves the README table
 ([working_copy.md](../knowledge-data-foundry/references/working_copy.md)). Run `pytest -q`, `ruff` on changed Python
-and `validate` before offering the commit; commits and pushes need the curator's ask.
+and `validate` before offering the commit; commits and pushes need the curator's ask. When the session ends, offer the
+register's report on the decisions of the day (`decision_register.py --since <date>`).
 
 ## Step 5: Update the page
 

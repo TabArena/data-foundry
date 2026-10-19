@@ -23,9 +23,10 @@ folds a random forest (ROC AUC 0.883) matches a Tanimoto nearest-neighbour model
      label, and a test parent is still never in train.
    - **Verification:** closed in favour of what is implemented. The drop is class-neutral (33 of 741 very toxic rows,
      4.5%, against 466 of 8,251, 5.6%; the positive share moves from 8.24% to 8.34%), and it is exactly what
-     `leak_checks.md` §5 prescribes (exact copies with one label dropped as in wine_quality, every copy of a both-class
-     vector dropped as in jm1). The 11 conflicting vectors are real chemistry rather than label noise, so they are
-     unpredictable from the bits either way, and 22 of 8,515 rows cannot move the score.
+     `leak_checks.md`, Copies across the split (LEAK-16 to LEAK-21), prescribes (exact copies with one label dropped as
+     in wine_quality, every copy of a both-class vector dropped as in jm1). The 11 conflicting vectors are real
+     chemistry rather than label noise, so they are unpredictable from the bits either way, and 22 of 8,515 rows cannot
+     move the score.
 
 2. **Random split, while the score depends on close analogs.**
    - Question: is the IID split what you want for a QSAR set?
@@ -42,8 +43,9 @@ folds a random forest (ROC AUC 0.883) matches a Tanimoto nearest-neighbour model
      (692 distinct clusters for 708 very toxic chemicals at Tanimoto 0.9, largest cluster 6 rows overall), and both
      classes have the same analog density, so the similarity gradient is the applicability domain every QSAR model has.
      Both source protocols are random, and the project's is structure-blind on purpose. After the deduplication no
-     chemical occurs twice, so there is no repeated entity to hold out, and a similarity-threshold cluster is barred as
-     a group key (`leak_checks.md` §5). The `curation_comments` "Note" bullet now carries these numbers.
+     chemical occurs twice, so there is no repeated entity to hold out (`leak_checks.md`, Copies across the split
+     (LEAK-16 to LEAK-21)), and a similarity-threshold cluster is barred as a group key (`splits.md`, SPLIT-24). The
+     `curation_comments` "Note" bullet now carries these numbers.
 
 3. **Only the calibration part of the VT data is on UCI.**
    - Question: extend the dataset with the project's evaluation set?

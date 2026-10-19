@@ -4,6 +4,42 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (curation commands renamed and mirrored, a review panel, ranked rules)
+
+Lennart asked for descriptive commands for what curators use, documentation for people, a quick screening stage with a
+priority, an add stage that attacks each dataset before the curator sees it, and an order of importance for the rules.
+No definition or container changed and nothing was built.
+
+- The commands: two stages, in each the AI works and the curator verifies. `/screen-candidates` (was
+  `/triage-candidates`) makes a quick pass from the source, rejects the obvious cases after an agent argued against
+  each reject, and sets a new record field `priority` (1-5); `/review-screened-candidates` opens the dashboard's new
+  Screening queue. `/add-dataset` adds a review panel of agents after its checks (claim, column and split auditors, a
+  domain practitioner, a blind reviewer without our notes, a precedent checker, an advocate and a critic, a mediator,
+  an editor) and writes its reports into a `**Review panel:**` block of `REVIEW.md`, shown in a Panel tab of the
+  review page; it also re-checks an existing folder ("is X ready?"). `/review-added-datasets` checks every mark for
+  consistency with the rules and earlier decisions before applying it. `/check-candidate` is gone (its uses went to
+  the two AI commands), and `/rebuild-working-copy` became `knowledge-data-foundry/references/rebuild.md` with its
+  scripts in that skill's `scripts/`. The agents are in `.claude/agents/`; the overview for people is
+  `.claude/skills/README.md` ("Start here" on the dashboard's Guidelines page).
+- The rules: `knowledge-curation` is ordered like a law book. `principles.md` ranks seven principles (ethics, scope, a
+  real use case, honest evaluation, faithful and unique data, worth benchmarking, the expert state), defines the rule
+  strengths (Must, Should, Weigh), how to decide, the tensions between rules, exceptions and amendments, and the
+  consistency checks on every decision, the curator's included. Every rule has an ID (`SEL`, `USE`, `LEAK`, `SPLIT`,
+  `PROV`, `TP`, `CLEAN`; `task_probes.md` rule N is TP-N, so the citations in the definitions still hold);
+  `evidence.md` holds what counts as evidence and what each probe flag can mean. The task and generated-data probes
+  print the rule next to each flag (`flag_rules` in their JSON); their numbers are unchanged.
+- In this folder: the citations of the old selection criteria and of "leak_checks.md, section 5" in nine `REVIEW.md`
+  files name the rule IDs (e.g. LEAK-16 to LEAK-21 in `qsar_oral_toxicity`); `GETTING_STARTED.md` and the README
+  describe the new commands.
+- The first full review panel ran on `airfoil_self_noise` (a re-check; the definition is unchanged and not rebuilt).
+  Its new `REVIEW.md` holds two issues (hold out runs or setups of one airfoil size at one angle; keep the scaled
+  target or re-target to the measured level), the `year` field row and the panel's reports, and lists the changes
+  that need no decision: `attack-angle` numeric (categorical costs 0.02-0.04 R² on the shipped splits), the target
+  named as the source's eq. 19 scaled level, the 62% figure and the chord reason restated, the BibTeX completed. The
+  year stays 2014: the rows were digitised in 2006 from the NASA report's figures and first published by UCI. The
+  working copy's own `REVIEW.md` is back with one cross-dataset item: the hidden-group probe skips float columns that
+  are not whole numbers.
+
 ## 2026-10-19 (one source for the curation knowledge; `LEAK_AUDIT.md` and `NEW_DATASETS_ISSUES.md` removed)
 
 Lennart asked for one source of truth for the curation knowledge, shared by all skills and the website, and for the

@@ -11,8 +11,8 @@ source documents the clinic, the units or the response (issue 1).
 
 **Issues for Lennart:**
 
-1. **The cohort may not be diabetes patients, and nothing documents it (major; criterion 4E against your recorded
-   acceptance).**
+1. **The cohort may not be diabetes patients, and nothing documents it (major; PROV-1 (criterion 4E) against your
+   recorded acceptance).**
    - Evidence: the paper's only cohort fact is "442 diabetes patients" (Sec. 1, Table 1). Read as fasting plasma glucose
      in mg/dL, `glucose` runs from 58 to 124 (mean 91, a smooth distribution with no cutoff). No patient reaches the
      126 mg/dL threshold, 94 are in 100-125 and 348 below 100. Median BMI is 25.7 and median triglycerides 102 mg/dL,

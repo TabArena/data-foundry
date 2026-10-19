@@ -25,16 +25,22 @@ trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabar
 page of the curation log is the reference (it renders the two knowledge skills, `.claude/skills/knowledge-curation/`
 and `.claude/skills/knowledge-data-foundry/`).
 
-The recommended workflow (October 2026): Claude does the research and the writing, you make the decisions.
+The recommended workflow (October 2026): Claude does the research and the writing, you make the decisions. The
+commands are explained for people in [`.claude/skills/README.md`](../../../.claude/skills/README.md), which the
+dashboard also shows as "Start here".
 
 ```
-1. AI triage          /triage-candidates drafts a verdict for each untriaged record, labelled AI (UNVERIFIED)
-2. You check it       the dashboard's Review pill: verify each AI draft, settle the suggestion (Yes, No, ...)
+1. AI screens         /screen-candidates: a quick pass from the source, a verdict and a priority 1-5 per record,
+                      labelled AI (UNVERIFIED); the obvious rejects are argued against before they are written
+2. You check it       /review-screened-candidates: the dashboard's Screening queue, highest priority first;
+                      accept (Yes), keep for later or reject
 3. AI adds the Yes    /add-dataset on a dashboard filter: per source one agent writes the definition and runs the
-                      checks and probes, a second verifies it; nothing is built; open issues in REVIEW.md
-4. You review it      /review-added-datasets: a page with each dataset's use case, its open issues and
-                      files; you set a verdict per dataset and a mark per issue, Claude applies them
-5. Build              /rebuild-working-copy: new containers (UUIDs), the CHANGELOG entry and the README table
+                      checks and probes, then a review panel of agents attacks it; nothing is built; open issues,
+                      ranked, in REVIEW.md
+4. You review it      /review-added-datasets: a page with each dataset's use case, its open issues, the panel's
+                      reports and files; you set a verdict per dataset and a mark per issue, Claude checks them for
+                      consistency with earlier decisions and applies them
+5. Build              on your ask ("rebuild X"): new containers (UUIDs), the CHANGELOG entry and the README table
 ```
 
 Steps 2 and 4 are yours; Claude never commits, pushes or builds without your go-ahead. Sections 5 and 6 describe
@@ -102,12 +108,12 @@ Settling a record means deciding its verdict: read the sources and comments, dec
 (`suggestion`), flag issues (`decision_markers`), fill in the metadata (problem type, required split, …) and write
 the reasoning into `## Comments`.
 
-**Recommended: Claude drafts, you decide.** In Claude Code, open the repository and run `/triage-candidates`: it
-starts the local dashboard and reads the curation knowledge, so Claude can research the untriaged candidates and
-draft verdicts. Each draft carries `AI (UNVERIFIED)` in `checked_by` and stays in the dashboard's **Review** pill
-(🤖) until you have checked it: read the reasoning, follow the sources it cites, change what you disagree with, and
-verify the row (✓) or put your name in `checked_by`. For a cited second opinion on one record, run
-`/check-candidate <unique_name>`.
+**Recommended: Claude drafts, you decide.** In Claude Code, open the repository and run `/screen-candidates` (on new
+links, names or the untriaged records): Claude researches each candidate from its source, writes what it found into
+the record, rejects the obvious cases and gives the rest a priority. Each draft carries `AI (UNVERIFIED)` in
+`checked_by` until you have checked it. Then run `/review-screened-candidates`: it opens the dashboard's
+**Screening** queue (highest priority first); read the screening block, follow the sources it cites, change what you
+disagree with, and verify the row (✓). For a deeper look at one record, run `/screen-candidates <unique_name>`.
 
 Without Claude, start the dashboard yourself, a spreadsheet-like grid over the records whose edits rewrite the
 markdown files in place:
@@ -139,19 +145,21 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
    "every record with `suggestion = Yes`, `data_foundry_status` without `DF: Yes`, claimed by me, `checked_by` without
    `AI (UNVERIFIED)`" (only records you have checked).
    Per source one agent downloads the data, writes the definition, runs `dataset check` and the leak, task and group
-   probes; a second agent verifies it against the verification checklist, and the first applies each finding or
-   rejects it with evidence. Nothing is built. The open issues for you go, as numbered items, into each dataset
-   folder's `REVIEW.md`.
+   probes and the verification checklist; then a review panel of agents attacks the result (a claim auditor, column
+   and split auditors, a domain practitioner, a blind reviewer that sees none of our notes, a precedent checker, an
+   advocate and a critic, a mediator). Nothing is built. The open issues for you go, ranked and numbered, into each
+   dataset folder's `REVIEW.md`, with the panel's reports below them.
 2. Run `/review-added-datasets`. It builds the review page from the `REVIEW.md` files, a local HTML file or a Claude artifact you can
    share. Each dataset opens on its use case (the `task_summary`), then tabs for your decisions (the issues and the
-   record fields that disagree with the definition), the run's details, `dataset.py`, the generated README and the
-   curation record. Set a verdict per dataset (ship, ship after changes, don't ship, discuss) and a mark per issue
+   record fields that disagree with the definition), the review panel's reports, the run's details, `dataset.py`, the
+   generated README and the curation record. Set a verdict per dataset (ship, ship after changes, don't ship, discuss) and a mark per issue
    (as implemented, change, discuss), with a note where you want something done or answered.
-3. Tell Claude to apply your marks. It changes the definitions, records your decisions in the curation records
+3. Tell Claude to apply your marks. It first checks each mark against the rules and similar earlier decisions and
+   asks you to reflect where one looks inconsistent (never changing your mark). Then it changes the definitions, records your decisions in the curation records
    (dated `CC (<date>, <name>):` lines), retires what you rejected, writes the CHANGELOG entry, answers your
    questions on the page, removes the settled issues from `REVIEW.md` and republishes the page with only what is
    still open. Repeat until every dataset has a verdict.
-4. The shipped datasets are built with `/rebuild-working-copy <names>` (new UUIDs, the README table, the CHANGELOG),
+4. The shipped datasets are built when you ask ("rebuild X and Y"; new UUIDs, the README table, the CHANGELOG),
    and the containers they replace are deleted once the new build is verified. Then commit and open the PR; it sets
    `DF: Yes` on the shipped records and releases their claims.
 
@@ -159,8 +167,8 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
 metadata, BibTeX and regime pre-filled, and loops on `dataset check`; everything that needs a look at the data is
 left as a `TODO(verify)` marker. From there you do the data science: download and load the raw data, clean it
 (dtypes, missing values, identifiers, the target), read the check results in the generated README, decide and check
-the split, and judge whether the result is a sound benchmark task. Then run the probes and `/check-candidate
-<unique_name>` for the verification, and open the PR; a curator builds the container after review.
+the split, and judge whether the result is a sound benchmark task. Then run `/add-dataset <unique_name>` again on the
+folder for the verification and the review panel, and open the PR; a curator builds the container after review.
 
 **Learn from the definitions in this folder.** The Data Foundry knowledge names a reference definition for each
 regime (IID, grouped, temporal, late labels, a sub-sampled `_1m` version, heavy raw data) in

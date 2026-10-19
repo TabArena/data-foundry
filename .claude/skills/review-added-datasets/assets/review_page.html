@@ -315,6 +315,17 @@ details.block > summary::before { content: "+"; font-family: var(--font-mono); c
 details.block[open] > summary::before { content: "\2212"; }
 details.block > .md { padding: 0 0 1rem 1.5rem; }
 
+/* The review panel (Panel tab) and its one line in the verdict box */
+.panelrec { margin: 0 0 .5rem; font: 500 1.08rem/1.4 var(--font-display); max-width: 820px; overflow-wrap: anywhere; }
+.panelrec .k { font: 600 .74rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin-right: .5rem; }
+.panelsum { max-width: 820px; margin-bottom: 1rem; }
+.roles { max-width: 820px; }
+.panelline { margin: 0 0 .65rem; font-size: .88rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.panelline .k { font-weight: 600; color: var(--ink); }
+.panelline .linkbtn { margin-left: .5rem; }
+.panelrec code, .panelline code, details.block > summary code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+.ctab { scroll-margin-top: calc(var(--hdr) + 1rem); }
+
 .pager { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
 .pager button { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: .35rem .8rem; cursor: pointer; font-weight: 500; font-size: .85rem; }
 .pager button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
@@ -446,7 +457,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   };
   const REGIME = { iid: "Random split", grouped: "Grouped split", temporal: "Temporal split" };
   const PROBLEM = { binary_classification: "Binary classification", multiclass_classification: "Multiclass classification", regression: "Regression" };
-  const CTABS = ["usecase", "decisions", "details", "code", "report", "record"];
+  const CTABS = ["usecase", "decisions", "panel", "details", "code", "report", "record"];
   const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
 
   const S = { reviews: {}, crosscut: {} };
@@ -470,6 +481,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   if (savedCurrent && byName.has(savedCurrent)) ui.current = savedCurrent;
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Plain text with `code` spans, such as the panel's recommendation and its role names.
+  const escCode = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
 
   function rev(name) {
@@ -704,6 +717,25 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (src) h += '<p class="srcnote">' + src + "</p>";
     return h;
   }
+  // The review panel of /add-dataset: its recommendation, its summary, then one collapsible section per role, closed
+  // except the mediator's. Background for the verdict: nothing here is marked or stored.
+  function panelHtml(d) {
+    const p = d.panel;
+    if (!p) {
+      const why = d.folder
+        ? "the folder\u2019s <code>REVIEW.md</code> has no <code>**Review panel:**</code> block."
+        : "this record was not added, so it has no <code>REVIEW.md</code>.";
+      return '<p class="intro">No review panel: ' + why + "</p>";
+    }
+    let h = '<p class="panelrec"><span class="k">Panel</span>' + escCode(p.recommendation) + "</p>";
+    h += '<div class="md panelsum">' + p.summary + "</div>";
+    if (p.sections.length) {
+      h += '<div class="roles">' + p.sections.map((s) =>
+        '<details class="block"' + (/^mediator\b/i.test(s.title) ? " open" : "") + "><summary>" + escCode(s.title) + '</summary><div class="md">' + s.html + "</div></details>").join("") + "</div>";
+    }
+    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the folder\u2019s <code>REVIEW.md</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
+    return h;
+  }
   function renderCase() {
     const d = byName.get(ui.current);
     const el = document.getElementById("case");
@@ -741,6 +773,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     h += '<div class="ctabs" role="tablist" aria-label="Use case, decisions and sources">' +
       ctab("usecase", "Use case", fitMark(d)) +
       ctab("decisions", "Decisions", '<span class="n" id="decCount">' + c.done + "/" + c.total + "</span>") +
+      ctab("panel", "Panel") +
       ctab("details", "Details") +
       ctab("code", '<span class="mono">dataset.py</span>') +
       ctab("report", '<span class="mono">README.md</span>') +
@@ -841,10 +874,12 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     rec += '<div class="md">' + d.record.html + "</div>";
 
     const panel = (k, inner) => '<div class="cpanel" id="cp-' + k + '" role="tabpanel" aria-labelledby="ct-' + k + '"' + (ui.ctab === k ? "" : " hidden") + ">" + inner + "</div>";
-    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
+    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
 
     // 3. Your verdict: below the tabs, whichever tab is open.
-    h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + '</h3><div class="seg">' +
+    h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + "</h3>" +
+      (d.panel ? '<p class="panelline"><span class="k">Panel:</span> ' + escCode(d.panel.recommendation) + '<button class="linkbtn" data-act="openpanel">Read the panel</button></p>' : "") +
+      '<div class="seg">' +
       segHtml(opts, r.verdict, "verdict", ro, REC[d.cat]) + "</div>" +
       '<label class="notelabel" for="note-v-' + slug(d.name) + '">Note for Claude</label>' +
       '<textarea class="note big" id="note-v-' + slug(d.name) + '" data-note="verdict" placeholder="What should change, or why you overrule the recommendation"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(r.note || "") + "</textarea></section>";
@@ -1066,6 +1101,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "filter") { ui.filter = b.dataset.f; store("filter", ui.filter); renderFilters(); renderList(); return; }
     if (act === "back") { ui.detailOpen = false; document.getElementById("desk").classList.remove("detail-open"); window.scrollTo(0, 0); return; }
     if (act === "ctab") { showCtab(b.dataset.c); return; }
+    if (act === "openpanel") { showCtab("panel"); const t = document.getElementById("ct-panel"); if (t) t.scrollIntoView({ block: "start" }); return; }
     if (act === "toggleResolved") {
       ui.showResolved = !ui.showResolved;
       store("showResolved", ui.showResolved);

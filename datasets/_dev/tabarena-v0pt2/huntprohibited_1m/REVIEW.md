@@ -28,17 +28,17 @@ record asks for cannot be built, and the sellers cannot be grouped (issues 1, 2,
    released files (test labels were never published). Question: keep the forced-IID version, or drop it because the
    source task is temporal? If kept, the record's split fields should say IID.
 
-2. **Text carries most of the signal (criterion 4A, the record's own concern).** Data page: "Data for this competition
-   consists mainly of Russian text." On the same fold (fold 0, 1M train / 500k test): structured columns alone ROC AUC
-   0.9324 (AP 0.511); LightGBM on structured plus 32 TF-IDF SVD dims per text column 0.9870 (AP 0.893); TF-IDF logistic
-   regression 0.9944 (AP 0.950). The TabArena default pipeline gives models each text column as a 32-dim
+2. **Text carries most of the signal (SEL-12 (criterion 4A), the record's own concern).** Data page: "Data for this
+   competition consists mainly of Russian text." On the same fold (fold 0, 1M train / 500k test): structured columns
+   alone ROC AUC 0.9324 (AP 0.511); LightGBM on structured plus 32 TF-IDF SVD dims per text column 0.9870 (AP 0.893);
+   TF-IDF logistic regression 0.9944 (AP 0.950). The TabArena default pipeline gives models each text column as a 32-dim
    Qwen3-Embedding-8B vector with n-grams off (tabarena `text_cache.py` `SEMANTIC_EMBEDDING`,
    `model_agnostic_default_preprocessing.py` `enable_text_ngram_features=False`), so the text cache must embed about
    2.67M distinct strings (titles 739k, descriptions 1.45M, attrs 479k). A bag-of-words linear model suffices (the 2014
    winners used SGD/SVM on TF-IDF plus a random forest over category, subcategory and counts), so no deep text model is
    required, but the benchmark ranks pipelines by how they encode Russian text. Implemented: kept, text as string
    columns (precedents in the copy: emscad, consumer_complaints_1m, mercari_price_suggestion). Alternative: exclude
-   under 4A. My view: keep, as the record decided.
+   under SEL-12 (criterion 4A). My view: keep, as the record decided.
 
 3. **`attrs` kept as one JSON string.** It is the category's form (79 keys, 1-12 per ad; 72 keys on at least 1,000 ads;
    6,004 strings malformed: quotes written as `/"`, tabs). 735,975 ads, all real estate, repeat a key: 735,772 give

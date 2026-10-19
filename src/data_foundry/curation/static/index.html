@@ -54,6 +54,7 @@
   .pill.tab.active { background:#1d4ed8; border-color:#3b82f6; }
   .pill.bey.active { background:#0f766e; border-color:#14b8a6; }
   .pill.rev.active { background:#b91c1c; border-color:#ef4444; }
+  .pill.scr.active { background:#0e7490; border-color:#22d3ee; }
   /* disagreement: always purple-filled so it stands out as a flag */
   .pill.dis { background:#7c3aed; border-color:#a78bfa; }
   .pill.dis:hover { border-color:#ede9fe; }
@@ -301,13 +302,14 @@
     title="Searches every field of every dataset. Several words = ALL must match (AND); !word excludes; &quot;quote&quot; for a phrase. A search deliberately spans all datasets, ignoring the pills / status / column filters." /></div>
   <span class="hint" id="count"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
-  <span id="shareLink" title="Copy a link that reopens this exact filtered view (pill, status, search, column filters)">🔗 Copy link</span>
+  <span id="shareLink" title="Copy a link that reopens this exact view (pill, status, search, column filters, sort)">🔗 Copy link</span>
   <div class="pills">
     <button class="pill df" id="pillDf" title="Filter: datasets in Data Foundry"><span class="n" id="dfN">0</span><span class="l">Data Foundry</span></button>
     <button class="pill tab" id="pillTab" title="Filter: datasets shipped in TabArena v0.1"><span class="n" id="tabN">0</span><span class="l">TabArena v0.1</span></button>
     <button class="pill bey" id="pillBey" title="Filter: datasets shipped in BeyondArena"><span class="n" id="beyN">0</span><span class="l">BeyondArena</span></button>
     <span class="pill-sep"></span>
     <button class="pill rev" id="pillRev" title="Filter: datasets to review — untriaged (⚠) plus AI-reviewed but unverified (🤖). Use the status funnel to see one group at a time."><span class="n" id="revN">0</span><span class="l">Review</span></button>
+    <button class="pill scr" id="pillScr" title="Filter: the screening queue: AI-screened records (AI (UNVERIFIED) in Checked by) that were not rejected, sorted by priority, highest first. Verify each and send it to /add-dataset."><span class="n" id="scrN">0</span><span class="l">Screening</span></button>
     <button class="pill dis" id="pillDis" title="Filter: open disagreements — unresolved ones, plus shipped-but-disputed (Yes (Disagreement)) to re-evaluate"><span class="n" id="disN">0</span><span class="l">⚡ Disagreement</span></button>
   </div>
 </div>
@@ -384,13 +386,17 @@ const RECORDS_URL = STATIC ? "./records.json" : "/api/records";
 // ----------------------------------------------------------------------------
 // Layout config — tweak freely.
 const PRIMARY = [
-  "checked_by", "unique_name", "data_foundry_status", "claimed_by", "suggestion", "decision_markers", "tags",
-  "name", "source_links", "comments", "year", "domain", "reference",
+  "checked_by", "unique_name", "data_foundry_status", "claimed_by", "suggestion", "priority", "decision_markers",
+  "tags", "name", "source_links", "comments", "year", "domain", "reference",
 ];
 const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
 const HIDDEN = new Set(["data_modality", "usable_task_type", "given_task_type"]);
 const FROZEN = new Set(["_status", "checked_by", "unique_name"]);
 const YEARS = Array.from({ length: 2027 - 1950 + 1 }, (_, i) => String(2027 - i));  // recent first; also free-text
+// Number fields: the values their editor and column filter offer (the record schema allows exactly these).
+const NUMBER_VALUES = { priority: [1, 2, 3, 4, 5] };
+// The order the table opens in (grouped by status); a shared link only carries a sort that differs from it.
+const DEFAULT_SORT = [{ column: "_status", dir: "asc" }];
 
 // ----------------------------------------------------------------------------
 // Colors. Each option gets a deterministic color from its text; a few fields
@@ -410,6 +416,14 @@ const CUSTOM = {
   data_foundry_status: {
     "TabArena (v0.1)": { bg: "#1e3a8a", fg: "#ffffff" },  // dark blue
     "BeyondArena":     { bg: "#0e7490", fg: "#ffffff" },  // teal
+  },
+  // Priority 1-5 (set by /screen-candidates): the darker, the sooner a curator should verify the record.
+  priority: {
+    "5": { bg: "#1e3a8a", fg: "#ffffff" },
+    "4": { bg: "#2563eb", fg: "#ffffff" },
+    "3": { bg: "#93c5fd", fg: "#1e3a8a" },
+    "2": { bg: "#dbeafe", fg: "#1e40af" },
+    "1": { bg: "#eef1f5", fg: "#4a4a55" },
   },
   tags: {
     "Non-IID (Temporal)": { bg: "#f9a8d4", fg: "#831843" },             // rose
@@ -478,8 +492,8 @@ function listEditorParams(field, multi) {
 }
 
 // ---- column filters: tri-state (neutral / include / exclude) ---------------
-// Dropdown columns do NOT use Tabulator's own header filters: a Tabulator header filter
-// holds a single value matched one way, which cannot express "has A AND B" or "not C".
+// Dropdown columns (and number columns: priority) do NOT use Tabulator's own header filters: a
+// Tabulator header filter holds a single value matched one way, which cannot express "has A AND B" or "not C".
 // Instead each such column owns an entry here and the whole set is evaluated inside the
 // one global filter predicate (see applyFilters), which keeps AND/NOT semantics, the
 // summary strip, and shareable links reading from a single source of truth.
@@ -495,15 +509,15 @@ const colModes = {};
 const hfButtons = {};                 // field -> the header button element (re-registered on redraw)
 const EMPTY_TOKEN = "∅";         // pseudo-option matching rows with no value in the column
 const EMPTY_LABEL = "(empty)";
-function isDropdownField(name) { const f = BY_NAME[name]; return !!f && (f.kind === "select" || f.kind === "multiselect"); }
+function isDropdownField(name) { const f = BY_NAME[name]; return !!f && ["select", "multiselect", "number"].includes(f.kind); }
 function colMode(field) { return colModes[field] === "any" ? "any" : "all"; }
 function colState(field) {
   const s = colFilters[field];
   return { inc: s ? s.inc : [], exc: s ? s.exc : [], mode: colMode(field) };
 }
-// Effective include-combination for a column: single-value columns can only ever match one
+// Effective include-combination for a column: single-value columns (select, number) can only ever match one
 // of the picked values, so "all" would be unsatisfiable — report/behave as "any" there.
-function effMode(field, st) { return BY_NAME[field] && BY_NAME[field].kind === "select" ? "any" : st.mode; }
+function effMode(field, st) { return BY_NAME[field] && BY_NAME[field].kind !== "multiselect" ? "any" : st.mode; }
 function setColState(field, st) {
   if (st && st.mode) colModes[field] = st.mode;
   if (st && (st.inc.length || st.exc.length)) colFilters[field] = { inc: st.inc, exc: st.exc };
@@ -517,9 +531,11 @@ function setColMode(field, mode) {
   applyFilters();
 }
 function optLabel(v) { return v === EMPTY_TOKEN ? EMPTY_LABEL : v; }
+// Tokens are strings (they come from the popover and the URL hash), while a number column holds numbers:
+// compare both as strings, so the priority filter's "5" matches a stored 5.
 function rowHasValue(field, d, token) {
-  const vals = asArray(d[field]);
-  return token === EMPTY_TOKEN ? vals.length === 0 : vals.includes(token);
+  const vals = asArray(d[field]).map(String);
+  return token === EMPTY_TOKEN ? vals.length === 0 : vals.includes(String(token));
 }
 function colFiltersPass(d) {
   for (const field of Object.keys(colFilters)) {
@@ -536,7 +552,9 @@ function colFiltersPass(d) {
 }
 // Compact, URL-safe encoding for shareable links: "mode=any|+Yes|-No (Retired)".
 // A bare value (no +/-) is read as an include, so links from before tri-state filters
-// existed (#hf.suggestion=Yes) still restore correctly.
+// existed (#hf.suggestion=Yes) still restore correctly. A "+" typed into a link by hand
+// (#hf.priority=+5|+4) reaches us as a space (URLSearchParams reads "+" as " "), so a
+// leading space is an include too; copied links encode the "+" as %2B.
 function encodeColState(st) {
   const parts = [];
   if (st.mode === "any") parts.push("mode=any");
@@ -549,7 +567,7 @@ function decodeColState(raw) {
   for (const part of String(raw || "").split("|")) {
     if (!part) continue;
     if (part === "mode=any" || part === "mode=all") { st.mode = part.slice(5); continue; }
-    if (part[0] === "+") st.inc.push(part.slice(1));
+    if (part[0] === "+" || part[0] === " ") st.inc.push(part.slice(1));
     else if (part[0] === "-") st.exc.push(part.slice(1));
     else st.inc.push(part);
   }
@@ -640,6 +658,24 @@ function clippedValueTip(cell) {
 // formatters
 function multiChips(field) { return cell => (cell.getValue() || []).map(v => chipHtml(field, v)).join(""); }
 function selectChip(field) { return cell => { const v = cell.getValue(); return v ? chipHtml(field, v) : ""; }; }
+function numberChip(field) {
+  return cell => { const v = cell.getValue(); return v == null || v === "" ? "" : chipHtml(field, String(v)); };
+}
+// The editor of a number column: "(none)" plus the allowed values. It hands back a Number or ""; onEdit
+// turns "" into null.
+function numberEditorParams(field) {
+  return {
+    values: [{ label: "(none)", value: "" }, ...(NUMBER_VALUES[field] || []).map(n => ({ label: String(n), value: n }))],
+    allowEmpty: true,
+    itemFormatter: (label, value) => {
+      if (value === "") return `<span style="color:#8a93a0">${escapeHtml(label)}</span>`;
+      const c = colorFor(field, String(value));
+      return `<span class="opt-sw" style="background:${c.bg};border-color:${c.fg}"></span>${escapeHtml(label)}`;
+    },
+  };
+}
+// A number cell's value as the record stores it: a Number, or null for none.
+function toNumber(v) { return v == null || v === "" ? null : Number(v); }
 function linksFmt(cell) {
   return splitLines(cell.getValue()).map(u =>
     /^https?:\/\//.test(u) ? `<a class="src" href="${escapeHtml(u)}" target="_blank" rel="noopener">${escapeHtml(u)}</a>` : escapeHtml(u)
@@ -871,12 +907,12 @@ function triStateHeaderFilter(field) {
 // current view, so they stay stable while you build up a filter.
 function popOptions(field) {
   const spec = BY_NAME[field] || {};
-  const vocabList = VOCAB[spec.vocab || field] || [];
+  const vocabList = spec.kind === "number" ? (NUMBER_VALUES[field] || []).map(String) : VOCAB[spec.vocab || field] || [];
   const known = new Set(vocabList);
   const counts = new Map();
   let emptyCount = 0;
   for (const d of table.getData()) {
-    const vals = asArray(d[field]);
+    const vals = asArray(d[field]).map(String);
     if (!vals.length) { emptyCount++; continue; }
     for (const v of vals) counts.set(v, (counts.get(v) || 0) + 1);
   }
@@ -1400,6 +1436,15 @@ function columnDefs() {
       // Same popover; here several required values combine with AND by default ("has A and B").
       c.headerFilter = triStateHeaderFilter(name);
     }
+    else if (f.kind === "number") {
+      // A small integer (priority 1-5): a centered chip picked from a list. Empty cells sort last in
+      // both directions, so "highest first" lists the prioritized records before the rest.
+      c.width = 86; c.hozAlign = "center"; c.cssClass = "dd-cell";
+      c.sorter = "number"; c.sorterParams = { alignEmptyValues: "bottom" };
+      c.editor = "list"; c.editorParams = numberEditorParams(name);
+      c.formatter = numberChip(name);
+      c.headerFilter = triStateHeaderFilter(name);  // the same ✓ / ✕ popover, over "1".."5" and (empty)
+    }
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
       c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true };
@@ -1436,6 +1481,7 @@ async function onEdit(cell) {
   let value = cell.getValue();
   if (spec.kind === "links") value = splitLines(value);
   else if (spec.kind === "multiselect") value = asArray(value);
+  else if (spec.kind === "number") value = toNumber(value);
   else if (value === "") value = null;
   // Tabulator commits a cell editor on blur, so merely opening a dropdown and clicking away
   // fires cellEdited with an untouched value. Don't PUT (or toast "Saved") for a no-op: the
@@ -1443,8 +1489,12 @@ async function onEdit(cell) {
   let old = cell.getOldValue();
   if (spec.kind === "links") old = splitLines(old);
   else if (spec.kind === "multiselect") old = asArray(old);
+  else if (spec.kind === "number") old = toNumber(old);
   else if (old === "") old = null;
-  if (JSON.stringify(value) === JSON.stringify(old)) return;
+  if (JSON.stringify(value) === JSON.stringify(old)) {
+    if (spec.kind === "number") cell.restoreOldValue();  // the editor's "" for an empty cell: keep the stored null
+    return;
+  }
   // The list editor rebuilds a multiselect's value in vocabulary order, so re-opening a dropdown
   // and clicking away can come back with the same tags in a different order. That is still a
   // no-op record-wise; put the stored order back so the cell keeps matching the file on disk.
@@ -1454,9 +1504,11 @@ async function onEdit(cell) {
     return;
   }
   try {
-    await registerNew(spec.vocab, asArray(value));
+    if (spec.kind !== "number") await registerNew(spec.vocab, asArray(value));  // a number has no vocabulary
     const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
-    cell.getRow().update({ needs_review: updated.needs_review });
+    const rowPatch = { needs_review: updated.needs_review };
+    if (spec.kind === "number") rowPatch[f] = value;  // keep the Number (or null), not the editor's raw value
+    cell.getRow().update(rowPatch);
     cell.getRow().reformat();
     updateCount();
     toast("Saved");
@@ -1545,6 +1597,11 @@ window.addExtraOption = addExtraOption;
 // Foundry pill counts collection membership (TabArena ∪ BeyondArena) — the datasets
 // actually shipped — not every record carrying a "DF: …" integration tag.
 const inBenchmark = d => (d.data_foundry_status || []).some(v => v === "TabArena (v0.1)" || v === "BeyondArena");
+// The screening queue: records /screen-candidates screened (AI (UNVERIFIED) in checked_by) and did not reject
+// (a suggestion that does not start with "No"). A curator verifies them, highest priority first.
+const inScreening = d => (d.checked_by || []).includes("AI (UNVERIFIED)")
+  && !!d.suggestion && !String(d.suggestion).startsWith("No");
+// A pill may carry its own row order (`sort`), applied when it is switched on (see pillToggle).
 const PILLS = {
   df:  { active: false, el: "pillDf",  count: "dfN",  test: inBenchmark },
   tab: { active: false, el: "pillTab", count: "tabN", test: d => (d.data_foundry_status || []).includes("TabArena (v0.1)") },
@@ -1553,9 +1610,30 @@ const PILLS = {
   // values, ship conflicts, and AI-reviewed-but-unverified rows (needs_review carries
   // "ai_unverified"). So the AI-review pass stays visible here until a human signs off.
   rev: { active: false, el: "pillRev", count: "revN", test: d => (d.needs_review || []).length > 0 },
+  scr: { active: false, el: "pillScr", count: "scrN", test: inScreening, sort: [{ column: "priority", dir: "desc" }] },
   dis: { active: false, el: "pillDis", count: "disN", test: d => d.suggestion === "Disagreement" || d.suggestion === "Yes (Disagreement)" },
 };
 function anyPill() { return Object.values(PILLS).some(p => p.active); }
+// ---- row order: "field:dir" strings, comma-separated when several columns sort ("priority:desc") ----
+function encodeSort(sorters) { return sorters.map(s => (s.field || s.column) + ":" + s.dir).join(","); }
+// Tabulator's setSort swaps each sorter's `column` name for its Column object in place: hand it copies, so the
+// constants (DEFAULT_SORT, a pill's `sort`) keep their names.
+function sortCopy(sorters) { return sorters.map(s => ({ ...s })); }
+function currentSort() { try { return encodeSort(table.getSorters() || []); } catch (e) { return ""; } }
+function sortIsCustom() { const s = currentSort(); return !!s && s !== encodeSort(DEFAULT_SORT); }
+// Parse a `sort=` value; unknown or unsortable columns and other directions are dropped.
+function decodeSort(raw) {
+  const sortable = new Set(table.getColumns()
+    .filter(c => c.getField() && c.getDefinition().headerSort !== false).map(c => c.getField()));
+  const out = [];
+  for (const part of String(raw || "").split(",")) {
+    const at = part.lastIndexOf(":");
+    const field = (at < 0 ? part : part.slice(0, at)).trim();
+    const dir = at < 0 ? "asc" : part.slice(at + 1).trim().toLowerCase();
+    if (sortable.has(field) && (dir === "asc" || dir === "desc")) out.push({ column: field, dir });
+  }
+  return out;
+}
 function applyFilters() {
   const q = parseQuery(document.getElementById("search").value);
   table.setFilter(d => {
@@ -1621,21 +1699,28 @@ function markActiveFilters(active) {
   search.classList.toggle("active", hasSearch);
   const any = activeFields.size > 0 || Object.keys(colFilters).length > 0 || hasSearch || anyPill() || statusActive();
   document.getElementById("clearFilters").classList.toggle("show", any);
-  document.getElementById("shareLink").classList.toggle("show", any);
+  syncShareLink();
   const cnt = document.getElementById("count");
   const activeCount = (active == null) ? table.getDataCount("active") : active;
   cnt.classList.toggle("filtered", activeCount < table.getDataCount());
   renderFilterBar();
 }
+// The 🔗 link shows whenever the view differs from the default: a filter (see markActiveFilters) or a sort.
+function syncShareLink() {
+  const filtered = document.getElementById("clearFilters").classList.contains("show");
+  document.getElementById("shareLink").classList.toggle("show", filtered || sortIsCustom());
+}
 
 // ---- shareable filter links -------------------------------------------------
-// The 🔗 button (shown next to ✕ Clear filters whenever the view is filtered) encodes
-// the current view — active pill, status constraints, search term, and every column
-// filter — into the URL hash (#pill=bey&status=+in-df|-no&q=…&hf.<field>=+A|-B) and
-// copies the link. boot() re-applies the hash on load, so such links deep-link into the
+// The 🔗 button (shown next to ✕ Clear filters whenever the view is filtered or sorted) encodes
+// the current view — active pill, status constraints, search term, every column filter, and
+// the row order — into the URL hash (#pill=bey&status=+in-df|-no&q=…&hf.<field>=+A|-B&sort=priority:desc)
+// and copies the link. boot() re-applies the hash on load, so such links deep-link into the
 // live dashboard AND the read-only GitHub Pages build (view state is fully client-side).
 // Links made before include/exclude filters existed (bare `status=in-df`, `hf.tags=New IID`)
-// still restore: a value with no +/- prefix is read as a single "require".
+// still restore: a value with no +/- prefix is read as a single "require". `sort=` takes any
+// sortable column as field:asc|desc (several comma-separated); a link without it keeps the
+// default order, or the order of its pill (#pill=scr sorts by priority, highest first).
 function filterStateToHash() {
   const p = new URLSearchParams();
   for (const [key, pill] of Object.entries(PILLS)) if (pill.active) p.set("pill", key);
@@ -1651,23 +1736,26 @@ function filterStateToHash() {
       if (f.field && f.value != null && f.value !== "") p.set("hf." + f.field, f.value);
     }
   } catch (e) { /* pre-build */ }
+  // The order: written when it is not the default, and always under a pill with its own order, so the
+  // link restores exactly what is on screen (a curator may have re-sorted the Screening queue).
+  if (sortIsCustom() || Object.values(PILLS).some(x => x.active && x.sort)) p.set("sort", currentSort());
   return p.toString();
 }
-// Restore a shared view from the URL hash. Unknown pills / statuses / columns are ignored,
-// so stale or hand-edited links degrade gracefully; the live-only workflow states (rev/dis
-// pills, ⚡/⚠/🤖 statuses) stay off in the static build, matching the hidden UI there.
+// Restore a shared view from the URL hash. Unknown pills / statuses / columns / sort fields are
+// ignored, so stale or hand-edited links degrade gracefully; the live-only workflow states
+// (rev/scr/dis pills, ⚡/⚠/🤖 statuses) stay off in the static build, matching the hidden UI there.
 function applyFiltersFromHash() {
   const raw = location.hash.replace(/^#/, "");
   if (!raw) return;
   const p = new URLSearchParams(raw);
   const pill = p.get("pill");
-  if (pill && PILLS[pill] && !(STATIC && ["rev", "dis"].includes(pill))) PILLS[pill].active = true;
+  if (pill && PILLS[pill] && !(STATIC && ["rev", "dis", "scr"].includes(pill))) PILLS[pill].active = true;
   // status=+in-df|-no  (a bare slug / marker, as older links carry, means "require")
   const hidden = m => STATIC && ["⚡", "⚠", "🤖"].includes(m);
   for (const part of String(p.get("status") || "").split("|")) {
     if (!part) continue;
     const sign = part[0] === "-" ? "exc" : "inc";
-    const key = part[0] === "+" || part[0] === "-" ? part.slice(1) : part;
+    const key = "+- ".includes(part[0]) ? part.slice(1) : part;  // " ": a hand-typed "+" (see decodeColState)
     const opt = STATUS_OPTS.find(o => o.m && (o.slug === key || o.m === key));
     if (opt && !hidden(opt.m) && !fStat[sign].includes(opt.m)) fStat[sign].push(opt.m);
   }
@@ -1687,6 +1775,11 @@ function applyFiltersFromHash() {
     }
   }
   refreshHfButtons();
+  // sort=priority:desc; without one, a pill with its own order (Screening) applies it.
+  const sorters = decodeSort(p.get("sort"));
+  const pillSort = Object.values(PILLS).find(x => x.active && x.sort);
+  if (sorters.length) table.setSort(sorters);
+  else if (pillSort) table.setSort(sortCopy(pillSort.sort));
 }
 async function copyShareLink() {
   const hash = filterStateToHash();
@@ -1730,7 +1823,7 @@ async function boot() {
     // of screens). Raise it for smoother scroll at the cost of startup, lower it for faster start.
     renderVerticalBuffer: 3000,
     movableColumns: true, index: "unique_name",
-    initialSort: [{ column: "_status", dir: "asc" }],  // group by status on load (accepted / in Data Foundry first)
+    initialSort: sortCopy(DEFAULT_SORT),  // group by status on load (accepted / in Data Foundry first)
     rowFormatter: row => {
       const p = row.getPosition(true);
       const el = row.getElement();
@@ -1741,6 +1834,7 @@ async function boot() {
   });
   if (!STATIC) table.on("cellEdited", onEdit);  // no write path in the read-only build
   table.on("dataFiltered", (filters, rows) => updateCount(rows));
+  table.on("dataSorted", () => syncShareLink());  // a sort alone makes the view worth a link
   table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); forwardFrozenRowScroll(); });
   startLiveRefresh();  // pick up records written outside this tab (agent, other tab, git pull)
 
@@ -1764,22 +1858,29 @@ async function boot() {
   addEventListener("resize", syncChrome);
   // Pills are exclusive among THEMSELVES (only one collection view at a time), but they
   // layer with the status filter — pick a pill (e.g. BeyondArena), then narrow by status.
-  // Clicking an active pill turns it off. The status filter is left untouched.
+  // Clicking an active pill turns it off. The status filter is left untouched. A pill with
+  // its own order (Screening: priority, highest first) sorts the table when switched on;
+  // leaving it restores the default order, unless the curator has re-sorted since.
   const pillToggle = key => () => {
     const was = PILLS[key].active;
+    const before = Object.values(PILLS).find(p => p.active);
     for (const p of Object.values(PILLS)) p.active = false;
     PILLS[key].active = !was;
     syncPillClasses();
     applyFilters();
+    if (PILLS[key].active && PILLS[key].sort) table.setSort(sortCopy(PILLS[key].sort));
+    else if (before && before.sort && currentSort() === encodeSort(before.sort)) table.setSort(sortCopy(DEFAULT_SORT));
   };
   for (const key of ["df", "tab", "bey"]) document.getElementById(PILLS[key].el).addEventListener("click", pillToggle(key));
-  // The public build keeps the Data Foundry / collection view pills; the review /
+  // The public build keeps the Data Foundry / collection view pills; the review / screening /
   // disagreement workflow pills are hidden (and left unwired).
   if (STATIC) {
     document.getElementById("pillRev").style.display = "none";
+    document.getElementById("pillScr").style.display = "none";
     document.getElementById("pillDis").style.display = "none";
   } else {
     document.getElementById("pillRev").addEventListener("click", pillToggle("rev"));
+    document.getElementById("pillScr").addEventListener("click", pillToggle("scr"));
     document.getElementById("pillDis").addEventListener("click", pillToggle("dis"));
   }
   document.getElementById("m-close").addEventListener("click", closeModal);

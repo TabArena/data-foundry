@@ -39,8 +39,8 @@ file is a valid task.
 
 3. **Which marker goes on the record? (Reviewer 3, finding 6)**
    - Implemented: Data Quality Issue is the decisive marker: the classes were recorded differently through every feature
-     family, as in §D.13 and prostate_cancer_detection. Trivial is used only in the sense of 'solved perfectly'
-     (criterion 4C).
+     family, as in LEAK-13 to LEAK-15 and prostate_cancer_detection. Trivial is used only in the sense of 'solved
+     perfectly' (TP-4, criterion 4C).
    - Alternative: Also justify Trivial with the fixed rule or rule 4, or use Trivial alone.
    - Numbers: Rule 4 needs the raw feature to match the methods fold by fold. The URL text gets 0.9973 and the fixed
      rule 0.9998, while all three families reach >= 0.99999 with log loss 0.0008-0.0041 against a prior of 0.682.
@@ -49,8 +49,8 @@ file is a valid task.
    - Implemented: Kept, with the comment reworded: it is the mean probability of the URL's characters under a
      distribution of legitimate domain names, either this file's legitimate rows or the outside list, which is open
      until someone reads the paper.
-   - Alternative: Drop URLCharProb as a possible class-conditional statistic over all rows (criterion 4D), or ask
-     Lennart for the paper PDF first.
+   - Alternative: Drop URLCharProb as a possible class-conditional statistic over all rows (LEAK-28, criterion 4D), or
+     ask Lennart for the paper PDF first.
    - Numbers: Frequencies from legitimate rows: MAD 0.0036, and 0.0015 for alphanumerics only. From all rows: MAD
      0.0115, correlation 0.96. No variant matches more than 4.6% of rows within 1e-4. AUC 0.77 alone. Without
      URLCharProb and TLDLegitimateProb, LightGBM gets AUC 1.000000, log loss 0.00042 (the same as with them).

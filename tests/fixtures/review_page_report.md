@@ -35,6 +35,24 @@ Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the REV
 1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
    alternative.
 
+**Review panel:** ship (mediator). Claim audit: 2 claims, 2 hold. Blind review: would benchmark; main concern the
+decibel scale. Debate: agreed on the random split; disputed: the target scale (issue 1).
+
+<details><summary>Claim audit</summary>
+
+| Claim | Source | Test | Result | Rule |
+|---|---|---|---|---|
+| 1,503 rows | UCI page | row count | holds | |
+| target in dB | NASA report, p. 3 | column range | holds | |
+
+</details>
+
+<details><summary>Mediator</summary>
+
+Ship. The advocate and the critic agree on the split; the target scale stays open as issue 1.
+
+</details>
+
 ### churn_telco_south_asia_duplicate
 
 **Outcome:** not added; duplicate. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.

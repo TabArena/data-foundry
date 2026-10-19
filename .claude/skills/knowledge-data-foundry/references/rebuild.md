@@ -1,27 +1,23 @@
----
-name: rebuild-working-copy
-description: Rebuild the datasets of the TabArena v0.2 working copy (`datasets/_dev/tabarena-v0pt2/`) and verify the build. Runs `dataset build` in parallel, compares the result with the previous build and the committed READMEs, checks that the traced raw inputs alone reproduce every checksum, writes a local backup zip of those inputs, and updates the README table and the CHANGELOG. Use when the user asks to rebuild all or several datasets, after a framework change that changes the containers (metadata format, split protocol, standard preprocessing), or before the collection is released.
-argument-hint: "[<unique_name>,...]"
-user-invocable: true
----
+# Rebuilding the working copy
 
-# Rebuild the working copy
+Knowledge for Claude, not a curator's command: what to do when the curator asks to rebuild the working copy ("rebuild
+everything", "rebuild X and Y"), after a framework change that changes the containers (metadata format, split
+protocol, standard preprocessing), or before the collection is released. Never start a build without that ask (house
+rules in the [skill index](../SKILL.md)).
 
 A build runs every definition end to end, saves a new container with a new UUID under the warehouse and rewrites the
 folder's `README.md`. The containers stay local; git gets the READMEs, the table and the log. The shipped BeyondArena
 containers are never touched. What a build is, the warehouse and the rules of the working copy are in
-[working_copy.md](../knowledge-data-foundry/references/working_copy.md); how to read the task probes in
-[task_probes.md](../knowledge-curation/references/task_probes.md).
+[working_copy.md](working_copy.md); how to read the task probes in
+[task_probes.md](../../knowledge-curation/references/task_probes.md).
 
-**Input (optional):** comma-separated unique names to rebuild only those; by default every definition under the root.
-
-$ARGUMENTS
+By default every definition under the root is rebuilt; the curator may name some (`--only a,b`).
 
 For a single dataset, `.venv/bin/python -m data_foundry.curation.cli dataset build <folder>` is enough; still do
 steps 5 and 8 for it.
 
-The scripts are in [`scripts/`](scripts/); run them from the repository root with `.venv/bin/python`. Below, `$K` is
-`.claude/skills/rebuild-working-copy/scripts`, `$OUT` a scratch folder for this run (outside the repository) and
+The scripts are in [`scripts/`](../scripts/); run them from the repository root with `.venv/bin/python`. Below, `$K` is
+`.claude/skills/knowledge-data-foundry/scripts`, `$OUT` a scratch folder for this run (outside the repository) and
 `$PREV` the scratch folder of the previous run, if you still have it.
 
 ## Before you start
@@ -114,7 +110,7 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
 The sweep's output stays in `$OUT/probes` (`summary.md` and one JSON per dataset); nothing of it goes into git. A
 flag is a question, not a verdict. A dataset whose record already holds a dated task-probe decision for the same flag
 needs no new one unless its numbers moved. Every other flag gets a decision as
-[task_probes.md](../knowledge-curation/references/task_probes.md) describes (check it with `tuned_results.py` first).
+[task_probes.md](../../knowledge-curation/references/task_probes.md) describes (check it with `tuned_results.py` first).
 Record each decision in the record (a dated comment with the evidence), in `CHANGELOG.md`, and as a row of that
 reference's cases table; list the flags still open in the `CHANGELOG.md` entry.
 

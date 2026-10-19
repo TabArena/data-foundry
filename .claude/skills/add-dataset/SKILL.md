@@ -1,28 +1,38 @@
 ---
 name: add-dataset
-description: Add a curated dataset to data-foundry as a v2 dataset folder (one `dataset.py` class + `explore.ipynb` + a generated `README.md`). Use this whenever a triaged candidate that came out `Yes` should be processed, or the user says "add / process / curate / scaffold dataset X", for one record or a batch (a dashboard filter). Reads the curation record, scaffolds the folder with `dataset new`, fills the metadata and the preprocessing from the source, loops on `dataset check` and the probes until clean, verifies the result, and leaves the open questions for the curator in the folder's `REVIEW.md`. v2 only: never writes a v1 curation notebook.
-argument-hint: <unique_name | dashboard filter>
+description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class, explore.ipynb, a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
+argument-hint: "<unique_name | dashboard filter> [--panel full|focused]"
 user-invocable: true
 ---
 
 # Add a dataset (v2)
 
-Turn an accepted record into a v2 dataset folder in the TabArena v0.2 working copy,
-`datasets/_dev/tabarena-v0pt2/<unique_name>/`. The triage comes first (`/triage-candidates`: the record is a `Yes`);
-the curator's review comes after (`/review-added-datasets`).
+Stage 2 of the pipeline ([pipeline.md](../knowledge-data-foundry/references/pipeline.md)): turn an accepted record into
+a v2 dataset folder in `datasets/_dev/tabarena-v0pt2/<unique_name>/`, then try to break it. The aim is a dataset the
+curator can judge in minutes: a short summary first, every detail below it. Screening comes first
+(`/screen-candidates`, then the curator's `Yes`); the curator's review comes after (`/review-added-datasets`).
 
 $ARGUMENTS
+
+Two modes:
+
+* **A record without a folder:** every step below.
+* **An existing folder** ("is X ready?", or after a change): a re-check. Skip steps 0-3 (the claim stays), run steps
+  4-8, and update the existing `REVIEW.md` (new issues take the next free number).
 
 ## Knowledge used
 
 | Step | Read |
 |---|---|
+| all | [principles.md](../knowledge-curation/references/principles.md): rank, strengths, the remedy ladder, the judgment record |
 | 0 | [records.md](../knowledge-data-foundry/references/records.md) (claims, pointers); for a batch [agent_runs.md](../knowledge-data-foundry/references/agent_runs.md) |
 | 1 | [use_case.md](../knowledge-curation/references/use_case.md), [provenance.md](../knowledge-curation/references/provenance.md) |
-| 1-3 | [definitions.md](../knowledge-data-foundry/references/definitions.md): the folder, the class, the base class, the field mapping, the recipe, the split declarations, the reference definitions |
+| 1-3 | [definitions.md](../knowledge-data-foundry/references/definitions.md): the folder, the class, the field mapping, the recipe, the split declarations, the reference definitions |
 | 3 | [cleaning_features.md](../knowledge-curation/references/cleaning_features.md), [splits.md](../knowledge-curation/references/splits.md) |
-| 5 | [leak_checks.md](../knowledge-curation/references/leak_checks.md), [task_probes.md](../knowledge-curation/references/task_probes.md), [checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md) |
-| 6 | [verification.md](../knowledge-curation/references/verification.md), [writing.md](../knowledge-curation/references/writing.md), [working_copy.md](../knowledge-data-foundry/references/working_copy.md) (`REVIEW.md`, CHANGELOG) |
+| 5 | [leak_checks.md](../knowledge-curation/references/leak_checks.md), [task_probes.md](../knowledge-curation/references/task_probes.md), [evidence.md](../knowledge-curation/references/evidence.md) (reading a probe), [checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md) |
+| 6 | [verification.md](../knowledge-curation/references/verification.md) |
+| 7 | [review_panel.md](references/review_panel.md) |
+| 8 | [writing.md](../knowledge-curation/references/writing.md), [working_copy.md](../knowledge-data-foundry/references/working_copy.md) (`REVIEW.md`, CHANGELOG) |
 
 ## The one rule
 
@@ -37,25 +47,25 @@ You have not seen the data until it is downloaded. Pre-fill structure, never fac
 The markers are enforced: `meta_placeholder_left`, `definition_license_placeholder` and `definition_todo_left` are
 errors, and `dataset build` refuses to save while any remains.
 
-## Step 0: Gather inputs
+## Step 0: Gather inputs and claim
 
-Read `curation/records/<unique_name>.md`: the front matter (name, source, year, domain, split, problem type, links,
-data state) and the comments (the provenance and duplicate checks already done; do not redo settled work). Ask only
-for what is missing or contradictory. No record: stop and point to `/triage-candidates`. Never work on a record
-another curator has claimed; the records you take get `WIP (DF)` and the curator's name in `claimed_by` first, and the
-claim goes to `main` in its own small PR.
+Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
+source, the use case, the regime, the risks). Verify its claims as you go instead of redoing its research; a
+measurement on the data supersedes what screening read from the page. No record: stop and point to
+`/screen-candidates`. Never work on a record another curator has claimed; the records you take get `WIP (DF)` and the
+curator's name in `claimed_by` first, and the claim goes to `main` in its own small PR.
 
-A batch (several names or a dashboard filter) runs as [agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)
-describes: units per source, one agent working and a second verifying each unit.
+A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
+([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
+for each dataset, because subagents do not start subagents.
 
 ## Step 1: The source, the use case and the fields
 
 Follow `source_links` to the first publication. Write the use case first, in `task_summary`: who uses the prediction,
 when, the decision it informs, what one row is, what is predicted and what is known then. A dataset no decision fits
-(`fit="none"`) is not added: it goes back to triage as `No Good Target / Scientific Discovery`. Write the prediction
-point into the first `curation_comments` bullet; every later choice is checked against it. Then map the fields
-(definitions.md, "Field mapping"); for a grouped task note what one real-world prediction is and what is known about a
-new group.
+(`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
+the first `curation_comments` bullet; every later choice is checked against it. Then map the fields (definitions.md,
+"Field mapping"); for a grouped task note what one real-world prediction is and what is known about a new group.
 
 ## Step 2: Scaffold
 
@@ -101,20 +111,38 @@ runs the pipeline, the checks and `_decisions` without saving, and writes `READM
 data in `explore.ipynb`, re-run, read the README diff. Stop when there are no errors and every warning is fixed or
 proposed for acceptance with a reason. Run `dataset check` again after every `ruff --fix`.
 
-Then run the leak probes and the task probes, and the group probes for a grouped task, the hidden-group probe for an
-IID one ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). A feature that comes
-close to the full model, a missing indicator that predicts the label, copies across the split or a pure-value warning
-each need a decision (drop, lag, filter, re-split, keep on purpose) with the deciding number in a bullet. Answer each
-task-probe flag by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
+Then run the leak probes and the task probes, the group probes for a grouped task and the hidden-group probe for an
+IID one ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Read every flag by
+[evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
+leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
+task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
 
-## Step 6: Verify and hand over
+## Step 6: The checklist
 
-Run every check of [verification.md](../knowledge-curation/references/verification.md) marked "add", with evidence;
-in a batch the second agent does it and the first applies or rejects each finding. Write what needs the curator's
-decision into the folder's `REVIEW.md`, phrased as [writing.md](../knowledge-curation/references/writing.md) says, and
-add a dated CHANGELOG entry for the new folder. Never build: a build is the curator's call
-([working_copy.md](../knowledge-data-foundry/references/working_copy.md)).
+Run every check of [verification.md](../knowledge-curation/references/verification.md) marked "add", in its rank order,
+with evidence and the rule IDs. Fix what can be fixed now (re-run `dataset check` after each fix); everything else
+becomes a draft issue for step 8.
 
-Report: the folder and a summary of the attributes; every `TODO(verify)` left, grouped by method; the mapping choices
-that were ambiguous and the traps you flagged; the verification verdict; and next steps with paths filled in (for a
-batch: the review page, `/review-added-datasets`).
+## Step 7: The review panel
+
+Attack the finished definition with the agents of [review_panel.md](references/review_panel.md): the evidence agents
+in parallel, then the advocate and the critic with one rebuttal each, then the mediator. `--panel full` (all agents)
+is the default for a new folder; `--panel focused` (the claim auditor, the auditors the change touches, the mediator
+and the editor) for a re-check after a small change. Say which tier ran.
+
+## Step 8: Synthesis and hand-over
+
+1. Apply what the panel settled that needs no decision (a refuted claim with an obvious fix, a missing note), re-run
+   `dataset check` and the probes it touches.
+2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
+   judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
+   that disagree with the definition, the issues in rank order (validity first, Must first), each with the rule ID,
+   the evidence and the decision needed ([writing.md](../knowledge-curation/references/writing.md)), and the
+   `**Review panel:**` block with each agent's full report.
+3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
+4. Add a dated CHANGELOG entry for the new folder, and an `**Assessment (AI, <date>):**` line in the record. Never
+   build: a build is the curator's call ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
+
+Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the
+curator by rank; every `TODO(verify)` left, grouped by method; what could not be checked; next steps with paths filled
+in (`/review-added-datasets`, with `--names` for a batch).

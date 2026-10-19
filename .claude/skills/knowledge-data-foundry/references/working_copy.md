@@ -4,7 +4,7 @@
 plus:
 
 * `README.md`: how to rebuild, and the table of datasets with their UUIDs, generated between the
-  `<!-- datasets:start/end -->` markers by `.claude/skills/rebuild-working-copy/scripts/readme_table.py`;
+  `<!-- datasets:start/end -->` markers by `.claude/skills/knowledge-data-foundry/scripts/readme_table.py`;
 * `GETTING_STARTED.md`: the way in for a new curator;
 * `CHANGELOG.md`: the dated log of every change, newest first;
 * `BENCHMARK_CHANGES_TODO.md`: what the TabArena harness still needs (group columns, per-group scoring, metrics);
@@ -44,8 +44,8 @@ container with a new UUID under the warehouse (`<warehouse>/<unique_name>/<uuid>
 `<version_of>/versions/<uuid>/` for a `_1m` version), verifies the export, and records the UUID, checksum and git
 commit in the README front matter. There is no v0.2 collection in the registry yet: record the UUID in a dated
 CHANGELOG entry, refresh the README table, and never add it to `BEYOND_ARENA_UUIDS`. A build happens only when the
-curator asks; `dataset check` gives the same container without saving. `/rebuild-working-copy` rebuilds and verifies
-many datasets at once.
+curator asks; `dataset check` gives the same container without saving. How to rebuild and verify many
+datasets at once: [rebuild.md](rebuild.md).
 
 * Build in the repository's `.venv` with the `build` extra. pandas 2.3 and 3 give the same containers; scikit-learn
   stays below 1.8.
@@ -59,8 +59,8 @@ many datasets at once.
 `local-data-warehouse/` (gitignored) holds the raw files of each dataset, the containers, and the run folders
 (`_runs/<date>_<run>/`: run reports, review-page sources, agents' outputs and evidence). Its data never leaves the
 machine and is never committed; personal data in raw files (ids, phone numbers, names) stays there (Lennart,
-2026-10-12). A private review page built from a run folder may be published for the curator. `minimal_inputs.py` of the
-rebuild skill collects the raw files the builds read into a local zip backup.
+2026-10-12). A private review page built from a run folder may be published for the curator. `minimal_inputs.py` (see
+[rebuild.md](rebuild.md)) collects the raw files the builds read into a local zip backup.
 
 After a verified rebuild (every new container reloads with its checksum and the traced-input check passes), the
 containers whose UUID is not a README's current `build.uuid` may be deleted, with a note in the rebuild's CHANGELOG

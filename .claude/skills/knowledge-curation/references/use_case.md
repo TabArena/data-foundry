@@ -1,95 +1,146 @@
 # The use case and the prediction point
 
-A dataset in the benchmark simulates a decision someone makes with a prediction. Write that decision down before
-anything else: every column, filter, target and split choice is checked against it. In the 2026 leak audit the
-written prediction point found columns no probe flagged (kickstarter's `staff_pick`, awarded mid-campaign, once the
-task was "predict at launch").
+Part 2 of the curation rules, under P3 (a real use case) in [principles.md](principles.md). The rules of earlier parts
+win over this file's rules in a conflict; within this file a rule wins over the rules below it of the same strength.
+How to weigh, exceptions and amendments: [principles.md](principles.md).
 
-## The use case
+A dataset in the benchmark simulates a decision someone makes with a prediction. This file covers that decision: the
+use case, the prediction point, the real-world target, the inputs known at prediction time, how closely the data
+mirrors the use case (the fit), and whether the model predicts for a new or a known entity.
 
-An actor, a moment and a decision: "a lender, when an application arrives, decides whether to approve it". Take it
-from the source (the paper, the competition, the data card) when it states one; otherwise write the most plausible
-one and say "for example". Then:
+## Rules
 
-* what one row is, with its population, place and period;
-* what is predicted, by when after the prediction point, in what classes or unit;
-* what is known at the prediction point, and nothing recorded later;
-* what the test data stands for (new customers, the next two weeks, configurations never measured, unseen patients).
+### The use case
 
-A task no decision fits is out (criterion 3 in [selection.md](selection.md)): a label counted over one calendar
-window shared by all rows, a label from clustering, a label the subject already knows when the features are
-recorded, or data that serves only a study looking back.
+**USE-1 (Must).** A use case is an actor, a moment and a decision: "a lender, when an application arrives, decides
+whether to approve it". Write it down before anything else, and check every column, filter, target and split choice
+against it. Why: the written prediction point finds columns no probe flags. How: the use-case checklist under Methods.
+Cases: kickstarter.
 
-## How closely the data mirrors it
+**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7 in
+[selection.md](selection.md), and data that serves only a study looking back is SEL-3. Marker:
+`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7.
 
-* Direct: the rows, the features, the label's timing and the split mirror the use case (airfoil_self_noise,
-  superconductivity, 2_month_survival_rate_prediction).
-* Approximate: a stand-in with a known gap, named as such. One snapshot standing in for a forecast
-  (account_debt_south_africa), a potential leak kept on purpose (kick), a reconstructed time axis or a label without a
-  stated horizon (alfa_battle_2_0_task_2), one judge or rating service standing for the rating a buyer meets
-  (coffee_rating_prediction; Lennart, 2026-10-14).
-* None: no decision fits. The dataset goes back to triage as `No Good Target / Scientific Discovery`.
+### The prediction point
 
-Before settling on approximate, ask whether the data as shipped mirrors another well-defined use case that
-practitioners have, where the features are known and the label is not. If it does, that is the use case and the fit
-is direct (5g_energy_consumption: a split by station within one week fills the gap for stations without
-measurements, rather than standing in weakly for a forecast; Lennart, 2026-10-14). Do not rephrase a use case only
-to excuse a gap: a credit model scores future applicants, so a random split of undated applications stays
-approximate.
+**USE-3 (Must).** Name the prediction point: when the model is used and what is known then. A value that did not
+exist at that point is a leak (LEAK-10, [leak_checks.md](leak_checks.md)), including a field that is blank because the
+outcome already happened and a feature computed over a window that ends at the outcome. Typical prediction points are
+under Patterns. Cases: kickstarter.
 
-## The prediction point
+**USE-4 (Must; narrows USE-3).** When the features include measurements from a stage after the decision the task
+models (a biopsy after the clinical examination, a lab result after triage), offer the task at the stage the source
+describes. [task_probes.md](task_probes.md) TP-6 keeps its own wording on a valid task against its best version.
+Cases: eryhemato_squamous_disease.
 
-When the model is used and what is known then: at launch (kickstarter), at admission (mic), at quote time
-(homesite), at checkout (brazilian_ecommerce), before the stay ends, photometric classification (sdss_17), cold start
-for a new respondent (in_vehicle_coupon_recommendation). A value that did not exist at that point is a leak
-([leak_checks.md](leak_checks.md)), including a field that is blank because the outcome already happened and a
-feature computed over a window that ends at the outcome.
+### The real-world target
 
-When the features include measurements from a stage after the decision the task models (a biopsy after the clinical
-examination, a lab result after triage), offer the task at the stage the source describes (eryhemato_squamous_disease:
-the 12 clinical features, before the skin biopsy).
+**USE-5 (Must).** Predict what the actor would act on, at the resolution they act on it. Check how the source built
+its label before accepting it. A target the source defined badly can often be redefined into the real one. Cases:
+corporate_credit_rating, cirrhosis_patient_survival_prediction.
 
-## The real-world target
+### Inputs known at prediction time
 
-Predict what the actor would act on, at the resolution they act on it. An agency rates the company and each of its
-debt instruments separately; the decision a lender or an investor takes rests on the issuer rating (S&P issuer credit
-rating, Moody's corporate family rating, Fitch issuer default rating), not on whichever instrument rating a file
-happened to keep (corporate_credit_rating: 17% of the checkable labels were not the issuer rating; retired 2026-10-16
-for a rebuild from the agencies' own histories). Check how the source built its label before accepting it.
+**USE-6 (Must).** Anything known at the prediction point is a legitimate input, including a number the company itself
+computed. A company's own estimate made before the outcome is an input, and the model refines it; a forecast the task
+corrects is the task's input. Why: dropping it changes the task into "predict without the company's estimate". Cases:
+brazilian_ecommerce, bias_correction_r_bias_correction_r_2.
 
-A leak in the features is no reason to reject a task whose use case is real: fix the leak and keep the task. A target
-the source defined badly can often be redefined into the real one (cirrhosis_patient_survival_prediction: time to
-death over the patients who died became death or transplant within five years, over the patients followed that long).
+**USE-7 (Must).** A row that lacks the input the prediction acts on is no task row: drop it rather than keep it as
+missing. Missing values of the other inputs stay missing. Why: nobody corrects a forecast that does not exist. Cases:
+bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15).
 
-## Inputs known at prediction time
+### How closely the data mirrors the use case
 
-Anything known at the prediction point is a legitimate input, including a number the company itself computed:
+**USE-8 (Must).** Write how closely the data mirrors the use case, its fit:
 
-* A company's own estimate made before the outcome is an input, and the model refines it. brazilian_ecommerce keeps
-  the delivery date Olist promised at checkout (it cannot leak, it is fixed before the delivery); dropping it would make
-  the task "predict without the company's estimate" (R^2 0.366 with it, 0.332 without; 2026-10-15).
-* A forecast the task corrects is the task's input. bias_correction_r_bias_correction_r_2 corrects the LDAPS weather
-  model's forecast.
+* Direct: the rows, the features, the label's timing and the split mirror the use case.
+* Approximate: a stand-in with a known gap, named as such: one snapshot standing in for a forecast, a potential leak
+  kept on purpose, a reconstructed time axis or a label without a stated horizon, one judge or rating service standing
+  for the rating a buyer meets.
+* None: no decision fits (USE-2). The dataset goes back to triage.
 
-A row that lacks the input the prediction acts on is no task row. Drop it rather than keep it as missing:
-bias_correction drops the three days without an LDAPS run, because nobody corrects a forecast that does not exist
-(Lennart, 2026-10-15). Missing values of the other inputs stay missing.
+Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise, superconductivity,
+2_month_survival_rate_prediction; approximate, account_debt_south_africa (one snapshot for a forecast), kick (a
+potential leak kept on purpose), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
+(one judge for the rating a buyer meets; Lennart, 2026-10-14).
 
-## Recurring entities and the cold start
+**USE-9 (Should; narrows USE-8).** Before settling on approximate, ask whether the data as shipped mirrors another
+well-defined use case that practitioners have, where the features are known and the label is not. If it does, that is
+the use case and the fit is direct. Weigh it together with the factor against it under Weighed factors: a use case
+rephrased only to excuse a gap. Cases: 5g_energy_consumption (Lennart, 2026-10-14).
 
-Decide from the use case whether the entity the model predicts for is new or known, before choosing the split
-([splits.md](splits.md)).
+### Recurring entities and the cold start
 
-* Most real predictions are for entities seen before: an agency reviews every rating at least once a year, a bank
-  scores its existing customers. Then the entity's history is legitimate and the split is temporal; the previous
-  outcome is a feature (corporate_credit_rating: 72% of the ratings with an earlier one repeat its class, and the
-  previous rating lifts a random forest's skill from 0.285 to 0.460).
-* A cold start predicts for an entity without history: a shadow rating of a new borrower, a recommender before it has
-  data on a person (in_vehicle_coupon_recommendation). A grouped split tests that.
-* When the use case is the first event of each entity, one row per entity makes it an IID task without grouping:
-  breast_cancer_prediction keeps each woman's earliest exam, since screening assesses her at the first exam (Lennart,
-  2026-10-15). One row per entity loses rows and signal, so take it only when the use case is that row
-  (corporate_credit_rating: the latest rating per company scored 0.112 skill, all ratings grouped by company 0.158).
+**USE-10 (Must).** Decide from the use case whether the entity the model predicts for is new or known, before choosing
+the split (SPLIT-3, [splits.md](splits.md)). For a known entity, its history is legitimate: the split is temporal and
+the previous outcome is a feature. A cold start predicts for an entity without history (a shadow rating of a new
+borrower, a recommender before it has data on a person), and a grouped split tests it. Cases: corporate_credit_rating,
+in_vehicle_coupon_recommendation.
+
+**USE-11 (Must; narrows USE-10).** When the use case is the first event of each entity, one row per entity makes it an
+IID task without grouping. Take one row per entity only when the use case is that row: it loses rows and signal.
+Cases: breast_cancer_prediction (Lennart, 2026-10-15), corporate_credit_rating.
+
+### A leak in a real task
+
+**USE-12 (Must).** A leak in the features is no reason to reject a task whose use case is real. The remedy for a leak
+is to fix it and keep the task; [leak_checks.md](leak_checks.md) decides how.
+
+## Weighed factors
+
+* **An entity seen before** (+ for a known entity, USE-10): most real predictions are for entities seen before. An
+  agency reviews every rating at least once a year; a bank scores its existing customers.
+* **A use case rephrased only to excuse a gap** (−, against a direct fit under USE-9): do not rephrase a use case only
+  to excuse a gap. A credit model scores future applicants, so a random split of undated applications stays
+  approximate.
+
+## Patterns
+
+Quick ways to apply the rules; a pattern never overrides a rule, and the dataset at hand wins over the pattern.
+
+* Typical prediction points (USE-3): at launch (kickstarter), at admission (mic), at quote time (homesite), at checkout
+  (brazilian_ecommerce), before the stay ends, photometric classification (sdss_17), cold start for a new respondent
+  (in_vehicle_coupon_recommendation).
+* A credit rating → the issuer rating (USE-5). An agency rates the company and each of its debt instruments
+  separately; the decision a lender or an investor takes rests on the issuer rating (S&P issuer credit rating, Moody's
+  corporate family rating, Fitch issuer default rating), not on whichever instrument rating a file happened to keep.
+
+## Methods
+
+### Writing the use case (USE-1)
+
+Take the use case from the source (the paper, the competition, the data card) when it states one; otherwise write the
+most plausible one and say "for example". Then write down:
+
+1. what one row is, with its population, place and period;
+2. what is predicted, by when after the prediction point, in what classes or unit;
+3. what is known at the prediction point, and nothing recorded later;
+4. what the test data stands for (new customers, the next two weeks, configurations never measured, unseen patients).
+
+## Cases
+
+Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
+
+| Rule | Dataset | Decision (date, curator) | Kind |
+|---|---|---|---|
+| USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
+| USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
+| USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
+| USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
+| USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |
+| USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
+| USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
+| USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
+| USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
+| USE-8 | kick | approximate: a potential leak kept on purpose | applied |
+| USE-8 | alfa_battle_2_0_task_2 | approximate: a reconstructed time axis or a label without a stated horizon | applied |
+| USE-8 | coffee_rating_prediction | approximate: one judge or rating service stands for the rating a buyer meets (2026-10-14, Lennart) | applied |
+| USE-9 | 5g_energy_consumption | direct: a split by station within one week fills the gap for stations without measurements, rather than standing in weakly for a forecast (2026-10-14, Lennart) | applied |
+| USE-10 | corporate_credit_rating | a known entity: 72% of the ratings with an earlier one repeat its class, and the previous rating lifts a random forest's skill from 0.285 to 0.460 | applied |
+| USE-10 | in_vehicle_coupon_recommendation | cold start: a recommender before it has data on a new respondent, tested by a grouped split | applied |
+| USE-11 | breast_cancer_prediction | each woman's earliest exam, since screening assesses her at the first exam; IID without grouping (2026-10-15, Lennart) | applied |
+| USE-11 | corporate_credit_rating | what one row per entity costs: the latest rating per company scored 0.112 skill, all ratings grouped by company 0.158 | applied |
 
 ## In Data Foundry
 

@@ -98,7 +98,9 @@ def render(result: dict) -> str:
             named = ", ".join(f"{k!r} {v}" for k, v in list(few.items())[:20])
             more = f" and {len(few) - 20} more" if len(few) > 20 else ""
             lines.append(f"  classes under {task.FEW_MINORITY} {what} in a test fold (smallest count): {named}{more}")
-    lines.append(f"  flags: {', '.join(result['flags']) or 'none'}")
+    rules = result.get("flag_rules", {})
+    flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in result["flags"]]
+    lines.append(f"  flags: {', '.join(flags) or 'none'}")
     return "\n".join(lines)
 
 

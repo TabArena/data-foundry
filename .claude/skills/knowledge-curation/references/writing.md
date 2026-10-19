@@ -1,9 +1,16 @@
 # Writing for the curator
 
-How we write the record comments, the notes on a dataset, the plain-language task summary and the questions for the
+Procedure, at every rank. How we write the record comments, the notes on a dataset, the plain-language task summary and the questions for the
 curator. The general style rules (no em dashes, no bold-first bullets, no inflated wording) are the "AI Writing
 Tropes to Avoid" section of [AGENTS.md](../../../../AGENTS.md); they apply to everything below, to docstrings and to
 commit messages.
+
+## The judgment record
+
+A verdict, an assessment, a `REVIEW.md` outcome and a mediator's report all have the shape of
+[principles.md](principles.md), "How to decide": the verdict first, then validity, value and quality with the rule IDs
+that held, were triggered (and how fixed) or were departed from, the factors weighed, and what is left for the
+curator. A reader sees in a few lines which rule decided and why it outranks another.
 
 ## Record comments
 
@@ -48,21 +55,31 @@ this brought up here?" and "explain this" in the reviews of October 2026 show wh
 * says what it does to the real task: which prediction gets better or worse than it would be in practice, and why;
 * gives the evidence, with numbers only where they decide;
 * says what was implemented and what the alternative is, each with its cost;
+* names the rule it rests on (its ID and strength), and for a weighing call the factors on each side;
+* says whether it follows or departs from a precedent (a similar dataset decided before);
 * ends with a recommendation and the decision needed.
 
-Raise only what changes one of our decisions. A problem of someone else's copy, another benchmark's scores, a model's
-pretraining data or a model's input limit is no issue ([provenance.md](provenance.md)). One issue per decision, and a
-record field that disagrees with the definition is a field correction, not an issue.
+Order the issues by rank: validity before value before quality, Must before Should, then by how much each changes the
+task. Raise only what changes one of our decisions. A problem of someone else's copy is a note on that copy
+([provenance.md](provenance.md), PROV-15); another benchmark's scores, a model's pretraining data or a model's input
+limit are no evidence ([evidence.md](evidence.md), EV-4). One issue per decision, and a record field that disagrees
+with the definition is a field correction, not an issue.
 
 When the curator says "do as you see fit" or "fix as needed", decide, apply it, and record the decision and the reason
 the same way as one of theirs. When a decision becomes a standing rule, write it into the knowledge files in the same
-change.
+change; when it departs from a rule for one dataset, record it as an exception with the fact that sets the case apart
+([principles.md](principles.md), "Exceptions and amendments").
+
+A question about the consistency of a curator's decision (a consistency check) is short and asks, never argues at
+length: the decision, the precedent or rule it departs from, the AI's best guess at the fact that sets it apart, and the
+ways out ([principles.md](principles.md), "Consistent judgement").
 
 ## Reporting back
 
-Lead with the recommendation in one sentence. Then what the record or definition missed or got wrong, what it had
-right and what could not be checked, with citations; counts and scores in a short table. Do not restate the record.
-Say which evidence proves a mechanism and which is circumstantial.
+Lead with the recommendation in one sentence. Then what the record or definition missed or got wrong, in rank order
+with the rule IDs, what it had right and what could not be checked, with citations; counts and scores in a short table.
+Do not restate the record. Say which evidence proves a mechanism and which is circumstantial (EV-6). A summary comes
+first and the details below it, so the curator can stop reading once the decision is clear.
 
 ## In Data Foundry
 

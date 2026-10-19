@@ -2,7 +2,7 @@
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/readme_table.py [--root datasets/_dev/tabarena-v0pt2]
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/readme_table.py [--root datasets/_dev/tabarena-v0pt2]
 
 The table (regime, rows, features, splits, UUID, open warnings) goes between the ``<!-- datasets:start -->`` and
 ``<!-- datasets:end -->`` markers of ``<root>/README.md``; a folder without a build, or whose README is stale, shows

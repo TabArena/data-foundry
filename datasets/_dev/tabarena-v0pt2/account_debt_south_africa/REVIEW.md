@@ -37,7 +37,7 @@ segments of the file without recorded debt, and the payment totals sum the windo
 3. **The payment totals are dropped (prediction point).** `totalreceipting`, `avgreceipting` and `collectionratio` sum
    the payments of the two years at whose end the status is read; arrears are billing less payments plus the opening
    balance. The bad-debt rate falls from 91.5% for accounts that paid nothing (97% when billed over 24-100 lines) to
-   14.7% for those that paid 87.5-105% of their billing. Dropped by the mutual_funds_india rule (patterns §D.2).
+   14.7% for those that paid 87.5-105% of their billing. Dropped by the mutual_funds_india rule (LEAK-10).
    Implemented: dropped (AUC 0.874). Alternatives: keep them as the uploader does, whose notebook's main feature is the
    collection ratio (AUC 0.952); or keep only the static profile, category, property value and size and `HasIDNo`
    (0.832). A deployed model with them mostly flags accounts the municipality's age analysis already lists.

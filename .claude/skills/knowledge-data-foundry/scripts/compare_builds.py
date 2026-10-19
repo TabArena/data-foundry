@@ -2,7 +2,7 @@
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/compare_builds.py <out_dir>
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/compare_builds.py <out_dir>
         [--previous <dir>] [--base-ref HEAD] [--root datasets/_dev/tabarena-v0pt2] [--expect-checksums <dir>]
 
 Reports, and writes to ``<out_dir>/summary.json``:

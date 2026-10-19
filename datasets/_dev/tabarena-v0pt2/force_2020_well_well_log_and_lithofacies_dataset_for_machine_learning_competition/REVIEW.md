@@ -9,7 +9,7 @@ on this data.
 
 **Record judgment:** valid with concerns: the depth context, the interpreted stratigraphy as features, and the
 label noise (the organisers put the reachable accuracy near 80%). Well logs are sensor readings per depth, not a
-vectorised image, so criterion 4A does not exclude them.
+vectorised image, so SEL-13 (criterion 4A) does not exclude them.
 
 **Issues for Lennart:**
 

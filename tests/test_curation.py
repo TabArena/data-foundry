@@ -11,14 +11,20 @@ from functools import partial
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 
+import pandas as pd
+import pydantic
 import pytest
 from data_foundry.curation import exporter, notebooks
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import (
     GUIDELINE_SKILLS,
+    START_DOC,
+    START_REPO_PATH,
+    START_SECTION,
     CurationHandler,
     _docs_payload,
     _records_payload,
+    _schema_payload,
     _version_payload,
 )
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
@@ -33,6 +39,7 @@ from data_foundry.curation.store import (
     load_all,
     load_record,
     markdown_to_record,
+    record_from_dict,
     record_to_dict,
     record_to_markdown,
     save_record,
@@ -52,6 +59,8 @@ def sample_record() -> CurationRecord:
         name="musk",
         checked_by=["Lennart", "Andrej"],
         data_foundry_status=["DF: Yes", "BeyondArena"],
+        suggestion="Yes",
+        priority=4,
         decision_markers=["Duplicate", "Data Quality Issue"],
         tags=["Tiny Data", "Non-IID (Grouped)"],
         required_split=["Grouped (NON-IID)", "?"],
@@ -69,6 +78,53 @@ def test_markdown_roundtrip(sample_record: CurationRecord) -> None:
     """A record survives markdown serialisation unchanged."""
     parsed = markdown_to_record(record_to_markdown(sample_record))
     assert parsed == sample_record
+    assert parsed.priority == 4
+
+
+def test_dict_roundtrip(sample_record: CurationRecord) -> None:
+    """``record_to_dict`` and ``record_from_dict`` (the dashboard's JSON path) keep every field, priority included."""
+    data = record_to_dict(sample_record)
+    assert data["priority"] == 4
+    assert record_from_dict(data) == sample_record
+    assert record_from_dict({**data, "priority": None}).priority is None
+
+
+def test_priority_sits_after_the_suggestion() -> None:
+    """``priority`` follows ``suggestion`` in the schema and in the front matter, written as a plain integer."""
+    names = [f.name for f in FIELDS]
+    assert names[names.index("suggestion") + 1] == "priority"
+    assert next(f for f in FIELDS if f.name == "priority").kind == "number"
+
+    text = record_to_markdown(_record("a", suggestion="Yes", priority=5, decision_markers=["TBD"]))
+    assert text.index("suggestion:") < text.index("priority: 5\n") < text.index("decision_markers:")
+    assert "priority:" not in record_to_markdown(_record("b", suggestion="No")), "an empty priority is omitted"
+
+
+@pytest.mark.parametrize("value", [0, 6, -1, "high"])
+def test_an_out_of_range_priority_fails_to_parse(value: object) -> None:
+    """A priority is an integer from 1 to 5; anything else is not a record."""
+    text = record_to_markdown(_record("a")).replace("name: a\n", f"name: a\npriority: {value}\n")
+    assert f"priority: {value}" in text
+    with pytest.raises(pydantic.ValidationError):
+        markdown_to_record(text)
+    with pytest.raises(pydantic.ValidationError):
+        _record("a", priority=value)
+
+
+def test_describe_shows_the_priority(sample_record: CurationRecord) -> None:
+    """The one-record summary lists the priority under its label."""
+    line = next(ln for ln in sample_record.describe().splitlines() if ln.strip().startswith("Priority:"))
+    assert line.split()[-1] == "4"
+    assert next(ln for ln in _record("a").describe().splitlines() if "Priority:" in ln).split()[-1] == "None"
+
+
+def test_schema_payload_has_the_number_field() -> None:
+    """The dashboard learns from the schema that ``priority`` is a number column, with its help text."""
+    fields = {f["name"]: f for f in _schema_payload()["fields"]}
+    assert fields["priority"]["kind"] == "number"
+    assert fields["priority"]["label"] == "Priority"
+    assert fields["priority"]["vocab"] is None
+    assert "/screen-candidates" in fields["priority"]["help"]
 
 
 def test_empty_fields_omitted_from_front_matter(sample_record: CurationRecord) -> None:
@@ -112,7 +168,8 @@ def test_build_site(tmp_path, sample_record: CurationRecord) -> None:
     assert "window.DF_STATIC = true" in guidelines
     assert "markdown-it@14.1.0" in guidelines
     manifest = json.loads((out / "docs" / "manifest.json").read_text(encoding="utf-8"))
-    assert [s["skill"] for s in manifest["sections"]] == list(GUIDELINE_SKILLS)
+    # The Start here page leads when the repo has a .claude/skills/README.md.
+    assert [s["skill"] for s in manifest["sections"] if s["skill"] != START_SECTION] == list(GUIDELINE_SKILLS)
     for doc in manifest["docs"]:
         assert (out / "docs" / doc["skill"] / doc["path"]).is_file(), doc
 
@@ -174,6 +231,27 @@ def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
     assert df.shape[0] == 1
     assert df.loc[0, "Checked by"] == "Lennart | Andrej"
     assert df.loc[0, "unique_name"] == "musk"
+    assert df.loc[0, "Priority"] == 4
+
+
+def test_exporter_keeps_priority_an_integer_column(tmp_path, sample_record: CurationRecord) -> None:
+    """Priority and Source Row stay nullable integers: empty where unset, and the Parquet export still writes."""
+    records = tmp_path / "records"
+    save_record(sample_record, records)
+    save_record(_record("unscreened"), records)
+    df = exporter.to_dataframe(directory=records)
+    assert str(df["Priority"].dtype) == "Int64"
+    assert str(df["Source Row"].dtype) == "Int64"
+    priority = df.set_index("unique_name")["Priority"]
+    assert priority["musk"] == 4
+    assert pd.isna(priority["unscreened"])
+
+    csv = exporter.export_csv(tmp_path / "out.csv", records).read_text(encoding="utf-8").splitlines()
+    header = csv[0].split(",")
+    assert csv[1].split(",")[header.index("Priority")] == "4"
+    pytest.importorskip("pyarrow")
+    back = pd.read_parquet(exporter.export_parquet(tmp_path / "out.parquet", records))
+    assert back.set_index("unique_name").loc["musk", "Priority"] == 4
 
 
 def _notebooks(*paths: Path) -> None:
@@ -349,7 +427,7 @@ def guideline_repo(tmp_path, monkeypatch) -> Path:
         "knowledge-curation/references/notes.txt": "not markdown",
         "knowledge-curation/.hidden.md": "# Hidden\n",
         "knowledge-data-foundry/SKILL.md": "# Data Foundry knowledge\n",
-        "triage-candidates/SKILL.md": "# Another skill\n",
+        "screen-candidates/SKILL.md": "# Another skill\n",
     }
     for rel, text in files.items():
         (skills / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -386,6 +464,40 @@ def test_docs_manifest_is_empty_without_the_skill_folders(tmp_path, monkeypatch)
     assert manifest["docs"] == []
 
 
+_START_README = """# Skills
+
+Start with [the curation knowledge](knowledge-curation/SKILL.md), then [screening](screen-candidates/SKILL.md).
+"""
+
+
+def test_build_site_has_the_start_here_page_when_a_readme_is_given(guideline_repo: Path) -> None:
+    """A given README becomes the first section and page, "Start here", copied to ``docs/start/README.md``."""
+    readme = guideline_repo / "elsewhere" / "README.md"
+    readme.parent.mkdir()
+    readme.write_text(_START_README, encoding="utf-8")
+    out = build_site(guideline_repo / "site", guideline_repo / "curation" / "records", start_readme=readme)
+
+    manifest = json.loads((out / "docs" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["sections"][0] == {"skill": START_SECTION, "title": "Start here"}
+    assert [s["skill"] for s in manifest["sections"][1:]] == list(GUIDELINE_SKILLS)
+    first = manifest["docs"][0]
+    assert first == {
+        "skill": START_SECTION,
+        "path": "README.md",
+        "repo_path": START_REPO_PATH,
+        "title": "Start here",
+        "heading": "Skills",
+    }
+    assert f"{first['skill']}/{first['path']}" == START_DOC
+    assert (out / "docs" / START_DOC).read_text(encoding="utf-8") == _START_README
+    assert [d["skill"] for d in manifest["docs"]].count(START_SECTION) == 1
+
+    # Without the README (none in the fixture's .claude/skills/) the page is left out.
+    plain = build_site(guideline_repo / "plain", guideline_repo / "curation" / "records")
+    assert not (plain / "docs" / START_SECTION).exists()
+    assert START_SECTION not in [s["skill"] for s in _docs_payload()["sections"]]
+
+
 def test_build_site_copies_the_guideline_docs(guideline_repo: Path) -> None:
     """The static build freezes the manifest and copies exactly the files it lists."""
     out = build_site(guideline_repo / "site", guideline_repo / "curation" / "records")
@@ -410,6 +522,17 @@ def server(guideline_repo: Path) -> Iterator[int]:
         httpd.shutdown()
         httpd.server_close()
         thread.join()
+
+
+def _put(port: int, path: str, payload: dict[str, object]) -> tuple[int, dict[str, object]]:
+    """PUT ``payload`` as JSON to ``path``; return status and the decoded JSON answer."""
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    try:
+        conn.request("PUT", path, body=json.dumps(payload), headers={"Content-Type": "application/json"})
+        resp = conn.getresponse()
+        return resp.status, json.loads(resp.read().decode("utf-8"))
+    finally:
+        conn.close()
 
 
 def _get(port: int, path: str) -> tuple[int, str, str]:
@@ -443,6 +566,35 @@ def test_server_serves_the_viewer_and_the_docs(server: int, guideline_repo: Path
     assert _get(server, "/docs/knowledge-data-foundry/SKILL.md")[0] == 200
 
 
+def test_server_serves_the_start_here_page_first(server: int, guideline_repo: Path) -> None:
+    """Given ``.claude/skills/README.md``, ``/api/docs`` lists Start here first and ``/docs/start/`` serves it."""
+    assert START_SECTION not in [s["skill"] for s in json.loads(_get(server, "/api/docs")[2])["sections"]]
+    (guideline_repo / ".claude" / "skills" / "README.md").write_text(_START_README, encoding="utf-8")
+
+    listing = json.loads(_get(server, "/api/docs")[2])
+    assert listing["sections"][0] == {"skill": START_SECTION, "title": "Start here"}
+    assert listing["docs"][0]["repo_path"] == START_REPO_PATH
+    assert _get(server, f"/docs/{START_DOC}") == (200, "text/markdown; charset=utf-8", _START_README)
+    assert _get(server, "/docs/start/SKILL.md")[0] == 404
+
+
+def test_server_saves_a_priority(server: int, guideline_repo: Path, sample_record: CurationRecord) -> None:
+    """A PUT of a priority rewrites the record; an out-of-range one is refused and leaves the file as it was."""
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    status, body = _put(server, "/api/records/musk", {"priority": 5})
+    assert (status, body["priority"]) == (200, 5)
+    assert "priority: 5\n" in path.read_text(encoding="utf-8")
+
+    before = path.read_text(encoding="utf-8")
+    status, body = _put(server, "/api/records/musk", {"priority": 9})
+    assert status == 500
+    assert "priority" in body["error"]
+    assert path.read_text(encoding="utf-8") == before
+
+    assert _put(server, "/api/records/musk", {"priority": None})[0] == 200
+    assert "priority:" not in path.read_text(encoding="utf-8")
+
+
 @pytest.mark.parametrize(
     "path",
     [
@@ -457,7 +609,7 @@ def test_server_serves_the_viewer_and_the_docs(server: int, guideline_repo: Path
         "/docs//knowledge-curation/SKILL.md",
         "/docs/knowledge-curation/references/notes.txt",
         "/docs/knowledge-curation/.hidden.md",
-        "/docs/triage-candidates/SKILL.md",
+        "/docs/screen-candidates/SKILL.md",
         "/docs/knowledge-curation/references/missing.md",
         "/docs/",
     ],

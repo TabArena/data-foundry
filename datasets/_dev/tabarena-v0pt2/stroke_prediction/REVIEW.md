@@ -10,7 +10,8 @@ The AI recommends `No`: the file is partly generated or altered (issue 1). The f
 
 - `year`: record `2021`, definition `2018`.
 
-**Record judgment:** valid with concerns, now leaning do not add (criterion 4B, partly generated data; issue 1).
+**Record judgment:** valid with concerns, now leaning do not add (SEL-16 and PROV-3 (criterion 4B), partly generated
+data; issue 1).
 Provenance is traced, but the data are partly generated or altered.
 
 **Issues for Lennart:**

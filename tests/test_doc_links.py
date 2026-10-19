@@ -15,6 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = [
     *sorted((ROOT / ".claude" / "skills").rglob("*.md")),
+    *sorted((ROOT / ".claude" / "agents").glob("*.md")),
     *(
         ROOT / name
         for name in ("AGENTS.md", "CLAUDE.md", "README.md", "CONTRIBUTING_DATASETS.md", "DATA_FOUNDRY_V1.md")
@@ -69,4 +70,5 @@ def test_docs_are_found():
     """The skills and docs above exist, so the link test covers them."""
     assert (ROOT / ".claude" / "skills" / "knowledge-curation" / "SKILL.md").exists()
     assert (ROOT / ".claude" / "skills" / "knowledge-data-foundry" / "SKILL.md").exists()
+    assert (ROOT / ".claude" / "skills" / "README.md").exists()
     assert len(DOCS) > 20

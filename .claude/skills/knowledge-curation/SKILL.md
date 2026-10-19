@@ -1,27 +1,38 @@
 ---
 name: knowledge-curation
-description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling. Selection criteria and verdicts, the use case and prediction point, IID / grouped / temporal splits, leaks, cleaning and features, whether a task is trivial or too small, sources and duplicates, the verification checklist, and how to write for the curator; plus a general probe library. Load it when advising on any of these, or when a workflow skill (/triage-candidates, /check-candidate, /add-dataset, /review-added-datasets) points to one of its files."
+description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths. The principles and how to decide (rank, Must / Should / Weigh, tensions, exceptions, consistent judgement), ethics and scope, the use case and prediction point, leaks, IID / grouped / temporal splits, sources and duplicates, whether a task is trivial or too small, cleaning and features; plus evidence and reading probes, the verification checklist, writing for the curator, and a general probe library. Load it when advising on any of these, or when a workflow skill (/screen-candidates, /review-screened-candidates, /add-dataset, /review-added-datasets) points to one of its files."
 user-invocable: false
 ---
 
 # Curation knowledge
 
-This skill holds knowledge, not steps: it never acts on its own. The workflow skills (`/triage-candidates`,
-`/check-candidate`, `/add-dataset`, `/review-added-datasets`, `/rebuild-working-copy`) say which file to read at which
+This skill holds knowledge, not steps: it never acts on its own. The workflow skills say which file to read at which
 step. Everything here would still hold with tooling other than Data Foundry; how this repository implements it is in
-the sibling skill [knowledge-data-foundry](../knowledge-data-foundry/SKILL.md).
+the sibling skill [knowledge-data-foundry](../knowledge-data-foundry/SKILL.md). The overview for people is the
+[skills README](../README.md).
 
-| Topic | File | Read it when |
+The files are ordered like a law book: an earlier part wins a conflict with a later one, and within a file an earlier
+rule wins over a later one of the same strength. Every rule has an ID (`LEAK-3`) and a strength (Must, Should,
+Weigh); cite them. Read [principles.md](references/principles.md) first.
+
+| Part | Principle | File | IDs | Read it when |
+|---|---|---|---|---|
+| 0 | how to decide | [principles.md](references/principles.md) | P1-P7 | before any judgment: the ranking, strengths, how to decide, tensions, exceptions and amendments, consistent judgement, arguing a call |
+| 1 | P1 ethics, P2 scope | [selection.md](references/selection.md) | `SEL` | screening or re-judging any record: scope rules, quick decision patterns, verdict values, the markers, the screening priority |
+| 2 | P3 a real use case | [use_case.md](references/use_case.md) | `USE` | before choosing a target, a column, a filter or a split |
+| 3 | P4 honest evaluation: leaks | [leak_checks.md](references/leak_checks.md) | `LEAK` | the data loads, or a column or dataset is suspected |
+| 4 | P4 honest evaluation: splits | [splits.md](references/splits.md) | `SPLIT` | deciding or checking a split |
+| 5 | P5 faithful, unique data | [provenance.md](references/provenance.md) | `PROV` | tracing a source or a duplicate, judging whether data is generated |
+| 6 | P6 worth benchmarking | [task_probes.md](references/task_probes.md) | `TP` | before proposing `Trivial` or `Too Small`, or answering a task-probe flag |
+| 7 | P7 the expert state | [cleaning_features.md](references/cleaning_features.md) | `CLEAN` | writing or reviewing the cleaning of a dataset |
+
+Procedure, at every rank:
+
+| File | IDs | Read it when |
 |---|---|---|
-| What belongs in the benchmark: scope, the five criteria, quick decision patterns, verdict values, markers, arguing a call | [selection.md](references/selection.md) | triaging or re-judging any record |
-| The use case, its fit, the prediction point, the real-world target, inputs known at prediction time, recurring entities and the cold start | [use_case.md](references/use_case.md) | before choosing a target, a column, a filter or a split |
-| IID, grouped and temporal splits: forecasting vs temporal tasks, windows, gaps and late labels, training history, group ids, hidden groups | [splits.md](references/splits.md) | deciding or checking a split |
-| Leaks: probes, mechanisms and what we did, what is not a leak, copies across the split, lessons from first suggestions | [leak_checks.md](references/leak_checks.md) | the data loads, or a column or dataset is suspected |
-| Cleaning to an expert state, missing and impossible values, encodings, dtypes, the target, which features we build, width | [cleaning_features.md](references/cleaning_features.md) | writing or reviewing the cleaning of a dataset |
-| Whether a task is worth benchmarking: the rules for the task-probe flags, forecasting-like tasks, cases, hidden-group and generated-data probes | [task_probes.md](references/task_probes.md) | before proposing `Trivial` or `Too Small`, or answering a probe flag |
-| Sources and year, duplicates, third-party copies, repairing from the origin, citing papers, competition pages, generated data | [provenance.md](references/provenance.md) | tracing a source or a duplicate |
-| The verification checklist and which stage runs which check | [verification.md](references/verification.md) | the last step of every workflow |
-| Record comments, dataset notes, the task summary, issues for the curator, reporting back | [writing.md](references/writing.md) | writing anything the curator will read |
+| [evidence.md](references/evidence.md) | `EV` | weighing evidence, settling a disputed fact, reading a probe flag |
+| [verification.md](references/verification.md) | | the last step of every workflow: the checklist and which stage runs which check |
+| [writing.md](references/writing.md) | | writing anything the curator will read: comments, notes, issues, the judgment record, reports |
 
 The general probe methods (leak, task, group, hidden-group and generated-data probes, as functions on a frame, a
 target and splits) are in [scripts/](scripts/); the commands that run them on a Data Foundry dataset are in the sibling
@@ -29,9 +40,7 @@ skill.
 
 ## Keeping it current
 
-* A curator's decision that becomes a standing rule goes into the file of its topic in the same change, with the name
-  and date (`Lennart, 2026-10-19`), and the case that prompted it as the example.
-* One rule lives in one file; other files link to it. When two statements disagree, the newer decision wins, and the
-  older text is corrected rather than left next to it.
-* Definitions and records cite `task_probes.md` by its rule numbers and `leak_checks.md` by name: keep both names and
-  the rule numbers stable.
+A curator's decision that becomes a standing rule goes into the file of its topic in the same change: a new rule placed
+by rank, or an amendment of an existing one under its ID, with the name and date and the case as a Cases row. An
+exception for one dataset leaves the rule unchanged. The details, and which names and numbers must stay stable, are in
+[principles.md](references/principles.md), "Exceptions and amendments" and "Keeping the rules current".

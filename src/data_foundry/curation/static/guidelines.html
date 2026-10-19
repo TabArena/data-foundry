@@ -6,7 +6,8 @@
 <title>Data Foundry — Guidelines</title>
 <!-- The guidelines are the markdown files of two skills (.claude/skills/knowledge-curation/ and
      .claude/skills/knowledge-data-foundry/), rendered here in the browser, so there is no second copy to
-     keep in sync. Live: the dashboard server answers api/docs (manifest) and docs/<skill>/<path>.md.
+     keep in sync. The first page, "Start here", is .claude/skills/README.md (docs/start/README.md), shown
+     when that file exists. Live: the dashboard server answers api/docs (manifest) and docs/<skill>/<path>.md.
      Static (GitHub Pages): build-site injects window.DF_STATIC and writes docs/manifest.json + the files. -->
 <script src="https://unpkg.com/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
 <style>
@@ -228,10 +229,12 @@ const DFDocs = (() => {
     return skills.includes(skill) && rest.length > skill.length + 1 ? rest : null;
   }
 
-  // Rewrite one link of the markdown file at repo path `from`. ctx = {blobBase, skills, page}.
-  //   absolute (scheme: or //host)                -> unchanged
-  //   .md inside a rendered skill (or "#heading")  -> page + "#doc=<skill>/<path>&h=<heading>"
-  //   any other relative path ("/x" = repo root)   -> blobBase + "/" + repo path (+ ?query, #fragment)
+  // Rewrite one link of the markdown file at repo path `from`. ctx = {blobBase, skills, page, docs}, where
+  // docs (optional) is a Map of repo path -> doc id for pages outside the skill folders (Start here).
+  //   absolute (scheme: or //host)                       -> unchanged
+  //   a page of this viewer: .md inside a rendered skill,
+  //   a path in ctx.docs, or "#heading"                  -> page + "#doc=<id>&h=<heading>"
+  //   any other relative path ("/x" = repo root)          -> blobBase + "/" + repo path (+ ?query, #fragment)
   function resolveLink(href, from, ctx) {
     const raw = String(href).trim();
     if (!raw || ABSOLUTE.test(raw) || raw.startsWith("//")) return href;
@@ -241,7 +244,7 @@ const DFDocs = (() => {
       target = joinPath(path.startsWith("/") ? "" : dirname(from), decode(path, decodeURI));
       if (target === null) return href;
     }
-    const doc = query ? null : viewerDoc(target, ctx.skills);
+    const doc = query ? null : (ctx.docs && ctx.docs.get(target)) || viewerDoc(target, ctx.skills);
     if (doc) return (ctx.page || "") + formatHash(doc, decode(frag, decodeURIComponent));
     return ctx.blobBase + "/" + encodeURI(target) + query + (frag ? "#" + frag : "");
   }
@@ -262,6 +265,7 @@ const DFDocs = (() => {
   const STATIC = !!window.DF_STATIC;
   const DEFAULT_BLOB = "https://github.com/TabArena/data-foundry/blob/main";
   const DEFAULT_SKILLS = ["knowledge-curation", "knowledge-data-foundry"];
+  const START = "start";  // the Start here section (.claude/skills/README.md): a page, not a skill folder
   const $ = (id) => document.getElementById(id);
   const docEl = $("df-doc"), footEl = $("df-docfoot"), tocEl = $("df-toc"), searchEl = $("df-search"), navBtn = $("df-navbtn");
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -269,7 +273,7 @@ const DFDocs = (() => {
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
   let manifest = { sections: [], docs: [] };
-  let ctx = { blobBase: DEFAULT_BLOB, skills: DEFAULT_SKILLS, page: "" };
+  let ctx = { blobBase: DEFAULT_BLOB, skills: DEFAULT_SKILLS, page: "", docs: new Map() };
   let byId = new Map();
   let current = null, loadSeq = 0, textsLoading = null;
   const texts = new Map();  // doc id -> markdown, for the page filter
@@ -311,7 +315,9 @@ const DFDocs = (() => {
     for (const sec of manifest.sections) {
       const docs = manifest.docs.filter((d) => d.skill === sec.skill);
       if (!docs.length) continue;
-      out.push(`<section class="sec"><div class="sec-t">${esc(sec.title)}</div>`);
+      // A section that is one page of the same name (Start here) needs no heading above it.
+      const lone = docs.length === 1 && docs[0].title === sec.title;
+      out.push(`<section class="sec">${lone ? "" : `<div class="sec-t">${esc(sec.title)}</div>`}`);
       for (const d of docs) {
         const id = docId(d);
         out.push(`<a class="doc" data-doc="${esc(id)}" href="${esc(DFDocs.formatHash(id))}" title="${esc(d.repo_path)}">${esc(d.title)}</a>`
@@ -509,8 +515,10 @@ const DFDocs = (() => {
     }
     ctx = {
       blobBase: String(manifest.github_blob_base || DEFAULT_BLOB).replace(/\/+$/, ""),
-      skills: manifest.sections.map((s) => s.skill),
+      skills: manifest.sections.map((s) => s.skill).filter((s) => s !== START),
       page: "",
+      // Every listed page by its repo path, so a link to .claude/skills/README.md opens Start here.
+      docs: new Map(manifest.docs.map((d) => [d.repo_path, docId(d)])),
     };
     byId = new Map(manifest.docs.map((d) => [docId(d), d]));
     buildNav();

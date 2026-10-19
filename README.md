@@ -219,18 +219,18 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The repo ships five curation workflows and two knowledge skills (in `.claude/skills/`).
-The knowledge skills, [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md) (how we decide and curate)
-and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements it), hold what
-every workflow applies; the dashboard's Guidelines page renders them.
+Working with Claude Code? The repo ships four curation commands and two knowledge skills (in `.claude/skills/`); start
+with [`.claude/skills/README.md`](.claude/skills/README.md), which the dashboard also shows as "Start here". In each of
+the two stages the AI works and the curator verifies:
 
-| Command | What it does |
-|---|---|
-| `/triage-candidates` | Starts the dashboard and drafts verdicts for untriaged records, so the agent can help decide which candidates belong. |
-| `/check-candidate <name>` | A cited second opinion on one dataset at any stage: traces the original source, verifies a finished definition, and writes the evidence into the record. |
-| `/add-dataset <name>` | Builds the v2 dataset folder (`dataset.py` + `explore.ipynb`) for a `Yes` candidate from its record, checks and verifies it, and leaves open questions in its `REVIEW.md`. |
-| `/review-added-datasets` | Builds the curator's review page for the datasets with open `REVIEW.md` files and applies the decisions. |
-| `/rebuild-working-copy` | Rebuilds the TabArena v0.2 working copy and verifies the build (comparison, reproduction from the traced inputs, backup). |
+| Stage | The AI works | The curator verifies |
+|---|---|---|
+| Screen: a quick pass from the source, with a priority | `/screen-candidates` | `/review-screened-candidates` (the dashboard) |
+| Add: build the dataset and attack it with a review panel | `/add-dataset` | `/review-added-datasets` (the review page) |
+
+The knowledge skills, [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md) (how we decide and curate, as
+ranked rules) and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements
+it), hold what every command applies; builds and commits happen only when the curator asks.
 
 Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md` and `examples/` cover it.
 
@@ -306,8 +306,9 @@ data-foundry/
 │   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
 │   ├── knowledge-curation/   # curation knowledge (references/) and the general probe library (scripts/)
-│   ├── knowledge-data-foundry/  # this repo's conventions (references/) and the probe commands (scripts/)
-│   └── rebuild-working-copy/scripts/  # rebuild the v0.2 working copy and verify the build
+│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the probe, pipeline and rebuild scripts
+│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets
+├── .claude/agents/           # the agents of screening and of the review panel
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
 ```

@@ -137,7 +137,7 @@ Do not re-implement any of this.
 ## In brief: `task_summary`
 
 The first attribute of the class and the first section of the README: what the dataset simulates, then our judgement
-of how closely it does ([use_case.md](../../knowledge-curation/references/use_case.md); style in
+of how closely it does (USE-1, USE-8 in [use_case.md](../../knowledge-curation/references/use_case.md); style in
 [writing.md](../../knowledge-curation/references/writing.md)). It is not stored in the container, so it never changes a
 checksum. `dataset check` reports `definition_summary_missing` (error) without it, `definition_no_use_case` (error)
 for `fit="none"`, and `definition_summary_long` (warning) for a field over 70 words.
@@ -171,14 +171,15 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `"business & marketing"`, `"insurance"`; the closest match when the record's value differs.
 * `source`: exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
   `"Customer"`, `"Other"`, `"ASlib"`: where the data was first published, with `source_url` pointing there
-  ([provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where the files are
-  downloaded from and names the original when the download is a copy.
-* `year`: the year of that first publication ([provenance.md](../../knowledge-curation/references/provenance.md)).
+  (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where
+  the files are downloaded from and names the original when the download is a copy.
+* `year`: the year of that first publication (PROV-9 in
+  [provenance.md](../../knowledge-curation/references/provenance.md)).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
-  when the task is temporal in nature but the release has no time index
-  ([splits.md](../../knowledge-curation/references/splits.md)).
+  when the task is temporal in nature but the release has no time index (SPLIT-8 in
+  [splits.md](../../knowledge-curation/references/splits.md)).
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
@@ -241,7 +242,7 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 #    then check for rows that are now copies (stereoisomers).
 # 7. TODO(verify): drop constant, all-missing and duplicated columns.
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
-# 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, section 5).
+# 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it.
 # 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
@@ -255,10 +256,10 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 ```
 
 Our own `_clean` never computes a feature value from a statistic over all rows: take it from the history before the
-oldest test window, or drop it (sf_permit_time counts standard phrases before 2020, the start of its oldest test
-window; home_credit_default_risk dropped `NEW_INC_BY_ORG` and a mean fill). Check that the source did not scale over
-all rows: every column of a block with mean 0 and SD 1, or min 0 and max 1, is the sign
-([leak_checks.md](../../knowledge-curation/references/leak_checks.md)).
+oldest test window, or drop it (LEAK-29; sf_permit_time counts standard phrases before 2020, the start of its oldest
+test window; home_credit_default_risk dropped `NEW_INC_BY_ORG` and a mean fill). Check that the source did not scale
+over all rows: every column of a block with mean 0 and SD 1, or min 0 and max 1, is the sign (LEAK-30 and probe 16 in
+[leak_checks.md](../../knowledge-curation/references/leak_checks.md)).
 
 ### pandas 2 and 3 build the same container
 
@@ -321,12 +322,12 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 ### Temporal: `Temporal` and `TemporalSplits`
 
 Declare `temporal = Temporal(on="date", splits=TemporalSplits(...))`: the time column and the test windows in one
-place. The horizon is a human judgment ([splits.md](../../knowledge-curation/references/splits.md)); write the reasoning
-in `splits_comment`, which replaces the generated text, so restate the windows (and any sub-sampling or trimming) in
-it. A window of fixed length is the horizon (`window` `unit` for a calendar unit, `window` steps for `unit="rows"`),
-and declaring it again is an error. Add `horizon=..., horizon_unit=...` only when the windows do not fix it:
-`unit="unique"` (anes counts election years, garments days), `window=None` (california, kick), or `_make_splits`
-(hotel).
+place. The horizon is a human judgment (SPLIT-12 in [splits.md](../../knowledge-curation/references/splits.md));
+write the reasoning in `splits_comment`, which replaces the generated text, so restate the windows (and any
+sub-sampling or trimming) in it. A window of fixed length is the horizon (`window` `unit` for a calendar unit, `window`
+steps for `unit="rows"`), and declaring it again is an error. Add `horizon=..., horizon_unit=...` only when the windows
+do not fix it: `unit="unique"` (anes counts election years, garments days), `window=None` (california, kick), or
+`_make_splits` (hotel).
 
 The gap between train and test is stored next to the horizon (`time_gap`, `time_gap_unit` in the split metadata, left
 out of the checksum while unset): the `gap` of a calendar or row window states it, while a gap of distinct time values
@@ -353,7 +354,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 
 The number of windows follows `recommended_dimensions` (20, 10, 3 or 1 times 3), never fewer than 3 (`splits_too_few`)
 and never a train side below half the data (`min_train_fraction=0.5`); then widen windows of fewer than about 50 test
-rows ([splits.md](../../knowledge-curation/references/splits.md)). Calendar windows end on unit boundaries;
+rows (SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). Calendar windows end on unit boundaries;
 `min_train_fraction` stops before a window whose train side is smaller than that share (of the distinct values for
 `"unique"`, of the rows otherwise) and, with `window=None` and `unit="unique"`, sizes the windows so they cover the
 newest `1 - min_train_fraction` of the values.
@@ -428,7 +429,7 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` | decide and document |
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
-| `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), rules 7 and 8) |
+| `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
 | `task_metric_empty`, `task_metric_problem_type_mismatch`, `task_metric_not_canonical` | leave `metric` unset, or use the canonical short name |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |

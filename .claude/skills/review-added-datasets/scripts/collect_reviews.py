@@ -37,13 +37,14 @@ FORMAT = HERE.parent / "references" / "review_file_format.md"
 
 TITLE_RE = re.compile(r"^# ([a-z0-9_]+)\s*$")
 LABEL_RE = re.compile(r"^\*\*([^*]+?):\*\*\s*(.*)$")
-BLOCKS = ("outcome", "points", "fields", "judgment", "issues")
+BLOCKS = ("outcome", "points", "fields", "judgment", "issues", "panel")
 """The blocks of a REVIEW.md, in the order they appear."""
 LABELS = {
     "Outcome": "outcome",
     "Main points": "points",
     "Record fields that disagree with the definition": "fields",
     "Record judgment": "judgment",
+    "Review panel": "panel",
 }
 ISSUES_LABEL = re.compile(r"^Issues(?: for [^*:]+)?$")
 FIELD_RE = re.compile(r"^- `([a-z_]+)`: record `([^`]+)`, definition `([^`]+)`\.?$")
@@ -76,6 +77,10 @@ class Entry:
     issues: str = ""
     numbers: list[int] = field(default_factory=list)
     fields: list[tuple[str, str, str]] = field(default_factory=list)
+    panel: str = ""
+    """The ``**Review panel:**`` block as written, label included; empty without one."""
+    panel_sections: list[str] = field(default_factory=list)
+    """The roles of the panel's ``<details>`` sections, in file order."""
 
 
 @dataclass
@@ -168,8 +173,14 @@ def _read_blocks(path: Path, lines: list[str]) -> dict[str, _Block]:
     """The labelled blocks after the title line, checked for order, repeats and stray text."""
     blocks: dict[str, _Block] = {}
     current: _Block | None = None
+    fenced = False
     for i in range(1, len(lines)):
         line = lines[i]
+        # Fenced code in the review panel is the panel's text, whatever its lines start with.
+        if current is not None and current.label == "Review panel" and (fenced or brp.FENCE.match(line)):
+            fenced = fenced != bool(brp.FENCE.match(line))
+            current.lines.append(line)
+            continue
         m = LABEL_RE.match(line)
         label = m.group(1).strip() if m else ""
         key = LABELS.get(label) or ("issues" if m and ISSUES_LABEL.match(label) else None)
@@ -181,14 +192,21 @@ def _read_blocks(path: Path, lines: list[str]) -> dict[str, _Block]:
             if current is not None:
                 current.lines.append(line)
             continue
-        if key in blocks:
-            raise ReviewFileError(path, i, f"a second `**{label}:**` block")
-        if current is not None and BLOCKS.index(key) < BLOCKS.index(next(reversed(blocks))):
-            raise ReviewFileError(path, i, f"`**{label}:**` comes before the blocks above it (see the format)")
+        _check_order(path, i, label, key, blocks)
         if key in ("fields", "issues") and m.group(2).strip():
             raise ReviewFileError(path, i, f"the `**{label}:**` label stands alone; its rows follow below it")
         current = blocks[key] = _Block(label, i, m.group(2))
     return blocks
+
+
+def _check_order(path: Path, index: int, label: str, key: str, blocks: dict[str, _Block]) -> None:
+    """A block label at ``index`` comes once, in the order of the format, and never after the review panel."""
+    if "panel" in blocks and key != "panel":
+        raise ReviewFileError(path, index, f"`**{label}:**` after `**Review panel:**`; the panel is the last block")
+    if key in blocks:
+        raise ReviewFileError(path, index, f"a second `**{label}:**` block")
+    if blocks and BLOCKS.index(key) < BLOCKS.index(next(reversed(blocks))):
+        raise ReviewFileError(path, index, f"`**{label}:**` comes before the blocks above it (see the format)")
 
 
 def _parse_fields(path: Path, block: _Block | None) -> list[tuple[str, str, str]]:
@@ -214,6 +232,20 @@ def _parse_fields(path: Path, block: _Block | None) -> list[tuple[str, str, str]
     return out
 
 
+def _check_panel(path: Path, lines: list[str], block: _Block | None) -> tuple[str, list[str]]:
+    """The review panel block as written (label included) and its roles, after the builder's own parser read it."""
+    if block is None:
+        return "", []
+    lines = [lines[block.start], *block.lines]
+    while lines and not lines[-1].strip():
+        lines.pop()
+    try:
+        panel = brp.split_panel(lines)
+    except brp.PanelFormatError as error:
+        raise ReviewFileError(path, block.start + error.index, error.message) from error
+    return "\n".join(lines), [s["title"] for s in panel["sections"]]
+
+
 def parse_review_file(path: Path, folder: str) -> Entry:
     """One dataset's REVIEW.md.
 
@@ -237,6 +269,7 @@ def parse_review_file(path: Path, folder: str) -> Entry:
         issues, numbers = _check_issues(path, blocks["issues"].start + 1, blocks["issues"].lines)
     if not numbers and not fields:
         raise ReviewFileError(path, None, "no open issue and no record field; delete the file")
+    panel, roles = _check_panel(path, lines, blocks.get("panel"))
     outcome = blocks["outcome"].text
     cell = _first_sentence(outcome)
     _check_outcome(path, blocks["outcome"].start, cell, name, folder)
@@ -252,6 +285,8 @@ def parse_review_file(path: Path, folder: str) -> Entry:
         issues=issues,
         numbers=numbers,
         fields=fields,
+        panel=panel,
+        panel_sections=roles,
     )
 
 
@@ -434,6 +469,8 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
             out += ["", f"**Record judgment:** {e.judgment}"]
         if e.numbers:
             out += ["", f"**{e.issues_label}:**", "", e.issues]
+        if e.panel:
+            out += ["", e.panel]
     return "\n".join(out) + "\n"
 
 
@@ -451,6 +488,12 @@ def check_report(path: Path, collected: Collected) -> None:
             raise ReviewFileError(e.source, None, f"the page would show issues {got}, the file has {e.numbers}")
         if len(report["fields"].get(e.name, [])) != len(e.fields):
             raise ReviewFileError(e.source, None, "the page would not show every record field")
+        panel = report["records"][e.name]["panel"]
+        got_roles = [s["title"] for s in panel["sections"]] if panel else []
+        if bool(panel) != bool(e.panel) or got_roles != e.panel_sections:
+            raise ReviewFileError(
+                e.source, None, f"the page would show the panel sections {got_roles}, the file has {e.panel_sections}"
+            )
     n_items = sum(len(s["items"]) for s in report["crosscut"])
     if n_items != collected.across_items:
         raise ReviewFileError(
@@ -485,7 +528,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"records {len(entries)} ({collected.n_folders} with a REVIEW.md, {len(entries) - collected.n_folders} "
         f"without a folder), issues {sum(len(e.numbers) for e in entries)}, "
-        f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}"
+        f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}, "
+        f"review panels {sum(1 for e in entries if e.panel)}"
     )
     print(f"{args.out} written")
     return 0

@@ -2,7 +2,7 @@
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/build_all.py <out_dir>
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/build_all.py <out_dir>
         [--root datasets/_dev/tabarena-v0pt2] [--jobs 16] [--previous <dir>] [--check-only] [--only a,b,...]
 
 Each dataset writes ``<out_dir>/<name>.json`` (see ``build_one.py``) and ``<name>.log``; this prints one line per

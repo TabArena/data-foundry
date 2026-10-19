@@ -3,7 +3,8 @@
 How to run the automated checks and the probes on a Data Foundry dataset, and the checks that only Data Foundry has.
 What to check and how to judge it is the general [verification.md](../../knowledge-curation/references/verification.md);
 how to read the probes is [leak_checks.md](../../knowledge-curation/references/leak_checks.md) and
-[task_probes.md](../../knowledge-curation/references/task_probes.md).
+[task_probes.md](../../knowledge-curation/references/task_probes.md). The readings of each flag, in rank order, are in
+[evidence.md](../../knowledge-curation/references/evidence.md), "Reading a probe".
 
 Run everything from the repository root with `.venv/bin/python`. On a shared machine cap the threads of every run
 (`OMP_NUM_THREADS=2 OMP_THREAD_LIMIT=2 OMP_WAIT_POLICY=PASSIVE MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2
@@ -68,13 +69,13 @@ K=.claude/skills/knowledge-data-foundry/scripts
   `uniform_within_class`).
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
-  splits of the shipped container; `--feature auto` adds the raw-feature test of rule 4. The runs used the shipped
+  splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped
   format-1 containers: say so when the v2 definition changed the split, the columns or the scoring.
 * `check_collection_bundles.py [--collection BeyondArena] [--json PATH]`: the bundle checks over every container of a
   registered collection, for the v1 collections ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)).
 
 A sweep over the working copy (`--all`, for example after a rebuild) writes its output to a scratch folder, never into
-git; `/rebuild-working-copy` runs it.
+git; the rebuild runs it ([rebuild.md](rebuild.md), step 6).
 
 ## Checks only Data Foundry has
 

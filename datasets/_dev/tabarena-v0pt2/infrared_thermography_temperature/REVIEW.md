@@ -42,7 +42,8 @@ kept. The modality marker is open.
    - Implemented: In scope as an exception, since Lennart asked to add the dataset. The curation_comments note names the
      conflict with the guidelines and gives the reasons: radiometric site temperatures in °C, sites named by ISO/TR
      13154, no images released, and the task is the source's calibration.
-   - Alternative: Exclude under criterion 4A: set No with Wrong Domain / Image and remove the folder.
+   - Alternative: Exclude under SEL-12 and SEL-13 (criterion 4A): set No with Wrong Domain / Image and remove the
+     folder.
    - Numbers: The face maximum T_Max1 alone, with the source's segmented calibration, reaches R^2 0.700. All features
      reach 0.709 (RF), and an additive model 0.727, which beats the calibration on 28/30 splits. Key points were placed
      by hand for about half the images (Zhou 2020 Sec. 2.2). Precedent: biomechanical_orthopaedic_prediction ships as

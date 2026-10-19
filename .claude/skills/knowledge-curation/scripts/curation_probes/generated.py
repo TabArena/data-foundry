@@ -77,6 +77,15 @@ INDEPENDENT_SHARE = 0.10
 UNIFORM_SHARE = 0.5
 
 
+FLAG_RULES = {
+    "formula": "PROV-3, SEL-16",
+    "rule_leaves": "PROV-3, SEL-16",
+    "independent_columns": "PROV-3, SEL-16",
+    "uniform_within_class": "PROV-3, SEL-16",
+}
+"""The rules each flag points to: the tests of ``provenance.md`` (PROV-3) and the scope rule SEL-16."""
+
+
 def design(df: pd.DataFrame, drop: list[str], *, codes: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Numeric features (datetimes as seconds, booleans as 0/1) and one-hot categoricals of few levels; with
     ``codes``, a categorical of more levels enters as its codes (for the tree).
@@ -404,4 +413,5 @@ def check_frame(df: pd.DataFrame, target: str, problem_type: str, group_cols: li
     ):
         flags.append("uniform_within_class")
     result["flags"] = flags
+    result["flag_rules"] = {flag: FLAG_RULES[flag] for flag in flags}
     return result

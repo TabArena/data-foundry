@@ -49,9 +49,10 @@ All commands run from the repository root in the repository's environment (`.ven
    (signal against dummy baselines) and, for a grouped task, `group_probes.py`. A task-probe flag is a question:
    check it against the benchmark's tuned methods (`tuned_results.py`) and answer it as
    [`task_probes.md`](.claude/skills/knowledge-curation/references/task_probes.md) says.
-7. **Second opinion.** `/check-candidate <unique_name>` in Claude Code runs the verification checklist
-   ([`verification.md`](.claude/skills/knowledge-curation/references/verification.md)): the provenance, scope, split
-   and leakage judgment the checks cannot make. Its `cannot-verify` items are what a reviewer reads first.
+7. **Second opinion.** `/add-dataset <unique_name>` in Claude Code, run on the existing folder, re-checks it: the
+   verification checklist ([`verification.md`](.claude/skills/knowledge-curation/references/verification.md)), the
+   provenance, scope, split and leakage judgment the checks cannot make, and a review panel of agents. The open
+   questions go into the folder's `REVIEW.md`, ranked; its `cannot-verify` items are what a reviewer reads first.
 8. **Open a PR** with `dataset.py`, `explore.ipynb` and the generated `README.md`. After review a curator runs
    `dataset build`, which saves the container with a new UUID and records it in the README; the working copy's
    `CHANGELOG.md` and dataset table are updated in the same change.

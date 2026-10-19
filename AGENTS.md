@@ -60,22 +60,25 @@ checking and maintaining those notebooks and their format-1 containers).
 
 ## High-leverage use cases for an agent
 
-Curation work runs through the skills in `.claude/skills/`. The knowledge they apply lives in two reference skills,
-read by every workflow at the step that needs it:
+Curation work runs through the skills in `.claude/skills/`; the overview for people (the commands, the pipeline, the
+review panel, how decisions are checked) is [`.claude/skills/README.md`](.claude/skills/README.md). The knowledge they
+apply lives in two reference skills, read by every workflow at the step that needs it:
 
 * [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md): how we decide whether a dataset belongs in
-  TabArena and how we curate it, independent of the tooling (selection, use case, splits, leaks, cleaning, task
-  quality, provenance, the verification checklist, writing for the curator), plus the general probe library;
+  TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths (principles,
+  scope, use case, leaks, splits, provenance, task quality, cleaning; evidence, the verification checklist, writing
+  for the curator), plus the general probe library;
 * [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md): how this repository implements it
   (records, dashboard, the v2 `dataset.py` API, checks and probe commands, the working copy, batch runs) and the house
   rules.
 
-The workflows form one pipeline: AI triage (`/triage-candidates`), the curator's check in the dashboard, AI adds the
-accepted records (`/add-dataset`, whose open questions go into each folder's `REVIEW.md`), the curator reviews them on
-the review page (`/review-added-datasets`), and the accepted datasets are built (`/rebuild-working-copy`).
-`/check-candidate` gives a cited second opinion on one dataset at any stage, including "is X ready?". Read the skill
-before doing its task; it names the knowledge files to read at each step. The dashboard's Guidelines page renders the
-two knowledge skills.
+The workflows form one pipeline of two stages, in each of which the AI works and the curator verifies: screening
+(`/screen-candidates`, a quick pass from the source with a priority, then `/review-screened-candidates` in the
+dashboard) and adding (`/add-dataset`, which builds the definition, runs a review panel of agents and leaves the open
+questions in each folder's `REVIEW.md`, then `/review-added-datasets` on the review page). Builds
+([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)) and commits happen only on the curator's
+ask. Read the skill before doing its task; it names the knowledge files to read at each step. The dashboard's
+Guidelines page renders the skills README and the two knowledge skills.
 
 ### Extending the package (schema, container, collections, examples)
 
@@ -183,15 +186,15 @@ bump versions or publish without explicit human authorization.
 | Public read-only backlog (GitHub Pages) | [tabarena.github.io/data-foundry](https://tabarena.github.io/data-foundry/) · [`.github/workflows/pages.yaml`](.github/workflows/pages.yaml) |
 | Curation knowledge (selection, use case, splits, leaks, cleaning, task quality, provenance, verification) | [`.claude/skills/knowledge-curation/SKILL.md`](.claude/skills/knowledge-curation/SKILL.md) |
 | Data Foundry knowledge (records, dashboard, `dataset.py`, checks and probes, working copy, house rules) | [`.claude/skills/knowledge-data-foundry/SKILL.md`](.claude/skills/knowledge-data-foundry/SKILL.md) |
-| Triage candidates (dashboard, AI triage) | [`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md) |
-| Check one dataset (second opinion with citations, "is it ready?") | [`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md) |
+| The curation skills for people (commands, pipeline, review panel) | [`.claude/skills/README.md`](.claude/skills/README.md) |
+| Screen candidates (quick pass, priority) and review the screening (dashboard) | [`.claude/skills/screen-candidates/SKILL.md`](.claude/skills/screen-candidates/SKILL.md) · [`.claude/skills/review-screened-candidates/SKILL.md`](.claude/skills/review-screened-candidates/SKILL.md) |
 | Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
-| Process a dataset, scaffold its v2 dataset folder | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
+| Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
-| Rebuild the TabArena v0.2 working copy and verify the build | [`.claude/skills/rebuild-working-copy/SKILL.md`](.claude/skills/rebuild-working-copy/SKILL.md) |
+| Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
 | Load / browse / benchmark shipped datasets | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |

@@ -22,6 +22,7 @@ REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "review-added-datasets" / "scripts"
 SCRIPT = SCRIPTS / "build_review_page.py"
 COLLECTOR = SCRIPTS / "collect_reviews.py"
+TEMPLATE = SCRIPTS.parent / "assets" / "review_page.html"
 ROOT = REPO / "datasets" / "_dev" / "tabarena-v0pt2"
 RECORDS = REPO / "curation" / "records"
 FIXTURE = Path(__file__).parent / "fixtures" / "review_page_report.md"
@@ -32,6 +33,9 @@ CHURN_SECTION = (
     + FIXTURE.read_text().split("### churn_telco_south_asia_duplicate\n", 1)[-1]
 )
 """The fixture report's last record section, to the end of the report."""
+AIRFOIL_REVIEW = REVIEW_FILES / "working_copy" / "airfoil_self_noise" / "REVIEW.md"
+PANEL_BLOCK = "**Review panel:**" + AIRFOIL_REVIEW.read_text().split("**Review panel:**", 1)[1].rstrip("\n")
+"""The review panel block of the example REVIEW.md, as written."""
 
 
 def _import(name: str, path: Path):
@@ -76,6 +80,13 @@ def test_collector_writes_the_fixture_report(crv, tmp_path):
     assert sorted(by_name) == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
     assert (by_name["airfoil_self_noise"].folder, by_name["airfoil_self_noise"].numbers) == ("airfoil_self_noise", [1])
     assert by_name["airfoil_self_noise"].fields == [("year", "2014", "1989")]
+    # The review panel is carried into the report as written, after the issues.
+    assert by_name["airfoil_self_noise"].panel == PANEL_BLOCK
+    assert by_name["airfoil_self_noise"].panel_sections == ["Claim audit", "Mediator"]
+    assert "Review panel" not in by_name["airfoil_self_noise"].issues
+    report = out.read_text()
+    assert PANEL_BLOCK + "\n\n### churn_telco_south_asia_duplicate" in report
+    assert report.index("**Issues for the curator:**") < report.index("**Review panel:**")
     # The record's block ends before the later CC comment.
     other = by_name["churn_telco_south_asia_duplicate"]
     assert (other.folder, other.cell, other.numbers) == (None, "not added; duplicate", [1])
@@ -132,6 +143,43 @@ def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, P
         ),
         ("records/churn_telco_south_asia_duplicate.md", "not added; duplicate", "duplicate", 12, "`not added`"),
         ("working_copy/REVIEW.md", "# Across datasets\n", "# Across datasets\nIntro.\n", 2, "only `### <section>`"),
+        # The review panel: one per file, the last block, every <details> closed.
+        (
+            "working_copy/airfoil_self_noise/REVIEW.md",
+            "issue 1.\n\n</details>\n",
+            "issue 1.\n\n</details>\n\n**Review panel:** ship.\n",
+            36,
+            "a second `**Review panel:**` block",
+        ),
+        (
+            "working_copy/airfoil_self_noise/REVIEW.md",
+            "issue 1.\n\n</details>\n",
+            "issue 1.\n\n</details>\n\n**Issues for the curator:**\n",
+            36,
+            "after `**Review panel:**`",
+        ),
+        (
+            "working_copy/airfoil_self_noise/REVIEW.md",
+            "| holds | |\n\n</details>\n",
+            "| holds | |\n\n",
+            21,
+            "is not closed",
+        ),
+        ("working_copy/airfoil_self_noise/REVIEW.md", "issue 1.\n\n</details>\n", "issue 1.\n", 30, "not closed"),
+        (
+            "working_copy/airfoil_self_noise/REVIEW.md",
+            "</details>\n\n<details><summary>Mediator",
+            "</details>\n\nStray.\n\n<details><summary>Mediator",
+            30,
+            "text outside a section",
+        ),
+        (
+            "working_copy/airfoil_self_noise/REVIEW.md",
+            "**Review panel:** ship (mediator).",
+            "**Review panel:**\n\nship (mediator).",
+            18,
+            "no summary",
+        ),
     ],
 )
 def test_collector_errors_name_the_file_and_line(crv, tmp_path, file, old, new, line, message):
@@ -140,6 +188,15 @@ def test_collector_errors_name_the_file_and_line(crv, tmp_path, file, old, new, 
     with pytest.raises(crv.ReviewFileError, match=re.escape(message)) as error:
         crv.collect(root, records)
     assert str(error.value).startswith(f"{path}, line {line}:" if line else f"{path}:")
+
+
+def test_collector_keeps_fenced_code_in_the_panel(crv, tmp_path):
+    """Inside a fence, a panel's lines are text: a `#` comment or a `</details>` neither breaks nor closes it."""
+    fenced = "```python\n# the check\nprint('</details>')\n```\n\nShip."
+    root, records, _ = _broken_copy(tmp_path, "working_copy/airfoil_self_noise/REVIEW.md", "Ship. The advocate", fenced)
+    entry = next(e for e in crv.collect(root, records).entries if e.name == "airfoil_self_noise")
+    assert entry.panel_sections == ["Claim audit", "Mediator"]
+    assert "# the check" in entry.panel
 
 
 def test_working_copy_review_files_collect_and_parse(crv, brp, tmp_path):
@@ -176,6 +233,9 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     assert [(it["n"], it["resolved"]) for it in added["items"]] == [(1, False)]
     assert "Keep the target in decibels?" in added["items"][0]["titleHtml"]
     assert added["fields"] == [{"key": "year", "field": "year", "record": "2014", "definition": "1989"}]
+    assert added["panel"]["recommendation"] == "ship (mediator)"
+    assert [s["title"] for s in added["panel"]["sections"]] == ["Claim audit", "Mediator"]
+    assert other["panel"] is None
 
     # The use case comes from the definition's task_summary.
     expected = brp.load_definition(ROOT / "airfoil_self_noise" / "dataset.py").task_summary.fields()
@@ -197,6 +257,7 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     assert "2 curation records" in data["subtitle"]
 
     assert "<title>Fixture Review</title>" in page
+    assert 'ctab("panel", "Panel")' in page
     assert re.search(r"__(TITLE|SUBTITLE|DATA)__", page) is None
     embedded = page.split('<script type="application/json" id="data">', 1)[1].split("</script>", 1)[0]
     assert json.loads(embedded) == data
@@ -214,6 +275,8 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
         ("year `2014`, definition `1989`.", "year 2014.", "- `airfoil_self_noise`", "field not understood"),
         ("### Framework (`src/data_foundry/v2/`)\n", "### Framework\nSome intro.\n", "Some intro.", "before the first"),
         ("   alternative.\n", "   alternative.\n1. **Again.** Twice.\n", "### airfoil_self_noise", "appear twice"),
+        ("issue 1.\n\n</details>\n", "issue 1.\n", "<details><summary>Mediator", "not closed"),
+        ("<details><summary>Claim audit", "<details open><summary>Claim audit", "<details open>", "on one line"),
     ],
 )
 def test_report_format_errors_name_the_line(brp, tmp_path, old, new, line_of, message):
@@ -227,6 +290,41 @@ def test_report_format_errors_name_the_line(brp, tmp_path, old, new, line_of, me
     with pytest.raises(brp.ReportFormatError, match=re.escape(message)) as error:
         brp.parse_report(path)
     assert f"line {line} " in str(error.value)
+
+
+def test_report_panel_becomes_page_data(brp, tmp_path):
+    """The builder reads the panel into summary, recommendation and sections; a record without one has none."""
+    text = FIXTURE.read_text().replace("Ship. The advocate", "**Split:** agreed.\n\nShip. The advocate", 1)
+    path = tmp_path / "report.md"
+    path.write_text(text)
+    records = brp.parse_report(path)["records"]
+    airfoil, churn = records["airfoil_self_noise"], records["churn_telco_south_asia_duplicate"]
+    assert churn["panel"] is None
+    assert brp._panel(churn["panel"]) is None
+    # The panel is the last block: a label-like line inside it stays in it, and the issues end before it.
+    assert list(airfoil["blocks"]) == ["outcome", "judgment"]
+    assert [it["n"] for it in airfoil["items"]] == [1]
+    assert "Review panel" not in airfoil["items"][0]["body_md"]
+
+    panel = brp._panel(airfoil["panel"])
+    assert sorted(panel) == ["recommendation", "sections", "summary"]
+    assert panel["recommendation"] == "ship (mediator)"
+    assert panel["summary"].startswith("<p>ship (mediator). Claim audit: 2 claims, 2 hold.")
+    claims, mediator = panel["sections"]
+    assert claims["title"] == "Claim audit"
+    assert "<table>" in claims["html"]
+    assert "<details" not in claims["html"]
+    assert mediator["title"] == "Mediator"
+    assert "<strong>Split:</strong> agreed." in mediator["html"]
+
+
+def test_template_has_the_panel_tab_and_keeps_the_store():
+    """The Panel tab follows Decisions; the store's collections and the mark fields are unchanged."""
+    page = TEMPLATE.read_text()
+    assert 'const CTABS = ["usecase", "decisions", "panel", "details", "code", "report", "record"];' in page
+    assert 'data-act="openpanel"' in page
+    assert '["reviews", "crosscut"].forEach((coll) => {' in page
+    assert "const S = { reviews: {}, crosscut: {} };" in page
 
 
 def test_shared_notes_follow_the_records_line(brp, tmp_path):

@@ -32,8 +32,8 @@ repository root:
   of these, with a manifest, is kept outside the repository (made on 2026-10-02; it also holds the inputs of the
   retired telemonitoring, fitness_club and parkinsons datasets).
 - To rebuild the whole folder, with the comparison against the previous build, the check from the traced inputs, the
-  backup and this table, follow the `/rebuild-working-copy` skill
-  ([`.claude/skills/rebuild-working-copy/SKILL.md`](../../../.claude/skills/rebuild-working-copy/SKILL.md)).
+  backup and this table, ask Claude to rebuild; it follows
+  [`rebuild.md`](../../../.claude/skills/knowledge-data-foundry/references/rebuild.md).
 - Build with the `build` extra installed (the repository's `.venv` has it). pandas 2.3 and pandas 3 give the same
   containers (checked on all datasets on 2026-10-06), and scikit-learn must stay below 1.8, which changes the grouped
   splits. The rows and splits are the same on every machine; a numpy log or exp can differ in its last bit between

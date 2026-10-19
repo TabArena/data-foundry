@@ -89,7 +89,7 @@ verify_saved_container(save_path, container=curated).raise_if_errors()
 
 ## Checking a shipped container
 
-For a shipped BeyondArena dataset (the verification of `/check-candidate` covers v2 definitions only):
+For a shipped BeyondArena dataset (the re-check of `/add-dataset` covers v2 definitions only):
 
 1. **Inputs.** The notebook is the record's `notebook_path`. Use it rather than guessing
    `datasets/**/<name>/<name>.ipynb`: a sibling such as `<name>_1m.ipynb` or `<name>_clf.ipynb` may be the run that

@@ -73,7 +73,9 @@ def render(r: dict) -> str:
             f"; within {r['classes']} classes: {r['class_pair_share']:.1%} of {r['class_pairs']} pairs dependent, "
             f"{r['class_uniform_columns']} of {r['class_uniform_tested']} uniform"
         )
-    return f"{r['name']} ({r['problem_type']}, {r['rows']} rows): {detail}; flags {r['flags']}"
+    rules = r.get("flag_rules", {})
+    flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in r["flags"]]
+    return f"{r['name']} ({r['problem_type']}, {r['rows']} rows): {detail}; flags {flags}"
 
 
 def main(argv: list[str] | None = None) -> int:

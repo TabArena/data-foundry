@@ -27,7 +27,7 @@ records older than the sale (issue 2) and pre-build sales (issue 4).
      - The 7 suburbs with 13-55% of their sales at $2M or more hold 45 of the 4,132 test rows, and 29 test rows are at
        $2M or more.
    - Implemented: keep, with an `Anomaly:` bullet and a decision table. This source cannot give the missing sales back.
-   - Question: is a task "price of a sale up to about $2.44M" acceptable? §D.6 asks to document a capped target;
+   - Question: is a task "price of a sale up to about $2.44M" acceptable? LEAK-26 asks to document a capped target;
      cirrhosis is a precedent for a recorded selection.
 
 2. **In the test period the site's record of a house is often older than the sale (new, from the verifier; reproduced).**
@@ -74,7 +74,7 @@ records older than the sale (issue 2) and pre-build sales (issue 4).
    - The probe's text encoding gains nothing: RF R² 0.849 with the text, 0.865 without; LightGBM 0.863 and 0.865.
      Tokenising drops the "/".
    - Kept as text, as melbourne_housing_market and california_house_prices_2020 do.
-   - Alternatives: a `UNIT` flag ("reconstruct destroyed meaning", patterns §D.12), with or without the text; or drop
+   - Alternatives: a `UNIT` flag ("reconstruct destroyed meaning", CLEAN-12), with or without the text; or drop
      ADDRESS.
    - Not tested: how `tabarena_default`'s text embedding uses the column.
 

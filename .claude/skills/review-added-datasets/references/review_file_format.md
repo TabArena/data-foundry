@@ -32,6 +32,7 @@ of a line, in this order:
 | `**Record fields that disagree with the definition:**` | no | One item per field, see below. |
 | `**Record judgment:**` | no | The AI's judgment of the record, in a few lines. |
 | `**Issues for <curator>:**` | no | The numbered issues. |
+| `**Review panel:**` | no | The review panel of `/add-dataset`: its summary, then one section per role, see below. |
 
 The first sentence of the outcome is the record's outcome on the page and sets its category:
 
@@ -80,6 +81,48 @@ Field names are lower case with `_`: `problem_type`, `required_split`, `original
 stored under the field name, so a field appears once per file. Record fields go only here, never into a numbered
 issue: an issue's marks do not say which value the record takes (Lennart, 2026-10-15, breast_cancer_prediction).
 Record changes that are not a disagreement (a dead link, a missing `v2_path`) need no mark: Claude makes them.
+
+### Review panel
+
+The review panel of `/add-dataset` (claim auditor, column auditor, split auditor, domain practitioner, blind
+reviewer, precedent checker, advocate, critic, mediator, review editor) leaves one optional block, the last of the
+file, after the issues:
+
+```markdown
+**Review panel:** ship after changes (mediator). Claim audit: 14 claims, 12 hold, 1 refuted (fixed), 1 untested.
+Blind review: would benchmark; main concern the year column. Debate: agreed on the split; disputed: keep `region`
+(issue 3).
+
+<details><summary>Claim audit</summary>
+
+| Claim | Source | Test | Result | Rule |
+|---|---|---|---|---|
+| ... | ... | ... | holds | LEAK-2 |
+
+</details>
+
+<details><summary>Mediator</summary>
+
+...markdown...
+
+</details>
+```
+
+* The summary is the first paragraph, starting on the label's line. Its first sentence, up to the first full stop,
+  is the panel's recommendation (`ship after changes (mediator)`), shown next to the curator's verdict box.
+* Then come only `<details><summary>Role</summary>` ... `</details>` sections, one per role, with markdown inside
+  (tables, lists, fenced code). The `<details>` line and the `</details>` line stand alone, and sections do not
+  nest. No `#` heading anywhere, as in the rest of the file: use bold text.
+* The panel holds no marks and no numbers: what the curator decides stays in the issues, which name the panel where
+  it matters ("the critic disputes this"). No issue holds a line that starts with `**Review panel:**`: that line
+  opens the panel and ends the issues.
+* The panel leaves with the file. While the file has open issues or field rows, the panel stays as the run wrote
+  it; when the last one is settled, the file and its panel are deleted. A panel alone does not keep a file.
+* Only a REVIEW.md has a panel; the open-issues block of a record without a folder has none.
+
+The collector stops on a second panel, a block label after the panel, a panel without its summary, text between the
+sections, a `<details>` without its `</details>` (or with a fenced block left open), a `</details>` without its
+`<details>`, or an empty section.
 
 ## Open issues of a record without a folder
 
@@ -152,6 +195,10 @@ checks that every issue it read arrives there.
   carry a tail in parentheses. Any other bold text at the start of a line is text of the current block.
 * An issue or cross-dataset item with a `Resolved` or `Deferred` label, or whose title starts with either word, is
   closed: the page hides it behind a toggle.
+* The collector copies a REVIEW.md's `**Review panel:**` block unchanged after the record's issues. The builder
+  takes everything from that label (outside fenced code) to the end of the record section as the panel and reads
+  its `<details>` sections itself, so their markdown renders with raw HTML off; a line inside the panel that looks
+  like another block label stays in the panel.
 * The builder also reads two things the collector does not write: a `(late)` tag after the record link, and shared
   notes, a `###` section with a heading in words that covers the records its first line `` Records: `a`, `b` ``
   names.
@@ -164,15 +211,18 @@ Its tabs, in this order:
 
 1. Use case: the definition's `task_summary` (or a `--tldr` entry).
 2. Decisions: the numbered issues and the record-field table, with their marks.
-3. Details: the outcome and the record judgment.
-4. `dataset.py`, 5. `README.md`, 6. Curation record: the files as of the build.
+3. Panel: the review panel's recommendation and summary, then one collapsible section per role, closed except the
+   Mediator's ("No review panel" for a record without one).
+4. Details: the outcome and the record judgment.
+5. `dataset.py`, 6. `README.md`, 7. Curation record: the files as of the build.
 
-The verdict box follows the tabs. The Across datasets view holds the cross-dataset items, and the Summary view all
-verdicts, the report's header, and the decisions as text or JSON.
+The verdict box follows the tabs; for a record with a panel, a line "Panel: <recommendation>" stands under its
+heading. The Across datasets view holds the cross-dataset items, and the Summary view all verdicts, the report's
+header, and the decisions as text or JSON.
 
 ## Example
 
-The test fixtures in `tests/fixtures/review_files/` are a complete example: one REVIEW.md
+The test fixtures in `tests/fixtures/review_files/` are a complete example: one REVIEW.md with a review panel
 (`working_copy/airfoil_self_noise/REVIEW.md`), the working copy's REVIEW.md (`working_copy/REVIEW.md`, the
 cross-dataset item above) and a record with an open-issues block (`records/churn_telco_south_asia_duplicate.md`,
 the block above). The REVIEW.md reads:
@@ -194,6 +244,24 @@ the block above). The REVIEW.md reads:
 
 1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
    alternative.
+
+**Review panel:** ship (mediator). Claim audit: 2 claims, 2 hold. Blind review: would benchmark; main concern the
+decibel scale. Debate: agreed on the random split; disputed: the target scale (issue 1).
+
+<details><summary>Claim audit</summary>
+
+| Claim | Source | Test | Result | Rule |
+|---|---|---|---|---|
+| 1,503 rows | UCI page | row count | holds | |
+| target in dB | NASA report, p. 3 | column range | holds | |
+
+</details>
+
+<details><summary>Mediator</summary>
+
+Ship. The advocate and the critic agree on the split; the target scale stays open as issue 1.
+
+</details>
 ```
 
 Collected with `--title "Added datasets: issues" --date 2026-10-01`, the three give

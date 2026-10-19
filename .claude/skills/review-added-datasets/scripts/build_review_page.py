@@ -113,6 +113,12 @@ NUMBERS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "ei
 RECORDS_LINE = re.compile(r"^Records?:\s*(.*)$")
 FIELD_LINE = re.compile(r"^- `([^`]+)`: (.*?)\.?$")
 FIELD_PART = re.compile(r"^(tag|[a-z_]+) `([^`]+)`, definition(?: source)? `([^`]+)`$")
+PANEL_LABEL = re.compile(r"^\*\*Review panel:\*\*\s*(.*)$")
+"""The review panel's label. The panel is the last block of a record section: it runs to the end of the section."""
+DETAILS_OPEN = re.compile(r"^<details>\s*<summary>(.+?)</summary>$")
+DETAILS_CLOSE = re.compile(r"^</details>$")
+FENCE = re.compile(r"^\s*(```|~~~)")
+SENTENCE_END = re.compile(r"\.(?=\s|$)")
 
 REGIME = {"iid": "iid", "temporal_non_iid": "temporal", "grouped_non_iid": "grouped"}
 """README `task.split_regime` values to the regime names the page uses."""
@@ -138,6 +144,16 @@ class ReportFormatError(ValueError):
 
 class BuildError(RuntimeError):
     """The report is well formed, but the repository does not hold what it names."""
+
+
+class PanelFormatError(ValueError):
+    """A review panel block does not follow the format; ``index`` counts from the block's label line (0)."""
+
+    def __init__(self, index: int, message: str) -> None:
+        """Keep the line within the block, for the caller to name the line in its file."""
+        super().__init__(message)
+        self.index = index
+        self.message = message
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -248,6 +264,105 @@ def _split_items(text: str) -> tuple[str, list[dict[str, Any]]]:
             },
         )
     return "\n".join(intro).strip(), items
+
+
+def panel_start(lines: list[str]) -> int | None:
+    """The index of the review panel's label line among ``lines``, outside fenced code; None without a panel."""
+    fenced = False
+    for i, line in enumerate(lines):
+        if FENCE.match(line):
+            fenced = not fenced
+        elif not fenced and PANEL_LABEL.match(line):
+            return i
+    return None
+
+
+@dataclass
+class _OpenSection:
+    """A ``<details>`` section of the review panel being read: its line, its role, its lines so far."""
+
+    at: int
+    title: str
+    body: list[str]
+    fenced: bool = False
+
+
+def _panel_summary(lines: list[str]) -> tuple[str, int]:
+    """The panel's summary paragraph (it starts on the label line) and the index of the line after it."""
+    m = PANEL_LABEL.match(lines[0]) if lines else None
+    if m is None:
+        raise PanelFormatError(0, "the panel starts with its label `**Review panel:**`")
+    i = 1
+    while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith("<details"):
+        i += 1
+    summary_md = "\n".join([m.group(1), *lines[1:i]]).strip()
+    if not summary_md:
+        raise PanelFormatError(0, "no summary: the panel's recommendation and summary follow the label on its line")
+    return summary_md, i
+
+
+def _open_section(line: str, k: int, current: _OpenSection | None) -> _OpenSection:
+    if current is not None:
+        raise PanelFormatError(current.at, "this `<details>` is not closed: end it with `</details>` first")
+    opened = DETAILS_OPEN.match(line.strip())
+    if opened is None or not opened.group(1).strip():
+        raise PanelFormatError(k, "a section opens with `<details><summary>Role</summary>` on one line")
+    return _OpenSection(k, opened.group(1).strip(), [])
+
+
+def _close_section(k: int, current: _OpenSection | None) -> dict[str, str]:
+    if current is None:
+        raise PanelFormatError(k, "`</details>` without its `<details><summary>Role</summary>`")
+    if not "".join(current.body).strip():
+        raise PanelFormatError(current.at, f"the `{current.title}` section is empty; leave it out")
+    return {"title": current.title, "md": _dedent(current.body).strip()}
+
+
+def _panel_sections(lines: list[str], start: int) -> list[dict[str, str]]:
+    """The ``<details>`` sections from ``start`` on; inside a fence, ``<details>`` lines are text."""
+    sections: list[dict[str, str]] = []
+    current: _OpenSection | None = None
+    for k in range(start, len(lines)):
+        line, stripped = lines[k], lines[k].strip()
+        if current is not None and (current.fenced or FENCE.match(line)):
+            current.fenced = current.fenced != bool(FENCE.match(line))
+            current.body.append(line)
+        elif stripped.startswith("<details"):
+            current = _open_section(line, k, current)
+        elif DETAILS_CLOSE.match(stripped):
+            sections.append(_close_section(k, current))
+            current = None
+        elif current is not None:
+            current.body.append(line)
+        elif stripped:
+            raise PanelFormatError(
+                k,
+                "text outside a section; after the summary paragraph come only `<details><summary>Role</summary>` "
+                "... `</details>` sections",
+            )
+    if current is not None:
+        fence = " (a code fence in it is not closed)" if current.fenced else ""
+        raise PanelFormatError(current.at, f"this `<details>` is not closed with `</details>`{fence}")
+    return sections
+
+
+def split_panel(lines: list[str]) -> dict[str, Any]:
+    """The review panel block, ``lines[0]`` being its label line: the summary, the recommendation, the sections.
+
+    The summary is the first paragraph (it starts on the label line); its first sentence, up to the first full stop,
+    is the panel's recommendation. Then come only ``<details><summary>Role</summary>`` ... ``</details>`` sections,
+    one per role, each with markdown inside. The ``<details>`` wrapper is read here, so the markdown inside renders
+    with raw HTML off.
+
+    Raises:
+        PanelFormatError: The block does not follow ``references/review_file_format.md``; its ``index`` counts
+            from the label line.
+    """
+    summary_md, start = _panel_summary(lines)
+    sections = _panel_sections(lines, start)
+    flat = " ".join(summary_md.split())
+    cut = SENTENCE_END.search(flat)
+    return {"summary_md": summary_md, "recommendation": flat[: cut.start()] if cut else flat, "sections": sections}
 
 
 def _cells(line: str) -> list[str]:
@@ -398,6 +513,19 @@ def _shared_records(
     raise fail("name the records these shared notes cover in a first line ``Records: `a`, `b` ``")
 
 
+def _cut_panel(rec: dict[str, Any], name: str, fail: Callable[..., ReportFormatError]) -> dict[str, Any] | None:
+    """The record section's review panel, cut from its lines: the last block, from its label to the section's end."""
+    at = panel_start(rec["lines"])
+    if at is None:
+        return None
+    try:
+        panel = split_panel(rec["lines"][at:])
+    except PanelFormatError as error:
+        raise fail(rec["line"] + 1 + at + error.index, f"### {name}", error.message) from error
+    rec["lines"] = rec["lines"][:at]
+    return panel
+
+
 def _parse_records(
     lines: list[str],
     parts: list[Span],
@@ -429,13 +557,14 @@ def _parse_records(
                 shared.setdefault(n, []).append({"title": sec_title, "md": "\n".join(body)})
             order.append("")
     for name, rec in records.items():
+        panel = _cut_panel(rec, name, fail)
         blocks = _split_blocks(rec["lines"])
         intro, items = _split_items(blocks.pop("issues", ""))
         numbers = [it["n"] for it in items]
         twice = sorted({n for n in numbers if numbers.count(n) > 1})
         if twice:
             raise fail(rec["line"], f"### {name}", f"issue number(s) {twice} appear twice; marks are stored by number")
-        rec.update(blocks=blocks, issues_intro=intro, items=items)
+        rec.update(blocks=blocks, issues_intro=intro, items=items, panel=panel)
     return records, shared
 
 
@@ -760,6 +889,17 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     }
 
 
+def _panel(panel: dict[str, Any] | None) -> dict[str, Any] | None:
+    """The review panel as the page shows it: the summary as HTML, the recommendation as text, the role sections."""
+    if panel is None:
+        return None
+    return {
+        "summary": render(panel["summary_md"]),
+        "recommendation": panel["recommendation"],
+        "sections": [{"title": s["title"], "html": render(s["md"])} for s in panel["sections"]],
+    }
+
+
 def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: dict[str, Any]) -> dict[str, Any]:
     """Everything the page shows for one record."""
     name = row["name"]
@@ -799,6 +939,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
             {"key": k, "title": SECTION_TITLES[k], "html": render(v)} for k, v in rec["blocks"].items() if v.strip()
         ],
         "shared": [{"title": s["title"], "html": render(s["md"])} for s in report["shared"].get(name, [])],
+        "panel": _panel(rec.get("panel")),
         "code": files["code"],
         "retired": retired,
         "record": _record(record_path),
@@ -908,8 +1049,10 @@ def _report(data: dict[str, Any], out: Path) -> None:
     n_open = sum(1 for d in datasets for it in d["items"] if not it["resolved"])
     n_fields = sum(len(d["fields"]) for d in datasets)
     n_x = sum(len(s["items"]) for s in data["crosscut"])
+    n_panels = sum(1 for d in datasets if d["panel"])
     print(
-        f"records {len(datasets)}, issues {n_items} ({n_open} open), field rows {n_fields}, cross-dataset items {n_x}"
+        f"records {len(datasets)}, issues {n_items} ({n_open} open), field rows {n_fields}, cross-dataset items {n_x}, "
+        f"review panels {n_panels}"
     )
     cats: dict[str, int] = {}
     for d in datasets:

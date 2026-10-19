@@ -2,7 +2,7 @@
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/rebuild-working-copy/scripts/build_one.py <unique_name> <out.json>
+    .venv/bin/python .claude/skills/knowledge-data-foundry/scripts/build_one.py <unique_name> <out.json>
         [--root datasets/_dev/tabarena-v0pt2] [--check-only] [--trace-prepare]
 
 The JSON holds the status, the findings, the checksum, the UUID and saved path of a build, the time, the peak memory,

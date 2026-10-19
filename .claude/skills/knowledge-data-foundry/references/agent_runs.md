@@ -29,7 +29,7 @@ When the curator names several records or a dashboard filter (for example "every
 * The root filesystem holding `/tmp` and the session scratchpad has 48 GB; large intermediates go under the run folder
   in `local-data-warehouse/_runs/` (on `/home`, with 1.7 TB free). `/home` is slow for many small files.
 * Agents leave stray work (a `find /` ran 3.5 hours): check `ps` for long-running children before finishing.
-* Builds need memory more than cores: [the rebuild skill](../../rebuild-working-copy/SKILL.md) lists the peaks.
+* Builds need memory more than cores: [rebuild.md](rebuild.md) lists the peaks.
 
 ## Brief for a unit agent
 

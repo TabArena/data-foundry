@@ -8,7 +8,8 @@ diff a curator commits is minimal and reviewable.
 The Guidelines page (``guidelines.html``) renders the markdown files of the two knowledge skills
 (:data:`GUIDELINE_SKILLS`) in the browser, read from ``.claude/skills/`` on every request: ``/api/docs``
 lists them and ``/docs/<skill>/<path>.md`` returns one file as written, so the page and the skills an
-agent reads are the same text.
+agent reads are the same text. Its first page, "Start here", is ``.claude/skills/README.md`` (the map of
+all skills), served as ``/docs/start/README.md`` when the file exists.
 
 Start it with::
 
@@ -50,6 +51,14 @@ GUIDELINE_SKILLS: dict[str, str] = {
     "knowledge-data-foundry": "Data Foundry",
 }
 """Skills the Guidelines page (``guidelines.html``) renders: folder under ``.claude/skills`` -> section title."""
+
+START_SECTION: str = "start"
+"""Reserved section key of the Guidelines page's first entry, "Start here" (no skill folder has this name)."""
+START_TITLE: str = "Start here"
+START_DOC: str = f"{START_SECTION}/README.md"
+"""Key (and ``/docs/`` URL path) of the Start here page."""
+START_REPO_PATH: str = ".claude/skills/README.md"
+"""Where the Start here page lives in the repo; its relative links are resolved from here."""
 
 _FRONT_MATTER = re.compile(r"\A﻿?---[ \t]*\r?\n(?:.*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.DOTALL)
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -122,17 +131,32 @@ def _version_payload(directory: Path | None) -> dict[str, object]:
     return {"version": f"{newest}-{count}", "records": count}
 
 
-def guideline_doc_files() -> dict[str, Path]:
-    """Every markdown file of the guideline skills, keyed ``<skill>/<path>`` (posix, relative to the skill).
+def start_readme_path() -> Path:
+    """The Start here page: ``README.md`` at the top of ``.claude/skills`` (it need not exist)."""
+    return skills_dir() / "README.md"
 
-    This map is the whole set of files the server hands out under ``/docs/`` and the static build
-    copies: a request is looked up in it and never joined onto the file system, so no path can
-    leave the two skill folders. Hidden files and folders are skipped, and so is a file that
-    resolves outside its skill folder (a symlink out). The folders are read on every call, so an
+
+def guideline_doc_files(start_readme: Path | None = None) -> dict[str, Path]:
+    """Every markdown file of the Guidelines page, keyed ``<skill>/<path>`` (posix, relative to the skill).
+
+    The first key is :data:`START_DOC` when the Start here README exists; the guideline skills' files
+    follow. This map is the whole set of files the server hands out under ``/docs/`` and the static
+    build copies: a request is looked up in it and never joined onto the file system, so no path can
+    leave the README and the two skill folders. Hidden files and folders are skipped, and so is a file
+    that resolves outside its skill folder (a symlink out). The folders are read on every call, so an
     edited or added file shows without a restart.
+
+    Args:
+        start_readme: The Start here README (defaults to :func:`start_readme_path`).
+
+    Returns:
+        ``{"<skill>/<path>": file}``, the Start here page first.
     """
     root = skills_dir()
     files: dict[str, Path] = {}
+    readme = start_readme_path() if start_readme is None else Path(start_readme)
+    if readme.is_file():
+        files[START_DOC] = readme
     for skill in GUIDELINE_SKILLS:
         skill_dir = root / skill
         if not skill_dir.is_dir():
@@ -176,10 +200,12 @@ def _index_order(index: str, rel: str) -> tuple[bool, bool, int, str]:
 def _docs_payload(files: dict[str, Path] | None = None) -> dict[str, object]:
     """Manifest of the Guidelines page: the sections and, per markdown file, its skill, paths and title.
 
-    Each skill's ``SKILL.md`` comes first, titled "Overview"; the other files follow in the order
-    the ``SKILL.md`` first names them (its index), then by path. Any other title is the file's
-    first ``# `` heading, else its file name. Without the skill folders (a non-editable install)
-    ``docs`` is empty and the page links to the files on GitHub instead.
+    When ``files`` holds the Start here README (:data:`START_DOC`), its section and page come first,
+    both titled "Start here", with ``repo_path`` :data:`START_REPO_PATH`. Then each skill's ``SKILL.md``,
+    titled "Overview"; the other files follow in the order the ``SKILL.md`` first names them (its
+    index), then by path. Any other title is the file's first ``# `` heading, else its file name.
+    Without the skill folders (a non-editable install) ``docs`` is empty and the page links to the
+    files on GitHub instead.
 
     Args:
         files: The files to describe, as :func:`guideline_doc_files` returns them (read when omitted).
@@ -188,7 +214,19 @@ def _docs_payload(files: dict[str, Path] | None = None) -> dict[str, object]:
         ``{"github_blob_base", "sections": [{skill, title}], "docs": [{skill, path, repo_path, title, heading}]}``.
     """
     files = guideline_doc_files() if files is None else files
+    sections = [{"skill": skill, "title": title} for skill, title in GUIDELINE_SKILLS.items()]
     docs: list[dict[str, object]] = []
+    if START_DOC in files:
+        sections.insert(0, {"skill": START_SECTION, "title": START_TITLE})
+        docs.append(
+            {
+                "skill": START_SECTION,
+                "path": START_DOC.split("/", 1)[1],
+                "repo_path": START_REPO_PATH,
+                "title": START_TITLE,
+                "heading": _first_heading(files[START_DOC].read_text(encoding="utf-8")),
+            }
+        )
     for skill in GUIDELINE_SKILLS:
         texts = {
             key.split("/", 1)[1]: path.read_text(encoding="utf-8")
@@ -206,11 +244,7 @@ def _docs_payload(files: dict[str, Path] | None = None) -> dict[str, object]:
                     "heading": heading,
                 }
             )
-    return {
-        "github_blob_base": GITHUB_BLOB_BASE,
-        "sections": [{"skill": skill, "title": title} for skill, title in GUIDELINE_SKILLS.items()],
-        "docs": docs,
-    }
+    return {"github_blob_base": GITHUB_BLOB_BASE, "sections": sections, "docs": docs}
 
 
 class CurationHandler(BaseHTTPRequestHandler):
@@ -241,7 +275,7 @@ class CurationHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _send_doc(self, key: str) -> None:
-        """Send one guideline markdown file by its ``<skill>/<path>`` key; any other path is a 404."""
+        """Send one Guidelines markdown file by its ``<skill>/<path>`` key (or :data:`START_DOC`); else a 404."""
         path = guideline_doc_files().get(key)
         if path is None:
             self._send_json({"error": "not found"}, status=404)

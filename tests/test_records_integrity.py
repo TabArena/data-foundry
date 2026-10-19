@@ -212,6 +212,12 @@ def test_claims_belong_to_wip_records(records):
     assert not bad, f"claim convention violations: {bad}"
 
 
+def test_rejected_records_have_no_priority(records):
+    """A record whose suggestion starts with ``No`` carries no ``priority``: there is nothing to verify or add."""
+    bad = sorted(r.unique_name for r in records if (r.suggestion or "").startswith("No") and r.priority is not None)
+    assert not bad, f"rejected records with a priority: {bad}"
+
+
 def test_tabarena_records_checked_by_lennart_and_andrej(records):
     """Every TabArena (v0.1) record records review by both Lennart and Andrej."""
     bad = [
@@ -358,3 +364,27 @@ def test_beyond_arena_records_point_at_both_definitions(records):
         if "BeyondArena" in (r.data_foundry_status or []) and r.suggestion != RETIRED_SUGGESTION and not r.v2_path
     ]
     assert not missing, f"BeyondArena records without a v2_path: {missing}"
+
+
+def test_exception_lines_name_a_defined_rule_and_serve_a_principle(records):
+    """Every ``**Exception to <ID> (...)**`` line names a rule the knowledge files define and gives a reason with a
+    "Serves" part (the ID check waits until the knowledge files define rule IDs at all).
+    """
+    import importlib.util  # noqa: PLC0415 - the parser lives in a skill script, not in the package
+    import sys  # noqa: PLC0415
+
+    skills = Path(__file__).resolve().parents[1] / ".claude" / "skills"
+    path = skills / "knowledge-data-foundry" / "scripts" / "decision_register.py"
+    spec = importlib.util.spec_from_file_location("decision_register", path)
+    register = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = register  # dataclasses look their module up there
+    spec.loader.exec_module(register)
+    defined = register.rule_ids_defined(skills / "knowledge-curation")
+    problems = []
+    for r in records:
+        for line in register.parse_exception_lines(r.comments or ""):
+            if not line.rule_ids or (defined and set(line.rule_ids) - defined):
+                problems.append((r.unique_name, "rule IDs not defined", line.rule_ids))
+            if line.serves is None or not line.words_before_serves:
+                problems.append((r.unique_name, "no reason with a 'Serves P<k>' part", line.reason[:80]))
+    assert not problems, f"exception lines that break the format: {problems}"

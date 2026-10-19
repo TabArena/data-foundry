@@ -13,7 +13,8 @@ to point its fetches at the sibling JSON files and drop all write affordances.
 This keeps a single source of truth for the page and avoids drift. The
 Guidelines page (``guidelines.html``) gets the same flag and reads
 ``docs/manifest.json`` plus the knowledge skills' markdown files, copied to the
-``docs/<skill>/<path>.md`` URLs the live server answers.
+``docs/<skill>/<path>.md`` URLs the live server answers, and the Start here page
+(``.claude/skills/README.md``) as ``docs/start/README.md``.
 """
 
 from __future__ import annotations
@@ -35,17 +36,22 @@ from data_foundry.curation.app import (
 _STATIC_FLAG = "<script>window.DF_STATIC = true;</script>\n</head>"
 
 
-def build_site(out_dir: str | Path, directory: str | Path | None = None) -> Path:
+def build_site(
+    out_dir: str | Path, directory: str | Path | None = None, *, start_readme: str | Path | None = None
+) -> Path:
     """Write a read-only static site.
 
     The site is ``index.html`` + ``schema.json`` + ``records.json`` for the grid, the other
     static pages (``guidelines.html``), and ``docs/manifest.json`` with a copy of every
-    guideline markdown file under ``docs/<skill>/<path>.md``.
+    guideline markdown file under ``docs/<skill>/<path>.md`` (the Start here README as
+    ``docs/start/README.md``).
 
     Args:
         out_dir: Destination directory; created if missing. Existing pages, ``*.json`` and
             ``docs/`` files of the same name in it are overwritten (nothing is deleted).
         directory: Records directory to snapshot (defaults to the standard one).
+        start_readme: The Start here README (defaults to ``.claude/skills/README.md``); a missing
+            file leaves the page out.
 
     Returns:
         The output directory path.
@@ -68,7 +74,7 @@ def build_site(out_dir: str | Path, directory: str | Path | None = None) -> Path
 
     # The guideline docs: one manifest and the markdown files it lists, at the same relative URLs
     # (docs/<skill>/<path>.md) the live server answers.
-    files = guideline_doc_files()
+    files = guideline_doc_files(Path(start_readme) if start_readme is not None else None)
     docs = out / "docs"
     docs.mkdir(exist_ok=True)
     for key, path in files.items():

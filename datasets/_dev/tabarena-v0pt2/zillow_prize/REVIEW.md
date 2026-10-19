@@ -18,10 +18,10 @@ values (issues 1, 2).
    median in MAE on 8 of 9 (0.0074); Huber loss 9 of 9 in RMSE (0.0096); L2 loss 4 of 9 (-0.0049), and only through
    the rows with |logerror| > 1. My re-run on the final frame agrees (L1 0.0073, Huber 0.0101, both 9 of 9). So RMSE
    keeps a real signal for robust fits and mainly tests robustness to the extreme rows. Implemented: default RMSE
-   (add-dataset §A), MAE noted. Alternative: `metric = "mae"`, the source's scoring (task_probes.md rule 6;
-   `allstate_claims_severity` does this), although the TabArena adapter still falls back to RMSE
-   (`BENCHMARK_CHANGES_TODO.md`, "Dataset-specific metrics"). Top-coding the target at +-0.4 (Zillow's round-2 score)
-   is not needed for the signal and changes the target.
+   (definitions.md, Field mapping), MAE noted. Alternative: `metric = "mae"`, the source's scoring
+   (task_probes.md rule 6; `allstate_claims_severity` does this), although the TabArena adapter still falls back to RMSE
+   (`BENCHMARK_CHANGES_TODO.md`, "Dataset-specific metrics"). Top-coding the target at +-0.4 (Zillow's round-2 score) is
+   not needed for the signal and changes the target.
 
 2. **Is the signal enough?** The task probes flag `no_signal`, `drift_baseline` and `unstable`; untuned models do not
    beat the mean. I kept the task under rule 2 (small but real: robust LightGBM fits beat the mean on 9 of 9

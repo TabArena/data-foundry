@@ -37,7 +37,19 @@ every uncommitted curation change and offer the commit.
 * `**Assessment (AI, YYYY-MM-DD):**` is the AI's evidence and recommendation ("recommend ...; the curator has the
   call"). The verdict and markers stay as they are.
 * `**Counter-argument (AI):**` is a disagreement with a documented decision, argued from the data
-  ([selection.md](../../knowledge-curation/references/selection.md), "Arguing a call"). The fields stay as they are.
+  ([principles.md](../../knowledge-curation/references/principles.md), "Arguing a call"). The fields stay as they are.
+* `**Screening (AI, YYYY-MM-DD):**` is the dossier `/screen-candidates` writes: the verdict and priority in its first
+  line, then the source, the use case, siblings and duplicates, papers, the risks for adding and the priority factors
+  (the format is in [the skill](../../screen-candidates/SKILL.md), step 6). It sits right under the AI disclaimer.
+* `**Exception to <ID> (YYYY-MM-DD, Name):**` is a curator's decision to depart from a rule for this dataset: the fact
+  that sets the case apart, then `Serves P<k>: <why>.` The rule does not change; the dataset's notes and the Cases
+  table of the rule's file get the same exception
+  ([principles.md](../../knowledge-curation/references/principles.md), "Exceptions and amendments").
+  `test_records_integrity.py` checks that the ID exists and the reason is given.
+* `**Consistency check (AI, YYYY-MM-DD):**` is the AI's question to the curator when a decision departs from a rule
+  without a fact that sets it apart, contradicts a similar precedent, drifts from the curator's earlier calls, or is
+  the third exception of its kind ([principles.md](../../knowledge-curation/references/principles.md), "Consistent
+  judgement"). The curator's answer follows as a `CC` line; the check stays as the record of the question.
 * `**Open issues (AI, YYYY-MM-DD):**` followed by numbered issues: the open questions of a record that has no dataset
   folder, until the curator settles them (a folder keeps them in its `REVIEW.md`, [working_copy.md](working_copy.md)).
 * A field edit alone gets no comment: git records who changed what.
@@ -45,15 +57,17 @@ every uncommitted curation change and offer the commit.
 Never delete existing comments. Never name company code repositories in a record (house rules in the
 [skill index](../SKILL.md)).
 
-## AI triage of untriaged records (`AI (UNVERIFIED)`)
+## AI screening of untriaged records (`AI (UNVERIFIED)`)
 
-The AI may draft a provisional triage for a record without a verdict, honestly labelled until a curator verifies it:
+The AI may draft a provisional screening for a record without a verdict (`/screen-candidates`), honestly labelled
+until a curator verifies it:
 
-1. set a `suggestion` and any justified `decision_markers`;
+1. set a `suggestion` (`TBD -> Yes`, `TBD -> 2nd Tier` or `No`, never a plain `Yes`), any justified
+   `decision_markers`, and a `priority` from 1 to 5 unless the verdict is `No`;
 2. fill empty metadata (`problem_type`, `required_split`, `domain`, `year`, `original_data_state`) only where it can
    be inferred with confidence, never overwriting a value;
 3. add `AI (UNVERIFIED)` to `checked_by` and `AI-Filled (Verify)` to `tags`;
-4. put the "AI-FILLED, UNVERIFIED" disclaimer at the top of `## Comments`, then the assessment, keeping every
+4. put the "AI-FILLED, UNVERIFIED" disclaimer at the top of `## Comments`, then the screening block, keeping every
    existing note below it.
 
 `AI (UNVERIFIED)` in `checked_by` puts the record in the review queue (status 🤖) until a curator verifies it (the ✓
@@ -70,6 +84,7 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `data_foundry_status` | Work state and collection membership in one list (below). |
 | `claimed_by` | The curator holding a WIP claim (one name, never the AI). |
 | `suggestion` | The verdict; the one required field. |
+| `priority` | 1-5: how urgently a curator should verify the screening and send the record to `/add-dataset` (5 first). Set by `/screen-candidates`, changed by the curator; none on a rejected record. |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
 | `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`). Remove a tag that does not apply. |
 | `collections` | External benchmarks the dataset appears in (TabSTAR, CARTE/TARTE, TabRed, TableShift, ...), never our own. |
