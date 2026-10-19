@@ -224,9 +224,8 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   leak suspect; read what a dominant feature means (a listed price is the natural core of a sale price); `Trivial`
   needs the raw feature to match or beat the methods fold by fold (fitness_club). A small but real signal is no
   reason to retire, and neither is a cutoff on the best skill; real means the best method beats shuffled labels on
-  the split the use case needs, not that it beats the dummy on most folds (Andrej, 2026-10-19: forest_fires' R² 0.013
-  came from fires of the same day on both sides of a random split, and it was re-split by day); if tuned methods
-  spread, the dataset stays.
+  the split the use case needs, not that it beats the dummy on most folds; if tuned methods spread, the dataset
+  stays.
   * **Under class imbalance, accuracy against the majority class is not evidence** of anything, in either
     direction (Lennart, 2026-09-23). "78% accuracy on an 80% majority class" does not show a task is
     unlearnable, and a high accuracy does not show it is trivial. Judge learnability with ROC AUC (per class

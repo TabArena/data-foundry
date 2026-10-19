@@ -16,9 +16,8 @@ flag is read), so the next decision starts from the precedent.
    a task for a concrete reason found in the task itself; until one is found, the task stays. **Real means it beats
    shuffled labels on the split the use case needs** (Andrej, 2026-10-19): the best method's mean skill against the
    same method on shuffled labels and the same splits (below, "A small signal"). Beating the dummy on most folds is
-   not that test: repeated folds overlap, and shuffled labels often reach such counts too. forest_fires was kept on
-   26 of 32 folds (R² 0.013) and was then re-split by day: the signal came from fires of the same day on both sides of
-   a random split.
+   not enough: repeated folds overlap, and shuffled labels often reach better than baseline performance too, but
+   randomly.
 3. **If tuned methods spread, keep the dataset.** No further discussion is needed.
 4. **`Trivial` needs proof.** Read what the dominant feature means first: the natural core of a task (a listed price
    for a sale price, age for survival) is expected to dominate. Then test it: the raw feature, chosen on each
@@ -55,20 +54,6 @@ flag is read), so the next decision starts from the precedent.
   (a generated or edited dataset: `../../check-candidate/SKILL.md`, "Checking whether the data is generated"). Look
   at the raw feature without a model too: `Listed Price` used as the prediction scored R² 0.64 until the 39 listings
   at $0 were set aside, then 0.89-0.91.
-* **A small signal** (a `no_signal` flag that a tuned method answers by beating the dummy, by a little). Two checks,
-  in this order:
-  1. *The split.* Ask whether rows share something new data would not have (a day, a site, an entity) that a random
-     split puts on both sides, even when no single column holds it (Hidden groups, below). If so, re-split by it
-     first and judge the signal there.
-  2. *Shuffled labels.* Refit the best tuned method on at least 100 shuffles of the labels on the same splits (a
-     subset of 12 splits is enough on a small dataset; shuffle across groups when the labels are constant within
-     them) and compare mean skills; the p-value is the share of shuffles that reach the real skill. A real signal
-     stays above the shuffles (p ≤ 0.05). `explore_page.py` does the same for the three untuned families; a tuned
-     method has to be refitted by hand (a Slurm job, never the login node).
-
-  forest_fires (2026-10-19): on random splits TabPFN-3.5 reached R² 0.012, above all 200 shuffles (p = 0.005); on
-  splits by day, R² -0.002 (p = 0.16). With shuffled labels it still beat the mean on at least 10 of 12 splits in 11 of
-  200 shuffles. Re-split by day (evidence in the record).
 * **A zero-inflated regression target** (forest_fires: 48% zeros). Check the oracle bound (the true zero / non-zero
   indicator with the positives' train mean: R² 0.58) and a hurdle model, P(y > 0) × E[y | y > 0], with its two stages
   reported apart (AUC of y > 0: 0.51-0.58; R² on the positive rows: below 0). Neither stage was learnable, so the
