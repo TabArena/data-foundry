@@ -9,7 +9,6 @@ claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
-- Multi-target
 collections:
 - TabArena Reject
 original_source: UCI
@@ -40,6 +39,8 @@ CC (2026-10-15, Lennart): The task corrects the LDAPS forecast; without one ther
 **Assessment (AI, 2026-10-15):** 75 station-days dropped (2013-08-10, 2016-07-31, 2016-08-20, all on the training side; 7,648 rows remain). On the shipped windows the mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on forecast and present-day minimum on 7 of 9 windows (RMSE 0.785 against 0.823, paired SE 0.022).
 
 CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
+
+**Assessment (AI, 2026-10-19):** Multi-target removed: one target; the rule from caracas_cervical_cancer (2026-10-15) removes tags that do not apply.
 
 ## Reference
 

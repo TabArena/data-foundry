@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: Other
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/

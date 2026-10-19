@@ -28,6 +28,17 @@ We need to find a version with a timestamp (or treat it as forced IID), but offi
 
 **Assessment (AI, 2026-10-07):** An older release of the data in `numerai_v5_2` (added as `numerai_v5_2_1m`), so a `Duplicate` of it. The Kaggle file (owner `numerai`: "a sample of the training data used in the Numerai machine learning competition", CC0-1.0) holds 96,320 rows, 21 features and a binary target, with no era or id column, and the file order holds no era blocks (a split on the file order scores ROC AUC 0.526, random splits 0.525-0.528). The timestamp this record asks for exists only in v5.2. OpenML 23517 is the Kaggle sample re-encoded: same shape, class counts (48,658 / 47,662) and feature-target rank correlations; values and row order differ.
 
+**Open issues (AI, 2026-10-07):** not added; duplicate. An older release of the data in `numerai_v5_2`, without
+eras.
+
+1. **Mark the record `No` + `Duplicate` of `numerai_v5_2`** (`numerai_v5_2_duplicate` under the `_duplicate`
+   convention)? Nothing was implemented. The alternative is a forced-IID definition (`ForcedIIDFromTemporal`,
+   binary, 96,320 x 21, ROC AUC about 0.53). A random split there mixes rows of the same unknown weeks, which share
+   the market state.
+
+2. **Noted only (a licence is never a verdict reason):** the 2016 Kaggle sample is CC0-1.0, while v5.2 falls under
+   Numerai's Terms of Service, section 4.2 (see `numerai_v5_2`, issue 1).
+
 ## Reference
 
 Kaggle

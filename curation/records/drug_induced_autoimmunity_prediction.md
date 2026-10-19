@@ -16,7 +16,6 @@ year: '2025'
 domain: medical & healthcare
 required_split:
 - Random (IID)
-- '?'
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:

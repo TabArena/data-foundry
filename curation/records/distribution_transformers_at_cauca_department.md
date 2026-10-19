@@ -8,7 +8,6 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
 - New IID
 collections:
 - New (BeyondArena)

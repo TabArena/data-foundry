@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: UCI
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 source_links:
 - https://doi.org/10.24432/C5F600
 notebook_path: datasets/beyond_iid/old_iid/polish_companies_bankruptcy/polish_companies_bankruptcy.ipynb

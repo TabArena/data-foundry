@@ -4,6 +4,48 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (one source for the curation knowledge; `LEAK_AUDIT.md` and `NEW_DATASETS_ISSUES.md` removed)
+
+Lennart asked for one source of truth for the curation knowledge, shared by all skills and the website, and for the
+two extra documents of this folder to go. No container changes and nothing was built.
+
+- The skills: two reference skills hold the knowledge, `.claude/skills/knowledge-curation/` (selection, use case,
+  splits, leaks, cleaning and features, task probes, provenance, the verification checklist, writing for the curator,
+  and the general probe library) and `.claude/skills/knowledge-data-foundry/` (records, dashboard, the `dataset.py`
+  API, the checks and probe commands, this working copy, source access, batch runs, house rules). The workflow skills
+  keep only their steps and link the file each step needs. `/verify-dataset` is gone: its checklist is
+  `verification.md`, which every workflow runs as its last step, and `/check-candidate` answers "is X ready?". The
+  move resolved the contradictions between the old copies (PCA and scaling over all rows, feature engineering,
+  impossible values, `Multi-target`, rare classes, where evidence goes) by Lennart's latest decisions, and added the
+  review lessons no skill held (the company's own estimate as an input, one scale for a feature whose scale changes,
+  the real-world target, cold start against recurring entities, multi-label flags, a rebuild's origin, and how to write
+  an issue for the curator).
+- The probes: the methods are now a library without Data Foundry imports
+  (`.claude/skills/knowledge-curation/scripts/curation_probes/`); the command-line entry points keep their names and
+  flags in `.claude/skills/knowledge-data-foundry/scripts/`. The READMEs that name the group-probe path keep the old
+  path until their next `dataset check` or build.
+- The website: the dashboard's Guidelines page (and the GitHub Pages copy) renders the two knowledge skills from their
+  .md files instead of the hand-written `guidelines.html`; `build-site` copies them, and Pages also redeploys when they
+  change.
+- `LEAK_AUDIT.md` removed: its general findings were already in `leak_checks.md`, its per-dataset findings in the
+  records' dated audit lines. Four open findings went into their records as dated assessments for the next pass:
+  `thyroid_discordant` (an `age` of 455), `heloc` (588 rows of -9 in every feature), `homesite_quote_conversion` (two
+  warnings without a decision), `online_shoppers_purchasing_intention_dataset` (40 exact duplicates).
+- `NEW_DATASETS_ISSUES.md` (the report of the 2026-10-07 run) removed. Its open issues are in a `REVIEW.md` in 41
+  dataset folders (264 issues, 22 record-field rows); the 6 records that were not added carry theirs in an
+  `**Open issues (AI, 2026-10-07):**` block. Settled issues and the run logs were left out; all 40 cross-dataset
+  items were closed. `/review-added-datasets` builds its page from these files (`collect_reviews.py`, format in
+  `references/review_file_format.md`). A folder's README lists its `REVIEW.md`.
+- `digicow_farmer_training_adoption_challenge`: the curation comments no longer cite the removed file (the evidence is
+  an assessment in the record); new checksum `v2:6e9e68dd...`, README refreshed, not built.
+- `bias_correction_r_bias_correction_r_2`: the record's `Multi-target` tag removed (one target).
+- Records (Lennart, 2026-10-19): `required_split` set to the definition's regime in the 34 records that disagreed
+  (several values, `?`, `Custom`, empty, or the regime before a re-split such as airfoil_self_noise, superconductivity
+  and lgd now grouped), and `Non-IID (Grouped)` / `Non-IID (Temporal)` tags that contradict the definition removed,
+  as well as `Larger IID Data` (force_2020, open_university_learning_analytics_dataset) and `New IID` (lgd) on grouped
+  datasets.
+  `african_credit_scoring_challenge` verified (the AI flag and tag removed, the disclaimer relabelled as an AI summary).
+
 ## 2026-10-19 (scaling over all rows: two definitions fixed, the rest kept with notes)
 
 Lennart's marks on the scan of 2026-10-16 (review page, "Scaling over all rows"). A scaling over all rows is a weak
@@ -668,7 +710,7 @@ Lennart's marks and notes on the review page (scope: the 125 built datasets and 
   - generated or injected data: `hepatitis_c_egypt`, `high_storage_system_data_for_energy_optimization`;
   - classes recorded differently, plus personal data in the files: `churn_telco_europa`;
   - a recommender task: `farm_to_feed_shopping_basket_recommendation_challenge`.
-- Every issue and open decision, per dataset and across datasets, is in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
+- Every issue and open decision, per dataset and across datasets, was in `NEW_DATASETS_ISSUES.md` (removed 2026-10-19; the open ones are now in the folders' `REVIEW.md` files).
   It includes two bugs in datasets already here: `mic` reads its file without `header=None` and so loses patient 1,
   and multi-line `splits_comment`s keep their code indentation.
 - The records of all 68 carry a dated AI assessment comment. The records with a folder have their `v2_path` and

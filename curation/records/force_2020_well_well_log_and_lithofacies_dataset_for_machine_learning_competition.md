@@ -8,7 +8,6 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 tags:
-- Larger IID Data
 - Non-IID (Grouped)
 - Review Prio 1 (Atlas)
 collections:
@@ -18,8 +17,6 @@ year: '2020'
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
-- '?'
-- Random (IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:

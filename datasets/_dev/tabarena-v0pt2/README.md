@@ -5,19 +5,21 @@ Working setup towards TabArena-v0.2
 - **New here?** [`GETTING_STARTED.md`](GETTING_STARTED.md): set-up, the two workflows (settling a record, adding a
   dataset) and the large-data candidates to start with.
 - **Every change is logged** in [`CHANGELOG.md`](CHANGELOG.md): edits, added or removed files, re-runs that change a container.
-- The leak audit of September-October 2026 (removed and changed datasets, with severity) is summarised in [`LEAK_AUDIT.md`](LEAK_AUDIT.md).
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates from its `dataset.py`: the folder's files, links to the curation record and the source, how to rebuild, the evidence and the build record.
-- Open decisions are in the curation records (`curation/records/<name>.md`) and in the newest `CHANGELOG.md` entries.
-- 53 definitions added on 2026-10-07 from the curation backlog (59, of which 6 were retired on 2026-10-12 and 2026-10-14) are not built yet; their issues and the decisions they
-  need are in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
+- Open questions for the curator are in a folder's `REVIEW.md` while they are open (the review page of
+  `/review-added-datasets` is built from them); settled decisions are in the curation records
+  (`curation/records/<name>.md`), the definitions and the `CHANGELOG.md` entries. How curation works here: the
+  knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
+  [`knowledge-data-foundry`](../../../.claude/skills/knowledge-data-foundry/SKILL.md).
 
 ## Rebuild
 
 124 datasets were built on 2026-10-06 from the definitions in this folder (the UUIDs below; a 125th, `mutual_funds_india`,
 was retired on 2026-10-14), as container format 2 (`container.format_version == 2`); 15 of them were rebuilt on
-2026-10-14 after the review of their task summaries (`CHANGELOG.md`). The 53 definitions added on 2026-10-07 are not built yet ("not built"
-in the table). To rebuild one, from the repository root:
+2026-10-14 after the review of their task summaries (`CHANGELOG.md`). The definitions added since are not built yet, and a
+definition edited after its build shows "not built" in the table until its next build. To rebuild one, from the
+repository root:
 
 ```bash
 .venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/<name>   # no save; rewrites README.md
@@ -36,10 +38,11 @@ in the table). To rebuild one, from the repository root:
   containers (checked on all datasets on 2026-10-06), and scikit-learn must stay below 1.8, which changes the grouped
   splits. The rows and splits are the same on every machine; a numpy log or exp can differ in its last bit between
   CPUs, so a dataset with a log-scaled target may get another checksum elsewhere.
-- `.claude/skills/verify-dataset/scripts/task_probes.py --all --built` sweeps the built containers against dummy baselines (answer its flags with
-  `.claude/skills/verify-dataset/references/task_probes.md`; the decisions on this build are in the records and
-  `CHANGELOG.md`), and
-  `.claude/skills/verify-dataset/scripts/group_probes.py <name>` probes a grouped task.
+- `.claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built` sweeps the built containers against
+  dummy baselines (answer its flags with
+  [`task_probes.md`](../../../.claude/skills/knowledge-curation/references/task_probes.md); the decisions on this
+  build are in the records and `CHANGELOG.md`), and `.claude/skills/knowledge-data-foundry/scripts/group_probes.py
+  <name>` probes a grouped task.
 
 ## Datasets
 

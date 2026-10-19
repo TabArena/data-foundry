@@ -19,7 +19,6 @@ year: '2021'
 domain: finance
 required_split:
 - Temporal (NON-IID)
-- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:

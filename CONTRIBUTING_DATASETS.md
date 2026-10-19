@@ -45,12 +45,13 @@ All commands run from the repository root in the repository's environment (`.ven
 5. **Check.** `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` runs the whole pipeline and the
    bundle checks without saving, and writes `README.md`. Repeat until there are no errors. A warning that is correct
    for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail.
-6. **Probe.** `.claude/skills/verify-dataset/scripts/leak_probes.py <unique_name>` (leaks), `task_probes.py`
+6. **Probe.** `.claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>` (leaks), `task_probes.py`
    (signal against dummy baselines) and, for a grouped task, `group_probes.py`. A task-probe flag is a question:
    check it against the benchmark's tuned methods (`tuned_results.py`) and answer it as
-   `.claude/skills/verify-dataset/references/task_probes.md` says.
-7. **Second opinion.** `/verify-dataset <unique_name>` in Claude Code: the provenance, scope, split and leakage
-   judgment the checks cannot make. Its `cannot-verify` items are what a reviewer reads first.
+   [`task_probes.md`](.claude/skills/knowledge-curation/references/task_probes.md) says.
+7. **Second opinion.** `/check-candidate <unique_name>` in Claude Code runs the verification checklist
+   ([`verification.md`](.claude/skills/knowledge-curation/references/verification.md)): the provenance, scope, split
+   and leakage judgment the checks cannot make. Its `cannot-verify` items are what a reviewer reads first.
 8. **Open a PR** with `dataset.py`, `explore.ipynb` and the generated `README.md`. After review a curator runs
    `dataset build`, which saves the container with a new UUID and records it in the README; the working copy's
    `CHANGELOG.md` and dataset table are updated in the same change.
@@ -62,7 +63,7 @@ them: the dtype casts from `_feature_types`, the row order (the rows in the orde
 shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal windows; at most 1M train and 500k test rows per split;
 larger data as a sub-sampled `<name>_1m` version), standard NaNs, the metadata validation, the bundle checks and the
 verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
-dtypes, accepted warnings) are in [`dataset_patterns.md`](.claude/skills/add-dataset/references/dataset_patterns.md).
+dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-data-foundry/references/definitions.md).
 
 ## 4. Practices
 
@@ -81,9 +82,8 @@ dtypes, accepted warnings) are in [`dataset_patterns.md`](.claude/skills/add-dat
 
 * Template: [`datasets/_template/`](datasets/_template/)
 * The v2 package: [`src/data_foundry/v2/`](src/data_foundry/v2/)
-* Scaffolding and recipes: [`.claude/skills/add-dataset/`](.claude/skills/add-dataset/SKILL.md)
-* Verification and probes: [`.claude/skills/verify-dataset/`](.claude/skills/verify-dataset/SKILL.md)
-* Selection criteria and processing conventions: the curation guidelines
-  ([`curation_guidelines.md`](.claude/skills/triage-candidates/references/curation_guidelines.md), also the
-  dashboard's Guidelines tab)
+* Scaffolding: [`.claude/skills/add-dataset/`](.claude/skills/add-dataset/SKILL.md)
+* Selection criteria, splits, leaks, cleaning, verification: the curation knowledge
+  ([`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md), also the dashboard's Guidelines page)
+* Records, `dataset.py` recipes, checks and probes: [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md)
 * v1 (BeyondArena notebooks): [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)

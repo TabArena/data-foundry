@@ -1,47 +1,45 @@
 ---
 name: review-added-datasets
-description: Build the curator's review page for a batch of datasets that /add-dataset just added (one verdict per dataset, marks per open issue, the use case first, then the decisions, dataset.py, README and curation record), as a local HTML file or a Claude artifact, then read the curator's decisions back and apply them. Use after a batch run of /add-dataset has written its run report, when the curator wants to review what would be added, or when they ask to apply, rebuild or republish such a review page.
-argument-hint: "<run report .md>"
+description: Build the curator's review page from the open review issues of the working copy (each dataset folder's REVIEW.md, the open-issue blocks of records without a folder, the cross-dataset REVIEW.md), with one verdict per dataset, marks per open issue, the use case first, then the decisions, dataset.py, README and curation record, as a local HTML file or a Claude artifact; then read the curator's decisions back and apply them. Use after a batch run of /add-dataset, when the curator wants to review the open issues of the working copy, or when they ask to apply, rebuild or republish such a review page.
+argument-hint: "[--names a,b]"
 user-invocable: true
 ---
 
 # Review added datasets
 
-The last step of the curation pipeline, before anything is built or shipped:
-
-1. **AI triage.** `/triage-candidates` drafts verdicts for untriaged records (labelled `AI (UNVERIFIED)`);
-   `/check-candidate <name>` gives a cited second opinion on one record.
-2. **The curator checks the triage** in the curation dashboard (`serve`): the Review pill lists the AI-drafted
-   records; the curator verifies them and settles each suggestion (`Yes`, `No`, ...).
-3. **AI adds the accepted records.** `/add-dataset` on a dashboard filter (for example `suggestion = Yes`,
-   `data_foundry_status` without `DF: Yes`, `claimed_by` empty, `checked_by` without `AI (UNVERIFIED)`), after the
-   curator has claimed them (`WIP (DF)` and `claimed_by`, sent to `main` in a small PR): per source one agent writes the
-   definition and runs the checks and probes, a second agent verifies it with `/verify-dataset`, the first applies
-   the findings. The run writes one **run report** in the format of
-   [`references/run_report_format.md`](references/run_report_format.md).
-4. **The curator reviews what would be added** on the page this skill builds, and Claude applies the decisions.
-   Only then are the accepted datasets built (`/rebuild-working-copy`).
+The last step before anything is built or shipped. `/add-dataset` leaves the questions it cannot settle for the
+curator in the dataset folder's `REVIEW.md` (a record it did not add keeps them in an open-issues block of the record).
+This skill collects all open issues into one page, the curator decides on the page, and Claude applies the decisions;
+only then are the accepted datasets built (`/rebuild-working-copy`). The format of the review files, and of the report
+the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files live
+and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
 The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; the
 tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
-disagree with the definition), Details (the run's report on the record), `dataset.py`, the generated `README.md` and
-the curation record; below the tabs, the verdict box. Other views: the issues that span datasets, and a summary
+disagree with the definition), Details (the outcome and the record judgment), `dataset.py`, the generated `README.md`
+and the curation record; below the tabs, the verdict box. Other views: the issues that span datasets, and a summary
 of all verdicts. The page embeds a snapshot of every file at build time.
 
 ## Step 1: Build the page
 
 ```bash
-.venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py <run_report.md> \
-    --out local-data-warehouse/_runs/<date>_<run>/review_page [--title "New Datasets Review"] [--subtitle <text>] \
-    [--tldr <yaml>] [--extra-crosscut <yaml>]
+R=local-data-warehouse/_runs/<date>_review
+.venv/bin/python .claude/skills/review-added-datasets/scripts/collect_reviews.py --out $R/review_report.md \
+    [--names a,b] [--title <report title>] [--date <YYYY-MM-DD>]
+.venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py $R/review_report.md \
+    --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>] [--extra-crosscut <yaml>]
 ```
 
-It writes `data.json` and `review_page.html` into `--out`. It needs `markdown-it-py` (the `curation` extra:
-`uv pip install --python .venv/bin/python -e ".[curation]"`). It stops with the section and line when the report
-does not follow the format; fix the report, not the parser. Records whose definition has no `task_summary` show "No
-summary" in the Use case tab (`--tldr` takes hand-written ones). `--extra-crosscut` adds cross-dataset items that are
-not in the report (a YAML list with fixed ids; the 2026-10-07 run keeps its "Repository and next steps" items there).
-Keep the output under `local-data-warehouse/`: it is never committed.
+`collect_reviews.py` reads every `datasets/_dev/tabarena-v0pt2/<folder>/REVIEW.md`, the open-issue blocks of the
+records and the working copy's own `REVIEW.md`, and writes one report; `--names` limits it to some records (the
+batch of one run). It stops with the file and the line when a file breaks the format, and checks the report with the
+builder's parser; fix the file, not the scripts. The report is generated: never edit or commit it.
+
+`build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
+(the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
+`task_summary` show "No summary" in the Use case tab (`--tldr` takes hand-written ones). `--extra-crosscut` adds
+cross-dataset items that are in no file (a YAML list with fixed ids). Keep the output under `local-data-warehouse/`:
+it is never committed.
 
 ## Step 2: Hand the page to the curator
 
@@ -49,13 +47,12 @@ Either way the curator sets a verdict per record (ship / ship after changes / do
 was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a
 mark per numbered issue (as implemented / change / discuss) with optional notes, a mark per record-field
 disagreement (take the definition's value / keep the record's value), and a mark per cross-dataset item (go ahead /
-leave as is / discuss). Record-field disagreements belong in the field table, never in a numbered issue
-(`references/run_report_format.md`).
+leave as is / discuss).
 
 * **Local file.** Open `review_page.html` in a browser. The marks are kept in that browser only (localStorage). When
   done, the curator copies them from the Summary view ("Copy decisions (JSON)") and pastes them to Claude or saves
-  them as a file. Every `file://` page shares one browser storage, so two runs' local pages with the same record
-  names see each other's marks: review one run at a time, or publish it.
+  them as a file. Every `file://` page shares one browser storage, so two local pages with the same record names see
+  each other's marks: review one page at a time, or publish it.
 * **Claude artifact.** Publish `review_page.html` with the Artifact tool, declaring the shared store:
   `capabilities: {db: {}, user: {}}` (load the `artifact-capabilities` skill first, as the tool requires). The
   marks then live in the artifact's database, where Claude reads them. Give the curator the link; a republish of
@@ -84,39 +81,48 @@ back (an `updatedAt` filter is enough): a verdict set while Claude applied the i
 ## Step 4: Apply them
 
 * **Every mark:** do what the mark and its note say; when a note asks a question, answer it on the page (Step 5)
-  before changing anything. Record each decision in the curation record as a dated `CC (<date>, <curator>):` line
-  (the curator's words or a faithful short form) through the store API (`load_record` → edit → recompute
-  `needs_review` → `save_record`); put Claude's own evidence in `**Assessment (AI, <date>):**` lines. A field marked
-  `update` is changed in the record to the definition's value.
+  before changing anything. A settled issue's decision goes into `dataset.py` (code and `curation_comments`) and into
+  the record: the curator's decision as a dated `CC (<date>, <curator>):` line (the curator's words or a faithful
+  short form), Claude's evidence as an `**Assessment (AI, <date>):**` line, through the store API
+  ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue leaves the `REVIEW.md` (or the
+  record's open-issues block); a `REVIEW.md` with no issue and no field row left is deleted, and so is an empty block.
+* **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
+  Either way the row leaves the `REVIEW.md`.
 * **ship:** the definition stays; apply the item marks; the dataset joins the accepted set and is built later. The
   record keeps its claim until the work reaches `main`; that PR sets `DF: Yes` and clears `WIP (DF)` and
   `claimed_by`.
-* **changes:** apply the changes, run `dataset check` (and the probes they touch), then put the record back to the
-  curator with what changed.
-* **dont:** retire it as the curation guidelines say: the record gets `No` (or `No (Retired)` for a shipped dataset)
-  with the reason as a marker and a CC line, its claim (`WIP (DF)`, `claimed_by`) is released, the folder leaves the working copy (`v2_path` cleared,
-  `sync-notebooks --check` clean), and the working copy's `CHANGELOG.md` and README table say so.
+* **changes:** apply the changes, run `dataset check` and the probes they touch
+  ([verification.md](../knowledge-curation/references/verification.md)), and put the record back to the curator with
+  what changed: the issues that stay open stay in the `REVIEW.md`.
+* **dont:** retire it as [records.md](../knowledge-data-foundry/references/records.md) says (duplicates and
+  retirements): the record gets `No` (or `No (Retired)` for a shipped dataset) with the reason as a marker and a CC
+  line, its claim is released, and the folder, its `REVIEW.md` with it, leaves the working copy (`v2_path` cleared,
+  `sync-notebooks --check` clean).
 * **discuss:** answer on the page and wait for the curator's next mark.
-* **Cross-dataset items:** `ok` means go ahead as the item proposes, `leave` means no change.
+* **Cross-dataset items:** `ok` means go ahead as the item proposes, `leave` means no change. While the page is in
+  use, close a settled item in the working copy's `REVIEW.md` with a `**Resolved (<date>):**` label instead of
+  deleting it: the page stores its marks by position.
 
-Every change to the working copy gets its dated `CHANGELOG.md` entry, as for any edit (CLAUDE.md). Run
-`pytest -q`, `ruff` on changed Python and `validate` before offering the commit; commits and pushes need the
-curator's ask.
+Every change to the working copy gets its dated `CHANGELOG.md` entry, and a removed dataset leaves the README table
+([working_copy.md](../knowledge-data-foundry/references/working_copy.md)). Run `pytest -q`, `ruff` on changed Python
+and `validate` before offering the commit; commits and pushes need the curator's ask.
 
 ## Step 5: Update the page
 
-Mark what is done in the run report: start an issue's title (a record's issue or a cross-dataset item) with
-`Resolved (<date>):` or `Deferred (<date>):`, and the page hides it behind a toggle (a resolved issue counts toward
-the marks only once it is marked); add a short answer or result to the issue text where the curator asked. Then
-rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what
-is still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are
-stored under them.
+Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Then
+rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what is
+still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are
+stored under them. A new issue takes the next number after the highest its file has had.
 
 ## Rules
 
 * The page's store contract (collections `reviews` and `crosscut`, document ids, field names) is fixed; changing it
   loses the curator's marks. Change the layout freely in `assets/review_page.html`.
+* The review files hold only what is open, written as
+  [writing.md](../knowledge-curation/references/writing.md) says for issues. A run's process log (what was tried,
+  probe outputs, scraped pages, evidence scripts) stays in its local run folder `local-data-warehouse/_runs/<run>/`;
+  no run report is committed.
 * The page and its data stay under `local-data-warehouse/` and are never committed; the artifact is private until
   the curator shares it.
 * Retired definitions are shown from the last commit that still had their folder; records that were not added show
-  only their report and record.
+  only their open issues and their record.

@@ -10,7 +10,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, d
 
 class ClassName(AbstractCuratedDataset):
     # In brief: the task in plain words, for a reader who has not seen the source (first in the README). One or two
-    # plain sentences per field; the house format and examples are in the add-dataset patterns ("In brief").
+    # plain sentences per field; the house format and examples are in knowledge-data-foundry definitions.md.
     task_summary = TaskSummary(
         question="TODO(verify): the prediction as a one-line question.",
         use_case="TODO(verify): who uses the prediction, when, and the decision it informs.",
@@ -73,7 +73,7 @@ class ClassName(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # TODO(verify): the preprocessing steps (see the add-dataset skill's dataset_patterns.md, §B), including
+        # TODO(verify): the preprocessing steps (knowledge-data-foundry definitions.md, the recipe), including
         # the column drops: df = drop_columns(df, ["id", ...]).
         return df
 

@@ -15,6 +15,8 @@ collections:
 original_source: UCI
 year: '2014'
 domain: biology & life sciences
+required_split:
+- Random (IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:

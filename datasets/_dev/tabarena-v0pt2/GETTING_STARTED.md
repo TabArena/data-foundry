@@ -22,7 +22,8 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)
-tab of the curation log is the reference.
+page of the curation log is the reference (it renders the two knowledge skills, `.claude/skills/knowledge-curation/`
+and `.claude/skills/knowledge-data-foundry/`).
 
 The recommended workflow (October 2026): Claude does the research and the writing, you make the decisions.
 
@@ -30,8 +31,8 @@ The recommended workflow (October 2026): Claude does the research and the writin
 1. AI triage          /triage-candidates drafts a verdict for each untriaged record, labelled AI (UNVERIFIED)
 2. You check it       the dashboard's Review pill: verify each AI draft, settle the suggestion (Yes, No, ...)
 3. AI adds the Yes    /add-dataset on a dashboard filter: per source one agent writes the definition and runs the
-                      checks and probes, a second verifies it; nothing is built; one run report
-4. You review it      /review-added-datasets <report>: a page with each dataset's use case, its open issues and
+                      checks and probes, a second verifies it; nothing is built; open issues in REVIEW.md
+4. You review it      /review-added-datasets: a page with each dataset's use case, its open issues and
                       files; you set a verdict per dataset and a mark per issue, Claude applies them
 5. Build              /rebuild-working-copy: new containers (UUIDs), the CHANGELOG entry and the README table
 ```
@@ -74,7 +75,6 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 |---|---|
 | [`README.md`](README.md) | The table of datasets (regime, size, splits, UUID, open warnings) and how to rebuild them. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
-| [`LEAK_AUDIT.md`](LEAK_AUDIT.md) | The 2026 leak audit: removed and changed datasets, with severity. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
 Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `explore.ipynb` (the
@@ -103,7 +103,7 @@ Settling a record means deciding its verdict: read the sources and comments, dec
 the reasoning into `## Comments`.
 
 **Recommended: Claude drafts, you decide.** In Claude Code, open the repository and run `/triage-candidates`: it
-starts the local dashboard and loads the curation guidelines, so Claude can research the untriaged candidates and
+starts the local dashboard and reads the curation knowledge, so Claude can research the untriaged candidates and
 draft verdicts. Each draft carries `AI (UNVERIFIED)` in `checked_by` and stays in the dashboard's **Review** pill
 (🤖) until you have checked it: read the reasoning, follow the sources it cites, change what you disagree with, and
 verify the row (✓) or put your name in `checked_by`. For a cited second opinion on one record, run
@@ -117,7 +117,7 @@ markdown files in place:
 ```
 
 * Filter to the large-data candidates: the **tags** column filter → `Review Prio 1 (Atlas)`.
-* Read the [**📖 Guidelines**](http://127.0.0.1:8765/guidelines.html) tab before your first triage: the selection
+* Read the [**📖 Guidelines**](http://127.0.0.1:8765/guidelines.html) page before your first triage: the selection
   criteria and the recurring decision patterns.
 * The status column shows what a row needs: 🤖 AI-drafted (a human verifies it with the ✓ action), ⚠ untriaged,
   ★ accepted but not yet in Data Foundry. Each row links its record (📄) and, once curated, its definition (🧩).
@@ -139,17 +139,18 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
    "every record with `suggestion = Yes`, `data_foundry_status` without `DF: Yes`, claimed by me, `checked_by` without
    `AI (UNVERIFIED)`" (only records you have checked).
    Per source one agent downloads the data, writes the definition, runs `dataset check` and the leak, task and group
-   probes; a second agent verifies it with `/verify-dataset`, and the first applies each finding or rejects it with
-   evidence. Nothing is built. The run writes one report with, per dataset, the open issues for you as numbered
-   items.
-2. Run `/review-added-datasets <report>`. It builds the review page, a local HTML file or a Claude artifact you can
+   probes; a second agent verifies it against the verification checklist, and the first applies each finding or
+   rejects it with evidence. Nothing is built. The open issues for you go, as numbered items, into each dataset
+   folder's `REVIEW.md`.
+2. Run `/review-added-datasets`. It builds the review page from the `REVIEW.md` files, a local HTML file or a Claude artifact you can
    share. Each dataset opens on its use case (the `task_summary`), then tabs for your decisions (the issues and the
    record fields that disagree with the definition), the run's details, `dataset.py`, the generated README and the
    curation record. Set a verdict per dataset (ship, ship after changes, don't ship, discuss) and a mark per issue
-   (keep, change, discuss), with a note where you want something done or answered.
+   (as implemented, change, discuss), with a note where you want something done or answered.
 3. Tell Claude to apply your marks. It changes the definitions, records your decisions in the curation records
    (dated `CC (<date>, <name>):` lines), retires what you rejected, writes the CHANGELOG entry, answers your
-   questions on the page and republishes it with only what is still open. Repeat until every dataset has a verdict.
+   questions on the page, removes the settled issues from `REVIEW.md` and republishes the page with only what is
+   still open. Repeat until every dataset has a verdict.
 4. The shipped datasets are built with `/rebuild-working-copy <names>` (new UUIDs, the README table, the CHANGELOG),
    and the containers they replace are deleted once the new build is verified. Then commit and open the PR; it sets
    `DF: Yes` on the shipped records and releases their claims.
@@ -158,13 +159,13 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
 metadata, BibTeX and regime pre-filled, and loops on `dataset check`; everything that needs a look at the data is
 left as a `TODO(verify)` marker. From there you do the data science: download and load the raw data, clean it
 (dtypes, missing values, identifiers, the target), read the check results in the generated README, decide and check
-the split, and judge whether the result is a sound benchmark task. Then run the probes and `/verify-dataset
-<unique_name>`, and open the PR; a curator builds the container after review.
+the split, and judge whether the result is a sound benchmark task. Then run the probes and `/check-candidate
+<unique_name>` for the verification, and open the PR; a curator builds the container after review.
 
-**Learn from the definitions in this folder.** The add-dataset skill names a reference definition for each regime
-(IID, grouped, temporal, a sub-sampled `_1m` version, heavy raw data) in step 2 of
-[`.claude/skills/add-dataset/SKILL.md`](../../../.claude/skills/add-dataset/SKILL.md); read the closest one in full
-before you write your own.
+**Learn from the definitions in this folder.** The Data Foundry knowledge names a reference definition for each
+regime (IID, grouped, temporal, late labels, a sub-sampled `_1m` version, heavy raw data) in
+[`definitions.md`](../../../.claude/skills/knowledge-data-foundry/references/definitions.md), "Reference
+definitions"; read the closest one in full before you write your own.
 
 ## 7. Where to start: the large-data candidates
 

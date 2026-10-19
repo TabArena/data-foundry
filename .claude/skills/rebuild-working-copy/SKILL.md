@@ -7,9 +7,11 @@ user-invocable: true
 
 # Rebuild the working copy
 
-A build runs every definition end to end, saves a new container with a new UUID under the warehouse
-(`<warehouse>/<unique_name>/<uuid>/`) and rewrites the folder's `README.md`. The containers stay local; git gets the
-READMEs, the table and the log. The shipped BeyondArena containers are never touched.
+A build runs every definition end to end, saves a new container with a new UUID under the warehouse and rewrites the
+folder's `README.md`. The containers stay local; git gets the READMEs, the table and the log. The shipped BeyondArena
+containers are never touched. What a build is, the warehouse and the rules of the working copy are in
+[working_copy.md](../knowledge-data-foundry/references/working_copy.md); how to read the task probes in
+[task_probes.md](../knowledge-curation/references/task_probes.md).
 
 **Input (optional):** comma-separated unique names to rebuild only those; by default every definition under the root.
 
@@ -100,27 +102,28 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
   format, and the count and size of the traced raw files;
 * a dated `CHANGELOG.md` entry, newest first: what was rebuilt and why, crashes and their fixes, the open warnings
   (count and datasets), and the verification of steps 2 and 3;
-* the open items the build raised, in the same `CHANGELOG.md` entry and in the affected records, and, when
-  datasets were removed, the counts in `LEAK_AUDIT.md`,
-  `AGENTS.md`, `datasets/README.md`, `GETTING_STARTED.md` and the add-dataset patterns.
+* the open items the build raised, in the same `CHANGELOG.md` entry and in the affected records (or the folders'
+  `REVIEW.md`), and, when datasets were removed, the counts in `AGENTS.md` and `datasets/README.md`.
 
 ## Step 6: the task-probe sweep (when rows or splits changed)
 
 ```bash
-.venv/bin/python .claude/skills/verify-dataset/scripts/task_probes.py --all --built --jobs 8 --out $OUT/probes
+.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built --jobs 8 --out $OUT/probes
 ```
 
 The sweep's output stays in `$OUT/probes` (`summary.md` and one JSON per dataset); nothing of it goes into git. A
 flag is a question, not a verdict. A dataset whose record already holds a dated task-probe decision for the same flag
 needs no new one unless its numbers moved. Every other flag gets a decision as
-`.claude/skills/verify-dataset/references/task_probes.md` describes (check it with `tuned_results.py` first). Record
-each decision in the record (a dated comment with the evidence), in `CHANGELOG.md`, and as a row of that reference's
-cases table; list the flags still open in the `CHANGELOG.md` entry.
+[task_probes.md](../knowledge-curation/references/task_probes.md) describes (check it with `tuned_results.py` first).
+Record each decision in the record (a dated comment with the evidence), in `CHANGELOG.md`, and as a row of that
+reference's cases table; list the flags still open in the `CHANGELOG.md` entry.
 
 ## Step 7: the superseded containers
 
 The previous build's containers stay in the warehouse next to the new ones (each README's `build.path` names the
-current one). List them for the user with their size; delete them only when the user says so.
+current one). Once steps 2 and 3 passed, delete the containers whose UUID is not a README's current `build.uuid` and
+note it in the CHANGELOG entry; never a UUID pinned in `src/data_foundry/collections/_registry.py`, raw files, or the
+containers of retired datasets without asking.
 
 ## Step 8: commit
 
@@ -132,5 +135,5 @@ user's ask (CLAUDE.md).
 * Report what happened with the numbers: crashes, errors, new warnings, a step that was skipped. "All verified" only
   after steps 2 and 3 ran on this build.
 * Never rebuild a shipped BeyondArena dataset to check it; the collection pins its UUIDs.
-* Never delete containers or raw files on your own.
+* Never delete raw files, pinned containers or retired datasets' containers on your own (step 7 is the exception).
 * The raw inputs and containers never go into git.

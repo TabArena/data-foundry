@@ -11,10 +11,11 @@ decision_markers:
 - Data Quality Issue
 tags:
 - Non-IID (Grouped)
-- Non-IID (Temporal)
 collections:
 - New (BeyondArena)
 original_source: Zindi
+required_split:
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:

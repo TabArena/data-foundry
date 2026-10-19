@@ -178,8 +178,8 @@ class TaskSummary:
     """What the dataset simulates, in plain words, for a reader who has not seen the source.
 
     Shown first in the generated ``README.md`` ("In brief"): the description, then the judgement of the use case.
-    Not stored in the container. The house format and examples are in the add-dataset skill
-    (``references/dataset_patterns.md``, "In brief").
+    Not stored in the container. The house format and examples are in the knowledge-data-foundry skill
+    (``references/definitions.md``, "In brief").
 
     Attributes:
         question: The prediction as a one-line question ("Will this loan default within a year of its issue?").
@@ -863,8 +863,8 @@ class AbstractCuratedDataset(ABC):
                     "definition_summary_missing",
                     "error",
                     "`task_summary` is not set: the README has no plain-language summary of the task.",
-                    hint="Add `task_summary = TaskSummary(...)` at the top of the class (add-dataset patterns, "
-                    '"In brief").',
+                    hint="Add `task_summary = TaskSummary(...)` at the top of the class (knowledge-data-foundry "
+                    'definitions.md, "In brief").',
                 ),
             ]
         findings = []

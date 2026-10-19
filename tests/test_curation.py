@@ -1,13 +1,26 @@
+"""Tests of the curation backlog: records, vocabularies, exports, the dashboard server and the static site."""
+
 from __future__ import annotations
 
+import http.client
 import json
 import os
+import threading
+from collections.abc import Iterator
 from functools import partial
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
 from data_foundry.curation import exporter, notebooks
-from data_foundry.curation.app import _records_payload, _version_payload
+from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
+from data_foundry.curation.app import (
+    GUIDELINE_SKILLS,
+    CurationHandler,
+    _docs_payload,
+    _records_payload,
+    _version_payload,
+)
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
@@ -33,6 +46,7 @@ def _record(unique_name: str, **fields: object) -> CurationRecord:
 
 @pytest.fixture
 def sample_record() -> CurationRecord:
+    """A record with every kind of field filled in."""
     return CurationRecord(
         unique_name="musk",
         name="musk",
@@ -52,11 +66,13 @@ def sample_record() -> CurationRecord:
 
 
 def test_markdown_roundtrip(sample_record: CurationRecord) -> None:
+    """A record survives markdown serialisation unchanged."""
     parsed = markdown_to_record(record_to_markdown(sample_record))
     assert parsed == sample_record
 
 
 def test_empty_fields_omitted_from_front_matter(sample_record: CurationRecord) -> None:
+    """Empty fields stay out of the front matter; filled ones are written."""
     md = record_to_markdown(sample_record)
     # collections is empty -> should not appear; required, present -> should.
     assert "collections:" not in md
@@ -65,6 +81,7 @@ def test_empty_fields_omitted_from_front_matter(sample_record: CurationRecord) -
 
 
 def test_save_and_load(tmp_path, sample_record: CurationRecord) -> None:
+    """A saved record is one ``<unique_name>.md`` file that loads back equal."""
     path = save_record(sample_record, tmp_path)
     assert path.name == "musk.md"
     assert load_record(path) == sample_record
@@ -72,6 +89,7 @@ def test_save_and_load(tmp_path, sample_record: CurationRecord) -> None:
 
 
 def test_build_site(tmp_path, sample_record: CurationRecord) -> None:
+    """The static site has the grid, its frozen JSON, and the Guidelines page with its docs."""
     records = tmp_path / "records"
     save_record(sample_record, records)
     out = build_site(tmp_path / "site", records)
@@ -88,16 +106,25 @@ def test_build_site(tmp_path, sample_record: CurationRecord) -> None:
     records_json = json.loads((out / "records.json").read_text(encoding="utf-8"))
     assert [r["unique_name"] for r in records_json] == ["musk"]
 
-    # Auxiliary static pages (e.g. guidelines.html) are copied alongside the grid.
-    assert (out / "guidelines.html").exists()
+    # The Guidelines page is the markdown viewer, also in read-only mode, with its frozen manifest; every
+    # file the manifest lists is copied next to it (this reads the repo's own skills, whatever they hold).
+    guidelines = (out / "guidelines.html").read_text(encoding="utf-8")
+    assert "window.DF_STATIC = true" in guidelines
+    assert "markdown-it@14.1.0" in guidelines
+    manifest = json.loads((out / "docs" / "manifest.json").read_text(encoding="utf-8"))
+    assert [s["skill"] for s in manifest["sections"]] == list(GUIDELINE_SKILLS)
+    for doc in manifest["docs"]:
+        assert (out / "docs" / doc["skill"] / doc["path"]).is_file(), doc
 
 
 def test_missing_front_matter_raises() -> None:
+    """A markdown file without front matter is not a record."""
     with pytest.raises(ValueError, match="front-matter"):
         markdown_to_record("# just a body\n\nno front matter here")
 
 
 def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
+    """Values outside the vocabulary are reported per field."""
     vocab = {"problem_type": ["Regression"], "domain": ["chemistry & material science"]}
     unknown = sample_record.unknown_vocab_values(vocab)
     assert unknown["problem_type"] == ["Binary Classification"]
@@ -126,12 +153,14 @@ def test_claimed_by_sits_next_to_the_wip_state_in_the_front_matter() -> None:
 
 
 def test_repo_vocabularies_load() -> None:
+    """The repo's ``vocabularies.yaml`` loads and has the Data Foundry states."""
     vocab = load_vocabularies()
     assert "data_foundry_status" in vocab
     assert "DF: Yes" in vocab["data_foundry_status"]
 
 
 def test_vocab_save_load_roundtrip(tmp_path) -> None:
+    """Bare ``Yes`` / ``No`` / ``?`` values survive a YAML round trip as strings."""
     path = tmp_path / "vocabularies.yaml"
     data = {"problem_type": ["Yes", "No", "?"], "domain": ["finance"]}
     save_vocabularies(data, path)
@@ -139,6 +168,7 @@ def test_vocab_save_load_roundtrip(tmp_path) -> None:
 
 
 def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
+    """The flat export joins list fields with `` | ``."""
     save_record(sample_record, tmp_path)
     df = exporter.to_dataframe(directory=tmp_path)
     assert df.shape[0] == 1
@@ -154,6 +184,7 @@ def _notebooks(*paths: Path) -> None:
 
 
 def test_resolve_notebook_prefers_the_shipped_tree_over_scratch_copies(tmp_path) -> None:
+    """The shipped tree wins over ``_dev`` and archived copies of the same notebook."""
     datasets = tmp_path / "datasets"
     _notebooks(
         datasets / "beyond_iid" / "new_iid" / "musk" / "musk.ipynb",
@@ -203,6 +234,7 @@ def test_resolve_notebook_keeps_a_shipped_dataset_out_of_dev(tmp_path) -> None:
 
 
 def test_resolve_notebook_picks_the_variant_that_shipped(tmp_path, monkeypatch) -> None:
+    """Of several notebook variants, the one whose output carries the shipped UUID wins."""
     uuid = "019d736f-26fd-73bd-8853-dc219e5f4ed5"
     dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
     _notebooks(dataset_dir / "musk.ipynb")  # full-size run
@@ -214,6 +246,7 @@ def test_resolve_notebook_picks_the_variant_that_shipped(tmp_path, monkeypatch) 
 
 
 def test_sync_notebook_paths_writes_the_pointer_into_the_record(tmp_path, sample_record: CurationRecord) -> None:
+    """``sync_notebook_paths`` reports with ``check`` and writes without it, once."""
     records = tmp_path / "records"
     save_record(sample_record, records)
     dataset_dir = tmp_path / "datasets" / "beyond_iid" / "new_iid" / "musk"
@@ -260,7 +293,177 @@ def test_version_payload_moves_when_a_record_is_written(tmp_path, sample_record:
 
 
 def test_record_to_dict_has_all_fields(sample_record: CurationRecord) -> None:
+    """``record_to_dict`` carries every schema field."""
     d = record_to_dict(sample_record)
     for f in FIELDS:
         assert f.name in d
     assert d["needs_review"] == []
+
+
+# -- the Guidelines page: the knowledge skills' markdown, served and frozen ------------------------------------
+
+_SKILL_INDEX = """---
+name: knowledge-curation
+description: "Reference knowledge"
+---
+
+# Curation knowledge
+
+Read [the second](references/b_second.md) before [the first](./references/a_first.md#leak-checks).
+"""
+
+_LEAK_CHECKS = """---
+# a YAML comment, not a heading
+title: x
+---
+
+# Leak checks `probe`
+
+## A section
+"""
+
+_NO_HEADING = """```text
+# inside a code fence, not a heading
+```
+
+Some text.
+"""
+
+
+@pytest.fixture
+def guideline_repo(tmp_path, monkeypatch) -> Path:
+    """A repo root with small guideline skills, made the curation root's parent via the environment.
+
+    Beside the two rendered skills it holds files the server must never hand out: another skill, a
+    non-markdown file, a hidden file, and the repo's ``pyproject.toml``.
+    """
+    curation = tmp_path / "curation"
+    (curation / "records").mkdir(parents=True)
+    monkeypatch.setenv(DATA_FOUNDRY_CURATION_ENV, str(curation))
+    skills = tmp_path / ".claude" / "skills"
+    files = {
+        "knowledge-curation/SKILL.md": _SKILL_INDEX,
+        "knowledge-curation/references/a_first.md": _LEAK_CHECKS,
+        "knowledge-curation/references/b_second.md": _NO_HEADING,
+        "knowledge-curation/references/c_unlisted.md": "# Unlisted\n",
+        "knowledge-curation/references/notes.txt": "not markdown",
+        "knowledge-curation/.hidden.md": "# Hidden\n",
+        "knowledge-data-foundry/SKILL.md": "# Data Foundry knowledge\n",
+        "triage-candidates/SKILL.md": "# Another skill\n",
+    }
+    for rel, text in files.items():
+        (skills / rel).parent.mkdir(parents=True, exist_ok=True)
+        (skills / rel).write_text(text, encoding="utf-8")
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'secret'\n", encoding="utf-8")
+    return tmp_path
+
+
+@pytest.mark.usefixtures("guideline_repo")
+def test_docs_manifest_lists_both_skills_in_index_order() -> None:
+    """SKILL.md comes first as Overview, then the files in the order SKILL.md names them, then the rest."""
+    payload = _docs_payload()
+    assert payload["sections"] == [{"skill": s, "title": t} for s, t in GUIDELINE_SKILLS.items()]
+    rows = [(d["skill"], d["path"], d["title"]) for d in payload["docs"]]
+    assert rows == [
+        ("knowledge-curation", "SKILL.md", "Overview"),
+        ("knowledge-curation", "references/b_second.md", "b_second"),  # no heading outside the fence
+        ("knowledge-curation", "references/a_first.md", "Leak checks probe"),  # front matter skipped
+        ("knowledge-curation", "references/c_unlisted.md", "Unlisted"),
+        ("knowledge-data-foundry", "SKILL.md", "Overview"),
+    ]
+    first = payload["docs"][0]
+    assert first["repo_path"] == ".claude/skills/knowledge-curation/SKILL.md"
+    assert first["heading"] == "Curation knowledge"
+    assert payload["github_blob_base"].startswith("https://")
+
+
+def test_docs_manifest_is_empty_without_the_skill_folders(tmp_path, monkeypatch) -> None:
+    """A curation root whose parent has no ``.claude/skills`` (a non-editable install) lists no docs."""
+    monkeypatch.setenv(DATA_FOUNDRY_CURATION_ENV, str(tmp_path / "curation"))
+    assert _docs_payload()["docs"] == []
+    out = build_site(tmp_path / "site", tmp_path / "curation" / "records")
+    manifest = json.loads((out / "docs" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["docs"] == []
+
+
+def test_build_site_copies_the_guideline_docs(guideline_repo: Path) -> None:
+    """The static build freezes the manifest and copies exactly the files it lists."""
+    out = build_site(guideline_repo / "site", guideline_repo / "curation" / "records")
+    docs = out / "docs"
+    manifest = json.loads((docs / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest == _docs_payload()
+    copied = sorted(p.relative_to(docs).as_posix() for p in docs.rglob("*") if p.is_file())
+    assert copied == sorted(["manifest.json", *(f"{d['skill']}/{d['path']}" for d in manifest["docs"])])
+    assert "# Leak checks `probe`" in (docs / "knowledge-curation/references/a_first.md").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def server(guideline_repo: Path) -> Iterator[int]:
+    """The dashboard server on a free local port, over the fixture repo; yields the port."""
+    handler = partial(CurationHandler, directory=guideline_repo / "curation" / "records")
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=httpd.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True)
+    thread.start()
+    try:
+        yield httpd.server_address[1]
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        thread.join()
+
+
+def _get(port: int, path: str) -> tuple[int, str, str]:
+    """GET ``path`` exactly as written (no client-side normalisation); return status, content type, body."""
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    try:
+        conn.request("GET", path)
+        resp = conn.getresponse()
+        return resp.status, resp.getheader("Content-Type", ""), resp.read().decode("utf-8")
+    finally:
+        conn.close()
+
+
+def test_server_serves_the_viewer_and_the_docs(server: int, guideline_repo: Path) -> None:
+    """``/guidelines.html``, ``/api/docs`` and ``/docs/<skill>/<path>.md`` answer, and an edit shows at once."""
+    status, ctype, body = _get(server, "/guidelines.html")
+    assert (status, ctype) == (200, "text/html; charset=utf-8")
+    assert "<df-docs-core>" in body
+
+    status, ctype, body = _get(server, "/api/docs")
+    assert status == 200
+    assert ctype.startswith("application/json")
+    assert json.loads(body) == _docs_payload()
+
+    path = guideline_repo / ".claude/skills/knowledge-curation/references/a_first.md"
+    status, ctype, body = _get(server, "/docs/knowledge-curation/references/a_first.md")
+    assert (status, ctype, body) == (200, "text/markdown; charset=utf-8", _LEAK_CHECKS)
+
+    path.write_text("# Leak checks, edited\n", encoding="utf-8")  # read on every request: no restart needed
+    assert _get(server, "/docs/knowledge-curation/references/a_first.md?x=1")[2] == "# Leak checks, edited\n"
+    assert _get(server, "/docs/knowledge-data-foundry/SKILL.md")[0] == 200
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/docs/../../pyproject.toml",
+        "/docs/knowledge-curation/../../../pyproject.toml",
+        "/docs/%2e%2e/%2e%2e/pyproject.toml",
+        "/docs/knowledge-curation/%2e%2e%2f%2e%2e%2f%2e%2e%2fpyproject.toml",
+        "/docs/knowledge-curation/..%2F..%2F..%2Fpyproject.toml",
+        "/docs/%252e%252e/%252e%252e/pyproject.toml",
+        "/docs/knowledge-curation/references/../SKILL.md",
+        "/docs/%2Fetc%2Fpasswd",
+        "/docs//knowledge-curation/SKILL.md",
+        "/docs/knowledge-curation/references/notes.txt",
+        "/docs/knowledge-curation/.hidden.md",
+        "/docs/triage-candidates/SKILL.md",
+        "/docs/knowledge-curation/references/missing.md",
+        "/docs/",
+    ],
+)
+def test_server_refuses_anything_but_a_guideline_doc(server: int, path: str) -> None:
+    """Path traversal (plain or encoded), other skills, non-markdown and hidden files are all a 404."""
+    status, _, body = _get(server, path)
+    assert status == 404
+    assert "secret" not in body

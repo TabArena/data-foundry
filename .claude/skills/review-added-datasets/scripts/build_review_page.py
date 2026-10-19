@@ -9,7 +9,7 @@ Usage, from the repository root::
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
 Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary`` and generated
 ``README.md`` (for a retired definition: from the last commit that still had it) and the curation record, as they
-are at build time. The report format is ``references/run_report_format.md``; a report that does not follow it stops
+are at build time. The report format is ``references/review_file_format.md``; a report that does not follow it stops
 the build with the section and the line.
 
 ``--tldr`` takes hand-written summaries (``unique_name: markdown``) for records whose definition has no
@@ -129,7 +129,7 @@ TLDR_LABELS = {
 
 
 class ReportFormatError(ValueError):
-    """The run report does not follow ``references/run_report_format.md``."""
+    """The run report does not follow ``references/review_file_format.md``."""
 
     def __init__(self, path: Path, index: int, section: str, message: str) -> None:
         """Name the report, the line (``index`` counts from 0) and the section in the message."""
@@ -443,7 +443,7 @@ def parse_report(path: Path) -> dict[str, Any]:
     """Parse a run report into its parts, as markdown text.
 
     Raises:
-        ReportFormatError: The report does not follow ``references/run_report_format.md``; the message names the
+        ReportFormatError: The report does not follow ``references/review_file_format.md``; the message names the
             line and the section.
     """
     lines = path.read_text().splitlines()
@@ -452,7 +452,7 @@ def parse_report(path: Path) -> dict[str, Any]:
         raise fail(0, "the title", "the report starts with a `# <title>` line")
     parts = _spans(_headings(lines, "##", 1, len(lines)), len(lines))
     if not parts:
-        raise fail(0, "the report", "no `## ` section; see references/run_report_format.md")
+        raise fail(0, "the report", "no `## ` section; see references/review_file_format.md")
 
     roles: dict[str, Span] = {}
     record_parts: list[Span] = []
@@ -950,7 +950,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         page = assemble(data, TEMPLATE.read_text())
     except ReportFormatError as error:
-        print(f"error: {error}\nThe format: {HERE.parent / 'references' / 'run_report_format.md'}", file=sys.stderr)
+        print(f"error: {error}\nThe format: {HERE.parent / 'references' / 'review_file_format.md'}", file=sys.stderr)
         return 1
     except BuildError as error:
         print(f"error: {error}", file=sys.stderr)

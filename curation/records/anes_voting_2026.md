@@ -10,7 +10,6 @@ suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
 tags:
-- Non-IID (Grouped)
 - Non-IID (Temporal)
 collections:
 - TableShift

@@ -19,9 +19,7 @@ original_source: UCI
 year: '2013'
 domain: biology & life sciences
 required_split:
-- '?'
 - Grouped (NON-IID)
-- Random (IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:

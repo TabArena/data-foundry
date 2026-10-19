@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: UCI
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5B301

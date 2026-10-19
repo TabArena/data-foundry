@@ -11,7 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 year: '2007'
 required_split:
-- Custom
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1039

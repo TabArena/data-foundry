@@ -3,495 +3,528 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TabArena — Curation Guidelines</title>
+<title>Data Foundry — Guidelines</title>
+<!-- The guidelines are the markdown files of two skills (.claude/skills/knowledge-curation/ and
+     .claude/skills/knowledge-data-foundry/), rendered here in the browser, so there is no second copy to
+     keep in sync. Live: the dashboard server answers api/docs (manifest) and docs/<skill>/<path>.md.
+     Static (GitHub Pages): build-site injects window.DF_STATIC and writes docs/manifest.json + the files. -->
+<script src="https://unpkg.com/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
 <style>
-  :root { --bar:#1e1b4b; --accent:#4f46e5; --ink:#27313f; --muted:#5b6573; }
-  * { box-sizing: border-box; }
-  body { margin:0; font:15px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#27313f; background:#f4f6f9; }
-  header { background:linear-gradient(110deg,#1a1452 0%,#2b2f96 38%,#1d4ed8 100%); color:#fff; padding:12px 22px; position:sticky; top:0; z-index:5;
-           display:flex; align-items:center; gap:18px; flex-wrap:wrap; border-bottom:1px solid #ffffff22; box-shadow:0 4px 18px -8px rgba(37,99,235,.5); }
-  header .logo { background:linear-gradient(135deg,#7c3aed,#2563eb); font-weight:800; border-radius:7px; padding:5px 7px; letter-spacing:.5px; box-shadow:0 2px 6px rgba(124,58,237,.45); }
-  header .t { font-weight:700; font-size:16px; }
-  header .s { font-size:11px; opacity:.6; text-transform:uppercase; letter-spacing:.06em; }
-  header .back { margin-left:auto; color:#cfe0ff; text-decoration:none; font-size:13px; border:1px solid #ffffff30; padding:6px 12px; border-radius:7px; }
-  header .back:hover { background:#ffffff14; }
-  .tabs { display:flex; gap:6px; background:#fff; padding:0 22px; border-bottom:1px solid #dfe4ea; position:sticky; top:54px; z-index:4; }
-  .tabs button { border:0; background:transparent; padding:13px 16px; font-size:14px; font-weight:600; color:#5b6573; cursor:pointer;
-                 border-bottom:3px solid transparent; }
-  .tabs button.active { color:var(--accent); border-bottom-color:var(--accent); }
-  main { max-width:880px; margin:0 auto; padding:28px 24px 80px; }
-  h1 { font-size:26px; margin:.2em 0 .1em; }
-  h2 { font-size:20px; margin:1.6em 0 .4em; padding-top:.3em; border-top:1px solid #e6eaef; }
-  h2:first-of-type { border-top:0; }
-  h3 { font-size:15px; margin:1.2em 0 .3em; color:#3730a3; }
-  p, li { color:#2b3543; }
-  ul, ol { padding-left:22px; }
-  li { margin:.25em 0; }
-  .lede { color:#55606e; font-size:15px; }
-  .callout { background:#eef4ff; border:1px solid #d3e1ff; border-radius:10px; padding:14px 18px; margin:16px 0; }
-  .callout h3 { margin-top:0; color:#23408e; }
-  .crit { background:#fff; border:1px solid #e3e8ee; border-radius:10px; padding:6px 18px; margin:14px 0; }
-  .tag { display:inline-block; background:#e6edff; color:#23408e; border-radius:9px; padding:1px 8px; font-size:12px; font-weight:600; }
-  code { background:#eef1f5; padding:1px 5px; border-radius:4px; font-size:13px; }
-  .src { color:#7a828f; font-size:12.5px; margin-top:30px; border-top:1px solid #e6eaef; padding-top:12px; }
-  section[hidden] { display:none; }
+  :root { --accent:#4f46e5; --ink:#27313f; --muted:#5b6573; --line:#e3e8ee; --bg:#f4f6f9; --head:56px; --nav:276px; }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font:15px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+
+  /* header: same bar as the dashboard */
+  #df-top { position:sticky; top:0; z-index:30; height:var(--head); display:flex; align-items:center; gap:14px; padding:0 20px;
+            background:linear-gradient(110deg,#1a1452 0%,#2b2f96 38%,#1d4ed8 100%); color:#fff;
+            border-bottom:1px solid #ffffff22; box-shadow:0 4px 18px -8px rgba(37,99,235,.5); }
+  #df-top .brand { display:flex; align-items:center; gap:10px; min-width:0; color:#fff; text-decoration:none; }
+  #df-top .brand:hover .t { text-decoration:underline; }
+  #df-top .logo { flex:none; background:linear-gradient(135deg,#7c3aed,#2563eb); font-weight:800; font-size:13px; border-radius:7px;
+                  padding:5px 7px; letter-spacing:.5px; box-shadow:0 2px 6px rgba(124,58,237,.45); }
+  #df-top .brand > div { min-width:0; }
+  #df-top .t { font-weight:700; font-size:16px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #df-top .s { font-size:11px; line-height:1.3; opacity:.6; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap;
+               overflow:hidden; text-overflow:ellipsis; }
+  #df-top .back { margin-left:auto; flex:none; color:#cfe0ff; text-decoration:none; font-size:13px; border:1px solid #ffffff30;
+                  padding:6px 12px; border-radius:7px; white-space:nowrap; }
+  #df-top .back:hover { background:#ffffff14; }
+  #df-navbtn { display:none; flex:none; font:inherit; font-size:13px; color:#fff; background:#ffffff12; border:1px solid #ffffff30;
+               border-radius:7px; padding:5px 10px; cursor:pointer; }
+
+  /* sidebar + page */
+  #df-layout { display:grid; grid-template-columns:var(--nav) minmax(0,1fr); min-height:calc(100vh - var(--head)); }
+  #df-nav { position:sticky; top:var(--head); align-self:start; height:calc(100vh - var(--head)); overflow-y:auto; background:#fff;
+            border-right:1px solid #dfe4ea; padding:16px 12px 40px; }
+  #df-search { width:100%; padding:7px 10px; border:1px solid #d6dbe2; border-radius:8px; font:inherit; font-size:13px;
+               background:#f8fafc; color:var(--ink); margin-bottom:8px; }
+  #df-search:focus { outline:2px solid #c7d2fe; border-color:var(--accent); background:#fff; }
+  .sec { margin:8px 0 14px; }
+  .sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#7a828f; padding:6px 10px 4px; }
+  a.doc { display:block; padding:5px 10px; border-radius:7px; color:#2b3543; text-decoration:none; font-size:14px; line-height:1.35; }
+  a.doc:hover { background:#eef2f7; }
+  a.doc.active { background:#e0e7ff; color:#312e81; font-weight:600; }
+  .sub { margin:2px 0 6px 14px; border-left:2px solid #e0e7ff; }
+  .sub:empty { display:none; }
+  .sub a { display:block; padding:3px 10px; font-size:12.5px; line-height:1.35; color:var(--muted); text-decoration:none; }
+  .sub a:hover { color:var(--accent); }
+  body.filtering .sub { display:none; }
+  .nomatch { color:var(--muted); font-size:13px; padding:4px 10px; margin:0; }
+
+  #df-main { min-width:0; padding:28px 32px 80px; }
+  #df-doc, #df-docfoot { max-width:880px; margin:0 auto; }
+  #df-doc.loading { opacity:.45; transition:opacity .15s; }
+  #df-docfoot { margin-top:36px; padding-top:12px; border-top:1px solid #e6eaef; color:#7a828f; font-size:12.5px; }
+  #df-docfoot:empty { display:none; }
+  #df-docfoot a { color:inherit; }
+
+  /* rendered markdown */
+  .md { overflow-wrap:break-word; }
+  .md h1 { font-size:26px; line-height:1.25; margin:.2em 0 .5em; }
+  .md h2 { font-size:20px; line-height:1.3; margin:1.7em 0 .5em; padding-top:.6em; border-top:1px solid #e6eaef; }
+  .md > h2:first-child { border-top:0; padding-top:0; margin-top:.2em; }
+  .md h3 { font-size:16px; line-height:1.35; margin:1.4em 0 .4em; color:#3730a3; }
+  .md h4, .md h5, .md h6 { font-size:14.5px; margin:1.2em 0 .3em; }
+  .md :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top:calc(var(--head) + 14px); }
+  .md :is(h1,h2,h3,h4,h5,h6).target { animation:df-flash 1.8s ease-out; border-radius:4px; }
+  @keyframes df-flash { from { background:#fef3c7; } to { background:transparent; } }
+  .md .anchor { margin-left:.35em; color:#a5b4fc; text-decoration:none; font-weight:400; opacity:0; transition:opacity .12s; }
+  .md :is(h1,h2,h3,h4,h5,h6):hover .anchor, .md .anchor:focus { opacity:1; }
+  @media (hover:none) { .md .anchor { opacity:.5; } }
+  .md p, .md li { color:#2b3543; }
+  .md a { color:#2d5bd8; }
+  .md ul, .md ol { padding-left:24px; }
+  .md li { margin:.25em 0; }
+  .md li > p { margin:.3em 0; }
+  .md hr { border:0; border-top:1px solid var(--line); margin:1.8em 0; }
+  .md img { max-width:100%; }
+  .md blockquote { margin:14px 0; padding:8px 16px; background:#eef4ff; border:1px solid #d3e1ff; border-left:4px solid #818cf8;
+                   border-radius:8px; color:#2b3543; }
+  .md blockquote > :first-child { margin-top:.2em; }
+  .md blockquote > :last-child { margin-bottom:.2em; }
+  .md blockquote .alert-t { font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.05em; margin:.2em 0 .1em; }
+  .md blockquote.alert-note .alert-t, .md blockquote.alert-tip .alert-t { color:#23408e; }
+  .md blockquote.alert-important { background:#f5f3ff; border-color:#ddd6fe; border-left-color:#7c3aed; }
+  .md blockquote.alert-important .alert-t { color:#5b21b6; }
+  .md blockquote.alert-tip { background:#f0fdf4; border-color:#bbf7d0; border-left-color:#16a34a; }
+  .md blockquote.alert-tip .alert-t { color:#166534; }
+  .md blockquote.alert-warning, .md blockquote.alert-caution { background:#fff7ed; border-color:#fed7aa; border-left-color:#ea580c; }
+  .md blockquote.alert-warning .alert-t, .md blockquote.alert-caution .alert-t { color:#9a3412; }
+  .md code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:#eef1f5; padding:1px 5px; border-radius:4px;
+             font-size:.86em; }
+  .md pre { background:#f6f8fa; border:1px solid var(--line); border-radius:8px; padding:12px 14px; overflow-x:auto; line-height:1.5;
+            font-size:13px; }
+  .md pre code { background:none; padding:0; font-size:inherit; white-space:pre; }
+  .md .tablewrap { overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  .md table { border-collapse:collapse; width:100%; font-size:14px; line-height:1.5; }
+  .md th, .md td { padding:7px 11px; border-bottom:1px solid #eef1f4; text-align:left; vertical-align:top; }
+  .md th { background:#eef1f5; font-weight:600; color:#39424f; border-bottom:1px solid #d6dbe2; }
+  .md tr:nth-child(even) td { background:#f9fafc; }
+  .md tbody tr:last-child td { border-bottom:0; }
+  .md details { margin:12px 0; padding:6px 14px; background:#fff; border:1px solid var(--line); border-radius:8px; }
+  .md summary { cursor:pointer; font-weight:600; }
+  .note { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; color:#7c2d12; }
+
+  #df-scrim { display:none; }
+  @media (max-width: 860px) {
+    #df-layout { grid-template-columns:minmax(0,1fr); }
+    #df-navbtn { display:inline-block; }
+    /* align-self back to stretch: Chrome aligns a fixed box too, and "start" would size it to its content */
+    #df-nav { position:fixed; top:var(--head); left:0; bottom:0; height:auto; align-self:stretch; width:min(320px, 86vw); z-index:25;
+              transform:translateX(-105%); transition:transform .18s ease; box-shadow:0 10px 30px rgba(15,23,42,.25); }
+    body.nav-open #df-nav { transform:none; }
+    body.nav-open #df-scrim { display:block; position:fixed; top:var(--head); left:0; right:0; bottom:0; background:rgba(15,23,42,.35);
+                              z-index:20; }
+    #df-main { padding:20px 16px 64px; }
+    #df-top { padding:0 12px; gap:10px; }
+    #df-top .s { display:none; }
+    .md h1 { font-size:22px; }
+  }
+  @media (max-width: 520px) { #df-top .back .long, #df-top .t .pre { display:none; } }
 </style>
 </head>
 <body>
-<header>
-  <span class="logo">DF</span>
-  <div><div class="t">TabArena — Curation Guidelines</div><div class="s">how to decide &amp; curate datasets</div></div>
-  <a class="back" href="index.html">← Back to curation</a>
+<header id="df-top">
+  <button id="df-navbtn" type="button" aria-controls="df-nav" aria-expanded="false" title="Show the list of pages">☰ Pages</button>
+  <a class="brand" href="index.html" title="Back to the curation log"><span class="logo">DF</span>
+    <div><div class="t"><span class="pre">Data Foundry — </span>Guidelines</div><div class="s">curation knowledge &amp; how this repo applies it</div></div></a>
+  <a class="back" href="index.html">← Back<span class="long"> to curation</span></a>
 </header>
-<div class="tabs">
-  <button id="tab-btn-main" class="active" onclick="showTab('main')">Guidelines</button>
-  <button id="tab-btn-proc" onclick="showTab('proc')">Dataset Processing (extended)</button>
-  <button id="tab-btn-flow" onclick="showTab('flow')">Curation log &amp; workflow</button>
+<div id="df-layout">
+  <nav id="df-nav" aria-label="Guideline pages">
+    <input type="search" id="df-search" placeholder="Filter pages (titles and text)" aria-label="Filter pages" />
+    <div id="df-toc"></div>
+  </nav>
+  <main id="df-main">
+    <article id="df-doc" class="md"><p>Loading…</p></article>
+    <footer id="df-docfoot"></footer>
+  </main>
 </div>
-
-<main>
-<section id="tab-main">
-  <h1>Curation Guidelines</h1>
-  <p class="lede">How we decide whether a dataset belongs in TabArena, and how we curate the ones we keep.
-  This is the working reference for the curation log on the previous page.</p>
-
-  <div class="callout">
-    <h3>Scope at a glance</h3>
-    <p><strong>We include</strong> real-world <strong>tabular</strong> datasets published for a
-    <strong>predictive</strong> classification or regression task, where a random (IID), temporal, or
-    grouped split is the appropriate protocol and tabular models are competitive.</p>
-    <p><strong>We exclude</strong>:</p>
-    <ul>
-      <li>time-series <em>forecasting</em>;</li>
-      <li>recommendation / ranking / click-through-rate / information-retrieval tasks;</li>
-      <li>non-predictive scientific-discovery or survey tables;</li>
-      <li>non-tabular modality data (image / text / audio) where modality-specific models clearly win;</li>
-      <li>artificial / deterministic / simulated data;</li>
-      <li>trivial tasks, irreversible data-quality issues or target leakage, and duplicates / re-uploads;</li>
-      <li>anything with ethical concerns.</li>
-    </ul>
-    <p style="margin-bottom:0"><em>The sections below give the full criteria and the reasoning behind each call.</em></p>
-  </div>
-
-  <h2>1 · Background: IID and non-IID tabular data</h2>
-  <p>We use an <strong>application-dependent</strong> definition of IID and non-IID data. Whether a dataset is
-  IID or non-IID is decided by the <strong>appropriate train–test split</strong> — the split that most closely
-  mirrors the original real-world application.</p>
-
-  <div class="callout">
-    <h3>Illustration — the same data, two applications</h3>
-    <p>Two practitioners use the same transaction data for fundamentally different goals. <strong>Alice</strong>
-    predicts whether <em>past</em> transactions were fraudulent for follow-up investigations — a <strong>random
-    (IID)</strong> split is appropriate. <strong>Bob</strong> predicts whether <em>new</em> transactions are
-    fraudulent to prevent fraud in real time — a <strong>temporal (non-IID)</strong> split is appropriate, to
-    simulate the distribution of unseen future transactions.</p>
-    <p>If Bob used a random split, he would <em>overestimate</em> models that exploit temporal leakage. If Alice
-    used a temporal split, she would <em>underestimate</em> such models. The appropriate split depends on the
-    application — TabArena extends this thinking from practitioners to data curation and benchmarking.</p>
-  </div>
-
-  <h3>IID tabular data</h3>
-  <p>Data is <strong>IID</strong> if the test samples in the associated application do not follow a particular
-  structure, so a random hold-out is appropriate.</p>
-
-  <h3>Non-IID tabular data</h3>
-  <p>Data is <strong>non-IID</strong> when the application requires a temporal or grouped split:</p>
-  <ul>
-    <li><strong>Temporal split</strong> — a time index is required; test samples occur strictly <em>after</em>
-    the training data, reflecting prediction of future observations (e.g., future transactions).</li>
-    <li><strong>Grouped split</strong> — a group index is required; all samples with the same index stay together,
-    so no group appears in both train and test. The aim is to generalize to <em>unseen entities (groups)</em>.
-    Grouped tasks come in two flavors:
-      <ul>
-        <li><em>label-per-group</em> — all samples in a group share one label; predict a group-level label
-        (e.g., is a customer fraudulent, based on a collection of their transactions).</li>
-        <li><em>label-per-sample</em> — each sample has its own label; predict individual labels for sources
-        unseen during training (e.g., a new country or hospital).</li>
-      </ul>
-    The source's use case, cited, also decides what one prediction is (a row, or a whole group: replicates
-    averaged, any instance positive, the latest row, the best of several candidates) and what is known about a new
-    group when predicting; the label structure alone does not. With only a few groups, a grouped split is a
-    domain-shift test between them rather than prediction for unseen entities; take that as its own decision
-    (covertype: 3 wilderness areas, IID instead).
-    </li>
-  </ul>
-  <p>For some datasets, either a temporal or a grouped split is plausible. A temporal split does not remove group
-  structure, and a grouped split does not make the task time-invariant — the split only determines which dependency
-  matters, it does not remove it.</p>
-  <p>TabArena <strong>excludes time-series forecasting</strong> data: although tabular-like and non-IID,
-  forecasting has fundamentally different assumptions and needs a different validation protocol. During curation we
-  carefully distinguish <em>temporal tabular regression</em> from <em>time-series forecasting</em>.</p>
-  <p><strong>A missing or hidden timestamp does not make a task IID — check the task design, not just the columns.</strong>
-  The time index is frequently absent: dropped by an uploader, never shipped, or only implied by how the data was
-  collected (samples logged sequentially over months/years; every feature and the target are <em>contemporaneous</em>
-  readings all known at prediction time <code>t</code>). Do not read "no timestamp column" as evidence of IID and wave
-  through a random split — that silently leaks temporal structure. If the underlying setup is "values unfolding over
-  time from a stream of signals", it is temporal / forecasting regardless of whether a literal date column survived.
-  Example: <code>combined_cycle_power_plant</code> ships with no timestamp, so it looks like IID sensor regression, but
-  it is a six-year hourly sensor stream predicting the plant's hourly output — a (multivariate) forecasting setup a
-  random split corrupts — and is correctly excluded as <em>time-series forecasting</em>.</p>
-  <p><strong>Do not trust the split the paper or source prescribes — verify it against the task design.</strong> The
-  original authors (or the dataset page) can pick a <em>leaking</em> evaluation split — most commonly a random split on
-  data that is really temporal — and papers get this wrong often. A prescribed "random split" is not evidence the task
-  is IID; treat the documented protocol as a claim to check, not a fact. Example:
-  <code>appliances_energy_prediction</code> ships with a date column (10-minute readings over ~4.5 months) and is a
-  forecasting task, yet was evaluated with a leaking random split; it is correctly excluded as time-series forecasting,
-  not the in-scope temporal regression an uncritical reading of the paper suggests.</p>
-
-  <h2>2 · Dataset curation, in brief</h2>
-  <p>The curation process extends tabular benchmarking to better represent challenging real-world predictive ML
-  applications. To keep selected datasets high-quality and representative, curation is <strong>manual and human-verified</strong>.
-  This is labor-intensive, but crucial to scientific rigor — data quality directly affects the correctness of the
-  benchmark's conclusions.</p>
-  <p>Datasets are gathered from prior tabular benchmark studies (re-evaluating accepted datasets and those
-  previously rejected for being non-IID, too small, or for data issues) and from non-IID/multimodal benchmarks,
-  plus new datasets found by browsing public repositories and competition sites (UCI, OpenML, Hugging Face, Kaggle,
-  Zindi, ASlib) and government data portals. Search is guided by popularity, task, and application domain, while
-  avoiding obvious duplicates.</p>
-
-  <h2>3 · Dataset selection criteria (summary)</h2>
-  <p>A dataset must satisfy <strong>all</strong> of the following to enter TabArena:</p>
-  <ol>
-    <li><strong>Unique</strong> — the dataset and its predictive ML task are unique within the benchmark.</li>
-    <li><strong>IID or non-IID tabular task</strong> — a random, temporal, or grouped split is the appropriate
-    validation protocol.</li>
-    <li><strong>Published for a predictive task</strong> — explicitly published for classification or regression. The target is an observed outcome or an expert annotation, not a label from unsupervised learning: a molecular subtype defined by clustering (PAM50, expression subtypes, NMF clusters) is not a real predictive task (brca_breast_cancer, glioblastoma, ov_ovarian_cancer, 2026-10-12). A label the source computes with a published, deterministic rule from the columns: drop the rule&rsquo;s inputs when the rest still makes a real task (account_debt_south_africa); when the inputs are the whole task it is <code>Trivial</code> (central_international_medical_college_and_hospital_health_risk_prediction, NEWS2). The task must simulate a decision someone makes with the prediction. A label counted over one calendar window shared by all rows, instead of a fixed time after each row, only supports a look back at which rows drew the outcome: <code>No Good Target / Scientific Discovery</code> (analcatdata_supreme, Congress&rsquo;s responses in 1979-1988 to Supreme Court rulings of 1953-1988, 2026-10-14). The same holds for a label the respondent already knows, asked in the same interview as the features (a past diagnosis): nobody predicts it. A screening task needs positives that do not know yet, found by an independent measurement such as a lab test (cdc_diabetes_health_indicators, BRFSS &ldquo;ever told you have diabetes&rdquo;, told a median of 10 years earlier; the undiagnosed sat in the negative class, 2026-10-15).</li>
-    <li><strong>Representative of a real application</strong> — stems from a real random distribution (not generated
-    by a deterministic function), and tabular models are a suitable, competitive choice (e.g., not a vectorized
-    version of ImageNet).</li>
-    <li><strong>No ethical concerns</strong> — the dataset and task raise no (obvious) ethical concerns.</li>
-  </ol>
-
-  <h2>4 · Selection criteria in detail</h2>
-  <p class="lede">These criteria involve subjective human interpretation; when in doubt, discuss and record the
-  decision in the curation log.</p>
-
-  <div class="crit">
-    <h3>Unique dataset</h3>
-    <p>Ensure each dataset has a <strong>unique original data source</strong>. Many datasets are re-uploaded to
-    OpenML/Kaggle under different names without attribution; gamified incentives can even push users to make data
-    look non-duplicate. So the first priority for any candidate is to determine its original source (or confirm it
-    is an original contribution). Sometimes trivial; sometimes it requires prolonged investigation — comparing data
-    statistics and comparing against popular datasets from the same domain. When the source stays unclear after a
-    thorough check, the curator team uses subjective judgment to assess authenticity and uniqueness.</p>
-    <p><strong>A working download link is not a known source.</strong> A live Kaggle / OpenML / PMLB page that is
-    itself an anonymous re-upload — no documentation, no traceable upstream (paper, competition, institution, or an
-    identifiable original uploader) — leaves the origin <em>unknown</em>, which fails this criterion and is a valid
-    exclusion (<code>Missing source information</code>). "The link still resolves" and "the data looks fine" are not
-    substitutes for provenance. Clear provenance and documentation are themselves an important <em>positive</em>
-    indicator of dataset quality; their absence is a real negative signal. This is distinct from a merely sparse
-    <em>record</em> for a dataset whose source <em>is</em> traceable — that alone is not grounds to reject.</p>
-    <p><strong>How to check for duplicates (recommended).</strong> The reliable signal is the
-    <em>original source</em>, not the data layout — two uploads can have different column names, dtypes,
-    row counts, or preprocessing and still be the same dataset. So:</p>
-    <ul>
-      <li>compare the <strong>versions and all links</strong> of the candidates (OpenML ids, Kaggle,
-      UCI/DOI, GitHub, the originating paper) — overlap in any canonical link is a strong signal;</li>
-      <li><strong>follow each link to its origin</strong> — a Kaggle/OpenML page usually references an
-      upstream source; two records that bottom out at the same source are duplicates even when their
-      direct links differ;</li>
-      <li><strong>spot-check by name and rough field structure</strong> against datasets you already
-      know, to recognise a re-upload under a new name (and rule out false matches).</li>
-    </ul>
-    <p>Rule of thumb: duplicates almost always <strong>share the same source</strong> even if the data
-    structure differs — shared provenance is strong evidence, a structural diff is weak. Conversely,
-    two records that merely share a source can be <em>legitimately distinct</em> tasks (e.g. a dataset
-    and its telemonitoring/temporal variant) — the record's comments are authoritative.</p>
-    <p>"Duplicate" is <strong>not</strong> limited to an <em>exact</em> re-upload: different versions / cuts of one
-    underlying dataset — a swapped target/outcome column, a different slice of the same cohort, added or dropped
-    rows/features — are duplicates too when neither adds a genuinely distinct task (e.g.
-    <code>arsenic_male_lung</code> is the lung-cancer-outcome version of the same arsenic-exposure data as
-    <code>arsenic_male_bladder</code>). Reach for the "legitimately distinct" carve-out only when the shared source
-    genuinely yields <em>different tasks</em>, not for mere version variants.</p>
-  </div>
-  <div class="crit">
-    <h3>IID and non-IID tabular datasets</h3>
-    <p>Include any tabular dataset whose original task requires a random, temporal, or grouped split. Exclude
-    <strong>time-series forecasting</strong> tasks — representing them faithfully needs a different protocol than
-    temporal tabular tasks, and they have their own benchmarking community.</p>
-  </div>
-  <div class="crit">
-    <h3>Predictive classification or regression tasks</h3>
-    <p>Exclude datasets that do not originally stem from a predictive classification/regression task. In particular,
-    exclude <strong>scientific-discovery</strong> tasks (e.g., survey data or non-predictive tables), and
-    tabular-adjacent tasks such as <strong>click-through-rate</strong> prediction and <strong>ranking /
-    information-retrieval</strong> (recommender) tasks — these need specific validation and have their own
-    communities.</p>
-    <p><strong>Scope by the original task, not the first source's framing.</strong> A re-upload often relabels a dataset
-    into a different task — e.g. an OpenML page serving a recommendation dataset as plain regression. Trace what the data
-    was <em>originally collected and used for</em> (the same original-source tracing used for duplicates) before
-    assigning scope. Example: <code>yearprediction_the_million_song_dataset</code> is served on OpenML as
-    YearPredictionMSD <em>regression</em>, but it is the Million Song Dataset Challenge — a song-<strong>recommendation</strong>
-    task — repackaged, so it is correctly excluded as recommender / out-of-scope, and the regression re-framings are
-    fake / duplicates.</p>
-    <p><strong>One task per curated dataset when the targets exclude each other.</strong> Some sources carry two
-    usable targets where taking one means dropping the other: <code>pva_revenue_prediction_kddcup98</code> has the
-    donation amount (<code>TARGET_D</code>) and the response flag (<code>TARGET_B</code> — did they donate at all), two
-    framings of one signal, so keeping both would leak. The problem type is then a property of the task we choose, not
-    of the dataset: curate one target per notebook, set <code>problem_type</code> to the task that ships, and note the
-    alternative in the record's comments. This is the case <code>Multi-target</code> does <em>not</em> cover — that tag
-    is for several targets predicted <strong>at once</strong>, which is the right call when they are distinct
-    quantities that could be modelled jointly (next-day min <em>and</em> max temperature, several soil nutrients).</p>
-  </div>
-  <div class="crit">
-    <h3>Representative of real-world tabular ML</h3>
-    <p>Exclude datasets representing tasks for which tabular ML models would not be used, that do not represent a
-    real-world application, or that cannot be preprocessed to be representative. Concretely, exclude datasets that:</p>
-    <ul>
-      <li><strong>(A) Non-tabular modality</strong> — where modality-specific models are clearly superior. This is
-      judged <em>per dataset</em> (not by blanket modality exclusion): vectorized image, text, audio, or time-series
-      data is allowed if tabular models are competitive with modality-specific solutions. Consult recent benchmarks
-      / the introductory paper for the dataset's application.
-      <br><em>Key exclusion — features that are an algorithmic vectorization of image/video content:</em> if the
-      columns are <em>computed from an image/video to describe its content</em> — raw pixels, HOG, colour/texture
-      histograms, <strong>or</strong> morphological / geometric / spectral descriptors extracted by a CV /
-      image-analysis pipeline, video-derived kinematics, remote-sensing spectra — the underlying task is a vision task
-      and the modality-specific model is the natural tool, so it is excluded as <code>Image</code> /
-      <code>Wrong Domain / Source Modality</code> <em>even when the dataset ships as a numeric / pre-extracted feature
-      table</em>. The feature vector does not make it tabular. This covers recognition sets (<code>letter</code>,
-      <code>mfeat_*</code>, <code>gina</code>, <code>gtsrb_*</code>, <code>optdigits</code>, <code>pendigits</code>,
-      <code>usps</code>, <code>semeion</code>, <code>texture</code>, <code>one_hundred_plants_*</code>) <strong>and</strong>
-      measured-from-image tables (<code>magic_gamma_telescope</code>, <code>wdbc</code>,
-      <code>image_gesture_phase_segmentation</code>, <code>dry_bean</code>/<code>raisin</code>/<code>pumpkin_seeds</code>,
-      <code>satimage</code>/<code>wilt</code>, <code>banknote_authentication</code>).
-      <em>"One more layer of abstraction" is still image-derived — a non-pixel or human-in-the-loop feature does not
-      escape this exclusion.</em> Two traps that look like carve-ins but are not: (1) <strong>descriptors / encodings
-      <em>of</em> an image</strong> (its geometry, shape, layout) stay image-derived even when mixed with a few
-      genuinely non-visual columns — <code>internet_advertisements</code> is the canonical case: per UCI its features
-      "encode the geometry of the image (if available) as well as phrases occurring in the URL, the image's URL and alt
-      text", i.e. an <em>is-this-an-ad-image?</em> vision task with text metadata bolted on → <code>Image</code>, and
-      the URL/alt-text tokens do <strong>not</strong> make it a carve-in; (2) <strong>a human <em>scoring what they see
-      in an image</em></strong> is still an image feature — <code>breast_w</code>'s 1–10 cytology grades are a
-      pathologist's scoring of cell morphology under a microscope → image-derived, and "assigned by eye" does not rescue
-      it when the thing being scored is an image. <strong>Exception:</strong> a reading that real tabular models take
-      as an input in practice stays in scope — the BI-RADS assessment and density of a screening mammogram, which risk
-      models such as the BCSC Risk Calculator combine with risk factors (<code>breast_cancer_prediction</code>), or the
-      thallium-scan result of <code>heart_disease_cleveland</code>. The rule stands in for the real-world use: when it
-      seems to exclude a dataset, check how the prediction is made in practice, and let the use case decide
-      (Lennart, 2026-10-15). <code>breast_w</code> stays out: its grades describe the slide for a call that pathology
-      makes from the image itself.
-      <br><em>Narrow carve-in (stays in-scope):</em> attributes that are <strong>not</strong> a description / scoring of
-      image (or other non-tabular) content — genuinely non-visual measurements or metadata taken from the real-world
-      entity directly (lab values, sensor readings, questionnaire responses, transaction fields), not read off a photo /
-      scan of it. Audio/sonar follow the same case-by-case logic (interpretable engineered measures like jitter/shimmer
-      can be in; raw spectral bins lean out). <code>wbcatt</code> (expert-annotated white-blood-cell morphology) sits on
-      the <code>breast_w</code> boundary and is kept only <strong>provisionally</strong> for a possible
-      causal/counterfactual framing — borderline, not a clean precedent. Decide on the data's actual columns, not the
-      dataset's fame.</li>
-      <li><strong>(B) Not a real random distribution</strong> — exclude artificial data and data generated by a
-      deterministic function. Simulated data from real applications (e.g., Higgs bosons) represents a real
-      distribution but is still excluded here, as such tasks have dedicated domain-specific benchmarks.</li>
-      <li><strong>(C) Trivial</strong> — practitioners would not use ML for it. A dataset is trivial if one feature or a
-      simple rule gives the score the best methods reach, or if it is solved perfectly (error 0). A small but real
-      signal, or methods that tie on a hard task, is not trivial, and a task too small to evaluate (a handful of units
-      of a class per test fold that decide the score) is its own reason (<code>Too Small</code>). Under class imbalance, accuracy compared with the majority class is not evidence in either direction: judge learnability with ROC AUC or log loss against the class prior, ideally from a quick gradient-boosting fit on the features known at prediction time. For a curated dataset the evidence is the task-probe sweep against dummy baselines on its own splits (<code>.claude/skills/verify-dataset/scripts/task_probes.py</code>); its flags (no signal, solved, no spread between model families, one feature carries it, a drift baseline as good as the models, unstable, few of a class per fold) are questions for the curator, not verdicts. Check each against the benchmark's tuned methods; the rules and the decisions of the v0.2 review are in <code>.claude/skills/verify-dataset/references/task_probes.md</code>.</li>
-      <li><strong>(D) Irreversible data quality issues</strong> — exclude datasets where irreversible preprocessing
-      leaks the target or the test feature distribution (e.g., PCA-transformed data, or a feature that is itself the
-      output of a <em>supervised</em> transform fit on the whole dataset — a discriminant-analysis score, target / mean
-      encoding, or a model's own prediction). Such a feature bakes label / whole-set information into every row and
-      cannot be recomputed per train/test split, so the leak is irreversible. Example: <code>yeast</code> ships a
-      "Score of discriminant analysis of the amino acid content of vacuolar and extracellular proteins" column — a DA
-      fit on the full dataset, baked in and unfixable. An <em>unsupervised</em> scaling over all rows (z-scores,
-      min-max, a quantile transform, RMA) also carries the test rows into every value, but it is a weak leak that real
-      data often come with: rebuild from unprocessed values when the source has them (<code>coad_colon_adenocarcinoma</code>,
-      retired for a GDC rebuild), otherwise keep the dataset with a note. It is a reason for exclusion only when a
-      strong leak is suspected (2026-10-19).</li>
-      <li><strong>(E) Insufficient information</strong> — when a prolonged investigation fails to find source
-      information needed to judge the criteria, it is the curation team's call whether to use it.</li>
-    </ul>
-  </div>
-  <div class="crit">
-    <h3>Ethically unambiguous tasks</h3>
-    <p>Exclude datasets whose tasks pose ethical concerns. This is extended to include cases where data subjects or
-    creators request that the data not be used for ML research (e.g., the Pima Indian Diabetes Dataset).</p>
-    <p><strong>Licence and redistribution terms are not a selection criterion at this stage.</strong> Note them in
-    the record's comments (non-commercial clause, request-only access, no redistribution) and decide on the data
-    itself; they are never the reason for a verdict or a marker.</p>
-  </div>
-
-  <p class="src">Adapted from the TabArena paper — Section 2 (background), Section 4 (curation &amp; selection
-  criteria), and Appendix B.2 (detailed criteria). Citations omitted. See the <strong>Dataset Processing
-  (extended)</strong> tab for processing conventions.</p>
-</section>
-
-<section id="tab-proc" hidden>
-  <h1>Dataset Processing <span class="tag">extended</span></h1>
-  <p class="lede">All datasets undergo a processing procedure for consistency and reproducibility. Below are the
-  recurring patterns; case-by-case details and comments for each dataset live in Data Foundry's notebooks.</p>
-
-  <h2>General</h2>
-  <ul>
-    <li><strong>Sample identifiers</strong> — drop uninformative ones (often just storage artifacts). Keep
-    informative identifiers (e.g., a time index) and process them to represent their original meaning.</li>
-    <li><strong>Missing values</strong> — convert proxy missing values (e.g., <code>999</code>, <code>-1</code>) to
-    explicit <code>NA</code> whenever the encoding can be reliably inferred from the data description and task
-    context.</li>
-    <li><strong>Skewed targets</strong> — for numerical targets with strong skew / heavy tails (e.g., housing
-    prices), consider logarithmic scaling on a case-by-case basis.</li>
-    <li><strong>Naming</strong> — standardize dataset names with <code>snake_case</code>.</li>
-    <li><strong>Sample order</strong> — always <strong>shuffle</strong> IID and grouped data to prevent methods from
-    exploiting implicit order leakage. For <strong>temporal</strong> data, sort chronologically by the time index.</li>
-  </ul>
-
-  <h2>Feature types (dtypes)</h2>
-  <ul>
-    <li>Transform object/string features to <strong>categorical</strong> (a fixed, finite set of values, inferred
-    from the description/context) or <strong>string</strong> (otherwise).</li>
-    <li>Convert <strong>date</strong> features to standardized <code>YYYY-MM-DD</code> datetime where possible; for
-    numerically-encoded dates, reconstruct as much of the date information as possible.</li>
-    <li>Encode all other features as <strong>numerical</strong> types.</li>
-    <li>A molecule's structure (<strong>SMILES</strong>) ships as RDKit's 2D descriptors (<code>rdkit_descriptors</code>
-    of <code>data_foundry.v2</code>, one pinned RDKit for every dataset), and the SMILES string is dropped; descriptors
-    the source ships stay next to them. As text the SMILES adds nothing to descriptors, and the benchmark then needs
-    no chemistry step of its own. Check for rows that become copies once the stereochemistry is gone.</li>
-  </ul>
-
-  <h2>Creating temporal tasks and splits</h2>
-  <ul>
-    <li>Manually define the <strong>prediction horizon</strong> and the associated test time points.</li>
-    <li>Verify every feature would have been <strong>available at prediction time</strong> (no target leakage from
-    future information); filter samples and features as needed.</li>
-    <li>Analyze for <strong>grouped-temporal structure</strong> — repeated observations from the same entity over
-    time (e.g., multiple transactions from one customer); carefully consider a grouped split during construction.</li>
-    <li>The <strong>first split</strong> of a temporal task is always the one with the <strong>most recent</strong>
-    test time point — it also has the most training data and is deemed the most representative. Order all other
-    splits by descending test time point.</li>
-  </ul>
-
-  <p class="src">Adapted from the TabArena paper — Appendix B.3 (details on dataset processing). Citations omitted.</p>
-</section>
-
-<section id="tab-flow" hidden>
-  <h1>Curation log &amp; workflow</h1>
-  <p class="lede">How the curation log on the previous page works — the states, the AI-assisted triage,
-  and the human verification step.</p>
-
-  <h2>One record per dataset</h2>
-  <p>Each candidate dataset is a single markdown record (structured front-matter + free-text comments)
-  under <code>curation/records/</code>, edited by hand or in the dashboard. Curators triage the backlog,
-  commit, and open a PR; the dashboard edits the same files in place, so every change is a reviewable diff.</p>
-  <p><strong>Comments hold substance, not a change log.</strong> Record the details we care about —
-  provenance, leak mechanisms, the real target/split, why a verdict was reached, what still needs
-  checking. Do <em>not</em> append notes that merely restate a field edit ("marked WIP", "set
-  suggestion to No"): git history already records who changed what and when. A dated
-  <code>CC (YYYY-MM-DD, Name):</code> comment is for new reasoning or facts accompanying a change,
-  not for the change itself.</p>
-  <p><strong>Keep comments minimal — substance is not volume.</strong> Record only the key information a
-  curator needs to act: what the dataset really is, the decisive reason for the verdict, where the data can
-  be obtained, what still needs checking. A few sentences is normal; a screenful is almost always too much.
-  Do <em>not</em> dump everything learned while investigating — per-column missingness, byte sizes,
-  checksums, download-endpoint mechanics, side observations, or restatements of front-matter fields. Those
-  belong in the dataset's definition (<code>dataset.py</code>) and its README, not the record.</p>
-  <p><strong>Cite papers by location in the text, never from memory.</strong> A dataset's paper is often the
-  decisive evidence, so any claim attributed to one needs a <em>text reference</em> — the section, table or
-  page, plus the load-bearing sentence quoted — from text you actually read, not from the title, the abstract
-  or recollection. Write it as <code>Sec. 6.1, p. 12: "…"</code> so the next curator can check it in one step.
-  Two traps this prevents, both real:</p>
-  <ul>
-    <li><strong>A paper can refute the claim you were about to make.</strong> For <code>kddcup99</code>, the
-    simulation-artifact critique (Mahoney &amp; Chan, RAID 2003) looks damning, but Tavallaee et al. (CISDA
-    2009, Sec. III) state the artifacts "do not affect the KDD data set since the 41 features used in KDD are
-    not related to any of the weaknesses mentioned" — they are packet-header fields absent from KDD's
-    features.</li>
-    <li><strong>A paper's own framing can decide the verdict.</strong> For <code>intrusion_detection</code>,
-    the BCCC/NTLFlowLyzer paper (Shafi et al., Computers &amp; Security 148:104160, 2025) says in Sec. 6.1
-    "our focus is on developing a profiling system, not a detection system", so its headline ">99.8%" is
-    profile coverage rather than predictive accuracy and the release ships no target, split or baseline —
-    that quote is why the record is <code>No</code> + <code>No Good Target / Scientific Discovery</code>.</li>
-  </ul>
-  <p>If a paper is paywalled and the passage could not be read, say so and mark the claim unverified instead
-  of paraphrasing the abstract as if it were the text.</p>
-
-  <h2>Suggestion states</h2>
-  <p>The suggestion is our verdict <strong>right now</strong>; an earlier verdict can change over time
-  (a dataset that shipped can later be excluded — see <code>No (Retired)</code> below).</p>
-  <ul>
-    <li><code>Yes</code> — include; <code>TBD -&gt; Yes</code> — likely include, pending verification.</li>
-    <li><code>TBD -&gt; 2nd Tier</code> — plausible but secondary; <code>No</code> — exclude.</li>
-    <li><code>No (Retired)</code> — exclude, <strong>but it shipped in a collection before the verdict
-    changed</strong> (e.g. later found trivial, or an ethical concern surfaced); keep the collection tag
-    and record why in the comments. A never-shipped exclusion is a plain <code>No</code>.</li>
-    <li><code>Disagreement</code> — curators genuinely disagree; not yet shipped, needs resolution.</li>
-    <li><code>Yes (Disagreement)</code> — <strong>shipped on purpose, but with an open disagreement to
-    re-evaluate</strong>; counts as accepted, but stays visible under the ⚡ Disagreement filter.</li>
-  </ul>
-  <p><strong>Invariant.</strong> A dataset shipped in a collection (<code>TabArena (v0.1)</code> /
-  <code>BeyondArena</code>) must carry an accepted verdict (<code>Yes</code> / <code>Yes (Disagreement)</code>)
-  <strong>or</strong> <code>No (Retired)</code>. Anything else on a shipped record is a
-  <code>ship_conflict</code>.</p>
-  <h2>Work-in-progress states</h2>
-  <p>The Data Foundry column holds two mutually exclusive WIP values: <code>WIP (Triage)</code> — the
-  verdict is still open (<code>TBD -&gt; …</code> / disputed) and someone is settling it — and
-  <code>WIP (DF)</code> — the verdict is a final <code>Yes</code> and the Data Foundry integration
-  (notebook) is in progress. A record without a final <code>Yes</code> must not carry
-  <code>WIP (DF)</code>.</p>
-  <p><strong>A WIP state is a claim.</strong> <code>Claimed by</code> names the curator who holds it; it is set and
-  cleared together with the WIP value. Leave a record claimed by someone else alone (no triage, no new
-  definition) until it is released. The claim reaches the main branch on its own, ahead of the work: a small pull
-  request that changes only the claim lines (<code>data_foundry_status</code> and <code>claimed_by</code>) of the
-  records you take, merged as soon as its checks pass, so this log shows it. The work stays on your branch (merge
-  main into it after the claim PR); the pull request that brings the work to main sets the final state and clears
-  the claim, and releasing a claim without the work is another small pull request. The <em>Claimed by</em> filter
-  set to <em>(empty)</em> shows what is free. A WIP record without a claim, or a claim without a WIP state, is in
-  the Review queue (<code>wip_unclaimed</code>, <code>claim_without_wip</code>).</p>
-
-  <h2>Decision markers</h2>
-  <p><code>decision_markers</code> flag <em>issues</em> (duplicate, trivial, leakage, out-of-scope, …).
-  A clean, includable dataset usually has <strong>none</strong> — their absence is the normal, good
-  state. A marker can also be a <em>provisional best-guess</em> of a concern, to confirm or rule out
-  later (recorded in the comments), so an accepted dataset may still carry a watch-item marker.</p>
-
-  <h2>Filtering the log</h2>
-  <p>Every filter speaks the same tri-state language: clicking a value cycles
-  <strong>✓ require → ✕ exclude → off</strong>. That holds for the status funnel in the leftmost
-  column and for the filter button in each dropdown column's header, whose popover lists all of
-  that column's values — the vocabulary, any value present in the data but missing from the
-  vocabulary (⚠), and <code>(empty)</code> — each with a count.</p>
-  <ul>
-    <li><strong>AND within a multi-value column:</strong> several ✓ values must <em>all</em> be
-    present (e.g. Tags ✓ Non-IID (Temporal) ✓ Review Prio 1). The
-    <em>match ALL ✓ / match ANY ✓</em> switch at the top of the popover changes that to
-    "either of" — set it before or after ticking values; it sticks for that column. On
-    single-value columns ✓ values read as "any of", since a row holds one value.</li>
-    <li><strong>AND across columns:</strong> different columns always combine, so
-    "in BeyondArena but not yet <code>DF: Yes</code>" is expressible.</li>
-    <li><strong>NOT:</strong> ✕ on any value or status excludes it.</li>
-    <li><strong>Text columns and the search box:</strong> several terms must all match,
-    <code>!word</code> excludes, <code>"quoted phrase"</code> keeps spaces. A search
-    deliberately spans all datasets, overriding the other filters while a term is present.</li>
-  </ul>
-  <p>The amber <strong>filter strip</strong> under the top bar states every active constraint in
-  words, with a ✕ to drop one and a ✕ to clear all — and <strong>🔗 Copy link</strong> encodes the
-  whole view (pill, statuses, column constraints, search) into the URL so it can be shared.</p>
-
-  <h2>AI-assisted triage &amp; verification</h2>
-  <p>An AI assistant can draft a provisional triage for untriaged datasets — a suggestion, justified
-  markers, and a written assessment — labelled <code>AI (UNVERIFIED)</code> and shown with a 🤖 status.
-  These stay in the <strong>Review</strong> queue until a human reads the record and verifies it (the
-  ✓ action), which records the curator as reviewer and clears the unverified flag. The AI never has the
-  final say; every decision is human-verified.</p>
-
-  <div class="callout">
-    <h3>For AI / agent contributors</h3>
-    <p>The full agentic curation brief — how an assistant should triage, the decision patterns, and the
-    duplicate-checking method — lives in the repo as a skill:
-    <a href="https://github.com/TabArena/data-foundry/blob/main/.claude/skills/triage-candidates/SKILL.md" target="_blank" rel="noopener"><code>.claude/skills/triage-candidates/SKILL.md</code></a>
-    (the <code>/triage-candidates</code> skill; its curation guidelines are in <code>references/curation_guidelines.md</code>).</p>
-  </div>
-
-  <p class="src">Operational reference for the curation dashboard; see the <strong>Guidelines</strong>
-  tab for the selection criteria.</p>
-</section>
-</main>
+<div id="df-scrim"></div>
 
 <script>
-function showTab(which) {
-  for (const t of ["main", "proc", "flow"]) {
-    document.getElementById("tab-" + t).hidden = which !== t;
-    document.getElementById("tab-btn-" + t).classList.toggle("active", which === t);
+// <df-docs-core>
+// Pure helpers, no DOM (kept in one block so they can be checked outside a browser): front matter,
+// GitHub's heading slugs, the #doc=<skill>/<path>.md&h=<slug> hash, and link rewriting.
+const DFDocs = (() => {
+  const SKILLS_ROOT = ".claude/skills/";
+  const ABSOLUTE = /^[a-z][a-z0-9+.-]*:/i;  // http:, https:, mailto:, data:, ...
+
+  // YAML front matter at the very top (as GitHub hides it): "---" ... "---" (or "...").
+  function stripFrontMatter(text) {
+    return String(text).replace(/^﻿?---[ \t]*\r?\n(?:[\s\S]*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/, "");
   }
-  window.scrollTo(0, 0);
-}
+
+  // GitHub's heading ids (github-slugger): lowercase, drop everything but letters, marks, numbers,
+  // "_", "-" and spaces, then each space becomes "-". Repeats get -1, -2, ... in document order.
+  function slug(text) {
+    return String(text).toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]/gu, "").replace(/ /g, "-");
+  }
+  function makeSlugger() {
+    const seen = Object.create(null);
+    return (text) => {
+      const base = slug(text);
+      let result = base;
+      while (result in seen) {
+        seen[base] += 1;
+        result = base + "-" + seen[base];
+      }
+      seen[result] = 0;
+      return result;
+    };
+  }
+
+  const decode = (s, fn) => { try { return fn(s); } catch (e) { return s; } };
+
+  // "#doc=knowledge-curation/references/x.md&h=some-heading". A hash without "=" (an old
+  // guidelines.html#section link) is read as a heading of the default page.
+  function parseHash(hash) {
+    const raw = String(hash || "").replace(/^#/, "");
+    const out = { doc: null, h: null };
+    if (!raw) return out;
+    if (!raw.includes("=")) { out.h = decode(raw, decodeURIComponent); return out; }
+    for (const part of raw.split("&")) {
+      const at = part.indexOf("=");
+      if (at < 0) continue;
+      const key = part.slice(0, at), value = decode(part.slice(at + 1), decodeURIComponent);
+      if (key === "doc") out.doc = value || null;
+      else if (key === "h") out.h = value || null;
+    }
+    return out;
+  }
+  function formatHash(doc, heading) {
+    let hash = "#doc=" + encodeURIComponent(doc).replace(/%2F/gi, "/");
+    if (heading) hash += "&h=" + encodeURIComponent(heading);
+    return hash;
+  }
+
+  const dirname = (path) => (path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "");
+  // Resolve a relative path against a repo-relative directory; null if it climbs above the repo root.
+  function joinPath(baseDir, rel) {
+    const parts = baseDir ? baseDir.split("/") : [];
+    for (const seg of rel.split("/")) {
+      if (seg === "" || seg === ".") continue;
+      if (seg === "..") {
+        if (!parts.length) return null;
+        parts.pop();
+      } else parts.push(seg);
+    }
+    return parts.join("/");
+  }
+  function splitHref(href) {
+    let path = href, query = "", frag = "";
+    const hashAt = path.indexOf("#");
+    if (hashAt >= 0) { frag = path.slice(hashAt + 1); path = path.slice(0, hashAt); }
+    const queryAt = path.indexOf("?");
+    if (queryAt >= 0) { query = path.slice(queryAt); path = path.slice(0, queryAt); }
+    return { path, query, frag };
+  }
+  // A repo path this page shows: a .md file inside one of the rendered skill folders -> "<skill>/<path>".
+  function viewerDoc(repoPath, skills) {
+    if (!repoPath.startsWith(SKILLS_ROOT) || !repoPath.endsWith(".md")) return null;
+    const rest = repoPath.slice(SKILLS_ROOT.length);
+    const skill = rest.split("/")[0];
+    return skills.includes(skill) && rest.length > skill.length + 1 ? rest : null;
+  }
+
+  // Rewrite one link of the markdown file at repo path `from`. ctx = {blobBase, skills, page}.
+  //   absolute (scheme: or //host)                -> unchanged
+  //   .md inside a rendered skill (or "#heading")  -> page + "#doc=<skill>/<path>&h=<heading>"
+  //   any other relative path ("/x" = repo root)   -> blobBase + "/" + repo path (+ ?query, #fragment)
+  function resolveLink(href, from, ctx) {
+    const raw = String(href).trim();
+    if (!raw || ABSOLUTE.test(raw) || raw.startsWith("//")) return href;
+    const { path, query, frag } = splitHref(raw);
+    let target = from;
+    if (path) {
+      target = joinPath(path.startsWith("/") ? "" : dirname(from), decode(path, decodeURI));
+      if (target === null) return href;
+    }
+    const doc = query ? null : viewerDoc(target, ctx.skills);
+    if (doc) return (ctx.page || "") + formatHash(doc, decode(frag, decodeURIComponent));
+    return ctx.blobBase + "/" + encodeURI(target) + query + (frag ? "#" + frag : "");
+  }
+  // Images and other embedded files: the raw file on GitHub.
+  function resolveAsset(src, from, ctx) {
+    const raw = String(src).trim();
+    if (!raw || ABSOLUTE.test(raw) || raw.startsWith("//")) return src;
+    const { path } = splitHref(raw);
+    const target = joinPath(path.startsWith("/") ? "" : dirname(from), decode(path, decodeURI));
+    return target ? ctx.blobBase + "/" + encodeURI(target) + "?raw=true" : src;
+  }
+
+  return { stripFrontMatter, slug, makeSlugger, parseHash, formatHash, joinPath, viewerDoc, resolveLink, resolveAsset };
+})();
+// </df-docs-core>
+
+(() => {
+  const STATIC = !!window.DF_STATIC;
+  const DEFAULT_BLOB = "https://github.com/TabArena/data-foundry/blob/main";
+  const DEFAULT_SKILLS = ["knowledge-curation", "knowledge-data-foundry"];
+  const $ = (id) => document.getElementById(id);
+  const docEl = $("df-doc"), footEl = $("df-docfoot"), tocEl = $("df-toc"), searchEl = $("df-search"), navBtn = $("df-navbtn");
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const docId = (d) => d.skill + "/" + d.path;
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+  let manifest = { sections: [], docs: [] };
+  let ctx = { blobBase: DEFAULT_BLOB, skills: DEFAULT_SKILLS, page: "" };
+  let byId = new Map();
+  let current = null, loadSeq = 0, textsLoading = null;
+  const texts = new Map();  // doc id -> markdown, for the page filter
+  const blobUrl = (repoPath) => ctx.blobBase + "/" + encodeURI(repoPath);
+
+  // markdown-it as GitHub renders: raw HTML on (the files are our own), tables on (default), bare
+  // http(s) URLs linked, but no fuzzy links (prose names files like SKILL.md, and .md is a domain).
+  const md = window.markdownit ? window.markdownit({ html: true, linkify: true }) : null;
+  if (md) {
+    md.linkify.set({ fuzzyLink: false, fuzzyEmail: false });
+    md.renderer.rules.table_open = () => '<div class="tablewrap"><table>\n';
+    md.renderer.rules.table_close = () => "</table></div>\n";
+  }
+
+  async function fetchJson(url) {
+    const resp = await fetch(url, { cache: "no-cache" });
+    if (!resp.ok) throw new Error(url + ": HTTP " + resp.status);
+    return resp.json();
+  }
+  async function loadManifest() {
+    const urls = STATIC ? ["docs/manifest.json", "api/docs"] : ["api/docs", "docs/manifest.json"];
+    let error;
+    for (const url of urls) {
+      try { return await fetchJson(url); } catch (e) { error = e; }
+    }
+    throw error;
+  }
+  async function fetchDoc(id) {
+    const resp = await fetch("docs/" + encodeURI(id), { cache: "no-cache" });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const text = await resp.text();
+    texts.set(id, text);
+    return text;
+  }
+
+  // -- sidebar ---------------------------------------------------------------
+  function buildNav() {
+    const out = [];
+    for (const sec of manifest.sections) {
+      const docs = manifest.docs.filter((d) => d.skill === sec.skill);
+      if (!docs.length) continue;
+      out.push(`<section class="sec"><div class="sec-t">${esc(sec.title)}</div>`);
+      for (const d of docs) {
+        const id = docId(d);
+        out.push(`<a class="doc" data-doc="${esc(id)}" href="${esc(DFDocs.formatHash(id))}" title="${esc(d.repo_path)}">${esc(d.title)}</a>`
+          + `<div class="sub" data-sub="${esc(id)}"></div>`);
+      }
+      out.push("</section>");
+    }
+    tocEl.innerHTML = out.join("") + '<p class="nomatch" hidden>No page matches.</p>';
+    searchEl.hidden = !manifest.docs.length;
+  }
+  function setActive(id, headings) {
+    tocEl.querySelectorAll("a.doc").forEach((a) => a.classList.toggle("active", a.dataset.doc === id));
+    tocEl.querySelectorAll(".sub").forEach((sub) => {
+      sub.innerHTML = sub.dataset.sub === id
+        ? headings.map((h) => `<a href="${esc(DFDocs.formatHash(id, h.id))}">${esc(h.text)}</a>`).join("") : "";
+    });
+  }
+  function searchTerms() { return searchEl.value.toLowerCase().split(/\s+/).filter(Boolean); }
+  function applyFilter() {
+    const terms = searchTerms();
+    document.body.classList.toggle("filtering", terms.length > 0);
+    let shown = 0;
+    tocEl.querySelectorAll("section.sec").forEach((sec) => {
+      let n = 0;
+      sec.querySelectorAll("a.doc").forEach((a) => {
+        const d = byId.get(a.dataset.doc);
+        const hay = (d.title + " " + (d.heading || "") + " " + d.repo_path + " " + (texts.get(a.dataset.doc) || "")).toLowerCase();
+        const ok = terms.every((t) => hay.includes(t));
+        a.hidden = !ok;
+        n += ok ? 1 : 0;
+      });
+      sec.hidden = n === 0;
+      shown += n;
+    });
+    const none = tocEl.querySelector(".nomatch");
+    if (none) none.hidden = shown > 0;
+  }
+  function loadAllTexts() {  // the filter searches the text too: fetch every page once, on first use
+    if (!textsLoading) {
+      textsLoading = Promise.all(manifest.docs.map((d) => (texts.has(docId(d)) ? null : fetchDoc(docId(d)).catch(() => null))));
+    }
+    return textsLoading;
+  }
+  searchEl.addEventListener("input", () => {
+    applyFilter();
+    if (searchTerms().length) loadAllTexts().then(applyFilter);
+  });
+
+  function closeNav() {
+    document.body.classList.remove("nav-open");
+    navBtn.setAttribute("aria-expanded", "false");
+  }
+  navBtn.addEventListener("click", () => {
+    const open = document.body.classList.toggle("nav-open");
+    navBtn.setAttribute("aria-expanded", String(open));
+  });
+  $("df-scrim").addEventListener("click", closeNav);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
+
+  // -- rendering -------------------------------------------------------------
+  // GitHub alerts: a blockquote starting with [!NOTE], [!TIP], [!IMPORTANT], [!WARNING] or [!CAUTION].
+  function markAlerts() {
+    docEl.querySelectorAll("blockquote").forEach((bq) => {
+      const p = bq.firstElementChild;
+      if (!p || p.tagName !== "P" || !p.firstChild || p.firstChild.nodeType !== Node.TEXT_NODE) return;
+      const m = p.firstChild.nodeValue.match(/^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i);
+      if (!m) return;
+      const kind = m[1].toLowerCase();
+      p.firstChild.nodeValue = p.firstChild.nodeValue.slice(m[0].length);
+      if (p.firstChild.nodeValue === "" && p.childNodes[1] && p.childNodes[1].nodeName === "BR") p.childNodes[1].remove();
+      bq.classList.add("alert", "alert-" + kind);
+      const title = document.createElement("p");
+      title.className = "alert-t";
+      title.textContent = kind;
+      bq.prepend(title);
+      if (!p.textContent.trim() && !p.children.length) p.remove();
+    });
+  }
+
+  function render(entry, text) {
+    const id = docId(entry);
+    const body = DFDocs.stripFrontMatter(text);
+    docEl.innerHTML = md
+      ? md.render(body)
+      : `<p class="note">The markdown renderer (markdown-it, from unpkg.com) did not load, so this is the raw text.</p><pre>${esc(body)}</pre>`;
+    docEl.classList.remove("loading");
+    markAlerts();
+    // Heading ids as GitHub makes them, so file.md#some-heading links land here too.
+    const slugger = DFDocs.makeSlugger();
+    const headings = [];
+    docEl.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((el) => {
+      const label = el.textContent;
+      const slug = slugger(label);
+      if (!el.id) el.id = slug;
+      const a = document.createElement("a");
+      a.className = "anchor";
+      a.href = DFDocs.formatHash(id, el.id);
+      a.textContent = "#";
+      a.setAttribute("aria-label", "Link to this section");
+      el.append(a);
+      if (el.tagName === "H2") headings.push({ id: el.id, text: label.trim() });
+    });
+    docEl.querySelectorAll("a[href]").forEach((a) => {
+      if (a.classList.contains("anchor")) return;
+      const href = a.getAttribute("href");
+      const out = DFDocs.resolveLink(href, entry.repo_path, ctx);
+      if (out !== href) a.setAttribute("href", out);
+      if (/^https?:\/\//i.test(out)) { a.target = "_blank"; a.rel = "noopener"; }
+    });
+    docEl.querySelectorAll("img[src]").forEach((img) => {
+      img.setAttribute("src", DFDocs.resolveAsset(img.getAttribute("src"), entry.repo_path, ctx));
+    });
+    footEl.innerHTML = `Source: <a href="${esc(blobUrl(entry.repo_path))}" target="_blank" rel="noopener"><code>${esc(entry.repo_path)}</code></a>`
+      + (STATIC ? "" : " (shown from this checkout; the link opens main on GitHub)");
+    document.title = (entry.heading || entry.title) + " · Data Foundry guidelines";
+    setActive(id, headings);
+  }
+  function githubLinks() {
+    return manifest.sections.map((s) => `<a href="${esc(blobUrl(".claude/skills/" + s.skill + "/SKILL.md"))}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join(" · ");
+  }
+  function renderMessage(title, html) {
+    docEl.classList.remove("loading");
+    docEl.innerHTML = `<h1>${esc(title)}</h1>${html}`;
+    footEl.innerHTML = "";
+    setActive(null, []);
+  }
+
+  async function showDoc(id, seq) {
+    const entry = byId.get(id);
+    if (!entry) {
+      renderMessage("Page not found", `<p>There is no guideline page <code>${esc(id)}</code>. `
+        + `It may have moved: try <a href="${esc(blobUrl(".claude/skills/" + id))}" target="_blank" rel="noopener">the file on GitHub</a> `
+        + `or the <a href="${esc(DFDocs.formatHash(docId(manifest.docs[0])))}">overview</a>.</p>`);
+      return;
+    }
+    setActive(id, []);
+    docEl.classList.add("loading");
+    let text;
+    try {
+      text = await fetchDoc(id);
+    } catch (e) {
+      if (seq === loadSeq) {
+        renderMessage(entry.title, `<p class="note">Could not load <code>${esc(entry.repo_path)}</code> (${esc(e.message)}). `
+          + `Read it <a href="${esc(blobUrl(entry.repo_path))}" target="_blank" rel="noopener">on GitHub</a>.</p>`);
+      }
+      return;
+    }
+    if (seq === loadSeq) render(entry, text);
+  }
+
+  function findHeading(h) {
+    const all = [...docEl.querySelectorAll("[id]")];
+    return all.find((el) => el.id === h) || all.find((el) => el.id.toLowerCase() === h.toLowerCase()) || null;
+  }
+  function scrollToHeading(h) {
+    const el = h ? findHeading(h) : null;
+    if (!el) { window.scrollTo(0, 0); return; }
+    el.scrollIntoView({ block: "start" });
+    el.classList.remove("target");
+    void el.offsetWidth;  // restart the highlight animation
+    el.classList.add("target");
+  }
+
+  async function route() {
+    closeNav();
+    const { doc } = DFDocs.parseHash(location.hash);
+    const id = doc || docId(manifest.docs[0]);
+    if (id !== current) {
+      current = id;
+      const seq = ++loadSeq;
+      await showDoc(id, seq);
+      if (seq !== loadSeq) return;  // a newer navigation took over
+    }
+    scrollToHeading(DFDocs.parseHash(location.hash).h);  // the heading may have changed while loading
+  }
+  // A click on the link of the hash already shown fires no hashchange: scroll anyway.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href^='#']");
+    if (a && a.getAttribute("href") === location.hash) {
+      e.preventDefault();
+      closeNav();
+      scrollToHeading(DFDocs.parseHash(location.hash).h);
+    }
+  });
+
+  async function init() {
+    try {
+      manifest = await loadManifest();
+    } catch (e) {
+      renderMessage("Guidelines unavailable", `<p class="note">The list of guideline pages did not load (${esc(e.message)}).</p>`
+        + `<p>Read them on GitHub: <a href="${esc(blobUrl(".claude/skills/knowledge-curation/SKILL.md"))}" target="_blank" rel="noopener">Curation knowledge</a>`
+        + ` · <a href="${esc(blobUrl(".claude/skills/knowledge-data-foundry/SKILL.md"))}" target="_blank" rel="noopener">Data Foundry</a>.</p>`);
+      searchEl.hidden = true;
+      return;
+    }
+    ctx = {
+      blobBase: String(manifest.github_blob_base || DEFAULT_BLOB).replace(/\/+$/, ""),
+      skills: manifest.sections.map((s) => s.skill),
+      page: "",
+    };
+    byId = new Map(manifest.docs.map((d) => [docId(d), d]));
+    buildNav();
+    if (!manifest.docs.length) {
+      renderMessage("Guidelines", `<p>No guideline files were found next to this ${STATIC ? "site" : "server"}. This page renders the `
+        + `markdown files of ${manifest.sections.map((s) => `<code>.claude/skills/${esc(s.skill)}/</code>`).join(" and ")}, `
+        + `which a non-editable install of the package does not include.</p><p>Read them on GitHub: ${githubLinks()}.</p>`);
+      return;
+    }
+    window.addEventListener("hashchange", route);
+    route();
+  }
+  init();
+})();
 </script>
 </body>
 </html>

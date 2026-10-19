@@ -7,10 +7,9 @@ Usage, from the repository root::
 
 Each dataset writes ``<out_dir>/<name>.json`` (see ``build_one.py``) and ``<name>.log``; this prints one line per
 finished dataset. ``--previous`` is the out_dir of an earlier run: its build times order the datasets longest first,
-so the largest builds do not start last. Memory is the limit, not cores: the largest dataset (maps_router_eta_1m)
-peaks at about 172 GB, the next ones at 58, 39 and 28 GB. The definitions with ``prepared_raw_files`` also trace their
-``_prepare_raw_files`` inputs (``prepare_read``) on a full build, which takes acquire_valued_shoppers_challenge to about
-145 GB.
+so the largest builds do not start last. Memory is the limit, not cores; the skill's SKILL.md lists the peak memory of
+the largest builds. The definitions with ``prepared_raw_files`` also trace their ``_prepare_raw_files`` inputs
+(``prepare_read``) on a full build.
 
 For the check against a minimal warehouse, point ``DATA_FOUNDRY_WAREHOUSE`` at it and pass ``--check-only``.
 """

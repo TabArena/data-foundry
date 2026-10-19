@@ -11,23 +11,28 @@ gotchas that look like blockers but aren't — lives in
 
 * **Repo:** [Data Foundry](README.md) — schema and curation toolkit for
   tabular datasets behind BeyondArena / TabArena.
+* **The knowledge every skill uses** is in two reference skills (knowledge only, no workflow):
+  [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md) (how we decide and curate, independent of the
+  tooling) and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements
+  it, and the house rules). The workflow skills link the exact file at each step; the dashboard's Guidelines page
+  renders both.
 * **You touch code mainly to:**
   * triage candidate datasets — the **curation log** of one markdown record per
     candidate under `curation/records/`; the `/triage-candidates` skill
     ([`.claude/skills/triage-candidates/SKILL.md`](.claude/skills/triage-candidates/SKILL.md))
-    starts the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) and loads the
-    curation guidelines,
-  * check one candidate the curator is looking at — the `/check-candidate <unique_name>`
+    starts the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) and drafts verdicts,
+  * check one dataset the curator is looking at, at any stage — the `/check-candidate <unique_name>`
     skill ([`.claude/skills/check-candidate/SKILL.md`](.claude/skills/check-candidate/SKILL.md))
-    traces the source and writes a cited second opinion into the record,
+    traces the source, verifies a finished definition ("is X ready?") and writes a cited second opinion into the
+    record,
   * process a decided candidate — scaffold its v2 dataset folder (`dataset.py`
     class + `explore.ipynb` + generated `README.md`, API in `src/data_foundry/v2/`)
     via the `/add-dataset` skill
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)); on a dashboard filter it adds a
-    whole batch and writes one run report,
+    whole batch, and the open questions go into each folder's `REVIEW.md`,
   * let the curator review a batch of added datasets — the `/review-added-datasets` skill
     ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)) builds the
-    review page (local HTML or a Claude artifact) from the run report and applies the curator's decisions,
+    review page (local HTML or a Claude artifact) from the `REVIEW.md` files and applies the curator's decisions,
   * rebuild the working copy and verify the build — the `/rebuild-working-copy` skill
     ([`.claude/skills/rebuild-working-copy/SKILL.md`](.claude/skills/rebuild-working-copy/SKILL.md)),
   * extend the package (`src/data_foundry/`),
@@ -45,7 +50,8 @@ gotchas that look like blockers but aren't — lives in
   how to rebuild them, its `GETTING_STARTED.md` the way in for a new curator). Every change there (edited definition or helper file, added or
   removed dataset, a re-run that makes a new container) gets a dated entry in its
   `CHANGELOG.md`, and a new, removed or rebuilt dataset also updates the table in its
-  `README.md`. A dataset retired to `No (Retired)` is removed from the copy.
+  `README.md`. A dataset retired to `No (Retired)` is removed from the copy. Open questions for the curator live in
+  a folder's `REVIEW.md` until they are settled.
 * **v2 only for new work:** every new dataset is a v2 folder. The BeyondArena notebooks are Data Foundry v1;
   never add or re-curate a dataset with v1. [DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md) is the one page about v1.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it

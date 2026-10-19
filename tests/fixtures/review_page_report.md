@@ -1,15 +1,15 @@
 # Added datasets: issues (2026-10-01)
 
-A test run of `/add-dataset` on two records: one added, one left out.
+Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the REVIEW.md of 1 dataset, the open issues of 1 record without a folder and the working copy's REVIEW.md. Edit those files, not this report.
 
-**Counts:** 1 added, 1 not added.
+**Open:** 2 records, 2 issues, 1 record field, 1 cross-dataset item.
 
 ## Summary per record
 
-| Record | Outcome | Main points for the curator |
+| Record | Outcome | Main points |
 |---|---|---|
 | [`airfoil_self_noise`](#airfoil_self_noise) | added | The target is in decibels; keep it? |
-| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The rows of `churn_telco_south_asia` with renamed values. |
+| [`churn_telco_south_asia_duplicate`](#churn_telco_south_asia_duplicate) | not added; duplicate | The files are the 2,000 rows of `churn_telco_south_asia` with renamed values. |
 
 ## Record fields that disagree with the definition
 
@@ -26,7 +26,7 @@ A test run of `/add-dataset` on two records: one added, one left out.
 
 ### airfoil_self_noise
 
-**Outcome:** added and checked.
+**Outcome:** added. NASA's wind-tunnel table as published; the AI recommends shipping it.
 
 **Record judgment:** valid. NASA wind-tunnel measurements of airfoil noise.
 
@@ -37,4 +37,9 @@ A test run of `/add-dataset` on two records: one added, one left out.
 
 ### churn_telco_south_asia_duplicate
 
-**Outcome:** not added. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
+**Outcome:** not added; duplicate. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
+
+**Issues:**
+
+1. **Leave it out as a duplicate?** Every row matches a row of `churn_telco_south_asia` once the values are
+   renamed.

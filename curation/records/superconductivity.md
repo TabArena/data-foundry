@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: UCI
 year: '2018'
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 source_links:
 - https://www.openml.org/search?type=data&id=44964
 - https://doi.org/10.24432/C53P47
