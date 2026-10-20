@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 2
 tags:
 - Larger IID Data
 collections:
@@ -37,6 +38,8 @@ Looks real enough and good
 **Assessment (AI, 2026-10-12), problem in a third-party copy:** OpenML 43838 (Municipal-Debt-Risk-Analysis, no default target) ships `total90debt`, `totalwriteoff` and `debtbillingratio` next to the label `baddebt`. The label is a rule of these columns (see the assessment of 2026-10-07), so a model given them predicts it almost exactly; our definition drops them.
 
 CC (2026-10-12, Lennart): Kept `TotalElectricityBill`: its signal is mostly whether the municipality bills electricity at all, which a real forecast knows too, and among billed accounts electricity is the same share of the bill for bad debts and others (median 0.33), so no cut-off for the window's arrears shows. Kept `HasIDNo`: the data card describes it as a property of the holder; capture during collection stays possible (Residential 64% against 47% bad debts; 0.002 ROC AUC). IID with `ForcedIIDFromTemporal`: the file is one extract without dates, so the status at the extract stands in for a forecast. A municipality scores its own accounts; for one not in the data, ROC AUC falls from 0.877 to 0.843 (file blocks of 2,500 rows) and 0.786 (thirds of the file), but the file has no municipality key. The Unknown-category run at the end of the file (rows 134,192-138,276) stays: debt is recorded there.
+
+**Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issue 1: 20% of rows lack recorded debt, dropped by file-order rule; retire is an alternative). Rare real municipal-debt task from Africa, but label is a rule, payments leak, and a fifth of the file is unrecorded.
 
 ## Reference
 

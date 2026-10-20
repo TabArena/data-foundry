@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -34,6 +35,8 @@ CC: "Time split required. Also spatial data. Time impact not ignorable as collec
 Feature descriptions: https://www.kaggle.com/datasets/harlfoxem/housesalesprediction/discussion/207885
 
 **Assessment (AI, 2026-10-07):** Provenance traced: the rows are King County Department of Assessments sales (21,386 of 21,613 match a recorded sale on parcel, date and price), first distributed in 2015 as `kc_house_data` with the University of Washington's Coursera ML Specialization; the Kaggle CSV is a cell-for-cell copy. The house features are the assessor's record as of 18-19 July 2015, not of each sale: for 2,151 rows the record changed after the sale, mostly upward, which flatters models (LightGBM RMSE on those rows 0.156 against 0.208 with the record at the sale). The v2 definition rebuilds each sale's record from the county's change log and drops May 2015, which the extract cut short.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Well-known house-price regression with its post-sale feature leak fixed; temporal split, spatial features, direct valuation fit.
 
 ## Reference
 

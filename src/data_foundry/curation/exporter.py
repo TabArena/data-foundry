@@ -7,7 +7,8 @@ just want to read/filter the backlog:
 * :func:`push_to_gsheet` — overwrite a (read-only-for-others) Google Sheet tab,
   so non-coding stakeholders keep the familiar grid without being a write path.
 
-Multi-value fields are joined with `` | `` so a single cell stays human-readable.
+Multi-value fields are joined with `` | `` so a single cell stays human-readable. Number fields (``priority``) and
+``source_row`` stay integer columns (pandas ``Int64``), empty where a record has none.
 """
 
 from __future__ import annotations
@@ -28,19 +29,27 @@ _COLUMNS: list[tuple[str, str]] = (
     + [(f.name, f.label) for f in FIELDS]
     + [("needs_review", "Needs Review"), ("source_row", "Source Row")]
 )
+# Integer columns: kept as nullable integers, so an empty cell does not turn the column into text (or floats).
+_INT_COLUMNS: frozenset[str] = frozenset({"source_row", *(f.name for f in FIELDS if f.kind == "number")})
 
 
-def _cell(value: object) -> object:
+def _cell(value: object, *, integer: bool = False) -> object:
     if isinstance(value, list):
         return MULTI_JOIN.join(str(v) for v in value)
-    return "" if value is None else value
+    if value is None:
+        return None if integer else ""
+    return value
 
 
 def to_dataframe(records: list[CurationRecord] | None = None, directory: str | Path | None = None) -> pd.DataFrame:
     """Flatten records into a single DataFrame with human-readable column labels."""
     records = records if records is not None else load_all(directory)
-    rows = [{label: _cell(getattr(r, name)) for name, label in _COLUMNS} for r in records]
-    return pd.DataFrame(rows, columns=[label for _, label in _COLUMNS])
+    rows = [{label: _cell(getattr(r, name), integer=name in _INT_COLUMNS) for name, label in _COLUMNS} for r in records]
+    df = pd.DataFrame(rows, columns=[label for _, label in _COLUMNS])
+    for name, label in _COLUMNS:
+        if name in _INT_COLUMNS:
+            df[label] = df[label].astype("Int64")
+    return df
 
 
 def export_csv(path: str | Path, directory: str | Path | None = None) -> Path:
@@ -66,8 +75,9 @@ def export_xlsx(path: str | Path, directory: str | Path | None = None) -> Path:
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
     df = to_dataframe(directory=directory)
-    # Strip control characters openpyxl rejects (some free-text comments contain them).
-    df = df.map(lambda v: ILLEGAL_CHARACTERS_RE.sub("", v) if isinstance(v, str) else v)
+    # Strip control characters openpyxl rejects (some free-text comments contain them); the integer columns stay.
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].map(lambda v: ILLEGAL_CHARACTERS_RE.sub("", v) if isinstance(v, str) else v)
     df.to_excel(out, index=False)
     return out
 
@@ -122,7 +132,7 @@ def push_to_gsheet(
     key = gspread.utils.extract_id_from_url(spreadsheet) if looks_like_url else spreadsheet
     book = gc.open_by_key(key) if (looks_like_url or len(key) > 30) else gc.open(spreadsheet)
 
-    df = to_dataframe(directory=directory).fillna("")
+    df = to_dataframe(directory=directory).astype(object).fillna("")
     try:
         ws = book.worksheet(worksheet)
         ws.clear()

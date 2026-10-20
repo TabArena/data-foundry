@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Trivial
 tags:
@@ -42,6 +43,8 @@ file cell for cell, so its `Duplicate` marker stands. The v2 definition uses De 
 the incomplete July 2010 and his three partial-sale outliers), the log price and 13 two-month temporal windows.
 `Trivial` is not borne out: the mean price per `Overall Qual` grade is worse than LightGBM in all 13 windows (RMSE
 0.228 against 0.119). Licence: JSE allows teaching use; publications need the author's consent.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Well-documented Ames sales as a temporal regression on the full file; solid but another house-price task in a crowded domain.
 
 ## Reference
 

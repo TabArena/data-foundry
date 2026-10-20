@@ -23,6 +23,11 @@ FIRST_COHORT = 2001  # first fall with admissions and test scores (documentation
 LAST_COHORT = 2018  # newest cohort with a published completion rate (MERGED2024_25_PP.csv)
 YEARS_TO_RATE = 6  # a four-year cohort's 150% completion rate is in the file six years after entry
 MIN_COHORT_SIZE = 30  # the threshold below which the Scorecard suppresses its pooled rates (documentation p. 25)
+NEW_SAT_COHORT = 2017  # the first entering cohort reported on the redesigned SAT scale (the file of 2017-18)
+# The College Board's new-to-old SAT concordance (Concordance Tables, May 9, 2016): Table 3 for the math section,
+# Table 2 for the total score (old scale: critical reading plus math), in 10-point steps.
+SAT_TABLES = "sat_concordance.csv"
+SAT_COLUMNS = {"SATMT25": "math", "SATMT75": "math", "SAT_AVG": "total"}
 
 PCIP = [
     f"PCIP{code:02d}"
@@ -41,9 +46,10 @@ OLD_RACE = {
 FEATURES = [
     # the institution in the entry year
     "STABBR", "REGION", "CONTROL", "PREDDEG", "HIGHDEG", "MAIN", "NUMBRANCH", "OPEFLAG", "DISTANCEONLY",
-    # admissions of the entering class (fall of the entry year); the SAT columns are left out (scale change in 2017)
+    # admissions of the entering class (fall of the entry year); the SAT reading percentiles are left out (the
+    # redesigned section of 2017 on has no concordance to the old one)
     "OPENADMP", "ADMCON7", "ADM_RATE", "ADM_RATE_ALL", "ACTCM25", "ACTCM75", "ACTEN25", "ACTEN75", "ACTMT25",
-    "ACTMT75",
+    "ACTMT75", *SAT_COLUMNS,
     # enrollment and its composition (fall of the entry year)
     "UGDS", "GRADS", "UGDS_WOMEN", *NEW_RACE, "UGDS_NRA", "UGDS_UNKN", *OLD_RACE.values(), "PPTUG_EF", "UG25ABV",
     # aid, prices, finances and faculty
@@ -153,7 +159,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         ),
         known=(
             "The college's figures in the Scorecard file of the entry year: type, control, state and region, degrees,"
-            " admission rate and ACT scores, cost and net price, aid and loan shares, enrollment by race and field of"
+            " admission rate, ACT and SAT scores, cost and net price, aid and loan shares, enrollment by race and field of"
             " study, spending and faculty, and its latest published completion and retention rates of older classes."
         ),
         split=(
@@ -164,7 +170,8 @@ class CollegeScorecard(AbstractCuratedDataset):
         changes=(
             "We rebuilt the task from the Department of Education's files: features from the entry year, the rate "
             "from six years later, and a five-year gap before each test class. The TableShift copy binarises the rate"
-            " and takes features from the year it is reported. We drop the SAT scores, rescaled from 2017 on."
+            " and takes features from the year it is reported. SAT scores from 2017 on, on the redesigned test, are"
+            " put back on the old scale with the College Board's tables."
         ),
         fit="direct",
         fit_reason=(
@@ -194,6 +201,10 @@ class CollegeScorecard(AbstractCuratedDataset):
           "https://web.archive.org/web/20260822105756id_/https://ed-public-download.scorecard.network/downloads/College_Scorecard_Raw_Data_06102026.zip"
         md5sum local-data-warehouse/college_scorecard/College_Scorecard_Raw_Data_06102026.zip
 
+        `sat_concordance.csv` next to this file holds Table 2 (total score) and Table 3 (math section) of the College
+        Board's "Concordance Tables" for converting new SAT scores to old ones (released May 9, 2016):
+        https://satsuite.collegeboard.org/media/pdf/higher-ed-brief-sat-concordance.pdf
+
         The zip (470 MB) stays packed; `_load_raw` reads the 30 files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv
         from it. Which year each column of each file covers is in the data dictionary of this release (sheet
         Institution_Cohort_Map; README "Released June 10, 2026") and in the technical documentation (version September
@@ -218,7 +229,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         - One row per institution and entering cohort of fall 2001-2018 (the first test scores and the last completion rates): the features of a four-year institution (ICLEVEL = 1) from the entry-year file, and as target `completion_rate_150pct` the C150_4 of the file six years later, joined on UNITID. The entry file's own C150_4, the rate of the cohort six years older, becomes C150_4_LATEST.
         - We keep cohorts of at least 30 students (D150_4), the size below which the Scorecard suppresses its pooled rates (documentation p. 25).
         - Features: close to TableShift's list. We drop columns the release fills from its newest file or one fixed year (LOCALE, CCBASIC, CCSIZSET, ACCREDAGENCY, HBCU, SCH_DEG), which would show old cohorts later information, series that end before the newest test cohort (the NSLDS student profile, the census shares, the writing scores) and mostly blank ones, and add per-year columns such as PREDDEG, C150_4_LATEST and RET_FT4. UG25ABV stays, though IPEDS collects it for odd falls only.
-        - We drop the SAT columns: from the 2017 cohort on they are on the redesigned scale, unlike every training cohort (median change within an institution from 2016 to 2017 of +70 points for SAT_AVG, against at most 7 between any two other years).
+        - SAT: from the 2017 cohort on the Scorecard reports the redesigned test, unlike every training cohort (median change within an institution from 2016 to 2017: +30 SATMT25, +70 SAT_AVG, against at most 7 between any two other years up to 2018). We put SATMT25, SATMT75 and SAT_AVG of those cohorts back on the old scale with the College Board's concordance tables (May 2016; linear between their 10-point steps), after which the median 2016-2017 change is 0 and -5 (Lennart, 2026-10-16). Untuned LightGBM R² on the 2018 and 2017 windows: 0.783 and 0.802 as published, 0.798 and 0.808 converted, 0.796 and 0.809 without SAT; the ACT columns cover most of the same institutions. SATVR25/75 stay out: the new reading-and-writing section has no table to the old critical reading section.
         - The institution's own history stays: C150_4_LATEST and RET_FT4 are published in the entry-year file, and an entity's own history is legitimate under a temporal split. The latest rate carried forward scores R² 0.734 on the 2018 window (decision table), untuned LightGBM on all features 0.797.
         - Codes become the data dictionary's labels. ADMCON7's -1 (not reported) and -2 (not applicable, the open-admission institutions up to 2013, blank from 2014 on) become missing.
         - Race and ethnicity shares: in the 2008-09 and 2009-10 files an institution reports in the old IPEDS categories, the new ones or both, with 0.0 in the set it does not use. Each share becomes the sum of its new and old category, and UGDS_NHPI and UGDS_2MOR are missing where only the old set was used.
@@ -241,6 +252,8 @@ class CollegeScorecard(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="unique", n_windows=9, gap=YEARS_TO_RATE - 1, min_train_fraction=0.5),
         horizon=1,
         horizon_unit="years",
+        gap=YEARS_TO_RATE - 1,
+        gap_unit="years",
     )
     accepted_check_warnings = {
         "splits_rows_unused": "By design: the cohorts of 2013 and 2014 (3,676 rows) lie in the five-year label gap of "
@@ -266,7 +279,14 @@ class CollegeScorecard(AbstractCuratedDataset):
         df = cohort_rows(raw)
         # 2. Cohorts of at least 30 students (the threshold the Scorecard applies to its pooled rates).
         df = df[df["D150_4"] >= MIN_COHORT_SIZE]
-        # 3. Race and ethnicity shares. Before 2008 only the old categories exist; in the 2008-09 and 2009-10 files an
+        # 3. SAT scores from the 2017 cohort on are on the redesigned scale: back to the old one, which every training
+        #    cohort has, with the College Board's concordance tables (linear between their 10-point steps).
+        tables = pd.read_csv(self.folder / SAT_TABLES)
+        redesigned = df["cohort_year"] >= NEW_SAT_COHORT
+        for column, table in SAT_COLUMNS.items():
+            points = tables[tables["table"] == table]
+            df.loc[redesigned, column] = np.interp(df.loc[redesigned, column], points["new_sat"], points["old_sat"])
+        # 4. Race and ethnicity shares. Before 2008 only the old categories exist; in the 2008-09 and 2009-10 files an
         #    institution reports in the old categories, the new ones, or partly in both (the shares of both sets with
         #    UGDS_NRA and UGDS_UNKN add up to 1), with 0.0 in the set it does not use. Each share becomes the sum of
         #    its new and old category; NHPI and 2MOR (new categories only) are missing where only old ones are used.
@@ -276,10 +296,10 @@ class CollegeScorecard(AbstractCuratedDataset):
             df[new] = df[[new, old]].sum(axis=1, min_count=1)
         df.loc[old_only, ["UGDS_NHPI", "UGDS_2MOR"]] = np.nan
         df = drop_columns(df, old_columns)
-        # 4. Codes to labels; ADMCON7's -1 (not reported) and -2 (not applicable) become missing.
+        # 5. Codes to labels; ADMCON7's -1 (not reported) and -2 (not applicable) become missing.
         for column, labels in LABELS.items():
             df[column] = to_labels(df[column], labels, missing=TO_MISSING.get(column, ()))
-        # 5. Target, and the identifier and the cohort count (from the outcome file) out.
+        # 6. Target, and the identifier and the cohort count (from the outcome file) out.
         df = df.rename(columns={"C150_4": self.target})
         return drop_columns(df, ["UNITID", "D150_4"])
 

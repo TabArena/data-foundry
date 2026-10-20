@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Review Prio 1 (Atlas)
 collections:
@@ -62,3 +63,5 @@ and store_and_fwd_flag; 86 trips across the daylight-saving switch lose the skip
 read Kaggle: the sample first appeared there (as sdss_17).
 
 Related work, not a source: the PKDD-15 Porto taxi trip-time competition (https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii), which has its own record (pkdd_15_taxi_trip_time_prediction_ii).
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. A large, well-sourced temporal ETA regression; which source copy to ship and the row filters that select on the target are still open.

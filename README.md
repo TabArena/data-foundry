@@ -219,15 +219,18 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The repo ships five curation workflows (in `.claude/skills/`):
+Working with Claude Code? The repo ships four curation commands and two knowledge skills (in `.claude/skills/`); start
+with [`.claude/skills/README.md`](.claude/skills/README.md), which the dashboard also shows as "Start here". In each of
+the two stages the AI works and the curator verifies:
 
-| Command | What it does |
-|---|---|
-| `/triage-candidates` | Starts the dashboard and loads the curation guidelines, so the agent can help decide which candidates belong. |
-| `/check-candidate <name>` | A cited second opinion on one record: traces the original source and writes the evidence into the record. |
-| `/add-dataset <name>` | Scaffolds the v2 dataset folder (`dataset.py` + `explore.ipynb`) for a `Yes` candidate from its record. |
-| `/verify-dataset <name>` | Runs the bundle checks plus a 15-item judgment rubric (provenance, split regime, leakage) before a dataset ships. |
-| `/rebuild-working-copy` | Rebuilds the TabArena v0.2 working copy and verifies the build (comparison, reproduction from the traced inputs, backup). |
+| Stage | The AI works | The curator verifies |
+|---|---|---|
+| Screen: a quick pass from the source, with a priority | `/screen-candidates` | `/review-screened-candidates` (the dashboard) |
+| Add: build the dataset and attack it with a review panel | `/add-dataset` | `/review-added-datasets` (the review page) |
+
+The knowledge skills, [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md) (how we decide and curate, as
+ranked rules) and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements
+it), hold what every command applies; builds and commits happen only when the curator asks.
 
 Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md` and `examples/` cover it.
 
@@ -302,8 +305,10 @@ data-foundry/
 ├── scripts/                  # one-off tooling (toy container builder, release)
 │   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
-│   ├── verify-dataset/scripts/  # leak, task and group probes for v2 datasets, the collection bundle check
-│   └── rebuild-working-copy/scripts/  # rebuild the v0.2 working copy and verify the build
+│   ├── knowledge-curation/   # curation knowledge (references/) and the general probe library (scripts/)
+│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the probe, pipeline and rebuild scripts
+│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets
+├── .claude/agents/           # the agents of screening and of the review panel
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
 ```
@@ -316,7 +321,7 @@ The short version (v2):
    datasets/_dev/tabarena-v0pt2` (or `/add-dataset <unique_name>` in Claude Code), and fill in `dataset.py`.
 2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
    warning is fixed or accepted with a reason; it writes the folder's `README.md`. Then run the probes in
-   `.claude/skills/verify-dataset/scripts/` (leak, task and, for a grouped task, group probes).
+   `.claude/skills/knowledge-data-foundry/scripts/` (leak, task and, for a grouped task, group probes).
 3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
 
 The long version is [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md); a first contribution to TabArena v0.2

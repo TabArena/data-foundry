@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -75,3 +76,5 @@ duplicate IDs, drop the constant `DAY_TYPE`, ignore the unreliable `MISSING_DATA
 the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
 
 **Assessment (AI, 2026-10-07):** Added as `pkdd_15_taxi_trip_time_prediction_ii_1m`: travel time at trip start from origin, destination (last GPS point), Porto local start time, call type, stand and taxi. Log1p target, monthly test windows Apr-Jun 2014, 1,655,983 trips after dropping non-trips, GPS errors and meter misuse. The taxi stays a feature: 99.93-100% of each test month's trips are by taxis seen before. ORIGIN_CALL is dropped: it adds nothing once the destination is known. Open: the challenge page says drivers "do not indicate the final destination of the ride", so the destination framing is ours. Its 2026-09-21 reason, a weak pickup-only signal, no longer holds under task_probes.md rule 2. Pickup-only LightGBM reaches R² 0.11-0.15, against 0.48-0.50 with the destination.
+
+**Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issue 1: source says drivers do not enter the destination, so that feature may not exist at pickup). A large temporal ETA regression from a documented challenge; without the destination, which may not be known at pickup, the signal is weak.

@@ -78,6 +78,8 @@ build = [
 tests = [
     "data-foundry[build]",
     "pytest",
+    # The review page tests parse the committed REVIEW.md files.
+    "markdown-it-py",
 ]
 dev = [
     "data-foundry[build,tests]",

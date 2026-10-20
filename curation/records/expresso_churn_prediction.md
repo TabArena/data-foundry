@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Review Prio 1 (Atlas)
 - New IID
@@ -42,6 +43,8 @@ Lennart: solved with IID in the competition, and all features are set up to be I
 REGION is dropped. Among churners it is missing for 92-95% at every level of activity (1 to 62 active days), while among stayers the share falls from 67% to 7%. The field looks filled after the observation window. Without it, ROC AUC falls from 0.93 to 0.90.
 
 The Azubian (1,077,024 rows) and DSN (400,000 rows) cuts are rows of this Train.csv. On Zindi, indabax_eswatini_2022 lists the Azubian file and has this competition as its parent.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Large real telco churn file from the operator's own competition, leaky REGION removed; churn tasks are common and the fit approximate.
 
 ## Reference
 

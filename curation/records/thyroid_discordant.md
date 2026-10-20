@@ -64,6 +64,8 @@ Data in the repo:
 10. allhyper -> same as above
 11. allbp -> same as above
 
+**Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01 (no leak): one row has an `age` of 455. Under the rule for impossible values (they become missing and the row stays; caracas_cervical_cancer, 2026-10-15) the definition should set it to missing in the next pass.
+
 ## Reference
 
 @article{quinlan1987simplifying,

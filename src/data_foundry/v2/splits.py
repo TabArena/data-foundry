@@ -308,6 +308,21 @@ class TemporalSplits:
             return self.window, "steps"
         return None
 
+    @property
+    def gap_length(self) -> tuple[int, str] | None:
+        """``(time_gap, time_gap_unit)`` of a gap in a calendar unit or in rows, else None.
+
+        No gap gives None, and so does ``unit="unique"``: a gap of distinct time values has no unit, so the
+        definition declares it on :class:`Temporal`.
+        """
+        if not self.gap:
+            return None
+        if self.unit in _CALENDAR_UNITS:
+            return self.gap, self.unit
+        if self.unit == "rows":
+            return self.gap, "steps"
+        return None
+
 
 HorizonUnit = Literal["steps", "days", "weeks", "months", "years"]
 
@@ -322,6 +337,8 @@ class Temporal:
         Temporal(on="t", splits=TemporalSplits(window=320, unit="rows", n_windows=9))         # horizon: 320 steps
         Temporal(on="Year", splits=TemporalSplits(unit="unique", n_windows=3), horizon=1, horizon_unit="years")
         Temporal(on="arrival_date", horizon=3, horizon_unit="months")                           # `_make_splits`
+        Temporal(on="cohort", splits=TemporalSplits(unit="unique", n_windows=9, gap=5), horizon=1,
+                 horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -330,15 +347,22 @@ class Temporal:
             or ``_make_splits``). A fixed-length window is the horizon (:attr:`TemporalSplits.horizon`), and
             declaring it again is an error, so the two cannot disagree.
         horizon_unit: ``steps``, ``days``, ``weeks``, ``months`` or ``years``; set together with ``horizon``.
+        gap: The span between the end of training and the start of each test window, for a gap the windows do not
+            state in a unit: ``TemporalSplits(unit="unique", gap=...)`` (required then) or a gap built in
+            ``_make_splits``. A gap in a calendar unit or in rows is stated by the windows
+            (:attr:`TemporalSplits.gap_length`), and declaring it again is an error.
+        gap_unit: The unit of ``gap``, as for ``horizon_unit``; set together with ``gap``.
 
-    The container stores the column as the task's ``time_on`` and the horizon as the splits' ``time_horizon`` /
-    ``time_horizon_unit``.
+    The container stores the column as the task's ``time_on``, the horizon as the splits' ``time_horizon`` /
+    ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
     splits: TemporalSplits | None = None
     horizon: int | None = None
     horizon_unit: HorizonUnit | None = None
+    gap: int | None = None
+    gap_unit: HorizonUnit | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.on, str) or not self.on.strip():
@@ -362,6 +386,33 @@ class Temporal:
                 "(unit='unique', window=None, or `_make_splits`)."
             )
             raise ValueError(msg)
+        self._check_gap()
+
+    def _check_gap(self) -> None:
+        if (self.gap is None) != (self.gap_unit is None):
+            msg = "Temporal: set `gap` and `gap_unit` together."
+            raise ValueError(msg)
+        if self.gap is not None and (not isinstance(self.gap, int) or self.gap <= 0):
+            msg = f"Temporal.gap must be a positive integer, got {self.gap!r}."
+            raise ValueError(msg)
+        if self.splits is None:
+            return
+        stated = self.splits.gap_length
+        if self.gap is not None and stated is not None:
+            msg = (
+                f"Temporal: the windows state the gap ({stated[0]} {stated[1]}); drop `gap={self.gap!r}, "
+                f"gap_unit={self.gap_unit!r}`."
+            )
+            raise ValueError(msg)
+        if self.gap is not None and not self.splits.gap:
+            msg = "Temporal: `gap` is declared, but the windows leave none (TemporalSplits(gap=0))."
+            raise ValueError(msg)
+        if self.gap is None and self.splits.gap and stated is None:
+            msg = (
+                f"Temporal: the windows leave a gap of {self.splits.gap} distinct time values; state it in a unit "
+                "with `gap=..., gap_unit=...` (e.g. 5 cohorts of a yearly column: gap=5, gap_unit='years')."
+            )
+            raise ValueError(msg)
 
     @property
     def resolved_horizon(self) -> tuple[int | None, str | None]:
@@ -370,6 +421,15 @@ class Temporal:
             return self.horizon, self.horizon_unit
         if self.splits is not None and self.splits.horizon is not None:
             return self.splits.horizon
+        return None, None
+
+    @property
+    def resolved_gap(self) -> tuple[int | None, str | None]:
+        """``(gap, gap_unit)``: stated by the windows, else as declared, else ``(None, None)`` (no gap)."""
+        if self.gap is not None:
+            return self.gap, self.gap_unit
+        if self.splits is not None and self.splits.gap_length is not None:
+            return self.splits.gap_length
         return None, None
 
 

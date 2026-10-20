@@ -139,7 +139,7 @@ class DigicowFarmerTrainingAdoptionChallenge(AbstractCuratedDataset):
         - Duplicates, kept: 6,590 rows (48.7%) repeat another row, but each is a different farmer of the same session and recorded profile. Copies share the training day, so they fall in the same test window.
         - Label recording (Data Quality Issue): a 0 mixes "did not adopt" with "not recorded". The share of 120-day adopters who adopted within 7 days is 0% for the trainings of August-October 2024 and 45%, 64% and 95% for November 2024, December 2024 and February 2025 (third decision), and TRA_gertumxc's farmers of March-July 2025 never adopted at any horizon (fourth decision). The trainer and location columns, the leak probes' strongest single features, carry this recording.
         - Anomaly: one row per farmer is the challenge's construction (the farmer's latest training in stored-date order); the selection uses dates, not labels.
-        - Too Small: the test windows hold 9, 5, 19 and 103 adopters from 1, 1, 2 and 7 trainers, and shorter windows leave a window without any adopter (fifth decision). A random split, folds grouped by `group_name` or leaving one trainer out do not fix this (NEW_DATASETS_ISSUES.md).
+        - Too Small: the test windows hold 9, 5, 19 and 103 adopters from 1, 1, 2 and 7 trainers, and shorter windows leave a window without any adopter (fifth decision). A random split, folds grouped by `group_name` or leaving one trainer out do not fix this.
     """
 
     # Task

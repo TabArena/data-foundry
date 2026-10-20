@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 1
 decision_markers:
 - Trivial
 tags:
@@ -39,6 +40,8 @@ Let us use the version of the data without normalization and the correct headers
 The original source of the data is supposedly from the same group as the referenced paper. Unclear in general, but should be fine as it is used so much
 
 **Assessment (AI, 2026-10-07):** The data traces to Efron et al. (2004) and Hastie's LARS page (since 2002, with the headers `age sex bmi map tc ldl hdl tch tg glu y`). It does not look like the paper's "442 diabetes patients": read as fasting glucose in mg/dL, `glu` runs 58-124 (mean 91), so none reaches 126. No source gives the clinic, the units or how the response is measured (criterion 4E, against the accepted unclear source). Not trivial: on all 60 splits the best single feature, chosen on the training side, reaches R^2 0.30 against 0.49 for the best of least squares, ridge and a random forest, and stays below them on every split. Suggest dropping `Trivial`.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape -, risk - (Issue 1: response, units and cohort undocumented; maybe not diabetics; alternative is to retire). A classic tiny regression (442 rows) used everywhere, but the cohort and the target are undocumented; it adds little beyond a familiar toy benchmark.
 
 ## Reference
 

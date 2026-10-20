@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Tiny Data
 collections:
@@ -35,6 +36,8 @@ Contains: https://www.kaggle.com/datasets/noahgift/social-power-nba
 Need to figure out which split / subset of the data to use
 
 **Assessment (AI, 2026-10-07):** Valid; added as a grouped regression (`datasets/_dev/tabarena-v0pt2/nba_players_2016_2019/`). Target: the source's All-Star score, 0.5 fan rank + 0.25 player rank + 0.25 media rank (data card; the NBA's formula). In 2017-18 and 2018-19 the shipped `Score` adds the ballot size plus one (113-147) to the rank of every player without player or media votes. Recomputed from the file's ranks, those seasons equal the NBA's official weighted scores (pr.nba.com result tables, all 958 matched rows). Split: grouped by player (660 players, 295 in all three seasons). The statistics cover the whole season, past the January vote. TabSTAR's target `Rk` is basketball-reference's alphabetical row number.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (domain social science), use case -, source -, shape +, no known risk. Grouped social-science regression with the target repaired to match official NBA scores; a stand-in task with season-long features past the vote.
 
 ## Reference
 

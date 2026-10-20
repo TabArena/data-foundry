@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 1
 decision_markers:
 - Trivial
 tags:
@@ -37,6 +38,8 @@ Otherwise, looks reasonable and might be a valid task
 Performance in paper is already very high, likely trivial
 
 **Assessment (AI, 2026-10-07):** One row per patient: the 383 differentiated cancers of a 400-patient endocrine-clinic cohort in Hamadan, 2008-2023 (Khazaei et al. 2024, J Res Health Sci 24:e00632, open access; Table 2 matches the file). `Response` is a post-treatment assessment ("determined based on the laboratory findings of thyroglobulin and antithyroglobulin and a whole-body scan", same paper, Methods), and a structural incomplete response is persistent or new metastatic disease (ATA 2015, [B29]): 89 of 91 such patients recurred. The v2 definition drops it and the undefined radiotherapy column and predicts at initial staging. ROC AUC is then 0.93 against 0.896 for the ATA risk alone (beaten on 59-60 of 60 splits), so `Trivial` does not hold. No open text defines recurrence.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source +, shape -, risk - (Issue 2: label definition unverified, 'Recurred' may include persistent disease (paper paywalled)). Tiny clinical cohort (383 patients) predicting recurrence at staging; beats ATA risk alone, but the label definition is unverified.
 
 ## Reference
 

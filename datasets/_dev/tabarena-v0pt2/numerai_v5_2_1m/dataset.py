@@ -117,6 +117,8 @@ class NumeraiV521m(AbstractCuratedDataset):
         splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4),
         horizon=52,
         horizon_unit="weeks",
+        gap=4,
+        gap_unit="weeks",
     )
     subsample_to_budget = True
     splits_comment = """

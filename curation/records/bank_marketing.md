@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 original_source: UCI
 year: '2011'
+required_split:
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1461

@@ -6,6 +6,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 suggestion: Disagreement
+priority: 2
 tags:
 - Larger IID Data
 collections:
@@ -32,6 +33,8 @@ Recent dataset for phishing website detection, best I know so far (AT). Features
 Discussion: unclear if this is grouped data or not!
 
 **Assessment (AI, 2026-10-07):** Recommend excluding it (`Data Quality Issue`). The two classes were collected differently, and every feature family shows it. All 134,850 legitimate rows are ranked domains written as https://www.<host> with no path, a form only 627 of the 100,520 phishing URLs share (URL features alone: AUC 0.9989). The phishing pages were fetched after the URLs were listed: 50.5% of phishing rows sit on 115 shared pages, none with a password field. A fixed rule with no training reaches AUC 0.9998. Andrej's leak question: the definition drops URLSimilarityIndex, Title and the two title scores, which does not change this. Hosts repeat only among phishing rows, and a host-grouped split scores the same. The file first appeared on Mendeley Data (2023).
+
+**Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issue 1: run recommends exclusion; collection artefacts separate classes (fixed rule AUC 0.9998)). Not useful: a fixed rule solves it because phishing and legitimate rows were collected differently; no version of the file is a valid task.
 
 ## Reference
 

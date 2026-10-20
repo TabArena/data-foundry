@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - New IID
 collections:
@@ -36,6 +37,8 @@ Likely use data from Kaggle
 A bit hard to parse what the origin is and where the Kaggle data was downloaded from, but we can use it
 
 **Assessment (AI, 2026-10-07):** All three Kaggle uploads are `framingham.csv` from MIT's 15.071 The Analytics Edge (OCW Spring 2017; aasheesh200 is byte-identical). Its 4,240 rows are the baseline exam (period 1, PREVCHD = 0) of the NHLBI BioLINCC Framingham teaching dataset; all 15 features match row for row. MIT's `TenYearCHD` equals TIMECHD < 10 years in all 4,240 rows, but TIMECHD is the censor date for participants without an event (documentation, p. 4). So 265 of its 644 positives had no CHD: 249 died of other causes and 16 were lost to follow-up. The v2 definition reads the teaching data (CRAN riskCommunicator) and rebuilds the label: 4,224 participants, 379 with CHD. BioLINCC calls teaching data "completely unsuitable for publication purposes".
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case +, source +, shape +, risk - (Issue 3: teaching data perturbed by undocumented anonymisation, unsuitable for publication per BioLINCC). Classic CHD risk task with the label rebuilt (41% of the Kaggle positives were wrong), but it rests on anonymised teaching data.
 
 ## Reference
 

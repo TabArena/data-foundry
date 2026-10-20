@@ -4,8 +4,7 @@ name: ApisTox
 checked_by:
 - Andrej
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
@@ -15,7 +14,6 @@ original_source: Other
 year: '2024'
 domain: biology & life sciences
 required_split:
-- Custom
 - Temporal (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
