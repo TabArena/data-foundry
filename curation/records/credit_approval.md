@@ -11,6 +11,7 @@ suggestion: 'Yes'
 decision_markers:
 - Outdated
 - Not Representative
+- Anonymized
 tags:
 - Tiny Data
 collections:

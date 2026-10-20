@@ -49,6 +49,11 @@ record, audit or PR that motivated it.
   [`curation/records/dementia_prediction.md`](../../../curation/records/dementia_prediction.md); evidence in
   `~/claude_jobs/dementia_baselines/`. Checked, not rebuilt; the build stays stale.
 
+## 2026-10-15 (credit_approval: `Anonymized` tag)
+
+- `credit_approval`: `data_tags = ("Anonymized",)`. Quinlan replaced all attribute names and values by symbols to keep
+  the data confidential, so the metadata now says so (regime tag `IID` unchanged). Not rebuilt; the build stays stale.
+
 ## 2026-10-15 (credit_g: corrected code table)
 
 - `credit_g`: the categories now carry the labels of Grömping's (2019) corrected code table; the Statlog `german.doc`
