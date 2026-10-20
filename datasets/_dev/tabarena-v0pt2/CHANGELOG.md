@@ -13,6 +13,20 @@ record, audit or PR that motivated it.
   [`curation/records/early_stage_diabetes_risk_prediction.md`](../../../curation/records/early_stage_diabetes_risk_prediction.md),
   now `Yes (Disagreement)`; evidence in `~/claude_jobs/esd_review/`. Checked, not rebuilt; the build is stale.
 
+## 2026-10-19 (drug_induced_autoimmunity_prediction: scaffold-grouped splits)
+
+- `drug_induced_autoimmunity_prediction`: grouped splits on the drug's Bemis-Murcko scaffold (its ring skeleton) instead
+  of random ones; a drug without a ring is a group of its own (443 groups, the largest 41 drugs, 10 with both labels).
+  Under random splits about a third of the test drugs have a close relative in training with the same label, and a
+  nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854. The use case
+  screens new candidates, so whole scaffolds are held out, as the Therapeutics Data Commons ADMET benchmarks do. Group
+  probe: LightGBM 0.815 on IID folds, 0.758 grouped; task probes: no flags, random forest 0.776 against the linear
+  model's 0.702. The scaffolds come from the new `data_foundry.v2.murcko_scaffolds` (RDKit, pinned like the
+  descriptors); `task_summary`, `curation_comments` and the grouping definition say why. Rows and features unchanged.
+  Follows Andrej's review of the record
+  [`curation/records/drug_induced_autoimmunity_prediction.md`](../../../curation/records/drug_induced_autoimmunity_prediction.md);
+  evidence in `~/claude_jobs/dia_review/` and `~/claude_jobs/dia_scaffold/`. Checked, not rebuilt; the build is stale.
+
 ## 2026-10-19 (forest_fires: day-grouped splits)
 
 - `forest_fires`: grouped splits by day instead of random ones. The data has no date, but the station computes the
