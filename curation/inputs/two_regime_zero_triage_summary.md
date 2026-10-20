@@ -176,3 +176,69 @@ skipped). `ruff check .` fails with 6,234 errors and `ruff format --check .` wou
 0.17.1 gives 6,234 and 311). All of them are in notebooks under `datasets/` and in two test files that this branch does
 not touch; its diff against `main` is limited to `curation/`. The CI lint step (ruff 0.15.15 on the v2 `dataset.py`
 files) passes.
+
+# Second batch: web search (2026-10-20)
+
+A web search for more zero-inflated regression tasks found 21 leads that had no record (insurance claims, Kaggle
+competitions with zero-heavy targets, US government claim and event tables, survey and count data). They were triaged
+the same way (`AI (UNVERIFIED)`, tag `Two-Regime Zeros`, `Lead: web search 2026-10-20 ...` in each record's reference)
+into 20 new records: the AIcrowd Insurance Pricing Game turned out to be the 2017 French pricing game (`pg17`) again,
+with three more years of claims and noise added to the features, and is merged into `pricing_game_2017_french_mtpl`.
+Probe numbers are untuned LightGBM on the split given: AUC for target > 0, R^2 on log1p(target) among positives.
+
+| Record | Verdict | Split | Rows / zero share | Reason |
+|---|---|---|---|---|
+| `pricing_game_2017_french_mtpl` | TBD -> Yes | Temporal (NON-IID) | 100,000 policies / 87.8% (AIcrowd copy 89.8%) | Real French MTPL portfolio over 4-5 years; AUC 0.61-0.63, R^2 about 0; negative amounts need a rule; AIcrowd lead merged here |
+| `nfip_redacted_flood_claims` | TBD -> Yes | Temporal (NON-IID) | 2,725,989 claims / 17.0% (2021-23 sample) | Null and 0 payouts both mean closed without payment; at filing AUC 0.58, R^2 0.15; adjuster damage amounts leak (0.98 / 0.96) |
+| `noaa_afsc_bottom_trawl_survey_cpue` | TBD -> Yes | Temporal (NON-IID) | 35,561 hauls / cod 22.2%, pollock 17.6% | NOAA's own habitat models predict from these hauls with held-out tests; cod AUC 0.91-0.93, R^2 0.16-0.27 |
+| `blogfeedback` | TBD -> Yes | Temporal (NON-IID) | 52,397 train / 64.0%; 7,624 test / 70.2% | Official later test period; AUC 0.91, R^2 0.52; 3,194 duplicate rows (marker); distinct from `facebook_comment_volume` (Singh et al. 2015 reused Buza's design) |
+| `liberty_mutual_fire_peril_loss_cost` | TBD -> 2nd Tier | Random (IID) | 452,061 / 99.74% | 1,188 positives on an undisclosed transform; AUC 0.70, R^2 0.16; close to rare-event ranking |
+| `allstate_claim_prediction_challenge` | TBD -> 2nd Tier | Temporal (NON-IID) | 13,184,290 / 99.27% | 2005-06 -> 2007: AUC 0.59, R^2 -0.03; target adjusted by Allstate, signal small |
+| `google_analytics_customer_revenue_prediction` | TBD -> 2nd Tier | Temporal (NON-IID) | 903,653 visits (v1) / 98.7%; user-level 99.96% | Real future-revenue task but about 130 buyers per window; must be rebuilt from train_v2 (25 GB) |
+| `fema_ihp_valid_registrations` | TBD -> 2nd Tier | Grouped (NON-IID) | 26,245,246 / 54.0% | At registration AUC 0.85, R^2 0.05 (leave one disaster out); after inspection the award follows program rules; half the zeros are process outcomes |
+| `eclipse_bug_data_zimmermann` | TBD -> 2nd Tier | Temporal (NON-IID) | 25,210 file-releases / 85-89% | AUC 0.79 across releases, R^2 0.09; one valid split; 2002-2004 code |
+| `loan_default_prediction_imperial_college` | No | Temporal (NON-IID) | 105,471 / 90.7% | Leaks: f528 - f527 alone AUC 0.92; 96.5% of defaults are the last row of an f274 block |
+| `heritage_health_prize` | No | Temporal (NON-IID) | not measured (about 83% zero per forum) | Kaggle: "DATA IS NO LONGER AVAILABLE FOR ANY REASON"; download 403 |
+| `walmart_sales_in_stormy_weather` | No | Temporal (NON-IID) | 4,617,600 / 97.4% | Per-series sales forecasting; a 28-day mean gives AUC 0.95, R^2 0.80 |
+| `avito_demand_prediction` | No | Temporal (NON-IID) | 1,503,424 / 64.8% | `deal_probability` is an undocumented Avito score, not an observed outcome |
+| `how_much_did_it_rain_ii` | No | Custom | 1,180,945 gauge-hours / 0.0% | No zeros at all; radar features; time and place hidden |
+| `noaa_storm_events_damage` | No | Temporal (NON-IID) | 468,514 events (2018-24) / 75.8% of reported | $0 mixes "no damage" and "not estimated" (NWS directive Sec. 2.7); the $0 share varies 4-98% by office |
+| `criteo_sponsored_search_conversion_log` | No | Temporal (NON-IID) | not measured (host gone) | Per-click conversion prediction for bidding: CTR family |
+| `north_american_breeding_bird_survey_counts` | No | Grouped (NON-IID) | 5,845 routes (counts not downloaded) | Trend survey without habitat covariates |
+| `rand_health_insurance_experiment_doctor_visits` | No | Grouped (NON-IID) | 20,190 person-years / 31.2% | Price-elasticity experiment; AUC 0.69-0.75, R^2 0.02-0.08 |
+| `bug_prediction_dataset_dambros` | No | Grouped (NON-IID) | 5,371 classes / 84.1% | One labelled release per system, so no realistic split |
+| `pricing_game_2015_french_mtpl` | No | - | 100,000 / 84.1% | Covariates look generated (AHDS); circumstantial, the organisers could settle it |
+
+Counts: 4 TBD -> Yes, 5 TBD -> 2nd Tier, 11 No.
+
+Open for the curator:
+* `noaa_afsc_bottom_trawl_survey_cpue` is the strongest case yet for the species-abundance question above; which
+  species to use is open.
+* `loan_default_prediction_imperial_college`: the leak rules keep unverified anonymised suspects (homesite, kick), so
+  TBD -> 2nd Tier with the leaking pair and the block position dropped is a defensible alternative to No.
+* `heritage_health_prize`: if a curator's Kaggle account entered before 2012-10-04 it may still download, and the
+  sponsor-approval route (Rule 22) may count as a request-only download, which the licence rule does not treat as a No.
+* The vocabulary has no generic "Not Available" marker; `Not Available (from Paper))` was used for HHP.
+* Not followed up: pg16 (2016 fleet pricing game, CASdatasets) and How Much Did It Rain I (2014, rules not accepted).
+
+Checks (2026-10-20, uncommitted): `validate` finds every dropdown value in the vocabulary; `pytest -q` passes (780
+passed, 177 skipped).
+
+# Third batch: exposure-scaled insurance tables (2026-10-20)
+
+Four leads from the curator's list of tables where losses scale with an insured value (the Chubb comparison).
+`liberty_mutual_fire_peril_loss_cost` was already in the second batch; the other three are new records, triaged the
+same way. All three were downloaded and measured; probe numbers as above.
+
+| Record | Verdict | Split | Rows / zero share | Reason |
+|---|---|---|---|---|
+| `spanish_motor_insurance_coverage_level_2022_2024` | TBD -> Yes | Temporal (NON-IID) | 354,140 insured-years / 88.1% (own damage 96.0%) | Recent, CC BY 4.0, cover-level premiums and incurred; AUC 0.69, R^2 -0.03; `vehicle_age` is mislabelled (years since licensing), `policy_status` is a year-end outcome |
+| `wisconsin_local_government_property_insurance_fund` | TBD -> Yes | Temporal (NON-IID) | 5,639 entity-years / 70.2% | Coverage $8.9k-$2.44B; 2006-09 -> 2010 AUC 0.78, R^2 0.25, log coverage alone 0.74 / 0.27; the paper's 2011 hold-out is not public |
+| `brazilian_vehicle_insurance_autoseg_2011` | TBD -> 2nd Tier | Random (IID) | 1,965,355 rating cells / 81.5% | Rows are AUTOSEG cells, not policies; exposure alone AUC 0.84 for a claim; 15.4% of claim amount sits in rows without exposure |
+
+Open for the curator:
+* AUTOSEG (SUSEP) publishes semester files from 2006-H2 on; built from those, a Brazilian hull table with a temporal
+  split and a clean exposure-claim join may be worth a record of its own. The SUSEP site refused connections from here.
+* Of the four, only the Spanish table and brvehins1 have the raw sum insured needed for the Chubb recipe (raw total
+  loss, log sum-insured exposure as a feature, then divide); LGPIF has `BCcov` per entity-year, and Liberty Mutual has
+  the insured value only inside its target.
