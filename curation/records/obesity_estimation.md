@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue
+- Selection Bias
 tags:
 - Tiny Data
 collections:
