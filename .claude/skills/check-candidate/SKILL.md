@@ -63,7 +63,16 @@ Do every step; skip only when an earlier step settles the verdict and say so.
    precedent for your recommendation. When the question is whether a curated task is empty, trivial or too small,
    follow [`../verify-dataset/references/task_probes.md`](../verify-dataset/references/task_probes.md): a small but
    real signal is no reason to retire, and `Trivial` and `Too Small` need the tests it names.
-5. **Write into the record only substance.** Add the source links you verified. Add one dated comment
+5. **Better data for the same task.** When the record is small, dated or narrow (`Tiny Data`, `Too Small`,
+   `Outdated`, `Not Representative`, or a classic UCI/StatLib-era set), search for a larger or newer public
+   dataset with the same target and use case, and features of the same kind known at prediction time. The
+   features need not match column for column. Government surveys, registries and newer studies are the usual
+   places. For a hit, load it and report its size after cleaning and a quick baseline. Add it as its own record (a
+   different source is not a `Duplicate`). On the old record, add a comment naming the new record in backticks and
+   the tag `Better Data Available`, which puts it in the Review queue (`better_data_review`). Do not
+   change its verdict: the curator decides whether it still holds, then removes the tag. Precedent:
+   `body_density_prediction` (252 men, 1985) → `nhanes_dxa_body_fat` (21,768 people, DXA percent fat).
+6. **Write into the record only substance.** Add the source links you verified. Add one dated comment
    with what the data is, the decisive facts, and the recommended verdict and markers. Fill empty
    optional metadata only where the evidence is clear. Reload immediately before saving: the human edits
    the same file in the dashboard.
@@ -72,7 +81,7 @@ Do every step; skip only when an earlier step settles the verdict and say so.
    * The human has not: leave `suggestion` and `decision_markers` alone and head the comment
      `**Assessment (AI, YYYY-MM-DD):** recommend ...; the human has the call.` Do not use the
      `AI (UNVERIFIED)` reviewer convention here; it is for provisional triage of untriaged records.
-6. **Leave the tree clean.** `git add` any new file under `curation/`, then run
+7. **Leave the tree clean.** `git add` any new file under `curation/`, then run
    `.venv/bin/python -m data_foundry.curation.cli validate` and `pytest -q tests/test_records_integrity.py`.
 
 ## Checking whether the data is generated
