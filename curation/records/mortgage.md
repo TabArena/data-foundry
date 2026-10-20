@@ -8,7 +8,6 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 tags:
-- Non-IID (Grouped)
 - Non-IID (Temporal)
 collections:
 - New (BeyondArena)
@@ -16,7 +15,6 @@ original_source: Website
 year: '2016'
 domain: finance
 required_split:
-- Grouped (NON-IID)
 - Temporal (NON-IID)
 problem_type: Multiclass Classification
 original_data_state: One Table

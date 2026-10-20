@@ -11,7 +11,6 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Free Text (Sentences)
-- Non-IID (Temporal)
 - Larger IID Data
 - Review Prio 1 (Atlas)
 collections:
@@ -20,8 +19,7 @@ original_source: Kaggle
 year: '2014'
 domain: business & marketing
 required_split:
-- Temporal (NON-IID)
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:

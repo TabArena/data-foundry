@@ -20,7 +20,7 @@ The findings (:func:`group_findings`):
   of the label than shuffled groups: the grouping may not be needed.
 
 Model-based diagnostics (the IID vs grouped score gap, learnability across groups with a permutation test) are slow,
-so they run on demand: ``.claude/skills/verify-dataset/scripts/group_probes.py``.
+so they run on demand: ``.claude/skills/knowledge-data-foundry/scripts/group_probes.py``.
 """
 
 from __future__ import annotations
@@ -132,7 +132,8 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
                 f"A test fold holds {low} groups ({low}-{high} per fold, {stats.n_groups} groups in all): a score per "
                 "group rests on few independent units, and a score per row on not many more.",
                 hint="Keep the dataset only if its signal across groups is real "
-                "(`.claude/skills/verify-dataset/scripts/group_probes.py`), and accept the warning with that reason.",
+                "(`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that "
+                "reason.",
             ),
         )
     if stats.largest_share > MAX_GROUP_SHARE:
@@ -167,7 +168,7 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
                 f"neighbours vs {stats.neighbour_chance:.1%}), and the group explains no more of the label than "
                 f"shuffled groups ({stats.label_share_by_group:.2f} vs {stats.label_share_shuffled:.2f}).",
                 hint="The grouping may not be needed: compare IID and grouped scores with "
-                "`.claude/skills/verify-dataset/scripts/group_probes.py`.",
+                "`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.",
             ),
         )
     return findings

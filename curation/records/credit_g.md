@@ -13,7 +13,6 @@ original_source: UCI
 year: '1994'
 required_split:
 - Random (IID)
-- Temporal (NON-IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=31

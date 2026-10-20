@@ -59,6 +59,7 @@ class Bioresponse(AbstractCuratedDataset):
     curation_comments = """
         - We changed the name of the target and mapped it to yes/no
         - Anomaly: Only train data is used, since test data is empty for target
+        - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
     """
 
     # Task

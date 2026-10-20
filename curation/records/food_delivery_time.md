@@ -10,12 +10,10 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
 - Random (IID)
 original_source: Kaggle
 year: '2023'
 required_split:
-- Temporal (NON-IID)
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time

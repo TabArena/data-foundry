@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: Kaggle
 year: '2013'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=4135

@@ -37,6 +37,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
     domain = "business & marketing"
     source = "Other"
     source_url = "https://kdd.org/kdd-cup/view/kdd-cup-2009/Data"
+    data_tags = ("Anonymized",)
     license = "Public Domain"
     download_description = """
         We download the data and the labels from the KDD challenge website:

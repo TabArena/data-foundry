@@ -17,7 +17,6 @@ year: '2014'
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
-- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:

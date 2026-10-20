@@ -13,7 +13,6 @@ original_source: UCI
 year: '2020'
 required_split:
 - Random (IID)
-- Temporal (NON-IID)
 source_links:
 - https://doi.org/10.24432/C5004D
 notebook_path: datasets/beyond_iid/old_iid/taiwanese_bankruptcy_prediction/taiwanese_bankruptcy_prediction.ipynb
@@ -38,6 +37,8 @@ Potential issue: temporal
 Lennart: Not time-based features, thus could be usable
 
 Andrej: Need to verify correct lag between features and target
+
+CC (2026-10-19, Lennart): 67 numeric columns are min-max scaled over all companies; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
 
 ## Reference
 

@@ -13,6 +13,8 @@ decision_markers:
 - Duplicate
 original_source: UCI
 year: '1992'
+required_split:
+- Random (IID)
 problem_type: Multiclass Classification
 source_links:
 - https://www.openml.org/search?type=data&id=40670

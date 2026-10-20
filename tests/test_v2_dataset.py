@@ -33,7 +33,7 @@ from data_foundry.v2 import (
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _horizon, _prepare_code_hash
+from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _gap, _horizon, _prepare_code_hash
 from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
@@ -385,6 +385,47 @@ def test_temporal_task_gets_tags_and_horizon_from_its_windows() -> None:
 def test_temporal_rejects_a_horizon_the_windows_already_set(splits: TemporalSplits) -> None:
     with pytest.raises(ValueError, match="the windows set the horizon"):
         Temporal(on="t", splits=splits, horizon=7, horizon_unit="days")
+
+
+def test_temporal_gap_is_stated_by_the_windows_or_declared() -> None:
+    assert _gap(_define(temporal=Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3)))) == (
+        None,
+        None,
+    )
+    days = TemporalSplits(window=7, unit="days", n_windows=3, gap=1)
+    assert _gap(_define(temporal=Temporal(on="t", splits=days))) == (1, "days")
+    rows = TemporalSplits(window=320, unit="rows", n_windows=3, gap=10)
+    assert _gap(_define(temporal=Temporal(on="t", splits=rows))) == (10, "steps")
+    cohorts = TemporalSplits(window=1, unit="unique", n_windows=3, gap=5)
+    declared = Temporal(on="t", splits=cohorts, horizon=1, horizon_unit="years", gap=5, gap_unit="years")
+    assert _gap(_define(temporal=declared)) == (5, "years")
+    custom = Temporal(on="t", horizon=1, horizon_unit="months", gap=1, gap_unit="months")  # `_make_splits`
+    assert custom.resolved_gap == (1, "months")
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"splits": TemporalSplits(window=7, unit="days", n_windows=3, gap=1), "gap": 1}, "together"),
+        (
+            {"splits": TemporalSplits(window=7, unit="days", n_windows=3, gap=1), "gap": 1, "gap_unit": "days"},
+            "the windows state the gap",
+        ),
+        ({"splits": TemporalSplits(window=7, unit="days", n_windows=3), "gap": 1, "gap_unit": "days"}, "leave none"),
+        (
+            {
+                "splits": TemporalSplits(window=1, unit="unique", n_windows=3, gap=5),
+                "horizon": 1,
+                "horizon_unit": "years",
+            },
+            "state it in a unit",
+        ),
+        ({"horizon": 1, "horizon_unit": "days", "gap": 0, "gap_unit": "days"}, "positive integer"),
+    ],
+)
+def test_temporal_rejects_a_bad_gap(kwargs: dict, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        Temporal(on="t", **kwargs)
 
 
 def test_temporal_rejects_inconsistent_declarations() -> None:

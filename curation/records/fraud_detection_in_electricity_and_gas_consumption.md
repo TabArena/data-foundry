@@ -9,7 +9,6 @@ claimed_by: Lennart
 suggestion: 'Yes'
 tags:
 - Review Prio 1 (Atlas)
-- Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
 - New (BeyondArena)

@@ -46,6 +46,8 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 - `SpecialDay` is non-zero only in February and May and is dropped as constant.
 - Split: IID (required_split set to Random (IID)): each session belongs to a different user sampled over one year (Sec. 2.1) and only the month is known, so a temporal split would mainly test extrapolation to unseen months.
 
+**Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01: 40 exact duplicate rows remain after the February-May sessions were dropped. To decide in the next pass: drop them as collection copies (with the share in the notes) or keep them as natural repeats.
+
 ## Reference
 
 Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks

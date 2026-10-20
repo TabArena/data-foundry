@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: Other
 year: '2004'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1053

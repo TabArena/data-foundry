@@ -9,9 +9,6 @@ claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
-tags:
-- Non-IID (Temporal)
-- Larger IID Data
 collections:
 - New (BeyondArena)
 original_source: Website

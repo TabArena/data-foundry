@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed
+checksum: v2:59d51e9a57ef9a8d469ebab03fff7845f0e328d15a3e3ed04b21ad67d4fcd837
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -20,11 +20,11 @@ build:
 build_stale: true
 data:
   n_rows: 307507
-  n_features: 504
+  n_features: 709
   dtypes:
-    category: 23
-    float64: 476
-    int64: 6
+    category: 24
+    float64: 654
+    int64: 32
   n_test_dataset_rows: null
 task:
   target: TARGET
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 205004
     max: 205005
@@ -67,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 504 features. Source: Kaggle (2018).
+Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:59d51e9a57ef9a8d469ebab03fff7845f0e328d15a3e3ed04b21ad67d4fcd837`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | license | Kaggle Competition Rules |
 | data_tags | IID, ForcedIIDFromTemporal |
 | reference | Montoya2018HomeCreditDefaultRisk |
-| rows x columns | 307,507 x 505 |
+| rows x columns | 307,507 x 710 |
 | task.target | TARGET |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -139,9 +141,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | TARGET |
 
 <details>
-<summary>Feature types: 23 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 24 categorical, 0 string, 0 datetime</summary>
 
-- categorical (23): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `TARGET`
+- categorical (24): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `TARGET`
 - string (0): none
 - datetime (0): none
 
@@ -164,24 +166,26 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffled); 12 of 505 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffled); 12 of 710 columns, the target first. Cells are cut at 40 characters.
 
-| TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_REALTY | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE | NAME_EDUCATION_TYPE | NAME_FAMILY_STATUS |
+| TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_CAR | FLAG_OWN_REALTY | CNT_CHILDREN | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Cash loans | F | Y | 180000 | 497520 | 52920 | 450000 | Unaccompanied | Commercial associate | Higher education | Single / not married |
-| 0 | Cash loans | M | N | 157500 | 675000 | 21775.5 | 675000 | Unaccompanied | Working | Lower secondary | Single / not married |
-| 0 | Cash loans | F | Y | 85500 | 1.28835e+06 | 37800 | 1.125e+06 | Family | Commercial associate | Higher education | Married |
-| 0 | Cash loans | F | Y | 121500 | 592560 | 32274 | 450000 | Family | Working | Secondary / secondary special | Married |
-| 0 | Cash loans | F | Y | 61650 | 297130 | 13216.5 | 256500 | Unaccompanied | Pensioner | Secondary / secondary special | Married |
+| 0 | Cash loans | M | N | Y | 0 | 157500 | 1.05129e+06 | 30870 | 918000 | Unaccompanied | Working |
+| 0 | Revolving loans | F | N | Y | 1 | 121500 | 180000 | 9000 | 180000 | Unaccompanied | Commercial associate |
+| 0 | Cash loans | F | Y | Y | 0 | 405000 | 1.68659e+06 | 44622 | 1.5075e+06 | Unaccompanied | Working |
+| 0 | Cash loans | F | Y | Y | 0 | 157500 | 1.28835e+06 | 37800 | 1.125e+06 | Unaccompanied | Working |
+| 0 | Cash loans | M | Y | Y | 0 | 166500 | 327024 | 12325.5 | 270000 | Spouse, partner | Working |
 
 ## Curation notes
 
 We start with the SQL tables from Kaggle. We then merge these tables into a single file following the top Kaggle solutions.
 We start from this file.
 
-- The top solutions start with various features from public notebooks/kernels. When selecting the kernel to use as our starting point, we looked among the most popular and best performance on the leaderboard. We found https://www.kaggle.com/code/jsaguiar/lightgbm-with-simple-features?scriptVersionId=6025993 and its follow-up https://www.kaggle.com/code/ogrellier/lighgbm-with-selected-features. We use the later one, because it performance better and comes with a reduced set of features from the initial raw merges. Note, this may introduce a slight bias, as the feature selection was done for LGBM.
+- The top solutions start with various features from public notebooks/kernels. When selecting the kernel to use as our starting point, we looked among the most popular and best performance on the leaderboard. We found https://www.kaggle.com/code/jsaguiar/lightgbm-with-simple-features?scriptVersionId=6025993 and its follow-up https://www.kaggle.com/code/ogrellier/lighgbm-with-selected-features. We use the features of the later one, because it performs better, but not its feature selection (below).
 - We do not follow the script exactly. We do not ordinal encode binary features. Moreover, we do not apply one-hot encoding to all categorical columns. Instead, we do it only when need for aggregations and otherwise keep the categorical column with the original semantics. Moreover, we fix some bugs in the original script that cause it to crash when run out of the box.
-- We drop a duplicated column after preprocessing.
+- We drop the columns that hold one value besides missing or copy an earlier column, mostly the shares of the "nan" category the one-hot encoding adds to every table.
+- We compute no statistic over all rows (Lennart, 2026-10-19): the kernel's median income per organisation type (`NEW_INC_BY_ORG`) is dropped, `NEW_SCORES_STD` stays missing where the kernel filled in its mean, and the kernel's feature selection (columns without LightGBM importance, measured on all labelled rows) is not applied, so 709 features ship instead of 504. The kernel computed these over Kaggle's train and test applications, as a competition allows; whether to keep that transductive setting for this task can be checked later.
+- Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
 - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
 
@@ -207,8 +211,8 @@ Default splits.
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 155,291,035 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 155,291,035 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
 
@@ -219,7 +223,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (505 rows)</summary>
+<summary>Show the table (710 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -232,6 +236,7 @@ Accepted on purpose:
 | TARGET | category | 0 | 0 | 2 | 0, 1 |
 | NAME_CONTRACT_TYPE | category | 0 | 0 | 2 | Cash loans, Revolving loans |
 | CODE_GENDER | category | 0 | 0 | 2 | F, M |
+| FLAG_OWN_CAR | category | 0 | 0 | 2 | N, Y |
 | FLAG_OWN_REALTY | category | 0 | 0 | 2 | Y, N |
 | NAME_INCOME_TYPE | category | 0 | 0 | 8 | Working, Commercial associate, Pensioner, State servant, Unemployed, Student, B… |
 | NAME_EDUCATION_TYPE | category | 0 | 0 | 5 | Secondary / secondary special, Higher education, Incomplete higher, Lower secon… |
@@ -246,45 +251,44 @@ Accepted on purpose:
 | FLAG_DOCUMENT_3 | category | 0 | 0 | 2 | 1, 0 |
 | FLAG_DOCUMENT_8 | category | 0 | 0 | 2 | 0, 1 |
 | FLAG_DOCUMENT_18 | category | 0 | 0 | 2 | 0, 1 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 0.3, 5.0, 0.2878, 3.8785, 1.875, 2.5949, 0.3333 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.7695, 0.5683, 0.1428, 3.2608, 0.6934, 0.2588, 1.2347, 182.7729, 1.6765 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 0.5683, 1.6121, -13144.0353, -488.9192, 3.2608, 0.1428, 0.9589, -1455.487,… |
-| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 6550 | 0.0, 1.0, 2.0, 0.5, 0.9309, 0.7927, 3.0, 0.9309, 0.4, 0.3333 |
+| NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MAX | float64 | 307456 | 99.98 | 5 | 0.0, 1.4333, 0.3872, 0.0248, 0.134 |
+| NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MEAN | float64 | 307456 | 99.98 | 5 | 0.0, 3.7267, 0.6453, 0.0372, 0.1787 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_OVERDUE_MEAN | float64 | 307401 | 99.97 | 5 | 0.0, 4.0, 2.5534, 0.0097, 1605.3333 |
+| NEW_RATIO_BURO_CNT_CREDIT_PROLONG_SUM | float64 | 304610 | 99.06 | 10 | 0.0, 1.0, 2.0, 0.5, 5.0, 3.0, 0.3333, 4.0, 1.5, 0.25 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 5.0, 0.3, 0.4364, 3.8785, 0.125, 0.6667, 2.5949 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_SUM | float64 | 303746 | 98.78 | 1923 | 0.0, 1.0, 0.3333, 0.0333, 2.0, 1.5, 0.2, 3.3333, 0.4, 3.0 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.1428, 3.2608, 0.5683, 0.6934, 0.7695, 5.4631, 1.1109, 3.6078, 0.7951 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MEAN | float64 | 301935 | 98.19 | 5072 | 0.0, 22.8255, 1.1365, -727.7435, 1.5982, 1.6121, 0.1428, -488.9192, -26288.0707… |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 3.2608, 0.5683, -1455.487, 0.9589, 1.6121, 0.1428, -488.9192, -13144.0353,… |
+| NEW_RATIO_BURO_MONTHS_BALANCE_MAX_MAX | float64 | 296673 | 96.48 | 602 | 0.0, 1.0, 0.5, 0.3333, 0.6667, 0.2, 0.1111, 0.75, 3.0, 2.0 |
+| NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 5635 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.2, 0.4, 0.6, 1.6667, 0.6667 |
+| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 6550 | 0.0, 1.0, 2.0, 0.5, 0.9309, 0.799, 0.3333, 0.9309, 0.7927, 0.4 |
 | NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MAX | float64 | 286429 | 93.15 | 13992 | 0.0, 1.0, 2.0, 0.5, 1.5, 2.5, 1.3333, 1.6667, 3.0, 5.0 |
 | NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 16387 | 0.0, 1.0, 0.5, 2.0, 0.3333, 0.6667, 1.5, 0.25, 0.4, 1.3333 |
-| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 17681 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.6667, 0.25, 1.5, 0.3333, 0.75 |
-| NEW_RATIO_BURO_AMT_CREDIT_MAX_OVERDUE_MEAN | float64 | 276818 | 90.02 | 10756 | 0.0, 2.2988, 2.533, 0.0629, 0.2819, 1.2586, 2.628, 4.2667, 0.1857, 1.4146 |
-| NEW_RATIO_BURO_AMT_ANNUITY_MAX | float64 | 276511 | 89.92 | 10438 | 1.0, 0.0, 0.0161, 2.0, 0.5, 0.3333, 1.6667, 10.0, 1.5, 5.0 |
+| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MAX | float64 | 286429 | 93.15 | 16981 | 0.0, 1.0, 2.0, 0.5, 5.0, 3.0, 1.5, 2.5, 2.0, 4.0 |
+| NEW_RATIO_PREV_RATE_DOWN_PAYMENT_MEAN | float64 | 286429 | 93.15 | 17681 | 0.0, 1.0, 0.5, 2.0, 0.3333, 0.6667, 0.25, 1.5, 0.3333, 0.4 |
+| NEW_RATIO_BURO_AMT_CREDIT_MAX_OVERDUE_MEAN | float64 | 276818 | 90.02 | 10756 | 0.0, 0.1857, 1.8462, 0.0638, 0.5257, 38.541, 0.0, 1.4072, 4.1441, 0.049 |
+| NEW_RATIO_BURO_AMT_ANNUITY_MAX | float64 | 276511 | 89.92 | 10438 | 1.0, 0.0, 0.0161, 2.0, 0.5, 0.3333, 1.5, 5.0, 0.75, 10.0 |
 | NEW_RATIO_BURO_AMT_ANNUITY_MEAN | float64 | 276511 | 89.92 | 14382 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.6667, 1.3333, 3.0, 0.75, 1.25 |
-| NEW_RATIO_PREV_APP_CREDIT_PERC_VAR | float64 | 272714 | 88.69 | 34225 | 0.0, 1.0, 54.0, 222.308, 0.1463, 4.306, 615.5377, 22.5286, 0.0351, 0.6667 |
+| NEW_RATIO_PREV_APP_CREDIT_PERC_VAR | float64 | 272714 | 88.69 | 34225 | 0.0, 1.0, 54.0, 0.6667, 298919902.6872, 0.0351, 0.1463, 88.6895, 17.168, 615.53… |
 | REFUSED_AMT_DOWN_PAYMENT_MIN | float64 | 262339 | 85.31 | 5273 | 0.0, 4500.0, 9000.0, 13500.0, 22500.0, 6750.0, 2250.0, 45000.0, 18000.0, 2700.0 |
+| REFUSED_AMT_DOWN_PAYMENT_MAX | float64 | 262339 | 85.31 | 6494 | 0.0, 4500.0, 9000.0, 13500.0, 22500.0, 6750.0, 2250.0, 18000.0, 45000.0, 11250.0 |
+| REFUSED_AMT_DOWN_PAYMENT_MEAN | float64 | 262339 | 85.31 | 9014 | 0.0, 4500.0, 9000.0, 2250.0, 13500.0, 22500.0, 6750.0, 11250.0, 18000.0, 45000.0 |
+| REFUSED_RATE_DOWN_PAYMENT_MIN | float64 | 262339 | 85.31 | 11695 | 0.0, 0.1089, 0.2178, 0.3267, 0.5445, 0.0653, 0.0871, 0.4356, 0.1091, 0.109 |
 | REFUSED_RATE_DOWN_PAYMENT_MAX | float64 | 262339 | 85.31 | 15641 | 0.0, 0.1089, 0.2178, 0.3267, 0.5445, 0.4356, 0.0653, 0.109, 0.1091, 0.1307 |
 | REFUSED_RATE_DOWN_PAYMENT_MEAN | float64 | 262339 | 85.31 | 17145 | 0.0, 0.1089, 0.0545, 0.2178, 0.0363, 0.0726, 0.1634, 0.0272, 0.3267, 0.5445 |
 | REFUSED_APP_CREDIT_PERC_VAR | float64 | 258350 | 84.01 | 31695 | 0.0, 0.5, 0.0062, 0.0019, 0.0137, 0.3333, 0.008, 0.0091, 0.0041, 0.0068 |
-| CC_AMT_PAYMENT_CURRENT_VAR | float64 | 246888 | 80.29 | 59041 | 0.0, 1012500.0, 10125000.0, 40500.0, 2531250.0, 4050000.0, 3375000.0, 632812500… |
+| CC_AMT_PAYMENT_CURRENT_VAR | float64 | 246888 | 80.29 | 59041 | 0.0, 1012500.0, 40500.0, 10125000.0, 2531250.0, 50625.0, 6328125000.0, 4050000.… |
 | CC_AMT_DRAWINGS_ATM_CURRENT_VAR | float64 | 246814 | 80.26 | 43704 | 0.0, 337500000.0, 253125000.0, 1012500000.0, 506250000.0, 289285714.2857, 11571… |
-| CC_AMT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 33669 | 0.0, 2109.375, 225000000.0, 25312.5, 337500000.0, 22500.0, 40500.0, 289285714.2… |
+| CC_AMT_DRAWINGS_OTHER_CURRENT_VAR | float64 | 246814 | 80.26 | 4861 | 0.0, 116447.8359, 116447.8359, 230444.1385, 230444.1385, 470061.1184, 230444.13… |
+| CC_AMT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 33669 | 0.0, 2109.375, 225000000.0, 25312.5, 337500000.0, 22500.0, 289285714.2857, 4050… |
 | CC_CNT_DRAWINGS_ATM_CURRENT_VAR | float64 | 246814 | 80.26 | 29341 | 0.0, 0.1667, 0.1429, 0.5, 0.125, 1.0, 2.0, 0.5714, 0.6667, 0.619 |
+| CC_CNT_DRAWINGS_OTHER_CURRENT_VAR | float64 | 246814 | 80.26 | 1499 | 0.0, 0.0104, 0.1667, 0.0105, 0.125, 0.0104, 0.0104, 0.1429, 0.0206, 0.0909 |
 | CC_CNT_DRAWINGS_POS_CURRENT_VAR | float64 | 246814 | 80.26 | 21978 | 0.0, 0.1667, 0.1429, 0.0104, 0.5, 0.125, 0.1111, 0.0909, 0.0104, 0.0104 |
 | CC_AMT_PAYMENT_CURRENT_MIN | float64 | 246447 | 80.14 | 9923 | 0.0, 2250.0, 4500.0, 9000.0, 6750.0, 13500.0, 2700.0, 11250.0, 22500.0, 2475.0 |
 | CC_AMT_PAYMENT_CURRENT_MAX | float64 | 246447 | 80.14 | 25753 | 22500.0, 13500.0, 45000.0, 9000.0, 18000.0, 27000.0, 90000.0, 67500.0, 11250.0,… |
-| CC_AMT_PAYMENT_CURRENT_MEAN | float64 | 246447 | 80.14 | 56764 | 0.0, 9000.0, 4500.0, 22500.0, 11250.0, 13500.0, 6750.0, 2250.0, 4950.0, 45000.0 |
-| CC_AMT_DRAWINGS_ATM_CURRENT_MAX | float64 | 246367 | 80.12 | 1305 | 0.0, 135000.0, 90000.0, 45000.0, 67500.0, 180000.0, 112500.0, 225000.0, 157500.… |
-| CC_AMT_DRAWINGS_ATM_CURRENT_MEAN | float64 | 246367 | 80.12 | 22420 | 0.0, 22500.0, 4500.0, 11250.0, 9000.0, 45000.0, 2250.0, 7500.0, 13500.0, 15000.0 |
-| CC_AMT_DRAWINGS_POS_CURRENT_MIN | float64 | 246367 | 80.12 | 2459 | 0.0, 450.0, 2250.0, 1350.0, 225.0, 900.0, 4500.0, 675.0, 45.0, 3150.0 |
-| CC_AMT_DRAWINGS_POS_CURRENT_MAX | float64 | 246367 | 80.12 | 28865 | 0.0, 45000.0, 450.0, 900.0, 90000.0, 225.0, 1350.0, 2250.0, 4500.0, 135000.0 |
-| CC_AMT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 33412 | 0.0, 90.0, 5000.0, 56.25, 45.0, 225.0, 4.6875, 375.0, 14.0625, 9.375 |
-| CC_CNT_DRAWINGS_ATM_CURRENT_MAX | float64 | 246367 | 80.12 | 44 | 0.0, 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 8.0, 9.0 |
-| CC_CNT_DRAWINGS_ATM_CURRENT_MEAN | float64 | 246367 | 80.12 | 3385 | 0.0, 1.0, 0.5, 0.3333, 0.25, 0.6667, 0.1667, 0.125, 2.0, 0.2 |
-| CC_CNT_DRAWINGS_POS_CURRENT_MIN | float64 | 246367 | 80.12 | 45 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
-| CC_CNT_DRAWINGS_POS_CURRENT_MAX | float64 | 246367 | 80.12 | 123 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| CC_CNT_DRAWINGS_POS_CURRENT_MEAN | float64 | 246367 | 80.12 | 5024 | 0.0, 1.0, 0.5, 0.3333, 2.0, 0.0104, 0.1667, 0.25, 0.2, 3.0 |
-| ACTIVE_AMT_ANNUITY_MAX | float64 | 246161 | 80.05 | 19214 | 0.0, 4500.0, 13500.0, 22500.0, 45000.0, 18000.0, 27000.0, 9000.0, 11250.0, 2700… |
-| ACTIVE_AMT_ANNUITY_MEAN | float64 | 246161 | 80.05 | 26843 | 0.0, 4500.0, 13500.0, 22500.0, 9000.0, 18000.0, 2250.0, 45000.0, 27000.0, 6750.0 |
-| NEW_RATIO_BURO_MONTHS_BALANCE_MIN_MIN | float64 | 242444 | 78.84 | 4501 | 1.0, 0.5, 0.3333, 0.0, 0.6667, 0.25, 0.4, 0.2, 0.75, 0.6 |
-| NEW_RATIO_BURO_MONTHS_BALANCE_SIZE_MEAN | float64 | 242426 | 78.84 | 25699 | 1.0, 0.5, 0.6667, 0.75, 0.8333, 0.3333, 0.8, 0.875, 0.25, 0.4 |
 
-(445 more rows not shown)
+(650 more rows not shown)
 
 </details>
 
@@ -298,10 +302,11 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (482 rows)</summary>
+<summary>Show the table (686 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
+| CNT_CHILDREN | 307507 | 0.417047 | 0.722119 | 0 | 19 |
 | AMT_INCOME_TOTAL | 307507 | 168798 | 237125 | 25650 | 1.17e+08 |
 | AMT_CREDIT | 307507 | 599029 | 402493 | 45000 | 4.05e+06 |
 | AMT_ANNUITY | 307495 | 27108.7 | 14493.8 | 1615.5 | 258026 |
@@ -312,10 +317,18 @@ Accepted on purpose:
 | DAYS_REGISTRATION | 307507 | -4986.13 | 3522.88 | -24672 | 0 |
 | DAYS_ID_PUBLISH | 307507 | -2994.2 | 1509.45 | -7197 | 0 |
 | OWN_CAR_AGE | 104580 | 12.0611 | 11.9449 | 0 | 91 |
+| FLAG_MOBIL | 307507 | 0.999997 | 0.00180332 | 0 | 1 |
+| FLAG_EMP_PHONE | 307507 | 0.819887 | 0.384282 | 0 | 1 |
+| FLAG_CONT_MOBILE | 307507 | 0.998133 | 0.0431642 | 0 | 1 |
+| FLAG_EMAIL | 307507 | 0.0567207 | 0.231308 | 0 | 1 |
 | CNT_FAM_MEMBERS | 307505 | 2.15266 | 0.91068 | 1 | 20 |
 | REGION_RATING_CLIENT | 307507 | 2.05246 | 0.509034 | 1 | 3 |
 | REGION_RATING_CLIENT_W_CITY | 307507 | 2.03152 | 0.502737 | 1 | 3 |
 | HOUR_APPR_PROCESS_START | 307507 | 12.0634 | 3.26584 | 0 | 23 |
+| REG_REGION_NOT_LIVE_REGION | 307507 | 0.0151444 | 0.122127 | 0 | 1 |
+| REG_REGION_NOT_WORK_REGION | 307507 | 0.0507696 | 0.219527 | 0 | 1 |
+| LIVE_REGION_NOT_WORK_REGION | 307507 | 0.0406592 | 0.1975 | 0 | 1 |
+| REG_CITY_NOT_WORK_CITY | 307507 | 0.230457 | 0.421126 | 0 | 1 |
 | EXT_SOURCE_1 | 134131 | 0.502129 | 0.211063 | 0.0145681 | 0.962693 |
 | EXT_SOURCE_2 | 306847 | 0.514392 | 0.19106 | 8.17362e-08 | 0.855 |
 | EXT_SOURCE_3 | 246542 | 0.510856 | 0.194843 | 0.000527265 | 0.89601 |
@@ -338,6 +351,9 @@ Accepted on purpose:
 | YEARS_BEGINEXPLUATATION_MODE | 157501 | 0.977065 | 0.064576 | 0 | 1 |
 | YEARS_BUILD_MODE | 103021 | 0.759637 | 0.11011 | 0 | 1 |
 | COMMONAREA_MODE | 92645 | 0.0425535 | 0.0744448 | 0 | 1 |
+| ELEVATORS_MODE | 143617 | 0.0744913 | 0.132257 | 0 | 1 |
+| ENTRANCES_MODE | 152680 | 0.145194 | 0.100978 | 0 | 1 |
+| FLOORSMAX_MODE | 154488 | 0.222317 | 0.14371 | 0 | 1 |
 | FLOORSMIN_MODE | 98867 | 0.228061 | 0.16116 | 0 | 1 |
 | LANDAREA_MODE | 124919 | 0.0649583 | 0.0817508 | 0 | 1 |
 | LIVINGAPARTMENTS_MODE | 97310 | 0.105646 | 0.097881 | 0 | 1 |
@@ -349,28 +365,16 @@ Accepted on purpose:
 | YEARS_BEGINEXPLUATATION_MEDI | 157501 | 0.977752 | 0.0598979 | 0 | 1 |
 | YEARS_BUILD_MEDI | 103021 | 0.755746 | 0.112066 | 0 | 1 |
 | COMMONAREA_MEDI | 92645 | 0.0445955 | 0.0761446 | 0 | 1 |
-| ENTRANCES_MEDI | 152680 | 0.149214 | 0.100369 | 0 | 1 |
-| FLOORSMAX_MEDI | 154488 | 0.225899 | 0.145067 | 0 | 1 |
-| FLOORSMIN_MEDI | 98867 | 0.231628 | 0.161934 | 0 | 1 |
-| LANDAREA_MEDI | 124919 | 0.0671694 | 0.0821675 | 0 | 1 |
-| LIVINGAPARTMENTS_MEDI | 97310 | 0.101956 | 0.0936429 | 0 | 1 |
-| LIVINGAREA_MEDI | 153158 | 0.108608 | 0.112261 | 0 | 1 |
-| NONLIVINGAPARTMENTS_MEDI | 93995 | 0.00865116 | 0.0474152 | 0 | 1 |
-| NONLIVINGAREA_MEDI | 137827 | 0.0282363 | 0.0701669 | 0 | 1 |
-| TOTALAREA_MODE | 159077 | 0.102548 | 0.107463 | 0 | 1 |
-| OBS_30_CNT_SOCIAL_CIRCLE | 306486 | 1.42221 | 2.40093 | 0 | 348 |
-| DEF_30_CNT_SOCIAL_CIRCLE | 306486 | 0.143406 | 0.446644 | 0 | 34 |
-| OBS_60_CNT_SOCIAL_CIRCLE | 306486 | 1.40526 | 2.37974 | 0 | 344 |
-| DEF_60_CNT_SOCIAL_CIRCLE | 306486 | 0.100034 | 0.362221 | 0 | 24 |
+| ELEVATORS_MEDI | 143617 | 0.0780795 | 0.134468 | 0 | 1 |
 
-(422 more rows not shown)
+(626 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (79 rows)</summary>
+<summary>Show the table (81 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -385,6 +389,8 @@ Accepted on purpose:
 | FLAG_DOCUMENT_3 | 2 | 0 | 89167 | 29 |
 | FLAG_DOCUMENT_8 | 1 | 0 | 282483 | 91.86 |
 | FLAG_DOCUMENT_8 | 2 | 1 | 25024 | 8.14 |
+| FLAG_OWN_CAR | 1 | N | 202922 | 65.99 |
+| FLAG_OWN_CAR | 2 | Y | 104585 | 34.01 |
 | FLAG_OWN_REALTY | 1 | Y | 213308 | 69.37 |
 | FLAG_OWN_REALTY | 2 | N | 94199 | 30.63 |
 | FLAG_PHONE | 1 | 0 | 221080 | 71.89 |
@@ -432,10 +438,8 @@ Accepted on purpose:
 | OCCUPATION_TYPE | 1 | &lt;NA> | 96389 | 31.35 |
 | OCCUPATION_TYPE | 2 | Laborers | 55186 | 17.95 |
 | OCCUPATION_TYPE | 3 | Sales staff | 32102 | 10.44 |
-| OCCUPATION_TYPE | 4 | Core staff | 27569 | 8.97 |
-| OCCUPATION_TYPE | 5 | Managers | 21371 | 6.95 |
 
-(19 more rows not shown)
+(21 more rows not shown)
 
 </details>
 
@@ -450,4 +454,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4fed6d18b08c7cff27589ae7ecc2a8da86da919b1117cff02d441bcdd50d72ed` |
+| stale | yes: the definition now gives checksum `v2:59d51e9a57ef9a8d469ebab03fff7845f0e328d15a3e3ed04b21ad67d4fcd837` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:96da125d823c02aabd996287b96bd57dcf5d173550cd7973d3cac99da9178dd7
+checksum: v2:67c30a3547f98e96c6ff8b0a8e04d04deb51de68b110bb8c5f571f34f978eda6
 build: null
 build_stale: false
 data:
@@ -45,8 +45,9 @@ bundle_checks:
   accepted: {}
 decisions:
 - Weather shifted from UTC to the sites' local time
-- Electricity zeros and site 0's 2016 recording gap dropped
-- Zeros of the thermal meters kept
+- Readings taken in kWh from BDG2
+- Hours a meter did not record dropped
+- Zeros of the thermal meters outside their season kept
 ---
 
 # ashrae_great_energy_predictor_iii_1m
@@ -55,7 +56,7 @@ decisions:
 
 Regression of `log1p_meter_reading`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:96da125d823c02aabd996287b96bd57dcf5d173550cd7973d3cac99da9178dd7`.
+Not built yet. The current definition gives checksum `v2:67c30a3547f98e96c6ff8b0a8e04d04deb51de68b110bb8c5f571f34f978eda6`.
 
 ## In brief
 
@@ -63,17 +64,17 @@ Not built yet. The current definition gives checksum `v2:96da125d823c02aabd99628
 
 **Use case.** After an energy-efficiency retrofit, an engineer or investor estimates what the building would have used without it, from a model fit on the readings before, and credits the difference as savings (the competition's purpose).
 
-**One row.** One hourly reading of one meter (electricity, chilled water, steam or hot water) of one building of the competition, 2016-2017; the 2,500,000 of 40.1M readings that the splits use.
+**One row.** One hourly reading of one meter (electricity, chilled water, steam or hot water) of one building of the competition, 2016-2017; the 2,500,000 of 39.1M readings that the splits use.
 
-**Predicted.** The meter's reading in that hour, in kWh (kWh equivalent for the heating and cooling meters), scored on a logarithmic scale as in the competition.
+**Predicted.** The meter's reading in that hour in kWh (the heating and cooling meters converted to kWh by the competition's organisers), scored on a logarithmic scale as in the competition.
 
 **Known at prediction time.** The building (site, primary use, floor area, year built, floors), the meter type, the local date and hour, and the site's weather in that hour (temperature, dew point, cloud, rain, pressure, wind); no reading after the cutoff.
 
 **What the test data stands for.** Three four-month windows tile 2017, newest first, each trained on a random million of all earlier readings; the oldest window is the competition's setting, train on 2016 and predict early 2017.
 
-**Our changes to the source.** We add the competition's 2017 readings, which its organisers released later, to split by time. Electricity readings of 0 and site 0's recording gap in early 2016 are dropped as meters not recording.
+**Our changes to the source.** We add the competition's 2017 readings, which its organisers released later with every meter in kWh, to split by time and to put all meters in one unit. Hours when a meter was not recording are dropped, as the top teams did: electricity at 0, a heating or cooling plant at 0 for two days in its season, a reading stuck for a week, and one steam meter's unit error.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** As in measuring retrofit savings, the model sees only the building, the time and the observed weather of each hour, never a later reading, and is fit on earlier readings. Recording errors stay as the competition shipped them, such as one steam meter at about 1,000 times its usual level.
+> **Use case fit: direct (the rows, features and split mirror the use case).** As in measuring retrofit savings, the model sees only the building, the time and the observed weather of each hour, never a later reading, and is fit on earlier readings. Hours when a meter did not record are dropped, as the savings would be measured on recorded hours only; the noise of real meters stays.
 
 ## Files in this folder
 
@@ -92,15 +93,19 @@ Not built yet. The current definition gives checksum `v2:96da125d823c02aabd99628
 `dataset.py` reads its raw files from `local-data-warehouse/ashrae_great_energy_predictor_iii/`. To get them:
 
 ```text
-We download four files of the Kaggle competition (train.csv holds 2016) and the competition's 2017 readings,
-which its technical team released in the Building Data Genome Project 2 (BDG2) repository (a Git LFS file,
-pinned to the commit that added it; sha256 67e6d3e82cc737d28389845fc5e526711705fc264fd178a7a0b6f8f3d8d3c82e).
-The competition's 2018 readings (its private test year) are not public.
+We download four files of the Kaggle competition (train.csv holds 2016) and, from the Building Data Genome
+Project 2 (BDG2) repository of the competition's technical team, the competition's 2017 readings
+(kaggle.csv, sha256 67e6d3e82cc737d28389845fc5e526711705fc264fd178a7a0b6f8f3d8d3c82e), the raw meter files
+with every reading in kWh (one per meter type) and the building metadata that maps BDG2's building names to
+the competition's building_id. The files are Git LFS objects, pinned to the commit that added kaggle.csv. The
+competition's 2018 readings (its private test year) are not public.
 
 mkdir -p local-data-warehouse/ashrae_great_energy_predictor_iii && cd local-data-warehouse/ashrae_great_energy_predictor_iii
 for f in train.csv weather_train.csv weather_test.csv building_metadata.csv; do kaggle competitions download -c ashrae-energy-prediction -f $f -p .; done
 unzip train.csv.zip && unzip weather_train.csv.zip && unzip weather_test.csv.zip && rm train.csv.zip weather_train.csv.zip weather_test.csv.zip
-mkdir -p bdg2 && wget -O bdg2/kaggle.csv https://media.githubusercontent.com/media/buds-lab/building-data-genome-project-2/9581aafed95b28e3d5ac39929c15fbc0ba36af5b/data/meters/kaggle/kaggle.csv
+BDG2=https://media.githubusercontent.com/media/buds-lab/building-data-genome-project-2/9581aafed95b28e3d5ac39929c15fbc0ba36af5b/data
+mkdir -p bdg2/raw && wget -O bdg2/kaggle.csv $BDG2/meters/kaggle/kaggle.csv && wget -O bdg2/metadata.csv $BDG2/metadata/metadata.csv
+for m in electricity chilledwater steam hotwater; do wget -O bdg2/raw/$m.csv $BDG2/meters/raw/$m.csv; done
 ```
 
 Then, from the repository root:
@@ -119,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | source | Kaggle: https://www.kaggle.com/competitions/ashrae-energy-prediction |
 | year | 2019 |
 | domain | environmental science & climate |
-| license | Kaggle Competition Rules (7A: use for any purpose, commercial or non-commercial; 7B: no redistribution to anyone not participating in the competition); the 2017 readings from BDG2: MIT License at the pinned commit (2020), CC BY 4.0 on its Zenodo release v1.0 (doi 10.5281/zenodo.3887306), and a LICENSE headed 'Attribution-ShareAlike 4.0 Unported' in the repository since 2023-10-14 |
+| license | Kaggle Competition Rules (7A: use for any purpose, commercial or non-commercial; 7B: no redistribution to anyone not participating in the competition); the 2017 readings and the readings in kWh from BDG2: MIT License at the pinned commit (2020), CC BY 4.0 on its Zenodo release v1.0 (doi 10.5281/zenodo.3887306), and a LICENSE headed 'Attribution-ShareAlike 4.0 Unported' in the repository since 2023-10-14 |
 | data_tags | Non-IID, Temporal |
 | reference | Howard2019ASHRAEGreatEnergyPredictorIII,Miller2020GEPIII,Miller2020BDG2 |
 | version of | ashrae_great_energy_predictor_iii |
@@ -179,29 +184,28 @@ The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is 
 
 | log1p_meter_reading | building_id | meter | timestamp | site_id | primary_use | square_feet | year_built | floor_count | air_temperature | cloud_coverage | dew_temperature |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5.65431 | 493 | electricity | 2016-01-01 00:00:00 | 3 | Education | 283000 | 2014 | nan | 7.2 | nan | 0 |
-| 3.23672 | 498 | electricity | 2016-01-01 00:00:00 | 3 | Entertainment/public assembly | 14842 | nan | nan | 7.2 | nan | 0 |
-| 4.16029 | 200 | electricity | 2016-01-01 00:00:00 | 2 | Entertainment/public assembly | 143093 | 1964 | nan | 7.2 | 0 | -5.6 |
-| 3.16674 | 1061 | electricity | 2016-01-01 00:00:00 | 12 | Retail | 44218 | nan | nan | 1.9 | 4 | -1.2 |
-| 2.55101 | 159 | electricity | 2016-01-01 00:00:00 | 2 | Education | 9788 | nan | nan | 7.2 | 0 | -5.6 |
+| 5.67949 | 1220 | electricity | 2016-01-01 00:00:00 | 13 | Public services | 381221 | nan | nan | -7.2 | 8 | -10.6 |
+| 3.86807 | 1399 | electricity | 2016-01-01 00:00:00 | 15 | Lodging/residential | 166814 | 1929 | nan | nan | nan | nan |
+| 0 | 964 | chilledwater | 2016-01-01 00:00:00 | 9 | Education | 130577 | nan | nan | 9.4 | nan | 3.3 |
+| 5.7212 | 1301 | steam | 2016-01-01 00:00:00 | 14 | Education | 62242 | nan | nan | 4.4 | nan | -2.2 |
+| 4.35927 | 587 | electricity | 2016-01-01 00:00:00 | 4 | Technology/science | 53234 | 1942 | 5 | 4.4 | 0 | -2.2 |
 
 ## Curation notes
 
-We start with train.csv (2016), building_metadata.csv, weather_train.csv and weather_test.csv of the Kaggle competition and the competition's 2017 readings (data/meters/kaggle/kaggle.csv of the BDG2 repository).
+We start with the Kaggle competition's train.csv (2016), building_metadata.csv and weather files and, from the BDG2 repository of its technical team, the 2017 readings (kaggle.csv), the raw meter files in kWh and their building metadata.
 
-- Prediction point: after a cutoff, for every later hour of a meter we already know, the model gives the reading the building would have had, from the building's metadata, the meter type, the local time and the site's weather in that hour, as in the competition. No reading after the cutoff is an input, so this is a regression on exogenous inputs with a temporal split, not forecasting.
-- We stack 2016 and 2017, the competition's public test year, which its technical team released in BDG2 ("matches seamlessly with the training data", BDG2 paper, p. 8); 2018 is not public. The 2017 file keeps the competition's units: site 0's median electricity reading is 193.8 in the last week of 2016 and 202.5 in the first week of 2017.
-- We drop the hours of 2017 without a reading (gaps the competition did not score).
-- Site 0's electricity readings are in kBTU. We multiply them by 0.2931, the host's factor (discussion 119261).
-- The weather timestamps are UTC and the meter timestamps local time (BDG2 paper, p. 8). We shift each site's weather by the 1st place solution's offsets (standard time) and join it on site and hour, so the mean day peaks at 14:00-16:00 at every site (decision table). The meters of 8 sites follow daylight saving time, but a join with it changed LightGBM's RMSE by -0.007 to +0.005 per window, no consistent gain, so we keep the standard offsets.
-- We drop site 0's electricity before 2016-05-21, a recording gap (its meters read 0 in 344,577 of these 348,560 hours), and every other electricity reading of 0: a whole-building electricity meter that reads 0 has not recorded (BDG2's cleaned data removes these readings too, p. 7).
-- Zero readings of the chilled-water, steam and hot-water meters stay: they follow the seasons (decision table), so a model can learn when a plant is off. BDG2's cleaned data removes zero runs of more than 24 hours; we keep them because most are seasonal.
-- Anomaly: other recording errors stay as the competition shipped them ("real data with measurement error", data page), such as building 1099's steam meter at about 1,000 times its usual level in March-June 2016. BDG2 fixed such unit errors, which were "left as-is in the Kaggle data set" (p. 8).
-- The target is log1p of the reading (kWh, or kWh equivalent for the thermal meters), so RMSE on it is the competition's metric, RMSLE.
-- The meter codes get the data page's names. building_id and site_id stay as categories: the test hours belong to meters with earlier readings in train, as in the competition.
-- precip_depth_1_hr = -1 stays: in the NOAA ISD-Lite data the weather comes from, -1 codes a trace of precipitation (ISD-Lite format note, field 11).
+- Prediction point: after a cutoff, the model gives each known meter's reading for a later hour from the building's metadata, the meter type, the local time and the site's weather, as in the competition; no later reading is an input. The top five teams fit boosted trees and neural networks on these inputs, with no lagged readings (GEPIII overview, Table 2).
+- Not a naive forecast: each meter's hour-of-week profile from the same month a year earlier scores RMSE 1.393 / 1.273 / 1.372 on the three windows, LightGBM with 1,000 trees on the shipped 1M training rows 1.261 / 1.176 / 1.223. One model per site does no better than one large model (1.238 / 1.178 / 1.222), so meter types and sites stay one task.
+- We stack 2016 and 2017, the competition's public test year ("matches seamlessly with the training data", BDG2 paper, p. 8), keeping the hours with a reading; 2018 is not public.
+- Units: the competition kept each site's own unit (ton-hours, pounds of steam, mmBTU, kBTU; BDG2 paper, Table 4). We take the readings in kWh from BDG2's raw files, converted and corrected by the same team (p. 8); per meter they differ from Kaggle's by one constant factor in 99.9% of the hours (decision table).
+- The weather is in UTC and the readings in local time (p. 8): we shift it by the 1st place solution's offsets and join it on site and hour. Daylight saving time at 8 sites changed RMSE by -0.007 to +0.005 per window, so we keep standard time.
+- Recording errors, removed as all top five teams did: site 0's electricity before 2016-05-21, electricity at 0, chilled water at 0 for 48 hours or more in May-October and steam or hot water in November-April, readings stuck for a week or more (site 5's electricity, March-November 2017), and building 1099's steam unit error (above 10 times its median, January-June 2016). 1.70M hours (4.2%, decision table).
+- 94.5% of the 2016 hours we drop are on the 1st place team's hand-made list of bad readings, and they cover 64% of that list. Zeros of heating and cooling meters outside their season stay: a plant switched off, which a model can learn.
+- The target is log1p of kWh, so RMSE is the competition's RMSLE, in one unit for all meters.
+- building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
+- precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
 
-Version of `ashrae_great_energy_predictor_iii`: The cleaned frame has 40.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
+Version of `ashrae_great_energy_predictor_iii`: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
 
 ## Splits
 
@@ -240,35 +244,49 @@ The weather files are in UTC and the meter readings in local time (BDG2 paper, p
 | 14 | -5 | 20 | 15 | 5 |
 | 15 | -5 | 20 | 15 | 5 |
 
-### 2. Electricity zeros and site 0's 2016 recording gap dropped
+### 2. Readings taken in kWh from BDG2
 
-A whole-building electricity meter that reads 0 has not recorded (BDG2's cleaned data drops these readings). Site 0's electricity reads 0 until 2016-05-20. Rows of the raw files per meter type.
+The competition kept each site's own unit; BDG2's raw files hold the same readings converted to kWh (paper, Tables 4 and 5). Meters per meter type by the factor between the two, named by the unit it implies; the ratio is the same within 0.1% for 99.9% of a meter's hours.
 
-| meter | hours_with_a_reading | zero_share | dropped_site_0_gap | dropped_zero |
+| unit in the competition data | electricity | chilledwater | steam | hotwater |
 |---|---|---|---|---|
-| electricity | 24237933 | 0.0285 | 348560 | 347118 |
-| chilledwater | 8494182 | 0.1526 | 0 | 0 |
-| steam | 5505619 | 0.1199 | 0 | 0 |
-| hotwater | 2525586 | 0.287 | 0 | 0 |
+| kBTU | 105 | 32 | 0 | 11 |
+| kWh | 1296 | 4 | 12 | 20 |
+| lb of steam | 0 | 0 | 312 | 0 |
+| mmBTU | 0 | 86 | 0 | 112 |
+| other: kWh x 3 | 0 | 1 | 0 | 0 |
+| other: kWh x 3,600 | 12 | 15 | 0 | 0 |
+| ton-hours | 0 | 360 | 0 | 2 |
 
-### 3. Zeros of the thermal meters kept
+### 3. Hours a meter did not record dropped
 
-Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a plant that is off, which a model can learn. Share of shipped rows with a reading of 0, by month and meter type.
+Hours with a reading per meter type and the hours each rule flags (a row can match several rules): site 0's 2016 gap, electricity at 0, a cooling or heating plant at 0 for 48 hours or more in its operating months, a reading repeated for a week or more, and building 1099's steam unit error.
+
+| meter | hours_with_a_reading | site_0_gap | electricity_zero | plant_zero_in_season | stuck_for_a_week | unit_error | dropped |
+|---|---|---|---|---|---|---|---|
+| electricity | 24237933 | 348560 | 691763 | 0 | 525863 | 0 | 1221609 |
+| chilledwater | 8494182 | 0 | 0 | 169893 | 34637 | 0 | 204530 |
+| steam | 5505619 | 0 | 0 | 78420 | 24314 | 3332 | 106066 |
+| hotwater | 2525586 | 0 | 0 | 135093 | 33852 | 0 | 168945 |
+
+### 4. Zeros of the thermal meters outside their season kept
+
+Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a plant switched off for the season, which a model can learn. Share of shipped rows with a reading of 0, by month and meter type.
 
 | month | chilledwater | electricity | hotwater | steam |
 |---|---|---|---|---|
-| 1 | 0.263 | 0 | 0.167 | 0.059 |
-| 2 | 0.25 | 0 | 0.166 | 0.063 |
-| 3 | 0.226 | 0 | 0.209 | 0.073 |
-| 4 | 0.167 | 0 | 0.271 | 0.097 |
-| 5 | 0.108 | 0 | 0.33 | 0.136 |
-| 6 | 0.063 | 0 | 0.387 | 0.177 |
-| 7 | 0.06 | 0 | 0.407 | 0.194 |
-| 8 | 0.052 | 0 | 0.404 | 0.173 |
-| 9 | 0.061 | 0 | 0.386 | 0.161 |
-| 10 | 0.13 | 0 | 0.337 | 0.139 |
-| 11 | 0.206 | 0 | 0.22 | 0.079 |
-| 12 | 0.253 | 0 | 0.172 | 0.063 |
+| 1 | 0.265 | 0 | 0.069 | 0.034 |
+| 2 | 0.247 | 0 | 0.094 | 0.039 |
+| 3 | 0.231 | 0 | 0.109 | 0.048 |
+| 4 | 0.17 | 0 | 0.137 | 0.066 |
+| 5 | 0.056 | 0 | 0.334 | 0.136 |
+| 6 | 0.036 | 0 | 0.396 | 0.178 |
+| 7 | 0.035 | 0 | 0.417 | 0.193 |
+| 8 | 0.029 | 0 | 0.413 | 0.182 |
+| 9 | 0.039 | 0 | 0.397 | 0.158 |
+| 10 | 0.065 | 0 | 0.351 | 0.139 |
+| 11 | 0.207 | 0 | 0.125 | 0.057 |
+| 12 | 0.257 | 0 | 0.087 | 0.032 |
 
 ## Bundle checks
 
@@ -284,22 +302,22 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| building_id | category | 0 | 0 | 1449 | 1259, 1249, 1294, 1301, 1295, 1232, 1331, 1241, 1297, 1298 |
+| building_id | category | 0 | 0 | 1449 | 1298, 1331, 1259, 1249, 1241, 1297, 1258, 1296, 1301, 1295 |
 | meter | category | 0 | 0 | 4 | electricity, chilledwater, steam, hotwater |
-| site_id | category | 0 | 0 | 16 | 13, 9, 2, 14, 3, 15, 0, 4, 5, 6 |
+| site_id | category | 0 | 0 | 16 | 13, 9, 2, 14, 3, 15, 0, 4, 6, 8 |
 | primary_use | category | 0 | 0 | 16 | Education, Office, Entertainment/public assembly, Lodging/residential, Public s… |
-| timestamp | datetime64\[ns\] | 0 | 0 | 17544 | 2017-10-30 22:00:00, 2017-12-28 18:00:00, 2017-11-10 03:00:00, 2017-10-23 21:00… |
-| floor_count | float64 | 2.07093e+06 | 82.84 | 18 | 1.0, 2.0, 4.0, 3.0, 6.0, 5.0, 8.0, 7.0, 9.0, 11.0 |
-| year_built | float64 | 1.4921e+06 | 59.68 | 116 | 1976.0, 1964.0, 1966.0, 2006.0, 1975.0, 1967.0, 1968.0, 1970.0, 1960.0, 2007.0 |
-| cloud_coverage | float64 | 1.11592e+06 | 44.64 | 10 | 0.0, 2.0, 4.0, 6.0, 8.0, 7.0, 9.0, 1.0, 3.0, 5.0 |
-| precip_depth_1_hr | float64 | 466163 | 18.65 | 167 | 0.0, -1.0, 3.0, 5.0, 8.0, 10.0, 13.0, 15.0, 2.0, 18.0 |
-| wind_direction | float64 | 178462 | 7.14 | 58 | 0.0, 300.0, 170.0, 290.0, 310.0, 270.0, 180.0, 320.0, 280.0, 160.0 |
-| sea_level_pressure | float64 | 153593 | 6.14 | 747 | 1015.2, 1015.6, 1016.9, 1016.2, 1016.0, 1015.9, 1014.9, 1016.5, 1015.5, 1016.4 |
-| wind_speed | float64 | 18204 | 0.73 | 72 | 0.0, 2.1, 2.6, 1.5, 3.1, 3.6, 4.1, 4.6, 5.1, 5.7 |
-| dew_temperature | float64 | 14700 | 0.59 | 552 | 10.0, 15.0, 18.9, 13.3, 17.8, 17.2, 18.3, 13.9, 16.7, 12.8 |
-| air_temperature | float64 | 12584 | 0.5 | 645 | 23.9, 23.3, 24.4, 22.8, 25.0, 15.0, 21.7, 22.2, 20.0, 17.2 |
-| log1p_meter_reading | float64 | 0 | 0 | 688024 | 0.0, 0.0004, 1.9259, 3.2347, 1.3688, 3.627, 3.2581, 3.0445, 3.5424, 0.0003 |
-| square_feet | int64 | 0 | 0 | 1397 | 387638, 150695, 200933, 42755, 64583, 71088, 159384, 15649, 72958, 62242 |
+| timestamp | datetime64\[ns\] | 0 | 0 | 17544 | 2017-11-15 06:00:00, 2017-08-25 13:00:00, 2017-05-24 17:00:00, 2017-10-23 21:00… |
+| floor_count | float64 | 2.09773e+06 | 83.91 | 18 | 1.0, 2.0, 4.0, 6.0, 3.0, 5.0, 8.0, 7.0, 9.0, 11.0 |
+| year_built | float64 | 1.50621e+06 | 60.25 | 116 | 1976.0, 1964.0, 2006.0, 1975.0, 1966.0, 2007.0, 1968.0, 1967.0, 1970.0, 2004.0 |
+| cloud_coverage | float64 | 1.11064e+06 | 44.43 | 10 | 0.0, 2.0, 4.0, 8.0, 6.0, 7.0, 9.0, 1.0, 3.0, 5.0 |
+| precip_depth_1_hr | float64 | 442426 | 17.7 | 167 | 0.0, -1.0, 3.0, 5.0, 8.0, 10.0, 13.0, 2.0, 15.0, 18.0 |
+| wind_direction | float64 | 179675 | 7.19 | 57 | 0.0, 300.0, 170.0, 290.0, 180.0, 310.0, 320.0, 160.0, 280.0, 270.0 |
+| sea_level_pressure | float64 | 129033 | 5.16 | 748 | 1015.5, 1015.9, 1015.2, 1015.6, 1016.4, 1016.2, 1016.9, 1016.3, 1016.5, 1016.0 |
+| wind_speed | float64 | 18579 | 0.74 | 73 | 0.0, 2.1, 2.6, 1.5, 3.1, 3.6, 4.1, 4.6, 5.1, 5.7 |
+| dew_temperature | float64 | 14843 | 0.59 | 553 | 18.9, 10.0, 18.3, 17.8, 13.9, 17.2, 13.3, 15.0, 12.8, 16.7 |
+| air_temperature | float64 | 12745 | 0.51 | 646 | 23.3, 24.4, 22.8, 23.9, 25.0, 20.0, 21.7, 25.6, 22.2, 15.0 |
+| log1p_meter_reading | float64 | 0 | 0 | 704780 | 0.0, 2.4984, 3.0445, 6.7568, 2.4188, 2.1332, 2.0165, 3.2581, 7.4494, 1.6094 |
+| square_feet | int64 | 0 | 0 | 1397 | 150695, 387638, 200933, 42755, 64583, 171084, 171008, 72958, 65000, 71088 |
 
 </details>
 
@@ -307,7 +325,7 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 6.7 | -0.273 | -1.538 | 4.326 | 0.325 | log1p | 1.16737e+06 | 2.13774e+16 | exponential |
+| 0 | 0 | 5.94 | 0.766 | -1.23 | 6.907 | 0.338 | log1p | 1.21713e+06 | 4.36139e+06 | exponential |
 
 ### Numeric features
 
@@ -316,17 +334,17 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| square_feet | 250000 | 108071 | 116974 | 283 | 875000 |
-| year_built | 100893 | 1968.03 | 30.1822 | 1900 | 2017 |
-| floor_count | 42844 | 4.22762 | 3.99096 | 1 | 26 |
-| air_temperature | 248707 | 15.8492 | 10.9796 | -28.4 | 48.3 |
-| cloud_coverage | 138493 | 1.93404 | 2.42401 | 0 | 9 |
-| dew_temperature | 248505 | 7.66836 | 10.2093 | -34 | 26.7 |
-| precip_depth_1_hr | 203499 | 0.807498 | 7.37221 | -1 | 597 |
-| sea_level_pressure | 234702 | 1015.8 | 7.41891 | 968.2 | 1047.2 |
-| wind_direction | 232153 | 175.153 | 113.725 | 0 | 360 |
-| wind_speed | 248180 | 3.40333 | 2.27371 | 0 | 24.2 |
-| log1p_meter_reading | 250000 | 4.19123 | 2.07998 | 0 | 16.7786 |
+| square_feet | 250000 | 108550 | 117017 | 283 | 875000 |
+| year_built | 99432 | 1967.84 | 30.5726 | 1900 | 2017 |
+| floor_count | 40274 | 4.30076 | 4.02977 | 1 | 26 |
+| air_temperature | 248669 | 15.8905 | 11.0224 | -28.9 | 48.3 |
+| cloud_coverage | 139063 | 1.942 | 2.42289 | 0 | 9 |
+| dew_temperature | 248455 | 7.70635 | 10.2539 | -34.7 | 26.7 |
+| precip_depth_1_hr | 205545 | 0.783186 | 7.48959 | -1 | 455 |
+| sea_level_pressure | 237111 | 1015.81 | 7.40748 | 968.8 | 1046.7 |
+| wind_direction | 232014 | 174.445 | 113.924 | 0 | 360 |
+| wind_speed | 248083 | 3.39178 | 2.26857 | 0 | 24.2 |
+| log1p_meter_reading | 250000 | 4.60347 | 2.6281 | 0 | 16.0164 |
 
 </details>
 
@@ -337,30 +355,30 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| building_id | 1 | 1259 | 455 | 0.18 |
-| building_id | 2 | 1249 | 451 | 0.18 |
-| building_id | 3 | 1294 | 450 | 0.18 |
-| building_id | 4 | 1301 | 434 | 0.17 |
-| building_id | 5 | 1295 | 431 | 0.17 |
-| meter | 1 | electricity | 146591 | 58.64 |
-| meter | 2 | chilledwater | 53116 | 21.25 |
-| meter | 3 | steam | 34648 | 13.86 |
-| meter | 4 | hotwater | 15645 | 6.26 |
-| primary_use | 1 | Education | 100892 | 40.36 |
-| primary_use | 2 | Office | 54508 | 21.8 |
-| primary_use | 3 | Entertainment/public assembly | 27858 | 11.14 |
-| primary_use | 4 | Lodging/residential | 26818 | 10.73 |
-| primary_use | 5 | Public services | 20634 | 8.25 |
-| site_id | 1 | 13 | 33600 | 13.44 |
-| site_id | 2 | 9 | 32738 | 13.1 |
-| site_id | 3 | 2 | 31405 | 12.56 |
-| site_id | 4 | 14 | 30658 | 12.26 |
-| site_id | 5 | 3 | 28996 | 11.6 |
-| timestamp | 1 | 2017-10-30 22:00:00 | 39 | 0.02 |
-| timestamp | 2 | 2017-12-28 18:00:00 | 35 | 0.01 |
-| timestamp | 3 | 2017-11-10 03:00:00 | 34 | 0.01 |
-| timestamp | 4 | 2017-10-23 21:00:00 | 34 | 0.01 |
-| timestamp | 5 | 2017-08-11 11:00:00 | 33 | 0.01 |
+| building_id | 1 | 1298 | 462 | 0.18 |
+| building_id | 2 | 1331 | 461 | 0.18 |
+| building_id | 3 | 1259 | 442 | 0.18 |
+| building_id | 4 | 1249 | 436 | 0.17 |
+| building_id | 5 | 1241 | 425 | 0.17 |
+| meter | 1 | electricity | 147324 | 58.93 |
+| meter | 2 | chilledwater | 52955 | 21.18 |
+| meter | 3 | steam | 34698 | 13.88 |
+| meter | 4 | hotwater | 15023 | 6.01 |
+| primary_use | 1 | Education | 100202 | 40.08 |
+| primary_use | 2 | Office | 54488 | 21.8 |
+| primary_use | 3 | Entertainment/public assembly | 27971 | 11.19 |
+| primary_use | 4 | Lodging/residential | 26919 | 10.77 |
+| primary_use | 5 | Public services | 20881 | 8.35 |
+| site_id | 1 | 13 | 33762 | 13.5 |
+| site_id | 2 | 9 | 33446 | 13.38 |
+| site_id | 3 | 2 | 31075 | 12.43 |
+| site_id | 4 | 14 | 30813 | 12.33 |
+| site_id | 5 | 3 | 29862 | 11.94 |
+| timestamp | 1 | 2017-11-15 06:00:00 | 34 | 0.01 |
+| timestamp | 2 | 2017-08-25 13:00:00 | 33 | 0.01 |
+| timestamp | 3 | 2017-05-24 17:00:00 | 33 | 0.01 |
+| timestamp | 4 | 2017-10-23 21:00:00 | 32 | 0.01 |
+| timestamp | 5 | 2017-10-23 18:00:00 | 32 | 0.01 |
 
 </details>
 

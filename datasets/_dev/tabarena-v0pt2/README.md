@@ -5,19 +5,21 @@ Working setup towards TabArena-v0.2
 - **New here?** [`GETTING_STARTED.md`](GETTING_STARTED.md): set-up, the two workflows (settling a record, adding a
   dataset) and the large-data candidates to start with.
 - **Every change is logged** in [`CHANGELOG.md`](CHANGELOG.md): edits, added or removed files, re-runs that change a container.
-- The leak audit of September-October 2026 (removed and changed datasets, with severity) is summarised in [`LEAK_AUDIT.md`](LEAK_AUDIT.md).
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates from its `dataset.py`: the folder's files, links to the curation record and the source, how to rebuild, the evidence and the build record.
-- Open decisions are in the curation records (`curation/records/<name>.md`) and in the newest `CHANGELOG.md` entries.
-- 53 definitions added on 2026-10-07 from the curation backlog (59, of which 6 were retired on 2026-10-12 and 2026-10-14) are not built yet; their issues and the decisions they
-  need are in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
+- Open questions for the curator are in a folder's `REVIEW.md` while they are open (the review page of
+  `/review-added-datasets` is built from them); settled decisions are in the curation records
+  (`curation/records/<name>.md`), the definitions and the `CHANGELOG.md` entries. How curation works here: the
+  knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
+  [`knowledge-data-foundry`](../../../.claude/skills/knowledge-data-foundry/SKILL.md).
 
 ## Rebuild
 
 124 datasets were built on 2026-10-06 from the definitions in this folder (the UUIDs below; a 125th, `mutual_funds_india`,
 was retired on 2026-10-14), as container format 2 (`container.format_version == 2`); 15 of them were rebuilt on
-2026-10-14 after the review of their task summaries (`CHANGELOG.md`). The 53 definitions added on 2026-10-07 are not built yet ("not built"
-in the table). To rebuild one, from the repository root:
+2026-10-14 after the review of their task summaries (`CHANGELOG.md`). The definitions added since are not built yet, and a
+definition edited after its build shows "not built" in the table until its next build. To rebuild one, from the
+repository root:
 
 ```bash
 .venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/<name>   # no save; rewrites README.md
@@ -30,16 +32,17 @@ in the table). To rebuild one, from the repository root:
   of these, with a manifest, is kept outside the repository (made on 2026-10-02; it also holds the inputs of the
   retired telemonitoring, fitness_club and parkinsons datasets).
 - To rebuild the whole folder, with the comparison against the previous build, the check from the traced inputs, the
-  backup and this table, follow the `/rebuild-working-copy` skill
-  ([`.claude/skills/rebuild-working-copy/SKILL.md`](../../../.claude/skills/rebuild-working-copy/SKILL.md)).
+  backup and this table, ask Claude to rebuild; it follows
+  [`rebuild.md`](../../../.claude/skills/knowledge-data-foundry/references/rebuild.md).
 - Build with the `build` extra installed (the repository's `.venv` has it). pandas 2.3 and pandas 3 give the same
   containers (checked on all datasets on 2026-10-06), and scikit-learn must stay below 1.8, which changes the grouped
   splits. The rows and splits are the same on every machine; a numpy log or exp can differ in its last bit between
   CPUs, so a dataset with a log-scaled target may get another checksum elsewhere.
-- `.claude/skills/verify-dataset/scripts/task_probes.py --all --built` sweeps the built containers against dummy baselines (answer its flags with
-  `.claude/skills/verify-dataset/references/task_probes.md`; the decisions on this build are in the records and
-  `CHANGELOG.md`), and
-  `.claude/skills/verify-dataset/scripts/group_probes.py <name>` probes a grouped task.
+- `.claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built` sweeps the built containers against
+  dummy baselines (answer its flags with
+  [`task_probes.md`](../../../.claude/skills/knowledge-curation/references/task_probes.md); the decisions on this
+  build are in the records and `CHANGELOG.md`), and `.claude/skills/knowledge-data-foundry/scripts/group_probes.py
+  <name>` probes a grouped task.
 
 ## Datasets
 
@@ -70,7 +73,7 @@ not accepted in the definition.
 | [`bad_customer_detection`](bad_customer_detection/) | IID | 1,723 | 13 | 10 x 3 | not built |  |
 | [`bank_customer_churn`](bank_customer_churn/) | IID | 10,000 | 10 | 3 x 3 | not built |  |
 | [`bank_marketing`](bank_marketing/) | IID | 45,211 | 13 | 3 x 3 | `01a111fc-7c2d-7441-b859-646c9bfbf380` | `dataset_missing_value_sentinel` |
-| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,723 | 23 | 9 x 1 | not built |  |
+| [`bias_correction_r_bias_correction_r_2`](bias_correction_r_bias_correction_r_2/) | temporal | 7,648 | 23 | 9 x 1 | not built |  |
 | [`biogeographical_ancestry_prediction`](biogeographical_ancestry_prediction/) | IID | 607 | 102 | 20 x 3 | not built |  |
 | [`biomechanical_orthopaedic_prediction`](biomechanical_orthopaedic_prediction/) | IID | 310 | 6 | 20 x 3 | not built |  |
 | [`bioresponse`](bioresponse/) | IID | 3,751 | 1,776 | 3 x 3 | `01a111fc-4c0b-76f4-b01d-a4db8e120e35` |  |
@@ -78,23 +81,20 @@ not accepted in the definition.
 | [`blood_transfusion`](blood_transfusion/) | IID | 748 | 4 | 20 x 3 | `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`body_density_prediction`](body_density_prediction/) | IID | 252 | 13 | 20 x 3 | not built |  |
 | [`brazilian_ecommerce`](brazilian_ecommerce/) | temporal | 88,721 | 24 | 5 x 1 | not built |  |
-| [`breast_cancer_prediction`](breast_cancer_prediction/) | grouped | 39,998 | 10 | 3 x 3 | not built |  |
+| [`breast_cancer_prediction`](breast_cancer_prediction/) | IID | 36,714 | 10 | 3 x 3 | not built |  |
 | [`california_house_prices_2020`](california_house_prices_2020/) | temporal | 39,048 | 41 | 3 x 1 | `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` |  |
 | [`caracas_cervical_cancer`](caracas_cervical_cancer/) | IID | 750 | 30 | 10 x 3 | not built |  |
 | [`cardiotocography`](cardiotocography/) | grouped | 2,126 | 22 | 10 x 3 | not built | `dataset_constant_column` |
-| [`cdc_diabetes_health_indicators`](cdc_diabetes_health_indicators/) | IID | 253,680 | 21 | 3 x 3 | not built |  |
 | [`churn_telco_south_asia`](churn_telco_south_asia/) | IID | 2,000 | 13 | 10 x 3 | not built |  |
 | [`cirrhosis_patient_survival_prediction`](cirrhosis_patient_survival_prediction/) | IID | 304 | 17 | 20 x 3 | `01a13a7d-c2bd-721a-88c1-f86443866b1e` |  |
 | [`climate_model_weather_forecasting_1m`](climate_model_weather_forecasting_1m/) | temporal | 2,115,283 | 99 | 3 x 1 | not built |  |
 | [`clock_protein_toxicity`](clock_protein_toxicity/) | IID | 171 | 1,117 | 20 x 3 | not built |  |
-| [`coad_colon_adenocarcinoma`](coad_colon_adenocarcinoma/) | IID | 256 | 36,355 | 20 x 3 | not built |  |
 | [`coffee_rating_prediction`](coffee_rating_prediction/) | temporal | 2,369 | 12 | 13 x 1 | not built | `dataset_constant_column` |
 | [`coil_2000`](coil_2000/) | IID | 9,822 | 85 | 3 x 3 | `01a111fc-ceb4-7695-8b34-df7a285cfcb6` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
-| [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 89 | 4 x 1 | not built |  |
+| [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 92 | 4 x 1 | not built |  |
 | [`concrete_compressive_strength`](concrete_compressive_strength/) | grouped | 1,030 | 8 | 10 x 3 | `01a13a7d-c2ed-79de-abb8-3476f95e6667` | `dataset_duplicate_rows` |
 | [`consumer_complaints_1m`](consumer_complaints_1m/) | temporal | 1,811,452 | 12 | 3 x 1 | not built |  |
 | [`cooking_time_1m`](cooking_time_1m/) | temporal | 2,500,000 | 196 | 3 x 1 | not built |  |
-| [`corporate_credit_rating`](corporate_credit_rating/) | grouped | 2,020 | 28 | 10 x 3 | not built |  |
 | [`corporate_credit_rating_cat_data_set_ratings_raitings`](corporate_credit_rating_cat_data_set_ratings_raitings/) | IID | 197 | 6 | 20 x 3 | not built |  |
 | [`covertype`](covertype/) | IID | 581,012 | 14 | 1 x 3 | `01a111fc-5b2f-72b3-983a-85ec312c2e8f` |  |
 | [`credit_approval`](credit_approval/) | IID | 690 | 15 | 20 x 3 | not built |  |
@@ -138,7 +138,7 @@ not accepted in the definition.
 | [`hepatitis_c_prediction`](hepatitis_c_prediction/) | IID | 608 | 11 | 20 x 3 | not built |  |
 | [`hepatitis_survival_prediction`](hepatitis_survival_prediction/) | IID | 155 | 19 | 20 x 3 | not built |  |
 | [`hiva_agnostic`](hiva_agnostic/) | IID | 4,229 | 1,429 | 3 x 3 | `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` |  |
-| [`home_credit_default_risk`](home_credit_default_risk/) | IID | 307,507 | 504 | 3 x 3 | not built |  |
+| [`home_credit_default_risk`](home_credit_default_risk/) | IID | 307,507 | 709 | 3 x 3 | not built |  |
 | [`home_credit_default_stability_1m`](home_credit_default_stability_1m/) | temporal | 1,224,927 | 710 | 3 x 1 | not built |  |
 | [`homesite_quote_conversion`](homesite_quote_conversion/) | IID | 260,753 | 295 | 3 x 3 | `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` | `dataset_constant_column`, `dataset_missing_value_label` |
 | [`horse_colic_survival`](horse_colic_survival/) | IID | 344 | 20 | 20 x 3 | `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` |  |
@@ -160,7 +160,6 @@ not accepted in the definition.
 | [`labour_inspection_compliance`](labour_inspection_compliance/) | IID | 63,634 | 376 | 3 x 3 | not built | `dataset_constant_column` |
 | [`lending_club`](lending_club/) | temporal | 609,544 | 81 | 3 x 1 | not built |  |
 | [`lgd`](lgd/) | grouped | 2,545 | 2 | 10 x 3 | not built |  |
-| [`lgg_low_grade_glioma`](lgg_low_grade_glioma/) | IID | 247 | 21,076 | 20 x 3 | not built |  |
 | [`ljubljana_breast_cancer`](ljubljana_breast_cancer/) | IID | 286 | 9 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`ljubljana_primary_tumor`](ljubljana_primary_tumor/) | IID | 302 | 17 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`lung_cancer`](lung_cancer/) | IID | 197 | 12,600 | 20 x 3 | `01a111fa-f2d2-7673-a757-142728cdfd4c` | `dataset_missing_value_sentinel` |

@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: bias_correction_r_bias_correction_r_2
 container_format: 2
-checksum: v2:190c2d0b5fb27dde39cdd2790b8bb2d2efc89d7fc938306536516bec3145d0cc
+checksum: v2:07d8e9f7f0e78bead778bb27fae7fe339f8c3cebd4d58cec83eb786ada0d771c
 build: null
 build_stale: false
 data:
-  n_rows: 7723
+  n_rows: 7648
   n_features: 23
   dtypes:
     category: 1
@@ -31,8 +31,8 @@ splits:
   time_horizon: 7
   time_horizon_unit: days
   n_train:
-    min: 6185
-    max: 7527
+    min: 6110
+    max: 7452
   n_test:
     min: 149
     max: 175
@@ -54,9 +54,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Next_Tmin`, scored with `rmse` on temporal splits by `Date`. 7,723 rows and 23 features. Source: UCI (2020).
+Regression of `Next_Tmin`, scored with `rmse` on temporal splits by `Date`. 7,648 rows and 23 features. Source: UCI (2020).
 
-Not built yet. The current definition gives checksum `v2:190c2d0b5fb27dde39cdd2790b8bb2d2efc89d7fc938306536516bec3145d0cc`.
+Not built yet. The current definition gives checksum `v2:07d8e9f7f0e78bead778bb27fae7fe339f8c3cebd4d58cec83eb786ada0d771c`.
 
 ## In brief
 
@@ -121,7 +121,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | cho2020comparative,uci2020biascorrection |
-| rows x columns | 7,723 x 24 |
+| rows x columns | 7,648 x 24 |
 | task.target | Next_Tmin |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -164,7 +164,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 7,723 rows of the final frame (the oldest rows: the frame is sorted by `Date`); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 7,648 rows of the final frame (the oldest rows: the frame is sorted by `Date`); 12 of 24 columns, the target first. Cells are cut at 40 characters.
 
 | Next_Tmin | station | Date | Present_Tmax | Present_Tmin | LDAPS_RHmin | LDAPS_RHmax | LDAPS_Tmax_lapse | LDAPS_Tmin_lapse | LDAPS_WS | LDAPS_LH | LDAPS_CC1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -197,36 +197,45 @@ targets, the next day's minimum (`Next_Tmin`) and maximum (`Next_Tmax`) air temp
 - We drop the last two rows of the file: they have no station and no date and hold the minimum and the maximum
   of every column.
 - We drop the 27 rows without a target (both targets are missing together).
-- We keep missing features as missing (the LDAPS forecasts of all stations on three days, the observed extremes
-  of 60 other station-days): at prediction time a station or a model run can fail.
+- We drop the 75 station-days without an LDAPS run (2013-08-10, 2016-07-31 and 2016-08-20, all in train): the
+  task corrects the forecast, and without one there is nothing to correct. The observed extremes missing on 60
+  other station-days stay missing: a station can fail on the evening of a prediction.
 - Note: the targets are the AWS daily extremes, the present-day columns the extremes of hourly readings up to 21
   KST (Sec. 2.3). So a row's label is close to, and mostly below, the next day's `Present_Tmin` at the station,
   a value known only on the next day (decision table).
-- Note: the task probes flag no_spread and unstable; we keep the task. The best family beats the training mean
-  on 9 of 9 windows, the skill varies with the training mean's error between weeks, and a window of 6-7 days
-  separates strong methods little. Once tuned results exist, check that tuned single models beat the per-station
-  MOS.
+- Note: the task probes flag no_spread and unstable; we keep the task. Untuned LightGBM beats the training mean
+  on 8 of 9 windows (skill 0.61-0.96); in the oldest, 2017-06-30 to 07-06, the training mean is already within
+  RMSE 1.11 and LightGBM falls just below it (skill -0.07). The skill varies with the training mean's error
+  between weeks, and a window of 6-7 days separates strong methods little. Once tuned results exist, check
+  that tuned single models beat the per-station MOS.
 - Anomaly: UCI and the paper's Table 1 give `LDAPS_CC1`-`LDAPS_CC4` (cloud cover) and `LDAPS_PPT1`-`LDAPS_PPT4`
   (precipitation) in "%", but the cloud covers lie between 0 and 0.98. We keep the values as published.
 - Note: the paper scores with R^2, bias and RMSE (Sec. 3.3); we keep the default RMSE.
 
 ## Splits
 
-Weather models are refit often (one to two weeks at most, as the curators argue for climate_model_weather_forecasting), so a bias-correction model is refit and then used every evening for 7 days. 9 test windows of 7 days walk back from 2017-08-30, newest first, and cover the whole last summer (2017-06-30 to 2017-08-30; the oldest window holds 6 days). Train is every earlier station-day from 2013-06-30 up to a gap of 1 day: the label of the day before a window is the minimum of the window's first day, which is complete only at midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25 stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2 protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
+Weather models are refit often (one to two weeks at most, as the curators argue for
+climate_model_weather_forecasting), so a bias-correction model is refit and then used every evening for 7 days.
+9 test windows of 7 days walk back from 2017-08-30, newest first, and cover the whole last summer (2017-06-30 to
+2017-08-30; the oldest window holds 6 days). Train is every earlier station-day from 2013-06-30 up to a gap of 1
+day: the label of the day before a window is the minimum of the window's first day, which is complete only at
+midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25
+stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2
+protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 6,185 to 7,527 rows, test 149 to 175 rows. Prediction horizon: 7 days.
+9 repeat(s) x 1 fold(s) with seed 4267; train 6,110 to 7,452 rows, test 149 to 175 rows. Prediction horizon: 7 days.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 7527 | 173 | 2013-06-30 00:00:00 | 2017-08-22 00:00:00 | 2017-08-24 00:00:00 | 2017-08-30 00:00:00 |
-| 1 | 0 | 7353 | 172 | 2013-06-30 00:00:00 | 2017-08-15 00:00:00 | 2017-08-17 00:00:00 | 2017-08-23 00:00:00 |
-| 2 | 0 | 7181 | 172 | 2013-06-30 00:00:00 | 2017-08-08 00:00:00 | 2017-08-10 00:00:00 | 2017-08-16 00:00:00 |
-| 3 | 0 | 7006 | 175 | 2013-06-30 00:00:00 | 2017-08-01 00:00:00 | 2017-08-03 00:00:00 | 2017-08-09 00:00:00 |
-| 4 | 0 | 6832 | 174 | 2013-06-30 00:00:00 | 2017-07-25 00:00:00 | 2017-07-27 00:00:00 | 2017-08-02 00:00:00 |
-| 5 | 0 | 6657 | 175 | 2013-06-30 00:00:00 | 2017-07-18 00:00:00 | 2017-07-20 00:00:00 | 2017-07-26 00:00:00 |
-| 6 | 0 | 6482 | 175 | 2013-06-30 00:00:00 | 2017-07-11 00:00:00 | 2017-07-13 00:00:00 | 2017-07-19 00:00:00 |
-| 7 | 0 | 6309 | 173 | 2013-06-30 00:00:00 | 2017-07-04 00:00:00 | 2017-07-06 00:00:00 | 2017-07-12 00:00:00 |
-| 8 | 0 | 6185 | 149 | 2013-06-30 00:00:00 | 2016-08-30 00:00:00 | 2017-06-30 00:00:00 | 2017-07-05 00:00:00 |
+| 0 | 0 | 7452 | 173 | 2013-06-30 00:00:00 | 2017-08-22 00:00:00 | 2017-08-24 00:00:00 | 2017-08-30 00:00:00 |
+| 1 | 0 | 7278 | 172 | 2013-06-30 00:00:00 | 2017-08-15 00:00:00 | 2017-08-17 00:00:00 | 2017-08-23 00:00:00 |
+| 2 | 0 | 7106 | 172 | 2013-06-30 00:00:00 | 2017-08-08 00:00:00 | 2017-08-10 00:00:00 | 2017-08-16 00:00:00 |
+| 3 | 0 | 6931 | 175 | 2013-06-30 00:00:00 | 2017-08-01 00:00:00 | 2017-08-03 00:00:00 | 2017-08-09 00:00:00 |
+| 4 | 0 | 6757 | 174 | 2013-06-30 00:00:00 | 2017-07-25 00:00:00 | 2017-07-27 00:00:00 | 2017-08-02 00:00:00 |
+| 5 | 0 | 6582 | 175 | 2013-06-30 00:00:00 | 2017-07-18 00:00:00 | 2017-07-20 00:00:00 | 2017-07-26 00:00:00 |
+| 6 | 0 | 6407 | 175 | 2013-06-30 00:00:00 | 2017-07-11 00:00:00 | 2017-07-13 00:00:00 | 2017-07-19 00:00:00 |
+| 7 | 0 | 6234 | 173 | 2013-06-30 00:00:00 | 2017-07-04 00:00:00 | 2017-07-06 00:00:00 | 2017-07-12 00:00:00 |
+| 8 | 0 | 6110 | 149 | 2013-06-30 00:00:00 | 2016-08-30 00:00:00 | 2017-06-30 00:00:00 | 2017-07-05 00:00:00 |
 
 ## Decisions
 
@@ -243,7 +252,7 @@ Most of the target's variance lies between days, so a random split would train o
 
 ### 2. Next_Tmin is the target; Next_Tmax is dropped
 
-The v2 task holds one target. For the minimum, the mean of untuned CatBoost, LightGBM and ridge (RMSE 0.779) beats the best per-station MOS (0.823) on 7 of the 9 windows; for the maximum, MOS on the forecast alone (1.575) beats every untuned model (1.583-1.710) and their mean (1.601). The maximum is observed on the next day, after the prediction point, so it cannot stay as a feature.
+The v2 task holds one target. For the minimum, the mean of untuned CatBoost, LightGBM and ridge (RMSE 0.785) beats the best per-station MOS (0.823) on 7 of the 9 windows; for the maximum, MOS on the forecast alone (1.575) beats every untuned model (1.587-1.676) and ties their mean (1.578). The maximum is observed on the next day, after the prediction point, so it cannot stay as a feature.
 
 | LDAPS forecast | Next_Tmin | Next_Tmax |
 |---|---|---|
@@ -272,7 +281,7 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 | 7 days x 9, gap 1 day (shipped) | 9 | 2017-06-30 | 62 | 149-175 | 80%-97% |
 | 7 days x 9, no gap | 9 | 2017-06-30 | 62 | 149-175 | 80%-98% |
 | 14 days x 9 walking back, gap 1 day | 5 | 2017-06-30 | 62 | 149-349 | 80%-95% |
-| 14 days x 9, cutoffs in 2016 and 2017, gap 1 day | 9 | 2016-07-06 | 118 | 149-350 | 62%-95% |
+| 14 days x 9, cutoffs in 2016 and 2017, gap 1 day | 9 | 2016-07-06 | 116 | 149-350 | 62%-95% |
 
 ## Bundle checks
 
@@ -289,28 +298,28 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | station | category | 0 | 0 | 25 | 1, 2, 3, 4, 9, 14, 17, 13, 10, 23 |
-| Date | datetime64\[ns\] | 0 | 0 | 310 | 2017-08-30 00:00:00, 2013-06-30 00:00:00, 2013-07-01 00:00:00, 2013-07-02 00:00… |
-| LDAPS_RHmin | float64 | 75 | 0.97 | 7645 | 51.8106, 71.6581, 77.0303, 48.5949, 44.2931, 44.9316, 51.6498, 44.8055, 42.2436… |
-| LDAPS_RHmax | float64 | 75 | 0.97 | 7637 | 91.8782, 91.2065, 85.8637, 96.0584, 91.7761, 92.531, 88.9382, 99.252, 88.8766, … |
-| LDAPS_Tmax_lapse | float64 | 75 | 0.97 | 7648 | 22.7738, 22.2232, 22.9253, 22.1796, 21.9683, 21.4139, 23.655, 22.7078, 22.6979,… |
-| LDAPS_Tmin_lapse | float64 | 75 | 0.97 | 7648 | 15.906, 15.955, 15.9721, 16.3967, 14.8925, 15.2561, 16.4708, 16.3501, 15.2971, … |
-| LDAPS_WS | float64 | 75 | 0.97 | 7648 | 4.4977, 4.7645, 4.3398, 4.1573, 4.1508, 3.631, 4.4507, 4.5706, 4.3527, 6.894 |
-| LDAPS_LH | float64 | 75 | 0.97 | 7648 | 13.2751, 37.7862, 33.3929, 58.3085, 53.2461, 73.2566, 7.9231, 64.0054, 38.5391,… |
-| LDAPS_CC1 | float64 | 75 | 0.97 | 7543 | 0.0, 0.54, 0.3226, 0.3606, 0.3679, 0.2134, 0.3335, 0.3165, 0.3481, 0.3502 |
-| LDAPS_CC2 | float64 | 75 | 0.97 | 7555 | 0.0, 0.0038, 0.0374, 0.0087, 0.0098, 0.0276, 0.0119, 0.022, 0.0212, 0.0063 |
-| LDAPS_CC3 | float64 | 75 | 0.97 | 7572 | 0.0, 0.0009, 0.0, 0.2948, 0.3495, 0.3593, 0.2896, 0.1257, 0.038, 0.0601 |
-| LDAPS_CC4 | float64 | 75 | 0.97 | 7497 | 0.0, 0.0026, 0.0017, 0.0052, 0.0, 0.0, 0.0001, 0.0001, 0.0043, 0.373 |
-| LDAPS_PPT1 | float64 | 75 | 0.97 | 2798 | 0.0, 0.002, 0.0026, 0.0017, 0.0005, 0.0022, 0.0001, 0.0006, 0.0, 0.2404 |
-| LDAPS_PPT2 | float64 | 75 | 0.97 | 2498 | 0.0, 0.002, 0.0, 0.0008, 0.0017, 0.0, 0.0014, 0.0026, 0.0005, 0.0001 |
-| LDAPS_PPT3 | float64 | 75 | 0.97 | 2345 | 0.0, 0.002, 0.0009, 0.0026, 0.0003, 0.0002, 0.0017, 0.0, 0.0001, 0.0009 |
-| LDAPS_PPT4 | float64 | 75 | 0.97 | 1912 | 0.0, 0.002, 0.0005, 0.0011, 0.0011, 0.0019, 0.0, 0.0007, 0.5004, 0.4046 |
-| Present_Tmax | float64 | 60 | 0.78 | 167 | 31.4, 29.4, 29.1, 29.7, 29.2, 30.6, 31.9, 30.0, 30.3, 32.2 |
+| Date | datetime64\[ns\] | 0 | 0 | 307 | 2017-08-30 00:00:00, 2013-06-30 00:00:00, 2013-07-01 00:00:00, 2013-07-02 00:00… |
+| Present_Tmax | float64 | 60 | 0.78 | 167 | 31.4, 29.4, 29.1, 30.6, 29.2, 31.9, 29.7, 30.3, 30.0, 32.2 |
 | Present_Tmin | float64 | 60 | 0.78 | 155 | 24.0, 23.8, 23.5, 23.1, 23.3, 23.7, 23.6, 23.9, 23.0, 23.4 |
+| LDAPS_RHmin | float64 | 0 | 0 | 7645 | 51.8106, 71.6581, 77.0303, 48.5949, 44.2931, 44.9316, 51.6498, 44.8055, 42.2436… |
+| LDAPS_RHmax | float64 | 0 | 0 | 7637 | 91.8782, 91.2065, 85.8637, 96.0584, 91.7761, 92.531, 88.9382, 99.252, 88.8766, … |
+| LDAPS_Tmax_lapse | float64 | 0 | 0 | 7648 | 22.7738, 22.2232, 22.9253, 22.1796, 21.9683, 21.4139, 23.655, 22.7078, 22.6979,… |
+| LDAPS_Tmin_lapse | float64 | 0 | 0 | 7648 | 15.906, 15.955, 15.9721, 16.3967, 14.8925, 15.2561, 16.4708, 16.3501, 15.2971, … |
+| LDAPS_WS | float64 | 0 | 0 | 7648 | 4.4977, 4.7645, 4.3398, 4.1573, 4.1508, 3.631, 4.4507, 4.5706, 4.3527, 6.894 |
+| LDAPS_LH | float64 | 0 | 0 | 7648 | 13.2751, 37.7862, 33.3929, 58.3085, 53.2461, 73.2566, 7.9231, 64.0054, 38.5391,… |
+| LDAPS_CC1 | float64 | 0 | 0 | 7543 | 0.0, 0.54, 0.3226, 0.3606, 0.3679, 0.2134, 0.3335, 0.3165, 0.3481, 0.3502 |
+| LDAPS_CC2 | float64 | 0 | 0 | 7555 | 0.0, 0.0038, 0.0374, 0.0087, 0.0098, 0.0276, 0.0119, 0.022, 0.0212, 0.0063 |
+| LDAPS_CC3 | float64 | 0 | 0 | 7572 | 0.0, 0.0009, 0.0, 0.2948, 0.3495, 0.3593, 0.2896, 0.1257, 0.038, 0.0601 |
+| LDAPS_CC4 | float64 | 0 | 0 | 7497 | 0.0, 0.0026, 0.0017, 0.0052, 0.0, 0.0, 0.0001, 0.0001, 0.0043, 0.373 |
+| LDAPS_PPT1 | float64 | 0 | 0 | 2798 | 0.0, 0.002, 0.0026, 0.0017, 0.0005, 0.0022, 0.0001, 0.0006, 0.0, 0.2404 |
+| LDAPS_PPT2 | float64 | 0 | 0 | 2498 | 0.0, 0.002, 0.0, 0.0008, 0.0017, 0.0, 0.0014, 0.0026, 0.0005, 0.0001 |
+| LDAPS_PPT3 | float64 | 0 | 0 | 2345 | 0.0, 0.002, 0.0009, 0.0026, 0.0003, 0.0002, 0.0017, 0.0, 0.0001, 0.0009 |
+| LDAPS_PPT4 | float64 | 0 | 0 | 1912 | 0.0, 0.002, 0.0005, 0.0011, 0.0011, 0.0019, 0.0, 0.0007, 0.5004, 0.4046 |
 | lat | float64 | 0 | 0 | 12 | 37.5776, 37.5507, 37.4967, 37.6046, 37.6181, 37.5237, 37.5372, 37.4697, 37.5102… |
 | lon | float64 | 0 | 0 | 25 | 126.891, 127.04, 127.058, 127.022, 126.826, 126.955, 127.083, 126.927, 127.032,… |
 | DEM | float64 | 0 | 0 | 25 | 15.5876, 26.298, 33.3068, 45.716, 50.9312, 208.507, 59.8324, 30.968, 44.7624, 2… |
 | Slope | float64 | 0 | 0 | 25 | 0.1554, 0.5721, 0.2661, 2.5348, 0.4125, 5.1782, 2.6865, 0.618, 0.5141, 2.785 |
-| Solar radiation | float64 | 0 | 0 | 1575 | 4434.2778, 4371.6846, 4440.394, 4495.4736, 4459.0234, 4614.7612, 4554.9653, 444… |
+| Solar radiation | float64 | 0 | 0 | 1575 | 4438.3735, 4445.646, 4458.8247, 4448.519, 4451.3452, 4435.6118, 4463.7944, 4441… |
 | Next_Tmin | float64 | 0 | 0 | 157 | 23.5, 23.4, 24.0, 23.2, 23.8, 23.9, 23.7, 22.1, 23.6, 23.1 |
 
 </details>
@@ -319,7 +328,7 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.396 | -0.784 | 6.166 | 0.013 | log | 68353.9 | 3.47376e+16 | exponential |
+| 0 | 0 | 0 | -0.393 | -0.781 | 6.153 | 0.013 | log | 67689.4 | 7.47224e+15 | exponential |
 
 ### Numeric features
 
@@ -328,8 +337,8 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Present_Tmax | 7663 | 29.7698 | 2.96771 | 20 | 37.6 |
-| Present_Tmin | 7663 | 23.2253 | 2.41022 | 11.3 | 29.9 |
+| Present_Tmax | 7588 | 29.7484 | 2.9674 | 20 | 37.6 |
+| Present_Tmin | 7588 | 23.1958 | 2.40088 | 11.3 | 29.9 |
 | LDAPS_RHmin | 7648 | 56.7408 | 14.643 | 19.7947 | 98.5247 |
 | LDAPS_RHmax | 7648 | 88.3715 | 7.1909 | 58.9363 | 100 |
 | LDAPS_Tmax_lapse | 7648 | 29.6167 | 2.94203 | 17.625 | 38.5423 |
@@ -344,12 +353,12 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 | LDAPS_PPT2 | 7648 | 0.481598 | 1.74472 | 0 | 21.6217 |
 | LDAPS_PPT3 | 7648 | 0.275122 | 1.14448 | 0 | 15.8412 |
 | LDAPS_PPT4 | 7648 | 0.267333 | 1.19136 | 0 | 16.6555 |
-| lat | 7723 | 37.5448 | 0.0503699 | 37.4562 | 37.645 |
-| lon | 7723 | 126.991 | 0.079318 | 126.826 | 127.135 |
-| DEM | 7723 | 61.9138 | 54.3088 | 12.37 | 212.335 |
-| Slope | 7723 | 1.25837 | 1.37072 | 0.0985 | 5.1782 |
-| Solar radiation | 7723 | 5342.11 | 429.072 | 4329.52 | 5992.9 |
-| Next_Tmin | 7723 | 22.9328 | 2.48318 | 11.3 | 29.8 |
+| lat | 7648 | 37.5448 | 0.0503703 | 37.4562 | 37.645 |
+| lon | 7648 | 126.991 | 0.0793172 | 126.826 | 127.135 |
+| DEM | 7648 | 61.9144 | 54.3094 | 12.37 | 212.335 |
+| Slope | 7648 | 1.25838 | 1.37073 | 0.0985 | 5.1782 |
+| Solar radiation | 7648 | 5344.26 | 429.903 | 4329.52 | 5992.9 |
+| Next_Tmin | 7648 | 22.9108 | 2.48048 | 11.3 | 29.8 |
 
 </details>
 
@@ -357,16 +366,16 @@ One- or two-week windows follow what the curators argue for weather (climate_mod
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Date | 1 | 2017-08-30 00:00:00 | 25 | 0.32 |
-| Date | 2 | 2013-06-30 00:00:00 | 25 | 0.32 |
-| Date | 3 | 2013-07-01 00:00:00 | 25 | 0.32 |
-| Date | 4 | 2013-07-02 00:00:00 | 25 | 0.32 |
-| Date | 5 | 2013-07-03 00:00:00 | 25 | 0.32 |
-| station | 1 | 1 | 310 | 4.01 |
-| station | 2 | 2 | 310 | 4.01 |
-| station | 3 | 3 | 310 | 4.01 |
-| station | 4 | 4 | 310 | 4.01 |
-| station | 5 | 9 | 310 | 4.01 |
+| Date | 1 | 2017-08-30 00:00:00 | 25 | 0.33 |
+| Date | 2 | 2013-06-30 00:00:00 | 25 | 0.33 |
+| Date | 3 | 2013-07-01 00:00:00 | 25 | 0.33 |
+| Date | 4 | 2013-07-02 00:00:00 | 25 | 0.33 |
+| Date | 5 | 2013-07-03 00:00:00 | 25 | 0.33 |
+| station | 1 | 1 | 307 | 4.01 |
+| station | 2 | 2 | 307 | 4.01 |
+| station | 3 | 3 | 307 | 4.01 |
+| station | 4 | 4 | 307 | 4.01 |
+| station | 5 | 9 | 307 | 4.01 |
 
 ## Build
 

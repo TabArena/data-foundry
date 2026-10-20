@@ -7,15 +7,13 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-tags:
-- New IID
 collections:
 - New (BeyondArena)
 original_source: Website
 year: '2016'
 domain: finance
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:

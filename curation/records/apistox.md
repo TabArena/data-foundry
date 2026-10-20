@@ -15,7 +15,6 @@ original_source: Other
 year: '2024'
 domain: biology & life sciences
 required_split:
-- Custom
 - Temporal (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table

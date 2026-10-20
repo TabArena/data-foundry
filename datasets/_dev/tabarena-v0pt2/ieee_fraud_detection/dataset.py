@@ -52,6 +52,7 @@ class IeeeFraudDetection(AbstractCuratedDataset):
     domain = "finance"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/competitions/ieee-fraud-detection/overview"
+    data_tags = ("Anonymized",)
     license = "non-commercial purposes only, including academic research"
     download_description = r"""
         kaggle competitions download -c ieee-fraud-detection -p local-data-warehouse/ieee_fraud_detection \

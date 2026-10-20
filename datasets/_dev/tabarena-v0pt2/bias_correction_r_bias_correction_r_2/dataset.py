@@ -133,15 +133,17 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         - We drop the last two rows of the file: they have no station and no date and hold the minimum and the maximum
           of every column.
         - We drop the 27 rows without a target (both targets are missing together).
-        - We keep missing features as missing (the LDAPS forecasts of all stations on three days, the observed extremes
-          of 60 other station-days): at prediction time a station or a model run can fail.
+        - We drop the 75 station-days without an LDAPS run (2013-08-10, 2016-07-31 and 2016-08-20, all in train): the
+          task corrects the forecast, and without one there is nothing to correct. The observed extremes missing on 60
+          other station-days stay missing: a station can fail on the evening of a prediction.
         - Note: the targets are the AWS daily extremes, the present-day columns the extremes of hourly readings up to 21
           KST (Sec. 2.3). So a row's label is close to, and mostly below, the next day's `Present_Tmin` at the station,
           a value known only on the next day (decision table).
-        - Note: the task probes flag no_spread and unstable; we keep the task. The best family beats the training mean
-          on 9 of 9 windows, the skill varies with the training mean's error between weeks, and a window of 6-7 days
-          separates strong methods little. Once tuned results exist, check that tuned single models beat the per-station
-          MOS.
+        - Note: the task probes flag no_spread and unstable; we keep the task. Untuned LightGBM beats the training mean
+          on 8 of 9 windows (skill 0.61-0.96); in the oldest, 2017-06-30 to 07-06, the training mean is already within
+          RMSE 1.11 and LightGBM falls just below it (skill -0.07). The skill varies with the training mean's error
+          between weeks, and a window of 6-7 days separates strong methods little. Once tuned results exist, check
+          that tuned single models beat the per-station MOS.
         - Anomaly: UCI and the paper's Table 1 give `LDAPS_CC1`-`LDAPS_CC4` (cloud cover) and `LDAPS_PPT1`-`LDAPS_PPT4`
           (precipitation) in "%", but the cloud covers lie between 0 and 0.98. We keep the values as published.
         - Note: the paper scores with R^2, bias and RMSE (Sec. 3.3); we keep the default RMSE.
@@ -153,16 +155,16 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
 
     # Splits
     temporal = Temporal(on="Date", splits=TemporalSplits(window=7, unit="days", n_windows=9, gap=1))
-    splits_comment = (
-        "Weather models are refit often (one to two weeks at most, as the curators argue for "
-        "climate_model_weather_forecasting), so a bias-correction model is refit and then used every evening for 7 days. "
-        "9 test windows of 7 days walk back from 2017-08-30, newest first, and cover the whole last summer (2017-06-30 to "
-        "2017-08-30; the oldest window holds 6 days). Train is every earlier station-day from 2013-06-30 up to a gap of 1 "
-        "day: the label of the day before a window is the minimum of the window's first day, which is complete only at "
-        "midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25 "
-        "stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2 "
-        "protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3)."
-    )
+    splits_comment = """
+        Weather models are refit often (one to two weeks at most, as the curators argue for
+        climate_model_weather_forecasting), so a bias-correction model is refit and then used every evening for 7 days.
+        9 test windows of 7 days walk back from 2017-08-30, newest first, and cover the whole last summer (2017-06-30 to
+        2017-08-30; the oldest window holds 6 days). Train is every earlier station-day from 2013-06-30 up to a gap of 1
+        day: the label of the day before a window is the minimum of the window's first day, which is complete only at
+        midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25
+        stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2
+        protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
+    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)
@@ -173,7 +175,8 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         df["station"] = df["station"].astype(int)
         # The second target is observed on the next day, after the prediction point.
         df = drop_columns(df, ["Next_Tmax"])
-        return df[df[self.target].notna()]
+        # Rows without a target, and the three days without an LDAPS run: with no forecast there is nothing to correct.
+        return df[df[self.target].notna() & df[FORECAST[self.target]].notna()]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(categorical=["station"], datetime={"Date": "%Y-%m-%d"})
@@ -273,9 +276,9 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
             Decision(
                 "Next_Tmin is the target; Next_Tmax is dropped",
                 "The v2 task holds one target. For the minimum, the mean of untuned CatBoost, LightGBM and ridge (RMSE "
-                "0.779) beats the best per-station MOS (0.823) on 7 of the 9 windows; for the maximum, MOS on the "
-                "forecast alone (1.575) beats every untuned model (1.583-1.710) and their mean (1.601). The maximum is "
-                "observed on the next day, after the prediction point, so it cannot stay as a feature.",
+                "0.785) beats the best per-station MOS (0.823) on 7 of the 9 windows; for the maximum, MOS on the "
+                "forecast alone (1.575) beats every untuned model (1.587-1.676) and ties their mean (1.578). The "
+                "maximum is observed on the next day, after the prediction point, so it cannot stay as a feature.",
                 pd.DataFrame(corrections).rename_axis("LDAPS forecast"),
             ),
             Decision(

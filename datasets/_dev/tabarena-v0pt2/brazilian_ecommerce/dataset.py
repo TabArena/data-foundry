@@ -134,7 +134,7 @@ class BrazilianEcommerce(AbstractCuratedDataset):
     splits_comment = """
         A model refit at the start of each month predicts the delivery time of the orders placed during that month. It trains on the orders placed at least one month before the refit whose delivery is known by then. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
     """
-    temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months")
+    temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
     accepted_check_warnings = {
         "splits_rows_unused": "Four orders placed in January and February 2018 (148 to 208 days to delivery) are in no "
         "split: they were placed before the oldest test window and were still in transit when the newest one started.",

@@ -13,7 +13,6 @@ original_source: UCI
 year: '2009'
 required_split:
 - Random (IID)
-- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=287

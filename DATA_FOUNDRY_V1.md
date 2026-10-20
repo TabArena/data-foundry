@@ -89,7 +89,7 @@ verify_saved_container(save_path, container=curated).raise_if_errors()
 
 ## Checking a shipped container
 
-For a shipped BeyondArena dataset (the `/verify-dataset` skill covers v2 definitions only):
+For a shipped BeyondArena dataset (the re-check of `/add-dataset` covers v2 definitions only):
 
 1. **Inputs.** The notebook is the record's `notebook_path`. Use it rather than guessing
    `datasets/**/<name>/<name>.ipynb`: a sibling such as `<name>_1m.ipynb` or `<name>_clf.ipynb` may be the run that
@@ -105,10 +105,10 @@ For a shipped BeyondArena dataset (the `/verify-dataset` skill covers v2 definit
    report = run_bundle_checks(BEYOND_ARENA.get_dataset("<name>"))   # prints the report
    ```
 
-   For the whole collection: `.venv/bin/python .claude/skills/verify-dataset/scripts/check_collection_bundles.py
+   For the whole collection: `.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/check_collection_bundles.py
    --collection BeyondArena --examples 5`. The leak, task and group probes run on v2 definitions; for a shipped
    container, run them on its v2 folder when the splits match, or the same probes by hand
-   ([`leak_checks.md`](.claude/skills/check-candidate/references/leak_checks.md)).
+   ([`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md)).
 3. **Pointer and pin.** The record's `notebook_path` names the notebook under the tree it ships from
    (`datasets/beyond_iid/`, never `datasets/_dev/`), and the notebook's saved output carries the UUID that
    `final_uuid_list.py` pins. A mismatch means the record points at the wrong run, or the notebook was re-run after

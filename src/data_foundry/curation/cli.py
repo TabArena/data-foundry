@@ -3,7 +3,7 @@
 Subcommands::
 
     data-foundry-curation serve                         # local editing dashboard
-    data-foundry-curation build-site OUT_DIR            # read-only static site (GitHub Pages)
+    data-foundry-curation build-site OUT_DIR            # read-only static site + guidelines (GitHub Pages)
     data-foundry-curation validate                      # check records against the vocab
     data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path and v2_path
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|parquet)
@@ -16,10 +16,11 @@ Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
 from data_foundry.curation import exporter
-from data_foundry.curation._paths import records_dir
+from data_foundry.curation._paths import records_dir, skills_dir
 from data_foundry.curation.app import serve
 from data_foundry.curation.notebooks import sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import load_vocabularies
@@ -35,7 +36,13 @@ def _cmd_serve(args: argparse.Namespace) -> int:
 
 def _cmd_build_site(args: argparse.Namespace) -> int:
     out = build_site(args.output, args.records_dir)
-    print(f"Built read-only static site in {out}/ (index.html, schema.json, records.json).")
+    n_docs = len(json.loads((out / "docs" / "manifest.json").read_text(encoding="utf-8"))["docs"])
+    print(
+        f"Built read-only static site in {out}/ (index.html, guidelines.html, schema.json, records.json, "
+        f"docs/manifest.json + {n_docs} guideline markdown files)."
+    )
+    if not n_docs:
+        print(f"warning: no guideline files under {skills_dir()}; the Guidelines page links to GitHub instead.")
     return 0
 
 
@@ -113,7 +120,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--strict", action="store_true", help="Exit non-zero if any value is unmapped.")
     p_validate.set_defaults(func=_cmd_validate)
 
-    p_sync = sub.add_parser("sync-notebooks", help="Refresh each record's notebook_path and v2_path from the datasets tree.")
+    p_sync = sub.add_parser(
+        "sync-notebooks", help="Refresh each record's notebook_path and v2_path from the datasets tree."
+    )
     p_sync.add_argument("--check", action="store_true", help="Report drift and exit non-zero instead of writing.")
     p_sync.set_defaults(func=_cmd_sync_notebooks)
 

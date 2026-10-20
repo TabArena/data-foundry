@@ -33,6 +33,8 @@ used in the TabPFN-Wide paper. from their download instructions: to map the meth
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Synovial sarcoma has 10 rows, 3-4 per test fold. They are 5% of the test rows and 6.5% of a random forest's log loss (0.64 against 1.41 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+CC (2026-10-19, Lennart): for the next pass, rebuild the methylation block from the GDC's per-sample beta values: the source kept 5,000 probes, by our notes chosen by variance over all patients and imputed with k-nearest neighbours over all patients. Kept as is until then.
+
 ## Reference
 
 N. Rappoport and R. Shamir. Multi-omic and multi-view clustering algorithms: review and cancer benchmark. Nucleic Acids Research, 46(20):10546–10562, Oct 2018. URL https://doi. org/10.1093/nar/gky889.

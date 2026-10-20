@@ -42,7 +42,7 @@ class FieldSpec:
     label: str
     """Human label, matching the original spreadsheet column where applicable."""
     kind: str
-    """One of ``"text"``, ``"select"``, ``"multiselect"``, ``"links"``, ``"body"``."""
+    """One of ``"text"``, ``"number"``, ``"select"``, ``"multiselect"``, ``"links"``, ``"body"``."""
     vocab: str | None = None
     """Vocabulary key for ``select``/``multiselect`` fields (defaults to ``name``)."""
     help: str = ""
@@ -88,6 +88,15 @@ FIELDS: tuple[FieldSpec, ...] = (
         "Suggestion",
         "select",
         help="What we suggest for the dataset right now; earlier verdicts can change over time.",
+    ),
+    FieldSpec(
+        "priority",
+        "Priority",
+        "number",
+        help=(
+            "How urgently a curator should verify the screening and send the record to /add-dataset: 5 first, 1 last. "
+            "Set by /screen-candidates; a rejected record has none."
+        ),
     ),
     FieldSpec("decision_markers", "Decision Markers", "multiselect", help="Reasons / decision flags."),
     FieldSpec("tags", "Prio Tag", "multiselect", help="Tags to determine the priority of investigating the dataset."),
@@ -173,6 +182,9 @@ class CurationRecord:
     """The curator who holds the record's WIP claim (:data:`WIP_STATUSES`). Set and cleared together with the WIP
     state; it reaches the main branch on its own, ahead of the work, so other curators see the claim."""
     suggestion: str | None = None
+    priority: int | None = pydantic.Field(default=None, ge=1, le=5)
+    """How urgently a curator should verify the screening and send the record to ``/add-dataset``: 5 first, 1 last.
+    Set by ``/screen-candidates`` and changed by the curator; a rejected record has none."""
     decision_markers: list[str] = pydantic.Field(default_factory=list)
     tags: list[str] = pydantic.Field(default_factory=list)
     collections: list[str] = pydantic.Field(default_factory=list)
@@ -278,7 +290,12 @@ class CurationRecord:
         lines = [f"CurationRecord: {self.unique_name}"]
         for f in FIELDS:
             value = getattr(self, f.name)
-            rendered = _one_line(value) if f.kind == "body" else (", ".join(value) if f.is_list else (value or "None"))
+            if f.kind == "body":
+                rendered = _one_line(value)
+            elif f.is_list:
+                rendered = ", ".join(value)
+            else:
+                rendered = "None" if value is None or value == "" else str(value)
             lines.append(f"  {f.label + ':':<34} {rendered}")
         if self.needs_review:
             lines.append(f"  {'needs_review:':<34} {', '.join(self.needs_review)}")

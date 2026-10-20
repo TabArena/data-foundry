@@ -12,7 +12,6 @@ suggestion: 'Yes'
 year: '2009'
 required_split:
 - Random (IID)
-- Grouped (NON-IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1111

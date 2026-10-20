@@ -36,6 +36,8 @@ Lennart: no objection
 
 Andrej: Fits criteria
 
+CC (2026-10-19, Lennart): the descriptors are min-max scaled over Kaggle's train and test molecules; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
+
 ## Reference
 
 https://www.kaggle.com/c/bioresponse

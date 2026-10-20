@@ -10,7 +10,6 @@ suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
 tags:
-- Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
 - New (BeyondArena)
@@ -19,7 +18,6 @@ year: '2024'
 domain: education
 required_split:
 - Grouped (NON-IID)
-- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:

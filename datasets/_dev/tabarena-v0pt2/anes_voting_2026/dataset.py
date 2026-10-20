@@ -70,6 +70,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         - We remove all samples with missing pre-election data, missing post-election data or a missing target.
         - We drop 327 that are missing from the last 9 years, which will be used for the test splits.
         - We drop all columns with questions that appear only in one year.
+        - These column choices look at every election year, the test years included: a pipeline choice that approximates the task (the questions of an election year are known before its vote), not a value computed from test rows; kept (Lennart, 2026-10-19).
         - The question columns partially stem from post-election interviews. However, there is no simple way to tell which is post-election. We therefore drop all questions for which "no Post IW" or "no post data" is listed as a reason for missing values in the codebook (February 5, 2026 version), and VCF1005, which is built from the post-election House vote ("R Voted" / "R did not vote"). Some additional questions are dropped based on common sense.
         - We encode gender as a categorical variable, because Other was introduced in 2016. However there are very few of these samples. This would actually require split-specific preprocessing.
         - For all features, we assign " " as missing values. Most features have additional types of missingness with own codes. We keep them as categories. That means NA only is assigned if a question was missing in a survey.

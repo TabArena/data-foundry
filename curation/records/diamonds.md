@@ -12,7 +12,6 @@ suggestion: 'Yes'
 year: '2007'
 required_split:
 - Random (IID)
-- Temporal (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=42225

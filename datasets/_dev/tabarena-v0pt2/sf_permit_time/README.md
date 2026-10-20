@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04
+checksum: v2:4acf0c8ad69710fbf574bbb1149195626c3b1d8bf5e3d4953fa6c79d0998c7aa
 build:
   uuid: 01a111fb-de83-7f11-84c7-a33ce2f7887a
   checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
@@ -44,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: 6
   time_horizon_unit: months
+  time_gap: 6
+  time_gap_unit: months
   n_train:
     min: 52851
     max: 89314
@@ -74,7 +76,7 @@ decisions:
 
 Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
 
-Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04`, so the build is stale. See [Build](#build).
+Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4acf0c8ad69710fbf574bbb1149195626c3b1d8bf5e3d4953fa6c79d0998c7aa`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -194,7 +196,7 @@ We start with the Building Permits table of the San Francisco open data portal (
 - Cohort: no miscellaneous permits (numbers starting with "M"); they are approved automatically or very fast and shift the distribution.
 - Cohort: issued or complete permits (Current Status), one per primary address (Primary Address Flag, as in the portal's deduplicated table) and with a location; a permit without one is a data error.
 - We drop the dates recorded after filing (Issued, Completed, First Construction Document, approved_date, Current Status and Last Permit Activity dates), Current Status, Revised Cost (most likely set at plan review), the ordinal codes of Permit Type and the construction types, Permit Creation Date (a system log date), ADU (deprecated from 2025), Record ID, Permit Number and the portal's load metadata.
-- Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions that occur more than 100 times. Nearly empty columns (some with 20 values) stay for the pipeline to handle.
+- Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions filed more than 100 times before 2020, the start of the oldest test window, so it counts no filing of a test window (until 2026-10-19 it counted the whole table). Nearly empty columns (some with 20 values) stay for the pipeline to handle.
 - Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
 - Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
 
@@ -202,7 +204,7 @@ We start with the Building Permits table of the San Francisco open data portal (
 
 A model refit at the start of each half-year predicts the days to issue of the permits filed in the next six months. It trains on the permits filed at least six months before the refit that were issued by then. The days to issue are known only once a permit is issued and have a long tail (p90 315 days), so many recent permits are still open at a refit and the issued ones are the fast ones. The gap leaves out the newest filings, and older permits still open at the refit are left out of that window's training rows (decision table). The test windows walk back from the second half of 2023, the newest filings kept (see curation_comments), while the training side keeps at least 50% of the rows: 8 windows, 2020-H1 to 2023-H2, newest first, with 52,851 to 89,314 training rows. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with the gap.
 
-8 repeat(s) x 1 fold(s) with seed 4267; train 52,851 to 89,314 rows, test 3,758 to 6,878 rows. Prediction horizon: 6 months.
+8 repeat(s) x 1 fold(s) with seed 4267; train 52,851 to 89,314 rows, test 3,758 to 6,878 rows. Prediction horizon: 6 months. Gap between train and test: 6 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -333,8 +335,8 @@ Accepted on purpose:
 | Description | 3 | re-roofing | 104 | 0.1 |
 | Description | 4 | reroofing. | 95 | 0.1 |
 | Description | 5 | soft story retrofit per sfebc chapter 4d: 2016 cebc appendix a-4 | 74 | 0.07 |
-| DescriptionIsStandardPhrase | 1 | False | 99082 | 99.23 |
-| DescriptionIsStandardPhrase | 2 | True | 765 | 0.77 |
+| DescriptionIsStandardPhrase | 1 | False | 99186 | 99.34 |
+| DescriptionIsStandardPhrase | 2 | True | 661 | 0.66 |
 | Existing Construction Type Description | 1 | wood frame (5) | 62303 | 62.4 |
 | Existing Construction Type Description | 2 | constr type 1 | 22366 | 22.4 |
 | Existing Construction Type Description | 3 | constr type 3 | 7427 | 7.44 |
@@ -396,4 +398,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8010ef7e857e9e727a7a4d54de041782d70c8eff8560a3280e6ae242bb297e04` |
+| stale | yes: the definition now gives checksum `v2:4acf0c8ad69710fbf574bbb1149195626c3b1d8bf5e3d4953fa6c79d0998c7aa` |

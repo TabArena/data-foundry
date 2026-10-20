@@ -1373,6 +1373,12 @@ def _check_temporal_metadata(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"`time_horizon={splits_metadata.time_horizon!r}` is set but the task has no `time_on` column.",
         )
+    if task.time_on is None and splits_metadata.time_gap is not None:
+        yield CheckResult(
+            "meta_time_gap_without_time_on",
+            "error",
+            f"`time_gap={splits_metadata.time_gap!r}` is set but the task has no `time_on` column.",
+        )
 
 
 @_check
