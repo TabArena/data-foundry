@@ -4,8 +4,7 @@ name: ApisTox
 checked_by:
 - Andrej
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

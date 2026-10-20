@@ -4,8 +4,7 @@ name: Caracas Cervical Cancer
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - New IID

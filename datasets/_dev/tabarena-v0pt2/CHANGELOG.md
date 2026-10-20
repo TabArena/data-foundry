@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-20 (eight shipped datasets are `DF: Yes`)
+
+The review work reached `main` with PR #11, so the records of the eight datasets Lennart shipped on the review page of
+the 2026-10-07 run, with no issue left open, take their final state: `DF: Yes`, the `WIP (DF)` claim released. No
+definition changed; none is built yet. `apistox`, `ashrae_great_energy_predictor_iii` (folder `_1m`),
+`bias_correction_r_bias_correction_r_2`, `brazilian_ecommerce`, `breast_cancer_prediction`, `caracas_cervical_cancer`,
+`churn_telco_south_asia`, `college_scorecard`. Every other dataset of that run still has a `REVIEW.md` (or, without a
+folder, an open-issues block in its record).
+
 ## 2026-10-20 (airfoil_self_noise grouped by setup, its year 1989)
 
 Lennart's marks on the review-panel pilot page, applied. The definition changed; not rebuilt (the README's build
