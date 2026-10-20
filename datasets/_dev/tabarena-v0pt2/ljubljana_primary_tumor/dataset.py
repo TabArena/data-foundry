@@ -30,10 +30,12 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         ),
         split="Random patients.",
         changes="We drop the primary sites with fewer than 10 patients.",
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The tissue type and the metastasis sites are known before the primary is found, and the label is the "
-            "site found. A model in use would also meet the rare sites we left out."
+            "site found. But the patients are not a series with metastases of unknown origin: their sites include lymph "
+            "nodes next to a known primary, and the tissue type is often missing (curation notes). A model in use "
+            "would also meet the rare sites we left out."
         ),
     )
 
@@ -61,6 +63,7 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI.
 
+        - Note: the patients are cancer patients whose primary was found, not a series with metastases of unknown origin. The metastasis sites include lymph nodes next to the primary (neck nodes in all 20 head and neck patients, armpit nodes in 21 of 24 breast patients), and the tissue type is missing for 45% of the lung patients (38 of 84) against 11% of the others, though a biopsy of a metastasis gives it.
         - We encode missing values as np.nan instead of "?".
         - We reverse the ordinal encoding of all features, adding the text back to the categories.
         - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.

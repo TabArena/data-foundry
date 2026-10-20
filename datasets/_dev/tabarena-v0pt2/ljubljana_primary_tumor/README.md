@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a
+checksum: v2:3c7ffe10866f97f7125f84bc67c6812a2c9d8c74882835a1150ec6f3c37f6d67
 build:
   uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
   checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3c7ffe10866f97f7125f84bc67c6812a2c9d8c74882835a1150ec6f3c37f6d67`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -82,7 +82,7 @@ Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the primary sites with fewer than 10 patients.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. A model in use would also meet the rare sites we left out.
+> **Use case fit: approximate (a stand-in with a known gap).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. But the patients are not a series with metastases of unknown origin: their sites include lymph nodes next to a known primary, and the tissue type is often missing (curation notes). A model in use would also meet the rare sites we left out.
 
 ## Files in this folder
 
@@ -172,6 +172,7 @@ The first 5 of 302 rows of the final frame (random rows: the frame is shuffled);
 
 We start with the data from UCI.
 
+- Note: the patients are cancer patients whose primary was found, not a series with metastases of unknown origin. The metastasis sites include lymph nodes next to the primary (neck nodes in all 20 head and neck patients, armpit nodes in 21 of 24 breast patients), and the tissue type is missing for 45% of the lung patients (38 of 84) against 11% of the others, though a biopsy of a metastasis gives it.
 - We encode missing values as np.nan instead of "?".
 - We reverse the ordinal encoding of all features, adding the text back to the categories.
 - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
@@ -381,4 +382,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a` |
+| stale | yes: the definition now gives checksum `v2:3c7ffe10866f97f7125f84bc67c6812a2c9d8c74882835a1150ec6f3c37f6d67` |

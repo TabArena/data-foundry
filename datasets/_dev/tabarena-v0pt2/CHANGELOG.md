@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-20 (ljubljana_primary_tumor: cohort in the use-case fit)
+
+- `ljubljana_primary_tumor`: fit `approximate` instead of `direct`. The patients are cancer patients whose primary
+  was found, not a series with metastases of unknown origin: the metastasis sites include lymph nodes next to the
+  primary (neck nodes in all 20 head and neck patients, armpit nodes in 21 of 24 breast patients), and the tissue type
+  is missing for 45% of the lung patients against 11% of the others. `fit_reason` says so and a curation note gives
+  the numbers; data, splits and metric unchanged. Follows Andrej's review (record marker `Selection Bias`); evidence
+  in `~/claude_jobs/lpt_review/`. Checked, not rebuilt; the build stays stale.
+
 ## 2026-10-20 (eryhemato_squamous_disease: selected cases in the use-case fit)
 
 - `eryhemato_squamous_disease`: fit `approximate` instead of `direct`. `fit_reason` says the patients look selected:
