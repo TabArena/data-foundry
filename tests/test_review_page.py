@@ -224,8 +224,12 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     data = json.loads((tmp_path / "data.json").read_text())
     page = (tmp_path / "review_page.html").read_text()
 
-    assert [d["name"] for d in data["datasets"]] == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
-    added, other = data["datasets"]
+    # The page's order is review_order (priority, then the fewest open marks), not the report's.
+    assert sorted(d["name"] for d in data["datasets"]) == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
+    assert data["datasets"] == sorted(data["datasets"], key=brp.review_order)
+    by_name = {d["name"]: d for d in data["datasets"]}
+    added, other = by_name["airfoil_self_noise"], by_name["churn_telco_south_asia_duplicate"]
+    assert (added["openMarks"], other["openMarks"]) == (2, 1)
     assert (added["cat"], added["folder"], added["retired"]) == ("added", "airfoil_self_noise", False)
     assert added["code"] == (ROOT / "airfoil_self_noise" / "dataset.py").read_text()
     assert added["readme"] is not None
@@ -318,11 +322,25 @@ def test_report_panel_becomes_page_data(brp, tmp_path):
     assert "<strong>Split:</strong> agreed." in mediator["html"]
 
 
+def test_review_order(brp):
+    """Priority 5 first, records without one last; within one priority the fewest open marks, then the name."""
+    rows = [
+        {"name": "b", "priority": 3, "openMarks": 4},
+        {"name": "none", "priority": None, "openMarks": 0},
+        {"name": "a", "priority": 3, "openMarks": 4},
+        {"name": "quick", "priority": 3, "openMarks": 1},
+        {"name": "top", "priority": 5, "openMarks": 9},
+    ]
+    assert [r["name"] for r in sorted(rows, key=brp.review_order)] == ["top", "quick", "a", "b", "none"]
+
+
 def test_template_has_the_panel_tab_and_keeps_the_store():
     """The Panel tab follows Decisions; the store's collections and the mark fields are unchanged."""
     page = TEMPLATE.read_text()
     assert 'const CTABS = ["usecase", "decisions", "panel", "details", "code", "report", "record"];' in page
     assert 'data-act="openpanel"' in page
+    # The rail groups the records by priority, in the order the builder sorted them.
+    assert '<li class="grp" aria-hidden="true">' in page
     assert '["reviews", "crosscut"].forEach((coll) => {' in page
     assert "const S = { reviews: {}, crosscut: {} };" in page
 

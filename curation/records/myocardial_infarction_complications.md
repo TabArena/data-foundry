@@ -4,6 +4,7 @@ name: Myocardial infarction complications
 checked_by:
 - Lennart
 suggestion: 'Yes'
+priority: 2
 tags:
 - New IID
 collections:
@@ -50,6 +51,8 @@ Hard to decide for one target. All of them have some merit. According to Dr. Cha
    and the column has no time stamp, although the source allows it at admission). Side note: `mic`'s comment "We use
    the categorical target as it summarizes the other possible targets" does not hold: 766 of the 935 patients with at
    least one of the 11 complications survived (LET_IS = 0), and 102 of the 271 deaths carry no complication flag.
+
+**Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Open issue 1: duplicate of mic (byte-identical file); run did not add it). Same patients and file as mic, already shipped; at most a reason to switch mic's target, not a new dataset.
 
 ## Reference
 

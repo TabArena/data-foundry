@@ -142,23 +142,26 @@ merged into PROV-1 and PROV-2 on 2026-10-19.)
 * **Clear provenance** (+): a strong sign of a good dataset; the factor is weighed under PROV-1
   ([provenance.md](provenance.md), Weighed factors).
 
-## Screening priority
+## Priority
 
-Screening gives every candidate it does not reject a priority from 1 (look at it last) to 5 (look at it first): how
-urgently a curator should verify it and send it to be added. It is a weighing of factors read from the source, never a
-verdict, and a curator may change it. Start at 1 and add one point for each factor that holds; take one point off for
-a known risk; never go below 1 or above 5 (first version, 2026-10-19; to be tuned on the first screening runs):
+Every record that is not rejected carries a priority from 1 (look at it last) to 5 (look at it first): how urgently a
+curator should act on it at its stage. Screening sets it from the source, to order the review of the screening; adding
+the dataset sets it again from what was measured, to order the review of the added datasets (a later stage's measured
+finding supersedes an earlier reading). It is a weighing of factors, never a verdict, and a curator may change it.
+Start at 1 and add one point for each factor that holds; take one point off for a known risk; never go below 1 or
+above 5 (first version, 2026-10-19, to be tuned; it orders the review of added datasets since 2026-10-20):
 
 | Factor | One point when |
 |---|---|
-| A gap in the benchmark | the dataset's domain, problem type or regime is thin among the accepted datasets (the coverage snapshot) |
-| A clear use case | the source names who acts on the prediction and the decision, and the fit is direct (USE-1, USE-8, [use_case.md](use_case.md)) |
+| A gap in the benchmark | the dataset's domain, problem type or regime is thin among the accepted datasets (screening: the coverage snapshot; once added: counted over the accepted definitions) |
+| A clear use case | the source names who acts on the prediction and the decision, and the fit is direct (USE-1, USE-8, [use_case.md](use_case.md)); a use case the curation wrote ("for example a lender") does not count |
 | A strong source | the first publisher documents the data (a paper, a codebook, an institution's page) (PROV-1, PROV-8, [provenance.md](provenance.md)) |
 | A good shape | comfortably above `Too Small` (about 1,000 units and 5 features or more, a first guess), with a mix of feature types or a grouped or temporal structure |
-| A known risk (minus one) | a likely leak, heavy joins across tables, or an unclear target |
+| A known risk (minus one) | a likely leak, heavy joins across tables, or an unclear target; once added, also an open issue that raises one of these or damage that may not be repairable, a duplicate, or the recommendation not to ship |
 
 A rejected record (`No`) has no priority. The factors only order the queue: a record with priority 1 is still a
-candidate, and a high priority never stands in for a check of the rules.
+candidate, and a high priority never stands in for a check of the rules. Within one priority the review of added
+datasets takes the record with the fewest open decisions first, so quick decisions do not wait behind long ones.
 
 ## Patterns
 

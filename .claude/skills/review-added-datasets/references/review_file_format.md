@@ -205,7 +205,9 @@ checks that every issue it read arrives there.
 
 ## Where the parts appear on the page
 
-The rail lists the records in the order of the summary table. A record's view starts with its category, the split,
+The rail lists the records by the record's `priority` (5 first, each under its heading; records without one last),
+and within one priority the fewest open decisions (open issues and record-field rows) first; the builder's
+`review_order` sets it, not the report. A record's view starts with its priority and category, the split,
 problem type, rows and build state, its name and its links, then (for a record decided in triage) the triage box.
 Its tabs, in this order:
 

@@ -4,6 +4,7 @@ name: farm-to-feed-shopping-basket-recommendation-challenge
 checked_by:
 - Andrej
 suggestion: 'Yes'
+priority: 1
 tags:
 - Non-IID (Temporal)
 - Multi-target
@@ -68,3 +69,5 @@ competition asks for a recommender system, and the data is the full customer x p
    - The three other Zindi recommender records (`zimnat_insurance_recommendation_challenge`,
      `akeed_restaurant_recommendation_challenge`, `xente_purchase_prediction_challenge`) are still
      `AI (UNVERIFIED)` `No`s; this record has the first data-based evidence for the pattern.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Run recommended not adding: out-of-scope recommender (CTR/RecSys) task, open issue 1). A weekly customer-by-SKU recommender grid whose purchase-recency baseline beats the models; out of scope as RecSys and forecasting.

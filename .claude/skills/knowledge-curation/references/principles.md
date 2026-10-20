@@ -36,7 +36,7 @@ the prediction is made in practice and let the use case decide (Lennart, 2026-10
 * **Should** is the default. A departure needs the fact that sets the case apart and the higher principle it serves,
   and is recorded as an exception.
 * **Weigh** is a factor. Factors are weighed together on the calls the rules leave open (a borderline keep, which
-  framing to ship, the screening priority); the decision names the factors on each side. No factor decides alone, and no
+  framing to ship, a record's priority); the decision names the factors on each side. No factor decides alone, and no
   number of factors overrides a Must.
 
 A rule may grade its strength by severity, such as a leak that is a Must when strong and a Should when weak.

@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -41,6 +42,8 @@ ROC AUC
 **Assessment (AI, 2026-10-07):** Boosters' links are dead; Alfa-Bank re-hosted byte-identical files for its 2022 ODS.ai competition (no login). Tabular models are competitive here (organizers' boosting baseline on aggregates 0.737 public AUC, their RNN 0.760), so the v2 folder uses that baseline's 127 aggregates per product. Boosters says the products are numbered by date; the transactions' week codes give 24 monthly issue dates, tested in 3 two-month windows. A client's products share identical transactions: when the earlier one defaulted, the later one defaults in 96% of cases, a flag not yet known at the later issue, so such products are removed from the training sides. Licence (noted only): the competition rules forbid passing on the data; Alfa-Bank later allowed research use.
 
 CC (2026-10-13, Lennart): Features like the top solutions of the competition, what a data scientist would build, instead of the organizers' 127-feature baseline: 513 aggregates over restored ruble amounts (amount and timing statistics, per-value shares and means, mode and last values, money in against out, daily activity, a balance proxy, the last 30 and 90 days). Label-based encodings, embeddings and sequence-model scores stay out (modelling steps). Sources: 1st place slides (six LightGBMs, 0.780 private without the RNN), 4th private place slides (3,289 features), 9th place code (github.com/aizakharov94/AlfaBattle_task2); slides in the Drive folder linked from Habr 551130. Untuned LightGBM on our windows: ROC AUC 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Large temporal credit-default task from a bank competition; reconstructed time axis and heavy transaction aggregation keep the fit approximate.
 
 ## Reference
 

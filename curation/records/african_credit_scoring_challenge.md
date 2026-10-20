@@ -8,6 +8,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 1
 tags:
 - Non-IID (Temporal)
 collections:
@@ -36,3 +37,5 @@ Predict loan default for an African credit-scoring challenge; this is a canonica
 predict loan default
 
 **Assessment (AI, 2026-10-07):** Added as a temporal task (binary `default`, ROC AUC); the record's Grouped split and tag do not fit, since repeat customers are history known at disbursement. Three leaks are removed: the repay amounts, which grow with penalties after a default (AUC 0.907 with them, 0.639 without); 8,899 rows whose lender funds under one unit, all labelled 0 by construction; and 802 rows whose label was not settled at the data pull. Nine windows: six over the end of the 2022 Type_1 lending, three 30-day windows ending 2024-10-08; each trains only on loans settled 30 days before it starts. Linear AUC 0.649, CatBoost 0.672. Open: the window scheme, and the near-chance 2024 windows.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Issues 2-3: label set at data pull; zero-share rows labelled 0 by construction; the fix selects on a post-disbursement field). A real temporal credit-default task, but the signal is weak and mostly the customer's history, the 2024 windows are near chance, and the label is fragile.

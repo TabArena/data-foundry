@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 4
 decision_markers:
 - Outdated
 tags:
@@ -51,6 +52,8 @@ CC (2026-10-12, Lennart): Use ICPSR 2957 only to put the phase II physiology bac
 CC (2026-10-12, Lennart): One target, death within 2 months; not a multi-target task (the 6-month and in-hospital framings are nested versions of the same signal).
 
 CC (2026-10-12, Lennart): Drop adls and adlsc, keep adlp, edu and income: the surrogate interview's gaps depend on whether the stay lasted until the interview, which is after the prediction point.
+
+**Assessment (AI, 2026-10-20):** priority 4 for the review of the added dataset: gap -, use case +, source +, shape +, no known risk. Well-documented clinical prognosis task whose misplaced phase II physiology was repaired from ICPSR; open issues only confirm cohort and drop choices.
 
 ## Reference
 

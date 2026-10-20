@@ -24,7 +24,7 @@ $ARGUMENTS
 | all | [principles.md](../knowledge-curation/references/principles.md): the ranking, strengths and the judgment record |
 | 3 | [provenance.md](../knowledge-curation/references/provenance.md), [use_case.md](../knowledge-curation/references/use_case.md), [splits.md](../knowledge-curation/references/splits.md), [sources_access.md](../knowledge-data-foundry/references/sources_access.md) |
 | 4 | [selection.md](../knowledge-curation/references/selection.md) (the scope rules and patterns, the markers), [evidence.md](../knowledge-curation/references/evidence.md) |
-| 5 | [selection.md](../knowledge-curation/references/selection.md), "Screening priority" |
+| 5 | [selection.md](../knowledge-curation/references/selection.md), "Priority" |
 | 6 | [records.md](../knowledge-data-foundry/references/records.md): the store API, the `AI (UNVERIFIED)` convention, the screening block |
 | 7 | [verification.md](../knowledge-curation/references/verification.md): the checks marked "screen"; [writing.md](../knowledge-curation/references/writing.md) |
 

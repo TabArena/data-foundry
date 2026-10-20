@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 collections:
@@ -41,6 +42,8 @@ https://www.sciencedirect.com/science/article/pii/S2666920X22000637?via%3Dihub (
 We might follow the Kaggle notebook as it seems to know more of the data and use case. Seems reasonable in most cases for the task. Could be made for several tasks, unclear which one would be best
 
 **Assessment (AI, 2026-10-07):** The task is final_result (four classes) on day 60 for the 26,395 registrations active then, using only what is known by day 60. The Kaggle notebook above uses the exam score, so it leaks the result. The OU trains on other presentations of a module (OULAD page: "the J presentation must be used to inform the B presentation or vice versa"). Four start dates cannot give three temporal windows, so the split holds out whole presentations. LightGBM log-loss skill: IID 0.193, grouped 0.141, 2014J hold-out 0.099. BBB 2014J marks its first TMA 1 or 100 (weight 0), and models score below the prior there. Data: figshare 10.6084/m9.figshare.5081998.v1 (CC BY 4.0); the OU link is dead.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (problem_type multiclass_classification), use case -, source +, shape +, risk - (Issue 5: recurring students leak across folds, kept; features built from seven joined tables). Large, well-sourced education multiclass task with real grouped structure; its day-60 framing and multi-table features are our own choices.
 
 ## Reference
 

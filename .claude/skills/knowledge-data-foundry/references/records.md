@@ -84,7 +84,7 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `data_foundry_status` | Work state and collection membership in one list (below). |
 | `claimed_by` | The curator holding a WIP claim (one name, never the AI). |
 | `suggestion` | The verdict; the one required field. |
-| `priority` | 1-5: how urgently a curator should verify the screening and send the record to `/add-dataset` (5 first). Set by `/screen-candidates`, changed by the curator; none on a rejected record. |
+| `priority` | 1-5: how urgently a curator should act on the record at its stage (5 first): verify the screening and send it to `/add-dataset`, then review what `/add-dataset` added. Set by `/screen-candidates`, set again by `/add-dataset` from what it measured, changed by the curator; none on a rejected record. The factors are in [selection.md](../../knowledge-curation/references/selection.md), "Priority". |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
 | `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`). Remove a tag that does not apply. |
 | `collections` | External benchmarks the dataset appears in (TabSTAR, CARTE/TARTE, TabRed, TableShift, ...), never our own. |

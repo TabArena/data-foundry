@@ -23,7 +23,7 @@ belong?") needs no command: answer it from knowledge-curation.
 | Screened by the AI | `TBD -> Yes`, `TBD -> 2nd Tier` or `No` | 1-5 (none on `No`) | `AI (UNVERIFIED)` | none | none | the disclaimer and a `**Screening (AI, <date>):**` block |
 | Verified by the curator | `Yes` (accepted for adding), `TBD -> Yes` (later) or `No` | as the curator leaves it | the curator | none | none | `CC` lines for decisions given in chat |
 | Taken for adding | `Yes` | | | `WIP (DF)` and `claimed_by` (on `main` first) | none | |
-| Added by the AI | `Yes` | | | kept | `v2_path`, the folder with `REVIEW.md` | `**Assessment (AI, <date>):**` |
+| Added by the AI | `Yes` | 1-5 again, from what was measured | | kept | `v2_path`, the folder with `REVIEW.md` | `**Assessment (AI, <date>):**` |
 | Reviewed by the curator | `Yes`, or `No` / `No (Retired)` when retired | | | kept until the work reaches `main` | issues leave `REVIEW.md` as they settle; a retired folder goes | `CC` lines, `Exception to` lines |
 | On `main` | `Yes` | | | `DF: Yes`, claim cleared | | |
 | Built (on request) | | | | | the README's build record, a CHANGELOG entry | |
@@ -39,7 +39,9 @@ never sets a plain `Yes` while screening; only a curator does.
 * **To add:** `suggestion` `Yes`, no `DF: Yes`, no claim, not AI-unverified
   (`#hf.suggestion=+Yes&hf.data_foundry_status=-DF: Yes&hf.claimed_by=+∅&hf.checked_by=-AI (UNVERIFIED)`).
 * **To review:** the folders of the working copy that have a `REVIEW.md`, and records with an `**Open issues (AI)**`
-  block ([working_copy.md](working_copy.md)).
+  block ([working_copy.md](working_copy.md)); the review page lists them by priority, highest first, and within one
+  priority the fewest open decisions first. A record that is `WIP (DF)` with neither is reviewed and waits for the PR
+  that brings it to `main`.
 
 ## Which file is the truth for what
 

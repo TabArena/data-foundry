@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Tiny Data
 collections:
@@ -34,6 +35,8 @@ used in the TabPFN-Wide paper. from their download instructions: to map the meth
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Synovial sarcoma has 10 rows, 3-4 per test fold. They are 5% of the test rows and 6.5% of a random forest's log loss (0.64 against 1.41 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
 CC (2026-10-19, Lennart): for the next pass, rebuild the methylation block from the GDC's per-sample beta values: the source kept 5,000 probes, by our notes chosen by variance over all patients and imputed with k-nearest neighbours over all patients. Kept as is until then.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (problem_type multiclass_classification), use case -, source +, shape -, no known risk. A very wide (26k features), tiny (201 patients) multiclass omics task that covers the wide-data regime; its use case is invented.
 
 ## Reference
 

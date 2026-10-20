@@ -24,6 +24,10 @@ record judgment), `dataset.py`, the generated `README.md` and the curation recor
 recommendation and the verdict box. Other views: the issues that span datasets, and a summary
 of all verdicts. The page embeds a snapshot of every file at build time.
 
+The rail lists the records by the record's `priority`, 5 first, each priority under its own heading, and within one
+priority the record with the fewest open decisions first: the curator reviews the most important datasets first and
+does not leave quick decisions behind long ones. Records without a priority come last.
+
 ## Step 1: Build the page
 
 ```bash
@@ -33,6 +37,11 @@ R=local-data-warehouse/_runs/<date>_review
 .venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py $R/review_report.md \
     --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>] [--extra-crosscut <yaml>]
 ```
+
+Before building, check that every record on the page has a `priority`: the builder prints the count per priority,
+and `priority_factors.py` (in `knowledge-data-foundry/scripts/`, no names: every folder with a `REVIEW.md`) lists them
+with the measured factors. Give a record without one its priority as `/add-dataset` does (Step 8,
+[selection.md](../knowledge-curation/references/selection.md), "Priority"), through the store API.
 
 `collect_reviews.py` reads every `datasets/_dev/tabarena-v0pt2/<folder>/REVIEW.md`, the open-issue blocks of the
 records and the working copy's own `REVIEW.md`, and writes one report; `--names` limits it to some records (the

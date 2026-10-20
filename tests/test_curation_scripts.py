@@ -1,4 +1,4 @@
-"""The curation scripts of the knowledge-data-foundry skill: benchmark coverage, clean room and decision register.
+"""The curation scripts of the knowledge-data-foundry skill: coverage, priority factors, clean room, decision register.
 
 The scripts live in the skill, not in the package, so they are imported from their files. They run here on small
 records written to ``tmp_path``; the clean room's end-to-end test needs the raw files of ``airfoil_self_noise`` and
@@ -39,6 +39,12 @@ def _import(name: str):
 def coverage():
     """benchmark_coverage.py, imported as a module."""
     return _import("benchmark_coverage")
+
+
+@pytest.fixture(scope="module")
+def priority():
+    """priority_factors.py, imported as a module."""
+    return _import("priority_factors")
 
 
 @pytest.fixture(scope="module")
@@ -121,6 +127,64 @@ def test_coverage_main_writes_json(coverage, tmp_path, capsys):
     assert "1 accepted datasets of 2 records" in capsys.readouterr().out
     data = json.loads(out.read_text())
     assert [row["value"] for row in data["fields"]["domain"]["values"] if row["thin"]] == ["finance", "education"]
+
+
+# --------------------------------------------------------------------------- priority_factors
+def _facts(domain="finance", problem="regression", regime="iid", units=5000, features=10, non_numeric=("categorical",)):
+    return {
+        "domain": domain,
+        "problem_type": problem,
+        "regime": regime,
+        "units": units,
+        "features": features,
+        "non_numeric": list(non_numeric),
+    }
+
+
+def test_priority_thin_values(priority):
+    """A value is thin at max(2, half the median count) or fewer; `other` never is."""
+    accepted = (
+        [_facts(domain="medical")] * 8
+        + [_facts(domain="finance", problem="binary_classification")] * 6
+        + [_facts(domain="education", problem="multiclass_classification", regime="grouped_non_iid")] * 2
+        + [_facts(domain="other")]
+    )
+    thin = priority.thin_values(accepted)
+    assert thin["domain"] == ["education"]
+    assert thin["problem_type"] == ["multiclass_classification"]
+    assert thin["regime"] == ["grouped_non_iid"]
+
+
+def test_priority_score(priority):
+    """Gap: a thin domain, problem type or regime; shape: 1,000 units, 5 features and mixed types or non-IID."""
+    thin = {"domain": ["education"], "problem_type": [], "regime": ["grouped_non_iid"]}
+    assert priority.score(_facts(), thin) == {
+        "gap": 0,
+        "gap_why": "no thin domain, problem type or regime",
+        "shape": 1,
+        "shape_why": "5,000 units, 10 features, categorical, iid",
+    }
+    assert priority.score(_facts(domain="education"), thin)["gap_why"] == "domain education"
+    assert priority.score(_facts(regime="grouped_non_iid"), thin)["gap"] == 1
+    # Numeric only: a good shape needs a grouped or temporal split instead.
+    assert priority.score(_facts(non_numeric=()), thin)["shape"] == 0
+    assert priority.score(_facts(non_numeric=(), regime="temporal_non_iid"), thin)["shape"] == 1
+    assert priority.score(_facts(units=999), thin)["shape"] == 0
+    assert priority.score(_facts(features=4), thin)["shape"] == 0
+
+
+def test_priority_factors_on_the_working_copy(priority, capsys):
+    """The command line measures a named record of the working copy against its accepted definitions."""
+    root = REPO / "datasets" / "_dev" / "tabarena-v0pt2"
+    if not (root / "airfoil_self_noise" / "README.md").is_file():
+        pytest.skip("needs the working copy")
+    where = ["--root", str(root), "--records", str(REPO / "curation" / "records")]
+    assert priority.main(["airfoil_self_noise", *where]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("Thin among the ")
+    assert "| `airfoil_self_noise` |" in out
+    with pytest.raises(SystemExit, match="no folder for: no_such_record"):
+        priority.main(["no_such_record", *where])
 
 
 # --------------------------------------------------------------------------- clean_room

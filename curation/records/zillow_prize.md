@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -36,3 +37,5 @@ Not a lot of information about solutions. Some I see use extensive feature engin
 Basic: https://www.kaggle.com/code/anokas/simple-xgboost-starter-0-0655
 
 **Assessment (AI, 2026-10-07):** Valid temporal regression. The target is Zillow's own residual, log(Zestimate) - log(SalePrice), which Zillow models to improve the Zestimate (FAQ, discussion 33899). Each sale must take the property file of its year: properties_2017 holds edits made after early-2016 sales (building facts differ for 1.2-2.0% of parcels sold January-May 2016, 0.81% of unsold ones), and Zillow warns about its tax values (discussion 40408). August and September 2017 are incomplete ("a biased sample", same post). Concern: sales with |logerror| > 1 (0.4%, mostly miskeyed prices) hold half of the squared error; the competition scored MAE. The signal is small but real: robust LightGBM fits beat the train mean on 9 of 9 monthly windows. The rules forbid redistribution.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case +, source +, shape +, risk - (Issue 2: probes flag no_signal, drift_baseline, unstable; target dominated by miskeyed-price outliers). Real company task with a clear use case and documented data, but the signal is tiny and may not separate methods.

@@ -39,7 +39,8 @@ commit, PR) and is not hardened for multi-user or public use.
   cycles **✓ require, ✕ exclude, off**, so "hide everything rejected" is one click. A claimed row's
   status tooltip ends with "claimed by <name>".
 * **Priority** (next to *Suggestion*) is the record's `priority`, 1 to 5 as a chip (the darker, the sooner a curator
-  should verify the screening and send the record to `/add-dataset`), set by `/screen-candidates`; pick another value
+  should act on the record: verify the screening, or review what `/add-dataset` added), set by `/screen-candidates`
+  and again by `/add-dataset`; pick another value
   or *(none)* from the cell's list. Click the header to sort: records without a priority sort last in both directions.
   Its filter popover lists 1 to 5 and *(empty)*, so `#hf.priority=+5|+4` shows the two top priorities.
 * **Claimed by** (next to *Data Foundry*) names who holds a WIP claim. Its filter on *(empty)*

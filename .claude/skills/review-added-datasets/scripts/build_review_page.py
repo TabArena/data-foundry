@@ -12,6 +12,9 @@ Per record the page embeds the report's section, the definition's ``dataset.py``
 are at build time. The report format is ``references/review_file_format.md``; a report that does not follow it stops
 the build with the section and the line.
 
+The page lists the records in review order (``review_order``): the record's ``priority`` from 5 down to 1, records
+without one last, then the fewest open marks first, then the name.
+
 ``--tldr`` takes hand-written summaries (``unique_name: markdown``) for records whose definition has no
 ``task_summary``. ``--extra-crosscut`` takes cross-dataset sections that are not in the report, as a YAML list of
 ``{title, items: [{id, title, md}]}``; like every cross-dataset id, theirs must not change once the page is
@@ -374,7 +377,7 @@ Span = tuple[int, str, int]
 
 
 def _parse_summary(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
-    """The summary table: one row per record, in the order of the page."""
+    """The summary table: one row per record, in the report's order (the page sorts them by ``review_order``)."""
     start, title, end = span
     section = f"## {title}"
     table = [i for i in range(start + 1, end) if lines[i].lstrip().startswith("|")]
@@ -702,6 +705,20 @@ def _record(path: Path) -> dict:
     return {"fields": rows, "html": render(body)}
 
 
+def _priority(path: Path) -> int | None:
+    """The record's ``priority`` (1-5), or None when it has none."""
+    value = _frontmatter(path.read_text())[0].get("priority")
+    return value if isinstance(value, int) and 1 <= value <= 5 else None
+
+
+def review_order(d: dict[str, Any]) -> tuple[bool, int, int, str]:
+    """The page's order: the highest priority first (records without one last), then the fewest open marks.
+
+    The open marks are the open issues and the record-field rows: within one priority the quick records come first.
+    """
+    return (d["priority"] is None, -(d["priority"] or 0), d["openMarks"], d["name"])
+
+
 def _decided(path: Path) -> dict | None:
     """The triage verdict of a record that already says No (verified, not reviewed for shipping), else None."""
     meta, body = _frontmatter(path.read_text())
@@ -917,9 +934,12 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if files["summary"] is None and name in tldr:
         files["summary"] = _summary_from_tldr(str(tldr[name]))
     decided = _decided(record_path)
+    fields = report["fields"].get(name, [])
     return {
         "name": name,
         "folder": folder,
+        "priority": _priority(record_path),
+        "openMarks": sum(1 for it in rec["items"] if not it["resolved"]) + len(fields),
         "late": row["late"],
         "cat": "decided" if decided else cat,
         "outcomeHtml": MD.renderInline(row["outcome"]),
@@ -934,7 +954,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
             }
             for it in rec["items"]
         ],
-        "fields": report["fields"].get(name, []),
+        "fields": fields,
         "blocks": [
             {"key": k, "title": SECTION_TITLES[k], "html": render(v)} for k, v in rec["blocks"].items() if v.strip()
         ],
@@ -992,7 +1012,7 @@ def build_data(
     """
     where = _repo_of(root)
     tldr_entries = (yaml.safe_load(tldr.read_text()) or {}) if tldr else {}
-    datasets = [_dataset(where, report, row, tldr_entries) for row in report["rows"]]
+    datasets = sorted((_dataset(where, report, row, tldr_entries) for row in report["rows"]), key=review_order)
 
     today = dt.date.today()
     run_date = dt.date.fromisoformat(report["date"]) if report["date"] else None
@@ -1058,6 +1078,11 @@ def _report(data: dict[str, Any], out: Path) -> None:
     for d in datasets:
         cats[d["cat"]] = cats.get(d["cat"], 0) + 1
     print("categories:", cats)
+    prios: dict[str, int] = {}
+    for d in datasets:  # already in review order: 5 down to 1, then none
+        key = str(d["priority"] or "none")
+        prios[key] = prios.get(key, 0) + 1
+    print("priorities:", prios)
     by_source: dict[str, list[str]] = {}
     for d in datasets:
         by_source.setdefault((d["summary"] or {}).get("source", "none"), []).append(d["name"])
