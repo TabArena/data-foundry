@@ -4,8 +4,7 @@ name: ASHRAE - Great Energy Predictor III
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
