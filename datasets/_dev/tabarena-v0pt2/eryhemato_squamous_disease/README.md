@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:56b610082f6f2004c27161696250fdad9cef284ddc113e85fcc6cc3f2e44fc3a
+checksum: v2:c091cdf7144916b5c6f0abd75940bcf38a1adecac2df42469931ae4bf68c53df
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -64,7 +64,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:56b610082f6f2004c27161696250fdad9cef284ddc113e85fcc6cc3f2e44fc3a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c091cdf7144916b5c6f0abd75940bcf38a1adecac2df42469931ae4bf68c53df`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -72,7 +72,7 @@ Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` 
 
 **Use case.** A dermatologist examines a patient with red, scaly skin and makes a differential diagnosis among six similar diseases before taking a biopsy, the first of the source's two steps.
 
-**One row.** One patient diagnosed with one of the six diseases (366 patients, published 1998; place and period not stated).
+**One row.** One patient diagnosed with one of the six diseases at the Department of Dermatology, Gazi University, Ankara (366 patients, published 1998; period not stated).
 
 **Predicted.** The diagnosis: psoriasis (31%), seborrheic dermatitis, lichen planus, pityriasis rosea, chronic dermatitis or pityriasis rubra pilaris (5%).
 
@@ -82,7 +82,7 @@ Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is close to solved.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes. It is small and old.
+> **Use case fit: approximate (a stand-in with a known gap).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes; it is small and old. The patients look selected (93% of those with lichen planus have mouth lesions, about half in another clinic's series, and all with pityriasis rubra pilaris are aged 7 to 22), which makes these two diseases easier to recognise than in a clinic.
 
 ## Files in this folder
 
@@ -154,7 +154,8 @@ Only curators run `build`, when the dataset ships.
   number={3},
   pages={147--165},
   year={1998},
-  publisher={Elsevier}
+  publisher={Elsevier},
+  doi={10.1016/S0933-3657(98)00028-1}
 }
 ```
 
@@ -179,6 +180,9 @@ We start with the data from UCI.
 - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
 - We encode all features but age as categorical, since they are ordinal features in nature.
 - We ensure missing values in age are encoded as NaN.
+- Note: `class` keeps the source's codes: 1 psoriasis, 2 seborrheic dermatitis, 3 lichen planus, 4 pityriasis rosea, 5 chronic dermatitis, 6 pityriasis rubra pilaris.
+- Note: the patients look selected. 93% of those with lichen planus have mouth lesions, against 56% of 91 biopsy-confirmed patients in another clinic's series (Samreen A, Luqman N, Asgher R, Khalid M, Shaheen JA. Frequency of oral involvement in cutaneous lichen planus patients. J Pak Assoc Dermatol. 2021;31(3):454-458. doi:10.66344/jpad.v31i3.1817). All 20 with pityriasis rubra pilaris are aged 7 to 22, though the disease is most common in adults; the source calls it "a children's disease".
+- Note: one psoriasis patient has age 0, the only patient younger than 7. It may be an infant or a stand-in for an unknown age (the source marks 8 unknown ages with "?"); we keep it.
 
 ## Splits
 
@@ -370,4 +374,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:56b610082f6f2004c27161696250fdad9cef284ddc113e85fcc6cc3f2e44fc3a` |
+| stale | yes: the definition now gives checksum `v2:c091cdf7144916b5c6f0abd75940bcf38a1adecac2df42469931ae4bf68c53df` |

@@ -17,8 +17,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "similar diseases before taking a biopsy, the first of the source's two steps."
         ),
         row=(
-            "One patient diagnosed with one of the six diseases (366 patients, published 1998; place and period not "
-            "stated)."
+            "One patient diagnosed with one of the six diseases at the Department of Dermatology, Gazi University, "
+            "Ankara (366 patients, published 1998; period not stated)."
         ),
         predicted=(
             "The diagnosis: psoriasis (31%), seborrheic dermatitis, lichen planus, pityriasis rosea, chronic "
@@ -34,10 +34,12 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is "
             "close to solved."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is "
-            "the differential the source describes. It is small and old."
+            "the differential the source describes; it is small and old. The patients look selected (93% of those "
+            "with lichen planus have mouth lesions, about half in another clinic's series, and all with pityriasis "
+            "rubra pilaris are aged 7 to 22), which makes these two diseases easier to recognise than in a clinic."
         ),
     )
 
@@ -63,7 +65,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           number={3},
           pages={147--165},
           year={1998},
-          publisher={Elsevier}
+          publisher={Elsevier},
+          doi={10.1016/S0933-3657(98)00028-1}
         }
     """
     curation_comments = """
@@ -72,6 +75,9 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
+        - Note: `class` keeps the source's codes: 1 psoriasis, 2 seborrheic dermatitis, 3 lichen planus, 4 pityriasis rosea, 5 chronic dermatitis, 6 pityriasis rubra pilaris.
+        - Note: the patients look selected. 93% of those with lichen planus have mouth lesions, against 56% of 91 biopsy-confirmed patients in another clinic's series (Samreen A, Luqman N, Asgher R, Khalid M, Shaheen JA. Frequency of oral involvement in cutaneous lichen planus patients. J Pak Assoc Dermatol. 2021;31(3):454-458. doi:10.66344/jpad.v31i3.1817). All 20 with pityriasis rubra pilaris are aged 7 to 22, though the disease is most common in adults; the source calls it "a children's disease".
+        - Note: one psoriasis patient has age 0, the only patient younger than 7. It may be an infant or a stand-in for an unknown age (the source marks 8 unknown ages with "?"); we keep it.
     """
 
     # Task

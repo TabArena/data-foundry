@@ -4,6 +4,19 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-20 (eryhemato_squamous_disease: selected cases in the use-case fit)
+
+- `eryhemato_squamous_disease`: fit `approximate` instead of `direct`. `fit_reason` says the patients look selected:
+  93% of those with lichen planus have mouth lesions (56% in a series of 91 biopsy-confirmed patients), and all 20
+  with pityriasis rubra pilaris are aged 7 to 22, so these two diseases are easier to recognise than in a clinic.
+  Data, splits and metric unchanged. Follows Andrej's audit in the record
+  [`curation/records/eryhemato_squamous_disease.md`](../../../curation/records/eryhemato_squamous_disease.md), which
+  found no reason to exclude the dataset or change its setup; evidence in `~/claude_jobs/derm_review/`. Checked, not
+  rebuilt; the build stays stale.
+- `eryhemato_squamous_disease`: `row` names the place (Department of Dermatology, Gazi University, Ankara). New
+  curation notes give the codes of `class`, the selection evidence with its reference, and the one patient aged 0
+  (kept). The BibTeX has the paper's DOI, also added to the record's source links. Data unchanged.
+
 ## 2026-10-19 (early_stage_diabetes_risk_prediction: duplicates note)
 
 - `early_stage_diabetes_risk_prediction`: a curation note says the dropped duplicates are uneven by class (61% of the
