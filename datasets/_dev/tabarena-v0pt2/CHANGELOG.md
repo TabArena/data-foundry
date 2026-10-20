@@ -63,11 +63,6 @@ record, audit or PR that motivated it.
   [`curation/records/credit_g.md`](../../../curation/records/credit_g.md) keeps it with the corrected table. Not
   rebuilt; the build stays stale.
 
-## 2026-10-15 (credit_approval: `Anonymized` tag)
-
-- `credit_approval`: `data_tags = ("Anonymized",)`. Quinlan replaced all attribute names and values by symbols to keep
-  the data confidential, so the metadata now says so (regime tag `IID` unchanged). Not rebuilt; the build stays stale.
-
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and
