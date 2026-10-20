@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
+checksum: v2:f102c39ea0c629658072a6e5e7b8f88c12ce6cce69a4de22de07c7affcc7834f
 build:
   uuid: 01a111fc-a27d-7f21-999e-eb82f18aaf21
   checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
@@ -17,9 +17,9 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
-  n_rows: 214
+  n_rows: 213
   n_features: 9
   dtypes:
     category: 1
@@ -44,16 +44,15 @@ splits:
   time_horizon_unit: null
   n_train:
     min: 142
-    max: 143
+    max: 142
   n_test:
     min: 71
-    max: 72
+    max: 71
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicate_rows
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -62,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 214 rows and 9 features. Source: UCI (1987).
+Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 213 rows and 9 features. Source: UCI (1987).
 
-Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f102c39ea0c629658072a6e5e7b8f88c12ce6cce69a4de22de07c7affcc7834f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -72,15 +71,15 @@ Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06. See [Build](#buil
 
 **Use case.** A forensic scientist identifies the type of a glass fragment left at a crime scene, so that it can be used as evidence (the source's motivation).
 
-**One row.** One glass sample of the US Forensic Science Service, 1987 (214 samples).
+**One row.** One glass fragment collected in forensic work by the UK Home Office Forensic Science Service, 1987 (213 fragments).
 
-**Predicted.** The glass type, one of six: building windows, float-processed (33%) or not (36%), float-processed vehicle windows, containers, tableware or headlamps.
+**Predicted.** The glass type, one of six: building windows, float-processed (32%) or not (36%), float-processed vehicle windows, containers, tableware or headlamps.
 
 **Known at prediction time.** The refractive index and the weight percent of the oxides of eight elements (sodium, magnesium, aluminium, silicon, potassium, calcium, barium, iron).
 
 **What the test data stands for.** Random samples, so the test data stands for new fragments of the same types.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features are measurements made on a fragment, and the label is what the investigator wants to know. The data is small and from 1987; two classes have 9 and 13 samples.
+> **Use case fit: approximate (a stand-in with a known gap).** The features are measurements on a fragment and the label is what an investigator wants to know, but both are dated: casework today compares fragments by trace elements, non-float window glass (36%) has hardly been made since the 1970s, and the class shares are those of the collection, not of casework. Two classes have 9 and 13 samples.
 
 ## Files in this folder
 
@@ -124,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | German1987glass |
-| rows x columns | 214 x 10 |
+| rows x columns | 213 x 10 |
 | task.target | Type_of_glass |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -157,102 +156,102 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 214 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 213 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
 | Type_of_glass | RI | Na | Mg | Al | Si | K | Ca | Ba | Fe |
 |---|---|---|---|---|---|---|---|---|---|
 | 2 | 1.51707 | 13.48 | 3.48 | 1.71 | 72.52 | 0.62 | 7.99 | 0 | 0 |
-| 3 | 1.5161 | 13.42 | 3.4 | 1.22 | 72.69 | 0.59 | 8.32 | 0 | 0 |
+| 2 | 1.5182 | 12.62 | 2.76 | 0.83 | 73.81 | 0.35 | 9.42 | 0 | 0.2 |
 | 2 | 1.51851 | 13.2 | 3.63 | 1.07 | 72.83 | 0.57 | 8.41 | 0.09 | 0.17 |
-| 6 | 1.51969 | 14.56 | 0 | 0.56 | 73.48 | 0 | 11.22 | 0 | 0 |
+| 1 | 1.523 | 13.31 | 3.58 | 0.82 | 71.99 | 0.12 | 10.17 | 0 | 0.03 |
 | 3 | 1.5161 | 13.33 | 3.53 | 1.34 | 72.67 | 0.56 | 8.33 | 0 | 0 |
 
 ## Curation notes
 
-We start with the data from UCI.
+We start with the data from UCI. Its documentation (`glass.names`) gives the creator as B. German of the Home Office Forensic Science Service, Aldermaston (UK); the abstract on the UCI page says "USA Forensic Science Service".
 
 - We drop the ID column, as it is a just a row identifier and does not contain any useful information for modeling.
-- The data contains one naturally occurring duplicate.
+- We drop one of two identical rows (Ids 39 and 40, float window glass), so that a copy cannot sit on both sides of a split.
+- The source file is sorted by class and, within a class, in a few blocks that each run roughly from high to low magnesium; the features predict the order (Spearman 0.67-0.90 per class). We shuffle the rows, so the order carries no information here. Beyond that sort, fragments of one object sit next to each other in the file (Ids 67-69 share the refractive index), but holding out blocks of 3 neighbouring rows costs at most 0.06 log loss and leaves the ranking of models unchanged, so the split stays random.
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 142 to 143 rows, test 71 to 72 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 142 rows, test 71 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 142 | 72 |
-| 0 | 1 | 143 | 71 |
-| 0 | 2 | 143 | 71 |
-| 1 | 0 | 142 | 72 |
-| 1 | 1 | 143 | 71 |
-| 1 | 2 | 143 | 71 |
-| 2 | 0 | 142 | 72 |
-| 2 | 1 | 143 | 71 |
-| 2 | 2 | 143 | 71 |
-| 3 | 0 | 142 | 72 |
-| 3 | 1 | 143 | 71 |
-| 3 | 2 | 143 | 71 |
-| 4 | 0 | 142 | 72 |
-| 4 | 1 | 143 | 71 |
-| 4 | 2 | 143 | 71 |
-| 5 | 0 | 142 | 72 |
-| 5 | 1 | 143 | 71 |
-| 5 | 2 | 143 | 71 |
-| 6 | 0 | 142 | 72 |
-| 6 | 1 | 143 | 71 |
-| 6 | 2 | 143 | 71 |
-| 7 | 0 | 142 | 72 |
-| 7 | 1 | 143 | 71 |
-| 7 | 2 | 143 | 71 |
-| 8 | 0 | 142 | 72 |
-| 8 | 1 | 143 | 71 |
-| 8 | 2 | 143 | 71 |
-| 9 | 0 | 142 | 72 |
-| 9 | 1 | 143 | 71 |
-| 9 | 2 | 143 | 71 |
-| 10 | 0 | 142 | 72 |
-| 10 | 1 | 143 | 71 |
-| 10 | 2 | 143 | 71 |
-| 11 | 0 | 142 | 72 |
-| 11 | 1 | 143 | 71 |
-| 11 | 2 | 143 | 71 |
-| 12 | 0 | 142 | 72 |
-| 12 | 1 | 143 | 71 |
-| 12 | 2 | 143 | 71 |
-| 13 | 0 | 142 | 72 |
-| 13 | 1 | 143 | 71 |
-| 13 | 2 | 143 | 71 |
-| 14 | 0 | 142 | 72 |
-| 14 | 1 | 143 | 71 |
-| 14 | 2 | 143 | 71 |
-| 15 | 0 | 142 | 72 |
-| 15 | 1 | 143 | 71 |
-| 15 | 2 | 143 | 71 |
-| 16 | 0 | 142 | 72 |
-| 16 | 1 | 143 | 71 |
-| 16 | 2 | 143 | 71 |
-| 17 | 0 | 142 | 72 |
-| 17 | 1 | 143 | 71 |
-| 17 | 2 | 143 | 71 |
-| 18 | 0 | 142 | 72 |
-| 18 | 1 | 143 | 71 |
-| 18 | 2 | 143 | 71 |
-| 19 | 0 | 142 | 72 |
-| 19 | 1 | 143 | 71 |
-| 19 | 2 | 143 | 71 |
+| 0 | 0 | 142 | 71 |
+| 0 | 1 | 142 | 71 |
+| 0 | 2 | 142 | 71 |
+| 1 | 0 | 142 | 71 |
+| 1 | 1 | 142 | 71 |
+| 1 | 2 | 142 | 71 |
+| 2 | 0 | 142 | 71 |
+| 2 | 1 | 142 | 71 |
+| 2 | 2 | 142 | 71 |
+| 3 | 0 | 142 | 71 |
+| 3 | 1 | 142 | 71 |
+| 3 | 2 | 142 | 71 |
+| 4 | 0 | 142 | 71 |
+| 4 | 1 | 142 | 71 |
+| 4 | 2 | 142 | 71 |
+| 5 | 0 | 142 | 71 |
+| 5 | 1 | 142 | 71 |
+| 5 | 2 | 142 | 71 |
+| 6 | 0 | 142 | 71 |
+| 6 | 1 | 142 | 71 |
+| 6 | 2 | 142 | 71 |
+| 7 | 0 | 142 | 71 |
+| 7 | 1 | 142 | 71 |
+| 7 | 2 | 142 | 71 |
+| 8 | 0 | 142 | 71 |
+| 8 | 1 | 142 | 71 |
+| 8 | 2 | 142 | 71 |
+| 9 | 0 | 142 | 71 |
+| 9 | 1 | 142 | 71 |
+| 9 | 2 | 142 | 71 |
+| 10 | 0 | 142 | 71 |
+| 10 | 1 | 142 | 71 |
+| 10 | 2 | 142 | 71 |
+| 11 | 0 | 142 | 71 |
+| 11 | 1 | 142 | 71 |
+| 11 | 2 | 142 | 71 |
+| 12 | 0 | 142 | 71 |
+| 12 | 1 | 142 | 71 |
+| 12 | 2 | 142 | 71 |
+| 13 | 0 | 142 | 71 |
+| 13 | 1 | 142 | 71 |
+| 13 | 2 | 142 | 71 |
+| 14 | 0 | 142 | 71 |
+| 14 | 1 | 142 | 71 |
+| 14 | 2 | 142 | 71 |
+| 15 | 0 | 142 | 71 |
+| 15 | 1 | 142 | 71 |
+| 15 | 2 | 142 | 71 |
+| 16 | 0 | 142 | 71 |
+| 16 | 1 | 142 | 71 |
+| 16 | 2 | 142 | 71 |
+| 17 | 0 | 142 | 71 |
+| 17 | 1 | 142 | 71 |
+| 17 | 2 | 142 | 71 |
+| 18 | 0 | 142 | 71 |
+| 18 | 1 | 142 | 71 |
+| 18 | 2 | 142 | 71 |
+| 19 | 0 | 142 | 71 |
+| 19 | 1 | 142 | 71 |
+| 19 | 2 | 142 | 71 |
 
 </details>
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 ## Data checks
 
@@ -261,50 +260,50 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Type_of_glass | category | 0 | 0 | 6 | 2, 1, 7, 3, 5, 6 |
-| RI | float64 | 0 | 0 | 178 | 1.5215, 1.5159, 1.5165, 1.5197, 1.5178, 1.5175, 1.5218, 1.5167, 1.5177, 1.5176 |
-| Na | float64 | 0 | 0 | 142 | 13.02, 13.0, 13.21, 12.85, 13.33, 12.86, 13.64, 13.24, 12.79, 13.41 |
-| Mg | float64 | 0 | 0 | 94 | 0.0, 3.48, 3.54, 3.58, 3.52, 3.62, 3.66, 3.56, 3.57, 3.61 |
-| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.43, 1.29, 1.23, 1.56, 1.28, 1.35, 1.36, 1.33 |
-| Si | float64 | 0 | 0 | 133 | 73.11, 73.1, 72.86, 73.28, 72.99, 72.95, 73.08, 72.97, 73.01, 72.67 |
-| K | float64 | 0 | 0 | 65 | 0.0, 0.57, 0.56, 0.6, 0.58, 0.61, 0.64, 0.59, 0.62, 0.54 |
-| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.79, 9.57, 8.44, 8.6, 8.52, 9.85, 8.83, 8.53 |
-| Ba | float64 | 0 | 0 | 34 | 0.0, 0.09, 1.57, 0.11, 1.59, 0.64, 0.61, 1.55, 0.54, 0.63 |
-| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.07, 0.28, 0.12, 0.16 |
+| RI | float64 | 0 | 0 | 178 | 1.5215, 1.5159, 1.5165, 1.5161, 1.5175, 1.5177, 1.5167, 1.5159, 1.5177, 1.5176 |
+| Na | float64 | 0 | 0 | 142 | 13.02, 13.0, 13.21, 12.85, 13.33, 12.86, 13.64, 13.24, 12.93, 12.79 |
+| Mg | float64 | 0 | 0 | 94 | 0.0, 3.48, 3.58, 3.54, 3.52, 3.62, 3.57, 3.5, 3.66, 3.56 |
+| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.56, 1.29, 1.23, 1.43, 1.28, 1.35, 1.36, 1.52 |
+| Si | float64 | 0 | 0 | 133 | 73.11, 72.86, 73.28, 73.1, 72.99, 72.64, 73.21, 72.61, 71.99, 72.67 |
+| K | float64 | 0 | 0 | 65 | 0.0, 0.57, 0.56, 0.6, 0.58, 0.64, 0.61, 0.59, 0.62, 0.55 |
+| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.79, 8.44, 8.83, 8.6, 8.52, 9.85, 8.55, 9.57 |
+| Ba | float64 | 0 | 0 | 34 | 0.0, 0.09, 1.57, 1.59, 0.64, 0.11, 0.67, 1.55, 0.54, 0.61 |
+| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.07, 0.28, 0.14, 0.22 |
 
 ### Target distribution
 
 | Type_of_glass | count | pct |
 |---|---|---|
-| 2 | 76 | 35.51 |
-| 1 | 70 | 32.71 |
-| 7 | 29 | 13.55 |
-| 3 | 17 | 7.94 |
-| 5 | 13 | 6.07 |
-| 6 | 9 | 4.21 |
+| 2 | 76 | 35.68 |
+| 1 | 69 | 32.39 |
+| 7 | 29 | 13.62 |
+| 3 | 17 | 7.98 |
+| 5 | 13 | 6.1 |
+| 6 | 9 | 4.23 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| RI | 214 | 1.51837 | 0.00303686 | 1.51115 | 1.53393 |
-| Na | 214 | 13.4079 | 0.816604 | 10.73 | 17.38 |
-| Mg | 214 | 2.68453 | 1.44241 | 0 | 4.49 |
-| Al | 214 | 1.44491 | 0.49927 | 0.29 | 3.5 |
-| Si | 214 | 72.6509 | 0.774546 | 69.81 | 75.41 |
-| K | 214 | 0.497056 | 0.652192 | 0 | 6.21 |
-| Ca | 214 | 8.95696 | 1.42315 | 5.43 | 16.19 |
-| Ba | 214 | 0.175047 | 0.497219 | 0 | 3.15 |
-| Fe | 214 | 0.0570093 | 0.0974387 | 0 | 0.51 |
+| RI | 213 | 1.51835 | 0.00303297 | 1.51115 | 1.53393 |
+| Na | 213 | 13.4041 | 0.816662 | 10.73 | 17.38 |
+| Mg | 213 | 2.6792 | 1.44369 | 0 | 4.49 |
+| Al | 213 | 1.44948 | 0.495925 | 0.29 | 3.5 |
+| Si | 213 | 72.6551 | 0.773998 | 69.81 | 75.41 |
+| K | 213 | 0.498873 | 0.653185 | 0 | 6.21 |
+| Ca | 213 | 8.95408 | 1.42588 | 5.43 | 16.19 |
+| Ba | 213 | 0.175869 | 0.498245 | 0 | 3.15 |
+| Fe | 213 | 0.057277 | 0.0975894 | 0 | 0.51 |
 
 ### Categorical features
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Type_of_glass | 1 | 2 | 76 | 35.51 |
-| Type_of_glass | 2 | 1 | 70 | 32.71 |
-| Type_of_glass | 3 | 7 | 29 | 13.55 |
-| Type_of_glass | 4 | 3 | 17 | 7.94 |
-| Type_of_glass | 5 | 5 | 13 | 6.07 |
+| Type_of_glass | 1 | 2 | 76 | 35.68 |
+| Type_of_glass | 2 | 1 | 69 | 32.39 |
+| Type_of_glass | 3 | 7 | 29 | 13.62 |
+| Type_of_glass | 4 | 3 | 17 | 7.98 |
+| Type_of_glass | 5 | 5 | 13 | 6.1 |
 
 ## Build
 
@@ -317,3 +316,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:f102c39ea0c629658072a6e5e7b8f88c12ce6cce69a4de22de07c7affcc7834f` |

@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-20 (forensic_glass_identification: duplicate dropped, origin, use-case fit)
+
+- `forensic_glass_identification`: fit `approximate` instead of `direct`. `fit_reason` says the features and glass
+  types are dated (casework today compares fragments by trace elements; non-float window glass, 36% of the rows, has
+  hardly been made since the 1970s) and the class shares are those of the collection, not of casework. `row` names
+  the UK Home Office Forensic Science Service as in `glass.names` (it said "US", from UCI's abstract), and a curation
+  note records the discrepancy.
+- `forensic_glass_identification`: drops one of two identical rows (Ids 39 and 40, float window glass), so 213 rows
+  instead of 214; an exact copy with the same label would sit on both sides of a split. A curation note describes the
+  source's row order (by class, then in blocks running roughly from high to low magnesium) and why the split stays
+  random: holding out blocks of 3 neighbouring rows costs at most 0.06 log loss with the ranking unchanged. Follows
+  Andrej's review in the record
+  [`curation/records/forensic_glass_identification.md`](../../../curation/records/forensic_glass_identification.md);
+  evidence in `~/claude_jobs/glass_review/`. Checked, not rebuilt; the build is stale.
+
 ## 2026-10-20 (ljubljana_primary_tumor: cohort in the use-case fit)
 
 - `ljubljana_primary_tumor`: fit `approximate` instead of `direct`. The patients are cancer patients whose primary
