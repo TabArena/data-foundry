@@ -12,6 +12,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 - Non-IID (Grouped)

@@ -12,6 +12,7 @@ decision_markers:
 - Outdated
 - Not Representative
 - No Good Target (yet)
+- Selection Bias
 tags:
 - Tiny Data
 collections:

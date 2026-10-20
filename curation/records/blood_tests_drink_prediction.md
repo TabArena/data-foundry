@@ -13,6 +13,7 @@ decision_markers:
 - Trivial
 - No Good Target (yet)
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 collections:

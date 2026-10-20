@@ -7,6 +7,8 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 tags:
 - Tiny Data
 collections:
