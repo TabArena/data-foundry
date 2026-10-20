@@ -11,6 +11,7 @@ suggestion: 'Yes'
 decision_markers:
 - Outdated
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 collections:

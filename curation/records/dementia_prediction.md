@@ -10,6 +10,7 @@ suggestion: Yes (Disagreement)
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
+- Selection Bias
 tags:
 - Tiny Data
 - Non-IID (Grouped)

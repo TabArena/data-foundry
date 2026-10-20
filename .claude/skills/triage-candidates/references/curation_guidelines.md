@@ -245,6 +245,15 @@ handcrafted sonar-return toy experiment → out on its **setup**, not merely its
   kept as a tiny-data task). In a multiclass task a rare class counts when its rows decide the score (alvin: 8 rows
   of the rarest classes carry half of a window's log loss; retired 2026-10-12); a rare class of the source's own
   labels among well-filled ones stays (mic: 12 rows, 4 per fold, 5% of the loss; kept 2026-10-12).
+* **Selection bias** (the rows are not drawn from the population the use case predicts for, so a class looks
+  different than it would there: cases and controls collected apart or in different periods, only typical or
+  confirmed cases, a teaching or volunteer collection, objects already picked for measurement) → `Selection Bias`,
+  usually still **Yes** (Andrej, 2026-10-20). It is a concern flag: name the gap in `fit_reason` and judge the model
+  comparison on the data, not on the marker. `eryhemato_squamous_disease` is the example: 93% of its lichen planus
+  patients have mouth lesions, against 56% in a clinic series, and the ranking is unchanged; kept. No marker when
+  the use case is defined on the selected population (only granted loans for a repayment score, Andrej
+  2026-10-15), or when one class was oversampled from the same population, which changes only the class shares
+  (`credit_g`). `Not Representative` is a different flag: the task is not a real tabular-ML application.
 * **Ethical concern** (sensitive use, creators ask it not be used for ML) → `Ethical Issue` → **No**.
 * **Licence / redistribution restriction** (non-commercial, request form, no redistribution) → **not a
   reason** and no marker: write it down as a note in `## Comments` and triage the data on its merits.
