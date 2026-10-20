@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a
+checksum: v2:af267f5cff10dd3106860579bac4811599a0c6753fd4cb816a00f1a0a3fa0508
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -71,13 +71,13 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:af267f5cff10dd3106860579bac4811599a0c6753fd4cb816a00f1a0a3fa0508`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** How severe is an older adult's dementia, judging from a short cognitive test and a brain scan?
 
-**Use case.** The source defines no task. For example, at a first visit a memory clinic estimates a person's clinical dementia rating from a short cognitive test and a brain MRI, before or instead of the full clinical interview.
+**Use case.** The source defines no task. For example, a memory clinic or a research study estimates a person's clinical dementia rating from a short cognitive test and a brain MRI, before or instead of the full clinical interview with the person and an informant.
 
 **One row.** One visit of an older adult in the OASIS-2 study, which scanned 150 people on two or more visits at least a year apart (370 visits; Marcus et al. 2010).
 
@@ -85,11 +85,11 @@ Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** Sex, age, years of education, socioeconomic status, the visit's Mini-Mental State Examination score, and three brain-size measures from the visit's MRI scan.
 
-**What the test data stands for.** Whole people are held out, so the test data stands for people not seen before; each of their visits is scored on its own.
+**What the test data stands for.** Whole people are held out, so the test data stands for people not seen before; each of their visits (first or follow-up) is scored on its own, without the earlier visits.
 
 **Our changes to the source.** We drop the group label (derived from the ratings of all visits), the visit number and the time since the first visit, and the 3 visits rated moderate dementia.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The use case is ours, as the source states none. Follow-up visits of test people are scored as if each were a first visit, and the MRI enters as three summary numbers of an imaging study.
+> **Use case fit: approximate (a stand-in with a known gap).** The use case is ours, as the source states none. The cohort is research volunteers, not clinic patients: the people without dementia stayed so over about three years, and only 14 of 150 convert, so borderline cases are rarer than in a clinic. 220 of the 370 visits are follow-ups, scored without the earlier visits, and the MRI enters as three summary numbers of an imaging study.
 
 ## Files in this folder
 
@@ -129,7 +129,7 @@ Only curators run `build`, when the dataset ships.
 | source | Other: https://sites.wustl.edu/oasisbrains/ |
 | year | 2010 |
 | domain | medical & healthcare |
-| license | CC BY NC 3.0 |
+| license | OASIS Data Use Terms: non-commercial, academic research purposes only |
 | data_tags | Non-IID, Grouped, WrongDomain |
 | reference | marcus2010open |
 | rows x columns | 370 x 10 |
@@ -186,6 +186,9 @@ We start with the data from Mendeley.
 - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
 - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
 - We also drop the constant hand column.
+- Sampling: the participants are volunteers of the Washington University Alzheimer's Disease Research Center, recruited mainly through media appeals, with at least two MRI visits (Marcus et al. 2010). The 'Nondemented' group stayed CDR 0 over all visits and only 14 subjects convert, so few visits sit near the boundary of no and very mild dementia. Demented subjects have fewer visits (mean 2.2 vs 2.6) and shorter follow-up, so the people without dementia weigh slightly more in a per-visit score (51% of the visits, 48% of the people).
+- Missing values are informative: the 19 visits without SES (8 subjects) and the 2 without MMSE (1 subject) are all rated very mild or mild dementia. SES comes from the clinical interview, which impaired participants may not complete, so a clinic would see the same pattern; we keep the missing values.
+- The source's group labels are not fully consistent with the per-visit rating (2 'Nondemented' subjects are rated 0.5 at a later visit, 1 'Converted' subject goes from 0.5 to 0); this does not affect the task, since the group label is dropped.
 
 ## Splits
 
@@ -263,7 +266,7 @@ We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjec
 
 ## Group structure
 
-One group is a subject of OASIS-2: older adults scanned on two or more visits at least a year apart, each visit with its own clinical dementia rating (Marcus et al. 2010). Each visit is one prediction, made from that visit alone, for a subject not seen in training: a first-visit framing, since a follow-up visit would know the earlier ratings. The source defines no prediction task.
+One group is a subject of OASIS-2: older adults scanned on two or more visits at least a year apart, each visit with its own clinical dementia rating (Marcus et al. 2010). Each visit is one prediction, made from that visit alone, for a subject not seen in training. Using the earlier visits instead would be trivial: carrying the previous rating forward is right for 85% of the 220 follow-up visits. The source defines no prediction task.
 
 | field | value |
 |---|---|
@@ -302,7 +305,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | SES | float64 | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
 | MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 25.0, 23.0, 21.0, 20.0, 22.0 |
 | eTIV | float64 | 0 | 0 | 368 | 1364.5, 1402.1, 1927.705, 1956.9603, 1294.81, 1525.34, 1569.21, 1688.0096, 1360… |
-| nWBV | float64 | 0 | 0 | 370 | 0.8195, 0.7255, 0.6965, 0.7505, 0.6702, 0.722, 0.7732, 0.737, 0.8063, 0.7267 |
+| nWBV | float64 | 0 | 0 | 370 | 0.7255, 0.6965, 0.7505, 0.6702, 0.722, 0.7732, 0.737, 0.8063, 0.7267, 0.7285 |
 | ASF | float64 | 0 | 0 | 368 | 1.2862, 1.2517, 0.9104, 0.8968, 1.3554, 1.1506, 1.1184, 1.0397, 1.2897, 0.9679 |
 | Age | int64 | 0 | 0 | 38 | 73, 75, 78, 80, 71, 81, 82, 76, 77, 68 |
 | EDUC | int64 | 0 | 0 | 12 | 12, 16, 18, 14, 13, 15, 20, 11, 8, 17 |
@@ -353,4 +356,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5df398348e171d8451b0d44cd1920e263db54bbb81b430d7ecce83dae0a3e01a` |
+| stale | yes: the definition now gives checksum `v2:af267f5cff10dd3106860579bac4811599a0c6753fd4cb816a00f1a0a3fa0508` |

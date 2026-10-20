@@ -4,6 +4,84 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-19 (early_stage_diabetes_risk_prediction: duplicates note)
+
+- `early_stage_diabetes_risk_prediction`: a curation note says the dropped duplicates are uneven by class (61% of the
+  negative rows repeat another row, 46% of the positive rows), so dropping them moves the positive share from 62% to
+  69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged. Follows Andrej's
+  review of the record
+  [`curation/records/early_stage_diabetes_risk_prediction.md`](../../../curation/records/early_stage_diabetes_risk_prediction.md),
+  now `Yes (Disagreement)`; evidence in `~/claude_jobs/esd_review/`. Checked, not rebuilt; the build is stale.
+
+## 2026-10-19 (drug_induced_autoimmunity_prediction: scaffold-grouped splits)
+
+- `drug_induced_autoimmunity_prediction`: grouped splits on the drug's Bemis-Murcko scaffold (its ring skeleton) instead
+  of random ones; a drug without a ring is a group of its own (443 groups, the largest 41 drugs, 10 with both labels).
+  Under random splits about a third of the test drugs have a close relative in training with the same label, and a
+  nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854. The use case
+  screens new candidates, so whole scaffolds are held out, as the Therapeutics Data Commons ADMET benchmarks do. Group
+  probe: LightGBM 0.815 on IID folds, 0.758 grouped; task probes: no flags, random forest 0.776 against the linear
+  model's 0.702. The scaffolds come from the new `data_foundry.v2.murcko_scaffolds` (RDKit, pinned like the
+  descriptors); `task_summary`, `curation_comments` and the grouping definition say why. Rows and features unchanged.
+  Follows Andrej's review of the record
+  [`curation/records/drug_induced_autoimmunity_prediction.md`](../../../curation/records/drug_induced_autoimmunity_prediction.md);
+  evidence in `~/claude_jobs/dia_review/` and `~/claude_jobs/dia_scaffold/`. Checked, not rebuilt; the build is stale.
+
+## 2026-10-19 (forest_fires: day-grouped splits)
+
+- `forest_fires`: grouped splits by day instead of random ones. The data has no date, but the station computes the
+  Fire Weather Index values FFMC, DMC, DC and ISI once a day, so fires with the same four values burned on the same day:
+  517 fires on 227 days (the largest 10 fires), 78% sharing their day. On random splits TabPFN-3.5 beats the training
+  mean a little (R^2 0.012, above all 200 shuffles of the labels, p = 0.005); split by day it does not (R^2 -0.002;
+  p = 0.16 against shuffles on the same splits). The use case sizes a fire from that day's weather, with no fire of
+  that day in training. The new `fire_day` column (anonymised) holds the groups and is not a feature;
+  `ForcedIIDFromTemporal` is dropped, and `task_summary`, `curation_comments` and the grouping definition say why.
+  Rows and features unchanged. Follows Andrej's review of the record
+  [`curation/records/forest_fires.md`](../../../curation/records/forest_fires.md), which suggests retiring it for no
+  signal under this split; evidence in `~/claude_jobs/forest_fires_review/`. The task-probe rule on small signals
+  (`.claude/skills/verify-dataset/references/task_probes.md`) now asks for shuffled labels on the use case's split.
+  Checked, not rebuilt; the build is stale.
+
+## 2026-10-19 (ecoli_proteins: `aac` dropped)
+
+- `ecoli_proteins`: `aac` is dropped (5 features, not 6). It is the score of a discriminant analysis fitted to the
+  labels of the authors' protein database, the predecessor of this dataset (Nakai & Kanehisa 1991), so it leaks the
+  labels (the leak `yeast` was rejected for). Without it, outer-membrane recall falls from 0.90 to 0.02
+  (TabPFN, stratified 3-fold x 20). `task_summary` and `curation_comments` say so; rows and splits unchanged. Follows
+  Andrej's review of the record [`curation/records/ecoli_proteins.md`](../../../curation/records/ecoli_proteins.md);
+  evidence in `~/claude_jobs/ecoli_headroom/`. Checked, not rebuilt; the build stays stale.
+
+## 2026-10-19 (dementia_prediction: licence, sampling notes)
+
+- `dementia_prediction`: the licence is now the OASIS Data Use Terms (non-commercial, academic research only), not
+  `CC BY NC 3.0`, which was the label of a third-party Mendeley re-upload (Battineni et al. 2019) that does not name
+  OASIS. `task_summary` and the grouping definition drop the first-visit framing (220 of 370 visits are follow-ups) and
+  name the sampling: research volunteers, stable controls, 14 of 150 converters. `curation_comments` add the sampling,
+  that the missing SES (19 visits, 8 subjects) and MMSE (2 visits) occur only in demented visits (kept, as a clinic
+  would see them too), and the source's inconsistent group labels (dropped anyway). Frame and splits unchanged. Follows
+  Andrej's review of the record
+  [`curation/records/dementia_prediction.md`](../../../curation/records/dementia_prediction.md); evidence in
+  `~/claude_jobs/dementia_baselines/`. Checked, not rebuilt; the build stays stale.
+
+## 2026-10-15 (credit_approval: `Anonymized` tag)
+
+- `credit_approval`: `data_tags = ("Anonymized",)`. Quinlan replaced all attribute names and values by symbols to keep
+  the data confidential, so the metadata now says so (regime tag `IID` unchanged). Not rebuilt; the build stays stale.
+
+## 2026-10-15 (credit_g: corrected code table)
+
+- `credit_g`: the categories now carry the labels of Grömping's (2019) corrected code table; the Statlog `german.doc`
+  mixes up the levels of 8 features and reverses people_liable. Example: "no checking account" was the safest group
+  (11.7% bad) and is in fact a balance of at least 200 DM; "foreign worker = yes" held 96.3% of the rows and is in fact
+  3.7%. Matched on duration, amount and age, 990 rows agree with UCI's South German Credit in every column except the
+  typos Grömping reports (A14 34, A15 1, A20 10). The typos stay, as a data-quality issue that real data has too.
+  Only the labels change: columns, dtypes and values are as before (installment_rate_percent, residence_since,
+  existing_credits_count and people_liable stay integer band codes; their bands are in `curation_comments`).
+  `task_summary` names the period (1973 to 1975), the granted-loans sample, the oversampling and the label definition;
+  `curation_comments` give the sources. Andrej's review in
+  [`curation/records/credit_g.md`](../../../curation/records/credit_g.md) keeps it with the corrected table. Not
+  rebuilt; the build stays stale.
+
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and

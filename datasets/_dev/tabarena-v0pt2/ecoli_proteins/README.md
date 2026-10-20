@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d
+checksum: v2:437474cfc40948392a15fe5cf0d29e4f6576a8b240a928e285b82b8906492dcf
 build:
   uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
   checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 327
-  n_features: 6
+  n_features: 5
   dtypes:
     category: 2
-    float64: 5
+    float64: 4
   n_test_dataset_rows: null
 task:
   target: class
@@ -61,9 +61,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 6 features. Source: UCI (1996).
+Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 5 features. Source: UCI (1996).
 
-Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:437474cfc40948392a15fe5cf0d29e4f6576a8b240a928e285b82b8906492dcf`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -75,11 +75,11 @@ Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The location: cytoplasm (44%), inner membrane without a signal sequence (24%), periplasm (16%), inner membrane with an uncleavable signal sequence (11%) or outer membrane (6%).
 
-**Known at prediction time.** Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal score, an amino-acid content score and two membrane-spanning region predictions.
+**Known at prediction time.** Five scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal score and two membrane-spanning region predictions.
 
 **What the test data stands for.** Random proteins, so the test data stands for proteins of unknown location.
 
-**Our changes to the source.** We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a cleavable signal sequence), each with fewer than 10 proteins.
+**Our changes to the source.** We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a cleavable signal sequence), each with fewer than 10 proteins, and the amino-acid content score, a discriminant fitted to the labels.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The scores come from the sequence alone, which is known before any experiment, and a held-out protein is one of unknown location. The data is small and from 1996.
 
@@ -123,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | horton1996probabilistic |
-| rows x columns | 327 x 7 |
+| rows x columns | 327 x 6 |
 | task.target | class |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -160,13 +160,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 327 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| class | mcg | gvh | lip | aac | alm1 | alm2 |
-|---|---|---|---|---|---|---|
-| im | 0.31 | 0.44 | 0.48 | 0.5 | 0.79 | 0.82 |
-| cp | 0.18 | 0.3 | 0.48 | 0.46 | 0.24 | 0.35 |
-| cp | 0.23 | 0.4 | 0.48 | 0.39 | 0.28 | 0.38 |
-| im | 0.33 | 0.56 | 0.48 | 0.33 | 0.78 | 0.8 |
-| cp | 0.34 | 0.28 | 0.48 | 0.41 | 0.35 | 0.44 |
+| class | mcg | gvh | lip | alm1 | alm2 |
+|---|---|---|---|---|---|
+| cp | 0.65 | 0.47 | 0.48 | 0.3 | 0.4 |
+| cp | 0.26 | 0.26 | 0.48 | 0.25 | 0.35 |
+| im | 0.2 | 0.46 | 0.48 | 0.78 | 0.81 |
+| cp | 0.57 | 0.54 | 0.48 | 0.28 | 0.33 |
+| cp | 0.4 | 0.46 | 0.48 | 0.35 | 0.44 |
 
 ## Curation notes
 
@@ -175,6 +175,11 @@ We start with the dataset from UCI.
 - We drop the sequence name column, which is a unique identifier.
 - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
 - We drop "chg", which becomes constant after our preprocessing steps.
+- We drop "aac", the score of a discriminant analysis of the amino-acid content of outer-membrane and
+  periplasmic proteins. It was fitted to the labels of the authors' protein database, the predecessor of this
+  dataset (Nakai & Kanehisa 1991, Proteins 11(2):95-110), and cannot be refitted per split, so it leaks the
+  labels (the reason `yeast` was rejected). Without it, outer-membrane proteins (6% of rows) are barely
+  recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
 
 ## Splits
 
@@ -263,11 +268,10 @@ Default splits.
 |---|---|---|---|---|---|
 | lip | category | 0 | 0 | 2 | 0.48, 1.0 |
 | class | category | 0 | 0 | 5 | cp, im, pp, imU, om |
-| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.64, 0.44, 0.74, 0.29, 0.4, 0.67, 0.69, 0.25 |
-| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.42, 0.37, 0.47, 0.49, 0.46, 0.57, 0.44, 0.39 |
-| aac | float64 | 0 | 0 | 59 | 0.42, 0.48, 0.46, 0.51, 0.41, 0.57, 0.49, 0.58, 0.56, 0.52 |
-| alm1 | float64 | 0 | 0 | 81 | 0.35, 0.39, 0.28, 0.33, 0.78, 0.76, 0.37, 0.42, 0.49, 0.71 |
-| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.35, 0.41, 0.74, 0.33, 0.38, 0.79, 0.44, 0.42 |
+| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.44, 0.64, 0.29, 0.4, 0.74, 0.69, 0.67, 0.25 |
+| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.47, 0.42, 0.37, 0.49, 0.46, 0.57, 0.44, 0.39 |
+| alm1 | float64 | 0 | 0 | 81 | 0.35, 0.39, 0.33, 0.28, 0.78, 0.76, 0.45, 0.49, 0.37, 0.38 |
+| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.35, 0.41, 0.74, 0.44, 0.79, 0.38, 0.33, 0.36 |
 
 ### Target distribution
 
@@ -285,7 +289,6 @@ Default splits.
 |---|---|---|---|---|---|
 | mcg | 327 | 0.49419 | 0.193719 | 0 | 0.89 |
 | gvh | 327 | 0.499939 | 0.149935 | 0.16 | 1 |
-| aac | 327 | 0.49945 | 0.123165 | 0 | 0.88 |
 | alm1 | 327 | 0.497462 | 0.217333 | 0.03 | 1 |
 | alm2 | 327 | 0.503119 | 0.206947 | 0 | 0.99 |
 
@@ -312,4 +315,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:76e696cf1d063a5c21378e2ada5dc2e674f7732f9fb228ebeda93befcb46e75d` |
+| stale | yes: the definition now gives checksum `v2:437474cfc40948392a15fe5cf0d29e4f6576a8b240a928e285b82b8906492dcf` |

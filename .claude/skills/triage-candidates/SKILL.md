@@ -98,7 +98,9 @@ guidelines as `references/curation_guidelines.md`.
   value not in `vocabularies.yaml`, `ai_unverified` (an AI triaged it, no human has verified —
   see below), or `ship_conflict` (carries a `TabArena (v0.1)`/`BeyondArena` tag but `suggestion`
   is not an accepted verdict — i.e. not `Yes`/`Yes (Disagreement)`/`No (Retired)`), `wip_unclaimed` or
-  `claim_without_wip` (a WIP value and `claimed_by` not set together). To add a new automated check,
+  `claim_without_wip` (a WIP value and `claimed_by` not set together), or `better_data_review` (tagged
+  `Better Data Available`: a larger or newer dataset for the same task has its own record, and a curator
+  must decide whether this one's verdict holds). To add a new automated check,
   extend `review_reasons()` (it is the single source of truth) and add a matching assertion in
   `tests/test_records_integrity.py`.
 * After editing records, sanity-check with `.venv/bin/python -m data_foundry.curation.cli validate`.

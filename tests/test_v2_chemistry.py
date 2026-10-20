@@ -1,10 +1,10 @@
-"""Tests for the SMILES descriptors (``data_foundry.v2.chemistry``)."""
+"""Tests for the SMILES descriptors and scaffolds (``data_foundry.v2.chemistry``)."""
 
 from __future__ import annotations
 
 import pandas as pd
 import pytest
-from data_foundry.v2 import DatasetDefinitionError, chemistry, rdkit_descriptors
+from data_foundry.v2 import DatasetDefinitionError, chemistry, murcko_scaffolds, rdkit_descriptors
 
 pytest.importorskip("rdkit")
 
@@ -40,3 +40,26 @@ def test_another_rdkit_version_is_an_error(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setattr(chemistry, "RDKIT_VERSION", "0.0.0")
     with pytest.raises(DatasetDefinitionError, match=r"need RDKit 0\.0\.0"):
         rdkit_descriptors(pd.Series(["CCO"]))
+
+
+def test_scaffolds_keep_rings_and_linkers_and_drop_side_chains() -> None:
+    """Toluene and benzoic acid share the benzene scaffold, pyridine keeps its nitrogen, ethanol has none."""
+    smiles = pd.Series(["Cc1ccccc1", "OC(=O)c1ccccc1", "c1ccncc1", "CCO", "c1ccccc1CCc1ccccc1"], index=[3, 4, 5, 6, 7])
+    out = murcko_scaffolds(smiles)
+
+    assert list(out.index) == [3, 4, 5, 6, 7]
+    assert out.dtype == "string"
+    assert list(out) == ["c1ccccc1", "c1ccccc1", "c1ccncc1", "", "c1ccc(CCc2ccccc2)cc1"]
+
+
+def test_scaffolds_drop_stereochemistry() -> None:
+    """Stereoisomers share one scaffold."""
+    out = murcko_scaffolds(pd.Series(["C[C@H]1CC[C@@H](C)C1c1ccccc1", "C[C@@H]1CC[C@@H](C)C1c1ccccc1"]))
+
+    assert out.iloc[0] == out.iloc[1]
+
+
+def test_a_scaffold_smiles_that_does_not_parse_is_an_error() -> None:
+    """A SMILES RDKit cannot parse stops the definition, as for the descriptors."""
+    with pytest.raises(DatasetDefinitionError, match="cannot parse 1 SMILES"):
+        murcko_scaffolds(pd.Series(["CCO", "C1CC"]))

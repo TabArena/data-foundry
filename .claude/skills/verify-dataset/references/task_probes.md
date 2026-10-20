@@ -1,6 +1,6 @@
 # Reading the task probes
 
-How to answer the flags of [`scripts/task_probes.py`](../scripts/task_probes.py) (rubric item 13): whether a
+How to answer the flags of [`scripts/task_probes.py`](../scripts/task_probes.py) (rubric item 14): whether a
 dataset is empty, trivial, too small, or worth benchmarking. The rules below come from the review of the 24 datasets
 the probes flagged in the TabArena v0.2 build (5-6 October 2026; the evidence is in each record's dated comment and
 on <https://claude.ai/artifact/APTR4PUmbUn2d133mcFgXf>).
@@ -12,9 +12,12 @@ flag is read), so the next decision starts from the precedent.
 
 1. **A flag is a question, not a verdict.** The probes fit untuned models; check every flag against tuned methods
    before acting on it (`scripts/tuned_results.py`, below).
-2. **A small but real signal is no reason to retire**, and neither is a cutoff on the best skill. forest_fires
-   (R² 0.013, but TabPFN-3.5 beats the mean on 26 of 32 folds) is a valid task. Retire, fix or keep a task for a
-   concrete reason found in the task itself; until one is found, the task stays.
+2. **A small but real signal is no reason to retire**, and neither is a cutoff on the best skill. Retire, fix or keep
+   a task for a concrete reason found in the task itself; until one is found, the task stays. **Real means it beats
+   shuffled labels on the split the use case needs** (Andrej, 2026-10-19): the best method's mean skill against the
+   same method on shuffled labels and the same splits (below, "A small signal"). Beating the dummy on most folds is
+   not enough: repeated folds overlap, and shuffled labels often reach better than baseline performance too, but
+   randomly.
 3. **If tuned methods spread, keep the dataset.** No further discussion is needed.
 4. **`Trivial` needs proof.** Read what the dominant feature means first: the natural core of a task (a listed price
    for a sale price, age for survival) is expected to dominate. Then test it: the raw feature, chosen on each
@@ -71,7 +74,7 @@ flag is read), so the next decision starts from the precedent.
 
 | Flag | What the script computes | First check |
 |---|---|---|
-| `no_signal` | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy fold by fold? Untuned models overfit noise (forest_fires, clock_protein_toxicity, asp_potassco: all kept). |
+| `no_signal` | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy? Untuned models overfit noise. If one does, by a little, check the split and shuffled labels ("A small signal"): forest_fires' signal was same-day fires across a random split. |
 | `solved` | ROC AUC, macro ROC AUC or R² of at least 0.995. | A leak or a lookup (leak probes, shallow tree); then a stage of the source where the task is not solved. |
 | `no_spread` | The best and worst family differ by less than twice the standard error of their per-split difference (or 0.01). | Tuned results: if methods spread, keep (rule 3). On a large, low-noise dataset strong methods converge (amex); on a small one it is noise. |
 | `one_feature` | The best single feature, chosen on each split's training side, reaches 95% of the best family's skill and leaves at most 1.25 times its remaining error (1 − skill). | Rule 4: what the feature means, then the raw feature against the methods fold by fold (`tuned_results.py --feature auto`). |
@@ -94,7 +97,7 @@ split, an unpaired spread test, the standard deviation for `unstable`, text left
 | parkinsons_biomedical_voice_measurements | no_spread, one_feature, unstable | retired, `Too Small` (5 Oct) | 8 healthy people, 2-3 per test fold; ranks less stable than on 98% of BeyondArena |
 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (6 Oct) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since |
 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (6 Oct) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy |
-| forest_fires | no_signal | kept (6 Oct) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing |
+| forest_fires | no_signal | kept (6 Oct); re-split by day (19 Oct) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing. Fires of one day share the station's daily fire weather index values; split by day, R² -0.002, within shuffled labels (p = 0.16; random splits p = 0.005) |
 | clock_protein_toxicity | no_signal | kept (6 Oct) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect |
 | asp_potassco_classification | no_signal | kept (6 Oct) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) |
 | sepsis_survival_minimal_clinical_records | one_feature | kept (6 Oct) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design |
@@ -172,6 +175,9 @@ quarter: concrete's `(all but Age)` gives R^2 0.923 random against 0.857 grouped
 the error. Take a key hit to the source: when the key is what one row's entity is (a mix, a wind-tunnel run), group on
 it with `df.groupby(columns).ngroup()` (`leak_checks.md` §5); when new rows keep the key, it is a feature. A group by
 no column at all (the target protein of a CASP decoy) still does not show up; read what one row is in the source.
+Neither does a group held by several columns that the other columns vary within: forest_fires' fires of one day share
+the four daily fire weather index values (FFMC, DMC, DC, ISI), while temperature, humidity, wind and the map square
+differ fire by fire (517 fires on 227 days). Values a source computes once per day, site or batch are such a key.
 
 Calibration of the composite keys on 2026-10-14 (all 177 definitions, the grouped ones as if IID): three hits,
 concrete `(all but Age)`, airfoil_self_noise `(all but frequency)` (the same groups as its run column) and

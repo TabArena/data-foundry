@@ -48,6 +48,8 @@ Also, I think that the use from this is limited unless we actually embed the den
 1) NHANES https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2021/DataFiles/BMX_L.htm
 2) UK Biobank (restricted access): https://www.ukbiobank.ac.uk/about-our-data/types-of-data/physical-measurements/
 
+CC (2026-10-15, Andrej): Replacement candidate: `nhanes_dxa_body_fat` (NHANES DXA percent fat from anthropometry, thousands of people of both sexes; see that record).
+
 ## Reference
 
 @article{penrose1985generalized,

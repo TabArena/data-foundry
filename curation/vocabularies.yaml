@@ -46,11 +46,13 @@ decision_markers:
 - Ethical Issue
 - Too Small
 - Not Representative
+- Selection Bias
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)
 - Robotics (RL)
 - TBD
+- Anonymized
 tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
@@ -67,6 +69,7 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Better Data Available
 collections:
 - New (BeyondArena)
 - TabArena Reject

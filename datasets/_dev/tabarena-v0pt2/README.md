@@ -110,10 +110,10 @@ not accepted in the definition.
 | [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
 | [`digicow_farmer_training_adoption_challenge`](digicow_farmer_training_adoption_challenge/) | temporal | 13,536 | 11 | 4 x 1 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 14 | 3 x 3 | not built |  |
-| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 587 | 176 | 20 x 3 | `01a13aff-7235-73c3-932c-785cd540127b` |  |
+| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | grouped | 587 | 176 | 20 x 3 | not built |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
 | [`early_stage_diabetes_risk_prediction`](early_stage_diabetes_risk_prediction/) | IID | 251 | 16 | 20 x 3 | not built |  |
-| [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 6 | 20 x 3 | not built |  |
+| [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 5 | 20 x 3 | not built |  |
 | [`electric_motor_temperature_prediction`](electric_motor_temperature_prediction/) | grouped | 1,296,316 | 109 | 1 x 3 | `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` |  |
 | [`emscad`](emscad/) | grouped | 16,116 | 17 | 3 x 3 | not built |  |
 | [`eryhemato_squamous_disease`](eryhemato_squamous_disease/) | IID | 366 | 12 | 20 x 3 | not built |  |
@@ -122,7 +122,7 @@ not accepted in the definition.
 | [`food_delivery_time`](food_delivery_time/) | IID | 45,451 | 9 | 3 x 3 | `01a13a7d-c2cc-70a6-b90d-08296c319c01` |  |
 | [`force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`](force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/) | grouped | 1,429,591 | 26 | 1 x 3 | not built |  |
 | [`forensic_glass_identification`](forensic_glass_identification/) | IID | 214 | 9 | 20 x 3 | `01a111fc-a27d-7f21-999e-eb82f18aaf21` |  |
-| [`forest_fires`](forest_fires/) | IID | 517 | 12 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
+| [`forest_fires`](forest_fires/) | grouped | 517 | 12 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`framingham_heart_study_fhs`](framingham_heart_study_fhs/) | IID | 4,224 | 15 | 3 x 3 | not built |  |
 | [`fraud_detection_in_electricity_and_gas_consumption_1m`](fraud_detection_in_electricity_and_gas_consumption_1m/) | grouped (per group: mean) | 1,500,000 | 18 | 1 x 3 | not built |  |
 | [`g_research_crypto_forecasting_1m`](g_research_crypto_forecasting_1m/) | temporal | 2,501,039 | 27 | 3 x 1 | not built |  |

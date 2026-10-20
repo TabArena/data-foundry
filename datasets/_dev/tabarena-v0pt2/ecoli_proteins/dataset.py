@@ -21,13 +21,14 @@ class EcoliProteins(AbstractCuratedDataset):
             "membrane with an uncleavable signal sequence (11%) or outer membrane (6%)."
         ),
         known=(
-            "Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
-            "score, an amino-acid content score and two membrane-spanning region predictions."
+            "Five scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
+            "score and two membrane-spanning region predictions."
         ),
         split="Random proteins, so the test data stands for proteins of unknown location.",
         changes=(
             "We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a "
-            "cleavable signal sequence), each with fewer than 10 proteins."
+            "cleavable signal sequence), each with fewer than 10 proteins, and the amino-acid content score, a "
+            "discriminant fitted to the labels."
         ),
         fit="direct",
         fit_reason=(
@@ -64,6 +65,11 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
+        - We drop "aac", the score of a discriminant analysis of the amino-acid content of outer-membrane and
+          periplasmic proteins. It was fitted to the labels of the authors' protein database, the predecessor of this
+          dataset (Nakai & Kanehisa 1991, Proteins 11(2):95-110), and cannot be refitted per split, so it leaks the
+          labels (the reason `yeast` was rejected). Without it, outer-membrane proteins (6% of rows) are barely
+          recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
     """
 
     # Task
@@ -91,6 +97,7 @@ class EcoliProteins(AbstractCuratedDataset):
             columns=[
                 "Sequence Name",  # avoid leakage from look the name and otherwise unique identifier.
                 "chg",  # constant after preprocessing
+                "aac",  # discriminant fitted to the labels; leaks them
             ]
         )
         # Drop samples with classes with too little data (less than 10 samples)

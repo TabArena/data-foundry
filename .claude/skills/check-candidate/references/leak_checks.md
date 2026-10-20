@@ -2,7 +2,7 @@
 
 What the BeyondArena leak audit (24 Sep to 1 Oct 2026: all 142 shipped datasets, 38 needing action) taught us about
 finding leaks and deciding what to do with them. Read it whenever the data can be loaded: `/check-candidate` step 4,
-`/add-dataset` step 6 (the `dataset check` loop) and `/verify-dataset` items 4, 5, 6, 9 and 13. The curation
+`/add-dataset` step 6 (the `dataset check` loop) and `/verify-dataset` items 4, 5, 7, 10 and 14. The curation
 guidelines hold the selection criteria; this file holds the tests and the precedents. Per-dataset detail is in the
 audit page (https://claude.ai/artifact/ENjKHNwVU7G9xNw1VoaKnn), in the records' dated `CC (2026-09-30 / 2026-10-01,
 Lennart)` comments and in `datasets/_dev/tabarena-v0pt2/CHANGELOG.md`.
