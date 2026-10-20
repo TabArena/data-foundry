@@ -144,15 +144,15 @@ for `fit="none"`, and `definition_summary_long` (warning) for a field over 70 wo
 
 ```python
 task_summary = TaskSummary(
-    question="How loud is an airfoil's own noise at a given sound frequency, for a wind-tunnel setting that was not measured?",
-    use_case="An aerodynamics engineer estimates the noise spectrum of an airfoil configuration (size, angle, wind speed) before, or instead of, measuring it in a wind tunnel.",
-    row="One frequency band of one wind-tunnel run, that is one airfoil size at one angle and one wind speed (106 runs of 8 to 19 bands, NASA 1989).",
-    predicted="The sound pressure level in that band, in decibels.",
+    question="How loud is an airfoil's own noise in a given frequency band, on the source's speed-scaled decibel level, for an airfoil size at an angle of attack that was not measured?",
+    use_case="An aerodynamics engineer estimates the noise spectrum of an airfoil at a size and angle of attack not yet tested, at any wind speed, before, or instead of, mounting it in a wind tunnel.",
+    row="One frequency band of one wind-tunnel run, that is one airfoil size at one angle and one wind speed (106 runs of 8 to 19 bands, the tripped-boundary-layer set of NASA 1989; bands with tunnel noise removed).",
+    predicted="The band's sound level as the source scales it, in decibels: the measured level minus a term of the wind speed and the boundary-layer thickness, so the measured level follows exactly from the features.",
     known="The band's frequency and the run's settings (chord length, angle of attack, wind speed) plus a boundary-layer thickness computed from them.",
-    split="Whole runs are held out, so the test data stands for configurations never measured; runs with the same size, angle or speed in other combinations can be in training.",
-    changes="We added the run as a group column and split by it; with random rows, models filled gaps in spectra they had already seen.",
+    split="Whole setups are held out, an airfoil size at one angle with all its wind speeds, so the test data stands for a size and angle never measured together; each size, and most angles, are in training with other partners.",
+    changes="We added the setup (size and angle) as a group column and split by it, and treat the angle as a number; with random rows, or whole runs, models filled in spectra of setups they had seen at another speed.",
     fit="direct",
-    fit_reason="The features are the settings an engineer chooses, and a held-out run is an unmeasured configuration. The task is narrow (one airfoil shape, one wind tunnel) but real.",
+    fit_reason="The features are the settings an engineer chooses, and a held-out setup is an airfoil at an angle not yet tested. The task is narrow (one airfoil shape, tripped, one wind tunnel and microphone) but real.",
 )
 ```
 
@@ -502,7 +502,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Regime | Reference | What it shows |
 |---|---|---|
 | IID | `tour_travels_churn/dataset.py`, `forensic_glass_identification/dataset.py` | The minimal definition: attributes, `_load_raw`, a short `_clean`. |
-| Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a wind-tunnel run built from three columns; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
+| Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
 | Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `subsample_to_budget`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |

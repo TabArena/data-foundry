@@ -198,6 +198,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
+| SPLIT-1 | airfoil_self_noise | grouped by setup, not by run: under the run split 91.5% of the test runs had their chord and angle in training at another speed, and a new angle or size is the query a tunnel cannot answer with one more run; treated like concrete_compressive_strength's mix (2026-10-20, Lennart) | applied |
 | SPLIT-4 | superconductivity | grouped by composition: a model is used for compositions nobody has measured, though a random split costs at most 0.009 R^2 (2026-10-06) | applied |
 | SPLIT-5, SPLIT-6 (SEL-10) | appliances_energy_prediction | 10-minute readings over 4.5 months, evaluated with a random split by its authors; it is forecasting, `No` | applied |
 | SPLIT-5 | kick | a comment called the Kaggle split grouped by auction location, yet 78.9% of its test rows are at a location also in train | applied |
@@ -215,7 +216,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-24 | emscad | grouped on identical profile text or a poster-specific masked contact (4,441 groups); the first suggestion, a TF-IDF cosine cluster at 0.95 or more, was barred | applied |
 | SPLIT-24 | in_vehicle_coupon_recommendation | consecutive blocks of identical person-level answers in the raw file order: 587 respondents | applied |
 | SPLIT-24 | concrete_compressive_strength | a mix is its seven ingredient amounts, tested at several ages: 428 mixes behind 1,030 tests (2026-10-14) | applied |
-| SPLIT-24 | airfoil_self_noise | a run is one chord, angle and velocity (2026-10-06) | applied |
+| SPLIT-24 | airfoil_self_noise | a setup is one chord and one angle with all its speeds, one figure of the report (2026-10-20; before, a run of chord, angle and velocity, 2026-10-06) | applied |
 | SPLIT-24, SPLIT-25 | maternal_health_risk | the first suggestion, a hash of the feature vector standing in for the unknown entity, was barred; the six collection sites are not in the file: retired | applied |
 | SPLIT-25 | hazelnut_spread_contaminant_detection | re-scans of about ten set-ups, not recoverable: retired | applied |
 | SPLIT-26 | superconductivity | key: element shares from `unique_m.csv`, which the features are computed from; a formula string would split one composition written two ways | applied |

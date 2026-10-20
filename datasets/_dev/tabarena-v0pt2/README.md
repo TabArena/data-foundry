@@ -91,7 +91,7 @@ not accepted in the definition.
 | [`clock_protein_toxicity`](clock_protein_toxicity/) | IID | 171 | 1,117 | 20 x 3 | not built |  |
 | [`coffee_rating_prediction`](coffee_rating_prediction/) | temporal | 2,369 | 12 | 13 x 1 | not built | `dataset_constant_column` |
 | [`coil_2000`](coil_2000/) | IID | 9,822 | 85 | 3 x 3 | `01a111fc-ceb4-7695-8b34-df7a285cfcb6` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
-| [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 89 | 4 x 1 | not built |  |
+| [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 92 | 4 x 1 | not built |  |
 | [`concrete_compressive_strength`](concrete_compressive_strength/) | grouped | 1,030 | 8 | 10 x 3 | `01a13a7d-c2ed-79de-abb8-3476f95e6667` | `dataset_duplicate_rows` |
 | [`consumer_complaints_1m`](consumer_complaints_1m/) | temporal | 1,811,452 | 12 | 3 x 1 | not built |  |
 | [`cooking_time_1m`](cooking_time_1m/) | temporal | 2,500,000 | 196 | 3 x 1 | not built |  |
@@ -138,7 +138,7 @@ not accepted in the definition.
 | [`hepatitis_c_prediction`](hepatitis_c_prediction/) | IID | 608 | 11 | 20 x 3 | not built |  |
 | [`hepatitis_survival_prediction`](hepatitis_survival_prediction/) | IID | 155 | 19 | 20 x 3 | not built |  |
 | [`hiva_agnostic`](hiva_agnostic/) | IID | 4,229 | 1,429 | 3 x 3 | `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` |  |
-| [`home_credit_default_risk`](home_credit_default_risk/) | IID | 307,507 | 504 | 3 x 3 | not built |  |
+| [`home_credit_default_risk`](home_credit_default_risk/) | IID | 307,507 | 709 | 3 x 3 | not built |  |
 | [`home_credit_default_stability_1m`](home_credit_default_stability_1m/) | temporal | 1,224,927 | 710 | 3 x 1 | not built |  |
 | [`homesite_quote_conversion`](homesite_quote_conversion/) | IID | 260,753 | 295 | 3 x 3 | `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` | `dataset_constant_column`, `dataset_missing_value_label` |
 | [`horse_colic_survival`](horse_colic_survival/) | IID | 344 | 20 | 20 x 3 | `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` |  |

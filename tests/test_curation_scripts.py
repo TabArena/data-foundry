@@ -186,7 +186,7 @@ def test_clean_room_on_airfoil(clean_room, tmp_path):
     assert "scaled-sound-pressure" in df.columns
     task = (out / "task.md").read_text()
     assert "random sample of 500 of the 1,503 rows" in task
-    assert "grouped by `run`" in task
+    assert "grouped by `setup`" in task
     assert "https://doi.org/10.24432/C5VW2C" in task
     for note in ("wind tunnel", "wind-tunnel", "engineer", "airfoil_self_noise"):  # task summary, comments, name
         assert note not in task.lower()

@@ -58,9 +58,12 @@ can differ from the source: the download instructions name the copy, and say whi
 
 **PROV-9 (Must).** The year is the year of that first publication: a competition's launch, a dataset's release (UCI's
 "donated on", a Kaggle dataset's first version), the online date of the paper or supplement that holds the rows, the
-first commit that shares them. Not the collection period, not the year of a paper that only analysed the data, not the
-BibTeX year of a later citation, not the date of the copy we download (Lennart, 2026-10-12 and 2026-10-14). A source
-that grows over time (a public register, a scraped site, a monthly archive) takes the year of the snapshot we pin.
+first commit that shares them. A figure that shows every measured value holds the rows, together with the columns
+the publication's own formulas compute from them: a file digitised from it later is a copy, and takes the figure's
+publication as its source and year. Not the collection period, not the year of a paper
+that only analysed the data, not the BibTeX year of a later citation, not the date of the copy we download (Lennart,
+2026-10-12 and 2026-10-14; figures: Lennart, 2026-10-20, airfoil_self_noise). A source that grows over time (a public
+register, a scraped site, a monthly archive) takes the year of the snapshot we pin.
 
 **PROV-10 (Must).** The citation is the work that published the data, not a paper that used it.
 
@@ -202,6 +205,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-6 | arsenic_male_lung | the lung-cancer version of the same exposure data as arsenic_male_bladder: a duplicate ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | amex_iid, amex_non_iid | the IID and grouped versions of one competition ([selection.md](selection.md), "Duplicates and versions") | applied |
+| PROV-8, PROV-9 | airfoil_self_noise | 1989 and NASA RP-1218, not UCI 2014: the report's Figs. 11-43 show every measured value (the scaled target and the thickness are the report's formulas of them), and UCI's file was digitised from them (Lau, López and Oñate, CIMNE PI-335, Sec. 4.1), so it is a copy; the report's tables do not list the levels (2026-10-20, Lennart; PROV-9 amended) | applied |
 | PROV-11 | corporate_issuer_credit_rating | a rating history rebuilt from the agencies' SEC Rule 17g-7(b) disclosures and SEC EDGAR has them as its source, not the Kaggle file it replaces (2026-10-16, Lennart) | applied |
 | PROV-12 | nyc_taxi_trip_duration | listed the Porto PKDD-15 competition as a source; moved to the comments (2026-10-12) | applied |
 | PROV-12 | melbourne_housing_market | listed two Airbnb datasets as sources; moved to the comments (2026-10-12) | applied |

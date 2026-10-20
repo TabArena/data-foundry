@@ -4,6 +4,30 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-20 (airfoil_self_noise grouped by setup, its year 1989)
+
+Lennart's marks on the review-panel pilot page, applied. The definition changed; not rebuilt (the README's build
+record names the container of 2026-10-06, marked stale).
+
+- `airfoil_self_noise` holds out whole setups, one chord length at one angle with all its speeds (`setup`, 33 groups,
+  11 per test fold; was the wind-tunnel run): under the run split 91.5% of the test runs had their chord and angle in
+  training at another speed, and a new angle or size is the query, as a new mix is for
+  `concrete_compressive_strength`. `attack-angle` is numeric (72% of the test runs now carry an angle absent from
+  training). On the shipped splits, untuned: LightGBM R² 0.727, random forest 0.717, linear 0.445; no task-probe
+  flags, no leak-probe hits; `groups_test_groups_few` accepted (the 33 setups are all the report has; R² 0.71 across
+  setups).
+- The scaled target stays as released and is named as the report's eq. 19 level, with its constants and the exact
+  conversion to the measured level. The notes now state the tripped set, the corrected angle, the truncated bands,
+  the source's prediction use and the reason for not grouping by chord; the 62% is 66.6%, and the BibTeX names
+  NASA RP-1218.
+- Year 1989 and source the NASA report (`source = "Other"`, `source_url` its NTRS page), not UCI 2014: the report's
+  figures show every measured value, and UCI's file was digitised from them. The year rule PROV-9 says so now (amended in
+  `knowledge-curation`), which corrects the reading in the entry below. The record's `original_source` is `Other`.
+- The folder's `REVIEW.md` is gone (no open issue left); the working copy's `REVIEW.md` keeps the hidden-group probe
+  item.
+- The README table, regenerated, also shows the current feature counts of `college_scorecard` (92) and
+  `home_credit_default_risk` (709), stale since their last definition changes.
+
 ## 2026-10-19 (curation commands renamed and mirrored, a review panel, ranked rules)
 
 Lennart asked for descriptive commands for what curators use, documentation for people, a quick screening stage with a
