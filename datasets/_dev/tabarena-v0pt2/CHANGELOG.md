@@ -4,6 +4,11 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-15 (credit_approval: `Anonymized` tag)
+
+- `credit_approval`: `data_tags = ("Anonymized",)`. Quinlan replaced all attribute names and values by symbols to keep
+  the data confidential, so the metadata now says so (regime tag `IID` unchanged). Not rebuilt; the build stays stale.
+
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and
