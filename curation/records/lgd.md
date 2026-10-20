@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 1
 collections:
 - New (BeyondArena)
 original_source: Website
@@ -29,6 +30,8 @@ type_adapter_id: curation-record-v1
 Looks like good data, again from the same interesting domain!
 
 **Assessment (AI, 2026-10-07):** The definition is a grouped regression, unlike this record's Binary / Random (IID) fields. The book (ch. 1, p. 14) calls the data 2,545 loans of a European bank, "slightly modified and anonymized". The target is `lgd_time`, the book's own task (ch. 1, p. 4; ch. 10 errata: "MODEL lgd_time ~ GENERAL(ll)"). The only features are `LTV` and `purpose1`. `event` is 0 exactly at the 0.00001 LGD floor, which makes it part of the target. Loans sharing one LTV value come as consecutive runs, most likely one borrower's loans (LGD residual correlation 0.42 within a run, 0.02 between neighbouring runs), so the split is by run. No HMEQ-style artefacts found.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape -, risk - (Issue 3: meaning of event=0 unsettled, 728 rows may not be LGD observations). Real LGD regression, but only two features, an unclear zero-loss target and undocumented modifications make it a thin task.
 
 ## Reference
 

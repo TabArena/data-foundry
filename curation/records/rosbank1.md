@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Free Text (Short)
 - '?'
@@ -39,6 +40,8 @@ Same datasets, different targets. Need to decide for one that we deem better
 Might be streaming event data (?), need to figure out when looking at the data
 
 **Assessment (AI, 2026-10-07):** The two targets are one signal: target_flag is 1 exactly when target_sum > 0 ("Значение 0 соответствует отказу", the task text), so churn means no POS purchase in the three months after the grace period. One transaction sequence and one label per client make one row per client a fixed task, not streaming data (CoLES, arXiv 2002.08232, Tables 6-7: aggregates 0.825 AUC, sequence models 0.817-0.843). The competition ran 27 April to 28 May 2018 (boosters.pro API) and the transactions end on 2 April 2018; periods ending in March 2018 churn 24 of 36, so periods ending from January 2018 are dropped as censored. Defined as churn, temporal with a three-month label gap. No licence stated.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Bank-card churn from transaction sequences, temporal, but small test windows (63-515 clients) cannot separate model families.
 
 ## Reference
 

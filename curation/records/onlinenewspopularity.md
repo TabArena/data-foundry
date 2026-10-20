@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 2
 decision_markers:
 - Wrong Domain / Source Modality
 - NLP (Text)
@@ -52,6 +53,8 @@ in a balanced "popular"/"unpopular" class distribution in the first training set
 I think we cannot get the original text but this is still fine. It is not too old and it had some well made features that might even beat LLM preprocessing or be used next to it. Thus I think we can add it as a good temporal dataset!
 
 **Assessment (AI, 2026-10-07):** Added as a temporal regression of log shares (9 two-week windows, Aug-Dec 2014, one-week gap), after the paper's rolling test sets of 1,000 articles (Sec. 3.1). UCI's `timedelta` and weekday flags follow a date 1-5 days after the publication date in the URL for 24% of the articles (Mashable's archived pages carry the URL date) and raise LightGBM's R² from 0.158 to 0.166: dropped. The LDA columns come from one model fitted on all texts and carry no signal: dropped. The keyword statistics of shifted articles include same-day articles published later (no measurable gain): kept with a note. Text-derived columns add 0.003 R². Binary framing (shares ≥ 1,400): ROC AUC 0.733 (paper: 0.73).
+
+**Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issues 5, 6: keyword and self-reference statistics kept as potential leaks using crawl-time share counts). Temporal regression on a documented source, but weak signal (R2 0.16) and kept potential leaks make it a modest addition.
 
 ## Reference
 

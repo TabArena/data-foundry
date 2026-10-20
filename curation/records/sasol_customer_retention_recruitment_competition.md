@@ -4,6 +4,7 @@ name: sasol-customer-retention-recruitment-competition
 checked_by:
 - Andrej
 suggestion: 'Yes'
+priority: 1
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
@@ -51,3 +52,5 @@ money divided by 2.34).
    - The Kaggle upload `kimp1995/sasol-customer-value-recruitment` (2026-10-02) has the file sizes the Zindi API lists
      for that competition, among them LABEL_RULES.md and label_rules.py.
    - It is not this record's data. It would be a new candidate with its own triage. I did not look at its labels.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Open issue 1: duplicate of expresso_churn_prediction; run recommends No + Duplicate). Renamed 70% sample of the Expresso churn data already shipped; adds nothing to the benchmark.

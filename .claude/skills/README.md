@@ -74,8 +74,9 @@ Two stages, and in each one the AI works first and you verify:
 ### `/review-added-datasets`: you decide on the review page
 
 * **When:** after `/add-dataset`, or when you want to see everything still open.
-* **Claude:** builds a page from the `REVIEW.md` files (a local HTML file, or a private Claude artifact if you prefer);
-  per dataset you get the use case, your decisions, the panel's reports, the definition, its README and the record.
+* **Claude:** builds a page from the `REVIEW.md` files (a local HTML file, or a private Claude artifact if you prefer),
+  ordered by priority: the most important datasets first, and within one priority the quickest decisions first. Per
+  dataset you get the use case, your decisions, the panel's reports, the definition, its README and the record.
   You mark a verdict per dataset and each question; Claude reads the marks back, checks them for consistency, applies
   them (to `dataset.py`, the record, the CHANGELOG) and removes what is settled from `REVIEW.md`.
 * **Next:** a build and a commit, when you ask ("rebuild X and Y", "commit this").

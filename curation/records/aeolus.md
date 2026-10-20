@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -37,6 +38,8 @@ Quite extensive. Could be the best flight data there is
 **Assessment (AI, 2026-10-12), problems in the release:** (1) The authors' release joins Meteostat's hourly weather, whose timestamps are UTC, to the local scheduled clock times, so the weather of a flight is read 4-10 hours early (origin weather a median 5.2 hours before departure); a few destination readings fall after the departure. (2) March 2024 is missing. Both are worth reporting to the authors (Xu et al., NeurIPS 2025). The definition keeps the release as published and states both as `Anomaly:` bullets; the leak of the late destination readings is a `Potential leak, kept on purpose:` bullet.
 
 CC (2026-10-12, Lennart): Target `ARR_DEL15` (arrival 15+ minutes late, ROC AUC), the weather as released, the flight number as a categorical. Two-week test windows (2024-12-18..31, 12-04..17, 11-20..12-03) instead of the three newest weeks, two of which fall in the holiday peak (25.1-26.5% late against 20.8% for 2024). History from 2023 on: TabReD's random sample of all nine years put only about 11.5% of each train side in 2024 and mixed in COVID-19 (2020: 9.7% late), while a model refit every two weeks trains on recent data with the previous holidays; the authors' own benchmarks use 2024 alone. The test-week comparison of history pools (each pool best in one week) did not decide it. The release's data problems are noted only, not reported.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Large temporal flight-delay task from a documented NeurIPS release, mixed features, direct fit; only licence and version notes remain open.
 
 ## Reference
 

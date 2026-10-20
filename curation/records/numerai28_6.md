@@ -4,6 +4,7 @@ name: numerai28.6
 checked_by:
 - Lennart
 suggestion: 'Yes'
+priority: 1
 tags:
 - Non-IID (Temporal)
 collections:
@@ -38,6 +39,8 @@ eras.
 
 2. **Noted only (a licence is never a verdict reason):** the 2016 Kaggle sample is CC0-1.0, while v5.2 falls under
    Numerai's Terms of Service, section 4.2 (see `numerai_v5_2`, issue 1).
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape -, risk - (Open issue 1: Duplicate of numerai_v5_2; not added). Older eraless release of numerai_v5_2 with encrypted numeric features; a duplicate with no added benchmark value.
 
 ## Reference
 

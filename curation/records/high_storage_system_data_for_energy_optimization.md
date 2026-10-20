@@ -4,6 +4,7 @@ name: High Storage System Data for Energy Optimization
 checked_by:
 - Lennart
 suggestion: 'Yes'
+priority: 1
 tags:
 - Non-IID (Temporal)
 collections:
@@ -44,3 +45,5 @@ normal recordings.
 4. **No other task in the files.** The title's energy optimization compares the normal standard and optimized runs
    (two control programs of one transport operation); the data card offers it for "energy based optimization
    processes", which has no target.
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source +, shape -, risk - (Open issue 1: generated anomalies; run did not add it and recommends No + AHDS). Software-injected anomalies in sensor recordings (217 cycles) give no real task; it should be rejected rather than added.

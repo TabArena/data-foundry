@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -39,6 +40,8 @@ Solved with LGBM twice, training data seems to have enough data for creating our
 CV was temporal
 
 **Assessment (AI, 2026-10-07):** This is time-series forecasting by the guidelines: the competition calls itself "a forecasting competition" (Timeline), and the target is the asset's own Close(t+16)/Close(t+1) − 1, residualised against the market (rebuilt from Close, median error 5e-7). The one-minute bar alone correlates 0.012, −0.006 and 0.002 with it on three 91-day windows; all signal comes from 18 lags of the same Close series (3rd-place solution), the only lagged-target design in the working copy. Even then R² against the train mean is +0.0007, +0.0012, −0.0003 (only the middle window outside day-to-day noise). Suggest `No` + `Time-series (Forecasting)` unless the "Forecasting-as-tabular" acceptance is meant for this case; the definition `g_research_crypto_forecasting_1m` is ready either way.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case +, source +, shape +, risk - (Issue 1: time-series forecasting on lagged targets; run recommends No). Out of scope as time-series forecasting: signal comes only from lagged returns and R² stays near zero under RMSE.
 
 ## Reference
 

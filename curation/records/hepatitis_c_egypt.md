@@ -5,6 +5,7 @@ checked_by:
 - Andrej
 - Lennart
 suggestion: 'Yes'
+priority: 1
 tags:
 - New IID
 collections:
@@ -58,6 +59,8 @@ included: generated or replaced data.
    the UCI codebook (`ALT 1` also in the variable list), so strictly one week into treatment; they are kept as the
    first enzymes (alternative: drop them). The biopsy grade is dropped as a result of the same biopsy (alternative:
    keep it as a pathology co-variable, which changes the task to "stage given grade").
+
+**Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap +, use case -, source -, shape -, risk - (Open issue 1: run recommends No (AHDS); independent columns suggest generated or replaced data). Likely generated or value-replaced file where every method ties with the class prior; would add only noise to rankings.
 
 ## Reference
 

@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 tags:
 - Review Prio 1 (Atlas)
 - Non-IID (Grouped)
@@ -58,6 +59,8 @@ replacements, counter status 5 and new counter codes first seen from 2013Q1 go w
 2012Q4. 47.8% of frauds carry such a trace, which the full history (Zindi's task) leaks. Per-client AUC is 0.61-0.69
 with the cut and 0.85 with the full history. First run as AI Hack Tunisia #4 (Sep 2019). `indabax_drc_2022` is the
 same STEG data.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Large grouped invoice-level fraud task from a real utility; adds a grouped 1M-row regime, with the inspection leak cut out.
 
 ## Reference
 

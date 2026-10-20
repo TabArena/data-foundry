@@ -125,6 +125,11 @@ button, input, textarea { font: inherit; color: inherit; }
 .legend span { display: inline-flex; align-items: center; gap: .3rem; }
 .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .list li + li { border-top: 1px solid var(--rule); }
+.list li.grp {
+  font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; color: var(--ink-3);
+  padding: .7rem .3rem .25rem; display: flex; justify-content: space-between;
+}
+.list li.grp .n { font-weight: 500; font-variant-numeric: tabular-nums; }
 .rowbtn {
   width: 100%; text-align: left; background: none; border: 0; padding: .45rem .3rem; cursor: pointer;
   display: grid; grid-template-columns: .75rem minmax(0, 1fr) auto; gap: .55rem; align-items: center;
@@ -148,6 +153,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .tag.notadded { background: var(--surface-2); color: var(--ink-2); }
 .tag.late { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .tag.decided { background: var(--surface-2); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.tag.prio { background: var(--accent-soft); color: var(--accent); }
+.tag.prio.none { background: transparent; color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--rule); }
 .readonly-items .item .seg, .readonly-items .item textarea { display: none; }
 
 /* Case file: the start mirrors the task-summary case view */
@@ -406,7 +413,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         <input class="search" id="search" type="search" placeholder="Search records" autocomplete="off">
         <div class="filters" id="filters"></div>
         <label class="toggle" for="hideReviewed"><input type="checkbox" id="hideReviewed"> Hide records with a verdict</label>
-        <p class="legend"><span><span class="vdot" aria-hidden="true"></span>your verdict</span><span><span class="fitmark direct" aria-hidden="true"></span><span class="fitmark approximate" aria-hidden="true"></span><span class="fitmark none" aria-hidden="true"></span>use-case fit</span><span>marks done/total</span></p>
+        <p class="legend"><span><span class="vdot" aria-hidden="true"></span>your verdict</span><span><span class="fitmark direct" aria-hidden="true"></span><span class="fitmark approximate" aria-hidden="true"></span><span class="fitmark none" aria-hidden="true"></span>use-case fit</span><span>marks done/total</span><span>by priority, 5 first; the quickest first within one</span></p>
         <ul class="list" id="list"></ul>
       </aside>
       <article class="case" id="case"></article>
@@ -652,10 +659,20 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const label = f ? "Use case fit: " + FIT[f] : "No task summary";
     return '<span class="fitmark ' + (f || "missing") + '" role="img" aria-label="' + esc(label) + '" title="' + esc(label) + '"></span>';
   }
+  const prioLabel = (p) => (p ? "Priority " + p : "No priority");
   function renderList() {
-    const rows = DS.filter(visible).map((d) => {
+    const shown = DS.filter(visible);
+    const perGroup = {};
+    shown.forEach((d) => { perGroup[d.priority || 0] = (perGroup[d.priority || 0] || 0) + 1; });
+    let group;
+    const rows = shown.map((d) => {
       const r = peekRev(d.name), c = counts(d);
-      return '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
+      let head = "";
+      if ((d.priority || 0) !== group) {
+        group = d.priority || 0;
+        head = '<li class="grp" aria-hidden="true"><span>' + prioLabel(d.priority) + '</span><span class="n">' + perGroup[group] + "</span></li>";
+      }
+      return head + '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
         '<span class="vdot"' + (r.verdict ? ' data-v="' + esc(r.verdict) + '"' : "") + '></span>' +
         '<span class="rowname">' + esc(d.name) + "</span>" +
         '<span class="rowmeta">' + fitMark(d) + c.done + "/" + c.total + "</span></button></li>";
@@ -748,7 +765,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     let h = '<button class="back" data-act="back">← All records</button>';
 
     // 1. The start, as on the task-summary page: eyebrow, name, links, then the run's outcome in two lines.
-    h += '<div class="eyebrow"><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
+    h += '<div class="eyebrow"><span class="tag prio' + (d.priority ? "" : " none") + '" title="The record\u2019s priority: 5 is reviewed first">' + prioLabel(d.priority) + "</span>" +
+      '<span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
     if (d.meta) {
       const m = d.meta;
       h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
@@ -1028,12 +1046,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       '<div class="stat"><div class="k">Triage verified</div><div class="v">' + tally.correct + "</div></div>" +
       '<div class="stat"><div class="k">No verdict yet</div><div class="v">' + tally.none + "</div></div>" +
       '<div class="stat"><div class="k">Agree with rec.</div><div class="v">' + agree + "/" + decided + "</div></div></div>";
-    h += '<div class="sumwrap"><table class="sumtab"><thead><tr><th>Record</th><th>Category</th><th>Use case fit</th><th>Recommendation</th><th>Your verdict</th><th>Marks</th><th>Note</th></tr></thead><tbody>';
+    h += '<div class="sumwrap"><table class="sumtab"><thead><tr><th>Record</th><th>Priority</th><th>Category</th><th>Use case fit</th><th>Recommendation</th><th>Your verdict</th><th>Marks</th><th>Note</th></tr></thead><tbody>';
     DS.forEach((d) => {
       const r = peekRev(d.name), c = counts(d);
       const labels = labelsFor(d);
       const f = fitOf(d);
       h += '<tr><td class="name"><button data-act="open" data-name="' + esc(d.name) + '">' + esc(d.name) + "</button></td>" +
+        '<td class="num">' + (d.priority || "–") + "</td>" +
         '<td><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span></td>" +
         "<td>" + (f ? '<span class="pill ' + f + '">' + esc(FIT[f]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
         "<td>" + esc(labels[REC[d.cat]]) + "</td>" +
