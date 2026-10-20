@@ -23,37 +23,50 @@ releases, and rows 63-69 one insurer's 2004 portfolio. None of the records touch
 
 | Row | Workbook candidate | Record | Verdict | Split | Rows / zero share | Reason |
 |---|---|---|---|---|---|---|
+| 6 | freMTPL2 | `fremtpl2` (existing, note added) | Yes | Random (IID) | 678,013 / 96.3% (aggregate amount) | Already in the log; note: 9,116 claimed policies lack a severity row, so the amount target needs a rule |
+| 5 | MEPS healthcare expenditure | `meps_total_healthcare_expenditure` | TBD -> Yes | Grouped (NON-IID) | 18,919 / 14.0% (2023 file) | Real person-level spending; 289 target-copy columns to drop; probe AUC 0.84 for any spending |
+| 11 | Dengue incidence environment | `metro_manila_village_weekly_dengue` | TBD -> Yes | Temporal (NON-IID) | not downloaded (Dryad); ~113,620 / ~71% from the paper | Village-week incidence from lagged environment, temporal split; target is log(n + 1) of incidence |
+| 20 | Wadden Sea Macoma abundance | `wadden_sea_sibes_macoma_abundance` | TBD -> Yes | Grouped (NON-IID) | 59,463 / 56.2% (SIBES) | Paper released no data; re-pointed to the public SIBES survey; grouped R^2 0.36 |
+| 25 | CarbonFluxBench | `carbonfluxbench_flux_tower_upscaling` | TBD -> Yes | Grouped (NON-IID) | 1,262,112 / 0.0% (GPP, NEE) | Large site-grouped upscaling task; not a zero-regime dataset; MODIS features need a modality call |
+| 30 | Insurance ausprivauto0405 | `australian_vehicle_insurance_2004_2005` (merged) | TBD -> Yes | Random (IID) | 67,856 / 93.2% | Same table as dataCar (row 61), compared row by row |
+| 53 | UCI retail-item demand benchmark | `online_retail` (existing, note added) | TBD -> Yes | Temporal (NON-IID) | 541,909 transactions (4,070 items) | Already in the log; the demand series are built from UCI Online Retail |
+| 61 | dataCar / insuranceData | `australian_vehicle_insurance_2004_2005` | TBD -> Yes | Random (IID) | 67,856 / 93.2% | Real policy data, zeros observed as no claim; weak signal (AUC 0.64) |
+| 63 | freMPL2 | `frempl_french_motor_personal_line` | TBD -> Yes | Random (IID) | 38,300 / 94.7% (freMPL2) | Contains freMPL1's contracts; amounts derived from freMPL1's claims (mostly 0.849x), not another coverage |
+| 64 | freMPL3 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 20,600 / 95.9% (freMPL3) | Same contracts as freMPL1; amounts derived from freMPL1's claims (mostly 0.849x), not another coverage |
+| 65 | freMPL5 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 16,000 / 89.7% (freMPL5) | One of five disjoint tables with one schema (freMPL5-9: 115,200 rows) |
+| 66 | freMPL6 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 32,400 / 89.0% (freMPL6) | As freMPL5 |
+| 67 | freMPL7 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 26,600 / 89.2% (freMPL7) | As freMPL5 |
+| 68 | freMPL8 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 24,000 / 89.9% (freMPL8) | As freMPL5 |
+| 69 | freMPL9 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 16,200 / 91.8% (freMPL9) | As freMPL5 |
 | 1 | New Brunswick depth-to-bedrock | `new_brunswick_depth_to_bedrock` | TBD -> 2nd Tier | Grouped (NON-IID) | not downloaded (no deposit) | Outcrop zeros are structural but 77% come from one survey programme; table not deposited, data statement unread |
 | 2 | Sweden depth-to-bedrock | `sweden_depth_to_bedrock` | TBD -> 2nd Tier | Grouped (NON-IID) | not downloaded (no deposit) | Only code is public; `HKDepth` may be an existing depth model (leak) and censored depths need a rule |
+| 17 | Thai road-accident fatalities | `thailand_road_accident_fatalities_2015` | TBD -> 2nd Tier | Random (IID) | 20,229 / 72.4% | Valid crash-severity task but 6 coarse covariates (1,165 cells); a richer 2019-2022 register exists |
+| 18 | Cape Floristic Region plant cover | `cape_floristic_region_family_cover` | TBD -> 2nd Tier | Random (IID) | 180 / 48.9% and 30.6% | Real signal on a tiny methods-paper table; covers pile up at 0.99 and exceed 1 in 21 plots |
+| 31 | Insurance norauto | `norwegian_automobile_insurance_norauto` | TBD -> 2nd Tier | Random (IID) | 183,999 / 95.4% | Four rating factors form 142 cells; 145,367 exact duplicate rows |
+| 55 | HDtweedie auto insurance | `autoclaim_sas_motor_insurance` (merged) | TBD -> 2nd Tier | Temporal (NON-IID) | 2,812 / 68.3% (the IN_YY subset) | HDtweedie's auto is the IN_YY subset of AutoClaim (row 56) |
+| 56 | AutoClaim / cplm motor insurance | `autoclaim_sas_motor_insurance` | TBD -> 2nd Tier | Temporal (NON-IID) | 10,296 / 73.4% | Clear signal (AUC 0.82) but SAS sample data with an unnamed insurer; generated-data checks mixed |
+| 58 | Nantucket Sound sea-duck abundance | `nantucket_sound_sea_duck_aerial_survey_counts` | TBD -> 2nd Tier | Temporal (NON-IID) | not downloaded (990 MB zip on Dryad) | Predictive framing with rich covariates, in-sample validation only; zip contents unknown |
+| 62 | swmotorcycle / CASdatasets | `swedish_motorcycle_insurance_wasa` | TBD -> 2nd Tier | Random (IID) | 64,548 / 99.0% | Rating-factor cells, 670 with a claim |
 | 3 | US FIA forest biomass | `fia_plot_aboveground_biomass` | No | Grouped (NON-IID) | not downloaded (no task table) | Multi-table inventory; plot biomass is an allometric sum of the tree tally; the cited study is county-level estimation |
 | 4 | SAV biomass - Upper Mississippi River | `upper_mississippi_sav_rake_biomass` | No | Grouped (NON-IID) | not downloaded (ScienceBase 403) | Method-calibration release; the rake density score is a direct proxy for the weight |
-| 5 | MEPS healthcare expenditure | `meps_total_healthcare_expenditure` | TBD -> Yes | Grouped (NON-IID) | 18,919 / 14.0% (2023 file) | Real person-level spending; 289 target-copy columns to drop; probe AUC 0.84 for any spending |
-| 6 | freMTPL2 | `fremtpl2` (existing, note added) | Yes | Random (IID) | 678,013 / 96.3% (aggregate amount) | Already in the log; note: 9,116 claimed policies lack a severity row, so the amount target needs a rule |
 | 7 | NOAA GHCN-D precipitation | `ghcn_daily_precipitation` | No | Temporal (NON-IID) | 57,632 / 66.7% (one station) | Station observation archive; any target forecasts the station's own series; trace stored as 0 |
 | 8 | PV generation / UNISOLAR | `unisolar_la_trobe_pv_generation` | No | Temporal (NON-IID) | 2,731,946 / 0.0% (night is NA) | Generation forecasting; the claimed night-time zeros do not exist in the release |
 | 9 | Phragmites cover / CRMS | `crms_phragmites_cover` | No | Grouped (NON-IID) | 75,418 visits / 94.1% | Monitoring table without a prediction task; most zeros are sites outside the species' range |
 | 10 | Vernal wetland vegetation | `vernal_pool_restoration_plant_cover` | No | Grouped (NON-IID) | not downloaded (Dryad) | 2 x 2 management experiment with 15 pools |
-| 11 | Dengue incidence environment | `metro_manila_village_weekly_dengue` | TBD -> Yes | Temporal (NON-IID) | not downloaded (Dryad); ~113,620 / ~71% from the paper | Village-week incidence from lagged environment, temporal split; target is log(n + 1) of incidence |
 | 12 | Bee-sting injuries | `korea_bee_sting_injuries_district_year` | No | Temporal (NON-IID) | not downloaded (not released) | Restricted NEDIS outcome; association study |
 | 13 | Western bluebird prospecting | `western_bluebird_nest_box_prospecting` | No | Grouped (NON-IID) | 110 / 16.4% | Playback experiment in 10 vineyards; zeros are a treatment effect |
 | 14 | Alpine treeline seedlings | `treeline_seedling_emergence_experiment` | No | ? | not downloaded (Dryad) | Single-site sowing experiment |
 | 15 | Magellanic woodpecker / beetle abundance | `magellanic_woodpecker_beetle_emergence` | No | ? | not downloaded (Dryad) | Case-control indicator test |
 | 16 | Plains-wanderer abundance | `plains_wanderer_spotlight_counts` | No | Grouped (NON-IID) | not downloaded (Dryad); 249 / ~84% from the paper | Explanatory study; 16 sites, 41 positive surveys |
-| 17 | Thai road-accident fatalities | `thailand_road_accident_fatalities_2015` | TBD -> 2nd Tier | Random (IID) | 20,229 / 72.4% | Valid crash-severity task but 6 coarse covariates (1,165 cells); a richer 2019-2022 register exists |
-| 18 | Cape Floristic Region plant cover | `cape_floristic_region_family_cover` | TBD -> 2nd Tier | Random (IID) | 180 / 48.9% and 30.6% | Real signal on a tiny methods-paper table; covers pile up at 0.99 and exceed 1 in 21 plots |
 | 19 | Lichen percent cover | `athabasca_forage_lichen_cover` | No | Grouped (NON-IID) | not downloaded (not released) | No table released; zero share set by preferential sampling |
-| 20 | Wadden Sea Macoma abundance | `wadden_sea_sibes_macoma_abundance` | TBD -> Yes | Grouped (NON-IID) | 59,463 / 56.2% (SIBES) | Paper released no data; re-pointed to the public SIBES survey; grouped R^2 0.36 |
 | 21 | OpenDengue | `opendengue_case_counts` | No | Temporal (NON-IID) | 29,873 / 32.6% (national); 2,821,791 / 55.1% (spatial) | Case counts without predictors; some zeros are documented fills |
 | 22 | Wildlife Insights camera traps | `wildlife_insights_camera_trap_detections` | No | ? | not downloaded (platform) | Platform of image identifications; no site-level count table |
 | 23 | iWildCam / LILA | `iwildcam_2020_camera_trap_species` | No | Grouped (NON-IID) | not downloaded (images) | Image classification; workbook link dead |
 | 24 | Freiburg urban wildlife camera traps | `freiburg_urban_mammal_camera_trap_events` | No | Grouped (NON-IID) | not downloaded (Dryad); ~6,884 events | Detection events only (no zeros); the paper's target is an unreleased survey |
-| 25 | CarbonFluxBench | `carbonfluxbench_flux_tower_upscaling` | TBD -> Yes | Grouped (NON-IID) | 1,262,112 / 0.0% (GPP, NEE) | Large site-grouped upscaling task; not a zero-regime dataset; MODIS features need a modality call |
 | 26 | Marine biotoxin benchmark | `basque_offshore_bivalve_biotoxins` | No | ? | 5,446 raw / 0.0% (93.6% below-LOQ) | Broken benchmark derivative (2 stations, 24 toxins pooled); non-detects coded at the LOQ |
 | 27 | Hydrographic benchmark | `basque_offshore_ctd_chlorophyll` | No | Grouped (NON-IID) | 8,195 raw, 4,653 after pipeline / 0.0% | Sensor cross-prediction within casts; no zeros |
 | 28 | Taxi tip amount / NYC TLC | `nyc_taxi_green_dec_2016` (existing, note added) | No | - | 581,835 / 15.2% (OpenML 42729) | Already in the log (TLC trip records); card-only copy, so zero tips are real |
 | 29 | Taxi green/NYC tip-percentage subsets | `nyc_taxi_green_dec_2016` (existing, note added) | No | - | same as row 28 | Same TLC source and target as row 28 |
-| 30 | Insurance ausprivauto0405 | `australian_vehicle_insurance_2004_2005` (merged) | TBD -> Yes | Random (IID) | 67,856 / 93.2% | Same table as dataCar (row 61), compared row by row |
-| 31 | Insurance norauto | `norwegian_automobile_insurance_norauto` | TBD -> 2nd Tier | Random (IID) | 183,999 / 95.4% | Four rating factors form 142 cells; 145,367 exact duplicate rows |
 | 32 | PV utility-scale dataset (2017-22) | `utility_scale_pv_generation_2017_2022_unidentified` | No | ? | not downloaded (no source) | No traceable source |
 | 33 | Dutch vegetation-plot plant cover (OZAB) | `dutch_vegetation_plot_species_cover` | No | ? | not downloaded (Dryad) | Three-species trend estimation; ordinal cover |
 | 34 | Palaearctic rear-edge forest birds | `morocco_forest_bird_transect_counts` | No | ? | not downloaded (Dryad) | Biogeographic hypothesis test on ~100-200 transects |
@@ -75,23 +88,10 @@ releases, and rows 63-69 one insurer's 2004 portfolio. None of the records touch
 | 50 | Car Parts intermittent-demand benchmark | `car_parts_intermittent_demand` | No | Temporal (NON-IID) | 2,674 x 51 months / 71.4% (75.9% zero-filled copy) | Univariate series; one release zero-fills truncated series |
 | 51 | Auto intermittent-demand benchmark | `auto_intermittent_demand` | No | Temporal (NON-IID) | 3,000 x 24 months / 22.0% | Univariate series forecasting |
 | 52 | RAF aerospace-parts demand | `raf_aerospace_parts_demand` | No | Temporal (NON-IID) | 5,000 x 84 months / 89.8% | Univariate series forecasting |
-| 53 | UCI retail-item demand benchmark | `online_retail` (existing, note added) | TBD -> Yes | Temporal (NON-IID) | 541,909 transactions (4,070 items) | Already in the log; the demand series are built from UCI Online Retail |
 | 54 | Weather4cast 2023 | `weather4cast_2023_rain_movie_prediction` | No | Custom | not downloaded (registration) | Satellite-image rain nowcasting; workbook link dead |
-| 55 | HDtweedie auto insurance | `autoclaim_sas_motor_insurance` (merged) | TBD -> 2nd Tier | Temporal (NON-IID) | 2,812 / 68.3% (the IN_YY subset) | HDtweedie's auto is the IN_YY subset of AutoClaim (row 56) |
-| 56 | AutoClaim / cplm motor insurance | `autoclaim_sas_motor_insurance` | TBD -> 2nd Tier | Temporal (NON-IID) | 10,296 / 73.4% | Clear signal (AUC 0.82) but SAS sample data with an unnamed insurer; generated-data checks mixed |
 | 57 | Ghana schistosomiasis egg counts | `ghana_schoolchildren_schistosoma_egg_counts` | No | Grouped (NON-IID) | 1,345 / 94.1% | Model-comparison study; 80 positives in 12 communities |
-| 58 | Nantucket Sound sea-duck abundance | `nantucket_sound_sea_duck_aerial_survey_counts` | TBD -> 2nd Tier | Temporal (NON-IID) | not downloaded (990 MB zip on Dryad) | Predictive framing with rich covariates, in-sample validation only; zip contents unknown |
 | 59 | Svalbard reindeer total-count pixels | `svalbard_reindeer_total_count_pixels` | No | Grouped (NON-IID) | not downloaded (Dryad); >=94% from the paper | Workbook DOI is drone imagery; the pixel table is a population estimate with 4 features |
 | 60 | Finnish large-carnivore FWTS | `finland_protected_area_carnivore_track_density` | No | Grouped (NON-IID) | not downloaded (Dryad) | Matched causal design, controls reused |
-| 61 | dataCar / insuranceData | `australian_vehicle_insurance_2004_2005` | TBD -> Yes | Random (IID) | 67,856 / 93.2% | Real policy data, zeros observed as no claim; weak signal (AUC 0.64) |
-| 62 | swmotorcycle / CASdatasets | `swedish_motorcycle_insurance_wasa` | TBD -> 2nd Tier | Random (IID) | 64,548 / 99.0% | Rating-factor cells, 670 with a claim |
-| 63 | freMPL2 | `frempl_french_motor_personal_line` | TBD -> Yes | Random (IID) | 38,300 / 94.7% (freMPL2) | freMPL2 overlaps freMPL1/3/4 (same policies, other guarantee) |
-| 64 | freMPL3 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 20,600 / 95.9% (freMPL3) | Same 20,594 policy-years as freMPL1 under another guarantee |
-| 65 | freMPL5 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 16,000 / 89.7% (freMPL5) | One of five disjoint tables with one schema (freMPL5-9: 115,200 rows) |
-| 66 | freMPL6 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 32,400 / 89.0% (freMPL6) | As freMPL5 |
-| 67 | freMPL7 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 26,600 / 89.2% (freMPL7) | As freMPL5 |
-| 68 | freMPL8 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 24,000 / 89.9% (freMPL8) | As freMPL5 |
-| 69 | freMPL9 | `frempl_french_motor_personal_line` (merged) | TBD -> Yes | Random (IID) | 16,200 / 91.8% (freMPL9) | As freMPL5 |
 
 ## Counts
 
