@@ -25,6 +25,8 @@
   side beats the previous quarter's class shares in every window. Proposal: for temporal tasks, cap by keeping the
   newest rows. Also: the 1-NN label agreement in `leak_probes.py` mostly measures panel repetition on loan-period
   data. The probe library changes; no definition does.
+  **Lennart (2026-10-21, go ahead):** Yes go ahead, but also feel free to raise the row cap maybe as needed and as
+  we have compute?
   **Resolved (2026-10-21, Lennart):** the task probe keeps a temporal task's newest train rows and the cap is now
   200,000 rows (`MAX_ROWS`); the dummy uses the whole train side. mortgage at 200k raises no flag (LightGBM +0.151,
   drift +0.122, one feature +0.117), as uncapped. A full sweep at the new cap (about 2-3 hours) is not run yet. The
@@ -46,6 +48,7 @@
   panel, column audit, 2026-10-20). Nothing is wrong in any of the three, but a reader comparing them sees three
   types for the same thing (CLEAN-14, Should). Proposal: pick one form for binary presence flags and apply it to the
   three definitions in one change.
+  **Lennart (2026-10-21, go ahead):** Assuming it is binary, the categorical dtype might be best?
   **Resolved (2026-10-21, Lennart):** categorical, after checking the values are only 0 and 1 (CLEAN-14 amended for
   a molecule's presence flags); qsar_oral_toxicity and qsar_tid_11 changed, hiva_agnostic already was.
 - **Consistency check: hiva_agnostic keeps 23 exact copies.** It keeps the 23 compounds that repeat another's
@@ -55,6 +58,8 @@
   cross the challenge's training/validation cut, so the effect is negligible, recorded as an exception; (b) drop its
   23 copies as well; (c) reopen qsar_oral_toxicity and keep its copies; (d) amend LEAK-19 with a share below which
   copies may stay. For hiva_agnostic's review; it does not block qsar_oral_toxicity.
+  **Lennart (2026-10-21, discuss):** IF the copies dont make any sense from a task use case, we should drop them as
+  far as I understand
   **Answer (AI, 2026-10-21):** the 23 copies are not one compound entered twice: the challenge's structure release
   has 4,229 distinct NSC numbers, and at most 19 of its structures repeat another (7 exact, 9 ignoring stereo, 19
   counting salt forms), so at least 4 of the 23 are different compounds the descriptors cannot tell apart. All 46
@@ -70,6 +75,8 @@
   per vector, LEAK-19 and LEAK-20 adapted to regression; (c) group on the vector, which needs the ChEMBL id the
   definition drops (SPLIT-24 bars a bare feature hash); (d) amend the rule for repeated vectors with differing
   regression targets. For qsar_tid_11's review.
+  **Lennart (2026-10-21, discuss):** THis might be a grouped task, investigate if that makes most sesne here, or if
+  we should do (a) or (b)
   **Answer (AI, 2026-10-21):** all 5,742 rows carry distinct ChEMBL compound ids, so the repeats are different
   compounds: of 798 traced rows, 179 vectors are stereoisomers, 125 analogs (F against Cl), 31 salt forms of one
   parent (target sd 0.006, real copies). LightGBM RMSE: random split 0.765, grouped on the vector 0.781, one row per
@@ -103,6 +110,11 @@
   can rank the models' outputs (a hard-label metric such as FORCE 2020's penalty matrix or African Credit's F1 then
   stays a note), and align definitions.md with it. The knowledge files change; the five definitions are then checked
   against the amended rule.
+  **Lennart (2026-10-21, go ahead):** Ok maybe change the skill and update these cases as you see fit, in short this
+  is what I want: we want to correctly document the metric that was used by the original use case. We only want to
+  overule it, if the metric was biased or wrong (based on some evidence we can infer from the paper). In general, we
+  watn to keep the note of the metric, as it makes no difference for the benchmark later which currently ignores
+  this field
   **Resolved (2026-10-21, Lennart):** TP-6 amended: a definition declares the metric its source's competition or
   paper scored, overruled only on written evidence that it is biased or wrong; the notes always name the original.
   Changed: zillow_prize `mae`, numerai_v5_2_1m `pearsonr`, african_credit `f1`, force_2020 its penalty matrix,
@@ -116,6 +128,8 @@
   mice_protein shows the same divergence). After the definition masked a few hundred impossible readings (DCAL
   10,006.8, DRHO -7,429.3 and others) the task probe's LightGBM gives 0.872 and no longer diverges, so extreme
   values were the likely trigger. Proposal: check the benchmark's LightGBM default on this dataset once it is built.
+  **Lennart (2026-10-21, go ahead):** we dont need to check the benchmark case, we can do that later, it is fine as
+  is for now
   **Resolved (2026-10-21, Lennart):** left for later, as is.
 
 ### Churn datasets
@@ -151,6 +165,7 @@
   frauds carry the trace; ROC AUC 0.848 with the full history against 0.688 with the cut). Option (a) covers both
   datasets; it does not block STEG either, whose issue 1 asks whether the cut stands (STEG review panel, precedent
   check and mediator, 2026-10-20).
+  **Lennart (2026-10-21, go ahead):** Reopen kick here
   **Resolved (2026-10-21, Lennart):** kick reopened: the expresso test gives the same signature (`WheelType` missing
   for 24.9% of bad buys and 1.5% of good ones in every band of age, odometer and price). kick's REVIEW.md issue 1
   asks to drop it, issue 2 a new finding on `PRIMEUNIT`/`AUCGUART`.
@@ -176,6 +191,7 @@
   2026-10-20). Proposal: amend PROV-14 so that a repair (same units, same features, damaged values restored from the
   origin) stays under its record, and only a rebuild from other sources gets a new one. It does not block
   framingham, whose issue 7 asks only how to record it.
+  **Lennart (2026-10-21, go ahead):** I agree to this
   **Resolved (2026-10-21, Lennart):** PROV-14 amended: a repair stays under its record; framingham's issue 7 is
   answered.
 - **Amend PROV-3 for an owner's disclosure control on a real cohort?** PROV-3 (Must) excludes a real table whose values
@@ -188,6 +204,7 @@
   stroke_prediction may be a second case: its ages 78 to 82 hold about 1,029 more patients than the trend gives, and
   the extra rows carry the stroke risk of older ages, as recording every age above 82 inside that range would (its
   issue 1; this points that way and does not prove it).
+  **Lennart (2026-10-21, go ahead):** agree, but also add a note about selection bias in the curation record here
   **Resolved (2026-10-21, Lennart):** PROV-3 amended for an owner's disclosure control with no measured damage;
   framingham's record, notes and issue 3 now name the selection: the teaching set is 4,434 of the 5,209 enrolled,
   period 1 is about 1956, and how the subset was drawn is not documented.
@@ -196,6 +213,7 @@
   Kaggle file aasheesh200 with MIT's `TenYearCHD`, which counts 265 deaths and losses among its 644 positives
   (framingham_heart_study_fhs, decision table), and sets `domain_str="physics & astronomy"`. Not touched. Proposal:
   fix both when SelectArena is next rebuilt, or note them there.
+  **Lennart (2026-10-21, leave as is):** We dont care about the select arena copy, ignore it
   **Resolved (2026-10-21, Lennart):** left as is (SelectArena is out of scope).
 
 ### Rules from the sarcoma review
@@ -208,6 +226,8 @@
   precedent that contradicts a rule is flagged, not followed. Proposal: amend USE-8 so that a weak LEAK-30 keep does
   not by itself make a fit approximate; otherwise reopen the fit labels of those datasets. It does not block sarcoma,
   which stays approximate either way.
+  **Lennart (2026-10-21, go ahead):** let us stay with direct fit if the task (without leakage) would be a direct
+  fit and only move to approixmate fit if we had to change a lot to avoid the leak
   **Resolved (2026-10-21, Lennart):** USE-8 amended: a potential leak kept on purpose does not by itself make a fit
   approximate; the fit is approximate only when avoiding the leak needed a large change to the task. One question
   follows in "Strong kept leaks and the fit" below.
@@ -224,6 +244,8 @@
   written for one dataset; it would have to say why stock stays out, and leg 1 needs a metric the adapter does not
   have yet. Proposal: no amendment; g_research goes `No` + `Time-series (Forecasting)` (its issue 1). Only if you
   amend do its issues 2 and 6 and the next item apply to it.
+  **Lennart (2026-10-21, discuss):** Mhm, double check this in depth, does the Kaggle best solutions not use taublar
+  models? do they use foreacsting models?
   **Answer (AI, 2026-10-21):** the top three were all LightGBM (G-Research's wrap-up), not sequence models; the 3rd
   place trains one LightGBM per coin on the coin's and the market's past 60/300/900-minute returns, the 14th adds
   the coin's last 15-minute return (close to the last target), and no top solution used an LSTM or ARIMA. So they
@@ -246,6 +268,8 @@
   Should); (b) hold both back until the adapter honours their metric (critic, EV-5; numerai mediator, 2026-10-20).
   For g_research it
   applies only if TP-10 is amended (previous item).
+  **Lennart (2026-10-21, discuss):** Here we might want to adapt the task to approximate it with RMSE later and add
+  this as a note, what would this look like? how are models usually scored here?
   **Answer (AI, 2026-10-21):** both sources score a correlation (Numerai: per-era correlation of rank-gaussianised
   predictions; G-Research: a Pearson correlation weighted by asset over the test period; practitioners: IC and its
   mean over its sd). RMSE fails because MSE = 1 - 2s*rho + s^2 for standardised target and a prediction of
@@ -322,6 +346,8 @@
   alone. Proposal: (a) none, keep CLEAN-19 as written and settle rosbank1 by its issue 5; (b) reopen alfa to match
   rosbank1; (c) amend CLEAN-19 so that a peer-reviewed tabular baseline for the data counts as what a data scientist
   would build.
+  **Lennart (2026-10-21, discuss):** It is both, we need to think what all kind of teams of data scientists would
+  build, so the combination of baselines from competitions and their top solutions.
   **Answer (AI, 2026-10-21):** proposed CLEAN-19 wording: "It is what teams of data scientists on this task would
   build: the union of the organizers' or a published baseline for the data and the features the top solutions
   share." Consistency check: on 2026-10-13 you chose alfa's top-solution aggregates instead of the organizers'
@@ -360,6 +386,9 @@
   perth_house_prices adds a spacing option for the family: windows at the refit cadence, spaced with `step` (how far
   each window moves back) where one atypical stretch would hold them all, as rain_in_australia does (`step=42`);
   perth's case is its issue 6.
+  **Lennart (2026-10-21, discuss):** We can keep the horion divers as is, as different task might forecast
+  diffeerntly long, maybe standardize some of it as you see fit but in general, all is fine here and we dont need to
+  force the same split
   **Resolved (2026-10-21, Lennart):** no family-wide window length. california_house_prices_2020 did break SPLIT-14
   (its oldest window trained on 25% of the rows) and now trains on 50%, 67% and 83%.
 - **Cite the first publication in nyc_taxi_trip_duration.** Like house_sales before this review, it names a
@@ -371,6 +400,7 @@
   appear more than once ("to avoid group-related target leakage"). Under its temporal split an earlier sale is history
   (USE-10, SPLIT-13), and house_sales, melbourne_housing_market and zillow_prize keep resales (house_sales precedent
   check, 2026-10-20). Proposal: keep the repeated sales there too.
+  **Lennart (2026-10-21, go ahead):** we want to keep real repeats, as hosue can be sold several times
   **Resolved (2026-10-21, Lennart):** california keeps its resales; 51 pairs with the same price are one sale
   scraped twice and keep their newest copy (39,060 rows).
 
@@ -447,6 +477,9 @@
   with the local hour, weekday and day of year, and 0.483 / 0.452 / 0.462 with AutoGluon's date parts. Under `default`
   the scores of these tasks measure the encoding as much as the models (nyc and pkdd review panels, 2026-10-20).
   Proposal: run v0.2 with `tabarena_default`, or change the harness to keep the hour for every datetime-only dataset.
+  **Lennart (2026-10-21, discuss):** Why did you propose this? we will always run with datetime encoding in v0.2,
+  most likely some evolution of tabarena_default. If you do something in your skills, feel free to use this for your
+  tests or checks and probes
   **Answer (AI, 2026-10-21):** it was proposed because the v0.1 default encodes a datetime as year, month, day and
   weekday and loses the hour, which on nyc_taxi_trip_duration and pkdd_15 moves the score more than the models do.
   If the v0.2 runs encode datetimes with the hour (as tabarena_default does), nothing is needed; the probes already
@@ -460,6 +493,8 @@
   1.39M) is the first case between the two (its issue 5; nyc review panel, precedent check and mediator,
   2026-10-20). Proposal: reword the check-table row to match the temporal `_1m` section, or to the amendment the
   curator chooses in nyc's issue 5.
+  **Lennart (2026-10-21, go ahead):** we want at moast 1m train samples and the naming can follow as is consient and
+  best
   **Resolved (2026-10-21, Lennart):** definitions.md states the budget once: at most 1M training rows; a dataset
   with a train side above it ships as a `_1m` version. nyc_taxi_trip_duration then needs one (see "A `_1m` version
   of nyc_taxi_trip_duration" below).
@@ -590,6 +625,8 @@
   columns keep only marks of uneven distributions (glucose, ages 78 to 82), none linked to the label (the spike at 65
   is no larger among patients with a stroke than among those without, p 0.45); its issue 1 applies the answer if its
   issue 5 keeps the dataset.
+  **Lennart (2026-10-21, discuss):** we can keep it case by case but work towards having both a and b imo, it is
+  hard to tell in general
   **Answer (AI, 2026-10-21):** draft: "Without a source statement or a written-down generator, measured marks are
   judged case by case. The strongest case has both (a) calibrated marks from at least two PROV-3 tests and (b) marks
   linked to the label (test 5 or 7). With only one of the two, the curator decides, and the record says which is
@@ -629,6 +666,7 @@
   out: (a) amend LEAK-25 so that "recovered" covers "located by a rule that does not read the label, and dropped",
   with the three as Cases; (b) retire the two open datasets like ghanas; (c) reopen caracas to match ghanas. The two
   open datasets wait for this decision.
+  **Lennart (2026-10-21, go ahead):** do (a)
   **Resolved (2026-10-21, Lennart):** (a): LEAK-25 amended; account_debt_south_africa's issue 1 and
   fraud_detection's issue 2 now ask only for your ok on the drop.
 
@@ -641,6 +679,7 @@
   finding (credit_card_customers review panel, precedent check and mediator, 2026-10-20). Ways out: (a) define it in
   the knowledge files (what earns it, what a benchmark run does with it) and apply it alike; (b) drop it from the
   schema and the definitions. Proposal: (b), unless the runs are to weight or filter by it.
+  **Lennart (2026-10-21, go ahead):** Do (b), we have this now with use case fit more or less
   **Resolved (2026-10-21, Lennart):** (b): new definitions may not set `2ndTierData`; it stays readable because a
   shipped BeyondArena container (coffee_rating_prediction) carries it. Removed from credit_card_customers and
   coffee_rating_prediction.
@@ -660,6 +699,8 @@
   whose construction is undocumented may ship with `fit="approximate"` and a note naming the gap", saying whether it
   covers an unknown quantity (diabetes_3) or only an unknown recording (blood_tests_drink_prediction). Either way add
   the three as Cases. The panel proposes neither over the other; both sides prefer either one to retiring diabetes_3. A keep of mobile_churn also needs the item "Amend PROV-1/PROV-2 for a named course or teaching platform", whose wider wording must say whether an undefined label rule is allowed: that is this question. diabetes_3's issue 1 decides this item.
+  **Lennart (2026-10-21, go ahead):** In general, I would like to keep the data and just mark it as approximate, and
+  we can case-by-case decide the details
   **Resolved (2026-10-21, Lennart):** USE-5 amended: an undocumented label from a named publication ships
   approximate with a note naming the gap, case by case; diabetes_3's issue 1 is settled.
 
@@ -697,6 +738,7 @@
   fit, and the diabetes_3 item "USE-5 for a label whose quantity no source documents: a reading or an amendment?",
   whose two ways out both ship such a label as `approximate`: deciding that item answers this one. No dataset waits
   on it.
+  **Lennart (2026-10-21, go ahead):** as above, yea it does
   **Resolved (2026-10-21, Lennart):** USE-8 amended: a label definition the sources do not settle makes the fit
   approximate; differentiated_thyroid_cancer_recurrence's fit rests on it.
 - **thyroid_discordant's `Trivial` marker was never tested under TP-4.** TP-4 (Must) says `Trivial` needs proof, a
@@ -727,6 +769,7 @@
   2026-10-20). numerai's case would not meet "when small" in its oldest window. Proposal: decide the three alike; the
   panels recommend dropping the selection in qsar_bioconcentration and numerai_v5_2, so the amendment is needed only if
   you keep them.
+  **Lennart (2026-10-21, leave as is):** keep it case by case
   **Resolved (2026-10-21, Lennart):** no amendment; LEAK-31 says a selection the source published is decided case by
   case.
 
@@ -758,6 +801,8 @@
   a short rule in TP-7 or USE-5 (for example: regression when the source scores by distance or models a number,
   classes when the source's classes are known and a field convention merges the rare ones), with these four as
   its Cases rows. Deciding corporate_credit_rating_cat's issue 2 first gives the rule its fourth case.
+  **Lennart (2026-10-21, leave as is):** In general, we decide this by the source but also check the soruce against
+  common sense and best pratices in similiar use cases, so it reamins case by case
   **Resolved (2026-10-21, Lennart):** left case by case, as you wrote: by the source, checked against common sense
   and the practice of similar use cases.
 
@@ -781,6 +826,8 @@
   mobile_churn name no first platform and would be `No` with `Missing source information`, like
   water_quality_and_potability. Keeping either needs a wider wording (an untraceable upload that passes PROV-3, with
   the gaps written as an approximate fit). Retire both, or widen the rule?
+  **Lennart (2026-10-21, discuss):** it is still case by case, if the data looks good enough even without a good
+  source but there is a source, we want to keep it for now and risk it
   **Resolved (2026-10-21, Lennart):** PROV-2 amended as you wrote: a sound upload (passes PROV-3) with a source to
   point to is kept for now, case by case, as an approximate fit with a note. tour_travels_churn stays (the
   generated-data probes raise nothing); mobile_churn's issue 1 and credit_card_customers' issue 3 are settled.
@@ -803,6 +850,9 @@
   0/1 flag (mercedes' options are int)? (3) Does CLEAN-11's "with the source's words" also bind its second clause (a
   single extreme training target)? If so, mercedes' drop has no source words. (4) maps_router_eta_1m's gap assumes
   `track_length` is in metres (minimum 1,000.0; in km drives would last thousands of hours).
+  **Lennart (2026-10-21, go ahead):** (1) yes, (2) yes we should have one clear way to treat 0/1 flags, (3) no it
+  also bind to what experts did by default, so again more complicated case by case, (4) check this error for track
+  length and how often it occurs
   **Resolved (2026-10-21, Lennart):** (1) `ForcedIIDFromTemporal` is now refused with a grouping or temporal split
   (validation and bundle check); no definition breaks. (2) CLEAN-14 amended: every 0/1 flag, booleans included, is
   categorical after a check on the data; 35 definitions changed (the list is in the CHANGELOG). (3) CLEAN-11

@@ -52,7 +52,12 @@ Each issue starts with `N. ` at the start of a line; its other lines are indente
 title is the bold text at the start (`1. **Keep the target in decibels?** The source ...`), or else the first
 sentence. An issue keeps its `Implemented:` and `Alternative:` parts, their numbers and the public links to its
 evidence. An answer to the curator's question goes into the issue as `**Answer (AI, <date>):**`; it does not close
-the issue.
+the issue. Write the curator's note that prompted it just before, at the start of a line, as
+`**Lennart (<date>, <mark>):** <the note, in their words>`. The page shows an issue or a cross-dataset item as a
+conversation: the original text, then one box per turn, each starting at a line that opens with one of these labels:
+`**Answer (AI, <date>):**`, `**Consistency check (AI, <date>):**`, `**<curator> (<date>[, <mark>]):**`,
+`**Resolved (<date>[, <who>]):**` or `**Deferred (<date>):**`. An open item whose last turn is the AI's is marked
+"Your turn".
 
 The number is the key of the curator's mark (`items.<N>` on the page). Numbers are unique in the file and never
 change; gaps are fine. A new issue takes the next number after the highest the file has had, so an old mark never

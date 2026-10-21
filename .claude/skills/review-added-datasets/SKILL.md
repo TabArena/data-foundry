@@ -135,7 +135,7 @@ register's report on the decisions of the day (`decision_register.py --since <da
 
 ## Step 5: Update the page
 
-Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Then
+Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Copy each note you acted on into the file first, as `**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with `if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then
 rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what is
 still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are
 stored under them. A new issue takes the next number after the highest its file has had.

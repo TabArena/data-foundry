@@ -384,3 +384,24 @@ def test_a_definition_removed_on_a_squash_merged_branch_is_found(brp, tmp_path):
     assert brp._show(tmp_path, commit, "gone/dataset.py") == "code\n"
     assert removed_on is not None
     assert brp._last_commit_with(tmp_path, "never/dataset.py") is None
+
+
+def test_thread_splits_the_original_from_the_turns(brp):
+    text = (
+        "The item proposes a change.\n"
+        "**Lennart (2026-10-21, discuss):** Why?\n"
+        "**Answer (AI, 2026-10-21):** Because the rule says so.\n"
+        "Second line of the answer.\n"
+        "**Resolved (2026-10-22, Lennart):** done."
+    )
+    out = brp._thread(text)
+    assert "proposes a change" in out["html"] and "Why?" not in out["html"]
+    who = [(t["who"], t["kind"], t["date"]) for t in out["thread"]]
+    assert who == [
+        ("curator", "note", "2026-10-21"),
+        ("ai", "answer", "2026-10-21"),
+        ("closed", "resolved", "2026-10-22"),
+    ]
+    assert out["thread"][0]["mark"] == "discuss" and out["thread"][0]["by"] == "Lennart"
+    assert "Second line" in out["thread"][1]["html"]
+    assert brp._thread("No turns here.")["thread"] == []

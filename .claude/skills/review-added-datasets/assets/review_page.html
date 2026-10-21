@@ -244,6 +244,19 @@ textarea.note.big { min-height: 4.2rem; }
 .statepill[data-v="change"], .statepill[data-v="leave"] { color: var(--change); }
 .statepill[data-v="discuss"] { color: var(--discuss); }
 .clamp { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+/* The conversation on an issue or item: the original text, then one turn per answer, note or closing label */
+.thread { list-style: none; margin: .7rem 0 0 2.4rem; padding: 0; display: grid; gap: .5rem; }
+.turn { border: 1px solid var(--rule); border-left-width: 4px; border-radius: 0 8px 8px 0; padding: .45rem .75rem .55rem; background: var(--surface); max-width: 78ch; }
+.turn.ai { border-left-color: var(--accent); background: var(--accent-soft); }
+.turn.curator { border-left-color: var(--discuss); background: var(--discuss-soft); margin-left: 1.5rem; }
+.turn.closed { border-left-color: var(--ok); background: var(--ok-soft); }
+.turn.closed.deferred { border-left-color: var(--ink-3); background: var(--surface-2); }
+.turn .who { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); margin-bottom: .15rem; display: flex; flex-wrap: wrap; gap: .2rem .6rem; }
+.turn .who .when { font-weight: 500; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
+.turn .md p { margin: .25rem 0; }
+.origlabel { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: .55rem 0 0 2.4rem; }
+.yourturn { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; background: var(--approx-soft); color: var(--approx); white-space: nowrap; }
+@media (max-width: 860px) { .thread, .origlabel { margin-left: 0; } .turn.curator { margin-left: .8rem; } }
 .more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
 .more[hidden] { display: none; }
 
@@ -490,6 +503,24 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   // Plain text with `code` spans, such as the panel's recommendation and its role names.
   const escCode = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+  // The conversation on an issue or item (from the builder's `thread`): who spoke, when, and what was said.
+  const fmtDay = (iso) => { const p = String(iso || "").split("-"); if (p.length !== 3) return esc(iso); const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1]; return (+p[2]) + " " + m + " " + p[0]; };
+  const TURN_WHO = { ai: "Claude", curator: "You", closed: "Closed" };
+  const TURN_KIND = { answer: "answer", "consistency check": "consistency check", note: "note", resolved: "resolved", deferred: "deferred" };
+  function threadHtml(it) {
+    const turns = it.thread || [];
+    if (!turns.length) return "";
+    return '<ol class="thread" aria-label="Conversation">' + turns.map((u) => {
+      let who = TURN_WHO[u.who] || u.who;
+      if (u.who === "closed") who = (u.kind === "deferred" ? "Deferred" : "Resolved") + (u.by ? " · " + esc(u.by) : "");
+      else who = (u.who === "curator" && u.by ? esc(u.by) : who) + " · " + esc(TURN_KIND[u.kind] || u.kind) + (u.mark ? " (" + esc(u.mark) + ")" : "");
+      return '<li class="turn ' + esc(u.who) + (u.kind === "deferred" ? " deferred" : "") + '"><div class="who"><span>' + who + '</span><span class="when">' + fmtDay(u.date) + "</span></div>" +
+        '<div class="md">' + u.html + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  const awaitsCurator = (it) => !it.resolved && (it.thread || []).length > 0 && it.thread[it.thread.length - 1].who === "ai";
+  const yourTurn = (it) => (awaitsCurator(it) ? '<span class="yourturn" title="Claude answered; your mark is next">Your turn</span>' : "");
+  const origLabel = (it) => ((it.thread || []).length ? '<p class="origlabel">The question</p>' : "");
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
 
   function rev(name) {
@@ -826,9 +857,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shownItems.forEach((it) => {
         const st = (r.items && r.items[it.n]) || {};
         dec += '<li class="item' + (it.resolved ? " resolved" : "") + '" id="item-' + it.n + '"><div class="item-top"><span class="num">' + it.n + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(ITEM_OPTS, st.d, "item", ' data-n="' + it.n + '"' + ro) + "</div>" +
-          '<div class="body md">' + it.html + "</div>" +
+          origLabel(it) + '<div class="body md">' + it.html + "</div>" + threadHtml(it) +
           '<label class="visually-hidden" for="note-i-' + slug(d.name) + "-" + it.n + '">Note on item ' + it.n + "</label>" +
           '<textarea class="note" rows="1" id="note-i-' + slug(d.name) + "-" + it.n + '" data-note="item" data-n="' + it.n + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
@@ -949,7 +980,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const el = document.getElementById("view-across");
     const ro = mode === "readonly" ? " disabled" : "";
     const nResolved = DATA.crosscut.reduce((n, s) => n + s.items.filter((it) => it.resolved).length, 0);
-    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes.</p>';
+    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes. Under each question, the conversation so far: your notes, Claude’s answers and the closing label, each with its date; "Your turn" marks an item Claude has answered and that waits for your mark.</p>';
     if (nResolved) {
       h += '<p class="jump"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide the " + nResolved + " resolved items" : "Show the " + nResolved + " resolved items") + "</button></p>";
     }
@@ -960,10 +991,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shown.forEach((it) => {
         const st = S.crosscut[it.id] || {};
         h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
-          '<div class="body md clamp">' + it.html + "</div>" +
-          '<button class="more" data-act="more">Show all</button>' +
+          origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +
+          '<button class="more" data-act="more">Show all</button>' + threadHtml(it) +
           '<label class="visually-hidden" for="note-x-' + esc(it.id) + '">Note</label>' +
           '<textarea class="note" rows="1" id="note-x-' + esc(it.id) + '" data-note="x" data-id="' + esc(it.id) + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });

@@ -663,6 +663,54 @@ def render(text: str) -> str:
     return MD.render(text.strip()) if text.strip() else ""
 
 
+TURN = re.compile(
+    r"^(?:- )?\*\*(?:(?P<ai>Answer|Consistency check) \(AI, (?P<ai_date>\d{4}-\d{2}-\d{2})\)[^*]*"
+    r"|(?P<close>Resolved|Deferred) \((?P<close_date>\d{4}-\d{2}-\d{2})(?:, (?P<close_who>[^)]+))?\)"
+    r"|(?P<who>[A-Z][a-z]+) \((?P<who_date>\d{4}-\d{2}-\d{2})(?:, (?P<mark>[^)]+))?\)):\*\*\s*",
+)
+"""A turn of the conversation on an issue or item, at the start of a line: the AI's answer or consistency check,
+the curator's note, or the label that closes it."""
+
+
+def _thread(text: str) -> dict[str, Any]:
+    """An issue's or item's text split into the original and the turns after it, each rendered.
+
+    The original is everything before the first turn label; each turn runs to the next label. The page shows the turns
+    as a conversation under the original text, so the curator sees who said what, and when.
+    """
+    body: list[str] = []
+    turns: list[dict[str, Any]] = []
+    for line in text.splitlines():
+        m = TURN.match(line)
+        if m:
+            if m["ai"]:
+                turn = {"who": "ai", "kind": m["ai"].lower(), "date": m["ai_date"]}
+            elif m["close"]:
+                turn = {
+                    "who": "closed",
+                    "kind": m["close"].lower(),
+                    "date": m["close_date"],
+                    "by": m["close_who"] or "",
+                }
+            else:
+                turn = {
+                    "who": "curator",
+                    "kind": "note",
+                    "date": m["who_date"],
+                    "mark": m["mark"] or "",
+                    "by": m["who"],
+                }
+            turn["lines"] = [line[m.end() :]]
+            turns.append(turn)
+        elif turns:
+            turns[-1]["lines"].append(line)
+        else:
+            body.append(line)
+    for turn in turns:
+        turn["html"] = render(_dedent(turn.pop("lines")))
+    return {"html": render("\n".join(body)), "thread": turns}
+
+
 def _frontmatter(text: str | None) -> tuple[dict, str]:
     m = re.match(r"^---\n(.*?)\n---\n(.*)$", text or "", re.S)
     return ((yaml.safe_load(m.group(1)) or {}), m.group(2)) if m else ({}, text or "")
@@ -949,7 +997,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
             {
                 "n": it["n"],
                 "titleHtml": MD.renderInline(it["title_md"]),
-                "html": render(it["body_md"]),
+                **_thread(it["body_md"]),
                 "resolved": it["resolved"],
             }
             for it in rec["items"]
@@ -980,7 +1028,7 @@ def _crosscut(report: dict[str, Any], extra: Path | None) -> list[dict[str, Any]
                 {
                     "id": it["id"],
                     "titleHtml": MD.renderInline(it["title_md"]),
-                    "html": render(it["body_md"]),
+                    **_thread(it["body_md"]),
                     "resolved": it["resolved"],
                 }
                 for it in sec["items"]
