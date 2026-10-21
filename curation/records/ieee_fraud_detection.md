@@ -43,6 +43,8 @@ CC (2026-10-01, Lennart): Leak audit, kept as is. The engineered `uid` (card1 + 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: V1, V14, V41, V65, V88, V107 (found on the data in `_feature_types`).
 
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: V1, V14, V41, V65, V88, V107 stay numeric (anonymized Vesta features).
+
 ## Reference
 
 Addison Howard, Bernadette Bouchon-Meunier, IEEE CIS, inversion, John Lei, Lynn@Vesta, Marcus2010, and Prof. Hussein Abbass. IEEE-CIS Fraud Detection. https://kaggle.com/competitions/ieee-fraud-detection, 2019. Kaggle.

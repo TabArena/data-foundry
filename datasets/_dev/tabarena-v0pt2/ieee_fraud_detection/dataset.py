@@ -133,10 +133,4 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         categorical += [f"M{i}" for i in range(1, 10)]
         categorical += [f"id_{i}" for i in range(12, 39)]
         categorical += ["uid"]
-        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
-        flags = [
-            c
-            for c in df.columns.drop(self.target)
-            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
-        ]
-        return FeatureTypes(categorical=[*categorical, *(c for c in flags if c not in categorical)])
+        return FeatureTypes(categorical=categorical)

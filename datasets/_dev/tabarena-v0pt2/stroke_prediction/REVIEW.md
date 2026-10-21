@@ -83,6 +83,16 @@ which are dropped, and marks remain in glucose and age (issue 1); the label is a
      one pass with credit_card_customers and hepatitis_c_egypt; the panel does not choose between their options.
      Decision needed: keep with a note or retire, as those items decide.
 
+   **Lennart (2026-10-21):** on the cross-dataset item "PROV-3 evidence standard": "either might be strong enough;
+   on the columns we ship, and if the marks on the published file leak/extend to the shipped version (which is
+   again case-by-case)".
+
+   **Answer (AI, 2026-10-21):** the standard is set (PROV-3 and EV-3 amended): marks count on the shipped columns,
+   and marks of the published file only when they extend to the shipped version. The strongest marks left with the
+   three dropped columns; what remains in shipped columns is PROV-3 test 4 only (the glucose floor at 55 and spike
+   at 65, the extra ages 78 to 82), none linked to the stroke (p 0.45). Still open, only if issue 5 keeps the
+   dataset: whether the dropped columns' marks extend to the kept ones, and whether the test-4 marks are enough.
+
 **Review panel:** don't ship unless the curator amends SEL-7 (mediator); if it is amended, ship after the changes
 made in the definition. Claim audit: 59 claims, 47 hold, 2 refuted (the use-case wording and the record's year, both
 fixed), 10 untested. Blind review: include with changes; main concerns the cited source and the dropped bmi, both

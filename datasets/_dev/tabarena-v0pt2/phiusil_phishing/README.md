@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: phiusil_phishing
 container_format: 2
-checksum: v2:e866cfbbd78d8c08125449d43ccc28a76d97159bef8de7b273dbcb062f8f81af
+checksum: v2:fc5ced2b00c04a1011e7fa06855527ea581ed0eb2702f12226c686084f55bafc
 build: null
 build_stale: false
 data:
   n_rows: 235370
   n_features: 49
   dtypes:
-    category: 21
+    category: 19
     float64: 7
-    int64: 21
+    int64: 23
     string: 1
   n_test_dataset_rows: null
 task:
@@ -72,7 +72,7 @@ decisions:
 
 Binary classification of `label`, scored with `roc_auc` on IID splits. 235,370 rows and 49 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:e866cfbbd78d8c08125449d43ccc28a76d97159bef8de7b273dbcb062f8f81af`.
+Not built yet. The current definition gives checksum `v2:fc5ced2b00c04a1011e7fa06855527ea581ed0eb2702f12226c686084f55bafc`.
 
 ## In brief
 
@@ -147,9 +147,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | label |
 
 <details>
-<summary>Feature types: 21 categorical, 1 string, 0 datetime</summary>
+<summary>Feature types: 19 categorical, 1 string, 0 datetime</summary>
 
-- categorical (21): `TLD`, `IsDomainIP`, `HasObfuscation`, `IsHTTPS`, `HasTitle`, `HasFavicon`, `Robots`, `IsResponsive`, `NoOfURLRedirect`, `NoOfSelfRedirect`, `HasDescription`, `HasExternalFormSubmit`, `HasSocialNet`, `HasSubmitButton`, `HasHiddenFields`, `HasPasswordField`, `Bank`, `Pay`, `Crypto`, `HasCopyrightInfo`, `label`
+- categorical (19): `TLD`, `IsDomainIP`, `HasObfuscation`, `IsHTTPS`, `HasTitle`, `HasFavicon`, `Robots`, `IsResponsive`, `HasDescription`, `HasExternalFormSubmit`, `HasSocialNet`, `HasSubmitButton`, `HasHiddenFields`, `HasPasswordField`, `Bank`, `Pay`, `Crypto`, `HasCopyrightInfo`, `label`
 - string (1): `URL`
 - datetime (0): none
 
@@ -338,8 +338,6 @@ Accepted on purpose:
 | HasFavicon | category | 0 | 0 | 2 | 0, 1 |
 | Robots | category | 0 | 0 | 2 | 0, 1 |
 | IsResponsive | category | 0 | 0 | 2 | 1, 0 |
-| NoOfURLRedirect | category | 0 | 0 | 2 | 0, 1 |
-| NoOfSelfRedirect | category | 0 | 0 | 2 | 0, 1 |
 | HasDescription | category | 0 | 0 | 2 | 0, 1 |
 | HasExternalFormSubmit | category | 0 | 0 | 2 | 0, 1 |
 | HasSocialNet | category | 0 | 0 | 2 | 0, 1 |
@@ -371,6 +369,8 @@ Accepted on purpose:
 | NoOfOtherSpecialCharsInURL | int64 | 0 | 0 | 74 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
 | LineOfCode | int64 | 0 | 0 | 10738 | 2, 9, 108, 11, 198, 20, 8, 13, 3, 4 |
 | LargestLineLength | int64 | 0 | 0 | 26178 | 9381, 8125, 8047, 50, 869, 80, 155, 41, 394, 2826 |
+| NoOfURLRedirect | int64 | 0 | 0 | 2 | 0, 1 |
+| NoOfSelfRedirect | int64 | 0 | 0 | 2 | 0, 1 |
 | NoOfPopup | int64 | 0 | 0 | 115 | 0, 1, 2, 3, 4, 5, 7, 6, 8, 10 |
 | NoOfiFrame | int64 | 0 | 0 | 119 | 0, 1, 2, 3, 4, 19, 5, 6, 7, 8 |
 | NoOfImage | int64 | 0 | 0 | 992 | 0, 1, 19, 2, 4, 3, 10, 14, 15, 11 |
@@ -393,7 +393,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (28 rows)</summary>
+<summary>Show the table (30 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -417,6 +417,8 @@ Accepted on purpose:
 | SpacialCharRatioInURL | 235370 | 0.0632492 | 0.0323632 | 0 | 0.397 |
 | LineOfCode | 235370 | 1143.79 | 3422.74 | 2 | 442666 |
 | LargestLineLength | 235370 | 12644.3 | 148925 | 22 | 1.39757e+07 |
+| NoOfURLRedirect | 235370 | 0.13339 | 0.339996 | 0 | 1 |
+| NoOfSelfRedirect | 235370 | 0.0401368 | 0.19628 | 0 | 1 |
 | NoOfPopup | 235370 | 0.22208 | 3.87397 | 0 | 602 |
 | NoOfiFrame | 235370 | 1.59134 | 5.76738 | 0 | 1602 |
 | NoOfImage | 235370 | 26.1202 | 79.4764 | 0 | 8956 |
@@ -431,7 +433,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (50 rows)</summary>
+<summary>Show the table (46 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -465,10 +467,6 @@ Accepted on purpose:
 | IsHTTPS | 2 | 0 | 51142 | 21.73 |
 | IsResponsive | 1 | 1 | 147080 | 62.49 |
 | IsResponsive | 2 | 0 | 88290 | 37.51 |
-| NoOfSelfRedirect | 1 | 0 | 225923 | 95.99 |
-| NoOfSelfRedirect | 2 | 1 | 9447 | 4.01 |
-| NoOfURLRedirect | 1 | 0 | 203974 | 86.66 |
-| NoOfURLRedirect | 2 | 1 | 31396 | 13.34 |
 | Pay | 1 | 0 | 179529 | 76.28 |
 | Pay | 2 | 1 | 55841 | 23.72 |
 | Robots | 1 | 0 | 172559 | 73.31 |

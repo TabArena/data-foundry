@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:0446b9128730d0887926fca32dbb5aef17a0a09a860df94b7caf645455512a30
+checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -17,13 +17,13 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1840
   n_features: 169
   dtypes:
-    category: 3
-    float64: 168
+    category: 1
+    float64: 170
   n_test_dataset_rows: null
 task:
   target: runtime
@@ -74,7 +74,7 @@ decisions: []
 
 Regression of `runtime`, scored with `rmse` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0446b9128730d0887926fca32dbb5aef17a0a09a860df94b7caf645455512a30`, so the build is stale. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06. See [Build](#build).
 
 ## In brief
 
@@ -142,9 +142,9 @@ Only curators run `build`, when the dataset ships.
 | task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `instance_id`, `edge_sa`, `edge_sl`
+- categorical (1): `instance_id`
 - string (0): none
 - datetime (0): none
 
@@ -267,7 +267,7 @@ One group is a SAT instance; its rows are the runs of the 10 candidate algorithm
 | largest group | 0.5% of the rows |
 | test groups per fold | 61 to 62 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 14.9% of the rows (chance: 0.5%) |
+| nearest neighbour in the same group | 14.0% of the rows (chance: 0.5%) |
 | label variance explained by the group | 0.83 (shuffled groups: 0.10) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -289,8 +289,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | instance_id | category | 0 | 0 | 184 | 0528c7a99010, 08415bce3425, 0a07f63855c7, 0a55aac17fd0, 0ae23b67a3f5, 0df78c1a1… |
-| edge_sa | category | 0 | 0 | 2 | 0.0, 1.0 |
-| edge_sl | category | 0 | 0 | 2 | 0.0, 1.0 |
 | CG_mean | float64 | 950 | 51.63 | 82 | 0.0046, 0.0206, 0.0174, 0.0198, 0.0176, 0.0139, 0.0202, 0.0218, 0.0733, 0.0195 |
 | CG_coeff_variation | float64 | 950 | 51.63 | 80 | 0.8944, 0.1896, 0.307, 0.4743, 0.1461, 0.1356, 0.0566, 1.6291, 1.0206, 0.1713 |
 | CG_min | float64 | 950 | 51.63 | 72 | 0.0003, 0.0021, 0.022, 0.0135, 0.0001, 0.0152, 0.006, 0.0069, 0.0012, 0.0 |
@@ -348,6 +346,8 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | DIAMETER_entropy | float64 | 0 | 0 | 106 | 0.0, 0.4717, 0.2813, 0.1533, 0.5059, 0.2505, 0.3281, 4.4519, 0.5156, 0.6898 |
 | cl_num_mean | float64 | 0 | 0 | 165 | 0.0, 4870.0, 4241.5, 2344.8889, 2244.3333, 2205.7778, 2670.4, 606.3846, 4202.0,… |
 | cl_num_coeff_variation | float64 | 0 | 0 | 153 | 0.0, 0.007, 0.0092, 0.0093, 0.004, 0.0066, 0.0026, 0.0094, 0.0191, 0.1411 |
+| cl_num_min | float64 | 0 | 0 | 159 | 0.0, 4836.0, 1380.0, 102.0, 4886.0, 4669.0, 110.0, 78.0, 20.0, 2045.0 |
+| cl_num_max | float64 | 0 | 0 | 161 | 0.0, 4879.0, 3848.0, 4202.0, 4330.0, 4636.0, 4904.0, 3495.0, 3860.0, 1362.0 |
 
 (111 more rows not shown)
 
@@ -362,7 +362,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (168 rows)</summary>
+<summary>Show the table (170 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -427,7 +427,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | cl_num_max | 1840 | 3241.04 | 1575.48 | 0 | 4941 |
 | cl_num_q90 | 1840 | 3100.47 | 1646.96 | 0 | 4941 |
 
-(108 more rows not shown)
+(110 more rows not shown)
 
 </details>
 
@@ -435,10 +435,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| edge_sa | 1 | 0.0 | 1104 | 60 |
-| edge_sa | 2 | 1.0 | 736 | 40 |
-| edge_sl | 1 | 0.0 | 1656 | 90 |
-| edge_sl | 2 | 1.0 | 184 | 10 |
 | instance_id | 1 | 0528c7a99010 | 10 | 0.54 |
 | instance_id | 2 | 08415bce3425 | 10 | 0.54 |
 | instance_id | 3 | 0a07f63855c7 | 10 | 0.54 |
@@ -456,4 +452,3 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0446b9128730d0887926fca32dbb5aef17a0a09a860df94b7caf645455512a30` |

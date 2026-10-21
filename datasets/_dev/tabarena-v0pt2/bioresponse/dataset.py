@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
 
 
 class Bioresponse(AbstractCuratedDataset):
@@ -77,12 +77,3 @@ class Bioresponse(AbstractCuratedDataset):
         df = df.rename(columns={"Activity": "MoleculeElicitsResponse"})
         df["MoleculeElicitsResponse"] = df["MoleculeElicitsResponse"].map({0: "No", 1: "Yes"})
         return df
-
-    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
-        flags = [
-            c
-            for c in df.columns.drop(self.target)
-            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
-        ]
-        return FeatureTypes(categorical=flags)

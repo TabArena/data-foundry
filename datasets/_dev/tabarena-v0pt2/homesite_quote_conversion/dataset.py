@@ -241,17 +241,7 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # features holding only 0 and 1 (plus missing values) are 0/1 flags: categorical (CLEAN-14)
-        flags = [
-            "SalesField3",
-            "SalesField9",
-            "PersonalField1",
-            "PersonalField2",
-            "PersonalField6",
-            "PropertyField8",
-            "PropertyField29",
-        ]
         return FeatureTypes(
-            categorical=[*object_columns(df), *flags],
+            categorical=object_columns(df),
             datetime=["Original_Quote_Date"],
         )

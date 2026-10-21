@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: asp_potassco_classification
 container_format: 2
-checksum: v2:f12799852e5f66dd408da42ff7f8cf284d62be51f962949b6603ee50687af890
+checksum: v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5
 build:
   uuid: 01a111fc-9534-79ba-a1c0-efe7268f38e0
   checksum: v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3
@@ -22,8 +22,8 @@ data:
   n_rows: 1212
   n_features: 136
   dtypes:
-    category: 5
-    float64: 133
+    category: 3
+    float64: 135
   n_test_dataset_rows: null
 task:
   target: algorithm
@@ -75,7 +75,7 @@ decisions: []
 
 Multiclass classification of `algorithm`, scored with `log_loss` on grouped splits by `task_id`. 1,212 rows and 136 features. Source: ASlib (2014).
 
-Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f12799852e5f66dd408da42ff7f8cf284d62be51f962949b6603ee50687af890`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -147,9 +147,9 @@ Only curators run `build`, when the dataset ships.
 | task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (5): `task_id`, `Tight`, `Removed_Nogoods-1`, `Removed_Nogoods-2`, `algorithm`
+- categorical (3): `task_id`, `Tight`, `algorithm`
 - string (0): none
 - datetime (0): none
 
@@ -187,11 +187,11 @@ The first 5 of 1,212 rows of the final frame (random rows: the frame is shuffled
 
 | algorithm | Frac_Neg_Body | Frac_Pos_Body | Frac_Unary_Rules | Frac_Binary_Rules | Frac_Ternary_Rules | Frac_Integrity_Rules | Tight | Problem_Variables | Free_Problem_Variables | Assigned_Problem_Variables | Constraints |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| clasp/2.1.3/h1-n1 | 0.01 | 0.9923 | 0.0017 | 0.0011 | 0.016 | 0.9749 | 1 | 161850 | 1545 | 160305 | 160624 |
-| clasp/2.1.3/h1-n1 | 0.0085 | 0.9978 | 0.0041 | 0.0044 | 0.9848 | 0.1004 | 1 | 57561 | 44000 | 13561 | 227160 |
-| clasp/2.1.3/h8-n1 | 0.0119 | 0.6401 | 0.0033 | 0.484 | 0.4892 | 0.3806 | 0 | 11476 | 4903 | 6573 | 17484 |
-| clasp/2.1.3/h5-n1 | 0.0013 | 0.3237 | 0.0012 | 0.0945 | 0.2733 | 0.0002 | 0 | 236023 | 235966 | 57 | 991613 |
-| clasp/2.1.3/h1-n1 | 0.0042 | 0.8233 | 0.0021 | 0.0105 | 0.2066 | 0.0198 | 1 | 10975 | 6573 | 4402 | 35689 |
+| clasp/2.1.3/h6-n1 | 0.3487 | 0.8613 | 0.2521 | 0.1387 | 0.4832 | 0.0756 | 1 | 161 | 145 | 16 | 428 |
+| clasp/2.1.3/h11-n1 | 0.2665 | 0.936 | 0.1386 | 0.3998 | 0 | 0.3998 | 1 | 884 | 510 | 374 | 373 |
+| clasp/2.1.3/h1-n1 | 0.0009 | 0.9898 | 0.0007 | 0.1155 | 0.8504 | 0.01 | 0 | 81011 | 80150 | 861 | 288997 |
+| clasp/2.1.3/h8-n1 | 0.0256 | 0.4656 | 0.0201 | 0.1844 | 0.6115 | 0.3059 | 1 | 78759 | 48626 | 30133 | 157786 |
+| clasp/2.1.3/h5-n1 | 0.0513 | 0.9567 | 0.0238 | 0.1266 | 0.7204 | 0.0003 | 0 | 100371 | 100145 | 226 | 368116 |
 
 ## Curation notes
 
@@ -286,66 +286,66 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Removed_Nogoods-2 | category | 162 | 13.37 | 1 | 0.0 |
-| Removed_Nogoods-1 | category | 135 | 11.14 | 1 | 0.0 |
 | Tight | category | 16 | 1.32 | 2 | 1.0, 0.0 |
 | algorithm | category | 0 | 0 | 11 | clasp/2.1.3/h1-n1, clasp/2.1.3/h10-n1, clasp/2.1.3/h6-n1, clasp/2.1.3/h4-n1, cl… |
 | task_id | category | 0 | 0 | 96 | 222a85a4193a, 54a904dabd66, c40240438f96, 6b33cae0f35e, 26164589427a, 15c7db402… |
-| Choices-4 | float64 | 218 | 17.99 | 751 | 528.0, 644.0, 200.0, 974.0, 634.0, 557.0, 716.0, 415.0, 709.0, 365.0 |
-| Conflicts/Choices-4 | float64 | 218 | 17.99 | 812 | 0.2424, 0.2524, 0.0375, 0.01, 0.1212, 0.0062, 0.0095, 0.0048, 0.2393, 0.2298 |
-| Avg_Conflict_Levels-4 | float64 | 218 | 17.99 | 954 | 33.8984, 64.6589, 1.0, 38.1016, 36.0703, 49.6692, 19.8438, 33.1797, 3.8828, 18.… |
-| Avg_LBD_Levels-4 | float64 | 218 | 17.99 | 825 | 3.1406, 4.0231, 2.8281, 3.5469, 3.0, 10.6641, 3.9922, 4.1008, 3.5156, 4.1385 |
+| Choices-4 | float64 | 218 | 17.99 | 751 | 528.0, 200.0, 644.0, 415.0, 716.0, 974.0, 557.0, 634.0, 841.0, 808.0 |
+| Conflicts/Choices-4 | float64 | 218 | 17.99 | 812 | 0.2424, 0.2524, 0.0048, 0.2298, 1.0, 0.2393, 0.9143, 0.094, 0.251, 0.0047 |
+| Avg_Conflict_Levels-4 | float64 | 218 | 17.99 | 954 | 33.8984, 64.6589, 38.1016, 1.0, 10.9297, 33.1797, 45.3594, 74.375, 36.0703, 212… |
+| Avg_LBD_Levels-4 | float64 | 218 | 17.99 | 825 | 3.1406, 4.0231, 2.8281, 3.5469, 10.6641, 3.9922, 3.0, 4.1008, 2.907, 3.2578 |
 | Learnt_from_Conflict-4 | float64 | 218 | 17.99 | 10 | 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 120.0 |
-| Learnt_from_Loop-4 | float64 | 218 | 17.99 | 284 | 0.0, 28.0, 30.0, 31.0, 37.0, 11.0, 9.0, 18.0, 32.0, 27.0 |
-| Frac_Learnt_from_Conflict-4 | float64 | 218 | 17.99 | 312 | 1.0, 0.8205, 0.8101, 0.805, 0.8312, 0.9209, 0.8767, 0.9343, 0.8258, 0.9481 |
-| Frac_Learnt_from_Loop-4 | float64 | 218 | 17.99 | 312 | 0.0, 0.1795, 0.1899, 0.195, 0.1688, 0.0791, 0.1233, 0.0657, 0.1742, 0.0519 |
-| Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 861 | 684.0, 1770.0, 913.0, 442.0, 409.0, 1451.0, 757.0, 708.0, 1416.0, 1070.0 |
-| Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 353 | 0.0, 45.0, 55.0, 150.0, 160.0, 40.0, 130.0, 135.0, 120.0, 155.0 |
-| Frac_Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 357 | 1.0, 0.0011, 0.0019, 0.0016, 0.0018, 0.0014, 0.0025, 0.002, 0.8893, 0.0004 |
-| Frac_Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 357 | 0.0, 0.9989, 0.9981, 0.9984, 0.9982, 0.9986, 0.9975, 0.998, 0.1107, 0.9996 |
-| Removed_Nogoods-4 | float64 | 218 | 17.99 | 6 | 0.0, 92.0, 93.0, 89.0, 90.0, 61.0 |
+| Learnt_from_Loop-4 | float64 | 218 | 17.99 | 284 | 0.0, 28.0, 31.0, 30.0, 11.0, 37.0, 18.0, 32.0, 9.0, 3.0 |
+| Frac_Learnt_from_Conflict-4 | float64 | 218 | 17.99 | 312 | 1.0, 0.8205, 0.805, 0.8101, 0.8312, 0.9343, 0.9209, 0.8767, 0.8421, 0.9481 |
+| Frac_Learnt_from_Loop-4 | float64 | 218 | 17.99 | 312 | 0.0, 0.1795, 0.195, 0.1899, 0.1688, 0.0657, 0.0791, 0.1233, 0.1579, 0.0519 |
+| Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 861 | 684.0, 442.0, 1770.0, 913.0, 2116.0, 409.0, 757.0, 1070.0, 1451.0, 1416.0 |
+| Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 353 | 0.0, 45.0, 55.0, 135.0, 130.0, 120.0, 160.0, 150.0, 40.0, 65.0 |
+| Frac_Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 357 | 1.0, 0.0011, 0.0019, 0.0018, 0.0014, 0.0016, 0.0115, 0.0025, 0.0004, 0.0005 |
+| Frac_Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 357 | 0.0, 0.9989, 0.9981, 0.9982, 0.9986, 0.9984, 0.9885, 0.9975, 0.9996, 0.9995 |
+| Removed_Nogoods-4 | float64 | 218 | 17.99 | 6 | 0.0, 92.0, 93.0, 89.0, 61.0, 90.0 |
 | Learnt_Binary-4 | float64 | 218 | 17.99 | 73 | 0.0, 2.0, 3.0, 1.0, 6.0, 7.0, 14.0, 4.0, 17.0, 12.0 |
-| Learnt_Ternary-4 | float64 | 218 | 17.99 | 106 | 0.0, 1.0, 10.0, 19.0, 18.0, 8.0, 9.0, 22.0, 15.0, 11.0 |
-| Learnt_Others-4 | float64 | 218 | 17.99 | 336 | 129.0, 128.0, 130.0, 131.0, 94.0, 132.0, 126.0, 127.0, 108.0, 120.0 |
-| Frac_Removed_Nogood-4 | float64 | 218 | 17.99 | 12 | 0.0, 0.7266, 0.7188, 0.7099, 0.6899, 0.6977, 0.7023, 0.7132, 0.7077, 0.4766 |
-| Frac_Learnt_Binary-4 | float64 | 218 | 17.99 | 417 | 0.0, 0.0078, 0.2969, 0.0156, 0.0046, 0.0076, 0.1797, 0.1318, 0.0538, 0.1308 |
-| Frac_Learnt_Ternary-4 | float64 | 218 | 17.99 | 454 | 0.0, 0.0078, 0.0076, 0.2812, 0.1154, 0.1473, 0.0938, 0.1462, 0.0775, 0.0781 |
-| Frac_Learnt_Others-4 | float64 | 218 | 17.99 | 549 | 1.0, 0.9922, 0.9924, 0.4219, 0.9844, 0.9766, 0.9923, 0.7231, 0.7344, 0.9927 |
-| Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 691 | 382.0, 128.0, 163.0, 181.0, 351.0, 161.0, 169.0, 159.0, 178.0, 477.0 |
-| Avg_Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 872 | 2.9844, 1.0, 1.2636, 1.2846, 3.4846, 2.7209, 3.0, 3.374, 1.2443, 1.2045 |
-| Longest_Backjumping-4 | float64 | 218 | 17.99 | 305 | 24.0, 4.0, 6.0, 5.0, 20.0, 27.0, 26.0, 7.0, 17.0, 16.0 |
-| Running_Avg_Conflictlevel-4 | float64 | 218 | 17.99 | 905 | 27.15, 1.0, 17.91, 26.11, 18.88, 29.27, 38.04, 25.95, 10.85, 195.0 |
-| Running_Avg_LBD-4 | float64 | 218 | 17.99 | 544 | 3.13, 3.2, 4.93, 3.93, 3.44, 3.58, 2.99, 4.29, 4.75, 4.16 |
-| Choices-3 | float64 | 191 | 15.76 | 693 | 341.0, 209.0, 338.0, 158.0, 410.0, 339.0, 336.0, 162.0, 282.0, 403.0 |
-| Conflicts/Choices-3 | float64 | 191 | 15.76 | 814 | 0.2815, 0.3345, 0.1696, 0.1479, 0.198, 0.9796, 0.4593, 0.0093, 0.2553, 0.6139 |
-| Avg_Conflict_Levels-3 | float64 | 191 | 15.76 | 968 | 37.6667, 1.1875, 31.7188, 35.1042, 1.0, 10.1031, 5.8969, 30.1146, 18.0515, 6.375 |
-| Avg_LBD_Levels-3 | float64 | 191 | 15.76 | 797 | 3.1146, 2.6667, 3.9479, 2.6979, 2.75, 3.125, 3.5729, 2.9479, 2.8542, 3.625 |
-| Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 12 | 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 72.0, 68.0, 103.0, 102.0 |
-| Learnt_from_Loop-3 | float64 | 191 | 15.76 | 279 | 0.0, 26.0, 21.0, 1.0, 22.0, 2.0, 23.0, 24.0, 7.0, 4.0 |
-| Frac_Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 300 | 1.0, 0.7869, 0.8205, 0.8, 0.932, 0.8727, 0.8348, 0.8136, 0.7934, 0.8972 |
-| Frac_Learnt_from_Loop-3 | float64 | 191 | 15.76 | 300 | 0.0, 0.2131, 0.1795, 0.2, 0.068, 0.1273, 0.1652, 0.1864, 0.2066, 0.1028 |
-| Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 856 | 521.0, 917.0, 295.0, 301.0, 355.0, 318.0, 311.0, 1433.0, 297.0, 370.0 |
-| Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 344 | 0.0, 551.0, 40.0, 125.0, 30.0, 70.0, 35.0, 25.0, 65.0, 105.0 |
-| Frac_Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 353 | 1.0, 0.0013, 0.0024, 0.0022, 0.0016, 0.0014, 0.0125, 0.0004, 0.876, 0.0018 |
-| Frac_Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 353 | 0.0, 0.9987, 0.9976, 0.9978, 0.9984, 0.9986, 0.9875, 0.9996, 0.124, 0.9982 |
+| Learnt_Ternary-4 | float64 | 218 | 17.99 | 106 | 0.0, 1.0, 10.0, 19.0, 18.0, 9.0, 8.0, 22.0, 14.0, 15.0 |
+| Learnt_Others-4 | float64 | 218 | 17.99 | 336 | 129.0, 128.0, 130.0, 131.0, 132.0, 94.0, 126.0, 127.0, 91.0, 108.0 |
+| Frac_Removed_Nogood-4 | float64 | 218 | 17.99 | 12 | 0.0, 0.7266, 0.7099, 0.7188, 0.7077, 0.4766, 0.7023, 0.6977, 0.7132, 0.6953 |
+| Frac_Learnt_Binary-4 | float64 | 218 | 17.99 | 417 | 0.0, 0.0078, 0.0046, 0.0156, 0.0076, 0.2969, 0.1318, 0.1797, 0.0923, 0.0538 |
+| Frac_Learnt_Ternary-4 | float64 | 218 | 17.99 | 454 | 0.0, 0.0078, 0.0076, 0.1154, 0.2812, 0.1473, 0.0938, 0.062, 0.0156, 0.0781 |
+| Frac_Learnt_Others-4 | float64 | 218 | 17.99 | 549 | 1.0, 0.9922, 0.9924, 0.4219, 0.9844, 0.9766, 0.9923, 0.9927, 0.8527, 0.7231 |
+| Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 691 | 382.0, 128.0, 163.0, 178.0, 161.0, 159.0, 351.0, 181.0, 169.0, 418.0 |
+| Avg_Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 872 | 2.9844, 1.0, 1.2636, 1.2846, 1.6719, 3.4846, 1.3101, 1.2443, 3.0, 2.7209 |
+| Longest_Backjumping-4 | float64 | 218 | 17.99 | 305 | 24.0, 4.0, 6.0, 5.0, 26.0, 20.0, 27.0, 7.0, 17.0, 16.0 |
+| Running_Avg_Conflictlevel-4 | float64 | 218 | 17.99 | 905 | 27.15, 26.11, 17.91, 18.88, 1.0, 29.27, 12.09, 42.42, 16.02, 23.31 |
+| Running_Avg_LBD-4 | float64 | 218 | 17.99 | 544 | 3.13, 3.2, 4.93, 3.93, 2.99, 3.44, 3.58, 4.16, 4.29, 3.59 |
+| Choices-3 | float64 | 191 | 15.76 | 693 | 341.0, 209.0, 338.0, 339.0, 158.0, 410.0, 162.0, 336.0, 403.0, 589.0 |
+| Conflicts/Choices-3 | float64 | 191 | 15.76 | 814 | 0.2815, 0.1479, 0.198, 0.3345, 0.4593, 0.1696, 0.2861, 0.9796, 0.2553, 0.6139 |
+| Avg_Conflict_Levels-3 | float64 | 191 | 15.76 | 968 | 37.6667, 1.1875, 1.0, 31.7188, 35.1042, 11.4583, 21.5104, 30.5833, 22.3229, 20.… |
+| Avg_LBD_Levels-3 | float64 | 191 | 15.76 | 797 | 3.1146, 2.6667, 2.6979, 3.9479, 3.5729, 2.75, 3.125, 2.9479, 1.1875, 3.9792 |
+| Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 12 | 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 72.0, 103.0, 68.0, 91.0 |
+| Learnt_from_Loop-3 | float64 | 191 | 15.76 | 279 | 0.0, 26.0, 21.0, 1.0, 19.0, 4.0, 2.0, 23.0, 14.0, 24.0 |
+| Frac_Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 300 | 1.0, 0.7869, 0.8205, 0.932, 0.8, 0.8727, 0.7934, 0.8136, 0.8348, 0.0174 |
+| Frac_Learnt_from_Loop-3 | float64 | 191 | 15.76 | 300 | 0.0, 0.2131, 0.1795, 0.068, 0.2, 0.1273, 0.2066, 0.1864, 0.1652, 0.9826 |
+| Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 856 | 521.0, 917.0, 295.0, 355.0, 318.0, 297.0, 301.0, 1433.0, 311.0, 539.0 |
+| Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 344 | 0.0, 551.0, 125.0, 40.0, 65.0, 25.0, 30.0, 35.0, 70.0, 105.0 |
+| Frac_Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 353 | 1.0, 0.0024, 0.0022, 0.0014, 0.0013, 0.0016, 0.0012, 0.876, 0.0004, 0.001 |
+| Frac_Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 353 | 0.0, 0.9976, 0.9978, 0.9986, 0.9987, 0.9984, 0.9988, 0.124, 0.9996, 0.999 |
 | Removed_Nogoods-3 | float64 | 191 | 15.76 | 2 | 0.0, 61.0 |
 | Learnt_Binary-3 | float64 | 191 | 15.76 | 59 | 0.0, 2.0, 1.0, 4.0, 3.0, 11.0, 5.0, 6.0, 10.0, 8.0 |
-| Learnt_Ternary-3 | float64 | 191 | 15.76 | 86 | 0.0, 7.0, 1.0, 10.0, 9.0, 8.0, 4.0, 3.0, 5.0, 6.0 |
-| Learnt_Others-3 | float64 | 191 | 15.76 | 323 | 96.0, 97.0, 98.0, 99.0, 95.0, 93.0, 65.0, 71.0, 66.0, 58.0 |
+| Learnt_Ternary-3 | float64 | 191 | 15.76 | 86 | 0.0, 7.0, 1.0, 10.0, 9.0, 8.0, 3.0, 4.0, 6.0, 16.0 |
+| Learnt_Others-3 | float64 | 191 | 15.76 | 323 | 96.0, 97.0, 99.0, 98.0, 93.0, 95.0, 65.0, 71.0, 66.0, 58.0 |
 | Frac_Removed_Nogood-3 | float64 | 191 | 15.76 | 2 | 0.0, 0.6354 |
 | Frac_Learnt_Binary-3 | float64 | 191 | 15.76 | 361 | 0.0, 0.0104, 0.0208, 0.3333, 0.1649, 0.0816, 0.0103, 0.1146, 0.0928, 0.0729 |
-| Frac_Learnt_Ternary-3 | float64 | 191 | 15.76 | 391 | 0.0, 0.0104, 0.0729, 0.0833, 0.1531, 0.134, 0.0208, 0.3021, 0.1771, 0.0102 |
-| Frac_Learnt_Others-3 | float64 | 191 | 15.76 | 499 | 1.0, 0.9896, 0.9897, 0.9688, 0.8646, 0.3646, 0.7526, 0.9792, 0.6875, 0.7245 |
-| Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 655 | 223.0, 96.0, 125.0, 118.0, 135.0, 123.0, 267.0, 136.0, 128.0, 126.0 |
-| Avg_Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 856 | 1.0, 2.3229, 1.3021, 1.2292, 2.7812, 1.3776, 2.4167, 1.2577, 1.3434, 2.9688 |
-| Longest_Backjumping-3 | float64 | 191 | 15.76 | 300 | 4.0, 16.0, 6.0, 5.0, 27.0, 9.0, 26.0, 24.0, 7.0, 15.0 |
-| Running_Avg_Conflictlevel-3 | float64 | 191 | 15.76 | 930 | 36.16, 1.14, 27.38, 33.7, 0.96, 9.38, 30.45, 26.09, 15.36, 25.8 |
-| Running_Avg_LBD-3 | float64 | 191 | 15.76 | 599 | 2.99, 3.82, 3.86, 3.83, 11.88, 3.32, 3.79, 3.0, 2.56, 3.96 |
-| Choices-2 | float64 | 162 | 13.37 | 630 | 222.0, 205.0, 190.0, 102.0, 64.0, 196.0, 241.0, 108.0, 278.0, 191.0 |
-| Conflicts/Choices-2 | float64 | 162 | 13.37 | 757 | 0.2883, 0.3368, 1.0, 0.3351, 0.6275, 0.0064, 0.3333, 0.3265, 0.3122, 0.3636 |
-| Avg_Conflict_Levels-2 | float64 | 162 | 13.37 | 977 | 42.375, 1.0, 32.7969, 4.4565, 32.3594, 1.9844, 23.5469, 15.1094, 11.9091, 26.46… |
-| Avg_LBD_Levels-2 | float64 | 162 | 13.37 | 719 | 3.2812, 2.8125, 4.0, 1.0, 2.7031, 2.6562, 3.0938, 3.1719, 2.4844, 2.7969 |
-| Learnt_from_Conflict-2 | float64 | 162 | 13.37 | 12 | 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 49.0, 46.0, 58.0, 54.0 |
+| Frac_Learnt_Ternary-3 | float64 | 191 | 15.76 | 391 | 0.0, 0.0104, 0.0729, 0.0833, 0.1531, 0.1771, 0.134, 0.0102, 0.0208, 0.3021 |
+| Frac_Learnt_Others-3 | float64 | 191 | 15.76 | 499 | 1.0, 0.9896, 0.9897, 0.8646, 0.9688, 0.3646, 0.7526, 0.9792, 0.7245, 0.6875 |
+| Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 655 | 223.0, 96.0, 125.0, 123.0, 135.0, 118.0, 136.0, 267.0, 128.0, 363.0 |
+| Avg_Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 856 | 1.0, 2.3229, 1.3021, 1.2292, 1.3776, 2.4167, 2.7812, 1.3469, 3.5417, 3.6701 |
+| Longest_Backjumping-3 | float64 | 191 | 15.76 | 300 | 4.0, 16.0, 5.0, 6.0, 9.0, 27.0, 26.0, 24.0, 7.0, 15.0 |
+| Running_Avg_Conflictlevel-3 | float64 | 191 | 15.76 | 930 | 36.16, 1.14, 33.7, 9.38, 27.38, 0.96, 30.45, 12.44, 24.69, 48.41 |
+| Running_Avg_LBD-3 | float64 | 191 | 15.76 | 599 | 2.99, 3.82, 3.86, 3.83, 3.0, 3.79, 3.32, 11.88, 2.56, 3.9 |
+| Choices-2 | float64 | 162 | 13.37 | 630 | 222.0, 205.0, 190.0, 102.0, 64.0, 196.0, 278.0, 241.0, 108.0, 105.0 |
+| Conflicts/Choices-2 | float64 | 162 | 13.37 | 757 | 0.2883, 0.3368, 1.0, 0.3351, 0.3333, 0.0064, 0.6275, 0.3122, 0.2591, 0.5039 |
+| Avg_Conflict_Levels-2 | float64 | 162 | 13.37 | 977 | 42.375, 1.0, 32.7969, 1.9844, 4.4565, 32.3594, 81.2615, 6.9077, 26.2615, 15.0 |
+| Avg_LBD_Levels-2 | float64 | 162 | 13.37 | 719 | 3.2812, 2.8125, 4.0, 1.0, 2.6562, 2.7031, 3.0938, 3.1719, 2.9219, 6.4844 |
+| Learnt_from_Conflict-2 | float64 | 162 | 13.37 | 12 | 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 49.0, 46.0, 58.0, 70.0 |
+| Learnt_from_Loop-2 | float64 | 162 | 13.37 | 270 | 0.0, 4.0, 10.0, 14.0, 5.0, 8.0, 2.0, 7.0, 6.0, 1.0 |
+| Frac_Learnt_from_Conflict-2 | float64 | 162 | 13.37 | 255 | 1.0, 0.9412, 0.8649, 0.9275, 0.8205, 0.9143, 0.9014, 0.7111, 0.9697, 0.8889 |
 
 (78 more rows not shown)
 
@@ -375,7 +375,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (133 rows)</summary>
+<summary>Show the table (135 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -428,6 +428,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Literals_in_Loop_Nogoods-1 | 1077 | 178053 | 1.04709e+06 | 0 | 1.3771e+07 |
 | Frac_Literals_in_Conflict_Nogoods-1 | 1077 | 0.780685 | 0.378601 | 0 | 1 |
 | Frac_Literals_in_Loop_Nogoods-1 | 1077 | 0.219315 | 0.378601 | 0 | 1 |
+| Removed_Nogoods-1 | 1077 | 0 | 0 | 0 | 0 |
 | Learnt_Binary-1 | 1077 | 3.16249 | 16.5165 | 0 | 365 |
 | Learnt_Ternary-1 | 1077 | 7.75023 | 39.0529 | 0 | 766 |
 | Learnt_Others-1 | 1077 | 485.123 | 1282.04 | 0 | 12316 |
@@ -438,23 +439,18 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Avg_Skipped_Levels_while_Backjumping-1 | 1077 | 8.73298 | 26.8035 | 1 | 579.531 |
 | Longest_Backjumping-1 | 1077 | 74.8867 | 281.789 | 1 | 4612 |
 | Running_Avg_Conflictlevel-1 | 1077 | 42.1179 | 111.532 | 0.16 | 1221.81 |
-| Running_Avg_LBD-1 | 1077 | 2.73796 | 3.61664 | 0.11 | 33.11 |
 
-(73 more rows not shown)
+(75 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Removed_Nogoods-1 | 1 | 0.0 | 1077 | 88.86 |
-| Removed_Nogoods-1 | 2 | &lt;NA> | 135 | 11.14 |
-| Removed_Nogoods-2 | 1 | 0.0 | 1050 | 86.63 |
-| Removed_Nogoods-2 | 2 | &lt;NA> | 162 | 13.37 |
 | Tight | 1 | 1.0 | 619 | 51.07 |
 | Tight | 2 | 0.0 | 577 | 47.61 |
 | Tight | 3 | &lt;NA> | 16 | 1.32 |
@@ -482,4 +478,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f12799852e5f66dd408da42ff7f8cf284d62be51f962949b6603ee50687af890` |
+| stale | yes: the definition now gives checksum `v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5` |

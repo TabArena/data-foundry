@@ -212,8 +212,8 @@ class PhiusilPhishing(AbstractCuratedDataset):
         )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # the 0/1 features are categorical (CLEAN-14), checked on the data; two are counts that hold only 0 and 1
-        # (NoOfURLRedirect, NoOfSelfRedirect)
+        # the yes/no features are categorical (CLEAN-14); the counts NoOfURLRedirect and NoOfSelfRedirect stay
+        # numeric although only 0 and 1 occur
         flags = [
             "IsDomainIP",
             "HasObfuscation",
@@ -222,8 +222,6 @@ class PhiusilPhishing(AbstractCuratedDataset):
             "HasFavicon",
             "Robots",
             "IsResponsive",
-            "NoOfURLRedirect",
-            "NoOfSelfRedirect",
             "HasDescription",
             "HasExternalFormSubmit",
             "HasSocialNet",

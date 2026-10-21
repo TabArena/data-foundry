@@ -4,6 +4,35 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (the curator's third round on the cross-dataset items)
+
+Lennart replied on the page; his notes are now dated turns in the working copy's `REVIEW.md`, and the page shows each
+issue and item as a conversation. Each changed record got a `CC (2026-10-21, Lennart)` line. Nothing was rebuilt.
+
+Rules: CLEAN-14 (a 0/1 column is categorical only when its meaning says it is a flag; counts and opaque columns stay
+numeric; a constant column is no flag), CLEAN-19 (the best of a baseline and the top solutions' features, or a
+reasonable combination, not their union), PROV-3 and EV-3 (either calibrated or label-linked marks can be enough;
+they count on the shipped columns, and on the published file when they extend to the shipped version).
+
+Definitions:
+
+- `qsar_tid_11`: drops 37 salt-form copies of one ChEMBL parent (LEAK-19; `SALT_FORM_COPIES`), 5,741 to 5,704
+  rows; the repeated fingerprints of different compounds stay, with the decision in its notes.
+- CLEAN-14 by meaning: 19 of the 35 definitions typed this morning go back in part or whole to numeric (amex_non_iid_1m,
+  apistox, asp_potassco_classification, bioresponse, cardiotocography, clock_protein_toxicity, coil_2000,
+  drug_induced_autoimmunity_prediction, early_learning_predictors, home_credit_default_risk,
+  home_credit_default_stability_1m, homesite_quote_conversion, ieee_fraud_detection, phiusil_phishing,
+  qsar_bioconcentration, santander_customer_satisfaction, sat11_hand_algo_runtime, sberbank_housing_market_forecasting,
+  taiwanese_bankruptcy_prediction); the flags they keep are explicit lists.
+
+- `drug_induced_autoimmunity_prediction`: grouped on the Bemis-Murcko scaffold (443 groups), taken from Andrej's PR #15
+  with its `murcko_scaffolds` helper in `data_foundry.v2.chemistry` and its tests (Lennart: make it grouped here as
+  well); ROC AUC 0.771 grouped against 0.826 random (untuned LightGBM).
+
+Review files: `water_quality_and_potability` re-checked (it fails PROV-3) and given an open-issues block for the curator;
+`rosbank1` issue 5 reworded under CLEAN-19; `credit_card_customers` and `stroke_prediction` issue 1 and
+`hepatitis_c_egypt`'s block say what the PROV-3 standard means for them.
+
 ## 2026-10-21 (the curator's marks on the follow-ups)
 
 Lennart marked the follow-up items of the working copy's `REVIEW.md`. Settled items are closed there; two new items

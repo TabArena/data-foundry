@@ -62,7 +62,11 @@ probes fit untuned models on a few splits and flag patterns that real data shows
 shipped data with a suspected fix and are not leaderboard numbers. So a task-probe flag is checked against the
 benchmark's tuned methods before anyone acts on it (TP-1); a hidden-group hit is decided by the context and the use
 case, never by the gap alone (SPLIT-30, [splits.md](splits.md); Lennart, 2026-10-06); a generated-data mark needs
-what the source says and, where possible, the generator written down (PROV-3, [provenance.md](provenance.md)); and a
+what the source says and, where possible, the generator written down (PROV-3, [provenance.md](provenance.md)); without
+either, the marks are judged case by case: calibrated marks from at least two PROV-3 tests, or marks linked to the
+label, can each be strong enough, counted on the columns we ship, and marks on the published file count when they
+extend to the shipped version (amended 2026-10-21, Lennart: "either might be strong enough; on the columns we ship,
+and if the marks on the published file leak/extend to the shipped version (which is again case-by-case)"); and a
 near-saturated score alone is not a leak: run the probes and report what they found. No flag is no pass either: the
 probes cover the mechanical part, and the prediction point and the source's entities need judgment
 ([verification.md](verification.md), the two halves). Cases: forest_fires, amazon_employee_access, superconductivity,

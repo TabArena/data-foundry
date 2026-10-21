@@ -51,6 +51,8 @@ CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10
 
 **Exception to SPLIT-10 (2026-10-21, Lennart):** no label dates, and a default can be flagged up to a year after the issue: a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must); SPLIT-9 is met by dropping the products of the test window's clients (principles.md, Tensions). The gap's length (0 or 1 month) stays open in REVIEW.md issue 3.
 
+CC (2026-10-21, Lennart): on CLEAN-19: "Okay, we here the case is that we want to take the best of both, or a reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does that make sense?" (CLEAN-19, amended). The top solutions' shared aggregates stay: they are the better of the two sets (untuned LightGBM 0.787 / 0.771 / 0.772 against the organizers' 0.774 / 0.757 / 0.763); the CLEAN-19 Cases row gained this reason.
+
 ## Reference
 
 Booster

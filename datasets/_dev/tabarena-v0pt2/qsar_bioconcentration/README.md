@@ -2,15 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_bioconcentration
 container_format: 2
-checksum: v2:4ca4d4bef7bf34229d0e5bfeca275005699511002d2eb8c7d1f3d0426a911d0b
+checksum: v2:526bff1bbfd6f1c4f3850b7d3906a877f6aeba7c1ee6ee09b34ca406737e5d1c
 build: null
 build_stale: false
 data:
   n_rows: 776
   n_features: 202
   dtypes:
-    category: 26
-    float64: 174
+    category: 2
+    float64: 198
     int64: 3
   n_test_dataset_rows: null
 task:
@@ -56,7 +56,7 @@ decisions:
 
 Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on IID splits. 776 rows and 202 features. Source: UCI (2016).
 
-Not built yet. The current definition gives checksum `v2:4ca4d4bef7bf34229d0e5bfeca275005699511002d2eb8c7d1f3d0426a911d0b`.
+Not built yet. The current definition gives checksum `v2:526bff1bbfd6f1c4f3850b7d3906a877f6aeba7c1ee6ee09b34ca406737e5d1c`.
 
 ## In brief
 
@@ -129,9 +129,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | bioconcentration_mechanism |
 
 <details>
-<summary>Feature types: 26 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (26): `B02(C-N)`, `rdkit_fr_Ar_NH`, `rdkit_fr_Ndealkylation1`, `rdkit_fr_SH`, `rdkit_fr_aldehyde`, `rdkit_fr_alkyl_carbamate`, `rdkit_fr_amidine`, `rdkit_fr_epoxide`, `rdkit_fr_furan`, `rdkit_fr_guanido`, `rdkit_fr_hdrzone`, `rdkit_fr_imidazole`, `rdkit_fr_lactone`, `rdkit_fr_morpholine`, `rdkit_fr_nitroso`, `rdkit_fr_oxazole`, `rdkit_fr_phos_acid`, `rdkit_fr_piperzine`, `rdkit_fr_priamide`, `rdkit_fr_prisulfonamd`, `rdkit_fr_sulfonamd`, `rdkit_fr_term_acetylene`, `rdkit_fr_thiazole`, `rdkit_fr_thiocyan`, `rdkit_fr_thiophene`, `bioconcentration_mechanism`
+- categorical (2): `B02(C-N)`, `bioconcentration_mechanism`
 - string (0): none
 - datetime (0): none
 
@@ -291,30 +291,6 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 |---|---|---|---|---|---|
 | B02(C-N) | category | 0 | 0 | 2 | 0, 1 |
 | bioconcentration_mechanism | category | 0 | 0 | 3 | lipid storage, metabolized or eliminated, additional storage sites |
-| rdkit_fr_Ar_NH | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_Ndealkylation1 | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_SH | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_aldehyde | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_alkyl_carbamate | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_amidine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_epoxide | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_furan | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_guanido | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_hdrzone | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_imidazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_lactone | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_morpholine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_nitroso | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_oxazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_phos_acid | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_piperzine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_priamide | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_prisulfonamd | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_sulfonamd | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_term_acetylene | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiocyan | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiophene | category | 0 | 0 | 2 | 0.0, 1.0 |
 | rdkit_MaxPartialCharge | float64 | 7 | 0.9 | 763 | 0.4596, -0.0533, 0.4261, 0.2121, 0.1606, 0.0558, 0.3236, 0.3796, 0.1556, 0.0277 |
 | rdkit_MinPartialCharge | float64 | 7 | 0.9 | 756 | -0.4766, -0.4574, -0.0533, -0.2345, -0.4574, -0.3243, -0.1031, -0.4667, -0.3975… |
 | rdkit_MaxAbsPartialCharge | float64 | 7 | 0.9 | 756 | 0.4766, 0.4574, 0.0533, 0.2345, 0.4574, 0.3243, 0.1031, 0.4667, 0.3975, 0.395 |
@@ -349,6 +325,30 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 | rdkit_BertzCT | float64 | 0 | 0 | 658 | 222.2979, 577.3489, 534.5371, 168.3883, 220.1562, 236.165, 134.1074, 300.6338, … |
 | rdkit_Chi0 | float64 | 0 | 0 | 393 | 6.8534, 5.9831, 8.4307, 7.5605, 5.1129, 7.3973, 7.7236, 11.7067, 12.577, 6.6902 |
 | rdkit_Chi0n | float64 | 0 | 0 | 612 | 8.2766, 8.5772, 4.1346, 4.0653, 5.6968, 7.976, 8.3842, 4.3659, 4.8659, 5.943 |
+| rdkit_Chi0v | float64 | 0 | 0 | 641 | 10.9997, 13.1128, 12.0562, 9.9431, 7.9646, 12.0562, 7.1337, 11.4079, 8.8866, 10… |
+| rdkit_Chi1 | float64 | 0 | 0 | 509 | 4.1984, 3.3938, 4.6091, 3.7877, 5.1091, 3.7877, 5.4641, 4.6984, 4.8637, 4.1815 |
+| rdkit_Chi1n | float64 | 0 | 0 | 688 | 4.482, 2.1993, 4.6402, 4.6993, 4.2707, 2.4047, 4.3823, 2.234, 4.494, 4.5936 |
+| rdkit_Chi1v | float64 | 0 | 0 | 720 | 6.9671, 5.9939, 4.4575, 7.9403, 6.4835, 3.0504, 6.4775, 2.9553, 3.2152, 4.0687 |
+| rdkit_Chi2n | float64 | 0 | 0 | 741 | 0.9955, 2.6004, 3.2483, 7.2148, 4.2345, 4.8085, 1.8168, 1.2956, 1.5877, 1.6804 |
+| rdkit_Chi2v | float64 | 0 | 0 | 770 | 2.4394, 6.827, 4.9108, 2.2279, 4.4111, 4.9356, 9.9777, 3.9774, 7.4181, 3.1535 |
+| rdkit_Chi3n | float64 | 0 | 0 | 741 | 0.0, 1.6322, 0.3214, 2.2842, 2.0294, 0.3349, 3.5747, 0.7331, 0.8273, 0.8035 |
+| rdkit_Chi3v | float64 | 0 | 0 | 765 | 0.0, 1.2487, 8.0833, 5.5574, 1.9469, 5.6811, 3.5294, 1.3852, 3.2764, 4.8237 |
+| rdkit_Chi4n | float64 | 0 | 0 | 727 | 0.0, 0.8438, 0.376, 0.6301, 0.0412, 0.4599, 2.5381, 0.4147, 0.5202, 0.2268 |
+| rdkit_Chi4v | float64 | 0 | 0 | 746 | 0.0, 0.376, 1.2612, 0.91, 0.7597, 5.0768, 2.6597, 1.6952, 6.8724, 2.0905 |
+| rdkit_HallKierAlpha | float64 | 0 | 0 | 413 | -0.98, -0.78, -0.11, -0.69, -0.04, 0.18, -1.3, -1.56, -1.58, -0.98 |
+| rdkit_Ipc | float64 | 0 | 0 | 549 | 104.2009, 47.1973, 64.0525, 416.3144, 72.4953, 129.2253, 70.7989, 34.3995, 85.7… |
+| rdkit_Kappa1 | float64 | 0 | 0 | 565 | 12.0674, 13.3247, 6.7163, 14.5862, 6.1447, 7.5262, 7.9911, 10.8155, 9.5703, 5.4… |
+| rdkit_Kappa2 | float64 | 0 | 0 | 605 | 4.8485, 5.2559, 2.4603, 5.6637, 4.035, 2.8685, 2.0527, 3.0679, 3.5254, 4.4415 |
+| rdkit_Kappa3 | float64 | 0 | 0 | 661 | 2.4643, 1.5012, 2.6692, 1.4834, 2.834, 1.4595, 1.138, 1.6727, 3.1992, 2.6971 |
+| rdkit_LabuteASA | float64 | 0 | 0 | 660 | 124.0048, 134.3081, 113.7016, 62.8912, 79.8197, 72.6909, 58.8938, 62.8322, 56.5… |
+| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 64 | 0.0, 5.1065, 4.7369, 9.4737, 5.3168, 5.7337, 4.8999, 9.0475, 4.5237, 10.6336 |
+| rdkit_PEOE_VSA10 | float64 | 0 | 0 | 115 | 0.0, 5.7495, 11.499, 5.0226, 10.0453, 9.7483, 12.6546, 6.104, 10.7721, 5.6939 |
+| rdkit_PEOE_VSA11 | float64 | 0 | 0 | 50 | 0.0, 5.7495, 11.499, 5.7832, 11.5665, 22.998, 4.3334, 5.6874, 5.1564, 6.6069 |
+| rdkit_PEOE_VSA12 | float64 | 0 | 0 | 41 | 0.0, 5.88, 5.6935, 5.9072, 5.9483, 6.104, 11.8967, 5.6011, 3.7925, 11.8144 |
+| rdkit_PEOE_VSA13 | float64 | 0 | 0 | 29 | 0.0, 5.6874, 5.9072, 11.3748, 5.5593, 5.2392, 10.0233, 10.1181, 5.5593, 11.8144 |
+| rdkit_PEOE_VSA14 | float64 | 0 | 0 | 71 | 0.0, 5.9693, 6.7186, 7.8227, 6.0932, 6.1763, 5.6874, 6.0311, 11.9386, 12.1456 |
+| rdkit_PEOE_VSA2 | float64 | 0 | 0 | 49 | 0.0, 4.7945, 10.1143, 9.5891, 20.2286, 9.0475, 13.5712, 5.3168, 4.6818, 10.1113 |
+| rdkit_PEOE_VSA3 | float64 | 0 | 0 | 52 | 0.0, 4.7945, 4.565, 4.984, 9.5891, 9.6658, 9.968, 9.7785, 8.4178, 4.3052 |
 
 (143 more rows not shown)
 
@@ -365,7 +365,7 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 ### Numeric features
 
 <details>
-<summary>Show the table (177 rows)</summary>
+<summary>Show the table (201 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -430,14 +430,11 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 | rdkit_PEOE_VSA14 | 776 | 4.05999 | 14.6757 | 0 | 184.206 |
 | rdkit_PEOE_VSA2 | 776 | 3.02498 | 5.16207 | 0 | 30.343 |
 
-(117 more rows not shown)
+(141 more rows not shown)
 
 </details>
 
 ### Categorical features
-
-<details>
-<summary>Show the table (53 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -446,56 +443,6 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 | bioconcentration_mechanism | 1 | lipid storage | 458 | 59.02 |
 | bioconcentration_mechanism | 2 | metabolized or eliminated | 254 | 32.73 |
 | bioconcentration_mechanism | 3 | additional storage sites | 64 | 8.25 |
-| rdkit_fr_Ar_NH | 1 | 0.0 | 767 | 98.84 |
-| rdkit_fr_Ar_NH | 2 | 1.0 | 9 | 1.16 |
-| rdkit_fr_Ndealkylation1 | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_Ndealkylation1 | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_SH | 1 | 0.0 | 773 | 99.61 |
-| rdkit_fr_SH | 2 | 1.0 | 3 | 0.39 |
-| rdkit_fr_aldehyde | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_aldehyde | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_alkyl_carbamate | 1 | 0.0 | 774 | 99.74 |
-| rdkit_fr_alkyl_carbamate | 2 | 1.0 | 2 | 0.26 |
-| rdkit_fr_amidine | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_amidine | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_epoxide | 1 | 0.0 | 774 | 99.74 |
-| rdkit_fr_epoxide | 2 | 1.0 | 2 | 0.26 |
-| rdkit_fr_furan | 1 | 0.0 | 765 | 98.58 |
-| rdkit_fr_furan | 2 | 1.0 | 11 | 1.42 |
-| rdkit_fr_guanido | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_guanido | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_hdrzone | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_hdrzone | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_imidazole | 1 | 0.0 | 768 | 98.97 |
-| rdkit_fr_imidazole | 2 | 1.0 | 8 | 1.03 |
-| rdkit_fr_lactone | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_lactone | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_morpholine | 1 | 0.0 | 773 | 99.61 |
-| rdkit_fr_morpholine | 2 | 1.0 | 3 | 0.39 |
-| rdkit_fr_nitroso | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_nitroso | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_oxazole | 1 | 0.0 | 774 | 99.74 |
-| rdkit_fr_oxazole | 2 | 1.0 | 2 | 0.26 |
-| rdkit_fr_phos_acid | 1 | 0.0 | 757 | 97.55 |
-| rdkit_fr_phos_acid | 2 | 1.0 | 19 | 2.45 |
-| rdkit_fr_piperzine | 1 | 0.0 | 774 | 99.74 |
-| rdkit_fr_piperzine | 2 | 1.0 | 2 | 0.26 |
-| rdkit_fr_priamide | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_priamide | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_prisulfonamd | 1 | 0.0 | 773 | 99.61 |
-| rdkit_fr_prisulfonamd | 2 | 1.0 | 3 | 0.39 |
-| rdkit_fr_sulfonamd | 1 | 0.0 | 765 | 98.58 |
-| rdkit_fr_sulfonamd | 2 | 1.0 | 11 | 1.42 |
-| rdkit_fr_term_acetylene | 1 | 0.0 | 772 | 99.48 |
-| rdkit_fr_term_acetylene | 2 | 1.0 | 4 | 0.52 |
-| rdkit_fr_thiazole | 1 | 0.0 | 771 | 99.36 |
-| rdkit_fr_thiazole | 2 | 1.0 | 5 | 0.64 |
-| rdkit_fr_thiocyan | 1 | 0.0 | 775 | 99.87 |
-| rdkit_fr_thiocyan | 2 | 1.0 | 1 | 0.13 |
-| rdkit_fr_thiophene | 1 | 0.0 | 772 | 99.48 |
-| rdkit_fr_thiophene | 2 | 1.0 | 4 | 0.52 |
-
-</details>
 
 ## Build
 

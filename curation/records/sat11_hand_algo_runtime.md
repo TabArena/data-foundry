@@ -47,6 +47,8 @@ CC (2026-10-06, Lennart): The split holds out instances, not instance families, 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: edge_sa, edge_sl.
 
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: edge_sa and edge_sl (edge counts of the solver's code graph) stay numeric.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

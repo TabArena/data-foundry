@@ -6,12 +6,12 @@ November or December 2017 after a three-month label gap. Verdict: ship; the pane
 Validity: USE-5 holds; fit approximate (USE-8) (how the label window was placed is not published; a test on the data
 found no sign of a window fixed in calendar time), LEAK-10 holds (107 of the 479 clients with a card purchase more than three months after their first transaction still count as churned, so the file holds no transactions from the label window), LEAK-24 holds (periods ending from 2018 on are
 cut), SPLIT-1, SPLIT-9 and SPLIT-10 hold. Value: TP-3 `no_spread` kept (three windows cannot separate model
-families). Quality: the features depart from CLEAN-19 and the alfa_battle_2_0_task_2 precedent (issue 5), CLEAN-21 is not met for
+families). Quality: the features are a published baseline, which CLEAN-19 as amended 2026-10-21 allows when no top solution's features are better (issue 5), CLEAN-21 is not met for
 mixed currencies (issue 7), CLEAN-8 accepted (Lennart, 2026-10-19). Weighed: source +, real use case +, drift +, small
 test windows -, card transactions only -. For the curator: issue 1, the target; issues 5 and 7, two quality calls.
 
-**Main points:** Keep churn as the only target (issue 1)? Keep the CoLES baseline features or search for the top
-solutions as for alfa (issue 5)? Keep, filter or convert the mixed currencies (issue 7)?
+**Main points:** Keep churn as the only target (issue 1)? Keep the CoLES baseline features, or take a 2018 top
+solution's features if they are better (issue 5)? Keep, filter or convert the mixed currencies (issue 7)?
 
 **Issues for Lennart:**
 
@@ -29,22 +29,24 @@ solutions as for alfa (issue 5)? Keep, filter or convert the mixed currencies (i
    the same clients. Neither the advocate nor the critic argued for it.
    Recommendation: churn only. Decision: churn only, or add a retained-spend folder with the note that its label window is less certain than the churn flag's?
 
-5. **Features: keep the CoLES baseline, or build what the top solutions share, as for alfa_battle_2_0_task_2?** The
+5. **Features: keep the CoLES baseline, or take a top solution's features if they are better?** The
    features are the hand-crafted aggregates of the CoLES paper (Babaev et al. 2022, a benchmark of models on bank transaction sequences) as pytorch-lifestream configures them for this data:
    counts, means and standard deviations of the amounts per transaction category, currency and merchant category code
-   (MCC, the 97 most frequent). CLEAN-19 (Should) asks that a transaction log be built into the features a data
-   scientist on this task would build, which are the features the top solutions share. For alfa_battle_2_0_task_2, a
-   bank competition on the same platform with the same kind of data, you replaced the organizers' baseline with the
-   top solutions' features, 30 MCC codes among them (CC 2026-10-13). No search for rosbank1's top solutions is on record (the two GitHub repositories
+   (MCC, the 97 most frequent). CLEAN-19 (Should), as amended 2026-10-21 ("we want to take the best of both, or a
+   reasonable combination, and not a union"), asks for the better of the organizers' or a published baseline and the
+   top solutions' features, or a reasonable combination of them, not their union. The CoLES aggregates are such a
+   published baseline. For alfa_battle_2_0_task_2, a bank competition on the same platform with the same kind of
+   data, the top solutions' features were the better set (untuned LightGBM 0.787 / 0.771 / 0.772 against the
+   organizers' 0.774 / 0.757 / 0.763), so they replaced the baseline (CC 2026-10-13). No search for rosbank1's top solutions is on record (the two GitHub repositories
    the definition names are copies of the data, not solutions).
    Effect on the task: not measured. The only comparison, 30 against 97 MCC codes (0.863 against 0.860 AUC, inside window standard errors of 0.02 to 0.04), tests the number of codes, not a top-solution feature set.
-   Implemented: the CoLES baseline, a peer-reviewed tabular baseline for this data. Alternatives: (a) keep it as an
-   exception to CLEAN-19 once a documented search of the 2018 write-ups and participant code finds no published
-   solutions (cost: the search); (b) rebuild like alfa from what the top solutions share (cost: the search, a rebuild
-   and a new review). The advocate holds that CoLES is peer-reviewed; the critic answers that this is not the fact alfa
-   lacked and that the search must be written down first. As it stands, the definition departs from the alfa precedent
-   without a fact that sets it apart.
-   Recommendation: search the 2018 write-ups and participant code first; if none are published, keep CoLES as an exception to CLEAN-19 with that fact, otherwise rebuild like alfa. Decision: agree, or rebuild like alfa now?
+   Implemented: the CoLES baseline, a peer-reviewed tabular baseline for this data; under the amended rule it meets
+   CLEAN-19 unless a 2018 top solution's features are better. Alternatives: (a) keep CoLES, with a documented search
+   of the 2018 write-ups and participant code on record (cost: the search); (b) if a top solution is found, compare
+   its features with CoLES on the three windows and take the better set, or a reasonable combination, as for alfa
+   (cost: the search, a rebuild and a new review). The rule no longer settles this alone: whether a better feature
+   set exists is not known until the search is done.
+   Recommendation: search the 2018 write-ups and participant code; if none are published or none beat CoLES, keep CoLES; otherwise take the better set. Decision: agree, or keep CoLES without the search?
 
 7. **Mixed currencies in the amount statistics: keep, use rubles only, or convert?** `amount` is in each
    transaction's own currency, so `amount_sum`, `amount_mean`, `amount_std` and the per-category and per-MCC means add

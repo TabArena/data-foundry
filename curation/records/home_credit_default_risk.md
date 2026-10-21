@@ -38,6 +38,8 @@ CC (2026-10-19, Lennart): the v2 definition computes nothing over all rows: the 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the 35 features that hold only 0 and 1: FLAG_MOBIL, FLAG_EMP_PHONE, FLAG_CONT_MOBILE, FLAG_EMAIL, the four REG/LIVE region and city flags, 17 FLAG_DOCUMENT columns and 10 CC_NAME_CONTRACT_STATUS min/max aggregates (found on the data in `_feature_types`).
 
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: FLAG_MOBIL, FLAG_EMP_PHONE, FLAG_CONT_MOBILE, FLAG_EMAIL, the four REG_/LIVE_..._NOT_... flags and 17 FLAG_DOCUMENT columns (explicit list). Reverted: the 10 CC_NAME_CONTRACT_STATUS min/max aggregates stay numeric.
+
 ## Reference
 
 Anna Montoya, inversion, KirillOdintsov, and Martin Kotek. Home Credit Default Risk. https://kaggle.com/competitions/home-credit-default-risk, 2018. Kaggle.

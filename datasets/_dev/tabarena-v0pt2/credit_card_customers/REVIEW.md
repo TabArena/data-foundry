@@ -79,6 +79,16 @@ churn use case; the ceiling does not add to the provenance doubt (independent fa
      marks.
    - Decision needed: which standard, (a) or (b), for this dataset, hepatitis_c_egypt and stroke_prediction.
 
+   **Lennart (2026-10-21):** on the cross-dataset item "PROV-3 evidence standard": "either might be strong enough;
+   on the columns we ship, and if the marks on the published file leak/extend to the shipped version (which is
+   again case-by-case)".
+
+   **Answer (AI, 2026-10-21):** the standard is set (PROV-3 and EV-3 amended): neither (a) nor (b) is required,
+   either can be enough, judged case by case on the shipped columns. Here the calibrated marks (the 12-month count
+   equal to Q4 + Q1 in 10,127 of 10,127 rows, inactivity and spend independent of activity, tenure set by age) all
+   sit in shipped columns, so they count under (a); the label-linked tests stay weak (distance AUC 0.559, no sign
+   change), so (b) is not met. Still open: whether these marks are strong enough to retire it.
+
 **Review panel:** don't ship yet (mediator); the PROV-3 standard decides. Claim audit: 50 claims, 41 hold, 3 hold
 with a caveat (wording fixed), 6 untested, 0 refuted. Blind review: include with changes; main concern the activity
 window that may end at the closure. Debate: agreed on the window note, the `ForcedIIDFromTemporal` tag and the

@@ -192,10 +192,6 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
-        flags = [
-            c
-            for c in df.columns.drop(self.target)
-            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
-        ]
-        return FeatureTypes(categorical=flags)
+        # Liability_Assets_Flag (1 when liabilities exceed assets) is a yes/no flag: categorical (CLEAN-14)
+        del df
+        return FeatureTypes(categorical=["Liability_Assets_Flag"])

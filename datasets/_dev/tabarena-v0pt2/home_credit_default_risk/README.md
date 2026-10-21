@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:f62a5ae60f0472b4ab1c9b39fa89ebba420b14d29e73193c7500a567a6a7eda5
+checksum: v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -22,8 +22,8 @@ data:
   n_rows: 307507
   n_features: 709
   dtypes:
-    category: 59
-    float64: 644
+    category: 49
+    float64: 654
     int64: 7
   n_test_dataset_rows: null
 task:
@@ -71,7 +71,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f62a5ae60f0472b4ab1c9b39fa89ebba420b14d29e73193c7500a567a6a7eda5`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,9 +141,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | TARGET |
 
 <details>
-<summary>Feature types: 59 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 49 categorical, 0 string, 0 datetime</summary>
 
-- categorical (59): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `CC_NAME_CONTRACT_STATUS_Active_MIN`, `CC_NAME_CONTRACT_STATUS_Active_MAX`, `CC_NAME_CONTRACT_STATUS_Approved_MAX`, `CC_NAME_CONTRACT_STATUS_Completed_MIN`, `CC_NAME_CONTRACT_STATUS_Completed_MAX`, `CC_NAME_CONTRACT_STATUS_Demand_MAX`, `CC_NAME_CONTRACT_STATUS_Refused_MAX`, `CC_NAME_CONTRACT_STATUS_Sent proposal_MAX`, `CC_NAME_CONTRACT_STATUS_Signed_MIN`, `CC_NAME_CONTRACT_STATUS_Signed_MAX`, `TARGET`
+- categorical (49): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `TARGET`
 - string (0): none
 - datetime (0): none
 
@@ -170,11 +170,11 @@ The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_CAR | FLAG_OWN_REALTY | CNT_CHILDREN | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Cash loans | F | N | Y | 0 | 126000 | 528633 | 24624 | 472500 | Unaccompanied | Working |
-| 0 | Revolving loans | M | N | Y | 0 | 67500 | 180000 | 9000 | 180000 | Unaccompanied | Working |
-| 0 | Cash loans | F | N | N | 0 | 90000 | 508496 | 21672 | 454500 | Children | Working |
-| 0 | Cash loans | F | N | Y | 2 | 135000 | 1.11384e+06 | 53716.5 | 900000 | Unaccompanied | State servant |
-| 0 | Cash loans | F | N | Y | 0 | 135000 | 239850 | 25960.5 | 225000 | Family | Working |
+| 0 | Cash loans | M | N | Y | 0 | 157500 | 1.05129e+06 | 30870 | 918000 | Unaccompanied | Working |
+| 0 | Revolving loans | F | N | Y | 1 | 121500 | 180000 | 9000 | 180000 | Unaccompanied | Commercial associate |
+| 0 | Cash loans | F | Y | Y | 0 | 405000 | 1.68659e+06 | 44622 | 1.5075e+06 | Unaccompanied | Working |
+| 0 | Cash loans | F | Y | Y | 0 | 157500 | 1.28835e+06 | 37800 | 1.125e+06 | Unaccompanied | Working |
+| 0 | Cash loans | M | Y | Y | 0 | 166500 | 327024 | 12325.5 | 270000 | Spouse, partner | Working |
 
 ## Curation notes
 
@@ -227,16 +227,6 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| CC_NAME_CONTRACT_STATUS_Active_MIN | category | 220602 | 71.74 | 2 | 1.0, 0.0 |
-| CC_NAME_CONTRACT_STATUS_Active_MAX | category | 220602 | 71.74 | 2 | 1.0, 0.0 |
-| CC_NAME_CONTRACT_STATUS_Approved_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Completed_MIN | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Completed_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Demand_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Refused_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Sent proposal_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Signed_MIN | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
-| CC_NAME_CONTRACT_STATUS_Signed_MAX | category | 220602 | 71.74 | 2 | 0.0, 1.0 |
 | FONDKAPREMONT_MODE | category | 210293 | 68.39 | 4 | reg oper account, reg oper spec account, not specified, org spec account |
 | WALLSMATERIAL_MODE | category | 156340 | 50.84 | 7 | Panel, Stone, brick, Block, Wooden, Mixed, Monolithic, Others |
 | HOUSETYPE_MODE | category | 154296 | 50.18 | 3 | block of flats, specific housing, terraced house |
@@ -286,7 +276,17 @@ Accepted on purpose:
 | FLAG_DOCUMENT_19 | category | 0 | 0 | 2 | 0, 1 |
 | FLAG_DOCUMENT_20 | category | 0 | 0 | 2 | 0, 1 |
 | FLAG_DOCUMENT_21 | category | 0 | 0 | 2 | 0, 1 |
-| NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MAX | float64 | 307456 | 99.98 | 5 | 0.0, 0.134, 0.0248, 0.3872, 1.4333 |
+| NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MAX | float64 | 307456 | 99.98 | 5 | 0.0, 1.4333, 0.3872, 0.0248, 0.134 |
+| NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MEAN | float64 | 307456 | 99.98 | 5 | 0.0, 3.7267, 0.6453, 0.0372, 0.1787 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_OVERDUE_MEAN | float64 | 307401 | 99.97 | 5 | 0.0, 4.0, 2.5534, 0.0097, 1605.3333 |
+| NEW_RATIO_BURO_CNT_CREDIT_PROLONG_SUM | float64 | 304610 | 99.06 | 10 | 0.0, 1.0, 2.0, 0.5, 5.0, 3.0, 0.3333, 4.0, 1.5, 0.25 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 5.0, 0.3, 0.4364, 3.8785, 0.125, 0.6667, 2.5949 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_SUM | float64 | 303746 | 98.78 | 1923 | 0.0, 1.0, 0.3333, 0.0333, 2.0, 1.5, 0.2, 3.3333, 0.4, 3.0 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.1428, 3.2608, 0.5683, 0.6934, 0.7695, 5.4631, 1.1109, 3.6078, 0.7951 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MEAN | float64 | 301935 | 98.19 | 5072 | 0.0, 22.8255, 1.1365, -727.7435, 1.5982, 1.6121, 0.1428, -488.9192, -26288.0707… |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 3.2608, 0.5683, -1455.487, 0.9589, 1.6121, 0.1428, -488.9192, -13144.0353,… |
+| NEW_RATIO_BURO_MONTHS_BALANCE_MAX_MAX | float64 | 296673 | 96.48 | 602 | 0.0, 1.0, 0.5, 0.3333, 0.6667, 0.2, 0.1111, 0.75, 3.0, 2.0 |
+| NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 5635 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.2, 0.4, 0.6, 1.6667, 0.6667 |
 
 (650 more rows not shown)
 
@@ -302,7 +302,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (651 rows)</summary>
+<summary>Show the table (661 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -367,47 +367,17 @@ Accepted on purpose:
 | NONLIVINGAPARTMENTS_MEDI | 93995 | 0.00865116 | 0.0474152 | 0 | 1 |
 | NONLIVINGAREA_MEDI | 137827 | 0.0282363 | 0.0701669 | 0 | 1 |
 
-(591 more rows not shown)
+(601 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (161 rows)</summary>
+<summary>Show the table (131 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| CC_NAME_CONTRACT_STATUS_Active_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Active_MAX | 2 | 1.0 | 86838 | 28.24 |
-| CC_NAME_CONTRACT_STATUS_Active_MAX | 3 | 0.0 | 67 | 0.02 |
-| CC_NAME_CONTRACT_STATUS_Active_MIN | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Active_MIN | 2 | 1.0 | 72218 | 23.48 |
-| CC_NAME_CONTRACT_STATUS_Active_MIN | 3 | 0.0 | 14687 | 4.78 |
-| CC_NAME_CONTRACT_STATUS_Approved_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Approved_MAX | 2 | 0.0 | 86900 | 28.26 |
-| CC_NAME_CONTRACT_STATUS_Approved_MAX | 3 | 1.0 | 5 | 0 |
-| CC_NAME_CONTRACT_STATUS_Completed_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Completed_MAX | 2 | 0.0 | 76297 | 24.81 |
-| CC_NAME_CONTRACT_STATUS_Completed_MAX | 3 | 1.0 | 10608 | 3.45 |
-| CC_NAME_CONTRACT_STATUS_Completed_MIN | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Completed_MIN | 2 | 0.0 | 86878 | 28.25 |
-| CC_NAME_CONTRACT_STATUS_Completed_MIN | 3 | 1.0 | 27 | 0.01 |
-| CC_NAME_CONTRACT_STATUS_Demand_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Demand_MAX | 2 | 0.0 | 86890 | 28.26 |
-| CC_NAME_CONTRACT_STATUS_Demand_MAX | 3 | 1.0 | 15 | 0 |
-| CC_NAME_CONTRACT_STATUS_Refused_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Refused_MAX | 2 | 0.0 | 86891 | 28.26 |
-| CC_NAME_CONTRACT_STATUS_Refused_MAX | 3 | 1.0 | 14 | 0 |
-| CC_NAME_CONTRACT_STATUS_Sent proposal_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Sent proposal_MAX | 2 | 0.0 | 86445 | 28.11 |
-| CC_NAME_CONTRACT_STATUS_Sent proposal_MAX | 3 | 1.0 | 460 | 0.15 |
-| CC_NAME_CONTRACT_STATUS_Signed_MAX | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Signed_MAX | 2 | 0.0 | 82614 | 26.87 |
-| CC_NAME_CONTRACT_STATUS_Signed_MAX | 3 | 1.0 | 4291 | 1.4 |
-| CC_NAME_CONTRACT_STATUS_Signed_MIN | 1 | &lt;NA> | 220602 | 71.74 |
-| CC_NAME_CONTRACT_STATUS_Signed_MIN | 2 | 0.0 | 86873 | 28.25 |
-| CC_NAME_CONTRACT_STATUS_Signed_MIN | 3 | 1.0 | 32 | 0.01 |
 | CODE_GENDER | 1 | F | 202448 | 65.84 |
 | CODE_GENDER | 2 | M | 105059 | 34.16 |
 | EMERGENCYSTATE_MODE | 1 | No | 159425 | 51.84 |
@@ -438,8 +408,38 @@ Accepted on purpose:
 | FLAG_DOCUMENT_2 | 1 | 0 | 307494 | 100 |
 | FLAG_DOCUMENT_2 | 2 | 1 | 13 | 0 |
 | FLAG_DOCUMENT_20 | 1 | 0 | 307351 | 99.95 |
+| FLAG_DOCUMENT_20 | 2 | 1 | 156 | 0.05 |
+| FLAG_DOCUMENT_21 | 1 | 0 | 307404 | 99.97 |
+| FLAG_DOCUMENT_21 | 2 | 1 | 103 | 0.03 |
+| FLAG_DOCUMENT_3 | 1 | 1 | 218340 | 71 |
+| FLAG_DOCUMENT_3 | 2 | 0 | 89167 | 29 |
+| FLAG_DOCUMENT_4 | 1 | 0 | 307482 | 99.99 |
+| FLAG_DOCUMENT_4 | 2 | 1 | 25 | 0.01 |
+| FLAG_DOCUMENT_5 | 1 | 0 | 302859 | 98.49 |
+| FLAG_DOCUMENT_5 | 2 | 1 | 4648 | 1.51 |
+| FLAG_DOCUMENT_6 | 1 | 0 | 280429 | 91.19 |
+| FLAG_DOCUMENT_6 | 2 | 1 | 27078 | 8.81 |
+| FLAG_DOCUMENT_7 | 1 | 0 | 307448 | 99.98 |
+| FLAG_DOCUMENT_7 | 2 | 1 | 59 | 0.02 |
+| FLAG_DOCUMENT_8 | 1 | 0 | 282483 | 91.86 |
+| FLAG_DOCUMENT_8 | 2 | 1 | 25024 | 8.14 |
+| FLAG_DOCUMENT_9 | 1 | 0 | 306309 | 99.61 |
+| FLAG_DOCUMENT_9 | 2 | 1 | 1198 | 0.39 |
+| FLAG_EMAIL | 1 | 0 | 290065 | 94.33 |
+| FLAG_EMAIL | 2 | 1 | 17442 | 5.67 |
+| FLAG_EMP_PHONE | 1 | 1 | 252121 | 81.99 |
+| FLAG_EMP_PHONE | 2 | 0 | 55386 | 18.01 |
+| FLAG_MOBIL | 1 | 1 | 307506 | 100 |
+| FLAG_MOBIL | 2 | 0 | 1 | 0 |
+| FLAG_OWN_CAR | 1 | N | 202922 | 65.99 |
+| FLAG_OWN_CAR | 2 | Y | 104585 | 34.01 |
+| FLAG_OWN_REALTY | 1 | Y | 213308 | 69.37 |
+| FLAG_OWN_REALTY | 2 | N | 94199 | 30.63 |
+| FLAG_PHONE | 1 | 0 | 221080 | 71.89 |
+| FLAG_PHONE | 2 | 1 | 86427 | 28.11 |
+| FLAG_WORK_PHONE | 1 | 0 | 246203 | 80.06 |
 
-(101 more rows not shown)
+(71 more rows not shown)
 
 </details>
 
@@ -454,4 +454,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f62a5ae60f0472b4ab1c9b39fa89ebba420b14d29e73193c7500a567a6a7eda5` |
+| stale | yes: the definition now gives checksum `v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150` |

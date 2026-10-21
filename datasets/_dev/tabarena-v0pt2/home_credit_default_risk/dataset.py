@@ -156,13 +156,37 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         return df.drop(columns=_copies(df.drop(columns=self.target)))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
+        # the FLAG_ and REG_/LIVE_ ..._NOT_... columns are yes/no flags by the codebook: categorical (CLEAN-14); the
+        # aggregates stay numeric even where only 0 and 1 occur
+        del df
         flags = [
-            c
-            for c in df.columns.drop(self.target)
-            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+            "FLAG_MOBIL",
+            "FLAG_EMP_PHONE",
+            "FLAG_CONT_MOBILE",
+            "FLAG_EMAIL",
+            "REG_REGION_NOT_LIVE_REGION",
+            "REG_REGION_NOT_WORK_REGION",
+            "LIVE_REGION_NOT_WORK_REGION",
+            "REG_CITY_NOT_WORK_CITY",
+            "FLAG_DOCUMENT_2",
+            "FLAG_DOCUMENT_4",
+            "FLAG_DOCUMENT_5",
+            "FLAG_DOCUMENT_6",
+            "FLAG_DOCUMENT_7",
+            "FLAG_DOCUMENT_9",
+            "FLAG_DOCUMENT_10",
+            "FLAG_DOCUMENT_11",
+            "FLAG_DOCUMENT_12",
+            "FLAG_DOCUMENT_13",
+            "FLAG_DOCUMENT_14",
+            "FLAG_DOCUMENT_15",
+            "FLAG_DOCUMENT_16",
+            "FLAG_DOCUMENT_17",
+            "FLAG_DOCUMENT_19",
+            "FLAG_DOCUMENT_20",
+            "FLAG_DOCUMENT_21",
         ]
-        return FeatureTypes(categorical=[*CATEGORICAL, *(c for c in flags if c not in CATEGORICAL)])
+        return FeatureTypes(categorical=[*CATEGORICAL, *flags])
 
 
 def _copies(df: pd.DataFrame) -> list[str]:

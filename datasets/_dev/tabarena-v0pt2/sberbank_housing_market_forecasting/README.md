@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:94dacb86f3113c3e014deae4d586dfc44a200aeb3a0cdf9cdec7f01a07ee45a3
+checksum: v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -22,11 +22,11 @@ data:
   n_rows: 28321
   n_features: 386
   dtypes:
-    category: 27
+    category: 23
     datetime64[ns]: 1
     float32: 3
     float64: 206
-    int64: 150
+    int64: 154
   n_test_dataset_rows: null
 task:
   target: price_doc
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:94dacb86f3113c3e014deae4d586dfc44a200aeb3a0cdf9cdec7f01a07ee45a3`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,9 +141,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | timestamp |
 
 <details>
-<summary>Feature types: 27 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 23 categorical, 0 string, 0 datetime</summary>
 
-- categorical (27): `state`, `ID_railroad_station_walk`, `ID_railroad_station_avto`, `ID_big_road1`, `ID_big_road2`, `ID_railroad_terminal`, `ID_bus_terminal`, `ecology`, `material`, `sub_area`, `product_type`, `culture_objects_top_25`, `thermal_power_plant_raion`, `incineration_raion`, `oil_chemistry_raion`, `radiation_raion`, `railroad_terminal_raion`, `big_market_raion`, `nuclear_reactor_raion`, `detention_facility_raion`, `water_1line`, `big_road1_1line`, `railroad_1line`, `mosque_count_500`, `mosque_count_1000`, `mosque_count_1500`, `mosque_count_2000`
+- categorical (23): `state`, `ID_railroad_station_walk`, `ID_railroad_station_avto`, `ID_big_road1`, `ID_big_road2`, `ID_railroad_terminal`, `ID_bus_terminal`, `ecology`, `material`, `sub_area`, `product_type`, `culture_objects_top_25`, `thermal_power_plant_raion`, `incineration_raion`, `oil_chemistry_raion`, `radiation_raion`, `railroad_terminal_raion`, `big_market_raion`, `nuclear_reactor_raion`, `detention_facility_raion`, `water_1line`, `big_road1_1line`, `railroad_1line`
 - string (0): none
 - datetime (0): none
 
@@ -256,10 +256,6 @@ We always use 6 month of the data as test data and all prior data as training da
 | ID_railroad_terminal | category | 0 | 0 | 8 | 32, 50, 5, 83, 121, 101, 97, 113 |
 | ID_bus_terminal | category | 0 | 0 | 14 | 8, 1, 9, 5, 3, 14, 4, 7, 13, 2 |
 | ecology | category | 0 | 0 | 5 | no data, poor, good, satisfactory, excellent |
-| mosque_count_500 | category | 0 | 0 | 2 | 0, 1 |
-| mosque_count_1000 | category | 0 | 0 | 2 | 0, 1 |
-| mosque_count_1500 | category | 0 | 0 | 2 | 0, 1 |
-| mosque_count_2000 | category | 0 | 0 | 2 | 0, 1 |
 | timestamp | datetime64\[ns\] | 0 | 0 | 1158 | 2014-12-16 00:00:00, 2014-12-09 00:00:00, 2014-06-30 00:00:00, 2014-12-18 00:00… |
 | modern_education_share_lag_1y | float32 | 12535 | 44.26 | 2 | 90.92, 93.08 |
 | old_education_build_share_lag_1y | float32 | 12535 | 44.26 | 2 | 23.14, 25.47 |
@@ -293,6 +289,10 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_before_1920 | float64 | 4960 | 17.51 | 29 | 0.0, 1.0, 2.0, 4.0, 13.0, 47.0, 6.0, 34.0, 23.0, 5.0 |
 | build_count_1921-1945 | float64 | 4960 | 17.51 | 47 | 0.0, 1.0, 2.0, 4.0, 20.0, 24.0, 3.0, 5.0, 299.0, 14.0 |
 | build_count_1946-1970 | float64 | 4960 | 17.51 | 100 | 7.0, 0.0, 1.0, 14.0, 40.0, 184.0, 2.0, 153.0, 439.0, 246.0 |
+| build_count_1971-1995 | float64 | 4960 | 17.51 | 92 | 10.0, 0.0, 131.0, 130.0, 93.0, 58.0, 42.0, 59.0, 176.0, 102.0 |
+| build_count_after_1995 | float64 | 4960 | 17.51 | 69 | 23.0, 0.0, 57.0, 13.0, 20.0, 176.0, 22.0, 11.0, 252.0, 33.0 |
+| cafe_sum_1500_min_price_avg | float64 | 4126 | 14.57 | 2494 | 1000.0, 500.0, 700.0, 300.0, 600.0, 716.67, 660.0, 750.0, 650.0, 833.33 |
+| cafe_sum_1500_max_price_avg | float64 | 4126 | 14.57 | 1665 | 1000.0, 1500.0, 1750.0, 1166.67, 1250.0, 500.0, 1100.0, 1208.33, 1125.0, 800.0 |
 
 (327 more rows not shown)
 
@@ -307,7 +307,7 @@ We always use 6 month of the data as test data and all prior data as training da
 ### Numeric features
 
 <details>
-<summary>Show the table (359 rows)</summary>
+<summary>Show the table (363 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -372,14 +372,14 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_foam | 23361 | 0.159582 | 1.10325 | 0 | 11 |
 | build_count_slag | 23361 | 4.43859 | 13.1373 | 0 | 84 |
 
-(299 more rows not shown)
+(303 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (89 rows)</summary>
+<summary>Show the table (81 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -433,18 +433,18 @@ We always use 6 month of the data as test data and all prior data as training da
 | material | 3 | 2.0 | 2714 | 9.58 |
 | material | 4 | 5.0 | 1386 | 4.89 |
 | material | 5 | 4.0 | 1305 | 4.61 |
-| mosque_count_1000 | 1 | 0 | 27788 | 98.12 |
-| mosque_count_1000 | 2 | 1 | 533 | 1.88 |
-| mosque_count_1500 | 1 | 0 | 27273 | 96.3 |
-| mosque_count_1500 | 2 | 1 | 1048 | 3.7 |
-| mosque_count_2000 | 1 | 0 | 26431 | 93.33 |
-| mosque_count_2000 | 2 | 1 | 1890 | 6.67 |
-| mosque_count_500 | 1 | 0 | 28189 | 99.53 |
-| mosque_count_500 | 2 | 1 | 132 | 0.47 |
 | nuclear_reactor_raion | 1 | no | 27550 | 97.28 |
 | nuclear_reactor_raion | 2 | yes | 771 | 2.72 |
+| oil_chemistry_raion | 1 | no | 28055 | 99.06 |
+| oil_chemistry_raion | 2 | yes | 266 | 0.94 |
+| product_type | 1 | Investment | 17379 | 61.36 |
+| product_type | 2 | OwnerOccupier | 10942 | 38.64 |
+| radiation_raion | 1 | no | 19059 | 67.3 |
+| radiation_raion | 2 | yes | 9262 | 32.7 |
+| railroad_1line | 1 | no | 27485 | 97.05 |
+| railroad_1line | 2 | yes | 836 | 2.95 |
 
-(29 more rows not shown)
+(21 more rows not shown)
 
 </details>
 
@@ -459,4 +459,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:94dacb86f3113c3e014deae4d586dfc44a200aeb3a0cdf9cdec7f01a07ee45a3` |
+| stale | yes: the definition now gives checksum `v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad` |

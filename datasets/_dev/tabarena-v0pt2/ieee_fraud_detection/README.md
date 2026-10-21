@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:8809099527a67617745caf8d2b66d7d5edb1076a8085c845c3a48cdeab99b5b0
+checksum: v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -22,9 +22,9 @@ data:
   n_rows: 590540
   n_features: 435
   dtypes:
-    category: 57
+    category: 51
     datetime64[ns]: 1
-    float64: 377
+    float64: 383
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 435 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8809099527a67617745caf8d2b66d7d5edb1076a8085c845c3a48cdeab99b5b0`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,9 +140,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | Transaction_date |
 
 <details>
-<summary>Feature types: 57 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 51 categorical, 0 string, 0 datetime</summary>
 
-- categorical (57): `ProductCD`, `addr1`, `addr2`, `P_emaildomain`, `R_emaildomain`, `DeviceType`, `DeviceInfo`, `card1`, `card2`, `card3`, `card4`, `card5`, `card6`, `M1`, `M2`, `M3`, `M4`, `M5`, `M6`, `M7`, `M8`, `M9`, `id_12`, `id_13`, `id_14`, `id_15`, `id_16`, `id_17`, `id_18`, `id_19`, `id_20`, `id_21`, `id_22`, `id_23`, `id_24`, `id_25`, `id_26`, `id_27`, `id_28`, `id_29`, `id_30`, `id_31`, `id_32`, `id_33`, `id_34`, `id_35`, `id_36`, `id_37`, `id_38`, `uid`, `V1`, `V14`, `V41`, `V65`, `V88`, `V107`, `isFraud`
+- categorical (51): `ProductCD`, `addr1`, `addr2`, `P_emaildomain`, `R_emaildomain`, `DeviceType`, `DeviceInfo`, `card1`, `card2`, `card3`, `card4`, `card5`, `card6`, `M1`, `M2`, `M3`, `M4`, `M5`, `M6`, `M7`, `M8`, `M9`, `id_12`, `id_13`, `id_14`, `id_15`, `id_16`, `id_17`, `id_18`, `id_19`, `id_20`, `id_21`, `id_22`, `id_23`, `id_24`, `id_25`, `id_26`, `id_27`, `id_28`, `id_29`, `id_30`, `id_31`, `id_32`, `id_33`, `id_34`, `id_35`, `id_36`, `id_37`, `id_38`, `uid`, `isFraud`
 - string (0): none
 - datetime (0): none
 
@@ -254,17 +254,12 @@ To define three train/test splits, we use the last three months as test sets, le
 | M8 | category | 346252 | 58.63 | 2 | F, T |
 | M9 | category | 346252 | 58.63 | 2 | T, F |
 | M4 | category | 281444 | 47.66 | 3 | M0, M2, M1 |
-| V1 | category | 279287 | 47.29 | 2 | 1.0, 0.0 |
 | M1 | category | 271100 | 45.91 | 2 | T, F |
 | M2 | category | 271100 | 45.91 | 2 | T, F |
 | M3 | category | 271100 | 45.91 | 2 | T, F |
 | M6 | category | 169360 | 28.68 | 2 | F, T |
-| V41 | category | 168969 | 28.61 | 2 | 1.0, 0.0 |
 | P_emaildomain | category | 94456 | 15.99 | 59 | gmail.com, yahoo.com, hotmail.com, anonymous.com, aol.com, comcast.net, icloud.… |
 | uid | category | 92436 | 15.65 | 306173 | 3428022.0, 2987225.0, 2997296.0, 3006103.0, 3144059.0, 2987765.0, 2989224.0, 31… |
-| V88 | category | 89164 | 15.1 | 2 | 1.0, 0.0 |
-| V65 | category | 77096 | 13.06 | 2 | 1.0, 0.0 |
-| V14 | category | 76073 | 12.88 | 2 | 1.0, 0.0 |
 | addr1 | category | 65706 | 11.13 | 332 | 299.0, 325.0, 204.0, 264.0, 330.0, 315.0, 441.0, 272.0, 123.0, 126.0 |
 | addr2 | category | 65706 | 11.13 | 74 | 87.0, 60.0, 96.0, 32.0, 65.0, 16.0, 31.0, 19.0, 26.0, 27.0 |
 | card2 | category | 8933 | 1.51 | 500 | 321.0, 111.0, 555.0, 490.0, 583.0, 170.0, 194.0, 545.0, 360.0, 514.0 |
@@ -272,13 +267,18 @@ To define three train/test splits, we use the last three months as test sets, le
 | card3 | category | 1565 | 0.27 | 114 | 150.0, 185.0, 106.0, 144.0, 146.0, 117.0, 143.0, 119.0, 102.0, 147.0 |
 | card4 | category | 1577 | 0.27 | 4 | visa, mastercard, american express, discover |
 | card6 | category | 1571 | 0.27 | 4 | debit, credit, debit or credit, charge card |
-| V107 | category | 314 | 0.05 | 2 | 1.0, 0.0 |
 | isFraud | category | 0 | 0 | 2 | 0, 1 |
 | ProductCD | category | 0 | 0 | 5 | W, C, R, H, S |
 | card1 | category | 0 | 0 | 13553 | 7919, 9500, 15885, 17188, 15066, 12695, 12544, 6019, 2803, 7585 |
 | Transaction_date | datetime64\[ns\] | 0 | 0 | 573349 | 2018-03-19 15:53:37, 2018-01-19 21:24:26, 2018-04-12 23:49:11, 2018-02-21 18:09… |
 | id_07 | float64 | 585385 | 99.13 | 84 | 0.0, 16.0, 14.0, 12.0, 15.0, 17.0, 4.0, 13.0, 5.0, 10.0 |
 | id_08 | float64 | 585385 | 99.13 | 94 | -100.0, 0.0, -34.0, -33.0, -32.0, -35.0, -25.0, -31.0, -30.0, -24.0 |
+| dist2 | float64 | 552913 | 93.63 | 1751 | 7.0, 0.0, 1.0, 9.0, 4.0, 2.0, 3.0, 68.0, 6.0, 13.0 |
+| D7 | float64 | 551623 | 93.41 | 38869 | -62.0756, -169.0062, -22.7203, -53.7887, -22.7571, -22.9456, -13.8738, -117.220… |
+| D13 | float64 | 528588 | 89.51 | 61772 | -9.9515, -169.0062, -19.1569, -145.642, -29.0092, -55.179, -166.706, -78.9215, … |
+| D14 | float64 | 528353 | 89.47 | 62047 | -21.8569, 84.3218, -52.641, -67.2717, -9.0177, -170.6809, -6.1058, -22.6582, -1… |
+| D12 | float64 | 525823 | 89.04 | 64551 | -159.8919, -62.0756, -154.0968, -23.0734, -21.7893, -22.8682, -85.6475, -74.981… |
+| id_03 | float64 | 524216 | 88.77 | 24 | 0.0, 1.0, 3.0, 2.0, 5.0, 4.0, 6.0, -5.0, -6.0, -7.0 |
 
 (376 more rows not shown)
 
@@ -294,7 +294,7 @@ To define three train/test splits, we use the last three months as test sets, le
 ### Numeric features
 
 <details>
-<summary>Show the table (378 rows)</summary>
+<summary>Show the table (384 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -331,6 +331,7 @@ To define three train/test splits, we use the last three months as test sets, le
 | D13 | 61952 | -69.2449 | 85.1012 | -182.998 | 698.052 |
 | D14 | 62187 | -26.271 | 141.613 | -194.876 | 698.03 |
 | D15 | 501427 | 74.4294 | 205.586 | -215.672 | 698.509 |
+| V1 | 311253 | 0.999945 | 0.00739021 | 0 | 1 |
 | V2 | 311253 | 1.0452 | 0.240133 | 0 | 8 |
 | V3 | 311253 | 1.07807 | 0.32089 | 0 | 9 |
 | V4 | 311253 | 0.846456 | 0.440053 | 0 | 6 |
@@ -343,6 +344,7 @@ To define three train/test splits, we use the last three months as test sets, le
 | V11 | 311253 | 0.478987 | 0.552431 | 0 | 5 |
 | V12 | 514467 | 0.559711 | 0.510533 | 0 | 3 |
 | V13 | 514467 | 0.599166 | 0.532185 | 0 | 6 |
+| V14 | 514467 | 0.9995 | 0.022345 | 0 | 1 |
 | V15 | 514467 | 0.122342 | 0.332422 | 0 | 7 |
 | V16 | 514467 | 0.12346 | 0.342841 | 0 | 15 |
 | V17 | 514467 | 0.13404 | 0.364456 | 0 | 15 |
@@ -356,17 +358,15 @@ To define three train/test splits, we use the last three months as test sets, le
 | V25 | 514467 | 0.97766 | 0.185245 | 0 | 7 |
 | V26 | 514467 | 0.98804 | 0.209302 | 0 | 13 |
 | V27 | 514467 | 0.00077556 | 0.0285959 | 0 | 4 |
-| V28 | 514467 | 0.000829985 | 0.0311328 | 0 | 4 |
-| V29 | 514467 | 0.38784 | 0.510652 | 0 | 5 |
 
-(318 more rows not shown)
+(324 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (236 rows)</summary>
+<summary>Show the table (218 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -426,12 +426,12 @@ To define three train/test splits, we use the last three months as test sets, le
 | Transaction_date | 3 | 2018-04-12 23:49:11 | 5 | 0 |
 | Transaction_date | 4 | 2018-02-21 18:09:48 | 5 | 0 |
 | Transaction_date | 5 | 2017-12-23 23:54:56 | 4 | 0 |
-| V1 | 1 | 1.0 | 311236 | 52.7 |
-| V1 | 2 | &lt;NA> | 279287 | 47.29 |
-| V1 | 3 | 0.0 | 17 | 0 |
-| V107 | 1 | 1.0 | 589978 | 99.9 |
+| addr1 | 1 | &lt;NA> | 65706 | 11.13 |
+| addr1 | 2 | 299.0 | 46335 | 7.85 |
+| addr1 | 3 | 325.0 | 42751 | 7.24 |
+| addr1 | 4 | 204.0 | 42020 | 7.12 |
 
-(176 more rows not shown)
+(158 more rows not shown)
 
 </details>
 
@@ -446,4 +446,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8809099527a67617745caf8d2b66d7d5edb1076a8085c845c3a48cdeab99b5b0` |
+| stale | yes: the definition now gives checksum `v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c` |

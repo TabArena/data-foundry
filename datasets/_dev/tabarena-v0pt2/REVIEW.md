@@ -84,6 +84,11 @@
   task does not fit (SPLIT-24 bars a bare fingerprint hash, and grouping would test whether the fingerprint resolves
   stereoisomers). Recommendation: (a) keep the repeats with this reason, and drop the 31 salt-form copies as LEAK-19
   does in qsar_oral_toxicity. Not applied yet.
+  **Lennart (2026-10-21, go ahead):** Yes, follow your recommendation
+  **Resolved (2026-10-21, Lennart):** applied: one row per ChEMBL parent, so 37 salt-form copies leave (the 31
+  whole-vector pairs and 6 pairs inside larger vectors; the parent's own row stays), 5,741 to 5,704 rows; the
+  decision to keep the stereoisomers and analogs is written in qsar_tid_11's notes. If only the 31 should go, 6 ids
+  come off the list.
 
 ### Rules and the benchmark harness
 
@@ -279,6 +284,27 @@
   era ids (a harness change). Both definitions now declare `pearsonr` with this note. Recommendation: keep both out
   of a scored run until the harness scores `pearsonr` or the z-scored RMSE; binarising the target to ROC AUC would
   run now but changes the task.
+  **Lennart (2026-10-21, discuss):** What did people on Kaggle, or as a baseline use? Tabular models? Also, could we
+  change the target for regression to match what we want it to be? Or would this only make sense if we add custom
+  metrics? (i am not opposed to adding custom metrics now, can you do a quick survey what metrics we need and how
+  many accepted datasets owuld change as a result?)
+  **Answer (AI, 2026-10-21):** Models: Numerai's example and benchmark models are LightGBM regressors on the raw
+  features, and strong participants use GBDT ensembles (some add MLPs); G-Research's top three were LightGBM. All
+  tabular, all scored by a correlation. Changing the target alone is not enough: for standardised y, MSE = 1 -
+  2*s*rho + s^2 for predictions of correlation rho and spread s, so RMSE still punishes a model whose predictions
+  are wider than its signal (rho 0.05 at spread 0.3 scores 1.06, worse than the constant; rho 0.03 at spread 0.03
+  scores 0.9991 and wins), whatever the target's scale. Numerai's target is already rank-binned per era and
+  G-Research's already residualised, so a per-era transform changes almost nothing. The cheapest faithful fix needs
+  no new scorer: AutoGluon has `pearsonr`, both definitions declare it, and the harness adapter only allows
+  `roc_auc`, `log_loss` and `rmse` today (it falls back silently otherwise); passing the declared metric through
+  needs a guard for a constant prediction, where `pearsonr` is undefined. Survey of 173 definitions (130 accepted):
+  allowing AutoGluon's built-in metrics changes the scored metric of 11 datasets (4 accepted: 5g_energy_consumption,
+  allstate_claims_severity, mercedes_benz_greener_manufacturing, bioresponse; 7 open); adding the three declared
+  custom scorers (amex_metric, the PhysioNet utility, FORCE's penalty matrix) brings it to 14 (6 accepted); scoring
+  the originals behind today's stand-ins (Gini stability, PAR10 for sat11, per-strain accuracy for micro_mass, per-
+  era correlation, AP@k) to 17 (9 accepted), with about 8 custom scorers, 4 of which need group, era or time ids the
+  harness does not pass today. Recommendation: allow the built-in metrics now (pearsonr for numerai and g_research);
+  custom scorers later, starting with the three already declared.
 
 ### Rules from the AlfaBattle review
 
@@ -355,6 +381,13 @@
   computes, so alfa stays; (b) rosbank1 takes the top solutions only, like alfa; (c) reopen alfa and add the
   baseline features back; (d) amend CLEAN-19 as worded above and apply it to both (rosbank1 then also needs the top
   2018 solutions' features). Not applied yet.
+  **Lennart (2026-10-21, discuss):** Okay, we here the case is that we want to take the best of both, or a
+  reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does
+  that make sense?
+  **Resolved (2026-10-21, Lennart):** yes, it makes sense. CLEAN-19 now says: take the best of the organizers' or a
+  published baseline and the top solutions' features, or a reasonable combination, not their union.
+  alfa_battle_2_0_task_2 keeps its top-solution aggregates; rosbank1's issue 5 now asks whether a 2018 top
+  solution's features beat the CoLES aggregates.
 
 ### Rules from the house_sales review
 
@@ -632,6 +665,12 @@
   linked to the label (test 5 or 7). With only one of the two, the curator decides, and the record says which is
   missing." Two questions before it goes in: is one of (a) or (b) enough to retire, or only both? And do the marks
   count on the file as published or on the columns we ship (this decides stroke_prediction)?
+  **Lennart (2026-10-21, discuss):** either might be strong enough; on the columns we ship, and if the marks on the
+  published file leak/extend to the shipped version (which is again case-by-case)
+  **Resolved (2026-10-21, Lennart):** PROV-3 and EV-3 amended in your words: either kind of mark can be strong
+  enough; they count on the shipped columns, and marks on the published file count when they extend to the shipped
+  version, case by case. credit_card_customers' issue 1, stroke_prediction's issue 1 and hepatitis_c_egypt's block
+  say what that means for each and stay open for you.
 - **Amend PROV-1/PROV-2 for a named course or teaching platform.** PROV-1 (Must) allows no exceptions, yet
   bank_customer_churn (data from a named data-science course) and tour_travels_churn (a bare Kaggle upload with no
   named origin) were kept; credit_card_customers (Analyttica's LEAPS teaching case 11, offline) and mobile_churn (an
@@ -865,13 +904,34 @@
   on this IID task of 587 molecules: about 2 molecules per value, so they may mark analog series (hidden-group sweep,
   2026-10-21). Proposal: check the source's structures (SMILES) for duplicates and analog series, and group the split
   on the series if the gap holds there.
+  **Lennart (2026-10-21, go ahead):** Yes do so, it likely is a grouped dataset, in the open PRs, there is a finding
+  from Andrej on this as well
+  **Resolved (2026-10-21, Lennart):** done: the working copy now groups the split on the Bemis-Murcko scaffold
+  (443 groups), taken from Andrej's PR #15 with its helper and tests, as you asked; PR #15 is to be updated later.
+  Scaffold-grouped ROC AUC 0.771 against 0.826 random (LightGBM). The two descriptors do not mark the scaffolds
+  (adjusted Rand 0.04 and 0.08); their gap comes from the value 0 landing in one fold. No duplicate structures.
 - **water_quality_and_potability against the amended PROV-2.** It was retired in the v1 workbook for its untraceable
   source alone; no PROV-3 test is on record, and nothing written sets it apart from mobile_churn or
   tour_travels_churn, which PROV-2 as amended now keeps. Ways out: (a) re-check it with the PROV-3 tests and keep it
   if they raise nothing; (b) name the fact that sets it apart and record it.
+  **Lennart (2026-10-21, go ahead):** recheck it and add it for me to be verified here, if it passes otherwise
+  **Resolved (2026-10-21, Lennart):** rechecked: it fails PROV-3 (the first upload of 2021 names its source
+  "Synthetically generated"; dissolved solids run about 50 times the conductivity, Spearman 0.021; 1,277 of 1,278
+  potable rows exceed 1,000 mg/l). It is on the review page for you to verify, as the record's issue 1
+  (recommendation: keep No and add `AHDS`).
 - **Which 0/1 columns are flags?** Applying CLEAN-14 literally also made categorical some counts that hold only 0 and
   1 in this data (RDKit fragment counts in apistox, `NoOfURLRedirect` in phiusil_phishing, sberbank's
   `mosque_count_*`, coil_2000's count columns, cardiotocography's `DS`), and left constant 0 or 1 columns as they are
   (for example `ca` in the two heart_disease sets, homesite's `PropertyField6`). Ways out: (a) keep it literal, as
   now; (b) a flag is a yes/no by meaning, so counts stay numeric even when only 0 and 1 occur (those five folders go
   back). Either way the rule text would say that a constant column is not a flag.
+  **Lennart (2026-10-21, discuss):** no if we can infer from the semantic context, keep it a number, this is a real-
+  world bias. We want to make thins categorical if we know from the context they are indeed such
+  **Resolved (2026-10-21, Lennart):** CLEAN-14 amended in your words: a 0/1 column is categorical when its meaning
+  says it is a yes/no flag; a count or a measured quantity stays numeric even when only 0 and 1 occur; with no
+  semantic context it stays as the source ships it; a constant column is no flag. 19 of this morning's 35
+  definitions changed back in part or whole (fragment counts, `mosque_count_*`, coil_2000's counts,
+  cardiotocography's `DS` and the anonymized columns of amex, ieee, homesite and bioresponse are numeric again); the
+  other 16 typed only real flags. Two open doubts: home_credit_default_risk's `CC_NAME_CONTRACT_STATUS_*` min/max
+  aggregates (reverted; a max of a one-hot reads as "ever had this status") and early_learning_predictors'
+  `practitioner` and `quintile_used` (reverted for lack of a codebook).

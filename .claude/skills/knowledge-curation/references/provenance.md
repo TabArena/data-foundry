@@ -35,8 +35,14 @@ scope rule is SEL-16 in [selection.md](selection.md), the detection is the seven
 generated?". Marker: `AHDS`, usually with `Missing source information`, and `Data Quality Issue` when a real
 table was manipulated. Values the data owner perturbed for privacy (disclosure control on a real cohort) are no
 rework when no test under Methods measures damage: the data stays, with a note saying what was checked and what cannot
-be (Lennart, 2026-10-21; framingham_heart_study_fhs). Cases: customer_satisfaction_in_airline, ecommerce_shipping,
-homeq_default_prediction, video_game_fps_prediction, framingham_heart_study_fhs.
+be (Lennart, 2026-10-21; framingham_heart_study_fhs). Without a source statement or a generator, measured marks are
+judged case by case: either calibrated marks from at least two of the tests under Methods, or marks linked to the label
+(test 5 or 7), can be strong enough. The marks count on the columns we ship; marks found on the file as published
+count when they extend to the shipped version, which is again case by case (amended 2026-10-21, Lennart: "either
+might be strong enough; on the columns we ship, and if the marks on the published file leak/extend to the shipped
+version (which is again case-by-case)"; prompted by credit_card_customers, stroke_prediction and hepatitis_c_egypt).
+Cases: customer_satisfaction_in_airline, ecommerce_shipping, homeq_default_prediction, video_game_fps_prediction,
+framingham_heart_study_fhs.
 
 ### Duplicates
 
@@ -207,7 +213,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
-| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source"). water_quality_and_potability was rejected in the v1 workbook for the source alone (the curator then judged its features free of group or time structure), with no PROV-3 test on record; under PROV-2 as amended (2026-10-21) no recorded fact sets it apart from mobile_churn, so it is due a re-check | applied |
+| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source"). water_quality_and_potability was rejected in the v1 workbook for the source alone (the curator then judged its features free of group or time structure), with no PROV-3 test on record; under PROV-2 as amended (2026-10-21) no recorded fact sets it apart from mobile_churn, so it is due a re-check; re-checked 2026-10-21: the first upload (adityakadiwal, 2021) calls itself "Synthetically generated" and TDS is about 50 times the conductivity, so the AI recommends keeping `No` with `AHDS`; open in its record | applied |
 | PROV-2 | bad_customer_detection | a plausible source unclear in a detail: kept, with a note of what to clarify (2026-10-14, Lennart) | applied |
 | PROV-2 | credit_card_customers, bank_customer_churn | a named first platform (Analyttica's LEAPS teaching case 11, offline; a named data-science course) counts as a known source when the data shows no PROV-3 marks; PROV-2 amended (2026-10-21, Lennart). credit_card_customers stays open on whether its measured marks count (its issue 1) | applied |
 | PROV-2 | tour_travels_churn | a bare Kaggle upload with no named origin, kept for now: the data passes PROV-3 and the upload is the source to point to; the gap is in the approximate fit (2026-10-21, Lennart; PROV-2 amended) | applied |

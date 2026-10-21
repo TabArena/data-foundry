@@ -44,6 +44,8 @@ CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the inp
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: herbicide, fungicide, insecticide, other_agrochemical and the 14 RDKit fragment counts that hold only 0 and 1 (found on the data in `_feature_types`).
 
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: herbicide, fungicide, insecticide, other_agrochemical. Reverted: the 14 RDKit fragment counts that hold only 0 and 1 stay numeric.
+
 ## Reference
 
 ApisTox: a new benchmark dataset for the classification of small molecules toxicity on honey bees

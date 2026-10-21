@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:11b0b70d364b619a31bf5822e167c39e14520bf84338ccb2897d2f504e20967a
+checksum: v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e
 build:
   uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
   checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
@@ -22,8 +22,8 @@ data:
   n_rows: 1035
   n_features: 204
   dtypes:
-    category: 19
-    float64: 185
+    category: 5
+    float64: 199
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 204 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:11b0b70d364b619a31bf5822e167c39e14520bf84338ccb2897d2f504e20967a`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,9 +144,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | first_publication_year |
 
 <details>
-<summary>Feature types: 19 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 
-- categorical (19): `herbicide`, `fungicide`, `insecticide`, `other_agrochemical`, `rdkit_fr_Ar_COO`, `rdkit_fr_Ndealkylation2`, `rdkit_fr_epoxide`, `rdkit_fr_furan`, `rdkit_fr_hdrzine`, `rdkit_fr_morpholine`, `rdkit_fr_nitro_arom_nonortho`, `rdkit_fr_oxazole`, `rdkit_fr_piperzine`, `rdkit_fr_prisulfonamd`, `rdkit_fr_tetrazole`, `rdkit_fr_thiazole`, `rdkit_fr_thiocyan`, `rdkit_fr_thiophene`, `toxic_to_bees`
+- categorical (5): `herbicide`, `fungicide`, `insecticide`, `other_agrochemical`, `toxic_to_bees`
 - string (0): none
 - datetime (0): none
 
@@ -262,20 +262,6 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | insecticide | category | 55 | 5.31 | 2 | 0.0, 1.0 |
 | other_agrochemical | category | 55 | 5.31 | 2 | 0.0, 1.0 |
 | toxic_to_bees | category | 0 | 0 | 2 | No, Yes |
-| rdkit_fr_Ar_COO | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_Ndealkylation2 | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_epoxide | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_furan | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_hdrzine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_morpholine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_nitro_arom_nonortho | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_oxazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_piperzine | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_prisulfonamd | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_tetrazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiazole | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiocyan | category | 0 | 0 | 2 | 0.0, 1.0 |
-| rdkit_fr_thiophene | category | 0 | 0 | 2 | 0.0, 1.0 |
 | rdkit_BCUT2D_MWHI | float64 | 107 | 10.34 | 928 | 15.3367, 35.4957, 16.6426, 35.5391, 35.499, 35.4957, 79.9198, 35.4957, 32.1335,… |
 | rdkit_BCUT2D_MWLOW | float64 | 107 | 10.34 | 927 | 9.9344, 10.3006, 9.7559, 10.0632, 9.9323, 10.1739, 10.1324, 9.9648, 10.2686, 10… |
 | rdkit_BCUT2D_CHGHI | float64 | 107 | 10.34 | 928 | 2.1231, 2.2822, 2.3507, 2.4394, 2.1792, 2.3653, 2.3002, 2.2175, 2.351, 2.911 |
@@ -317,6 +303,20 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | rdkit_Chi3v | float64 | 0 | 0 | 962 | 0.0, 1.2295, 1.2111, 1.241, 1.67, 3.2382, 2.73, 2.7255, 1.7232, 1.4887 |
 | rdkit_Chi4n | float64 | 0 | 0 | 930 | 0.0, 0.3085, 0.7804, 0.8438, 0.5323, 0.3291, 0.3041, 0.6244, 0.2535, 5.5972 |
 | rdkit_Chi4v | float64 | 0 | 0 | 948 | 0.0, 0.7116, 0.6985, 0.7374, 2.6791, 3.0219, 1.2621, 1.1409, 2.3974, 0.3586 |
+| rdkit_HallKierAlpha | float64 | 0 | 0 | 707 | -1.06, -0.79, -1.04, -0.08, -0.53, -1.22, -1.1, -1.59, -0.18, -2.24 |
+| rdkit_Ipc | float64 | 0 | 0 | 870 | 3.6096, 0.0, 3.2451, 2.7549, 180.9125, 34289.728, 286.5687, 81.2384, 9.6515, 70… |
+| rdkit_Kappa1 | float64 | 0 | 0 | 943 | 11.9719, 17.5424, 11.3652, 13.0268, 10.44, 12.82, 20.9657, 16.9028, 18.9478, 14… |
+| rdkit_Kappa2 | float64 | 0 | 0 | 1001 | 14.5307, 8.7261, 5.9206, 4.0029, 6.1245, 7.3912, 3.4993, 6.1147, 7.2484, 6.7803 |
+| rdkit_Kappa3 | float64 | 0 | 0 | 1012 | 3.8784, 4.2197, 15.47, 1.593, 4.9942, 3.2387, 4.4113, 5.9679, 2.7868, 5.0091 |
+| rdkit_LabuteASA | float64 | 0 | 0 | 1017 | 63.6387, 69.4388, 107.2327, 86.0682, 136.7347, 95.8582, 76.7263, 119.5108, 100.… |
+| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 210 | 0.0, 4.7369, 9.4737, 5.1065, 5.3168, 4.8999, 14.2106, 9.8434, 10.0537, 4.5237 |
+| rdkit_PEOE_VSA10 | float64 | 0 | 0 | 250 | 0.0, 5.7495, 11.499, 4.8955, 5.6939, 5.0226, 5.1531, 6.104, 5.5635, 5.6011 |
+| rdkit_PEOE_VSA11 | float64 | 0 | 0 | 130 | 0.0, 6.6069, 5.7832, 11.499, 6.104, 5.7495, 11.5665, 5.6874, 5.6939, 5.1564 |
+| rdkit_PEOE_VSA12 | float64 | 0 | 0 | 90 | 0.0, 5.9072, 5.88, 5.9483, 5.6935, 6.104, 11.8967, 17.7083, 3.7925, 5.6011 |
+| rdkit_PEOE_VSA13 | float64 | 0 | 0 | 53 | 0.0, 5.9072, 10.0233, 5.6874, 11.8144, 5.5593, 5.2392, 5.5593, 11.3748, 12.3326 |
+| rdkit_PEOE_VSA14 | float64 | 0 | 0 | 189 | 0.0, 5.9693, 6.0932, 6.0311, 6.1763, 6.7186, 11.9386, 29.5573, 12.0004, 12.1456 |
+| rdkit_PEOE_VSA2 | float64 | 0 | 0 | 91 | 0.0, 4.7945, 9.5891, 5.3168, 9.0475, 10.1143, 10.1113, 20.2286, 9.6944, 4.8376 |
+| rdkit_PEOE_VSA3 | float64 | 0 | 0 | 141 | 0.0, 4.7945, 4.984, 9.7785, 9.5891, 4.565, 9.6658, 9.968, 8.4178, 22.729 |
 
 (145 more rows not shown)
 
@@ -332,7 +332,7 @@ New compounds are few in recent years, so ten years is the shortest window that 
 ### Numeric features
 
 <details>
-<summary>Show the table (186 rows)</summary>
+<summary>Show the table (200 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -397,14 +397,14 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | rdkit_PEOE_VSA6 | 1035 | 23.7195 | 21.5076 | 0 | 166.906 |
 | rdkit_PEOE_VSA7 | 1035 | 25.5428 | 19.379 | 0 | 224.032 |
 
-(126 more rows not shown)
+(140 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (42 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -420,34 +420,6 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | other_agrochemical | 1 | 0.0 | 764 | 73.82 |
 | other_agrochemical | 2 | 1.0 | 216 | 20.87 |
 | other_agrochemical | 3 | &lt;NA> | 55 | 5.31 |
-| rdkit_fr_Ar_COO | 1 | 0.0 | 982 | 94.88 |
-| rdkit_fr_Ar_COO | 2 | 1.0 | 53 | 5.12 |
-| rdkit_fr_Ndealkylation2 | 1 | 0.0 | 1024 | 98.94 |
-| rdkit_fr_Ndealkylation2 | 2 | 1.0 | 11 | 1.06 |
-| rdkit_fr_epoxide | 1 | 0.0 | 1030 | 99.52 |
-| rdkit_fr_epoxide | 2 | 1.0 | 5 | 0.48 |
-| rdkit_fr_furan | 1 | 0.0 | 1028 | 99.32 |
-| rdkit_fr_furan | 2 | 1.0 | 7 | 0.68 |
-| rdkit_fr_hdrzine | 1 | 0.0 | 1020 | 98.55 |
-| rdkit_fr_hdrzine | 2 | 1.0 | 15 | 1.45 |
-| rdkit_fr_morpholine | 1 | 0.0 | 1029 | 99.42 |
-| rdkit_fr_morpholine | 2 | 1.0 | 6 | 0.58 |
-| rdkit_fr_nitro_arom_nonortho | 1 | 0.0 | 1019 | 98.45 |
-| rdkit_fr_nitro_arom_nonortho | 2 | 1.0 | 16 | 1.55 |
-| rdkit_fr_oxazole | 1 | 0.0 | 1030 | 99.52 |
-| rdkit_fr_oxazole | 2 | 1.0 | 5 | 0.48 |
-| rdkit_fr_piperzine | 1 | 0.0 | 1034 | 99.9 |
-| rdkit_fr_piperzine | 2 | 1.0 | 1 | 0.1 |
-| rdkit_fr_prisulfonamd | 1 | 0.0 | 1034 | 99.9 |
-| rdkit_fr_prisulfonamd | 2 | 1.0 | 1 | 0.1 |
-| rdkit_fr_tetrazole | 1 | 0.0 | 1030 | 99.52 |
-| rdkit_fr_tetrazole | 2 | 1.0 | 5 | 0.48 |
-| rdkit_fr_thiazole | 1 | 0.0 | 1022 | 98.74 |
-| rdkit_fr_thiazole | 2 | 1.0 | 13 | 1.26 |
-| rdkit_fr_thiocyan | 1 | 0.0 | 1034 | 99.9 |
-| rdkit_fr_thiocyan | 2 | 1.0 | 1 | 0.1 |
-| rdkit_fr_thiophene | 1 | 0.0 | 1022 | 98.74 |
-| rdkit_fr_thiophene | 2 | 1.0 | 13 | 1.26 |
 | toxic_to_bees | 1 | No | 739 | 71.4 |
 | toxic_to_bees | 2 | Yes | 296 | 28.6 |
 
@@ -464,4 +436,4 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:11b0b70d364b619a31bf5822e167c39e14520bf84338ccb2897d2f504e20967a` |
+| stale | yes: the definition now gives checksum `v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e` |

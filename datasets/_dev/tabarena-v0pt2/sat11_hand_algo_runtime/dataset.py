@@ -176,8 +176,5 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 "instance_id",
-                # features holding only 0 and 1: 0/1 flags (CLEAN-14)
-                "edge_sa",
-                "edge_sl",
             ],
         )

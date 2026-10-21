@@ -154,14 +154,11 @@ class QsarBioconcentration(AbstractCuratedDataset):
         return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # all features are descriptors (floats and counts); those holding only 0 and 1 (plus missing values) are 0/1
-        # flags, categorical (CLEAN-14); the target becomes a category
-        flags = [
-            c
-            for c in df.columns.drop(self.target)
-            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
-        ]
-        return FeatureTypes(categorical=flags)
+        # B02(C-N) marks the presence of a C-N pair at topological distance 2: a yes/no flag, categorical (CLEAN-14).
+        # The other descriptors (floats and counts, the RDKit fragment counts too where only 0 and 1 occur) stay
+        # numeric; the target becomes a category.
+        del df
+        return FeatureTypes(categorical=["B02(C-N)"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         kept = _swap_back_structures(raw.rename(columns={"B02[C-N]": "B02(C-N)", "F04[C-O]": "F04(C-O)"}))

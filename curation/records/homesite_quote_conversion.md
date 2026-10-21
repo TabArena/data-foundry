@@ -47,6 +47,8 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: SalesField3, SalesField9, PersonalField1, PersonalField2, PersonalField6, PropertyField8, PropertyField29.
 
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: SalesField3, SalesField9, PersonalField1, PersonalField2, PersonalField6, PropertyField8, PropertyField29 stay numeric (anonymized fields).
+
 ## Reference
 
 Darrel, Stephen D Stayton, and Will Cukierski. Homesite Quote Conversion. https://kaggle.com/competitions/homesite-quote-conversion, 2015. Kaggle.

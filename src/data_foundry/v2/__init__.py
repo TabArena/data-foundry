@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from data_foundry.schema import Grouping
 from data_foundry.utils.dtypes import object_columns
-from data_foundry.v2.chemistry import rdkit_descriptors
+from data_foundry.v2.chemistry import murcko_scaffolds, rdkit_descriptors
 from data_foundry.v2.dataset import (
     AUTO,
     AbstractCuratedDataset,
@@ -46,6 +46,7 @@ __all__ = [
     "drop_columns",
     "get_dataset",
     "load_definition",
+    "murcko_scaffolds",
     "object_columns",
     "order_rows",
     "rdkit_descriptors",

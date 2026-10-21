@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: clock_protein_toxicity
 container_format: 2
-checksum: v2:60b4bcb014c24ebe3c709c127922747aff7fbc3fc461e74884973287ba9bec89
+checksum: v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698
 build:
   uuid: 01a111fc-9673-778e-85dd-8d3026178022
   checksum: v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2
@@ -22,9 +22,9 @@ data:
   n_rows: 171
   n_features: 1117
   dtypes:
-    category: 12
+    category: 1
     float64: 973
-    int64: 133
+    int64: 144
   n_test_dataset_rows: null
 task:
   target: Toxic
@@ -66,7 +66,7 @@ decisions: []
 
 Binary classification of `Toxic`, scored with `roc_auc` on IID splits. 171 rows and 1,117 features. Source: UCI (2022).
 
-Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:60b4bcb014c24ebe3c709c127922747aff7fbc3fc461e74884973287ba9bec89`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,9 +133,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | Toxic |
 
 <details>
-<summary>Feature types: 12 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
-- categorical (12): `khs.aaS`, `nsBr`, `khs.ssS`, `nHdCH2`, `nQ`, `khs.dNH`, `LipinskiFailures`, `khs.dCH2`, `khs.dS`, `ndCH2`, `ndS`, `Toxic`
+- categorical (1): `Toxic`
 - string (0): none
 - datetime (0): none
 
@@ -263,17 +263,6 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| khs.aaS | category | 0 | 0 | 2 | 0, 1 |
-| nsBr | category | 0 | 0 | 2 | 0, 1 |
-| khs.ssS | category | 0 | 0 | 2 | 0, 1 |
-| nHdCH2 | category | 0 | 0 | 2 | 0, 1 |
-| nQ | category | 0 | 0 | 2 | 0, 1 |
-| khs.dNH | category | 0 | 0 | 2 | 0, 1 |
-| LipinskiFailures | category | 0 | 0 | 2 | 0, 1 |
-| khs.dCH2 | category | 0 | 0 | 2 | 0, 1 |
-| khs.dS | category | 0 | 0 | 2 | 0, 1 |
-| ndCH2 | category | 0 | 0 | 2 | 0, 1 |
-| ndS | category | 0 | 0 | 2 | 0, 1 |
 | Toxic | category | 0 | 0 | 2 | NonToxic, Toxic |
 | MATS3v | float64 | 0 | 0 | 163 | 0.0096, 0.0247, -0.0251, 0.0289, -0.0325, -0.0028, -0.0619, 0.03, -0.0312, -0.0… |
 | MATS3s | float64 | 0 | 0 | 168 | -0.0384, 0.0095, 0.017, 0.0056, -0.0799, -0.0077, -0.0008, 0.026, -0.0517, -0.0… |
@@ -323,6 +312,17 @@ Default splits.
 | SpMax3_Bhp | float64 | 0 | 0 | 164 | 3.8447, 3.8293, 3.7404, 3.849, 3.8034, 3.7714, 3.8386, 3.9505, 3.7969, 3.8213 |
 | SpMax3_Bhs | float64 | 0 | 0 | 163 | 4.1029, 4.0663, 4.6173, 4.1305, 4.05, 4.57, 4.5738, 4.5696, 4.1089, 4.6188 |
 | SpMax3_Bhe | float64 | 0 | 0 | 168 | 3.8813, 3.8746, 3.8772, 3.8926, 4.0155, 3.9059, 3.9268, 3.8903, 3.9101, 3.8504 |
+| SpMin6_Bhi | float64 | 0 | 0 | 155 | 1.3815, 1.3884, 1.2698, 1.2748, 1.3952, 0.5827, 1.2952, 1.4068, 1.4623, 1.4635 |
+| SpMax3_Bhm | float64 | 0 | 0 | 164 | 3.8556, 3.825, 3.8715, 3.8737, 3.8635, 3.8563, 3.9383, 3.8227, 3.9073, 3.899 |
+| SpMax3_Bhi | float64 | 0 | 0 | 158 | 3.909, 3.878, 3.89, 3.9108, 3.9253, 3.8689, 3.9168, 3.8946, 3.9097, 3.8699 |
+| ETA_EtaP_F_L | float64 | 0 | 0 | 155 | 0.2559, 0.3093, 0.2782, 0.3086, 0.3049, 0.3041, 0.2618, 0.2722, 0.3071, 0.3092 |
+| mindCH2 | float64 | 0 | 0 | 2 | 0.0, 3.5148 |
+| AATSC2e | float64 | 0 | 0 | 117 | 0.006, 0.005, 0.0179, 0.0142, 0.008, 0.0058, 0.0107, 0.0077, 0.0098, 0.0094 |
+| AATSC2c | float64 | 0 | 0 | 60 | 0.0007, -0.0001, 0.0003, -0.0007, 0.0009, 0.0, -0.0005, 0.0005, 0.0019, 0.0004 |
+| AATSC2m | float64 | 0 | 0 | 166 | -0.757, -0.1926, 6.0504, 0.0465, -0.0779, 4.0171, 0.7695, 4.2563, 8.4167, -1.21… |
+| AATSC2i | float64 | 0 | 0 | 163 | -0.1221, -0.096, -0.0355, 0.2696, -0.0733, -0.0611, -0.2415, -0.1469, -0.145, 0… |
+| AATS5p | float64 | 0 | 0 | 171 | 1.3297, 1.7494, 1.4945, 1.4829, 1.7147, 1.5874, 1.3634, 1.4538, 1.6822, 1.392 |
+| AATSC2v | float64 | 0 | 0 | 165 | -4.004, -3.9618, -4.1565, 3.6996, -3.4506, -1.6323, -3.9748, -4.2402, -4.3573, … |
 
 (1,058 more rows not shown)
 
@@ -338,7 +338,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (1,106 rows)</summary>
+<summary>Show the table (1,117 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -393,6 +393,7 @@ Default splits.
 | maxHother | 171 | 0.615785 | 0.0989121 | 0 | 0.8422 |
 | nHBAcc_Lipinski | 171 | 7.20468 | 1.98796 | 2 | 14 |
 | StN | 171 | 0.526789 | 3.13697 | 0 | 21.2941 |
+| khs.aaS | 171 | 0.0643275 | 0.246056 | 0 | 1 |
 | khs.aaO | 171 | 0.111111 | 0.397706 | 0 | 3 |
 | khs.aaN | 171 | 1.18713 | 1.37629 | 0 | 7 |
 | Sare | 171 | 61.0133 | 9.4937 | 24.244 | 79.416 |
@@ -401,45 +402,17 @@ Default splits.
 | SpMax3_Bhp | 171 | 3.78417 | 0.126958 | 2.9822 | 4.0029 |
 | SpMax3_Bhs | 171 | 4.28899 | 0.321285 | 3.4378 | 4.9938 |
 | SpMax3_Bhe | 171 | 3.86256 | 0.11096 | 3.1907 | 4.0541 |
-| SpMin6_Bhi | 171 | 1.29226 | 0.16826 | 0.3102 | 1.6695 |
 
-(1,046 more rows not shown)
+(1,057 more rows not shown)
 
 </details>
 
 ### Categorical features
 
-<details>
-<summary>Show the table (24 rows)</summary>
-
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| LipinskiFailures | 1 | 0 | 151 | 88.3 |
-| LipinskiFailures | 2 | 1 | 20 | 11.7 |
 | Toxic | 1 | NonToxic | 115 | 67.25 |
 | Toxic | 2 | Toxic | 56 | 32.75 |
-| khs.aaS | 1 | 0 | 160 | 93.57 |
-| khs.aaS | 2 | 1 | 11 | 6.43 |
-| khs.dCH2 | 1 | 0 | 170 | 99.42 |
-| khs.dCH2 | 2 | 1 | 1 | 0.58 |
-| khs.dNH | 1 | 0 | 169 | 98.83 |
-| khs.dNH | 2 | 1 | 2 | 1.17 |
-| khs.dS | 1 | 0 | 170 | 99.42 |
-| khs.dS | 2 | 1 | 1 | 0.58 |
-| khs.ssS | 1 | 0 | 162 | 94.74 |
-| khs.ssS | 2 | 1 | 9 | 5.26 |
-| nHdCH2 | 1 | 0 | 170 | 99.42 |
-| nHdCH2 | 2 | 1 | 1 | 0.58 |
-| nQ | 1 | 0 | 166 | 97.08 |
-| nQ | 2 | 1 | 5 | 2.92 |
-| ndCH2 | 1 | 0 | 170 | 99.42 |
-| ndCH2 | 2 | 1 | 1 | 0.58 |
-| ndS | 1 | 0 | 170 | 99.42 |
-| ndS | 2 | 1 | 1 | 0.58 |
-| nsBr | 1 | 0 | 170 | 99.42 |
-| nsBr | 2 | 1 | 1 | 0.58 |
-
-</details>
 
 ## Build
 
@@ -452,4 +425,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:60b4bcb014c24ebe3c709c127922747aff7fbc3fc461e74884973287ba9bec89` |
+| stale | yes: the definition now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698` |

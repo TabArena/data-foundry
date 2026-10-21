@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:b5f842f810c39087dfd87ce005f0c1ed3d6481e4a0325e93c402cfd11dd8c537
+checksum: v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -19,7 +19,7 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 5741
+  n_rows: 5704
   n_features: 1024
   dtypes:
     category: 1024
@@ -45,11 +45,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 3827
-    max: 3828
+    min: 3802
+    max: 3803
   n_test:
-    min: 1913
-    max: 1914
+    min: 1901
+    max: 1902
 bundle_checks:
   ok: true
   errors: []
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,741 rows and 1,024 features. Source: OpenML (2015).
+Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,704 rows and 1,024 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b5f842f810c39087dfd87ce005f0c1ed3d6481e4a0325e93c402cfd11dd8c537`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -75,7 +75,7 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 
 **Use case.** In drug discovery, a medicinal chemist screens candidate molecules for activity on one protein target before making and testing them (the Meta-QSAR project builds one such model per target).
 
-**One row.** One compound measured against human thrombin (ChEMBL target 11, CHEMBL204; ChEMBL version 17, Meta-QSAR project 2015; 5,741 compounds).
+**One row.** One compound measured against human thrombin (ChEMBL target 11, CHEMBL204; ChEMBL version 17, Meta-QSAR project 2015; 5,704 compounds after the salt-form copies leave).
 
 **Predicted.** The compound's median measured potency, as the negative log of the concentration that gives half the effect; higher means more potent.
 
@@ -83,7 +83,7 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 
 **What the test data stands for.** Random compounds, so close relatives of a test compound can be in training. The file is roughly in ChEMBL ID order, with the mean activity drifting along it; the shuffle removes this order.
 
-**Our changes to the source.** We drop one row with a negative activity value, judged a data error.
+**Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The fingerprint comes from the structure alone, which is all a chemist has before synthesis, and held-out compounds stand for unmeasured ones. The activities are medians over measurements of many sources.
 
@@ -128,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | license | Public Domain |
 | data_tags | IID |
 | reference | olier2018meta |
-| rows x columns | 5,741 x 1,025 |
+| rows x columns | 5,704 x 1,025 |
 | task.target | MEDIAN_PXC50 |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -162,15 +162,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,741 rows of the final frame (random rows: the frame is shuffled); 12 of 1,025 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled); 12 of 1,025 columns, the target first. Cells are cut at 40 characters.
 
 | MEDIAN_PXC50 | FCFP6_1024_0 | FCFP6_1024_1 | FCFP6_1024_2 | FCFP6_1024_3 | FCFP6_1024_4 | FCFP6_1024_5 | FCFP6_1024_6 | FCFP6_1024_7 | FCFP6_1024_8 | FCFP6_1024_9 | FCFP6_1024_10 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 4.678 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 4.854 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 |
-| 5 | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 |
-| 4.301 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 5.398 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 9.553 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| 8.301 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| 5 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 5.699 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 5.167 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -183,32 +183,45 @@ The first 5 of 5,741 rows of the final frame (random rows: the frame is shuffled
 - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
 - Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
 - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
+- Repeated fingerprints (LEAK-16 asks for a recorded decision; Lennart, 2026-10-21): 870 of 5,741 rows sit in
+  387 repeated FCFP vectors (116 with the same target too), and every row has its own ChEMBL compound id. We
+  traced 798 of the 870 rows in ChEMBL (the other 72 ids are no longer in ChEMBL). Most repeats are different
+  compounds the fingerprint cannot tell apart: stereoisomers (179 vectors) and analogs such as F against Cl
+  (125 vectors), with their own measured potency. These stay. Untuned LightGBM RMSE (5-fold, 2 seeds): random
+  split 0.765, grouped on the vector 0.781, one row per vector 0.757; predicting a repeated row by its
+  vector-mates' mean gives 0.798, worse than the model. Grouping on a bare fingerprint hash is barred
+  (SPLIT-24) and would test whether the fingerprint resolves stereoisomers.
+- We drop 37 rows that are salt forms of a compound also in the data (LEAK-19, as in qsar_oral_toxicity): two
+  ChEMBL ids with one ChEMBL parent (molecule_hierarchy), the same fingerprint and nearly the same target
+  (median sd 0.04 within a pair; 0.006 in the 31 pairs that make up a whole vector). The rule does not read
+  the target: we keep the parent's own row (in the one pair without it, the lowest ChEMBL id). The ids are
+  embedded as SALT_FORM_COPIES, since the raw file has no structures.
 - The 1,024 fingerprint bits are 0/1 presence flags (OpenML stores them as floats): integers typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21).
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 3,827 to 3,828 rows, test 1,913 to 1,914 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 3,802 to 3,803 rows, test 1,901 to 1,902 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 3827 | 1914 |
-| 0 | 1 | 3827 | 1914 |
-| 0 | 2 | 3828 | 1913 |
-| 1 | 0 | 3827 | 1914 |
-| 1 | 1 | 3827 | 1914 |
-| 1 | 2 | 3828 | 1913 |
-| 2 | 0 | 3827 | 1914 |
-| 2 | 1 | 3827 | 1914 |
-| 2 | 2 | 3828 | 1913 |
+| 0 | 0 | 3802 | 1902 |
+| 0 | 1 | 3803 | 1901 |
+| 0 | 2 | 3803 | 1901 |
+| 1 | 0 | 3802 | 1902 |
+| 1 | 1 | 3803 | 1901 |
+| 1 | 2 | 3803 | 1901 |
+| 2 | 0 | 3802 | 1902 |
+| 2 | 1 | 3803 | 1901 |
+| 2 | 2 | 3803 | 1901 |
 
 ## Bundle checks
 
 0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_duplicate_rows`: 116 exact duplicate row(s) (2.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **warning** `dataset_conflicting_duplicate_rows`: 367 row(s) (6.4%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **warning** `dataset_duplicate_rows`: 99 exact duplicate row(s) (1.7% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **warning** `dataset_conflicting_duplicate_rows`: 347 row(s) (6.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
@@ -288,13 +301,13 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.692 | 0.285 | 2.369 | 0.057 | log | 37698.4 | 37354.6 | lognormal |
+| 0 | 0 | 0 | 0.688 | 0.283 | 2.36 | 0.057 | log | 37459.9 | 37137.6 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| MEDIAN_PXC50 | 5741 | 6.2392 | 1.53901 | 3.495 | 11 |
+| MEDIAN_PXC50 | 5704 | 6.23526 | 1.53636 | 3.495 | 11 |
 
 ### Categorical features
 
@@ -303,66 +316,66 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| FCFP6_1024_0 | 1 | 1 | 5737 | 99.93 |
+| FCFP6_1024_0 | 1 | 1 | 5700 | 99.93 |
 | FCFP6_1024_0 | 2 | 0 | 4 | 0.07 |
-| FCFP6_1024_1 | 1 | 1 | 5615 | 97.81 |
-| FCFP6_1024_1 | 2 | 0 | 126 | 2.19 |
-| FCFP6_1024_10 | 1 | 0 | 5688 | 99.08 |
-| FCFP6_1024_10 | 2 | 1 | 53 | 0.92 |
-| FCFP6_1024_100 | 1 | 0 | 5693 | 99.16 |
+| FCFP6_1024_1 | 1 | 1 | 5578 | 97.79 |
+| FCFP6_1024_1 | 2 | 0 | 126 | 2.21 |
+| FCFP6_1024_10 | 1 | 0 | 5651 | 99.07 |
+| FCFP6_1024_10 | 2 | 1 | 53 | 0.93 |
+| FCFP6_1024_100 | 1 | 0 | 5656 | 99.16 |
 | FCFP6_1024_100 | 2 | 1 | 48 | 0.84 |
-| FCFP6_1024_1000 | 1 | 0 | 5595 | 97.46 |
-| FCFP6_1024_1000 | 2 | 1 | 146 | 2.54 |
-| FCFP6_1024_1001 | 1 | 0 | 5425 | 94.5 |
-| FCFP6_1024_1001 | 2 | 1 | 316 | 5.5 |
-| FCFP6_1024_1002 | 1 | 0 | 5406 | 94.16 |
-| FCFP6_1024_1002 | 2 | 1 | 335 | 5.84 |
-| FCFP6_1024_1003 | 1 | 0 | 5225 | 91.01 |
-| FCFP6_1024_1003 | 2 | 1 | 516 | 8.99 |
-| FCFP6_1024_1004 | 1 | 0 | 5552 | 96.71 |
-| FCFP6_1024_1004 | 2 | 1 | 189 | 3.29 |
-| FCFP6_1024_1005 | 1 | 0 | 5382 | 93.75 |
-| FCFP6_1024_1005 | 2 | 1 | 359 | 6.25 |
-| FCFP6_1024_1006 | 1 | 0 | 5671 | 98.78 |
-| FCFP6_1024_1006 | 2 | 1 | 70 | 1.22 |
-| FCFP6_1024_1007 | 1 | 0 | 4863 | 84.71 |
-| FCFP6_1024_1007 | 2 | 1 | 878 | 15.29 |
-| FCFP6_1024_1008 | 1 | 0 | 5671 | 98.78 |
-| FCFP6_1024_1008 | 2 | 1 | 70 | 1.22 |
-| FCFP6_1024_1009 | 1 | 0 | 5545 | 96.59 |
-| FCFP6_1024_1009 | 2 | 1 | 196 | 3.41 |
-| FCFP6_1024_101 | 1 | 0 | 5527 | 96.27 |
-| FCFP6_1024_101 | 2 | 1 | 214 | 3.73 |
-| FCFP6_1024_1010 | 1 | 0 | 5423 | 94.46 |
-| FCFP6_1024_1010 | 2 | 1 | 318 | 5.54 |
-| FCFP6_1024_1011 | 1 | 0 | 5649 | 98.4 |
-| FCFP6_1024_1011 | 2 | 1 | 92 | 1.6 |
-| FCFP6_1024_1012 | 1 | 0 | 5530 | 96.32 |
-| FCFP6_1024_1012 | 2 | 1 | 211 | 3.68 |
-| FCFP6_1024_1013 | 1 | 0 | 5414 | 94.3 |
-| FCFP6_1024_1013 | 2 | 1 | 327 | 5.7 |
-| FCFP6_1024_1014 | 1 | 0 | 4964 | 86.47 |
-| FCFP6_1024_1014 | 2 | 1 | 777 | 13.53 |
-| FCFP6_1024_1015 | 1 | 0 | 5613 | 97.77 |
-| FCFP6_1024_1015 | 2 | 1 | 128 | 2.23 |
-| FCFP6_1024_1016 | 1 | 0 | 5454 | 95 |
-| FCFP6_1024_1016 | 2 | 1 | 287 | 5 |
-| FCFP6_1024_1017 | 1 | 0 | 5387 | 93.83 |
-| FCFP6_1024_1017 | 2 | 1 | 354 | 6.17 |
-| FCFP6_1024_1018 | 1 | 0 | 4750 | 82.74 |
-| FCFP6_1024_1018 | 2 | 1 | 991 | 17.26 |
-| FCFP6_1024_1019 | 1 | 0 | 4833 | 84.18 |
-| FCFP6_1024_1019 | 2 | 1 | 908 | 15.82 |
-| FCFP6_1024_102 | 1 | 0 | 5513 | 96.03 |
-| FCFP6_1024_102 | 2 | 1 | 228 | 3.97 |
-| FCFP6_1024_1020 | 1 | 0 | 5452 | 94.97 |
-| FCFP6_1024_1020 | 2 | 1 | 289 | 5.03 |
-| FCFP6_1024_1021 | 1 | 0 | 5612 | 97.75 |
-| FCFP6_1024_1021 | 2 | 1 | 129 | 2.25 |
-| FCFP6_1024_1022 | 1 | 0 | 5653 | 98.47 |
-| FCFP6_1024_1022 | 2 | 1 | 88 | 1.53 |
-| FCFP6_1024_1023 | 1 | 0 | 5700 | 99.29 |
-| FCFP6_1024_1023 | 2 | 1 | 41 | 0.71 |
+| FCFP6_1024_1000 | 1 | 0 | 5558 | 97.44 |
+| FCFP6_1024_1000 | 2 | 1 | 146 | 2.56 |
+| FCFP6_1024_1001 | 1 | 0 | 5389 | 94.48 |
+| FCFP6_1024_1001 | 2 | 1 | 315 | 5.52 |
+| FCFP6_1024_1002 | 1 | 0 | 5377 | 94.27 |
+| FCFP6_1024_1002 | 2 | 1 | 327 | 5.73 |
+| FCFP6_1024_1003 | 1 | 0 | 5191 | 91.01 |
+| FCFP6_1024_1003 | 2 | 1 | 513 | 8.99 |
+| FCFP6_1024_1004 | 1 | 0 | 5515 | 96.69 |
+| FCFP6_1024_1004 | 2 | 1 | 189 | 3.31 |
+| FCFP6_1024_1005 | 1 | 0 | 5345 | 93.71 |
+| FCFP6_1024_1005 | 2 | 1 | 359 | 6.29 |
+| FCFP6_1024_1006 | 1 | 0 | 5634 | 98.77 |
+| FCFP6_1024_1006 | 2 | 1 | 70 | 1.23 |
+| FCFP6_1024_1007 | 1 | 0 | 4837 | 84.8 |
+| FCFP6_1024_1007 | 2 | 1 | 867 | 15.2 |
+| FCFP6_1024_1008 | 1 | 0 | 5635 | 98.79 |
+| FCFP6_1024_1008 | 2 | 1 | 69 | 1.21 |
+| FCFP6_1024_1009 | 1 | 0 | 5508 | 96.56 |
+| FCFP6_1024_1009 | 2 | 1 | 196 | 3.44 |
+| FCFP6_1024_101 | 1 | 0 | 5495 | 96.34 |
+| FCFP6_1024_101 | 2 | 1 | 209 | 3.66 |
+| FCFP6_1024_1010 | 1 | 0 | 5389 | 94.48 |
+| FCFP6_1024_1010 | 2 | 1 | 315 | 5.52 |
+| FCFP6_1024_1011 | 1 | 0 | 5613 | 98.4 |
+| FCFP6_1024_1011 | 2 | 1 | 91 | 1.6 |
+| FCFP6_1024_1012 | 1 | 0 | 5493 | 96.3 |
+| FCFP6_1024_1012 | 2 | 1 | 211 | 3.7 |
+| FCFP6_1024_1013 | 1 | 0 | 5380 | 94.32 |
+| FCFP6_1024_1013 | 2 | 1 | 324 | 5.68 |
+| FCFP6_1024_1014 | 1 | 0 | 4935 | 86.52 |
+| FCFP6_1024_1014 | 2 | 1 | 769 | 13.48 |
+| FCFP6_1024_1015 | 1 | 0 | 5577 | 97.77 |
+| FCFP6_1024_1015 | 2 | 1 | 127 | 2.23 |
+| FCFP6_1024_1016 | 1 | 0 | 5417 | 94.97 |
+| FCFP6_1024_1016 | 2 | 1 | 287 | 5.03 |
+| FCFP6_1024_1017 | 1 | 0 | 5350 | 93.79 |
+| FCFP6_1024_1017 | 2 | 1 | 354 | 6.21 |
+| FCFP6_1024_1018 | 1 | 0 | 4722 | 82.78 |
+| FCFP6_1024_1018 | 2 | 1 | 982 | 17.22 |
+| FCFP6_1024_1019 | 1 | 0 | 4805 | 84.24 |
+| FCFP6_1024_1019 | 2 | 1 | 899 | 15.76 |
+| FCFP6_1024_102 | 1 | 0 | 5476 | 96 |
+| FCFP6_1024_102 | 2 | 1 | 228 | 4 |
+| FCFP6_1024_1020 | 1 | 0 | 5417 | 94.97 |
+| FCFP6_1024_1020 | 2 | 1 | 287 | 5.03 |
+| FCFP6_1024_1021 | 1 | 0 | 5576 | 97.76 |
+| FCFP6_1024_1021 | 2 | 1 | 128 | 2.24 |
+| FCFP6_1024_1022 | 1 | 0 | 5616 | 98.46 |
+| FCFP6_1024_1022 | 2 | 1 | 88 | 1.54 |
+| FCFP6_1024_1023 | 1 | 0 | 5664 | 99.3 |
+| FCFP6_1024_1023 | 2 | 1 | 40 | 0.7 |
 
 (1,988 more rows not shown)
 
@@ -379,4 +392,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b5f842f810c39087dfd87ce005f0c1ed3d6481e4a0325e93c402cfd11dd8c537` |
+| stale | yes: the definition now gives checksum `v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708` |
