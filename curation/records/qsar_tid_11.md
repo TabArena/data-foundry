@@ -10,6 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 year: '2015'
+domain: chemistry & material science
 required_split:
 - Random (IID)
 problem_type: Regression
@@ -35,3 +36,11 @@ Potential issue: We are no domain experts
 Lennart: tend towards yes - hard to tell if domain is appropiate. The papers and meta-learning use this still and it might be outdated but tabular is sitll a strong baseline (even once they have deep learning method as for other bio applicaiton domains)
 
 Andrej: Not in TabRepo, need to clarify
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
+
+CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is binary, the categorical dtype might be best?"); CLEAN-14 amended. The bits were checked to hold only 0 and 1.
+
+CC (2026-10-21, Lennart): CLEAN-11 amended: a row whose target the source names as not the task's quantity, or a single extreme target in the training period only, may leave, with the source's words.
+
+**Assessment (AI, 2026-10-21):** the dropped row (pXC50 -6.24) does not meet the amended clause (the split is random, so there is no training period, and the source does not name the row), but it is an impossible value: a half-effect concentration of about 1.7 million mol/L. Under CLEAN-11 the target becomes missing and the row leaves by CLEAN-15; the reason is now in curation_comments.

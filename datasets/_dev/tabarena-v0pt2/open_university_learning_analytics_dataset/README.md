@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: open_university_learning_analytics_dataset
 container_format: 2
-checksum: v2:66dd2c979b53dbaa21a2178108ce2d084165530004114d78a654c71f49601d12
+checksum: v2:e51c311e950522b93d2c990a3c48ffd55cf94e702600db2b9b21352b4a968d1a
 build: null
 build_stale: false
 data:
@@ -37,9 +37,11 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 15832
-    max: 18701
+    min: 14931
+    max: 17946
   n_test:
     min: 7694
     max: 10563
@@ -54,9 +56,9 @@ bundle_checks:
       the source has (6-9 per test fold), and holding out whole presentations is the
       use case. Each fold still scores 7,694-10,563 registrations one by one (smallest
       class: 874 rows), and the signal across presentations is real: on unseen presentations
-      logistic regression, random forest, LightGBM and kNN reach macro ROC AUC 0.717,
-      0.745, 0.744 and 0.634 (group_probes.py, 2026-10-06). Most of the variance between
-      folds comes from one presentation, BBB 2014J (see its Anomaly bullet).'
+      logistic regression, random forest, LightGBM and kNN reach macro ROC AUC 0.753,
+      0.753, 0.753 and 0.642 (group_probes.py, 2026-10-20), and untuned LightGBM''s
+      log-loss skill varies little over the 9 splits (0.167, standard deviation 0.015).'
 decisions:
 - Grouped by module-presentation, not temporal by start date
 - 'Cohort: the registrations active on day 60'
@@ -68,25 +70,25 @@ decisions:
 
 Multiclass classification of `final_result`, scored with `log_loss` on grouped splits by `module_presentation`. 26,395 rows and 40 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:66dd2c979b53dbaa21a2178108ce2d084165530004114d78a654c71f49601d12`.
+Not built yet. The current definition gives checksum `v2:e51c311e950522b93d2c990a3c48ffd55cf94e702600db2b9b21352b4a968d1a`.
 
 ## In brief
 
 **Question.** On day 60 of an online course, will a student finish with distinction, pass, fail or withdraw?
 
-**Use case.** On day 60 of a running module presentation, the Open University looks for students at risk, for example to offer tutor support; it trains its model on other presentations of the same module.
+**Use case.** On day 60 of a running module presentation, the Open University looks for students at risk, for example to offer tutor support, with a model trained on earlier presentations of the same module.
 
 **One row.** One student's registration on one of 22 presentations of 7 modules of the UK Open University, 2013-2014, still active on day 60 (26,395 registrations).
 
 **Predicted.** The final result of the registration: distinction, pass, fail or withdrawn.
 
-**Known at prediction time.** The student's profile (sex, region, prior education, deprivation band of the area, age band, disability), the registration date, the assessment results and submission timing known by day 60, and the daily activity in the online learning environment before day 60.
+**Known at prediction time.** The module and its start month, the student's profile (sex, region, prior education, deprivation band of the area, age band, disability), the earlier attempts at the module, the credits the student is studying, the registration date, the assessment results and submission timing known by day 60, and the daily activity in the online learning environment before day 60.
 
-**What the test data stands for.** Whole presentations are held out in three folds, so the test data stands for a presentation the model has not seen; training can include later and concurrent presentations.
+**What the test data stands for.** Whole presentations are held out in three folds, so the test data stands for a presentation the model has not seen; training can include later and concurrent presentations, but not the test students' own concurrent or later registrations.
 
-**Our changes to the source.** We fix day 60 as the prediction point, build the features from what is known by then, drop the registrations that ended before day 60, and hold out whole presentations.
+**Our changes to the source.** We fix day 60 as the prediction point, build the features from what is known by then (no marks of ungraded assignments), drop the registrations that ended before day 60, and hold out whole presentations.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Deployment trains on earlier presentations only, but four start dates do not allow a split by time, so training also holds later and concurrent ones; 12.9% of a test fold's rows have the same student in training, kept on purpose (about 0.0025 of log loss).
+> **Use case fit: approximate (a stand-in with a known gap).** Deployment trains on earlier presentations only, but four start dates do not allow a split by time, so training also holds later and concurrent ones: 67% of training rows come from presentations still running on the test presentation's day 60. Training leaves out the test students' own concurrent and later registrations; 4.9% of test rows share a student with training through earlier registrations, which deployment also knows.
 
 ## Files in this folder
 
@@ -94,6 +96,7 @@ Not built yet. The current definition gives checksum `v2:66dd2c979b53dbaa21a2178
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/open_university_learning_analytics_dataset.md`](../../../../curation/records/open_university_learning_analytics_dataset.md)
@@ -120,7 +123,8 @@ studentRegistration.csv, studentVle.csv and vle.csv (464 MB). The OU's own page
 https://analyse.kmi.open.ac.uk/open_dataset) shows a download button without a link, and its old file URL
 (http://schools.stem.open.ac.uk/cdn/files/anonymisedData.zip) returns 404 (both 2026-10-06). The UCI copy
 (https://archive.ics.uci.edu/static/public/349/open+university+learning+analytics+dataset.zip) holds the
-same tables with empty values written as "?": its files equal these after replacing "?" by "".
+same tables with empty values written as "?": its files equal these once "?" is replaced by "" and these
+files' CRLF line ends by LF.
 ```
 
 Then, from the repository root:
@@ -140,7 +144,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | education |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped, Spatial |
+| data_tags | Non-IID, Grouped, Spatial, ForcedGroupedFromTemporal |
 | reference | kuzilek2017oulad |
 | rows x columns | 26,395 x 42 |
 | task.target | final_result |
@@ -183,27 +187,28 @@ The first 5 of 26,395 rows of the final frame (random rows: the frame is shuffle
 
 | final_result | code_module | gender | region | highest_education | imd_band | age_band | num_of_prev_attempts | studied_credits | disability | date_registration | presentation_start |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Pass | BBB | M | North Western Region | A Level or Equivalent | 40-50% | 0-35 | 0 | 60 | N | -89 | October |
-| Distinction | BBB | M | South East Region | A Level or Equivalent | 20-30% | 0-35 | 0 | 120 | N | -141 | February |
-| Fail | DDD | M | Wales | Lower Than A Level | 60-70% | 0-35 | 1 | 150 | N | -199 | February |
-| Pass | EEE | M | South West Region | A Level or Equivalent | 20-30% | 0-35 | 0 | 60 | N | -9 | October |
-| Distinction | FFF | M | North Western Region | A Level or Equivalent | 0-10% | 0-35 | 0 | 60 | N | -32 | October |
+| Pass | EEE | M | Scotland | HE Qualification | 70-80% | 0-35 | 0 | 60 | N | -60 | October |
+| Pass | FFF | M | North Western Region | A Level or Equivalent | 20-30% | 0-35 | 0 | 60 | N | -22 | February |
+| Withdrawn | DDD | M | North Region | A Level or Equivalent | 40-50% | 35-55 | 0 | 120 | N | -24 | February |
+| Pass | BBB | F | Ireland | Lower Than A Level | 30-40% | 0-35 | 0 | 75 | N | -24 | October |
+| Withdrawn | DDD | F | Scotland | A Level or Equivalent | 40-50% | 0-35 | 0 | 60 | N | -87 | October |
 
 ## Curation notes
 
 We start with the seven tables of the Open University Learning Analytics Dataset (OULAD): studentInfo.csv, one row per registration of a student on a module-presentation (32,593 rows; 22 presentations of 7 modules in 2013 and 2014), joined with the registration dates, the assessment results and the daily VLE click log.
 
-- Prediction point: day 60 of the module-presentation (day 0 is its official start), when the OU looks for students at risk in a running presentation. Day 60 is our choice. The target is final_result (Distinction, Pass, Fail, Withdrawn), the "final course results" the dataset paper names.
-- Cohort: the registrations active on day 60 (decision table). We drop the 6,190 that ended before day 60, whose result (Withdrawn) is already known, and the 8 made after day 60.
-- Assessments (TMAs and CMAs, not the final exam): assessments_due, assessments_submitted and days_early_mean use the cut-offs and submissions before day 60. score_mean and score_min use the scores known on day 60: a CMA's from its submission, a TMA's 14 days after the later of its cut-off and its submission ("ten working days", OU Tutor Support Statement), and a banked result from the start. assessments_banked counts banked results.
-- VLE: clicks_before_start (days -25 to -1), clicks per activity type, active_days and clicks_last_14_days on days 0-59, and days_since_last_click (missing without a click); nothing from day 60 on enters. Counts without a record are 0.
-- We drop id_student (an identifier), date_unregistration (in the cohort the withdrawal date, after day 60) and code_presentation, whose year names the presentation (the start month stays as presentation_start). module_presentation_length (courses.csv) differs only between the years of a module and start month, so it also names the presentation and is not joined.
+- Prediction point: the start of day 60 of the module-presentation (day 0 is its official start), when the OU looks for students at risk in a running presentation. Day 60 is our choice, made for the use case: by then the first assessment marks are back; it was not picked by comparing scores at other days. The target is final_result (Distinction, Pass, Fail, Withdrawn), the "final course results" the dataset paper names.
+- Cohort: the registrations active on day 60 (decision table). We drop the 6,190 that ended before day 60, whose result is already decided (6,182 Withdrawn and 8 Fail), and the 8 made after day 60. The 42 that withdrew on day 60 itself stay, as the features stop at day 59.
+- Assessments (TMAs and CMAs, not the final exam): assessments_due, assessments_submitted and days_early_mean use the cut-offs and submissions before day 60. score_mean and score_min use the scores known on day 60: a CMA's from its submission, a TMA's 14 days after the later of its cut-off and its submission, and a banked result from the start. The 14 days are an assumption from the OU Tutor Support Statement ("ten working days"); the data holds no return date, and with holidays ten working days take longer than 14 calendar days, so the delay may err toward a leak (skill 0.132 with it, 0.158 without, one grouped repeat). Weight-0 TMAs are left out of the scores (BBB 2014J, below); FFF's weight-0 CMAs are graded quizzes (mean mark 86) and stay. assessments_banked counts banked results.
+- studied_credits: "the modules the student is currently studying" (dataset paper), with no date. It is equal across a student's concurrent registrations, withdrawn ones included, which fits a total taken at registration; kept.
+- VLE: clicks_before_start (from the log's first day, 8 to 25 days before the start, to day -1), clicks per activity type, active_days and clicks_last_14_days on days 0-59, and days_since_last_click (missing without a click); nothing from day 60 on enters. Counts without a record are 0.
+- We drop id_student (an identifier, used first by the train filter below), date_unregistration (in the cohort the withdrawal date, after day 60) and code_presentation, whose year names the presentation (the start month stays as presentation_start). module_presentation_length (courses.csv) differs only between the years of a module and start month, so it also names the presentation and is not joined.
 - imd_band: we write the band "10-20" as "10-20%", like the other nine.
 - Categorical: module_presentation, code_module, presentation_start and the six profile columns (gender to disability).
-- Split: grouped by module_presentation (Grouping definition), since the OU trains on other presentations of the module. Four start dates cannot give three temporal windows with half of the rows before each (decision table).
-- Potential leak, kept on purpose: students recur, so 12.9% of a grouped test fold's rows have the same student on the train side, partly in concurrent or later registrations that deployment would not know. Removing those train rows costs about 0.0025 of log loss over all test rows, and shared students link all 22 presentations, so no grouping removes it. Revisit if methods are ranked within that margin.
-- Anomaly: BBB 2014J changed its design. Its first TMA has weight 0 and is marked 1 or 100 (the other BBB presentations grade it), and on day 60 this mark is the presentation's only known score. Untuned LightGBM scores below the class prior on it (skill -0.42), and the three weakest grouped splits test it. We keep the marks as recorded, since a deployed model meets such redesigns.
-- Anomaly: 93 Withdrawn registrations have no date_unregistration and stay in the cohort; 45 registrations have no date_registration (7 in the cohort, kept missing).
+- Split: grouped by module_presentation (Grouping definition). Deployment would train on earlier presentations, but four start dates cannot give three temporal windows with half of the rows before each (decision table), so whole presentations are held out instead; 67% of a fold's training rows (averaged over test rows) come from presentations still running on the test presentation's day 60. Tagged ForcedGroupedFromTemporal (SPLIT-8, Lennart, 2026-10-21): on the one valid temporal window (test 2014J, 66.5% of the rows before it) untuned LightGBM has log loss 1.205 grouped against 1.185 temporal, and random forest, LightGBM and logistic regression rank the same under both splits (measured before the train filter and the weight-0 change, review panel 2026-10-20), so the grouped split costs about 0.02 log loss against real use.
+- Train filter (_make_splits): students recur, so 12.9% of a grouped test fold's rows have the same student on the train side. Shared students link all 22 presentations, so no grouping separates them. From each fold's train side we drop the registrations of its test students that started on or after the student's first test presentation (concurrent or later ones, which deployment would not know): 577-901 rows per split, 3.2-5.7% of the train side. What stays: 4.9% of test rows share a student with training only through earlier registrations, which deployment also knows. Before the filter these rows cost +0.002 to +0.005 log loss over all test rows, which is not distinguishable from removing as many random rows.
+- Anomaly: BBB 2014J changed its design. Its first TMA has weight 0 and is marked 1 or 100 (1,739 of 1,776 marks; the other BBB presentations weight and grade it). An OU analyst knows the weights and computes scores over graded assessments, so score_mean and score_min leave weight-0 TMAs out: 1,655 rows lose that mark (1,652 of BBB 2014J), and BBB 2014J has no known score on day 60. On the 9 splits, untuned LightGBM reaches log-loss skill 0.167 (standard deviation over the splits 0.015; 0.04 on BBB 2014J) and random forest 0.158 (-0.23 on BBB 2014J). With these marks in, LightGBM reached 0.141 (0.052; -0.42 on BBB 2014J) and random forest 0.168, so the change favours no model family.
+- Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
 - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
 
 ## Splits
@@ -211,25 +216,27 @@ We start with the seven tables of the Open University Learning Analytics Dataset
 Grouped 3-fold cross-validation over the 22 module-presentations with 3 repeats (the recommended split for
 this size): each test fold holds six to nine presentations that the model has not seen. It stands
 in for the temporal split of deployment (train on earlier presentations of a module), which four start dates
-cannot give with three windows and half of the data for training.
+cannot give with three windows and half of the data for training. Each train side leaves out the
+registrations of that fold's test students that started on or after their first test presentation (577-901
+rows per split).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 15,832 to 18,701 rows, test 7,694 to 10,563 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 14,931 to 17,946 rows, test 7,694 to 10,563 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 17758 | 8637 |
-| 0 | 1 | 16554 | 9841 |
-| 0 | 2 | 18478 | 7917 |
-| 1 | 0 | 18701 | 7694 |
-| 1 | 1 | 15832 | 10563 |
-| 1 | 2 | 18257 | 8138 |
-| 2 | 0 | 17841 | 8554 |
-| 2 | 1 | 16765 | 9630 |
-| 2 | 2 | 18184 | 8211 |
+| 0 | 0 | 17152 | 8637 |
+| 0 | 1 | 15939 | 9841 |
+| 0 | 2 | 17612 | 7917 |
+| 1 | 0 | 17946 | 7694 |
+| 1 | 1 | 14931 | 10563 |
+| 1 | 2 | 17673 | 8138 |
+| 2 | 0 | 17264 | 8554 |
+| 2 | 1 | 16004 | 9630 |
+| 2 | 2 | 17399 | 8211 |
 
 ## Group structure
 
-One group is a module-presentation (module_presentation, e.g. "BBB 2014J"): one run of a module, starting in February (B) or October (J) of 2013 or 2014; 22 runs of 7 modules. A model is used during a running presentation, whose results are not known yet, and the OU trains it on other presentations of the same module: "for some presentations the corresponding previous B/J presentation do not exist and therefore the J presentation must be used to inform the B presentation or vice versa. In the dataset this is the case of CCC, EEE and GGG modules" (OULAD page, courses.csv). So the test presentations are new to the model, and each registration in them is one prediction. On day 60 every registration of the running presentation is known with its day-60 features (OU Analyse scores all students of a presentation each week), so a model may use the presentation's other rows, for example to compare a student's activity with the cohort's. The split is less strict than deployment: the train side also holds later presentations and the concurrent ones of other modules, because a temporal split by start date cannot give three windows with half of the data for training (four start dates).
+One group is a module-presentation (module_presentation, e.g. "BBB 2014J"): one run of a module, starting in February (B) or October (J) of 2013 or 2014; 22 runs of 7 modules. A model is used during a running presentation, whose results are not known yet, and is trained on other presentations of the same module. The OULAD page advises analysing the B and J presentations separately, each informed by the previous one of its kind: "for some presentations the corresponding previous B/J presentation do not exist and therefore the J presentation must be used to inform the B presentation or vice versa. In the dataset this is the case of CCC, EEE and GGG modules" (OULAD page, courses.csv). That advice points to earlier presentations; the test presentations are new to the model, and each registration in them is one prediction. On day 60 every registration of the running presentation is known with its day-60 features (OU Analyse scores all students of a presentation each week), so a model may use the presentation's other rows, for example to compare a student's activity with the cohort's. The split is less strict than deployment: the train side also holds later presentations and the concurrent ones of other modules (but not the test students' own concurrent or later registrations), because a temporal split by start date cannot give three windows with half of the data for training (four start dates).
 
 | field | value |
 |---|---|
@@ -246,10 +253,10 @@ One group is a module-presentation (module_presentation, e.g. "BBB 2014J"): one 
 | largest group | 7.2% of the rows |
 | test groups per fold | 6 to 9 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 58.3% of the rows (chance: 5.2%) |
+| nearest neighbour in the same group | 57.8% of the rows (chance: 5.2%) |
 | label variance explained by the group | 0.01 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
@@ -266,7 +273,7 @@ Deployment trains on earlier presentations of a module, but the data has four st
 
 ### 2. Cohort: the registrations active on day 60
 
-A registration that ended before the prediction day already has its result (Withdrawn); one made after it does not exist yet.
+A registration that ended before the prediction day already has its result (Withdrawn, or Fail for 8); one made after it does not exist yet.
 
 | registration | Distinction | Fail | Pass | Withdrawn | All |
 |---|---|---|---|---|---|
@@ -283,7 +290,7 @@ A registration that ended before the prediction day already has its result (With
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: The 22 module-presentations are all the presentations the source has (6-9 per test fold), and holding out whole presentations is the use case. Each fold still scores 7,694-10,563 registrations one by one (smallest class: 874 rows), and the signal across presentations is real: on unseen presentations logistic regression, random forest, LightGBM and kNN reach macro ROC AUC 0.717, 0.745, 0.744 and 0.634 (group_probes.py, 2026-10-06). Most of the variance between folds comes from one presentation, BBB 2014J (see its Anomaly bullet).
+- `groups_test_groups_few`: The 22 module-presentations are all the presentations the source has (6-9 per test fold), and holding out whole presentations is the use case. Each fold still scores 7,694-10,563 registrations one by one (smallest class: 874 rows), and the signal across presentations is real: on unseen presentations logistic regression, random forest, LightGBM and kNN reach macro ROC AUC 0.753, 0.753, 0.753 and 0.642 (group_probes.py, 2026-10-20), and untuned LightGBM's log-loss skill varies little over the 9 splits (0.167, standard deviation 0.015).
 
 ## Data checks
 
@@ -304,23 +311,23 @@ Accepted on purpose:
 | final_result | category | 0 | 0 | 4 | Pass, Fail, Withdrawn, Distinction |
 | presentation_start | category | 0 | 0 | 2 | October, February |
 | module_presentation | category | 0 | 0 | 22 | FFF 2013J, CCC 2014J, BBB 2013J, FFF 2014J, BBB 2014J, DDD 2013J, BBB 2013B, DD… |
+| score_mean | float64 | 5751 | 21.79 | 456 | 80.0, 90.0, 86.0, 85.0, 78.0, 84.0, 70.0, 88.0, 82.0, 92.0 |
+| score_min | float64 | 5751 | 21.79 | 99 | 80.0, 70.0, 78.0, 90.0, 60.0, 82.0, 86.0, 84.0, 76.0, 72.0 |
 | days_early_mean | float64 | 4424 | 16.76 | 170 | 0.0, 1.0, 0.5, 2.0, 1.5, -1.0, -3.0, -1.5, -2.0, 3.0 |
-| score_mean | float64 | 4098 | 15.53 | 459 | 100.0, 80.0, 1.0, 90.0, 86.0, 85.0, 78.0, 84.0, 70.0, 88.0 |
-| score_min | float64 | 4098 | 15.53 | 100 | 100.0, 80.0, 70.0, 78.0, 90.0, 1.0, 60.0, 82.0, 86.0, 84.0 |
 | days_since_last_click | float64 | 561 | 2.13 | 81 | 1.0, 2.0, 3.0, 7.0, 6.0, 5.0, 8.0, 4.0, 9.0, 13.0 |
 | date_registration | float64 | 7 | 0.03 | 306 | -22.0, -29.0, -24.0, -25.0, -23.0, -30.0, -36.0, -28.0, -17.0, -32.0 |
 | num_of_prev_attempts | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 5, 6 |
 | studied_credits | int64 | 0 | 0 | 50 | 60, 120, 30, 90, 150, 180, 240, 210, 75, 70 |
 | assessments_due | int64 | 0 | 0 | 5 | 2, 3, 1, 0, 4 |
 | assessments_submitted | int64 | 0 | 0 | 5 | 2, 1, 0, 3, 4 |
-| assessments_banked | int64 | 0 | 0 | 13 | 0, 3, 2, 4, 1, 5, 6, 7, 8, 9 |
+| assessments_banked | int64 | 0 | 0 | 13 | 0, 3, 2, 4, 1, 5, 6, 7, 9, 8 |
 | clicks_before_start | int64 | 0 | 0 | 831 | 0, 1, 2, 3, 5, 4, 7, 6, 10, 8 |
-| clicks_dataplus | int64 | 0 | 0 | 18 | 0, 1, 3, 4, 2, 6, 5, 7, 8, 9 |
+| clicks_dataplus | int64 | 0 | 0 | 18 | 0, 1, 3, 4, 2, 6, 5, 7, 8, 11 |
 | clicks_dualpane | int64 | 0 | 0 | 31 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | clicks_externalquiz | int64 | 0 | 0 | 45 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | clicks_forumng | int64 | 0 | 0 | 1212 | 0, 2, 3, 1, 4, 5, 6, 7, 8, 10 |
 | clicks_glossary | int64 | 0 | 0 | 117 | 0, 1, 2, 3, 4, 5, 7, 6, 8, 9 |
-| clicks_homepage | int64 | 0 | 0 | 722 | 0, 22, 27, 29, 56, 1, 13, 38, 5, 16 |
+| clicks_homepage | int64 | 0 | 0 | 722 | 0, 22, 27, 56, 29, 1, 13, 38, 5, 6 |
 | clicks_htmlactivity | int64 | 0 | 0 | 17 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | clicks_oucollaborate | int64 | 0 | 0 | 50 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | clicks_oucontent | int64 | 0 | 0 | 1006 | 0, 1, 2, 3, 4, 5, 8, 6, 7, 10 |
@@ -329,13 +336,13 @@ Accepted on purpose:
 | clicks_page | int64 | 0 | 0 | 35 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | clicks_questionnaire | int64 | 0 | 0 | 27 | 0, 9, 3, 10, 6, 4, 11, 1, 7, 12 |
 | clicks_quiz | int64 | 0 | 0 | 812 | 0, 1, 2, 16, 15, 14, 17, 18, 19, 13 |
-| clicks_repeatactivity | int64 | 0 | 0 | 3 | 0, 4, 3 |
+| clicks_repeatactivity | int64 | 0 | 0 | 3 | 0, 3, 4 |
 | clicks_resource | int64 | 0 | 0 | 168 | 0, 1, 2, 4, 5, 6, 3, 7, 8, 9 |
 | clicks_sharedsubpage | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
 | clicks_subpage | int64 | 0 | 0 | 410 | 0, 1, 4, 2, 6, 3, 5, 8, 7, 9 |
 | clicks_url | int64 | 0 | 0 | 144 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | active_days | int64 | 0 | 0 | 61 | 10, 17, 0, 11, 8, 13, 14, 12, 16, 15 |
-| clicks_last_14_days | int64 | 0 | 0 | 822 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 19 |
+| clicks_last_14_days | int64 | 0 | 0 | 822 | 0, 1, 2, 3, 5, 4, 6, 7, 19, 9 |
 
 </details>
 
@@ -361,8 +368,8 @@ Accepted on purpose:
 | assessments_due | 26395 | 1.97488 | 0.889354 | 0 | 4 |
 | assessments_submitted | 26395 | 1.62716 | 0.962625 | 0 | 4 |
 | days_early_mean | 21971 | 0.64083 | 3.75842 | -40 | 29 |
-| score_mean | 22297 | 76.0723 | 20.4857 | 0 | 100 |
-| score_min | 22297 | 72.241 | 21.2654 | 0 | 100 |
+| score_mean | 20644 | 77.4262 | 15.4865 | 0 | 100 |
+| score_min | 20644 | 73.2901 | 16.8804 | 0 | 100 |
 | assessments_banked | 26395 | 0.0675507 | 0.575726 | 0 | 12 |
 | clicks_before_start | 26395 | 76.0056 | 138.086 | 0 | 3731 |
 | clicks_dataplus | 26395 | 0.0187157 | 0.39503 | 0 | 29 |

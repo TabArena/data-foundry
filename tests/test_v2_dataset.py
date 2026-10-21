@@ -359,6 +359,8 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
         ({"categorical_features": ("a",)}, "`_feature_types`"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
+        ({"data_tags": ("2ndTierData",)}, "retired"),
+        ({"data_tags": ("ForcedGroupedFromTemporal",)}, "marks a grouped split"),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -454,6 +456,12 @@ def test_grouping_is_stored_in_a_format_2_task() -> None:
     assert task.grouping.definition == "One group is a toy."
     assert task.grouping.aggregation == "mean"
     assert cls.dataset_metadata.data_tags == ["Non-IID", "GroupedTemporal"]
+
+
+def test_forced_grouped_tag_keeps_the_automatic_regime_tags() -> None:
+    grouping = Grouping(on="g", labels="per_group", definition="One group is a toy.")
+    cls = _define(grouping=grouping, data_tags=("ForcedGroupedFromTemporal",))
+    assert cls.dataset_metadata.data_tags == ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"]
 
 
 def test_cast_and_drop_helpers() -> None:

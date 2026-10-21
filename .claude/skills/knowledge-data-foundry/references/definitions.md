@@ -178,17 +178,38 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
-  when the task is temporal in nature but the release has no time index (SPLIT-8 in
-  [splits.md](../../knowledge-curation/references/splits.md)).
+  when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
+  (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md)); `"ForcedGroupedFromTemporal"` when such a
+  task ships grouped instead (SPLIT-8; the definition must declare a `grouping`). `"2ndTierData"` is retired
+  (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as a
+  finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
   `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, and the record's `problem_type` follows the one that
   ships.
-* `metric`: leave it unset for the three defaults (`rmse`, `roc_auc`, `log_loss`). Another metric is a deliberate
-  custom one that must be registered downstream, in its canonical short spelling (`mae`, `rmsle`, `mape`;
-  `task_metric_not_canonical` rejects aliases). A competition with its own metric keeps our default, and the notes name
-  the original metric.
+* `metric`: the original use case's metric, the one the source's competition or paper scored (TP-6 in
+  [task_probes.md](../../knowledge-curation/references/task_probes.md); amended 2026-10-21). Overrule it only on
+  evidence that it is biased or wrong for the use case, written in the notes with its numbers. Leave the attribute
+  unset when the metric is the problem type's default (`rmse`, `roc_auc`, `log_loss`). The bundle checks know these
+  names (`KNOWN_METRICS` in `src/data_foundry/bundle_checks.py`): binary `roc_auc`, `average_precision`, `log_loss`,
+  `accuracy`, `balanced_accuracy`, `f1`, `mcc`, `precision`, `recall`; multiclass `log_loss`, `accuracy`,
+  `balanced_accuracy`, `f1_macro`, `f1_micro`, `f1_weighted`, `mcc`, `roc_auc_ovo_macro`, `roc_auc_ovr_macro`;
+  regression `rmse`, `mae`, `mse`, `r2`, `rmsle`, `mape`, `median_absolute_error`, `pearsonr`, `spearmanr`. An alias
+  is an error (`task_metric_not_canonical`); any other string passes as an info (`task_metric_unknown`), must be
+  registered downstream, and until then TabArena scores the default instead. Take the first that applies:
+  1. The original is a listed name: declare it (zillow_prize `mae`, african_credit_scoring_challenge `f1`).
+  2. A listed metric ranks models as the original does, by identity or measured on the shipped splits: declare it
+     (porto_seguro `roc_auc`: the normalized Gini is 2 x ROC AUC - 1; numerai_v5_2_1m `pearsonr`: pooled Pearson
+     within 0.0002 of Numerai's per-era CORR).
+  3. The original is a published metric with a reference implementation that scores the shipped target and
+     predictions as they are: declare it under that name, with the link in a comment (amex_non_iid_1m `amex_metric`,
+     sepsis_prediction_1m's PhysioNet 2019 utility, force_2020's `force_2020_penalty_matrix`).
+  4. Otherwise (a rubric over several targets, or targets the task does not ship): the listed metric the original
+     weighs most on the shipped target (digicow_farmer_training_adoption_challenge: Zindi's 7-day log loss).
+
+  Whenever the declared metric is not exactly the original, the notes name the original (and its weights, for a
+  rubric).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
@@ -366,10 +387,12 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
-The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows. A
-dataset that does not fit gets a sub-sampled version, its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of `<name>`. Set
-`subsample_to_budget = True`:
+The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows:
+the row budget (Lennart, 2026-10-21: at most 1M training rows). A dataset whose splits, before any cap, have a
+side over the budget ships only as a sub-sampled version, whatever the size of its frame (nyc_taxi_trip_duration:
+1.45M rows, train sides of 1.28M to 1.39M). The version has its own folder and class, `<unique_name>_1m/dataset.py`,
+with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of
+`<name>`. Set `subsample_to_budget = True`:
 
 * IID or grouped data: a frame of up to 1.5M rows is taken fully (3 folds of 2/3 train). A larger frame is sub-sampled
   to 1.5M rows before splitting (`subsample_frame`: rows stratified on the target, or whole groups), then the usual
@@ -436,7 +459,7 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
 | `splits_rows_unused` | IID and grouped splits cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: a `_1m` version for a frame above 1.5M rows, otherwise narrower windows |
+| `splits_train_over_budget`, `splits_test_over_budget` | a split side over the row budget: a `_1m` version with `subsample_to_budget` ("Larger than the row budget"); narrower windows do not shrink a train side |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |

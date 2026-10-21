@@ -103,7 +103,7 @@ class PhiusilPhishing(AbstractCuratedDataset):
         ),
         row=(
             "One URL with features of its fetched page: 134,850 legitimate and 100,520 phishing URLs, published in "
-            "2023; the collection period is not stated."
+            "2023 and collected mostly in 2023 (Mendeley Data page)."
         ),
         predicted="Whether the URL is phishing or legitimate (43% phishing).",
         known=(
@@ -120,9 +120,9 @@ class PhiusilPhishing(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The classes were collected in different forms: every legitimate URL is the bare homepage of a ranked "
-            "site, and the phishing pages were fetched later, so a fixed rule reaches ROC AUC 0.9998. The curation "
-            "notes recommend excluding the dataset."
+            "The sampling replaces the task: negatives are ranked homepages only (every legitimate URL is the bare "
+            "homepage of a ranked site), and half the positives are pages fetched after takedown, so a fixed rule "
+            "reaches ROC AUC 0.9998. The curation notes recommend excluding the dataset."
         ),
     )
 
@@ -167,10 +167,10 @@ class PhiusilPhishing(AbstractCuratedDataset):
         - Dropped as a copy: Domain, the authority part of URL. URL, the input the detector classifies, stays as a string; TLD is a categorical.
         - Construction artifacts that stay: every feature family separates the classes (fourth decision); dropping columns would not help, as the URL features alone reach ROC AUC 0.9989 and the page features 0.99994.
         - Anomaly, shared pages: 50.5% of the phishing rows and no legitimate row carry one of 115 pages found on at least 100 rows and several hosts, such as Firebase Hosting's page for an address without a site (fifth decision). A page template is not an entity that new URLs lack, so no split changes this.
-        - Potential leak, kept on purpose: URLLength is len(URL) - 1 for every legitimate row and 52,090 phishing rows and len(URL) for 48,428, so the URL counts and ratios use a string cut more often in one class. Adding len(URL) moves the URL features from ROC AUC 0.99893 to 0.99895, so we keep the source's values; recompute them if the dataset ever ships.
+        - LEAK-13 departure, acceptable only because the dataset is excluded: URLLength is len(URL) - 1 for every legitimate row and 52,090 phishing rows and len(URL) for 48,428, so the URL counts and ratios use a string cut more often in one class. Adding len(URL) moves the URL features from ROC AUC 0.99893 to 0.99895; recompute len(URL) and the URL counts and ratios from URL if the dataset ever ships.
         - Kept: TLDLegitimateProb (a TLD's share in an outside list of about 10M domains) and URLCharProb (possibly computed from this file's legitimate rows). Without both, ROC AUC stays 1.0000.
-        - Duplicates: 425 URLs occur twice (all phishing); we keep the first copy in file order. Near-copies that differ in the scheme, a leading "www." or a trailing slash stay.
-        - Note: hosts recur for phishing only, by construction, and 43 homepages are listed both as Legitimate and as Phishing (sixth decision).
+        - Duplicates: 425 URLs occur twice (all phishing), as two fetches of the same URL (every pair differs in URLLength, 37 in LineOfCode); we keep the first copy in file order. Near-copies that differ in the scheme, a leading "www." or a trailing slash stay.
+        - Note: hosts with several rows are phishing hosts, by construction, apart from 54 hosts (112 rows) that hold both classes, and 43 homepages are listed both as Legitimate and as Phishing (sixth decision).
     """
 
     # Task
@@ -183,7 +183,8 @@ class PhiusilPhishing(AbstractCuratedDataset):
         "https://www.bipa.na), not a missing value.",
         "dataset_pure_feature_value": "These values come from how the two classes were collected (curation_comments): "
         "every legitimate URL is https://www.<host> without a path, so NoOfSubDomain = 0, NoOfQMarkInURL = 1 and "
-        "IsHTTPS = 0 occur in phishing rows only, and HasSocialNet = 1 marks the full homepages of ranked domains. "
+        "IsHTTPS = 0 occur in phishing rows only, and HasSocialNet = 1 is nearly pure (107,146 legitimate and 511 "
+        "phishing rows), as it marks the full homepages of ranked domains. "
         "Dropping them would not help: the URL keeps the template and the page features alone reach ROC AUC 0.99994. "
         "We recommend excluding the dataset for this reason.",
     }
@@ -370,7 +371,8 @@ class PhiusilPhishing(AbstractCuratedDataset):
             ),
             Decision(
                 "IID split, hosts not held out",
-                "Hosts recur for phishing only, by construction; a detector meets known and new hosts, and a "
+                "Hosts with several rows are phishing hosts, apart from the hosts that hold both classes (table); a "
+                "detector meets known and new hosts, and a "
                 "host-grouped split gives the same score (splits comment). Hosts are the authority part of the URL. "
                 "The last row counts homepages listed once as Legitimate and once as Phishing (curation_comments).",
                 hosts,

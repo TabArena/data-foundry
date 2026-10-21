@@ -7,7 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -39,3 +39,9 @@ Basic: https://www.kaggle.com/code/anokas/simple-xgboost-starter-0-0655
 **Assessment (AI, 2026-10-07):** Valid temporal regression. The target is Zillow's own residual, log(Zestimate) - log(SalePrice), which Zillow models to improve the Zestimate (FAQ, discussion 33899). Each sale must take the property file of its year: properties_2017 holds edits made after early-2016 sales (building facts differ for 1.2-2.0% of parcels sold January-May 2016, 0.81% of unsold ones), and Zillow warns about its tax values (discussion 40408). August and September 2017 are incomplete ("a biased sample", same post). Concern: sales with |logerror| > 1 (0.4%, mostly miskeyed prices) hold half of the squared error; the competition scored MAE. The signal is small but real: robust LightGBM fits beat the train mean on 9 of 9 monthly windows. The rules forbid redistribution.
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case +, source +, shape +, risk - (Issue 2: probes flag no_signal, drift_baseline, unstable; target dominated by miskeyed-price outliers). Real company task with a clear use case and documented data, but the signal is tiny and may not separate methods.
+
+**Assessment (AI, 2026-10-20):** review panel (full tier): ship after changes. The fit is `approximate` (USE-6, USE-8): the Zestimate, the listing data and the last sale price were never released. The tax delinquency is one snapshot of about September 2016 in both property files, after the sales of January to August 2016 (1.5% flagged against 3.8% from September 2016), so the definition blanks it for those sales (LEAK-10 via LEAK-7); blanking, keeping or dropping it give the same L1 LightGBM skill within the seed spread. Building facts differ between the files for 1.4-2.3% of the parcels sold January to May 2016 and 3.2-3.7% of the parcels sold only in 2017, flat by sale month; the tax values show no reset at the sale (LEAK-10's "did not change" clause). Signal: untuned LightGBM with an absolute-error loss beats the train mean in 8 or 9 of 9 windows (R^2 about 0.001-0.012), squared-error fits in 3 or 4; the train median loses to the mean in 9 of 9, so the gain is in the features (TP-2). TP-1: tuned results pending; if tuned methods do not beat the dummy window by window, `TBD -> 2nd Tier`. 0.38% of the rows hold half of the squared error; RMSE or MAE is open in the working copy's TP-6 item. The prediction point rests on Kaggle's FAQ, which no one could read (REVIEW.md issue 3). Priority 2: gap -, use case -, source +, shape +, risk - (fit approximate; small signal and an RMSE dominated by miskeyed prices; the blind reviewer would exclude).
+
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric set to `mae`, the competition's metric (was the default RMSE); 0.38% of the rows hold 49.9% of the squared error. Needs a rebuild to reach the container.

@@ -7,7 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 4
+priority: 3
 decision_markers:
 - Outdated
 tags:
@@ -54,6 +54,8 @@ CC (2026-10-12, Lennart): One target, death within 2 months; not a multi-target 
 CC (2026-10-12, Lennart): Drop adls and adlsc, keep adlp, edu and income: the surrogate interview's gaps depend on whether the stay lasted until the interview, which is after the prediction point.
 
 **Assessment (AI, 2026-10-20):** priority 4 for the review of the added dataset: gap -, use case +, source +, shape +, no known risk. Well-documented clinical prognosis task whose misplaced phase II physiology was repaired from ICPSR; open issues only confirm cohort and drop choices.
+
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes. For the curator (REVIEW.md issues 5, 7, 8, 9): frame the use case as the source's objective estimate or keep the physicians' estimates and DNR; drop adlp, whose gaps hold 475 patients with interview status "Pt Death" (all positive, 0.0035 ROC AUC), against CC 2026-10-12; the year 2000 has no source (2001 or 2003); a pafi cut. Applied: prediction point named study day 3, alb above 6 g/dL set missing, wblc 0 noted, the split note and four inexact sentences corrected with the measured numbers. The earlier "no known risk" no longer holds. Priority 3: gap -, use case +, source +, shape +, risk - (adlp's gaps encode deaths after day 3, a confirmed leak open in issue 7).
 
 ## Reference
 

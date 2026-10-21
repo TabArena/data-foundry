@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94
+checksum: v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766
 build:
   uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
   checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
@@ -45,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 383088
     max: 520877
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94`, so the build is stale. See [Build](#build).
+Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -205,6 +207,13 @@ that is refit every quarter: 3 test windows, the quarters 2015 Q2, Q3 and Q4 (ne
 all loans issued before the quarter as training data. The outcome of a loan issued shortly before a
 window was only known later (by 2018), so the train side holds labels a deployed model would not have
 had yet; a gap of a full 36-month term would remove this but leave too little data.
+
+Exception to SPLIT-10 (2026-10-21, Lennart): a loan's outcome is known only when it ends, up to 36 months after
+issue, and the data has no outcome dates; a 36-month gap leaves 5-9% of the rows for training in the three
+windows and a 12-month gap 33-46%, below the 50% floor (even a 6-month gap leaves 46% for the oldest window).
+Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that tell a
+test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
+Tensions).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 383,088 to 520,877 rows, test 64,222 to 88,667 rows. Prediction horizon: 3 months.
 
@@ -446,4 +455,4 @@ had yet; a gap of a full 36-month term would remove this but leave too little da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94` |
+| stale | yes: the definition now gives checksum `v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766` |

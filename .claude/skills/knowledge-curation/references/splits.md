@@ -56,10 +56,18 @@ by an uploader, never shipped, or only implied by how the data was collected (re
 feature and the target contemporaneous). When the setup is values unfolding over time from a stream of signals, it is
 temporal or forecasting whether or not a date column survived. Cases: combined_cycle_power_plant.
 
-**SPLIT-8 (Must; narrows SPLIT-7).** When a task is temporal in nature but the release has no dates at all (one
-extract, the status at that moment standing in for a forecast), it ships as IID, tagged as forced IID from temporal,
-with the cost of the missing time axis measured where the data allows. Say what the timestamp would change and that it
-should be recovered if a later release has it. Cases: account_debt_south_africa (Lennart, 2026-10-12).
+**SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but
+the release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
+forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
+with no dates at all (one extract, the status at that moment standing in for a forecast), a release with one stock
+month of the base or a few cohort months of one customer base (a split by those months tests a change of cohort, not
+of time), and a release with too few periods for three windows. The closest regime is IID (tag
+`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the entities recur across them
+(tag `ForcedGroupedFromTemporal`). Say what the timestamp or a dated window would change and that it should be
+recovered if a later release has it. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, from
+mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
+open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department.) Cases:
+account_debt_south_africa, mobile_churn, nba_players_2016_2019.
 
 ### Temporal tasks
 
@@ -91,7 +99,8 @@ predicts for known entities, and a question when the use case is a new entity (U
 ### How many windows
 
 **SPLIT-14 (Must).** A temporal task has at least 3 windows, and no window's train side holds less than 50% of the
-data. Why: a smaller train side is too unlike the real application.
+data. Why: a smaller train side is too unlike the real application. A task that cannot meet it ships under SPLIT-8
+(Lennart, 2026-10-21).
 
 **SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
 size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
@@ -204,9 +213,14 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-5 | kick | a comment called the Kaggle split grouped by auction location, yet 78.9% of its test rows are at a location also in train | applied |
 | SPLIT-6, SPLIT-7 (SEL-10) | combined_cycle_power_plant | no timestamp, looks like IID sensor regression, but it is a six-year hourly stream predicting the plant's output: forecasting, `No` | applied |
 | SPLIT-8 | account_debt_south_africa | ships as IID, tagged forced IID from temporal; held out by file block, ROC AUC falls from 0.877 to 0.843 and 0.786 (2026-10-12, Lennart) | applied |
+| SPLIT-8 | mobile_churn, churn_telco_south_asia, bank_customer_churn, tour_travels_churn | one stock month (mobile_churn: June's base plus the July and August joiners) or one undated snapshot: IID, `ForcedIIDFromTemporal`; on mobile_churn's 1,533 later joiners, training on June gives ROC AUC 0.661 against 0.690 IID, the others cannot measure it (2026-10-21, Lennart) | applied |
+| SPLIT-8 | nba_players_2016_2019, open_university_learning_analytics_dataset | too few periods (3 seasons; 4 start dates): stacked and grouped by player or by module-presentation, `ForcedGroupedFromTemporal`; on the one valid window R^2 0.745 against 0.744 grouped (nba), log loss 1.185 against 1.205 grouped (open_university) (2026-10-21, Lennart) | applied |
+| SPLIT-8 | distribution_transformers_at_cauca_department | two label years, one window: one year IID, `ForcedIIDFromTemporal`, not stacked, as the two files hold the same units with identical attributes; ROC AUC 0.648 trained on 2019 and tested on 2020 against 0.639 on the random folds (2026-10-21, Lennart) | applied |
 | SPLIT-9 | hotel_booking_demand | train kept bookings arriving after the prediction date that were already cancelled (100% positive), so the model learned "future arrival means cancelled"; filtering on the status date kept the shortcut, filtering on the arrival date removed it | applied |
 | SPLIT-10 | brazilian_ecommerce | a gap of one month; R^2 0.353 with the gap, -0.054 without (2026-10-15, Lennart) | applied |
 | SPLIT-10 | sf_permit_time | a gap of 6 months, since a 1-month gap still censored the slow permits | applied |
+| SPLIT-10 | alfa_battle_2_0_task_2 | no label dates, a default flagged up to a year after issue: a 12-month gap leaves 13-27% of the rows for training, a 6-month gap 35-53%; SPLIT-9 met by dropping the products of the test window's clients. Serves SPLIT-14 (2026-10-21, Lennart) | exception |
+| SPLIT-10 | lending_club | outcomes known up to 36 months after issue, no outcome dates: a 36-month gap leaves 5-9% of the rows for training, a 12-month gap 33-46%. Serves SPLIT-14 (2026-10-21, Lennart) | exception |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |

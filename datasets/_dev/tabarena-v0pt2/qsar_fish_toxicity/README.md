@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152
+checksum: v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc
 build:
   uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
   checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
@@ -42,6 +42,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 605
     max: 606
@@ -65,7 +67,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 908 rows and 6 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -120,7 +122,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5JG7B |
 | year | 2015 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | cassotti2015similarity |
@@ -273,4 +275,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2555ea7bbd3f29979dd2cc285543733357e3921e4d92c162817379f177d27152` |
+| stale | yes: the definition now gives checksum `v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc` |

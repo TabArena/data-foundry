@@ -37,7 +37,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
     # Dataset
     unique_name = "qsar_fish_toxicity"
     year = "2015"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5JG7B"
     license = "CC BY 4.0"

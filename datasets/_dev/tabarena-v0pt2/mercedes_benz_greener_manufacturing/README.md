@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
+checksum: v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8
 build:
   uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
   checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 4204
   n_features: 371
@@ -29,7 +29,7 @@ data:
 task:
   target: y
   problem_type: regression
-  metric: rmse
+  metric: r2
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: time_index
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: 320
   time_horizon_unit: steps
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1324
     max: 3884
@@ -64,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `y`, scored with `rmse` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
+Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 4,204 x 372 |
 | task.target | y |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | r2 |
 | task.split_regime | temporal_non_iid |
 | task.time_on | time_index |
 
@@ -178,11 +180,13 @@ We start with the train.csv from Kaggle.
 - The data has been anonymized, so feature meanings are unknown.
 - There is generally weird behavior related to the ID and potentially a time column (see X5 here https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing/discussion/34949). However, it is hard to parse the exact details due to anonymization. We generally take from this that the data is sorted sequentially by ID and that there may be time dependencies. Also checkout https://www.kaggle.com/code/sudalairajkumar/simple-exploration-notebook-mercedes which shows relation between index and y, showing that y goes up with higher index and it shows that X5 (the time group feature), has the highest importance. Plus, it has one outlier.
 - We remove the one outlier from y.
+  Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, inside the first 1,000 cars that every test window trains on. The competition host does not name the row.
 - We drop X5 as it leaks time group information in temporal splits (besides having a full categorical-value distribution shift with a temporal split).
 - We tread the ID as a time_index.
 - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
 - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
 - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
+- Metric: the competition scored R² (Kaggle's evaluation metric), which we declare (TP-6); within one test fold it ranks models as RMSE does.
 
 ## Splits
 
@@ -379,3 +383,4 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8` |

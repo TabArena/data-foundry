@@ -33,6 +33,10 @@ type_adapter_id: curation-record-v1
 
 We can add it for now. We are missing some information, but it seems reasonable. It might be trivial after we test it for the first time.
 
+CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot churn sets: tagged `ForcedIIDFromTemporal`; SPLIT-8 now covers a release with one stock month or one undated snapshot.
+
+**Assessment (AI, 2026-10-21):** tag and one note line added; a dated window would test the model on a later season's customers; not measurable on one undated snapshot.
+
 ## Reference
 
 Kaggle

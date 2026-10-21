@@ -2,15 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: nba_players_2016_2019
 container_format: 2
-checksum: v2:64b80d33f233a39ea90eb1a3dec37ec15eb1a40ca98583e837b24b85f7b032c5
+checksum: v2:60afa2c6decf72ca9b1c2437326ed3f3946568e0f6fc4648fc30aae877d46c2b
 build: null
 build_stale: false
 data:
   n_rows: 1408
-  n_features: 34
+  n_features: 35
   dtypes:
     category: 7
-    float64: 26
+    float64: 27
     int64: 3
   n_test_dataset_rows: null
 task:
@@ -37,6 +37,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 918
     max: 963
@@ -59,27 +61,27 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `all_star_score`, scored with `rmse` on grouped splits by `player_id`. 1,408 rows and 34 features. Source: Kaggle (2019).
+Regression of `all_star_score`, scored with `rmse` on grouped splits by `player_id`. 1,408 rows and 35 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:64b80d33f233a39ea90eb1a3dec37ec15eb1a40ca98583e837b24b85f7b032c5`.
+Not built yet. The current definition gives checksum `v2:60afa2c6decf72ca9b1c2437326ed3f3946568e0f6fc4648fc30aae877d46c2b`.
 
 ## In brief
 
 **Question.** How high will an NBA player rank in a season's All-Star vote, given his season?
 
-**Use case.** For example, while the All-Star vote is open, a team's marketing staff estimates where its players will rank from their statistics, salary and popularity, to decide whom to campaign for.
+**Use case.** For example, when the All-Star vote opens and before the NBA publishes the first fan returns, a team's marketing staff estimates where its players will rank from their statistics, salary, popularity and last season's vote, to decide whom to campaign for.
 
 **One row.** One NBA player in one regular season, 2016-17 to 2018-19 (1,408 rows of 660 players).
 
-**Predicted.** The player's All-Star score for the season, half his rank in the fan vote plus a quarter each of his ranks in the player and media votes, within his conference and ballot position; lower is better.
+**Predicted.** The player's All-Star score for the season, half his rank in the fan vote plus a quarter each of his ranks in the player and media votes, within his season, conference and ballot position; lower is better. It ranks the whole ballot, so most of the error comes from players far below the 2 or 3 starters.
 
-**Known at prediction time.** The season's statistics (games, minutes, points, rebounds, assists, shooting), age, position, team, conference and ballot position, salary, and mean daily Wikipedia page views; the statistics cover the whole season.
+**Known at prediction time.** The prediction point is the vote's close in mid-January. Known then: age, position, conference, ballot position, salary, last season's score and Wikipedia page views of the calendar year the season starts. The statistics (games, minutes, points, rebounds, assists, shooting) and the team are end-of-season values, which predict the score less well than values at the vote's close.
 
-**What the test data stands for.** Whole players are held out with all their seasons, so the test data stands for players never seen; the real use, a new season of mostly known players, would need a split by season, which three seasons cannot give.
+**What the test data stands for.** Whole players are held out with all their seasons. Held-out players are mostly veterans whose other seasons are hidden, not new players. The real use, a new season of mostly known players, needs a split by season, which three seasons cannot give; the grouped split is the fallback and scored the same as holding out the newest season.
 
-**Our changes to the source.** We recompute the score of 2017-18 and 2018-19 with the NBA's formula, as the shipped one penalised players without player or media votes, and drop the votes and ranks behind it and whether the player played in the game.
+**Our changes to the source.** We recompute the score of 2017-18 and 2018-19 with the NBA's formula, as the shipped one penalised players without player or media votes; drop the votes and ranks behind it and whether the player played in the game; add last season's score; and blank the page views that repeat an earlier season's value.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The vote closes in mid-January, but 25 of the 34 features cover the whole season; statistics as of the vote's close predict as well (R^2 0.772 against 0.741). Held-out players stand in for a new season of mostly known players.
+> **Use case fit: approximate (a stand-in with a known gap).** The vote closes in mid-January, but 25 of the 35 features are the whole season's; statistics as of the vote's close predict better (R^2 0.772 against 0.741). The fan returns the NBA publishes during the vote are missing, and last season's score is missing for 2016-17. Held-out players stand in for a new season of mostly known players.
 
 ## Files in this folder
 
@@ -87,6 +89,7 @@ Not built yet. The current definition gives checksum `v2:64b80d33f233a39ea90eb1a
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/nba_players_2016_2019.md`](../../../../curation/records/nba_players_2016_2019.md)
@@ -125,9 +128,9 @@ Only curators run `build`, when the dataset ships.
 | year | 2019 |
 | domain | social science |
 | license | CC0-1.0 (Kaggle data card) |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal |
 | reference | davra2019nbaplayers |
-| rows x columns | 1,408 x 36 |
+| rows x columns | 1,408 x 37 |
 | task.target | all_star_score |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -161,36 +164,37 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,408 rows of the final frame (random rows: the frame is shuffled); 12 of 36 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,408 rows of the final frame (random rows: the frame is shuffled); 12 of 37 columns, the target first. Cells are cut at 40 characters.
 
 | all_star_score | player_id | position | second_position | age | team | games | games_started | minutes_per_game | field_goals_per_game | field_goal_attempts_per_game | field_goal_pct |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 69.5 | ea2ac7baa265 | C | nan | 21 | MEM | 62 | 6 | 15.2 | 2.6 | 4.3 | 0.608 |
-| 45.8 | d52c96a9b58a | PF | nan | 32 | WAS | 77 | 44 | 27.2 | 4.2 | 8.9 | 0.475 |
-| 35 | 93176be67621 | PF | nan | 25 | UTA | 50 | 39 | 23.7 | 4.1 | 8.3 | 0.487 |
-| 40.2 | 7c40d51968e2 | SG | nan | 28 | ATL | 65 | 65 | 27.5 | 4.4 | 10.4 | 0.42 |
-| 7.2 | 9f0cea6156c5 | C | nan | 24 | DET | 78 | 78 | 33.7 | 6 | 11.3 | 0.529 |
+| 76 | 0f484e833a75 | SF | nan | 23 | MIN | 30 | 3 | 16.8 | 2 | 4.7 | 0.423 |
+| 5.2 | c8c880d13edb | SF | SG | 29 | PHI | 65 | 65 | 33.6 | 6.4 | 13.9 | 0.462 |
+| 7.8 | 3e86295d8bad | SG | nan | 36 | MIA | 67 | 3 | 22.9 | 4.5 | 10.2 | 0.438 |
+| 38 | 3b05c3718828 | C | nan | 36 | GSW | 68 | 0 | 12.6 | 2 | 3.7 | 0.536 |
+| 34.8 | 37f0e002bbe3 | C | nan | 32 | CLE | 27 | 21 | 21.6 | 1.4 | 3 | 0.469 |
 
 ## Curation notes
 
 We start with nba_final.csv, the only file of the Kaggle dataset "NBA PLAYERS 2016-2019" (davra98): one row per NBA player and season, 2016-17 to 2018-19 (1,408 rows, 660 players), with season statistics, salary, Wikipedia pageviews and All-Star votes.
 
-- Prediction point: the end of the regular season. The task explains the season's All-Star vote, which closes in mid-January, from the player's season as shipped, so 25 of the 34 features run past the vote. The later games carry no label information: the same statistics as of the vote's close, rebuilt from box scores, predict the score better (grouped LightGBM R^2 0.772 against 0.741).
-- Target: `all_star_score` (`Score`). Within each season, conference and ballot position the players are ranked by their fan, player and media votes, and the score is 0.5 x fan rank + 0.25 x player rank + 0.25 x media rank (data card; the NBA's own rule). Lower is better.
-- Target fixed for 2017-18 and 2018-19 (`documented_score`): the shipped `Score` adds the ballot size plus one to the player and media rank of players without such votes, which makes the seasons incomparable. We recompute both seasons with the formula from the file's own ranks, rounded to one decimal as the source rounds 2016-17; they then equal the NBA's official scores for all 958 rows matched by name (decision table). 2016-17 follows the formula and keeps its values.
+- Prediction point: the close of the All-Star vote (mid-January; 25 Dec to 21 Jan in 2019, starters public on 24 Jan). The 25 season statistics (`games`, `games_started` and the per-game values) and `team` are measured at the end of the regular season, after the outcome, and kept (LEAK-11): they weaken the signal. The same statistics as of the vote's close, rebuilt from box scores, predict the score better (grouped LightGBM R^2 0.772 against 0.741, paired SE 0.004, 5 x 3 folds).
+- Target: `all_star_score` (`Score`). Within each season, conference and ballot position the players are ranked by their fan, player and media votes, and the score is 0.5 x fan rank + 0.25 x player rank + 0.25 x media rank (data card; the NBA's own rule). Lower is better. The score ranks the whole ballot (92-140 players per cell): 92% of rows score above 10 and carry 77% of its variance, so RMSE is driven by non-contenders. A label is relative to its cell, and the cell (season, conference, ballot position) is in the features.
+- Target fixed for 2017-18 and 2018-19 (`documented_score`): the shipped `Score` adds the ballot size plus one to the player and media rank of players without such votes, which makes the seasons incomparable. We recompute both seasons with the formula from the file's own ranks, rounded to one decimal as the source rounds 2016-17; they then equal the NBA's official scores for all 958 rows matched by name (decision table). 2016-17 follows the formula and keeps its values; its unranked players get the same rank (players voted in the cell plus one), so the three seasons share one scale (mean target 42.4 / 45.8 / 44.7).
+- Added `prev_score`: the player's score of the season before, public before the vote opens (USE-10: the previous outcome of a known player). It is missing for all of 2016-17 (436 rows) and for players without a row in the previous season; the missing values come from the design and say nothing about the player. It stays on the same side of every grouped split as its row. Grouped LightGBM R^2 0.744 -> 0.760 (SE 0.004).
 - Dropped: the votes and ranks the score is computed from (`Fvot`, `FRank`, `Pvot`, `PRank`, `Mvot`, `MRank`); `Play` (played in the game, decided after the vote); `Rk` (basketball-reference's alphabetical row number; decision table); `Player.x` (the name).
 - `Player_ID` becomes the group column `player_id`, anonymized.
-- Grouped by player: most players appear in several seasons, and a player's score carries over (decision table). The real use, a new season with mostly known players, is a temporal split, but three seasons cannot give the protocol's three test windows.
+- Grouped by player, a fallback from the temporal split the use case implies: most players appear in several seasons, and a player's score carries over (decision table). A split by season needs three test windows with half the rows or more before each, and of three seasons only 2018-19 has that (66%). Tagged ForcedGroupedFromTemporal (SPLIT-8, Lennart, 2026-10-21): the one valid window (train 2016-18, test 2018-19) scores untuned LightGBM R^2 0.745 against 0.744 grouped (0.766 against 0.760 with `prev_score`), with the same order of model families, so the grouped split under-rates real use by about 0.01.
 - Renamed: the per-game statistics after basketball-reference's glossary; `conference` `Est` to `East`; `ballot_position` `Back` and `Front` to `guard` and `frontcourt`. `season` is a category.
-- `team` is the team at the end of the season, of the other conference in 87 rows (mostly trades after the vote). Kept: the team is known at the prediction point, and a trade does not depend on the vote.
-- `wikipedia_daily_views` (`mean_views`) is for most rows the mean daily pageviews over the calendar year in which the season starts, before the vote, but 185 rows of the later seasons repeat an earlier season's value of the same player. Kept as shipped: masking the 185 copies changes LightGBM's grouped R^2 by -0.005, dropping the column by -0.038.
+- `team` is the team at the end of the season, of the other conference in 87 rows (82 of them traded after the vote). Kept under LEAK-11: masking the team on those 87 rows raises grouped R^2 0.744 -> 0.751 (paired +0.007, SE 0.0015), so the post-vote value weakens the signal. Trades within a conference are not measured.
+- `wikipedia_daily_views` (`mean_views`) is the mean daily pageviews over the calendar year in which the season starts, before the vote (checked against the Wikimedia API to 2 decimals). 185 rows of the later seasons repeat an earlier season's value of the same player, a stale merge: masked (`repeats_earlier_season`; grouped R^2 -0.005, SE 0.003). Left as shipped: 7 later-season rows that hold a 2016 mean without being an exact copy, and rows that count a redirect title instead of the article (undercounts the file cannot tell apart).
 - Missing values stay missing (`salary`, `wikipedia_daily_views`, the shooting percentages of players without an attempt). No duplicate rows.
 - Note: TabSTAR (via OpenML 43653) takes the alphabetical `Rk` as its target and keeps the vote columns as features, so that version has no task.
 - Note: the merged pageviews of noahgift/social-power-nba are CC BY-NC-SA 4.0.
 
 ## Splits
 
-Grouped 3-fold cross-validation by player with the recommended repeats: all seasons of a player stay on one side, so no split trains on a test player's other seasons. The real use, a new season with mostly known players, is a temporal split by season, but of three seasons only the newest has half the rows or more before it, and the protocol needs three such windows. Holding out players scored close to holding out the newest season (untuned LightGBM R^2 0.751 against 0.747); a random split scored 0.769.
+Grouped 3-fold cross-validation by player with the recommended repeats: all seasons of a player stay on one side, so no split trains on a test player's other seasons. This is a fallback from temporal: the real use, a new season with mostly known players, is a temporal split by season, but of three seasons only the newest has half the rows or more before it, and the protocol needs three such windows. Holding out players scored close to holding out the newest season (untuned LightGBM R^2, 3 x 3 folds: 0.751 against 0.747; a rerun on the shipped splits: 0.744 against 0.745), with the same order of model families; a random split scored 0.769 (rerun 0.759).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 918 to 963 rows, test 445 to 490 rows.
 
@@ -251,10 +255,10 @@ One group is a player (basketball-reference's player id), with one row per seaso
 | largest group | 0.2% of the rows |
 | test groups per fold | 220 |
 | groups of two or more rows with a single label | 0.2% |
-| nearest neighbour in the same group | 28.3% of the rows (chance: 0.1%) |
-| label variance explained by the group | 0.88 (shuffled groups: 0.47) |
+| nearest neighbour in the same group | 26.1% of the rows (chance: 0.1%) |
+| label variance explained by the group | 0.88 (shuffled groups: 0.50) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
@@ -300,7 +304,7 @@ TabSTAR used `Rk` as the target ('NBA All-Star Rank'), but it orders the players
 ### Feature summary
 
 <details>
-<summary>Show the table (36 rows)</summary>
+<summary>Show the table (37 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -311,32 +315,33 @@ TabSTAR used `Rk` as the target ('NBA All-Star Rank'), but it orders the players
 | season | category | 0 | 0 | 3 | 2017-18, 2018-19, 2016-17 |
 | conference | category | 0 | 0 | 2 | East, West |
 | ballot_position | category | 0 | 0 | 2 | frontcourt, guard |
-| wikipedia_daily_views | float64 | 138 | 9.8 | 1084 | 209.6038, 2019.2705, 583.2186, 817.5929, 10.5929, 1557.3333, 225.0683, 8.3115, … |
-| three_point_pct | float64 | 99 | 7.03 | 260 | 0.0, 0.333, 0.2, 0.5, 0.25, 0.367, 0.348, 0.4, 0.324, 0.371 |
-| salary | float64 | 62 | 4.4 | 832 | 77250.0, 1312611.0, 543471.0, 1378242.0, 815615.0, 1471382.0, 838464.0, 1544951… |
-| free_throw_pct | float64 | 47 | 3.34 | 370 | 0.667, 0.5, 1.0, 0.75, 0.8, 0.6, 0.818, 0.806, 0.833, 0.772 |
-| two_point_pct | float64 | 15 | 1.07 | 337 | 0.5, 0.333, 0.483, 0.556, 0.481, 0.477, 0.494, 0.514, 0.429, 0.528 |
-| field_goal_pct | float64 | 4 | 0.28 | 331 | 0.5, 0.444, 0.452, 0.423, 0.4, 0.434, 0.442, 0.412, 0.402, 0.429 |
-| effective_field_goal_pct | float64 | 4 | 0.28 | 311 | 0.5, 0.523, 0.518, 0.516, 0.492, 0.481, 0.507, 0.506, 0.527, 0.54 |
-| minutes_per_game | float64 | 0 | 0 | 344 | 20.0, 34.0, 16.5, 34.2, 25.9, 15.5, 23.5, 18.4, 8.5, 15.8 |
-| field_goals_per_game | float64 | 0 | 0 | 104 | 2.0, 3.0, 2.5, 1.0, 1.5, 2.7, 2.1, 2.8, 2.2, 0.7 |
-| field_goal_attempts_per_game | float64 | 0 | 0 | 200 | 2.0, 3.0, 4.4, 5.9, 5.4, 3.5, 5.1, 6.4, 5.5, 5.0 |
-| three_pointers_per_game | float64 | 0 | 0 | 41 | 0.0, 0.5, 0.3, 0.1, 0.8, 0.4, 0.7, 0.6, 0.2, 1.0 |
-| three_point_attempts_per_game | float64 | 0 | 0 | 90 | 0.0, 0.1, 0.8, 0.2, 1.7, 1.2, 2.7, 1.4, 2.6, 0.5 |
-| two_pointers_per_game | float64 | 0 | 0 | 85 | 1.2, 1.0, 0.9, 0.5, 1.1, 0.7, 1.5, 2.1, 1.4, 0.8 |
-| two_point_attempts_per_game | float64 | 0 | 0 | 154 | 2.1, 2.8, 3.4, 1.8, 1.5, 2.0, 3.2, 3.1, 2.7, 4.6 |
-| free_throws_per_game | float64 | 0 | 0 | 76 | 0.4, 0.7, 0.5, 0.8, 0.6, 0.9, 0.3, 0.0, 1.2, 1.0 |
-| free_throw_attempts_per_game | float64 | 0 | 0 | 89 | 0.8, 1.0, 0.5, 0.9, 0.7, 1.3, 1.2, 0.4, 0.6, 0.0 |
+| prev_score | float64 | 665 | 47.23 | 309 | 36.5, 31.0, 42.8, 43.0, 42.5, 54.0, 45.0, 29.5, 36.0, 19.8 |
+| wikipedia_daily_views | float64 | 323 | 22.94 | 1084 | 209.6038, 544.6904, 1692.7863, 261.7077, 877.2247, 8.1749, 965.6093, 1263.6959,… |
+| three_point_pct | float64 | 99 | 7.03 | 260 | 0.0, 0.333, 0.2, 0.5, 0.367, 0.25, 0.4, 0.348, 0.324, 0.371 |
+| salary | float64 | 62 | 4.4 | 832 | 77250.0, 1312611.0, 543471.0, 1378242.0, 815615.0, 1471382.0, 838464.0, 2393887… |
+| free_throw_pct | float64 | 47 | 3.34 | 370 | 0.667, 0.5, 1.0, 0.75, 0.8, 0.6, 0.818, 0.806, 0.833, 0.714 |
+| two_point_pct | float64 | 15 | 1.07 | 337 | 0.5, 0.333, 0.483, 0.477, 0.556, 0.494, 0.481, 0.429, 0.492, 0.528 |
+| field_goal_pct | float64 | 4 | 0.28 | 331 | 0.5, 0.444, 0.452, 0.434, 0.423, 0.412, 0.4, 0.442, 0.429, 0.402 |
+| effective_field_goal_pct | float64 | 4 | 0.28 | 311 | 0.5, 0.523, 0.518, 0.492, 0.516, 0.481, 0.506, 0.507, 0.54, 0.499 |
+| minutes_per_game | float64 | 0 | 0 | 344 | 34.0, 20.0, 25.9, 34.2, 12.0, 15.5, 18.4, 23.5, 16.5, 8.5 |
+| field_goals_per_game | float64 | 0 | 0 | 104 | 2.0, 3.0, 2.5, 1.0, 1.5, 2.1, 2.7, 2.8, 2.2, 0.7 |
+| field_goal_attempts_per_game | float64 | 0 | 0 | 200 | 3.0, 2.0, 4.4, 3.5, 5.4, 5.9, 5.1, 4.1, 5.5, 6.4 |
+| three_pointers_per_game | float64 | 0 | 0 | 41 | 0.0, 0.5, 0.3, 0.1, 0.4, 0.8, 0.7, 0.6, 0.2, 1.0 |
+| three_point_attempts_per_game | float64 | 0 | 0 | 90 | 0.0, 0.1, 0.8, 1.7, 1.2, 0.2, 2.6, 2.7, 1.4, 0.5 |
+| two_pointers_per_game | float64 | 0 | 0 | 85 | 1.2, 1.0, 0.9, 0.5, 1.1, 0.7, 1.5, 1.4, 2.1, 0.8 |
+| two_point_attempts_per_game | float64 | 0 | 0 | 154 | 2.1, 2.8, 1.8, 3.4, 2.0, 1.5, 2.7, 3.2, 3.1, 3.0 |
+| free_throws_per_game | float64 | 0 | 0 | 76 | 0.4, 0.7, 0.5, 0.8, 0.6, 0.9, 0.3, 0.0, 1.2, 1.1 |
+| free_throw_attempts_per_game | float64 | 0 | 0 | 89 | 0.8, 1.0, 0.5, 0.9, 0.7, 1.3, 1.2, 0.6, 0.4, 0.0 |
 | offensive_rebounds_per_game | float64 | 0 | 0 | 46 | 0.3, 0.4, 0.5, 0.2, 0.6, 0.7, 0.8, 0.1, 0.9, 1.0 |
-| defensive_rebounds_per_game | float64 | 0 | 0 | 96 | 1.8, 2.1, 2.4, 2.7, 2.3, 1.3, 1.2, 2.0, 3.2, 2.2 |
-| total_rebounds_per_game | float64 | 0 | 0 | 122 | 2.5, 1.8, 2.3, 1.9, 3.1, 3.8, 4.0, 2.9, 1.5, 2.6 |
+| defensive_rebounds_per_game | float64 | 0 | 0 | 96 | 1.8, 2.1, 2.7, 2.4, 2.3, 1.3, 2.0, 1.2, 3.0, 2.2 |
+| total_rebounds_per_game | float64 | 0 | 0 | 122 | 1.8, 2.5, 2.3, 1.9, 3.1, 4.0, 2.9, 3.8, 2.8, 2.6 |
 | assists_per_game | float64 | 0 | 0 | 91 | 0.5, 1.2, 1.0, 0.6, 0.9, 0.7, 1.1, 0.4, 0.8, 1.3 |
 | steals_per_game | float64 | 0 | 0 | 24 | 0.5, 0.3, 0.4, 0.6, 0.7, 0.2, 0.8, 0.9, 1.0, 0.1 |
 | blocks_per_game | float64 | 0 | 0 | 28 | 0.1, 0.2, 0.3, 0.4, 0.0, 0.5, 0.6, 0.7, 0.8, 0.9 |
-| turnovers_per_game | float64 | 0 | 0 | 47 | 0.8, 0.5, 0.6, 0.9, 0.7, 1.0, 0.3, 0.4, 1.3, 1.1 |
+| turnovers_per_game | float64 | 0 | 0 | 47 | 0.8, 0.5, 0.6, 0.9, 0.7, 1.0, 0.4, 0.3, 1.3, 1.1 |
 | personal_fouls_per_game | float64 | 0 | 0 | 41 | 1.6, 2.0, 1.9, 1.8, 1.7, 2.2, 1.5, 1.4, 2.1, 1.3 |
-| points_per_game | float64 | 0 | 0 | 248 | 4.0, 5.9, 6.7, 5.0, 2.3, 6.3, 6.9, 2.5, 4.4, 7.1 |
-| all_star_score | float64 | 0 | 0 | 358 | 31.0, 36.5, 56.0, 42.0, 40.0, 64.0, 45.0, 29.5, 30.5, 42.5 |
+| points_per_game | float64 | 0 | 0 | 248 | 4.0, 5.0, 6.7, 5.9, 6.3, 2.3, 6.9, 2.5, 4.4, 7.1 |
+| all_star_score | float64 | 0 | 0 | 358 | 36.5, 31.0, 56.0, 42.0, 40.0, 39.5, 45.0, 64.0, 51.5, 42.5 |
 | age | int64 | 0 | 0 | 24 | 23, 24, 25, 22, 26, 28, 27, 21, 29, 30 |
 | games | int64 | 0 | 0 | 82 | 82, 81, 74, 80, 73, 77, 75, 79, 76, 78 |
 | games_started | int64 | 0 | 0 | 83 | 0, 1, 2, 3, 4, 6, 81, 5, 13, 80 |
@@ -347,12 +352,12 @@ TabSTAR used `Rk` as the target ('NBA All-Star Rank'), but it orders the players
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.007 | -1.707 | 528.409 | 0.65 | log | 13499.5 | 1.31553e+09 | exponential |
+| 0 | 0 | 0 | 0.007 | -1.707 | 528.409 | 0.65 | log | 13499.5 | 1.31554e+09 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (29 rows)</summary>
+<summary>Show the table (30 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -383,8 +388,9 @@ TabSTAR used `Rk` as the target ('NBA All-Star Rank'), but it orders the players
 | personal_fouls_per_game | 1408 | 1.72607 | 0.751721 | 0 | 4 |
 | points_per_game | 1408 | 8.79418 | 6.08195 | 0 | 36.1 |
 | salary | 1346 | 6.79005e+06 | 7.45256e+06 | 56845 | 3.74572e+07 |
-| wikipedia_daily_views | 1270 | 988.802 | 2131.28 | 1.14286 | 34148 |
+| wikipedia_daily_views | 1085 | 1049.33 | 2253.14 | 1.14286 | 34148 |
 | all_star_score | 1408 | 44.3835 | 22.9872 | 1 | 93.2 |
+| prev_score | 743 | 40.1489 | 22.121 | 1 | 91.8 |
 
 </details>
 

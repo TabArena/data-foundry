@@ -62,6 +62,7 @@ from data_foundry.bundle_checks import (
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
+    RETIRED_DATA_TAGS,
     DatasetMetadata,
     Grouping,
     PredictiveMLSplitsMetadata,
@@ -1232,6 +1233,14 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             fail(f"`{attr}` must be a string.")
     if isinstance(cls.data_tags, str):
         fail("`data_tags` must be a tuple of tags, not one string.")
+    retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
+    if retired:
+        fail(
+            f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
+            "finding and its fit as `approximate` instead."
+        )
+    if "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
+        fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]

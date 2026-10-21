@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4
+checksum: v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4
 build:
   uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
   checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
@@ -51,6 +51,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 61207
     max: 62529
@@ -72,7 +74,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -187,6 +189,7 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
 - With this setup, the task is development of predictive models for network optimization where models need to generalize to new unseen base station configurations and estimate their energy consumption under similar conditions (during the same time period).
 - For preprocessing, we orient on a top solution from the Zindi challenge: https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main.
 - Note that the competition also used mostly samples from the known BS as the test set, but weighted unknown base stations higher in evaluation.
+- Metric: the challenge ranked the private leaderboard by weighted MAPE (WMAPE), with a larger weight per test row for a new base station or configuration, given in its test file (Zindi evaluation page). Every test station here is new and the weights are not published with the training data, so we declare unweighted `mape` (TP-6).
 - The data itself is time-series. However, because we predict entirely unseen base stations in a per-sample fashion, the row-wise dependencies resulting from the temporal components cannot be used to improve performance unless the task is treated as transductive learning.
 - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
 - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
@@ -235,7 +238,7 @@ One group is a base station; its rows are its hourly measurements. The ITU AI/ML
 | nearest neighbour in the same group | 5.1% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.86 (shuffled groups: 0.01) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -344,4 +347,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:760138fb229c67172cc4e379432693c10b6d1883200edb6590084e624ef738d4` |
+| stale | yes: the definition now gives checksum `v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4` |

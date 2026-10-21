@@ -78,11 +78,9 @@ class DeliveryEta1m(AbstractCuratedDataset):
     problem_type = "regression"
 
     # Splits
-    splits_comment = (
-        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
-    )
+    splits_comment = """
+        We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+    """
     temporal = Temporal(
         on="timestamp",
         splits=TemporalSplits(window=7, unit="days", n_windows=3),

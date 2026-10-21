@@ -64,8 +64,9 @@ def test_dataset_metadata_license_string(base_dataset_metadata_kwargs):
         ["Non-IID", "Temporal"],
         ["Grouped", "Spatial"],
         ["IID", "Anonymized"],
-        ["IID", "2ndTierData"],
+        ["IID", "2ndTierData"],  # retired, but old containers carry it and must still load
         ["ForcedIIDFromTemporal"],
+        ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"],
         ["WrongDomain"],
         ["GroupedTemporal"],
     ],

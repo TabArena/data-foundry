@@ -1453,7 +1453,7 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"Task declares no `time_on`/`group_on` (IID split) but `data_tags={sorted(tags)}` has no `IID` tag.",
             )
-        wrong = tags & (non_iid_tags | {"Non-IID"})
+        wrong = tags & (non_iid_tags | {"Non-IID", "ForcedGroupedFromTemporal"})
         if wrong:
             yield CheckResult(
                 "meta_tags_contradict_regime",

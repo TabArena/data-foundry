@@ -39,6 +39,12 @@ Need to figure out which split / subset of the data to use
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (domain social science), use case -, source -, shape +, no known risk. Grouped social-science regression with the target repaired to match official NBA scores; a stand-in task with season-long features past the vote.
 
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes, and the changes are in the definition: the prediction point stated as the vote's close with the end-of-season statistics and `team` kept under LEAK-11 (both measured to weaken the signal), last season's score added as `prev_score` (grouped R^2 0.744 to 0.760), the grouped split named a fallback from temporal, the 185 stale pageview copies masked, and a note that the score ranks the whole ballot. The earlier assessment's "no known risk" is wrong: the prediction point and the split are stand-ins (fit approximate). Open for the curator: the split and the "too few periods" amendment, the target over the whole ballot, box-score statistics, the pageview re-pull. Priority 3: gap + (domain social science), use case - (the actor is our example, fit approximate), source - (a student upload on Kaggle, no paper), shape +, risk 0 (no leak shown; the open issues are weighing calls and a repairable column).
+
+CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too few periods: the closest regime that keeps the rows, tagged as forced from temporal, with the cost measured against the valid windows (SPLIT-8 amended).
+
+**Assessment (AI, 2026-10-21):** tagged `ForcedGroupedFromTemporal`. Cost: the one valid window (train 2016-18, test 2018-19) scores untuned LightGBM R^2 0.745 against 0.744 grouped (0.766 against 0.760 with prev_score), same order of model families. REVIEW.md issue 2 settled.
+
 ## Reference
 
 Kaggle

@@ -12,6 +12,122 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, T
 if TYPE_CHECKING:
     import pandas as pd
 
+MONTHLY = [
+    "oil_urals",
+    "cpi",
+    "ppi",
+    "balance_trade",
+    "net_capital_export",
+    "deposits_value",
+    "deposits_growth",
+    "deposits_rate",
+    "mortgage_value",
+    "mortgage_growth",
+    "mortgage_rate",
+    "income_per_cap",
+    "fixed_basket",
+    "rent_price_4+room_bus",
+    "rent_price_3room_bus",
+    "rent_price_2room_bus",
+    "rent_price_1room_bus",
+    "rent_price_3room_eco",
+    "rent_price_2room_eco",
+    "rent_price_1room_eco",
+]
+"""Macro columns with one value per month, the month's own (`oil_urals` of January 2015 is 46.3, that month's Urals
+average; `income_per_cap` peaks in December). `deposits_value` and `deposits_growth` also change once in the middle of
+six Augusts and Septembers. The model sees the value of one month before the sale."""
+
+QUARTERLY = [
+    "gdp_quart",
+    "gdp_quart_growth",
+    "balance_trade_growth",
+    "average_provision_of_build_contract",
+    "average_provision_of_build_contract_moscow",
+]
+"""Macro columns with one value per quarter. The model sees the value of one quarter before the sale. `gdp_quart`
+already holds the previous quarter's GDP (the 2015 Q2 rows hold 2015 Q1's 18,209.7 bn rubles and growth of -2.8%), so
+the model sees the GDP of two quarters back, as mortgage does."""
+
+YEARLY_ALREADY_LAGGED = ["gdp_annual", "gdp_annual_growth"]
+"""Yearly columns that already hold the previous year: the 2014 rows hold Russia's 2013 GDP (71,016.7 bn rubles) and
+growth (1.3%). Kept as joined."""
+
+YEARLY = [
+    "gdp_deflator",
+    "grp",
+    "grp_growth",
+    "real_dispos_income_per_cap_growth",
+    "salary",
+    "salary_growth",
+    "retail_trade_turnover",
+    "retail_trade_turnover_per_cap",
+    "retail_trade_turnover_growth",
+    "labor_force",
+    "unemployment",
+    "employment",
+    "invest_fixed_capital_per_cap",
+    "invest_fixed_assets",
+    "profitable_enterpr_share",
+    "unprofitable_enterpr_share",
+    "share_own_revenues",
+    "overdue_wages_per_cap",
+    "fin_res_per_cap",
+    "marriages_per_1000_cap",
+    "divorce_rate",
+    "construction_value",
+    "invest_fixed_assets_phys",
+    "pop_natural_increase",
+    "pop_migration",
+    "pop_total_inc",
+    "childbirth",
+    "mortality",
+    "housing_fund_sqm",
+    "lodging_sqm_per_cap",
+    "water_pipes_share",
+    "baths_share",
+    "sewerage_share",
+    "gas_share",
+    "hot_water_share",
+    "electric_stove_share",
+    "heating_share",
+    "old_house_share",
+    "average_life_exp",
+    "infant_mortarity_per_1000_cap",
+    "perinatal_mort_per_1000_cap",
+    "incidence_population",
+    "load_of_teachers_preschool_per_teacher",
+    "child_on_acc_pre_school",
+    "load_of_teachers_school_per_teacher",
+    "students_state_oneshift",
+    "modern_education_share",
+    "old_education_build_share",
+    "provision_doctors",
+    "provision_nurse",
+    "load_on_doctors",
+    "power_clinics",
+    "hospital_beds_available_per_cap",
+    "hospital_bed_occupancy_per_year",
+    "provision_retail_space_sqm",
+    "turnover_catering_per_cap",
+    "theaters_viewers_per_1000_cap",
+    "seats_theather_rfmin_per_100000_cap",
+    "museum_visitis_per_100_cap",
+    "bandwidth_sports",
+    "population_reg_sports_share",
+    "students_reg_sports_share",
+    "apartment_build",
+    "apartment_fund_sqm",
+]
+"""Macro columns with one value per calendar year, set from January 1 of the year it describes (Moscow's average
+salary of 2014, 61,208 rubles, sits on every 2014 row) and published in the next year. The model sees the value of
+one year before the sale."""
+
+LAGS = {"1mo": MONTHLY, "3mo": QUARTERLY, "1y": YEARLY}
+"""How far before the sale date each group of macro columns is read, and the suffix of its columns."""
+
+SUFFIX = {"1mo": "_lag_1m", "3mo": "_lag_1q", "1y": "_lag_1y"}
+
 
 class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -27,8 +143,9 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         predicted="The sale price per square metre of total area, on a logarithmic scale.",
         known=(
             "The flat (areas, floor, number of floors, rooms, build year, material, condition, purchase type), its "
-            "district's population, schools, facilities, ecology and distances to points of interest, and the "
-            "macroeconomic indicators of the sale date."
+            "district's population, schools, facilities, ecology and distances to points of interest, the market "
+            "prices of the sale date (exchange rates, oil, stock indices) and the monthly, quarterly and yearly "
+            "economic statistics of one period before it."
         ),
         split=(
             "Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every "
@@ -36,13 +153,14 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         ),
         changes=(
             "Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up"
-            " to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less."
+            " to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less. The economic "
+            "statistics are those of the month, quarter or year before the sale, not of the sale's own period."
         ),
         fit="direct",
         fit_reason=(
             "The flat's and district's figures are known at the sale, and the half-year windows match a model refit "
-            "twice a year. Whether every macroeconomic indicator joined on the sale date was already published then "
-            "is not stated."
+            "twice a year. The economic statistics are lagged by one period because their release dates are not "
+            "given; a monthly figure may still come out a few days after a sale early in the month."
         ),
     )
 
@@ -73,16 +191,23 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
         - The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
-          after the first-place solution).
+          after the first-place solution). The competition scored RMSLE on `price_doc`, the price of the whole flat; this task
+          ships the price per square metre, so we keep RMSE, which on the log target is the competition's metric up to the
+          division by `full_sq` (TP-6).
         - Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
           smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
           (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
         - As TabReD, we drop sales at 1 million rubles or less or at exactly 2 or 3 million (fake low prices, by the
           first-place report often set to avoid tax), and flats with a total area of 5 m2 or less or of 5326 m2 (a
           typo for 53).
-        - We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily; monthly,
-          quarterly and annual statistics change on the first day of their period, and `gdp_annual` on a 2014 sale is
-          Russia's 2013 GDP. The source does not say when each figure was published, so some may postdate the sale.
+        - We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily and keep the
+          sale date's value. The monthly, quarterly and yearly statistics hold their own period's value from its first
+          day (published later; the source gives no release dates), so we read them one period before the sale, as
+          mortgage lags its macro series to their release (LEAK-10; Lennart, 2026-10-21): 20 monthly columns one
+          month back (`_lag_1m`), 5 quarterly one quarter back (`_lag_1q`) and 64 yearly one year back (`_lag_1y`).
+          `gdp_quart` already holds the previous quarter, so the model sees GDP two quarters back; `gdp_annual` and
+          `gdp_annual_growth` already hold the previous year (a 2014 sale has Russia's 2013 GDP) and are kept as
+          joined.
         - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
@@ -138,7 +263,29 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
             & pl.col("price_doc").ne(2_000_000)
             & pl.col("price_doc").ne(3_000_000)
         )
-        data = data.join(data_macro, on="timestamp")
+        # The daily market prices of the sale date, and every monthly, quarterly and yearly statistic as of one
+        # period before it (their release dates are not given; mortgage lags its macro series the same way). Each
+        # statistic holds one value per period (deposits_value and deposits_growth change once within six months).
+        lagged = [c for cols in LAGS.values() for c in cols]
+        for period, cols in {
+            "1mo": [c for c in MONTHLY if c not in ("deposits_value", "deposits_growth")],
+            "1q": QUARTERLY,
+            "1y": YEARLY,
+        }.items():
+            per_period = data_macro.group_by(pl.col("timestamp").dt.truncate(period), maintain_order=True).agg(
+                pl.col(cols).drop_nulls()
+            )
+            assert per_period.select(pl.col(cols).list.n_unique().max()).max_horizontal().item() <= 1, period
+        data = data.join(data_macro.drop(lagged), on="timestamp")
+        for offset, cols in LAGS.items():
+            data = data.with_columns(pl.col("timestamp").dt.offset_by(f"-{offset}").alias("_macro_date")).join(
+                data_macro.select(
+                    pl.col("timestamp").alias("_macro_date"), *[pl.col(c).alias(c + SUFFIX[offset]) for c in cols]
+                ),
+                on="_macro_date",
+                how="left",
+            )
+        data = data.drop("_macro_date")
         # log scale target as in TabRed
         data = data.with_columns((pl.col("price_doc") / pl.col("full_sq")).log().alias("price_doc"))
         data = data.to_pandas()

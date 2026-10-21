@@ -12,7 +12,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2024'
-domain: biology & life sciences
+domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification
@@ -39,6 +39,8 @@ CC (2026-10-14, Lennart): Ship (review of the 2026-10-07 run).
 CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset; the structure ships as RDKit's 2D descriptors from one shared helper, the same tooling for all (review page, issue 1).
 
 **Assessment (AI, 2026-10-14):** Next to the descriptors the SMILES as character n-grams adds 0.010 ROC AUC to LightGBM over the 4 windows (standard error 0.023). The definition now drops it and keeps the 199 descriptors, computed by `data_foundry.v2.rdkit_descriptors` (CHANGELOG, 2026-10-14).
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
 
 ## Reference
 

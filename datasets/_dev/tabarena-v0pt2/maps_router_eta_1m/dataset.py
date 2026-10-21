@@ -72,14 +72,12 @@ class MapsRouterEta1m(AbstractCuratedDataset):
     problem_type = "regression"
 
     # Splits
-    splits_comment = (
-        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
-    )
+    splits_comment = """
+        We use each of the last 3 weeks as a test window (newest first) and the routes requested at least one day before it as train data. The gap of one day is part of the task: a travel time is known only when the drive ends (up to 16.6 hours after the request, from the target and track_length in metres), so at a weekly refit the last routes before it have no label yet; without the gap 656, 654 and 578 train routes per window (request time + seconds per km x km) would end after the window start, with it none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%). Each window keeps at most 500k of its rows (2.4M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+    """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=7, unit="days", n_windows=3),
+        splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
     )
     subsample_to_budget = True
 

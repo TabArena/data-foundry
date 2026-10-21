@@ -38,7 +38,7 @@ class QsarBiodeg(AbstractCuratedDataset):
     # Dataset
     unique_name = "qsar_biodeg"
     year = "2013"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5H60M"
     license = "CC BY 4.0"

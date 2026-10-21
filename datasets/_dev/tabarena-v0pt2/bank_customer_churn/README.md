@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866
+checksum: v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f
 build:
   uuid: 01a111fc-c45b-7b5e-b6fe-7f527899d692
   checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 6666
     max: 6667
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2022).
 
-Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -123,7 +125,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2022 |
 | domain | business & marketing |
 | license |  |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | Topre2022BankCustomerChurn |
 | rows x columns | 10,000 x 11 |
 | task.target | churn |
@@ -171,6 +173,7 @@ The first 5 of 10,000 rows of the final frame (random rows: the frame is shuffle
 ## Curation notes
 
 - We remove the customer_id column.
+- The split is forced (ForcedIIDFromTemporal, SPLIT-8): a bank would train on customers whose leaving is known by an earlier date and score its current customers, but the file is one undated snapshot. A dated window would test a model on customers of a later period, after shifts in balances, products and the bank's offers; the cost cannot be measured here. Recover dates if the source turns up.
 
 ## Splits
 
@@ -272,4 +275,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0a56452be5bb6ff904c490f066fdf91de711c2296af2a6393cd9f1b2e2892866` |
+| stale | yes: the definition now gives checksum `v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f` |

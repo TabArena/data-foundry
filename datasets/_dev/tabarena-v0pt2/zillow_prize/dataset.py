@@ -29,6 +29,9 @@ def sales_files() -> dict[str, str]:
 LAST_COMPLETE_MONTH = "2017-08-01"
 """Sales on or after this date are dropped: Zillow's 2017 release covers August and September 2017 only in part."""
 
+DELINQUENCY_SNAPSHOT_MONTH = "2016-09-01"
+"""Both property files hold one tax-delinquency snapshot of about this month; for earlier sales it is blanked."""
+
 QUALITY_2017_TO_2016 = {1: 10, 2: 10, 3: 7, 4: 7, 5: 7, 6: 7, 7: 4, 8: 4, 9: 1, 10: 10, 11: 10, 12: 12}
 """`buildingqualitytypeid` of properties_2017 on the scale of properties_2016, read off the parcels in both files."""
 
@@ -78,21 +81,24 @@ class ZillowPrize(AbstractCuratedDataset):
         known=(
             "The sale month and the home's facts from the county property file of the sale's year: location (county, "
             "city, ZIP code, neighbourhood, coordinates), size, rooms, building type, quality and age, lot, pool, "
-            "garage, assessed tax values and tax delinquency."
+            "garage, assessed tax values, and tax delinquency for the sales from September 2016 on."
         ),
         split=(
             "Each test window is one month of sales (nine windows, November 2016 to July 2017, newest first); "
             "training is every sale before the preceding month, since Zillow receives sales with a delay."
         ),
         changes=(
-            "Each sale takes the property file of its own year, which keeps later edits out. We drop August and "
-            "September 2017, which Zillow released only in part, and split by sale month."
+            "Each sale takes the property file of its own year, so a 2016 sale never sees the 2017 file; both files "
+            "were extracted after some of their sales, so a few home facts may postdate the sale. We blank the tax "
+            "delinquency for sales before September 2016 (it was looked up later), drop August and September 2017, "
+            "which Zillow released only in part, and split by sale month."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The prediction is made before the sale month from facts on file, as Zillow asks. The tax delinquency "
-            "snapshot postdates some 2016 training sales; it is kept since dropping it changes nothing. The signal is"
-            " small but beats the training mean in all nine windows."
+            "Zillow predicted from much more than the public files: the Zestimate itself, the listing data and the "
+            "last sale price were never released, so the inputs are only the county facts. The property files were "
+            "extracted after some of their sales, so a few facts may postdate the sale (edits measured for 1-4% of "
+            "parcels)."
         ),
     )
 
@@ -132,27 +138,30 @@ class ZillowPrize(AbstractCuratedDataset):
         We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, Orange and Ventura counties) and properties_2016.csv and properties_2017.csv (one row per parcel) from round 1 of the Kaggle competition Zillow Prize.
 
         - Prediction point: the first day of the sale month, since Zillow pairs each sale with the Zestimate of that day (FAQ). `transaction_month` replaces `transactiondate`.
-        - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page. The competition scored MAE; we keep the default RMSE.
+        - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page. The competition scored MAE, which we declare (task_probes.md, rule 6, TP-6).
         - Extreme values, kept: 2.1% of the rows have an absolute logerror above 0.4 and hold 74% of the squared error (decision table). Zillow traces them mostly to data errors such as miskeyed prices; the competition's test kept them.
-        - Small signal (task probes no_signal, drift_baseline, unstable), kept: LightGBM with an absolute-error loss beats the train mean on all 9 windows (R^2 0.003 to 0.021; task_probes.md, rule 2).
-        - Each sale gets its parcel's row from the property file of its year. This keeps the building facts edited after a 2016 sale, and the 2016 tax values that Zillow warns may be 2016 sale prices, out of the 2016 rows.
+        - Small signal (task probes no_signal, drift_baseline, unstable), kept: untuned LightGBM with an absolute-error loss (100 trees, row and column subsampling 0.8) beats the train mean in 8 or 9 of the 9 windows, depending on the seed (R^2 about 0.001 to 0.012); squared-error fits do not (3 or 4 of 9). A constant train median loses to the mean in 9 of 9, so the gain comes from the features (task_probes.md, rule 2). Tuned results are pending.
+        - Each sale gets its parcel's row from the property file of its year, which keeps the 2016 sale reassessments of properties_2017 out of the 2016 rows. Neither file predates its sales: properties_2016 is a snapshot of about September 2016 and properties_2017 was released in October 2017. Building facts differ between the files for 1.4-2.3% of the parcels sold January to May 2016 (about 1.1% for later 2016 sales) and for 3.2-3.7% of the parcels sold only in 2017, flat by sale month in 2017; the share of 2017 parcels whose tax value moved shows no jump at the sale (0.204-0.217 in every month). So the facts kept are almost always the ones on file before the sale (as in melbourne_housing_market).
         - We drop the sales of August and September 2017 (14,737 rows): Zillow's 2017 release covers them only in part and calls them "a biased sample" (decision table).
-        - Note: after 15 October 2016 train_2016_v2 holds only part of the sales (the rest were the public leaderboard). The share looks random (absolute logerror above 0.4: 2.2% after, 2.0% before), so we keep them.
+        - Note: after 15 October 2016 train_2016_v2 holds only part of the sales (the rest were the public leaderboard), so the November and December 2016 test windows hold 1,826 and 1,739 sales, about 18% of a usual month, and are noisier. The share looks random (absolute logerror above 0.4: 2.2% after, 2.0% before), so we keep them.
         - We drop the 24 sales of 2017 whose parcel has no home facts in properties_2017, as Zillow did for 2016 (discussion 34667).
         - We drop the 19 sales within 31 days of a sale of the same parcel, as the competition does (Data page); other repeat sales stay.
-        - `buildingqualitytypeid` is on another scale in properties_2017, where each code comes from one 2016 code (decision table); we map the 2017 values onto the 2016 scale. It stays numeric (ordinal).
-        - Each column of `PRESENCE_FLAGS` holds one value or nothing and becomes a boolean.
+        - `buildingqualitytypeid` (lower is better) is on another scale in properties_2017, where each code comes from one 2016 code (decision table; a crosstab of the data, Zillow publishes no conversion); we map the 2017 values onto the 2016 scale, which holds 8 values (1, 4, 6, 7, 8, 10, 11, 12; 6, 8 and 11 on 8 rows). It stays numeric (ordinal).
+        - Each column of `PRESENCE_FLAGS` holds one value or nothing and becomes a boolean (`taxdelinquencyflag` 1 or 0, see below).
         - `taxdelinquencyyear`: the two-digit years (3 to 15, and 99) become four-digit years.
-        - Potential leak, kept on purpose: `taxdelinquencyflag` and `taxdelinquencyyear` are one snapshot of about August-September 2016, taken after the sale for the training sales of January to August 2016 (1.5% flagged, against 3.1-4.7% per month later). Dropping both leaves LightGBM's skill unchanged (R^2 0.0069 with them, 0.0068 without), so we keep them.
-        - Zero means "not recorded" and becomes missing in `roomcnt` (0 in 99,475 of 99,476 Los Angeles rows), in `bathroomcnt` (its zeros lack the counts derived from it) and in `bedroomcnt` where the bathrooms are also 0 (large homes, no studios).
-        - We drop `parcelid` (an identifier), `regionidcounty` (a recoding of `fips`), `assessmentyear` (it repeats the sale year) and `transactiondate`.
-        - `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `propertycountylandusecode` and `propertyzoningdesc` are categories; the census tract-and-block numbers stay numeric.
+        - `taxdelinquencyflag` and `taxdelinquencyyear` are one snapshot of about August-September 2016 in both files, taken after the sale for the sales of January to August 2016 (1.5% flagged, against 3.1-4.7% per month from September 2016; a sale clears the arrears). Both are missing for the sales before September 2016 (72,157 training rows; the flag is 1 or 0 elsewhere); every test row keeps them, since the snapshot predates every test window. Blanking, keeping and dropping them give the same L1 LightGBM skill within the seed spread (R^2 0.0053-0.0057, 9 windows, 3 seeds, two configs).
+        - Zero means "not recorded" and becomes missing in `roomcnt` in every county (all of Los Angeles, 44% of Orange; those homes have a median of 3 bedrooms), in `bathroomcnt` (its zeros lack the counts derived from it), in `bedroomcnt` where the bathrooms are also 0 (large homes, no studios) and in `garagetotalsqft` where `garagecarcnt` is 1 or more (14,981 rows, about 30% of the Orange and Ventura garages).
+        - The spa and hot-tub flags (`hashottuborspa`, `pooltypeid10`) are recorded for about half as many parcels in properties_2017 as in properties_2016 (2.2-3.1% of the 2016 sales against 1.5-2.3% of the 2017 sales for `hashottuborspa`); a recording change we keep, since no source says which file is right.
+        - Near copies, kept since they differ on some rows: `calculatedbathnbr` equals `bathroomcnt` on 99.98% of the rows, `finishedsquarefeet50` equals `finishedfloor1squarefeet` on 99.5%, `censustractandblock` equals `rawcensustractandblock` on its leading digits on 98.9%.
+        - We drop `parcelid` (an identifier), `regionidcounty` (a recoding of `fips`), `assessmentyear` (the sale year minus one, constant within each property file) and `transactiondate`.
+        - `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `propertycountylandusecode` and `propertyzoningdesc` are categories; the census tract-and-block numbers stay numeric: each is a county, tract and block code, so its order follows geography, and it has about 55,000 values.
         - Duplicate rows, kept: 7 rows repeat another row exactly and 39 more repeat another row's features with another logerror. They are separate sales of separate parcels, such as units of one building.
     """
 
     # Task
     target = "logerror"
     problem_type = "regression"
+    metric = "mae"  # the competition's metric
 
     # Splits: monthly windows, train ending one month before each window.
     splits_comment = """
@@ -238,11 +247,18 @@ class ZillowPrize(AbstractCuratedDataset):
         assert df["buildingqualitytypeid"].isna().sum() == quality.isna().sum()  # every 2017 code is mapped
         delinquency = df["taxdelinquencyyear"]
         df["taxdelinquencyyear"] = delinquency + np.where(delinquency > 50, 1900, 2000)
-        # Zero as "not recorded": no room counts in Los Angeles county; no bathrooms only where the counts derived from
-        # them (calculatedbathnbr, fullbathcnt) are missing; no bedrooms together with no bathrooms (large homes).
+        # The delinquency snapshot was taken after the sales before September 2016 (a sale clears the arrears): unknown.
+        before_snapshot = df["transaction_month"] < DELINQUENCY_SNAPSHOT_MONTH
+        # The flag becomes 1.0 / 0.0 with missing values (a boolean column cannot hold them for every model).
+        df["taxdelinquencyflag"] = df["taxdelinquencyflag"].astype(float).mask(before_snapshot)
+        df["taxdelinquencyyear"] = df["taxdelinquencyyear"].mask(before_snapshot)
+        # Zero as "not recorded": room counts in every county; no bathrooms only where the counts derived from them
+        # (calculatedbathnbr, fullbathcnt) are missing; no bedrooms together with no bathrooms (large homes); no garage
+        # area for a garage with cars.
         df["bedroomcnt"] = df["bedroomcnt"].mask((df["bedroomcnt"] == 0) & (df["bathroomcnt"] == 0))
         for column in ("roomcnt", "bathroomcnt"):
             df[column] = df[column].mask(df[column] == 0)
+        df["garagetotalsqft"] = df["garagetotalsqft"].mask((df["garagetotalsqft"] == 0) & (df["garagecarcnt"] > 0))
 
         # 8. The target with the 4 decimals of the source.
         df["logerror"] = df["logerror"].round(4)
@@ -305,7 +321,7 @@ class ZillowPrize(AbstractCuratedDataset):
             Decision(
                 "Extreme logerror values kept",
                 "Rows with an absolute logerror above 1 are few but hold half of the squared error around the mean, "
-                "so they weigh heavily in RMSE; the competition scored MAE on all sales.",
+                "so they would weigh heavily in RMSE; the competition scored MAE on all sales, the metric we declare.",
                 outliers,
             ),
         ]

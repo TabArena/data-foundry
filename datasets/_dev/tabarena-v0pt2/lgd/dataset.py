@@ -48,18 +48,20 @@ class Lgd(AbstractCuratedDataset):
         ),
         known=("Only the loan-to-value ratio and whether the loan's purpose is renting, as in the book's models."),
         split=(
-            "Groups of loans that most likely belong to one borrower are held out whole, so each test loan comes from"
-            " a borrower the model has not seen, as for a new default."
+            "Groups of loans that most likely belong to one borrower are held out whole, so each test loan most likely"
+            " comes from a borrower the model has not seen: new borrowers in the same undated period, not next year's"
+            " defaults."
         ),
         changes=(
             "We drop the transformations of the loss and the flag that marks loans without loss, and group the loans "
-            "by borrower (runs of rows with one loan-to-value ratio) instead of the record's random split."
+            "by borrower (runs of rows with one loan-to-value ratio)."
         ),
         fit="approximate",
         fit_reason=(
-            "The file has no dates, though its row order shows a drift in the losses, so the split cannot place new "
-            "defaults after old ones. Reading the zero-loss loans as defaults that ended without loss follows the "
-            "book's code but is not verified."
+            "The file has no dates, so the split cannot place new defaults after old ones. The 28.6% of loans without"
+            " loss are kept as cures (defaults that ended without loss), as the book's Tobit and censored beta code"
+            " treat them, but the data page ('event: Indicator variable for a default or cure event; 1 = event, 0 = no"
+            " event') leans against that reading."
         ),
     )
 
@@ -111,12 +113,12 @@ class Lgd(AbstractCuratedDataset):
         - We drop `Recovery_rate`, `y_logistic`, `lnrr` and `Y_probit`, transformations of the LGD.
         - We drop `event`: it is 0 for exactly the 728 loans at the floor, so it says whether there was a loss (decision table).
         - We keep the source's target bounds: an LGD of zero is stored as 0.00001 (28.6% of the loans) and a total loss as 0.99999 (5.6%).
-        - We rename `LTV` to `loan_to_value` (a share, although the data page says "in %") and `purpose1` to `purpose_renting`.
-        - Grouped by borrower block (`borrower_block`): a run of consecutive rows with one loan-to-value ratio, which occurs in no other run. 70 of the 488 multi-loan runs mix both purposes, so a run holds different loans, most likely of one borrower, and their LGDs are alike (correlation 0.42 within runs net of LTV and file order, 0.02 between neighbouring runs). A borrower's loans default together, so the losses of the other loans are not known at a new default; each run stays on one side, against the record's "Random (IID)" (decision table).
+        - We rename `LTV` to `loan_to_value` (a share, although the data page says "in %") and `purpose1` to `purpose_renting`, a categorical 0/1 flag.
+        - Grouped by borrower block (`borrower_block`): a run of consecutive rows with one loan-to-value ratio, which occurs in no other run. 70 of the 488 multi-loan runs mix both purposes, so a run holds different loans, most likely of one borrower, and their LGDs are alike (correlation 0.42 within runs net of LTV and file order, 0.35 without the 120 exact repeats, 0.02 between neighbouring runs). A borrower's loans default together, so the losses of the other loans are not known at a new default; each run stays on one side (decision table).
         - Duplicates: the 120 rows that repeat an earlier row of their run and the 397 rows that differ from another loan only in the LGD are loans of one borrower; we keep them, and the grouped split keeps each run on one side.
-        - Anomaly: the file's row order carries the outcome without a documented meaning (the median LTV and the mean LGD rise along the file); with no dates in the file, the split cannot be temporal.
-        - Note: we read `event` = 0 as a cure (a default that ended without loss), as the book's Tobit and censored beta code do; its Heckman code treats it as "not selected", and chapter 10 was not read. If these loans never defaulted, the 728 rows do not belong in an LGD target.
-        - Note: the artefacts for which the book's HMEQ data was retired (homeq_default_prediction) are absent: no run is a jittered copy, and the number format of the LTV does not predict the LGD.
+        - Anomaly: the file's row order carries the outcome without a documented meaning (the median LTV and the mean LGD rise over the first four fifths of the file); with no dates in the file, the split cannot be temporal. Forward windows in file order score a spline R² of 0.138 against 0.210 grouped, an upper bound on what a dated split would cost, since the order is not shown to be time.
+        - Note: the data page says "event: Indicator variable for a default or cure event; 1 = event, 0 = no event". Read literally, it puts cures at 1, so it leans against reading `event` = 0 as a cure (a default that ended without loss). The book's R code treats these rows as an LGD of 0 in its Tobit and censored beta models and as "not selected" in its Heckman model. We keep the rows as cures, an open risk on 28.6% of the target until chapter 10 (pp. 271-313) is read: if these loans never defaulted, the 728 rows do not belong in an LGD target.
+        - Note: the artefacts for which the book's HMEQ data was retired (homeq_default_prediction) are absent: no run is a jittered copy, and the number format of the LTV does not predict the LGD. LTVs with 6 or 7 decimals are in excess at LTV > 1, but adding that flag to a spline changes R² only from 0.2064 to 0.2057.
         - Note: two features only, as in the book's models. The raw loan-to-value ratio as a monotone fit (skill 0.188) beats a spline on both columns (0.208) on 0 of the 30 shipped splits, so the task is not `Trivial` (task-probe rule 4).
     """
 
@@ -132,7 +134,8 @@ class Lgd(AbstractCuratedDataset):
             One group is a run of consecutive rows of the source file with the same loan-to-value ratio: 1,958 runs,
             488 of them with 2-7 loans. The loans of a run share one loan-to-value ratio. They are most likely one
             borrower's loans: 70 of the multi-loan runs mix both loan purposes, and their LGDs correlate (0.42 after
-            LTV and the file-order trend are removed, 0.02 between neighbouring runs).
+            LTV and the file-order trend are removed, 0.35 without the 120 exact repeats, 0.02 between neighbouring
+            runs).
             The key equals the LTV value, since no value occurs outside its run. The grouping rests on the consecutive
             blocks of the file's order, not on a hash of the features.
             The book defines LGD by the "default of an obligor" (chapter 1, p. 10), so a borrower's loans default
@@ -142,7 +145,9 @@ class Lgd(AbstractCuratedDataset):
     )
     splits_comment = (
         "Grouped splits on the borrower block: all loans that share one loan-to-value ratio (one run in the source "
-        "file) stay on one side, so each test loan comes from a borrower the model has not seen, as for a new default."
+        "file, most likely one borrower) stay on one side. The test stands for new borrowers in the same undated "
+        "period, not next year's defaults: the file has no dates, and forward windows in file order give a spline R² "
+        "of 0.138 against 0.210 grouped, an upper bound on that gap since the order is not shown to be time."
     )
     accepted_check_warnings = {
         "dataset_duplicate_rows": (
@@ -176,7 +181,7 @@ class Lgd(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         del df
-        return FeatureTypes(categorical=["borrower_block"])
+        return FeatureTypes(categorical=["borrower_block", "purpose_renting"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         del df

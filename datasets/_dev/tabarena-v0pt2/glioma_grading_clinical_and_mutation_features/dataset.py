@@ -29,8 +29,9 @@ class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
             "patient's age, sex and race?"
         ),
         use_case=(
-            "After a glioma has been removed or biopsied and its DNA sequenced, the care team assigns the tumour's "
-            "grade class from the mutations, for example as a check on the tissue diagnosis (the source's task)."
+            "After a diffuse glioma has been removed or biopsied, graded from the tissue and its DNA sequenced, a "
+            "neuropathology lab checks the histological grade against the tumour's mutation profile and flags a "
+            "disagreement for review. The source's own task is the grading from these features."
         ),
         row=(
             "One patient of the US Cancer Genome Atlas glioma projects (lower-grade glioma and glioblastoma), 862 "
@@ -41,8 +42,8 @@ class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
             "diagnosed from the tissue."
         ),
         known=(
-            "Whether each of the 20 genes mutated most often in these patients carries a mutation (from whole-exome "
-            "sequencing), and the patient's sex, race and age at diagnosis."
+            "Whether each of the 20 Cancer Gene Census genes mutated most often in these patients (the GDC portal's "
+            "list) carries a mutation (from whole-exome sequencing), and the patient's sex, race and age at diagnosis."
         ),
         split=("Random patients, so the test data stands for new patients like those of the two projects."),
         changes=(
@@ -50,10 +51,11 @@ class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
             "part also gives it; we keep the patients without a clinical record or race, whom the authors' own file "
             "drops."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The mutations and the patient's facts are known once the tumour is sequenced. The grades follow the "
-            "histological criteria of 1989-2013; WHO 2021 regrades some of these tumours with markers the data lacks."
+            "A histological grade of its era (1989-2013) stands in for today's WHO 2021 integrated grade, from an exome "
+            "gene set without TERT, CDKN2A/B, EGFR amplification or +7/-10; the mutations are known after the "
+            "histology."
         ),
     )
 
@@ -87,17 +89,18 @@ class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with TCGA_GBM_LGG_Mutations_all.csv, the original file of UCI dataset 759 (Tasci et al. 2022): 862 patients of the TCGA lower-grade glioma (TCGA-LGG) and glioblastoma (TCGA-GBM) projects, with sex, race, age at diagnosis and the mutation status of the 20 genes mutated most often in these patients.
+        We start with TCGA_GBM_LGG_Mutations_all.csv, the original file of UCI dataset 759 (Tasci et al. 2022): 862 patients of the TCGA lower-grade glioma (TCGA-LGG) and glioblastoma (TCGA-GBM) projects, with sex, race, age at diagnosis and the mutation status of the 20 Cancer Gene Census genes mutated most often in these patients (the GDC portal's list).
 
-        - Prediction point: a diffuse glioma has been resected or biopsied and its DNA sequenced; the model assigns the grade class, lower-grade glioma (WHO grade II or III) or glioblastoma (grade IV), from the 20 mutation flags and the patient's sex, race and age. This is the source's task.
-        - Target: `Grade` is the TCGA project of every row, so the label is the histological diagnosis that put a tumour in one of the two projects. We keep the labels LGG and GBM.
+        - Prediction point: a diffuse glioma has been resected or biopsied, graded from the tissue and its DNA sequenced; a neuropathology lab checks the histological grade class, lower-grade glioma (WHO grade II or III) or glioblastoma (grade IV), against the 20 mutation flags and the patient's sex, race and age, and flags a disagreement for review. The grading from these features is the source's task.
+        - Target: `Grade` is the TCGA project of every row, so the label is the histological diagnosis that put a tumour in one of the two projects. We keep the labels LGG and GBM. LGG merges WHO grades II and III (238 grade II, 259 grade III and 2 without a grade in the GDC).
         - We drop `Project` (a copy of the label), `Primary_Diagnosis` (the histology the grade follows from; decision table) and `Case_ID` (the TCGA patient barcode, one row per patient, whose tissue source site gives the label: each of the 45 sites sent patients to one project only).
-        - IID split: the features do not carry the site, since holding out whole sites scores like a random split (logistic regression ROC AUC 0.919 against 0.918).
-        - The mutation flags are the GDC's open-access somatic calls from whole-exome sequencing for every patient (decision table). The 70 patients with no mutation in the 20 genes have 3 to 110 calls in other genes, so `NOT_MUTATED` is a wildtype call. The flags, sex and race are categories. The authors chose the 20 genes by mutation frequency in all patients, without the label.
+        - IID split: the 45 sites are each pure in the label, but the features do not predict the site (below the majority rate within each grade), and holding out whole sites scores like the shipped split (mean per-fold ROC AUC over 10 repeats of 3 folds: logistic regression 0.921 and random forest 0.927, against 0.921 and 0.924).
+        - The mutation flags are the GDC's open-access somatic calls from whole-exome sequencing for every patient (decision table). The 70 patients with no mutation in the 20 genes have 3 to 110 calls in other genes, so `NOT_MUTATED` is a wildtype call. The flags, sex and race are categories. The 20 genes are the Cancer Gene Census genes mutated most often over all patients of both projects, chosen without the label; longer genes outside the census, such as TTN, are not among them.
         - `Age_at_diagnosis` is a GDC text such as "51 years 108 days"; we convert it to years as years + days / 365.25, which gives the GDC's day count within one day.
-        - `--` (4 patients without a clinical record) and `not reported` (race of 18 patients) become missing. We keep these patients, which the authors' preprocessed file TCGA_InfoWithGrade.csv (OpenML 46604) drops.
+        - `--` (4 patients without a clinical record, and the age of one more) and `not reported` (race of 18 patients) become missing. We keep these patients, which the authors' preprocessed file TCGA_InfoWithGrade.csv (OpenML 46604) drops.
         - Note: the grades are histological, from diagnoses between 1989 and 2013, and WHO 2021 regrades some of these tumours with markers the data lacks. Without IDH1 and IDH2 the models keep ROC AUC 0.888 (logistic regression) and 0.893 (random forest), so the label is not built from the features; we keep the source's label.
-        - Note: lgg_low_grade_glioma and glioblastoma share TCGA patients with this file (240 of 247 and 180 of 274) but predict molecular subtypes within one grade from omics profiles; the overlap matters only for a method trained across datasets.
+        - Note: the two classes are two separately collected TCGA projects. Both were exome-sequenced at one centre (Broad Institute), and the GDC called all 994 mutation files with one workflow. The DNA of 142 GBM patients was whole-genome amplified (no LGG). The features do not tell amplified from plain DNA (random forest ROC AUC 0.532 within GBM), and without the amplified GBM the ROC AUC stays at random forest 0.922 / logistic regression 0.919 (all rows 0.919 / 0.917), so the batch carries none of the grade signal.
+        - Note: lgg_low_grade_glioma and glioblastoma, which share TCGA patients with this file, are both retired, so no shipped dataset overlaps it.
     """
 
     # Task

@@ -38,6 +38,8 @@ Discussion: I think this is grouped, subject ID is not unique but counts up with
 
 **Assessment (AI, 2026-10-20):** priority 4 for the review of the added dataset: gap -, use case +, source +, shape +, no known risk. Well-documented FDA fever-screening regression with a direct use case; the open question is mainly the image-derived modality marker.
 
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes; the 17 subjects without a complete round-1 image are dropped (their next image follows the oral thermometer; USE-7), 1,018 to 1,001 rows, which supersedes "the 17 keep their later image" above; the use case is rewritten to the clinic triage station of the source (fit direct), the split reason rests on the new person (IID; temporal open as a variant) and the "exception" note now gives the SEL-15 reason (scope open for the curator). The 2026-10-07 measurement (SubjectID unique) supersedes "subject ID is not unique"; the reference is Sensors 22(1):215, 2022. Priority 4: gap - (no thin domain, problem type or regime), use case + (the source's calibration, fit direct), source + (PhysioNet and two papers), shape + (1,001 people, 35 features, categorical), risk 0 (no leak left, recommended to ship).
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

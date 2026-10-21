@@ -537,6 +537,11 @@ def test_iid_tags_on_a_grouped_task_are_flagged():
     assert "meta_tags_missing_regime" in found
 
 
+def test_forced_grouped_tag_on_an_iid_task_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["IID", "ForcedGroupedFromTemporal"])
+    assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))

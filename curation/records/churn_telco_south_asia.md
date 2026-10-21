@@ -41,6 +41,10 @@ Open (2026-10-12): a paper to get. IntelliSys 2017, doi 10.1109/IntelliSys.2017.
 
 CC (2026-10-15, Lennart): ship, kept for now although the task may be problematic: neither paper says when churn was observed, and if the churners left inside August-September, the usage totals end at the outcome (the iranian_churn reason). The definition states this as a potential leak kept on purpose; revisit if the churn can be dated. The impossible negative `network_age` values and the undocumented `aug_fav_a` "0" are missing; the other anomalies stay as published.
 
+CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot churn sets: tagged `ForcedIIDFromTemporal`; SPLIT-8 now covers a release with one stock month or one undated snapshot.
+
+**Assessment (AI, 2026-10-21):** tag and one note line added; a dated earlier window would test the model across shifts in usage and the network mix; not measurable on one two-month window.
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,

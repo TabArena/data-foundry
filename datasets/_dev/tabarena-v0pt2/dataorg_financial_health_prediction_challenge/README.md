@@ -2,20 +2,20 @@
 report_format: data-foundry-report-v2
 unique_name: dataorg_financial_health_prediction_challenge
 container_format: 2
-checksum: v2:0bd839620f9aed1d280508ca3e9fa0bd9eaf2b682c6d33d5b025f5828dbb3584
+checksum: v2:84c15fdcab4f1fb7eadd16e86bc2dd7cdb42f2fb4dc959596e473a565f95304f
 build: null
 build_stale: false
 data:
   n_rows: 7674
-  n_features: 37
+  n_features: 26
   dtypes:
-    category: 32
+    category: 21
     float64: 6
   n_test_dataset_rows: null
 task:
   target: financial_health
   problem_type: multiclass_classification
-  metric: log_loss
+  metric: f1_weighted
   split_regime: iid
   stratify_on: financial_health
   time_on: null
@@ -29,6 +29,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 5116
     max: 5116
@@ -43,34 +45,34 @@ bundle_checks:
   accepted: {}
 decisions:
 - 'Lesotho dropped: its label runs against formal finance and income'
-- Product columns kept although the index is computed from such answers
+- 'The 11 product columns dropped: inputs of the index'
 ---
 
 # dataorg_financial_health_prediction_challenge
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `financial_health`, scored with `log_loss` on IID splits. 7,674 rows and 37 features. Source: Zindi (2025).
+Multiclass classification of `financial_health`, scored with `f1_weighted` on IID splits. 7,674 rows and 26 features. Source: Zindi (2025).
 
-Not built yet. The current definition gives checksum `v2:0bd839620f9aed1d280508ca3e9fa0bd9eaf2b682c6d33d5b025f5828dbb3584`.
+Not built yet. The current definition gives checksum `v2:84c15fdcab4f1fb7eadd16e86bc2dd7cdb42f2fb4dc959596e473a565f95304f`.
 
 ## In brief
 
 **Question.** Is a small business's financial health low, medium or high?
 
-**Use case.** An institution, such as a lender, assesses a small business from what its owner reports in one interview, the prediction point the definition sets for data.org's Zindi competition (2025).
+**Use case.** A development partner or government agency screens a small business from one interview with its owner, to find vulnerable businesses and target support (the use the competition page names besides lenders' credit risk).
 
 **One row.** One small or micro business in Eswatini (2023), Malawi (2019) or Zimbabwe (2022), from FinMark Trust's FinScope surveys of business owners (7,674 businesses).
 
 **Predicted.** The class of the business's Financial Health Index at the interview: Low (66.54%), Medium (27.42%) or High (6.05%).
 
-**Known at prediction time.** The country, the owner's age and sex, the business's age, turnover and expenses, the owner's income (local currency), and answers on finance held (accounts, cards, loans, mobile money, insurance), record keeping, tax, problems, risks and attitudes.
+**Known at prediction time.** The country, the owner's age and sex, the business's age, turnover and expenses, the owner's income (local currency), and answers on record keeping, tax, problems, risks and attitudes.
 
-**What the test data stands for.** Random businesses, as in the competition, so the test data stands for other businesses of the same surveys.
+**What the test data stands for.** Random businesses, as in the competition, so the test data stands for other businesses of the same surveys, not a later survey or another country.
 
-**Our changes to the source.** We drop Lesotho's 1,944 businesses, whose label runs against the index's own parts and against the other countries.
+**Our changes to the source.** We drop Lesotho's 1,944 businesses, whose label runs against the index's own parts and against the other countries, and the 11 answers on financial products held, which are inputs of the index.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The index comes from an unpublished formula over survey answers, among them the insurance and credit products that are features, so the task partly recovers that formula (a small tree on those columns: log loss 0.285; all columns: 0.260). The countries asked different questions, so some columns are missing for whole countries.
+> **Use case fit: approximate (a stand-in with a known gap).** The competition introduced the index and did not publish its formula or who acts on its class; the screening use is the page's own. Without the product answers the task predicts the class from the business's profile, money and attitudes. The countries asked different questions, so some columns are missing for whole countries, and the test data comes from the same surveys.
 
 ## Files in this folder
 
@@ -78,6 +80,7 @@ Not built yet. The current definition gives checksum `v2:0bd839620f9aed1d280508c
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/dataorg_financial_health_prediction_challenge.md`](../../../../curation/records/dataorg_financial_health_prediction_challenge.md)
@@ -125,17 +128,17 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY-SA 4.0 |
 | data_tags | IID |
 | reference | zindi2025dataorgfinancialhealth |
-| rows x columns | 7,674 x 38 |
+| rows x columns | 7,674 x 27 |
 | task.target | financial_health |
 | task.problem_type | multiclass_classification |
-| task.metric | log_loss |
+| task.metric | f1_weighted |
 | task.split_regime | iid |
 | task.stratify_on | financial_health |
 
 <details>
-<summary>Feature types: 32 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 21 categorical, 0 string, 0 datetime</summary>
 
-- categorical (32): `country`, `attitude_stable_business_environment`, `attitude_worried_shutdown`, `compliance_income_tax`, `perception_insurance_doesnt_cover_losses`, `perception_cannot_afford_insurance`, `motor_vehicle_insurance`, `has_mobile_money`, `current_problem_cash_flow`, `has_cellphone`, `owner_sex`, `offers_credit_to_customers`, `attitude_satisfied_with_achievement`, `has_credit_card`, `keeps_financial_records`, `perception_insurance_companies_dont_insure_businesses_like_yours`, `perception_insurance_important`, `has_insurance`, `covid_essential_service`, `attitude_more_successful_next_year`, `problem_sourcing_money`, `marketing_word_of_mouth`, `has_loan_account`, `has_internet_banking`, `has_debit_card`, `future_risk_theft_stock`, `medical_insurance`, `funeral_insurance`, `motivation_make_more_money`, `uses_friends_family_savings`, `uses_informal_lender`, `financial_health`
+- categorical (21): `country`, `attitude_stable_business_environment`, `attitude_worried_shutdown`, `compliance_income_tax`, `perception_insurance_doesnt_cover_losses`, `perception_cannot_afford_insurance`, `current_problem_cash_flow`, `has_cellphone`, `owner_sex`, `offers_credit_to_customers`, `attitude_satisfied_with_achievement`, `keeps_financial_records`, `perception_insurance_companies_dont_insure_businesses_like_yours`, `perception_insurance_important`, `covid_essential_service`, `attitude_more_successful_next_year`, `problem_sourcing_money`, `marketing_word_of_mouth`, `future_risk_theft_stock`, `motivation_make_more_money`, `financial_health`
 - string (0): none
 - datetime (0): none
 
@@ -158,32 +161,34 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 7,674 rows of the final frame (random rows: the frame is shuffled); 12 of 38 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 7,674 rows of the final frame (random rows: the frame is shuffled); 12 of 27 columns, the target first. Cells are cut at 40 characters.
 
 | financial_health | country | owner_age | attitude_stable_business_environment | attitude_worried_shutdown | compliance_income_tax | perception_insurance_doesnt_cover_losses | perception_cannot_afford_insurance | personal_income | business_expenses | business_turnover | business_age_years |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Low | eswatini | 36 | Yes | Yes | No | Yes | Yes | 600 | 3400 | 4000 | 4 |
-| High | malawi | 67 | Yes | No | Yes | No | No | 2e+06 | 1.49e+08 | 3e+08 | 11 |
-| Low | zimbabwe | 25 | Yes | Yes | No | No | Don't know | 30 | 96 | 360 | 4 |
-| Medium | zimbabwe | 49 | Yes | No | Yes | No | No | 2000 | 12000 | 14400 | 9 |
-| Low | zimbabwe | 38 | Yes | No | Don't know | No | Don't know | 80 | 1200 | 2160 | 2 |
+| Low | malawi | 37 | Don't know | Yes | No | Don't know | Don't know | 500000 | 300000 | 1.4e+07 | 10 |
+| Medium | eswatini | 34 | Yes | Yes | No | No | Yes | 15000 | 7500 | 15000 | 2 |
+| Low | eswatini | 37 | No | No | No | No | Yes | 6000 | 30000 | 40000 | 0 |
+| Medium | eswatini | 37 | Yes | Yes | No | Yes | Yes | 16000 | 420000 | 2e+06 | 3 |
+| Medium | zimbabwe | 41 | No | Yes | No | Yes | Yes | 250 | 1200 | 7200 | 3 |
 
 ## Curation notes
 
-We start with Train.csv of the Zindi competition "data.org Financial Health Prediction Challenge" (2025): 9,618 small businesses in Eswatini, Lesotho, Malawi and Zimbabwe from FinMark Trust's FinScope MSME surveys, with 37 survey answers and the class of the business's Financial Health Index (FHI): Low, Medium or High.
+We start with Train.csv of the Zindi competition "data.org Financial Health Prediction Challenge" (2025): 9,618 small businesses in Eswatini, Lesotho, Malawi and Zimbabwe from FinMark Trust's FinScope MSME surveys, with the country, 36 survey answers and the class of the business's Financial Health Index (FHI): Low, Medium or High.
 
-- Prediction point: an institution, such as a lender, assesses a small business from what its owner reports in one interview. The index describes the business at the same interview, so no column is recorded after the label.
-- Target: `Target` renamed to `financial_health`. The competition scored weighted F1 (Zindi discussion 29971); we keep the default metric, log loss.
-- We drop Lesotho's 1,944 rows: its label runs against the index's own dimensions and the other three countries, a recording problem we cannot repair. In Lesotho every formal-finance answer goes with a lower class, elsewhere with a higher one (decision table). LightGBM trained on two of the other countries ranks the third at ROC AUC 0.63 to 0.68 and Lesotho at 0.46, and swapping Low and Medium does not repair it (0.54). Revisit if data.org or FinMark Trust explain how Lesotho's FHI was computed.
-- Potential leak, kept on purpose: the FHI is computed from survey answers, among them the insurance and credit products that are columns here; none of the 1,896 businesses with an insurance product is Low. A depth-6 tree on country and the 11 product columns reaches log loss 0.285 against 0.260 for untuned LightGBM on all columns (class shares 0.796) and is worse on all 9 splits. We keep the columns: a business reports them at the assessment, the competition predicts the FHI from all columns, and the formula is not published. Revisit if data.org or FinMark Trust publish it.
-- Anomaly: the competition merged surveys with different questionnaires, and we keep the answers as released. Columns a country did not ask are missing for all its rows, and Malawi asked the three insurance products of only 147 of its businesses, 91% of them Medium or High against 14% of the others.
-- We unify the seven spellings of "Don't know" and the two of "Used to have but don't have now" (`ANSWER_SPELLINGS`). Each column has one spelling per country, and country is a column, so no information is lost.
+- Prediction point: a development partner or government agency screens a small business from one interview with its owner, to target support (the competition page names this use and lenders' credit risk; no source shows a lender acting on the class). The index describes the business at the same interview, so no column is recorded after the label. The page says the challenge "introduces a data-driven Financial Health Index"; its formula and author are not published.
+- Target: `Target` renamed to `financial_health`. The competition scored F1 (Zindi evaluation page; API `f1_multiclass`); the page does not say how the three classes are averaged. Participants who submitted single-class files found the leaderboard scores fit weighted F1, not macro or micro F1 (Zindi discussion 29971, "Which F1-score ?"; not confirmed by the host), so we declare `f1_weighted` (TP-6).
+- We drop Lesotho's 1,944 rows: its label runs against the index's own dimensions and the other three countries, and its answers are damaged too (decision 1), a recording problem we cannot repair. In Lesotho every formal-finance answer goes with a lower class, elsewhere with a higher one. LightGBM trained on the other countries ranks Lesotho at ROC AUC 0.43 to 0.50, against 0.62 to 0.95 for the other countries, and swapping Low and Medium in Lesotho's labels does not repair it (ROC AUC 0.54). Revisit if data.org or FinMark Trust explain how Lesotho's FHI was computed.
+- We drop the 11 answers on financial products held (`PRODUCTS`: insurance, cards, loan and other accounts, mobile money, informal sources): the page names "access to credit and financial services" as one of the FHI's four dimensions, so these answers are parts of the target (LEAK-10), although the owner gives them at the interview. None of the 1,896 businesses with an insurance product is Low. With the same LightGBM, country and the 11 answers reach log loss 0.255 against 0.266 for all columns (better on 9 of 9 splits); the 26 remaining columns reach 0.694 (macro ROC AUC 0.756) against 0.796 for the class shares, better on 9 of 9. Dropping only the 8 formal products would leave 0.678; mobile money and the informal sources go too, as they likely feed the access or debt dimensions.
+- Anomaly: the competition merged surveys with different questionnaires, and we keep the answers as released. Columns a country did not ask are missing for all its rows. In Zimbabwe (motivation_make_more_money, current_problem_cash_flow) and Eswatini (problem_sourcing_money, marketing_word_of_mouth) the answer is "Yes" or missing, and missing means not ticked; we keep it missing, as the questionnaires are not at hand.
+- We unify the six spellings of "Don't know" (`ANSWER_SPELLINGS`). Each column has one spelling per country, and country is a column, so no information is lost.
 - current_problem_cash_flow: Eswatini's "0" becomes "No", as Malawi writes it; Zimbabwe's missing values stay missing.
 - Malawi records the age of a business under a year in months, with the years missing; we set those 225 businesses' years to 0, as Eswatini and Zimbabwe record such a business.
-- The amounts stay in local currency, since country is a column.
+- business_age_years and business_age_months become missing in the 6 rows where the business is older than its owner (for example an owner of 20 with a business of 25 years).
+- The amounts stay in local currency, since country is a column. Their period may differ by country too (personal income over turnover has a median of 0.06 in Zimbabwe against 0.33 elsewhere), which country also covers.
+- The page lists traded commodities, trade activity, firm size and location as inputs; Train.csv has none of them.
 - We drop ID, a random id per row.
-- IID split, as in the competition (its test set is a random 20% of every country). Each survey is one cross-section, and a business appears once.
-- dtypes: country and the 31 answer columns are categorical; owner_age, the three amounts and the age of the business (years, months) are numeric.
+- IID split, as in the competition (its test set is a random 20% of every country). Each survey is one cross-section, and a business appears once. The score holds for the same surveys: untuned LightGBM trained on Malawi 2019 and Zimbabwe 2022 scores Eswatini 2023 at log loss 1.14, against 0.905 under the random split and 0.958 for Eswatini's own class shares. Three country-years are too few for a grouped or temporal split.
+- dtypes: country and the 19 answer columns are categorical; owner_age, the three amounts and the age of the business (years, months) are numeric.
 
 ## Splits
 
@@ -207,7 +212,7 @@ Default splits.
 
 ### 1. Lesotho dropped: its label runs against formal finance and income
 
-Share of Medium or High among the businesses that gave the answer against those that gave another answer to the same question (n: the businesses that gave it), from the raw file. In Eswatini, Malawi and Zimbabwe every formal-finance answer goes with a higher class; in Lesotho every one goes with a lower class, and the class falls with income, expenses and turnover (Spearman -0.12, -0.11, -0.11; +0.14 to +0.24 in the other countries). The informal friends-and-family answer goes with a higher class everywhere. The 1,944 Lesotho rows are dropped.
+Share of Medium or High among the businesses that gave the answer against those that gave another answer to the same question (n: the businesses that gave it), from the raw file. In Eswatini, Malawi and Zimbabwe every formal-finance answer goes with a higher class; in Lesotho every one goes with a lower class, and the class falls with income, expenses and turnover (Spearman -0.12, -0.11, -0.11 without the 97/98/99 codes; -0.055, -0.073, -0.052 as released; +0.14 to +0.24 in the other countries). The informal friends-and-family answer goes with a higher class everywhere. The answers are damaged too: 12 columns are missing for every Lesotho business, among them three insurance columns, the credit card and record keeping, and 86% answer that they used to have an informal lender. The 1,944 Lesotho rows are dropped.
 
 | answer | eswatini | malawi | zimbabwe | lesotho |
 |---|---|---|---|---|
@@ -218,9 +223,9 @@ Share of Medium or High among the businesses that gave the answer against those 
 | income tax compliance: Yes | 0.66 vs 0.43 (n = 681) | 0.42 vs 0.15 (n = 322) | 0.63 vs 0.30 (n = 140) | 0.25 vs 0.40 (n = 109) |
 | friends and family: Have now | 0.67 vs 0.48 (n = 101) | 0.38 vs 0.17 (n = 163) | not asked | 0.95 vs 0.31 (n = 265) |
 
-### 2. Product columns kept although the index is computed from such answers
+### 2. The 11 product columns dropped: inputs of the index
 
-Class counts by country, any insurance product and the number of formal credit products (credit card, loan account). On the shipped splits a depth-6 tree on country and the 11 product columns reaches log loss 0.285 against 0.260 for untuned LightGBM on all columns (class shares 0.796) and is worse on all 9 splits; within identical product answers the most frequent class covers 93.8% of the rows. The formula is not published, and the competition predicts the index from all columns.
+Class counts by country, any insurance product and the number of formal credit products (credit card, loan account), from the raw answers of the three kept countries. The competition page names access to credit and financial services as one of the index's four dimensions. With the same LightGBM on the shipped splits, country and the 11 product columns reach log loss 0.255 against 0.266 for all columns, better on 9 of 9; within identical product answers the most frequent class covers 93.8% of the rows. The 26 remaining columns reach 0.694 against 0.796 for the class shares.
 
 | country | any insurance product | formal credit products | Low | Medium | High |
 |---|---|---|---|---|---|
@@ -251,34 +256,23 @@ Class counts by country, any insurance product and the number of formal credit p
 ### Feature summary
 
 <details>
-<summary>Show the table (38 rows)</summary>
+<summary>Show the table (27 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| uses_friends_family_savings | category | 4482 | 58.41 | 4 | Never had, Used to have but don't have now, Have now, Don't know |
-| uses_informal_lender | category | 4482 | 58.41 | 4 | Never had, Used to have but don't have now, Have now, Don't know |
 | motivation_make_more_money | category | 4291 | 55.92 | 2 | Yes, No |
 | problem_sourcing_money | category | 3587 | 46.74 | 2 | Yes, No |
 | marketing_word_of_mouth | category | 3237 | 42.18 | 2 | Yes, No |
 | future_risk_theft_stock | category | 2679 | 34.91 | 2 | No, Yes |
 | attitude_more_successful_next_year | category | 2612 | 34.04 | 3 | Yes, No, Don't know |
-| has_loan_account | category | 2612 | 34.04 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
-| has_internet_banking | category | 2612 | 34.04 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
-| has_debit_card | category | 2612 | 34.04 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
 | covid_essential_service | category | 2390 | 31.14 | 3 | No, Yes, Don't know |
-| motor_vehicle_insurance | category | 2244 | 29.24 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
-| medical_insurance | category | 2244 | 29.24 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
-| funeral_insurance | category | 2244 | 29.24 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
-| has_mobile_money | category | 2172 | 28.3 | 4 | Have now, Never had, Used to have but don't have now, Don't know |
 | current_problem_cash_flow | category | 2162 | 28.17 | 2 | No, Yes |
-| has_insurance | category | 12 | 0.16 | 2 | No, Yes |
 | perception_insurance_important | category | 11 | 0.14 | 3 | Yes, No, Don't know |
 | perception_insurance_doesnt_cover_losses | category | 5 | 0.07 | 3 | No, Yes, Don't know |
 | perception_cannot_afford_insurance | category | 5 | 0.07 | 3 | Yes, No, Don't know |
 | keeps_financial_records | category | 5 | 0.07 | 4 | No, Yes, sometimes, Yes, always, Yes |
 | compliance_income_tax | category | 4 | 0.05 | 4 | No, Yes, Don't know, Refused |
 | perception_insurance_companies_dont_insure_businesses_like_yours | category | 4 | 0.05 | 3 | No, Yes, Don't know |
-| has_credit_card | category | 3 | 0.04 | 4 | Never had, Have now, Used to have but don't have now, Don't know |
 | attitude_stable_business_environment | category | 2 | 0.03 | 3 | Yes, No, Don't know |
 | attitude_worried_shutdown | category | 2 | 0.03 | 3 | No, Yes, Don't know |
 | offers_credit_to_customers | category | 2 | 0.03 | 3 | Yes, sometimes, No, Yes, always |
@@ -287,11 +281,11 @@ Class counts by country, any insurance product and the number of formal credit p
 | has_cellphone | category | 0 | 0 | 2 | Yes, No |
 | owner_sex | category | 0 | 0 | 2 | Female, Male |
 | financial_health | category | 0 | 0 | 3 | Low, Medium, High |
-| business_age_months | float64 | 2167 | 28.24 | 12 | 0.0, 2.0, 3.0, 5.0, 6.0, 1.0, 8.0, 4.0, 11.0, 9.0 |
+| business_age_months | float64 | 2173 | 28.32 | 12 | 0.0, 2.0, 3.0, 5.0, 6.0, 1.0, 8.0, 4.0, 11.0, 9.0 |
 | business_expenses | float64 | 229 | 2.98 | 789 | 1200.0, 5000.0, 1800.0, 600.0, 3000.0, 2400.0, 1500.0, 10000.0, 1000.0, 6000.0 |
 | business_turnover | float64 | 216 | 2.81 | 818 | 3600.0, 5000.0, 6000.0, 3000.0, 2400.0, 1200.0, 1800.0, 20000.0, 600.0, 30000.0 |
-| personal_income | float64 | 109 | 1.42 | 634 | 500.0, 1500.0, 2000.0, 100.0, 1000.0, 300.0, 200.0, 50.0, 150.0, 3000.0 |
-| business_age_years | float64 | 27 | 0.35 | 50 | 2.0, 3.0, 1.0, 5.0, 0.0, 4.0, 10.0, 6.0, 7.0, 8.0 |
+| personal_income | float64 | 109 | 1.42 | 634 | 500.0, 1500.0, 2000.0, 100.0, 1000.0, 200.0, 300.0, 50.0, 150.0, 3000.0 |
+| business_age_years | float64 | 33 | 0.43 | 50 | 2.0, 3.0, 1.0, 5.0, 0.0, 4.0, 10.0, 6.0, 7.0, 8.0 |
 | owner_age | float64 | 0 | 0 | 74 | 35.0, 42.0, 36.0, 38.0, 40.0, 37.0, 39.0, 32.0, 34.0, 30.0 |
 
 </details>
@@ -312,13 +306,13 @@ Class counts by country, any insurance product and the number of formal credit p
 | personal_income | 7565 | 328754 | 2.87338e+06 | 0 | 1.5e+08 |
 | business_expenses | 7445 | 577055 | 6.94059e+06 | 0 | 5e+08 |
 | business_turnover | 7458 | 1.69799e+06 | 9.85599e+06 | 0 | 4.2e+08 |
-| business_age_years | 7647 | 6.79718 | 7.39761 | 0 | 56 |
-| business_age_months | 5507 | 3.63628 | 3.38649 | 0 | 11 |
+| business_age_years | 7641 | 6.77424 | 7.35244 | 0 | 56 |
+| business_age_months | 5501 | 3.63643 | 3.38625 | 0 | 11 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (128 rows)</summary>
+<summary>Show the table (75 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -356,34 +350,34 @@ Class counts by country, any insurance product and the number of formal credit p
 | financial_health | 1 | Low | 5106 | 66.54 |
 | financial_health | 2 | Medium | 2104 | 27.42 |
 | financial_health | 3 | High | 464 | 6.05 |
-| funeral_insurance | 1 | Never had | 3615 | 47.11 |
-| funeral_insurance | 2 | &lt;NA> | 2244 | 29.24 |
-| funeral_insurance | 3 | Have now | 1608 | 20.95 |
-| funeral_insurance | 4 | Used to have but don't have now | 181 | 2.36 |
-| funeral_insurance | 5 | Don't know | 26 | 0.34 |
 | future_risk_theft_stock | 1 | No | 3191 | 41.58 |
 | future_risk_theft_stock | 2 | &lt;NA> | 2679 | 34.91 |
 | future_risk_theft_stock | 3 | Yes | 1804 | 23.51 |
 | has_cellphone | 1 | Yes | 6203 | 80.83 |
 | has_cellphone | 2 | No | 1471 | 19.17 |
-| has_credit_card | 1 | Never had | 7246 | 94.42 |
-| has_credit_card | 2 | Have now | 281 | 3.66 |
-| has_credit_card | 3 | Used to have but don't have now | 91 | 1.19 |
-| has_credit_card | 4 | Don't know | 53 | 0.69 |
-| has_credit_card | 5 | &lt;NA> | 3 | 0.04 |
-| has_debit_card | 1 | Never had | 3770 | 49.13 |
-| has_debit_card | 2 | &lt;NA> | 2612 | 34.04 |
-| has_debit_card | 3 | Have now | 1076 | 14.02 |
-| has_debit_card | 4 | Used to have but don't have now | 206 | 2.68 |
-| has_debit_card | 5 | Don't know | 10 | 0.13 |
-| has_insurance | 1 | No | 7375 | 96.1 |
-| has_insurance | 2 | Yes | 287 | 3.74 |
-| has_insurance | 3 | &lt;NA> | 12 | 0.16 |
-| has_internet_banking | 1 | Never had | 4668 | 60.83 |
-| has_internet_banking | 2 | &lt;NA> | 2612 | 34.04 |
-| has_internet_banking | 3 | Have now | 345 | 4.5 |
+| keeps_financial_records | 1 | No | 3334 | 43.45 |
+| keeps_financial_records | 2 | Yes, sometimes | 1671 | 21.77 |
+| keeps_financial_records | 3 | Yes, always | 1525 | 19.87 |
+| keeps_financial_records | 4 | Yes | 1139 | 14.84 |
+| keeps_financial_records | 5 | &lt;NA> | 5 | 0.07 |
+| marketing_word_of_mouth | 1 | &lt;NA> | 3237 | 42.18 |
+| marketing_word_of_mouth | 2 | Yes | 2420 | 31.54 |
+| marketing_word_of_mouth | 3 | No | 2017 | 26.28 |
+| motivation_make_more_money | 1 | &lt;NA> | 4291 | 55.92 |
+| motivation_make_more_money | 2 | Yes | 2500 | 32.58 |
+| motivation_make_more_money | 3 | No | 883 | 11.51 |
+| offers_credit_to_customers | 1 | Yes, sometimes | 4557 | 59.38 |
+| offers_credit_to_customers | 2 | No | 2730 | 35.57 |
+| offers_credit_to_customers | 3 | Yes, always | 385 | 5.02 |
+| offers_credit_to_customers | 4 | &lt;NA> | 2 | 0.03 |
+| owner_sex | 1 | Female | 4303 | 56.07 |
+| owner_sex | 2 | Male | 3371 | 43.93 |
+| perception_cannot_afford_insurance | 1 | Yes | 4754 | 61.95 |
+| perception_cannot_afford_insurance | 2 | No | 1739 | 22.66 |
+| perception_cannot_afford_insurance | 3 | Don't know | 1176 | 15.32 |
+| perception_cannot_afford_insurance | 4 | &lt;NA> | 5 | 0.07 |
 
-(68 more rows not shown)
+(15 more rows not shown)
 
 </details>
 

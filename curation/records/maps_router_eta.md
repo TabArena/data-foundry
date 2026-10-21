@@ -38,6 +38,10 @@ Not much more, need to follow preprocessing from TabRed most likely.
 
 CC (2026-10-19, Lennart): TabReD's quantile transform of the numeric features may be fit on all rows (undocumented); kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
 
+CC (2026-10-21, Lennart): check SPLIT-9 on the weekly test windows and add a gap where train labels arrive late, as for nyc_taxi_trip_duration and pkdd_15 (cross-dataset review, marked ok).
+
+**Assessment (AI, 2026-10-21):** SPLIT-9 late labels in maps_router_eta_1m (request time + exp(target) s/km x track_length, read as metres: its minimum is 1,000.0, and the median speed is 27 km/h; drives up to 16.6 h): without a gap 656, 654 and 578 train routes per weekly window (newest first; starts 2023-12-04, 11-27, 11-20) end after the window start; with a gap of one day (TemporalSplits(..., gap=1)) none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%); each train side is still a random 1M. Gap set in dataset.py, counts in splits_comment; script local-data-warehouse/_runs/2026-10-21_crosscut/x21-0/late_labels.py.
+
 ## Reference
 
 TabRed

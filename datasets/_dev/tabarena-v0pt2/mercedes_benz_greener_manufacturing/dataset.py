@@ -65,16 +65,19 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         - The data has been anonymized, so feature meanings are unknown.
         - There is generally weird behavior related to the ID and potentially a time column (see X5 here https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing/discussion/34949). However, it is hard to parse the exact details due to anonymization. We generally take from this that the data is sorted sequentially by ID and that there may be time dependencies. Also checkout https://www.kaggle.com/code/sudalairajkumar/simple-exploration-notebook-mercedes which shows relation between index and y, showing that y goes up with higher index and it shows that X5 (the time group feature), has the highest importance. Plus, it has one outlier.
         - We remove the one outlier from y.
+          Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, inside the first 1,000 cars that every test window trains on. The competition host does not name the row.
         - We drop X5 as it leaks time group information in temporal splits (besides having a full categorical-value distribution shift with a temporal split).
         - We tread the ID as a time_index.
         - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
         - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
         - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
+        - Metric: the competition scored R² (Kaggle's evaluation metric), which we declare (TP-6); within one test fold it ranks models as RMSE does.
     """
 
     # Task
     target = "y"
     problem_type = "regression"
+    metric = "r2"  # the competition's metric
 
     # Splits
     splits_comment = """

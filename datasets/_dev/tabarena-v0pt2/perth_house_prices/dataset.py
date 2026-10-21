@@ -10,6 +10,35 @@ from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Task
 
 RAW_FILE = "all_perth_310121.csv"
 COORDINATE_COLUMNS = ["LATITUDE", "LONGITUDE", "NEAREST_SCH_DIST"]  # the school distance is computed from them
+# Opening month of the stations opened since 1988 (Joondalup line Dec 1992, extended to Currambine Aug 1993, Clarkson
+# Oct 2004, Greenwood Jan 2005, Butler Sep 2014; Thornlie Aug 2005; Mandurah line Dec 2007). The file names the
+# nearest station at the scrape, so a sale before the opening names a station that did not exist.
+STATION_OPENED = {
+    **dict.fromkeys(
+        ["Joondalup", "Edgewater", "Whitfords", "Warwick", "Stirling", "Glendalough", "Leederville"], "1992-12"
+    ),
+    "Currambine": "1993-08",
+    "Clarkson": "2004-10",
+    "Greenwood": "2005-01",
+    "Thornlie": "2005-08",
+    "Butler": "2014-09",
+    **dict.fromkeys(
+        [
+            "Esplanade",
+            "Canning Bridge",
+            "Bull Creek",
+            "Murdoch",
+            "Cockburn Central",
+            "Kwinana",
+            "Wellard",
+            "Rockingham",
+            "Warnbro",
+            "Mandurah",
+        ],
+        "2007-12",
+    ),
+}
+SCHOOL_OPENED = {"JOSEPH BANKS SECONDARY COLLEGE": "2015-01"}  # the one school in the file known to open after 1988
 
 
 class PerthHousePrices(AbstractCuratedDataset):
@@ -24,24 +53,28 @@ class PerthHousePrices(AbstractCuratedDataset):
             "property's latest sale only, dated by month from 1988 to 2020 (33,090 sales)."
         ),
         predicted=(
-            "The sale price in Australian dollars, as its natural logarithm; sales above about $2.44M are missing "
-            "from the data."
+            "The sale price in Australian dollars, as its natural logarithm; the data is truncated at $2.44M "
+            "(dearer sales are absent)."
         ),
         known=(
-            "The sale month, the address, suburb, postcode and coordinates, the house (bedrooms, bathrooms, garage, "
-            "land and floor area, build year), the distances to the city centre, the nearest station and school, and "
-            "that school's rank."
+            "The sale month, address and location, the site's record of the house (rooms, garage, land and floor "
+            "area, build year) as of the January 2021 scrape, the nearest station and school as of the scrape "
+            "(blank before they opened) with their distances, and that school's rank of 2019 or later."
         ),
         split=(
             "Each test window is one month of April to December 2020, trained on all earlier sales, as for a model "
             "refit at the start of each month."
         ),
-        changes=("We drop 563 sales dated before the house was built, whose house record describes a later building."),
-        fit="direct",
+        changes=(
+            "We drop 563 sales dated before the house was built (land or off-the-plan sales), blank the station or "
+            "school for the sales before it opened, and set impossible floor areas and bathroom counts to missing."
+        ),
+        fit="approximate",
         fit_reason=(
-            "Everything the model sees is known when a house sells, and each month is predicted from earlier sales "
-            "only. Sales above about $2.44M are missing, and in the test months the site's house record is often "
-            "older than the sale, which adds noise."
+            "Each month is predicted from earlier sales only, from a house's record and location. Three gaps remain: "
+            "the data is truncated at $2.44M (dearer sales are absent), the house attributes are the site's record "
+            "of January 2021 rather than at the sale, and the school rank is kept although its ranking year is "
+            "unknown and may postdate the test sales (a potential leak kept on purpose, weak)."
         ),
     )
 
@@ -80,17 +113,19 @@ class PerthHousePrices(AbstractCuratedDataset):
         - `DATE_SOLD` is the sale month ("09-2018", a trailing carriage return stripped), parsed to the first day of the month; it is the time column and a feature.
         - The target is the natural log of `PRICE`, renamed to `log_PRICE`.
         - Sampling: a property appears only with its latest sale before the scrape, and each suburb holds only its newest sales, so the older years are thin (decision table).
-        - Anomaly: no sale is above $2,440,000 although the site lists dearer sales, so the task is the price of a sale up to about $2.44M, and the dearest suburbs keep only their cheaper sales (decision table).
-        - We drop the 563 sales (1988-2016) dated before the year the house was built. The attributes are the site's record at the scrape, so these rows describe a house that did not exist at the sale (decision table); all are training rows.
-        - We drop 3 copies of sales geocoded to several address points (identical except the coordinates and the school distance); two pairs that differ only in the address stay.
-        - Missing values: "NULL" and empty fields are read as missing, and we set the proxies `LAND_AREA` 999999 and `GARAGE` 99 to missing.
-        - Anomaly: other scrape errors stay, as nothing marks them missing (whole-complex land areas of strata units, implausible floor areas, up to 50 car spaces).
+        - Anomaly: the data is truncated at $2,440,000: one sale sits at that price and none above it, although the site lists dearer sales, so the dearer sales are absent (not set to the ceiling). The task is the price of a sale up to $2.44M, and the dearest suburbs keep only their cheaper sales (decision table).
+        - We drop the 563 sales (1988-2016) dated before the year the house was built: a land or off-the-plan sale is not the sale of the house the valuation prices, and the row's attributes describe a house built 1-23 years later; LightGBM prices them 0.1-0.5 log units too high, by setup (decision table). All are training rows. The 140 sales in the build year stay as the boundary case (a sale just before or after completion), although 9-13% of them are priced more than 0.5 log units too high.
+        - We drop 3 copies of sales geocoded to several address points (identical except the coordinates and the school distance); two pairs that differ in the address and its coordinates stay.
+        - Missing values: "NULL" and empty fields are read as missing, and we set the proxies `LAND_AREA` 999999 and `GARAGE` 99 to missing. `GARAGE` has no 0, so a missing value may also mean no car space.
+        - Impossible values to missing, rows kept: `FLOOR_AREA` of 1-40 m² for a house of 2 or more bedrooms (19 rows), and `BATHROOMS` more than 2 above `BEDROOMS` (2 rows: 16 bathrooms in 95 m², 7 bathrooms with 1 bedroom). Unusual values stay: whole-complex land areas of strata units and garages of 13-50 car spaces.
         - Anomaly: no house has a build year after 2017, so newer houses lack `BUILD_YEAR` (missing in 9.5% of all rows).
-        - Anomaly: in the test period the site's record of a house is often older than the sale (bedrooms or bathrooms differ from the sold listings of heptix/perth-property-prices in 27.0% of the shared 2020 sales, 0.7% in 2007-2016), which adds noise to the test windows.
-        - `NEAREST_SCH_RANK` is missing for unranked schools. The school and station columns are as of the scrape, which affects training rows only.
+        - Anomaly: the house attributes are the site's record at the scrape. Before the test period they did not change: bedrooms or bathrooms differ from the sold listings of heptix/perth-property-prices in 0.7% of the shared 2007-2016 sales (2.8% in 2017-2018). In the test period the record is often older than the sale, not newer (27.0% of the shared 2020 sales differ, mostly with fewer rooms), which adds noise to the test windows but no post-sale value.
+        - Station and school as of the scrape: we blank `NEAREST_STN` and `NEAREST_STN_DIST` for the 147 sales (1988-2014) before their station opened (the opening months of 22 stations), and `NEAREST_SCH`, `NEAREST_SCH_DIST` and `NEAREST_SCH_RANK` for the 58 sales (1990-2014) that name Joseph Banks Secondary College, opened in 2015; all are training rows.
+        - Potential leak, kept on purpose: `NEAREST_SCH_RANK` is one ranking per school, of 2019 or later (the 2015 school is ranked), so for most rows it postdates the sale and for the test rows its year is unknown and may follow the sale; the effect is nil (mean RMSE 0.1623 without it against 0.1622, one seed, 9 windows). Schools opened since 1988 other than Joseph Banks were not checked. Revisit if the ranking year is found. `NEAREST_SCH_RANK` is missing for unranked schools.
+        - `NEAREST_STN` `Vic` names two stations 14 km apart; we split it by longitude into Victoria Street (Mosman Park, west of 115.8° E, 98 rows) and Victoria Park (198 rows).
         - `ADDRESS` stays as text (string), as in melbourne_housing_market: unit numbers and lettered lots are the only trace of the property type the upload dropped (decision table).
         - Categorical: `SUBURB`, `POSTCODE`, `NEAREST_STN` and `NEAREST_SCH`.
-        - Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market, as the file has no sale type.
+        - Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and house_prices_nominal).
         - Note: December 2020 is short (0.71 of November's sales, 0.83-1.04 in 2013-2019; some sales were not yet on the site), but its prices are in line, so it stays the newest test window (decision table).
         - Licence: CC BY-NC-SA 4.0 (Kaggle data card); the terms of the scraped site are not stated.
     """
@@ -102,7 +137,7 @@ class PerthHousePrices(AbstractCuratedDataset):
     # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), April to December 2020.
     temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9))
     splits_comment = """
-        A price model refit at the start of every month predicts that month's sales: 9 test windows of one calendar month, December 2020 back to April 2020, newest first, each trained on all earlier sales (88-99% of the rows). The source dates sales by month only. An IID task of this size would get 3 x 3 splits; the windows hold 284-628 sales. No gap: many sales reach the site within days (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and a month after its end December 2020 held about 80% of its usual share of November's count. A one-month gap would drop the previous month entirely; it raises LightGBM's mean test RMSE from 0.159 to 0.162.
+        A price model refit at the start of every month predicts that month's sales: 9 test windows of one calendar month, December 2020 back to April 2020, newest first, each trained on all earlier sales (88-99% of the rows). The source dates sales by month only. An IID task of this size would get 3 x 3 splits; the windows hold 284-628 sales. No gap: many sales reach the site within days (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and a month after its end December 2020 held about 80% of its usual share of November's count. At the source's month resolution the smallest gap drops the whole previous month, more than the delay.
     """
     accepted_check_warnings = {
         "meta_time_horizon_mismatch": "`DATE_SOLD` holds the first day of the sale month (the source gives no day), "
@@ -126,6 +161,22 @@ class PerthHousePrices(AbstractCuratedDataset):
         # Proxy missing values.
         df["LAND_AREA"] = df["LAND_AREA"].mask(df["LAND_AREA"] == 999999)
         df["GARAGE"] = df["GARAGE"].mask(df["GARAGE"] == 99)
+        # Impossible values: a house of 2+ bedrooms on 1-40 m2, more bathrooms than bedrooms + 2 (16 in 95 m2).
+        df["FLOOR_AREA"] = df["FLOOR_AREA"].mask((df["FLOOR_AREA"] <= 40) & (df["BEDROOMS"] >= 2))
+        df["BATHROOMS"] = df["BATHROOMS"].mask(df["BATHROOMS"] > df["BEDROOMS"] + 2)
+        # Station and school as of the scrape: blank them for a sale before they opened.
+        sold = pd.to_datetime(df["DATE_SOLD"], format="%m-%Y")
+        station_opened = pd.to_datetime(
+            df["NEAREST_STN"].map({f"{name} Station": month for name, month in STATION_OPENED.items()})
+        )
+        df.loc[sold < station_opened, ["NEAREST_STN", "NEAREST_STN_DIST"]] = np.nan
+        school_opened = pd.to_datetime(df["NEAREST_SCH"].map(SCHOOL_OPENED))
+        df.loc[sold < school_opened, ["NEAREST_SCH", "NEAREST_SCH_DIST", "NEAREST_SCH_RANK"]] = np.nan
+        # `Vic` names Victoria Street (Mosman Park, west) and Victoria Park, 14 km apart.
+        is_vic = df["NEAREST_STN"] == "Vic"
+        df.loc[is_vic, "NEAREST_STN"] = np.where(
+            df.loc[is_vic, "LONGITUDE"] < 115.8, "Victoria Street Station", "Victoria Park Station"
+        )
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"PRICE": "log_PRICE"})
         df["log_PRICE"] = np.log(df["log_PRICE"])
@@ -212,20 +263,40 @@ class PerthHousePrices(AbstractCuratedDataset):
         )
         cap.index.name = "year"
 
+        # Sales before their station or school opened (the raw file, after the build-year drop).
+        kept = raw[~(gap > 0)]
+        kept_sold = sold[~(gap > 0)]
+        rows = {}
+        for column, opened_map in (("NEAREST_STN", STATION_OPENED), ("NEAREST_SCH", SCHOOL_OPENED)):
+            keys = {f"{k} Station": v for k, v in opened_map.items()} if column == "NEAREST_STN" else opened_map
+            before = kept_sold < pd.to_datetime(kept[column].map(keys))
+            for name, n in kept.loc[before, column].value_counts().items():
+                years = kept_sold[before & (kept[column] == name)].dt.year
+                rows[name] = {"opened": keys[name], "sales before": int(n), "sold in": f"{years.min()}-{years.max()}"}
+        anachronisms = pd.DataFrame(rows).T
+        anachronisms.index.name = "station or school"
+
         return [
             Decision(
-                "No sale above $2,440,000: a capped target, kept and documented",
-                "The upload stops at $2,440,000 in every year although the site lists dearer sales (17 McNeil Street, "
-                "Peppermint Grove, $5,200,000 in June 2013); nothing in the source gives them back, so the task is the "
-                "price of a sale up to about $2.44M.",
+                "No sale above $2,440,000: a truncated target, kept and documented",
+                "The upload stops at $2,440,000 in every year, with one sale at that price, although the site lists "
+                "dearer sales (17 McNeil Street, Peppermint Grove, $5,200,000 in June 2013): the dearer sales are "
+                "absent, not set to the ceiling. Nothing in the source gives them back, so the task is the price of "
+                "a sale up to $2.44M.",
                 cap,
             ),
             Decision(
                 "Sales dated before the build year dropped",
-                "563 sales describe a house built 1 to 23 years after the sale (a land or off-the-plan sale); "
-                "cross-fitted LightGBM prices them 0.23 log units too high on average. All are older than the "
-                "test windows.",
+                "563 sales describe a house built 1 to 23 years after the sale: a land or off-the-plan sale, not the "
+                "sale of the house the valuation prices. LightGBM prices them 0.1-0.5 log units too high on average, "
+                "by setup. All are older than the test windows; the 140 sales in the build year stay.",
                 before_build,
+            ),
+            Decision(
+                "Station and school blanked for sales before they opened",
+                "The nearest station and school are as of the scrape; a sale before the opening names one that did "
+                "not exist, so its name and distance (and the school's rank) are set to missing.",
+                anachronisms,
             ),
             Decision(
                 "Each suburb holds its newest sales only",

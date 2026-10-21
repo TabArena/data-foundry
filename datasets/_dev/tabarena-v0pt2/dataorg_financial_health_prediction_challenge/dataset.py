@@ -13,14 +13,28 @@ TARGET = "financial_health"
 ANSWER_SPELLINGS = {
     "Don’t know": "Don't know",
     "Don’t know or N/A": "Don't know",
-    "Don’t know (Do not show)": "Don't know",
     "Don't Know": "Don't know",
     "Don?t know / doesn?t apply": "Don't know",
     " Do not know / N\u200e/A": "Don't know",
-    "Used to have but don’t have now": "Used to have but don't have now",
 }
 """Spellings of one answer that differ by country (curly apostrophes, a lost apostrophe, a stray space and a
 left-to-right mark); each column has one spelling per country."""
+
+PRODUCTS = [
+    "has_insurance",
+    "funeral_insurance",
+    "medical_insurance",
+    "motor_vehicle_insurance",
+    "has_credit_card",
+    "has_loan_account",
+    "has_debit_card",
+    "has_internet_banking",
+    "has_mobile_money",
+    "uses_friends_family_savings",
+    "uses_informal_lender",
+]
+"""The financial products a business holds: inputs of the index's "access to credit and financial services"
+dimension, dropped (curation comments, decision 2)."""
 
 FORMAL_ANSWERS = {
     "loan account: Have now": ("has_loan_account", "Have now"),
@@ -34,15 +48,16 @@ FORMAL_ANSWERS = {
 
 INSURANCE = ["has_insurance", "funeral_insurance", "medical_insurance", "motor_vehicle_insurance"]
 CREDIT = ["has_credit_card", "has_loan_account"]
-"""The answers that act as inputs of the index (curation comments, "Potential leak, kept on purpose")."""
+"""The product answers tabulated against the class in decision 2."""
 
 
 class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Is a small business's financial health low, medium or high?",
         use_case=(
-            "An institution, such as a lender, assesses a small business from what its owner reports in one "
-            "interview, the prediction point the definition sets for data.org's Zindi competition (2025)."
+            "A development partner or government agency screens a small business from one interview with its owner, "
+            "to find vulnerable businesses and target support (the use the competition page names besides lenders' "
+            "credit risk)."
         ),
         row=(
             "One small or micro business in Eswatini (2023), Malawi (2019) or Zimbabwe (2022), from FinMark Trust's "
@@ -54,23 +69,22 @@ class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
         ),
         known=(
             "The country, the owner's age and sex, the business's age, turnover and expenses, the owner's income "
-            "(local currency), and answers on finance held (accounts, cards, loans, mobile money, insurance), record "
-            "keeping, tax, problems, risks and attitudes."
+            "(local currency), and answers on record keeping, tax, problems, risks and attitudes."
         ),
         split=(
             "Random businesses, as in the competition, so the test data stands for other businesses of the same "
-            "surveys."
+            "surveys, not a later survey or another country."
         ),
         changes=(
             "We drop Lesotho's 1,944 businesses, whose label runs against the index's own parts and against the other"
-            " countries."
+            " countries, and the 11 answers on financial products held, which are inputs of the index."
         ),
         fit="approximate",
         fit_reason=(
-            "The index comes from an unpublished formula over survey answers, among them the insurance and credit "
-            "products that are features, so the task partly recovers that formula (a small tree on those columns: log"
-            " loss 0.285; all columns: 0.260). The countries asked different questions, so some columns are missing "
-            "for whole countries."
+            "The competition introduced the index and did not publish its formula or who acts on its class; the "
+            "screening use is the page's own. Without the product answers the task predicts the class from the "
+            "business's profile, money and attitudes. The countries asked different questions, so some columns are "
+            "missing for whole countries, and the test data comes from the same surveys."
         ),
     )
 
@@ -108,31 +122,36 @@ class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with Train.csv of the Zindi competition "data.org Financial Health Prediction Challenge" (2025): 9,618 small businesses in Eswatini, Lesotho, Malawi and Zimbabwe from FinMark Trust's FinScope MSME surveys, with 37 survey answers and the class of the business's Financial Health Index (FHI): Low, Medium or High.
+        We start with Train.csv of the Zindi competition "data.org Financial Health Prediction Challenge" (2025): 9,618 small businesses in Eswatini, Lesotho, Malawi and Zimbabwe from FinMark Trust's FinScope MSME surveys, with the country, 36 survey answers and the class of the business's Financial Health Index (FHI): Low, Medium or High.
 
-        - Prediction point: an institution, such as a lender, assesses a small business from what its owner reports in one interview. The index describes the business at the same interview, so no column is recorded after the label.
-        - Target: `Target` renamed to `financial_health`. The competition scored weighted F1 (Zindi discussion 29971); we keep the default metric, log loss.
-        - We drop Lesotho's 1,944 rows: its label runs against the index's own dimensions and the other three countries, a recording problem we cannot repair. In Lesotho every formal-finance answer goes with a lower class, elsewhere with a higher one (decision table). LightGBM trained on two of the other countries ranks the third at ROC AUC 0.63 to 0.68 and Lesotho at 0.46, and swapping Low and Medium does not repair it (0.54). Revisit if data.org or FinMark Trust explain how Lesotho's FHI was computed.
-        - Potential leak, kept on purpose: the FHI is computed from survey answers, among them the insurance and credit products that are columns here; none of the 1,896 businesses with an insurance product is Low. A depth-6 tree on country and the 11 product columns reaches log loss 0.285 against 0.260 for untuned LightGBM on all columns (class shares 0.796) and is worse on all 9 splits. We keep the columns: a business reports them at the assessment, the competition predicts the FHI from all columns, and the formula is not published. Revisit if data.org or FinMark Trust publish it.
-        - Anomaly: the competition merged surveys with different questionnaires, and we keep the answers as released. Columns a country did not ask are missing for all its rows, and Malawi asked the three insurance products of only 147 of its businesses, 91% of them Medium or High against 14% of the others.
-        - We unify the seven spellings of "Don't know" and the two of "Used to have but don't have now" (`ANSWER_SPELLINGS`). Each column has one spelling per country, and country is a column, so no information is lost.
+        - Prediction point: a development partner or government agency screens a small business from one interview with its owner, to target support (the competition page names this use and lenders' credit risk; no source shows a lender acting on the class). The index describes the business at the same interview, so no column is recorded after the label. The page says the challenge "introduces a data-driven Financial Health Index"; its formula and author are not published.
+        - Target: `Target` renamed to `financial_health`. The competition scored F1 (Zindi evaluation page; API `f1_multiclass`); the page does not say how the three classes are averaged. Participants who submitted single-class files found the leaderboard scores fit weighted F1, not macro or micro F1 (Zindi discussion 29971, "Which F1-score ?"; not confirmed by the host), so we declare `f1_weighted` (TP-6).
+        - We drop Lesotho's 1,944 rows: its label runs against the index's own dimensions and the other three countries, and its answers are damaged too (decision 1), a recording problem we cannot repair. In Lesotho every formal-finance answer goes with a lower class, elsewhere with a higher one. LightGBM trained on the other countries ranks Lesotho at ROC AUC 0.43 to 0.50, against 0.62 to 0.95 for the other countries, and swapping Low and Medium in Lesotho's labels does not repair it (ROC AUC 0.54). Revisit if data.org or FinMark Trust explain how Lesotho's FHI was computed.
+        - We drop the 11 answers on financial products held (`PRODUCTS`: insurance, cards, loan and other accounts, mobile money, informal sources): the page names "access to credit and financial services" as one of the FHI's four dimensions, so these answers are parts of the target (LEAK-10), although the owner gives them at the interview. None of the 1,896 businesses with an insurance product is Low. With the same LightGBM, country and the 11 answers reach log loss 0.255 against 0.266 for all columns (better on 9 of 9 splits); the 26 remaining columns reach 0.694 (macro ROC AUC 0.756) against 0.796 for the class shares, better on 9 of 9. Dropping only the 8 formal products would leave 0.678; mobile money and the informal sources go too, as they likely feed the access or debt dimensions.
+        - Anomaly: the competition merged surveys with different questionnaires, and we keep the answers as released. Columns a country did not ask are missing for all its rows. In Zimbabwe (motivation_make_more_money, current_problem_cash_flow) and Eswatini (problem_sourcing_money, marketing_word_of_mouth) the answer is "Yes" or missing, and missing means not ticked; we keep it missing, as the questionnaires are not at hand.
+        - We unify the six spellings of "Don't know" (`ANSWER_SPELLINGS`). Each column has one spelling per country, and country is a column, so no information is lost.
         - current_problem_cash_flow: Eswatini's "0" becomes "No", as Malawi writes it; Zimbabwe's missing values stay missing.
         - Malawi records the age of a business under a year in months, with the years missing; we set those 225 businesses' years to 0, as Eswatini and Zimbabwe record such a business.
-        - The amounts stay in local currency, since country is a column.
+        - business_age_years and business_age_months become missing in the 6 rows where the business is older than its owner (for example an owner of 20 with a business of 25 years).
+        - The amounts stay in local currency, since country is a column. Their period may differ by country too (personal income over turnover has a median of 0.06 in Zimbabwe against 0.33 elsewhere), which country also covers.
+        - The page lists traded commodities, trade activity, firm size and location as inputs; Train.csv has none of them.
         - We drop ID, a random id per row.
-        - IID split, as in the competition (its test set is a random 20% of every country). Each survey is one cross-section, and a business appears once.
-        - dtypes: country and the 31 answer columns are categorical; owner_age, the three amounts and the age of the business (years, months) are numeric.
+        - IID split, as in the competition (its test set is a random 20% of every country). Each survey is one cross-section, and a business appears once. The score holds for the same surveys: untuned LightGBM trained on Malawi 2019 and Zimbabwe 2022 scores Eswatini 2023 at log loss 1.14, against 0.905 under the random split and 0.958 for Eswatini's own class shares. Three country-years are too few for a grouped or temporal split.
+        - dtypes: country and the 19 answer columns are categorical; owner_age, the three amounts and the age of the business (years, months) are numeric.
     """
 
     # Task
     target = TARGET
     problem_type = "multiclass_classification"
+    metric = "f1_weighted"  # the competition's F1; weighted per the participants' leaderboard probe (curation comments)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "Train.csv")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = drop_columns(raw.rename(columns={"Target": TARGET}), ["ID"])  # ID: a random "ID_" + 6 characters
+        # The products held are inputs of the index's access-to-finance dimension (curation comments, decision 2)
+        df = drop_columns(df, PRODUCTS)
 
         # Lesotho's label runs against formal finance and income, unlike the other countries (curation comments)
         df = df[df["country"] != "lesotho"]
@@ -146,6 +165,10 @@ class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
         # Malawi gives months instead of years for a business under a year
         under_a_year = (df["country"] == "malawi") & df["business_age_years"].isna() & df["business_age_months"].notna()
         df.loc[under_a_year, "business_age_years"] = 0
+
+        # A business older than its owner is impossible: its age becomes missing
+        older = df["business_age_years"] > df["owner_age"]
+        df.loc[older, ["business_age_years", "business_age_months"]] = np.nan
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -170,17 +193,18 @@ class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
             rows.append(row)
         direction = pd.DataFrame(rows).set_index("answer")
 
-        # 2. The products a business holds largely set its class
-        held = lambda col: df[col].eq("Have now") | df[col].eq("Yes")  # has_insurance answers Yes / No
+        # 2. The products a business holds largely set its class (raw answers of the kept countries)
+        kept = raw[raw["country"] != "lesotho"]
+        held = lambda col: kept[col].eq("Have now") | kept[col].eq("Yes")  # has_insurance answers Yes / No
         insured = np.where(pd.concat([held(c) for c in INSURANCE], axis=1).any(axis=1), "yes", "no")
         credit = sum(held(c).astype(int) for c in CREDIT)
         lookup = pd.crosstab(
             [
-                df["country"].rename("country"),
-                pd.Series(insured, index=df.index, name="any insurance product"),
+                kept["country"].rename("country"),
+                pd.Series(insured, index=kept.index, name="any insurance product"),
                 credit.rename("formal credit products"),
             ],
-            df[TARGET],
+            kept["Target"].rename(TARGET),
         )[["Low", "Medium", "High"]]
 
         return [
@@ -189,18 +213,22 @@ class DataorgFinancialHealthPredictionChallenge(AbstractCuratedDataset):
                 "Share of Medium or High among the businesses that gave the answer against those that gave another "
                 "answer to the same question (n: the businesses that gave it), from the raw file. In Eswatini, Malawi "
                 "and Zimbabwe every formal-finance answer goes with a higher class; in Lesotho every one goes with a "
-                "lower class, and the class falls with income, expenses and turnover (Spearman -0.12, -0.11, -0.11; "
-                "+0.14 to +0.24 in the other countries). The informal friends-and-family answer goes with a higher "
-                "class everywhere. The 1,944 Lesotho rows are dropped.",
+                "lower class, and the class falls with income, expenses and turnover (Spearman -0.12, -0.11, -0.11 "
+                "without the 97/98/99 codes; -0.055, -0.073, -0.052 as released; +0.14 to +0.24 in the other "
+                "countries). The informal friends-and-family answer goes with a higher class everywhere. The answers "
+                "are damaged too: 12 columns are missing for every Lesotho business, among them three insurance "
+                "columns, the credit card and record keeping, and 86% answer that they used to have an informal "
+                "lender. The 1,944 Lesotho rows are dropped.",
                 direction,
             ),
             Decision(
-                "Product columns kept although the index is computed from such answers",
+                "The 11 product columns dropped: inputs of the index",
                 "Class counts by country, any insurance product and the number of formal credit products (credit "
-                "card, loan account). On the shipped splits a depth-6 tree on country and the 11 product columns "
-                "reaches log loss 0.285 against 0.260 for untuned LightGBM on all columns (class shares 0.796) and is "
-                "worse on all 9 splits; within identical product answers the most frequent class covers 93.8% of the "
-                "rows. The formula is not published, and the competition predicts the index from all columns.",
+                "card, loan account), from the raw answers of the three kept countries. The competition page names "
+                "access to credit and financial services as one of the index's four dimensions. With the same "
+                "LightGBM on the shipped splits, country and the 11 product columns reach log loss 0.255 against "
+                "0.266 for all columns, better on 9 of 9; within identical product answers the most frequent class "
+                "covers 93.8% of the rows. The 26 remaining columns reach 0.694 against 0.796 for the class shares.",
                 lookup,
             ),
         ]

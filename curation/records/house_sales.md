@@ -38,6 +38,12 @@ Feature descriptions: https://www.kaggle.com/datasets/harlfoxem/housesalespredic
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Well-known house-price regression with its post-sale feature leak fixed; temporal split, spatial features, direct valuation fit.
 
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes. Applied: the 1,061 sales the county flags as not at market value (warnings 15, 46, 60, 51, 23, 13) dropped from the county's sales extract (USE-5); the lot size rebuilt from the `LandFootage` record (LEAK-10); a one-week gap for the recording delay (SPLIT-10); the July-2015 view, waterfront and neighbours' areas kept with a `Potential leak, kept on purpose:` note and the fit set to approximate (USE-8); 5 placeholder living areas set to missing; the use case reworded to the assessor's record on the sale day; the 2015 course release and the county cited (PROV-10). Open: the borderline warning codes, `yr_renovated` 0 as missing, and the house-price family's fit label and window length. Priority 3: gap -, use case -, source +, shape +, risk - (no thin domain, problem type or regime; the use case is the curation's and the fit approximate; King County's assessor records; 19,906 sales, temporal, mixed feature types; no known risk, the open issues are scope and encoding).
+
+CC (2026-10-21, Lennart): Stay with direct fit if the task (without leakage) would be a direct fit, and only move to approximate if we had to change a lot to avoid the leak; keep the horizons as they are, no family-wide window.
+
+**Assessment (AI, 2026-10-21):** fit set back to `direct`; `fit_reason` names the remnant kept from July 2015 (view, waterfront and the neighbours' areas changed after the sale for about 145 rows; masking them: RMSE 0.2147 against 0.2132) and the 1,073 sales flagged as changed since the sale. Dataset check: 0 errors, 0 warnings.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

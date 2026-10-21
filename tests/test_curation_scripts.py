@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.curation.record import CurationRecord
@@ -490,3 +491,44 @@ def test_register_main(register, tmp_path, capsys):
         "amendment_due",
     }
     assert all("full" not in d for d in data["decisions"])
+
+
+@pytest.fixture(scope="module")
+def task_probe():
+    """curation_probes.task, imported through task_probes.py (which puts the probe library on the path)."""
+    return _import("task_probes").task
+
+
+def test_task_probe_cap_keeps_the_newest_rows_of_a_temporal_train_side(task_probe):
+    """A temporal train side keeps its newest rows; any other keeps random rows; a small side is kept whole."""
+    rng = np.random.default_rng(0)
+    train = np.arange(100, 1100)
+    times = np.zeros(1100)
+    times[train] = rng.permutation(1000)  # row order is not time order
+    newest = task_probe.cap_train(train, 300, times, rng)
+    assert len(newest) == 300
+    assert list(newest) == sorted(newest)
+    assert set(times[newest]) == set(range(700, 1000))
+    sampled = task_probe.cap_train(train, 300, None, rng)
+    assert len(sampled) == 300
+    assert set(sampled) <= set(train)
+    assert times[sampled].min() < 700  # random rows reach back in time
+    assert task_probe.cap_train(train, 5_000, times, rng) is train
+
+
+def test_task_probe_run_on_a_capped_temporal_task(task_probe):
+    """A drifting temporal task capped below its train side: the keys are stable and the dummy uses every train row."""
+    rng = np.random.default_rng(1)
+    n = 1_200
+    t = np.arange(n)
+    x = rng.normal(size=n)
+    y = (rng.random(n) < 1 / (1 + np.exp(-(x + 3 * t / n - 2)))).astype(int)  # the base rate drifts up
+    df = pd.DataFrame({"t": t.astype(float), "x": x, "noise": rng.normal(size=n), "y": y})
+    splits = [(np.arange(0, 800), np.arange(800, 1_000)), (np.arange(0, 1_000), np.arange(1_000, 1_200))]
+    result = task_probe.run(df, "y", "binary_classification", splits, time_on="t", max_rows=300, n_jobs=1)
+    assert {"scores", "best", "flags", "flag_rules", "per_split", "single_feature", "splits_probed"} <= set(result)
+    assert {"dummy", "drift", "linear", "random_forest", "lightgbm", "single_feature"} <= set(result["scores"])
+    assert result["splits_probed"] == 2
+    full_share = y[:800].mean()  # the dummy predicts the whole train side's class share, not the capped rows'
+    expected = -(y[800:1_000] * np.log(full_share) + (1 - y[800:1_000]) * np.log(1 - full_share)).mean()
+    assert result["per_split"]["dummy_loss"][0] == pytest.approx(expected, abs=1e-4)

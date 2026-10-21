@@ -36,6 +36,10 @@ Kaggle solutions used IID CV splits. There is also a problem with metric hacking
 
 TabRed uses 4/5 month as time horizon
 
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric stays the default `roc_auc`: the competition scored "Home Credit 2023 - Gini Stability" (Kaggle API), the mean weekly Gini with a penalty for a falling trend and for the spread around it; it needs the week of each row and is no listed metric, and ROC AUC is the per-week score it is built from (definitions.md, Field mapping, rule 4). The notes now name the original. Needs a rebuild to reach the container (notes only).
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

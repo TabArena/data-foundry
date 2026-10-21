@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a
+checksum: v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed
 build:
   uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
   checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
@@ -29,7 +29,7 @@ data:
 task:
   target: target
   problem_type: binary_classification
-  metric: normalized_gini_coefficient
+  metric: roc_auc
   split_regime: iid
   stratify_on: target
   time_on: null
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 396804
     max: 396804
@@ -53,8 +55,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - task_metric_unknown
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -63,9 +64,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `target`, scored with `normalized_gini_coefficient` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
+Binary classification of `target`, scored with `roc_auc` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a`, so the build is stale. See [Build](#build).
+Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -130,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 595,206 x 38 |
 | task.target | target |
 | task.problem_type | binary_classification |
-| task.metric | normalized_gini_coefficient |
+| task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | target |
 
@@ -180,6 +181,7 @@ We start with the train.csv from Kaggle.
 - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
 - We drop the index as it seems to be uninformative for this dataset.
 - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
+- Metric: the competition scored the normalized Gini coefficient, which for a binary target is 2 x ROC AUC - 1, so we keep ROC AUC, which ranks models the same (TP-6).
 
 ## Splits
 
@@ -195,9 +197,8 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **info** `task_metric_unknown`: Metric 'normalized_gini_coefficient' is not one of the standard names for binary_classification. (hint: Fine for a custom competition metric, but it has to be registered on the consumer side — TabArena otherwise silently falls back to 'roc_auc'.)
 
 ## Data checks
 
@@ -361,4 +362,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b3e6feed69bbdd2692248673a1c9997a2d35fdbe5d456e8b37424b78c239088a` |
+| stale | yes: the definition now gives checksum `v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed` |

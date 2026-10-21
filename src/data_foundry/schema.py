@@ -93,9 +93,14 @@ DataTags = Literal[
     # data that is IID by construction of the data.
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
-    "2ndTierData",  # Data that is not of the highest quality but still a reasonable task
+    # a task temporal by its use case, split grouped because it has too few periods for three test windows
+    "ForcedGroupedFromTemporal",
+    # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
+    "2ndTierData",
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
+RETIRED_DATA_TAGS = ("2ndTierData",)
+"""Tags old containers may carry and loading accepts, but a new definition may not set."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

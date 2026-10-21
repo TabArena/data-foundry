@@ -37,6 +37,14 @@ temporal split on era, likely need to add feature neutralization: https://github
 
 **Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issue 3: 75 Faith features designed with test-era targets, kept as a potential leak). Large anonymised temporal finance panel with real but tiny signal; RMSE mostly ranks shrinkage.
 
+**Correction (AI, 2026-10-20):** the assessment of 2026-10-07 says the Faith features were designed over two test windows; their design period (eras 1080-1191) covers all of the oldest window, all of the middle one and eras 1184-1191 of the newest, so parts of all three. Its gain of +0.002-0.004 per era is also superseded: on the shipped splits ridge gains +0.0043, +0.0013 and +0.0056 (eras 1184-1191), +0.0010 after the release.
+
+**Assessment (AI, 2026-10-20):** re-check by the full review panel: ship after changes (mediator). The split holds (the 4-era gap covers the 3-era overlap of the 20-day targets), and the task is a ranking of the stocks within each week, not forecasting (the id changes every era; a stock's newest known target correlates about 0 with its target). The signal is small but real on the shipped splits (per-era correlation 0.0071 / 0.0142 / 0.0154, t 3.3 / 7.7 / 8.1), fragile on the newest window; tuned methods must beat the constant 0.5 window by window or the dataset goes to `TBD -> 2nd Tier`. Under RMSE the model ranking agrees with Numerai's per-era correlation at Kendall tau -0.11 to 0.39, pooled `pearsonr` at 0.89-0.93, so the panel recommends `pearsonr` (TP-6). The 75 Faith features gain about 28% of the signal in eras 1080-1131; the panel recommends dropping them (LEAK-31). Open for the curator in the folder's REVIEW.md: the metric, the Faith features, `medium` against `all`, v5.2 against v5.3. Priority 2: gap -, use case - (fit approximate: the Faith features and the metric gap), source +, shape +, risk - (the Faith features designed with test-era targets, a measured leak open in issue 3).
+
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric of numerai_v5_2_1m set to `pearsonr` (was RMSE): Numerai's per-era CORR is no listed metric name; pooled Pearson tracks it within 0.0002 per model on the shipped windows (every era's target mean is 0.5) and agrees with its model ranking at Kendall tau 0.89-0.93, RMSE at -0.11 to 0.39. Needs a rebuild to reach the container.
+
 ## Reference
 
 Website https://numer.ai/data/v5.2

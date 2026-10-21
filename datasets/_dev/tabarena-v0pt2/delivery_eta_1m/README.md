@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce
+checksum: v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43
 build:
   uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
   checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: 7
   time_horizon_unit: days
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1000000
     max: 1000000
@@ -65,7 +67,7 @@ decisions: []
 
 Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -171,6 +173,7 @@ The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is 
 
 We start with data from TabRed, which already comes preprocessed.
 
+- Potential leak, kept on purpose: TabReD releases the 217 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 152 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
 - We drop orders with a delivery time under one minute (386k of 17.0M, 2.3%), as TabReD's preprocessing does.
 - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
 - We drop a duplicated column `cat_2` in the preprocessing.
@@ -180,7 +183,7 @@ Version of `delivery_eta`: We sample per test window (v2 split protocol): each w
 
 ## Splits
 
-We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days.
 
@@ -386,4 +389,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c9dd3016b85500d3d2e97efaf93120a4ef0e0c24bbba8238745abd7022228dce` |
+| stale | yes: the definition now gives checksum `v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43` |

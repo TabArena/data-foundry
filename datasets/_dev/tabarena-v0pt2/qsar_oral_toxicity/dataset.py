@@ -13,6 +13,26 @@ N_BITS = 1024
 N_TRAINING_ROWS = 6744
 """The file stores the authors' 6,744 training molecules first, then their 2,248 test molecules (paper, Table 1)."""
 
+PARENT_PAIRS = (
+    (3238, 6358),
+    (3952, 7628),
+    (3785, 8179),
+    (6671, 6689),
+    (6675, 8967),
+    (2900, 5706),
+    (4384, 4996),
+    (4538, 7203),
+    (6672, 6690),
+)
+"""Rows of the UCI file that hold one parent structure twice, as (the row kept, the row dropped).
+
+Nine parents (a free acid and its salt or tautomer under two CASRNs, all not very toxic) survive the deduplication
+twice, because the two entries differ in their bits. The pairs come from linking the file to the project's
+structure file `trainingset_171130.txt` by row order; both blocks of the file are in CASRN order.
+"""
+
+PARENT_KEPT_TWICE = tuple(dropped for _, dropped in PARENT_PAIRS)
+
 
 class QsarOralToxicity(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -24,11 +44,12 @@ class QsarOralToxicity(AbstractCuratedDataset):
         ),
         row=(
             "One chemical of the calibration set of the US ICCVAM acute oral toxicity project, with rat test data "
-            "(8,493 chemicals after removing salt forms and copies)."
+            "(8,484 chemicals after removing salt forms and copies)."
         ),
         predicted=(
-            "Whether the swallowed dose that kills half of the rats is below 50 mg per kg of body weight (8% are very"
-            " toxic)."
+            "Whether the swallowed dose that kills half of the rats is 50 mg per kg of body weight or less, the top "
+            "acute oral hazard category (8% are very toxic). A quarter of the chemicals carry that category without "
+            "a measured dose."
         ),
         known=(
             "1,024 on/off fingerprint bits computed from the chemical's structure, with salts, solvents and "
@@ -36,11 +57,13 @@ class QsarOralToxicity(AbstractCuratedDataset):
         ),
         split=(
             "Random chemicals; salt forms and hydrates of one compound share a fingerprint and are kept once, so a "
-            "test chemical never has its parent structure in training."
+            "test chemical never has its parent structure in training. The rows carry no identifier, but they can be "
+            "linked to the project's structure file by their order, which is how we checked this."
         ),
         changes=(
-            "We drop exact copies of a fingerprint and the 22 rows of fingerprints that occur with both classes; the "
-            "source kept them and fixed one training and test set."
+            "We drop exact copies of a fingerprint, the 22 rows of fingerprints that occur with both classes, and "
+            "nine rows whose parent structure is already in another row; the source kept them and fixed one training "
+            "and test set."
         ),
         fit="direct",
         fit_reason=(
@@ -91,12 +114,12 @@ class QsarOralToxicity(AbstractCuratedDataset):
         We start with qsar_oral_toxicity.csv from UCI 508: 8,992 chemicals, 1,024 binary fingerprint bits and the class (no header, no identifiers). It is the very toxic (VT) endpoint of the calibration set of the ICCVAM "Predictive Models for Acute Oral Systemic Toxicity" project (rat oral LD50 data; its consensus models became CATMoS), with fingerprints computed by Ballabio et al. (2019).
 
         - Prediction point: a chemical without an acute oral toxicity test, before any animal test. Every feature is computed from its QSAR-ready structure (salts, solvents and stereochemistry removed), so all of them exist at prediction time.
-        - Target: `very_toxic` is "Yes" when the rat oral LD50 is below 50 mg/kg (the file's "positive"), else "No" (paper, Sec. 2.1). The paper scores the non-error rate; we keep the collection's ROC AUC.
-        - Features: binary extended connectivity fingerprints computed with Dragon 7 (paper, Sec. 2.2), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and kept as numeric 0/1 columns. No bit is constant and no two bits are equal.
-        - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (406 repeated vectors, 894 rows; the project's training file shows the same 406 repeated parents by InChIKey). We drop the 477 exact copies and then every row of the 11 bit vectors that occur with both classes (22 rows), as for wine_quality and jm1, so a test chemical never has its parent structure in train; 8,493 chemicals remain (708 very toxic, 8.3%; decision table). The source kept the copies.
+        - Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the file's "positive"), else "No" (paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). The 44 chemicals at exactly 50 mg/kg are positive, and the label is the top regulatory hazard category on every row: 2,258 rows (25%) carry that category without a point LD50. The paper scores the non-error rate; we keep the collection's ROC AUC.
+        - Features: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment (ECFP_1024_02 or _02R of Table 2; the file does not say which), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal. 97 of the project's QSAR-ready structures still carry stereo markers, which the fingerprint ignores.
+        - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (406 repeated vectors, 894 rows; by InChIKey the project's training file has 405 repeated parents over 891 rows, which agrees with the vectors on 394 of them, and 12 of the repeated vectors are hash collisions of different chemicals rather than one parent). We drop the 477 exact copies and then every row of the 11 bit vectors that occur with both classes (22 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 8,484 chemicals remain (708 very toxic, 8.3%; decision tables). The source kept the copies.
         - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
-        - IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. The source splits at random: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the file stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The file holds no structure or identifier, so a scaffold split cannot be built.
-        - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.681 below a Tanimoto similarity of 0.5 to the nearest training chemical, 0.954 above 0.85). It does not come from series a random split lets a model memorise: at Tanimoto 0.9 only 456 rows (5.4%) have any analog, and the 708 very toxic chemicals sit in 692 distinct clusters.
+        - IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. The source splits at random: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the file stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The split rests on the use case, a new chemical each time with no entity that recurs, and on these structure-blind source protocols; the file carries no identifier, but its rows can be linked to the project's structure file by order, so a scaffold key could be reconstructed.
+        - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.681 below a Tanimoto similarity of 0.5 to the nearest training chemical, 0.954 above 0.85). Near copies carry little of it (at Tanimoto 0.9 only 456 rows, 5.4%, have any analog, the near-copy gap is 0.006), but chemotypes do: held out by structure clusters (Butina, Tanimoto 0.5) a random forest falls from 0.882 to 0.842, and on the reconstructed Murcko scaffolds from 0.887 to 0.843, with the model ranking unchanged.
         - Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest (ROC AUC 0.883) and LightGBM (0.869) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (0.877).
     """
 
@@ -115,11 +138,13 @@ class QsarOralToxicity(AbstractCuratedDataset):
         # Salt forms, hydrates and stereoisomers of one parent structure share the bit vector: keep one row per
         # vector, and drop every vector that occurs with both classes.
         df = df.drop_duplicates()
-        return df[~df.duplicated(subset=bits, keep=False)]
+        df = df[~df.duplicated(subset=bits, keep=False)]
+        # Nine parents survive with two different vectors (tautomer or salt entries); keep the first row of each.
+        return df.drop(index=list(PARENT_KEPT_TWICE))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The 1,024 bits stay numeric 0/1; the target becomes a category.
-        return FeatureTypes()
+        # The 1,024 bits are 0/1 presence flags: categorical (CLEAN-14); the target becomes a category.
+        return FeatureTypes(categorical=[f"ecfp_{i + 1}" for i in range(N_BITS)])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         positive = raw[N_BITS] == "positive"
@@ -151,13 +176,28 @@ class QsarOralToxicity(AbstractCuratedDataset):
             {"rows": block.value_counts(sort=False), "very toxic": positive.groupby(block, sort=False).sum()}
         )
         file_order.index.name = "position in the UCI file"
+
+        pairs = pd.DataFrame(PARENT_PAIRS, columns=["row kept", "row dropped"])
+        pairs["bits in common"] = [
+            int((raw.iloc[kept, :N_BITS].to_numpy() & raw.iloc[dropped, :N_BITS].to_numpy()).sum())
+            for kept, dropped in PARENT_PAIRS
+        ]
+        pairs["very toxic"] = [bool(positive.iloc[kept] or positive.iloc[dropped]) for kept, dropped in PARENT_PAIRS]
         return [
             Decision(
                 "Copies of a parent structure dropped",
                 "The bits are computed from the QSAR-ready parent structure, so salts, hydrates and stereoisomers "
-                "of one compound share the bit vector. One row per vector is kept, and vectors with both classes "
-                f"are dropped; {len(df):,} chemicals remain.",
+                "of one compound share the bit vector (12 of the repeated vectors are hash collisions of different "
+                "chemicals instead). One row per vector is kept, and vectors with both classes are dropped, which "
+                f"leaves {len(df) + len(PARENT_KEPT_TWICE):,} chemicals before the nine rows of the next decision.",
                 duplicates,
+            ),
+            Decision(
+                "Nine parents that survive twice reduced to one row",
+                "Linking the rows to the project's structure file by order shows nine parent structures in two kept "
+                "rows each (a free acid and its salt or tautomer under two CASRNs, all not very toxic), whose bits "
+                f"differ. We keep the first row of each pair, so {len(df):,} chemicals remain.",
+                pairs,
             ),
             Decision(
                 "The file's order is the authors' split; we use cross-validation",

@@ -24,6 +24,16 @@ HISTORY_START = "2023-01-01"
 MIN_SCHEDULED_MINUTES = 15
 """Scheduled block times below 15 minutes are errors; the shortest real hop (Wrangell-Petersburg) is 18 minutes."""
 
+MIN_TEMPERATURE_C = -50
+"""Temperatures below -50 C are errors: no US airport outside Alaska comes near it, Alaska's lowest reading is -41 C."""
+
+MAX_WIND_KMH = 120
+"""Mean wind speeds above 120 km/h (hurricane force) recorded without rain are sensor errors (ACY, HOU, ATW)."""
+
+TRUE_SIGNS = {"GUM": ("LONGITUDE", 1), "PPG": ("LATITUDE", -1)}
+"""Coordinates the release stores with the wrong sign: Guam at 144.80 W (true 144.80 E), Pago Pago at 14.33 N (true
+14.33 S)."""
+
 SKIPPED_COLUMNS = (
     "DEP_DELAY",
     "TAXI_OUT",
@@ -70,7 +80,8 @@ class Aeolus1m(AbstractCuratedDataset):
         ),
         known=(
             "The date, airline, flight number, route, scheduled times and duration, the airports' locations, and the "
-            "weather at both airports a few hours before departure."
+            "weather at both airports observed 3.5 to 11 hours before departure (about a day early for overnight "
+            "arrivals)."
         ),
         split=(
             "Each test window is two weeks at the end of 2024; training is a random million earlier flights from 2023"
@@ -80,11 +91,12 @@ class Aeolus1m(AbstractCuratedDataset):
             "We use the history from 2023 on (the release starts in 2016) and two-week windows, so only one window "
             "falls in the holiday peak."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "Everything the model sees is known before departure, except the destination weather of 2% of the "
-            "flights, read up to about an hour later. Cancelled and diverted flights are not in the release, so the "
-            "task is the delay of a flight that operates."
+            "The weather is an old observation: 3.5 to 11 hours before departure by time zone, a day early for "
+            "overnight arrivals; 2% of the destination readings and Guam's origin readings fall after the departure "
+            "(at most 4.4 and about 10 hours). The inbound aircraft, the largest cause of delay, is missing, and so "
+            "are cancelled and diverted flights: the task is the delay of a flight that operates."
         ),
     )
 
@@ -95,7 +107,7 @@ class Aeolus1m(AbstractCuratedDataset):
         The release holds 54,674,003 flights of 2016-2024; we keep the 12,930,302 from 2023 on (curation notes). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
     """
     year = "2025"
-    domain = "business & marketing"
+    domain = "industry & manufacturing"  # transport has no value of its own; as for nyc_taxi_trip_duration
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/flnny123/mfddmulti-modal-flight-delay-dataset"
     license = "Apache-2.0 (Kaggle data card); the paper (Appendix A.3) states CC BY-NC 4.0"
@@ -127,16 +139,20 @@ class Aeolus1m(AbstractCuratedDataset):
         We start with the nine yearly tables `Aeolus/Flight_Tab/flight_with_weather_<year>.csv` (2016-2024) of the authors' Kaggle release of Aeolus (Xu et al., NeurIPS 2025): 54,674,003 completed US domestic flights with hourly Meteostat weather at both airports, of which we keep the 12,930,302 from 2023 on.
 
         - Prediction point: shortly before the scheduled departure, with the paper's tabular features (Table 9).
-        - History: we keep the flights from 2023-01-01 on (`HISTORY_START`), what a delay model refit every two weeks would train on: two seasonal cycles with the previous holidays, without COVID-19 (2020: 9.7% delayed against 17-21%). The authors' benchmarks use 2024 alone (Sec. 4.1). The 2016-2018 precipitation code and the one flight recorded twice (2018) fall before it.
-        - Target: `ARR_DEL15` is "Yes" for an arrival 15 minutes or more after the schedule, the US DOT definition and the paper's classification task. We do not use the minutes (ARR_DELAY): in 2023 and 2024 the 1% longest delays hold 66-68% of their variance, so an RMSE would mostly score a few extreme delays (third decision).
+        - History: we keep the flights from 2023-01-01 on (`HISTORY_START`), what a delay model refit every two weeks would train on: two seasonal cycles with the previous holidays, without COVID-19 (2020: 9.7% delayed against 17-21%). The authors' benchmarks use 2024 alone (Sec. 4.1 and 4.2). The 2016-2018 precipitation code and the one flight recorded twice (2018) fall before it.
+        - Target: `ARR_DEL15` is "Yes" for an arrival 15 minutes or more after the schedule, the US DOT definition; the paper's classification task uses more than 15 minutes (0.68% of the flights differ). We do not use the minutes (ARR_DELAY): in 2023 and 2024 the 1% longest delays hold 66-68% of their variance, so an RMSE would mostly score a few extreme delays (third decision). The probe on the source label: untuned LightGBM reached R² 0.01-0.02 on the minutes (2026-10-07, all nine years).
         - Note: the authors' classifier code labels `abs(ARR_DELAY) > 15`, which counts early arrivals as delayed; we follow the DOT definition.
         - Dropped as recorded at or after the departure: DEP_DELAY, TAXI_OUT, WHEELS_OFF, WHEELS_ON, TAXI_IN, ACTUAL_ELAPSED_TIME, AIR_TIME, DEP_TIME and ARR_TIME (the last two read for the first decision), and ARR_DELAY, the target's source. Also not read: FLIGHTS (always 1), ORIGIN_INDEX and DEST_INDEX (one per airport) and the parts of FL_DATE.
         - CRS_DEP_TIME and CRS_ARR_TIME are local clock times dated on the flight date; we keep their time of day in minutes (`CRS_DEP_TIME_MIN`, `CRS_ARR_TIME_MIN`, as the authors' code does).
-        - Anomaly: the release joined Meteostat's hourly records, whose timestamps are UTC, to the local scheduled clock times (first and second decision). So the origin weather is from a median 5.2 hours before the departure, the destination weather a median 3.0 hours.
-        - Potential leak, kept on purpose: the destination weather of 1.94% of the flights (0.9-1.0% in each test window) is read after the scheduled departure, a median 0.7 hours after it, and the 686 departures from Guam get weather from after the departure. All of the destination weather adds 0.006 to 0.024 ROC AUC per test window (untuned LightGBM), an upper bound for its late part. We keep it as released; re-joining it would be our own fix.
-        - Proxy missing values: scheduled block times below 15 minutes (3 rows) become missing; the shortest real hop is 18 minutes.
-        - OP_CARRIER_FL_NUM is categorical (the paper's Table 9): a flight number names a recurring service of its carrier.
-        - Task probes (50k training rows per window): no flags; ROC AUC LightGBM 0.609, linear 0.594, the scheduled arrival time alone 0.584.
+        - Anomaly: the release joined Meteostat's hourly records, whose timestamps are UTC, to the local scheduled clock times (first and second decision). So the origin weather is from 3.5 to 11.4 hours before the departure depending on the time zone (median 5.2), the destination weather a median 3.0 hours. Kept as released (curator, 2026-10-12).
+        - Anomaly: the release dates the scheduled arrival on FL_DATE, so the 460,592 overnight arrivals (3.6% of the kept history) carry the destination reading of the departure date at the arrival's clock hour, a median 25 hours before the departure.
+        - Potential leak, kept on purpose: the destination weather of 1.94% of the flights (0.9-1.1% in each test window) is read after the scheduled departure, a median 0.7 hours and at most 4.4 hours after it, and the origin weather of the 686 departures from Guam (106 in the frame) about 10 hours after it. Making the late destination readings missing in the test windows costs 0.0003-0.0004 ROC AUC per window (untuned LightGBM, 1M train rows); all of the destination weather adds 0.008-0.016. Kept with the weather as released (curator, 2026-10-12); revisit if the weather is re-joined or the readings are masked.
+        - Proxy missing values: scheduled block times below 15 minutes (3 rows) become missing; the shortest real hop is 18 minutes. Four implausible longer block times stay (17-60 minutes on routes with medians of 90-133 minutes).
+        - Impossible weather becomes missing: temperatures below -50 C (-60.6 C at Sarasota in May) and mean wind speeds above 120 km/h recorded without rain (up to 232 km/h), about 0.001% of the rows.
+        - Repair: the release stores Guam's longitude and Pago Pago's latitude with the wrong sign; we set the true signs (`TRUE_SIGNS`).
+        - Note: the release writes a scheduled midnight as 23:59 (no 00:00 in the kept history), and has no weather for the flights of 2024-12-31 scheduled from 23:30 on (the nearest hour falls in the next year's file), about 300 missing readings in the newest window.
+        - OP_CARRIER_FL_NUM is categorical (the paper's Table 9). A service is the carrier plus the number: 92.8% of the numbers are used by more than one carrier, so a model has to combine it with OP_CARRIER.
+        - Task probes (50k training rows per window): flag `no_spread` (LightGBM minus linear +0.036, paired standard error 0.019), kept as for amex_non_iid_1m; ROC AUC LightGBM 0.612, linear 0.594, the best single feature (a scheduled time) 0.581. With the full 1M training rows LightGBM reaches 0.629-0.630.
         - Note: the release holds no cancelled or diverted flights, so the task is the delay of a flight that operates.
         - Anomaly: March 2024 is missing from the release, a gap in the training history; the test windows are not affected.
     """
@@ -147,7 +163,7 @@ class Aeolus1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A delay model is refit every two weeks and predicts the flights of the two weeks ahead from the schedule and the weather. We use the last six weeks of 2024 as three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.8%, 16.7% and 17.3% of the flights late), so that one window, not two of three weekly ones, falls in the holiday peak (20.8% late over 2024). Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's departures and long delays land after midnight. Each window keeps all of its flights (258,551, 256,013 and 269,272); each train side is a random 1M of the earlier flights (one random order for all windows).
+        A delay model is refit every two weeks and predicts the flights of the two weeks ahead from the schedule and the weather. We use the last six weeks of 2024 as three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.8%, 16.7% and 17.3% of the flights late), so that one window, not two of three weekly ones, falls in the holiday peak (20.8% late over 2024). Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's departures and long delays land after midnight. Each window keeps all of its flights (258,551, 256,013 and 269,272); each train side is a random 1M of the earlier flights (one random order for all windows). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1): one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
     """
     temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=14, unit="days", n_windows=3, gap=1))
     subsample_to_budget = True
@@ -194,6 +210,15 @@ class Aeolus1m(AbstractCuratedDataset):
             df[f"{col}_MIN"] = (df[col].dt.hour * 60 + df[col].dt.minute).astype("int64")
         # Proxy missing values: impossible scheduled block times.
         df["CRS_ELAPSED_TIME"] = df["CRS_ELAPSED_TIME"].mask(df["CRS_ELAPSED_TIME"] < MIN_SCHEDULED_MINUTES)
+        # Impossible weather readings to missing.
+        for side in ("O", "D"):
+            df[f"{side}_TEMP"] = df[f"{side}_TEMP"].mask(df[f"{side}_TEMP"] < MIN_TEMPERATURE_C)
+            df[f"{side}_WSPD"] = df[f"{side}_WSPD"].mask(df[f"{side}_WSPD"] > MAX_WIND_KMH)
+        # Repair: the two airports whose coordinates the release stores with the wrong sign.
+        for side, airport in (("O", "ORIGIN"), ("D", "DEST")):
+            for code, (axis, sign) in TRUE_SIGNS.items():
+                rows = (df[airport] == code).to_numpy()
+                df.loc[rows, f"{side}_{axis}"] = sign * df.loc[rows, f"{side}_{axis}"].abs()
         # A flight number is a label of its carrier, not a quantity (the CSV writes 4814.0).
         df["OP_CARRIER_FL_NUM"] = df["OP_CARRIER_FL_NUM"].astype("int64")
         # Categories in sorted order, whatever order the parquet dictionary had.
@@ -301,7 +326,7 @@ class Aeolus1m(AbstractCuratedDataset):
                 alignment,
             ),
             Decision(
-                "The scheduled clock hour was read as UTC: the weather is from 3.5 to 10 hours earlier",
+                "The scheduled clock hour was read as UTC: the weather is from 3.5 to 11 hours earlier",
                 "The release joined Meteostat's hourly records, whose timestamps are UTC, to the local scheduled "
                 "clock times. Read as local time, each airport's daily temperature cycle is shifted by its UTC offset "
                 "(Honolulu would be coldest at 15 h and warmest at midnight); read as UTC, the coldest readings fall "

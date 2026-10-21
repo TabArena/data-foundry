@@ -38,7 +38,7 @@ class Bioresponse(AbstractCuratedDataset):
     # Dataset
     unique_name = "bioresponse"
     year = "2012"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/c/bioresponse"
     license = "Public Domain"
@@ -60,11 +60,13 @@ class Bioresponse(AbstractCuratedDataset):
         - We changed the name of the target and mapped it to yes/no
         - Anomaly: Only train data is used, since test data is empty for target
         - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
+        - Metric: the competition scored log loss (Kaggle's evaluation metric for bioresponse), which we declare (TP-6).
     """
 
     # Task
     target = "MoleculeElicitsResponse"
     problem_type = "binary_classification"
+    metric = "log_loss"  # the competition's metric
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/train.csv")

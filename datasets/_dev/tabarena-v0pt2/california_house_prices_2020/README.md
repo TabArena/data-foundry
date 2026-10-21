@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
+checksum: v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -17,9 +17,9 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
-  n_rows: 39048
+  n_rows: 39060
   n_features: 41
   dtypes:
     category: 1
@@ -43,14 +43,16 @@ splits:
   n_repeats: 3
   n_folds: 1
   random_state: 4267
-  time_horizon: 10382
+  time_horizon: 6510
   time_horizon_unit: steps
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 9762
-    max: 29286
+    min: 19530
+    max: 32550
   n_test:
-    min: 9762
-    max: 9762
+    min: 6510
+    max: 6510
 bundle_checks:
   ok: true
   errors: []
@@ -64,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index`. 39,048 rows and 41 features. Source: Kaggle (2021).
+Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index`. 39,060 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -74,13 +76,13 @@ Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14. See [Build](#buil
 
 **Use case.** For example, when a home is listed, a buyer, an agent or a valuation website estimates the price it will sell for, to set or judge an offer.
 
-**One row.** One home sold in California around 2020, as scraped from Redfin; Arizona homes, older copies of repeated homes and homes whose listing predates their last sale are dropped.
+**One row.** One sale of a home in California around 2020, as scraped from Redfin; Arizona homes, second copies of one sale and homes whose listing predates their last sale are dropped.
 
 **Predicted.** The sale price in US dollars, on a log scale.
 
 **Known at prediction time.** The listing (list price, listing date, description), the home's facts (type, year built, size, lot, rooms, heating, cooling, parking, appliances), its previous sale, tax assessment, address, region, and nearby schools with ratings and distances.
 
-**What the test data stands for.** Three test sets, each a quarter of the sales in sale order, with all earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates.
+**What the test data stands for.** Three test sets, each a sixth of the sales in sale order (the newest half of the sales), with all earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates.
 
 **Our changes to the source.** We drop 5,413 listings whose description states the sold price and 2,480 whose listing describes an earlier sale, and order and split the sales by the Kaggle ID, which follows the sale order.
 
@@ -128,7 +130,7 @@ Only curators run `build`, when the dataset ships.
 | license | Custom Kaggle Competition Rules |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | d2lcourse2021california_house_prices |
-| rows x columns | 39,048 x 42 |
+| rows x columns | 39,060 x 42 |
 | task.target | Sold Price |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -161,7 +163,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 39,048 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 42 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 39,060 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 42 columns, the target first. Cells are cut at 40 characters.
 
 | Sold Price | time_index | Address | Summary | Type | Year built | Heating | Cooling | Parking | Lot | Bedrooms | Bathrooms |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -177,7 +179,7 @@ We follow some common preprocessing steps from Kaggle and enhance features as mu
 
 We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
-- We log scale the target variable.
+- We log scale the target variable (log1p), so RMSE on it is the competition's metric, RMSLE (Kaggle's evaluation metric).
 - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
 - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
 - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
@@ -191,19 +193,19 @@ We found out that the data was web scraped from redfin.com and that the houses a
 - We treat ZIP codes as strings. But we add a new categorical features that puts zip code in to approximate relevant buckets of regions.
 - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
 - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
-- After all the above preprocessing, there exist 63 houses that appear multiple times in the dataset (same address, zip code, year built). We only keep the newest entry to avoid group-related target leakage.
+- After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
 
 ## Splits
 
-We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a separate repeat with one fold. Each fold has 25% of the original data as test set. We simulate as if we deploy a model at a time point x, for the next time period (e.g. for a whole next year like in the original competition task). As we do not know the time periods from the time_index, we split based on number of samples.
+Three test windows in sale order, each a sixth of the sales (6,510 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 9,762 to 29,286 rows, test 9,762 rows. Prediction horizon: 10382 steps.
+3 repeat(s) x 1 fold(s) with seed 4267; train 19,530 to 32,550 rows, test 6,510 rows. Prediction horizon: 6510 steps.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 29286 | 9762 | 0 | 31123 | 31124 | 41527 |
-| 1 | 0 | 19524 | 9762 | 0 | 20785 | 20786 | 31123 |
-| 2 | 0 | 9762 | 9762 | 0 | 10483 | 10484 | 20785 |
+| 0 | 0 | 32550 | 6510 | 0 | 34604 | 34605 | 41543 |
+| 1 | 0 | 26040 | 6510 | 0 | 27685 | 27686 | 34604 |
+| 2 | 0 | 19530 | 6510 | 0 | 20795 | 20796 | 27685 |
 
 ## Bundle checks
 
@@ -220,43 +222,43 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Zip Region | category | 0 | 0 | 5 | San Francisco Bay Area, Southern California / LA Area, Northern California, Cen… |
-| Last Sold On | datetime64\[ns\] | 15536 | 39.79 | 5854 | 2017-06-30 00:00:00, 2015-02-27 00:00:00, 2017-05-26 00:00:00, 2017-12-29 00:00… |
+| Last Sold On | datetime64\[ns\] | 15538 | 39.78 | 5855 | 2017-06-30 00:00:00, 2015-02-27 00:00:00, 2017-05-26 00:00:00, 2017-12-29 00:00… |
 | Year built | datetime64\[ns\] | 1017 | 2.6 | 156 | 1973-01-01 00:00:00, 2020-01-01 00:00:00, 1950-01-01 00:00:00, 1947-01-01 00:00… |
 | Listed On | datetime64\[ns\] | 0 | 0 | 1145 | 2020-09-18 00:00:00, 2020-10-16 00:00:00, 2020-10-02 00:00:00, 2020-10-09 00:00… |
-| Last Sold Price | float64 | 15536 | 39.79 | 3547 | 650000.0, 850000.0, 500000.0, 550000.0, 1200000.0, 1100000.0, 700000.0, 750000.… |
-| Middle School Score | float64 | 13611 | 34.86 | 9 | 6.0, 3.0, 5.0, 7.0, 4.0, 8.0, 9.0, 2.0, 1.0 |
-| Middle School Distance | float64 | 13610 | 34.85 | 210 | 0.6, 0.8, 0.7, 0.5, 0.9, 0.4, 1.0, 0.3, 1.1, 1.2 |
-| Lot | float64 | 12269 | 31.42 | 7730 | 5000.0, 6098.0, 2500.0, 6534.0, 2996.0, 2495.0, 11325.6, 5998.0, 7405.0, 43560.0 |
-| Full bathrooms | float64 | 5804 | 14.86 | 15 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
-| High School Score | float64 | 4470 | 11.45 | 10 | 7.0, 6.0, 8.0, 5.0, 4.0, 3.0, 9.0, 2.0, 10.0, 1.0 |
-| High School Distance | float64 | 4294 | 11 | 330 | 0.8, 0.7, 0.9, 0.6, 1.0, 0.5, 1.2, 1.1, 1.3, 0.4 |
-| Elementary School Score | float64 | 3888 | 9.96 | 10 | 6.0, 7.0, 5.0, 4.0, 8.0, 9.0, 3.0, 2.0, 1.0, 10.0 |
-| Elementary School Distance | float64 | 3766 | 9.64 | 235 | 0.3, 0.4, 0.2, 0.5, 0.6, 0.7, 0.1, 0.8, 0.9, 1.0 |
-| Annual tax amount | float64 | 3571 | 9.15 | 17400 | 1204.0, 1976.0, 1266.0, 5340.0, 4235.0, 2506.0, 1395.0, 2307.0, 1467.0, 1748.0 |
-| Bedrooms | float64 | 3411 | 8.74 | 28 | 3.0, 2.0, 4.0, 1.0, 5.0, 6.0, 0.0, 7.0, 8.0, 9.0 |
-| Tax assessed value | float64 | 3170 | 8.12 | 29367 | 918000.0, 1224000.0, 867000.0, 1200000.0, 1196460.0, 1248480.0, 1326000.0, 6630… |
-| Bathrooms | float64 | 2692 | 6.89 | 22 | 2.0, 3.0, 1.0, 4.0, 5.0, 6.0, 0.0, 7.0, 8.0, 9.0 |
+| Last Sold Price | float64 | 15538 | 39.78 | 3547 | 650000.0, 850000.0, 500000.0, 550000.0, 1200000.0, 1100000.0, 700000.0, 350000.… |
+| Middle School Score | float64 | 13613 | 34.85 | 9 | 6.0, 3.0, 5.0, 7.0, 4.0, 8.0, 9.0, 2.0, 1.0 |
+| Middle School Distance | float64 | 13612 | 34.85 | 210 | 0.6, 0.8, 0.7, 0.5, 0.9, 0.4, 1.0, 0.3, 1.1, 1.2 |
+| Lot | float64 | 12280 | 31.44 | 7731 | 5000.0, 6098.0, 2500.0, 6534.0, 2495.0, 2996.0, 11325.6, 5998.0, 7405.0, 43560.0 |
+| Full bathrooms | float64 | 5805 | 14.86 | 15 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
+| High School Score | float64 | 4471 | 11.45 | 10 | 7.0, 6.0, 8.0, 5.0, 4.0, 3.0, 9.0, 2.0, 10.0, 1.0 |
+| High School Distance | float64 | 4295 | 11 | 330 | 0.8, 0.7, 0.9, 0.6, 1.0, 0.5, 1.2, 1.1, 1.3, 0.4 |
+| Elementary School Score | float64 | 3889 | 9.96 | 10 | 6.0, 7.0, 5.0, 4.0, 8.0, 9.0, 3.0, 2.0, 1.0, 10.0 |
+| Elementary School Distance | float64 | 3767 | 9.64 | 235 | 0.3, 0.4, 0.2, 0.5, 0.6, 0.7, 0.1, 0.8, 0.9, 1.0 |
+| Annual tax amount | float64 | 3571 | 9.14 | 17402 | 1204.0, 1395.0, 2307.0, 2506.0, 4235.0, 1266.0, 5340.0, 1976.0, 2800.0, 2460.0 |
+| Bedrooms | float64 | 3412 | 8.74 | 28 | 3.0, 2.0, 4.0, 1.0, 5.0, 6.0, 0.0, 7.0, 8.0, 9.0 |
+| Tax assessed value | float64 | 3170 | 8.12 | 29374 | 918000.0, 1224000.0, 867000.0, 1200000.0, 1326000.0, 663000.0, 1196460.0, 12484… |
+| Bathrooms | float64 | 2693 | 6.89 | 22 | 2.0, 3.0, 1.0, 4.0, 5.0, 6.0, 0.0, 7.0, 8.0, 9.0 |
 | Total interior livable area | float64 | 2204 | 5.64 | 4377 | 1200.0, 1440.0, 1300.0, 1400.0, 1000.0, 1800.0, 1100.0, 1040.0, 1500.0, 1600.0 |
 | Extra Space | float64 | 702 | 1.8 | 20 | 0.0, 2.0, 4.0, 1.0, 3.0, 6.0, 5.0, 10.0, 8.0, 20.0 |
 | Garage spaces | float64 | 664 | 1.7 | 41 | 2.0, 0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 7.0 |
 | Sold Price | float64 | 0 | 0 | 5120 | 13.9978, 13.9108, 14.0779, 14.0387, 13.9553, 13.653, 13.8643, 14.1156, 14.221, … |
 | Listed Price | float64 | 0 | 0 | 4170 | 899000.0, 799000.0, 699000.0, 1495000.0, 995000.0, 1299000.0, 599000.0, 999000.… |
-| time_index | int64 | 0 | 0 | 39048 | 41527, 0, 1, 2, 3, 4, 5, 6, 41474, 41475 |
-| Bedrooms_description | string | 33015 | 84.55 | 219 | Walk-in Closet, Master Suite / Retreat, Walk-in Closet, Master Suite / Retreat,… |
-| Cooling features | string | 18549 | 47.5 | 249 | Central, Central Air, Other, Wall/Window Unit(s), Wall, Central, Solar, See Rem… |
-| Cooling | string | 17315 | 44.34 | 431 | Central Air, Central AC, Central, Ceiling Fan, Ceiling Fan, Central AC, Other, … |
-| Middle School | string | 13610 | 34.85 | 475 | Hubert Howe Bancroft Middle School, Lick (James) Middle School, Mission Hill Mi… |
-| Laundry features | string | 11379 | 29.14 | 1714 | Inside, In Garage, Laundry Closet, Laundry Room, Washer / Dryer, Washer / Dryer… |
-| Appliances included | string | 10322 | 26.43 | 4483 | Dishwasher, Dryer, Garbage disposal, Microwave, Range / Oven, Refrigerator, Was… |
-| Flooring | string | 9302 | 23.82 | 1159 | Wood, Hardwood, Tile, Wood, Laminate, Tile, Hardwood, Wood, Tile, Tile, Hardwoo… |
+| time_index | int64 | 0 | 0 | 39060 | 41543, 0, 1, 2, 3, 4, 5, 6, 7, 8 |
+| Bedrooms_description | string | 33022 | 84.54 | 219 | Walk-in Closet, Master Suite / Retreat, Walk-in Closet, Master Suite / Retreat,… |
+| Cooling features | string | 18556 | 47.51 | 249 | Central, Central Air, Other, Wall/Window Unit(s), Wall, Central, Solar, See Rem… |
+| Cooling | string | 17322 | 44.35 | 431 | Central Air, Central AC, Central, Ceiling Fan, Ceiling Fan, Central AC, Other, … |
+| Middle School | string | 13612 | 34.85 | 475 | Hubert Howe Bancroft Middle School, Lick (James) Middle School, Mission Hill Mi… |
+| Laundry features | string | 11382 | 29.14 | 1715 | Inside, In Garage, Laundry Closet, Laundry Room, Washer / Dryer, Washer / Dryer… |
+| Appliances included | string | 10325 | 26.43 | 4483 | Dishwasher, Dryer, Garbage disposal, Microwave, Range / Oven, Refrigerator, Was… |
+| Flooring | string | 9304 | 23.82 | 1159 | Wood, Hardwood, Tile, Wood, Laminate, Tile, Hardwood, Wood, Tile, Tile, Hardwoo… |
 | Heating features | string | 6498 | 16.64 | 1009 | Central, Forced air, Gas, Forced air, Wall Furnace, Forced Air, Other, Central,… |
 | Heating | string | 5827 | 14.92 | 1588 | Central, Central Forced Air, Central Forced Air - Gas, Forced Air, Wall Furnace… |
-| High School | string | 4294 | 11 | 606 | Fairfax Senior High School, University Senior High School Charter, Harbor High … |
-| Elementary School | string | 3766 | 9.64 | 1627 | Laurel Elementary School, Daniel Webster Elementary School, Sherman Elementary … |
-| Parking features | string | 3687 | 9.44 | 4728 | Garage, Garage - Attached, Covered, Garage, Garage, Garage - Attached, Garage -… |
+| High School | string | 4295 | 11 | 606 | Fairfax Senior High School, University Senior High School Charter, Harbor High … |
+| Elementary School | string | 3767 | 9.64 | 1627 | Laurel Elementary School, Daniel Webster Elementary School, Sherman Elementary … |
+| Parking features | string | 3689 | 9.44 | 4728 | Garage, Garage - Attached, Covered, Garage, Garage, Garage - Attached, Garage -… |
 | Parking | string | 1281 | 3.28 | 4849 | Garage, Garage - Attached, Covered, 0 spaces, Garage, Garage, Garage - Attached… |
-| Summary | string | 326 | 0.83 | 38495 | Neighboring The Ace Hotel, 939 S. Broadway is the epitome of effort lessliving … |
-| Address | string | 0 | 0 | 39040 | 750 Van Ness Ave #706, 555 Fulton St #404, 555 Fulton St STE 206, 500 Cambridge… |
+| Summary | string | 326 | 0.83 | 38507 | Neighboring The Ace Hotel, 939 S. Broadway is the epitome of effort lessliving … |
+| Address | string | 0 | 0 | 39042 | 400 Mariners Island Blvd, 1 Appian Way, 425 N El Camino Real, 555 Fulton St STE… |
 | Type | string | 0 | 0 | 140 | SingleFamily, Condo, Townhouse, Unknown, MultiFamily, MobileManufactured, Vacan… |
 | Region | string | 0 | 0 | 900 | Los Angeles, San Jose, San Francisco, San Mateo, Sunnyvale, Santa Cruz, Santa C… |
 | City | string | 0 | 0 | 855 | Los Angeles, San Jose, San Francisco, Santa Clara, San Mateo, Sunnyvale, Santa … |
@@ -268,7 +270,7 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.02 | -0.209 | 0.577 | 0.003 | log | 537468 | 1.3098e+10 | exponential |
+| 0 | 0 | 0 | 0.02 | -0.209 | 0.577 | 0.003 | log | 537646 | 1.30601e+10 | exponential |
 
 ### Numeric features
 
@@ -277,25 +279,25 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| time_index | 39048 | 20784.4 | 11958.1 | 0 | 41527 |
-| Sold Price | 39048 | 13.7944 | 0.759423 | 11.5179 | 17.9099 |
-| Lot | 26779 | 54229.9 | 811265 | 0 | 6.9696e+07 |
-| Bedrooms | 35637 | 2.82557 | 1.30819 | 0 | 42 |
-| Bathrooms | 36356 | 2.36536 | 1.1959 | 0 | 24 |
-| Full bathrooms | 33244 | 2.08943 | 0.975917 | 1 | 17 |
-| Total interior livable area | 36844 | 1833.17 | 1184.26 | 1 | 35970 |
-| Garage spaces | 38384 | 1.4542 | 8.62742 | 0 | 1000 |
-| Elementary School Score | 35160 | 5.75193 | 2.12291 | 1 | 10 |
-| Elementary School Distance | 35282 | 1.07585 | 2.25769 | 0 | 57.2 |
-| Middle School Score | 25437 | 5.30711 | 2.01069 | 1 | 9 |
-| Middle School Distance | 25438 | 1.61576 | 2.37992 | 0 | 57.2 |
-| High School Score | 34578 | 6.12279 | 2.00565 | 1 | 10 |
-| High School Distance | 34754 | 2.27709 | 3.48452 | 0 | 73.9 |
-| Tax assessed value | 35878 | 794039 | 1.13322e+06 | 0 | 4.59e+07 |
-| Annual tax amount | 35477 | 10033.6 | 13604.8 | 0 | 552485 |
-| Listed Price | 39048 | 1.37304e+06 | 2.80271e+06 | 0 | 4.02532e+08 |
-| Last Sold Price | 23512 | 812315 | 1.15311e+06 | 0 | 9e+07 |
-| Extra Space | 38346 | 0.0893965 | 0.914774 | 0 | 100 |
+| time_index | 39060 | 20792.9 | 11963 | 0 | 41543 |
+| Sold Price | 39060 | 13.7943 | 0.759373 | 11.5179 | 17.9099 |
+| Lot | 26780 | 54227.9 | 811250 | 0 | 6.9696e+07 |
+| Bedrooms | 35648 | 2.82535 | 1.3081 | 0 | 42 |
+| Bathrooms | 36367 | 2.36519 | 1.19577 | 0 | 24 |
+| Full bathrooms | 33255 | 2.08934 | 0.975794 | 1 | 17 |
+| Total interior livable area | 36856 | 1832.98 | 1184.13 | 1 | 35970 |
+| Garage spaces | 38396 | 1.4539 | 8.6261 | 0 | 1000 |
+| Elementary School Score | 35171 | 5.75178 | 2.12281 | 1 | 10 |
+| Elementary School Distance | 35293 | 1.07571 | 2.25736 | 0 | 57.2 |
+| Middle School Score | 25447 | 5.30734 | 2.01058 | 1 | 9 |
+| Middle School Distance | 25448 | 1.61558 | 2.3795 | 0 | 57.2 |
+| High School Score | 34589 | 6.12287 | 2.0055 | 1 | 10 |
+| High School Distance | 34765 | 2.27699 | 3.48409 | 0 | 73.9 |
+| Tax assessed value | 35890 | 793971 | 1.13305e+06 | 0 | 4.59e+07 |
+| Annual tax amount | 35489 | 10032.7 | 13602.8 | 0 | 552485 |
+| Listed Price | 39060 | 1.37287e+06 | 2.8023e+06 | 0 | 4.02532e+08 |
+| Last Sold Price | 23522 | 812175 | 1.1529e+06 | 0 | 9e+07 |
+| Extra Space | 38358 | 0.0893686 | 0.914632 | 0 | 100 |
 
 </details>
 
@@ -306,66 +308,66 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Address | 1 | 750 Van Ness Ave #706 | 2 | 0.01 |
-| Address | 2 | 555 Fulton St #404 | 2 | 0.01 |
-| Address | 3 | 555 Fulton St STE 206 | 2 | 0.01 |
-| Address | 4 | 500 Cambridge St | 2 | 0.01 |
-| Address | 5 | 555 Fulton St #215 | 2 | 0.01 |
-| Appliances included | 1 | &lt;NA> | 10322 | 26.43 |
+| Address | 1 | 400 Mariners Island Blvd | 3 | 0.01 |
+| Address | 2 | 1 Appian Way | 3 | 0.01 |
+| Address | 3 | 425 N El Camino Real | 3 | 0.01 |
+| Address | 4 | 555 Fulton St STE 206 | 2 | 0.01 |
+| Address | 5 | 421 Grove St | 2 | 0.01 |
+| Appliances included | 1 | &lt;NA> | 10325 | 26.43 |
 | Appliances included | 2 | Dishwasher, Dryer, Garbage disposal, Microwave, Range / Oven, Re... | 1582 | 4.05 |
 | Appliances included | 3 | Dishwasher, Dryer, Freezer, Garbage disposal, Microwave, Range /... | 1090 | 2.79 |
-| Appliances included | 4 | Dryer, Washer | 1001 | 2.56 |
-| Appliances included | 5 | Dishwasher | 757 | 1.94 |
-| Bedrooms_description | 1 | &lt;NA> | 33015 | 84.55 |
-| Bedrooms_description | 2 | Walk-in Closet | 925 | 2.37 |
-| Bedrooms_description | 3 | Master Suite / Retreat, Walk-in Closet | 711 | 1.82 |
+| Appliances included | 4 | Dryer, Washer | 1003 | 2.57 |
+| Appliances included | 5 | Dishwasher | 758 | 1.94 |
+| Bedrooms_description | 1 | &lt;NA> | 33022 | 84.54 |
+| Bedrooms_description | 2 | Walk-in Closet | 926 | 2.37 |
+| Bedrooms_description | 3 | Master Suite / Retreat, Walk-in Closet | 713 | 1.83 |
 | Bedrooms_description | 4 | Master Suite / Retreat | 666 | 1.71 |
 | Bedrooms_description | 5 | Ground Floor Bedroom | 480 | 1.23 |
-| City | 1 | Los Angeles | 9340 | 23.92 |
-| City | 2 | San Jose | 5208 | 13.34 |
+| City | 1 | Los Angeles | 9340 | 23.91 |
+| City | 2 | San Jose | 5208 | 13.33 |
 | City | 3 | San Francisco | 4628 | 11.85 |
-| City | 4 | Santa Clara | 830 | 2.13 |
-| City | 5 | San Mateo | 817 | 2.09 |
-| Cooling | 1 | &lt;NA> | 17315 | 44.34 |
-| Cooling | 2 | Central Air | 7798 | 19.97 |
-| Cooling | 3 | Central AC | 5048 | 12.93 |
-| Cooling | 4 | Central | 1683 | 4.31 |
+| City | 4 | Santa Clara | 830 | 2.12 |
+| City | 5 | San Mateo | 825 | 2.11 |
+| Cooling | 1 | &lt;NA> | 17322 | 44.35 |
+| Cooling | 2 | Central Air | 7798 | 19.96 |
+| Cooling | 3 | Central AC | 5052 | 12.93 |
+| Cooling | 4 | Central | 1684 | 4.31 |
 | Cooling | 5 | Ceiling Fan | 930 | 2.38 |
-| Cooling features | 1 | &lt;NA> | 18549 | 47.5 |
-| Cooling features | 2 | Central | 8896 | 22.78 |
-| Cooling features | 3 | Central Air | 7134 | 18.27 |
+| Cooling features | 1 | &lt;NA> | 18556 | 47.51 |
+| Cooling features | 2 | Central | 8901 | 22.79 |
+| Cooling features | 3 | Central Air | 7134 | 18.26 |
 | Cooling features | 4 | Other | 788 | 2.02 |
 | Cooling features | 5 | Wall/Window Unit(s) | 639 | 1.64 |
-| Elementary School | 1 | &lt;NA> | 3766 | 9.64 |
+| Elementary School | 1 | &lt;NA> | 3767 | 9.64 |
 | Elementary School | 2 | Laurel Elementary School | 303 | 0.78 |
 | Elementary School | 3 | Daniel Webster Elementary School | 288 | 0.74 |
 | Elementary School | 4 | Sherman Elementary School | 282 | 0.72 |
 | Elementary School | 5 | Kenter Canyon Elementary School | 281 | 0.72 |
-| Flooring | 1 | &lt;NA> | 9302 | 23.82 |
+| Flooring | 1 | &lt;NA> | 9304 | 23.82 |
 | Flooring | 2 | Wood | 3836 | 9.82 |
 | Flooring | 3 | Hardwood | 1846 | 4.73 |
-| Flooring | 4 | Tile, Wood | 1619 | 4.15 |
-| Flooring | 5 | Laminate | 1506 | 3.86 |
-| Heating | 1 | Central | 8606 | 22.04 |
+| Flooring | 4 | Tile, Wood | 1619 | 4.14 |
+| Flooring | 5 | Laminate | 1508 | 3.86 |
+| Heating | 1 | Central | 8606 | 22.03 |
 | Heating | 2 | &lt;NA> | 5827 | 14.92 |
-| Heating | 3 | Central Forced Air | 4503 | 11.53 |
-| Heating | 4 | Central Forced Air - Gas | 2892 | 7.41 |
-| Heating | 5 | Forced Air | 2249 | 5.76 |
+| Heating | 3 | Central Forced Air | 4506 | 11.54 |
+| Heating | 4 | Central Forced Air - Gas | 2893 | 7.41 |
+| Heating | 5 | Forced Air | 2250 | 5.76 |
 | Heating features | 1 | Central | 7834 | 20.06 |
-| Heating features | 2 | Forced air, Gas | 6703 | 17.17 |
+| Heating features | 2 | Forced air, Gas | 6706 | 17.17 |
 | Heating features | 3 | &lt;NA> | 6498 | 16.64 |
-| Heating features | 4 | Forced air | 5061 | 12.96 |
+| Heating features | 4 | Forced air | 5065 | 12.97 |
 | Heating features | 5 | Wall Furnace | 1191 | 3.05 |
-| High School | 1 | &lt;NA> | 4294 | 11 |
+| High School | 1 | &lt;NA> | 4295 | 11 |
 | High School | 2 | Fairfax Senior High School | 1339 | 3.43 |
 | High School | 3 | University Senior High School Charter | 1153 | 2.95 |
 | High School | 4 | Harbor High School | 707 | 1.81 |
 | High School | 5 | Independence High School | 657 | 1.68 |
-| Last Sold On | 1 | &lt;NA> | 15536 | 39.79 |
+| Last Sold On | 1 | &lt;NA> | 15538 | 39.78 |
 | Last Sold On | 2 | 2017-06-30 00:00:00 | 27 | 0.07 |
-| Last Sold On | 3 | 2017-12-29 00:00:00 | 25 | 0.06 |
-| Last Sold On | 4 | 2015-02-27 00:00:00 | 25 | 0.06 |
-| Last Sold On | 5 | 2017-05-26 00:00:00 | 25 | 0.06 |
+| Last Sold On | 3 | 2015-02-27 00:00:00 | 25 | 0.06 |
+| Last Sold On | 4 | 2017-05-26 00:00:00 | 25 | 0.06 |
+| Last Sold On | 5 | 2017-12-29 00:00:00 | 25 | 0.06 |
 
 (55 more rows not shown)
 
@@ -382,3 +384,4 @@ We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a sepa
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186` |

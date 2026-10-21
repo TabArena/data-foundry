@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: infrared_thermography_temperature
 container_format: 2
-checksum: v2:0059972b90ad115b50902b6d3767fa997bd3668c6a50c11494d635e518a74c65
+checksum: v2:814ec9e680733c1be1d191819fe99a933e2b5f580059fd09ca32c07603f8522c
 build: null
 build_stale: false
 data:
-  n_rows: 1018
+  n_rows: 1001
   n_features: 35
   dtypes:
     category: 3
@@ -29,12 +29,14 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 678
-    max: 679
+    min: 667
+    max: 668
   n_test:
-    min: 339
-    max: 340
+    min: 333
+    max: 334
 bundle_checks:
   ok: true
   errors: []
@@ -43,7 +45,7 @@ bundle_checks:
   accepted: {}
 decisions:
 - Round 1 of the FLIR camera, not the mean of the four rounds (the UCI copy)
-- Subjects without a complete round-1 image get their next complete image
+- Subjects without a complete round-1 image are dropped
 - IID over subjects; the measurement day is not held out
 - 'One measurement under two subject codes: both rows dropped'
 ---
@@ -52,27 +54,27 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `aveOralM`, scored with `rmse` on IID splits. 1,018 rows and 35 features. Source: Other (2023).
+Regression of `aveOralM`, scored with `rmse` on IID splits. 1,001 rows and 35 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:0059972b90ad115b50902b6d3767fa997bd3668c6a50c11494d635e518a74c65`.
+Not built yet. The current definition gives checksum `v2:814ec9e680733c1be1d191819fe99a933e2b5f580059fd09ca32c07603f8522c`.
 
 ## In brief
 
 **Question.** What is a person's oral temperature, estimated from one thermal image of the face?
 
-**Use case.** At an entrance, a fever-screening thermal camera images a person once and estimates the oral temperature, to decide whether to send the person to a second check (the FDA study's setting).
+**Use case.** At a clinic's triage station, after a person has rested 15 minutes in the room and answered a short intake, a thermal camera images the face once and estimates the oral temperature, to decide whether to measure by mouth; a maker of such cameras fits the same mapping to calibrate a device.
 
-**One row.** One person in an FDA clinical study of infrared fever screening, imaged once and measured by mouth (1,018 people; place and years not stated).
+**One row.** One person imaged once and measured by mouth in an FDA study of infrared fever screening at the University of Maryland Health Center, College Park, from November 2016 to May 2018, mostly students (1,001 people).
 
 **Predicted.** The oral temperature, the mean of two thermometer readings in monitor mode, in °C; the typical spread is about 0.5 °C.
 
-**Known at prediction time.** The first image's temperatures at 26 places of the face and the camera's reference offset, the room temperature and humidity, the distance to the camera, the time of day, and sex, age group, ethnicity and whether cosmetics are worn.
+**Known at prediction time.** The first image's temperatures at 26 places of the face and the camera's reference offset; the room temperature and humidity, the distance to the camera and the time of day, which the station records; and the sex, age group, ethnicity and whether cosmetics are worn, which the person states at intake.
 
-**What the test data stands for.** Random people, so the test data stands for new people screened with the same set-up; people measured on the same day fall on both sides.
+**What the test data stands for.** Random people, so the test data stands for new people screened with the same set-up; people measured on the same day fall on both sides. The set-up changed between the two study years (two locations, the distance shortened from about 0.8 to 0.6 m), and a calibration fitted on the first year over-predicts the second by about 0.08 °C.
 
-**Our changes to the source.** We keep only the first image, taken before the thermometer, and drop the fast-mode oral reading, a second measurement of the target.
+**Our changes to the source.** We keep only the first image, taken before the thermometer, and drop the 17 people without a complete first image, whose next image was taken after it. We drop the fast-mode oral reading, a second measurement of the target.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The camera has all these values at one look, and the oral reading is the reference it is calibrated to. The task covers one study's cameras and rooms.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The station has the camera's readings, the room sensors and the intake answers when the image is taken, and the oral reading is the reference it is calibrated to. Both papers call the conditions a best case (15 minutes of rest, key points partly placed by hand, blurred images excluded), and the task covers one clinic's cameras and rooms.
 
 ## Files in this folder
 
@@ -80,6 +82,7 @@ Not built yet. The current definition gives checksum `v2:0059972b90ad115b50902b6
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/infrared_thermography_temperature.md`](../../../../curation/records/infrared_thermography_temperature.md)
@@ -117,7 +120,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC0 1.0 |
 | data_tags | IID |
 | reference | wang2023facial,wang2022infrared |
-| rows x columns | 1,018 x 36 |
+| rows x columns | 1,001 x 36 |
 | task.target | aveOralM |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -160,75 +163,75 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,018 rows of the final frame (random rows: the frame is shuffled); 12 of 36 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,001 rows of the final frame (random rows: the frame is shuffled); 12 of 36 columns, the target first. Cells are cut at 40 characters.
 
 | aveOralM | T_offset1 | Max1R13_1 | Max1L13_1 | aveAllR13_1 | aveAllL13_1 | T_RC1 | T_RC_Dry1 | T_RC_Wet1 | T_RC_Max1 | T_LC1 | T_LC_Dry1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 36.79 | 1.03 | 35.33 | 35.38 | 34.97 | 34.99 | 35.31 | 35.31 | 34.95 | 35.33 | 35.32 | 35.32 |
-| 37.24 | 1.28 | 35.73 | 36.2 | 34.99 | 35.64 | 36.03 | 35.7 | 36.03 | 36.08 | 36.18 | 36.18 |
-| 36.54 | 0.91 | 34.34 | 34.65 | 33.32 | 33.54 | 34.93 | 34.31 | 34.93 | 35.07 | 34.88 | 34.6 |
-| 36.89 | 1.02 | 36.22 | 35.92 | 35.41 | 35.28 | 36.18 | 36.18 | 36.09 | 36.22 | 35.89 | 35.89 |
-| 36.89 | 0.93 | 35.1 | 35.52 | 33.81 | 34.53 | 35.35 | 35.1 | 35.35 | 35.4 | 35.5 | 35.5 |
+| 36.84 | 0.76 | 34.78 | 34.73 | 34.44 | 34.41 | 34.87 | 34.87 | 34.82 | 34.87 | 34.72 | 34.71 |
+| 37.74 | 1.12 | 36.5 | 36.51 | 34.55 | 34.51 | 36.63 | 36.39 | 36.63 | 36.65 | 36.57 | 36.46 |
+| 36.89 | -0.35 | 34.75 | 34.58 | 33.58 | 34 | 35.04 | 34.7 | 35.04 | 35.06 | 34.56 | 34.56 |
+| 36.94 | 1.39 | 35.53 | 35.59 | 34.73 | 34.82 | 35.5 | 35.49 | 35.45 | 35.53 | 35.55 | 35.54 |
+| 36.94 | 1 | 35.63 | 36 | 35.21 | 35.55 | 35.6 | 35.59 | 35.59 | 35.63 | 36.01 | 35.94 |
 
 ## Curation notes
 
 We start with FLIR_groups1and2.csv from PhysioNet (version 1.0.0): 1,020 subjects of an FDA fever-screening study, each with four rounds of facial temperatures, two oral readings, demographics and the room conditions.
 
-- Prediction point: a screening thermograph images a person once and estimates the oral temperature from that image (facial temperatures, blackbody offset), the room, the distance, the time of day and what the person states.
+- Prediction point: at a clinic's triage station, after 15 minutes of rest in the room, the camera images a person once and the oral temperature is estimated from that image (facial temperatures, blackbody offset), the room readings and distance the station records, the time of day and what the person states at intake.
 - We keep round 1 (`T_offset1` and the 26 facial temperatures) and drop rounds 2-4, imaged after the first oral reading had put the thermometer under the tongue. Both papers analysed round 1 only (decision table). The UCI copy is not used: its `*_1` columns average each subject's rounds.
-- The 17 subjects without a complete round-1 image get their next complete one (round 2 or 3). The models over-predict them by 0.07-0.14 °C, but the source counted them in its round-1 analysis, 5 of the 17 are febrile, and left missing the camera says nothing about them (RMSE 0.77-0.90 °C against 0.33-0.39 °C; decision table).
+- We drop the 17 subjects without a complete round-1 image (5 of them at or above 37.5 °C, 4 at or above 38 °C; decision table): their next complete image (round 2 or 3) was taken after the first oral reading, so they lack the image the prediction acts on. Left missing, the gap would mark a group that is 29% febrile against 10.6% elsewhere.
 - Target: `aveOralM`, the mean of two oral readings in monitor mode, the reference of both papers. We drop `aveOralF`, the same two readings in fast mode: a measurement of the target.
-- We keep `T_atm`, `Humidity`, `Distance` and `T_offset1`, which the v1 notebook dropped: a screening thermograph measures all four.
+- We keep `T_atm`, `Humidity`, `Distance` and `T_offset1`, which the v1 notebook dropped: the screening station records all four when it takes the image.
 - We convert `Time` to the decimal hour `TimeOfDay`, and drop `SubjectID` (the measurement date and a number) and `Date`.
 - We drop subjects 170208-03 and 180228-01, one measurement under two codes a year apart: their images and oral readings agree, while the date, ethnicity and room readings differ (decision table).
 - One `Distance` of 79.0, among 0.60-0.77 m that day, is in centimetres: we set 0.79 m.
-- IID over subjects: each subject is in the file once, and the source calibrated on a random 60% of the subjects. The measurement day carries a small part of the target and more of the calibration offset (decision table), but folds grouped by day score the same as random ones (random forest R^2 0.709 against 0.711), and `hidden_groups.py` finds no hit.
-- Not temporal: each row is a different person, and although the set-up changed during the study, in expanding windows training on all earlier subjects instead of a random set of the same size changes the RMSE by -0.2% to +2.5%.
-- Not trivial: the source's segmented linear calibration of `T_Max1` reaches RMSE 0.277 °C, an additive model of every numeric feature 0.265 °C, better on 28 of 30 splits.
+- IID over subjects: each row is a new person, in the file once, and the day's conditions (`T_atm`, `Humidity`, `Distance`, `T_offset1`) are recorded for every new person, so they are features, not a group to hold out. The source calibrated on a random 60% of the subjects. The measurement day carries a small part of the target and more of the calibration offset (decision table); `hidden_groups.py` finds no hit.
+- The split comparisons are evidence, not the reason (random forest, 10 x 3 folds unless stated): folds grouped by day score as random ones do (R^2 0.699 against 0.700). The set-up changed between the two study years (two locations; median distance 0.80 m in the first winter, 0.60 m in the second). In 6 expanding windows over the newest half of the days, training on all earlier subjects instead of a random set of the same size changes the RMSE by +0.5% to +6.7% across ridge, forest and LightGBM; the first window of the second year is 5-29% worse with a bias of +0.1 °C, and a first-year calibration over-predicts the second year by 0.06-0.09 °C.
+- Not trivial: a one-feature segmented calibration of `T_Max1` in the source's style (our 4-knot linear spline; Wang 2022 gives no knots) reaches RMSE 0.276 °C, an additive model of every numeric feature 0.264 °C, better on 29 of 30 splits.
 - Anomaly: `Age` has an overlapping bin 21-30 for 10 subjects, and `aveOralM` lies on a 0.05 °C grid shifted by -0.01 °C, which does not change the RMSE. Both kept.
-- Note: we keep the dataset as an exception to the record's marker `Wrong Domain / Source Modality` (features measured from images): each column is a radiometric temperature at a facial site, the input of the calibration the source studies, and the release holds no images.
+- Note: the record's marker `Wrong Domain / Source Modality` (features measured from images) does not apply on our reading, pending the curator's confirmation: each column is a radiometric temperature at a fixed facial site, the camera is used as a thermometer, the target is the same physical quantity measured by mouth, and the release holds no images. satimage and wilt, where an imaging sensor's values serve to recognise what the image shows, are the counter-cases.
 
 ## Splits
 
-Default splits: repeated 3-fold cross-validation over the subjects, one row each. Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and tested on the other 40%, and note that a random split of one pool may bias the estimate upwards (Sec. 4.5). Subjects measured on the same day fall on both sides of a split: 96-99% of the test subjects of a fold share their day with a training subject. The curation notes compare this split with folds grouped by day, which score the same, and with a temporal split on the date.
+Default splits: repeated 3-fold cross-validation over the subjects, one row each. Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and tested on the other 40%, and note that a random split of one pool may bias the estimate upwards (Sec. 4.5). Subjects measured on the same day fall on both sides of a split: 94-99% of the test subjects of a fold share their day with a training subject. Each row is a new person, and the day's conditions are recorded as features for every person. The set-up changed between the two study years (two locations, the median distance from 0.80 to 0.60 m), and a first-year calibration over-predicts the second year by 0.06-0.09 °C. The curation notes compare this split with folds grouped by day, which score the same, and with a temporal split on the date.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 678 to 679 rows, test 339 to 340 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 667 to 668 rows, test 333 to 334 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 678 | 340 |
-| 0 | 1 | 679 | 339 |
-| 0 | 2 | 679 | 339 |
-| 1 | 0 | 678 | 340 |
-| 1 | 1 | 679 | 339 |
-| 1 | 2 | 679 | 339 |
-| 2 | 0 | 678 | 340 |
-| 2 | 1 | 679 | 339 |
-| 2 | 2 | 679 | 339 |
-| 3 | 0 | 678 | 340 |
-| 3 | 1 | 679 | 339 |
-| 3 | 2 | 679 | 339 |
-| 4 | 0 | 678 | 340 |
-| 4 | 1 | 679 | 339 |
-| 4 | 2 | 679 | 339 |
-| 5 | 0 | 678 | 340 |
-| 5 | 1 | 679 | 339 |
-| 5 | 2 | 679 | 339 |
-| 6 | 0 | 678 | 340 |
-| 6 | 1 | 679 | 339 |
-| 6 | 2 | 679 | 339 |
-| 7 | 0 | 678 | 340 |
-| 7 | 1 | 679 | 339 |
-| 7 | 2 | 679 | 339 |
-| 8 | 0 | 678 | 340 |
-| 8 | 1 | 679 | 339 |
-| 8 | 2 | 679 | 339 |
-| 9 | 0 | 678 | 340 |
-| 9 | 1 | 679 | 339 |
-| 9 | 2 | 679 | 339 |
+| 0 | 0 | 667 | 334 |
+| 0 | 1 | 667 | 334 |
+| 0 | 2 | 668 | 333 |
+| 1 | 0 | 667 | 334 |
+| 1 | 1 | 667 | 334 |
+| 1 | 2 | 668 | 333 |
+| 2 | 0 | 667 | 334 |
+| 2 | 1 | 667 | 334 |
+| 2 | 2 | 668 | 333 |
+| 3 | 0 | 667 | 334 |
+| 3 | 1 | 667 | 334 |
+| 3 | 2 | 668 | 333 |
+| 4 | 0 | 667 | 334 |
+| 4 | 1 | 667 | 334 |
+| 4 | 2 | 668 | 333 |
+| 5 | 0 | 667 | 334 |
+| 5 | 1 | 667 | 334 |
+| 5 | 2 | 668 | 333 |
+| 6 | 0 | 667 | 334 |
+| 6 | 1 | 667 | 334 |
+| 6 | 2 | 668 | 333 |
+| 7 | 0 | 667 | 334 |
+| 7 | 1 | 667 | 334 |
+| 7 | 2 | 668 | 333 |
+| 8 | 0 | 667 | 334 |
+| 8 | 1 | 667 | 334 |
+| 8 | 2 | 668 | 333 |
+| 9 | 0 | 667 | 334 |
+| 9 | 1 | 667 | 334 |
+| 9 | 2 | 668 | 333 |
 
 </details>
 
@@ -240,21 +243,20 @@ Both papers analysed the first round only; Zhou et al. (2020) did so to approxim
 
 | index | corr. round 1 | corr. round 2 | corr. round 3 | corr. round 4 (mouth open) | corr. mean of rounds (UCI copy) | round 2 minus round 1 (°C) | round 4 minus round 1 (°C) |
 |---|---|---|---|---|---|---|---|
-| canthiMax (extended canthi, max) | 0.763 | 0.768 | 0.778 | 0.779 | 0.784 | 0.062 | 0.121 |
-| T_Max (whole face, max) | 0.791 | 0.799 | 0.805 | 0.763 | 0.85 | 0.151 | 0.749 |
-| T_OR (mouth, mean of the 4 warmest pixels) | 0.639 | 0.679 | 0.709 | 0.709 | 0.767 | 0.411 | 1.219 |
-| T_OR_Max (mouth, max) | 0.638 | 0.678 | 0.708 | 0.712 | 0.767 | 0.41 | 1.214 |
-| T_FHC_Max (forehead centre, max) | 0.55 | 0.58 | 0.594 | 0.59 | 0.596 | 0.115 | 0.106 |
+| canthiMax (extended canthi, max) | 0.763 | 0.764 | 0.773 | 0.774 | 0.78 | 0.062 | 0.121 |
+| T_Max (whole face, max) | 0.791 | 0.797 | 0.801 | 0.757 | 0.846 | 0.151 | 0.749 |
+| T_OR (mouth, mean of the 4 warmest pixels) | 0.639 | 0.675 | 0.703 | 0.703 | 0.762 | 0.411 | 1.219 |
+| T_OR_Max (mouth, max) | 0.638 | 0.675 | 0.702 | 0.706 | 0.762 | 0.41 | 1.214 |
+| T_FHC_Max (forehead centre, max) | 0.55 | 0.574 | 0.585 | 0.579 | 0.587 | 0.115 | 0.106 |
 
-### 2. Subjects without a complete round-1 image get their next complete image
+### 2. Subjects without a complete round-1 image are dropped
 
-The source counted these subjects in its round-1 analysis (Zhou et al. 2020, Table 5). Their image comes from round 2 or 3, after the first oral reading, and the models over-predict them by 0.07-0.14 °C; left missing, the camera says nothing about them (RMSE 0.77-0.90 °C against 0.33-0.39 °C with the later image; curation comments).
+Their next complete image comes from round 2 or 3, after the first oral reading had put the thermometer under the tongue, so they lack the image the prediction acts on. Left missing, the missing image would mark a group with a higher share of fever. Subjects of the file without the double-coded pair.
 
-| image used (round) | subjects | oral temperature >= 37.5 °C | oral temperature >= 38.0 °C | share >= 37.5 °C |
+| cohort | subjects | oral temperature >= 37.5 °C | oral temperature >= 38.0 °C | share >= 37.5 °C |
 |---|---|---|---|---|
-| 1 | 1001 | 106 | 45 | 0.106 |
-| 2 | 13 | 4 | 3 | 0.308 |
-| 3 | 4 | 1 | 1 | 0.25 |
+| complete round-1 image (kept) | 1001 | 106 | 45 | 0.106 |
+| incomplete round-1 image (dropped) | 17 | 5 | 4 | 0.294 |
 
 ### 3. IID over subjects; the measurement day is not held out
 
@@ -262,13 +264,13 @@ The source counted these subjects in its round-1 analysis (Zhou et al. 2020, Tab
 
 | index | share between days | same with shuffled days | permutation p | ICC |
 |---|---|---|---|---|
-| aveOralM (target) | 0.176 | 0.15 | 0.078 | 0.031 |
-| aveOralM >= 37.5 °C | 0.174 | 0.151 | 0.111 | 0.028 |
-| aveOralM minus T_Max1 (calibration offset) | 0.267 | 0.151 | 0.001 | 0.138 |
-| T_atm | 0.838 | 0.15 | 0.001 | 0.81 |
-| Humidity | 0.975 | 0.15 | 0.001 | 0.971 |
-| Distance | 0.707 | 0.151 | 0.001 | 0.656 |
-| T_offset1 | 0.464 | 0.151 | 0.001 | 0.37 |
+| aveOralM (target) | 0.174 | 0.154 | 0.13 | 0.025 |
+| aveOralM >= 37.5 °C | 0.169 | 0.154 | 0.193 | 0.019 |
+| aveOralM minus T_Max1 (calibration offset) | 0.274 | 0.152 | 0.001 | 0.143 |
+| T_atm | 0.838 | 0.154 | 0.001 | 0.81 |
+| Humidity | 0.975 | 0.153 | 0.001 | 0.971 |
+| Distance | 0.711 | 0.153 | 0.001 | 0.66 |
+| T_offset1 | 0.469 | 0.154 | 0.001 | 0.375 |
 
 ### 4. One measurement under two subject codes: both rows dropped
 
@@ -310,39 +312,39 @@ The images of rounds 1-3 and the oral readings agree, while the date, the time, 
 | Gender | category | 0 | 0 | 2 | Female, Male |
 | Age | category | 0 | 0 | 8 | 18-20, 21-25, 26-30, 31-40, 51-60, 21-30, 41-50, >60 |
 | Ethnicity | category | 0 | 0 | 6 | White, Asian, Black or African-American, Hispanic/Latino, Multiracial, American… |
-| Cosmetics | float64 | 29 | 2.85 | 2 | 0.0, 1.0 |
-| Distance | float64 | 2 | 0.2 | 32 | 0.6, 0.7, 0.65, 0.8, 0.75, 0.62, 0.66, 0.64, 0.63, 0.78 |
-| T_offset1 | float64 | 0 | 0 | 197 | 0.78, 0.92, 0.97, 0.91, 0.89, 0.82, 1.03, 0.93, 0.95, 0.79 |
-| Max1R13_1 | float64 | 0 | 0 | 261 | 35.39, 35.29, 35.59, 35.25, 35.52, 35.33, 35.51, 35.05, 35.58, 35.64 |
-| Max1L13_1 | float64 | 0 | 0 | 250 | 35.53, 35.59, 35.48, 35.29, 35.47, 35.52, 35.81, 35.64, 35.51, 35.36 |
-| aveAllR13_1 | float64 | 0 | 0 | 317 | 35.33, 34.68, 35.13, 34.92, 35.01, 34.93, 35.49, 34.87, 34.78, 34.85 |
-| aveAllL13_1 | float64 | 0 | 0 | 296 | 35.01, 35.03, 34.48, 34.75, 35.09, 35.25, 34.77, 35.27, 34.86, 35.14 |
-| T_RC1 | float64 | 0 | 0 | 246 | 35.39, 35.31, 35.66, 35.25, 35.45, 35.58, 35.49, 35.44, 35.5, 35.84 |
-| T_RC_Dry1 | float64 | 0 | 0 | 253 | 35.49, 35.45, 35.32, 35.37, 35.55, 35.66, 35.36, 35.31, 35.41, 35.33 |
-| T_RC_Wet1 | float64 | 0 | 0 | 262 | 35.23, 35.38, 35.36, 35.39, 35.75, 35.47, 35.1, 35.51, 35.17, 35.67 |
-| T_RC_Max1 | float64 | 0 | 0 | 250 | 35.52, 35.39, 35.59, 35.68, 35.25, 35.33, 35.34, 35.23, 35.32, 35.66 |
-| T_LC1 | float64 | 0 | 0 | 248 | 35.5, 35.82, 35.47, 35.31, 35.16, 35.42, 35.68, 35.54, 35.52, 35.6 |
-| T_LC_Dry1 | float64 | 0 | 0 | 251 | 35.26, 35.47, 35.16, 35.33, 35.5, 35.31, 35.78, 35.28, 35.59, 35.92 |
-| T_LC_Wet1 | float64 | 0 | 0 | 272 | 35.54, 35.24, 35.38, 35.35, 35.29, 35.27, 35.4, 35.14, 35.23, 35.44 |
-| T_LC_Max1 | float64 | 0 | 0 | 248 | 35.53, 35.64, 35.51, 35.47, 35.61, 35.74, 35.33, 35.67, 35.36, 35.85 |
-| RCC1 | float64 | 0 | 0 | 274 | 34.83, 34.9, 35.03, 35.46, 35.7, 35.27, 35.42, 35.02, 35.26, 35.23 |
-| LCC1 | float64 | 0 | 0 | 280 | 34.96, 35.0, 34.9, 35.22, 35.12, 35.48, 35.29, 35.26, 34.82, 35.35 |
-| canthiMax1 | float64 | 0 | 0 | 244 | 35.47, 35.53, 35.74, 35.54, 35.68, 35.94, 35.59, 35.88, 35.72, 35.67 |
-| canthi4Max1 | float64 | 0 | 0 | 248 | 35.31, 35.49, 35.5, 35.92, 35.45, 35.77, 35.67, 35.44, 35.73, 35.75 |
-| T_FHCC1 | float64 | 0 | 0 | 291 | 34.91, 34.48, 34.36, 34.49, 34.93, 34.26, 34.41, 34.62, 34.74, 34.72 |
-| T_FHRC1 | float64 | 0 | 0 | 302 | 34.87, 34.44, 34.75, 34.62, 34.14, 34.27, 34.39, 34.78, 34.65, 34.5 |
-| T_FHLC1 | float64 | 0 | 0 | 310 | 34.69, 34.4, 34.72, 34.75, 34.57, 34.56, 34.33, 34.35, 34.98, 35.25 |
-| T_FHBC1 | float64 | 0 | 0 | 309 | 34.37, 34.48, 34.5, 34.43, 34.29, 34.61, 35.1, 34.69, 33.94, 34.49 |
-| T_FHTC1 | float64 | 0 | 0 | 323 | 34.77, 34.74, 34.7, 34.29, 34.71, 34.8, 34.06, 34.88, 34.73, 34.69 |
-| T_FH_Max1 | float64 | 0 | 0 | 248 | 35.2, 35.41, 35.26, 35.29, 35.23, 35.19, 35.18, 35.79, 35.32, 35.16 |
-| T_FHC_Max1 | float64 | 0 | 0 | 276 | 35.36, 35.08, 34.98, 35.28, 35.11, 34.72, 35.34, 35.22, 35.07, 34.91 |
-| T_Max1 | float64 | 0 | 0 | 233 | 35.81, 35.71, 36.04, 35.53, 35.94, 35.41, 35.84, 35.67, 35.7, 35.64 |
-| T_OR1 | float64 | 0 | 0 | 291 | 35.15, 35.26, 34.89, 35.01, 35.53, 35.36, 35.69, 35.65, 35.79, 35.67 |
-| T_OR_Max1 | float64 | 0 | 0 | 287 | 35.64, 34.96, 35.31, 35.78, 35.39, 35.37, 35.4, 35.67, 35.13, 35.56 |
-| aveOralM | float64 | 0 | 0 | 70 | 36.89, 36.99, 36.79, 36.94, 37.04, 37.09, 36.84, 36.74, 37.14, 36.69 |
+| Cosmetics | float64 | 28 | 2.8 | 2 | 0.0, 1.0 |
+| Distance | float64 | 2 | 0.2 | 32 | 0.6, 0.7, 0.65, 0.8, 0.75, 0.62, 0.66, 0.64, 0.78, 0.68 |
+| T_offset1 | float64 | 0 | 0 | 196 | 0.78, 0.92, 0.97, 0.89, 0.91, 0.82, 0.79, 1.03, 0.93, 0.95 |
+| Max1R13_1 | float64 | 0 | 0 | 257 | 35.39, 35.29, 35.59, 35.25, 35.33, 35.52, 35.05, 35.51, 35.58, 35.64 |
+| Max1L13_1 | float64 | 0 | 0 | 249 | 35.59, 35.53, 35.48, 35.29, 35.36, 35.47, 35.81, 35.52, 35.61, 35.28 |
+| aveAllR13_1 | float64 | 0 | 0 | 315 | 35.13, 34.68, 35.33, 35.01, 34.93, 34.78, 35.49, 34.87, 34.85, 34.92 |
+| aveAllL13_1 | float64 | 0 | 0 | 294 | 35.01, 35.03, 34.75, 34.48, 35.25, 35.09, 34.77, 34.47, 34.86, 34.99 |
+| T_RC1 | float64 | 0 | 0 | 244 | 35.39, 35.31, 35.66, 35.25, 35.58, 35.45, 35.49, 35.44, 35.37, 35.6 |
+| T_RC_Dry1 | float64 | 0 | 0 | 249 | 35.49, 35.37, 35.32, 35.45, 35.66, 35.55, 35.31, 35.36, 34.87, 35.21 |
+| T_RC_Wet1 | float64 | 0 | 0 | 260 | 35.23, 35.39, 35.75, 35.36, 35.51, 35.47, 35.38, 35.1, 35.67, 35.17 |
+| T_RC_Max1 | float64 | 0 | 0 | 247 | 35.52, 35.39, 35.33, 35.25, 35.68, 35.59, 35.23, 35.34, 35.32, 35.47 |
+| T_LC1 | float64 | 0 | 0 | 247 | 35.5, 35.82, 35.31, 35.16, 35.47, 35.54, 35.42, 35.49, 35.17, 35.3 |
+| T_LC_Dry1 | float64 | 0 | 0 | 250 | 35.26, 35.47, 35.16, 35.33, 35.5, 35.92, 35.54, 35.78, 35.31, 35.59 |
+| T_LC_Wet1 | float64 | 0 | 0 | 271 | 35.24, 35.54, 35.38, 35.29, 35.35, 35.04, 35.23, 35.4, 35.17, 34.77 |
+| T_LC_Max1 | float64 | 0 | 0 | 246 | 35.53, 35.64, 35.47, 35.51, 35.59, 35.67, 35.61, 35.48, 35.33, 35.36 |
+| RCC1 | float64 | 0 | 0 | 270 | 34.83, 35.46, 34.9, 35.03, 35.42, 35.27, 35.02, 35.26, 35.7, 35.15 |
+| LCC1 | float64 | 0 | 0 | 279 | 34.96, 35.0, 34.9, 35.12, 35.48, 35.29, 35.27, 35.11, 35.44, 35.22 |
+| canthiMax1 | float64 | 0 | 0 | 242 | 35.47, 35.53, 35.68, 35.94, 35.54, 35.74, 35.59, 35.52, 35.67, 35.72 |
+| canthi4Max1 | float64 | 0 | 0 | 247 | 35.31, 35.49, 35.45, 35.92, 35.5, 35.77, 35.75, 35.73, 35.48, 35.44 |
+| T_FHCC1 | float64 | 0 | 0 | 289 | 34.91, 34.48, 34.93, 34.49, 34.36, 34.26, 34.62, 34.47, 34.6, 34.41 |
+| T_FHRC1 | float64 | 0 | 0 | 300 | 34.44, 34.87, 34.62, 34.75, 34.5, 34.65, 34.78, 34.39, 34.27, 34.14 |
+| T_FHLC1 | float64 | 0 | 0 | 308 | 34.69, 34.33, 34.56, 34.98, 34.72, 34.4, 34.57, 34.75, 34.35, 34.34 |
+| T_FHBC1 | float64 | 0 | 0 | 307 | 34.37, 34.48, 34.5, 34.61, 34.29, 35.1, 34.69, 34.43, 34.85, 34.35 |
+| T_FHTC1 | float64 | 0 | 0 | 320 | 34.74, 34.77, 34.7, 34.29, 34.71, 34.8, 34.73, 34.56, 34.86, 34.38 |
+| T_FH_Max1 | float64 | 0 | 0 | 244 | 35.2, 35.41, 35.29, 35.26, 35.18, 35.23, 35.16, 35.19, 35.43, 35.27 |
+| T_FHC_Max1 | float64 | 0 | 0 | 275 | 35.08, 34.98, 35.28, 35.36, 35.34, 34.72, 35.11, 35.22, 34.91, 35.07 |
+| T_Max1 | float64 | 0 | 0 | 229 | 35.81, 36.04, 35.94, 35.53, 35.41, 35.71, 35.67, 35.7, 35.84, 35.89 |
+| T_OR1 | float64 | 0 | 0 | 287 | 35.15, 35.26, 35.36, 35.53, 35.01, 34.89, 35.65, 35.46, 35.69, 35.79 |
+| T_OR_Max1 | float64 | 0 | 0 | 283 | 35.31, 35.64, 34.96, 35.78, 35.37, 35.39, 35.4, 35.67, 35.57, 35.2 |
+| aveOralM | float64 | 0 | 0 | 69 | 36.89, 36.99, 36.94, 36.79, 37.04, 37.09, 36.84, 36.74, 37.14, 36.69 |
 | T_atm | float64 | 0 | 0 | 78 | 24.0, 24.1, 24.2, 23.8, 23.4, 24.3, 23.5, 23.2, 23.9, 23.7 |
-| Humidity | float64 | 0 | 0 | 352 | 30.0, 13.5, 20.1, 48.5, 27.2, 14.0, 15.1, 17.9, 15.5, 18.1 |
-| TimeOfDay | float64 | 0 | 0 | 999 | 10.0608, 11.1256, 15.2389, 14.2825, 14.3522, 10.5575, 15.4842, 13.9261, 13.0842… |
+| Humidity | float64 | 0 | 0 | 349 | 30.0, 13.5, 20.1, 48.5, 14.0, 15.1, 27.2, 17.9, 15.5, 17.4 |
+| TimeOfDay | float64 | 0 | 0 | 982 | 10.0608, 12.735, 11.4814, 14.2825, 11.1256, 10.5575, 14.4136, 15.2389, 11.5386,… |
 
 </details>
 
@@ -350,7 +352,7 @@ The images of rounds 1-3 and the oral readings agree, while the date, the time, 
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.975 | 1.877 | 0.26 | 0 | log | 51467.6 | 169265 | exponential |
+| 0 | 0 | 0 | 2.024 | 1.923 | 0.255 | 0 | log | 50666.7 | 170087 | exponential |
 
 ### Numeric features
 
@@ -359,39 +361,39 @@ The images of rounds 1-3 and the oral readings agree, while the date, the time, 
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| T_offset1 | 1018 | 0.959008 | 0.416673 | -0.76 | 3.58 |
-| Max1R13_1 | 1018 | 35.5317 | 0.613927 | 33.35 | 38.52 |
-| Max1L13_1 | 1018 | 35.5449 | 0.588767 | 33.55 | 38.16 |
-| aveAllR13_1 | 1018 | 34.7933 | 0.803707 | 29.95 | 37.74 |
-| aveAllL13_1 | 1018 | 34.9109 | 0.721189 | 31.54 | 37.78 |
-| T_RC1 | 1018 | 35.596 | 0.587145 | 33.34 | 38.51 |
-| T_RC_Dry1 | 1018 | 35.5186 | 0.606484 | 33.34 | 38.51 |
-| T_RC_Wet1 | 1018 | 35.4816 | 0.609769 | 33.3 | 38.41 |
-| T_RC_Max1 | 1018 | 35.6259 | 0.586415 | 33.35 | 38.52 |
-| T_LC1 | 1018 | 35.5749 | 0.575887 | 33.78 | 38.16 |
-| T_LC_Dry1 | 1018 | 35.5411 | 0.58232 | 33.67 | 38.16 |
-| T_LC_Wet1 | 1018 | 35.4 | 0.620444 | 33.12 | 37.93 |
-| T_LC_Max1 | 1018 | 35.6064 | 0.575615 | 33.79 | 38.21 |
-| RCC1 | 1018 | 35.1853 | 0.658978 | 32.78 | 38.31 |
-| LCC1 | 1018 | 35.1387 | 0.652765 | 32.57 | 37.91 |
-| canthiMax1 | 1018 | 35.7218 | 0.564427 | 33.85 | 38.52 |
-| canthi4Max1 | 1018 | 35.6919 | 0.564405 | 33.82 | 38.51 |
-| T_FHCC1 | 1018 | 34.4461 | 0.773279 | 30.02 | 37.18 |
-| T_FHRC1 | 1018 | 34.4414 | 0.789785 | 29.54 | 37.24 |
-| T_FHLC1 | 1018 | 34.4508 | 0.778675 | 30.21 | 37.07 |
-| T_FHBC1 | 1018 | 34.3502 | 0.773504 | 30.26 | 37.27 |
-| T_FHTC1 | 1018 | 34.4318 | 0.920142 | 27.7 | 37.44 |
-| T_FH_Max1 | 1018 | 35.3586 | 0.564345 | 33.08 | 38.02 |
-| T_FHC_Max1 | 1018 | 35.0055 | 0.644561 | 31.63 | 37.58 |
-| T_Max1 | 1018 | 35.8251 | 0.535136 | 33.85 | 38.52 |
-| T_OR1 | 1018 | 35.3008 | 0.702628 | 32.18 | 37.75 |
-| T_OR_Max1 | 1018 | 35.335 | 0.702343 | 32.18 | 37.76 |
-| aveOralM | 1018 | 37.0283 | 0.509996 | 35.54 | 40.34 |
-| T_atm | 1018 | 24.1154 | 1.33758 | 20.2 | 29.1 |
-| Humidity | 1018 | 28.719 | 13.0805 | 9.9 | 61.2 |
-| Distance | 1016 | 0.653061 | 0.067829 | 0.54 | 0.92 |
-| Cosmetics | 989 | 0.31547 | 0.464938 | 0 | 1 |
-| TimeOfDay | 1018 | 13.4454 | 2.12592 | 8.52611 | 17.2958 |
+| T_offset1 | 1001 | 0.96013 | 0.418634 | -0.76 | 3.58 |
+| Max1R13_1 | 1001 | 35.5279 | 0.610207 | 33.35 | 38.52 |
+| Max1L13_1 | 1001 | 35.5407 | 0.586615 | 33.55 | 38.16 |
+| aveAllR13_1 | 1001 | 34.788 | 0.801672 | 29.95 | 37.74 |
+| aveAllL13_1 | 1001 | 34.9047 | 0.720366 | 31.54 | 37.78 |
+| T_RC1 | 1001 | 35.5924 | 0.583712 | 33.34 | 38.51 |
+| T_RC_Dry1 | 1001 | 35.5145 | 0.60311 | 33.34 | 38.51 |
+| T_RC_Wet1 | 1001 | 35.4788 | 0.605948 | 33.3 | 38.41 |
+| T_RC_Max1 | 1001 | 35.6223 | 0.582944 | 33.35 | 38.52 |
+| T_LC1 | 1001 | 35.5707 | 0.573993 | 33.78 | 38.16 |
+| T_LC_Dry1 | 1001 | 35.5368 | 0.580138 | 33.67 | 38.16 |
+| T_LC_Wet1 | 1001 | 35.3966 | 0.621006 | 33.12 | 37.93 |
+| T_LC_Max1 | 1001 | 35.6022 | 0.573713 | 33.79 | 38.21 |
+| RCC1 | 1001 | 35.182 | 0.653642 | 32.78 | 38.31 |
+| LCC1 | 1001 | 35.1347 | 0.65289 | 32.57 | 37.91 |
+| canthiMax1 | 1001 | 35.7175 | 0.560948 | 33.85 | 38.52 |
+| canthi4Max1 | 1001 | 35.6877 | 0.560963 | 33.82 | 38.51 |
+| T_FHCC1 | 1001 | 34.4393 | 0.772657 | 30.02 | 37.18 |
+| T_FHRC1 | 1001 | 34.4352 | 0.788801 | 29.54 | 37.24 |
+| T_FHLC1 | 1001 | 34.4466 | 0.774688 | 30.21 | 37.07 |
+| T_FHBC1 | 1001 | 34.3445 | 0.772065 | 30.26 | 37.27 |
+| T_FHTC1 | 1001 | 34.4301 | 0.91761 | 27.7 | 37.44 |
+| T_FH_Max1 | 1001 | 35.3558 | 0.562935 | 33.08 | 38.02 |
+| T_FHC_Max1 | 1001 | 34.9995 | 0.643021 | 31.63 | 37.58 |
+| T_Max1 | 1001 | 35.8208 | 0.530714 | 33.85 | 38.52 |
+| T_OR1 | 1001 | 35.2935 | 0.697821 | 32.18 | 37.75 |
+| T_OR_Max1 | 1001 | 35.3278 | 0.697675 | 32.18 | 37.76 |
+| aveOralM | 1001 | 37.0264 | 0.504699 | 35.54 | 40.34 |
+| T_atm | 1001 | 24.1201 | 1.34557 | 20.2 | 29.1 |
+| Humidity | 1001 | 28.7316 | 13.0793 | 9.9 | 61.2 |
+| Distance | 999 | 0.652983 | 0.0679791 | 0.54 | 0.92 |
+| Cosmetics | 973 | 0.316547 | 0.465368 | 0 | 1 |
+| TimeOfDay | 1001 | 13.4584 | 2.12498 | 8.52611 | 17.2958 |
 
 </details>
 
@@ -402,18 +404,18 @@ The images of rounds 1-3 and the oral readings agree, while the date, the time, 
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Age | 1 | 18-20 | 532 | 52.26 |
-| Age | 2 | 21-25 | 355 | 34.87 |
-| Age | 3 | 26-30 | 67 | 6.58 |
-| Age | 4 | 31-40 | 31 | 3.05 |
-| Age | 5 | 51-60 | 11 | 1.08 |
-| Ethnicity | 1 | White | 505 | 49.61 |
-| Ethnicity | 2 | Asian | 260 | 25.54 |
-| Ethnicity | 3 | Black or African-American | 143 | 14.05 |
-| Ethnicity | 4 | Hispanic/Latino | 56 | 5.5 |
-| Ethnicity | 5 | Multiracial | 50 | 4.91 |
-| Gender | 1 | Female | 604 | 59.33 |
-| Gender | 2 | Male | 414 | 40.67 |
+| Age | 1 | 18-20 | 524 | 52.35 |
+| Age | 2 | 21-25 | 347 | 34.67 |
+| Age | 3 | 26-30 | 66 | 6.59 |
+| Age | 4 | 31-40 | 31 | 3.1 |
+| Age | 5 | 51-60 | 11 | 1.1 |
+| Ethnicity | 1 | White | 494 | 49.35 |
+| Ethnicity | 2 | Asian | 255 | 25.47 |
+| Ethnicity | 3 | Black or African-American | 143 | 14.29 |
+| Ethnicity | 4 | Hispanic/Latino | 56 | 5.59 |
+| Ethnicity | 5 | Multiracial | 49 | 4.9 |
+| Gender | 1 | Female | 600 | 59.94 |
+| Gender | 2 | Male | 401 | 40.06 |
 
 </details>
 

@@ -7,7 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 5
+priority: 4
 tags:
 - Non-IID (Grouped)
 - Review Prio 1 (Atlas)
@@ -45,6 +45,14 @@ Need to double-check. Also, once checked, update GitHub issue! "
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Anhydrite (1,807 rows in 10 wells) and Halite (14,711 rows in 4 wells) are each missing from one of the 3 well-grouped test folds. These are not small classes: the well split leaves them out, which the definition already accepts as `splits_test_class_missing` with that reason.
 
 **Assessment (AI, 2026-10-20):** priority 5 for the review of the added dataset: gap + (problem_type multiclass_classification), use case +, source +, shape +, no known risk. Large well-grouped multiclass task with a documented competition source and a direct use case; strong grouped-regime addition.
+
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes; open for the curator are the fit with NPD's GROUP and FORMATION (a released-well use case or an approximate fit) and the metric (TP-6). Applied: values below -900, impossible negatives, DCAL above 100 and DRHO in 36/7-3 and 31/4-10 masked; a splits comment (departure from 98 / 10 / 10, test wells have drilled neighbours); the GROUP and FORMATION note reworded (boundaries 4x enriched on lithology changes, shared post-well sources); off-scale wells and metric facts noted; stale numbers corrected; fit_reason names the mud-log gap; domain environmental science & climate in the definition. Corrections to earlier lines: 12 of 13 finalists used only tree ensembles (one also a neural network); the GROUP and FORMATION timing is a known risk. Priority 4: gap + (multiclass), use case + (the competition's own task, interpreting a well's lithology), source + (organisers' repository, Zenodo record, retrospective), shape +, risk - (GROUP and FORMATION may postdate the prediction point, issue 2).
+
+**Assessment (AI, 2026-10-20):** correction to the earlier 2026-10-20 lines: the "no known risk" of the first one does not hold. Whether NPD's GROUP and FORMATION exist when a newly drilled well is first interpreted is open (REVIEW.md issue 2), and the 2026-10-07 line's "all 13 finalists used tree ensembles" should read 12 of 13 used only tree ensembles (one team also a neural network).
+
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric set to `force_2020_penalty_matrix`, the competition's 12 x 12 penalty matrix over hard labels (was the default log loss). No listed metric ranks the same; the name is not registered downstream, so TabArena scores log loss until it is. Needs a rebuild to reach the container.
 
 ## Reference
 

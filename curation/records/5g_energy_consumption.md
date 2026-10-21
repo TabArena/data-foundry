@@ -34,3 +34,7 @@ type_adapter_id: curation-record-v1
 Would require grouped-temporal split, but not possible due to data size
 
 We could do a grouped split as a validation study, but this would not exactly correspond to the actual task
+
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric stays `mape`: the challenge ranked the private leaderboard by weighted MAPE, the weights (higher for new stations or configurations) given in its test file (Zindi evaluation page). Here every test station is new and the weights are not in the released data, so unweighted MAPE is the nearest listed metric. The notes now name WMAPE. Needs a rebuild to reach the container (notes only).

@@ -8,6 +8,10 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
 
+# Entries of one sale scraped twice: the same home (address, ZIP code, year built) with the same sold price, a median
+# 61 Kaggle IDs apart (51 pairs).
+SAME_SALE_ROWS = 51
+
 
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -17,8 +21,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             " sell for, to set or judge an offer."
         ),
         row=(
-            "One home sold in California around 2020, as scraped from Redfin; Arizona homes, older copies of "
-            "repeated homes and homes whose listing predates their last sale are dropped."
+            "One sale of a home in California around 2020, as scraped from Redfin; Arizona homes, second copies of "
+            "one sale and homes whose listing predates their last sale are dropped."
         ),
         predicted="The sale price in US dollars, on a log scale.",
         known=(
@@ -27,8 +31,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             "nearby schools with ratings and distances."
         ),
         split=(
-            "Three test sets, each a quarter of the sales in sale order, with all earlier sales for training. The "
-            "order comes from the Kaggle row ID, as the data has no sale dates."
+            "Three test sets, each a sixth of the sales in sale order (the newest half of the sales), with all "
+            "earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates."
         ),
         changes=(
             "We drop 5,413 listings whose description states the sold price and 2,480 whose listing describes an "
@@ -70,7 +74,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
         We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
-        - We log scale the target variable.
+        - We log scale the target variable (log1p), so RMSE on it is the competition's metric, RMSLE (Kaggle's evaluation metric).
         - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
         - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
         - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
@@ -84,7 +88,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - We treat ZIP codes as strings. But we add a new categorical features that puts zip code in to approximate relevant buckets of regions.
         - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
         - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
-        - After all the above preprocessing, there exist 63 houses that appear multiple times in the dataset (same address, zip code, year built). We only keep the newest entry to avoid group-related target leakage.
+        - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
     """
 
     # Task
@@ -93,12 +97,12 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create a sklearn TimeSeriesSplit with 3 splits. We treat each split as a separate repeat with one fold. Each fold has 25% of the original data as test set. We simulate as if we deploy a model at a time point x, for the next time period (e.g. for a whole next year like in the original competition task). As we do not know the time periods from the time_index, we split based on number of samples.
+        Three test windows in sale order, each a sixth of the sales (6,510 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
     """
     temporal = Temporal(
         on="time_index",
-        splits=TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.25),
-        horizon=10382,
+        splits=TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.5),
+        horizon=6510,
         horizon_unit="steps",
     )
 
@@ -206,14 +210,14 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             raise ValueError(f"Unexpected zip code: {x}")
 
         df["Zip Region"] = df["Zip"].apply(zip_buckets)
-        # Only keep the newest entry for houses that appear multiple times
+        # One sale scraped twice (same home, same sold price): keep the newest entry. Repeated sales of a home at
+        # another price stay, as an earlier sale is history under the temporal split.
         n_data = len(df)
-        idx = df.groupby(["Address", "Zip", "Year built"], dropna=False)["time_index"].idxmax()
-        # groupby().idxmax() returns rows in group-key (address) order; sort back to the Kaggle Id (= sale) order
-        df = df.loc[idx].sort_values("time_index", kind="stable").reset_index(drop=True)
-        assert (
-            n_data - len(df) == 67
-        )  # We have 63 houses with multiple entries (either 2 or 3) for a total of 130 entire. We keep one entry per house, thus 130 - 63 = 67
+        same_sale = df.sort_values("time_index", kind="stable").duplicated(
+            ["Address", "Zip", "Year built", "Sold Price"], keep="last"
+        )
+        df = df[~same_sale.reindex(df.index)].sort_values("time_index", kind="stable").reset_index(drop=True)
+        assert n_data - len(df) == SAME_SALE_ROWS, "expected 51 sales scraped twice"
         # Drop homes whose listing predates their last sale: it describes an earlier sale (see curation_comments)
         df = df[~(pd.to_datetime(df["Last Sold On"]) >= pd.to_datetime(df["Listed On"]))]
         # Log scale target as it is exp distributed

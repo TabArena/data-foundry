@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: tour_travels_churn
 container_format: 2
-checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
+checksum: v2:ff5414489fd24aff6ac2b46610ce636c9c8317237ac9f1852cb37722e0f36799
 build:
   uuid: 01a111fc-edc9-7641-b79f-dc54c06b0b31
   checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 954
   n_features: 6
@@ -42,6 +42,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 636
     max: 636
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows and 6 features. Source: Kaggle (2021).
 
-Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ff5414489fd24aff6ac2b46610ce636c9c8317237ac9f1852cb37722e0f36799`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -121,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | Tejashvi2023TourTravelsCustomerChurnPrediction |
 | rows x columns | 954 x 7 |
 | task.target | Target |
@@ -169,6 +171,8 @@ The first 5 of 954 rows of the final frame (random rows: the frame is shuffled).
 ## Curation notes
 
 The source of the data from Kaggle is unknown but the data distributions look reasonable enough to use. But I would also not be surprised if we find out the data is artificially created.
+
+- The split is forced (ForcedIIDFromTemporal, SPLIT-8): the company would train on customers whose churn is known by an earlier date and score its current ones, but the file is one undated snapshot. A dated window would test a model on a later season's customers, whose bookings and services may differ; the cost cannot be measured here.
 
 ## Splits
 
@@ -283,3 +287,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:ff5414489fd24aff6ac2b46610ce636c9c8317237ac9f1852cb37722e0f36799` |

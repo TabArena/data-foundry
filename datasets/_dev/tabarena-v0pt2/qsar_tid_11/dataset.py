@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
 
 
 class QsarTid11(AbstractCuratedDataset):
@@ -69,7 +69,9 @@ class QsarTid11(AbstractCuratedDataset):
         - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
           first tenth, 5.6 in the ninth); the standard shuffle removes this order.
         - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
+        - Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
         - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
+        - The 1,024 fingerprint bits are 0/1 presence flags (OpenML stores them as floats): integers typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21).
     """
 
     # Task
@@ -87,4 +89,10 @@ class QsarTid11(AbstractCuratedDataset):
         df.drop(columns=["MOLECULE_CHEMBL_ID"], inplace=True)
         # Remove one negative outlier row
         df = df[df["MEDIAN_PXC50"] >= 0].reset_index(drop=True)
+        bits = df.columns.drop("MEDIAN_PXC50")
+        df[bits] = df[bits].astype("int8")
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # The fingerprint bits are 0/1 presence flags: categorical (CLEAN-14).
+        return FeatureTypes(categorical=list(df.columns.drop(self.target)))

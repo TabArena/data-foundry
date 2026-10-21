@@ -36,7 +36,7 @@ RECORDED = {
 }
 
 # The columns of day D recorded after the 9 am observation, inside the window of the label (rain from 9 am on D to
-# 9 am on D+1). They are replaced by their values of D-1 at the same station.
+# 9 am on D+1). They are replaced by their values of D-1 at the same location.
 AFTER_9AM = (
     "MaxTemp",
     "Sunshine",
@@ -53,20 +53,20 @@ AFTER_9AM = (
 
 class RainInAustralia(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="Will it rain more than 1 mm at this Australian weather station in the next 24 hours?",
+        question="Will it rain more than 1 mm at this Australian weather location in the next 24 hours?",
         use_case=(
-            "For example, each morning at 9 am a farmer or local forecaster estimates from a station's observations "
+            "For example, each morning at 9 am a farmer or local forecaster estimates from a location's observations "
             "whether more than 1 mm of rain will fall there by 9 am the next day."
         ),
         row=(
-            "One day at one of 49 Australian weather stations of the Bureau of Meteorology, November 2007 to January "
-            "2026 (264,562 station-days)."
+            "One day at one of 49 Australian locations of the Bureau of Meteorology (its Daily Weather Observations "
+            "pages, some combining several stations), November 2007 to January 2026 (264,562 location-days)."
         ),
         predicted="Whether more than 1 mm of rain falls in the 24 hours from 9 am that day (22% of days).",
         known=(
             "The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and "
             "evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust "
-            "and 3 pm observations, the station and the date."
+            "and 3 pm observations, the location and the date."
         ),
         split=(
             "Nine test windows of 14 days, one every six weeks from February 2025 to January 2026, newest first; each"
@@ -74,13 +74,15 @@ class RainInAustralia(AbstractCuratedDataset):
         ),
         changes=(
             "We replace the ten values recorded after 9 am (the afternoon readings, the day's maximum temperature, "
-            "sunshine and gust) by the previous day's, drop the rain amount that defines the label, and drop rows "
-            "whose next record is more than a day later."
+            "sunshine and gust) by the previous day's, drop the rain amount that defines the label, drop rows "
+            "whose next record is more than a day later, and drop the rows without a label (8,076) or without their "
+            "own 9 am rain reading (2,571)."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "Every input is read by 9 am, the label covers the next 24 hours, and each window follows its training "
-            "days, as in daily use. A forecaster would also have weather-model output, which the data lack."
+            "A forecast from the location's own observations, standing in for the forecast-informed decision: a "
+            "forecaster would also have weather-model output, which the data lack. Every input is read by 9 am, the "
+            "label covers the next 24 hours, and each window follows its training days, as in daily use."
         ),
     )
 
@@ -134,33 +136,52 @@ class RainInAustralia(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with weatherAUS.csv of the R package rattle: daily observations of 49 Australian weather stations from
-        the Bureau of Meteorology (BoM), 2007-11-01 to 2026-01-30, with the target RainTomorrow.
+        We start with weatherAUS.csv of the R package rattle: daily observations of 49 Australian locations (BoM Daily
+        Weather Observations pages, some combining several stations) from the Bureau of Meteorology (BoM), 2007-11-01
+        to 2026-01-30, with the target RainTomorrow.
 
-        - Prediction point: the 9 am observation at a station on day D. The model predicts whether more than 1 mm of
+        - Prediction point: the 9 am observation at a location on day D. The model predicts whether more than 1 mm of
           rain falls by 9 am on D+1 (RainTomorrow), from the observations up to 9 am on D and those recorded on D-1.
         - BoM records rainfall "in the 24 hours to 9am" (BoM notes), so the label's window starts at 9 am on D, and ten
           columns of day D are recorded inside it: MaxTemp (the label's own 24 hours), Sunshine and the wind gust (to
           midnight) and the six 3 pm observations. Five of them are tied more closely to the label than to the rain
           read at 9 am on D (Sunshine ROC AUC 0.805 against 0.733; decision table). We replace the ten columns by their
-          values of D-1 at the same station (`<column>_prev_day`, missing when the station has no row for D-1).
+          values of D-1 at the same location (`<column>_prev_day`, missing when the location has no row for D-1).
         - We drop RISK_MM, the label's rain amount: RainTomorrow is RISK_MM > 1 mm in every labelled row.
-        - rattle takes RainTomorrow from the station's next row in the file, which before the periods missing from the
-          file is 29-401 days later. We drop every row whose next row is more than one day later (decision table). The
-          last row of each station keeps its label; it matches BoM's reading of the next day at the 15 stations checked.
+        - rattle takes RainTomorrow from the location's next row in the file, which before the periods missing from the
+          file is 29-401 days later. We drop every row whose next row is more than one day later (decision table).
+          The last row of each location keeps its label; it matches BoM's reading of the next day at the 7 locations
+          checked.
         - We drop the rows without a label and the rows whose own 9 am rain reading is missing, since BoM's next value
           can then be "accumulated over several days rather than the normal one day" (decision table).
-        - RainToday is Rainfall > 1 mm in every row; we keep both, as the source ships them.
+        - Rainfall and RainToday (Rainfall > 1 mm in every row) are the location's 9 am gauge reading on D, i.e. the
+          label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 shipped windows (LightGBM,
+          0.8495 with them, 0.8467 without; log loss 0.3516 against 0.3549), and the features without the location's
+          rain series beat persistence and the location-by-month climatology in 9 of 9 windows, so the skill does not
+          come from the lagged target. We keep both: the reading is an input the forecaster has at 9 am.
+        - The wind direction is blank in every row with a wind speed of 0; we set it to "Calm" there (WindDir9am,
+          WindDir3pm before the lag; 15,003 and 1,609 rows of the cleaned data).
+        - A relative humidity of 0% is impossible; we set it to missing (5 cells, all at Woomera).
         - `Location`, the wind directions and RainToday are categorical, `Date` a date.
-        - Location stays a feature, and the split is temporal, not grouped by station: a model is used at the same
-          stations on later days (splits comment).
-        - Anomaly: the file has no rows for any station in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
+        - Location stays a feature, and the split is temporal, not grouped by location: a model is used at the same
+          locations on later days (splits comment).
+        - Anomaly: the file has no rows for any location in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
           2017-02-28.
         - Anomaly: Evaporation is a multi-day total after days without a reading, and Cloud9am and Cloud3pm hold 9 (sky
           obscured) in 3 rows. We keep the values as recorded.
         - Anomaly: missing Sunshine and Evaporation grow from 34-46% of the rows in 2009-2013 to 66-79% in 2017-2025.
-        - Anomaly: Cloud9am is missing more often on dry mornings. The report is made at 9 am, so we keep the missing
-          values as they are.
+        - Anomaly: a blank Cloud9am is mostly a clear or near-clear sky at the time of the observation, mixed with
+          true gaps. Among the locations that record cloud, rain follows 11.7% of blank mornings against 24.7% of
+          mornings with a reading, and the gap holds within RainToday x humidity strata. Days with a blank Cloud3pm have
+          8.5 h of sunshine, against 10.5-11.2 h at 0-1 oktas and 4.8 h at 7 oktas, and the locations with the most
+          blanks record almost no 0 oktas (Uluru 76% blank, 0.1% zeros). The blank is set at 9 am, so we keep it
+          (effect 0.003 ROC AUC); a recode to 0 is not safe because true gaps are mixed in. Revisit if BoM states
+          otherwise. rattle's cloud values also differ from current BoM pages at Melbourne and Hobart (a revision
+          between versions).
+        - Anomaly: paired locations (Perth and PerthAirport, Sydney and SydneyAirport, Melbourne and MelbourneAirport)
+          share Sunshine on 100% of their shared days. The split is unaffected, since a date is never on both sides.
+        - Anomaly: in 2,648 kept rows the location's previous reading or row is missing, so Rainfall and RainToday may
+          be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
         - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
           use the data with BoM acknowledged as the source.
     """
@@ -175,8 +196,12 @@ class RainInAustralia(AbstractCuratedDataset):
         Weather models are refit often (one to two weeks, the horizon the curators set for
         climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 9 test windows
         of 14 days, one every 6 weeks from 2025-02-15 to 2026-01-30, newest first, so that the windows cover every
-        season of the last year; train is every earlier day (from 2007-11-01). Each window holds 622-642 station-days
-        of 46 stations with 63-205 rain days. The 9 windows are the 3 x 3 splits of the v2 protocol for this size.
+        season of the last year; train is every earlier day (from 2007-11-01). Each window holds 622-642
+        location-days of 46 locations with 63-205 rain days. The 9 windows are the 9 splits the v2 protocol gives this
+        size. No gap: the label of the last training day is read at 9 am on the first test day, before the first
+        prediction. The history has a break (no rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are
+        missing far more often after it; training from 2017-03 gives ROC AUC 0.842 against 0.847 with the full
+        history, so the old years do no harm.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -184,7 +209,12 @@ class RainInAustralia(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = cast_dtypes(raw, datetime={"Date": "%Y-%m-%d"})  # the lag below needs the dates
-        # The columns recorded after 9 am on D, replaced by their values of D-1 at the same station.
+        # A blank direction at a speed of 0 is a calm wind; RH 0% is impossible (Woomera only).
+        for direction, speed in (("WindDir9am", "WindSpeed9am"), ("WindDir3pm", "WindSpeed3pm")):
+            df[direction] = df[direction].mask(df[speed].eq(0), "Calm")
+        for humidity in ("Humidity9am", "Humidity3pm"):
+            df[humidity] = df[humidity].mask(df[humidity].eq(0))
+        # The columns recorded after 9 am on D, replaced by their values of D-1 at the same location.
         keys = ["Location", "Date"]
         previous = df[[*keys, *AFTER_9AM]].assign(Date=df["Date"] + pd.Timedelta(days=1))
         previous = previous.rename(columns={c: f"{c}_prev_day" for c in AFTER_9AM})

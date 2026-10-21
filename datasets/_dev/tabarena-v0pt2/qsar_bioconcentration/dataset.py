@@ -58,12 +58,13 @@ class QsarBioconcentration(AbstractCuratedDataset):
         ),
         predicted=(
             "The mechanism class, read from the measured bioconcentration and the measured octanol-water "
-            "partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%)."
+            "partitioning: lipid storage (59%), metabolized or eliminated (33%), or additional storage sites (8%)."
         ),
         known="The chemical's structure, as the source's nine descriptors and 193 more computed with RDKit.",
         split=(
-            "Random chemicals, one row each, as in the source's random split; the file has no chemical families for a"
-            " stricter split."
+            "Random chemicals, one row each, as in the source's random split: each prediction is a new chemical, "
+            "usually of a chemical family already measured. A third of the chemicals belong to such families "
+            "(congener series), and the test chemicals of a family whose relatives are in training score higher."
         ),
         changes=(
             "We drop the measured bioconcentration factor the class is read from, swap back the structures of three "
@@ -73,8 +74,9 @@ class QsarBioconcentration(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The structure and its descriptors are known before a fish test, and a held-out chemical is an untested "
-            "one. The authors chose the nine descriptors on chemicals that also sit in our test folds, which may "
-            "favour those slightly."
+            "one: a random member of the historical BCF compilation, which often has relatives in training. The "
+            "authors chose the nine descriptors on chemicals that also sit in our test folds; that favours those "
+            "chemicals by at most about 0.015 macro ROC AUC."
         ),
     )
 
@@ -117,17 +119,17 @@ class QsarBioconcentration(AbstractCuratedDataset):
         We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. The authors' 2015 BCF table (Chemosphere SI), which adds the experimental logKOW, is evidence only.
 
         - Prediction point: an organic chemical whose bioconcentration in fish has not been measured, before a fish test. Its structure (the SMILES) and the descriptors computed from it are known; the measured BCF, and so the class read from it, are not.
-        - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data).
+        - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data). The 2015 table gives a logKOW for 773 of the 776 chemicals, measured for 651 and predicted for 122; the band gives the file's class for 72% of the 122, and below a logKOW of 1 the class is mostly lipid storage by convention.
         - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, which the paper models and the 9 descriptors were selected for.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-        - The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). LightGBM's macro ROC AUC on our splits: 0.735 with the 9, 0.752 with RDKit's added (better on 13 of 15 splits).
-        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowers LightGBM's macro ROC AUC from 0.735 to 0.723.
+        - The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's added (better on 12 of 15 splits).
+        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 (run of 2026-10-14, settings not recorded).
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
         - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
         - Renamed B02[C-N] and F04[C-O] to B02(C-N) and F04(C-O), since LightGBM and XGBoost refuse square brackets in feature names.
-        - Split: IID, one row per distinct chemical, as in the source's random split. The file holds no key of chemical families for a stricter split.
-        - Note: the authors selected the 9 descriptors on their 584 training chemicals, which sit in our test folds too. A random forest scores macro AUC 0.064 higher on those chemicals than on the authors' test chemicals (one-sided p = 0.06 against random subsets), and logistic regression shows no gap (0.003), so we keep it (as home_credit_default_risk).
-        - Note: TabSTAR's annotation (OpenML 46585) swaps the names of classes 2 and 3. Our labels follow the old UCI page and the rule: class 2 lies above the TGD line.
+        - Split: IID, one row per distinct chemical, as in the source's random split. IID rests on the use case: each prediction is a new chemical, usually of a family already measured, and no chemical recurs (no copies across the split by InChIKey).
+        - Note: the test chemicals often have relatives in training. Murcko scaffolds (ring skeletons) of the SMILES put 260 chemicals (34%) in 42 congener series, such as 64 biphenyls and 24 naphthalenes. A random forest scores macro ROC AUC 0.754 on random splits and 0.650 with the series held out; on our splits it scores 0.779 on test chemicals whose scaffold is in training and 0.655 on those with a new one. A split by scaffold cannot be scored (test folds of 30 to 556 rows, 3 of 30 without a class), so IID stays; a candidate for a scaffold-grouped variant.
+        - Potential leak, kept on purpose: the authors selected the 9 descriptors on their 584 training chemicals, which sit in our test folds too. A random forest scores macro ROC AUC 0.069 higher on those chemicals than on the authors' test chemicals (one-sided p = 0.04 against random subsets), but also 0.054 higher (p = 0.09) on the 193 RDKit columns nobody selected, so at most about 0.015 is the selection; logistic regression shows no gap (0.006). Kept as the source's published descriptors next to RDKit's (CC 2026-10-14); dropping them would remove the selection at little cost (RDKit's alone score 0.758 against 0.763 with both).
     """
 
     # Task

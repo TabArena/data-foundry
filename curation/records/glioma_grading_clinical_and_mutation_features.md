@@ -38,6 +38,8 @@ I think we can still use it (as it is still suggested to be used this way)
 
 **Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape -, no known risk. A small, clean clinical-genomic binary task (862 patients); IDH1 and age carry most of the signal, and the label is TCGA-era histology.
 
+**Assessment (AI, 2026-10-20):** review panel: ship after changes (text only, the data is unchanged; fit now approximate). Open (REVIEW.md): is a cross-check of a grade that already exists a use case (issue 5, USE-1), and confirm keeping a label right in its era but partly renamed by WHO 2021 (issue 1, USE-5); the tissue-site split is to be decided with sarcoma's issue 4 (features do not predict the site; grouped by site 0.921 / 0.927 against 0.921 / 0.924). The batch between the two TCGA projects is not triggered (LEAK-14/LEAK-15: one sequencing centre, one GDC workflow; amplified DNA not visible, ROC AUC 0.532). Priority 2: gap -, use case -, source +, shape -, risk 0 (use case: a cross-check we wrote, fit approximate; shape: 862 patients; risk: no leak, the open issues are rule readings, not an unclear target).
+
 ## Reference
 
 @article{tasci2022hierarchical,

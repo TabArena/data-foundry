@@ -64,8 +64,9 @@ class Sarcoma(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Which type of soft-tissue sarcoma is this tumour, judged from its molecular profiles?",
         use_case=(
-            "For example, a molecular pathology lab types a sarcoma from the tumour's expression and methylation "
-            "profiles, to support or check a hard diagnosis; TabPFN-Wide uses the task as a benchmark."
+            "A molecular pathology lab types a sarcoma from the tumour's methylation or expression profile, to support "
+            "or check a hard diagnosis, as the DNA-methylation sarcoma classifier of Koelsche et al. (2021) does; "
+            "TabPFN-Wide uses the task as a benchmark."
         ),
         row=(
             "The primary tumour of one patient of the TCGA sarcoma study whose type expert pathologists confirmed "
@@ -75,17 +76,22 @@ class Sarcoma(AbstractCuratedDataset):
             "The reviewed histological type: leiomyosarcoma (40%), dedifferentiated liposarcoma, undifferentiated "
             "pleomorphic sarcoma, myxofibrosarcoma or synovial sarcoma (5%)."
         ),
-        known=("25,971 measurements of the tumour: gene expression, DNA methylation and microRNA expression."),
-        split="Random patients, so the test data stands for new patients' tumours.",
+        known="25,910 measurements of the tumour: gene expression, DNA methylation and microRNA expression.",
+        split=(
+            "Random patients, so the test data stands for new patients' tumours; one hospital gives half the rows, so "
+            "the scores are optimistic for a lab whose patients come from elsewhere."
+        ),
         changes=(
             "The source is a clustering benchmark without a label; we add the expert-reviewed type of the TCGA study "
-            "instead of the submitted diagnosis, and drop the 5 nerve-sheath tumours."
+            "instead of the submitted diagnosis, merge the two leiomyosarcoma sites, and drop the 5 nerve-sheath "
+            "tumours and the array's genotype probes."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The profiles exist before the typing, and the label is the reviewed pathology diagnosis. The study left "
-            "out uncertain cases, so the test tumours are cleaner than a lab's, and few labs measure all three "
-            "profiles."
+            "A closed set of five expert-confirmed types, profiled on three omics, stands in for a classifier that "
+            "faces every referred sarcoma: the review left out uncertain cases and rarer types, so the test tumours "
+            "are cleaner than a lab's, and a lab mostly has one methylation array. The source's preprocessing over "
+            "all patients is a weak potential leak kept on purpose (curation notes), not a reason for the fit."
         ),
     )
 
@@ -139,16 +145,19 @@ class Sarcoma(AbstractCuratedDataset):
     curation_comments = """
         We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport & Shamir (2018): gene expression (`exp`), DNA methylation (`methy`, 450k array) and miRNA expression (`mirna`), plus the clinical file `clinical/sarcoma`. The label comes from the master patient table of the TCGA sarcoma study (`SARC_Master_Patient_Table.xlsx`, GDC publication page).
 
-        - Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles. The label is the expert pathology diagnosis, made from the tissue; no clinical column enters.
-        - Task: multiclass classification of the histological type, as in TabPFN-Wide (Kolberg et al. 2025, Sec. 5). The source is a clustering benchmark without a target. We use log loss, the collection's metric for a multiclass task.
-        - Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table).
+        - Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles; no clinical column enters.
+        - Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target. We use log loss, the collection's metric for a multiclass task.
+        - Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table). For dedifferentiated liposarcoma the review also required a 12q15 copy-number gain in the study's own data (Cell 2017, Methods), and all 8 relabels into or out of that class follow it. The copy number is not shipped.
         - Rows: the primary tumours (TCGA sample type 01) of the 257 patients with all three omics, restricted to the 206 reviewed patients, one row per patient; the barcode is not a feature. We drop the 5 MPNST (fewer than 10), which leaves 201 rows.
-        - Target: leiomyosarcoma 80 (soft-tissue and uterine as one type, as in the clinical file), dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold).
-        - Note: the study finds "MFS and UPS to be largely indistinguishable across multiple platforms"; we keep the two diagnoses apart, as the pathologists do.
-        - Features: the three omic blocks side by side, each column prefixed with its omic (`mRNA_`, `Methy_`, `miRNA_`), with the gene names as the source wrote them through R's `make.names` and the values as shipped. We drop the columns that are constant over the 201 rows and those that copy an earlier column (decision table).
-        - Note: the benchmark's own preprocessing (dropping patients and features with over 20% missing values, k-nearest-neighbour imputation, the 5,000 probes of highest variance) uses all patients but no label.
-        - Split: IID over patients, as in TabPFN-Wide. One tissue source site holds 101 of the 201 rows, but holding out whole sites moves a random forest only from macro ROC AUC 0.954 to 0.947 (log loss 0.66 to 0.76), so we keep the split by patient, the unit of the use case.
-        - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma. The review typed these tumours by "focal chromosome 12q~15 amplification", the amplicon of MDM2, and `mRNA_MDM2.4193` alone separates them (ROC AUC 1.000). The class is defined by the amplification and the data are TCGA measurements, so we keep it.
+        - Target: leiomyosarcoma 80, dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold). Soft-tissue and uterine leiomyosarcoma are one type, as in the clinical file: whether the tumour sits in the uterus is known before profiling, so nobody predicts it.
+        - Note: the study finds "MFS and UPS to be largely indistinguishable across multiple platforms" and analyses them as one spectrum; we keep the two reviewed diagnoses apart, as the label does. From these inputs they barely separate (ROC AUC 0.60-0.66 within the pair, three runs), and the pair carries about half of a random forest's log loss with 30% of the rows.
+        - Features: the three omic blocks side by side, each column prefixed with its omic (`mRNA_`, `Methy_`, `miRNA_`), with the gene names as the source wrote them through R's `make.names` and the values as shipped (mRNA and miRNA normalised per sample). We drop the 61 `Methy_rs*` columns, the array's SNP genotyping probes: the patient's germline genotype, not methylation, with no class signal (best one-vs-rest ROC AUC 0.77 among 305 tests). We drop the columns that are constant over the 201 rows and those that copy an earlier column (decision table).
+        - Potential leak, kept on purpose: the benchmark's preprocessing ran over all patients, test rows included: it removed patients and features with over 20% missing values and imputed the rest by k-nearest neighbours on every omic, and kept the 5,000 methylation probes of highest variance over all 269 samples (Rappoport & Shamir 2018, Suppl. File 1). The share of imputed values is not known. Kept (Lennart, 2026-10-19) until the rebuild from the GDC's per-sample values, which should cover every block the imputation touched and drop the genotype probes too.
+        - Split: IID over patients, one row each, since a lab types the tumours of new patients (splits comment). One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and holding out whole sites raises a random forest's log loss from 0.64 to 0.77: a known optimism for a new lab.
+        - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.05 over 30 splits), so the column stays (SEL-5).
+    """
+    splits_comment = """
+        IID over patients, stratified on the type: each patient is one row, and a lab types the tumours of new patients. One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and the features carry the site weakly within a type (that site against the rest among dedifferentiated liposarcomas: ROC AUC 0.69-0.73, against 0.65 for the 95th percentile of shuffled labels). Holding out whole sites raises a random forest's log loss from 0.64 to 0.77 (mean of three seeds), so the scores are optimistic for a lab whose patients come from elsewhere.
     """
 
     # Task
@@ -174,7 +183,9 @@ class Sarcoma(AbstractCuratedDataset):
         assert not unknown, f"reviewed types without a mapping: {unknown}"
         df[self.target] = types.map(REVIEWED_HISTOLOGY).to_numpy()
         df = df[df[self.target].notna()]
-        # 3. Drop the feature columns that are constant over these rows, then those that copy an earlier column.
+        # 3. Drop the array's SNP genotyping probes (`Methy_rs*`, a germline genotype, not methylation).
+        df = df.drop(columns=[c for c in df.columns if c.startswith("Methy_rs")])
+        # 4. Drop the feature columns that are constant over these rows, then those that copy an earlier column.
         features = df.drop(columns=[self.target])
         constant = features.columns[features.nunique() <= 1]
         features = features.drop(columns=constant)
@@ -197,10 +208,18 @@ class Sarcoma(AbstractCuratedDataset):
             .reset_index()
         )
         n_source = sum(raw[file].shape[0] for file in OMICS)
+        n_snp = sum(str(probe).startswith("rs") for probe in raw["methy"].index)
+        n_kept = df.shape[1] - 1
         columns = pd.DataFrame(
-            {"columns": [n_source, n_source - (df.shape[1] - 1), df.shape[1] - 1]},
+            {"columns": [n_source, n_snp, n_source - n_snp - n_kept, n_kept]},
             index=pd.Index(
-                ["omic features in the source files", "constant or duplicated, dropped", "features kept"], name="step"
+                [
+                    "omic features in the source files",
+                    "SNP genotyping probes (`Methy_rs*`), dropped",
+                    "constant or duplicated, dropped",
+                    "features kept",
+                ],
+                name="step",
             ),
         )
         return [
@@ -214,8 +233,12 @@ class Sarcoma(AbstractCuratedDataset):
                 evidence=table,
             ),
             Decision(
-                title="Constant and duplicated columns are dropped",
-                why="Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds nothing.",
+                title="Genotype probes, constant and duplicated columns are dropped",
+                why=(
+                    "The `rs` probes of the methylation array measure the patient's germline genotype, not the tumour's "
+                    "methylation, and carry no class signal. Zero-only genes and miRNAs carry nothing, and an exact "
+                    "copy of a column adds nothing."
+                ),
                 evidence=columns,
             ),
         ]

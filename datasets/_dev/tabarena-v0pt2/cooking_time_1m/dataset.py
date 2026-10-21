@@ -79,14 +79,12 @@ class CookingTime1m(AbstractCuratedDataset):
     problem_type = "regression"
 
     # Splits
-    splits_comment = (
-        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
-    )
+    splits_comment = """
+        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+    """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=7, unit="days", n_windows=3),
+        splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
     )
     subsample_to_budget = True
 

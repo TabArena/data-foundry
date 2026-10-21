@@ -40,6 +40,10 @@ Looks like a good QSAR dataset and a valid task
 
 **Assessment (AI, 2026-10-20):** priority 4 for the review of the added dataset: gap -, use case +, source +, shape +, no known risk. Well-documented regulatory toxicity task with 1,024 fingerprint bits; issues closed in verification, only an optional extension stays open.
 
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes, no exclusion and no re-split. Applied: the target reads 50 mg/kg or less, the top hazard category (the 2026-10-07 line's "LD50 < 50" is the same correction; 25% of labels come from category data without a point LD50); nine parents that survived the deduplication twice lose their second row through the order linkage to the project's structure file, so 8,484 chemicals remain; the false reason for IID-only (no structure in the file) is replaced by the use case and the structure-blind source protocols; the duplicate counts, the Dragon 7 citation and the fingerprint variant are corrected; the note carries the cluster cost (random forest 0.882 to 0.842 by Butina clusters, 0.887 to 0.843 by scaffolds, ranking unchanged). Open for the curator: the fit label (the prediction set is farther from training than the test rows, 9.3% against 19.7% close analogs; the panel recommends approximate), a scaffold-grouped variant, and the extension with the evaluation set. Priority 4: gap - (no thin domain, problem type or regime), use case + (CATMoS names the screener and the decision), source + (UCI, two papers, the project's own files), shape + (8,484 rows, 1,024 features), risk none (the open items are a label and a variant, not a leak or an unclear target).
+
+CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is binary, the categorical dtype might be best?"); CLEAN-14 amended. The bits were checked to hold only 0 and 1.
+
 ## Reference
 
 @article{ballabio2019integrated,

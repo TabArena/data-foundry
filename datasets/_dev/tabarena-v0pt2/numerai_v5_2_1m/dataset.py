@@ -33,7 +33,7 @@ class NumeraiV521m(AbstractCuratedDataset):
         row=("One stock in one weekly era of Numerai's v5.2 tournament data; dates and stock names are hidden."),
         predicted=(
             "The stock's own return over the next 20 market days, ranked within the week and binned into five levels "
-            "from 0 to 1; it is known about four weeks later."
+            "from 0 to 1; it is known about five weeks later."
         ),
         known=(
             "780 disguised features of the stock as of that Friday (Numerai's medium set), each binned into five "
@@ -49,8 +49,9 @@ class NumeraiV521m(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Numerai designed some features with the targets of the test years (75 released at era 1192), and they "
-            "are kept on purpose because every method sees them. Everything else is known on the Friday."
+            "Numerai designed some features with the targets of the test years (75 released at era 1192). The "
+            "score is the Pearson correlation over all test rows, which stands for Numerai's per-week correlation "
+            "(within 0.0002 per model on the shipped windows). Everything else is known on the Friday."
         ),
     )
 
@@ -93,16 +94,18 @@ class NumeraiV521m(AbstractCuratedDataset):
     curation_comments = """
         We start with train.parquet and validation.parquet of the Numerai tournament data v5.2 ("Faith2"), with the medium feature set of features.json.
 
-        - Prediction point: every Friday after the market close (one era), a model scores each stock from its features as of that day; the target is the stock's return over the next 20 market days, known about 4 weeks later.
+        - Prediction point: every Friday after the market close (one era), a model scores each stock from its features as of that day; the target is the stock's return over the next 20 market days, known about 5 weeks later (at era T the newest resolved target is that of era T - 5).
+        - Scope: a ranking of the stocks within each week, not forecasting of a series. `id` is unique across all 6.88M rows, so the data holds no series per stock, and a stock's newest known target (matched by its nearest neighbour on the 780 features five eras back) correlates 0.01, -0.00 and -0.01 with its target at three test eras. Whether some disguised features are trailing returns cannot be tested.
         - Target: `target_ender_20`, equal to the main target `target` of v5.2: a stock-specific return, ranked within each era and binned into 0, 0.25, 0.5, 0.75 and 1, so every era has a mean of 0.5. The other 40 target columns are future returns and are not read.
-        - Features: the 780 features of Numerai's `medium` set, of the 2,748 in v5.2, each an integer bin 0-4 within its era with an obfuscated name. On the newest test window, LightGBM correlates with the target at 0.0064 per era with `medium`, 0.0055 with `all` and 0.0011 with `small`.
+        - Features: the 780 features of Numerai's `medium` set, of the 2,748 in v5.2, each an integer bin 0-4 within its era with an obfuscated name; Numerai describes `medium` as features "each unique in some way". On the newest test window `medium` and `all` cannot be told apart: their order flips with the random 1M train sample (LightGBM per-era correlation 0.0006-0.0088 for `medium` over four samples, 0.0044-0.0060 for `all` over two). Whether the other 1,968 features are near-copies of the 780 is not measured.
         - Rows: we keep data_type `train` and `validation` up to era 1235 and drop data_type `test` (eras 1236-1240), whose targets had not resolved on 2026-10-06.
         - `era` (one per week; Numerai publishes no dates) becomes an integer and the time column. `id` is unique per stock per era (docs), so it identifies no stock and is not read.
         - Missing values: Numerai sets every value of a feature-era without data to 2 (hello_numerai.ipynb of v5.2); we set such feature-eras to missing (decision table). Elsewhere each bin holds 20% of an era's stocks, so no single stock is filled with 2. No duplicate rows.
         - Anomaly: the universe grows from 2,314 stocks in era 1 to 6,057-7,231 per era since era 1100.
-        - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2): LightGBM like Numerai's example model (600 trees, 1M train rows) correlates with the target at 0.006, 0.014 and 0.018 per era (t = 3.0, 7.2 and 8.7).
-        - Note: RMSE mostly ranks how far a model shrinks towards 0.5 (on the newest window the constant 0.5 beats LightGBM and ridge). We keep it because TabArena's adapter accepts only `rmse` for regression; `pearsonr` would be closer to Numerai's scoring.
-        - Potential leak, kept on purpose: Numerai designs features to predict the target and released the 75 `faith` features of `medium` at era 1192, so test eras 1080-1191 lie in their design period. With ridge they add +0.0041 per-era correlation in 1080-1131, +0.0016 in 1132-1183, +0.0097 in 1184-1191 and +0.0019 after the release; the 122 `midnight` features (about era 1098) add +0.0017 in 1080-1097. We keep them because every method sees them (leak_checks.md, feature selection on the full labelled set). Revisit once v5.2 has a year of eras after its release, or drop the 75 `faith` features (705 left).
+        - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2, TP-2): on the shipped splits, LightGBM like Numerai's example model (600 trees) correlates with the target at 0.0071, 0.0142 and 0.0154 per era, newest window first (t = 3.3, 7.7 and 8.1). The newest window is fragile: one of five other random 1M train samples gives ridge a t of 0.8 there. Tuned results are pending; if tuned methods do not beat the constant 0.5 window by window under the metric that scores, the dataset goes to `TBD -> 2nd Tier` (as zillow_prize).
+        - Metric: Numerai scores CORR, the mean over eras of the per-era correlation of the predictions with the target, which no listed metric names; we declare pooled `pearsonr`, which tracks CORR within 0.0002 per model here because every era's target mean is 0.5 (TP-6). RMSE, declared before, ranks the scale of the predictions, not the ranking of the stocks within each era. Over the constant 0.5, the train mean, ridge and LightGBM fits and copies of one LightGBM's predictions scaled by 0.3 and 3 (same ranking), RMSE's model ranking agrees with per-era CORR at Kendall tau -0.11, 0.11 and 0.39 in the three windows, pooled Pearson correlation at 0.89 to 0.93; the copy scaled by 3 loses to the constant in every window, and on the newest window the constant 0.5 beats ridge and LightGBM as fitted.
+        - Potential leak, kept on purpose: Numerai designs features to predict the target and released the 75 `faith` features of `medium` at era 1192, so test eras 1080-1191 lie in their design period. On the shipped splits, ridge with them gains +0.0043 ± 0.0006 per-era correlation in 1080-1131 (about 28% of the signal there), +0.0013 ± 0.0007 in 1132-1183, +0.0056 ± 0.0018 in 1184-1191 and +0.0010 ± 0.0006 after the release. The 122 `midnight` features (released about era 1098) show no gain before their release (-0.0005 ± 0.0011 in 1080-1097). LEAK-31 says to remove a selection made with test labels when we can (dropping the 75 leaves 705); they stay for now as the source's own published inputs, and the curator decides. Revisit once v5.2 has a year of eras after the release.
+        - History: each train side is a random 1M of all earlier eras (TabReD's convention); Numerai's example models train on all eras, so the whole history is what a participant trains on.
         - Note: feature neutralization post-processes predictions per era, so it belongs to a model or a scorer and is not applied.
         - Note: numerai28_6 (OpenML 23517), an older sample of this data, is not added separately.
     """
@@ -110,6 +113,7 @@ class NumeraiV521m(AbstractCuratedDataset):
     # Task
     target = "target_ender_20"
     problem_type = "regression"
+    metric = "pearsonr"  # stands for Numerai's per-era CORR (curation comments)
 
     # Splits: three windows of 52 weekly eras, 4 embargoed eras between train and test.
     temporal = Temporal(
@@ -122,7 +126,7 @@ class NumeraiV521m(AbstractCuratedDataset):
     )
     subsample_to_budget = True
     splits_comment = """
-        Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 4 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. Numerai's example notebooks score a model on a long out-of-sample period (eras 575 onward); one year per window keeps 3 windows near the newest data and gives each window score 52 eras. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses.
+        Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. Numerai's example notebooks score a model on a long out-of-sample period (eras 575 onward); one year per window keeps 3 windows near the newest data and gives each window score 52 eras. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses. Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
     """
 
     accepted_check_warnings = {

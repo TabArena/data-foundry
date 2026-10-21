@@ -39,6 +39,10 @@ Check year/month and user account id column if temporal or grouped splits are ne
 
 **Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Issue 1: source and churn definition unknown (unclear target); alternative is No). Real-looking prepaid churn data with unknown origin and an undocumented label; another common churn task with weak provenance.
 
+**Assessment (AI, 2026-10-20):** Re-check by the review panel: the source search has ended with no upstream. Every path ends at the anonymous Kaggle upload of 2019 (no description, licence unknown, no other datasets by the uploader); OpenML 44231 is a copy, and no source defines churn or its horizon. The data place the label after the month's snapshot for both classes and no column restates it, but the panel recommends `No` with `Missing source information` under PROV-1 as written, unless the curator amends PROV-1/PROV-2 to cover an untraceable upload with an undefined label rule (REVIEW.md issue 1). Priority 1: gap - (no thin domain, problem type or regime), use case - (the source names no actor or decision; the use case is ours), source - (anonymous upload), shape + (54,207 accounts, 57 features), risk - (recommended not to ship; undefined target).
+
+CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot churn sets: tagged `ForcedIIDFromTemporal`; SPLIT-8 now covers a release with one stock month or one undated snapshot. The tag stays; REVIEW.md issue 4 settled.
+
 ## Reference
 
 Kaggle

@@ -37,15 +37,13 @@ def _labelled_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         df[col] = pd.to_datetime(df[col], format="%Y-%m-%d")
     pull = df["disbursement_date"].max()  # the data pull: the file ends with the loans of its last day
 
-    # One row per lender of a loan. Zindi split the rows of a loan between Train.csv and Test.csv at random, so the
-    # lender rows are counted over both files (Test.csv: loan ids only, it has no labels)
-    kenya = raw["test"].loc[raw["test"]["country_id"] == "Kenya", "tbl_loan_id"]
-    rows_per_loan = pd.concat([df["tbl_loan_id"], kenya]).value_counts()
-    df["other_lenders_on_loan"] = df["tbl_loan_id"].map(rows_per_loan) - 1
+    # Rows whose lender funds less than one unit of the loan are never labelled 1: they hide about 90-130 defaults
+    # under the label 0 (curation comments)
+    df = df[df["Amount_Funded_By_Lender"] >= 0.5].copy()
 
-    # A lender that funds less than one unit of the loan is owed nothing, so its row is labelled 0 whatever the
-    # customer did: these rows hide about 130 defaults (curation comments)
-    df = df[df["Amount_Funded_By_Lender"] >= 0.5]
+    # One row funds more than the loan (2,627.1 of 2,249; share 1.168): its funded amount and share are unknown
+    impossible = df["Amount_Funded_By_Lender"] > df["Total_Amount"]
+    df.loc[impossible, ["Amount_Funded_By_Lender", "Lender_portion_Funded"]] = np.nan
 
     # Labels not yet settled at the data pull
     return df[df["due_date"] + pd.Timedelta(days=LABEL_SETTLED_DAYS) <= pull]
@@ -60,17 +58,18 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             "it knows."
         ),
         row=(
-            "One lender's part of one loan in Kenya, 2022 to 2024 (a loan with two lenders gives two rows); 54,163 of"
-            " the 58,953 rows are from July to November 2022, mostly 7-day loans of one product."
+            "One lender's part of one loan in Kenya, October 2021 to October 2024 (a loan with two lenders gives two "
+            "rows); 54,163 of the 58,953 rows are from July to November 2022, mostly 7-day loans of one product."
         ),
         predicted=(
-            "Whether that lender's part of the loan defaulted, as recorded when the data was pulled (about 2% of "
-            "rows). A label counts as settled 30 days after the due date; the source states no other horizon."
+            "The loan's default, recorded on each lender row as it stood when the data was pulled (about 2% of rows; "
+            "the two rows of a loan share the label in 2,132 of 2,134 loans). A label counts as settled 30 days after "
+            "the due date; the source states no other horizon."
         ),
         known=(
             "The customer (as an id, so the same customer's settled earlier loans can be in training), new or repeat "
             "customer, the lender, the loan product, amount and duration, the disbursement and due dates, the "
-            "lender's funded amount and share, and whether another lender shares the loan."
+            "lender's funded amount and share."
         ),
         split=(
             "Nine test windows of at most 30 days: six at the end of the 2022 lending of the main product and three "
@@ -84,9 +83,10 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The lender's funded amount and share and the count of other lenders are values at the data pull, and "
-            "lenders can buy each other out; they are kept on purpose, as they show no link to the outcome (ROC AUC "
-            "0.639 with the share columns, 0.635 without). How the loans were sampled is not stated."
+            "The lender's funded amount and share are values at the data pull (lenders can buy each other out), kept "
+            "as they show no link to the outcome within a loan product. The customer's history is known only through "
+            "labels settled before each window, while a lender learns of a repayment the day it is made. How the "
+            "loans were sampled is not stated."
         ),
     )
 
@@ -102,6 +102,9 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         (Kaggle user thelastsmilodon, 32nd place) uploaded on 2025-01-14, two days after submissions closed, with the
         licence "other" and no description. Its Train.csv, Test.csv, economic_indicators.csv and
         VariableDefinitions.txt have the byte sizes the Zindi data page lists (8,785,708, 2,379,732, 7,930 and 1,539).
+        The upload has no version, so we record the SHA-256 of our files (first 16 hex digits): Train.csv
+        20d437430408084a, Test.csv 8d31edd85335c681, economic_indicators.csv bc49ee02a535465a, VariableDefinitions.txt
+        0cc43fb6c53d6503.
 
         mkdir -p local-data-warehouse/african_credit_scoring_challenge
         uvx --from kaggle==2.2.2 kaggle datasets download thelastsmilodon/african-credit-scoring-challenge-data -p local-data-warehouse/african_credit_scoring_challenge
@@ -121,31 +124,33 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.
 
         - Prediction point: when a loan is disbursed, with the customer's settled earlier loans known.
-        - We rename target to default and keep ROC AUC; the competition scored F1.
-        - Zindi split the lender rows of a loan at random between Train.csv and Test.csv, so other_lenders_on_loan (0 or 1) counts the loan's other rows in both files; Test.csv is read only for this.
+        - We rename target to default. The competition scored F1, which we declare (TP-6).
+        - We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for decision table 2.
         - We drop ID and tbl_loan_id (identifiers) and country_id (Kenya in every row).
         - We drop Total_Amount_to_Repay and Lender_portion_to_be_repaid: recorded at the data pull, they grow with a defaulted loan's days past due (decision table).
-        - We drop the 8,899 rows whose lender funds less than one unit (Amount_Funded_By_Lender below 0.5). A lender row's label follows that lender's repayment (host), so these rows are labelled 0 whatever the customer did and hide about 130 defaults (decision table).
-        - Unsettled labels: recent defaults include late payments paid later (decision table). A label counts as settled 30 days after the due date, and we drop the 802 rows due less than 30 days before the data pull.
+        - We drop the 8,899 rows whose lender funds less than one unit (Amount_Funded_By_Lender below 0.5): none is labelled 1, where about 105 would be expected at the rate of their months, and for the same customers and months 1.04% of them carry a default-size repay charge against 0.40% of the customers' other loans. They are labelled 0 whatever the customer did and hide about 90-130 defaults (decision table).
+        - Unsettled labels: recent defaults include late payments paid later (decision table, counted per loan). A label counts as settled 30 days after the due date, a conservative cut rather than a measured end of settlement, and we drop the 802 rows due less than 30 days before the data pull.
         - Temporal split on disbursement_date: 9 test windows of at most 30 days, each training on the loans settled before it starts (splits comment).
         - customer_id stays as a categorical: an entity's own history is legitimate under a temporal split (ieee_fraud_detection's uid). A default usually ends a customer's history, which made "the customer's last loan" a winning rule in the competition's random split; here a training side holds only settled loans.
         - lender_id, loan_type and New_versus_Repeat are categoricals. New_versus_Repeat differs between a loan's two rows in 133 of the 2,134 two-row loans, so we read it per lender.
         - disbursement_date and due_date are datetimes; we keep due_date, disbursement_date plus duration, as a source column.
         - We do not join economic_indicators.csv: for Kenya alone it is a function of the year, with no values for 2024.
         - Duplicates: the 275 extra copies of identical rows have their own tbl_loan_id and share a date; we keep them as separate loans.
-        - Anomaly: 54,163 of the 58,953 rows are from July to November 2022, mostly Type_1 7-day loans (0.98% defaults). The source does not say how the loans were sampled.
-        - Potential leak, kept on purpose: Amount_Funded_By_Lender, Lender_portion_Funded and other_lenders_on_loan are values at the data pull, and lenders can buy each other out (host). They show no outcome link among the kept rows; without the two share columns untuned LightGBM scores 0.635 against 0.639. Kept like kick's unverified host fields; revisit if the host documents when shares are recorded.
-        - Note: the task probes flag no_spread and drift_baseline; we keep the task under task_probes.md rules 1-3 (weak separation on windows of 20-56 default rows; the drift is in log loss). Re-check against tuned runs.
+        - Anomaly: 54,163 of the 58,953 rows are from July to November 2022 (1.16% defaults), mostly Type_1 7-day loans. The source does not say how the loans were sampled.
+        - One row funds 2,627.1 of a loan of 2,249 (share 1.168): we set its Amount_Funded_By_Lender and Lender_portion_Funded to missing.
+        - Potential leak, kept on purpose: Amount_Funded_By_Lender and Lender_portion_Funded are values at the data pull, and lenders can buy each other out (host). Within a loan product they show no link to the outcome (ROC AUC 0.46 and 0.49 alone on the Type_1 rows); the link over all rows is the mix of products. Kept like kick's unverified host fields; revisit if the host documents when shares are recorded.
+        - Note: the task probes flag no_spread, drift_baseline and unstable; we keep the task under task_probes.md rules 1-3 and 9 (weak separation on windows of 20-56 default rows; the drift is in log loss; LightGBM falls just below the class shares on the oldest 2024 window only, skill -0.03, and beats them on the other 4 probed windows). Re-check against tuned runs.
         - Licence: the Zindi rules call the data "private property of the client"; the Kaggle copy is a participant's upload.
     """
 
     # Task
     target = "default"
     problem_type = "binary_classification"
+    metric = "f1"  # the competition's metric
 
     # Splits: the end of the Type_1 lending and the newest 90 days (`_make_splits`)
     splits_comment = """
-        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month: no test window is longer than 30 days, the declared horizon. A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; loans disbursed in the weeks before a window, and longer loans still running, are not in that window's training side. The windows cover the two periods with enough loans for such windows, newest first: three 30-day windows at the end of the data (2024-07-11 to 2024-10-08, all but 9 rows Type_7 loans; 500-677 rows, 296-394 loans and 32-56 default rows each) and six windows of about equal numbers of rows at the end of the Type_1 lending, from 2022-10-20 (the first day by which half of all rows have a settled label) to 2022-12-01 (the last Type_1 loan; 5-10 days, 1,812-2,206 rows and 20-31 default rows each). A row is one lender's part of a loan, so a two-lender loan counts twice. The 1,901 rows between (2022-12-02 to 2024-07-10, about 100 a month of changing products) are too few for 30-day test windows and are training data only, apart from 6 long loans that settle on or after the first day of the newest window and so are in no split. The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments). Nine windows of equal numbers of rows from 2022-10-20 (the v1 notebook's equal buckets) would test 2022-12-16 to 2024-07-10 as one window: one model for 573 days, with 28% of the window's rows in products that have no training row. Windows of equal numbers of distinct dates, as in kick, would put all 9 windows between March 2023 and October 2024 (112 to 872 rows and 9 to 72 default rows each) and leave 95% of the rows for training only.
+        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month: no test window is longer than 30 days, the declared horizon. A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; loans disbursed in the weeks before a window, and longer loans still running, are not in that window's training side. The windows cover the two periods with enough loans for such windows, newest first: three 30-day windows at the end of the data (2024-07-11 to 2024-10-08, all but 9 rows Type_7 loans; 500-677 rows, 296-394 loans and 32-56 default rows each) and six windows of about equal numbers of rows at the end of the Type_1 lending, from 2022-10-20 (the first day by which half of all rows have a settled label) to 2022-12-01 (the last Type_1 loan; 5-10 days, 1,812-2,206 rows and 20-31 default rows each). A row is one lender's part of a loan, so a two-lender loan counts twice. The 1,901 rows between (2022-12-02 to 2024-07-10, about 100 a month of changing products) are too few for 30-day test windows and are training data only, apart from 6 long loans that settle on or after the first day of the newest window and so are in no split. The 2024 windows test a new product: Type_7 loans, first lent on 2023-07-27, with 98-688 Type_7 rows on their training sides and 12-44% of their test rows from a customer seen in training. Their labels are 30-119 days past due at the data pull; counted per loan, 2024 loans 31-45 days past due default at 7.2% (15 of 209) against 5.8-9.8% in each later bucket and 11.8-20.4% before 30 days (decision table 3), so the 30-day cut is conservative at this edge, not a measured end of settlement. The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments). Nine windows of equal numbers of rows from 2022-10-20 (the v1 notebook's equal buckets) would test 2022-12-16 to 2024-07-10 as one window: one model for 573 days, with 28% of the window's rows in products that have no training row. Windows of equal numbers of distinct dates, as in kick, would put all 9 windows between March 2023 and October 2024 (112 to 872 rows and 9 to 72 default rows each) and leave 95% of the rows for training only.
     """
     temporal = Temporal(on="disbursement_date", horizon=WINDOW_DAYS, horizon_unit="days")
     accepted_check_warnings = {
@@ -256,19 +261,22 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         )
         shares.columns = ["loans", "labelled 1", "customer borrowed again after the due date"]
 
-        # 3. Defaults of the newest loans are inflated by late payments that are paid later
+        # 3. Defaults of the newest loans are inflated by late payments that are paid later; one count per loan, as
+        # the rows of a two-lender loan share the label
         recent = (disbursed >= "2024-01-01") & (past_due > 0) & ~no_share
+        loans = pd.DataFrame({"loan": train["tbl_loan_id"], "past_due": past_due, "label": train["target"]})
+        loans = loans[recent].drop_duplicates("loan")
         settle = (
-            train["target"][recent]
+            loans["label"]
             .groupby(
                 pd.cut(
-                    past_due[recent],
-                    [0, 7, 14, 30, 60, 90, 180, 365],
-                    labels=["1-7", "8-14", "15-30", "31-60", "61-90", "91-180", "181-365"],
+                    loans["past_due"],
+                    [0, 7, 14, 30, 45, 60, 90, 120, 180, 365],
+                    labels=["1-7", "8-14", "15-30", "31-45", "46-60", "61-90", "91-120", "121-180", "181-365"],
                 ),
                 observed=True,
             )
-            .agg(rows="size", defaults="sum", default_rate="mean")
+            .agg(loans="size", defaults="sum", default_rate="mean")
             .rename_axis("days past due at the pull")
             .round(3)
         )
@@ -324,9 +332,10 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             ),
             Decision(
                 "A label counts as settled 30 days after the due date",
-                "Of the rows of 2024 loans, 19.6% of those 1-7 days overdue at the pull are labelled 1 and 11.6-15.3% "
-                "of those 8-30 days overdue, against 6.9-10.2% from 31 days on, so recent defaults include late "
-                "payments that are paid later. Loans due less than 30 days before the pull are dropped, and each "
+                "Of the 2024 loans, counted once per loan, 20.4% of those 1-7 days overdue at the pull are labelled 1 "
+                "and 11.8-14.9% of those 8-30 days overdue, against 5.8-9.8% from 31 days on (7.2% at 31-45 days), so "
+                "recent defaults include late payments that are paid later. 30 days is a conservative cut, not a "
+                "measured end of settlement. Loans due less than 30 days before the pull are dropped, and each "
                 "training side holds only loans settled before its window starts.",
                 settle,
             ),

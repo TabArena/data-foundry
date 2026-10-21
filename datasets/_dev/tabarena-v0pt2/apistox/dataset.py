@@ -68,7 +68,7 @@ class Apistox(AbstractCuratedDataset):
     # Dataset
     unique_name = "apistox"
     year = "2024"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "Other"  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
     source_url = "https://doi.org/10.5281/zenodo.11062076"
     license = "CC BY-NC 4.0"

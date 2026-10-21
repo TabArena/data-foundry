@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 original_source: UCI
 year: '2015'
+domain: chemistry & material science
 required_split:
 - Random (IID)
 source_links:
@@ -34,6 +35,8 @@ Lennart: seems real, distinict from other QSAR data
 Andrej: Seems fine
 
 **Assessment (AI, 2026-10-14):** no leak found, so the remark "might have a leak" is removed (Lennart's ask). All six descriptors are computed from the structure; the strongest (MLOGP, R² 0.42 alone) is the known link of logP to baseline toxicity. The 84 shared descriptor vectors (217 rows) are isomers whose LC50 differs within every vector; keeping one row per vector gives R² 0.571 against 0.577. The descriptors were selected on the paper's training set (726 of 908 chemicals): a mild optimism that cannot be measured.
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
 
 ## Reference
 

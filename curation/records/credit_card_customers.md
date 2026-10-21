@@ -46,6 +46,10 @@ CC (2026-10-19, Lennart): Credit_Limit and Total_Revolving_Bal are clipped at pe
 
 **Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Issue 1: run recommends No + AHDS (constructed columns); issue 2 possible window-ends-at-closure leak). Popular churn table, but likely constructed teaching data with an untraceable source and a near-ceiling AUC; weak benchmark value.
 
+**Assessment (AI, 2026-10-20):** Don't ship yet; the standard for calling data generated without a source statement or a generator decides (REVIEW.md issue 1, one standard for this dataset, hepatitis_c_egypt, stroke_prediction and framingham_heart_study_fhs). The review panel reproduced the marks (12-month count = Q4 + Q1 count in 10,127/10,127 rows; inactivity and spend independent of activity where real card tables are not; tenure set by age), but the label-linked tests are weak (label-free distance AUC 0.559; class-dependent correlations without a sign change). Unverified: the LEAPS case date (2020-04-19) and the LEAPS remark calling another case's data "a dummy dataset"; the platform is offline and not archived. If kept, the keep of the untraceable teaching source needs a PROV-1/PROV-2 amendment (issue 3). The definition now carries `ForcedIIDFromTemporal` (SPLIT-8). Priority 1: gap -, use case -, source -, shape +, risk - (approximate fit with a possible window leak; untraceable teaching source; recommendation not to ship yet).
+
+CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use case fit more or less"); the tag is retired from new definitions.
+
 ## Reference
 
 Kaggle / Broken Website

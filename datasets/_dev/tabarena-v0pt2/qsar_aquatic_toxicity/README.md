@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_aquatic_toxicity
 container_format: 2
-checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
+checksum: v2:f84fe8c1a4a909ef36b9c6144cc6dfdec9f175544d3273acbd7059aee00da819
 build:
   uuid: 01a111fc-b7f2-70ec-b160-9c69d2d62b73
   checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 546
   n_features: 8
@@ -42,6 +42,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 364
     max: 364
@@ -64,7 +66,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 546 rows and 8 features. Source: UCI (2014).
 
-Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f84fe8c1a4a909ef36b9c6144cc6dfdec9f175544d3273acbd7059aee00da819`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -119,7 +121,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5SG7H |
 | year | 2014 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | cassotti2014prediction |
@@ -305,3 +307,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:f84fe8c1a4a909ef36b9c6144cc6dfdec9f175544d3273acbd7059aee00da819` |

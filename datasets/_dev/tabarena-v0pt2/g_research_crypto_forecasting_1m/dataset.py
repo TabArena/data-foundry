@@ -22,7 +22,9 @@ def history_features(df: pd.DataFrame) -> pd.DataFrame:
     for at most :data:`FFILL_LIMIT` minutes. For each look-back window in :data:`LAGS`: the log of Close over its
     trailing mean (the window ends at the row's minute) and the log return over the window, the mean of each over the
     assets that have a value at that minute (`market_*`), and the asset's value minus that mean (`*_minus_market`).
-    Every value uses only minutes up to the row's own, so it is known when the prediction is made.
+    Every value uses only minutes up to the row's own, so it is known when the prediction is made. `shift` checks
+    only the window's end point, so a log return can span a gap longer than :data:`FFILL_LIMIT` minutes (as in the
+    solution's code).
     """
     minute = ((df["timestamp"] - df["timestamp"].min()) // 60).to_numpy()
     assets = np.sort(df["Asset_ID"].unique())
@@ -66,7 +68,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         ),
         split=(
             "Each test window is 91 days at the end of the period, newest first; training is a random million earlier"
-            " minutes, with a one-day gap."
+            " coin-minute rows, with a one-day gap."
         ),
         changes=(
             "We add the price-trend features of the third-place solution, as the minute itself carries no signal, and"
@@ -75,8 +77,9 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "Everything the model sees is known at the minute and the target covers the next 15 minutes, as in "
-            "trading. The signal is tiny (R² +0.0007, +0.0012 and -0.0003 in the three windows), and RMSE replaces "
-            "the competition's weighted correlation."
+            "trading. The signal is tiny: one LightGBM configuration reaches R² +0.0006, +0.0013 and +0.0004 in the "
+            "three windows, none outside the day-to-day noise, while its daily correlation with the target is "
+            "positive on 70-74 of 91 days. The declared metric is Pearson correlation, for the competition's weighted correlation."
         ),
     )
 
@@ -111,22 +114,24 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         We start with train.csv (one row per asset and minute, 14 cryptocurrencies, 2018-01-01 to 2021-09-21) and asset_details.csv of the Kaggle competition.
 
         - Prediction point: at the close of minute t we predict an asset's `Target`, its return from minute t+1 to t+16 minus its beta times the weighted mean return of the 14 assets (the organisers' tutorial notebook). Known then: every one-minute bar of the 14 assets up to and including minute t.
-        - Scope: all the signal comes from lags of the asset's own Close series, so by the curation guidelines this is time-series forecasting. The curators accepted it as a forecasting-as-tabular task (the record's comments); the call stays open for the curator, as does the small signal (last bullet).
-        - History features (`history_features`): a row's own bar carries no signal for the next 15 minutes (correlation with the target 0.012, -0.006 and 0.002 in the three test windows), so we add those of the 3rd-place solution cited in the record. For 60, 300 and 900 minutes: the log of Close over its trailing mean and the log return, their mean over the assets (`market_*`) and the asset's difference from it (`*_minus_market`). With them the correlation is 0.037, 0.051 and 0.040.
-        - We compute the features on the full minute grid before dropping rows. A missing minute takes the asset's last Close for at most 100 minutes (as in the 3rd-place solution); a window reaching into a longer gap or before the asset's first minute is missing.
-        - We drop the 750,338 rows (3.1%) without a target: their future prices are missing, and the competition does not score them. Their bars still enter the history features.
+        - Scope: the target is the asset's own residualised forward return, and its signal is the asset's trailing return relative to the 14-asset mean. The bar alone, the asset's own lags alone and the market means alone carry none (LightGBM on each set, three test windows). The relative returns correlate 0.80-0.83 (median over the 14 assets) with sums of the asset's own lagged `Target`, so by the curation guidelines (SEL-10, TP-10) this is time-series forecasting. The record carries an imported, unattributed note "Forecasting-as-tabular task" (sheet import, 2026-06-23) that predates TP-10; no curator decision accepts the case. The scope call stays with the curator.
+        - History features (`history_features`): a row's own bar carries no signal for the next 15 minutes (a LightGBM prediction from the bar correlates -0.002, 0.005 and 0.010 with the target in the three test windows), so we add the features of the public notebook "Training 3rd place solution" (sugghi) cited in the record. For 60, 300 and 900 minutes: the log of Close over its trailing mean and the log return, their mean over the assets (`market_*`) and the asset's difference from it (`*_minus_market`). With them the correlation is 0.026, 0.059 and 0.049. The features come from this one notebook; that it is the 3rd-place team's code is not verified, and no other solution was compared.
+        - We compute the features on the full minute grid before dropping rows. A missing minute takes the asset's last Close for at most 100 minutes (as in the notebook). A trailing mean reaching into a longer gap or before the asset's first minute is missing; a log return checks only its end point, so 193, 1,804 and 9,370 values (60, 300 and 900 minutes) span a longer gap, as in the notebook.
+        - We drop the 750,338 rows (3.1%) without a target: Close(t+1) or Close(t+16) is missing (37% lack only Close(t+1)), and the competition does not score them. Their bars still enter the history features.
         - We replace `Asset_ID` by the asset's name from asset_details.csv (`Asset_Name`, category); its `Weight`, the asset's weight in the metric, is not a feature.
-        - `VWAP` is a positive price: we set its 7 infinite and 8 negative values (all Maker, June 2020) to missing.
+        - `VWAP` is a positive price and `Volume` a traded amount: we set the infinite and negative VWAP values (13 rows of the frame, 15 of the raw file, all Maker, June 2020) and the negative Volume values (2 rows of the frame, 3 raw, Maker) to missing.
         - We convert `timestamp` (Unix seconds) to a datetime.
-        - Anomaly: `Volume` is negative in 3 rows of Maker, 18 bars have a `Low` below half of their open and close and 3 a `High` above twice, and 266 targets exceed 0.2 in absolute value (mostly Bitcoin Cash around its November 2018 fork). We keep them. No (timestamp, asset) pair repeats.
+        - Anomaly: 16 bars of the frame (18 raw) have a `Low` below half of their open and close and 3 raw bars a `High` above twice, and 266 targets exceed 0.2 in absolute value (mostly Bitcoin Cash around its November 2018 fork). We keep them as unusual but real. No (timestamp, asset) pair repeats.
         - Temporal, not grouped by asset: the competition forecasts the same 14 assets on later data; a split by asset would only test a shift between 14 assets (decision table).
-        - Note: the competition scored a weighted Pearson correlation. We use RMSE, the collection's default, until dataset-specific metrics are supported (BENCHMARK_CHANGES_TODO.md), so methods are ranked mostly by how close they stay to the mean.
-        - Note: the task probes flag no_signal, drift_baseline and unstable. LightGBM early-stopped on the newest 10% of each train side reaches R^2 +0.00073, +0.00115 and -0.00028, a small real signal (outside the day-to-day noise only in window 1) and no reason to retire; drift_baseline comes from a target centred on zero.
+        - History: each train side is a random 1M of all earlier rows back to 2018, TabReD's convention; no use-case reason is recorded for the whole history against a recent one. The test windows from 2020-12-22 to 2021-06-21 fall in the 2021 high-volatility regime (median absolute 900-minute return 0.029-0.036, against 0.013-0.022 in every quarter of 2019-2020).
+        - Metric: the competition scored a weighted Pearson correlation over all test rows, each row weighted by its asset's `Weight` in asset_details.csv (Bitcoin 6.78, Ethereum 5.89, Cardano 4.41, Binance Coin 4.30, Dogecoin 3.56, Bitcoin Cash and Litecoin 2.40, Ethereum Classic and Stellar 2.08, TRON 1.79, Monero 1.61, EOS.IO 1.39, IOTA and Maker 1.10). No listed metric weighs rows, so we declare pooled `pearsonr` (TP-6): over seven predictions per window (ridge with two penalties, four LightGBM sizes, one raw feature), it ranks them as the weighted correlation does in all three windows (Kendall tau 1.0), within 0.008 of it. RMSE, declared before, ranks mostly how close predictions stay to the mean.
+        - Note: the task probes flag no_signal, drift_baseline and unstable (untuned models). LightGBM (learning rate 0.05, 31 leaves, at least 200 rows per leaf) early-stopped on the newest 10% of each train side reaches R^2 +0.0006, +0.0013 and +0.0004 in one refit (+0.0007, +0.0012 and -0.0003 in an earlier run, so the sign of the third window is unstable); no window's 95% day-block interval excludes 0. Its daily correlation with the target is positive on 71, 70 and 74 of 91 days. The signal is small and real under correlation and not separable from the noise under RMSE; drift_baseline comes from a target centred on zero.
     """
 
     # Task
     target = "Target"
     problem_type = "regression"
+    metric = "pearsonr"  # stands for the competition's asset-weighted correlation (curation comments)
 
     # Splits
     temporal = Temporal(
@@ -134,7 +139,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         splits=TemporalSplits(window=91, unit="days", n_windows=3, gap=1),
     )
     splits_comment = """
-        The competition scored the submitted models on the 3 months of live data after its submission deadline. We use each of the last 3 windows of 91 days (newest first) as a test window and all earlier data as train data, with a 1-day gap: a row's target needs the prices of the next 16 minutes, so every training label is known when the window starts. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows). Rows of one asset a few minutes apart share most of their 15-minute target window (their targets correlate 0.51-0.55 within 5 minutes), so validation inside a train side has to split by time blocks, not rows: LightGBM early-stopped on random rows of the train side never stops and scores test R^2 -0.0010, -0.0002 and -0.0017, against +0.0007, +0.0012 and -0.0003 when it stops on the newest 10%.
+        The competition scored the submitted models on the 3 months of live data after its submission deadline. We use each of the last 3 windows of 91 days (newest first) as a test window and all earlier data as train data, with a 1-day gap: a row's target needs the prices of the next 16 minutes, so every training label is known when the window starts. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows). Rows of one asset a few minutes apart share most of their 15-minute target window (per asset, targets 5 minutes apart correlate with a median of 0.57, range 0.25-0.66), so validation inside a train side has to split by time blocks, not rows: LightGBM early-stopped on random rows of the train side stops after 220-528 rounds and scores test R^2 -0.0049, -0.0043 and -0.0090, against +0.0006, +0.0013 and +0.0004 when it stops on the newest 10%.
     """
     subsample_to_budget = True
 
@@ -152,6 +157,8 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         # VWAP is a positive price: its infinite and negative values (Maker, June 2020) become missing.
         vwap = df["VWAP"].to_numpy()
         df.loc[~np.isfinite(vwap) | (vwap <= 0), "VWAP"] = np.nan
+        # A traded volume cannot be negative (Maker): missing.
+        df.loc[df["Volume"] < 0, "Volume"] = np.nan
         # The asset's name instead of its id (same position).
         df["Asset_ID"] = df["Asset_ID"].map(assets.set_index("Asset_ID")["Asset_Name"])
         df = df.rename(columns={"Asset_ID": "Asset_Name"})
@@ -184,12 +191,12 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
             Decision(
                 "Temporal split over the same 14 assets, not grouped by asset",
                 "The competition forecasts the 14 assets on later data. The assets enter the data at different times, "
-                "and a row has no target when the asset's prices 16 minutes later are missing (rows of the raw file).",
+                "and a row has no target when the asset's Close one or 16 minutes later is missing (rows of the raw file).",
                 coverage,
             ),
             Decision(
                 "History features from the 3rd-place solution carry the signal",
-                "The bar of one minute says little about the next 15 minutes; the recent returns of the asset and of "
+                "The bar of one minute says little about the next 15 minutes; the asset's recent returns relative to "
                 "the market do (in ranks most clearly). Correlation of each feature with the target on the shipped frame.",
                 correlation,
             ),

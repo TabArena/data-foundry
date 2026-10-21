@@ -26,9 +26,11 @@ CALENDAR_FILE = "issue_calendar.csv"
 # and 4th private place slides, 9th place code; see the record), per product over its transactions before the issue.
 RUBLE_SCALE = 17.8209
 """`amnt` is a scaled log of the amount: exp(amnt * 17.8209) - 1 restores rubles (competition chat, used by the 1st,
-9th and 15th place); 98.8% of the restored amounts are whole rubles."""
+9th and 15th place); about 70% of the restored amounts are whole rubles (within a kopeck), the rest real kopeck prices,
+and that share peaks sharply at this scale."""
 INFLOW_CODE = 2
-"""`income_flag` 2 marks money coming in (8% of the transactions, median 5,600 rubles); 1 is spending."""
+"""`income_flag` 2 marks money coming in (8% of the transactions, median 5,000 rubles); 1 is spending, and the rare,
+undocumented 3 counts as spending too."""
 SALARY_RUB = 15_000
 """An inflow of at least this many rubles counts as salary-like (9th place)."""
 RECENT_DAYS = (30, 90)
@@ -79,6 +81,9 @@ TOP_PIVOT_COLUMNS = {"mcc": 30, "card_type": 30}
 """Per value of the most frequent codes: count share and mean amount."""
 MODE_COLUMNS = ["mcc", "mcc_category", "card_type", "operation_type", "city", "country"]
 """The mode (by count) and the last value, categorical, and the share of the mode."""
+COPY_COLUMNS = ["out_sum_30d", "mean_rub_income_flag_2", "share_mcc_17", "mean_rub_mcc_17"]
+"""Exact copies of other features on all rows (`out_sum_block_0`, `in_mean`, `share_mcc_category_15`,
+`mean_rub_mcc_category_15`: mcc 17 is the only pivoted code of its category); dropped in `_clean`."""
 TX_COLUMNS = ["app_id", "transaction_number", "amnt", "hour_diff", "days_before", "weekofyear", *CATEGORICAL_COLUMNS]
 
 # Issue months (curation_comments, "Time"): the week code of the latest transaction along `app_id`.
@@ -477,13 +482,17 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a client default on a credit product the bank has just issued?",
         use_case=(
-            "When a bank issues a credit product, it scores the client's default risk from the client's card "
-            "transactions, to decide on the product and its terms."
+            "When a bank issues a credit product to a card client, it adds a score from the client's card "
+            "transactions to its existing scorecards (credit bureau, application form), to decide on the product and "
+            "its terms."
         ),
-        row="One issued credit product, with the client's card transactions of the year before.",
+        row=(
+            "One issued credit product (issued products only, no rejected applications), with the client's card "
+            "transactions of the year before."
+        ),
         predicted="Whether the client defaulted on it (2.8% did); the source states no horizon.",
         known=(
-            "The product type and 513 summaries of the year's card transactions (amounts, timing, merchants, money in"
+            "The product type and 508 summaries of the year's card transactions (amounts, timing, merchants, money in"
             " and out, recent activity)."
         ),
         split=(
@@ -538,12 +547,12 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
         - Prediction point: a credit product is issued. The bank knows the product type and the client's card transactions of the preceding year (Alfa-Bank on Habr, 2021). The target `default` is the source's flag "1 - факт ухода в дефолт" (1: the applicant defaulted), with no horizon stated.
         - Features: the source is an event sequence per product; we aggregate it like the competition's top solutions (record), whose boosting reached 0.774-0.780 private ROC AUC against 0.737 public for the organizers' 127-feature baseline. Their label encodings, embeddings and sequence-model scores are modelling steps and stay out.
-        - We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; 98.8% come out whole) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Untuned LightGBM: ROC AUC 0.787 / 0.771 / 0.772 on the windows, 0.774 / 0.757 / 0.763 with the 127.
+        - We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; about 70% come out whole within a kopeck, the rest are real kopeck prices, and that share peaks sharply at this scale) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Four features that copy another on every row are dropped (`COPY_COLUMNS`), leaving 508 aggregates. LightGBM with default settings: ROC AUC 0.779 / 0.763 / 0.761 on the windows, newest first (before the 4 copies were dropped).
         - The coded values and the 30 most frequent codes are chosen over all transactions, test windows included: a pipeline choice that approximates the task (a deployed model would choose from its own history), not a value computed from test rows; kept (Lennart, 2026-10-19).
         - Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a statistic over no known amount stays missing.
         - Time: the data has no dates, but later applications have a later `app_id`. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`); `calendar_months` moves 292 products at the month edges to the month whose calendar fits them, and `issue_calendar` finds one issue date per month (first decision; `app_id` 0-4 stay in month 0). We keep `issue_month` (0-23) as the time column and drop `app_id` and the latest-transaction fields, which only date the issue.
-        - Repeat clients: there is no client id, but a client's products issued less than a year apart share identical transactions. We link two products by the `LINK_*` rules (at least 3 identical transactions, 80% of the smaller product's, in the 28 days before an issue date) and take connected products as one client (`client_keys`). In the newest window the test products whose client's earlier product defaulted default in 95.6% of cases, the others in 2.5% (second decision). That earlier flag was most likely set after the test product was issued, so it carries the test product's own outcome. `_make_splits` removes from each training side the products of clients with a product in the test window (as in hotel_booking_demand: a training label not known at the prediction point is left out).
-        - Note: the default rate rises from 2.0-2.6% (months 1-12) to 3.0-3.4% (months 18-23). The competition labelled 7 later months with the same flag, so we see no sign of right-censoring.
+        - Repeat clients: there is no client id, but a client's products issued less than a year apart share identical transactions. We link two products by the `LINK_*` rules (at least 3 identical transactions, 80% of the smaller product's, in the 28 days before an issue date) and take connected products as one client (`client_keys`). In the newest window the test products whose client's earlier product defaulted default in 95.6% of cases, the other linked ones in 2.5% and the unlinked ones in 2.7% (second decision). That earlier flag was most likely set after the test product was issued, so it carries the test product's own outcome: over consecutive products of a client, the later one defaults in 95.1% of cases when the earlier one did, flat over lags of 1-10 months, but the earlier one has defaulted in only 45.5% of cases when the later one did (a bank does not issue new credit to a client already in default). `_make_splits` removes from each training side the products of clients with a product in the test window: an evaluation stand-in for an as-of filter on the label dates, which the data does not have.
+        - Note: the default rate rises from 2.0-2.6% (months 1-12) to 3.4% (month 21), then falls to 3.1% and 3.0% (months 22-23). The dip holds for products with an earlier product of the same client (5.2% in month 20 to 4.0% in month 23, about 4.6 standard errors) and a little for first products (2.85% to 2.6%). The flag has no stated horizon, so this is maybe right-censoring of the newest months (defaults not yet flagged when the data was extracted), or a cluster of clients around months 20-21; labels from a later extraction would settle it.
         - No duplicate rows.
     """
 
@@ -553,7 +562,9 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A scoring model is refit on all products issued so far and used for the next two months. We use 3 test windows of two issue months each, newest first: months 22-23, 20-21 and 18-19, each training on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were not known when the test products were issued. The competition trained on these 24 months and tested on the 7 months after a month that was not released; its test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave less than half of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet, as in the competition; a 12-month gap would leave 13-27% of the rows for training.
+        A scoring model is refit on all products issued so far and used for the next two months. We use 3 test windows of two issue months each, newest first: months 22-23, 20-21 and 18-19, each training on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130); its test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53%. At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window, an upper bound on that optimism (it mixes in the cost of older training data).
+
+        Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). The length of the gap (0 or 1 month) is open in REVIEW.md issue 3.
     """
     temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months")
     accepted_check_warnings = {
@@ -635,7 +646,8 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
         # `app_id` only orders the products (now `issue_month`); the latest-transaction fields only date the issue
         # (`days_before_min` keeps the days since the latest transaction). `client_key` stays for `_make_splits`,
         # which removes it.
-        return drop_columns(df, ["app_id", "latest_week_code", "latest_days_before"])
+        # `COPY_COLUMNS` copy another feature on every row.
+        return drop_columns(df, ["app_id", "latest_week_code", "latest_days_before", *COPY_COLUMNS])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         codes = [c for c in df.columns if c.startswith(("mode_", "last_"))]  # transaction codes, not quantities
@@ -719,8 +731,9 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
                 "A product is linked to the client's other products by identical transactions: "
                 f"{int((clients > 1).sum()):,} products belong to a client with several products, "
                 f"{int((clients > 1).groupby(frame['client_key']).any().sum()):,} clients, of whom {two_in_one_month} "
-                "have two products in one month. The earlier product's default flag was not known when the test "
-                "product was issued, so the earlier product is removed from the training side.",
+                "have two products in one month. The earlier product's default flag was most likely not known when the "
+                "test product was issued (a bank does not issue new credit to a client already in default), so the "
+                "earlier product is removed from the training side.",
                 pd.DataFrame(rows).set_index("split"),
             ),
         ]

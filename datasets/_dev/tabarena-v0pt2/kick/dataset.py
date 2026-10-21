@@ -37,11 +37,11 @@ class Kick(AbstractCuratedDataset):
             "We split by purchase date instead of the competition's random split, in which both sides cover the same "
             "two years."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "Everything else is known at the auction, but a missing wheel type marks 25% of the bad buys and 1.5% of "
-            "the others and may be filled in after a car is returned. It is kept as the company released it (ROC AUC "
-            "0.757 with it, 0.691 without)."
+            "The cars, the features known at the auction and the split by purchase date mirror the dealer's decision. "
+            "A missing wheel type, which may be filled in after a car is returned, is a potential leak kept as the "
+            "company released it and named in the notes."
         ),
     )
 
@@ -70,6 +70,7 @@ class Kick(AbstractCuratedDataset):
         - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.
         - The data is temporal and also grouped by auction location. Locations reappear over time, so a grouped split would test unseen auctions, which does not match deployment; a model is deployed on future purchases at mostly known auctions. Therefore, we use temporal evaluation.
         - The test features from the Kaggle competition are available and could be used for unsupervised approaches.
+        - Metric: the competition scored the Gini index (Kaggle's evaluation metric), which for a binary target is a linear function of ROC AUC (normalized: 2 x ROC AUC - 1), so we keep ROC AUC, which ranks models the same (TP-6).
         - We transform "PurchDate" to datetime.
         - We drop the "RefId" column, as it is just an identifier and not useful for modeling.
         - We assign the categorical features "WheelTypeID", "BYRNO", and "VNZIP1" to category dtype, as they are given as numbers.

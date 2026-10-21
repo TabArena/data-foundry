@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
+checksum: v2:433e7e4e0a07d649e1f5980ddb6c4e77d6b902c28b94885f966e33fb85b6e172
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1055
   n_features: 41
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 703
     max: 704
@@ -65,7 +67,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,055 rows and 41 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:433e7e4e0a07d649e1f5980ddb6c4e77d6b902c28b94885f966e33fb85b6e172`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -118,7 +120,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | UCI: https://doi.org/10.24432/C5H60M |
 | year | 2013 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | mansouri2013quantitative |
@@ -370,3 +372,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:433e7e4e0a07d649e1f5980ddb6c4e77d6b902c28b94885f966e33fb85b6e172` |

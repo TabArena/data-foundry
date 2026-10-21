@@ -30,6 +30,10 @@ LATITUDE = (40.0, 41.5)
 
 COORDINATES = ["pickup_longitude", "pickup_latitude", "dropoff_longitude", "dropoff_latitude"]
 
+PASSENGER_SEATS = 6
+"""A yellow cab seats at most 5 passengers, a minivan cab 6 (the counts 5 and 6 are 99.5% VeriFone meters). A count
+of 0 means the driver did not enter it, and 8 or 9 cannot be carried: both are set to missing."""
+
 VENDORS = {1: "Creative Mobile Technologies", 2: "VeriFone"}
 """TLC data dictionary: "1=Creative Mobile Technologies, LLC; 2=VeriFone Inc."."""
 
@@ -52,6 +56,11 @@ def deduplicated_with_dst_fix(raw: pd.DataFrame) -> pd.DataFrame:
     return df.assign(trip_duration=df["trip_duration"] - 3600 * across_switch.astype("int64"))
 
 
+def same_point(df: pd.DataFrame) -> pd.Series:
+    """Whether the recorded pickup and drop-off coordinates are identical (no destination for the ETA)."""
+    return df["pickup_longitude"].eq(df["dropoff_longitude"]) & df["pickup_latitude"].eq(df["dropoff_latitude"])
+
+
 def haversine_km(df: pd.DataFrame) -> pd.Series:
     """The great-circle distance between the pickup and the dropoff point in km (evidence only, not a feature)."""
     lon1, lat1, lon2, lat2 = (np.radians(df[c]) for c in COORDINATES)
@@ -64,11 +73,11 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
         question="How long will a New York taxi ride take, from pickup to drop-off?",
         use_case=(
             "When a passenger gets in and names the destination, the taxi's system estimates the arrival time with a "
-            "model refit every week on the latest trips."
+            "model refit every week on the trips since January."
         ),
         row=(
             "One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine "
-            "Commission's trip records (1,451,706 trips)."
+            "Commission's trip records (1,447,167 trips)."
         ),
         predicted="The trip's duration in seconds, on a log scale.",
         known=(
@@ -76,18 +85,19 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
             " company of the cab's meter system."
         ),
         split=(
-            "Each of the last three weeks of June 2016 is a test window; training is a random million earlier trips, "
-            "as for a model refit weekly."
+            "Each of the last three weeks of June 2016 is a test window; training is a random million trips picked "
+            "up at least a day before the window, as for a model refit weekly."
         ),
         changes=(
             "We split by week instead of the competition's random sample of the same days, drop a flag set only after"
-            " the trip, non-rides under 30 seconds and broken clocks over 3 hours, and correct trips across the "
-            "daylight-saving switch."
+            " the trip, non-rides under 30 seconds, broken clocks over 3 hours and trips whose drop-off point equals "
+            "the pickup point, blank impossible passenger counts, and correct trips across the daylight-saving switch."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "Everything the model sees is known at pickup once the passenger names the destination; the recorded "
-            "drop-off point stands in for it."
+            "Everything the model sees is known at pickup except the destination: the recorded drop-off point stands "
+            "in for the one named at pickup, and differs from it when a passenger changes the destination or gets out"
+            " early. The task is framed without a routing estimate."
         ),
     )
 
@@ -112,6 +122,12 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
         rm local-data-warehouse/nyc_taxi_trip_duration/train.zip
     """
     bibtex = r"""
+        @misc{nyctlc2016trips,
+          author = {{NYC Taxi and Limousine Commission}},
+          title = {{TLC} Trip Record Data: Yellow Taxi Trip Records, January to June 2016},
+          year = {2016},
+          howpublished = {\url{https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page}}
+        }
         @misc{risdal2017nyctaxi,
           author = {Meg Risdal},
           title = {New York City Taxi Trip Duration},
@@ -132,9 +148,11 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
         - We take 3,600 s off the trips picked up before 02:00 on 2016-03-13 and dropped off after the clocks jumped to 03:00. The times are wall-clock times, so these trips were recorded one hour too long (decision table).
         - We drop trips shorter than 30 s, which are not rides (most start and end at one point), and trips longer than 3 h, whose clock is broken (a cluster just below 24 h from VeriFone meters at walking speed; decision table). The two filters remove 0.47% of the trips.
         - We drop 38 trips with an end outside the box of longitude -75 to -72 and latitude 40 to 41.5: GPS errors on trips of a few minutes.
-        - Anomaly: 5,621 kept trips start and end at one point, 46 imply more than 100 km/h, and 24 have passenger_count 0. We keep them, as they cannot be told from real trips with certainty.
+        - We drop 4,539 trips (0.31%, 0.29-0.34% in every month, 73% VeriFone) whose drop-off coordinates equal the pickup coordinates to the last digit: a named destination is never the pickup point, so these rows lack the input the ETA acts on (decision table). Their mean target is 6.04 against 6.47 for the other trips.
+        - We set passenger_count to missing where it is 0 (the driver did not enter it) or above the 6 seats of a cab (8 and 9), 23 trips in all, and keep the trips.
+        - Anomaly: 1,082 kept trips start and end within 10 m but not at the same coordinates, and 46 imply more than 100 km/h. We keep them, as they cannot be told from real trips with certainty.
         - Split: weekly test windows over the last 3 weeks of June 2016 (splits_comment). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
-        - Note: pickup_datetime is the only time feature, and the hour matters most. Untuned LightGBM on the weekly windows scores RMSE 0.380, 0.365 and 0.378 when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.425, 0.414 and 0.434 with AutoGluon's date parts, which lose it.
+        - Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scores RMSE 0.373, 0.357 and 0.381 on the weekly windows (newest first) when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
         - Note: the Kaggle rules (Sec. 7) allow academic research and other non-commercial use and forbid redistribution; the TLC publishes the same records on NYC Open Data without an explicit licence.
     """
 
@@ -143,14 +161,14 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
     problem_type = "regression"
     accepted_check_warnings = {
         "splits_rows_unused": "Each train side over the 1M-row budget is a random 1M of the earlier trips, drawn per "
-        "window: 129,675 trips (8.9%), all before 2016-06-10, fall in none of the three samples. The frame keeps the "
-        "whole half-year; the _1m convention that drops such rows is for frames over 1.5M rows.",
+        "window: 122,285 trips (8.4%), all before 2016-06-10, fall in none of the three samples. The frame keeps the "
+        "whole half-year under the full name; a _1m version would drop these rows (open for the curator).",
     }
 
     # Splits
-    temporal = Temporal(on="pickup_datetime", splits=TemporalSplits(window=7, unit="days", n_windows=3))
+    temporal = Temporal(on="pickup_datetime", splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1))
     splits_comment = """
-        An ETA model refit every week predicts the trips of the next week, as for the other ETA tasks of the collection (delivery_eta_1m, maps_router_eta_1m). We use each of the last 3 weeks of June 2016 as a test window (newest first, 52,963 to 54,713 trips each) and all earlier trips as train data: 3 windows, the 1 x 3 an IID task of this size would get, and every train side holds at least 89% of the trips. Split sides over the row budget are trimmed: each train side (1.29M to 1.40M trips) is a random 1M of the earlier trips, drawn per window, and no test window reaches 500k rows. The competition's test set is a random sample of the same days (curation_comments); a random split is optimistic here: untuned LightGBM scores RMSE 0.396-0.399 on random 3-fold splits against 0.419-0.440 on the weekly windows, probably because trips of one day share its traffic and weather.
+        An ETA model refit every week predicts the trips of the next week, as for the other ETA tasks of the collection (delivery_eta_1m, maps_router_eta_1m). We use each of the last 3 weeks of June 2016 as a test window (newest first, 52,779 to 54,532 trips each) and the trips picked up at least one day before it as train data: 3 windows, the 1 x 3 an IID task of this size would get, and every train side holds at least 88% of the trips. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 119 and 127 train trips per window would end after the window start. Split sides over the row budget are trimmed: each train side (1.28M to 1.39M trips) is a random 1M of the earlier trips, drawn per window, and no test window reaches 500k rows. The competition's test set is a random sample of the same days (curation_comments); a random split is optimistic here. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scores RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -166,6 +184,11 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
         for c in COORDINATES:
             inside &= df[c].between(*(LONGITUDE if c.endswith("longitude") else LATITUDE))
         df = df[inside]
+        # no destination: the drop-off point is the pickup point to the last digit
+        df = df[~same_point(df)]
+        # 0 (not entered) and more than the seats of a cab (8, 9) are not passenger counts
+        count = df["passenger_count"]
+        df["passenger_count"] = count.astype(float).mask(count.eq(0) | count.gt(PASSENGER_SEATS))
         df["vendor_id"] = df["vendor_id"].map(VENDORS)
         # the competition scored RMSLE: RMSE on log1p(duration) is that metric
         df[self.target] = np.log1p(df["trip_duration"])
@@ -225,6 +248,30 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
             }
         )
 
+        # the trips of the duration window by how far the drop-off lies from the pickup
+        trips = base[kept]
+        distance = np.select(
+            [same_point(trips), km[kept] < 0.01], ["same coordinates", "within 10 m, not the same"], "10 m or more"
+        )
+        points = (
+            pd.DataFrame(
+                {
+                    "distance": distance,
+                    "log1p": np.log1p(seconds[kept]),
+                    "verifone": trips["vendor_id"].eq(2),
+                    "seconds": seconds[kept],
+                }
+            )
+            .groupby("distance")
+            .agg(
+                trips=("log1p", "size"),
+                mean_log1p_duration=("log1p", "mean"),
+                median_seconds=("seconds", "median"),
+                share_verifone=("verifone", "mean"),
+            )
+            .reindex(["same coordinates", "within 10 m, not the same", "10 m or more"])
+        )
+
         # trips picked up between 01:00 and 01:59 on the night of the switch and on the Sundays before and after
         pickup = pd.to_datetime(base["pickup_datetime"], format=TIME_FORMAT)
         recorded = (pd.to_datetime(base["dropoff_datetime"], format=TIME_FORMAT) - pickup).dt.total_seconds()
@@ -246,6 +293,14 @@ class NycTaxiTripDuration(AbstractCuratedDataset):
                 "cluster just below 24 h from VeriFone meters at walking speed, whose TLC records carry the fares of "
                 "trips of minutes.",
                 by_band.round(3),
+            ),
+            Decision(
+                "Trips whose drop-off coordinates equal the pickup coordinates are dropped",
+                "The task takes the drop-off point as the destination named at pickup, and a named destination is "
+                "never the pickup point: these rows lack the input the ETA acts on (a failed GPS fix at the drop-off "
+                "or a ride that did not happen). Trips that end within 10 m at other coordinates are kept, as they "
+                "cannot be told from short real rides. Trips of 30 s to 3 h, before the box filter:",
+                points.round(3),
             ),
             Decision(
                 "store_and_fwd_flag is dropped",

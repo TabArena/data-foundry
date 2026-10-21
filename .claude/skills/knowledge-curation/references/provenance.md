@@ -20,15 +20,19 @@ of a search counts ([selection.md](selection.md), "Unknown or unclear source"). 
 Cases: water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow.
 
 **PROV-2 (Should; narrows PROV-1).** A source that is plausible but unclear in a detail stays, with a note of what to
-clarify. A bare record of a known origin (a link, no description) is no lack of information either. Cases:
-bad_customer_detection (Lennart, 2026-10-14).
+clarify. A bare record of a known origin (a link, no description) is no lack of information either. A named first
+platform (a course or teaching provider) counts as a known source when the data shows no PROV-3 marks; an anonymous
+upload that names no platform is not covered (Lennart, 2026-10-21; credit_card_customers, bank_customer_churn).
+Cases: bad_customer_detection (Lennart, 2026-10-14), credit_card_customers, bank_customer_churn.
 
 **PROV-3 (Must).** The data is real: not generated, and not a real table someone reworked (relabelled, columns
 renamed, values replaced). A table that looks clean and scores well can still be either. Generated data is `No`; the
 scope rule is SEL-16 in [selection.md](selection.md), the detection is the seven tests under Methods, "Is the data
 generated?". Marker: `AHDS`, usually with `Missing source information`, and `Data Quality Issue` when a real
-table was manipulated. Cases: customer_satisfaction_in_airline, ecommerce_shipping, homeq_default_prediction,
-video_game_fps_prediction.
+table was manipulated. Values the data owner perturbed for privacy (disclosure control on a real cohort) are no
+rework when no test under Methods measures damage: the data stays, with a note saying what was checked and what cannot
+be (Lennart, 2026-10-21; framingham_heart_study_fhs). Cases: customer_satisfaction_in_airline, ecommerce_shipping,
+homeq_default_prediction, video_game_fps_prediction, framingham_heart_study_fhs.
 
 ### Duplicates
 
@@ -81,7 +85,11 @@ or retiring the dataset, and repair or rebuild from the origin when it has them.
 LEAK-30 in [leak_checks.md](leak_checks.md). Cases: SUPPORT2, ashrae, coad_colon_adenocarcinoma,
 corporate_credit_rating.
 
-**PROV-14 (Must).** A rebuild that would not match the release exactly is a new dataset with its own record.
+**PROV-14 (Must).** A repair stays under its record: the same units and the same features, with the damaged values
+restored from the origin (PROV-13), even when the table then differs from the release. Only a rebuild from other
+sources (new data, new units or new columns, PROV-11) is a new dataset with its own record (Lennart, 2026-10-21;
+framingham_heart_study_fhs). Cases: SUPPORT2 (2_month_survival_rate_prediction), cirrhosis_patient_survival_prediction,
+framingham_heart_study_fhs (repairs); corporate_credit_rating, rebuilt as corporate_issuer_credit_rating.
 
 ### Problems of third-party copies
 
@@ -197,10 +205,12 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 |---|---|---|---|
 | PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source") | applied |
 | PROV-2 | bad_customer_detection | a plausible source unclear in a detail: kept, with a note of what to clarify (2026-10-14, Lennart) | applied |
+| PROV-2 | credit_card_customers, bank_customer_churn | a named first platform (Analyttica's LEAPS teaching case 11, offline; a named data-science course) counts as a known source when the data shows no PROV-3 marks; PROV-2 amended (2026-10-21, Lennart). credit_card_customers stays open on whether its measured marks count (its issue 1) | applied |
 | PROV-3 | customer_satisfaction_in_airline | tests 1, 3 and 6: a derived file with rating columns under the wrong name, replaced distances and 14,659 labels flipped by a rule; the passenger part is synthetic, the route distances real; retired | applied |
 | PROV-3 | ecommerce_shipping | tests 2 and 4: `Warehouse_block` is the id modulo 6, `Mode_of_Shipment` a 137-id cycle, 1,833 rows per warehouse block; retired | applied |
 | PROV-3 | homeq_default_prediction | test 5: near-copy clusters pure in the label, distance alone AUC 0.92; retired | applied |
 | PROV-3 | video_game_fps_prediction | test 7: log FPS = game + CPU + GPU, R^2 0.99998, `Trivial` and often `AHDS`; retired | applied |
+| PROV-3 | framingham_heart_study_fhs | BioLINCC's teaching data, anonymised by undocumented methods ("permutations and/or random visit selection", Nahhas, App. A.6): no test fires (digit preference intact, systolic BP ends in 0 for 22.5% of readings; within-person r 0.90 and 0.71 six years apart; per-sex baseline tables match the documentation); kept with a note of what was checked; PROV-3 amended (2026-10-21, Lennart). stroke_prediction may be a second case (about 1,029 more patients aged 78 to 82 than the trend gives); not decided | applied |
 | PROV-4, PROV-5 | colleges (OpenML 42727) | marked a duplicate of college_scorecard only after its named original (a Colleges.txt file, still online) proved to be the College Scorecard file of 2013-14: all 7,804 institution ids in it, and faculty salary, size and admission rate agreeing for 97-99% of the colleges (2026-10-12; Lennart asked for that check) | applied |
 | PROV-6 | arsenic_male_lung | the lung-cancer version of the same exposure data as arsenic_male_bladder: a duplicate ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |
@@ -212,6 +222,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-12 | nyc_taxi_trip_duration | listed the Porto PKDD-15 competition as a source; moved to the comments (2026-10-12) | applied |
 | PROV-12 | melbourne_housing_market | listed two Airbnb datasets as sources; moved to the comments (2026-10-12) | applied |
 | PROV-13, PROV-15 | SUPPORT2 | the copy's phase II physiology held rows of the wrong patient; restored from the study data (ICPSR 2957) | applied |
+| PROV-14 | SUPPORT2 (2_month_survival_rate_prediction), cirrhosis_patient_survival_prediction, framingham_heart_study_fhs | repairs: the same units and features, damaged values restored from the origin, kept under their records (framingham: 4,240 participants matched row for row on 15 features, 249 labels turned from Yes to No, 16 rows dropped); PROV-14 amended (2026-10-21, Lennart) | applied |
+| PROV-11, PROV-14 | corporate_credit_rating | a rebuild from other sources (the agencies' rating histories, SEC EDGAR): a new record, corporate_issuer_credit_rating (2026-10-16, Lennart) | applied |
 | PROV-13 | ashrae | the readings put in kWh from the data owners' raw files | applied |
 | PROV-13 | coad_colon_adenocarcinoma | retired for a rebuild from the GDC's per-sample files | applied |
 | PROV-13 | corporate_credit_rating | retired for a rebuild from the agencies' own rating histories | applied |

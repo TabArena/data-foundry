@@ -67,6 +67,8 @@ BODY_STATISTICS = [
     *NEGATIVE_POLARITY,
 ]
 LDA_TOPICS = ["LDA_00", "LDA_01", "LDA_02", "LDA_03", "LDA_04"]
+# The one share count in the release that is not a whole number (a parsing artefact).
+FRACTIONAL_SHARES = 1.59
 
 
 def _url_dates(urls: pd.Series) -> pd.Series:
@@ -99,8 +101,8 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         ),
         known=(
             "Statistics of the text and page (word counts, title length, links, images, videos, sentiment, "
-            "subjectivity, keywords), the channel (business, tech and others), the shares of earlier Mashable "
-            "articles it links to or shares keywords with, and the publication date."
+            "subjectivity, keywords), the channel (business, tech and others), the earlier Mashable articles it links "
+            "to or shares keywords with and their shares at the crawl of 8 January 2015, and the publication date."
         ),
         split=(
             "Each test window is two weeks of articles (24 August to 27 December 2014); training is every article "
@@ -112,10 +114,10 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Two potential leaks are kept on purpose: keyword statistics that, for a quarter of the articles, include"
-            " same-day articles published later, and links possibly added after publication (R² 0.158 with both; "
-            "0.135 and 0.143 without each). Shares are counted up to one crawl date, though the newest articles show "
-            "no deficit."
+            "Two potential leaks are kept on purpose: the keyword and link statistics use other articles' shares at "
+            "the crawl, and for 80% of the test rows the keyword statistics include same-day articles published "
+            "later (R² 0.158 with both, 0.135 and 0.143 without each). Shares are counted at one crawl date, though "
+            "the newest articles show no deficit."
         ),
     )
 
@@ -152,17 +154,17 @@ class Onlinenewspopularity(AbstractCuratedDataset):
     curation_comments = """
         We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on our 9 windows, averaged over 3 seeds.
 
-        - Prediction point: before publication. The source's system "analyzes articles prior to their publication" (abstract) and suggests changes to the article and its publication day; the shares of earlier Mashable articles are known.
+        - Prediction point: before publication. The source's system "analyzes articles prior to their publication" (abstract) and suggests changes to the article and its publication day; the earlier Mashable articles are known, with their shares at the crawl of 2015-01-08 (see the potential leaks below).
         - Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular above 1,400 shares) is a cut of this count.
         - Time: the publication date comes from the URL, which Mashable's archived pages confirm; the URL is dropped.
         - We drop `timedelta` and the seven weekday flags with `is_weekend`. They follow the authors' date, 1 to 5 days after the URL date for 24% of the articles, which is not known before publication and goes with the outcome (decision table).
         - The six `data_channel_is_*` flags become one categorical `data_channel`, `other` when no flag is set.
         - We drop one article whose text processing failed (counts in its rate columns, zero topic and sentiment values).
-        - Proxy missing values, set to missing: statistics of words, links or earlier articles that do not exist (no body words, no positive or negative words, a self-reference maximum of 0, the first day's keywords) and negative keyword statistics (-1 and averages that include it), impossible share counts.
-        - We drop `n_non_stop_words`, which only repeats `n_tokens_content` > 0 (1 with body words, 0 without).
+        - Proxy missing values, set to missing: statistics of words, links or earlier articles that do not exist (no body words, no positive or negative words, a self-reference maximum of 0, the first day's keywords) and negative keyword statistics (-1 and averages that include it). The share count 1.59, the only one that is not a whole number (`kw_max_min` 111 rows, `self_reference_min_shares` 10, `self_reference_max_shares` 3; 120 rows), is set to missing with the averages that include it.
+        - We drop `n_non_stop_words`, which only repeats `n_tokens_content` > 0 (1 with body words, 0 without), and `rate_negative_words`, which is 1 - `rate_positive_words` in every row where both are defined.
         - We drop the five LDA topic columns: the paper applied LDA "to all Mashable texts" (Sec. 2.1), test windows included, and without the texts it cannot be refitted per window (decision table).
-        - Potential leak, kept on purpose: the keyword statistics summarize the articles with an earlier authors' date, so for the shifted 24% they include articles of the same day published hours later, and they use the crawl's share counts. The same-day articles bring no measurable gain: the keyword columns lower the squared error by 0.0245 for shifted and 0.0172 for unshifted test articles (standard error of the difference 0.006). Without them R^2 falls from 0.158 to 0.135.
-        - Potential leak, kept on purpose: the self-reference statistics come from the page's links at the crawl, so a link added after publication can point to a newer article. Such links are rare (4 of the 906 articles checked link to an article 1 to 2 days newer); without them R^2 falls from 0.158 to 0.143.
+        - Potential leak, kept on purpose: the keyword and self-reference statistics hold other articles' share counts at the crawl of 2015-01-08, not at publication. They include the counts of articles from the gap week and from earlier in the same test window (at least 0.9% and 0.4% of the test rows), whose shares an editor would have seen younger. Masking the 2,907 cells traced to an article less than 8 days older than the row changes R^2 by -0.0004, less than the spread over seeds (0.002). Without the keyword columns R^2 falls from 0.158 to 0.135, without the self-reference columns to 0.143. Revisit if a source with counts at publication appears.
+        - Potential leak, kept on purpose: the keyword statistics summarize the articles with an earlier authors' date, so for the shifted rows (80% of the test rows, 6,627 of 8,289; the three newest windows entirely) they include articles of the same day published hours later. These bring no measurable gain: the keyword columns lower the squared error by 0.0187 for shifted and 0.0264 for unshifted test articles (difference -0.008, standard error 0.008). The self-reference statistics come from the page's links at the crawl, so a link added after publication can point to a newer article; such links are rare (4 of 895 traceable articles link to an article 1 to 2 days newer, about what chance gives). The page counts (`num_hrefs`, `num_imgs` and the rest) are read at the crawl too.
         - We keep the newest articles. The paper discarded articles less than three weeks old, but the shares of the 481 articles from 2014-12-18 on show no deficit (decision table).
         - No duplicate rows; the URLs are unique.
         - Text: the release holds statistics of the text only; a TF-IDF encoding of the URL slug does not help (R^2 0.152 with it).
@@ -178,7 +180,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         splits=TemporalSplits(window=2, unit="weeks", n_windows=9, gap=1),
     )
     splits_comment = """
-        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), from 2014-08-24 to 2014-12-27, newest first, with 769 to 1,001 articles each; train is every article published at least one week before the window starts (30,967 to 38,385 articles, 78% of the data or more). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). Nine windows are the 3 x 3 splits an IID task of this size would get.
+        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), from 2014-08-24 to 2014-12-27, newest first, with 769 to 1,001 articles each; train is every article published at least one week before the window starts (30,967 to 38,385 articles, 78% of the data or more). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). The labels are the counts at the 2015-01-08 crawl for train and test alike, so the gap stands in for the settling time only. The paper trains on a sliding window of W = 10,000 articles; we expand the train side, which keeps a full season before the first window and scores no lower (R^2 0.158 expanding, 0.146 sliding). Nine windows are the 3 x 3 splits an IID task of this size would get.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -198,6 +200,14 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         df.loc[df["global_rate_negative_words"] == 0, NEGATIVE_POLARITY] = np.nan
         no_polar_words = (df["rate_positive_words"] == 0) & (df["rate_negative_words"] == 0)
         df.loc[no_polar_words, ["rate_positive_words", "rate_negative_words"]] = np.nan
+        # The share count 1.59 is not a whole number: missing, with the averages that include it.
+        kw_fraction = df["kw_max_min"] == FRACTIONAL_SHARES
+        df.loc[kw_fraction, ["kw_max_min", "kw_avg_min"]] = np.nan
+        self_min = df["self_reference_min_shares"] == FRACTIONAL_SHARES
+        self_max = df["self_reference_max_shares"] == FRACTIONAL_SHARES
+        df.loc[self_min, "self_reference_min_shares"] = np.nan
+        df.loc[self_max, "self_reference_max_shares"] = np.nan
+        df.loc[self_min | self_max, "self_reference_avg_sharess"] = np.nan
         # No linked Mashable article with a known share count (real counts are at least 1).
         df.loc[df["self_reference_max_shares"] == 0, SELF_REFERENCE_SHARES] = np.nan
         # No earlier article with the keywords (the first day); negative values (-1, and averages that include it).
@@ -208,7 +218,16 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         df["log_shares"] = np.log(df["shares"])
         return drop_columns(
             df,
-            ["url", "timedelta", "shares", "n_non_stop_words", *CHANNEL_FLAGS, *WEEKDAY_FLAGS, *LDA_TOPICS],
+            [
+                "url",
+                "timedelta",
+                "shares",
+                "n_non_stop_words",
+                "rate_negative_words",
+                *CHANNEL_FLAGS,
+                *WEEKDAY_FLAGS,
+                *LDA_TOPICS,
+            ],
         )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

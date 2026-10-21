@@ -65,12 +65,12 @@ class PortoSeguro(AbstractCuratedDataset):
         - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
         - We drop the index as it seems to be uninformative for this dataset.
         - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
+        - Metric: the competition scored the normalized Gini coefficient, which for a binary target is 2 x ROC AUC - 1, so we keep ROC AUC, which ranks models the same (TP-6).
     """
 
     # Task
     target = "target"
     problem_type = "binary_classification"
-    metric = "normalized_gini_coefficient"  # see https://www.kaggle.com/c/ClaimPredictionChallenge/discussion/703
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

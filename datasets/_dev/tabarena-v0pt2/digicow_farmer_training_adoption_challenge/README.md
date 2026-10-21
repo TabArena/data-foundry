@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: digicow_farmer_training_adoption_challenge
 container_format: 2
-checksum: v2:6e9e68dd4bccf51a60ac64841d2916888fb303230571a96ce885f6cc94188373
+checksum: v2:f85e350cba4327f8b50cc5330d4b93a5c78bc7ecf076a2cdc554ce3ed2b23457
 build: null
 build_stale: false
 data:
@@ -17,7 +17,7 @@ data:
 task:
   target: adopted_within_07_days
   problem_type: binary_classification
-  metric: roc_auc
+  metric: log_loss
   split_regime: temporal_non_iid
   stratify_on: adopted_within_07_days
   time_on: training_day
@@ -54,15 +54,15 @@ bundle_checks:
       and ward they mainly serve: TRA_ubcgvofe 0 adopters in 1,456 rows, TRA_suiifsur
       2 in 2,190, TRA_gertumxc 11 in 3,049. They mark where adoption was not recorded
       (curation comments, Label recording): the Data Quality Issue for which the dataset
-      is recommended for retirement. Accepted only so that the folder checks clean
-      for Lennart''s decision (2026-10-07).'
+      is recommended not to ship. Accepted only so that the folder checks clean for
+      Lennart''s decision (2026-10-07).'
     splits_test_minority_few: The two newest windows hold 9 and 5 adopters, all trained
       by TRA_rkvyofbh in 3 sessions each; shorter windows leave a window without any
-      adopter. This is the Too Small for which the dataset is recommended for retirement.
+      adopter. This is the Too Small for which the dataset is recommended not to ship.
       Accepted only so that the folder checks clean for Lennart's decision (2026-10-07).
 decisions:
 - training_day is stored with day and month swapped; we swap them back
-- 'has_topic_trained_on is dropped: it goes with the adoption for two trainers'
+- 'has_topic_trained_on is dropped: it goes with the adoption where it is mostly 0'
 - Adoptions are recorded in waves
 - 'The label is adoption as recorded: a 0 mixes ''did not adopt'' with ''not recorded'''
 - 'Test windows: 4 calendar months, newest first'
@@ -72,9 +72,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `adopted_within_07_days`, scored with `roc_auc` on temporal splits by `training_day`. 13,536 rows and 11 features. Source: Zindi (2026).
+Binary classification of `adopted_within_07_days`, scored with `log_loss` on temporal splits by `training_day`. 13,536 rows and 11 features. Source: Zindi (2026).
 
-Not built yet. The current definition gives checksum `v2:6e9e68dd4bccf51a60ac64841d2916888fb303230571a96ce885f6cc94188373`.
+Not built yet. The current definition gives checksum `v2:f85e350cba4327f8b50cc5330d4b93a5c78bc7ecf076a2cdc554ce3ed2b23457`.
 
 ## In brief
 
@@ -82,17 +82,17 @@ Not built yet. The current definition gives checksum `v2:6e9e68dd4bccf51a60ac648
 
 **Use case.** At the end of a farmer's training day, DigiCow scores the farmer's chance of adopting within seven days from the profile, the trainers and the day's topics, for example to plan follow-up.
 
-**One row.** One farmer with one training day, the one the challenge kept per farmer, March 2024 to December 2025 (13,536 farmers); the country of the counties and wards is not named in the definition.
+**One row.** One farmer with one training day, the one the challenge kept per farmer (not always the farmer's first), March 2024 to December 2025 (13,536 farmers); for 2025 only the trainings of days 1-4 of each month are here. The country of the counties and wards is not named in the definition.
 
 **Predicted.** Whether the farmer adopted within 7 days of the training (1.1% did). What counts as adoption is not stated, and a 0 mixes 'did not adopt' with 'not recorded'.
 
 **Known at prediction time.** Gender, age band, registration method, cooperative membership, group, county, sub-county and ward, the day's trainers and the topics of its sessions, and the training date.
 
-**What the test data stands for.** Each test window is four calendar months of trainings (four windows, September 2024 to December 2025, newest first); training is all earlier trainings, whose 7-day outcome is known by then.
+**What the test data stands for.** Each test window is four calendar months of trainings (four windows, September 2024 to December 2025, newest first; in 2025 the days 1-4 of each month); training is all earlier trainings, whose 7-day outcome is known by then.
 
-**Our changes to the source.** We swap back the day and month of the stored dates, drop the 90- and 120-day labels, which contain the 7-day one, and drop a topic flag that two trainers recorded with the adoption; the topics still partly carry it.
+**Our changes to the source.** We swap back the day and month of the stored dates, drop the 90- and 120-day labels, which contain the 7-day one, and drop a topic flag recorded with the adoption where it is mostly 0; the topics still partly carry it.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The prediction point and horizon fit, but adoption is recorded only for some trainers and months, so a 0 mixes non-adopters with farmers never followed up and the model partly learns who recorded. The test windows hold 9 to 103 adopters from 1 to 7 trainers; the dataset is recommended for retirement.
+> **Use case fit: approximate (a stand-in with a known gap).** The prediction point and horizon fit, but adoption is recorded only for some trainers and months, so a 0 mixes non-adopters with farmers never followed up and the model partly learns who recorded. The test windows hold 9 to 103 adopters from 1 to 7 trainers; the dataset is recommended not to ship.
 
 ## Files in this folder
 
@@ -154,7 +154,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 13,536 x 12 |
 | task.target | adopted_within_07_days |
 | task.problem_type | binary_classification |
-| task.metric | roc_auc |
+| task.metric | log_loss |
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | adopted_within_07_days |
 | task.time_on | training_day |
@@ -199,22 +199,25 @@ The first 5 of 13,536 rows of the final frame (the oldest rows: the frame is sor
 
 We start with Train.csv of the Zindi DigiCow Farmer Training Adoption Challenge (final release, 2026-02-10): 13,536 labelled rows, one per farmer.
 
-- Recommendation (2026-10-07): retire, suggestion `No` with the markers `Too Small` and `Data Quality Issue`; the folder stays for Lennart's decision (last two bullets). Revisit if DigiCow documents when and for which trainers adoption was followed up.
+- Recommendation (2026-10-20): do not ship, suggestion `No` with the markers `Too Small` and `Data Quality Issue` (LEAK-25, TP-9); the folder stays for Lennart's decision (last two bullets). Revisit if DigiCow documents who was followed up and when.
 - Prediction point: the end of a farmer's training day, when DigiCow knows the farmer's profile, the trainer and the topics of the day's sessions.
 - We use the final release, from which the host removed the counts over later trainings after leak reports; Test.csv has no labels.
-- Dates: `training_day` is stored with the day in the month field. We swap them back; then Sundays are rare and 42.7% of a group's date gaps are whole weeks (first decision). The day is never above 12, so the release holds days 1-12 of each month only.
-- We do not use Prior.csv: in true dates 20.3% of its rows for Train.csv farmers come after the farmer's Train.csv row, so history features built from it would see later outcomes.
-- Target: `adopted_within_07_days`, the challenge's main target. We drop `adopted_within_90_days` and `adopted_within_120_days`: later outcomes that contain the 7-day label in every row.
-- We drop `has_topic_trained_on`: for the trainers TRA_szrwyfzz and TRA_hyodnntj it goes with the adoption, and within one session the flagged farmers hold all the 7-day adopters (second decision). The drop is incomplete, since `topics_list` predicts the flag with ROC AUC 0.87 in these trainers' rows. Dropping both or keeping both is Lennart's call.
-- We drop `ID` (row id) and `farmer_name` (one row per farmer). `trainer` (a list of ids) and `topics_list` are written as text, topics joined by "; " within a session and sessions by " | ". Gender, registration, age band, group, county, subcounty, ward and trainer are categoricals; `belong_to_cooperative` stays 0/1.
+- Dates: `training_day` is stored with the day in the month field. We swap them back; then Sundays are rare and 42.7% of a group's date gaps are whole weeks (first decision). The day is never above 12, so the release holds days 1-12 of each month only. Zindi cut Train/Test in stored-date order, so Train.csv holds days 1-4 of each 2025 month and days 5-12 went to the unlabelled Test.csv.
+- We do not use Prior.csv, the farmers' other trainings. As stored, 20.3% of its rows for Train.csv farmers fall after the farmer's Train.csv row in true dates; a history of the earlier rows only is legal (LEAK-34) and is the first fix to try if the task is revived. It stays out because the task is not shipped, and it carries the same recording waves.
+- Target: `adopted_within_07_days`, the challenge's main target. It belongs to the row's own training: the codebook says "first training", but 2,540 rows (18.8%) are not the farmer's first training in true dates. We drop `adopted_within_90_days` and `adopted_within_120_days`: later outcomes that contain the 7-day label in every row.
+- Metric: Zindi scored log loss 0.75 and ROC AUC 0.25 (7-day log loss 0.65, 7-day ROC AUC 0.15, the 90- and 120-day log loss and ROC AUC 0.05 each). The rubric is no listed metric and scores targets this task does not ship, so we declare log loss, which carries 0.65 of the 0.80 weight of the 7-day target (TP-6).
+- We drop `has_topic_trained_on`: a flag of 0 never adopts, and where the flag is mostly 0 (TRA_szrwyfzz and TRA_hyodnntj; TRA_twwcfcum's one flagged row is its one adopter) the flagged farmers hold all the adopters (second decision).
+- Potential leak, kept on purpose: `topics_list`, the day's topics, known at the prediction point (LEAK-37). In TRA_szrwyfzz's and TRA_hyodnntj's rows it predicts the dropped flag with ROC AUC 0.885-0.902 (5-fold, grouped by session), and within their 82 sessions that mix flagged and unflagged farmers it predicts adoption with 0.649; adopters have 4.71 topics against 3.22. Two readings: more sessions attended, or the flag carried over. Revisit if the topics are shown to be recorded at follow-up.
+- We drop `ID` (row id) and `farmer_name` (one row per farmer). `trainer` (a list of ids) and `topics_list` are written as text, topics joined by "; " within a session and sessions by " | ". Topic spellings vary by trainer (141 spellings, 123 after case and punctuation), kept as released. Gender, registration, age band, group, county, subcounty, ward and trainer are categoricals; `belong_to_cooperative` stays 0/1.
+- Domain: `environmental science & climate` is the closest fixed value for agriculture.
 - Duplicates, kept: 6,590 rows (48.7%) repeat another row, but each is a different farmer of the same session and recorded profile. Copies share the training day, so they fall in the same test window.
-- Label recording (Data Quality Issue): a 0 mixes "did not adopt" with "not recorded". The share of 120-day adopters who adopted within 7 days is 0% for the trainings of August-October 2024 and 45%, 64% and 95% for November 2024, December 2024 and February 2025 (third decision), and TRA_gertumxc's farmers of March-July 2025 never adopted at any horizon (fourth decision). The trainer and location columns, the leak probes' strongest single features, carry this recording.
-- Anomaly: one row per farmer is the challenge's construction (the farmer's latest training in stored-date order); the selection uses dates, not labels.
-- Too Small: the test windows hold 9, 5, 19 and 103 adopters from 1, 1, 2 and 7 trainers, and shorter windows leave a window without any adopter (fifth decision). A random split, folds grouped by `group_name` or leaving one trainer out do not fix this.
+- Label recording (Data Quality Issue): a 0 mixes "did not adopt" with "not recorded". Among 120-day adopters, the share who adopted within 7 days is 1 of 95 for the trainings of August-October 2024 and 73%, 90% and 100% for November 2024, December 2024 and February 2025 in Train.csv (third decision); with Prior.csv 1 of 1,021 and 45%, 64% and 95%. TRA_gertumxc's farmers of March-July 2025 never adopted at any horizon (fourth decision). The trainer and location columns, the leak probes' strongest single features, carry this recording.
+- Anomaly: one row per farmer is the challenge's construction (the farmer's latest training in stored-date order; in true dates it is the latest for 67.8% of the 3,193 farmers with other trainings in Prior.csv); the selection uses dates, not labels.
+- Too Small: the test windows hold 9, 5, 19 and 103 adopters from 1, 1, 2 and 7 trainers, and shorter windows leave a window without any adopter (fifth decision). Wider windows break the 50% train floor, a random split is barred for a temporal task, and folds grouped by `group_name` or leaving one trainer out do not fix this.
 
 ## Splits
 
-DigiCow scores a farmer at the end of the training day and refits on trainings whose 7-day outcome is known. Trainings fall on days 1-12 of a month only, so with windows that start on the first of a month the newest training on a train side is at least 19 days old in every window (17 after a February) and its 7-day label is known: no gap is needed. Test windows of 4 calendar months walk back from December 2025, newest first, while the train side holds at least half of the rows; train is all earlier data. That gives 4 windows: September-December 2025 (718 rows, 9 adopters), May-August 2025 (773 rows, 5), January-April 2025 (727 rows, 19; no training in January) and September-December 2024 (4,264 rows, 103), the last trained on 7,054 rows with 17 adopters. Adopters arrive in waves (curation comments), so shorter windows leave a window without any adopter (with 3-month windows, April-June 2025 has none): 4 months is the shortest calendar window for which every window holds adopters, and the 50% floor ends the walk back at September 2024, short of the 9 splits an IID task of this size would get. The windows' adopters come from 3, 3, 8 and 52 sessions and 1, 1, 2 and 7 trainers: too few units to compare methods (curation comments, Too Small; recommended for retirement).
+DigiCow scores a farmer at the end of the training day and refits on trainings whose 7-day outcome is known. Trainings fall on days 1-12 of a month only (days 1-4 in 2025, the rest being in Zindi's Test.csv), so with windows that start on the first of a month the newest training on a train side is at least 19 days old in every window (17 after a February) and its 7-day label is known: no gap is needed. Test windows of 4 calendar months walk back from December 2025, newest first, while the train side holds at least half of the rows; train is all earlier data. That gives 4 windows: September-December 2025 (718 rows, 9 adopters), May-August 2025 (773 rows, 5), January-April 2025 (727 rows, 19; no training in January) and September-December 2024 (4,264 rows, 103), the last trained on 7,054 rows with 17 adopters. Adopters arrive in waves (curation comments), so shorter windows leave a window without any adopter (with 3-month windows, April-June 2025 has none): 4 months is the shortest calendar window for which every window holds adopters, and the 50% floor ends the walk back at September 2024, short of the 9 splits an IID task of this size would get. The windows' adopters come from 3, 3, 8 and 52 sessions and 1, 1, 2 and 7 trainers: too few units to compare methods (curation comments, Too Small; recommended not to ship).
 
 4 repeat(s) x 1 fold(s) with seed 4267; train 7,054 to 12,818 rows, test 718 to 4,264 rows. Prediction horizon: 4 months.
 
@@ -236,9 +239,9 @@ As stored, Sundays are as common as weekdays and a group's training dates are wh
 | as stored | 0.139 | 0.131 | 546 | 0.145 | 12 |
 | day and month swapped | 0.055 | 0.049 | 546 | 0.427 | 12 |
 
-### 2. has_topic_trained_on is dropped: it goes with the adoption for two trainers
+### 2. has_topic_trained_on is dropped: it goes with the adoption where it is mostly 0
 
-For TRA_szrwyfzz and TRA_hyodnntj the flag is 1 on 221 of 4,195 rows, which hold all their adopters (71% adopted within 120 days); within one session only the adopters tend to carry it. For the other trainers it is 1 on almost every row. The drop is incomplete: topics_list predicts the flag with ROC AUC 0.87 in these trainers' rows (curation comments).
+For TRA_szrwyfzz and TRA_hyodnntj the flag is 1 on 221 of 4,195 rows, which hold all their adopters (71% adopted within 120 days); within one session only the adopters tend to carry it. For most other trainers it is 1 on almost every row; TRA_twwcfcum's one flagged row is its one adopter, and a flag of 0 never adopts. The drop is incomplete: topics_list predicts the flag with ROC AUC 0.885-0.902 in the two trainers' rows (curation comments, potential leak).
 
 | trainer | flag | rows | adopted_7_days | adopted_120_days |
 |---|---|---|---|---|
@@ -256,7 +259,7 @@ For TRA_szrwyfzz and TRA_hyodnntj the flag is 1 on 221 of 4,195 rows, which hold
 
 ### 3. Adoptions are recorded in waves
 
-By month of the (swapped-back) training date, 1 of the 95 adopters trained in August-October 2024 adopted within 7 days, against 33 of 45, 69 of 77 and 19 of 19 for November 2024, December 2024 and February 2025: 36 of the 38 August adopters adopted on days 91-120, 40 of the 57 of September-October on days 8-90, all pointing at adoptions recorded around December 2024. A delay set by farmers' behaviour cannot jump like this between neighbouring months. 10 of the 21 months have no 7-day adopter.
+In Train.csv, by month of the (swapped-back) training date, 1 of the 95 adopters trained in August-October 2024 adopted within 7 days, against 33 of 45, 69 of 77 and 19 of 19 for November 2024, December 2024 and February 2025: 36 of the 38 August adopters adopted on days 91-120, 40 of the 57 of September-October on days 8-90, all pointing at adoptions recorded around December 2024. A delay set by farmers' behaviour cannot jump like this between neighbouring months. 10 of the 21 months have no 7-day adopter.
 
 | month | rows | adopted_within_7_days | adopted_day_8_to_90 | adopted_day_91_to_120 | share_within_7_days |
 |---|---|---|---|---|---|
@@ -284,7 +287,7 @@ By month of the (swapped-back) training date, 1 of the 95 adopters trained in Au
 
 ### 4. The label is adoption as recorded: a 0 mixes 'did not adopt' with 'not recorded'
 
-Adopters appear only for some trainers and periods. TRA_gertumxc's farmers adopted within 120 days in the trainings of August-December 2024 and never in 2025, although the 2025 windows closed before the release; TRA_ubcgvofe and TRA_suiifsur record almost no adoption. This is the Data Quality Issue for which the dataset is recommended for retirement (curation comments).
+Adopters appear only for some trainers and periods. TRA_gertumxc's farmers adopted within 120 days in the trainings of August-December 2024 and never in 2025, although the 2025 windows closed before the release; TRA_ubcgvofe and TRA_suiifsur record almost no adoption. This is the Data Quality Issue for which the dataset is recommended not to ship (curation comments).
 
 | trainer | period | rows | adopted_7_days | adopted_120_days |
 |---|---|---|---|---|
@@ -328,8 +331,8 @@ The shortest calendar windows for which every window holds adopters; the train s
 Accepted on purpose:
 
 - `dataset_duplicate_rows`: 6,590 rows repeat another row: each row is a different farmer (13,536 distinct farmer_name values), trained in the same session with the same recorded profile. Copies share the training day, so they always fall in the same window (2026-10-07).
-- `dataset_pure_feature_value`: The values are three trainers and the counties, subcounty and ward they mainly serve: TRA_ubcgvofe 0 adopters in 1,456 rows, TRA_suiifsur 2 in 2,190, TRA_gertumxc 11 in 3,049. They mark where adoption was not recorded (curation comments, Label recording): the Data Quality Issue for which the dataset is recommended for retirement. Accepted only so that the folder checks clean for Lennart's decision (2026-10-07).
-- `splits_test_minority_few`: The two newest windows hold 9 and 5 adopters, all trained by TRA_rkvyofbh in 3 sessions each; shorter windows leave a window without any adopter. This is the Too Small for which the dataset is recommended for retirement. Accepted only so that the folder checks clean for Lennart's decision (2026-10-07).
+- `dataset_pure_feature_value`: The values are three trainers and the counties, subcounty and ward they mainly serve: TRA_ubcgvofe 0 adopters in 1,456 rows, TRA_suiifsur 2 in 2,190, TRA_gertumxc 11 in 3,049. They mark where adoption was not recorded (curation comments, Label recording): the Data Quality Issue for which the dataset is recommended not to ship. Accepted only so that the folder checks clean for Lennart's decision (2026-10-07).
+- `splits_test_minority_few`: The two newest windows hold 9 and 5 adopters, all trained by TRA_rkvyofbh in 3 sessions each; shorter windows leave a window without any adopter. This is the Too Small for which the dataset is recommended not to ship. Accepted only so that the folder checks clean for Lennart's decision (2026-10-07).
 
 ## Data checks
 

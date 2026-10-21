@@ -66,6 +66,10 @@ Data in the repo:
 
 **Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01 (no leak): one row has an `age` of 455. Under the rule for impossible values (they become missing and the row stays; caracas_cervical_cancer, 2026-10-15) the definition should set it to missing in the next pass.
 
+CC (2026-10-21, Lennart): "ok" on the cross-dataset item that the `Trivial` marker was never tested under TP-4: run the test and keep or remove the marker by the result.
+
+**Assessment (AI, 2026-10-21):** TP-4 test on the 30 shipped splits: the best single raw feature, chosen on each training side, is `FTI` on all 30, ROC AUC 0.822 on average (0.691 to 0.897), against 0.974 (0.913 to 0.996) for a default random forest and 0.973 (0.900 to 0.996) for LightGBM; the single feature is worse than both on 30 of 30 splits (task probe: one-feature LightGBM 0.869, random forest 0.976, no flag). The marker is refuted; recommend removing it (REVIEW.md issue 1); the curator has the call.
+
 ## Reference
 
 @article{quinlan1987simplifying,

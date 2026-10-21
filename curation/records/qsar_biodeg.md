@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 original_source: UCI
 year: '2013'
+domain: chemistry & material science
 required_split:
 - Random (IID)
 problem_type: Binary Classification
@@ -35,6 +36,8 @@ Potential issue: -
 Lennart: no objection
 
 Andrej: Matches criteria
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
 
 ## Reference
 

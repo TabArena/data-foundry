@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
+checksum: v2:2d399e4cbe3e0dac82c2ebca4e22a1a69db4c496722235081debdc64f95b2889
 build:
   uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
   checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1035
   n_features: 204
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: 10
   time_horizon_unit: years
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 584
     max: 981
@@ -67,7 +69,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 204 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14. See [Build](#build).
+Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2d399e4cbe3e0dac82c2ebca4e22a1a69db4c496722235081debdc64f95b2889`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | Other: https://doi.org/10.5281/zenodo.11062076 |
 | year | 2024 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY-NC 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | adamczyk2025apistox |
@@ -417,3 +419,4 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:2d399e4cbe3e0dac82c2ebca4e22a1a69db4c496722235081debdc64f95b2889` |
