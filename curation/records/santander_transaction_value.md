@@ -35,6 +35,8 @@ Follow preprocessing of Tschalzev et al. and check if splits are usable as IID
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — Root Mean Squared Logarithmic Error (RMSLE) (https://www.kaggle.com/competitions/santander-value-prediction-challenge/overview/evaluation).
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the raw transaction value, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
 ## Reference
 
 https://www.kaggle.com/competitions/santander-value-prediction-challenge

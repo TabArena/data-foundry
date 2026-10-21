@@ -65,6 +65,10 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The paper scores a binary task (shares >= 1,400 threshold) with accuracy/F1/AUC; we ship a regression on log shares, so the original target is not ours; rmse on the log target is the regression fallback.
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

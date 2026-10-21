@@ -69,8 +69,9 @@ class SantanderTransactionValue(AbstractCuratedDataset):
         - Since we restrict to the train.csv, we do not exploit the test leak of the competition.
         - The expert preprocessing aggregates over feature groups per row to create the new features for the final dataset. Feature groups for aggregation are found by searching for chains of features (?).
         - The data contains a very small number of duplicates. We remove them to avoid leakage in our own splits.
-        - We store log1p of the competition's target (until 2026-10-14 the metric was `rmsle`, which logged the stored
-          target a second time).
+        - We store log1p of the competition's target; the metric is the competition's RMSLE on the raw value, computed
+          after the inverse (`target_transform="log1p"`; until 2026-10-14 the metric was `rmsle` without the inverse,
+          which logged the stored target a second time).
         - ForcedIIDFromTemporal: the columns form time series (the 40 ordered columns the code starts from are
           successive steps), and rows chain in time: in train.csv, 1,415 row pairs hold the same 40 values shifted by
           one step. The file has no date, so the split stays random and chained rows can fall on both sides.
@@ -80,13 +81,14 @@ class SantanderTransactionValue(AbstractCuratedDataset):
     target = "target"
     problem_type = "regression"
     metric = Metric.source(
-        "rmse",
+        "rmsle",
         original="Root Mean Squared Logarithmic Error (RMSLE)",
         reference="https://www.kaggle.com/competitions/santander-value-prediction-challenge/overview/evaluation",
         definition=(
-            "sqrt(mean((log1p(y_hat) - log1p(y))^2)) on the raw transaction value; the stored target is "
-            "log1p(target), so RMSE on it equals the competition's RMSLE"
+            "sqrt(mean((log1p(y_hat) - log1p(y))^2)) on the raw transaction value, computed after the inverse of "
+            "the stored log1p(target)"
         ),
+        target_transform="log1p",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

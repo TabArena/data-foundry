@@ -996,8 +996,40 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
             "A stand-in metric needs the `original` it stands in for and the `reason` the original cannot be computed.",
         )
 
+    yield from _target_transform_findings(ctx)
     yield from _scoring_column_findings(ctx)
     yield from _metric_computes_findings(ctx)
+
+
+def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value."""
+    from data_foundry.v2.metrics import INVERSE_TRANSFORMS  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    task = ctx.task
+    transform = getattr(task.objective_metric, "target_transform", "identity") or "identity"
+    if transform == "identity":
+        return
+    if task.problem_type != "regression":
+        yield CheckResult(
+            "task_metric_transform_not_regression",
+            "error",
+            f"`target_transform={transform!r}` is for a regression target; the task is {task.problem_type}.",
+        )
+        return
+    if ctx.df is None or ctx.target not in ctx.df.columns:
+        return
+    values = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float)
+    with np.errstate(over="ignore", invalid="ignore"):
+        inverse = INVERSE_TRANSFORMS[transform](values)
+    bad = np.isfinite(values) & ~np.isfinite(inverse)
+    if bad.any():
+        yield CheckResult(
+            "task_metric_transform_overflow",
+            "error",
+            f"The inverse of `target_transform={transform!r}` overflows on {int(bad.sum())} target value(s) (max "
+            f"{np.nanmax(values):g}): the shipped target is not on the {transform} scale.",
+            hint="Declare the transform the definition applies to the target (or none when it ships raw).",
+        )
 
 
 def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:

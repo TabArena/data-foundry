@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pkdd_15_taxi_trip_time_prediction_ii_1m
 container_format: 2
-checksum: v2:11c789249f6554c5c3083565d73d689a32052b9a4f9e9822777cac635786e2f8
+checksum: v2:7e17953b1ec8666e6aa1f5e264347bd6e3fe773124912aa66731db35dfcd584b
 build: null
 build_stale: false
 data:
@@ -16,7 +16,7 @@ data:
 task:
   target: log1p_travel_time
   problem_type: regression
-  metric: rmse
+  metric: rmsle
   metric_origin: source
   scoring_columns: null
   split_regime: temporal_non_iid
@@ -56,9 +56,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_travel_time`, scored with `rmse` on temporal splits by `start_time`. 1,434,291 rows and 8 features. Source: Kaggle (2015).
+Regression of `log1p_travel_time`, scored with `rmsle` on temporal splits by `start_time`. 1,434,291 rows and 8 features. Source: Kaggle (2015).
 
-Not built yet. The current definition gives checksum `v2:11c789249f6554c5c3083565d73d689a32052b9a4f9e9822777cac635786e2f8`.
+Not built yet. The current definition gives checksum `v2:7e17953b1ec8666e6aa1f5e264347bd6e3fe773124912aa66731db35dfcd584b`.
 
 ## In brief
 
@@ -134,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,434,291 x 9 |
 | task.target | log1p_travel_time |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | start_time |
 
@@ -142,11 +142,12 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
+| name | `rmsle` (standard; takes value; lower is better) |
 | origin | source: the source's metric |
 | original | Root Mean Squared Logarithmic Error (RMSLE) |
 | reference | https://www.kaggle.com/competitions/pkdd-15-taxi-trip-time-prediction-ii/overview/evaluation |
-| definition | sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds; equals RMSE on the shipped log1p_travel_time target. |
+| definition | sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds, computed after the inverse of the shipped log1p_travel_time target. |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
@@ -191,7 +192,7 @@ We start with train.csv of the ECML/PKDD 2015 Discovery Challenge (UCI id 339): 
 
 - Prediction point: the start of the trip, when the meter is switched on. The task is the travel time from origin and destination, an ETA task like `nyc_taxi_trip_duration` (the challenge's Task II starts from a partial trajectory).
 - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, a stand-in for a destination named at pickup (`fit="approximate"`, as `nyc_taxi_trip_duration`), the curator's framing (record, CC 2026-09-21). Without it, LightGBM's R^2 is 0.12 to 0.15 (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per split).
-- Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; RMSE on it is the challenge's metric, RMSLE.
+- Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; the metric is the challenge's RMSLE on the travel time in seconds, computed after the inverse (`target_transform="log1p"`).
 - `_prepare_raw_files` parses each polyline into its number of points and its first and last point; the route is known only after the trip and is not a feature.
 - `start_time`: TIMESTAMP is Unix time in UTC; the pickup profile by UTC hour shifts by one hour at both daylight-saving switches (decision table), so we convert it to Porto local time without a time zone.
 - Rows dropped (counts in the decision table): under 2 GPS points; a TRIP_ID that occurs twice or more (we cannot tell which copy is right); a start outside Greater Porto (lat 41.0 to 41.3, lon -8.8 to -8.4); under 1 minute (a meter switched on and off without a ride) or over 3 hours (a meter left running); a straight line from start to end faster than 120 km/h (a GPS jump); an end point identical to the start point (no destination a passenger would name, as in `nyc_taxi_trip_duration`); and the last trips, which start on 1 July 2014 in local time. The 1-minute cut sits on a slope (other filters on): 71% of 15-second trips end within 100 m of their start, 53% at 30 s, 41% at 45 s, 32% at 60 s and 7% at 120 s, against 1.9% of all trips.

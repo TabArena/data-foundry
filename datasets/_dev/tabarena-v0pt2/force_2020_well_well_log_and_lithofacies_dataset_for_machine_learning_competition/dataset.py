@@ -101,30 +101,45 @@ DCAL_MAX = 100.0
 DRHO_HOLDS_DENSITY = ["36/7-3", "31/4-10"]
 """Wells whose DRHO curve holds a bulk density (equal to RHOB in 36/7-3), not a density correction."""
 
+OFF_SCALE_WELLS = {"ROP": ["25/6-2"], "ROPA": ["34/4-10 R"], "SGR": ["34/12-1", "35/11-15 S"]}
+"""Curves on a scale that no other well shares and no known unit factor explains (per-well medians, README.md)."""
+
+MUDWEIGHT_MAX = 100.0
+"""MUDWEIGHT above this is a third scale (about 156, in 16/10-2 and 281 rows of 15/9-14) that no training side shares."""
+
+FORMATION_MERGE = {"Grid Mb.": "Grid Fm.", "Skade Mb.": "Skade Fm.", "Ty Mb.": "Ty Fm."}
+"""One rock unit under two FORMATION codes (ranked as a member or a formation), never in the same well."""
+
 
 def impossible_values(frame: pd.DataFrame) -> dict[str, pd.DataFrame]:
     """Where the log curves of ``frame`` hold no reading, by reason; each value is a boolean frame over ``LOGS``."""
     logs = frame[LOGS]
     none = pd.DataFrame(False, index=frame.index, columns=LOGS)
-    negative, dcal, drho = none.copy(), none.copy(), none.copy()
+    negative, dcal, drho, off_scale = none.copy(), none.copy(), none.copy(), none.copy()
     negative[NON_NEGATIVE] = logs[NON_NEGATIVE] < 0
     dcal["DCAL"] = logs["DCAL"] > DCAL_MAX
     drho["DRHO"] = frame["WELL"].isin(DRHO_HOLDS_DENSITY) & logs["DRHO"].notna()
+    for curve, wells in OFF_SCALE_WELLS.items():
+        off_scale[curve] = frame["WELL"].isin(wells) & logs[curve].notna()
+    off_scale["MUDWEIGHT"] = logs["MUDWEIGHT"] > MUDWEIGHT_MAX
     return {
         "below -900 (LAS null or ramp)": logs < SENTINEL_FLOOR,
         "negative": negative & ~(logs < SENTINEL_FLOOR),
         f"DCAL above {DCAL_MAX:g}": dcal,
         "DRHO holds a density": drho & ~(logs < SENTINEL_FLOOR),
+        "off-scale well": off_scale & ~(logs < SENTINEL_FLOOR) & ~negative,
     }
 
 
 class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question=("Which rock type lies at each depth of a newly drilled well, judging from its well logs?"),
+        question=(
+            "Which rock type lies at each depth of a newly drilled or a released well, judging from its well logs?"
+        ),
         use_case=(
-            "After a well has been drilled and logged, a geologist interprets the rock type along the whole well from"
-            " its wireline logs, its position and the official stratigraphic picks (the FORCE 2020 competition's "
-            "task)."
+            "After a well has been drilled and logged, or once it is released to the public, a geologist interprets "
+            "the rock type along the whole well from its wireline logs, its position and the official stratigraphic "
+            "picks (the FORCE 2020 competition's task, whose labels cover 118 released wells)."
         ),
         row="One depth sample (every 0.152 m) of one of 118 wells in the Norwegian North Sea.",
         predicted=(
@@ -136,18 +151,20 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
             " missing), the depth and position, drilling data (bit size, mud weight, rate of penetration) and the "
             "stratigraphic group and formation; the same well's other depths may be used."
         ),
-        split=("Whole wells are held out in three folds, so the test data stands for wells never interpreted."),
+        split=(
+            "Whole wells are held out in three folds, so the test data stands for newly drilled or released wells "
+            "never interpreted."
+        ),
         changes=(
             "We pool the competition's training, open-test and blind wells and split by well across all 118; we drop "
             "the interpreter's confidence in the label and the basement class, found in one well only."
         ),
         fit="direct",
         fit_reason=(
-            "Everything the model sees is known once a well is logged, and a held-out well is a new well. The "
-            "stratigraphic picks come from the national register (NPD) rather than the interpreters, as the "
-            "competition gave them. The known gap: the interpreters also drew on mud logs, completion logs and "
-            "in-house data that the model does not get, which the organisers say caps the reachable accuracy near "
-            "80%."
+            "Everything the model sees is known once a well is logged and released, and a held-out well is a new "
+            "well; the stratigraphic picks are the national register's (NPD), published for released wells. The "
+            "known gap: the interpreters also drew on mud logs, completion logs and in-house data the model does not "
+            "get, which the organisers say caps the reachable accuracy near 80%."
         ),
     )
 
@@ -194,12 +211,13 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Proxy missing values: values below -900 in the 20 log curves become missing. They are the LAS null values -999.0, -999.25 and -999.9 (in RXO, SP and ROPA) and interpolation ramps from them (RXO -995.9 and -968.1, ROPA -965.9 and -948.9, DRHO -7,429.3). Z_LOC is not masked: it is the true vertical depth, below -900 m on most rows.
         - Impossible values become missing: negative readings of the resistivity, gamma-ray and penetration-rate curves (RMED 7, RXO 131, SGR 39, ROP 52 and ROPA 20 rows; SGR down to -778) and DCAL above 100 inches (2 rows, one of 10,006.8).
         - DRHO becomes missing in two wells where it holds another curve: in 36/7-3 it equals RHOB on all 3,474 rows, in 31/4-10 it is a bulk density (median 2.38 g/cm3, 2,208 rows); a density correction is normally within about 0.2 g/cm3. We mask by well, not by a threshold: |DRHO| > 1 would also take 3,339 rows of 28 other wells (median -1.16), unusual bad-hole readings that stay.
+        - Off-scale wells become missing per curve (Lennart, 2026-10-21): ROP in 25/6-2 (median 17,778 against 0.6-365 in the other 66 wells, 2,925 rows), ROPA in 34/4-10 R (median 0.099 against 10-82; 1/87 of its own ROP, no unit factor), SGR in 34/12-1 and 35/11-15 S (medians 0.012 and 0.020 against 46-106; GR is 5,283 and 3,323 times SGR there, no unit factor) and MUDWEIGHT above 100 (a third scale of about 156: all 1,275 rows of 16/10-2 and 281 of 15/9-14). No training side shares these scales, and the LAS headers give no other unit (ROP m/h, SGR gAPI in every well).
         - Interpolated values and spikes otherwise stay ("slightly cleaned up and partially despiked", Zenodo), as do missing curves: only WELL, DEPT and GR are guaranteed (starter notebook).
-        - WELL (the group of the split), GROUP and FORMATION are categorical.
-        - Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD; the deepest top above each sample reproduces GROUP on 100% and FORMATION on 99.95% of the rows). They are not independent of the label: lithostratigraphic units are defined by their rock, the labels and the NPD tops draw on the same post-well material (completion and mud logs), 14,709 of 14,711 Halite rows lie in the Zechstein group, four formation names state a lithology ("Intra ... Fm. Sst.", "Ran Sst Mb."; 0.66% of the rows), and within 0.76 m (NPD's whole-metre rounding) 65.7% of group and 62.8% of formation boundaries sit on a lithology change, against 23.4% of random samples (4x). The competition gave them as features, so we keep them; without both, a random forest's log loss rises from 0.764 to 0.809 (100 trees, 200k training rows per grouped fold). Whether NPD's picks exist when a newly drilled well is first interpreted is not settled: the interpreter would then have the operator's own tops.
+        - WELL (the group of the split), GROUP and FORMATION are categorical. Three rock units appear under two FORMATION codes, ranked as a formation or as a member, never in the same well and always in the same group: Grid Mb. (2 wells) becomes Grid Fm. (15), Skade Mb. (4) Skade Fm. (20) and Ty Mb. (2) Ty Fm. (13), one code per unit (CLEAN-14; Lennart, 2026-10-21).
+        - Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD; the deepest top above each sample reproduces GROUP on 100% and FORMATION on 99.95% of the rows). They are not independent of the label: lithostratigraphic units are defined by their rock, the labels and the NPD tops draw on the same post-well material (completion and mud logs), 14,709 of 14,711 Halite rows lie in the Zechstein group, four formation names state a lithology ("Intra ... Fm. Sst.", "Ran Sst Mb."; 0.66% of the rows), and within 0.76 m (NPD's whole-metre rounding) 65.7% of group and 62.8% of formation boundaries sit on a lithology change, against 23.4% of random samples (4x). The competition gave them as features, so we keep them; without both, a random forest's log loss rises from 0.764 to 0.809 (100 trees, 200k training rows per grouped fold). NPD publishes its picks for released wells, the wells the labels were built for; at the first interpretation of a newly drilled well the interpreter would have the operator's own tops, so the use case names both (USE-9; Lennart, 2026-10-21).
         - Note: 34/5-1 A and 34/5-1 S, two wellbores of one well, share 2,273 measured depths but no identical readings and lie 1.5-1.9 km apart at equal measured depth, so the group stays the wellbore, as in the competition; both are in one fold of the shipped splits.
         - Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
-        - Anomaly: MUDWEIGHT is on three scales (per-well medians of 0.13-0.17 in 19 wells, 1.08-1.80 in 9 and 156 in 16/10-2) with no unit in the competition files; we leave it, as a conversion would rest on guessed units. Other curves have wells on another scale: ROP in 25/6-2 (median 17,778 against 0.6-150 elsewhere, 2,925 rows), SGR in 34/12-1 and 35/11-15 S (medians about 0.01 against 46-106, 8,731 rows) and ROPA in 34/4-10 R (median 0.099 against 10-82). The scale is constant within a well.
+        - Anomaly: MUDWEIGHT stays on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9 (16/7-4 and 25/3-1 hold both), with no unit in the competition files or the LAS headers; both scales occur on every training side, so a model can learn them (CLEAN-21 departure, Lennart, 2026-10-21). The 0.13-0.17 wells fit bar/m (divided by 0.0981 they give per-well medians of 1.34-1.77 g/cm3), but no header confirms it. ROPA is in ft/h in 32/2-1 and 16/10-5 (ROP / ROPA 0.31 and 0.30 there, about 1 in the other wells) and stays as published.
         - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
         - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
         - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
@@ -228,7 +246,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         prediction_unit="row",
         context="all_rows",
         definition="""
-            One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders. The use case is to interpret the lithology of a new well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
+            One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders. The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
         """,
     )
     splits_comment = """
@@ -262,7 +280,9 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         assert df["lithology"].notna().all()
         df = drop_columns(df, [LABEL])
         df = df[df["lithology"] != "Basement"]
-        # 4. LAS null values, their interpolation ramps and impossible readings are missing values
+        # 4. One code per rock unit
+        df["FORMATION"] = df["FORMATION"].replace(FORMATION_MERGE)
+        # 5. LAS null values, their interpolation ramps, impossible readings and off-scale wells are missing values
         masks = impossible_values(df)
         df[LOGS] = df[LOGS].mask(np.logical_or.reduce([mask.to_numpy() for mask in masks.values()]))
         return df
@@ -302,7 +322,8 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
                 "Values below -900 are the LAS null values -999.0, -999.25 and -999.9 (stored as float32) or "
                 "interpolation ramps from them. Resistivity, gamma ray and penetration rate cannot be negative, a "
                 "differential caliper above 100 inches is impossible, and DRHO holds a bulk density in 36/7-3 and "
-                "31/4-10. Rows masked per curve and reason (Basement rows dropped):",
+                "31/4-10. ROP, ROPA and SGR in single wells and MUDWEIGHT above 100 are on a scale no other well "
+                "shares. Rows masked per curve and reason (Basement rows dropped):",
                 masked,
             ),
         ]

@@ -39,6 +39,10 @@ Moreover, this is not sold prices (as immoscout shows only prices you can ask to
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. RMSE on the log price is the obvious choice for price prediction.
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: an asking price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 Kaggle / OpenML

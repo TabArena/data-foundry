@@ -46,3 +46,7 @@ CC (2026-10-01, Lennart): Leak audit: right-censored target fixed. The download 
 CC (2026-10-19, Lennart): `DescriptionIsStandardPhrase` counts the descriptions filed before 2020, the start of the oldest test window, instead of the whole table (the flag covers 0.66% of the rows instead of 0.77%).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — DataSF's Building Permits table defines no task or metric; rmse on the log days to issue scores relative error.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a waiting time's error matters relative to the time; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).

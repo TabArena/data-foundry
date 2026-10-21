@@ -146,7 +146,7 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         We start with train.csv of the Kaggle playground competition "New York City Taxi Trip Duration" (2017): 1,458,644 yellow-cab trips with pickup times from 2016-01-01 to 2016-06-30, sampled from the trip records of the NYC Taxi and Limousine Commission (TLC).
 
         - Prediction point: when the meter is engaged and the passenger has named the destination, an ETA from the vendor of the cab's meter system, the pickup time and point, the passenger count and the dropoff point. The dropoff point is recorded when the meter is disengaged; we take it as the destination named at pickup (Lennart, 2026-09-21), and the data page keeps it on purpose.
-        - Target: `log1p_trip_duration`, the trip duration in seconds, log1p-scaled. The competition scored RMSLE, so RMSE on this target is the competition's metric.
+        - Target: `log1p_trip_duration`, the trip duration in seconds, log1p-scaled. The competition scored RMSLE on the duration in seconds, which the metric computes after the inverse (`target_transform="log1p"`).
         - We drop id, an identifier, and dropoff_datetime, which equals pickup_datetime plus the target.
         - We drop store_and_fwd_flag: it says whether the trip record "was held in vehicle memory before sending to the vendor" (TLC data dictionary), and the record is sent after the trip, so the flag is not known at the prediction point.
         - We map vendor_id to the vendor names of the TLC data dictionary (a category); pickup_datetime is a datetime.
@@ -166,13 +166,14 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
     target = "log1p_trip_duration"
     problem_type = "regression"
     metric = Metric.source(
-        "rmse",
+        "rmsle",
         original="RMSLE (Root Mean Squared Logarithmic Error)",
         reference="https://www.kaggle.com/competitions/nyc-taxi-trip-duration/overview/evaluation",
         definition=(
-            "sqrt(mean((log(p+1) - log(a+1))^2)) on trip_duration in seconds; equals rmse on our log1p_trip_duration "
-            "target."
+            "sqrt(mean((log(p+1) - log(a+1))^2)) on trip_duration in seconds, computed after the inverse of our "
+            "log1p_trip_duration target."
         ),
+        target_transform="log1p",
     )
 
     # Splits
@@ -201,7 +202,7 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         count = df["passenger_count"]
         df["passenger_count"] = count.astype(float).mask(count.eq(0) | count.gt(PASSENGER_SEATS))
         df["vendor_id"] = df["vendor_id"].map(VENDORS)
-        # the competition scored RMSLE: RMSE on log1p(duration) is that metric
+        # the competition scored RMSLE: the metric inverts log1p (target_transform="log1p")
         df[self.target] = np.log1p(df["trip_duration"])
         # dropoff_datetime = pickup_datetime + trip_duration (the target); the flag is set when the record is sent
         return drop_columns(df, ["id", "dropoff_datetime", "trip_duration", "store_and_fwd_flag"])

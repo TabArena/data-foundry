@@ -145,7 +145,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
 
         - Prediction point: the start of the trip, when the meter is switched on. The task is the travel time from origin and destination, an ETA task like `nyc_taxi_trip_duration` (the challenge's Task II starts from a partial trajectory).
         - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, a stand-in for a destination named at pickup (`fit="approximate"`, as `nyc_taxi_trip_duration`), the curator's framing (record, CC 2026-09-21). Without it, LightGBM's R^2 is 0.12 to 0.15 (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per split).
-        - Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; RMSE on it is the challenge's metric, RMSLE.
+        - Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; the metric is the challenge's RMSLE on the travel time in seconds, computed after the inverse (`target_transform="log1p"`).
         - `_prepare_raw_files` parses each polyline into its number of points and its first and last point; the route is known only after the trip and is not a feature.
         - `start_time`: TIMESTAMP is Unix time in UTC; the pickup profile by UTC hour shifts by one hour at both daylight-saving switches (decision table), so we convert it to Porto local time without a time zone.
         - Rows dropped (counts in the decision table): under 2 GPS points; a TRIP_ID that occurs twice or more (we cannot tell which copy is right); a start outside Greater Porto (lat 41.0 to 41.3, lon -8.8 to -8.4); under 1 minute (a meter switched on and off without a ride) or over 3 hours (a meter left running); a straight line from start to end faster than 120 km/h (a GPS jump); an end point identical to the start point (no destination a passenger would name, as in `nyc_taxi_trip_duration`); and the last trips, which start on 1 July 2014 in local time. The 1-minute cut sits on a slope (other filters on): 71% of 15-second trips end within 100 m of their start, 53% at 30 s, 41% at 45 s, 32% at 60 s and 7% at 120 s, against 1.9% of all trips.
@@ -160,10 +160,11 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     target = "log1p_travel_time"
     problem_type = "regression"
     metric = Metric.source(
-        "rmse",
+        "rmsle",
         original="Root Mean Squared Logarithmic Error (RMSLE)",
         reference="https://www.kaggle.com/competitions/pkdd-15-taxi-trip-time-prediction-ii/overview/evaluation",
-        definition="sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds; equals RMSE on the shipped log1p_travel_time target.",
+        definition="sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds, computed after the inverse of the shipped log1p_travel_time target.",
+        target_transform="log1p",
     )
 
     # Splits

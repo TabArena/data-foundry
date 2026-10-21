@@ -39,6 +39,10 @@ Andrej: We need to write down the reason why we consider some housing datasets a
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. rmse on the log sale price is the regression fallback.
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

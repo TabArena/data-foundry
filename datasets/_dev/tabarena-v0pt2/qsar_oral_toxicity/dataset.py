@@ -65,10 +65,11 @@ class QsarOralToxicity(AbstractCuratedDataset):
             "nine rows whose parent structure is already in another row; the source kept them and fixed one training "
             "and test set."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The features come from the structure, which exists before any test. The score depends on how close a new"
-            " chemical is to the reference set (random forest ROC AUC 0.681 for distant chemicals, 0.954 for close "
+            "The screening is simulated: the test rows are random tested chemicals, closer to the training chemicals "
+            "than the untested ones a screener faces (19.7% against 9.3% have a close analog, Tanimoto 0.7 or more). "
+            "The score follows that distance (random forest ROC AUC 0.681 for distant chemicals, 0.954 for close "
             "ones)."
         ),
     )
@@ -115,11 +116,13 @@ class QsarOralToxicity(AbstractCuratedDataset):
 
         - Prediction point: a chemical without an acute oral toxicity test, before any animal test. Every feature is computed from its QSAR-ready structure (salts, solvents and stereochemistry removed), so all of them exist at prediction time.
         - Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the file's "positive"), else "No" (paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). The 44 chemicals at exactly 50 mg/kg are positive, and the label is the top regulatory hazard category on every row: 2,258 rows (25%) carry that category without a point LD50.
-        - Features: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment (ECFP_1024_02 or _02R of Table 2; the file does not say which), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal. 97 of the project's QSAR-ready structures still carry stereo markers, which the fingerprint ignores.
+        - Features: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment (ECFP_1024_02 of Table 2: the file equals that block of the authors' package bit for bit, all 8,992 rows), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal. 97 of the project's QSAR-ready structures still carry stereo markers, which the fingerprint ignores.
         - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (406 repeated vectors, 894 rows; by InChIKey the project's training file has 405 repeated parents over 891 rows, which agrees with the vectors on 394 of them, and 12 of the repeated vectors are hash collisions of different chemicals rather than one parent). We drop the 477 exact copies and then every row of the 11 bit vectors that occur with both classes (22 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 8,484 chemicals remain (708 very toxic, 8.3%; decision tables). The source kept the copies.
         - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
         - IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. The source splits at random: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the file stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The split rests on the use case, a new chemical each time with no entity that recurs, and on these structure-blind source protocols; the file carries no identifier, but its rows can be linked to the project's structure file by order, so a scaffold key could be reconstructed.
         - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.681 below a Tanimoto similarity of 0.5 to the nearest training chemical, 0.954 above 0.85). Near copies carry little of it (at Tanimoto 0.9 only 456 rows, 5.4%, have any analog, the near-copy gap is 0.006), but chemotypes do: held out by structure clusters (Butina, Tanimoto 0.5) a random forest falls from 0.882 to 0.842, and on the reconstructed Murcko scaffolds from 0.887 to 0.843, with the model ranking unchanged.
+        - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The random test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have half the share of close analogs (9.3% against 19.7% at Tanimoto 0.7 or more; median nearest similarity 0.474 against 0.553).
+        - Grouped variant: a scaffold-grouped split on the structures linked by row order stays a listed candidate (SPLIT-31; Lennart, 2026-10-21), not built: its key would be our reconstruction, not a field of the source.
         - Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest (ROC AUC 0.883) and LightGBM (0.869) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (0.877).
     """
 
@@ -129,7 +132,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
     metric = Metric.fallback(
         reason=(
             "Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's "
-            "house measure, without costs; 25% very toxic. Original rejected: NER. roc_auc is the binary "
+            "house measure, without costs; 8.3% very toxic. Original rejected: NER. roc_auc is the binary "
             "fallback."
         ),
     )

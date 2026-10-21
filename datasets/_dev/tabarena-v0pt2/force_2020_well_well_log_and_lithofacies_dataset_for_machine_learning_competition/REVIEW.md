@@ -7,74 +7,40 @@ decision (masks for sentinel remnants and impossible readings, a splits comment,
 
 ```text
 Verdict: ship after changes.
-Validity: SEL-13 holds (well logs are sensor readings per depth, not an image); USE-1 holds; USE-8 not yet met: the
-  fit says direct for a newly drilled well while GROUP/FORMATION may postdate that point (issue 2); LEAK-10 not strong
-  for GROUP/FORMATION (kept, note reworded); SPLIT-1 holds (grouped by well: random forest log loss 0.315 on
+Validity: SEL-13 holds (well logs are sensor readings per depth, not an image); USE-1 holds; USE-8 met with the use
+  case "a newly drilled or a released well" (USE-9; Lennart, 2026-10-21); LEAK-10 not strong for GROUP/FORMATION
+  (kept, note reworded); SPLIT-1 holds (grouped by well: random forest log loss 0.315 on
   row-random folds against 0.763 grouped); SPLIT-19 departure kept with its reason, now in the splits comment; PROV
   holds (md5, pinned commit, CC BY 4.0).
 Value: TP-1/TP-3 real signal (random forest 0.742 against class shares 1.288, LightGBM 0.872, linear 0.886); no_spread
   gone after the masks; TP-8 fold gap accepted (CC 2026-10-12); MET-4: the competition's penalty matrix declared as `cost_matrix` (11 x 11, Basement dropped).
-Quality: CLEAN-10/CLEAN-11 fixed by masking; CLEAN-21 curves on a second scale, kept with a note (issue 8); CLEAN-14
-  duplicate formation codes (issue 9).
+Quality: CLEAN-10/CLEAN-11 fixed by masking; CLEAN-21 off-scale wells masked, MUDWEIGHT's two main scales kept,
+  a conversion proposed (issue 8); CLEAN-14 duplicate formation codes merged; CLEAN-17 Basement drop confirmed.
 Weighed: source +, size +, gap + (grouped multiclass), label noise - (reachable accuracy near 80%).
-For the curator: issue 2 (a released-well use case or an approximate fit), issues 8
-  and 9 (cleaning), issues 10 and 1 (confirmations).
+For the curator: issue 8 (convert two curves) and issue 1 (record the depth order).
 ```
 
-**Main points:** Restate the use case as "a newly drilled or a released well" (keeps the fit direct) or mark the fit
-approximate (issue 2); the competition's penalty matrix is declared as `cost_matrix`
-(MET-4); keep, mask or convert the curves on a
-second scale (issue 8); merge the duplicate formation codes (issue 9); confirm the Basement drop (issue 10) and no
-depth-window features (issue 1).
-
-**Record fields that disagree with the definition:**
-
-- `domain`: record `chemistry & material science`, definition `environmental science & climate`.
+**Main points:** Convert ROPA in two ft/h wells and MUDWEIGHT from bar/m to g/cm3, or keep the curves as now (issue
+8); declare `time_on="DEPTH_MD"` in the Grouping, as TabArena builds no depth context itself (issue 1).
 
 **Record judgment:** valid with concerns. Well logs are sensor readings per depth, not a vectorised image, so SEL-13
-does not exclude them; the task is the source's own and the split by well mirrors it. The concerns: whether NPD's GROUP and FORMATION exist when a new well is first interpreted (issue 2), and label noise (the organisers put the reachable accuracy near 80%).
+does not exclude them; the task is the source's own and the split by well mirrors it. The concerns: label noise (the organisers put the reachable accuracy near 80%).
 
 **Issues for Lennart:**
-
-2. **Restate the use case so the NPD picks fit, or mark the fit approximate?** GROUP and FORMATION are the official
-   stratigraphic picks of the Norwegian register (NPD): the depth where each named rock unit (a group, or a formation
-   within it) starts in the well. The definition keeps them as features, as the competition did, and says
-   `fit="direct"` for "a newly drilled well". But NPD publishes its picks after the well is reported, from the same
-   completion and mud logs the labels were drawn from; at the first interpretation of a new well a geologist has the
-   operator's own tops, not NPD's (domain practitioner). The units are defined by their rock, so the picks partly
-   encode the label: 14,709 of 14,711 Halite rows lie in the Zechstein group, and 66% of group boundaries sit within
-   0.76 m of a lithology change, against 23% of random depths.
-   - Effect: for a newly drilled well, a model that gets NPD's picks may score better than one would in practice,
-     where the interpreter has only the operator's tops. They are the strongest single features (macro AUC 0.85 for FORMATION, 0.83 for GROUP); dropping both
-     raises a random forest's log loss from 0.764 to 0.809. Not a strong leak: with only depth and location they
-     reach accuracy 0.44, below the 0.613 of always predicting shale, so dropping them is not required.
-   - Implemented: kept as features, `fit="direct"`, the use case "a newly drilled well"; the note now gives the
-     alignment numbers and says the timing is not settled.
-   - Alternative (a), the advocate's and the mediator's lean: restate `question`, `use_case`, `fit_reason` and the
-     split sentence as "a newly drilled or a released well" (USE-9). The labels were built for 118 released wells, and
-     the practitioner calls interpreting the backlog of released wells "the larger real use", where "the NPD tops are
-     exactly what I would use". The fit stays direct.
-   - Alternative (b), the critic's fallback: keep the use case, set `fit="approximate"` and write the note as
-     `Potential leak, kept on purpose:` (the kick precedent, USE-8 Cases).
-   - Alternative (c): a logs-only task without GROUP and FORMATION.
-   - Rule: USE-8 (Must), USE-9 (Should, narrows USE-8), LEAK-10. (a) departs from kick on a named fact (a
-     released-well use case the source data were built for, as in 5g_energy_consumption); the factor against it is a
-     use case rephrased only to excuse a gap. Keeping them only because the competition gave them would be the third
-     such keep, after homesite and kick; a third keep for the same reason triggers a proposal to amend LEAK-38.
-   - Recommendation: (a), written into all four text fields.
-   - Decision: (a), (b) or (c).
 
 8. **Curves on a second scale: keep, mask or convert?** In a few wells a curve is recorded in another unit than in
    the rest, and the competition files give no units. MUDWEIGHT (the drilling mud's density) has three scales:
    per-well medians of 0.13-0.17 in 19 wells, 1.08-1.80 in 9 and 156 in one (29 of 118 wells carry it). ROP (rate of
-   penetration) in 25/6-2 has a median of 17,778 against 0.6-150 elsewhere (2,925 rows); SGR (spectral gamma ray) in
+   penetration) in 25/6-2 has a median of 17,778 against 0.6-365 elsewhere (2,925 rows); SGR (spectral gamma ray) in
    34/12-1 and 35/11-15 S medians of about 0.01 against 46-106 (8,731 rows); ROPA in 34/4-10 R a median of 0.099
    against 10-82.
-   - Effect: one number means different things in different wells. The scale is constant within a well.
+   - Effect: one number means different things in different wells. The scale is constant within a well, except
+     MUDWEIGHT in 16/7-4 and 25/3-1 (both scales).
      MUDWEIGHT's two main scales (19 and 9 wells) appear on every training side, so a model can learn them. The
      single-well scales (ROP 25/6-2, ROPA 34/4-10 R, MUDWEIGHT 16/10-2) and SGR's two wells do not: when such a well
      is tested, no training well shares its scale, and its readings are taken at face value on the wrong scale.
-   - Implemented: kept as published; the notes name the wells.
+   - Implemented (2026-10-21, the recommendation): ROP in 25/6-2, ROPA in 34/4-10 R, SGR in 34/12-1 and 35/11-15 S and
+     MUDWEIGHT above 100 (16/10-2 and 281 rows of 15/9-14) are masked; MUDWEIGHT's two main scales stay.
    - Alternatives: drop MUDWEIGHT (college_scorecard, 2026-10-16: a section without a published conversion was
      dropped); mask the off-scale wells per curve (cheap and safe: it only removes values); convert the 0.13-0.17
      MUDWEIGHT wells from bar/m (x 10.2; the practitioner calls this well founded, but CLEAN-21 asks for a published
@@ -85,25 +51,32 @@ does not exclude them; the task is the source's own and the split by well mirror
    - Recommendation: keep MUDWEIGHT's two main scales as an exception to CLEAN-21 with that fact, and mask the
      single-well and two-well off-scale curves (cheap and safe).
    - Decision: the recommendation, keep all (exception), drop MUDWEIGHT, or mask every off-scale well.
-
-9. **Merge the duplicate formation codes?** Three rock units appear under two FORMATION codes, never in the same well:
-   Grid Fm. (15 wells) and Grid Mb. (2), Skade Fm. (20) and Skade Mb. (4), Ty Fm. (13) and Ty Mb. (2). The pairs come
-   from older and newer NPD naming (the unit ranked as a formation or as a member); their label mixes are similar
-   (Skade 86% and 85% shale, Ty 77% and 75% sandstone).
-   - Effect: a model sees two levels for one unit, and the rarer code is learnt from 2-4 wells. Small.
-   - Implemented: kept as published. Alternative: map Mb. to Fm. for these three, after checking NPD's nomenclature.
-   - Rule: CLEAN-14 (Should: one meaning, one code). Only the column audit raised it.
-   - Recommendation: map them once the nomenclature check confirms the pairs.
-   - Decision: map, or keep with a note.
-
-10. **Confirm the Basement drop, and record it as a case of CLEAN-17?** CLEAN-17 (Should) keeps the rare classes of
-   the source's labels. The Basement class has 103 rows, all in well 16/4-1, so no split by well can both train and
-   test it; the definition drops it and 11 classes remain. It is the first class dropped for living in one group, so
-   it would get a row in CLEAN-17's Cases table (a knowledge-file change).
-   - Implemented: dropped, with the fact in the notes. Alternative: keep it; the fold that tests 16/4-1 then holds a
-     class no training side has.
-   - Recommendation: confirm and add the Cases row.
-   - Decision: confirm (with the row), or keep the class.
+   **Lennart (2026-10-21, discuss):** follow the recommendation, but i also dont fully follow, why and how does the
+   scale differ? could we normalize the scale somehow at collection time or at processing time with info we have or do
+   we expect the model to learn this?
+   **Answer (AI, 2026-10-21):** The recommendation is applied (Implemented, above). Why the scales differ: the 118
+   wells were drilled by many operators over decades, and the drilling curves (MUDWEIGHT, ROP, ROPA) come from each
+   rig's mud-logging system, which records in its own unit. Mud weight can be written as a density (g/cm3, or pounds
+   per gallon) or as the pressure gradient that density makes (bar/m, psi/ft); a rate of penetration in m/h or ft/h.
+   The organisers joined the curves by name without converting them. The LAS headers do not help: I read all 118 in
+   the Zenodo zip, and MUDWEIGHT and ROPA have no unit in any well while ROP says m/h in all 67 and SGR gAPI in all
+   14, also in the wells whose values are 1,000 times off, so the headers were harmonised, not measured. The data do
+   identify two cases, by a known factor checked against a second curve or a second group of wells:
+   - ROPA in ft/h in 32/2-1 and 16/10-5 (5,814 rows): the same well's ROP (m/h) is 0.31 and 0.30 times ROPA there,
+     1/3.28 = 0.305, against 0.83-1.08 in the 26 other wells with both curves. Multiplying by 0.3048 is safe.
+   - MUDWEIGHT in bar/m in the 19 wells at 0.13-0.17 (225,528 rows, plus 932 rows of 25/3-1): divided by 0.0981 (the
+     gradient of 1 g/cm3) their per-well medians become 1.34-1.77 g/cm3, the range of the 9 g/cm3 wells (1.08-1.80;
+     16/7-4 holds 880 rows on that scale too). The factor is physics; the unit is inferred from the cluster, not
+     stated, and the converted wells sit higher than the g/cm3 wells at 1.5-2.5 km (median 1.53 against 1.34), which
+     may be the different fields. A row-wise rule (below 0.5 is bar/m) handles the two mixed wells.
+   The other off-scale curves have no such check and stay masked: ROP in 25/6-2 would fit mm/h (divided by 1,000 the
+   median is 17.8 m/h; it falls with depth as ROP does) but the well has no ROPA to confirm it; ROPA in 34/4-10 R is
+   1/87 of its ROP and SGR 1/5,283 and 1/3,323 of GR, no unit factor; MUDWEIGHT near 156 would be bar/m times 1,000,
+   unconfirmed. Could the model learn it instead? For MUDWEIGHT mostly yes: both scales are on every training side and
+   a tree splits them apart, but each scale is then learnt from half the wells, and a linear or distance-based model
+   reads 0.15 and 1.5 as different muds. Proposal: convert at processing time, in `_clean`, ROPA in the two ft/h wells
+   (x 0.3048) and MUDWEIGHT below 0.5 (/ 0.0981, CLEAN-21 with the conversion inferred from the data), and record it
+   as a CLEAN-21 case; keep the masks for the rest. Decision: convert as proposed, convert ROPA only, or keep as now.
 
 1. **Depth context: confirm that the rows ship without depth-window features?** A model may use the other depths of
    the same well (`context="all_rows"`: the whole log exists before it is interpreted), but the dataset ships one raw
@@ -120,6 +93,23 @@ does not exclude them; the task is the source's own and the split by well mirror
    - Rule: a weighing call (CLEAN-2, CLEAN-19, USE-3).
    - Recommendation: confirm.
    - Decision: confirm, or add window features, or `context="none"`.
+   **Lennart (2026-10-21, discuss):** Does our default grouped preprocessing in tabarena support this? and what would
+   be most appropriate for the task to add here?
+   **Answer (AI, 2026-10-21):** No. TabArena reads three group fields from a container: `group_on`, `group_labels` and
+   `group_time_on` (from `Grouping.time_on`); `context` and `prediction_unit` are not read anywhere. Its default
+   model-agnostic preprocessing adds a group feature generator only for `per_group` labels, and it builds whole-group
+   aggregates (mean, std, min, max, last over all rows of the group, the top 50 by variance), not windows; for
+   `per_sample` labels, as here, it only drops WELL. So every model sees one depth sample on its own, with DEPTH_MD as
+   a plain number, and this definition sets no `Grouping.time_on`, so even the order is not passed on. What fits the
+   task: (1) declare `time_on="DEPTH_MD"` in the Grouping next to `context="all_rows"`, so the order inside a well is
+   in the metadata (it never changes the split) and a harness or a method can build windows; (2) do not ship window
+   features in the definition: under the declared penalty they did not help a random forest (3 grouped folds, the
+   2026-10-07 run before the masks: mean penalty 0.662 raw, 0.668 with gradients and 21-sample means and spreads of 9
+   logs; log loss 0.776 and 0.764, better on 2 of 3 folds), and they are the winners' engineering, not the source's
+   (electric_motor is set apart: there the features are the publishers' own); (3) if TabArena should use the
+   neighbouring depths, the general fix is a window generator for `per_sample` groups with `context="all_rows"`
+   (rolling means, spreads and differences per group over `group_time_on`), a harness change for the working copy's
+   cross-dataset REVIEW.md. Decision: (1) only (my recommendation), (1) and window features in `_clean`, or as now.
 
 **Review panel:** ship after changes (mediator). The mediator's issues 1-6 are this file's issues 2, 4, 8, 9, 1 and
 10; its issue 7 (TabArena's LightGBM default diverged here) moved to the working copy's REVIEW.md; after the masks the

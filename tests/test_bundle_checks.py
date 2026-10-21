@@ -932,3 +932,17 @@ def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])
     assert feature_columns(container) == ["feat_num", "feat_cat"]
     assert feature_columns(make_grouped_container()) == ["feat_num"]
+
+
+def test_target_transform_that_overflows_is_an_error():
+    """A log transform on a target whose exp overflows is not the scale the target ships on."""
+    df = make_iid_frame()
+    df["target"] = 800.0 + np.arange(len(df)) / len(df)  # exp(800) overflows: not a log target
+    spec = _spec("rmse", target_transform="log")
+    found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
+    assert found.get("task_metric_transform_overflow") == "error"
+    df["target"] = np.log1p(df["feat_num"].abs())
+    found = metric_findings(
+        make_v2_container(df, spec=_spec("rmse", target_transform="log1p"), problem_type="regression")
+    )
+    assert "task_metric_transform_overflow" not in found

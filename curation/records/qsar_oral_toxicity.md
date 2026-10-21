@@ -46,6 +46,10 @@ CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is bi
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 25% very toxic. Original rejected: NER. roc_auc is the binary fallback.
 
+CC (2026-10-21, Lennart): keep the scaffold-grouped variant a listed candidate (SPLIT-31), no re-split; IID stays.
+
+CC (2026-10-21, Lennart): fit `approximate`: "this is a more simulated use case than a direct real case". The fit_reason names the gap: the random test chemicals are closer to training than the untested chemicals a screener faces (19.7% against 9.3% with a close analog at Tanimoto 0.7 or more).
+
 ## Reference
 
 @article{ballabio2019integrated,

@@ -305,6 +305,11 @@
   era correlation, AP@k) to 17 (9 accepted), with about 8 custom scorers, 4 of which need group, era or time ids the
   harness does not pass today. Recommendation: allow the built-in metrics now (pearsonr for numerai and g_research);
   custom scorers later, starting with the three already declared.
+  **Lennart (2026-10-21, discuss):** We implemented this now through a bigger change to how we handle metrics in
+  data foundry, so this point should be resolved.
+  **Resolved (2026-10-21, Lennart):** numerai_v5_2_1m declares `mean_group_pearsonr` (Numerai CORR, per era) and
+  g_research `weighted_pearsonr` (asset-weighted), both custom metrics of `data_foundry.v2.metrics`, tested against
+  the official code; the TabArena adapter's changes are in BENCHMARK_CHANGES_TODO.md.
 
 ### Rules from the AlfaBattle review
 

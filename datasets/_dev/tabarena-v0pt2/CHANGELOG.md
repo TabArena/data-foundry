@@ -4,6 +4,31 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (the curator's marks on force_2020, infrared_thermography and qsar_oral_toxicity)
+
+Lennart marked these three datasets on the review page; each record has his decisions as `CC (2026-10-21, Lennart)`
+lines, and the open questions keep his note and an answer as dated turns in the folder's `REVIEW.md`. Nothing was
+rebuilt.
+
+- `infrared_thermography_temperature`: the split stays IID over people; the calibration is a time-independent
+  function of the inputs (Lennart), so the measured shift between the study years (a first-year calibration
+  over-predicts the second year by 0.06-0.09 °C) is documented and a temporal split recorded as a candidate variant
+  (SPLIT-31). SEL-15 is amended: a physical quantity measured through an imaging device at defined sites, used by the
+  field as the instrument's reading, is a measurement, not an image descriptor (SEL-13); satimage and wilt are the
+  counter-cases. The `Wrong Domain / Source Modality` marker is removed and the folder's `REVIEW.md` with it (no issue
+  left).
+- `qsar_oral_toxicity`: fit `approximate` (Lennart: a simulated screening; random tested chemicals stand in for the
+  untested ones a screener faces, 19.7% against 9.3% with a close analog); IID stays, the scaffold-grouped variant a
+  listed candidate (SPLIT-31); the Features note names the fingerprint ECFP_1024_02 (the UCI file equals that block
+  of the authors' package bit for bit). Issue 3 (extending with the package's validation set or its non-toxic
+  endpoint) stays open. Data and splits unchanged.
+- `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`: the use case reads "a newly
+  drilled or a released well" (issue 2 (a)); off-scale curves masked per well (ROP in 25/6-2, ROPA in 34/4-10 R, SGR
+  in 34/12-1 and 35/11-15 S, MUDWEIGHT above 100 in 16/10-2 and 15/9-14); Grid, Skade and Ty Mb. merged into their
+  Fm. codes; the Basement drop confirmed as a CLEAN-17 case; the record's domain set to environmental science &
+  climate. Open: issue 8 (convert ROPA from ft/h in two wells and MUDWEIGHT from bar/m to g/cm3) and issue 1
+  (declare `time_on="DEPTH_MD"`; TabArena builds no depth context).
+
 ## 2026-10-21 (every dataset declares its metric)
 
 Lennart decided that a dataset is scored by the metric its original task defines (the competition's evaluation page,
@@ -11,8 +36,8 @@ the task description or the paper), with an explicit fallback (roc_auc / log_los
 Nothing was rebuilt; every container needs a rebuild, because the task metadata changed.
 
 - **Format 2 task metadata, changed in place:** `objective_metric_name` is replaced by the spec `objective_metric`
-  (name, kind, prediction, origin `source` / `stand_in` / `fallback`, original, reference, definition, reason, params,
-  inputs) and `scoring_columns` (columns kept for scoring only, never features). An older format-2 file stops loading
+  (name, kind, prediction, origin `source` / `stand_in` / `context` / `fallback`, original, reference, definition,
+  reason, params, inputs, target_transform) and `scoring_columns` (columns kept for scoring only, never features). An older format-2 file stops loading
   with a "rebuild" message; format 1 (BeyondArena) is unchanged.
 - **`data_foundry.v2.metrics`:** `Metric.source / stand_in / fallback / local`, the registry of 23 standard metrics
   (scikit-learn names) and 11 custom ones with general names (`cost_matrix`, `precision_at_k`,
@@ -21,7 +46,7 @@ Nothing was rebuilt; every container needs a rebuild, because the task metadata 
   equal to its official implementation and timed on 1M rows; `scorer(container)` (inputs by row index, per-group
   aggregation) and `feature_columns(container)`. The module imports nothing else from Data Foundry.
 - **Definitions:** `metric` is a required attribute. All 173 definitions declare one, from a sweep of their sources
-  and the new rules MET-1..13 (`knowledge-curation/references/metrics.md`): 67 source, 6 stand-in, 1 from the task's context, 99 fallback.
+  and the new rules MET-1..13 (`knowledge-curation/references/metrics.md`): 67 source, 6 stand-in, 13 from the task's context, 87 fallback.
   The scored metric changes for 18: allstate_claims_severity (`mae` on the raw loss), aps_failure and credit_g
   (`cost_matrix` on probabilities), coil_2000 and labour_inspection_compliance (`precision_at_k`),
   corporate_credit_rating_cat (`mae`, stand-in), electric_motor_temperature_prediction (`mse`), force_2020
@@ -31,9 +56,27 @@ Nothing was rebuilt; every container needs a rebuild, because the task metadata 
   rossmann_store_sales (`rmspe`), sat11_hand_algo_runtime (`par_k`), wine_quality (`mae`), diamonds (`rmsle` on
   the price in dollars, the new origin `context`: no source metric, but the task makes one obvious). amex and
   sepsis_prediction_1m keep their metric under a general name (`gini_top_capture`,
-  `normalized_early_detection_utility`). forest_fires, allstate and diamonds ship the raw target (MET-3). Each record has an
+  `normalized_early_detection_utility`). Each record has an
   `Assessment (AI, 2026-10-21)` line; Lennart's calls (home_credit stand-in, labour_inspection, covertype and the
   threshold metrics left out, the accepted proposals) are `CC` lines.
+- **The shipped scale and the scored scale (`target_transform`, MET-3 rewritten; Lennart: "ship the target on the
+  modelling scale, score on the original scale"):** the spec field `target_transform` (`identity`, `log`, `log1p`,
+  `log10`; regression only) says how the target ships transformed for modelling; `score` / `scorer` apply the inverse
+  to the true values and the predictions before the metric, so the declared metric is the one on the original scale.
+  New checks `task_metric_transform_not_regression` and `task_metric_transform_overflow`; the README's metric table
+  has a "target scale" row. `par_k` loses its own `target_transform` param (no double inverse). Definitions:
+  - diamonds (log price again, `rmsle` on the dollar price), allstate_claims_severity (log loss again, `mae` on the
+    loss), forest_fires (log1p area again, `mae` in hectares): the targets ship as before today's change.
+  - From the fallback `rmse` on a log target to `Metric.from_context("rmsle", target_transform=...)`, the shipped
+    target unchanged: house_sales, houses, immoscout_german_house_prices, melbourne_housing_market, miami_housing,
+    perth_house_prices, wine_world_cost, brazilian_ecommerce, sf_permit_time, video_transcoding_time_prediction,
+    onlinenewspopularity (`log`) and blood_tests_drink_prediction (`log1p`).
+  - From `rmse` on a log1p target to the competition's `rmsle` with `target_transform="log1p"` (the same number):
+    mercari_price_suggestion, pkdd_15_taxi_trip_time_prediction_ii_1m, nyc_taxi_trip_duration_1m,
+    ashrae_great_energy_predictor_iii_1m, santander_transaction_value, california_house_prices_2020.
+  - sat11_hand_algo_runtime: par_k's log transform moved to the spec's `target_transform="log"` (the same score).
+  - sberbank_housing_market_forecasting keeps `rmse` on log(price / full_sq): the inverse is the price per square
+    metre, not the price the competition scored.
 - **Skills and docs:** TP-6 points to `metrics.md`; `/screen-candidates`, `/add-dataset`, the claim auditor and the
   domain practitioner check the metric; the review page shows each dataset's metric; the probes drop scoring columns;
   `examples/read_metric_without_data_foundry.py` reads a container's metric with plain json; `BENCHMARK_CHANGES_TODO.md`

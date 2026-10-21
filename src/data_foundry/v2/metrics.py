@@ -25,6 +25,14 @@ Conventions of the predictions:
   (``f1``, ``precision``, ``recall``) take ``labels[1]``.
 * ``value``: a number per row (regression).
 
+The scale of a regression target: a target may ship on the scale a practitioner models it on (``log`` of a price,
+``log1p`` of a count) while the task means the original scale. The spec's ``target_transform`` (``identity``, the
+default, ``log``, ``log1p`` or ``log10``) says how the target ships transformed for modelling; :func:`score` (and so
+:func:`scorer` and :func:`to_sklearn_scorer`) applies the inverse (``exp``, ``expm1``, ``10**``) to both ``y_true``
+and ``y_pred`` before the metric, so the metric is computed on the original scale. Predictions are passed on the
+shipped scale, as the model makes them. RMSLE of a ``log1p``-shipped target is thus the RMSE of the shipped values,
+and the declared metric is always the one on the original scale.
+
 Every implementation is the fastest well-tested one available: scikit-learn or scipy where they cover the metric,
 otherwise vectorised numpy; each is tested against the reference implementation (``tests/test_v2_metrics.py``; the
 custom metrics against their official code, vendored in ``tests/test_v2_metrics_custom.py``).
@@ -78,6 +86,16 @@ FALLBACK_METRICS: dict[str, str] = {
 
 ORIGINS = ("source", "stand_in", "context", "fallback")
 PREDICTIONS = ("proba", "label", "value")
+
+INVERSE_TRANSFORMS: dict[str, Callable[[np.ndarray], np.ndarray]] = {
+    "identity": lambda v: v,
+    "log": np.exp,
+    "log1p": np.expm1,
+    "log10": lambda v: np.power(10.0, v),
+}
+"""The inverse of each ``target_transform`` a spec may declare: the target ships transformed for modelling, and the
+metric is computed after this inverse of both the true values and the predictions."""
+TARGET_TRANSFORMS = tuple(INVERSE_TRANSFORMS)
 
 
 def _sklearn_metrics() -> Any:
@@ -780,22 +798,12 @@ def _gini_stability(y_true, y_pred, *, labels=None, params, order, **_):
 # par_k
 
 
-_INVERSE_TRANSFORMS: dict[str, Callable[[np.ndarray], np.ndarray]] = {
-    "identity": lambda v: v,
-    "log": np.exp,
-    "log10": lambda v: np.power(10.0, v),
-    "log1p": np.expm1,
-}
-
-
 def _check_par_k(params: Mapping[str, Any]) -> None:
     _require(params, "cutoff")
     if float(params["cutoff"]) <= 0:
         raise ValueError("cutoff is a positive runtime.")
     if float(params.get("k", 10)) <= 0:
         raise ValueError("k is positive.")
-    if params.get("target_transform", "identity") not in _INVERSE_TRANSFORMS:
-        raise ValueError(f"target_transform is one of {sorted(_INVERSE_TRANSFORMS)}.")
 
 
 def _par_k(y_true, y_pred, *, group, params, **_):
@@ -805,7 +813,7 @@ def _par_k(y_true, y_pred, *, group, params, **_):
     cutoff = float(params["cutoff"])
     k = float(params.get("k", 10))
     rel_tol = float(params.get("timeout_rel_tol", 1e-9))
-    runtime = _INVERSE_TRANSFORMS[params.get("target_transform", "identity")](np.asarray(y_true, dtype=float))
+    runtime = np.asarray(y_true, dtype=float)  # on the original scale: score() inverts the spec's target_transform
     penalized = np.where(runtime >= cutoff * (1 - rel_tol), k * cutoff, runtime)
     codes, _ = _group_codes(group)
     predicted = np.asarray(y_pred, dtype=float)
@@ -1037,8 +1045,6 @@ _CUSTOM_METRICS = (
         params={
             "cutoff": "the runtime limit; a true runtime >= cutoff * (1 - timeout_rel_tol) is a timeout",
             "k": "the penalty factor of a timeout (default 10)",
-            "target_transform": "how the target was transformed: identity (default), log, log10, log1p; inverted "
-            "before scoring",
             "timeout_rel_tol": "relative tolerance of the timeout test (default 1e-9)",
         },
         check_params=_check_par_k,
@@ -1111,10 +1117,24 @@ class Metric:
     fn: Callable[..., float] | None = field(default=None, compare=False)
     prediction: str | None = None
     greater_is_better: bool | None = None
+    target_transform: str = "identity"
+    """Regression only: the target ships transformed for modelling (``log``, ``log1p``, ``log10``); the metric is
+    computed after the inverse of both the true values and the predictions, on the original scale."""
 
     def __post_init__(self) -> None:
         if self.origin not in ORIGINS:
             raise ValueError(f"Metric origin is one of {ORIGINS}, not {self.origin!r}.")
+        if self.target_transform not in INVERSE_TRANSFORMS:
+            raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {self.target_transform!r}.")
+        if self.target_transform != "identity":
+            prediction = self.prediction
+            if self.fn is None and self.name is not None and self.name in METRICS:
+                prediction = METRICS[self.name].prediction_for(self.params)
+            if prediction is not None and prediction != "value":
+                raise ValueError(
+                    f"target_transform={self.target_transform!r} is for a regression metric, not {self.name!r} "
+                    f"(it takes {prediction!r})."
+                )
         if self.fn is None and self.name is not None:
             if self.name not in METRICS:
                 raise ValueError(_unknown_name_message(self.name))
@@ -1133,8 +1153,13 @@ class Metric:
         params: Mapping[str, Any] | None = None,
         inputs: Mapping[str, str] | None = None,
         definition: str | None = None,
+        target_transform: str = "identity",
     ) -> Metric:
-        """The metric the source scored, under its registry name; ``reference`` links where the source defines it."""
+        """The metric the source scored, under its registry name; ``reference`` links where the source defines it.
+
+        ``target_transform``: the scale the target ships on for modelling (regression); the metric is computed after
+        its inverse, on the original scale.
+        """
         return cls(
             name=name,
             origin="source",
@@ -1143,6 +1168,7 @@ class Metric:
             definition=definition,
             params=dict(params or {}),
             inputs=dict(inputs or {}),
+            target_transform=target_transform,
         )
 
     @classmethod
@@ -1156,6 +1182,7 @@ class Metric:
         params: Mapping[str, Any] | None = None,
         inputs: Mapping[str, str] | None = None,
         definition: str | None = None,
+        target_transform: str = "identity",
     ) -> Metric:
         """The closest computable metric to ``original``, which cannot be computed (``reason`` says why)."""
         return cls(
@@ -1167,6 +1194,7 @@ class Metric:
             definition=definition,
             params=dict(params or {}),
             inputs=dict(inputs or {}),
+            target_transform=target_transform,
         )
 
     @classmethod
@@ -1178,9 +1206,11 @@ class Metric:
         params: Mapping[str, Any] | None = None,
         inputs: Mapping[str, str] | None = None,
         definition: str | None = None,
+        target_transform: str = "identity",
     ) -> Metric:
         """No metric defined by the source, but the task makes ``name`` the obvious one (``reason`` says why, e.g.
         "a price's error matters relative to the price"). Used instead of the fallback only when the context is clear.
+        ``target_transform``: the scale the target ships on (e.g. ``log`` of a price scored by RMSLE on the price).
         """
         return cls(
             name=name,
@@ -1189,12 +1219,18 @@ class Metric:
             definition=definition,
             params=dict(params or {}),
             inputs=dict(inputs or {}),
+            target_transform=target_transform,
         )
 
     @classmethod
-    def fallback(cls, *, reason: str) -> Metric:
-        """No metric defined by the source (``reason``: where we looked); roc_auc / log_loss / rmse at build."""
-        return cls(name=None, origin="fallback", reason=reason)
+    def fallback(cls, *, reason: str, target_transform: str = "identity") -> Metric:
+        """No metric defined by the source (``reason``: where we looked); roc_auc / log_loss / rmse at build.
+
+        ``target_transform`` (regression only) makes the fallback rmse the RMSE on the original scale, after the
+        inverse; a log target whose relative error is the obvious goal declares :meth:`from_context` ``rmsle``
+        instead.
+        """
+        return cls(name=None, origin="fallback", reason=reason, target_transform=target_transform)
 
     @classmethod
     def local(  # noqa: PLR0913 - the spec's fields, all keyword-only
@@ -1211,6 +1247,7 @@ class Metric:
         reason: str | None = None,
         params: Mapping[str, Any] | None = None,
         inputs: Mapping[str, str] | None = None,
+        target_transform: str = "identity",
     ) -> Metric:
         """A metric whose code only the definition holds: ``fn(y_true, y_pred, *, labels=None, params, **inputs)``.
 
@@ -1234,6 +1271,7 @@ class Metric:
             fn=fn,
             prediction=prediction,
             greater_is_better=bool(greater_is_better),
+            target_transform=target_transform,
         )
 
     # --- resolution ---
@@ -1253,6 +1291,10 @@ class Metric:
     def spec(self, problem_type: str) -> dict[str, Any]:
         """The fields of the container's spec (:class:`data_foundry.schema.MetricSpec`) for ``problem_type``."""
         resolved = self.resolve(problem_type)
+        if resolved.target_transform != "identity" and problem_type != "regression":
+            raise ValueError(
+                f"target_transform={resolved.target_transform!r} is for a regression target, not {problem_type}."
+            )
         if resolved.fn is not None:
             kind, prediction, greater_is_better = "local", resolved.prediction, resolved.greater_is_better
         else:
@@ -1271,6 +1313,7 @@ class Metric:
             "reference": resolved.reference,
             "definition": resolved.definition or (METRICS[resolved.name].definition if resolved.fn is None else None),
             "reason": resolved.reason,
+            "target_transform": resolved.target_transform,
         }
 
 
@@ -1320,8 +1363,9 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     Args:
         spec: A :class:`~data_foundry.schema.MetricSpec`, the ``objective_metric`` dict of the JSON file, or a
             :class:`Metric` (resolved, or local).
-        y_true: The true values of the scored rows.
-        y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions).
+        y_true: The true values of the scored rows, on the scale the target ships on.
+        y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions), on
+            the shipped scale; a spec's ``target_transform`` is inverted on both before the metric.
         labels: The class labels in the order of the probability columns (classification); default the sorted
             classes of ``y_true``.
         **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``).
@@ -1336,6 +1380,13 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     if missing:
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
     y_true = np.asarray(y_true)
+    transform = fields.get("target_transform") or "identity"
+    if transform != "identity":  # the target ships transformed for modelling: score on the original scale
+        if transform not in INVERSE_TRANSFORMS:
+            raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {transform!r}.")
+        inverse = INVERSE_TRANSFORMS[transform]
+        y_true = inverse(y_true.astype(float))
+        y_pred = inverse(np.asarray(y_pred, dtype=float))
     values = {role: np.asarray(v) for role, v in inputs.items()}
     return float(fn(y_true, y_pred, labels=labels, params=dict(fields.get("params") or {}), **values))
 
@@ -1346,7 +1397,8 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     ``row_index`` are the positions of the scored rows in ``container.dataset`` (the test side of a split, as in
     ``experiment_metadata.splits``); the scorer takes the values of the spec's input columns from those rows, so a
     benchmark passes only the test indices. It is needed when the metric has inputs. ``labels`` defaults to the
-    categories of the target column, the column order of the probabilities.
+    categories of the target column, the column order of the probabilities. Values are passed on the shipped scale:
+    a per-group aggregation works on it, and :func:`score` then inverts the spec's ``target_transform``.
 
     Args:
         container: A format-2 container (anything with ``dataset`` and ``task_metadata.objective_metric``).

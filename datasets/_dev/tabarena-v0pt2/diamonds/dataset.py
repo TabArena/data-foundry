@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
@@ -19,7 +20,7 @@ class Diamonds(AbstractCuratedDataset):
             "One diamond with its price, from the diamonds data of the ggplot2 R package (53,940 stones); the seller "
             "and the date of the prices are not stated."
         ),
-        predicted="The price in US dollars.",
+        predicted="The price in US dollars, shipped on a log scale for modelling; scored by RMSLE on the dollar price.",
         known=(
             "Weight in carats, cut quality, colour grade, clarity grade, total depth and table width in percent, and "
             "length, width and depth in millimetres."
@@ -55,8 +56,9 @@ class Diamonds(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - The price ships in US dollars and is scored by RMSLE (Lennart, 2026-10-21): a price's error matters relative
-          to the price, which an earlier version got by log-scaling the target.
+        - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
+          by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
+          error matters relative to the price.
     """
 
     # Task
@@ -68,6 +70,7 @@ class Diamonds(AbstractCuratedDataset):
             "A teaching dataset of the ggplot2 package defines no task or score; for a price the error that matters "
             "is relative to the price (a $500 miss means more on a $1,000 stone than on a $15,000 one), so RMSLE."
         ),
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -75,7 +78,9 @@ class Diamonds(AbstractCuratedDataset):
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        return raw
+        df = raw
+        df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

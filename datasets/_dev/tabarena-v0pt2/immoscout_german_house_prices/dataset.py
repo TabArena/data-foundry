@@ -85,8 +85,10 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
     # Task
     target = "LogPrice"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. RMSE on the log price is the obvious choice for price prediction.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. For an asking price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

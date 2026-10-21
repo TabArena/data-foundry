@@ -76,11 +76,10 @@ class MiamiHousing(AbstractCuratedDataset):
     # Task
     target = "SALE_PRC"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason=(
-            "Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. rmse on "
-            "the log sale price is the regression fallback."
-        )
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. For a sale price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

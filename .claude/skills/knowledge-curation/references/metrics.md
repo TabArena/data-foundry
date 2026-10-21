@@ -74,16 +74,20 @@ becomes the top 20% of each fold), emscad and taiwanese_bankruptcy_prediction (t
 sample; the release is 4.6% and 3.2% positive), naticusdroid_android_permissions_dataset (balanced with 75%
 duplicates in the paper, 35% positive after we dropped them).
 
-**MET-3 (Must).** The declared metric is computed on the scale the source scored. Ship the target on that scale: a
-transform the definition applied for modelling (log1p of a skewed target) is undone when the source's metric is
-defined on the raw scale, because a metric on another scale is another metric (MAE on a log target is close to a
-median relative error, not an error in hectares). Keep a transformed target only when the transform is how the metric
-is defined: RMSLE is RMSE on log1p(y), so a log1p target with `rmse` is the source's RMSLE, and declaring `rmsle` on
-it logs the target twice. "If the goal is to use the transform only for scoring we can keep it that way, but generally
-speaking we can adapt the data to these needs" (Lennart, 2026-10-21). Cases: forest_fires (MAD in hectares, target
-shipped as log1p), allstate_claims_severity (MAE on the raw loss, target shipped logged), mercari_price_suggestion
-and pkdd_15_taxi_trip_time_prediction_ii_1m (RMSLE as RMSE on log1p), santander_transaction_value (`rmsle` on a log1p
-target, a definition bug).
+**MET-3 (Must).** The declared metric is the one on the scale the task means (the source's scale: the price in
+dollars, the area in hectares), and the target may ship on the scale a practitioner models it on (log of a price,
+log1p of a count or a duration). The spec's `target_transform` (`log`, `log1p`, `log10`; `identity` by default)
+states the shipped scale, and the metric is computed after the inverse of both the true values and the predictions,
+so a metric on another scale is never declared by accident (MAE on a log target is close to a median relative error,
+not an error in hectares). RMSLE on a log1p target is `rmsle` with `target_transform="log1p"`, not `rmse` on the
+shipped values; `rmsle` without the transform on a log1p target logs it twice. The transform is the definition's
+modelling choice; the metric follows the task (Lennart, 2026-10-21: "ship the target on the modelling scale, score
+on the original scale"). A target whose inverse is not the scored quantity (sberbank_housing_market_forecasting
+ships log price per square metre, the competition scored the price) keeps the metric that is exact on the shipped
+scale. Cases: forest_fires (MAE in hectares, target shipped as log1p), allstate_claims_severity (MAE on the raw loss,
+target shipped as log), diamonds (RMSLE on the dollar price, target shipped as log), the RMSLE competitions on a log1p
+target (mercari_price_suggestion, pkdd_15_taxi_trip_time_prediction_ii_1m, nyc_taxi_trip_duration_1m,
+ashrae_great_energy_predictor_iii_1m, santander_transaction_value, california_house_prices_2020).
 
 ### Whose metric to trust
 
@@ -159,8 +163,8 @@ overrule it (MET-5, MET-4). Cases: sepsis_survival_minimal_clinical_records (PR 
 **MET-11 (Must).** Every metric has one origin, and the notes name the original whenever the declared metric is not
 exactly it:
 * **source**: what the source scored, computed on our data. A metric that ranks every pair of models the same by
-  identity counts (RMSE on log1p(y) for RMSLE; ROC AUC for a binary normalized Gini, which is 2 x AUC - 1); the
-  `definition` says the identity.
+  identity counts (ROC AUC for a binary normalized Gini, which is 2 x AUC - 1); the `definition` says the identity.
+  A shipped scale is not an identity: it is the spec's `target_transform` (MET-3).
 * **stand-in**: the source has a unique metric that cannot be computed on our data (inputs not published, a task we
   changed), and the closest computable metric replaces it; it names the original and why the original cannot be
   computed, and the closeness is measured on the shipped splits where possible (pooled Pearson within 0.0002 of
@@ -201,8 +205,8 @@ shipped: a reader of the files could not compute it. How in Data Foundry:
 | A paper's accuracy, no threshold, no costs | the fallback, unless the use case acts on hard labels at equal costs | MET-6, MET-8 |
 | A cost matrix or one treatment threshold fixed by the source | `cost_matrix` (mean cost per row) | MET-7 |
 | A range of costs or thresholds | the fallback | MET-7 |
-| A metric on the raw scale, a target shipped transformed | ship the raw target | MET-3 |
-| RMSLE | a log1p target with `rmse` | MET-3, MET-11 |
+| A metric on the raw scale, a target shipped transformed | the metric with `target_transform` (the inverse before scoring) | MET-3 |
+| RMSLE | `rmsle` with `target_transform="log1p"` on a log1p target | MET-3, MET-11 |
 | No metric anywhere | the fallback, with where we looked | MET-1, MET-11 |
 
 ## Cases
@@ -220,8 +224,8 @@ and wait for the curator; the others are decided.
 | MET-4 | digicow_farmer_training_adoption_challenge | `log_loss` (2026-10-21) | Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) scores targets the task does not ship; on the shipped 7-day target log loss carries 0.65 of 0.80 | applied |
 | MET-11 | porto_seguro | `roc_auc` for the normalized Gini (2026-10-21) | for a binary target the normalized Gini is 2 x ROC AUC - 1, so the two rank models the same | applied |
 | MET-2, MET-11 | numerai_v5_2_1m | `pearsonr` standing for per-era CORR (2026-10-21); `mean_group_pearsonr` on the `era` scoring column proposed | pooled Pearson within 0.0002 of CORR per model, Kendall tau 0.89-0.93 with its ranking; `era` ships, so the original is computable | applied, proposed |
-| MET-3, MET-11 | mercari_price_suggestion | `rmse` on the log1p price, the source's RMSLE | Kaggle scored RMSLE; the target is already log1p, so RMSE on it equals RMSLE on the price | proposed |
-| MET-3, MET-5 | forest_fires | `mae` on the burned area in hectares, the target shipped raw | Cortez & Morais 2007 report MAD and RMSE and rank by MAD (SVM with 4 weather inputs, MAD 12.71; the mean predictor has the best RMSE); MAE on the shipped log1p target would be another metric | proposed |
+| MET-3, MET-11 | mercari_price_suggestion | `rmsle` on the price, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Kaggle scored RMSLE on the price | applied |
+| MET-3, MET-5 | forest_fires | `mae` on the burned area in hectares, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Cortez & Morais 2007 fit on log1p(area), report MAD and RMSE on the area and rank by MAD (SVM with 4 weather inputs, MAD 12.71; the mean predictor has the best RMSE); MAE on the shipped log1p values would be another metric | applied |
 | MET-5 | gallstone_disease | fallback `roc_auc` | Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC; accuracy is the headline, none is named as the criterion | proposed |
 | MET-6 | ljubljana_breast_cancer | fallback `roc_auc` | every 1986-1988 paper reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows | proposed |
 | MET-6, MET-8 | heart_disease_cleveland (and _hungary, _va_long_beach) | fallback `roc_auc` | Detrano 1989 scores reliability (calibration in the large) and percent correctly classified: two criteria, one of them about probabilities | proposed |

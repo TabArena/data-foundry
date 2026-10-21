@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: brazilian_ecommerce
 container_format: 2
-checksum: v2:39cb5916d4dda650e2af8bdf42002fc9e0df4c413159dd455f48f522c5d88b2e
+checksum: v2:cb8fb2bf48fa8d5c6b65ec452da61f6fa562663fdb50e232903341c8b0b0e0c4
 build: null
 build_stale: false
 data:
@@ -17,8 +17,8 @@ data:
 task:
   target: log_delivery_days
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
@@ -61,9 +61,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_delivery_days`, scored with `rmse` on temporal splits by `order_purchase_timestamp`. 88,721 rows and 24 features. Source: Kaggle (2018).
+Regression of `log_delivery_days`, scored with `rmsle` on temporal splits by `order_purchase_timestamp`. 88,721 rows and 24 features. Source: Kaggle (2018).
 
-Not built yet. The current definition gives checksum `v2:39cb5916d4dda650e2af8bdf42002fc9e0df4c413159dd455f48f522c5d88b2e`.
+Not built yet. The current definition gives checksum `v2:cb8fb2bf48fa8d5c6b65ec452da61f6fa562663fdb50e232903341c8b0b0e0c4`.
 
 ## In brief
 
@@ -135,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 88,721 x 25 |
 | task.target | log_delivery_days |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | order_purchase_timestamp |
 
@@ -143,10 +143,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own. For a delivery time the error that matters is relative to the time (two days late on a three-day delivery is worse than on a thirty-day one), so RMSLE on the days. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 7 categorical, 0 string, 1 datetime</summary>
@@ -191,7 +192,7 @@ We start with olist_orders_dataset.csv of the Kaggle release by Olist (version 2
 
 - Prediction point: at checkout, from what is known when the customer places the order, including the delivery date Olist promises then.
 - Task choice: the uploader's notebook predicts the review score, but a low score reaches ROC AUC 0.60 from the checkout features alone. We take the delivery time, which the data card suggests.
-- Target: the log of the days from order_purchase_timestamp to order_delivered_customer_date, because the durations are right-skewed. We keep RMSE (on the log days).
+- Target: the log of the days from order_purchase_timestamp to order_delivered_customer_date, because the durations are right-skewed. The metric is RMSLE on the days, computed after the inverse (`target_transform="log"`; Lennart, 2026-10-21).
 - Cohort: the review sample ends with the surveys sent on 2018-08-31, and a survey goes out at delivery or at the promised date. We keep orders placed before 2018-08-01 and promised by 2018-08-24, so every kept order would be in the sample whatever its delivery time (decision table).
 - Cohort: delivered orders (status "delivered" with a delivery date) with one seller. The orders file has one delivery date per order, which mixes shipments when an order has several sellers.
 - We drop order_approved_at, order_delivered_carrier_date and order_status (constant after the cohort filter), all recorded after checkout, and do not take shipping_limit_date from the items file, which is set at payment approval.

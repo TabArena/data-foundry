@@ -196,8 +196,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
   * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
     scored (zillow_prize `Metric.source("mae", original="MAE of logerror", reference=<the evaluation page>)`). A
-    metric equal to the original by identity is a source too, with the identity in `definition` (RMSLE as `rmse` on
-    a log1p target; ROC AUC for a binary normalized Gini).
+    metric equal to the original by identity is a source too, with the identity in `definition` (ROC AUC for a binary
+    normalized Gini).
   * `Metric.stand_in(name, original=..., reason=..., reference=...)`: the closest computable metric to a unique
     original that cannot be computed on our data; `original` and `reason` are required.
   * `Metric.from_context(name, reason=...)`: the source defines no metric, but the task makes one obvious (diamonds:
@@ -205,6 +205,15 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   * `Metric.fallback(reason=...)`: no metric of the source the task would use (none defined, several reported, a
     threshold metric without a threshold or costs); `roc_auc`, `log_loss` or `rmse` by problem type at build. The
     reason says where we looked and which source metric was rejected and why.
+
+  Every constructor takes `target_transform` (`"identity"` by default, `"log"`, `"log1p"`, `"log10"`; regression
+  only, MET-3): the target ships transformed for modelling, and the metric is computed after the inverse (`exp`,
+  `expm1`, `10**`) of both the true values and the predictions, on the original scale. Declare exactly what `_clean`
+  applies: `np.log(price)` is `"log"`, `np.log1p(area)` is `"log1p"`. So RMSLE on a log1p target is
+  `Metric.source("rmsle", ..., target_transform="log1p")`, the competition's MAE on a logged loss is
+  `Metric.source("mae", ..., target_transform="log")`, and a price shipped as its log with no source metric is
+  `Metric.from_context("rmsle", reason=..., target_transform="log")`. A custom metric never inverts the target
+  itself (par_k reads the runtime after the spec's inverse).
 
   `name` is a key of `METRICS` (standard scikit-learn style names, or a custom metric under a general name, MET-12);
   an unknown name or param is refused when `dataset.py` is imported, with the close names. `params` holds JSON values
@@ -218,13 +227,15 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
-  `reference`, `definition` (a one-line formula) and `reason`; a reader without Data Foundry can implement the metric
+  `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can implement the metric
   from these fields. `describe()` and the README show it with the scoring columns. The bundle checks:
   `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
   alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
   metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or the time column, which is allowed),
   `task_metric_reference_missing` (a source or stand-in without a link), `task_metric_stand_in_incomplete`,
-  `task_metric_not_computable` (no finite score of a random prediction on some fold) and `task_metric_local`.
+  `task_metric_not_computable` (no finite score of a random prediction on some fold), `task_metric_local`,
+  `task_metric_transform_not_regression` and `task_metric_transform_overflow` (the inverse of `target_transform`
+  overflows on a shipped value: the target is not on that scale).
   `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
   user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
@@ -447,8 +458,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Cohort and selection, right truncation.
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
-  give_me_some_credit); a target stored as `log1p` with metric `rmsle`, which logs it again
-  (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
+  give_me_some_credit); a target stored as `log1p` with metric `rmsle` and no
+  `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
   `license` (cirrhosis: `"IID"`). Read the class attributes once more for these before handing off.
 
 ## Bundle checks and what to do at scaffold time

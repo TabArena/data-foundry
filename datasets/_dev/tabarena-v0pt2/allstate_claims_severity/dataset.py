@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
@@ -19,7 +20,10 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
             "One insurance claim at Allstate (188,317 claims, the competition's training file; the period is not "
             "stated)."
         ),
-        predicted="The cost of the claim (the loss as published); the currency is not stated.",
+        predicted=(
+            "The cost of the claim, shipped on a log scale for modelling; scored by MAE on the loss as published. The "
+            "currency is not stated."
+        ),
         known=(
             "130 anonymized attributes of the claim, 116 categorical and 14 numeric; their meaning and when they are "
             "recorded are not given."
@@ -64,7 +68,8 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
         - Top Kaggle solutions did not perform any relevant preprocessing.
         - We drop the ID column, as it does not contain any signal.
         - The data contains 1 duplicate row when ignoring the target. We drop this artifact.
-        - The target is the loss as published, not logged: the competition scored MAE on this scale (MET-3).
+        - We log scale the target, the scale a practitioner models a claim cost on; the metric is the competition's
+          MAE on the loss as published, computed after the inverse (`target_transform="log"`, MET-3).
     """
 
     # Task
@@ -75,6 +80,7 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
         original="Mean Absolute Error",
         reference="https://www.kaggle.com/competitions/allstate-claims-severity (Kaggle API evaluationMetric)",
         definition="mean absolute error of the claim loss in dollars, on the raw scale",
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -86,6 +92,8 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
         df = df.drop(columns=["id"])
         # Drop duplicates w/o target column
         df = df.drop_duplicates(subset=[c for c in df.columns if c != self.task_metadata.target_column_name])
+        # log scale the target (the metric inverts it: target_transform="log")
+        df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

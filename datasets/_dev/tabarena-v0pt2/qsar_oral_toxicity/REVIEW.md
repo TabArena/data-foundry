@@ -3,71 +3,19 @@
 **Outcome:** added. The very toxic endpoint (rat oral LD50 of 50 mg/kg or less) of UCI 508 from 1,024 ECFP bits,
 binary, IID with the default random splits; copies of a parent structure, vectors with both classes and nine rows
 whose parent structure is already present are dropped (8,484 chemicals). A review panel, full tier, ran on
-2026-10-20 and recommends shipping it after changes, which are applied. Validity: SEL-1, SEL-3, SEL-12 hold; USE-1,
-USE-3 hold, USE-5 holds (target corrected to 50 mg/kg or less); USE-8 is open (issue 6); LEAK-10, LEAK-16, LEAK-19,
-LEAK-20, LEAK-27 to LEAK-30 hold; LEAK-17: nine parent structures survived twice, one row of each pair is dropped
-(`PARENT_PAIRS`); SPLIT-1, SPLIT-24, SPLIT-29 hold and IID stays, with SPLIT-31 a candidate (issue 2); PROV-8,
-PROV-13 hold. Value: the task probes are clean (random forest 0.884 on the 8,484 shipped rows, 236 positives in the
-smallest test fold, no flag). Quality: CLEAN holds; the 0/1 bits are categorical by the convention settled on 2026-10-21 (CLEAN-14, Lennart); two
-consistency checks are filed on hiva_agnostic and qsar_tid_11. Weighed: the gap between the random test rows and the
-untested chemicals the actor screens (against), a real regulatory endpoint, a faithful source and a clean shape
-(for). Left for the curator: the fit label (issue 6), a scaffold-grouped variant (issue 2), the extension (issue 3).
+2026-10-20 and recommends shipping it after changes, which are applied; on 2026-10-21 the fit became `approximate`
+and the scaffold-grouped variant stays a listed candidate (SPLIT-31). Only the extension is open (issue 3).
 
-**Main points:** Is the fit `direct` or `approximate`? The random test chemicals sit closer to the training chemicals
-than the untested chemicals the actor screens (issue 6).
+**Main points:** Extend the dataset with the package's validation set, add the non-toxic endpoint as a second
+dataset, both, or neither? The curator's copy of the package holds both (issue 3).
 
 **Record judgment:** valid. The labels are the very toxic endpoint of the calibration set of the ICCVAM acute oral
 toxicity project (CATMoS): the claim audit reproduced the class counts, both block counts and the checksum, and
-linked every row to the project's structure file (100% class agreement). Fingerprints are in scope
-by the qsar_tid_11 precedent: on our folds a random forest (0.883) matches the paper's own kind of model, which
-predicts from the most similar known chemicals (0.877).
+linked every row to the project's structure file (100% class agreement). The UCI file equals the ECFP_1024_02
+training and test blocks of the authors' package bit for bit. Fingerprints are in scope by the qsar_tid_11
+precedent.
 
 **Issues for Lennart:**
-
-6. **Is the fit `direct` or `approximate`?**
-   - Problem: `use_case` says a regulator or maker screens chemicals that have no animal test. The test rows are
-     random members of the tested reference set, which sit closer to the training chemicals than the chemicals that
-     actor really screens.
-   - Effect: the shipped score is the in-domain number. Untested chemicals of the project's own 48,137-chemical
-     prediction set have half the share of close analogs of a test row (9.3% against 19.7% at Tanimoto 0.7
-     (fingerprint similarity, 0 to 1) or more;
-     median nearest similarity 0.474 against 0.553), and the skill follows that axis exactly (random forest 0.68 for
-     chemicals with no close analog, 0.96 for very close ones).
-   - Evidence for `direct` (the practitioner): the project's own external evaluation set has the same profile as our
-     test rows (0.545, 21.7%), and its blind validation scored like its random test (non-error rate 85% against 86%).
-   - Evidence for `approximate` (the critic; the advocate conceded in the rebuttal): the actor named in `use_case`
-     screens the prediction set, and narrowing the use case to the programme's evaluation design would be "a use case
-     rephrased only to excuse a gap", which USE-9 counts against narrowing.
-   - Implemented: `fit = "direct"` (the label the definition had before the panel), with the AUC by distance to the
-     training chemicals (0.681 / 0.954) in `fit_reason`. It is left unchanged until you decide.
-   - Alternative: `fit = "approximate"` with the two similarity numbers and the 0.044 AUC drop under a
-     scaffold-grouped split (issue 2) in `fit_reason`. The dataset and the split stay either way; `approximate`
-     would follow kick and account_debt_south_africa, and `direct` would follow 5g_energy_consumption.
-   - Rule: USE-8 (Must), narrowed by USE-9 (Should, a weighing).
-   - Recommendation: `approximate` (mediator; advocate and critic agree after rebuttal).
-   - Decision: do you count the programme's own evaluation design as a use case practitioners have? Yes keeps
-     `direct`; no sets `approximate`.
-
-2. **A scaffold-grouped variant next to the IID dataset?**
-   - Problem: a scaffold-grouped split holds out whole chemical families: chemicals sharing a ring skeleton (Murcko
-     scaffold) or falling in one similarity cluster (Butina) stay on one side. The rows carry no structure, but they
-     can be linked to the project's structure file by their order, so
-     a scaffold key can be reconstructed after all. The earlier round closed this question on the premise that no
-     such key exists, and on the premise that screening lists hold many analogs of tested chemicals; the claim audit
-     refuted both.
-   - Effect: on the shipped IID split a random forest scores 0.882; held out by structure clusters (Butina at
-     Tanimoto 0.5) it scores 0.842, and on the reconstructed Murcko scaffolds 0.843 against 0.887. The model ranking
-     is unchanged under every split. So about 0.04 of the random-split score comes from test chemicals whose
-     chemical family is in training. Near copies explain only 0.006 of it.
-   - Implemented: IID stays, and the notes now carry the cluster cost. After the deduplication no chemical recurs, so
-     SPLIT-29 is not triggered, and SPLIT-24 bars a similarity cluster as a group key.
-   - Alternative: build a second dataset with a scaffold-grouped split on the linked structures. Its cost: the key is
-     a reconstruction that is right for about 96-99% of rows, not a field of the source, and a split key we build
-     ourselves ranks below what the source provides (P5 over P6, as for eryhemato).
-   - Rule: SPLIT-31 (Should): an IID split that matches the framing but is optimistic over related entities is a
-     candidate for a grouped variant, as for amazon_employee_access and bank_marketing.
-   - Recommendation: keep it as a listed candidate (mediator, advocate and critic agree on no re-split).
-   - Decision: leave the variant as a listed candidate, or build it?
 
 3. **Extend the dataset with the project's evaluation set and the second endpoint?**
    - Problem: UCI holds only the calibration part of the data. The full very toxic data is 11,886 chemicals.
@@ -82,6 +30,20 @@ predicts from the most similar known chemicals (0.877).
    - Rule: PROV-6 and PROV-7 (a shared source with a distinct task is not a duplicate); no rule forces the extension.
    - Recommendation: leave it as it is unless you fill in the form; both extensions need the same download.
    - Decision: fetch the package by hand (which enables both), or leave the dataset as it is?
+
+   **Lennart (2026-10-21, discuss):** here is the gdrive link to the data [a copy the curator provided (Google Drive)] can you use that? i can use it without the form
+   **Answer (AI, 2026-10-21):** Yes. A copy the curator provided (Google Drive) is the Milano group's package behind
+   the form (a RAR of MATLAB code and data; only the data was read). `vt_data.mat` holds the training (6,744), test
+   (2,248) and validation (2,894, 243 very toxic) chemicals in both fingerprint variants; its ECFP_1024_02 training
+   and test blocks equal the UCI file bit for bit (8,992 of 8,992 rows, classes 100% equal), so UCI uses `_02`.
+   With our deduplication (exact copies, vectors with both classes) the very toxic data grows from 8,493 to 11,114
+   chemicals (931 very toxic, +31%); 237 validation vectors equal a calibration vector. `nt_data.mat` holds the
+   non-toxic endpoint: 11,871 chemicals (5,083 non-toxic, 43%) with ECFP_1024_05 bits and 3,152 fragment counts.
+   Each set also carries CASRN, DTXSID, QSAR-ready SMILES, InChIKey and LD50 per chemical, as MATLAB string objects
+   that scipy does not decode; the project's structure files give the same by row order. Nothing is changed yet:
+   extending means a new raw file whose public route is the form (the package's readme: freeware, cite the paper),
+   and redoing the parent-pair linkage for the validation rows. Your call: extend the very toxic dataset with the
+   validation set, add the non-toxic endpoint as a second dataset, both, or neither?
 
 **Review panel:** ship after changes (mediator). Claims: 52 checked, 8 refuted (the target threshold, the "never" in
 the split text, the reason given for IID-only, two duplicate counts, a citation, the record's "issues closed"), all

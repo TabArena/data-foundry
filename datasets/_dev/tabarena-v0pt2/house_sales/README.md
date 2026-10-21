@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:f815b8d313e6fae297ea10cf4a722e114af409eeddfee266a17170c9456c41c7
+checksum: v2:a56f837886fef019f31be5a92b8b7107d23f5a8d7b5ac71c0527389b72034a0b
 build: null
 build_stale: false
 data:
@@ -17,8 +17,8 @@ data:
 task:
   target: log_price
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
@@ -60,9 +60,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_price`, scored with `rmse` on temporal splits by `date`. 19,906 rows and 19 features. Source: GOV Website (2015).
+Regression of `log_price`, scored with `rmsle` on temporal splits by `date`. 19,906 rows and 19 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:f815b8d313e6fae297ea10cf4a722e114af409eeddfee266a17170c9456c41c7`.
+Not built yet. The current definition gives checksum `v2:a56f837886fef019f31be5a92b8b7107d23f5a8d7b5ac71c0527389b72034a0b`.
 
 ## In brief
 
@@ -142,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 19,906 x 20 |
 | task.target | log_price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | date |
 
@@ -150,10 +150,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Neither the King County assessor extracts nor the Kaggle dataset card define a task metric; the Coursera course that first distributed kc_house_data used RSS/RMSE on raw price as a teaching exercise, not a benchmark definition. RMSE on the log price is the obvious choice for a price model. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | Neither the King County assessor extracts nor the Kaggle dataset card define a task metric (the Coursera course that first distributed kc_house_data used RSS/RMSE on the raw price as a teaching exercise, not a benchmark definition). For a sale price the error that matters is relative to the price (prices range from $75,000 to $7.7 million), so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 1 datetime</summary>

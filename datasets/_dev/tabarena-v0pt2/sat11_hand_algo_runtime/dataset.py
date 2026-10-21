@@ -111,8 +111,9 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             " (exp of the log target), a timeout (runtime >= 5,000 x (1 - 1e-4)) counted as 50,000 s; mean "
             "over instances"
         ),
-        params={"cutoff": 5000, "k": 10, "target_transform": "log", "timeout_rel_tol": 0.0001},
+        params={"cutoff": 5000, "k": 10, "timeout_rel_tol": 0.0001},
         inputs={"group": "instance_id"},
+        target_transform="log",
     )
     grouping = Grouping(
         on="instance_id",

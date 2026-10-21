@@ -15,7 +15,7 @@ collections:
 - TabArena Submission
 original_source: Github
 year: '2020'
-domain: chemistry & material science
+domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)
 problem_type: Multiclass Classification
@@ -55,6 +55,16 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 **Assessment (AI, 2026-10-21):** metric set to `force_2020_penalty_matrix`, the competition's 12 x 12 penalty matrix over hard labels (was the default log loss). No listed metric ranks the same; the name is not registered downstream, so TabArena scores log loss until it is. Needs a rebuild to reach the container.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source cost_matrix (the competition's 11 x 11 penalty matrix without Basement, labels in the starter notebook's order) — the FORCE 2020 starter notebook's penalty matrix score on hard labels, renamed from force_2020_penalty_matrix; the scored metric changes from log_loss to cost_matrix (MET-4, MET-7, MET-12).
+
+CC (2026-10-21, Lennart): use case restated as "a newly drilled or a released well" (option (a) of REVIEW.md issue 2): NPD publishes its GROUP and FORMATION picks for released wells, the wells the labels were built for; both stay as features and the fit stays direct (USE-9).
+
+CC (2026-10-21, Lennart): curves on a second scale: follow the recommendation. ROP in 25/6-2, ROPA in 34/4-10 R, SGR in 34/12-1 and 35/11-15 S and MUDWEIGHT above 100 (16/10-2 and 281 rows of 15/9-14) are masked; MUDWEIGHT's two main scales stay, as both occur on every training side. His question whether the scales can be normalised is open (REVIEW.md issue 8).
+
+CC (2026-10-21, Lennart): duplicate formation codes merged as proposed: Grid Mb., Skade Mb. and Ty Mb. become Grid Fm., Skade Fm. and Ty Fm. (CLEAN-14).
+
+CC (2026-10-21, Lennart): Basement drop confirmed (103 rows, all in 16/4-1); recorded as a CLEAN-17 case.
+
+**Assessment (AI, 2026-10-21):** domain set to environmental science & climate, the definition's. The LAS headers in the Zenodo zip were read (118 files): MUDWEIGHT and ROPA have no unit in any well, ROP says m/h in all 67 wells and SGR gAPI in all 14, so the headers were harmonised and do not identify a well's unit. From the data: ROPA is in ft/h in 32/2-1 and 16/10-5 (median ROP / ROPA 0.31 and 0.30, against 0.83-1.08 in 26 other wells); the 0.13-0.17 MUDWEIGHT wells fit bar/m (divided by 0.0981: per-well medians 1.34-1.77 g/cm3, against 1.08-1.80 in the g/cm3 wells); 16/7-4 (880 rows) and 25/3-1 (932 rows) hold both MUDWEIGHT scales; ROPA in 34/4-10 R is 1/87 of its ROP and SGR in 34/12-1 and 35/11-15 S is 1/5,283 and 1/3,323 of GR, no unit factor. Depth-window features under the declared penalty (random forest, 3 grouped folds, 2026-10-07 run before the masks): mean penalty 0.662 raw, 0.668 with windows (log loss 0.776 and 0.764). Scripts and logs: local-data-warehouse/_runs/2026-10-21_marks/force_2020/.
 
 ## Reference
 

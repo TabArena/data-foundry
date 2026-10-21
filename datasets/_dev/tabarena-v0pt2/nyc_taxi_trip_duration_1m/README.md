@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nyc_taxi_trip_duration_1m
 container_format: 2
-checksum: v2:6f140d9a6753bb4104e394c1e54dcd7dc09a5cf85526c0482c57715eedc44162
+checksum: v2:b76f5a7418070375dc91c416daa77de495da7273528f0ea3eebfa022f1110aaa
 build: null
 build_stale: false
 data:
@@ -16,7 +16,9 @@ data:
 task:
   target: log1p_trip_duration
   problem_type: regression
-  metric: rmse
+  metric: rmsle
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: pickup_datetime
@@ -55,9 +57,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_trip_duration`, scored with `rmse` on temporal splits by `pickup_datetime`. 1,166,477 rows and 7 features. Source: GOV Website (2016).
+Regression of `log1p_trip_duration`, scored with `rmsle` on temporal splits by `pickup_datetime`. 1,166,477 rows and 7 features. Source: GOV Website (2016).
 
-Not built yet. The current definition gives checksum `v2:6f140d9a6753bb4104e394c1e54dcd7dc09a5cf85526c0482c57715eedc44162`.
+Not built yet. The current definition gives checksum `v2:b76f5a7418070375dc91c416daa77de495da7273528f0ea3eebfa022f1110aaa`.
 
 ## In brief
 
@@ -130,9 +132,20 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,166,477 x 8 |
 | task.target | log1p_trip_duration |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | pickup_datetime |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSLE (Root Mean Squared Logarithmic Error) |
+| reference | https://www.kaggle.com/competitions/nyc-taxi-trip-duration/overview/evaluation |
+| definition | sqrt(mean((log(p+1) - log(a+1))^2)) on trip_duration in seconds, computed after the inverse of our log1p_trip_duration target. |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
@@ -181,7 +194,7 @@ The first 5 of 1,166,477 rows of the final frame (the oldest rows: the frame is 
 We start with train.csv of the Kaggle playground competition "New York City Taxi Trip Duration" (2017): 1,458,644 yellow-cab trips with pickup times from 2016-01-01 to 2016-06-30, sampled from the trip records of the NYC Taxi and Limousine Commission (TLC).
 
 - Prediction point: when the meter is engaged and the passenger has named the destination, an ETA from the vendor of the cab's meter system, the pickup time and point, the passenger count and the dropoff point. The dropoff point is recorded when the meter is disengaged; we take it as the destination named at pickup (Lennart, 2026-09-21), and the data page keeps it on purpose.
-- Target: `log1p_trip_duration`, the trip duration in seconds, log1p-scaled. The competition scored RMSLE, so RMSE on this target is the competition's metric.
+- Target: `log1p_trip_duration`, the trip duration in seconds, log1p-scaled. The competition scored RMSLE on the duration in seconds, which the metric computes after the inverse (`target_transform="log1p"`).
 - We drop id, an identifier, and dropoff_datetime, which equals pickup_datetime plus the target.
 - We drop store_and_fwd_flag: it says whether the trip record "was held in vehicle memory before sending to the vendor" (TLC data dictionary), and the record is sent after the trip, so the flag is not known at the prediction point.
 - We map vendor_id to the vendor names of the TLC data dictionary (a category); pickup_datetime is a datetime.

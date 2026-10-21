@@ -45,3 +45,7 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 **Assessment (AI, 2026-10-21):** fit stays `approximate` for the truncation at $2.44M and the attributes as of the January 2021 scrape; the school rank left `fit_reason` (its potential-leak note stays); REVIEW.md issue 1 settled and removed.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset of scraped listings; the source defines no task or metric (rmse on the log price).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).

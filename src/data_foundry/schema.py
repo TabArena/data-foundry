@@ -188,6 +188,7 @@ class Grouping:
 MetricKind = Literal["standard", "custom", "local"]
 MetricPrediction = Literal["proba", "label", "value"]
 MetricOrigin = Literal["source", "stand_in", "context", "fallback"]
+TargetTransform = Literal["identity", "log", "log1p", "log10"]
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -227,10 +228,19 @@ class MetricSpec:
     """The metric as a one-line formula."""
     reason: str | None = None
     """Why the metric is a fallback (the source defines none) or a stand-in (why the original cannot be computed)."""
+    target_transform: TargetTransform = "identity"
+    """Regression only: the scale the target ships on. The target ships transformed for modelling (``log`` for a
+    price, ``log1p`` for a count); the metric is computed after the inverse (``exp``, ``expm1``, ``10**``) of both the
+    true values and the predictions, so the declared metric is the one on the original scale."""
 
     def __post_init__(self):
         if not (self.name or "").strip():
             raise ValueError("MetricSpec.name must name the metric.")
+        if self.target_transform != "identity" and self.prediction != "value":
+            raise ValueError(
+                f"MetricSpec.target_transform={self.target_transform!r} is for a regression metric (prediction "
+                f"'value'), not one that takes {self.prediction!r}."
+            )
 
     def describe_lines(self, indent: str = "  ") -> list[str]:
         """The spec as ``describe()`` lines: name, kind, origin, original, reference, definition, reason."""
@@ -243,9 +253,12 @@ class MetricSpec:
             ("reason", self.reason),
             ("params", self.params or None),
             ("inputs", self.inputs or None),
+            ("target_transform", self.target_transform if self.target_transform != "identity" else None),
         ):
             if value:
                 lines.append(f"{indent}  {label + ':':20s} {value}")
+        if self.target_transform != "identity":
+            lines[-1] += f" (the target ships on the {self.target_transform} scale; scored after the inverse)"
         return lines
 
 

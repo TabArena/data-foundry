@@ -39,3 +39,5 @@ Not sure how useful the name is given the existence of the description, also not
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag is an artefact of the probe, which leaves text columns out (R^2 0.06 for every family without the 4 text columns). With its text, on BeyondArena (the shipped `_1m` version, one holdout split) the best method (TabPFN-3.5) reaches R^2 0.670 and the median 0.603.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the competition's RMSLE, as RMSE on the shipped log1p(price) (Kaggle evaluation page).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.

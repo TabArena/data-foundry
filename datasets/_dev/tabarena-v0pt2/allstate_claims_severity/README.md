@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claims_severity
 container_format: 2
-checksum: v2:d1677b0eebeff77f5fe4567e45324b995a0f08ea74cab90656189cedea1685ff
+checksum: v2:eeb39256fa6cbbd095da58f71206551e142ed5525922adf4e465c17bb2193964
 build:
   uuid: 01a111fc-59f8-730c-b058-7264a71a29bc
   checksum: v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 features. Source: Kaggle (2016).
 
-Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d1677b0eebeff77f5fe4567e45324b995a0f08ea74cab90656189cedea1685ff`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:eeb39256fa6cbbd095da58f71206551e142ed5525922adf4e465c17bb2193964`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -77,7 +77,7 @@ Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` 
 
 **One row.** One insurance claim at Allstate (188,317 claims, the competition's training file; the period is not stated).
 
-**Predicted.** The cost of the claim (the loss as published); the currency is not stated.
+**Predicted.** The cost of the claim, shipped on a log scale for modelling; scored by MAE on the loss as published. The currency is not stated.
 
 **Known at prediction time.** 130 anonymized attributes of the claim, 116 categorical and 14 numeric; their meaning and when they are recorded are not given.
 
@@ -142,6 +142,7 @@ Only curators run `build`, when the dataset ships.
 | original | Mean Absolute Error |
 | reference | https://www.kaggle.com/competitions/allstate-claims-severity (Kaggle API evaluationMetric) |
 | definition | mean absolute error of the claim loss in dollars, on the raw scale |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 116 categorical, 0 string, 0 datetime</summary>
@@ -173,11 +174,11 @@ The first 5 of 188,317 rows of the final frame (random rows: the frame is shuffl
 
 | loss | cat1 | cat2 | cat3 | cat4 | cat5 | cat6 | cat7 | cat8 | cat9 | cat10 | cat11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5994.46 | A | B | B | B | B | A | A | A | B | B | B |
-| 4442.26 | A | A | A | A | B | A | A | A | A | A | A |
-| 945.06 | B | A | A | A | B | B | A | A | A | A | A |
-| 6082.33 | B | A | A | B | A | A | A | A | A | A | A |
-| 681.56 | A | B | A | A | A | B | A | A | B | A | A |
+| 8.80967 | A | A | A | A | A | B | A | A | A | A | A |
+| 9.22965 | A | B | A | B | B | A | B | A | B | B | B |
+| 8.41071 | A | B | A | A | B | A | A | A | A | A | A |
+| 7.81556 | A | B | A | B | A | A | A | A | B | A | B |
+| 8.54995 | A | B | A | A | B | A | A | A | B | B | A |
 
 ## Curation notes
 
@@ -187,7 +188,8 @@ We start with the train.csv from Kaggle.
 - Top Kaggle solutions did not perform any relevant preprocessing.
 - We drop the ID column, as it does not contain any signal.
 - The data contains 1 duplicate row when ignoring the target. We drop this artifact.
-- The target is the loss as published, not logged: the competition scored MAE on this scale (MET-3).
+- We log scale the target, the scale a practitioner models a claim cost on; the metric is the competition's
+  MAE on the loss as published, computed after the inverse (`target_transform="log"`, MET-3).
 
 ## Splits
 
@@ -290,7 +292,7 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 3.795 | 0.093 | 8.43373e+06 | 0.659 | log | 3.39677e+06 | 3.35046e+06 | lognormal |
+| 0 | 0 | 0 | 0.093 | -0.312 | 0.659 | 0.009 | log1p | 1.15679e+06 | 1.84997e+08 | exponential |
 
 ### Numeric features
 
@@ -313,7 +315,7 @@ Default splits.
 | cont12 | 188317 | 0.493152 | 0.209427 | 0.036232 | 0.998484 |
 | cont13 | 188317 | 0.493139 | 0.212777 | 0.000228 | 0.988494 |
 | cont14 | 188317 | 0.495718 | 0.222487 | 0.179722 | 0.844848 |
-| loss | 188317 | 3037.35 | 2904.09 | 0.67 | 121012 |
+| loss | 188317 | 7.68527 | 0.811865 | -0.400478 | 11.7036 |
 
 </details>
 
@@ -400,4 +402,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d1677b0eebeff77f5fe4567e45324b995a0f08ea74cab90656189cedea1685ff` |
+| stale | yes: the definition now gives checksum `v2:eeb39256fa6cbbd095da58f71206551e142ed5525922adf4e465c17bb2193964` |

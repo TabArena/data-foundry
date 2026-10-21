@@ -4,13 +4,15 @@ A container is a folder of plain files, so code that does not install Data Found
 script imports nothing from ``data_foundry``. It:
 
 1. reads ``task_metadata.*.json``: the metric spec ``objective_metric`` in container format 2 (name, kind, prediction,
-   origin, original, reference, definition, params, inputs), or the bare ``objective_metric_name`` in format 1
-   (BeyondArena);
+   origin, original, reference, definition, params, inputs, target_transform), or the bare ``objective_metric_name``
+   in format 1 (BeyondArena);
 2. lists the scoring columns (format 2: ``scoring_columns``), the columns the metric needs, which are never features;
 3. takes the features as every column but the target, the group column(s) and the scoring columns;
 4. scores a dummy prediction on the test side of the first split with the scikit-learn function of a standard
    metric. A custom metric (``kind: "custom"``) is implemented from its ``definition`` and ``params``, or by copying
-   ``src/data_foundry/v2/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code.
+   ``src/data_foundry/v2/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
+   target may ship on a modelling scale (``target_transform``: ``log``, ``log1p``, ``log10``); the metric is
+   computed after the inverse of both the true values and the predictions.
 
 Run::
 
@@ -47,7 +49,11 @@ STANDARD = {
     "mae": metrics.mean_absolute_error,
     "mse": metrics.mean_squared_error,
     "r2": metrics.r2_score,
+    "rmsle": lambda y, p: metrics.mean_squared_log_error(y, p) ** 0.5,
 }
+
+# The inverse of the spec's ``target_transform``: the target ships on that scale, the metric is on the original one.
+INVERSE = {"identity": lambda v: v, "log": np.exp, "log1p": np.expm1, "log10": lambda v: np.power(10.0, v)}
 
 
 def find_container(path: Path) -> Path:
@@ -104,7 +110,7 @@ def main(path: Path) -> float | None:
     for key in ("name", "kind", "prediction", "greater_is_better", "origin", "original", "reference", "definition"):
         if spec.get(key) is not None:
             print(f"  {key}: {spec[key]}")
-    for key in ("params", "inputs", "reason"):
+    for key in ("params", "inputs", "reason", "target_transform"):
         if spec.get(key):
             print(f"  {key}: {spec[key]}")
 
@@ -139,6 +145,9 @@ def main(path: Path) -> float | None:
     if spec["prediction"] == "proba" and len(classes) == 2:
         y_true, labels = (y_test == classes[1]).astype(int), [0, 1]  # the positive class is the second
     kwargs = {"labels": labels} if spec["name"] == "log_loss" else {}
+    inverse = INVERSE[spec.get("target_transform") or "identity"]  # identity in format 1 and for classification
+    if spec["prediction"] == "value":
+        y_true, y_pred = inverse(np.asarray(y_true, dtype=float)), inverse(np.asarray(y_pred, dtype=float))
     value = float(STANDARD[spec["name"]](y_true, y_pred, **kwargs))
     print(f"{spec['name']} of a random prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
     return value

@@ -140,8 +140,10 @@ class PerthHousePrices(AbstractCuratedDataset):
     # Task
     target = "log_PRICE"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="Kaggle dataset (scraped listings), no task or metric defined by the source; regression default rmse on the log target."
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A Kaggle dataset (scraped listings) with no task or metric defined by the source. For a sale price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
     )
 
     # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), April to December 2020.

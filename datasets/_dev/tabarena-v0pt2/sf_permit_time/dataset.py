@@ -140,8 +140,10 @@ class SfPermitTime(AbstractCuratedDataset):
     # Task
     target = "DaysToIssue"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="The source is the City of San Francisco's open-data Building Permits table (DataSF), with no prediction task or metric; the task (time to issue at filing) is ours. RMSE on the log target scores relative error, the natural choice for waiting times.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="The source is the City of San Francisco's open-data Building Permits table (DataSF), with no prediction task or metric; the task (time to issue at filing) is ours. For a waiting time of days to years the error that matters is relative to the time, so RMSLE on the days.",
+        target_transform="log",
     )
 
     # Splits

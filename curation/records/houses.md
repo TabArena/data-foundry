@@ -37,6 +37,10 @@ Andrej: non-iid. Currently, we do not include spatial data as non-iid. Might cha
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The paper is a spatial-econometrics estimation paper: it models ln(median house value) by least squares / spatial autoregression and compares fits, without a prediction metric. RMSE on the log target follows from its least-squares setup.
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a house value's error matters relative to the value; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 Pace and Barry (1997), "Sparse Spatial Autoregressions", Statistics and Probability Letters.

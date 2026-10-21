@@ -74,8 +74,10 @@ class BloodTestsDrinkPrediction(AbstractCuratedDataset):
     # Task
     target = "drinks"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="The source frames a classification of liver disorder (the selector column was misread as the label); McDermott & Forsyth say the intended label is drinks dichotomised, with no metric for a regression on the count. Our regression on drinks is our own task, so the regression fallback applies.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="The source frames a classification of liver disorder (the selector column was misread as the label); McDermott & Forsyth say the intended label is drinks dichotomised, with no metric for a regression on the count. Our regression on drinks is our own task. Drinks per day is a right-skewed count whose error matters relative to the amount (two drinks off is a large miss for a light drinker, a small one for a heavy drinker), so RMSLE on the count.",
+        target_transform="log1p",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

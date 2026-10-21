@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:8812338d8470ec5e6e442949c5180ef7f873848637c1bed6675477575c0cd6d1
+checksum: v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af
 build: null
 build_stale: false
 data:
@@ -17,7 +17,7 @@ data:
 task:
   target: log1p_meter_reading
   problem_type: regression
-  metric: rmse
+  metric: rmsle
   metric_origin: source
   scoring_columns: null
   split_regime: temporal_non_iid
@@ -58,9 +58,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_meter_reading`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
+Regression of `log1p_meter_reading`, scored with `rmsle` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:8812338d8470ec5e6e442949c5180ef7f873848637c1bed6675477575c0cd6d1`.
+Not built yet. The current definition gives checksum `v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af`.
 
 ## In brief
 
@@ -135,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 2,500,000 x 16 |
 | task.target | log1p_meter_reading |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | timestamp |
 
@@ -143,11 +143,12 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
+| name | `rmsle` (standard; takes value; lower is better) |
 | origin | source: the source's metric |
 | original | RMSLE (Root Mean Squared Logarithmic Error) |
 | reference | https://www.kaggle.com/competitions/ashrae-energy-prediction/overview/evaluation |
-| definition | sqrt(mean((log1p(pred) - log1p(actual))^2)) over all meter-hours; our target is log1p_meter_reading, so RMSE on it equals the competition's RMSLE. |
+| definition | sqrt(mean((log1p(pred) - log1p(actual))^2)) of kWh over all meter-hours, computed after the inverse of our log1p_meter_reading target. |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>
@@ -215,7 +216,7 @@ We start with the Kaggle competition's train.csv (2016), building_metadata.csv a
 - The weather is in UTC and the readings in local time (p. 8): we shift it by the 1st place solution's offsets and join it on site and hour. Daylight saving time at 8 sites changed RMSE by -0.007 to +0.005 per window, so we keep standard time.
 - Recording errors, removed as all top five teams did: site 0's electricity before 2016-05-21, electricity at 0, chilled water at 0 for 48 hours or more in May-October and steam or hot water in November-April, readings stuck for a week or more (site 5's electricity, March-November 2017), and building 1099's steam unit error (above 10 times its median, January-June 2016). 1.70M hours (4.2%, decision table).
 - 94.5% of the 2016 hours we drop are on the 1st place team's hand-made list of bad readings, and they cover 64% of that list. Zeros of heating and cooling meters outside their season stay: a plant switched off, which a model can learn.
-- The target is log1p of kWh, so RMSE is the competition's RMSLE, in one unit for all meters.
+- The target is log1p of kWh, in one unit for all meters; the metric is the competition's RMSLE on kWh, computed after the inverse (`target_transform="log1p"`).
 - building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
 - precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
 

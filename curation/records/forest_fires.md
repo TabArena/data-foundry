@@ -45,6 +45,10 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task after the task-p
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — Cortez & Morais 2007 rank models by MAD of the burned area on the raw scale (RMSE also reported); the target now ships in hectares, the log1p transform is dropped (MET-3, MET-5). Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-21):** the burned area ships on a log1p scale again (`np.log1p`, as before today's change, the authors' modelling scale) and is scored by MAE on the area in hectares, after the inverse, as Cortez & Morais scored MAD (`Metric.source("mae", target_transform="log1p")`, MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 @article{cortez2007data,

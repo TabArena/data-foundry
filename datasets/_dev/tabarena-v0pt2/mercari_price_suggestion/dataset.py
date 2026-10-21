@@ -60,7 +60,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     curation_comments = """
         We start from the Kaggle competition dataset.
 
-        - We log1p scale the target, so RMSE on it is the competition's RMSLE on the price.
+        - We log1p scale the target; the metric is the competition's RMSLE on the price, computed after the inverse (`target_transform="log1p"`).
         - The dataset was solved by Kaggle experts by tabular models and a lot of custom string preprocessing. So it is a great use case to test encoding pipelines! The dataset also has mostly string data.
         - The task was treated and solved as an IID task on Kaggle.
         - We replace "No description yet" with NaN.
@@ -71,10 +71,12 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     target = "price"
     problem_type = "regression"
     metric = Metric.source(
-        "rmse",
+        "rmsle",
         original="Root Mean Squared Logarithmic Error",
         reference="https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/overview/evaluation",
-        definition="RMSE on the shipped log1p(price), which equals the competition's RMSLE on the price",
+        definition="sqrt(mean((log1p(p) - log1p(a))^2)) of the price in US dollars, computed after the inverse of the "
+        "shipped log1p(price)",
+        target_transform="log1p",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

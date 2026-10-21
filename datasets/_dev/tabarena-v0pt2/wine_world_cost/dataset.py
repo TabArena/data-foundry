@@ -70,8 +70,10 @@ class WineWorldCost(AbstractCuratedDataset):
     # Task
     target = "Price"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="Scraped Kaggle dataset with no competition, paper or stated metric",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A scraped Kaggle dataset with no competition, paper or stated metric. For a bottle's price the error that matters is relative to the price (a pound off a cheap bottle is a large miss, on a rare one a small one), so RMSLE on the price.",
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

@@ -443,9 +443,7 @@ def test_par_k_equals_the_reference_on_log_runtimes() -> None:
     log_target = np.log(runtime)  # as sat11 stores it; exp(log(5000)) is 5000.000000000004
     predicted = log_target + rng.normal(scale=1.0, size=len(runtime))
     shuffle = rng.permutation(len(runtime))  # shuffled rows, as shipped
-    spec = _spec(
-        "par_k", "regression", params={"cutoff": 5000, "k": 10, "target_transform": "log"}, inputs={"group": "i"}
-    )
+    spec = _spec("par_k", "regression", params={"cutoff": 5000, "k": 10}, inputs={"group": "i"}, target_transform="log")
     value = score(spec, log_target[shuffle], predicted[shuffle], group=instance[shuffle])
     assert value == pytest.approx(_par_k_reference(runtime, predicted, instance, 5000, 10), rel=1e-12)
 
@@ -457,6 +455,8 @@ def test_par_k_by_hand() -> None:
     assert value == pytest.approx((3 + 1000) / 2)
     with pytest.raises(ValueError, match="missing param"):
         Metric.source("par_k")
+    with pytest.raises(ValueError, match="takes the params"):  # the spec-level target_transform is the one way
+        Metric.source("par_k", params={"cutoff": 100, "target_transform": "log"})
 
 
 # --- normalized_early_detection_utility (PhysioNet/CinC 2019) ------------------------------------------------------
@@ -649,7 +649,7 @@ _CHECK_PARAMS = {
     "cost_matrix": {"labels": ["no", "yes"], "matrix": [[0, 1], [5, 0]]},
     "precision_at_k": {"k_fraction": 0.2},
     "average_precision_at_k": {"k_fraction": 0.1},
-    "par_k": {"cutoff": 5000, "target_transform": "log"},
+    "par_k": {"cutoff": 5000},
 }
 
 

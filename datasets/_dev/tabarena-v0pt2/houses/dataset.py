@@ -73,8 +73,10 @@ class Houses(AbstractCuratedDataset):
     # Task
     target = "LnMedianHouseValue"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="The paper is a spatial-econometrics estimation paper: it models ln(median house value) by least squares / spatial autoregression and compares fits, without a prediction metric. RMSE on the log target follows from its least-squares setup.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="The paper is a spatial-econometrics estimation paper: it models ln(median house value) by least squares / spatial autoregression and compares fits, without a prediction metric. For a house value the error that matters is relative to the value (the paper's own log scale), so RMSLE on the median house value.",
+        target_transform="log",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

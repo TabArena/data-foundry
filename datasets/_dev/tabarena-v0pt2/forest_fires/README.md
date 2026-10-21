@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: v2:273458f178e4609b95603b66ff47531cebb064732f3d60b9c88a1acc35a7eebc
+checksum: v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2
 build:
   uuid: 01a111fc-a4a0-72df-82ce-c3f0eed0000e
   checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `area`, scored with `mae` on IID splits. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:273458f178e4609b95603b66ff47531cebb064732f3d60b9c88a1acc35a7eebc`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -80,7 +80,7 @@ Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` 
 
 **One row.** One forest fire in the Montesinho natural park in northeast Portugal, 2000-2003 (517 fires).
 
-**Predicted.** The burned area in hectares; 48% of the fires burned 0 ha.
+**Predicted.** The burned area in hectares, shipped on a log1p scale for modelling; scored by MAE on the area in hectares. 48% of the fires burned 0 ha.
 
 **Known at prediction time.** The fire's square on a grid map of the park, the month and weekday, four components of the Canadian fire weather index, and the temperature, humidity, wind and rain.
 
@@ -145,6 +145,7 @@ Only curators run `build`, when the dataset ships.
 | original | MAD (mean absolute deviation) of the burned area; RMSE also reported, models ranked by MAD |
 | reference | Cortez & Morais 2007, A data mining approach to predict forest fires using meteorological data (EPIA 2007), Sec. 3-4; UCI forestfires.names |
 | definition | mean absolute error of the burned area in hectares, on the raw scale |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
@@ -175,18 +176,18 @@ The first 5 of 517 rows of the final frame (random rows: the frame is shuffled);
 
 | area | X | Y | month | day | FFMC | DMC | DC | ISI | temp | RH | wind |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 4 | 3 | aug | sun | 90.2 | 99.6 | 631.2 | 6.3 | 21.5 | 34 | 2.2 |
-| 0 | 7 | 4 | aug | sat | 90.2 | 110.9 | 537.4 | 6.2 | 19.5 | 43 | 5.8 |
-| 0 | 4 | 5 | sep | fri | 94.3 | 85.1 | 692.3 | 15.9 | 17.7 | 37 | 3.6 |
-| 0.41 | 7 | 4 | sep | sun | 89.6 | 84.1 | 714.3 | 5.7 | 17.1 | 53 | 5.4 |
-| 0 | 5 | 5 | mar | sat | 91.7 | 35.8 | 80.8 | 7.8 | 15.1 | 27 | 5.4 |
+| 0 | 2 | 2 | aug | mon | 91.1 | 103.2 | 638.8 | 5.8 | 23.1 | 31 | 3.1 |
+| 3.41707 | 4 | 4 | sep | sun | 92.4 | 124.1 | 680.7 | 8.5 | 16.9 | 60 | 1.3 |
+| 2.39425 | 7 | 4 | feb | mon | 84.7 | 9.5 | 58.3 | 4.1 | 7.5 | 71 | 6.3 |
+| 0 | 5 | 4 | apr | sun | 91 | 14.6 | 25.6 | 12.3 | 17.6 | 27 | 5.8 |
+| 2.12346 | 4 | 3 | jul | sun | 93.7 | 101.3 | 423.4 | 14.7 | 26.1 | 45 | 4 |
 
 ## Curation notes
 
 We start with the data from UCI.
 
 - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
-- We ship the burned area in hectares, as the authors scored it: they fit on log1p(area) and computed MAD and RMSE on the raw area after back-transforming the predictions (Cortez and Morais 2007, Sec. 3-4).
+- We log1p scale the target as suggested by the authors, and score it as they did: they fit on log1p(area) and computed MAD and RMSE on the raw area after back-transforming the predictions (Cortez and Morais 2007, Sec. 3-4), so the metric is MAE after the inverse (`target_transform="log1p"`, MET-3).
 - The data contains naturally occurring duplicates.
 
 ## Splits
@@ -281,17 +282,17 @@ Default splits.
 |---|---|---|---|---|---|
 | month | category | 0 | 0 | 12 | aug, sep, mar, jul, feb, jun, oct, apr, dec, jan |
 | day | category | 0 | 0 | 7 | sun, fri, sat, mon, tue, thu, wed |
-| FFMC | float64 | 0 | 0 | 106 | 91.6, 92.1, 91.0, 91.7, 93.7, 92.4, 92.5, 94.8, 90.2, 90.1 |
-| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 231.1, 142.4, 35.8, 108.3, 126.5, 137.0, 108.4, 145.4 |
-| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 692.3, 715.1, 601.4, 698.6, 686.5, 80.8, 706.4, 647.1 |
-| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 7.8, 14.3 |
-| temp | float64 | 0 | 0 | 192 | 17.4, 19.6, 20.6, 15.4, 15.2, 21.9, 23.4, 20.1, 19.3, 15.9 |
-| wind | float64 | 0 | 0 | 21 | 2.2, 3.1, 4.0, 4.9, 2.7, 5.4, 4.5, 3.6, 1.8, 5.8 |
-| rain | float64 | 0 | 0 | 7 | 0.0, 0.2, 0.8, 6.4, 1.4, 1.0, 0.4 |
-| area | float64 | 0 | 0 | 251 | 0.0, 1.94, 1.56, 6.43, 28.66, 0.68, 0.9, 1.75, 2.18, 3.71 |
+| FFMC | float64 | 0 | 0 | 106 | 92.1, 91.6, 91.0, 91.7, 93.7, 92.4, 92.5, 94.8, 90.1, 90.2 |
+| DMC | float64 | 0 | 0 | 215 | 99.0, 129.5, 142.4, 231.1, 126.5, 35.8, 108.4, 108.3, 137.0, 152.6 |
+| DC | float64 | 0 | 0 | 219 | 745.3, 692.6, 601.4, 715.1, 692.3, 698.6, 686.5, 706.4, 764.0, 647.1 |
+| ISI | float64 | 0 | 0 | 119 | 9.6, 7.1, 6.3, 8.4, 7.0, 6.2, 9.2, 7.5, 9.0, 8.1 |
+| temp | float64 | 0 | 0 | 192 | 19.6, 17.4, 20.6, 15.4, 21.9, 15.2, 18.2, 23.4, 20.1, 19.1 |
+| wind | float64 | 0 | 0 | 21 | 3.1, 2.2, 4.0, 4.9, 2.7, 5.4, 4.5, 3.6, 1.8, 5.8 |
+| rain | float64 | 0 | 0 | 7 | 0.0, 0.8, 0.2, 1.4, 6.4, 1.0, 0.4 |
+| area | float64 | 0 | 0 | 251 | 0.0, 1.0784, 2.3943, 3.3898, 0.6419, 1.5497, 0.9708, 1.0818, 0.4187, 2.0055 |
 | X | int64 | 0 | 0 | 9 | 4, 6, 2, 8, 7, 3, 1, 5, 9 |
 | Y | int64 | 0 | 0 | 7 | 4, 5, 6, 3, 2, 9, 8 |
-| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 45, 34, 40, 33, 46 |
+| RH | int64 | 0 | 0 | 75 | 27, 39, 35, 43, 42, 34, 45, 33, 40, 46 |
 
 </details>
 
@@ -299,7 +300,7 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 47.78 | 12.847 | 1.218 | 4052.06 | 1.956 | log1p | 2271.5 | 1994.2 | lognormal |
+| 0 | 0 | 47.78 | 1.218 | 0.507 | 1.956 | 0.365 | log1p | 950.1 | 1542.7 | exponential |
 
 ### Numeric features
 
@@ -318,7 +319,7 @@ Default splits.
 | RH | 517 | 44.2882 | 16.3175 | 15 | 100 |
 | wind | 517 | 4.0176 | 1.79165 | 0.4 | 9.4 |
 | rain | 517 | 0.0216634 | 0.295959 | 0 | 6.4 |
-| area | 517 | 12.8473 | 63.6558 | 0 | 1090.84 |
+| area | 517 | 1.11103 | 1.39844 | 0 | 6.99562 |
 
 </details>
 
@@ -348,4 +349,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:273458f178e4609b95603b66ff47531cebb064732f3d60b9c88a1acc35a7eebc` |
+| stale | yes: the definition now gives checksum `v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2` |

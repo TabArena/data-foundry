@@ -388,6 +388,17 @@ METRIC_ORIGINS = {
 }
 
 
+def _target_scale(spec: Any) -> str | None:
+    """The README's line on a target that ships transformed for modelling (``target_transform``), else None."""
+    transform = getattr(spec, "target_transform", "identity") or "identity"
+    if transform == "identity":
+        return None
+    return (
+        f"ships on the `{transform}` scale for modelling; scored on the original scale after the inverse of "
+        f"`{transform}`"
+    )
+
+
 def _metric_block(task: Any) -> list[str]:
     """The metric spec (name, origin, original, reference, definition) and the scoring columns."""
     spec = task.objective_metric
@@ -405,6 +416,7 @@ def _metric_block(task: Any) -> list[str]:
             ("reason", spec.reason),
             ("params", spec.params or None),
             ("inputs", ", ".join(f"{role}: `{column}`" for role, column in spec.inputs.items()) or None),
+            ("target scale", _target_scale(spec)),
         )
         if value
     ]

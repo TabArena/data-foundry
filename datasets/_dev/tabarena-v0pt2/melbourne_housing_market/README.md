@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: melbourne_housing_market
 container_format: 2
-checksum: v2:bb22c0cab16be4c7f5838735ae51369d155f5a47e812c18088ae183e49aaf19f
+checksum: v2:265cf4eacee1f321290c11bd199c7b3df0c702ddd96bc07dad00f4da2096bdbc
 build: null
 build_stale: false
 data:
@@ -18,8 +18,8 @@ data:
 task:
   target: log_price
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
@@ -60,9 +60,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_price`, scored with `rmse` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2018).
+Regression of `log_price`, scored with `rmsle` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2018).
 
-Not built yet. The current definition gives checksum `v2:bb22c0cab16be4c7f5838735ae51369d155f5a47e812c18088ae183e49aaf19f`.
+Not built yet. The current definition gives checksum `v2:265cf4eacee1f321290c11bd199c7b3df0c702ddd96bc07dad00f4da2096bdbc`.
 
 ## In brief
 
@@ -134,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 21,266 x 20 |
 | task.target | log_price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
 
@@ -142,10 +142,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Kaggle dataset without a task or metric; regression fallback rmse (on the log target, close to RMSLE). |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A Kaggle dataset without a task or metric. For a sale price the error that matters is relative to the price, so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 6 categorical, 1 string, 1 datetime</summary>

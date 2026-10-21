@@ -51,6 +51,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source par_k {"cutoff": 5000, "k": 10, "target_transform": "log", "timeout_rel_tol": 0.0001} — PAR10 (penalized average runtime, factor 10) of the selected algorithm; also reported as the fraction of the single-best to virtual-best gap closed (Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237:41-58; Pulatov et al. 2022 (PMLR v188)); inputs {"group": "instance_id"}.
 
+**Assessment (AI, 2026-10-21):** the log transform of the runtime moved from par_k's `target_transform` param to the spec-level `target_transform="log"` (the param is removed, so no double inverse is possible); the score is unchanged. Needs a rebuild to reach the container.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

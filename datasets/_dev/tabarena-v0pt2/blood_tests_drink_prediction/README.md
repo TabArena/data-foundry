@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: blood_tests_drink_prediction
 container_format: 2
-checksum: v2:eb274e825f2f48ef86e6e1c18f994879c905509a7be179046bd36bc6d9e4f23e
+checksum: v2:25374b9fad0ee91ce8ffef4d1d02adbb651377ceedd324b14676299e840ca7ee
 build:
   uuid: 01a111fc-c9a3-7ff6-8480-be0052f38d83
   checksum: v2:67e715194799b5b1dda8194df914d6b8b3c46f2b3f458edeca14bc728273a081
@@ -28,8 +28,8 @@ data:
 task:
   target: drinks
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: iid
   stratify_on: null
@@ -66,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `drinks`, scored with `rmse` on IID splits. 345 rows and 5 features. Source: UCI (1990).
+Regression of `drinks`, scored with `rmsle` on IID splits. 345 rows and 5 features. Source: UCI (1990).
 
-Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:eb274e825f2f48ef86e6e1c18f994879c905509a7be179046bd36bc6d9e4f23e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c9a3-7ff6-8480-be0052f38d83` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:25374b9fad0ee91ce8ffef4d1d02adbb651377ceedd324b14676299e840ca7ee`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,17 +133,18 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 345 x 6 |
 | task.target | drinks |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | iid |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | The source frames a classification of liver disorder (the selector column was misread as the label); McDermott & Forsyth say the intended label is drinks dichotomised, with no metric for a regression on the count. Our regression on drinks is our own task, so the regression fallback applies. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | The source frames a classification of liver disorder (the selector column was misread as the label); McDermott & Forsyth say the intended label is drinks dichotomised, with no metric for a regression on the count. Our regression on drinks is our own task. Drinks per day is a right-skewed count whose error matters relative to the amount (two drinks off is a large miss for a light drinker, a small one for a heavy drinker), so RMSLE on the count. |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -314,4 +315,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:eb274e825f2f48ef86e6e1c18f994879c905509a7be179046bd36bc6d9e4f23e` |
+| stale | yes: the definition now gives checksum `v2:25374b9fad0ee91ce8ffef4d1d02adbb651377ceedd324b14676299e840ca7ee` |

@@ -174,11 +174,10 @@ class Onlinenewspopularity(AbstractCuratedDataset):
     # Task
     target = "log_shares"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason=(
-            "The paper scores a binary task (shares >= 1,400 threshold) with accuracy/F1/AUC; we ship a regression on "
-            "log shares, so the original target is not ours; rmse on the log target is the regression fallback."
-        )
+    metric = Metric.from_context(
+        "rmsle",
+        reason="The paper scores a binary task (shares >= 1,400) with accuracy/F1/AUC; we ship a regression on the shares, so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares.",
+        target_transform="log",
     )
 
     # Splits: nine two-week windows, the size of the paper's rolling test sets, with a one-week gap.

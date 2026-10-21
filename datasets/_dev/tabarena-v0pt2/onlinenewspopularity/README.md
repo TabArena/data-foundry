@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: onlinenewspopularity
 container_format: 2
-checksum: v2:7e75013d8ced5e90786799669112e4360601616ed996f060a2abb72898288927
+checksum: v2:ae660df9296f0bd314f42a0e3f972fd93bbcba551c85d786075c4ff604187184
 build: null
 build_stale: false
 data:
@@ -16,8 +16,8 @@ data:
 task:
   target: log_shares
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
@@ -56,9 +56,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_shares`, scored with `rmse` on temporal splits by `publication_date`. 39,643 rows and 39 features. Source: UCI (2015).
+Regression of `log_shares`, scored with `rmsle` on temporal splits by `publication_date`. 39,643 rows and 39 features. Source: UCI (2015).
 
-Not built yet. The current definition gives checksum `v2:7e75013d8ced5e90786799669112e4360601616ed996f060a2abb72898288927`.
+Not built yet. The current definition gives checksum `v2:ae660df9296f0bd314f42a0e3f972fd93bbcba551c85d786075c4ff604187184`.
 
 ## In brief
 
@@ -128,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 39,643 x 40 |
 | task.target | log_shares |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | publication_date |
 
@@ -136,10 +136,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | The paper scores a binary task (shares >= 1,400 threshold) with accuracy/F1/AUC; we ship a regression on log shares, so the original target is not ours; rmse on the log target is the regression fallback. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | The paper scores a binary task (shares >= 1,400) with accuracy/F1/AUC; we ship a regression on the shares, so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>

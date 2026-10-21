@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: video_transcoding_time_prediction
 container_format: 2
-checksum: v2:99ecb1f7b1396b5e08b714d7bb049357bdb8af17795a9a789ce7e450fdcdc1b2
+checksum: v2:25c0e012a4e71afaebb5bb132a75648f822e72451bdee817330876b6689d1be4
 build:
   uuid: 01a111fc-7b5a-7853-8e13-f42ccc0c3b03
   checksum: v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5
@@ -29,8 +29,8 @@ data:
 task:
   target: log_transcoding_time
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
@@ -74,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_transcoding_time`, scored with `rmse` on grouped splits by `video_id`. 68,784 rows and 18 features. Source: UCI (2015).
+Regression of `log_transcoding_time`, scored with `rmsle` on grouped splits by `video_id`. 68,784 rows and 18 features. Source: UCI (2015).
 
-Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:99ecb1f7b1396b5e08b714d7bb049357bdb8af17795a9a789ce7e450fdcdc1b2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:25c0e012a4e71afaebb5bb132a75648f822e72451bdee817330876b6689d1be4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 68,784 x 20 |
 | task.target | log_transcoding_time |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | grouped_non_iid |
 | task.group_on | video_id |
 | task.group_labels | per_sample |
@@ -147,10 +147,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Deneke et al. 2014 (ICME, paywalled) are cited for R2 0.958 between predicted and measured time in Deneke's 2017 dissertation abstract; not read, and R2 on the raw time is not computable on the shipped log target. rmse on log time is the regression fallback. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | Deneke et al. 2014 (ICME, paywalled) are cited for R2 0.958 between predicted and measured time in Deneke's 2017 dissertation abstract; not read, so the source's metric is not verified. Transcoding times span orders of magnitude and a scheduler cares about a job's time relative to its size, so RMSLE on the time. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
@@ -196,7 +197,7 @@ We use the tabular prediction task from the UCI archive, which is a video transc
 - Some features on the videos (like URL and category) are not part of this dataset as we got it from UCI, but this sounds like a good idea for the task.
 - The data includes several transcoding per video (also with different output target formats), which creates a non-IID setting. We will use the video id as the group label, and we will make sure to split the data such that all transcoding measurements for a given video are in the same split (train/test).
 - We log scale the target variable.
-- Metric: the fallback rmse on the log time, not the paper's R2 on the raw time (known only from a dissertation abstract); the curator accepted this (Lennart, 2026-10-21).
+- Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
 
 ## Splits
 
@@ -345,4 +346,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:99ecb1f7b1396b5e08b714d7bb049357bdb8af17795a9a789ce7e450fdcdc1b2` |
+| stale | yes: the definition now gives checksum `v2:25c0e012a4e71afaebb5bb132a75648f822e72451bdee817330876b6689d1be4` |

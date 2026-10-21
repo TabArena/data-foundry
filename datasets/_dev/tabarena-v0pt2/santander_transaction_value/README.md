@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_transaction_value
 container_format: 2
-checksum: v2:f16ca4e6497b82abee316dc5e9a2c4954df515b3be6429f810bef5f5c4d2e0bf
+checksum: v2:550727ef7852af5423fa54dce2d6cacaede2bb34e957aa2997b80da1c836e276
 build:
   uuid: 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
   checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
@@ -28,7 +28,7 @@ data:
 task:
   target: target
   problem_type: regression
-  metric: rmse
+  metric: rmsle
   metric_origin: source
   scoring_columns: null
   split_regime: iid
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `target`, scored with `rmse` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
+Regression of `target`, scored with `rmsle` on IID splits. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:f16ca4e6497b82abee316dc5e9a2c4954df515b3be6429f810bef5f5c4d2e0bf`, so the build is stale. See [Build](#build).
+Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:550727ef7852af5423fa54dce2d6cacaede2bb34e957aa2997b80da1c836e276`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,18 +132,19 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 4,447 x 541 |
 | task.target | target |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | iid |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
+| name | `rmsle` (standard; takes value; lower is better) |
 | origin | source: the source's metric |
 | original | Root Mean Squared Logarithmic Error (RMSLE) |
 | reference | https://www.kaggle.com/competitions/santander-value-prediction-challenge/overview/evaluation |
-| definition | sqrt(mean((log1p(y_hat) - log1p(y))^2)) on the raw transaction value; the stored target is log1p(target), so RMSE on it equals the competition's RMSLE |
+| definition | sqrt(mean((log1p(y_hat) - log1p(y))^2)) on the raw transaction value, computed after the inverse of the stored log1p(target) |
+| target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -190,8 +191,9 @@ We start with the train.csv from Kaggle.
 - Since we restrict to the train.csv, we do not exploit the test leak of the competition.
 - The expert preprocessing aggregates over feature groups per row to create the new features for the final dataset. Feature groups for aggregation are found by searching for chains of features (?).
 - The data contains a very small number of duplicates. We remove them to avoid leakage in our own splits.
-- We store log1p of the competition's target (until 2026-10-14 the metric was `rmsle`, which logged the stored
-  target a second time).
+- We store log1p of the competition's target; the metric is the competition's RMSLE on the raw value, computed
+  after the inverse (`target_transform="log1p"`; until 2026-10-14 the metric was `rmsle` without the inverse,
+  which logged the stored target a second time).
 - ForcedIIDFromTemporal: the columns form time series (the 40 ordered columns the code starts from are
   successive steps), and rows chain in time: in train.csv, 1,415 row pairs hold the same 40 values shifted by
   one step. The file has no date, so the split stays random and chained rows can fall on both sides.
@@ -386,4 +388,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f16ca4e6497b82abee316dc5e9a2c4954df515b3be6429f810bef5f5c4d2e0bf` |
+| stale | yes: the definition now gives checksum `v2:550727ef7852af5423fa54dce2d6cacaede2bb34e957aa2997b80da1c836e276` |

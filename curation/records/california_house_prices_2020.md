@@ -76,6 +76,8 @@ CC (2026-10-21, Lennart): We want to keep real repeats, as houses can be sold se
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE, the competition's evaluation metric, as RMSE on log1p(Sold Price).
 
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the sale price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
 ## Reference
 
 Kaggle

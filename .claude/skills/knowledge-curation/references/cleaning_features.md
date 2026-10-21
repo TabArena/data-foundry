@@ -100,7 +100,7 @@ RDKit fragment count, `NoOfURLRedirect`, `mosque_count_500`, an aggregate over a
 and name the column after the transform (`log_days_to_death`).
 
 **CLEAN-17 (Should).** Keep rare classes of the source's labels (TP-8), and merge classes only by an established
-convention of the field, with the merge tested (TP-7): [task_probes.md](task_probes.md). Cases: audiology_diagnosis.
+convention of the field, with the merge tested (TP-7): [task_probes.md](task_probes.md). Cases: audiology_diagnosis, force_2020 (a class in one group only).
 
 **CLEAN-18 (Should).** Remove a `Multi-target` tag when the dataset predicts one target ([selection.md](selection.md),
 "Reading decision markers and optional fields").
@@ -175,6 +175,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-14 | qsar_oral_toxicity, hiva_agnostic, qsar_tid_11 | fingerprint bits and binary structure descriptors, checked to hold only 0 and 1, typed categorical (int64, category and float64 before) (2026-10-21, Lennart) | applied |
 | CLEAN-14 | every 0/1 flag of the working copy (35 definitions, e.g. framingham_heart_study_fhs, phiusil_phishing, bioresponse, home_credit_default_risk, zillow_prize) | first applied on the data: every feature holding only 0 and 1 typed categorical, counts and anonymized descriptors included; revised the same day by meaning: flags kept categorical (`waterfront`, `male`, `Promo`, `FLAG_DOCUMENT_*`, santander's `ind_var*` indicators, zillow's presence flags), counts reverted to numeric (RDKit fragment counts, `NoOfURLRedirect`, `mosque_count_*`, coil_2000's policy counts, cardiotocography's `DS`, home credit aggregates), anonymized descriptors reverted (amex_non_iid_1m, ieee_fraud_detection's V columns, bioresponse, homesite_quote_conversion's fields); the case that prompted the second amendment (2026-10-21, Lennart) | applied |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
+| CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |
 | CLEAN-20 | santander_customer_transaction_prediction | `has_one` won the competition and is not copied | applied |
 | CLEAN-21 | college_scorecard | the SAT was redesigned in 2016, so from the 2017 cohort on an institution's scores jump while its students stay the same; the College Board's concordance tables put SATMT25, SATMT75 and SAT_AVG back on the old scale (median change 2016 to 2017 within an institution: 0 instead of +30); a section without a conversion table stays dropped (2026-10-16, Lennart) | applied |

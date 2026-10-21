@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: v2:0bb563d422cd77162ffc4ccad6884098795a42095359c75b5c6a1f8c9349bee0
+checksum: v2:5017506377aac331768eb40d28e0055a1a417d4e4e7f82db86bba0d5eb3cc817
 build:
   uuid: 01a111fb-de83-7f11-84c7-a33ce2f7887a
   checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
@@ -30,8 +30,8 @@ data:
 task:
   target: DaysToIssue
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
@@ -76,9 +76,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `DaysToIssue`, scored with `rmse` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
+Regression of `DaysToIssue`, scored with `rmsle` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
 
-Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0bb563d422cd77162ffc4ccad6884098795a42095359c75b5c6a1f8c9349bee0`, so the build is stale. See [Build](#build).
+Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5017506377aac331768eb40d28e0055a1a417d4e4e7f82db86bba0d5eb3cc817`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,7 +149,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 99,847 x 38 |
 | task.target | DaysToIssue |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Filed Date |
 
@@ -157,10 +157,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | The source is the City of San Francisco's open-data Building Permits table (DataSF), with no prediction task or metric; the task (time to issue at filing) is ours. RMSE on the log target scores relative error, the natural choice for waiting times. |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | The source is the City of San Francisco's open-data Building Permits table (DataSF), with no prediction task or metric; the task (time to issue at filing) is ours. For a waiting time of days to years the error that matters is relative to the time, so RMSLE on the days. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 14 categorical, 14 string, 1 datetime</summary>
@@ -409,4 +410,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0bb563d422cd77162ffc4ccad6884098795a42095359c75b5c6a1f8c9349bee0` |
+| stale | yes: the definition now gives checksum `v2:5017506377aac331768eb40d28e0055a1a417d4e4e7f82db86bba0d5eb3cc817` |

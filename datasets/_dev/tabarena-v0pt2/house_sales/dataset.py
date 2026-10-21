@@ -273,8 +273,10 @@ class HouseSales(AbstractCuratedDataset):
     # Task
     target = "log_price"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="Neither the King County assessor extracts nor the Kaggle dataset card define a task metric; the Coursera course that first distributed kc_house_data used RSS/RMSE on raw price as a teaching exercise, not a benchmark definition. RMSE on the log price is the obvious choice for a price model.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Neither the King County assessor extracts nor the Kaggle dataset card define a task metric (the Coursera course that first distributed kc_house_data used RSS/RMSE on the raw price as a teaching exercise, not a benchmark definition). For a sale price the error that matters is relative to the price (prices range from $75,000 to $7.7 million), so RMSLE on the price.",
+        target_transform="log",
     )
 
     # Splits

@@ -290,3 +290,76 @@ def test_a_metric_from_context_needs_a_reason():
     assert (spec["name"], spec["origin"]) == ("rmsle", "context")
     with pytest.raises(TypeError):
         Metric.from_context("rmsle")  # type: ignore[call-arg]
+
+
+# --- target_transform: the target ships on a modelling scale, the metric is computed on the original scale ---------
+
+_TRANSFORMS = {"log": np.log, "log1p": np.log1p, "log10": np.log10}
+
+
+@pytest.mark.parametrize("transform", sorted(_TRANSFORMS))
+@pytest.mark.parametrize("name", ["rmse", "mae", "rmsle", "r2"])
+def test_target_transform_scores_on_the_original_scale(transform: str, name: str) -> None:
+    """The inverse of the shipped scale is applied to y_true and y_pred before the metric."""
+    rng = np.random.default_rng(3)
+    raw = rng.uniform(1, 1000, 400)
+    pred = raw * rng.uniform(0.7, 1.3, 400)
+    forward = _TRANSFORMS[transform]
+    shipped = metric_spec(Metric.source(name, reference="x", target_transform=transform), "regression")
+    plain = metric_spec(Metric.source(name, reference="x"), "regression")
+    assert shipped.target_transform == transform
+    expected = score(plain, raw, pred)
+    assert score(shipped, forward(raw), forward(pred)) == pytest.approx(expected, rel=1e-9)
+    # the dict of the JSON file, the Metric itself and the sklearn scorer all invert
+    assert score(dataclasses.asdict(shipped), forward(raw), forward(pred)) == pytest.approx(expected, rel=1e-9)
+    assert score(Metric.source(name, target_transform=transform), forward(raw), forward(pred)) == pytest.approx(
+        expected, rel=1e-9
+    )
+
+
+def test_rmsle_on_a_log_shipped_target_equals_rmsle_on_the_raw_values() -> None:
+    """RMSLE of a log- or log1p-shipped price is RMSLE on the price."""
+    rng = np.random.default_rng(4)
+    price = rng.lognormal(8, 1, 1000)
+    pred = price * rng.lognormal(0, 0.2, 1000)
+    spec = Metric.from_context("rmsle", reason="a price", target_transform="log").spec("regression")
+    expected = np.sqrt(np.mean((np.log1p(pred) - np.log1p(price)) ** 2))
+    assert score(spec, np.log(price), np.log(pred)) == pytest.approx(expected, rel=1e-9)
+    # rmsle of a log1p-shipped target is the rmse of the shipped values
+    spec = Metric.source("rmsle", reference="x", target_transform="log1p").spec("regression")
+    assert score(spec, np.log1p(price), np.log1p(pred)) == pytest.approx(expected, rel=1e-9)
+
+
+def test_target_transform_is_for_regression_only() -> None:
+    """A transform on a classification metric, or an unknown transform, is refused."""
+    with pytest.raises(ValueError, match="regression"):
+        Metric.source("roc_auc", target_transform="log")
+    with pytest.raises(ValueError, match="regression"):
+        Metric.fallback(reason="none", target_transform="log").spec("binary_classification")
+    with pytest.raises(ValueError, match="target_transform is one of"):
+        Metric.source("rmse", target_transform="sqrt")
+    with pytest.raises(ValueError, match="regression"):
+        MetricSpec(
+            name="roc_auc",
+            kind="standard",
+            prediction="proba",
+            greater_is_better=True,
+            origin="source",
+            target_transform="log",
+        )
+    # a fallback rmse on a log target can declare it too
+    assert Metric.fallback(reason="none", target_transform="log").spec("regression")["target_transform"] == "log"
+
+
+def test_target_transform_round_trips_through_json() -> None:
+    """The field survives the JSON file; a spec saved before it existed reads as identity."""
+    spec = metric_spec(Metric.source("rmsle", reference="x", target_transform="log1p"), "regression")
+    task = PredictiveMLTaskMetadataV2(target_column_name="y", problem_type="regression", objective_metric=spec)
+    adapter = TypeAdapter(PredictiveMLTaskMetadataV2)
+    dumped = json.loads(json.dumps(adapter.dump_python(task, mode="json")))
+    assert dumped["objective_metric"]["target_transform"] == "log1p"
+    assert adapter.validate_python(dumped) == task
+    # a spec saved before the field existed reads as identity
+    del dumped["objective_metric"]["target_transform"]
+    assert adapter.validate_python(dumped).objective_metric.target_transform == "identity"
+    assert any("target_transform" in line for line in spec.describe_lines())

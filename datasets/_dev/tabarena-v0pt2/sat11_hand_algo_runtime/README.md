@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c
+checksum: v2:d47a954fc721e657d83716330ee73672dd20c390cc2337c97f46fddb00f4d31c
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -77,7 +77,7 @@ decisions: []
 
 Regression of `runtime`, scored with `par_k` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d47a954fc721e657d83716330ee73672dd20c390cc2337c97f46fddb00f4d31c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -153,8 +153,9 @@ Only curators run `build`, when the dataset ships.
 | original | PAR10 (penalized average runtime, factor 10) of the selected algorithm; also reported as the fraction of the single-best to virtual-best gap closed |
 | reference | Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237:41-58; Pulatov et al. 2022 (PMLR v188) |
 | definition | per instance select the algorithm with the lowest predicted runtime; its true runtime in seconds (exp of the log target), a timeout (runtime >= 5,000 x (1 - 1e-4)) counted as 50,000 s; mean over instances |
-| params | {'cutoff': 5000, 'k': 10, 'target_transform': 'log', 'timeout_rel_tol': 0.0001} |
+| params | {'cutoff': 5000, 'k': 10, 'timeout_rel_tol': 0.0001} |
 | inputs | group: `instance_id` |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -468,4 +469,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c` |
+| stale | yes: the definition now gives checksum `v2:d47a954fc721e657d83716330ee73672dd20c390cc2337c97f46fddb00f4d31c` |

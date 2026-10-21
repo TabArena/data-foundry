@@ -37,7 +37,11 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-13), and a format-2
   container stores it as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`: `name`, `kind`
   `standard` or `custom`, `prediction` `proba` / `label` / `value`, `greater_is_better`, `params`, `inputs`,
-  `origin` `source` / `stand_in` / `fallback`, `original`, `reference`, `definition`, `reason`). The field
+  `origin` `source` / `stand_in` / `context` / `fallback`, `original`, `reference`, `definition`, `reason`,
+  `target_transform`). A regression target may ship on a modelling scale (`target_transform` `log`, `log1p` or
+  `log10`; `identity` by default): models fit and predict on the shipped scale, and the metric is computed after the
+  inverse of both the true values and the predictions (`score` does it), so the scorer must not be the bare
+  metric on the shipped values. The field
   `objective_metric_name` is gone from format 2; format 1 (BeyondArena) keeps it. The reference implementation of
   every name is `data_foundry.v2.metrics` (numpy, pandas, scikit-learn and scipy only; the custom metrics are tested
   against their official code). The adapter (`adapter.py`) has to:

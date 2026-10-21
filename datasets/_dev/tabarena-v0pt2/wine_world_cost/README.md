@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3
+checksum: v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -29,8 +29,8 @@ data:
 task:
   target: Price
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: rmsle
+  metric_origin: context
   scoring_columns: null
   split_regime: iid
   stratify_on: null
@@ -66,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Price`, scored with `rmse` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
+Regression of `Price`, scored with `rmsle` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,17 +131,18 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,279 x 15 |
 | task.target | Price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | iid |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Scraped Kaggle dataset with no competition, paper or stated metric |
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A scraped Kaggle dataset with no competition, paper or stated metric. For a bottle's price the error that matters is relative to the price (a pound off a cheap bottle is a large miss, on a rare one a small one), so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 3 categorical, 8 string, 0 datetime</summary>
@@ -357,4 +358,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3` |
+| stale | yes: the definition now gives checksum `v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420` |

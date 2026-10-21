@@ -62,14 +62,16 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
         - Some features on the videos (like URL and category) are not part of this dataset as we got it from UCI, but this sounds like a good idea for the task.
         - The data includes several transcoding per video (also with different output target formats), which creates a non-IID setting. We will use the video id as the group label, and we will make sure to split the data such that all transcoding measurements for a given video are in the same split (train/test).
         - We log scale the target variable.
-        - Metric: the fallback rmse on the log time, not the paper's R2 on the raw time (known only from a dissertation abstract); the curator accepted this (Lennart, 2026-10-21).
+        - Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
     """
 
     # Task
     target = "log_transcoding_time"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="Deneke et al. 2014 (ICME, paywalled) are cited for R2 0.958 between predicted and measured time in Deneke's 2017 dissertation abstract; not read, and R2 on the raw time is not computable on the shipped log target. rmse on log time is the regression fallback.",
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Deneke et al. 2014 (ICME, paywalled) are cited for R2 0.958 between predicted and measured time in Deneke's 2017 dissertation abstract; not read, so the source's metric is not verified. Transcoding times span orders of magnitude and a scheduler cares about a job's time relative to its size, so RMSLE on the time.",
+        target_transform="log",
     )
     grouping = Grouping(
         on="video_id",

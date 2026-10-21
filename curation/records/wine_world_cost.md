@@ -38,3 +38,7 @@ Scraped from the web
 **Assessment (AI, 2026-10-14):** the description check asked above is done. No description states the wine's own price (one quotes a stale price of the same wine, 17 compare with other wines). R² over the 9 splits: all text and tabular columns 0.724; with every sentence holding price or value words removed 0.721; everything except the description 0.700. The shop is most likely Majestic Wine (UK): 78 descriptions and 18 titles name it.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — scraped Kaggle dataset with no competition, paper or stated metric.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a bottle price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
