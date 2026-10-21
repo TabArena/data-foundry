@@ -6,13 +6,14 @@ if not, ship as defined now. Kaggle's BankChurners.csv from teaching case 11 of 
 split of one undated snapshot: will a credit card customer close the account? Not built yet.
 
 **Main points:** Are measured marks of generated data enough to retire without a source statement or a generator
-(one standard for three datasets)? Then confirm the keep of the untraceable teaching source.
+(one standard for three datasets)? The untraceable teaching source no longer needs a decision of its own: PROV-2 as
+amended (Lennart, 2026-10-21) keeps a sound upload with a source to point to, so the keep follows issue 1.
 
 **Record judgment:** don't ship yet; issue 1 decides. Validity: SEL-1 holds; USE-1 holds with an approximate fit;
 LEAK-10 maybe (the activity window may end at the closure), kept with a note, since the oldest quarter's count alone
 gives ROC AUC 0.819; LEAK-30 weak, kept (Lennart, 2026-10-19); SPLIT-8 triggered, fixed with the
-`ForcedIIDFromTemporal` tag and the split wording; PROV-1 kept on a screening-era call through a named first platform,
-to be confirmed (issue 3); PROV-3 and SEL-16 maybe generated (issue 1). Value: no task-probe flag, but near the
+`ForcedIIDFromTemporal` tag and the split wording; PROV-1 kept under PROV-2 as amended (Lennart, 2026-10-21; LEAPS case 11, offline, is
+the source to point to) if the data passes PROV-3; PROV-3 and SEL-16 maybe generated (issue 1). Value: no task-probe flag, but near the
 ceiling (CatBoost with default settings, ROC AUC 0.9943); check against the tuned results when they exist. Quality:
 the loose wording the panel found (the 12-month count, the profile columns, the clipped derived columns, "not missing
 at random") is fixed in `dataset.py`. Weighed: an untraceable source and likely constructed columns against a real
@@ -77,31 +78,6 @@ churn use case; the ceiling does not add to the provenance doubt (independent fa
      on weaker evidence than any precedent. Set the standard once and apply it to the three datasets with measured
      marks.
    - Decision needed: which standard, (a) or (b), for this dataset, hepatitis_c_egypt and stroke_prediction.
-
-3. **Confirm the screening-era keep of an untraceable teaching source?** Now follows issue 1: PROV-2 was amended
-   (Lennart, 2026-10-21): "a named first platform (a course or teaching provider) counts as a known source when the
-   data shows no PROV-3 marks". LEAPS case 11 is such a platform, so the source holds if issue 1 finds the measured
-   marks not enough; if they are judged enough, the dataset is `No` (`AHDS`, `Missing source information`) under
-   PROV-3 anyway. Nothing is left to decide here beyond issue 1.
-   - Problem: the trail ends at LEAPS case 11, which is offline. No bank, country or period is named anywhere. The
-     keep ("good to use for now. We can filter later") comes from screening, before the measurements of 2026-10-07; a
-     later stage's measured finding supersedes it, so the keep needs confirming.
-   - Effect: if kept, the benchmark carries a churn table nobody can check against its origin.
-   - For keeping: PROV-1 counts "an identifiable first uploader" as traceable, and the Kaggle uploader names the
-     LEAPS case URL. bank_customer_churn (data from a named data-science course) was kept the same way, and
-     tour_travels_churn (a bare Kaggle upload with no named origin) on less.
-   - Against: course churn data with signs of fakeness went `No` three times (customer_churn_dataset,
-     predictive_analytics_for_customer_churn_dataset, ibm_telco_customer_churn). Whether the rows are real is no
-     detail in the sense of PROV-2, so this side holds only if issue 1 goes toward "generated".
-   - Implemented: kept, the unknown bank, place and period stated in the task summary. `source = "Other"` names the
-     first publication (LEAPS); the record's `Company` counts as `Other`, so no field disagrees.
-   - Alternatives: (a) confirm the keep and amend PROV-1/PROV-2: "a named course or teaching platform counts as a known
-     source when the data shows no PROV-3 marks"; cost: a third keep under a Must becomes a rule (mobile_churn, from an
-     unnamed operator, is not covered by this wording); (b) revise: `No` + `Missing source information`; cost: the
-     decision differs from bank_customer_churn and tour_travels_churn unless they are reopened.
-   - Rule: PROV-1 (Must), PROV-2 (Should). This is the third keep of a dataset with an untraceable source, so an
-     amendment is due (cross-dataset item "Amend PROV-1/PROV-2 for a named course or teaching platform").
-   - Decision: (a) taken as a rule (PROV-2 amended, 2026-10-21); the outcome follows issue 1.
 
 **Review panel:** don't ship yet (mediator); the PROV-3 standard decides. Claim audit: 50 claims, 41 hold, 3 hold
 with a caveat (wording fixed), 6 untested, 0 refuted. Blind review: include with changes; main concern the activity

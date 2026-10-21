@@ -144,9 +144,15 @@ class Apistox(AbstractCuratedDataset):
         return drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The agrochemical flags stay 0/1, the year an integer and the descriptors floats; the target becomes a
-        # category.
-        return FeatureTypes()
+        # The 0/1 flags (the four agrochemical flags and the RDKit fragment counts that hold only 0 and 1, plus missing
+        # values) are categorical (CLEAN-14), the year an integer and the other descriptors floats; the target becomes
+        # a category.
+        flags = [
+            c
+            for c in df.columns.drop(self.target)
+            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+        ]
+        return FeatureTypes(categorical=flags)
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         toxic = raw["label"].eq(1)

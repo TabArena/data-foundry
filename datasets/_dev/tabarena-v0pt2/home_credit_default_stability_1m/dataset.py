@@ -348,7 +348,13 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         text_cols = df.columns[(df.dtypes == "object") | (df.dtypes == "string")]
+        # 0/1 flags (features holding only 0 and 1, plus missing values; a boolean column too) are categorical (CLEAN-14)
+        flags = [
+            c
+            for c in df.columns.drop(self.target)
+            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+        ]
         return FeatureTypes(
-            categorical=[c for c in text_cols if c != "date_decision"],
+            categorical=[*(c for c in text_cols if c != "date_decision"), *flags],
             datetime={"date_decision": "%Y-%m-%d"},
         )

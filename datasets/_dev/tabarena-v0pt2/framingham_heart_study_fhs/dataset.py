@@ -275,9 +275,11 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # every feature is numeric: 0/1 flags, the ordered education level and the measurements
+        # the 0/1 flags are categorical (CLEAN-14); the ordered education level and the measurements stay numeric
         del df
-        return FeatureTypes()
+        return FeatureTypes(
+            categorical=["male", "currentSmoker", "BPMeds", "prevalentStroke", "prevalentHyp", "diabetes"],
+        )
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         # 1. MIT's TenYearCHD by what happened in the 10 years

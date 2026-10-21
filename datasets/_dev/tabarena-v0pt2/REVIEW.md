@@ -12,6 +12,10 @@
   the 1.5 the integer rule asks for. Its runs show only in the file order. Proposal: take a float column as a
   candidate when its distinct values are few against the rows (the same share rule as for integers), then re-run the
   hidden-group sweep and compare the hits. The probe library changes; no definition does.
+  **Resolved (2026-10-21, Lennart):** a float column is a candidate under the integers' share rule, and every
+  candidate now needs at least 20 values held by two or more rows (a sparse bin crashed micro_mass and sarcoma).
+  airfoil's thickness is now a hit; lgd's loan-to-value ratio (1.3 rows per value) still is not, as predicted. One
+  new hit in an IID dataset is the new follow-up "drug_induced_autoimmunity_prediction" below.
 
 ### Framework
 
@@ -56,6 +60,8 @@
   counting salt forms), so at least 4 of the 23 are different compounds the descriptors cannot tell apart. All 46
   rows are inactive. By your note they stay (they are real screened compounds); the facts are now in the notes and
   the record. Mark ok to close, or change to drop them anyway.
+  **Resolved (2026-10-21, Lennart):** kept, by your note: the copies are distinct screened compounds; the facts are
+  in hiva_agnostic's notes and record.
 - **qsar_tid_11 has no decision on its repeated fingerprints.** 870 of its 5,741 rows (15%) sit in 387 repeated FCFP
   vectors (116 exact copies; within a vector the pChEMBL standard deviation is 0.25 against 1.54 overall), with no
   decision recorded, while LEAK-16 (Must) asks for one every time (qsar_oral_toxicity review panel, precedent check,
@@ -225,6 +231,9 @@
   targets: TP-10's second leg fails in substance, and its first leg (beating the coin's naive forecast) fails on the
   data. Recommendation unchanged: no amendment, g_research goes No + Time-series (Forecasting). Its metric is now
   `pearsonr` under the amended TP-6 either way.
+  **Resolved (2026-10-21, Lennart):** the research is answered above; the decision is
+  g_research_crypto_forecasting_1m's issue 1 (No + Time-series (Forecasting) recommended), which now cites the top
+  solutions.
 - **RMSE ranks shrinkage on low-signal finance panels: decide numerai_v5_2 and g_research_crypto_forecasting alike.**
   Under RMSE a model that predicts closer to the mean wins over one with more signal: in g_research's window 2 the
   model correlating 0.058 with the target scores R² -0.0090, the one correlating 0.049 scores +0.0004. numerai_v5_2
@@ -442,6 +451,8 @@
   weekday and loses the hour, which on nyc_taxi_trip_duration and pkdd_15 moves the score more than the models do.
   If the v0.2 runs encode datetimes with the hour (as tabarena_default does), nothing is needed; the probes already
   use their own encoding. Mark ok to close.
+  **Resolved (2026-10-21, Lennart):** nothing to change while the v0.2 runs encode datetimes with the hour, as you
+  wrote.
 - **Align the row-budget wording of definitions.md.** The check-table row `splits_train_over_budget` says "a `_1m`
   version for a frame above 1.5M rows, otherwise narrower windows"; the temporal `_1m` section of the same file (and
   `default_splits` in the code) accepts a temporal `_1m` version whenever a train side exceeds 1M, whatever the frame
@@ -473,6 +484,10 @@
   not checked. Proposal: report the check as not run when no row reaches the token floor, and add an exact key on
   each normalised text column (as SPLIT-24 allows); then re-run the probe on the text datasets. The probe library
   changes; no definition does.
+  **Resolved (2026-10-21, Lennart):** the near-copy check reports "not run" when no row reaches the token floor (32
+  of 173 datasets), and each string column of 3 or more words gets an exact key on its normalised text. No text key
+  is a hit: huntprohibited_1m's description key holds 3.3% of the rows (gap 0.001), matching the split audit;
+  emscad's keys sit inside its known group.
 
 ### Rules from the open_university review
 
@@ -759,13 +774,22 @@
   answer also decides the fit labels not yet changed: homesite_quote_conversion, qsar_aquatic_toxicity and
   onlinenewspopularity would read `direct`; perth_house_prices, credit_card_customers, african_credit_scoring_challenge
   and zillow_prize stay approximate, and their `fit_reason` would stop counting the kept leak as a gap.
+  **Resolved (2026-10-21, Lennart):** applied: homesite_quote_conversion, qsar_aquatic_toxicity and
+  onlinenewspopularity read `direct`; perth_house_prices, credit_card_customers, african_credit_scoring_challenge
+  and zillow_prize stay approximate without counting the kept leak; perth's issue 1 is settled.
 - **Sources with no named platform.** Under PROV-1 as written and PROV-2 as widened, tour_travels_churn (shipped) and
   mobile_churn name no first platform and would be `No` with `Missing source information`, like
   water_quality_and_potability. Keeping either needs a wider wording (an untraceable upload that passes PROV-3, with
   the gaps written as an approximate fit). Retire both, or widen the rule?
+  **Resolved (2026-10-21, Lennart):** PROV-2 amended as you wrote: a sound upload (passes PROV-3) with a source to
+  point to is kept for now, case by case, as an approximate fit with a note. tour_travels_churn stays (the
+  generated-data probes raise nothing); mobile_churn's issue 1 and credit_card_customers' issue 3 are settled.
+  water_quality_and_potability is now out of line; see the new item below.
 - **A `_1m` version of nyc_taxi_trip_duration.** Its train sides hold 1.28M to 1.39M rows, above the 1M budget. Under
   the reworded definitions.md it ships as `nyc_taxi_trip_duration_1m` (a new folder with `version_of` and
   `subsample_to_budget`, as delivery_eta_1m). Create it?
+  **Resolved (2026-10-21, Lennart):** done: the folder is now `nyc_taxi_trip_duration_1m` (1,166,477 rows, 1M rows
+  per train side, the same test windows).
 - **Metrics still to settle.** expresso_churn_prediction_1m (the first competition, UmojaHack Ghana 2020, scored log
   loss; its 2021 re-run with the same files scored AUC), hiva_agnostic (probably the balanced error rate, not
   verified), aps_failure (a cost of 10 per false positive and 500 per false negative on hard labels), coil_2000
@@ -773,8 +797,31 @@
   (unknown). Also: african_credit's F1 and force_2020's penalty matrix score hard labels; the sources give no evidence
   that this is wrong, so both stay declared. digicow declares log loss although its panel measured that log loss there
   tracks the trainers' recording waves; that is our measurement, not the source's. Keep these as they are?
+  **Resolved (2026-10-21, Lennart):** kept as they are (your ok).
 - **Small rule questions.** (1) Refuse `ForcedIIDFromTemporal` on a grouped or temporal split, as the new grouped tag is
   refused on an IID one? (2) CLEAN-14's categorical convention covers a molecule's 0/1 flags only; extend it to every
   0/1 flag (mercedes' options are int)? (3) Does CLEAN-11's "with the source's words" also bind its second clause (a
   single extreme training target)? If so, mercedes' drop has no source words. (4) maps_router_eta_1m's gap assumes
   `track_length` is in metres (minimum 1,000.0; in km drives would last thousands of hours).
+  **Resolved (2026-10-21, Lennart):** (1) `ForcedIIDFromTemporal` is now refused with a grouping or temporal split
+  (validation and bundle check); no definition breaks. (2) CLEAN-14 amended: every 0/1 flag, booleans included, is
+  categorical after a check on the data; 35 definitions changed (the list is in the CHANGELOG). (3) CLEAN-11
+  amended: a single extreme training target may leave with the source's words or where experts of the field drop it
+  by default, case by case; mercedes cites it. (4) `track_length` is in metres (in km the median drive would last
+  194 h); 31 of 13.6M rows look implausible and none of them is late, so the one-day gap stands and no row is
+  cleaned.
+- **drug_induced_autoimmunity_prediction: two descriptors mark groups of molecules.** The hidden-group probe, now
+  taking float columns, finds `SMR_VSA10` (gap 0.172) and `SMR_VSA7` (gap 0.112) against a random-split skill of 0.657
+  on this IID task of 587 molecules: about 2 molecules per value, so they may mark analog series (hidden-group sweep,
+  2026-10-21). Proposal: check the source's structures (SMILES) for duplicates and analog series, and group the split
+  on the series if the gap holds there.
+- **water_quality_and_potability against the amended PROV-2.** It was retired in the v1 workbook for its untraceable
+  source alone; no PROV-3 test is on record, and nothing written sets it apart from mobile_churn or
+  tour_travels_churn, which PROV-2 as amended now keeps. Ways out: (a) re-check it with the PROV-3 tests and keep it
+  if they raise nothing; (b) name the fact that sets it apart and record it.
+- **Which 0/1 columns are flags?** Applying CLEAN-14 literally also made categorical some counts that hold only 0 and
+  1 in this data (RDKit fragment counts in apistox, `NoOfURLRedirect` in phiusil_phishing, sberbank's
+  `mosque_count_*`, coil_2000's count columns, cardiotocography's `DS`), and left constant 0 or 1 columns as they are
+  (for example `ca` in the two heart_disease sets, homesite's `PropertyField6`). Ways out: (a) keep it literal, as
+  now; (b) a flag is a yes/no by meaning, so counts stay numeric even when only 0 and 1 occur (those five folders go
+  back). Either way the rule text would say that a constant column is not a flag.

@@ -50,6 +50,14 @@ CC (2026-10-19, Lennart): Credit_Limit and Total_Revolving_Bal are clipped at pe
 
 CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use case fit more or less"); the tag is retired from new definitions.
 
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit stays `approximate` for the untraceable teaching source and the marks of generated data; the activity-window leak left `fit_reason` (its potential-leak note stays).
+
+CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kept for now, case by case, when the data looks sound and there is a source to point to ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"); PROV-1/PROV-2 amended, the gap written as an approximate fit with a note.
+
+**Assessment (AI, 2026-10-21):** REVIEW.md issue 3 settled and removed; the keep still depends on the PROV-3 standard (issue 1).
+
 ## Reference
 
 Kaggle / Broken Website

@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: mortgage
 container_format: 2
-checksum: v2:b8f2b41a75a27b85e7703ffcc03a7fbcc0e31899b02c17967956f61f27af19ca
+checksum: v2:14bbea5af8e82aae54f514095bceb7c52656c649b4d211adc7aa07553d230d40
 build: null
 build_stale: false
 data:
   n_rows: 621653
   n_features: 18
   dtypes:
-    category: 2
+    category: 3
     float64: 11
-    int64: 6
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: status
@@ -58,7 +58,7 @@ decisions:
 
 Multiclass classification of `status`, scored with `log_loss` on temporal splits by `time`. 621,653 rows and 18 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:b8f2b41a75a27b85e7703ffcc03a7fbcc0e31899b02c17967956f61f27af19ca`.
+Not built yet. The current definition gives checksum `v2:14bbea5af8e82aae54f514095bceb7c52656c649b4d211adc7aa07553d230d40`.
 
 ## In brief
 
@@ -139,9 +139,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | time |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `real_estate_type`, `status`
+- categorical (3): `real_estate_type`, `investor_orig_time`, `status`
 - string (0): none
 - datetime (0): none
 
@@ -269,6 +269,7 @@ The source's macro columns hold the quarter's own values (the house price index 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | real_estate_type | category | 0 | 0 | 4 | single_family, other, planned_urban_development, condominium |
+| investor_orig_time | category | 0 | 0 | 2 | 0, 1 |
 | status | category | 0 | 0 | 3 | active, payoff, default |
 | balance_time_lag_2 | float64 | 96232 | 15.48 | 414076 | 650000.0, 400000.0, 1000000.0, 200000.0, 500000.0, 520000.0, 300000.0, 280000.0… |
 | Interest_Rate_orig_time | float64 | 89929 | 14.47 | 1824 | 6.5, 5.875, 6.25, 6.0, 6.75, 5.75, 6.875, 6.375, 5.5, 6.625 |
@@ -285,7 +286,6 @@ The source's macro columns hold the quarter's own values (the house price index 
 | orig_time | int64 | 0 | 0 | 98 | 25, 26, 27, 22, 24, 23, 21, 18, 19, 20 |
 | first_time | int64 | 0 | 0 | 50 | 25, 28, 24, 30, 27, 29, 22, 20, 23, 26 |
 | mat_time | int64 | 0 | 0 | 201 | 142, 145, 141, 146, 143, 147, 148, 144, 140, 139 |
-| investor_orig_time | int64 | 0 | 0 | 2 | 0, 1 |
 | FICO_orig_time | int64 | 0 | 0 | 397 | 660, 662, 672, 687, 683, 682, 661, 684, 704, 701 |
 
 </details>
@@ -301,7 +301,7 @@ The source's macro columns hold the quarter's own values (the house price index 
 ### Numeric features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -315,7 +315,6 @@ The source's macro columns hold the quarter's own values (the house price index 
 | hpi_time_lag_2 | 620841 | 186.081 | 28.4038 | 107.83 | 226.29 |
 | gdp_time_lag_2 | 620841 | 1.55878 | 1.92943 | -4.14671 | 5.13246 |
 | uer_time_lag_1 | 621370 | 6.44502 | 1.90925 | 3.8 | 10 |
-| investor_orig_time | 621653 | 0.137955 | 0.344853 | 0 | 1 |
 | balance_orig_time | 621383 | 256479 | 219744 | 4791.5 | 8e+06 |
 | FICO_orig_time | 621653 | 673.611 | 71.7204 | 400 | 840 |
 | LTV_orig_time | 621653 | 78.976 | 10.1249 | 50.1 | 218.5 |
@@ -329,6 +328,8 @@ The source's macro columns hold the quarter's own values (the house price index 
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| investor_orig_time | 1 | 0 | 535893 | 86.2 |
+| investor_orig_time | 2 | 1 | 85760 | 13.8 |
 | real_estate_type | 1 | single_family | 380503 | 61.21 |
 | real_estate_type | 2 | other | 121490 | 19.54 |
 | real_estate_type | 3 | planned_urban_development | 77640 | 12.49 |

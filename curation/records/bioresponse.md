@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric set to `log_loss`, the competition's metric (Kaggle API: "Log Loss"; was the default ROC AUC). Needs a rebuild to reach the container.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the 834 descriptors that hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 https://www.kaggle.com/c/bioresponse

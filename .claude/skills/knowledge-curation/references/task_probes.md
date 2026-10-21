@@ -170,7 +170,20 @@ groups the rows with the same text: an exact key from the data, which SPLIT-24 a
 (boilerplate) are left single. The output (`(text: <column>)`) gives the keys, the rows that share one, `s_id` and, for
 an IID task, the gap against the random folds with each key moved into one fold (the gap models read no text, so the
 gap comes from the other columns of the repeated rows); for a temporal task, the test rows whose text is on the training
-side. A text key catches a copy with other capitals, punctuation or spacing, not one with a word changed.
+side. A text key catches a copy with other capitals, punctuation or spacing, not one with a word changed. A string
+column that is a candidate of its own (a title, a company profile) is left to the column check.
+
+Sweep of 2026-10-21 (173 built containers, the grouped ones as if IID), before and after floats became candidates (a
+candidate now also needs 20 values held by two rows or more, so a sparse spectrum bin with one repeated 0 is none) and
+the text keys came in. New hits: airfoil_self_noise `suction-side-displacement-thickness` (105 values for 106 runs;
+gap 0.123, next to its known `run`), drug_induced_autoimmunity_prediction `SMR_VSA10` and `SMR_VSA7` (IID, 587
+molecules; gaps 0.172 and 0.112 of a random-split skill of 0.657), and in grouped datasets early_learning_predictors
+`pri_fees_amount_pv`, force_2020 `FORMATION` and `Y_LOC` (a well's location) and sepsis_prediction_1m `Age` and
+`HospAdmTime` (constant per patient). lgd stays without a candidate: its loan-to-value ratio has 1.3 rows per value. No
+text key is a hit: emscad's `description`, `requirements` and `benefits` keys hold 17-29% of the rows with gaps of
+0.019-0.032 (its known group already holds them out), huntprohibited_1m's `description` 3.3% (gap 0.001),
+mercari_price_suggestion's `name` 28% (gap 0.000); consumer_complaints_1m's narrative is a column candidate. The
+near-copy check does not run on 32 of the 173 datasets (airfoil_self_noise, lgd, huntprohibited_1m, mercari among them).
 
 **Composite keys cover an entity measured more than once.** Rows identical in every column but one are one entity at
 another age, dose, time or frequency. concrete_compressive_strength's 1,030 tests are 428 mixes (the seven ingredient

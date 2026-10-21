@@ -43,6 +43,12 @@ Check year/month and user account id column if temporal or grouped splits are ne
 
 CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot churn sets: tagged `ForcedIIDFromTemporal`; SPLIT-8 now covers a release with one stock month or one undated snapshot. The tag stays; REVIEW.md issue 4 settled.
 
+CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kept for now, case by case, when the data looks sound and there is a source to point to ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"); PROV-1/PROV-2 amended, the gap written as an approximate fit with a note.
+
+**Assessment (AI, 2026-10-21):** REVIEW.md issue 1 settled and removed; the outcome now recommends shipping as defined, issue 2 (the drop of SIM cards never activated) stays open.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: user_intake, user_has_outgoing_calls, user_has_outgoing_sms, user_use_gprs, user_does_reload.
+
 ## Reference
 
 Kaggle

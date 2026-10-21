@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: mobile_churn
 container_format: 2
-checksum: v2:e9ac4954562e76c7902f553211b6fbb84a29b4e44569138b1835322f7cc76757
+checksum: v2:6835e41387775ee4dd3464e1e65652955e9b6a496cfd162d7f1e97061b3bfa6b
 build: null
 build_stale: false
 data:
   n_rows: 54207
   n_features: 57
   dtypes:
-    category: 1
+    category: 6
     float64: 34
-    int64: 23
+    int64: 18
   n_test_dataset_rows: null
 task:
   target: churn
@@ -59,7 +59,7 @@ decisions:
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 54,207 rows and 57 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:e9ac4954562e76c7902f553211b6fbb84a29b4e44569138b1835322f7cc76757`.
+Not built yet. The current definition gives checksum `v2:6835e41387775ee4dd3464e1e65652955e9b6a496cfd162d7f1e97061b3bfa6b`.
 
 ## In brief
 
@@ -136,9 +136,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | churn |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `churn`
+- categorical (6): `user_intake`, `user_has_outgoing_calls`, `user_has_outgoing_sms`, `user_use_gprs`, `user_does_reload`, `churn`
 - string (0): none
 - datetime (0): none
 
@@ -250,6 +250,11 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| user_intake | category | 0 | 0 | 2 | 0, 1 |
+| user_has_outgoing_calls | category | 0 | 0 | 2 | 1, 0 |
+| user_has_outgoing_sms | category | 0 | 0 | 2 | 1, 0 |
+| user_use_gprs | category | 0 | 0 | 2 | 0, 1 |
+| user_does_reload | category | 0 | 0 | 2 | 1, 0 |
 | churn | category | 0 | 0 | 2 | No, Yes |
 | gprs_inactive_days | float64 | 49132 | 90.64 | 93 | 1.0, 2.0, 3.0, 9.0, 4.0, 5.0, 10.0, 11.0, 13.0, 20.0 |
 | reloads_inactive_days | float64 | 14110 | 26.03 | 93 | 16.0, 2.0, 27.0, 3.0, 1.0, 4.0, 5.0, 6.0, 9.0, 8.0 |
@@ -286,11 +291,6 @@ Accepted on purpose:
 | last_100_calls_outgoing_to_abroad_duration | float64 | 0 | 0 | 2915 | 0.0, 0.5, 1.0, 2.0, 0.53, 1.5, 1.08, 1.38, 0.72, 0.33 |
 | last_100_gprs_usage | float64 | 0 | 0 | 2630 | 0.0, 0.3, 0.31, 0.59, 0.32, 0.6, 0.61, 0.33, 0.62, 0.35 |
 | month | int64 | 0 | 0 | 3 | 6, 8, 7 |
-| user_intake | int64 | 0 | 0 | 2 | 0, 1 |
-| user_has_outgoing_calls | int64 | 0 | 0 | 2 | 1, 0 |
-| user_has_outgoing_sms | int64 | 0 | 0 | 2 | 1, 0 |
-| user_use_gprs | int64 | 0 | 0 | 2 | 0, 1 |
-| user_does_reload | int64 | 0 | 0 | 2 | 1, 0 |
 | reloads_count | int64 | 0 | 0 | 25 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | calls_outgoing_count | int64 | 0 | 0 | 581 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
 | calls_outgoing_to_onnet_count | int64 | 0 | 0 | 66 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
@@ -321,20 +321,15 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (57 rows)</summary>
+<summary>Show the table (52 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | month | 54207 | 6.04684 | 0.285943 | 6 | 8 |
 | user_lifetime | 52912 | 953.679 | 653.232 | 0 | 1986 |
-| user_intake | 54207 | 0.0494955 | 0.216902 | 0 | 1 |
 | user_no_outgoing_activity_in_days | 53500 | 5.08764 | 10.5106 | 0 | 100 |
 | user_account_balance_last | 54207 | 11.7788 | 19.822 | 0 | 1775.71 |
 | user_spendings | 54207 | 8.39438 | 15.6612 | -30.06 | 1236.47 |
-| user_has_outgoing_calls | 54207 | 0.93737 | 0.242299 | 0 | 1 |
-| user_has_outgoing_sms | 54207 | 0.739333 | 0.439003 | 0 | 1 |
-| user_use_gprs | 54207 | 0.0552696 | 0.228508 | 0 | 1 |
-| user_does_reload | 54207 | 0.552401 | 0.497251 | 0 | 1 |
 | reloads_inactive_days | 40097 | 23.9148 | 22.0013 | 0 | 92 |
 | reloads_count | 54207 | 1.01013 | 1.45844 | 0 | 28 |
 | reloads_sum | 54207 | 9.52754 | 19.0968 | -17.24 | 1500 |
@@ -387,10 +382,25 @@ Accepted on purpose:
 
 ### Categorical features
 
+<details>
+<summary>Show the table (12 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | churn | 1 | No | 48815 | 90.05 |
 | churn | 2 | Yes | 5392 | 9.95 |
+| user_does_reload | 1 | 1 | 29944 | 55.24 |
+| user_does_reload | 2 | 0 | 24263 | 44.76 |
+| user_has_outgoing_calls | 1 | 1 | 50812 | 93.74 |
+| user_has_outgoing_calls | 2 | 0 | 3395 | 6.26 |
+| user_has_outgoing_sms | 1 | 1 | 40077 | 73.93 |
+| user_has_outgoing_sms | 2 | 0 | 14130 | 26.07 |
+| user_intake | 1 | 0 | 51524 | 95.05 |
+| user_intake | 2 | 1 | 2683 | 4.95 |
+| user_use_gprs | 1 | 0 | 51211 | 94.47 |
+| user_use_gprs | 2 | 1 | 2996 | 5.53 |
+
+</details>
 
 ## Build
 

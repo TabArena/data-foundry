@@ -42,6 +42,8 @@ CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES datas
 
 CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: herbicide, fungicide, insecticide, other_agrochemical and the 14 RDKit fragment counts that hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 ApisTox: a new benchmark dataset for the classification of small molecules toxicity on honey bees

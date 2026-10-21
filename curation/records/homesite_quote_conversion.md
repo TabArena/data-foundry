@@ -41,6 +41,12 @@ CC (2026-10-01, Lennart): Leak audit: possible leak, kept for now on purpose; re
 
 **Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01: two bundle-check warnings have no decision yet (13 columns constant once -1 becomes missing; a `' '` level in `GeographicField63`). To settle in the next pass: drop the constant columns and turn the blank level into missing, or accept each warning with its reason.
 
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit set to `direct`; the two status-like fields (ROC AUC 0.965 with, 0.915 without) are named in `fit_reason` as kept and noted.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: SalesField3, SalesField9, PersonalField1, PersonalField2, PersonalField6, PropertyField8, PropertyField29.
+
 ## Reference
 
 Darrel, Stephen D Stayton, and Will Cukierski. Homesite Quote Conversion. https://kaggle.com/competitions/homesite-quote-conversion, 2015. Kaggle.

@@ -304,7 +304,8 @@ class CollegeScorecard(AbstractCuratedDataset):
         return drop_columns(df, ["UNITID", "D150_4"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["STABBR", *LABELS])
+        # MAIN and DISTANCEONLY are 0/1 flags (CLEAN-14)
+        return FeatureTypes(categorical=["STABBR", *LABELS, "MAIN", "DISTANCEONLY"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         rows = cohort_rows(raw)

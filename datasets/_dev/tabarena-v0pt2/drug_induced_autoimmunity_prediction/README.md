@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
+checksum: v2:b324e1e524a2a9c4cbb0859998130e3e2970e604a4b2c019327a9668cb7f47d0
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -17,14 +17,14 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 587
   n_features: 176
   dtypes:
-    category: 1
+    category: 21
     float64: 82
-    int64: 94
+    int64: 74
   n_test_dataset_rows: null
 task:
   target: Label
@@ -43,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 391
     max: 392
@@ -65,7 +67,7 @@ decisions:
 
 Binary classification of `Label`, scored with `roc_auc` on IID splits. 587 rows and 176 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b324e1e524a2a9c4cbb0859998130e3e2970e604a4b2c019327a9668cb7f47d0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,9 +134,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | Label |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 21 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `Label`
+- categorical (21): `fr_C_S`, `fr_SH`, `fr_azo`, `fr_benzodiazepine`, `fr_dihydropyridine`, `fr_epoxide`, `fr_furan`, `fr_hdrzine`, `fr_hdrzone`, `fr_lactam`, `fr_lactone`, `fr_morpholine`, `fr_nitro_arom_nonortho`, `fr_nitroso`, `fr_oxazole`, `fr_oxime`, `fr_sulfone`, `fr_term_acetylene`, `fr_tetrazole`, `fr_urea`, `Label`
 - string (0): none
 - datetime (0): none
 
@@ -294,6 +296,26 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Label | category | 0 | 0 | 2 | 0, 1 |
+| fr_C_S | category | 0 | 0 | 2 | 0, 1 |
+| fr_SH | category | 0 | 0 | 2 | 0, 1 |
+| fr_azo | category | 0 | 0 | 2 | 0, 1 |
+| fr_benzodiazepine | category | 0 | 0 | 2 | 0, 1 |
+| fr_dihydropyridine | category | 0 | 0 | 2 | 0, 1 |
+| fr_epoxide | category | 0 | 0 | 2 | 0, 1 |
+| fr_furan | category | 0 | 0 | 2 | 0, 1 |
+| fr_hdrzine | category | 0 | 0 | 2 | 0, 1 |
+| fr_hdrzone | category | 0 | 0 | 2 | 0, 1 |
+| fr_lactam | category | 0 | 0 | 2 | 0, 1 |
+| fr_lactone | category | 0 | 0 | 2 | 0, 1 |
+| fr_morpholine | category | 0 | 0 | 2 | 0, 1 |
+| fr_nitro_arom_nonortho | category | 0 | 0 | 2 | 0, 1 |
+| fr_nitroso | category | 0 | 0 | 2 | 0, 1 |
+| fr_oxazole | category | 0 | 0 | 2 | 0, 1 |
+| fr_oxime | category | 0 | 0 | 2 | 0, 1 |
+| fr_sulfone | category | 0 | 0 | 2 | 0, 1 |
+| fr_term_acetylene | category | 0 | 0 | 2 | 0, 1 |
+| fr_tetrazole | category | 0 | 0 | 2 | 0, 1 |
+| fr_urea | category | 0 | 0 | 2 | 0, 1 |
 | BalabanJ | float64 | 0 | 0 | 486 | 1.838, 1.735, 2.195, 1.43, 1.797, 1.85, 1.384, 2.218, 2.462, 3.735 |
 | BertzCT | float64 | 0 | 0 | 574 | 1136.74, 431.802, 677.309, 42.913, 138.219, 804.749, 400.94, 670.244, 593.895, … |
 | Chi0 | float64 | 0 | 0 | 448 | 10.836, 20.698, 11.707, 23.859, 16.397, 12.958, 13.828, 12.345, 14.656, 15.364 |
@@ -333,26 +355,6 @@ Default splits.
 | MaxPartialCharge | float64 | 0 | 0 | 246 | 0.303, 0.326, 0.306, 0.119, 0.339, 0.224, 0.416, 0.407, 0.174, 0.255 |
 | MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.017, 0.004, 0.008, 0.013, 0.016, 0.007, 0.045, 0.054, 0.003, 0.006 |
 | MinAbsPartialCharge | float64 | 0 | 0 | 237 | 0.303, 0.326, 0.306, 0.119, 0.339, 0.224, 0.174, 0.407, 0.255, 0.316 |
-| MinEStateIndex | float64 | 0 | 0 | 538 | -1.299, -0.598, -0.594, -1.119, -0.177, -1.269, -0.843, -0.816, -1.031, -1.372 |
-| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.493, -0.508, -0.48, -0.394, -0.504, -0.393, -0.507, -0.39, -0.462 |
-| MolLogP | float64 | 0 | 0 | 564 | 4.03, 2.44, 2.01, 2.548, 2.083, 4.894, -3.493, 3.813, 4.17, 3.723 |
-| MolMR | float64 | 0 | 0 | 585 | 23.325, 98.485, 92.341, 140.483, 119.902, 34.04, 118.541, 255.322, 22.752, 58.45 |
-| MolWt | float64 | 0 | 0 | 569 | 285.343, 263.381, 354.487, 415.574, 434.504, 314.469, 300.745, 365.842, 443.432… |
-| PEOE_VSA1 | float64 | 0 | 0 | 245 | 0.0, 9.843, 5.317, 5.107, 10.213, 4.737, 5.734, 9.637, 14.743, 15.32 |
-| PEOE_VSA10 | float64 | 0 | 0 | 178 | 0.0, 5.75, 6.104, 12.084, 6.607, 5.601, 6.042, 5.783, 18.46, 12.208 |
-| PEOE_VSA11 | float64 | 0 | 0 | 96 | 0.0, 11.499, 5.783, 5.96, 11.566, 11.384, 6.104, 23.386, 5.132, 5.647 |
-| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 5.783, 10.023, 5.948, 5.88, 5.601, 5.429, 5.824 |
-| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 11.814, 5.559, 5.687, 10.023, 5.083, 11.69, 5.239, 17.722 |
-| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 5.69, 6.176, 6.031, 17.908, 15.192, 12.063 |
-| PEOE_VSA2 | float64 | 0 | 0 | 104 | 0.0, 4.795, 9.589, 14.384, 4.9, 9.694, 14.906, 4.567, 9.779, 10.114 |
-| PEOE_VSA3 | float64 | 0 | 0 | 71 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 4.992, 9.968 |
-| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 4.992, 12.629, 8.418, 4.305, 21.952 |
-| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.579, 6.423, 23.099, 23.202 |
-| PEOE_VSA6 | float64 | 0 | 0 | 214 | 0.0, 12.133, 6.066, 30.332, 18.199, 11.601, 24.265, 42.465, 6.924, 13.847 |
-| PEOE_VSA7 | float64 | 0 | 0 | 375 | 0.0, 6.924, 12.133, 18.199, 6.421, 17.696, 12.842, 6.066, 30.332, 25.123 |
-| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 12.966, 5.563, 12.587 |
-| PEOE_VSA9 | float64 | 0 | 0 | 287 | 0.0, 6.607, 6.104, 12.208, 6.042, 6.545, 11.375, 12.649, 5.694, 5.918 |
-| SMR_VSA1 | float64 | 0 | 0 | 246 | 0.0, 4.795, 9.901, 14.638, 9.531, 4.737, 9.589, 24.597, 9.843, 14.696 |
 
 (117 more rows not shown)
 
@@ -368,7 +370,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (176 rows)</summary>
+<summary>Show the table (156 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -433,16 +435,61 @@ Default splits.
 | NumSaturatedHeterocycles | 587 | 0.48552 | 0.795279 | 0 | 5 |
 | NumSaturatedRings | 587 | 0.97615 | 1.28901 | 0 | 7 |
 
-(116 more rows not shown)
+(96 more rows not shown)
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (42 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Label | 1 | 0 | 447 | 76.15 |
 | Label | 2 | 1 | 140 | 23.85 |
+| fr_C_S | 1 | 0 | 585 | 99.66 |
+| fr_C_S | 2 | 1 | 2 | 0.34 |
+| fr_SH | 1 | 0 | 582 | 99.15 |
+| fr_SH | 2 | 1 | 5 | 0.85 |
+| fr_azo | 1 | 0 | 586 | 99.83 |
+| fr_azo | 2 | 1 | 1 | 0.17 |
+| fr_benzodiazepine | 1 | 0 | 581 | 98.98 |
+| fr_benzodiazepine | 2 | 1 | 6 | 1.02 |
+| fr_dihydropyridine | 1 | 0 | 579 | 98.64 |
+| fr_dihydropyridine | 2 | 1 | 8 | 1.36 |
+| fr_epoxide | 1 | 0 | 581 | 98.98 |
+| fr_epoxide | 2 | 1 | 6 | 1.02 |
+| fr_furan | 1 | 0 | 578 | 98.47 |
+| fr_furan | 2 | 1 | 9 | 1.53 |
+| fr_hdrzine | 1 | 0 | 577 | 98.3 |
+| fr_hdrzine | 2 | 1 | 10 | 1.7 |
+| fr_hdrzone | 1 | 0 | 585 | 99.66 |
+| fr_hdrzone | 2 | 1 | 2 | 0.34 |
+| fr_lactam | 1 | 0 | 574 | 97.79 |
+| fr_lactam | 2 | 1 | 13 | 2.21 |
+| fr_lactone | 1 | 0 | 569 | 96.93 |
+| fr_lactone | 2 | 1 | 18 | 3.07 |
+| fr_morpholine | 1 | 0 | 580 | 98.81 |
+| fr_morpholine | 2 | 1 | 7 | 1.19 |
+| fr_nitro_arom_nonortho | 1 | 0 | 581 | 98.98 |
+| fr_nitro_arom_nonortho | 2 | 1 | 6 | 1.02 |
+| fr_nitroso | 1 | 0 | 585 | 99.66 |
+| fr_nitroso | 2 | 1 | 2 | 0.34 |
+| fr_oxazole | 1 | 0 | 586 | 99.83 |
+| fr_oxazole | 2 | 1 | 1 | 0.17 |
+| fr_oxime | 1 | 0 | 582 | 99.15 |
+| fr_oxime | 2 | 1 | 5 | 0.85 |
+| fr_sulfone | 1 | 0 | 579 | 98.64 |
+| fr_sulfone | 2 | 1 | 8 | 1.36 |
+| fr_term_acetylene | 1 | 0 | 582 | 99.15 |
+| fr_term_acetylene | 2 | 1 | 5 | 0.85 |
+| fr_tetrazole | 1 | 0 | 580 | 98.81 |
+| fr_tetrazole | 2 | 1 | 7 | 1.19 |
+| fr_urea | 1 | 0 | 572 | 97.44 |
+| fr_urea | 2 | 1 | 15 | 2.56 |
+
+</details>
 
 ## Build
 
@@ -455,3 +502,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:b324e1e524a2a9c4cbb0859998130e3e2970e604a4b2c019327a9668cb7f47d0` |

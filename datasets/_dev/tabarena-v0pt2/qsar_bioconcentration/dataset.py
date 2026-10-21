@@ -154,8 +154,14 @@ class QsarBioconcentration(AbstractCuratedDataset):
         return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # all features are descriptors (floats and counts); the target becomes a category
-        return FeatureTypes()
+        # all features are descriptors (floats and counts); those holding only 0 and 1 (plus missing values) are 0/1
+        # flags, categorical (CLEAN-14); the target becomes a category
+        flags = [
+            c
+            for c in df.columns.drop(self.target)
+            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+        ]
+        return FeatureTypes(categorical=flags)
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         kept = _swap_back_structures(raw.rename(columns={"B02[C-N]": "B02(C-N)", "F04[C-O]": "F04(C-O)"}))
@@ -222,7 +228,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
 
 def _shared_descriptors(df: pd.DataFrame, columns: list[str], target: str) -> pd.Series:
     """How many chemicals share all of ``columns`` with another chemical, and how many of them differ in class."""
-    groups = df.groupby(columns, sort=False, dropna=False)[target]
+    groups = df.groupby(columns, sort=False, dropna=False, observed=True)[target]  # 0/1 flags are categories
     size, n_classes = groups.transform("size"), groups.transform("nunique")
     return pd.Series(
         {

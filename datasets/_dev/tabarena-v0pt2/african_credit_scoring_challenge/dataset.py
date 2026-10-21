@@ -83,10 +83,8 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The lender's funded amount and share are values at the data pull (lenders can buy each other out), kept "
-            "as they show no link to the outcome within a loan product. The customer's history is known only through "
-            "labels settled before each window, while a lender learns of a repayment the day it is made. How the "
-            "loans were sampled is not stated."
+            "The customer's history is known only through labels settled before each window, while a lender learns of"
+            " a repayment the day it is made. How the loans were sampled is not stated."
         ),
     )
 

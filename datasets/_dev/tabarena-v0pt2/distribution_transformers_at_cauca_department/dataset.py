@@ -209,7 +209,9 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["client_type"])
+        # 0/1 flags are categorical (CLEAN-14)
+        flags = ["urban", "keraunic_criticality", "removable_connectors", "overhead_lv_network", "circuit_end"]
+        return FeatureTypes(categorical=["client_type", *flags])
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         history = failure_history(raw)

@@ -195,7 +195,18 @@ class DigicowFarmerTrainingAdoptionChallenge(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["gender", "registration", "age", "group_name", "county", "subcounty", "ward", "trainer"],
+            # belong_to_cooperative is a 0/1 flag: categorical (CLEAN-14)
+            categorical=[
+                "gender",
+                "registration",
+                "age",
+                "group_name",
+                "county",
+                "subcounty",
+                "ward",
+                "trainer",
+                "belong_to_cooperative",
+            ],
             string=["topics_list"],
             datetime={"training_day": "%Y-%m-%d"},
         )

@@ -52,3 +52,5 @@ three classification tasks for 7, 90, and 120-day adoption windows. Competition 
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
 **Assessment (AI, 2026-10-21):** metric set to `log_loss` (was ROC AUC): Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) is no listed metric and scores targets the task does not ship; log loss carries 0.65 of the 7-day target's 0.80. Moot while the dataset is recommended No.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: belong_to_cooperative.

@@ -38,6 +38,8 @@ Determine how to make it a target, as it is not just one target per group
 
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes; applied: `balance_time_lag_2` added (the balance at the previous-but-one observation; the data has no delinquency field), the last row of the 501 loans that leave early without an event dropped (label not recorded, LEAK-25), the two ids that copy another id dropped (23 rows), the 37.5% placeholder rate masked, and the notes corrected (GDP vintage caveat, the level effect's own reason, re-run numbers). Priority 4: gap + (multiclass_classification), use case + (a holder's quarterly PD scoring, the book's own backtest), source + (the book's data page and codebook), shape + (621,653 loan-quarters, 18 features, temporal), risk - (open: rows scored in the quarter the loan is originated, USE-3, issue 10; the quarter's overall event rate carries 74-83% of LightGBM's gain).
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: investor_orig_time.
+
 ## Reference
 
 @book{baesens2016credit,

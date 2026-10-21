@@ -273,7 +273,9 @@ competition, institution, an identifiable first uploader), we cannot tell what t
 `Missing source information`, `No` (PROV-1, [provenance.md](provenance.md); `water_quality_and_potability`,
 `3d_estimation_using_rssi_of_wlan_dataset_complete_1_target`, `calendardow`). A live link is not a known source. A
 source that is plausible but unclear in a detail stays, with a note of what to clarify (PROV-2;
-bad_customer_detection; Lennart, 2026-10-14).
+bad_customer_detection; Lennart, 2026-10-14). An upload whose first platform cannot be traced stays for now, case by
+case, when the data passes PROV-3 and there is a source to point to; the gap goes into an approximate fit with a note
+(PROV-2 as amended, Lennart, 2026-10-21; tour_travels_churn, mobile_churn).
 
 A record with too little information while the dataset's origin is known (a bare link, no description) is not
 rejected for that (PROV-2): use `TBD -> Yes` or `TBD -> 2nd Tier` and write down what to inspect (the size after

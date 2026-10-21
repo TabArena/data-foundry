@@ -45,3 +45,7 @@ predict loan default
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
 **Assessment (AI, 2026-10-21):** metric set to `f1`, the competition's metric (was the default ROC AUC). F1 scores hard labels at a threshold; no evidence from the source that it is biased or wrong. Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit stays `approximate` for the label-only history and the unstated sampling; the funded-amount columns left `fit_reason` (their potential-leak note stays).

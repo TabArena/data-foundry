@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73
+checksum: v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a
 build:
   uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
   checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
@@ -22,9 +22,8 @@ data:
   n_rows: 6819
   n_features: 92
   dtypes:
-    category: 1
+    category: 2
     float64: 91
-    int64: 1
   n_test_dataset_rows: null
 task:
   target: Bankrupt
@@ -43,6 +42,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 4546
     max: 4546
@@ -64,7 +65,7 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,9 +132,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | Bankrupt |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `Bankrupt`
+- categorical (2): `Liability_Assets_Flag`, `Bankrupt`
 - string (0): none
 - datetime (0): none
 
@@ -176,6 +177,7 @@ The first 5 of 6,819 rows of the final frame (random rows: the frame is shuffled
 - We drop the constant column "Net_Income_Flag".
 - We drop two duplicated features (same values as other features).
 - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
+- Potential leak, kept on purpose: 67 of the 91 non-binary numeric columns have a minimum of exactly 0 and a maximum of exactly 1 over the 6,819 companies, a min-max scaling over all rows that UCI does not document; the Taiwan Economic Journal's raw data are commercial. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if unscaled data appear.
 - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
 - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
   year, so the split stays random.
@@ -213,6 +215,7 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Bankrupt | category | 0 | 0 | 2 | No, Yes |
+| Liability_Assets_Flag | category | 0 | 0 | 2 | 0, 1 |
 | ROA_C_Before_Interest_Depreciation | float64 | 0 | 0 | 3333 | 0.4901, 0.5165, 0.5138, 0.4992, 0.5019, 0.4841, 0.4981, 0.5146, 0.4951, 0.5061 |
 | ROA_A_Before_Interest_After_Tax | float64 | 0 | 0 | 3151 | 0.5597, 0.5683, 0.566, 0.5589, 0.5631, 0.5542, 0.5579, 0.5533, 0.5628, 0.5406 |
 | ROA_B_Before_Interest_Depreciation_After_Tax | float64 | 0 | 0 | 3160 | 0.5515, 0.5388, 0.5582, 0.5525, 0.5436, 0.5523, 0.5507, 0.5434, 0.554, 0.5405 |
@@ -271,7 +274,6 @@ Default splits.
 | Current_Assets_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.4729, 0.1014, 0.3555, 0.7237, 0.4163, 0.5065, 0.9221, 0.6091, 0.516, 0.7484 |
 | Cash_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.1626, 0.0303, 0.0353, 0.1834, 0.0675, 0.0438, 0.0092, 0.0587, 0.0699, 0.6019 |
 | Quick_Assets_to_Current_Liability | float64 | 0 | 0 | 6819 | 0.0082, 0.0024, 0.0053, 0.0667, 0.0197, 0.0068, 0.0006, 0.0057, 0.0117, 0.0411 |
-| Cash_to_Current_Liability | float64 | 0 | 0 | 6816 | 7510000000.0, 4610000000.0, 8870000000.0, 0.0016, 0.0021, 0.0485, 0.002, 0.0443… |
 
 (33 more rows not shown)
 
@@ -287,7 +289,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (92 rows)</summary>
+<summary>Show the table (91 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -352,7 +354,7 @@ Default splits.
 | Cash_to_Current_Liability | 6819 | 3.716e+07 | 5.10351e+08 | 0 | 9.65e+09 |
 | Current_Liability_to_Assets | 6819 | 0.0906728 | 0.0502899 | 0 | 1 |
 
-(32 more rows not shown)
+(31 more rows not shown)
 
 </details>
 
@@ -362,6 +364,8 @@ Default splits.
 |---|---|---|---|---|
 | Bankrupt | 1 | No | 6599 | 96.77 |
 | Bankrupt | 2 | Yes | 220 | 3.23 |
+| Liability_Assets_Flag | 1 | 0 | 6811 | 99.88 |
+| Liability_Assets_Flag | 2 | 1 | 8 | 0.12 |
 
 ## Build
 
@@ -374,4 +378,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5dabefea42710d632d04b8cb922e6feb31562ad608919d9c85386308b1593e73` |
+| stale | yes: the definition now gives checksum `v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a` |

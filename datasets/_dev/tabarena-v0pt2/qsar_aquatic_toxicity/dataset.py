@@ -25,11 +25,12 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
             "estimate, the number of nitrogen atoms and counts of atom fragments."
         ),
         split="Random chemicals, so the test data stands for new chemicals like those measured.",
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "The descriptors come from the structure alone, as in screening, but the authors chose these eight from a"
-            " larger set by their fit to the toxicity values, which may carry information on the test chemicals into "
-            "the features."
+            "The descriptors come from the structure alone, as in screening. The authors chose these eight from a "
+            "larger set by their fit to the toxicity values, which may carry information on the test chemicals into "
+            "the features: a potential leak kept and noted, which does not make the fit approximate (USE-8 as amended"
+            " 2026-10-21)."
         ),
     )
 

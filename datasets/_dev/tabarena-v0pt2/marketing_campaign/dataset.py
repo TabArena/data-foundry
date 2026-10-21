@@ -89,6 +89,7 @@ class MarketingCampaign(AbstractCuratedDataset):
                 "AcceptedCmp3",
                 "AcceptedCmp4",
                 "AcceptedCmp5",
+                "Complain",  # a 0/1 flag (CLEAN-14)
                 "Marital_Status",
                 "Education",
             ],

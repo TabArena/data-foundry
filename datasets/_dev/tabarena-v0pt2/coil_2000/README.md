@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
+checksum: v2:3266a1e9150041dcfaac62a0a5c2a64f2450a3f8d822f89e5eecac7231bad1c4
 build:
   uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
   checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
@@ -17,13 +17,13 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 9822
   n_features: 85
   dtypes:
-    category: 6
-    int64: 80
+    category: 11
+    int64: 75
   n_test_dataset_rows: null
 task:
   target: MobileHomePolicy
@@ -42,6 +42,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 6548
     max: 6548
@@ -65,7 +67,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `roc_auc` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3266a1e9150041dcfaac62a0a5c2a64f2450a3f8d822f89e5eecac7231bad1c4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -134,9 +136,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | MobileHomePolicy |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 11 categorical, 0 string, 0 datetime</summary>
 
-- categorical (6): `customerSubtype`, `customerMainType`, `romanCatholic`, `avgAge`, `contributionPrivateThirdPartyInsurance`, `MobileHomePolicy`
+- categorical (11): `customerSubtype`, `customerMainType`, `romanCatholic`, `avgAge`, `contributionPrivateThirdPartyInsurance`, `contributionBicyclePolicies`, `numberOfThirdPartyInsuranceAgriculture`, `numberOfPrivateAccidentInsurancePolicies`, `numberOfFamilyAccidentsInsurancePolicies`, `numberOfSurfboardPolicies`, `MobileHomePolicy`
 - string (0): none
 - datetime (0): none
 
@@ -214,6 +216,11 @@ Default splits.
 | customerMainType | category | 0 | 0 | 10 | Family with grown ups, Average Family, Conservative families, Successful hedoni… |
 | romanCatholic | category | 0 | 0 | 10 | 0%, 1 - 10%, 11 - 23%, 24 - 36%, 37 - 49%, 50 - 62%, 63 - 75%, 76 - 88%, 100%, … |
 | contributionPrivateThirdPartyInsurance | category | 0 | 0 | 4 | f 0, f 50 - 99, f 1 - 49, f 100 - 199 |
+| contributionBicyclePolicies | category | 0 | 0 | 2 | 0, 1 |
+| numberOfThirdPartyInsuranceAgriculture | category | 0 | 0 | 2 | 0, 1 |
+| numberOfPrivateAccidentInsurancePolicies | category | 0 | 0 | 2 | 0, 1 |
+| numberOfFamilyAccidentsInsurancePolicies | category | 0 | 0 | 2 | 0, 1 |
+| numberOfSurfboardPolicies | category | 0 | 0 | 2 | 0, 1 |
 | MobileHomePolicy | category | 0 | 0 | 2 | No, Yes |
 | numberOfHouses | int64 | 0 | 0 | 9 | 1, 2, 3, 7, 4, 5, 6, 8, 10 |
 | avgSizeHousehold | int64 | 0 | 0 | 6 | 3, 2, 4, 1, 5, 6 |
@@ -264,11 +271,6 @@ Default splits.
 | contributionTractorPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 5, 6, 7 |
 | contributionAgriculturalMachinesPolicies | int64 | 0 | 0 | 6 | 0, 4, 3, 2, 6, 1 |
 | contributionMopedPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 2, 5, 6 |
-| contributionLifeInsurances | int64 | 0 | 0 | 10 | 0, 4, 3, 6, 5, 2, 1, 7, 9, 8 |
-| contributionPrivateAccidentInsurancePolicies | int64 | 0 | 0 | 7 | 0, 2, 3, 1, 4, 6, 5 |
-| contributionFamilyAccidentsInsurancePolicies | int64 | 0 | 0 | 3 | 0, 2, 3 |
-| contributionDisabilityInsurancePolicies | int64 | 0 | 0 | 5 | 0, 6, 7, 4, 5 |
-| contributionFirePolicies | int64 | 0 | 0 | 9 | 0, 4, 3, 2, 5, 6, 1, 7, 8 |
 
 (26 more rows not shown)
 
@@ -284,7 +286,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (80 rows)</summary>
+<summary>Show the table (75 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -344,19 +346,19 @@ Default splits.
 | contributionFirePolicies | 9822 | 1.84942 | 1.88127 | 0 | 8 |
 | contributionSurfboardPolicies | 9822 | 0.001629 | 0.0570585 | 0 | 3 |
 | contributionBoatPolicies | 9822 | 0.0152718 | 0.24421 | 0 | 6 |
-| contributionBicyclePolicies | 9822 | 0.0253513 | 0.157198 | 0 | 1 |
 | contributionPropertyInsurancePolicies | 9822 | 0.0166972 | 0.211487 | 0 | 6 |
 | contributionSocialSecurityInsurancePolicies | 9822 | 0.0454083 | 0.396983 | 0 | 5 |
 | numberOfPrivateThirdPartyInsurance | 9822 | 0.40002 | 0.492001 | 0 | 2 |
+| numberOfThirdPartyInsuranceFirms | 9822 | 0.0140501 | 0.126058 | 0 | 5 |
 
-(20 more rows not shown)
+(15 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (26 rows)</summary>
+<summary>Show the table (36 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -367,6 +369,8 @@ Default splits.
 | avgAge | 3 | 50-60 years | 1777 | 18.09 |
 | avgAge | 4 | 60-70 years | 329 | 3.35 |
 | avgAge | 5 | 20-30 years | 104 | 1.06 |
+| contributionBicyclePolicies | 1 | 0 | 9573 | 97.46 |
+| contributionBicyclePolicies | 2 | 1 | 249 | 2.54 |
 | contributionPrivateThirdPartyInsurance | 1 | f 0 | 5903 | 60.1 |
 | contributionPrivateThirdPartyInsurance | 2 | f 50 - 99 | 3562 | 36.27 |
 | contributionPrivateThirdPartyInsurance | 3 | f 1 - 49 | 341 | 3.47 |
@@ -381,6 +385,14 @@ Default splits.
 | customerSubtype | 3 | Middle class families | 546 | 5.56 |
 | customerSubtype | 4 | Large religous families | 542 | 5.52 |
 | customerSubtype | 5 | Modern, complete families | 460 | 4.68 |
+| numberOfFamilyAccidentsInsurancePolicies | 1 | 0 | 9744 | 99.21 |
+| numberOfFamilyAccidentsInsurancePolicies | 2 | 1 | 78 | 0.79 |
+| numberOfPrivateAccidentInsurancePolicies | 1 | 0 | 9777 | 99.54 |
+| numberOfPrivateAccidentInsurancePolicies | 2 | 1 | 45 | 0.46 |
+| numberOfSurfboardPolicies | 1 | 0 | 9813 | 99.91 |
+| numberOfSurfboardPolicies | 2 | 1 | 9 | 0.09 |
+| numberOfThirdPartyInsuranceAgriculture | 1 | 0 | 9613 | 97.87 |
+| numberOfThirdPartyInsuranceAgriculture | 2 | 1 | 209 | 2.13 |
 | romanCatholic | 1 | 0% | 5420 | 55.18 |
 | romanCatholic | 2 | 1 - 10% | 2744 | 27.94 |
 | romanCatholic | 3 | 11 - 23% | 1213 | 12.35 |
@@ -400,3 +412,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:3266a1e9150041dcfaac62a0a5c2a64f2450a3f8d822f89e5eecac7231bad1c4` |

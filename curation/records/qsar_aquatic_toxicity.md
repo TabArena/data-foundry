@@ -45,6 +45,10 @@ Generally fine to add, but we need to decide whether we allow two datasets that 
 
 CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
 
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit set to `direct`; the authors' selection of the eight descriptors by their fit to the toxicity is named in `fit_reason` as a kept potential leak.
+
 ## Reference
 
 @article{cassotti2014prediction,

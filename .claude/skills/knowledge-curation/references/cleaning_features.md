@@ -61,8 +61,9 @@ when it means something ("not previously contacted").
 **CLEAN-11 (Should; amended 2026-10-21, Lennart, on house_prices_nominal, mercedes_benz_greener_manufacturing and
 qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
 only when it is no task row (USE-7, [use_case.md](use_case.md)) or a copy ([leak_checks.md](leak_checks.md), Copies
-across the split (LEAK-16 to LEAK-21)). A row whose target the source names as not the task's quantity, or a single
-extreme target in the training period only, may leave, with the source's words. Rows that are a sentinel in every
+across the split (LEAK-16 to LEAK-21)). A row whose target the source names as not the task's quantity may leave, with
+the source's words. A single extreme target in the training period only may leave with the source's words or where
+experts of the field drop such a value by default, decided case by case. Rows that are a sentinel in every
 feature are a decision of their own (Weighed factors). Cases: caracas_cervical_cancer, churn_telco_south_asia,
 heart_disease_va_long_beach, thyroid_discordant, sdss_17, house_prices_nominal, mercedes_benz_greener_manufacturing,
 qsar_tid_11.
@@ -78,11 +79,12 @@ Cases: caracas_cervical_cancer (Lennart, 2026-10-15).
 
 ### Dtypes by meaning
 
-**CLEAN-14 (Should; amended 2026-10-21, Lennart, on qsar_oral_toxicity, hiva_agnostic and qsar_tid_11).**
-Categorical for a fixed, finite set of values (inferred from the description and the context), string for free text
-and high-cardinality values, datetime for dates (`YYYY-MM-DD` where possible; reconstruct numerically encoded dates as
-far as the information allows), numeric for everything else. A molecule's 0/1 presence flags (fingerprint bits, binary
-structure descriptors) are categorical, after checking that they hold only 0 and 1.
+**CLEAN-14 (Should; amended 2026-10-21, Lennart, on qsar_oral_toxicity, hiva_agnostic and qsar_tid_11, then on
+every 0/1 flag of the working copy: "we should have one clear way to treat 0/1 flags").** Categorical for a fixed,
+finite set of values (inferred from the description and the context), string for free text and high-cardinality
+values, datetime for dates (`YYYY-MM-DD` where possible; reconstruct numerically encoded dates as far as the
+information allows), numeric for everything else. Every 0/1 flag (a feature holding only 0 and 1, plus missing values;
+a boolean column too) is categorical, after checking on the data that it holds only those values.
 
 ### The target
 
@@ -158,10 +160,11 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-11 | thyroid_discordant | `age = 455`: missing | applied |
 | CLEAN-11 | sdss_17 | `-9999`: missing | applied |
 | CLEAN-11 | house_prices_nominal | De Cock's three partial sales over 4,000 sq ft, which he calls "Partial Sales that likely don't represent actual market values" (2011, p. 4), all in the training rows: dropped with his words; the case that prompted the amendment (2026-10-21, Lennart) | applied |
-| CLEAN-11 | mercedes_benz_greener_manufacturing | one testing time of 265.3 s against a next highest of 169.9 s (mean 100.7, sd 12.7), car 883 of 4,209 in ID order, inside the first 1,000 cars that every window trains on: dropped as a single extreme target in the training period only; the competition host does not name it (2026-10-21, Lennart) | applied |
+| CLEAN-11 | mercedes_benz_greener_manufacturing | one testing time of 265.3 s against a next highest of 169.9 s (mean 100.7, sd 12.7), car 883 of 4,209 in ID order, inside the first 1,000 cars that every window trains on: dropped as a single extreme target in the training period only; the competition host does not name it; it leaves as the field's default for a single extreme time (the curator's call; the competition's public exploration notebook points it out as the one outlier); the case that made the second clause "the source's words or the experts' default, case by case" (2026-10-21, Lennart) | applied |
 | CLEAN-11 | qsar_tid_11 | one pXC50 of -6.24, a half-effect concentration of about 1.7 million mol/L: impossible, so the target is missing and the row leaves by CLEAN-15; the training-period clause does not apply to a random split (2026-10-21, Lennart) | applied |
 | CLEAN-13 | caracas_cervical_cancer | each STD type is its own question, and 9 patients have two or three: one category per flag; one category of combinations would need 14 levels, 9 of them with 1-3 patients (2026-10-15, Lennart) | applied |
 | CLEAN-14 | qsar_oral_toxicity, hiva_agnostic, qsar_tid_11 | fingerprint bits and binary structure descriptors, checked to hold only 0 and 1, typed categorical (int64, category and float64 before) (2026-10-21, Lennart) | applied |
+| CLEAN-14 | every 0/1 flag of the working copy (35 definitions, e.g. framingham_heart_study_fhs, phiusil_phishing, bioresponse, home_credit_default_risk, zillow_prize) | features holding only 0 and 1 (plus missing values) typed categorical, booleans included; found on the data, so counts that hold only 0 and 1 (RDKit fragment counts, `NoOfURLRedirect`, `mosque_count_500`) count too; a constant column (one value) is no flag and stays as it is; the case that extended the rule from a molecule's flags to all (2026-10-21, Lennart) | applied |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart) | applied |
 | CLEAN-20 | santander_customer_transaction_prediction | `has_one` won the competition and is not copied | applied |

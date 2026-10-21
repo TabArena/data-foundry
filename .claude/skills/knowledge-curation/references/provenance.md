@@ -16,14 +16,18 @@ is here (PROV-3).
 known source: when following every link ends at an anonymous re-upload with no documentation and no traceable upstream
 (paper, competition, institution, an identifiable first uploader), the origin is unknown. A dataset that still lacks
 the information needed to decide after a thorough search is `No`, and that is the curation team's call; only the end
-of a search counts ([selection.md](selection.md), "Unknown or unclear source"). Marker: `Missing source information`.
-Cases: water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow.
+of a search counts ([selection.md](selection.md), "Unknown or unclear source"). PROV-2 keeps, case by case, a sound
+upload whose first platform cannot be traced but that has a source to point to (amended 2026-10-21, Lennart). Marker:
+`Missing source information`. Cases: water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow.
 
 **PROV-2 (Should; narrows PROV-1).** A source that is plausible but unclear in a detail stays, with a note of what to
-clarify. A bare record of a known origin (a link, no description) is no lack of information either. A named first
-platform (a course or teaching provider) counts as a known source when the data shows no PROV-3 marks; an anonymous
-upload that names no platform is not covered (Lennart, 2026-10-21; credit_card_customers, bank_customer_churn).
-Cases: bad_customer_detection (Lennart, 2026-10-14), credit_card_customers, bank_customer_churn.
+clarify. A bare record of a known origin (a link, no description) is no lack of information either. An upload whose
+first platform cannot be traced is kept for now, case by case, when the data looks sound (it passes PROV-3) and there
+is a source to point to: the first upload, or a named course or teaching platform. The gap is written as an
+approximate fit (USE-8) with a note of what is unknown, and the risk is taken knowingly (Lennart, 2026-10-21: "if the
+data looks good enough even without a good source but there is a source, we want to keep it for now and risk it";
+this widens the amendment of the same day for a named platform). Cases: bad_customer_detection (Lennart, 2026-10-14),
+tour_travels_churn, mobile_churn, credit_card_customers, bank_customer_churn.
 
 **PROV-3 (Must).** The data is real: not generated, and not a real table someone reworked (relabelled, columns
 renamed, values replaced). A table that looks clean and scores well can still be either. Generated data is `No`; the
@@ -203,9 +207,12 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
-| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source") | applied |
+| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source"). water_quality_and_potability was rejected in the v1 workbook for the source alone (the curator then judged its features free of group or time structure), with no PROV-3 test on record; under PROV-2 as amended (2026-10-21) no recorded fact sets it apart from mobile_churn, so it is due a re-check | applied |
 | PROV-2 | bad_customer_detection | a plausible source unclear in a detail: kept, with a note of what to clarify (2026-10-14, Lennart) | applied |
 | PROV-2 | credit_card_customers, bank_customer_churn | a named first platform (Analyttica's LEAPS teaching case 11, offline; a named data-science course) counts as a known source when the data shows no PROV-3 marks; PROV-2 amended (2026-10-21, Lennart). credit_card_customers stays open on whether its measured marks count (its issue 1) | applied |
+| PROV-2 | tour_travels_churn | a bare Kaggle upload with no named origin, kept for now: the data passes PROV-3 and the upload is the source to point to; the gap is in the approximate fit (2026-10-21, Lennart; PROV-2 amended) | applied |
+| PROV-2 | mobile_churn | every link ends at an anonymous Kaggle upload (2019, empty description); no PROV-3 flag and the data look like a system export: kept, with the unknown operator and churn rule in the approximate fit (2026-10-21, Lennart; PROV-2 amended) | applied |
+| PROV-2 | credit_card_customers, bank_customer_churn | covered by the wider amendment as well (a named platform is a source to point to); credit_card_customers' keep still depends on its PROV-3 question (its issue 1) (2026-10-21, Lennart) | applied |
 | PROV-3 | customer_satisfaction_in_airline | tests 1, 3 and 6: a derived file with rating columns under the wrong name, replaced distances and 14,659 labels flipped by a rule; the passenger part is synthetic, the route distances real; retired | applied |
 | PROV-3 | ecommerce_shipping | tests 2 and 4: `Warehouse_block` is the id modulo 6, `Mode_of_Shipment` a 137-id cycle, 1,833 rows per warehouse block; retired | applied |
 | PROV-3 | homeq_default_prediction | test 5: near-copy clusters pure in the label, distance alone AUC 0.92; retired | applied |

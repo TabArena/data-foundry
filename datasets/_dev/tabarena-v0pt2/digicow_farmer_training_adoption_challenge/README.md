@@ -2,16 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: digicow_farmer_training_adoption_challenge
 container_format: 2
-checksum: v2:f85e350cba4327f8b50cc5330d4b93a5c78bc7ecf076a2cdc554ce3ed2b23457
+checksum: v2:f7b131ca399fcb7f69b271340aabd056c57211a549f914181f8891e858a37bbc
 build: null
 build_stale: false
 data:
   n_rows: 13536
   n_features: 11
   dtypes:
-    category: 9
+    category: 10
     datetime64[ns]: 1
-    int64: 1
     string: 1
   n_test_dataset_rows: null
 task:
@@ -74,7 +73,7 @@ decisions:
 
 Binary classification of `adopted_within_07_days`, scored with `log_loss` on temporal splits by `training_day`. 13,536 rows and 11 features. Source: Zindi (2026).
 
-Not built yet. The current definition gives checksum `v2:f85e350cba4327f8b50cc5330d4b93a5c78bc7ecf076a2cdc554ce3ed2b23457`.
+Not built yet. The current definition gives checksum `v2:f7b131ca399fcb7f69b271340aabd056c57211a549f914181f8891e858a37bbc`.
 
 ## In brief
 
@@ -160,9 +159,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | training_day |
 
 <details>
-<summary>Feature types: 9 categorical, 1 string, 1 datetime</summary>
+<summary>Feature types: 10 categorical, 1 string, 1 datetime</summary>
 
-- categorical (9): `gender`, `registration`, `age`, `group_name`, `county`, `subcounty`, `ward`, `trainer`, `adopted_within_07_days`
+- categorical (10): `gender`, `registration`, `age`, `group_name`, `county`, `subcounty`, `ward`, `trainer`, `belong_to_cooperative`, `adopted_within_07_days`
 - string (1): `topics_list`
 - datetime (1): `training_day (%Y-%m-%d)`
 
@@ -347,13 +346,13 @@ Accepted on purpose:
 | registration | category | 0 | 0 | 2 | Ussd, Manual |
 | age | category | 0 | 0 | 2 | Above 35, Below 35 |
 | group_name | category | 0 | 0 | 864 | GRP_quagidu, GRP_djqxnra, GRP_fbkujpq, GRP_jlpogjf, GRP_cihxwsh, GRP_xdjnmhn, G… |
+| belong_to_cooperative | category | 0 | 0 | 2 | 0, 1 |
 | county | category | 0 | 0 | 8 | CNT_vvuukv, CNT_yljqnl, CNT_mggvna, CNT_lpotuu, CNT_fhdsoy, CNT_rihpna, CNT_mvq… |
 | subcounty | category | 0 | 0 | 26 | SUB_dhaaasn, SUB_sxusspx, SUB_jchavji, SUB_hdsoyfn, SUB_twzhvtx, SUB_mdyljqn, S… |
 | ward | category | 0 | 0 | 66 | WRD_emtehozd, WRD_dsoyfnyw, WRD_atkhhvon, WRD_gwikueno, WRD_oqksptot, WRD_vwitn… |
 | adopted_within_07_days | category | 0 | 0 | 2 | No, Yes |
 | trainer | category | 0 | 0 | 12 | TRA_gertumxc, TRA_suiifsur, TRA_hyodnntj, TRA_szrwyfzz, TRA_rkvyofbh, TRA_ubcgv… |
 | training_day | datetime64\[ns\] | 0 | 0 | 152 | 2024-06-06 00:00:00, 2024-05-06 00:00:00, 2024-05-08 00:00:00, 2024-08-07 00:00… |
-| belong_to_cooperative | int64 | 0 | 0 | 2 | 0, 1 |
 | topics_list | string | 0 | 0 | 2250 | Biosecurity In Poultry Farming; Calf Feeding; Feeding A Lactating Cow, Herd Hea… |
 
 </details>
@@ -367,14 +366,12 @@ Accepted on purpose:
 
 ### Numeric features
 
-| index | count | mean | std | min | max |
-|---|---|---|---|---|---|
-| belong_to_cooperative | 13536 | 0.142435 | 0.349509 | 0 | 1 |
+No numeric features to summarize.
 
 ### Categorical features
 
 <details>
-<summary>Show the table (43 rows)</summary>
+<summary>Show the table (45 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -382,6 +379,8 @@ Accepted on purpose:
 | adopted_within_07_days | 2 | Yes | 153 | 1.13 |
 | age | 1 | Above 35 | 10828 | 79.99 |
 | age | 2 | Below 35 | 2708 | 20.01 |
+| belong_to_cooperative | 1 | 0 | 11608 | 85.76 |
+| belong_to_cooperative | 2 | 1 | 1928 | 14.24 |
 | county | 1 | CNT_vvuukv | 3049 | 22.53 |
 | county | 2 | CNT_yljqnl | 2190 | 16.18 |
 | county | 3 | CNT_mggvna | 2168 | 16.02 |

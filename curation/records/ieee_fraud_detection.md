@@ -41,6 +41,8 @@ Note: Possible data quality issue: The data is also grouped, but the group ident
 
 CC (2026-10-01, Lennart): Leak audit, kept as is. The engineered `uid` (card1 + addr1 + D1 anchor, from the 1st-place Kaggle solution) carries labels across the temporal split: the host labels a chargeback card and its later linked transactions as fraud, so test rows whose uid had fraud in train are about 95% fraud (15-17% of test rows have a uid seen in train). This is legitimate history under the host's labelling rule, not a leak, and it is worth little: dropping uid moves LightGBM AUC by -0.007 to -0.001 (0.911 -> 0.903 on split 0, 0.908 -> 0.907 on split 1), and dropping uid plus the row-ID/time proxies (TransactionID, day, date) gives 0.906. The Data Quality Issue marker (uid is not given by the host) stays.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: V1, V14, V41, V65, V88, V107 (found on the data in `_feature_types`).
+
 ## Reference
 
 Addison Howard, Bernadette Bouchon-Meunier, IEEE CIS, inversion, John Lei, Lynn@Vesta, Marcus2010, and Prof. Hussein Abbass. IEEE-CIS Fraud Detection. https://kaggle.com/competitions/ieee-fraud-detection, 2019. Kaggle.

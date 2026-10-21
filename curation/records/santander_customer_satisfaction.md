@@ -30,6 +30,8 @@ type_adapter_id: curation-record-v1
 
 CC: "work with hundreds of anonymized features to predict if a customer is satisfied or dissatisfied with their banking experience. Very nice dataset. Data was uploaded to OpenML with Public license, but the actual license might be more prohibitive. Unsure how to deal with that. also, we don't know the split, but as competition winners used random, this should be fine."
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the 56 ind_var indicators, which hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 Soraya_Jimenez and Will Cukierski. Santander Customer Satisfaction. https://kaggle.com/competitions/santander-customer-satisfaction, 2016. Kaggle.

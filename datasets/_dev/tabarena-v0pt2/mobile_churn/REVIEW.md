@@ -1,86 +1,25 @@
 # mobile_churn
 
-**Outcome:** added; recommended `No` (`Missing source information`) under PROV-1 as written, unless the curator amends
-PROV-1/PROV-2 to cover an untraceable upload with an undefined label rule (issue 1); then ship as defined now.
+**Outcome:** added. The AI recommends shipping it as defined now: PROV-2 as amended (Lennart, 2026-10-21) keeps, case
+by case, a sound upload with a source to point to, and the unknown operator and churn rule are in the approximate fit.
 Prepaid accounts of one unnamed operator at the end of June, July or August 2013: will the account churn after the
 month? Random split over accounts (54,207 rows), the 12,262 SIM cards never activated dropped. Not built yet.
 
-**Main points:** Keep a dataset whose source search ended with no upstream and whose churn rule is unknown, by an
-amendment of PROV-1/PROV-2, or apply `No`? Then confirm the drop of the SIM cards never activated (issue 2).
+**Main points:** Confirm the drop of the SIM cards never activated (issue 2).
 
-**Record judgment:** don't ship under PROV-1 as written. Validity: SEL-1 and SEL-2 hold; USE-1 holds with an
-approximate fit; USE-5 cannot be checked against a source, the same gap as PROV-1; USE-8 holds with the gap named and
+**Record judgment:** ship. Validity: SEL-1 and SEL-2 hold; USE-1 holds with an
+approximate fit; USE-5 cannot be checked against a source, kept with the gap named (USE-5 and PROV-2 amended); USE-8 holds with the gap named and
 a potential-leak note (the churn rule may be defined from the inactivity the recency columns measure); LEAK-10 holds
 (the 100-day windows end at the snapshot); LEAK-22 applied, the never-activated SIM cards dropped (issue 2); SPLIT-1
 holds; SPLIT-8 triggered, fixed with the `ForcedIIDFromTemporal` tag and the split wording (settled 2026-10-21); PROV-3 holds (no
-marks of generated data); PROV-1 triggered, the search has ended with no upstream (issue 1). Value: LightGBM ROC AUC
+marks of generated data); PROV-1 triggered, the search has ended with no upstream at the Kaggle upload; kept under PROV-2 as amended
+(Lennart, 2026-10-21: "if the data looks good enough even without a good source but there is a source, we want to
+keep it for now and risk it"). Value: LightGBM ROC AUC
 0.848, 0.049 above a linear model, with 1,797 churners per test fold; no task-probe flag. Quality: the notes state the
 measured numbers, name both default dates and note the missing values that the month's counts contradict. Weighed:
-shape, signal and realism for; source and label definition against. Left for the curator: the PROV-1 rule (issue 1),
-then the drop (issue 2).
+shape, signal and realism for; source and label definition against. Left for the curator: the drop (issue 2).
 
 **Issues for Lennart:**
-
-1. **Keep a dataset with no traceable source and no churn definition?** I recommend (a), `No`, unless you adopt the
-   wider amendment in (b) for all the untraceable keeps at once. Update (2026-10-21): PROV-2 was amended only for a
-   named first platform ("a named first platform (a course or teaching provider) counts as a known source when the
-   data shows no PROV-3 marks", Lennart). This dataset names no platform, so the amendment does not cover it: under
-   the rules as they stand it is (a), `No` with `Missing source information`, and that needs your explicit call
-   (or the wider wording of (b)).
-   - Problem: every link ends at the Kaggle upload `dimitaryanev/mobilechurndataxlsx` (2019-10-31): empty
-     description, licence "Unknown", no other datasets or notebooks by the uploader. OpenML 44231 is a cell-for-cell
-     copy that points back to it ("No description available", creator "UNK"). Neither page defines churn: no rule,
-     no horizon, no operator.
-   - Effect: we cannot tell whether the label means "deactivated by the operator" or "inactive N more days", two
-     different targets. The study the practitioner cites (Radosavljevik, van der Putten and Larsen, "The Impact of
-     Experimental Setup on Prepaid Churn Modeling") finds that the churn definition changes how predictable prepaid
-     churn is more than any other choice in the setup.
-   - What the data settle: the label falls after the month's snapshot for both classes, and it is not "inactive N
-     days at the snapshot" (in June the churn rate is 4.6% at 0-5 days without activity and 61% at 60-75 days, with
-     no cutoff). No single feature restates it (best ROC AUC 0.779 against 0.844 for all features). The data look
-     like a real system export (default dates, refunds, sentinels contradicted by counts); the generated-data probes
-     raise no flag.
-   - The search has ended (review panel's source search, 2026-10-20): exact-string web searches for the column names
-     and the file name; a GitHub code search (only later users: the TabSTAR annotation, student projects, a 2025
-     hiring case with the same columns and no origin); the Kaggle notebooks on the dataset (they call it "an
-     anonymous telecommunications company"); the CTGAN-ENN paper (Journal of Big Data 11:121, 2024), which cites the
-     Kaggle page; and the OpenML upload batch 44228-44231, none of which names an origin. Left unread: the one Kaggle
-     discussion topic, which needs a logged-in browser
-     (https://www.kaggle.com/datasets/dimitaryanev/mobilechurndataxlsx/discussion); its question of 2021-12-27, "can
-     you give me the time frame of the collected data, and its provenance", had no answer when the review of
-     2026-10-07 read it.
-   - A clue that does not hold: on-net calls are rare (0.3 per account and month against 16.3 off-net), which the
-     earlier review read as a small operator or a virtual operator; but the calls by destination add up to the total
-     in only 10.8% of rows, so a fourth destination is likely and the clue proves nothing.
-   - Rule: PROV-1 (Must: an untraceable source is `No`), PROV-2 (Should), USE-5 (Must, the label checked against the
-     source). An uploader handle with no description identifies nothing about the data's origin; PROV-3 passing says
-     the data are real, not what they are. Nothing ranked above PROV-1 needs the keep.
-   - Precedent: water_quality_and_potability went `No` under PROV-1 although its data were judged sound.
-     bank_customer_churn (data from a named data-science course) and tour_travels_churn (a bare Kaggle upload with no
-     named origin) were kept; that contradicts the rule, so it is no precedent to follow. churn_telco_south_asia kept
-     an undated label with a note, but it has two source papers. Your screening keep ("data looking very good and
-     real") was made knowing the source was missing, but it departs from a Must without a fact that sets the case
-     apart, so the way out is an amendment, not an exception.
-   - Implemented: kept, with the gaps in `fit_reason` (no stated churn rule or horizon, operator unknown) and a
-     `Potential leak, kept on purpose:` note in the form churn_telco_south_asia uses; cost: it ships against PROV-1 as
-     written unless (b) is adopted.
-   - Alternatives:
-     - (a) apply PROV-1: `No` with `Missing source information`; cost: a large, real-looking prepaid churn task
-       leaves, and the decision differs from tour_travels_churn and bank_customer_churn unless they are reopened;
-     - (b) amend PROV-1/PROV-2 once for bank_customer_churn, tour_travels_churn, credit_card_customers and
-       mobile_churn, and decide newspaper_churn the same way. The wording proposed for credit_card_customers ("a
-       named course or teaching platform counts as a known source when the data shows no PROV-3 marks") does not
-       cover this dataset, which has no named platform. A wider wording would, for example: "an untraceable first
-       upload stays when the data passes PROV-3, the prediction point and label timing are measured on the data, and
-       the gaps (source, label rule) are written as an approximate fit with a potential-leak note". It must also say
-       whether an undefined label rule is allowed. Cost: a Must gives way for a class of datasets whose origin nobody
-       can check, and the benchmark carries a churn label whose rule is unknown;
-     - (c) reopen tour_travels_churn and bank_customer_churn (and credit_card_customers) to match
-       water_quality_and_potability; cost: up to four churn datasets leave, bank_customer_churn among them, which
-       shipped in TabArena v0.1.
-   - The cross-dataset item "Amend PROV-1/PROV-2 for a named course or teaching platform" was decided on 2026-10-21
-     with the narrow wording (credit_card_customers, bank_customer_churn); (b) would widen it further.
-   - Decision needed: (a) `No`, (b) the wider amendment, or (c) reopen the earlier keeps.
 
 2. **Confirm the drop of the SIM cards never activated?** I recommend confirming it; the panel agrees.
    - Problem: 12,262 rows have neither the intake flag nor an activation date. Only 0.34% of them used calls, SMS

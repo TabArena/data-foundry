@@ -27,7 +27,7 @@ source_links:
 - https://www.kaggle.com/datasets/wol4aravio/ny-taxi-trip-duration-enriched-by-mathematica
 - https://www.openml.org/d/42729
 - https://www.kaggle.com/datasets/diishasiing/revenue-for-cab-drivers
-v2_path: datasets/_dev/tabarena-v0pt2/nyc_taxi_trip_duration/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/nyc_taxi_trip_duration_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -71,3 +71,7 @@ Related work, not a source: the PKDD-15 Porto taxi trip-time competition (https:
 CC (2026-10-21, Lennart): Cite the original publisher, the NYC Taxi and Limousine Commission trip records, as house_sales does (PROV-10).
 
 **Assessment (AI, 2026-10-21):** bibtex now cites the TLC Trip Record Data first, next to the Kaggle competition that published the sample. Dataset check: 0 errors, 0 warnings.
+
+CC (2026-10-21, Lennart): ok on creating the _1m version (`nyc_taxi_trip_duration_1m`): every train side is over the 1M-row budget.
+
+**Assessment (AI, 2026-10-21):** the folder is renamed to `nyc_taxi_trip_duration_1m` (`version_of = "nyc_taxi_trip_duration"`, `subsample_to_budget = True`, as delivery_eta_1m; the full version is not kept in the working copy, as for the other `_1m` datasets). Same three weekly test windows (52,779 / 52,949 / 54,532 trips, newest first) and one-day gap; each train side is a random 1M of the 1.28M-1.39M earlier trips, drawn in one order so the sides overlap; the frame keeps the 1,166,477 trips a split uses (of 1,447,167 after cleaning), so the accepted `splits_rows_unused` warning is gone. Dataset check: 0 errors, 0 warnings. Not built.

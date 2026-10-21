@@ -220,7 +220,8 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         return df.rename(columns={"Time": "TimeOfDay"})
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["Gender", "Age", "Ethnicity"])
+        # Cosmetics is a 0/1 flag (CLEAN-14)
+        return FeatureTypes(categorical=["Gender", "Age", "Ethnicity", "Cosmetics"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         del df

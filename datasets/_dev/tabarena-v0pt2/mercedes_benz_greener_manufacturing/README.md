@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8
+checksum: v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7
 build:
   uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
   checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -180,7 +180,7 @@ We start with the train.csv from Kaggle.
 - The data has been anonymized, so feature meanings are unknown.
 - There is generally weird behavior related to the ID and potentially a time column (see X5 here https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing/discussion/34949). However, it is hard to parse the exact details due to anonymization. We generally take from this that the data is sorted sequentially by ID and that there may be time dependencies. Also checkout https://www.kaggle.com/code/sudalairajkumar/simple-exploration-notebook-mercedes which shows relation between index and y, showing that y goes up with higher index and it shows that X5 (the time group feature), has the highest importance. Plus, it has one outlier.
 - We remove the one outlier from y.
-  Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, inside the first 1,000 cars that every test window trains on. The competition host does not name the row.
+  Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, inside the first 1,000 cars that every test window trains on. The competition host does not name the row; it leaves as the field's expert default for a single extreme testing time (CLEAN-11 allows the source's words or the experts' default, case by case; Lennart, 2026-10-21).
 - We drop X5 as it leaks time group information in temporal splits (besides having a full categorical-value distribution shift with a temporal split).
 - We tread the ID as a time_index.
 - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
@@ -383,4 +383,4 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fd921bf190a64f1c19e1685ab002efdc85b1cd93dae41b4bd0d0181bb88fd6a8` |
+| stale | yes: the definition now gives checksum `v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7` |

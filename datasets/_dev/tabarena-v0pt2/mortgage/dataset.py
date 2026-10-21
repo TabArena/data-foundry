@@ -236,7 +236,8 @@ class Mortgage(AbstractCuratedDataset):
         return drop_columns(df, ["id", "loan", "default_time", "payoff_time", *flags[1:]])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["real_estate_type"])
+        # investor_orig_time is a 0/1 flag (CLEAN-14)
+        return FeatureTypes(categorical=["real_estate_type", "investor_orig_time"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         # How the row's own balance moves on event rows against the loan's previous row.

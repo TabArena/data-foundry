@@ -5,8 +5,8 @@
 a model that values a property from its record and location, used by lenders and agents) refit each month; nine
 one-month test windows, April to December 2020, no gap. Validity: SEL-1 and SEL-2 hold; USE-5 holds (the sale price
 is what the valuation acts on); USE-7 applied (the 563 sales dated before the build year are land or off-the-plan
-sales, dropped; the 140 sales in the build year stay); USE-8 read as written gives `approximate` (truncated at $2.44M,
-attributes as of the scrape, the school rank kept as a weak potential leak), unless the curator amends it (issue 1);
+sales, dropped; the 140 sales in the build year stay); USE-8 `approximate` (truncated at $2.44M,
+attributes as of the scrape; the school rank is a potential leak kept with a note, no gap: Lennart, 2026-10-21);
 LEAK-26 met (the truncation documented); LEAK-10 triggered on training rows and fixed: the station and its distance
 blanked for 147 sales before the station opened, and the school, its distance and its rank for the 58 sales before
 Joseph Banks Secondary College opened (the rank belongs to that school, so it goes with the name); for the rooms,
@@ -18,7 +18,7 @@ Quality: CLEAN-11 impossible floor areas and bathroom counts set to missing; CLE
 stations, the unit flag open (issue 5). Weighed: use case +, signal +, source (a scrape, truncated, one sale per
 property) -, a single test year -.
 
-**Main points:** The fit label follows the house-family USE-8 item (issue 1); a one-month gap or no gap follows
+**Main points:** A one-month gap or no gap follows
 house_prices_nominal's issue 4 (issue 7); spaced monthly windows (`step=3`) or contiguous 2020 windows with a recorded
 exception (issue 6); the training history from 1988 or from 2013 (issue 3); a `UNIT` flag from `ADDRESS` (issue 5).
 
@@ -26,30 +26,6 @@ exception (issue 6); the training history from 1988 or from 2013 (issue 3); a `U
 property appears once with its latest sale, and the dearer sales are absent.
 
 **Issues for Lennart:**
-
-1. **The fit label: `approximate` under USE-8 as written, or `direct` if the house family amends it?**
-   - Problem: the definition ships `fit="approximate"` with three named gaps: the data is truncated at $2,440,000
-     (one sale at that price, none above, though the site lists dearer sales), the house attributes are the site's
-     record of January 2021 rather than at the sale, and `NEAREST_SCH_RANK` stays with a `Potential leak, kept on
-     purpose:` note (one ranking of 2019 or later, its year unknown). USE-8 (Must) lists "a potential leak kept on
-     purpose" under an approximate fit, as for kick.
-   - Effect: a one-word label; the rows, the split and the target do not change. The truncation removes about 1.5% of
-     houses sold in 2015-2020 (75 of 5,072 in heptix/perth-property-prices, a second Kaggle upload of Perth sold
-     listings, 2006-2024, used here only as a check), and 45 of the 4,132 test rows are in the suburbs the cut
-     reaches. Dropping the rank changes
-     mean RMSE from 0.1622 to 0.1623 (LightGBM, one seed, 9 windows).
-   - For `approximate` (critic): USE-8 is a Must and rules win over precedents; house_sales, houses and zillow_prize
-     read `approximate` for the same kinds of gap, and houses names its cap in `fit_reason`.
-   - For `direct` (advocate, domain practitioner): the truncation and the stale records are not on USE-8's list of
-     approximate patterns; they narrow the population or remove inputs, they do not make the task a stand-in. Drop
-     the rank (no measurable cost) and no kept leak remains.
-   - Implemented: `approximate` (mediator: the rule as written). The decision itself belongs to the working copy's
-     items "Does a weak potential leak kept on purpose make a fit `approximate`?" and "The fit label of the
-     house-price datasets with values kept from after the sale", which list perth; the truncation and the stale
-     records fall outside even that item's amendment (b), so an amendment would have to name them.
-   - Decision needed: if the family item keeps USE-8, perth stays `approximate` and this issue closes with it. If it
-     amends USE-8 by option (b), decide here whether the amendment also names a documented truncation and attributes
-     as of a later scrape: yes, perth goes `direct` with `NEAREST_SCH_RANK` dropped; no, perth stays `approximate`.
 
 7. **A one-month gap, or no gap as the second exception to SPLIT-10?**
    - Problem: sales reach the site late. December 2020 holds 0.71 of November's count against 0.83-1.04 in

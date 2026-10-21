@@ -169,7 +169,8 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["AccCategory"])
+        # 0/1 flags are categorical (CLEAN-14)
+        return FeatureTypes(categorical=["AccCategory", "HasIDNo"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         import matplotlib.pyplot as plt

@@ -155,6 +155,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
                 "CustomerType",
                 "ReservationStatus",
                 "hotel",
+                "IsRepeatedGuest",  # a 0/1 flag (CLEAN-14)
             ],
             datetime=["arrival_date", "ReservationStatusDate", "booking_date"],
         )

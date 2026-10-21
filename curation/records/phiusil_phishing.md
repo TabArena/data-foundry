@@ -38,6 +38,8 @@ Discussion: unclear if this is grouped data or not!
 
 **Assessment (AI, 2026-10-20):** The review panel recommends `No` with `Data Quality Issue` (the curator's call). The two classes were collected in different forms (LEAK-13 to LEAK-15, Must): every legitimate row is a ranked homepage written as https://www.<host>, and 50.5% of the phishing rows sit on 115 pages shared across hosts, such as takedown and 'site not found' pages fetched after the URL was listed (LEAK-10). A fixed rule with no training reaches ROC AUC 0.9998, the URL features alone 0.9989, the page features alone 0.99994, and every split (random, by host, by registered domain) ROC AUC 1.0. Mendeley v1 and v2 hold the same file, so there is nothing to repair from; `Trivial` is not proven (TP-4). Priority 2: gap -, use case -, source +, shape +, risk - (the fit is approximate, as the negatives are ranked homepages only; the panel recommends not to ship).
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: 19 columns (IsDomainIP, HasObfuscation, IsHTTPS, HasTitle, HasFavicon, Robots, IsResponsive, NoOfURLRedirect, NoOfSelfRedirect, HasDescription, HasExternalFormSubmit, HasSocialNet, HasSubmitButton, HasHiddenFields, HasPasswordField, Bank, Pay, Crypto, HasCopyrightInfo).
+
 ## Reference
 
 Prasad, A., & Chandra, S. (2023). PhiUSIIL: A diverse security profile empowered phishing URL detection framework based on similarity index and incremental learning. Computers & Security, 103545. doi: https://doi.org/10.1016/j.cose.2023.103545

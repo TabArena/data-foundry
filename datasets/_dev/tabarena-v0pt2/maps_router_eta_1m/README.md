@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: maps_router_eta_1m
 container_format: 2
-checksum: v2:9949ed8f92ff98b85e991ce35caf8740c1a4fda36dc7e3347dace180f8da9bcf
+checksum: v2:80a2f87930b2c181d3db8b5a79c73669a2c903ec0b705c4726141d8304a6c11f
 build:
   uuid: 01a111ff-5cb6-76bc-bc05-231ccdac19d0
   checksum: v2:e2cf072d781c420ba7d7dbca45b1ac74d8f194fab060cb3e5923a1482485b0ea
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `target_log_spkm`, scored with `rmse` on temporal splits by `timestamp`. 2,535,166 rows and 988 features. Source: Kaggle (2024).
 
-Built as `01a111ff-5cb6-76bc-bc05-231ccdac19d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9949ed8f92ff98b85e991ce35caf8740c1a4fda36dc7e3347dace180f8da9bcf`, so the build is stale. See [Build](#build).
+Built as `01a111ff-5cb6-76bc-bc05-231ccdac19d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:80a2f87930b2c181d3db8b5a79c73669a2c903ec0b705c4726141d8304a6c11f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -181,7 +181,7 @@ Version of `maps_router_eta`: We sample per test window (v2 split protocol): eac
 
 ## Splits
 
-We use each of the last 3 weeks as a test window (newest first) and the routes requested at least one day before it as train data. The gap of one day is part of the task: a travel time is known only when the drive ends (up to 16.6 hours after the request, from the target and track_length in metres), so at a weekly refit the last routes before it have no label yet; without the gap 656, 654 and 578 train routes per window (request time + seconds per km x km) would end after the window start, with it none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%). Each window keeps at most 500k of its rows (2.4M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+We use each of the last 3 weeks as a test window (newest first) and the routes requested at least one day before it as train data. The gap of one day is part of the task: a travel time is known only when the drive ends (up to 16.6 hours after the request, from the target and track_length in metres), so at a weekly refit the last routes before it have no label yet; without the gap 656, 654 and 578 train routes per window (request time + seconds per km x km) would end after the window start, with it none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%). Each window keeps at most 500k of its rows (2.4M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows). TabReD documents only the target (log seconds per km), not the unit of track_length; we read it as metres because no value is below 1,000.0 (TabReD's 1 km floor, we assume) and the implied drive is then 0.03 to 16.6 hours (median 12 minutes), against a median of 194 hours if read as km. The data have few implausible rows: 31 of 13.6M (12 above 150 km/h, 5 below 2 km/h, 14 longer than 12 hours), none among the late routes, so the gap is set by ordinary short drives requested in the last hours before a window start.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days. Gap between train and test: 1 days.
 
@@ -385,4 +385,4 @@ We use each of the last 3 weeks as a test window (newest first) and the routes r
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9949ed8f92ff98b85e991ce35caf8740c1a4fda36dc7e3347dace180f8da9bcf` |
+| stale | yes: the definition now gives checksum `v2:80a2f87930b2c181d3db8b5a79c73669a2c903ec0b705c4726141d8304a6c11f` |

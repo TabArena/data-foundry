@@ -114,6 +114,10 @@ class RossmannStoreSales(AbstractCuratedDataset):
                 "StoreType",
                 "Assortment",
                 "PromoInterval",
+                # 0/1 flags (CLEAN-14)
+                "Promo",
+                "SchoolHoliday",
+                "Promo2",
             ],
             datetime=["Date"],
         )

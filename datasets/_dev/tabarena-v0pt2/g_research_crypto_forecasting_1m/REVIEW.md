@@ -52,6 +52,11 @@ reproduced; the record's 2026-10-20 panel assessment replaces them.
      own past targets. Over the 14 coins, the median correlation of `log_return_60_minus_market` with the sum of past
      `Target` values covering the same 60 minutes is 0.83 (0.80 for 300 and 900 minutes). The coin's own lags alone
      and the market means alone carry no signal; only the coin's past return against the market does.
+   - The top solutions (checked 2026-10-21 at your ask): all of the top three used LightGBM, not sequence models
+     (G-Research's wrap-up). The 3rd place trains one LightGBM per coin on the coin's and the market's past
+     60/300/900-minute returns (the source of these features); the 14th adds the coin's last 15-minute return, close
+     to the last target; no top solution used an LSTM or ARIMA. Tabular models, then, but on the coin's own trailing
+     returns, so leg 2 fails in substance.
    - Implemented: the definition as built, with the scope and the recommendation `No` stated in its notes.
    - Alternative: keep it by amending TP-10 (across datasets, "Rules from the G-Research review"): leg 2 narrowed to
      "no lag of the target column itself", leg 1 measured by correlation, a metric the benchmark adapter does not

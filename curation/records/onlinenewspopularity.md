@@ -59,6 +59,10 @@ I think we cannot get the original text but this is still fine. It is not too ol
 
 **Assessment (AI, 2026-10-20):** re-checked by the review panel: ship after changes, now made in the definition (the `known` wording names the crawl-time counts, the 1.59 share count is masked, `rate_negative_words` dropped as a copy, the notes give the 9-window figures). Masking the keyword and self-reference counts traced to articles under 8 days older changes R² by -0.0004 (0.1553 to 0.1549), so they stay with a note; keeping them needs a LEAK-10 amendment (REVIEW.md issue 5). The release holds no text: the 19 text-derived columns add 0.004 R² and the slug's TF-IDF lowers it, which does not bear out `Wrong Domain / Source Modality` (issue 8). Priority 2: gap -, use case - (fit approximate: one crawl date, crawl-time counts), source + (the EPIA 2015 paper and UCI's page), shape +, risk - (the kept crawl-time counts await the LEAK-10 amendment, issue 5).
 
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit set to `direct`; the two kept crawl-time leaks (R² 0.158 with both, 0.135 and 0.143 without each) are named in `fit_reason` as kept; REVIEW.md outcome and issue 5 updated.
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

@@ -279,5 +279,11 @@ class Coil2000(AbstractCuratedDataset):
                 "romanCatholic",
                 "avgAge",
                 "contributionPrivateThirdPartyInsurance",
+                # codes and counts that hold only 0 and 1: 0/1 flags (CLEAN-14)
+                "contributionBicyclePolicies",
+                "numberOfThirdPartyInsuranceAgriculture",
+                "numberOfPrivateAccidentInsurancePolicies",
+                "numberOfFamilyAccidentsInsurancePolicies",
+                "numberOfSurfboardPolicies",
             ],
         )

@@ -64,14 +64,16 @@ bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15).
   verified), one judge or rating service standing for the rating a buyer meets, a task changed a lot to avoid a leak.
 * None: no decision fits (USE-2). The dataset goes back to triage.
 
-A potential leak kept on purpose (a weak LEAK-30 keep, a remnant measured to carry no signal) does not by itself make
-a fit approximate: the fit is that of the task without the leak, and the leak is named in the notes
-([leak_checks.md](leak_checks.md)). The fit becomes approximate only when avoiding the leak needed a large change to
-the task (Lennart, 2026-10-21, sarcoma, house_sales). An unverified label definition is a known gap and makes the fit
+A potential leak kept on purpose does not by itself make a fit approximate, however much signal it carries (a weak
+LEAK-30 keep, a remnant measured to carry no signal, or fields worth ROC AUC +0.066 as in kick): the fit is that of
+the task without the leak, and the leak is named in the notes ([leak_checks.md](leak_checks.md)) and in `fit_reason`
+as kept, not as a gap. The fit becomes approximate only when avoiding the leak needed a large change to the task
+(Lennart, 2026-10-21, sarcoma, house_sales; a strong kept leak: Lennart, 2026-10-21, kick,
+homesite_quote_conversion). An unverified label definition is a known gap and makes the fit
 approximate (Lennart, 2026-10-21, differentiated_thyroid_cancer_recurrence).
 
 Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise, superconductivity,
-2_month_survival_rate_prediction; approximate, account_debt_south_africa
+2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak); approximate, account_debt_south_africa
 (one snapshot for a forecast), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
 (one judge for the rating a buyer meets; Lennart, 2026-10-14), differentiated_thyroid_cancer_recurrence (an unverified
 label breadth), sarcoma (a closed set of types; its kept preprocessing does not count).
@@ -141,13 +143,14 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
 | USE-5 | diabetes_3 | Efron et al. (2004) describe the label only as "a quantitative measure of disease progression one year after baseline", with no measure, scale, clinic or inclusion rule: kept with fit approximate and a note (2026-10-21, Lennart; USE-5 amended) | applied |
 | USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate | applied |
-| USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment if the source passes PROV-1/PROV-2 (a named course or teaching platform); open, 2026-10-21 | applied |
+| USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment, now that PROV-2 (amended 2026-10-21, Lennart) keeps a sound upload with a source to point to | applied |
 | USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |
 | USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
 | USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
-| USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate | applied |
+| USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate; now direct (next row) | applied |
+| USE-8 | kick, homesite_quote_conversion | a strong kept leak stays direct: kick's missing WheelType (ROC AUC +0.066) and homesite's two status-like fields (+0.050) are named in `fit_reason` as kept, not as a gap; qsar_aquatic_toxicity and onlinenewspopularity moved to direct the same way, and perth_house_prices, credit_card_customers, african_credit_scoring_challenge and zillow_prize stay approximate for their other gaps only (Lennart, 2026-10-21) | applied |
 | USE-8 | alfa_battle_2_0_task_2 | approximate: a reconstructed time axis or a label without a stated horizon | applied |
 | USE-8 | coffee_rating_prediction | approximate: one judge or rating service stands for the rating a buyer meets (2026-10-14, Lennart) | applied |
 | USE-8 | house_sales | a remnant kept from after the sale (view, waterfront, the neighbours' areas; about 145 rows changed, RMSE 0.2147 masked against 0.2132 kept) does not make the fit approximate: USE-8 amended (2026-10-21, Lennart) | applied |

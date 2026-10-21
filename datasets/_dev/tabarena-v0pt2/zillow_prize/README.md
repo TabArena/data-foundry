@@ -2,17 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: zillow_prize
 container_format: 2
-checksum: v2:9c30ac4786caabf68abc9b8b7d70020724e0306ce74adf00a181ce05c63f1ff1
+checksum: v2:69c7c8e48ac92637e672d970ef2c37eabbf0f0cd85671b942aa6c2f0c281bce4
 build: null
 build_stale: false
 data:
   n_rows: 153108
   n_features: 56
   dtypes:
-    bool: 8
-    category: 12
+    category: 21
     datetime64[ns]: 1
-    float64: 36
+    float64: 35
   n_test_dataset_rows: null
 task:
   target: logerror
@@ -62,7 +61,7 @@ decisions:
 
 Regression of `logerror`, scored with `mae` on temporal splits by `transaction_month`. 153,108 rows and 56 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:9c30ac4786caabf68abc9b8b7d70020724e0306ce74adf00a181ce05c63f1ff1`.
+Not built yet. The current definition gives checksum `v2:69c7c8e48ac92637e672d970ef2c37eabbf0f0cd85671b942aa6c2f0c281bce4`.
 
 ## In brief
 
@@ -80,7 +79,7 @@ Not built yet. The current definition gives checksum `v2:9c30ac4786caabf68abc9b8
 
 **Our changes to the source.** Each sale takes the property file of its own year, so a 2016 sale never sees the 2017 file; both files were extracted after some of their sales, so a few home facts may postdate the sale. We blank the tax delinquency for sales before September 2016 (it was looked up later), drop August and September 2017, which Zillow released only in part, and split by sale month.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Zillow predicted from much more than the public files: the Zestimate itself, the listing data and the last sale price were never released, so the inputs are only the county facts. The property files were extracted after some of their sales, so a few facts may postdate the sale (edits measured for 1-4% of parcels).
+> **Use case fit: approximate (a stand-in with a known gap).** Zillow predicted from much more than the public files: the Zestimate itself, the listing data and the last sale price were never released, so the inputs are only the county facts.
 
 ## Files in this folder
 
@@ -144,9 +143,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | transaction_month |
 
 <details>
-<summary>Feature types: 12 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 21 categorical, 0 string, 1 datetime</summary>
 
-- categorical (12): `fips`, `airconditioningtypeid`, `architecturalstyletypeid`, `buildingclasstypeid`, `heatingorsystemtypeid`, `propertylandusetypeid`, `typeconstructiontypeid`, `regionidcity`, `regionidneighborhood`, `regionidzip`, `propertycountylandusecode`, `propertyzoningdesc`
+- categorical (21): `fips`, `airconditioningtypeid`, `architecturalstyletypeid`, `buildingclasstypeid`, `heatingorsystemtypeid`, `propertylandusetypeid`, `typeconstructiontypeid`, `regionidcity`, `regionidneighborhood`, `regionidzip`, `propertycountylandusecode`, `propertyzoningdesc`, `hashottuborspa`, `fireplaceflag`, `taxdelinquencyflag`, `poolcnt`, `pooltypeid10`, `pooltypeid2`, `pooltypeid7`, `decktypeid`, `storytypeid`
 - string (0): none
 - datetime (1): `transaction_month (%Y-%m-%d)`
 
@@ -173,11 +172,11 @@ The first 5 of 153,108 rows of the final frame (the oldest rows: the frame is so
 
 | logerror | airconditioningtypeid | architecturalstyletypeid | basementsqft | bathroomcnt | bedroomcnt | buildingclasstypeid | buildingqualitytypeid | calculatedbathnbr | decktypeid | finishedfloor1squarefeet | calculatedfinishedsquarefeet |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1.25 | nan | nan | nan | 2 | 4 | nan | 4 | 2 | False | nan | 1828 |
-| -0.0141 | 1 | nan | nan | 3 | 3 | nan | 4 | 3 | False | nan | 1343 |
-| 0.1284 | 13 | nan | nan | 2 | 3 | nan | nan | 2 | False | nan | 2075 |
-| 0.1293 | nan | nan | nan | 2.5 | 2 | nan | nan | 2.5 | False | nan | 1406 |
-| 0.004 | nan | nan | nan | 2.5 | 3 | nan | nan | 2.5 | False | nan | 1737 |
+| 0.1865 | nan | nan | nan | 4 | 4 | nan | nan | 4 | False | nan | 2467 |
+| 0.1536 | 1 | nan | nan | 5 | 4 | nan | 4 | 5 | False | nan | 2835 |
+| 0.0723 | nan | nan | nan | 3 | 3 | nan | 4 | 3 | False | nan | 1405 |
+| 0.0392 | nan | nan | nan | 3 | 3 | nan | 4 | 3 | False | nan | 2614 |
+| -0.0608 | nan | nan | nan | 2 | 4 | nan | nan | 2 | False | nan | 1654 |
 
 ## Curation notes
 
@@ -286,63 +285,63 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| decktypeid | bool | 0 | 0 | 2 | False, True |
-| hashottuborspa | bool | 0 | 0 | 2 | False, True |
-| poolcnt | bool | 0 | 0 | 2 | False, True |
-| pooltypeid10 | bool | 0 | 0 | 2 | False, True |
-| pooltypeid2 | bool | 0 | 0 | 2 | False, True |
-| pooltypeid7 | bool | 0 | 0 | 2 | False, True |
-| storytypeid | bool | 0 | 0 | 2 | False, True |
-| fireplaceflag | bool | 0 | 0 | 2 | False, True |
 | buildingclasstypeid | category | 153080 | 99.98 | 2 | 4, 3 |
 | architecturalstyletypeid | category | 152675 | 99.72 | 6 | 7, 8, 2, 21, 3, 10 |
 | typeconstructiontypeid | category | 152628 | 99.69 | 4 | 6, 4, 13, 10 |
 | airconditioningtypeid | category | 104118 | 68 | 6 | 1, 13, 5, 11, 9, 3 |
 | regionidneighborhood | category | 92105 | 60.16 | 505 | 27080, 118208, 48570, 37739, 48200, 268496, 51906, 54300, 113455, 274049 |
+| taxdelinquencyflag | category | 72157 | 47.13 | 2 | 0.0, 1.0 |
 | heatingorsystemtypeid | category | 57049 | 37.26 | 12 | 2, 7, 24, 6, 20, 13, 18, 1, 10, 11 |
 | propertyzoningdesc | category | 54073 | 35.32 | 2292 | LAR1, LAR3, LARS, LBR1N, LARD1.5, LAR2, SCUR2, LARD2, LARA, LARE11 |
 | regionidcity | category | 2991 | 1.95 | 178 | 12447, 46298, 54311, 5534, 52650, 40227, 16764, 25218, 34278, 27110 |
 | regionidzip | category | 77 | 0.05 | 389 | 97319, 96987, 96974, 97318, 97329, 97118, 97328, 96993, 96996, 96962 |
+| decktypeid | category | 0 | 0 | 2 | False, True |
 | fips | category | 0 | 0 | 3 | 6037, 6059, 6111 |
+| hashottuborspa | category | 0 | 0 | 2 | False, True |
+| poolcnt | category | 0 | 0 | 2 | False, True |
+| pooltypeid10 | category | 0 | 0 | 2 | False, True |
+| pooltypeid2 | category | 0 | 0 | 2 | False, True |
+| pooltypeid7 | category | 0 | 0 | 2 | False, True |
 | propertycountylandusecode | category | 1 | 0 | 89 | 0100, 122, 010C, 0101, 34, 1111, 1, 010E, 010D, 0200 |
 | propertylandusetypeid | category | 0 | 0 | 14 | 261, 266, 246, 269, 248, 247, 265, 263, 260, 275 |
+| storytypeid | category | 0 | 0 | 2 | False, True |
+| fireplaceflag | category | 0 | 0 | 2 | False, True |
 | transaction_month | datetime64\[ns\] | 0 | 0 | 19 | 2017-06-01 00:00:00, 2016-06-01 00:00:00, 2017-05-01 00:00:00, 2016-08-01 00:00… |
-| finishedsquarefeet13 | float64 | 153044 | 99.96 | 16 | 1440.0, 1344.0, 1392.0, 1536.0, 1248.0, 1152.0, 1056.0, 1488.0, 1584.0, 1566.0 |
-| basementsqft | float64 | 153022 | 99.94 | 73 | 700.0, 1528.0, 515.0, 273.0, 168.0, 900.0, 100.0, 1312.0, 912.0, 1048.0 |
-| yardbuildingsqft26 | float64 | 152958 | 99.9 | 105 | 120.0, 88.0, 60.0, 56.0, 144.0, 180.0, 125.0, 108.0, 37.0, 168.0 |
-| finishedsquarefeet6 | float64 | 152362 | 99.51 | 607 | 2530.0, 4442.0, 720.0, 952.0, 3500.0, 3470.0, 520.0, 765.0, 4414.0, 750.0 |
+| finishedsquarefeet13 | float64 | 153044 | 99.96 | 16 | 1440.0, 1344.0, 1392.0, 1536.0, 1248.0, 1152.0, 1056.0, 1488.0, 1464.0, 1566.0 |
+| basementsqft | float64 | 153022 | 99.94 | 73 | 700.0, 1528.0, 515.0, 273.0, 168.0, 900.0, 100.0, 1312.0, 912.0, 771.0 |
+| yardbuildingsqft26 | float64 | 152958 | 99.9 | 105 | 120.0, 144.0, 88.0, 60.0, 56.0, 180.0, 125.0, 108.0, 37.0, 100.0 |
+| finishedsquarefeet6 | float64 | 152362 | 99.51 | 607 | 3470.0, 720.0, 952.0, 2530.0, 3500.0, 4442.0, 765.0, 520.0, 2180.0, 4345.0 |
 | poolsizesum | float64 | 151432 | 98.91 | 366 | 450.0, 400.0, 800.0, 500.0, 600.0, 512.0, 480.0, 420.0, 648.0, 525.0 |
 | taxdelinquencyyear | float64 | 150025 | 97.99 | 12 | 2015.0, 2014.0, 2013.0, 2012.0, 2011.0, 2010.0, 2009.0, 2008.0, 2007.0, 2006.0 |
 | yardbuildingsqft17 | float64 | 148537 | 97.01 | 734 | 200.0, 240.0, 300.0, 180.0, 120.0, 288.0, 360.0, 216.0, 400.0, 150.0 |
-| finishedsquarefeet15 | float64 | 147103 | 96.08 | 2518 | 1680.0, 1536.0, 1600.0, 2016.0, 1560.0, 1440.0, 1364.0, 1488.0, 2160.0, 1936.0 |
-| finishedfloor1squarefeet | float64 | 141330 | 92.31 | 2224 | 1431.0, 1260.0, 880.0, 1226.0, 1252.0, 798.0, 1104.0, 1110.0, 1441.0, 734.0 |
-| finishedsquarefeet50 | float64 | 141330 | 92.31 | 2247 | 1431.0, 1260.0, 1226.0, 880.0, 1252.0, 798.0, 1104.0, 1441.0, 734.0, 856.0 |
+| finishedsquarefeet15 | float64 | 147103 | 96.08 | 2518 | 1680.0, 1536.0, 1600.0, 2016.0, 1560.0, 1440.0, 1364.0, 1488.0, 2160.0, 1740.0 |
+| finishedfloor1squarefeet | float64 | 141330 | 92.31 | 2224 | 1431.0, 1260.0, 880.0, 1226.0, 1252.0, 798.0, 1104.0, 1205.0, 1441.0, 780.0 |
+| finishedsquarefeet50 | float64 | 141330 | 92.31 | 2247 | 1431.0, 1260.0, 1226.0, 880.0, 1252.0, 1104.0, 798.0, 1205.0, 856.0, 780.0 |
 | fireplacecnt | float64 | 136758 | 89.32 | 5 | 1.0, 2.0, 3.0, 4.0, 5.0 |
 | threequarterbathnbr | float64 | 132857 | 86.77 | 5 | 1.0, 2.0, 3.0, 4.0, 7.0 |
 | numberofstories | float64 | 118163 | 77.18 | 5 | 1.0, 2.0, 3.0, 4.0, 6.0 |
 | roomcnt | float64 | 118143 | 77.16 | 16 | 6.0, 7.0, 5.0, 8.0, 4.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
 | garagetotalsqft | float64 | 117331 | 76.63 | 1016 | 400.0, 441.0, 360.0, 462.0, 460.0, 440.0, 420.0, 483.0, 480.0, 430.0 |
 | garagecarcnt | float64 | 102350 | 66.85 | 15 | 2.0, 1.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| taxdelinquencyflag | float64 | 72157 | 47.13 | 2 | 0.0, 1.0 |
 | buildingqualitytypeid | float64 | 55558 | 36.29 | 8 | 7.0, 4.0, 1.0, 10.0, 12.0, 8.0, 6.0, 11.0 |
-| unitcnt | float64 | 53851 | 35.17 | 13 | 1.0, 2.0, 4.0, 3.0, 6.0, 143.0, 9.0, 11.0, 5.0, 70.0 |
+| unitcnt | float64 | 53851 | 35.17 | 13 | 1.0, 2.0, 4.0, 3.0, 6.0, 143.0, 11.0, 9.0, 5.0, 70.0 |
 | lotsizesquarefeet | float64 | 16830 | 10.99 | 24573 | 6000.0, 5000.0, 7200.0, 7000.0, 6500.0, 7500.0, 6600.0, 5500.0, 4000.0, 5200.0 |
-| finishedsquarefeet12 | float64 | 7638 | 4.99 | 5632 | 1200.0, 1080.0, 1120.0, 1040.0, 1300.0, 1260.0, 1440.0, 960.0, 1280.0, 1400.0 |
+| finishedsquarefeet12 | float64 | 7638 | 4.99 | 5632 | 1200.0, 1120.0, 1080.0, 1040.0, 1300.0, 1260.0, 1440.0, 960.0, 1280.0, 1400.0 |
 | calculatedbathnbr | float64 | 1681 | 1.1 | 24 | 2.0, 3.0, 1.0, 2.5, 4.0, 1.5, 5.0, 3.5, 4.5, 6.0 |
 | fullbathcnt | float64 | 1681 | 1.1 | 16 | 2.0, 3.0, 1.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | bathroomcnt | float64 | 1649 | 1.08 | 24 | 2.0, 3.0, 1.0, 2.5, 4.0, 1.5, 5.0, 3.5, 4.5, 6.0 |
 | bedroomcnt | float64 | 1609 | 1.05 | 17 | 3.0, 2.0, 4.0, 5.0, 1.0, 6.0, 0.0, 8.0, 7.0, 9.0 |
 | yearbuilt | float64 | 972 | 0.63 | 138 | 1955.0, 1989.0, 1950.0, 1964.0, 1954.0, 1973.0, 1953.0, 1956.0, 1979.0, 1987.0 |
-| calculatedfinishedsquarefeet | float64 | 823 | 0.54 | 5733 | 1200.0, 1120.0, 1080.0, 1440.0, 1040.0, 1300.0, 1260.0, 960.0, 1280.0, 1400.0 |
-| censustractandblock | float64 | 800 | 0.52 | 55348 | 60371371031000.0, 60590320582009.0, 60379203391054.0, 60372766032001.0, 6059062… |
-| structuretaxvaluedollarcnt | float64 | 476 | 0.31 | 89997 | 100000.0, 200000.0, 90000.0, 150000.0, 92000.0, 140000.0, 120000.0, 105000.0, 1… |
-| taxamount | float64 | 11 | 0.01 | 138071 | 2418.22, 2388.63, 1544.26, 1076.27, 3720.52, 4401.72, 4905.5, 2386.52, 1138.23,… |
-| logerror | float64 | 0 | 0 | 8177 | 0.003, 0.002, 0.005, 0.001, 0.007, 0.004, 0.006, 0.0, -0.005, 0.01 |
-| latitude | float64 | 0 | 0 | 116721 | 33984600.0, 33665651.0, 34056700.0, 33766300.0, 33785200.0, 33667397.0, 3360300… |
-| longitude | float64 | 0 | 0 | 116305 | -118445000.0, -118389000.0, -118390000.0, -118438000.0, -118432000.0, -11846700… |
+| calculatedfinishedsquarefeet | float64 | 823 | 0.54 | 5733 | 1200.0, 1120.0, 1080.0, 1440.0, 1040.0, 1300.0, 1260.0, 960.0, 1280.0, 1320.0 |
+| censustractandblock | float64 | 800 | 0.52 | 55348 | 60371371031000.0, 60379203391054.0, 60590320582009.0, 60372766032001.0, 6059062… |
+| structuretaxvaluedollarcnt | float64 | 476 | 0.31 | 89997 | 100000.0, 200000.0, 90000.0, 150000.0, 92000.0, 140000.0, 105000.0, 120000.0, 1… |
+| taxamount | float64 | 11 | 0.01 | 138071 | 2418.22, 1544.26, 2388.63, 1076.27, 3720.52, 4401.72, 4905.5, 2386.52, 1418.64,… |
+| logerror | float64 | 0 | 0 | 8177 | 0.003, 0.002, 0.005, 0.001, 0.007, 0.004, 0.006, -0.005, 0.0, 0.01 |
+| latitude | float64 | 0 | 0 | 116721 | 33984600.0, 33665651.0, 33766300.0, 34056700.0, 33785200.0, 33667397.0, 3360300… |
+| longitude | float64 | 0 | 0 | 116305 | -118445000.0, -118389000.0, -118390000.0, -118438000.0, -118463000.0, -11843200… |
 | rawcensustractandblock | float64 | 0 | 0 | 55601 | 60379203.3911, 60590626.1021, 60371371.031, 60590320.582, 60372741.001, 6037920… |
-| taxvaluedollarcnt | float64 | 2 | 0 | 94654 | 400000.0, 350000.0, 500000.0, 420000.0, 340000.0, 450000.0, 375000.0, 300000.0,… |
-| landtaxvaluedollarcnt | float64 | 3 | 0 | 94876 | 20980.0, 300000.0, 200000.0, 29757.0, 203996.0, 21299.0, 204922.0, 400000.0, 18… |
+| taxvaluedollarcnt | float64 | 2 | 0 | 94654 | 400000.0, 350000.0, 500000.0, 420000.0, 340000.0, 375000.0, 450000.0, 300000.0,… |
+| landtaxvaluedollarcnt | float64 | 3 | 0 | 94876 | 20980.0, 300000.0, 200000.0, 29757.0, 203996.0, 21299.0, 204922.0, 19149.0, 183… |
 
 </details>
 
@@ -355,7 +354,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (44 rows)</summary>
+<summary>Show the table (35 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -365,7 +364,6 @@ Accepted on purpose:
 | bedroomcnt | 151499 | 3.07289 | 1.11144 | 0 | 16 |
 | buildingqualitytypeid | 97550 | 5.56713 | 1.90225 | 1 | 12 |
 | calculatedbathnbr | 151427 | 2.31274 | 0.978059 | 1 | 20 |
-| decktypeid | 153108 | 0.00761554 | 0.0869344 | 0 | 1 |
 | finishedfloor1squarefeet | 11778 | 1356.77 | 661.193 | 44 | 7625 |
 | calculatedfinishedsquarefeet | 152285 | 1778.09 | 940.139 | 2 | 35640 |
 | finishedsquarefeet12 | 145470 | 1751.44 | 920.09 | 2 | 21929 |
@@ -377,30 +375,22 @@ Accepted on purpose:
 | fullbathcnt | 151427 | 2.24527 | 0.964915 | 1 | 20 |
 | garagecarcnt | 50758 | 1.81406 | 0.600272 | 0 | 24 |
 | garagetotalsqft | 35777 | 493.5 | 165.992 | 0 | 7339 |
-| hashottuborspa | 153108 | 0.0236826 | 0.152059 | 0 | 1 |
 | latitude | 153108 | 3.40065e+07 | 265373 | 3.33393e+07 | 3.48188e+07 |
 | longitude | 153108 | -1.18201e+08 | 360240 | -1.19475e+08 | -1.17555e+08 |
 | lotsizesquarefeet | 136278 | 29513.7 | 122811 | 167 | 6.97101e+06 |
-| poolcnt | 153108 | 0.202373 | 0.40177 | 0 | 1 |
 | poolsizesum | 1676 | 517.991 | 158.044 | 24 | 1750 |
-| pooltypeid10 | 153108 | 0.010104 | 0.10001 | 0 | 1 |
-| pooltypeid2 | 153108 | 0.0135787 | 0.115734 | 0 | 1 |
-| pooltypeid7 | 153108 | 0.18871 | 0.391279 | 0 | 1 |
 | rawcensustractandblock | 153108 | 6.04919e+07 | 205497 | 6.0371e+07 | 6.11101e+07 |
 | roomcnt | 34965 | 6.49409 | 1.55476 | 1 | 18 |
-| storytypeid | 153108 | 0.000561695 | 0.0236935 | 0 | 1 |
 | threequarterbathnbr | 20251 | 1.00914 | 0.110064 | 1 | 7 |
 | unitcnt | 99257 | 1.11162 | 1.02722 | 1 | 237 |
 | yardbuildingsqft17 | 4571 | 309.222 | 225.221 | 11 | 3011 |
 | yardbuildingsqft26 | 150 | 270.333 | 300.282 | 12 | 1366 |
 | yearbuilt | 152136 | 1968.58 | 23.7908 | 1824 | 2016 |
 | numberofstories | 34945 | 1.43869 | 0.545516 | 1 | 6 |
-| fireplaceflag | 153108 | 0.00240353 | 0.048967 | 0 | 1 |
 | structuretaxvaluedollarcnt | 152632 | 183908 | 218459 | 44 | 1.14218e+07 |
 | taxvaluedollarcnt | 153106 | 471364 | 601363 | 22 | 4.90612e+07 |
 | landtaxvaluedollarcnt | 153105 | 288027 | 444679 | 22 | 4.89522e+07 |
 | taxamount | 153097 | 5993.56 | 7212.63 | 19.92 | 586639 |
-| taxdelinquencyflag | 80951 | 0.0380848 | 0.191402 | 0 | 1 |
 | taxdelinquencyyear | 3083 | 2014.05 | 1.53629 | 1999 | 2015 |
 | censustractandblock | 152308 | 6.04917e+13 | 2.05266e+11 | 6.0371e+13 | 6.11101e+13 |
 
@@ -409,7 +399,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (61 rows)</summary>
+<summary>Show the table (80 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -426,14 +416,28 @@ Accepted on purpose:
 | buildingclasstypeid | 1 | &lt;NA> | 153080 | 99.98 |
 | buildingclasstypeid | 2 | 4 | 27 | 0.02 |
 | buildingclasstypeid | 3 | 3 | 1 | 0 |
+| decktypeid | 1 | False | 151942 | 99.24 |
+| decktypeid | 2 | True | 1166 | 0.76 |
 | fips | 1 | 6037 | 99476 | 64.97 |
 | fips | 2 | 6059 | 41354 | 27.01 |
 | fips | 3 | 6111 | 12278 | 8.02 |
+| fireplaceflag | 1 | False | 152740 | 99.76 |
+| fireplaceflag | 2 | True | 368 | 0.24 |
+| hashottuborspa | 1 | False | 149482 | 97.63 |
+| hashottuborspa | 2 | True | 3626 | 2.37 |
 | heatingorsystemtypeid | 1 | 2 | 65371 | 42.7 |
 | heatingorsystemtypeid | 2 | &lt;NA> | 57049 | 37.26 |
 | heatingorsystemtypeid | 3 | 7 | 26932 | 17.59 |
 | heatingorsystemtypeid | 4 | 24 | 1752 | 1.14 |
 | heatingorsystemtypeid | 5 | 6 | 1621 | 1.06 |
+| poolcnt | 1 | False | 122123 | 79.76 |
+| poolcnt | 2 | True | 30985 | 20.24 |
+| pooltypeid10 | 1 | False | 151561 | 98.99 |
+| pooltypeid10 | 2 | True | 1547 | 1.01 |
+| pooltypeid2 | 1 | False | 151029 | 98.64 |
+| pooltypeid2 | 2 | True | 2079 | 1.36 |
+| pooltypeid7 | 1 | False | 124215 | 81.13 |
+| pooltypeid7 | 2 | True | 28893 | 18.87 |
 | propertycountylandusecode | 1 | 0100 | 52479 | 34.28 |
 | propertycountylandusecode | 2 | 122 | 26086 | 17.04 |
 | propertycountylandusecode | 3 | 010C | 17399 | 11.36 |
@@ -459,22 +463,8 @@ Accepted on purpose:
 | regionidneighborhood | 3 | 118208 | 1323 | 0.86 |
 | regionidneighborhood | 4 | 48570 | 1303 | 0.85 |
 | regionidneighborhood | 5 | 37739 | 1274 | 0.83 |
-| regionidzip | 1 | 97319 | 1571 | 1.03 |
-| regionidzip | 2 | 96987 | 1519 | 0.99 |
-| regionidzip | 3 | 96974 | 1317 | 0.86 |
-| regionidzip | 4 | 97318 | 1306 | 0.85 |
-| regionidzip | 5 | 97329 | 1249 | 0.82 |
-| transaction_month | 1 | 2017-06-01 00:00:00 | 11448 | 7.48 |
-| transaction_month | 2 | 2016-06-01 00:00:00 | 10921 | 7.13 |
-| transaction_month | 3 | 2017-05-01 00:00:00 | 10481 | 6.85 |
-| transaction_month | 4 | 2016-08-01 00:00:00 | 10476 | 6.84 |
-| transaction_month | 5 | 2016-05-01 00:00:00 | 9961 | 6.51 |
-| typeconstructiontypeid | 1 | &lt;NA> | 152628 | 99.69 |
-| typeconstructiontypeid | 2 | 6 | 474 | 0.31 |
-| typeconstructiontypeid | 3 | 4 | 3 | 0 |
-| typeconstructiontypeid | 4 | 13 | 2 | 0 |
 
-(1 more rows not shown)
+(20 more rows not shown)
 
 </details>
 

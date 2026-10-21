@@ -26,11 +26,12 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
             "Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by "
             "date instead."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% "
-            "buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC"
-            " AUC 0.965 with them, 0.915 without)."
+            "Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status "
+            "code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with "
+            "them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and "
+            "noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21)."
         ),
     )
 
@@ -240,7 +241,17 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # features holding only 0 and 1 (plus missing values) are 0/1 flags: categorical (CLEAN-14)
+        flags = [
+            "SalesField3",
+            "SalesField9",
+            "PersonalField1",
+            "PersonalField2",
+            "PersonalField6",
+            "PropertyField8",
+            "PropertyField29",
+        ]
         return FeatureTypes(
-            categorical=object_columns(df),
+            categorical=[*object_columns(df), *flags],
             datetime=["Original_Quote_Date"],
         )

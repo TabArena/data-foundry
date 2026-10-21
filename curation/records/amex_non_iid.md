@@ -42,6 +42,8 @@ CC (2026-10-02, Lennart): The per-customer prediction is the latest statement's 
 
 CC (2026-10-06, Lennart): Kept as it is after the task-probe review (flag `no_spread`). Scored per customer at the latest statement, the linear model, random forest and LightGBM all reach ROC AUC 0.95 (skill +0.898 to +0.907, standard deviation under 0.01 over the folds), and `P_2` alone reaches skill +0.82; on BeyondArena (the shipped version, one holdout per statement) TabPFN-3.5 reaches AUC 0.947 and the median method 0.943. Strong methods converging on a large, well-engineered credit dataset is expected; with 1.5M rows small gaps can still be real.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the 20 anonymized features that hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 Kaggle

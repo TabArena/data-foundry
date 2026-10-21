@@ -1,9 +1,10 @@
 # nyc_taxi_trip_duration
 
-**Outcome:** added. The Kaggle sample of the 2016 NYC yellow-cab trips, target the log trip duration (regression, an
-ETA at pickup with the drop-off point taken as the destination), temporal with three weekly test windows in June 2016
-and a one-day gap. The review panel's changes are in dataset.py (not built yet); the AI recommends shipping it as
-`nyc_taxi_trip_duration_1m`, the version the row budget asks for (issue 5).
+**Outcome:** added as `nyc_taxi_trip_duration_1m`. The Kaggle sample of the 2016 NYC yellow-cab trips, target the log
+trip duration (regression, an ETA at pickup with the drop-off point taken as the destination), temporal with three
+weekly test windows in June 2016 and a one-day gap. The review panel's changes are in dataset.py (not built yet).
+Under the row budget it ships only as `nyc_taxi_trip_duration_1m` (the curator, 2026-10-21): train sides of 1M, a
+frame of 1,166,477 trips.
 
 ```text
 Verdict: ship (the panel's changes are in dataset.py; not built yet).
@@ -19,11 +20,11 @@ Value: TP-2 holds (task probe: LightGBM skill 0.62 over predicting the mean befo
 Quality: CLEAN-10/CLEAN-11 passenger_count 0, 8 and 9 set missing; the 30 s / 3 h cuts rest on evidence outside the
   target (CLEAN-11, CLEAN-15; pkdd_15 CC).
 Weighed: size +, source +, consistency with the ETA siblings +, half a year of history -, no routing estimate -.
-For the curator: nothing on the row budget (issue 5, answered by the rule: a `_1m` version). The datetime
+For the curator: nothing on the row budget (settled 2026-10-21: the `_1m` version). The datetime
   encoding of v0.2 is a cross-dataset item; the bibtex cites the TLC next to the Kaggle competition (PROV-10; the curator, 2026-10-21).
 ```
 
-**Main points:** The row budget is answered by the rule: the dataset becomes `nyc_taxi_trip_duration_1m` (issue 5). The datetime
+**Main points:** Settled 2026-10-21: the dataset ships as `nyc_taxi_trip_duration_1m` under the row budget. The datetime
 encoding of the v0.2 runs (it decides whether models see the hour of day) is decided across datasets in the working
 copy's REVIEW.md. Settled 2026-10-21: the bibtex cites the TLC, the original publisher, next to the Kaggle competition.
 
@@ -35,18 +36,6 @@ copy's REVIEW.md. Settled 2026-10-21: the bibtex cites the TLC, the original pub
 match NYC Open Data to the second). The fit is approximate: the recorded drop-off point stands in for the destination
 named at pickup. The CC of 2026-09-21 says the TLC Parquet files hold coordinates up to mid-2016; the 2016 files hold
 zone IDs only; NYC Open Data (uacg-pexx) still serves the coordinates.
-
-**Issues for Lennart:**
-
-5. **Row budget: answered by the rule (2026-10-21); the rename to `nyc_taxi_trip_duration_1m` is due.** The curator
-   decided on the working copy's row-budget item: at most 1M training rows, and the naming follows the house rule.
-   definitions.md now says it once: a dataset whose splits have a side over the budget ships only as a `_1m` version,
-   whatever the size of its frame. Every train side here holds 1.28M to 1.39M trips, so the dataset becomes
-   `nyc_taxi_trip_duration_1m` (`version_of`, `subsample_to_budget = True`, as delivery_eta_1m): the same test
-   windows, one random order of the trips so the train sides overlap, and a frame of only the rows used (the
-   122,285 trips before 2016-06-10 that fall in no split drop out). Effect on the task: none. Still to do: the folder,
-   the class, the `splits_rows_unused` acceptance, the README table, the CHANGELOG and the record's `v2_path`. No
-   decision is needed.
 
 **Review panel:** ship after changes (mediator). Claim audit: two claims refuted, the split
 note's scores and cause (fixed in dataset.py) and the CC's TLC coordinates (record judgment); licence and two source

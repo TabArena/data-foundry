@@ -2,17 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:ee853d77f2f591b6f28ce0593bb225941a5432f3be9b7651e5dc1703e57b8d9f
+checksum: v2:a236b4919048d65f8b304b78bd882157feecb18c0c29dd908998adad681e3062
 build: null
 build_stale: false
 data:
   n_rows: 19906
   n_features: 19
   dtypes:
-    category: 1
+    category: 2
     datetime64[ns]: 1
     float64: 9
-    int64: 9
+    int64: 8
   n_test_dataset_rows: null
 task:
   target: log_price
@@ -60,7 +60,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmse` on temporal splits by `date`. 19,906 rows and 19 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:ee853d77f2f591b6f28ce0593bb225941a5432f3be9b7651e5dc1703e57b8d9f`.
+Not built yet. The current definition gives checksum `v2:a236b4919048d65f8b304b78bd882157feecb18c0c29dd908998adad681e3062`.
 
 ## In brief
 
@@ -145,9 +145,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | date |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 1 datetime</summary>
 
-- categorical (1): `zipcode`
+- categorical (2): `zipcode`, `waterfront`
 - string (0): none
 - datetime (1): `date (%Y%m%dT%H%M%S)`
 
@@ -354,6 +354,7 @@ A new sale can be the resale of a known house, and under the temporal split a re
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| waterfront | category | 0 | 0 | 2 | 0, 1 |
 | zipcode | category | 0 | 0 | 70 | 98103, 98115, 98052, 98038, 98034, 98117, 98042, 98006, 98133, 98118 |
 | date | datetime64\[ns\] | 0 | 0 | 354 | 2014-06-23 00:00:00, 2014-06-26 00:00:00, 2014-06-25 00:00:00, 2014-07-08 00:00… |
 | yr_renovated | float64 | 19087 | 95.89 | 69 | 2014.0, 2003.0, 2000.0, 2005.0, 2007.0, 2013.0, 2006.0, 2004.0, 2002.0, 1990.0 |
@@ -366,7 +367,6 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | lat | float64 | 0 | 0 | 4973 | 47.6846, 47.6886, 47.6955, 47.5491, 47.6711, 47.6904, 47.5322, 47.6624, 47.5396… |
 | long | float64 | 0 | 0 | 749 | -122.29, -122.3, -122.362, -122.291, -122.363, -122.372, -122.288, -122.357, -1… |
 | sqft_lot | int64 | 0 | 0 | 9296 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 8400, 9600, 3600 |
-| waterfront | int64 | 0 | 0 | 2 | 0, 1 |
 | view | int64 | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
 | condition | int64 | 0 | 0 | 5 | 3, 4, 5, 2, 1 |
 | grade | int64 | 0 | 0 | 12 | 7, 8, 9, 6, 10, 11, 5, 12, 4, 13 |
@@ -386,7 +386,7 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Numeric features
 
 <details>
-<summary>Show the table (18 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -396,7 +396,6 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | sqft_living | 19901 | 2080.37 | 918.918 | 290 | 13540 |
 | sqft_lot | 19906 | 15045.3 | 40916.9 | 572 | 1.65136e+06 |
 | floors | 19906 | 1.50319 | 0.545404 | 1 | 3.5 |
-| waterfront | 19906 | 0.00733447 | 0.085329 | 0 | 1 |
 | view | 19906 | 0.23405 | 0.76512 | 0 | 4 |
 | condition | 19906 | 3.35843 | 0.603663 | 1 | 5 |
 | grade | 19906 | 7.66889 | 1.18032 | 1 | 13 |
@@ -413,6 +412,9 @@ A new sale can be the resale of a known house, and under the temporal split a re
 
 ### Categorical features
 
+<details>
+<summary>Show the table (12 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | date | 1 | 2014-06-23 00:00:00 | 136 | 0.68 |
@@ -420,11 +422,15 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | date | 3 | 2014-06-25 00:00:00 | 124 | 0.62 |
 | date | 4 | 2014-07-08 00:00:00 | 123 | 0.62 |
 | date | 5 | 2015-04-22 00:00:00 | 118 | 0.59 |
+| waterfront | 1 | 0 | 19760 | 99.27 |
+| waterfront | 2 | 1 | 146 | 0.73 |
 | zipcode | 1 | 98103 | 570 | 2.86 |
 | zipcode | 2 | 98115 | 544 | 2.73 |
 | zipcode | 3 | 98052 | 543 | 2.73 |
 | zipcode | 4 | 98038 | 531 | 2.67 |
 | zipcode | 5 | 98034 | 519 | 2.61 |
+
+</details>
 
 ## Build
 

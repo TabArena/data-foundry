@@ -156,7 +156,13 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         return df.drop(columns=_copies(df.drop(columns=self.target)))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=CATEGORICAL)
+        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
+        flags = [
+            c
+            for c in df.columns.drop(self.target)
+            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+        ]
+        return FeatureTypes(categorical=[*CATEGORICAL, *(c for c in flags if c not in CATEGORICAL)])
 
 
 def _copies(df: pd.DataFrame) -> list[str]:

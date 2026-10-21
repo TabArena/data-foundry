@@ -118,6 +118,7 @@ class Kick(AbstractCuratedDataset):
                 "Model",
                 "VNST",
                 "IsBadBuy",
+                "IsOnlineSale",  # a 0/1 flag (CLEAN-14)
             ),
             datetime=("PurchDate",),
         )

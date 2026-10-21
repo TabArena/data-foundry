@@ -133,5 +133,7 @@ class Cardiotocography(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 "patient_id",
+                # DS (severe decelerations) holds only 0 and 1: a 0/1 flag, categorical (CLEAN-14); DR is constant 0
+                "DS",
             ],
         )

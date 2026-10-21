@@ -71,10 +71,9 @@ class PerthHousePrices(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Each month is predicted from earlier sales only, from a house's record and location. Three gaps remain: "
-            "the data is truncated at $2.44M (dearer sales are absent), the house attributes are the site's record "
-            "of January 2021 rather than at the sale, and the school rank is kept although its ranking year is "
-            "unknown and may postdate the test sales (a potential leak kept on purpose, weak)."
+            "Each month is predicted from earlier sales only, from a house's record and location. Two gaps remain: "
+            "the data is truncated at $2.44M (dearer sales are absent), and the house attributes are the site's "
+            "record of January 2021 rather than at the sale."
         ),
     )
 

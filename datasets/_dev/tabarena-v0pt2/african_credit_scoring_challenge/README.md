@@ -93,7 +93,7 @@ Not built yet. The current definition gives checksum `v2:ce2bf2e2e4d01e49c2cc2a9
 
 **Our changes to the source.** We drop the amounts to repay, which grow after a default, the rows of lenders funding less than one unit (labelled no default whatever happened) and the loans not settled at the data pull, and we split by disbursement date where the competition split rows at random.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The lender's funded amount and share are values at the data pull (lenders can buy each other out), kept as they show no link to the outcome within a loan product. The customer's history is known only through labels settled before each window, while a lender learns of a repayment the day it is made. How the loans were sampled is not stated.
+> **Use case fit: approximate (a stand-in with a known gap).** The customer's history is known only through labels settled before each window, while a lender learns of a repayment the day it is made. How the loans were sampled is not stated.
 
 ## Files in this folder
 

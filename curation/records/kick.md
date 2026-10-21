@@ -50,6 +50,12 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric stays the default `roc_auc`: the competition scored the Gini index (Kaggle API: "Gini Index"), which for a binary target is a linear function of ROC AUC and ranks models the same. The notes now name the Gini. Needs a rebuild to reach the container (notes only).
 
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit stays `direct` (set earlier today); the kept missing WheelType is worth ROC AUC +0.066 (0.757 with, 0.691 without).
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: IsOnlineSale.
+
 ## Reference
 
 faysal, Will Adams, and Will Cukierski. Don't Get Kicked!. https://kaggle.com/competitions/DontGetKicked, 2011. Kaggle.

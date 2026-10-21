@@ -63,12 +63,12 @@ not accepted in the definition.
 | [`alfa_battle_2_0_task_2`](alfa_battle_2_0_task_2/) | temporal | 963,811 | 510 | 3 x 1 | not built |  |
 | [`allstate_claims_severity`](allstate_claims_severity/) | IID | 188,317 | 130 | 3 x 3 | `01a111fc-59f8-730c-b058-7264a71a29bc` |  |
 | [`amazon_employee_access`](amazon_employee_access/) | IID | 32,769 | 9 | 3 x 3 | not built | `dataset_pure_feature_value` |
-| [`amex_non_iid_1m`](amex_non_iid_1m/) | grouped (per group: last) | 1,500,000 | 189 | 1 x 3 | `01a111fb-d73e-711b-a490-c684c5c4635d` | `dataset_missing_value_sentinel` |
+| [`amex_non_iid_1m`](amex_non_iid_1m/) | grouped (per group: last) | 1,500,000 | 189 | 1 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`anes_voting_2026`](anes_voting_2026/) | temporal | 48,587 | 261 | 9 x 1 | not built |  |
 | [`apistox`](apistox/) | temporal | 1,035 | 204 | 4 x 1 | not built |  |
 | [`aps_failure`](aps_failure/) | IID | 76,000 | 170 | 3 x 3 | not built | `dataset_constant_column`, `dataset_pure_feature_value` |
 | [`ashrae_great_energy_predictor_iii_1m`](ashrae_great_energy_predictor_iii_1m/) | temporal | 2,500,000 | 15 | 3 x 1 | not built |  |
-| [`asp_potassco_classification`](asp_potassco_classification/) | grouped | 1,212 | 136 | 10 x 3 | `01a111fc-9534-79ba-a1c0-efe7268f38e0` | `dataset_constant_column` |
+| [`asp_potassco_classification`](asp_potassco_classification/) | grouped | 1,212 | 136 | 10 x 3 | not built | `dataset_constant_column` |
 | [`audiology_diagnosis`](audiology_diagnosis/) | IID | 195 | 65 | 20 x 3 | `01a111fc-c395-7cc5-9b60-91d8a7afaa20` |  |
 | [`bad_customer_detection`](bad_customer_detection/) | IID | 1,723 | 13 | 10 x 3 | not built |  |
 | [`bank_customer_churn`](bank_customer_churn/) | IID | 10,000 | 10 | 3 x 3 | not built |  |
@@ -90,7 +90,7 @@ not accepted in the definition.
 | [`climate_model_weather_forecasting_1m`](climate_model_weather_forecasting_1m/) | temporal | 2,115,283 | 99 | 3 x 1 | not built |  |
 | [`clock_protein_toxicity`](clock_protein_toxicity/) | IID | 171 | 1,117 | 20 x 3 | not built |  |
 | [`coffee_rating_prediction`](coffee_rating_prediction/) | temporal | 2,369 | 12 | 13 x 1 | not built | `dataset_constant_column` |
-| [`coil_2000`](coil_2000/) | IID | 9,822 | 85 | 3 x 3 | `01a111fc-ceb4-7695-8b34-df7a285cfcb6` | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
+| [`coil_2000`](coil_2000/) | IID | 9,822 | 85 | 3 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`college_scorecard`](college_scorecard/) | temporal | 34,431 | 92 | 4 x 1 | not built |  |
 | [`concrete_compressive_strength`](concrete_compressive_strength/) | grouped | 1,030 | 8 | 10 x 3 | `01a13a7d-c2ed-79de-abb8-3476f95e6667` | `dataset_duplicate_rows` |
 | [`consumer_complaints_1m`](consumer_complaints_1m/) | temporal | 1,811,452 | 12 | 3 x 1 | not built |  |
@@ -110,7 +110,7 @@ not accepted in the definition.
 | [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
 | [`digicow_farmer_training_adoption_challenge`](digicow_farmer_training_adoption_challenge/) | temporal | 13,536 | 11 | 4 x 1 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 12 | 3 x 3 | not built |  |
-| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 587 | 176 | 20 x 3 | `01a13aff-7235-73c3-932c-785cd540127b` |  |
+| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | IID | 587 | 176 | 20 x 3 | not built |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
 | [`early_stage_diabetes_risk_prediction`](early_stage_diabetes_risk_prediction/) | IID | 251 | 16 | 20 x 3 | not built |  |
 | [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 6 | 20 x 3 | not built |  |
@@ -140,7 +140,7 @@ not accepted in the definition.
 | [`hiva_agnostic`](hiva_agnostic/) | IID | 4,229 | 1,429 | 3 x 3 | not built |  |
 | [`home_credit_default_risk`](home_credit_default_risk/) | IID | 307,507 | 709 | 3 x 3 | not built |  |
 | [`home_credit_default_stability_1m`](home_credit_default_stability_1m/) | temporal | 1,224,927 | 710 | 3 x 1 | not built |  |
-| [`homesite_quote_conversion`](homesite_quote_conversion/) | IID | 260,753 | 295 | 3 x 3 | `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` | `dataset_constant_column`, `dataset_missing_value_label` |
+| [`homesite_quote_conversion`](homesite_quote_conversion/) | IID | 260,753 | 295 | 3 x 3 | not built | `dataset_constant_column`, `dataset_missing_value_label` |
 | [`horse_colic_survival`](horse_colic_survival/) | IID | 344 | 20 | 20 x 3 | `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` |  |
 | [`hotel_booking_demand`](hotel_booking_demand/) | temporal | 81,418 | 28 | 9 x 1 | not built |  |
 | [`house_prices_nominal`](house_prices_nominal/) | temporal | 2,919 | 78 | 13 x 1 | not built |  |
@@ -178,7 +178,7 @@ not accepted in the definition.
 | [`naticusdroid_android_permissions_dataset`](naticusdroid_android_permissions_dataset/) | IID | 7,491 | 85 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows`, `dataset_pure_feature_value` |
 | [`nba_players_2016_2019`](nba_players_2016_2019/) | grouped | 1,408 | 35 | 10 x 3 | not built |  |
 | [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 781 | 3 x 1 | not built |  |
-| [`nyc_taxi_trip_duration`](nyc_taxi_trip_duration/) | temporal | 1,447,167 | 7 | 3 x 1 | not built |  |
+| [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,166,477 | 7 | 3 x 1 | not built |  |
 | [`obesity_estimation`](obesity_estimation/) | IID | 488 | 14 | 20 x 3 | `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` |  |
 | [`online_shoppers_purchasing_intention_dataset`](online_shoppers_purchasing_intention_dataset/) | IID | 6,875 | 16 | 3 x 3 | not built |  |
 | [`onlinenewspopularity`](onlinenewspopularity/) | temporal | 39,643 | 39 | 9 x 1 | not built |  |
@@ -202,11 +202,11 @@ not accepted in the definition.
 | [`regensburg_pediatric_appendicitis`](regensburg_pediatric_appendicitis/) | IID | 763 | 51 | 10 x 3 | not built |  |
 | [`rosbank1`](rosbank1/) | temporal | 4,791 | 347 | 3 x 1 | not built |  |
 | [`rossmann_store_sales`](rossmann_store_sales/) | temporal | 844,392 | 15 | 3 x 1 | not built |  |
-| [`santander_customer_satisfaction`](santander_customer_satisfaction/) | IID | 71,080 | 307 | 3 x 3 | `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` | `dataset_pure_feature_value` |
+| [`santander_customer_satisfaction`](santander_customer_satisfaction/) | IID | 71,080 | 307 | 3 x 3 | not built | `dataset_pure_feature_value` |
 | [`santander_customer_transaction_prediction`](santander_customer_transaction_prediction/) | IID | 200,000 | 200 | 3 x 3 | `01a111fa-f277-7533-bac1-a15ddbf6a38d` |  |
 | [`santander_transaction_value`](santander_transaction_value/) | IID | 4,447 | 540 | 3 x 3 | `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` |  |
 | [`sarcoma`](sarcoma/) | IID | 201 | 25,910 | 20 x 3 | not built |  |
-| [`sat11_hand_algo_runtime`](sat11_hand_algo_runtime/) | grouped (per group: select_min) | 1,840 | 169 | 10 x 3 | `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` | `dataset_constant_column` |
+| [`sat11_hand_algo_runtime`](sat11_hand_algo_runtime/) | grouped (per group: select_min) | 1,840 | 169 | 10 x 3 | not built | `dataset_constant_column` |
 | [`sberbank_housing_market_forecasting`](sberbank_housing_market_forecasting/) | temporal | 28,321 | 386 | 5 x 1 | not built |  |
 | [`sdss_17`](sdss_17/) | IID | 99,999 | 8 | 3 x 3 | not built |  |
 | [`sepsis_prediction_1m`](sepsis_prediction_1m/) | grouped | 1,499,997 | 42 | 1 x 3 | not built |  |

@@ -40,6 +40,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric stays the default `roc_auc`: the competition scored "Home Credit 2023 - Gini Stability" (Kaggle API), the mean weekly Gini with a penalty for a falling trend and for the spread around it; it needs the week of each row and is no listed metric, and ROC AUC is the per-week score it is built from (definitions.md, Field mapping, rule 4). The notes now name the original. Needs a rebuild to reach the container (notes only).
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: isbidproduct_1095L (boolean) and 5 aggregates that hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

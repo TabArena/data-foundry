@@ -45,3 +45,9 @@ Basic: https://www.kaggle.com/code/anokas/simple-xgboost-starter-0-0655
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
 **Assessment (AI, 2026-10-21):** metric set to `mae`, the competition's metric (was the default RMSE); 0.38% of the rows hold 49.9% of the squared error. Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit stays `approximate` for the inputs Zillow never released; the facts that may postdate the sale left `fit_reason` (the split text still names them).
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the presence flags hashottuborspa, fireplaceflag, poolcnt, pooltypeid10, pooltypeid2, pooltypeid7, decktypeid, storytypeid (booleans) and taxdelinquencyflag (1.0 / 0.0).

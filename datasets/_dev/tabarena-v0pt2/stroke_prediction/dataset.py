@@ -124,7 +124,7 @@ class StrokePrediction(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["gender", "smoking_status"],
+            categorical=["gender", "smoking_status", "hypertension", "heart_disease"],  # with the 0/1 flags (CLEAN-14)
         )
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:

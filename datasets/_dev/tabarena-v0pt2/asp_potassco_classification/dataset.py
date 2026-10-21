@@ -138,5 +138,9 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 "task_id",
+                # 0/1 flags (CLEAN-14)
+                "Tight",
+                "Removed_Nogoods-1",
+                "Removed_Nogoods-2",
             ],
         )

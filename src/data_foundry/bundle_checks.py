@@ -1476,11 +1476,12 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"Task defines a non-IID split but `data_tags={sorted(tags)}` lacks `Non-IID`.",
             )
-        if "IID" in tags:
+        wrong = tags & {"IID", "ForcedIIDFromTemporal"}
+        if wrong:
             yield CheckResult(
                 "meta_tags_contradict_regime",
                 "warning",
-                f"`data_tags` claim `IID` but the task defines a {regime.replace('_non_iid', '')} split.",
+                f"`data_tags` claim {sorted(wrong)} but the task defines a {regime.replace('_non_iid', '')} split.",
             )
         extra = (tags & non_iid_tags) - {expected, "GroupedTemporal"}
         if extra:

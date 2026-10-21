@@ -542,6 +542,16 @@ def test_forced_grouped_tag_on_an_iid_task_is_flagged():
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
 
 
+def test_forced_iid_tag_on_a_grouped_task_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Grouped", "ForcedIIDFromTemporal"])
+    assert "meta_tags_contradict_regime" in slugs_of(make_grouped_container(dataset_metadata=metadata))
+
+
+def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_tags_contradict_regime" not in slugs_of(make_container(dataset_metadata=metadata))
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))

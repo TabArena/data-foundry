@@ -51,6 +51,8 @@ CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES datas
 
 **Assessment (AI, 2026-10-20):** the 'no known risk' of the first 2026-10-20 line no longer holds: the open issues of REVIEW.md (the logKOW input, the fit label, the 9 selected descriptors) are the known risks. Evidence task, not an issue: read Grisoni et al. 2016 (Environment International 88) for the class thresholds, which are inferred from the data (600 of 607 chemicals with a logKOW of at least 1) and match the archived UCI page.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: B02(C-N) and the 24 RDKit fragment counts that hold only 0 and 1 (found on the data in `_feature_types`).
+
 ## Reference
 
 @article{grisoni2016investigating,

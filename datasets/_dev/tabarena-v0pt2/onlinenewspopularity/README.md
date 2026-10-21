@@ -74,7 +74,7 @@ Not built yet. The current definition gives checksum `v2:bec12547120c1231661d733
 
 **Our changes to the source.** We take the publication date from the URL and drop the weekday flags and the age column, which follow a later date for 24% of the articles, and the topic scores, fitted on all texts including the test ones.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Two potential leaks are kept on purpose: the keyword and link statistics use other articles' shares at the crawl, and for 80% of the test rows the keyword statistics include same-day articles published later (R² 0.158 with both, 0.135 and 0.143 without each). Shares are counted at one crawl date, though the newest articles show no deficit.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Articles are scored before publication on later windows, as in the source's system. Two potential leaks are kept and noted, which do not make the fit approximate (USE-8 as amended 2026-10-21): the keyword and link statistics use other articles' shares at the crawl, and for 80% of the test rows the keyword statistics include same-day articles published later (R² 0.158 with both, 0.135 and 0.143 without each).
 
 ## Files in this folder
 

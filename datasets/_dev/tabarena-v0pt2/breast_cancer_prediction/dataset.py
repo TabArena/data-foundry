@@ -176,7 +176,15 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["birads_assessment", "mammogram_type"])
+        # 0/1 flags are categorical (CLEAN-14)
+        flags = [
+            "comparison_mammogram_available",
+            "current_hormone_therapy",
+            "prior_breast_biopsy",
+            "prior_mammogram",
+            "family_history_breast_cancer",
+        ]
+        return FeatureTypes(categorical=["birads_assessment", "mammogram_type", *flags])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         by_assessment = (

@@ -42,6 +42,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric set to `r2`, the competition's metric (Kaggle API: "R^2 score (coefficient of determination)"; was the default RMSE); within one test fold R² ranks models as RMSE does. Needs a rebuild to reach the container.
 
+CC (2026-10-21, Lennart): "no it also bind to what experts did by default, so again more complicated case by case": CLEAN-11 amended again: a single extreme target in the training period may leave with the source's words or where experts of the field drop such a value by default, decided case by case. The one testing time of 265.3 s leaves as the experts' default for a single extreme time.
+
 ## Reference
 
 https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing

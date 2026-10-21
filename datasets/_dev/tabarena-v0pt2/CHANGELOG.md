@@ -4,6 +4,40 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (the curator's marks on the follow-ups)
+
+Lennart marked the follow-up items of the working copy's `REVIEW.md`. Settled items are closed there; two new items
+ask about drug_induced_autoimmunity_prediction's descriptor groups, water_quality_and_potability and which 0/1
+columns are flags. Each changed record got a `CC (2026-10-21, Lennart)` line. Nothing was rebuilt.
+
+Rules: USE-8 (a strong kept leak still does not make a fit approximate), PROV-2 (a sound upload with a source to point
+to is kept for now, case by case, as an approximate fit), CLEAN-14 (every 0/1 flag, booleans included, is
+categorical), CLEAN-11 (a single extreme training target may leave where experts drop it by default). Code: a v2
+definition may no longer carry `ForcedIIDFromTemporal` with a grouping or temporal split, and the bundle check flags
+it. The hidden-group probe takes float columns (a candidate needs at least 20 values held by two or more rows),
+reports the near-copy check as not run below its token floor, and adds an exact key on each normalised text column.
+
+Definitions:
+
+- `nyc_taxi_trip_duration` is renamed `nyc_taxi_trip_duration_1m` (`version_of`, `subsample_to_budget`): 1,166,477
+  rows, 1M rows per train side, the same test windows; the `splits_rows_unused` acceptance is gone.
+- 0/1 flags made categorical in 35 definitions: account_debt_south_africa, amex_non_iid_1m, apistox,
+  asp_potassco_classification, bioresponse, breast_cancer_prediction, cardiotocography, clock_protein_toxicity,
+  coil_2000, college_scorecard, digicow_farmer_training_adoption_challenge,
+  distribution_transformers_at_cauca_department, drug_induced_autoimmunity_prediction, early_learning_predictors,
+  framingham_heart_study_fhs, home_credit_default_risk, home_credit_default_stability_1m, homesite_quote_conversion,
+  hotel_booking_demand, house_sales, ieee_fraud_detection, infrared_thermography_temperature, kick,
+  marketing_campaign, mobile_churn, mortgage, phiusil_phishing, qsar_bioconcentration, rossmann_store_sales,
+  santander_customer_satisfaction, sat11_hand_algo_runtime, sberbank_housing_market_forecasting, stroke_prediction,
+  taiwanese_bankruptcy_prediction, zillow_prize.
+- Fit `direct`: homesite_quote_conversion, qsar_aquatic_toxicity, onlinenewspopularity; the kept leak no longer
+  counts as a gap in perth_house_prices, credit_card_customers, african_credit_scoring_challenge and zillow_prize.
+- Notes: tour_travels_churn (its source under the amended PROV-2; the generated-data probes raise nothing),
+  mercedes_benz_greener_manufacturing (CLEAN-11 as amended), maps_router_eta_1m (`track_length` in metres; 31 of
+  13.6M rows implausible, none late, so the one-day gap stands).
+- Review files: settled issues removed from perth_house_prices (issue 1), mobile_churn (issue 1),
+  credit_card_customers (issue 3) and nyc_taxi_trip_duration_1m (issue 5).
+
 ## 2026-10-21 (the curator's marks on the cross-dataset items)
 
 Lennart marked the cross-dataset items of the working copy's `REVIEW.md` on the review page. The settled items carry a

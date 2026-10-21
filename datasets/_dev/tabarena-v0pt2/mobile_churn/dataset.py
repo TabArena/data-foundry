@@ -150,9 +150,17 @@ class MobileChurn(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # every feature is numeric; the target becomes a category without being listed
+        # the 0/1 flags are categorical (CLEAN-14), every other feature numeric; the target becomes a category
         del df
-        return FeatureTypes()
+        return FeatureTypes(
+            categorical=[
+                "user_intake",
+                "user_has_outgoing_calls",
+                "user_has_outgoing_sms",
+                "user_use_gprs",
+                "user_does_reload",
+            ],
+        )
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         del df

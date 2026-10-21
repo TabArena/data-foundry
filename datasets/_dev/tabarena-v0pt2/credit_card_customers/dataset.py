@@ -49,9 +49,8 @@ class CreditCardCustomers(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "A potential leak kept on purpose: if the activity window ends at the closure, the activity describes the"
-            " closing itself (ROC AUC 0.980 from the activity alone, 0.994 from all columns). The columns also show "
-            "marks of generated data, and the source cannot be traced."
+            "A teaching case's snapshot stands in for a bank's own customers: the first source (Analyttica's LEAPS "
+            "case 11) is offline, no bank, place or period is named, and the columns show marks of generated data."
         ),
     )
 

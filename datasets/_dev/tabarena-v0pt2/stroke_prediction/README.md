@@ -2,16 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: stroke_prediction
 container_format: 2
-checksum: v2:23e5ce97229d26c3f6ee5648cd3eac657a1af9352a071a52fdd776bb3a194e6f
+checksum: v2:801883d013178cc257fcc58daf3041abe9eba23738ab2375ad2d5aabaf0d6aed
 build: null
 build_stale: false
 data:
   n_rows: 43400
   n_features: 6
   dtypes:
-    category: 3
+    category: 5
     float64: 2
-    int64: 2
   n_test_dataset_rows: null
 task:
   target: stroke
@@ -58,7 +57,7 @@ decisions:
 
 Binary classification of `stroke`, scored with `roc_auc` on IID splits. 43,400 rows and 6 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:23e5ce97229d26c3f6ee5648cd3eac657a1af9352a071a52fdd776bb3a194e6f`.
+Not built yet. The current definition gives checksum `v2:801883d013178cc257fcc58daf3041abe9eba23738ab2375ad2d5aabaf0d6aed`.
 
 ## In brief
 
@@ -140,9 +139,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | stroke |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `gender`, `smoking_status`, `stroke`
+- categorical (5): `gender`, `smoking_status`, `hypertension`, `heart_disease`, `stroke`
 - string (0): none
 - datetime (0): none
 
@@ -273,11 +272,11 @@ Women and men are married alike and hold the same work types at every age, and a
 |---|---|---|---|---|---|
 | smoking_status | category | 13292 | 30.63 | 3 | never smoked, formerly smoked, smokes |
 | gender | category | 0 | 0 | 3 | Female, Male, Other |
+| hypertension | category | 0 | 0 | 2 | 0, 1 |
+| heart_disease | category | 0 | 0 | 2 | 0, 1 |
 | stroke | category | 0 | 0 | 2 | No, Yes |
 | age | float64 | 0 | 0 | 104 | 51.0, 52.0, 53.0, 78.0, 50.0, 57.0, 47.0, 44.0, 55.0, 49.0 |
 | avg_glucose_level | float64 | 0 | 0 | 12543 | 82.71, 72.53, 87.07, 98.9, 90.71, 84.4, 88.83, 83.92, 83.1, 84.49 |
-| hypertension | int64 | 0 | 0 | 2 | 0, 1 |
-| heart_disease | int64 | 0 | 0 | 2 | 0, 1 |
 
 ### Target distribution
 
@@ -291,23 +290,30 @@ Women and men are married alike and hold the same work types at every age, and a
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | age | 43400 | 42.2179 | 22.5196 | 0.08 | 82 |
-| hypertension | 43400 | 0.0935714 | 0.291235 | 0 | 1 |
-| heart_disease | 43400 | 0.0475115 | 0.212733 | 0 | 1 |
 | avg_glucose_level | 43400 | 104.483 | 43.1118 | 55 | 291.05 |
 
 ### Categorical features
+
+<details>
+<summary>Show the table (13 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | gender | 1 | Female | 25665 | 59.14 |
 | gender | 2 | Male | 17724 | 40.84 |
 | gender | 3 | Other | 11 | 0.03 |
+| heart_disease | 1 | 0 | 41338 | 95.25 |
+| heart_disease | 2 | 1 | 2062 | 4.75 |
+| hypertension | 1 | 0 | 39339 | 90.64 |
+| hypertension | 2 | 1 | 4061 | 9.36 |
 | smoking_status | 1 | never smoked | 16053 | 36.99 |
 | smoking_status | 2 | &lt;NA> | 13292 | 30.63 |
 | smoking_status | 3 | formerly smoked | 7493 | 17.26 |
 | smoking_status | 4 | smokes | 6562 | 15.12 |
 | stroke | 1 | No | 42617 | 98.2 |
 | stroke | 2 | Yes | 783 | 1.8 |
+
+</details>
 
 ## Build
 

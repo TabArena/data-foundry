@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: v2:097b7902c2ce146ad89f02c7bca03d6f2225805c82ae522966510b1a3ec419d5
+checksum: v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88
 build:
   uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
   checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
@@ -22,10 +22,10 @@ data:
   n_rows: 72983
   n_features: 32
   dtypes:
-    category: 18
+    category: 19
     datetime64[ns]: 1
     float64: 9
-    int64: 5
+    int64: 4
   n_test_dataset_rows: null
 task:
   target: IsBadBuy
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:097b7902c2ce146ad89f02c7bca03d6f2225805c82ae522966510b1a3ec419d5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,9 +141,9 @@ Only curators run `build`, when the dataset ships.
 | task.time_on | PurchDate |
 
 <details>
-<summary>Feature types: 18 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 19 categorical, 0 string, 1 datetime</summary>
 
-- categorical (18): `WheelTypeID`, `BYRNO`, `VNZIP1`, `PRIMEUNIT`, `AUCGUART`, `WheelType`, `Trim`, `SubModel`, `Color`, `Transmission`, `Nationality`, `Size`, `TopThreeAmericanName`, `Auction`, `Make`, `Model`, `VNST`, `IsBadBuy`
+- categorical (19): `WheelTypeID`, `BYRNO`, `VNZIP1`, `PRIMEUNIT`, `AUCGUART`, `WheelType`, `Trim`, `SubModel`, `Color`, `Transmission`, `Nationality`, `Size`, `TopThreeAmericanName`, `Auction`, `Make`, `Model`, `VNST`, `IsBadBuy`, `IsOnlineSale`
 - string (0): none
 - datetime (1): `PurchDate`
 
@@ -255,6 +255,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | BYRNO | category | 0 | 0 | 74 | 99761, 18880, 835, 3453, 22916, 21053, 19619, 99750, 17675, 20928 |
 | VNZIP1 | category | 0 | 0 | 153 | 32824, 27542, 75236, 74135, 80022, 85226, 85040, 29697, 95673, 28273 |
 | VNST | category | 0 | 0 | 37 | TX, FL, CA, NC, AZ, CO, SC, OK, GA, TN |
+| IsOnlineSale | category | 0 | 0 | 2 | 0, 1 |
 | PurchDate | datetime64\[ns\] | 0 | 0 | 517 | 2010-11-23 00:00:00, 2009-02-25 00:00:00, 2010-12-08 00:00:00, 2010-10-13 00:00… |
 | MMRCurrentAuctionAveragePrice | float64 | 315 | 0.43 | 10315 | 0.0, 5480.0, 5569.0, 6311.0, 8186.0, 7269.0, 6858.0, 7644.0, 8196.0, 8033.0 |
 | MMRCurrentAuctionCleanPrice | float64 | 315 | 0.43 | 11265 | 0.0, 6461.0, 6584.0, 7450.0, 8107.0, 1.0, 8892.0, 9279.0, 7898.0, 9044.0 |
@@ -268,7 +269,6 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | VehYear | int64 | 0 | 0 | 10 | 2006, 2005, 2007, 2004, 2008, 2003, 2002, 2001, 2009, 2010 |
 | VehicleAge | int64 | 0 | 0 | 10 | 4, 3, 5, 2, 6, 7, 1, 8, 9, 0 |
 | VehOdo | int64 | 0 | 0 | 39947 | 77995, 75009, 79015, 71225, 75371, 67464, 77449, 88958, 73159, 75064 |
-| IsOnlineSale | int64 | 0 | 0 | 2 | 0, 1 |
 | WarrantyCost | int64 | 0 | 0 | 281 | 920, 1974, 2152, 1389, 1215, 1155, 803, 728, 1503, 1086 |
 
 </details>
@@ -283,7 +283,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 ### Numeric features
 
 <details>
-<summary>Show the table (14 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -299,7 +299,6 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | MMRCurrentRetailAveragePrice | 72668 | 8775.72 | 3090.7 | 0 | 39080 |
 | MMRCurrentRetailCleanPrice | 72668 | 10145.4 | 3310.25 | 0 | 41062 |
 | VehBCost | 72983 | 6730.93 | 1767.85 | 1 | 45469 |
-| IsOnlineSale | 72983 | 0.0252799 | 0.156975 | 0 | 1 |
 | WarrantyCost | 72983 | 1276.58 | 598.847 | 462 | 7498 |
 
 </details>
@@ -307,7 +306,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 ### Categorical features
 
 <details>
-<summary>Show the table (84 rows)</summary>
+<summary>Show the table (86 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -329,6 +328,8 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | Color | 5 | BLACK | 7627 | 10.45 |
 | IsBadBuy | 1 | 0 | 64007 | 87.7 |
 | IsBadBuy | 2 | 1 | 8976 | 12.3 |
+| IsOnlineSale | 1 | 0 | 71138 | 97.47 |
+| IsOnlineSale | 2 | 1 | 1845 | 2.53 |
 | Make | 1 | CHEVROLET | 17248 | 23.63 |
 | Make | 2 | DODGE | 12912 | 17.69 |
 | Make | 3 | FORD | 11305 | 15.49 |
@@ -369,10 +370,8 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | TopThreeAmericanName | 5 | &lt;NA> | 5 | 0.01 |
 | Transmission | 1 | AUTO | 70398 | 96.46 |
 | Transmission | 2 | MANUAL | 2575 | 3.53 |
-| Transmission | 3 | &lt;NA> | 9 | 0.01 |
-| Transmission | 4 | Manual | 1 | 0 |
 
-(24 more rows not shown)
+(26 more rows not shown)
 
 </details>
 
@@ -387,4 +386,4 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:097b7902c2ce146ad89f02c7bca03d6f2225805c82ae522966510b1a3ec419d5` |
+| stale | yes: the definition now gives checksum `v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88` |

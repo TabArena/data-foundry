@@ -1241,6 +1241,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         )
     if "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
+    if "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
+        fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]

@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: account_debt_south_africa
 container_format: 2
-checksum: v2:bf23af830c7ca9b761ce50280fab7828f0b34a430e59e87f131ec4abd66ca4a3
+checksum: v2:fe9d8e926864aa7fb6b001f8f9fc6b217685c5b47a5ae7aca48a172a6161c50c
 build: null
 build_stale: false
 data:
   n_rows: 101686
   n_features: 7
   dtypes:
-    category: 2
+    category: 3
     float64: 2
-    int64: 4
+    int64: 3
   n_test_dataset_rows: null
 task:
   target: BadDebt
@@ -63,7 +63,7 @@ decisions:
 
 Binary classification of `BadDebt`, scored with `roc_auc` on IID splits. 101,686 rows and 7 features. Source: Kaggle (2020).
 
-Not built yet. The current definition gives checksum `v2:bf23af830c7ca9b761ce50280fab7828f0b34a430e59e87f131ec4abd66ca4a3`.
+Not built yet. The current definition gives checksum `v2:fe9d8e926864aa7fb6b001f8f9fc6b217685c5b47a5ae7aca48a172a6161c50c`.
 
 ## In brief
 
@@ -136,9 +136,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | BadDebt |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `AccCategory`, `BadDebt`
+- categorical (3): `AccCategory`, `HasIDNo`, `BadDebt`
 - string (0): none
 - datetime (0): none
 
@@ -269,13 +269,13 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | AccCategory | category | 0 | 0 | 12 | Residential, Unknown, Agricultural, Business, Government, Municipal, Educationa… |
+| HasIDNo | category | 0 | 0 | 2 | 1, 0 |
 | BadDebt | category | 0 | 0 | 2 | Yes, No |
 | PropertySize | float64 | 8853 | 8.71 | 13523 | 240.0, 300.0, 200.0, 275.0, 600.0, 264.0, 286.0, 250.0, 276.0, 220.0 |
 | PropertyValue | float64 | 8784 | 8.64 | 9303 | 60000.0, 40000.0, 50000.0, 1100000.0, 80000.0, 55000.0, 35000.0, 1200000.0, 250… |
 | TotalBilling | int64 | 0 | 0 | 28410 | 1, 2, 12, 7321, 15, 1079, 4177, 6031, 178, 6 |
 | AverageBilling | int64 | 0 | 0 | 4113 | 1, 0, 2, 3, 4, 5, 8, 7, 9, 6 |
 | TotalElectricityBill | int64 | 0 | 0 | 12420 | 0, 2126, 703, 3132, 2445, 352, 176, 273, 88, 527 |
-| HasIDNo | int64 | 0 | 0 | 2 | 1, 0 |
 
 ### Target distribution
 
@@ -293,7 +293,6 @@ Accepted on purpose:
 | TotalBilling | 101686 | 13679.6 | 147641 | 1 | 2.61336e+07 |
 | AverageBilling | 101686 | 602.384 | 5254.74 | 0 | 725934 |
 | TotalElectricityBill | 101686 | 5009.76 | 116568 | -16171 | 2.27117e+07 |
-| HasIDNo | 101686 | 0.536957 | 0.498635 | 0 | 1 |
 
 ### Categorical features
 
@@ -306,6 +305,8 @@ Accepted on purpose:
 | AccCategory | 5 | Government | 2486 | 2.44 |
 | BadDebt | 1 | Yes | 57199 | 56.25 |
 | BadDebt | 2 | No | 44487 | 43.75 |
+| HasIDNo | 1 | 1 | 54601 | 53.7 |
+| HasIDNo | 2 | 0 | 47085 | 46.3 |
 
 ## Build
 

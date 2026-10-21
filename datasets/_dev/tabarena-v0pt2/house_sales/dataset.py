@@ -388,7 +388,7 @@ class HouseSales(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["zipcode"],
+            categorical=["zipcode", "waterfront"],  # waterfront is a 0/1 flag (CLEAN-14)
             datetime={"date": "%Y%m%dT%H%M%S"},
         )
 

@@ -361,6 +361,20 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ({"data_tags": "Spatial"}, "tuple of tags"),
         ({"data_tags": ("2ndTierData",)}, "retired"),
         ({"data_tags": ("ForcedGroupedFromTemporal",)}, "marks a grouped split"),
+        (
+            {
+                "data_tags": ("ForcedIIDFromTemporal",),
+                "grouping": Grouping(on="g", labels="per_group", definition="x"),
+            },
+            "marks an IID split",
+        ),
+        (
+            {
+                "data_tags": ("ForcedIIDFromTemporal",),
+                "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
+            },
+            "marks an IID split",
+        ),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:

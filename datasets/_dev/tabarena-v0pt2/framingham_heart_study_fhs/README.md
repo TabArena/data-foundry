@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: framingham_heart_study_fhs
 container_format: 2
-checksum: v2:193ab5e5fa36722af6ab04dad03386e57ee08562c2fbcd04a0b67e65e39e9661
+checksum: v2:9bb6d28a79ec857e1d5f60ae01bc212e6a07a03cb71b7d5e532f8b71f693cb2e
 build: null
 build_stale: false
 data:
   n_rows: 4224
   n_features: 15
   dtypes:
-    category: 1
-    float64: 9
-    int64: 6
+    category: 7
+    float64: 8
+    int64: 1
   n_test_dataset_rows: null
 task:
   target: chd_within_10_years
@@ -56,7 +56,7 @@ decisions:
 
 Binary classification of `chd_within_10_years`, scored with `roc_auc` on IID splits. 4,224 rows and 15 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:193ab5e5fa36722af6ab04dad03386e57ee08562c2fbcd04a0b67e65e39e9661`.
+Not built yet. The current definition gives checksum `v2:9bb6d28a79ec857e1d5f60ae01bc212e6a07a03cb71b7d5e532f8b71f693cb2e`.
 
 ## In brief
 
@@ -147,9 +147,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | chd_within_10_years |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `chd_within_10_years`
+- categorical (7): `male`, `currentSmoker`, `BPMeds`, `prevalentStroke`, `prevalentHyp`, `diabetes`, `chd_within_10_years`
 - string (0): none
 - datetime (0): none
 
@@ -192,11 +192,11 @@ The first 5 of 4,224 rows of the final frame (random rows: the frame is shuffled
 
 | chd_within_10_years | male | totChol | age | sysBP | diaBP | currentSmoker | cigsPerDay | BMI | diabetes | BPMeds | heartRate |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 0 | 302 | 54 | 210 | 127.5 | 0 | 0 | 31.98 | 0 | 0 | 68 |
-| No | 1 | 309 | 43 | 124 | 85 | 1 | 20 | 26.91 | 1 | 0 | 70 |
-| No | 0 | 254 | 49 | 142 | 87 | 0 | 0 | 27.94 | 0 | 0 | 60 |
-| No | 1 | 200 | 47 | 126 | 86 | 1 | 20 | 26.84 | 0 | 0 | 80 |
-| No | 1 | 231 | 42 | 123 | 87 | 1 | 20 | 21.48 | 0 | 0 | 75 |
+| No | 0 | 187 | 41 | 108 | 64 | 0 | 0 | 23.63 | 0 | 0 | 72 |
+| No | 1 | 253 | 53 | 121 | 85.5 | 1 | 30 | 28.52 | 0 | 0 | 80 |
+| No | 0 | 145 | 37 | 105 | 73 | 0 | 0 | 23.44 | 0 | nan | 58 |
+| No | 0 | 199 | 41 | 117 | 86 | 0 | 0 | 34.54 | 0 | 0 | 72 |
+| No | 0 | 213 | 40 | 130 | 80 | 1 | 20 | 19.98 | 0 | 0 | 96 |
 
 ## Curation notes
 
@@ -305,22 +305,22 @@ The population at risk of the documentation (period 1, PREVCHD = 0), without the
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| BPMeds | category | 53 | 1.25 | 2 | 0.0, 1.0 |
+| male | category | 0 | 0 | 2 | 0, 1 |
+| currentSmoker | category | 0 | 0 | 2 | 0, 1 |
+| diabetes | category | 0 | 0 | 2 | 0, 1 |
+| prevalentStroke | category | 0 | 0 | 2 | 0, 1 |
+| prevalentHyp | category | 0 | 0 | 2 | 0, 1 |
 | chd_within_10_years | category | 0 | 0 | 2 | No, Yes |
 | glucose | float64 | 384 | 9.09 | 143 | 75.0, 77.0, 73.0, 80.0, 70.0, 83.0, 78.0, 74.0, 76.0, 85.0 |
 | education | float64 | 105 | 2.49 | 4 | 1.0, 2.0, 3.0, 4.0 |
-| BPMeds | float64 | 53 | 1.25 | 2 | 0.0, 1.0 |
 | totChol | float64 | 49 | 1.16 | 248 | 240.0, 220.0, 260.0, 210.0, 232.0, 250.0, 200.0, 225.0, 230.0, 205.0 |
 | cigsPerDay | float64 | 29 | 0.69 | 33 | 0.0, 20.0, 30.0, 15.0, 10.0, 9.0, 5.0, 3.0, 40.0, 1.0 |
-| BMI | float64 | 19 | 0.45 | 1364 | 22.19, 22.91, 23.48, 22.54, 23.09, 25.09, 25.23, 23.1, 22.73, 25.94 |
+| BMI | float64 | 19 | 0.45 | 1364 | 22.19, 23.48, 22.91, 22.54, 23.09, 25.09, 25.23, 23.1, 22.73, 27.73 |
 | heartRate | float64 | 1 | 0.02 | 73 | 75.0, 80.0, 70.0, 60.0, 85.0, 72.0, 65.0, 90.0, 68.0, 100.0 |
-| sysBP | float64 | 0 | 0 | 234 | 120.0, 130.0, 110.0, 115.0, 125.0, 124.0, 122.0, 126.0, 128.0, 116.0 |
+| sysBP | float64 | 0 | 0 | 234 | 120.0, 130.0, 110.0, 125.0, 115.0, 124.0, 122.0, 126.0, 128.0, 116.0 |
 | diaBP | float64 | 0 | 0 | 146 | 80.0, 82.0, 85.0, 70.0, 81.0, 84.0, 90.0, 78.0, 87.0, 86.0 |
-| male | int64 | 0 | 0 | 2 | 0, 1 |
 | age | int64 | 0 | 0 | 39 | 40, 46, 42, 41, 48, 39, 44, 45, 43, 52 |
-| currentSmoker | int64 | 0 | 0 | 2 | 0, 1 |
-| diabetes | int64 | 0 | 0 | 2 | 0, 1 |
-| prevalentStroke | int64 | 0 | 0 | 2 | 0, 1 |
-| prevalentHyp | int64 | 0 | 0 | 2 | 0, 1 |
 
 </details>
 
@@ -333,35 +333,42 @@ The population at risk of the documentation (period 1, PREVCHD = 0), without the
 
 ### Numeric features
 
-<details>
-<summary>Show the table (15 rows)</summary>
-
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| male | 4224 | 0.429214 | 0.495023 | 0 | 1 |
 | totChol | 4175 | 236.743 | 44.6106 | 107 | 696 |
 | age | 4224 | 49.602 | 8.5768 | 32 | 70 |
 | sysBP | 4224 | 132.344 | 22.0326 | 83.5 | 295 |
 | diaBP | 4224 | 82.8885 | 11.8954 | 48 | 142.5 |
-| currentSmoker | 4224 | 0.493608 | 0.500018 | 0 | 1 |
 | cigsPerDay | 4195 | 8.97831 | 11.8855 | 0 | 70 |
 | BMI | 4205 | 25.8079 | 4.08176 | 15.54 | 56.8 |
-| diabetes | 4224 | 0.0258049 | 0.158572 | 0 | 1 |
-| BPMeds | 4171 | 0.0297291 | 0.169859 | 0 | 1 |
 | heartRate | 4223 | 75.875 | 12.0027 | 44 | 143 |
 | glucose | 3840 | 81.9742 | 23.9833 | 40 | 394 |
 | education | 4119 | 1.97766 | 1.019 | 1 | 4 |
-| prevalentStroke | 4224 | 0.00591856 | 0.0767133 | 0 | 1 |
-| prevalentHyp | 4224 | 0.310606 | 0.462797 | 0 | 1 |
-
-</details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (15 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| BPMeds | 1 | 0.0 | 4047 | 95.81 |
+| BPMeds | 2 | 1.0 | 124 | 2.94 |
+| BPMeds | 3 | &lt;NA> | 53 | 1.25 |
 | chd_within_10_years | 1 | No | 3845 | 91.03 |
 | chd_within_10_years | 2 | Yes | 379 | 8.97 |
+| currentSmoker | 1 | 0 | 2139 | 50.64 |
+| currentSmoker | 2 | 1 | 2085 | 49.36 |
+| diabetes | 1 | 0 | 4115 | 97.42 |
+| diabetes | 2 | 1 | 109 | 2.58 |
+| male | 1 | 0 | 2411 | 57.08 |
+| male | 2 | 1 | 1813 | 42.92 |
+| prevalentHyp | 1 | 0 | 2912 | 68.94 |
+| prevalentHyp | 2 | 1 | 1312 | 31.06 |
+| prevalentStroke | 1 | 0 | 4199 | 99.41 |
+| prevalentStroke | 2 | 1 | 25 | 0.59 |
+
+</details>
 
 ## Build
 

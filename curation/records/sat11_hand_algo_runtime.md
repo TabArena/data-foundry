@@ -45,6 +45,8 @@ We use the task that aims to go from (Instance_features, algorithm_features) -> 
 
 CC (2026-10-06, Lennart): The split holds out instances, not instance families, on purpose. The instances come in 48 families (74% of an instance's nearest neighbours are in its own family), but a selector in use has other members of a new instance's family in its data, so holding out single instances, as ASlib does, is the realistic setting.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: edge_sa, edge_sl.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

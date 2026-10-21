@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: phiusil_phishing
 container_format: 2
-checksum: v2:eca5e83bfdec26977e0fe4cb15cb16256f19f1f65e1b3f968ab1deff3fbe2226
+checksum: v2:e866cfbbd78d8c08125449d43ccc28a76d97159bef8de7b273dbcb062f8f81af
 build: null
 build_stale: false
 data:
   n_rows: 235370
   n_features: 49
   dtypes:
-    category: 2
+    category: 21
     float64: 7
-    int64: 40
+    int64: 21
     string: 1
   n_test_dataset_rows: null
 task:
@@ -72,7 +72,7 @@ decisions:
 
 Binary classification of `label`, scored with `roc_auc` on IID splits. 235,370 rows and 49 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:eca5e83bfdec26977e0fe4cb15cb16256f19f1f65e1b3f968ab1deff3fbe2226`.
+Not built yet. The current definition gives checksum `v2:e866cfbbd78d8c08125449d43ccc28a76d97159bef8de7b273dbcb062f8f81af`.
 
 ## In brief
 
@@ -147,9 +147,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | label |
 
 <details>
-<summary>Feature types: 2 categorical, 1 string, 0 datetime</summary>
+<summary>Feature types: 21 categorical, 1 string, 0 datetime</summary>
 
-- categorical (2): `TLD`, `label`
+- categorical (21): `TLD`, `IsDomainIP`, `HasObfuscation`, `IsHTTPS`, `HasTitle`, `HasFavicon`, `Robots`, `IsResponsive`, `NoOfURLRedirect`, `NoOfSelfRedirect`, `HasDescription`, `HasExternalFormSubmit`, `HasSocialNet`, `HasSubmitButton`, `HasHiddenFields`, `HasPasswordField`, `Bank`, `Pay`, `Crypto`, `HasCopyrightInfo`, `label`
 - string (1): `URL`
 - datetime (0): none
 
@@ -330,7 +330,26 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| IsDomainIP | category | 0 | 0 | 2 | 0, 1 |
 | TLD | category | 0 | 0 | 695 | com, org, net, app, uk, co, io, de, ru, au |
+| HasObfuscation | category | 0 | 0 | 2 | 0, 1 |
+| IsHTTPS | category | 0 | 0 | 2 | 1, 0 |
+| HasTitle | category | 0 | 0 | 2 | 1, 0 |
+| HasFavicon | category | 0 | 0 | 2 | 0, 1 |
+| Robots | category | 0 | 0 | 2 | 0, 1 |
+| IsResponsive | category | 0 | 0 | 2 | 1, 0 |
+| NoOfURLRedirect | category | 0 | 0 | 2 | 0, 1 |
+| NoOfSelfRedirect | category | 0 | 0 | 2 | 0, 1 |
+| HasDescription | category | 0 | 0 | 2 | 0, 1 |
+| HasExternalFormSubmit | category | 0 | 0 | 2 | 0, 1 |
+| HasSocialNet | category | 0 | 0 | 2 | 0, 1 |
+| HasSubmitButton | category | 0 | 0 | 2 | 0, 1 |
+| HasHiddenFields | category | 0 | 0 | 2 | 0, 1 |
+| HasPasswordField | category | 0 | 0 | 2 | 0, 1 |
+| Bank | category | 0 | 0 | 2 | 0, 1 |
+| Pay | category | 0 | 0 | 2 | 0, 1 |
+| Crypto | category | 0 | 0 | 2 | 0, 1 |
+| HasCopyrightInfo | category | 0 | 0 | 2 | 0, 1 |
 | label | category | 0 | 0 | 2 | Legitimate, Phishing |
 | CharContinuationRate | float64 | 0 | 0 | 898 | 1.0, 0.6667, 0.5714, 0.75, 0.6, 0.5, 0.625, 0.8, 0.6364, 0.8333 |
 | TLDLegitimateProb | float64 | 0 | 0 | 465 | 0.5229, 0.08, 0.0384, 0.0015, 0.0286, 0.006, 0.0129, 0.0327, 0.018, 0.0101 |
@@ -341,10 +360,8 @@ Accepted on purpose:
 | SpacialCharRatioInURL | float64 | 0 | 0 | 240 | 0.043, 0.042, 0.04, 0.045, 0.038, 0.037, 0.048, 0.036, 0.05, 0.034 |
 | URLLength | int64 | 0 | 0 | 482 | 26, 25, 24, 27, 23, 22, 28, 21, 29, 30 |
 | DomainLength | int64 | 0 | 0 | 101 | 18, 19, 20, 17, 16, 15, 21, 22, 14, 23 |
-| IsDomainIP | int64 | 0 | 0 | 2 | 0, 1 |
 | TLDLength | int64 | 0 | 0 | 12 | 3, 2, 4, 5, 6, 7, 8, 9, 10, 11 |
 | NoOfSubDomain | int64 | 0 | 0 | 10 | 1, 2, 0, 3, 4, 5, 6, 10, 7, 8 |
-| HasObfuscation | int64 | 0 | 0 | 2 | 0, 1 |
 | NoOfObfuscatedChar | int64 | 0 | 0 | 20 | 0, 3, 12, 6, 9, 15, 24, 18, 21, 39 |
 | NoOfLettersInURL | int64 | 0 | 0 | 421 | 12, 11, 13, 10, 14, 16, 15, 9, 8, 17 |
 | NoOfDegitsInURL | int64 | 0 | 0 | 182 | 0, 1, 2, 3, 6, 4, 5, 7, 9, 10 |
@@ -352,27 +369,10 @@ Accepted on purpose:
 | NoOfQMarkInURL | int64 | 0 | 0 | 5 | 0, 1, 2, 3, 4 |
 | NoOfAmpersandInURL | int64 | 0 | 0 | 31 | 0, 1, 2, 12, 15, 3, 4, 14, 5, 6 |
 | NoOfOtherSpecialCharsInURL | int64 | 0 | 0 | 74 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
-| IsHTTPS | int64 | 0 | 0 | 2 | 1, 0 |
 | LineOfCode | int64 | 0 | 0 | 10738 | 2, 9, 108, 11, 198, 20, 8, 13, 3, 4 |
 | LargestLineLength | int64 | 0 | 0 | 26178 | 9381, 8125, 8047, 50, 869, 80, 155, 41, 394, 2826 |
-| HasTitle | int64 | 0 | 0 | 2 | 1, 0 |
-| HasFavicon | int64 | 0 | 0 | 2 | 0, 1 |
-| Robots | int64 | 0 | 0 | 2 | 0, 1 |
-| IsResponsive | int64 | 0 | 0 | 2 | 1, 0 |
-| NoOfURLRedirect | int64 | 0 | 0 | 2 | 0, 1 |
-| NoOfSelfRedirect | int64 | 0 | 0 | 2 | 0, 1 |
-| HasDescription | int64 | 0 | 0 | 2 | 0, 1 |
 | NoOfPopup | int64 | 0 | 0 | 115 | 0, 1, 2, 3, 4, 5, 7, 6, 8, 10 |
 | NoOfiFrame | int64 | 0 | 0 | 119 | 0, 1, 2, 3, 4, 19, 5, 6, 7, 8 |
-| HasExternalFormSubmit | int64 | 0 | 0 | 2 | 0, 1 |
-| HasSocialNet | int64 | 0 | 0 | 2 | 0, 1 |
-| HasSubmitButton | int64 | 0 | 0 | 2 | 0, 1 |
-| HasHiddenFields | int64 | 0 | 0 | 2 | 0, 1 |
-| HasPasswordField | int64 | 0 | 0 | 2 | 0, 1 |
-| Bank | int64 | 0 | 0 | 2 | 0, 1 |
-| Pay | int64 | 0 | 0 | 2 | 0, 1 |
-| Crypto | int64 | 0 | 0 | 2 | 0, 1 |
-| HasCopyrightInfo | int64 | 0 | 0 | 2 | 0, 1 |
 | NoOfImage | int64 | 0 | 0 | 992 | 0, 1, 19, 2, 4, 3, 10, 14, 15, 11 |
 | NoOfCSS | int64 | 0 | 0 | 209 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | NoOfJS | int64 | 0 | 0 | 253 | 0, 1, 9, 2, 6, 8, 7, 4, 10, 5 |
@@ -393,19 +393,17 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (47 rows)</summary>
+<summary>Show the table (28 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | URLLength | 235370 | 34.5455 | 41.3327 | 13 | 6097 |
 | DomainLength | 235370 | 21.456 | 9.12773 | 4 | 110 |
-| IsDomainIP | 235370 | 0.00270213 | 0.0519118 | 0 | 1 |
 | CharContinuationRate | 235370 | 0.8459 | 0.216384 | 0 | 1 |
 | TLDLegitimateProb | 235370 | 0.260503 | 0.251618 | 0 | 0.522907 |
 | URLCharProb | 235370 | 0.05576 | 0.0105831 | 0.00108276 | 0.0908237 |
 | TLDLength | 235370 | 2.76427 | 0.599667 | 2 | 13 |
 | NoOfSubDomain | 235370 | 1.16496 | 0.600695 | 0 | 10 |
-| HasObfuscation | 235370 | 0.00205209 | 0.0452536 | 0 | 1 |
 | NoOfObfuscatedChar | 235370 | 0.02488 | 1.87792 | 0 | 447 |
 | ObfuscationRatio | 235370 | 0.000138306 | 0.00381826 | 0 | 0.348 |
 | NoOfLettersInURL | 235370 | 19.4056 | 29.0995 | 0 | 5191 |
@@ -417,27 +415,10 @@ Accepted on purpose:
 | NoOfAmpersandInURL | 235370 | 0.0250797 | 0.837185 | 0 | 149 |
 | NoOfOtherSpecialCharsInURL | 235370 | 2.33598 | 3.52756 | 0 | 499 |
 | SpacialCharRatioInURL | 235370 | 0.0632492 | 0.0323632 | 0 | 0.397 |
-| IsHTTPS | 235370 | 0.782717 | 0.412398 | 0 | 1 |
 | LineOfCode | 235370 | 1143.79 | 3422.74 | 2 | 442666 |
 | LargestLineLength | 235370 | 12644.3 | 148925 | 22 | 1.39757e+07 |
-| HasTitle | 235370 | 0.861444 | 0.345484 | 0 | 1 |
-| HasFavicon | 235370 | 0.362191 | 0.480635 | 0 | 1 |
-| Robots | 235370 | 0.266861 | 0.44232 | 0 | 1 |
-| IsResponsive | 235370 | 0.624888 | 0.484153 | 0 | 1 |
-| NoOfURLRedirect | 235370 | 0.13339 | 0.339996 | 0 | 1 |
-| NoOfSelfRedirect | 235370 | 0.0401368 | 0.19628 | 0 | 1 |
-| HasDescription | 235370 | 0.440855 | 0.496491 | 0 | 1 |
 | NoOfPopup | 235370 | 0.22208 | 3.87397 | 0 | 602 |
 | NoOfiFrame | 235370 | 1.59134 | 5.76738 | 0 | 1602 |
-| HasExternalFormSubmit | 235370 | 0.0440583 | 0.205225 | 0 | 1 |
-| HasSocialNet | 235370 | 0.457395 | 0.498183 | 0 | 1 |
-| HasSubmitButton | 235370 | 0.414679 | 0.492668 | 0 | 1 |
-| HasHiddenFields | 235370 | 0.378209 | 0.484941 | 0 | 1 |
-| HasPasswordField | 235370 | 0.102107 | 0.30279 | 0 | 1 |
-| Bank | 235370 | 0.127204 | 0.333202 | 0 | 1 |
-| Pay | 235370 | 0.237248 | 0.425396 | 0 | 1 |
-| Crypto | 235370 | 0.0234907 | 0.151456 | 0 | 1 |
-| HasCopyrightInfo | 235370 | 0.487509 | 0.499845 | 0 | 1 |
 | NoOfImage | 235370 | 26.1202 | 79.4764 | 0 | 8956 |
 | NoOfCSS | 235370 | 6.34325 | 74.9335 | 0 | 35820 |
 | NoOfJS | 235370 | 10.5387 | 22.3287 | 0 | 6957 |
@@ -450,10 +431,48 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (50 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| Bank | 1 | 0 | 205430 | 87.28 |
+| Bank | 2 | 1 | 29940 | 12.72 |
+| Crypto | 1 | 0 | 229841 | 97.65 |
+| Crypto | 2 | 1 | 5529 | 2.35 |
+| HasCopyrightInfo | 1 | 0 | 120625 | 51.25 |
+| HasCopyrightInfo | 2 | 1 | 114745 | 48.75 |
+| HasDescription | 1 | 0 | 131606 | 55.91 |
+| HasDescription | 2 | 1 | 103764 | 44.09 |
+| HasExternalFormSubmit | 1 | 0 | 225000 | 95.59 |
+| HasExternalFormSubmit | 2 | 1 | 10370 | 4.41 |
+| HasFavicon | 1 | 0 | 150121 | 63.78 |
+| HasFavicon | 2 | 1 | 85249 | 36.22 |
+| HasHiddenFields | 1 | 0 | 146351 | 62.18 |
+| HasHiddenFields | 2 | 1 | 89019 | 37.82 |
+| HasObfuscation | 1 | 0 | 234887 | 99.79 |
+| HasObfuscation | 2 | 1 | 483 | 0.21 |
+| HasPasswordField | 1 | 0 | 211337 | 89.79 |
+| HasPasswordField | 2 | 1 | 24033 | 10.21 |
+| HasSocialNet | 1 | 0 | 127713 | 54.26 |
+| HasSocialNet | 2 | 1 | 107657 | 45.74 |
+| HasSubmitButton | 1 | 0 | 137767 | 58.53 |
+| HasSubmitButton | 2 | 1 | 97603 | 41.47 |
+| HasTitle | 1 | 1 | 202758 | 86.14 |
+| HasTitle | 2 | 0 | 32612 | 13.86 |
+| IsDomainIP | 1 | 0 | 234734 | 99.73 |
+| IsDomainIP | 2 | 1 | 636 | 0.27 |
+| IsHTTPS | 1 | 1 | 184228 | 78.27 |
+| IsHTTPS | 2 | 0 | 51142 | 21.73 |
+| IsResponsive | 1 | 1 | 147080 | 62.49 |
+| IsResponsive | 2 | 0 | 88290 | 37.51 |
+| NoOfSelfRedirect | 1 | 0 | 225923 | 95.99 |
+| NoOfSelfRedirect | 2 | 1 | 9447 | 4.01 |
+| NoOfURLRedirect | 1 | 0 | 203974 | 86.66 |
+| NoOfURLRedirect | 2 | 1 | 31396 | 13.34 |
+| Pay | 1 | 0 | 179529 | 76.28 |
+| Pay | 2 | 1 | 55841 | 23.72 |
+| Robots | 1 | 0 | 172559 | 73.31 |
+| Robots | 2 | 1 | 62811 | 26.69 |
 | TLD | 1 | com | 112382 | 47.75 |
 | TLD | 2 | org | 18792 | 7.98 |
 | TLD | 3 | net | 7076 | 3.01 |

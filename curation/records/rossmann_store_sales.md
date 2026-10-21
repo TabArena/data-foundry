@@ -30,6 +30,8 @@ type_adapter_id: curation-record-v1
 
 Awesome dataset, even the forecast horizon is given.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Promo, SchoolHoliday, Promo2.
+
 ## Reference
 
 FlorianKnauer and Will Cukierski. Rossmann Store Sales. https://kaggle.com/competitions/rossmann-store-sales, 2015. Kaggle.

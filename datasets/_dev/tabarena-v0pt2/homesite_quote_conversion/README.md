@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
+checksum: v2:b87a54a0f1f2fbd8544d1862be0bfdb00ff184937c30642c40e45f8840ac1109
 build:
   uuid: 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
   checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
@@ -17,15 +17,15 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 260753
   n_features: 295
   dtypes:
-    category: 27
+    category: 34
     datetime64[ns]: 1
-    float64: 148
-    int64: 120
+    float64: 147
+    int64: 114
   n_test_dataset_rows: null
 task:
   target: QuoteConversion_Flag
@@ -44,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 173835
     max: 173836
@@ -69,7 +71,7 @@ decisions: []
 
 Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID splits. 260,753 rows and 295 features. Source: Kaggle (2015).
 
-Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b87a54a0f1f2fbd8544d1862be0bfdb00ff184937c30642c40e45f8840ac1109`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -85,7 +87,7 @@ Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#buil
 
 **What the test data stands for.** Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by date instead.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC AUC 0.965 with them, 0.915 without).
+> **Use case fit: direct (the rows, features and split mirror the use case).** Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21).
 
 ## Files in this folder
 
@@ -137,9 +139,9 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | QuoteConversion_Flag |
 
 <details>
-<summary>Feature types: 27 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 34 categorical, 0 string, 1 datetime</summary>
 
-- categorical (27): `Field6`, `Field12`, `CoverageField8`, `CoverageField9`, `SalesField7`, `PersonalField7`, `PersonalField16`, `PersonalField17`, `PersonalField18`, `PersonalField19`, `PropertyField3`, `PropertyField4`, `PropertyField5`, `PropertyField7`, `PropertyField14`, `PropertyField28`, `PropertyField30`, `PropertyField31`, `PropertyField32`, `PropertyField33`, `PropertyField34`, `PropertyField36`, `PropertyField37`, `PropertyField38`, `GeographicField63`, `GeographicField64`, `QuoteConversion_Flag`
+- categorical (34): `Field6`, `Field12`, `CoverageField8`, `CoverageField9`, `SalesField7`, `PersonalField7`, `PersonalField16`, `PersonalField17`, `PersonalField18`, `PersonalField19`, `PropertyField3`, `PropertyField4`, `PropertyField5`, `PropertyField7`, `PropertyField14`, `PropertyField28`, `PropertyField30`, `PropertyField31`, `PropertyField32`, `PropertyField33`, `PropertyField34`, `PropertyField36`, `PropertyField37`, `PropertyField38`, `GeographicField63`, `GeographicField64`, `SalesField3`, `SalesField9`, `PersonalField1`, `PersonalField2`, `PersonalField6`, `PropertyField8`, `PropertyField29`, `QuoteConversion_Flag`
 - string (0): none
 - datetime (1): `Original_Quote_Date`
 
@@ -166,11 +168,11 @@ The first 5 of 260,753 rows of the final frame (random rows: the frame is shuffl
 
 | QuoteConversion_Flag | Original_Quote_Date | Field6 | Field7 | Field8 | Field9 | Field10 | Field11 | Field12 | CoverageField1A | CoverageField1B | CoverageField2A |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2013-09-03 00:00:00 | J | 23 | 0.9497 | 0.0004 | 1165 | 1.2665 | N | 9 | 15 | 9 |
-| 0 | 2015-02-17 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 25 | 25 | 25 |
-| 1 | 2014-03-25 00:00:00 | B | 25 | 0.9153 | 0.0007 | 935 | 1.02 | N | 24 | 25 | 25 |
-| 1 | 2013-09-27 00:00:00 | B | 24 | 0.9403 | 0.0006 | 965 | 1.02 | N | 7 | 11 | 7 |
-| 0 | 2014-07-21 00:00:00 | J | 23 | 0.8928 | 0.0004 | 1113 | 1.2665 | N | 3 | 3 | 3 |
+| 0 | 2014-02-23 00:00:00 | F | 11 | 0.9685 | 0.004 | 548 | 1.1886 | N | 2 | 1 | 2 |
+| 1 | 2015-05-18 00:00:00 | F | 22 | 1.0101 | 0.004 | 548 | 1.2694 | N | 12 | 19 | 12 |
+| 1 | 2015-04-23 00:00:00 | B | 2 | 0.9153 | 0.0007 | 935 | 1.02 | N | 6 | 10 | 7 |
+| 0 | 2014-02-09 00:00:00 | J | 23 | 0.8922 | 0.0004 | 1113 | 1.2665 | N | 11 | 19 | 11 |
+| 0 | 2014-02-01 00:00:00 | J | 1 | 0.8922 | 0.0004 | 1113 | 1.2665 | N | 23 | 25 | 23 |
 
 ## Curation notes
 
@@ -221,6 +223,7 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| PropertyField29 | category | 200685 | 76.96 | 2 | 0.0, 1.0 |
 | PropertyField38 | category | 1220 | 0.47 | 2 | N, Y |
 | PersonalField7 | category | 113 | 0.04 | 2 | N, Y |
 | PropertyField36 | category | 113 | 0.04 | 2 | N, Y |
@@ -233,13 +236,19 @@ Default splits.
 | Field12 | category | 0 | 0 | 2 | N, Y |
 | CoverageField8 | category | 0 | 0 | 7 | Y, T, X, Z, U, V, W |
 | CoverageField9 | category | 0 | 0 | 12 | E, D, G, F, K, J, A, B, I, H |
+| SalesField3 | category | 0 | 0 | 2 | 1, 0 |
 | SalesField7 | category | 0 | 0 | 7 | K, P, T, Q, V, R, M |
+| SalesField9 | category | 0 | 0 | 2 | 0, 1 |
+| PersonalField1 | category | 0 | 0 | 2 | 1, 0 |
+| PersonalField2 | category | 0 | 0 | 2 | 1, 0 |
+| PersonalField6 | category | 0 | 0 | 2 | 0, 1 |
 | PersonalField16 | category | 0 | 0 | 50 | ZA, XR, XJ, XM, XD, XH, XX, XO, XB, YH |
 | PersonalField17 | category | 0 | 0 | 66 | ZE, XV, XS, YY, ZK, ZH, XE, XG, YV, ZF |
 | PersonalField18 | category | 0 | 0 | 61 | XR, YP, ZW, XF, YI, XQ, YF, ZN, YG, XZ |
 | PersonalField19 | category | 0 | 0 | 57 | XD, XC, XX, ZQ, YF, ZN, ZT, ZV, YJ, XU |
 | PropertyField5 | category | 0 | 0 | 2 | Y, N |
 | PropertyField7 | category | 0 | 0 | 19 | O, R, J, D, S, N, I, Q, A, K |
+| PropertyField8 | category | 0 | 0 | 2 | 1, 0 |
 | PropertyField14 | category | 0 | 0 | 4 | C, A, B, D |
 | PropertyField28 | category | 0 | 0 | 4 | B, A, D, C |
 | PropertyField30 | category | 0 | 0 | 2 | N, Y |
@@ -261,26 +270,19 @@ Default splits.
 | GeographicField18A | float64 | 254135 | 97.46 | 1 | 25.0 |
 | GeographicField23A | float64 | 254096 | 97.45 | 1 | 25.0 |
 | GeographicField14A | float64 | 253814 | 97.34 | 1 | 25.0 |
-| PropertyField29 | float64 | 200685 | 76.96 | 2 | 0.0, 1.0 |
 | PersonalField84 | float64 | 124208 | 47.63 | 7 | 2.0, 1.0, 5.0, 3.0, 7.0, 4.0, 8.0 |
 | PersonalField10A | float64 | 54785 | 21.01 | 25 | 5.0, 6.0, 7.0, 4.0, 8.0, 9.0, 25.0, 1.0, 10.0, 11.0 |
 | PersonalField10B | float64 | 54785 | 21.01 | 25 | 3.0, 10.0, 12.0, 7.0, 5.0, 17.0, 14.0, 25.0, 20.0, 15.0 |
 | PersonalField4A | float64 | 24526 | 9.41 | 25 | 7.0, 13.0, 5.0, 6.0, 4.0, 8.0, 9.0, 10.0, 11.0, 12.0 |
 | PersonalField4B | float64 | 24526 | 9.41 | 25 | 5.0, 8.0, 10.0, 12.0, 13.0, 21.0, 24.0, 16.0, 15.0, 3.0 |
 | GeographicField37A | float64 | 3101 | 1.19 | 25 | 3.0, 4.0, 5.0, 2.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 |
-| GeographicField37B | float64 | 3101 | 1.19 | 25 | 10.0, 5.0, 8.0, 3.0, 21.0, 15.0, 4.0, 22.0, 7.0, 16.0 |
+| GeographicField37B | float64 | 3101 | 1.19 | 25 | 10.0, 5.0, 8.0, 21.0, 3.0, 15.0, 4.0, 22.0, 7.0, 16.0 |
 | GeographicField55A | float64 | 1553 | 0.6 | 25 | 4.0, 3.0, 5.0, 6.0, 7.0, 2.0, 8.0, 9.0, 10.0, 11.0 |
-| GeographicField55B | float64 | 1553 | 0.6 | 25 | 9.0, 4.0, 12.0, 20.0, 5.0, 25.0, 7.0, 21.0, 18.0, 2.0 |
+| GeographicField55B | float64 | 1553 | 0.6 | 25 | 9.0, 4.0, 12.0, 20.0, 5.0, 25.0, 7.0, 18.0, 21.0, 2.0 |
 | GeographicField56B | float64 | 1553 | 0.6 | 24 | 2.0, 10.0, 25.0, 22.0, 11.0, 12.0, 23.0, 17.0, 5.0, 20.0 |
 | GeographicField54A | float64 | 1544 | 0.59 | 25 | 15.0, 14.0, 16.0, 13.0, 12.0, 17.0, 11.0, 10.0, 18.0, 19.0 |
 | GeographicField54B | float64 | 1544 | 0.59 | 25 | 2.0, 8.0, 25.0, 17.0, 24.0, 9.0, 14.0, 13.0, 7.0, 18.0 |
 | GeographicField2A | float64 | 1260 | 0.48 | 25 | 14.0, 13.0, 12.0, 11.0, 16.0, 17.0, 18.0, 15.0, 10.0, 9.0 |
-| GeographicField2B | float64 | 1260 | 0.48 | 25 | 20.0, 5.0, 25.0, 21.0, 4.0, 8.0, 2.0, 9.0, 1.0, 23.0 |
-| GeographicField48A | float64 | 1248 | 0.48 | 25 | 19.0, 17.0, 15.0, 16.0, 20.0, 18.0, 21.0, 22.0, 14.0, 12.0 |
-| GeographicField48B | float64 | 1248 | 0.48 | 25 | 8.0, 3.0, 25.0, 4.0, 20.0, 16.0, 1.0, 21.0, 13.0, 22.0 |
-| GeographicField49A | float64 | 1248 | 0.48 | 25 | 18.0, 17.0, 19.0, 20.0, 16.0, 15.0, 21.0, 14.0, 13.0, 22.0 |
-| GeographicField49B | float64 | 1248 | 0.48 | 25 | 25.0, 13.0, 23.0, 16.0, 17.0, 12.0, 18.0, 5.0, 3.0, 1.0 |
-| GeographicField50A | float64 | 1248 | 0.48 | 25 | 17.0, 16.0, 18.0, 15.0, 14.0, 19.0, 20.0, 13.0, 21.0, 22.0 |
 
 (236 more rows not shown)
 
@@ -296,7 +298,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (268 rows)</summary>
+<summary>Show the table (261 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -323,24 +325,19 @@ Default splits.
 | SalesField1B | 260753 | 13.0001 | 7.20697 | 1 | 25 |
 | SalesField2A | 260391 | 5.74361 | 4.99345 | 1 | 25 |
 | SalesField2B | 260391 | 13.0021 | 7.21023 | 1 | 25 |
-| SalesField3 | 260753 | 0.744958 | 0.435886 | 0 | 1 |
 | SalesField4 | 260753 | 4.34349 | 1.02431 | 1 | 5 |
 | SalesField5 | 260753 | 4.2246 | 0.977157 | 1 | 5 |
 | SalesField6 | 260753 | 14.0012 | 6.29728 | 1 | 24 |
 | SalesField8 | 260753 | 33734.9 | 19444.1 | 1 | 67164 |
-| SalesField9 | 260753 | 0.147005 | 0.354112 | 0 | 1 |
 | SalesField10 | 260753 | 0.340698 | 0.773829 | 0 | 21 |
 | SalesField11 | 260753 | 0.597911 | 1.10709 | 0 | 32 |
 | SalesField12 | 260753 | 0.623966 | 1.13651 | 0 | 32 |
 | SalesField13 | 260753 | 0.0636234 | 0.28839 | 0 | 7 |
 | SalesField14 | 260753 | 0.0955272 | 0.367653 | 0 | 14 |
 | SalesField15 | 260753 | 0.0981887 | 0.374738 | 0 | 14 |
-| PersonalField1 | 260753 | 0.726515 | 0.445748 | 0 | 1 |
-| PersonalField2 | 260753 | 0.699156 | 0.458626 | 0 | 1 |
 | PersonalField4A | 236227 | 10.8438 | 6.17819 | 1 | 25 |
 | PersonalField4B | 236227 | 13.2843 | 7.17794 | 1 | 25 |
 | PersonalField5 | 260753 | 6.63078 | 0.568167 | 1 | 10 |
-| PersonalField6 | 260753 | 0.370278 | 0.48288 | 0 | 1 |
 | PersonalField8 | 260753 | 1.00015 | 0.0125385 | 1 | 3 |
 | PersonalField9 | 260753 | 2.15224 | 0.494768 | 1 | 3 |
 | PersonalField10A | 205968 | 9.0299 | 6.0289 | 1 | 25 |
@@ -360,15 +357,20 @@ Default splits.
 | PersonalField29 | 260753 | 1.52218 | 0.604798 | 1 | 7 |
 | PersonalField30 | 260753 | 0.0559648 | 0.246379 | 0 | 22 |
 | PersonalField31 | 260753 | 0.296833 | 0.469694 | 0 | 23 |
+| PersonalField32 | 260753 | 0.470196 | 0.512921 | 0 | 23 |
+| PersonalField33 | 260753 | 0.497674 | 0.517218 | 0 | 23 |
+| PersonalField34 | 260753 | 1.00779 | 0.121861 | 1 | 7 |
+| PersonalField35 | 260753 | 0.00329431 | 0.0618092 | 0 | 5 |
+| PersonalField36 | 260753 | 0.00401146 | 0.0691766 | 0 | 5 |
 
-(208 more rows not shown)
+(201 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (104 rows)</summary>
+<summary>Show the table (119 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -401,6 +403,8 @@ Default splits.
 | Original_Quote_Date | 3 | 2014-02-24 00:00:00 | 600 | 0.23 |
 | Original_Quote_Date | 4 | 2015-03-23 00:00:00 | 594 | 0.23 |
 | Original_Quote_Date | 5 | 2015-03-17 00:00:00 | 586 | 0.22 |
+| PersonalField1 | 1 | 1 | 189441 | 72.65 |
+| PersonalField1 | 2 | 0 | 71312 | 27.35 |
 | PersonalField16 | 1 | ZA | 124015 | 47.56 |
 | PersonalField16 | 2 | XR | 15051 | 5.77 |
 | PersonalField16 | 3 | XJ | 10153 | 3.89 |
@@ -421,19 +425,17 @@ Default splits.
 | PersonalField19 | 3 | XX | 13690 | 5.25 |
 | PersonalField19 | 4 | ZQ | 8282 | 3.18 |
 | PersonalField19 | 5 | YF | 5487 | 2.1 |
+| PersonalField2 | 1 | 1 | 182307 | 69.92 |
+| PersonalField2 | 2 | 0 | 78446 | 30.08 |
+| PersonalField6 | 1 | 0 | 164202 | 62.97 |
+| PersonalField6 | 2 | 1 | 96551 | 37.03 |
 | PersonalField7 | 1 | N | 259379 | 99.47 |
 | PersonalField7 | 2 | Y | 1261 | 0.48 |
 | PersonalField7 | 3 | &lt;NA> | 113 | 0.04 |
 | PropertyField14 | 1 | C | 195586 | 75.01 |
 | PropertyField14 | 2 | A | 36277 | 13.91 |
-| PropertyField14 | 3 | B | 28846 | 11.06 |
-| PropertyField14 | 4 | D | 44 | 0.02 |
-| PropertyField28 | 1 | B | 243374 | 93.34 |
-| PropertyField28 | 2 | A | 9136 | 3.5 |
-| PropertyField28 | 3 | D | 6994 | 2.68 |
-| PropertyField28 | 4 | C | 1249 | 0.48 |
 
-(44 more rows not shown)
+(59 more rows not shown)
 
 </details>
 
@@ -448,3 +450,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:b87a54a0f1f2fbd8544d1862be0bfdb00ff184937c30642c40e45f8840ac1109` |

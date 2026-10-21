@@ -322,5 +322,10 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
                 "water_1line",
                 "big_road1_1line",
                 "railroad_1line",
+                # counts that hold only 0 and 1: 0/1 flags (CLEAN-14)
+                "mosque_count_500",
+                "mosque_count_1000",
+                "mosque_count_1500",
+                "mosque_count_2000",
             ],
         )

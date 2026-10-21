@@ -44,6 +44,8 @@ CC (2026-10-21, Lennart): Stay with direct fit if the task (without leakage) wou
 
 **Assessment (AI, 2026-10-21):** fit set back to `direct`; `fit_reason` names the remnant kept from July 2015 (view, waterfront and the neighbours' areas changed after the sale for about 145 rows; masking them: RMSE 0.2147 against 0.2132) and the 1,073 sales flagged as changed since the sale. Dataset check: 0 errors, 0 warnings.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: waterfront.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

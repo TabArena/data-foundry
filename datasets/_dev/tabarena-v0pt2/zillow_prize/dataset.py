@@ -96,9 +96,7 @@ class ZillowPrize(AbstractCuratedDataset):
         fit="approximate",
         fit_reason=(
             "Zillow predicted from much more than the public files: the Zestimate itself, the listing data and the "
-            "last sale price were never released, so the inputs are only the county facts. The property files were "
-            "extracted after some of their sales, so a few facts may postdate the sale (edits measured for 1-4% of "
-            "parcels)."
+            "last sale price were never released, so the inputs are only the county facts."
         ),
     )
 
@@ -271,7 +269,8 @@ class ZillowPrize(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=[*CODE_COLUMNS, "propertycountylandusecode", "propertyzoningdesc"],
+            # the presence flags (booleans, and taxdelinquencyflag 1.0 / 0.0) are 0/1 flags: categorical (CLEAN-14)
+            categorical=[*CODE_COLUMNS, "propertycountylandusecode", "propertyzoningdesc", *PRESENCE_FLAGS],
             datetime={"transaction_month": "%Y-%m-%d"},
         )
 

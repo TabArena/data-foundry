@@ -46,6 +46,8 @@ The data would allow to predict no shows as a second target
 
 The distributions are suspiciously clean, but the data source seems valid.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: IsRepeatedGuest.
+
 ## Reference
 
 Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in brief, 22, 41-49.

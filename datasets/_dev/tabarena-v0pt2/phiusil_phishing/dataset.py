@@ -212,7 +212,30 @@ class PhiusilPhishing(AbstractCuratedDataset):
         )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["TLD"], string=["URL"])
+        # the 0/1 features are categorical (CLEAN-14), checked on the data; two are counts that hold only 0 and 1
+        # (NoOfURLRedirect, NoOfSelfRedirect)
+        flags = [
+            "IsDomainIP",
+            "HasObfuscation",
+            "IsHTTPS",
+            "HasTitle",
+            "HasFavicon",
+            "Robots",
+            "IsResponsive",
+            "NoOfURLRedirect",
+            "NoOfSelfRedirect",
+            "HasDescription",
+            "HasExternalFormSubmit",
+            "HasSocialNet",
+            "HasSubmitButton",
+            "HasHiddenFields",
+            "HasPasswordField",
+            "Bank",
+            "Pay",
+            "Crypto",
+            "HasCopyrightInfo",
+        ]
+        return FeatureTypes(categorical=["TLD", *flags], string=["URL"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         from sklearn.metrics import roc_auc_score

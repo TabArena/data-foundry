@@ -40,6 +40,8 @@ Raw data has dates!
 
 From going through the raw data description, it seems one had one or multiple measurements per patient and split it into multiple rows or segments and then created tabular features. Targets can be different per instance. Need to take raw data to get the group IDs.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: DS (DR is constant 0 and stays as it is).
+
 ## Reference
 
 @misc{cardiotocography_193,

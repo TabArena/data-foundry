@@ -2,8 +2,8 @@
 
 **Outcome:** added. Not built yet. The AI recommends shipping it with the changes the panel agreed, which the definition
 contains. A temporal regression of ln(shares) of Mashable articles: nine two-week test windows (August to
-December 2014) after a one-week gap. Validity: SEL-12 holds (no text ships); USE-1 and USE-3 hold, fit `approximate`
-(USE-8); LEAK-10 triggered, fixed (`timedelta` and the weekday flags follow a later date: dropped, the date taken from
+December 2014) after a one-week gap. Validity: SEL-12 holds (no text ships); USE-1 and USE-3 hold, fit `direct`
+(USE-8 as amended 2026-10-21: the kept leaks are noted, not gaps); LEAK-10 triggered, fixed (`timedelta` and the weekday flags follow a later date: dropped, the date taken from
 the URL); LEAK-30 fixed (LDA columns dropped; unlike the keep-with-note cases of 2026-10-19, because they carry no signal and
 cannot be refitted without the texts); LEAK-24 not triggered (no share deficit in the newest weeks); the
 keyword and self-reference columns, which hold share counts read at the crawl, are kept with a note (LEAK-6), which
@@ -50,7 +50,7 @@ release holds statistics of the text, not the text.
      under 8 days older, against 0.045 (SE 0.019, 818 rows) where it is 28 days or older; the difference, +0.067 (SE
      0.083), is not distinguishable from 0.
    - Implemented: kept, with two `Potential leak, kept on purpose:` notes that name the mechanism and the measurement;
-     the fit reads `approximate`.
+     the fit reads `direct` (USE-8 as amended, Lennart, 2026-10-21: a kept leak does not make the fit approximate).
    - Alternatives: mask the traced cells (changes nothing measurable, reaches only the traceable cells, and its pattern
      of missing values would come from other rows' labels, test rows included); or drop both groups (R^2 0.155 to
      0.109; the paper's most important feature is `kw_avg_avg`).

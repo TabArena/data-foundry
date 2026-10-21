@@ -44,9 +44,9 @@ REGION (issue 1). New: `PRIMEUNIT` and `AUCGUART` start to be filled mostly for 
    - Recommendation (AI): drop. The mechanism is now measured, not suspected, which was LEAK-38's reason to keep, and
      the measured signature matches REGION's: the covariates known at the auction predict 1.2% missing for the bad
      buys and 24.9% are, a 17-fold gap that no other column's missing flag shows. Keeping it would leave two answers to the same test in the working copy.
-   - Fit: USE-8 is being amended (a weak potential leak kept on purpose no longer makes a fit approximate by itself).
-     kick's `fit_reason` named nothing but this leak, so its fit is now `direct`. It stays direct if `WheelType` is
-     dropped, since dropping two columns is not a large change to the task.
+   - Fit: `direct` either way. USE-8 was amended (Lennart, 2026-10-21): a potential leak kept on purpose, even a
+     strong one like this (ROC AUC +0.066), does not make a fit approximate. Dropping two columns is not a large change
+     to the task either.
 
 2. **`PRIMEUNIT` and `AUCGUART`: filled mostly for good buys from October 2010. Test and decide?**
    - Problem: both are about 95% missing. From October 2010 they are filled more often for good buys than for bad ones

@@ -82,7 +82,7 @@ Not built yet. The current definition gives checksum `v2:3c04ca8745d28cd94f5a9ae
 
 **Our changes to the source.** We drop 563 sales dated before the house was built (land or off-the-plan sales), blank the station or school for the sales before it opened, and set impossible floor areas and bathroom counts to missing.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Each month is predicted from earlier sales only, from a house's record and location. Three gaps remain: the data is truncated at $2.44M (dearer sales are absent), the house attributes are the site's record of January 2021 rather than at the sale, and the school rank is kept although its ranking year is unknown and may postdate the test sales (a potential leak kept on purpose, weak).
+> **Use case fit: approximate (a stand-in with a known gap).** Each month is predicted from earlier sales only, from a house's record and location. Two gaps remain: the data is truncated at $2.44M (dearer sales are absent), and the house attributes are the site's record of January 2021 rather than at the sale.
 
 ## Files in this folder
 

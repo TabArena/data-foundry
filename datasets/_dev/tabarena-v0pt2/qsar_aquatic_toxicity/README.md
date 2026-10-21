@@ -82,7 +82,7 @@ Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` 
 
 **What the test data stands for.** Random chemicals, so the test data stands for new chemicals like those measured.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The descriptors come from the structure alone, as in screening, but the authors chose these eight from a larger set by their fit to the toxicity values, which may carry information on the test chemicals into the features.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, as in screening. The authors chose these eight from a larger set by their fit to the toxicity values, which may carry information on the test chemicals into the features: a potential leak kept and noted, which does not make the fit approximate (USE-8 as amended 2026-10-21).
 
 ## Files in this folder
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa
+checksum: v2:6e66570185333d08762a49d78c7db2a50c9c65ed64301384def70442a1459442
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -22,8 +22,8 @@ data:
   n_rows: 2126
   n_features: 22
   dtypes:
-    category: 2
-    float64: 22
+    category: 3
+    float64: 21
   n_test_dataset_rows: null
 task:
   target: NSP
@@ -49,6 +49,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1285
     max: 1520
@@ -73,7 +75,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e66570185333d08762a49d78c7db2a50c9c65ed64301384def70442a1459442`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,9 +144,9 @@ Only curators run `build`, when the dataset ships.
 | task.group_labels | per_sample |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (2): `patient_id`, `NSP`
+- categorical (3): `patient_id`, `DS`, `NSP`
 - string (0): none
 - datetime (0): none
 
@@ -252,7 +254,7 @@ One group is a patient, as far as the file names identify one; its rows are segm
 | nearest neighbour in the same group | 66.6% of the rows (chance: 0.8%) |
 | label variance explained by the group | 0.50 (shuffled groups: 0.08) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -271,6 +273,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| DS | category | 0 | 0 | 2 | 0.0, 1.0 |
 | NSP | category | 0 | 0 | 3 | 1.0, 2.0, 3.0 |
 | patient_id | category | 0 | 0 | 176 | 6be4bb9797f6, 8ca98716a316, a8e224f4ea68, cbb8f049c20b, 7b2d930bb3f0, fd828194e… |
 | LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 144.0, 142.0, 132.0 |
@@ -282,7 +285,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 10.0 |
 | MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 5.2, 6.5, 9.5, 8.5, 7.2, 6.8, 5.6 |
 | DL | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| DS | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | DP | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
 | DR | float64 | 0 | 0 | 1 | 0.0 |
 | Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 83.0, 22.0, 96.0, 42.0 |
@@ -309,7 +311,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (22 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -322,7 +324,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | ALTV | 2126 | 9.84666 | 18.3969 | 0 | 91 |
 | MLTV | 2126 | 8.18763 | 5.62825 | 0 | 50.7 |
 | DL | 2126 | 1.57008 | 2.49923 | 0 | 16 |
-| DS | 2126 | 0.00329257 | 0.0572998 | 0 | 1 |
 | DP | 2126 | 0.126058 | 0.464361 | 0 | 4 |
 | DR | 2126 | 0 | 0 | 0 | 0 |
 | Width | 2126 | 70.4459 | 38.9557 | 3 | 180 |
@@ -342,6 +343,8 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| DS | 1 | 0.0 | 2119 | 99.67 |
+| DS | 2 | 1.0 | 7 | 0.33 |
 | NSP | 1 | 1.0 | 1655 | 77.85 |
 | NSP | 2 | 2.0 | 295 | 13.88 |
 | NSP | 3 | 3.0 | 176 | 8.28 |
@@ -362,4 +365,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa` |
+| stale | yes: the definition now gives checksum `v2:6e66570185333d08762a49d78c7db2a50c9c65ed64301384def70442a1459442` |

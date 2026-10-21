@@ -179,7 +179,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
   when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
-  (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md)); `"ForcedGroupedFromTemporal"` when such a
+  (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
+  `temporal` refuses it, Lennart 2026-10-21); `"ForcedGroupedFromTemporal"` when such a
   task ships grouped instead (SPLIT-8; the definition must declare a `grouping`). `"2ndTierData"` is retired
   (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as a
   finding and the fit as `approximate`.

@@ -39,6 +39,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task after the task-p
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Configuration h3-n1 is the fastest on 21 runs from 9 instance groups, 1-17 per grouped test fold. It is 1.7% of the test rows and 3.9% of a random forest's log loss. The decision of 2026-10-06 (`no_signal`, kept) stands. Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Tight, Removed_Nogoods-1, Removed_Nogoods-2.
+
 ## Reference
 
 @article{hoos2014claspfolio,

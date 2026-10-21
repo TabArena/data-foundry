@@ -706,6 +706,13 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_emotional_met",
                 "teacher_selfcare_met",
                 "teacher_social_met",
+                # features holding only 0 and 1: 0/1 flags (CLEAN-14)
+                "count_staff_unpaid_managers",
+                "pra_breadwinner",
+                "pra_letcee_club",
+                "practitioner",
+                "pri_funding_subsidy",
+                "quintile_used",
             ),
             datetime={"child_dob": "%d%b%Y"},
         )

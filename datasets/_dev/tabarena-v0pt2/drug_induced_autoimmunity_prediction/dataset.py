@@ -94,12 +94,18 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         return df[~df.duplicated(subset=df.columns.drop(self.target), keep=False)]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes()
+        # 0/1 flags (features holding only 0 and 1, plus missing values) are categorical (CLEAN-14)
+        flags = [
+            c
+            for c in df.columns.drop(self.target)
+            if pd.api.types.is_numeric_dtype(df[c]) and df[c].nunique() == 2 and df[c].dropna().isin([0, 1]).all()
+        ]
+        return FeatureTypes(categorical=flags)
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         descriptors = raw.columns.drop(["SMILES", self.target])
         shared = raw[raw.duplicated(subset=descriptors, keep=False)]
-        pair = shared.groupby(list(descriptors), sort=False, dropna=False).ngroup().rename("pair") + 1
+        pair = shared.groupby(list(descriptors), sort=False, dropna=False, observed=True).ngroup().rename("pair") + 1
         labels = shared.groupby(pair)[self.target].transform("nunique")
         pairs = (
             shared[["SMILES", self.target]]

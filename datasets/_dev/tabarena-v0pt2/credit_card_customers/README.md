@@ -73,7 +73,7 @@ Not built yet. The current definition gives checksum `v2:cb46df713e3f932ad04c57b
 
 **Our changes to the source.** We drop the masked client number and the two columns of a naive Bayes classifier fitted with the label, which the file ships.
 
-> **Use case fit: approximate (a stand-in with a known gap).** A potential leak kept on purpose: if the activity window ends at the closure, the activity describes the closing itself (ROC AUC 0.980 from the activity alone, 0.994 from all columns). The columns also show marks of generated data, and the source cannot be traced.
+> **Use case fit: approximate (a stand-in with a known gap).** A teaching case's snapshot stands in for a bank's own customers: the first source (Analyttica's LEAPS case 11) is offline, no bank, place or period is named, and the columns show marks of generated data.
 
 ## Files in this folder
 
