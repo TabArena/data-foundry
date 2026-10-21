@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -40,9 +41,9 @@ OTHER = "other"
 
 DISCOUNT_MONTHS = 3  # "history of clients' transactions during 3 months of privileged usage" (the task text)
 LABEL_MONTHS = 3  # the label covers "the next three months of usage of the product" after the period
-# The transactions end on 2018-04-02 and the competition opened on 2018-04-27 with the labels in train.csv: we keep the
-# clients whose period ends before 2018-01-01, so their three-month label window closes by 2018-03-31 (curation_comments,
-# "Cohort").
+# How the label window was placed is not published, and the newest periods' labels are off (March 2018: 24 of 36
+# churned). We keep the clients whose period ends before 2018-01-01: a three-month window after the period then closes by
+# 2018-03-31, inside the transactions (they end 2018-04-02) (curation_comments, "Cohort").
 LABELS_COMPLETE_BEFORE = "2018-01-01"
 
 
@@ -122,7 +123,8 @@ class Rosbank1(AbstractCuratedDataset):
         question=("Will a bank client stop using the bank's card in the three months after its introductory period?"),
         use_case=(
             "At the end of a client's three-month introductory period on a Rosbank card, the bank scores the risk "
-            "that the client stops using it, for example to make a retention offer; the model is refit every month."
+            "that the client stops using it, for example to make a retention offer; the model is refit, for example "
+            "every month."
         ),
         row=(
             "One client of Rosbank, a Russian bank, whose introductory period ended by December 2017, with the card "
@@ -135,7 +137,8 @@ class Rosbank1(AbstractCuratedDataset):
         known=(
             "Summaries of the client's card transactions up to the end of the period (counts, sums, means and spreads"
             " by transaction type, currency and the 97 most frequent merchant categories), the dates of the first and"
-            " last transaction, and how the client was acquired."
+            " last transaction, and the client's channel type (undocumented; constant per client, read as how the "
+            "client was acquired)."
         ),
         split=(
             "Each test window is one month of period ends (October, November, December 2017); training holds the "
@@ -144,12 +147,14 @@ class Rosbank1(AbstractCuratedDataset):
         changes=(
             "We summarise the transactions, rebuild each period's end date from the first and last transactions, and "
             "split by it, where the competition split clients at random; periods ending from January 2018 on are left"
-            " out as their outcome window was not complete."
+            " out as their outcome window may not be complete."
         ),
         fit="approximate",
         fit_reason=(
-            "The period end dates are reconstructed from the transactions, as the data has no dates, and when the "
-            "labels were drawn is not published. The test windows are small (63 to 515 clients)."
+            "How the label window was placed is not published, and the newest rows contradict 'after the period' "
+            "(clients whose period had not ended when the data stops still have full spend labels). The period end "
+            "dates are reconstructed from the transactions, as the data has no dates. The test windows are small (63 "
+            "to 515 clients) and the two newest are a thin tail of the client intake."
         ),
     )
 
@@ -185,22 +190,31 @@ class Rosbank1(AbstractCuratedDataset):
 
         - Prediction point: the end of a client's three-month grace period of Rosbank's card (the task text: "3 months of privileged usage"). Known then: the client's card transactions up to that day.
         - Task: churn, the competition's task 1, as in CoLES (Babaev et al. 2022). target_flag is 1 exactly when target_sum, the POS spend of the next three months, is positive (decision table): churn "Yes" is target_flag 0, and target_sum is dropped.
-        - Tabular framing: for this sequence data, the tabular baseline in the literature is LightGBM on hand-crafted aggregates (CoLES, Sec. 4.1.2: ROC AUC 0.825, not clearly beaten by sequence models). We build them as pytorch-lifestream configures them for this dataset (`aggregate_transactions`).
+        - Tabular framing: for this sequence data, the tabular baseline in the literature is LightGBM on hand-crafted aggregates (CoLES, Sec. 4.1.2, Table 6: ROC AUC 0.825, level with the supervised sequence model at 0.817, above CPC, RTD and SOP at 0.782 to 0.802, and below CoLES embeddings fed to LightGBM at 0.843). We build them as pytorch-lifestream configures them for this dataset (`aggregate_transactions`).
         - Features, where we deviate from that configuration: all 10 transaction categories and four currency values (rubles, euros, US dollars, "other") get their own columns, against its 7 categories and 1 currency; the 97 most frequent MCC codes plus "other", as there. A mean or standard deviation over no transactions or of one transaction is missing (the configuration writes 0).
         - The 97 MCC codes are the most frequent over all transactions, test windows included: a pipeline choice that approximates the task (a deployed model would choose from its own history), not a value computed from test rows; kept (Lennart, 2026-10-19).
-        - channel_type, the client's acquisition channel, has one value per client, so it is one categorical column (decision table).
-        - Time: the data has no period dates. Most clients transact over 80 to 92 days, so period_end, the time column, is the first transaction plus three months, or the last transaction when that is later (decision table). first_transaction and last_transaction are features. All three are dates, as POS transactions carry a date only.
-        - Cohort: the transactions end on 2 April 2018 and the competition opened with the labels on 27 April 2018, so the newest periods cannot have complete three-month labels (24 of the 36 clients whose period ends in March 2018 churned, against 35.5% for October 2017 to February 2018). We keep the periods ending before 1 January 2018, whose label window closes by 31 March 2018 (decision table). Keeping January 2018 would be right if the labels were drawn at the end of April; nothing published says when.
+        - channel_type is undocumented (the competition publishes no column descriptions); it is constant per client and read as the acquisition channel (a participant notebook, kianya/rosbank-competition, says so), so it is one categorical column (decision table).
+        - Time: the data has no period dates. Most clients transact over 80 to 92 days, so period_end, the time column, is the first transaction plus three months, or the last transaction when that is later (decision table). first_transaction and last_transaction are features. All three are dates, as POS transactions carry a date only. For the clients at first plus three months the estimate is an upper bound of the true period end (a period that started before the first transaction ends earlier), so it errs on the safe side for the gap. The transactions in the file are not in the label window: 107 of the 479 clients with a POS purchase after first plus three months still churned.
+        - Cohort: how the label window was placed is not published, and the newest labels are off: 24 of the 36 clients whose period ends in March 2018 churned, against 35.5% for October 2017 to February 2018, while 37 of the 63 clients whose period ends from April 2018 on, after the transactions stop (2 April 2018), have full spend labels that a window after their period could not hold. We keep the periods ending before 1 January 2018, whose three-month window after the period closes by 31 March 2018, inside the transactions (decision table). A window fixed in calendar time would make churn rise with cohort age; in channel type1 (two thirds of the clients) it does not (logit slope +0.006 per month, SE 0.013, with activity controls; panel review 2026-10-20), so we read the window as per client.
         - Split: temporal on period_end, with each training client's three-month label window as a gap (splits_comment; decision table).
         - Not used: test.csv.gz (no labels), PERIOD (the month of TRDATETIME) and cl_id, which carries the label (alone ROC AUC 0.728).
-        - Anomaly: amount is in the transaction's currency, so the overall amount statistics mix currencies for the 2.6% of transactions not in rubles, as in CoLES.
+        - Anomaly: amount is in the transaction's currency, so the overall amount statistics mix currencies, as in CoLES: 2.6% of transactions are not in rubles, but 1,072 clients (22.4%) have one, and the largest amounts are in Vietnamese dong and Indonesian rupiah (up to 35.8 million).
         - Duplicates: 828 transaction rows repeat another row; we count them, as POS transactions carry a date only. Two pairs of clients share all aggregates, the label and period_end, so each pair falls on one side of every split; we keep them.
-        - Note: the task probes flag `no_spread` (LightGBM leads linear by 0.045 AUC, paired standard error 0.036), a gap 3 windows cannot test; we keep the task.
+        - Note: the task probes flag `no_spread` (LightGBM leads linear by 0.017 AUC, a skill gap of 0.034 with paired standard error 0.087), a gap 3 windows cannot test; we keep the task.
     """
 
     # Task
     target = "churn"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC - Area Under the ROC Curve (task 1, churn); task 2 POS spend used RMSE",
+        reference="https://boosters.pro/api/champ/champ?champname=rosbank1 (metric: 'AUC', checked 2026-10-21)",
+        definition=(
+            "Area under the ROC curve; our label churn = target_flag 0 is the competition label flipped, and "
+            "AUC is unchanged under the flip of both label and score."
+        ),
+    )
 
     # Splits: monthly windows of the period end after a 3-month gap (the label window), down to half of the clients.
     temporal = Temporal(
@@ -213,7 +227,7 @@ class Rosbank1(AbstractCuratedDataset):
         "last whose outcome is known when it starts.",
     }
     splits_comment = """
-        A churn model is refit every month and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. A fourth window (September 2017) would train on 44% of the clients, below the 50% floor, and two-month windows would leave one window above it. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The competition split its clients at random (its unlabelled test file covers the same months); this split is stricter.
+        A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. A fourth window (September 2017) would train on 44% of the clients, below the 50% floor, and two-month windows would leave one window above it. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -296,10 +310,11 @@ class Rosbank1(AbstractCuratedDataset):
                 labels,
             ),
             Decision(
-                "Periods ending from January 2018 are dropped: their labels cannot be complete",
-                "The transactions end on 2 April 2018 and the competition opened on 27 April 2018 with the labels in "
-                "train.csv, so a three-month label window that ends after March 2018 runs past the data. March 2018 "
-                "churn shows it; periods ending from April 2018 on also lack part of their own three months.",
+                "Periods ending from January 2018 are dropped: their labels may not be complete",
+                "How the label window was placed is not published. Churn of the periods ending in March 2018 is far "
+                "above the months before, and periods ending from April 2018 on end after the transactions (2 April "
+                "2018) yet have labels. A three-month window after a period that ends in 2017 closes by 31 March 2018, "
+                "inside the transactions.",
                 cut,
             ),
             Decision(

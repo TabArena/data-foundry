@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class StudentPortuguesePerformance(AbstractCuratedDataset):
@@ -66,6 +66,12 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
     # Task
     target = "G3"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE (regression setup C)",
+        reference="Cortez & Silva 2008, Using data mining to predict secondary school student performance, FUBUTEC (UCI 320)",
+        definition="Root mean squared error of the predicted final grade G3 (0-20); the paper's classification setups use PCC instead",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "student-por.csv", sep=";")

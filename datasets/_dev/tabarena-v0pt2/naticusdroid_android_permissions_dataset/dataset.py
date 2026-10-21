@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class NaticusdroidAndroidPermissionsDataset(AbstractCuratedDataset):
@@ -71,6 +71,13 @@ class NaticusdroidAndroidPermissionsDataset(AbstractCuratedDataset):
     # Task
     target = "Malware"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Mathur et al. 2021 report accuracy, precision, recall and F1 on a balanced set with 75% duplicates; after "
+            "deduplication we ship 35% malware, so the paper's accuracy does not mean the same (MET-2). roc_auc is "
+            "the binary fallback."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/data.csv")

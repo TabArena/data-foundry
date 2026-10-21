@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607
+checksum: v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -29,7 +29,9 @@ data:
 task:
   target: LogPrice
   problem_type: regression
-  metric: rmse
+  metric: rmsle
+  metric_origin: context
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 6878
     max: 6878
@@ -62,9 +66,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `LogPrice`, scored with `rmse` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
+Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,8 +135,18 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 10,317 x 24 |
 | task.target | LogPrice |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. For an asking price the error that matters is relative to the price, so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 8 categorical, 4 string, 0 datetime</summary>
@@ -353,4 +367,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:877d67fa38ae9169847acfa5179ce61c86c580b1a0636da4225dd2d929480607` |
+| stale | yes: the definition now gives checksum `v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8` |

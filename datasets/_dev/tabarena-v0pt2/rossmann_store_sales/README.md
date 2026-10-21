@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34
+checksum: v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293
 build:
   uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
   checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
@@ -22,15 +22,17 @@ data:
   n_rows: 844392
   n_features: 15
   dtypes:
-    category: 6
+    category: 9
     datetime64[ns]: 1
     float64: 5
-    int64: 4
+    int64: 1
   n_test_dataset_rows: null
 task:
   target: Sales
   problem_type: regression
-  metric: rmse
+  metric: rmspe
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Date
@@ -44,6 +46,8 @@ splits:
   random_state: 4267
   time_horizon: 42
   time_horizon_unit: days
+  time_gap: 1
+  time_gap_unit: days
   n_train:
     min: 728478
     max: 802996
@@ -63,9 +67,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
+Regression of `Sales`, scored with `rmspe` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,14 +135,24 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 844,392 x 16 |
 | task.target | Sales |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmspe |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
 
-<details>
-<summary>Feature types: 6 categorical, 0 string, 1 datetime</summary>
+**Metric**
 
-- categorical (6): `Store`, `DayOfWeek`, `StateHoliday`, `StoreType`, `Assortment`, `PromoInterval`
+| field | value |
+|---|---|
+| name | `rmspe` (custom; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Square Percentage Error (RMSPE) |
+| reference | https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API evaluationMetric: 'Root Mean Square Percentage Error') |
+| definition | sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales |
+
+<details>
+<summary>Feature types: 9 categorical, 0 string, 1 datetime</summary>
+
+- categorical (9): `Store`, `DayOfWeek`, `StateHoliday`, `StoreType`, `Assortment`, `PromoInterval`, `Promo`, `SchoolHoliday`, `Promo2`
 - string (0): none
 - datetime (1): `Date`
 
@@ -188,7 +202,7 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance'.
 Therefore, we define the same horizon for our test splits and add one day between train/test as a planning gap.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 728,478 to 802,996 rows, test 37,044 to 40,282 rows. Prediction horizon: 42 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 728,478 to 802,996 rows, test 37,044 to 40,282 rows. Prediction horizon: 42 days. Gap between train and test: 1 days.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -213,9 +227,12 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | PromoInterval | category | 423307 | 50.13 | 3 | Jan,Apr,Jul,Oct, Feb,May,Aug,Nov, Mar,Jun,Sept,Dec |
 | Store | category | 0 | 0 | 1115 | 1097, 423, 769, 682, 494, 562, 335, 85, 733, 262 |
 | DayOfWeek | category | 0 | 0 | 7 | 6, 2, 3, 5, 1, 4, 7 |
+| Promo | category | 0 | 0 | 2 | 0, 1 |
 | StateHoliday | category | 0 | 0 | 4 | 0, a, b, c |
+| SchoolHoliday | category | 0 | 0 | 2 | 0, 1 |
 | StoreType | category | 0 | 0 | 4 | a, d, c, b |
 | Assortment | category | 0 | 0 | 3 | a, c, b |
+| Promo2 | category | 0 | 0 | 2 | 0, 1 |
 | Date | datetime64\[ns\] | 0 | 0 | 942 | 2015-06-10 00:00:00, 2015-06-30 00:00:00, 2015-06-09 00:00:00, 2015-06-08 00:00… |
 | Promo2SinceWeek | float64 | 423307 | 50.13 | 24 | 14.0, 40.0, 31.0, 10.0, 5.0, 37.0, 1.0, 13.0, 45.0, 22.0 |
 | Promo2SinceYear | float64 | 423307 | 50.13 | 7 | 2011.0, 2013.0, 2014.0, 2012.0, 2009.0, 2010.0, 2015.0 |
@@ -223,9 +240,6 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | CompetitionOpenSinceYear | float64 | 268619 | 31.81 | 23 | 2013.0, 2012.0, 2014.0, 2005.0, 2010.0, 2011.0, 2009.0, 2008.0, 2007.0, 2006.0 |
 | CompetitionDistance | float64 | 2186 | 0.26 | 654 | 250.0, 50.0, 350.0, 1200.0, 190.0, 90.0, 180.0, 330.0, 150.0, 140.0 |
 | Sales | int64 | 0 | 0 | 21734 | 5674, 5558, 5483, 6214, 6049, 5723, 5449, 5140, 5489, 5041 |
-| Promo | int64 | 0 | 0 | 2 | 0, 1 |
-| SchoolHoliday | int64 | 0 | 0 | 2 | 0, 1 |
-| Promo2 | int64 | 0 | 0 | 2 | 0, 1 |
 
 </details>
 
@@ -240,19 +254,16 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | Sales | 844392 | 6955.51 | 3104.21 | 0 | 41551 |
-| Promo | 844392 | 0.446352 | 0.497114 | 0 | 1 |
-| SchoolHoliday | 844392 | 0.19358 | 0.395103 | 0 | 1 |
 | CompetitionDistance | 842206 | 5457.98 | 7809.44 | 20 | 75860 |
 | CompetitionOpenSinceMonth | 575773 | 7.22488 | 3.21014 | 1 | 12 |
 | CompetitionOpenSinceYear | 575773 | 2008.7 | 5.97805 | 1900 | 2015 |
-| Promo2 | 844392 | 0.498684 | 0.499999 | 0 | 1 |
 | Promo2SinceWeek | 421085 | 23.2534 | 14.1006 | 1 | 50 |
 | Promo2SinceYear | 421085 | 2011.75 | 1.66096 | 2009 | 2015 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (30 rows)</summary>
+<summary>Show the table (36 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -269,10 +280,16 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | DayOfWeek | 3 | 3 | 141936 | 16.81 |
 | DayOfWeek | 4 | 5 | 138640 | 16.42 |
 | DayOfWeek | 5 | 1 | 137560 | 16.29 |
+| Promo | 1 | 0 | 467496 | 55.36 |
+| Promo | 2 | 1 | 376896 | 44.64 |
+| Promo2 | 1 | 0 | 423307 | 50.13 |
+| Promo2 | 2 | 1 | 421085 | 49.87 |
 | PromoInterval | 1 | &lt;NA> | 423307 | 50.13 |
 | PromoInterval | 2 | Jan,Apr,Jul,Oct | 242411 | 28.71 |
 | PromoInterval | 3 | Feb,May,Aug,Nov | 98005 | 11.61 |
 | PromoInterval | 4 | Mar,Jun,Sept,Dec | 80669 | 9.55 |
+| SchoolHoliday | 1 | 0 | 680935 | 80.64 |
+| SchoolHoliday | 2 | 1 | 163457 | 19.36 |
 | StateHoliday | 1 | 0 | 843482 | 99.89 |
 | StateHoliday | 2 | a | 694 | 0.08 |
 | StateHoliday | 3 | b | 145 | 0.02 |
@@ -300,4 +317,4 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a523bbfabe94a95c43a6437253a46a40e4d4f71aa3e7b309164d2971ccfcb34` |
+| stale | yes: the definition now gives checksum `v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
+checksum: v2:265db16d827553b43e49a033df1ef10e41ab1630533d20771bf06b94b4e0d739
 build:
   uuid: 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
   checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 260753
   n_features: 295
@@ -31,6 +31,8 @@ task:
   target: QuoteConversion_Flag
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: QuoteConversion_Flag
   time_on: null
@@ -44,6 +46,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 173835
     max: 173836
@@ -69,7 +73,7 @@ decisions: []
 
 Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID splits. 260,753 rows and 295 features. Source: Kaggle (2015).
 
-Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:265db16d827553b43e49a033df1ef10e41ab1630533d20771bf06b94b4e0d739`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -85,7 +89,7 @@ Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06. See [Build](#buil
 
 **What the test data stands for.** Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by date instead.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC AUC 0.965 with them, 0.915 without).
+> **Use case fit: direct (the rows, features and split mirror the use case).** Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21).
 
 ## Files in this folder
 
@@ -135,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | QuoteConversion_Flag |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC (area under the ROC curve) |
+| reference | https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation |
+| definition | Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label. |
 
 <details>
 <summary>Feature types: 27 categorical, 0 string, 1 datetime</summary>
@@ -448,3 +462,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:265db16d827553b43e49a033df1ef10e41ab1630533d20771bf06b94b4e0d739` |

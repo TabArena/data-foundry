@@ -36,6 +36,8 @@ Lennart: We can likely ignore the time impact but might need to restore the date
 
 Andrej: Fits criteria
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (with ALIFT second) in Moro, Cortez & Rita 2014, Decision Support Systems 62:22-31.
+
 ## Reference
 
 S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM'2011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.

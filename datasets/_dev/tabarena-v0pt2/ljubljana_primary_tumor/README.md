@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a
+checksum: v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef
 build:
   uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
   checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
@@ -28,6 +28,8 @@ task:
   target: class
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: class
   time_on: null
@@ -41,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 201
     max: 202
@@ -64,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | log_loss |
 | task.split_regime | iid |
 | task.stratify_on | class |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The 1986-1987 papers report accuracy only; we drop the classes with fewer than 10 rows (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback. |
 
 <details>
 <summary>Feature types: 18 categorical, 0 string, 0 datetime</summary>
@@ -381,4 +394,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:91fefed2b17ed3b7c3e7e8aa97700ac74dd39e0e58666847c689fc73766a734a` |
+| stale | yes: the definition now gives checksum `v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef` |

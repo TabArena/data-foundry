@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
+checksum: v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 28321
   n_features: 386
@@ -25,13 +25,15 @@ data:
     category: 23
     datetime64[ns]: 1
     float32: 3
-    float64: 208
-    int64: 152
+    float64: 206
+    int64: 154
   n_test_dataset_rows: null
 task:
   target: price_doc
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: timestamp
@@ -45,6 +47,8 @@ splits:
   random_state: 4267
   time_horizon: 6
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 5053
     max: 25257
@@ -68,7 +72,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -80,13 +84,13 @@ Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14. See [Build](#buil
 
 **Predicted.** The sale price per square metre of total area, on a logarithmic scale.
 
-**Known at prediction time.** The flat (areas, floor, number of floors, rooms, build year, material, condition, purchase type), its district's population, schools, facilities, ecology and distances to points of interest, and the macroeconomic indicators of the sale date.
+**Known at prediction time.** The flat (areas, floor, number of floors, rooms, build year, material, condition, purchase type), its district's population, schools, facilities, ecology and distances to points of interest, the market prices of the sale date (exchange rates, oil, stock indices) and the monthly, quarterly and yearly economic statistics of one period before it.
 
 **What the test data stands for.** Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every earlier sale, as for a model refit every half year.
 
-**Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less.
+**Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less. The economic statistics are those of the month, quarter or year before the sale, not of the sale's own period.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and the half-year windows match a model refit twice a year. Whether every macroeconomic indicator joined on the sale date was already published then is not stated.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and the half-year windows match a model refit twice a year. The economic statistics are lagged by one period because their release dates are not given; a monthly figure may still come out a few days after a sale early in the month.
 
 ## Files in this folder
 
@@ -138,6 +142,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | timestamp |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Squared Logarithmic Error (RMSLE) on price_doc |
+| reference | https://www.kaggle.com/competitions/sberbank-russian-housing-market/overview/evaluation |
+| definition | RMSE on log(price_doc / full_sq); since full_sq is known per row, log(price/sq) - log(price_hat/sq) = log(price) - log(price_hat), so this is the competition's RMSLE on the sale price up to log vs log1p (negligible at prices of 10^5 to 10^8 RUB) |
+
 <details>
 <summary>Feature types: 23 categorical, 0 string, 0 datetime</summary>
 
@@ -179,16 +193,21 @@ The first 5 of 28,321 rows of the final frame (the oldest rows: the frame is sor
 We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
 - The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
-  after the first-place solution).
+  after the first-place solution); RMSE on it is the competition's RMSLE on `price_doc` (TP-6).
 - Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
   smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
   (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
 - As TabReD, we drop sales at 1 million rubles or less or at exactly 2 or 3 million (fake low prices, by the
   first-place report often set to avoid tax), and flats with a total area of 5 m2 or less or of 5326 m2 (a
   typo for 53).
-- We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily; monthly,
-  quarterly and annual statistics change on the first day of their period, and `gdp_annual` on a 2014 sale is
-  Russia's 2013 GDP. The source does not say when each figure was published, so some may postdate the sale.
+- We join macro.csv on the sale date. Market prices (exchange rates, oil, stock indices) are daily and keep the
+  sale date's value. The monthly, quarterly and yearly statistics hold their own period's value from its first
+  day (published later; the source gives no release dates), so we read them one period before the sale, as
+  mortgage lags its macro series to their release (LEAK-10; Lennart, 2026-10-21): 20 monthly columns one
+  month back (`_lag_1m`), 5 quarterly one quarter back (`_lag_1q`) and 64 yearly one year back (`_lag_1y`).
+  `gdp_quart` already holds the previous quarter, so the model sees GDP two quarters back; `gdp_annual` and
+  `gdp_annual_growth` already hold the previous year (a 2014 sale has Russia's 2013 GDP) and are kept as
+  joined.
 - We drop two duplicated columns with the same values as other columns: "0_6_all", "7_14_all"
 - We drop the ID column as it does not provide information.
 - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
@@ -248,14 +267,10 @@ We always use 6 month of the data as test data and all prior data as training da
 | ID_bus_terminal | category | 0 | 0 | 14 | 8, 1, 9, 5, 3, 14, 4, 7, 13, 2 |
 | ecology | category | 0 | 0 | 5 | no data, poor, good, satisfactory, excellent |
 | timestamp | datetime64\[ns\] | 0 | 0 | 1158 | 2014-12-16 00:00:00, 2014-12-09 00:00:00, 2014-06-30 00:00:00, 2014-12-18 00:00… |
-| modern_education_share | float32 | 5053 | 17.84 | 3 | 93.08, 90.92, 95.4918 |
-| old_education_build_share | float32 | 5053 | 17.84 | 3 | 25.47, 23.14, 8.2517 |
-| child_on_acc_pre_school | float32 | 3692 | 13.04 | 3 | 16.765, 3.013, 7.311 |
-| provision_retail_space_sqm | float64 | 23268 | 82.16 | 2 | 794.0, 741.0 |
-| load_of_teachers_preschool_per_teacher | float64 | 15786 | 55.74 | 3 | 863.3948, 856.7305, 793.3196 |
-| theaters_viewers_per_1000_cap | float64 | 15786 | 55.74 | 3 | 627.0, 603.0, 565.0 |
-| museum_visitis_per_100_cap | float64 | 15786 | 55.74 | 3 | 1440.0, 1309.0, 1240.0 |
-| students_reg_sports_share | float64 | 15786 | 55.74 | 3 | 76.2, 67.85, 64.12 |
+| modern_education_share_lag_1y | float32 | 12535 | 44.26 | 2 | 90.92, 93.08 |
+| old_education_build_share_lag_1y | float32 | 12535 | 44.26 | 2 | 23.14, 25.47 |
+| child_on_acc_pre_school_lag_1y | float32 | 4425 | 15.62 | 4 | 3.013, 7.311, 16.765, 45.713 |
+| provision_retail_space_sqm_lag_1y | float64 | 16414 | 57.96 | 2 | 794.0, 741.0 |
 | hospital_beds_raion | float64 | 13665 | 48.25 | 79 | 540.0, 30.0, 1046.0, 2300.0, 240.0, 1084.0, 750.0, 229.0, 645.0, 1183.0 |
 | build_year | float64 | 12853 | 45.38 | 118 | 2014.0, 2015.0, 0.0, 2013.0, 1970.0, 2016.0, 1968.0, 1969.0, 1.0, 1967.0 |
 | cafe_sum_500_min_price_avg | float64 | 12687 | 44.8 | 634 | 500.0, 1000.0, 300.0, 1500.0, 750.0, 400.0, 650.0, 954.84, 600.0, 666.67 |
@@ -284,6 +299,10 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_before_1920 | float64 | 4960 | 17.51 | 29 | 0.0, 1.0, 2.0, 4.0, 13.0, 47.0, 6.0, 34.0, 23.0, 5.0 |
 | build_count_1921-1945 | float64 | 4960 | 17.51 | 47 | 0.0, 1.0, 2.0, 4.0, 20.0, 24.0, 3.0, 5.0, 299.0, 14.0 |
 | build_count_1946-1970 | float64 | 4960 | 17.51 | 100 | 7.0, 0.0, 1.0, 14.0, 40.0, 184.0, 2.0, 153.0, 439.0, 246.0 |
+| build_count_1971-1995 | float64 | 4960 | 17.51 | 92 | 10.0, 0.0, 131.0, 130.0, 93.0, 58.0, 42.0, 59.0, 176.0, 102.0 |
+| build_count_after_1995 | float64 | 4960 | 17.51 | 69 | 23.0, 0.0, 57.0, 13.0, 20.0, 176.0, 22.0, 11.0, 252.0, 33.0 |
+| cafe_sum_1500_min_price_avg | float64 | 4126 | 14.57 | 2494 | 1000.0, 500.0, 700.0, 300.0, 600.0, 716.67, 660.0, 750.0, 650.0, 833.33 |
+| cafe_sum_1500_max_price_avg | float64 | 4126 | 14.57 | 1665 | 1000.0, 1500.0, 1750.0, 1166.67, 1250.0, 500.0, 1100.0, 1208.33, 1125.0, 800.0 |
 
 (327 more rows not shown)
 
@@ -293,7 +312,7 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.72491e+17 | exponential |
+| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.99476e+17 | exponential |
 
 ### Numeric features
 
@@ -450,3 +469,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2` |

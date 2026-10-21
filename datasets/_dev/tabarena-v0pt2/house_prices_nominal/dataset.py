@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -43,6 +44,9 @@ MS_SUBCLASS_LABELS = {
     "190": "2 FAMILY CONVERSION - ALL STYLES AND AGES",
 }
 
+# `Exterior 2nd` spellings that differ from the documentation and from `Exterior 1st`.
+EXTERIOR_2ND_SPELLINGS = {"Brk Cmn": "BrkComm", "CmentBd": "CemntBd", "Wd Shng": "WdShing"}
+
 # Columns whose "NA" is a documented level ("NA No Basement", ...), the label we write for it, and the column that
 # says whether the item exists (None: the column alone says it).
 ABSENT_LEVELS = {
@@ -67,8 +71,8 @@ class HousePricesNominal(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a house in Ames, Iowa sell for?",
         use_case=(
-            "For example, a lender or a valuation service estimates the sale price of a house from the assessor's "
-            "record, with a model refit every two months on the latest sales."
+            "For example, the city assessor of Ames values residential properties from recent sales: a model "
+            "refit every two months, as new sales arrive, estimates what each house would sell for from its record."
         ),
         row=(
             "One sale of residential property in Ames, Iowa, January 2006 to June 2010, from the city assessor's "
@@ -89,8 +93,10 @@ class HousePricesNominal(AbstractCuratedDataset):
         ),
         fit="direct",
         fit_reason=(
-            "The record describes the house at the sale and the windows follow time, as for a model in use. De Cock "
-            "kept only the latest sale of a home sold twice, so the older months miss about 100 sales."
+            "The assessor's file of about 2010 describes the house at the sale: no remodel year postdates its sale "
+            "except one new house (2008, sold 2007), set to missing. Whether a grade was revised after the sale "
+            "cannot be checked. The windows follow time. De Cock kept only the latest sale of a home sold twice, so "
+            "the older months miss about 100 sales."
         ),
     )
 
@@ -134,29 +140,35 @@ class HousePricesNominal(AbstractCuratedDataset):
         - Source: we use this file rather than the record's Kaggle competition (OpenML 42165), whose 1,460 labelled rows it holds: twice the labelled rows, values as published.
         - Anomaly: De Cock kept only the latest sale of a home sold more than once (p. 4), so the older months miss about 100 sales.
         - We drop the 8 sales of July 2010: the extract cut the month (decision table).
-        - We drop `Order` (the file's row number) and `PID` (the parcel number, unique per row).
+        - We drop `Order` (the file's row number) and `PID` (the parcel number). Its block prefix, a location, adds nothing as a feature: LightGBM's RMSE changes by -0.0005 (SE 0.0005) with the block and -0.0001 (SE 0.0007) with the section (13 windows, 3 seeds).
         - `Yr Sold` and `Mo Sold` become `Month Sold`, the month of the sale and the time column (the file gives no day).
         - In 14 columns "NA" is a documented level for an absent item ("NA No Basement", ...). We write it out ("No basement", ...); empty fields are the missing values. Where the item exists (two houses with a detached garage), "NA" is missing.
-        - `MS SubClass` codes ("020", ...) become the documentation's labels. We strip the trailing blank of `Sale Type` "WD ".
+        - `MS SubClass` codes ("020", ...) become the documentation's labels. We strip the trailing blank of `Sale Type` "WD ". `Exterior 2nd` spells three materials unlike the documentation and `Exterior 1st` (`Brk Cmn`, `CmentBd`, `Wd Shng`, 225 rows); we use the documentation's codes `BrkComm`, `CemntBd`, `WdShing`.
         - `Garage Yr Blt` = 2207 (a house built in 2006 and sold new in 2007) is a typo; we set it to missing.
-        - The 23 nominal and 21 text-coded ordinal variables are categorical with the source's codes, as in OpenML's house_prices_nominal; the rest is numeric. Total and part areas are kept as published.
-        - The target is the natural log of `SalePrice`, renamed to `log_SalePrice`; RMSE on it is the competition's metric.
-        - We drop De Cock's three "true outliers" (p. 4), partial sales of new houses over 4,000 sq ft, and keep his two other houses over 4,000 sq ft (decision table). The three would only train, yet without them the task probe's linear model goes from RMSE 0.133 to 0.124.
-        - The records describe the house at the sale: no house built two or more years before its sale has a remodel year after it.
+        - The 23 nominal and 21 text-coded ordinal variables are categorical and keep the source's codes, apart from the relabelling above; the rest is numeric. Total and part areas are kept as published.
+        - The target is the natural log of `SalePrice`, renamed to `log_SalePrice`, the scale the competition scored on.
+        - CLEAN-11 as amended (Lennart, 2026-10-21: a row whose target the source names as not the task's quantity may leave, with the source's words): we drop De Cock's three "true outliers" (p. 4), partial sales of new houses over 4,000 sq ft that "likely don't represent actual market values" ($28-$40 per sq ft against a median of $150 for partial sales), and keep his two other houses over 4,000 sq ft (decision table). The three would only train, yet without them the task probe's linear model goes from RMSE 0.125 to 0.119 (13 windows). It was the third drop of target-outlier rows, after mercedes_benz_greener_manufacturing and qsar_tid_11, and prompted that amendment.
+        - The records describe the house at the sale: no house built two or more years before its sale has a remodel year after it. One new house (built 2007, sold in June 2007) shows a remodel in 2008, a value from after the sale, and one house shows a remodel in 2001 before it was built in 2002, impossible by the documentation; both remodel years become missing. Whether the grades were revised after a sale cannot be checked from the file.
         - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.
         - Note: allocation sales ("Alloca") and adjoining-land purchases ("AdjLand") come mostly in blocks of neighbouring parcels sold in one month, so a block shares a window; kept, with `Sale Condition` as a feature.
         - No duplicate rows. Two pairs of neighbouring parcels share every feature and sold in one month at different prices; kept.
-        - Note: the record's `Trivial` marker does not hold: `Overall Qual` alone reaches R² 0.682 and De Cock's two-variable model 0.766, against 0.912 for LightGBM.
+        - Note: the record's `Trivial` marker does not hold: `Overall Qual` alone reaches R² 0.682 in the task probe (13 windows) and De Cock's two-variable model 0.766, against 0.911 for the probe's linear model and 0.900 for its LightGBM.
     """
 
     # Task
     target = "log_SalePrice"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE between the logarithm of the predicted and the observed sale price",
+        reference="https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview/evaluation",
+        definition="RMSE on log_SalePrice (= RMSE of log predicted vs log observed SalePrice, RMSLE-like on the raw price).",
+    )
 
     # Splits: two-month calendar windows down to half of the rows for training (13 windows of 46-191 sales).
     temporal = Temporal(on="Month Sold", splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5))
     splits_comment = """
-        A price model refit every two months predicts the sales of the next two months: 13 test windows of two calendar months, from May-June 2010 back to May-June 2008, newest first, each trained on all earlier sales. The windows stop where the training side would fall below half of the rows (a March-April 2008 window would train on 47% of them). An IID task of this size would get 10 x 3 splits; monthly windows would hold 19-112 sales, so we use two months (46-191 sales per window). A price is known once the sale is recorded, so each window trains on every earlier month without a gap. A model used earlier, at the purchase agreement one or two months before the sale, would need a gap of that length; over the 13 windows it changes LightGBM's RMSE by +0.0006 (SE 0.0010) for one month and +0.0026 (SE 0.0013) for two.
+        A price model refit every two months predicts the sales of the next two months: 13 test windows of two calendar months, from May-June 2010 back to May-June 2008, newest first, each trained on all earlier sales. The windows stop where the training side would fall below half of the rows (a March-April 2008 window would train on 47% of them). An IID task of this size would get 10 x 3 splits; monthly windows would hold 19-112 sales, so we use two months (46-191 sales per window). Each window trains on every earlier month without a gap. Sales reach the file with a delay: the extract's last full month, June 2010, holds 82 sales against 97-112 in the Junes of 2006-2009, about 78% of a usual June. Its 73 normal sales show no price selection (mean residual -0.001 of a 500-tree LightGBM), and June 2010 is only ever tested, never trained on. A one-month gap changes LightGBM's RMSE by +0.0004 to +0.0010 and a two-month gap by +0.0016 to +0.0026 (500-tree LightGBM, 3 seeds, 13 windows), within noise.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -198,6 +210,13 @@ class HousePricesNominal(AbstractCuratedDataset):
         typo = df["Garage Yr Blt"] > df["Yr Sold"].max()
         assert typo.sum() == 1, "expected one garage year after the data end"
         df.loc[typo, "Garage Yr Blt"] = np.nan
+        # Remodel years that cannot hold at the sale: one after the sale (a new house sold in 2007, remodelled 2008)
+        # and one before the construction (remodelled 2001, built 2002).
+        bad_remodel = (df["Year Remod/Add"] > df["Yr Sold"]) | (df["Year Remod/Add"] < df["Year Built"])
+        assert bad_remodel.sum() == 2, "expected two impossible remodel years"
+        df["Year Remod/Add"] = df["Year Remod/Add"].mask(bad_remodel)
+        # `Exterior 2nd` spells three materials unlike the documentation and `Exterior 1st`.
+        df["Exterior 2nd"] = df["Exterior 2nd"].replace(EXTERIOR_2ND_SPELLINGS)
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"SalePrice": "log_SalePrice"})
         df["log_SalePrice"] = np.log(df["log_SalePrice"])

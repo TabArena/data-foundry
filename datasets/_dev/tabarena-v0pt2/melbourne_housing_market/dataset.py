@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -48,8 +49,27 @@ AGENT_SPELLING = {
 # The property types as words (data card: "h - house,cottage,villa, semi,terrace; u - unit, duplex; t - townhouse").
 TYPE_LABELS = {"h": "house", "u": "unit", "t": "townhouse"}
 
-# Attributes the uploader scraped from realestate.com.au after the sale (forum thread 53664, step 4).
+# Attributes the uploader scraped from realestate.com.au after the sale (forum thread 53664, step 4). The coordinates
+# come from the same lookup (4,760 of the 4,915 sales without these attributes also lack them); they stay for every
+# row, as a location does not change.
 SCRAPED_ATTRIBUTES = ["Bedroom2", "Bathroom", "Car", "Landsize", "BuildingArea", "YearBuilt"]
+
+# The uploader looked the attributes up for all earlier sales at once, by 10 April 2017 (thread 30748: on 28 March
+# "It may be difficult", on 10 April "I've added some more info to the dataset including landsize, bedroom, bathroom,
+# carspace"); the sales from the sheet of 22 April 2017 on were looked up by the weekly runs. The six attributes of
+# the sales before this lookup are blanked (LEAK-7, LEAK-10).
+BATCH_LOOKUP = pd.Timestamp("2017-04-10")
+
+# The uploader's suburb lookups (forum thread 53664, step 5): one value per suburb. Two rows lack them (the "Fawkner
+# Lot" row and one Footscray row) and get their suburb's values.
+SUBURB_LOOKUPS = ["Postcode", "CouncilArea", "Regionname", "Propertycount"]
+ROWS_WITHOUT_LOOKUP = 2
+
+# Building areas that cannot be: below 10 m², above 1,000 m² where the area also exceeds the lot or 200 m² per room,
+# and a house's area equal to its land size (the lot copied into the field).
+MIN_BUILDING_AREA = 10
+MAX_BUILDING_AREA = 1000
+MAX_AREA_PER_ROOM = 200
 
 # Melbourne was founded in 1835: an earlier construction year is a data error.
 FOUNDING_YEAR = 1835
@@ -97,10 +117,11 @@ def _result_key(df: pd.DataFrame, columns: list[str]) -> pd.Series:
 
 class MelbourneHousingMarket(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="At what price will a Melbourne property listed for auction sell?",
+        question="Before the auction, at what price will a Melbourne property sell, for a property that sells?",
         use_case=(
-            "When a property is listed for auction, a price model refit on all earlier sales estimates its sale "
-            "price, for example for a buyer or an agent setting expectations."
+            "Before the auction of a Melbourne property, a price model fitted on all earlier sales estimates the "
+            "price it sells for, for example for a buyer or an agent setting expectations. The task covers the "
+            "properties that sell: a property passed in at auction has no sale price."
         ),
         row=(
             "One sale of a property listed for auction in Melbourne, January 2016 to March 2018, from the weekly "
@@ -108,36 +129,40 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         ),
         predicted="The sale price, as the natural log of Australian dollars.",
         known=(
-            "The address, suburb, postcode, council area, region, coordinates, distance to the centre and the "
-            "suburb's number of properties; the property type, rooms, agent and auction date; and six attributes "
-            "scraped from realestate.com.au (bedrooms, bathrooms, car spaces, land and building size, year built)."
+            "The address, suburb, postcode, council area, region, distance to the centre and the suburb's number of "
+            "properties; the property type, rooms, agent and auction date; and, from a lookup on realestate.com.au "
+            "made after the sale, the coordinates and six attributes (bedrooms, bathrooms, car spaces, land and "
+            "building size, year built), blank for the sales before April 2017, looked up months later."
         ),
         split=(
             "Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all"
-            " earlier sales."
+            " earlier sales and predicts up to 7 calendar weeks ahead."
         ),
         changes=(
             "We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after "
-            "the auction, and test on later weekly sheets instead of random sales."
+            "the auction, blank the attributes looked up months after the sale, and test on later weekly sheets "
+            "instead of random sales."
         ),
         fit="direct",
         fit_reason=(
-            "The listing and the earlier sales are what a price model has before the auction, and later sheets stand "
-            "for the coming auctions. The scraped attributes were looked up after the sale; blanking them for the 495"
-            " sales of 2016 whose bedroom count differs from the sheet changes the error by 0.0004."
+            "The listing and the earlier sales are what a price model has before the auction, the rows are the "
+            "properties that sell, as the use case names, and later sheets stand for the coming auctions. The "
+            "scraped attributes were looked up days or weeks after the sale (the weekly runs); those of the earlier "
+            "sales, looked up months later, are blanked."
         ),
     )
 
     # Dataset
     unique_name = "melbourne_housing_market"
-    year = "2018"
+    year = "2018"  # the snapshot we pin (version 27); the source grew with each version from 2017 to 2018
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market"
     license = "CC BY-NC-SA 4.0"
     data_tags = ("Spatial",)
     download_description = """
-        We download the Kaggle dataset anthonypino/melbourne-housing-market (last updated 2018-10-14). It holds two
+        We download version 27 of the Kaggle dataset anthonypino/melbourne-housing-market (2018-10-14, the current
+        one; the md5s below identify its files). It holds two
         files: Melbourne_housing_FULL.csv (34,857 rows, 21 columns; md5 06cc531612b8261e0c594c5085e3dc30), which the
         definition uses, and MELBOURNE_HOUSE_PRICES_LESS.csv (63,023 rows, 13 columns; md5
         cc467c28044d01770d8784cf287d1b6e), read only for the evidence of two cleaning steps.
@@ -159,16 +184,17 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
     curation_comments = """
         We start with Melbourne_housing_FULL.csv of the Kaggle dataset anthonypino/melbourne-housing-market: results of properties scheduled for auction in Melbourne (January 2016 to March 2018) from the weekly result sheets of Domain.com.au, with attributes scraped from realestate.com.au.
 
-        - Prediction point: a property is listed for auction, and a price model refit on all earlier sales predicts its sale price from the listing and the auction date.
-        - Version: the dataset's other file, MELBOURNE_HOUSE_PRICES_LESS.csv (read only for the decision tables), holds more results but not the scraped attributes. We use the full file for them: the RMSE in log price is 0.183 with them and 0.211 with the other file's columns only (LightGBM with fixed parameters on the shipped windows).
-        - Coverage: before 27 May 2017 the full file holds only the inner suburbs (decision table); all test windows lie later. We keep the earlier rows: training only on the sales from 27 May 2017 raises the RMSE from 0.183 to 0.188.
+        - Prediction point: before the auction, for a property that sells. A price model fitted on all earlier sales predicts the sale price from the listing and the auction date; a property passed in has no sale price and is not in the task.
+        - Version: the dataset's other file, MELBOURNE_HOUSE_PRICES_LESS.csv (read only for the decision tables), holds more results but not the scraped attributes. We use the full file for them: the RMSE in log price is 0.182 with them, 0.200 without them and 0.206 with the other file's columns only (LightGBM with fixed parameters on the shipped windows, 3 seeds; worse in 9 of 9 windows; measured before the blanking of the April 2017 lookup, which adds 0.001).
+        - Coverage: before 27 May 2017 the full file holds only the inner suburbs (decision table); all test windows lie later. We keep the earlier rows: training only on the sales from 27 May 2017 raises the RMSE from 0.182 to 0.185.
         - We keep the results with a sale price (S, SP, SA) and drop the passed-in (PI) and vendor-bid (VB) results, whose price is the highest or the vendor's bid (data card; decision table). We then drop Method, as the result of the auction is known only after it.
         - The 787 results dated 6 January 2018 are the sheet of 16 December 2017, read again in the holiday break (decision table); we date them 16 December 2017.
         - Repeated reports within 60 days: a sale reported again at the same price keeps its first report, and an address reported at two prices loses both reports. Addresses sold twice 63-679 days apart stay, as the earlier sale is history under the temporal split.
-        - The scraped attributes were taken after the sale: six sales of 2016 show a construction year of 2017 or 2018, so we set all six scraped attributes of these rows to missing. Other late lookups stay: blanking the scraped values of the 495 sales of 2016 whose Bedroom2 differs from the sheet's Rooms changes the RMSE by +0.0004.
+        - Attributes looked up after the sale (LEAK-7, LEAK-10; Lennart, 2026-10-21): the six attributes from realestate.com.au (Bedroom2, Bathroom, Car, Landsize, BuildingArea, YearBuilt) and the coordinates were looked up after the sale (forum thread 53664, step 4). The sales up to the sheet of 8 April 2017 were looked up at once, by 10 April 2017 (thread 30748: "It may be difficult" on 28 March, "I've added some more info to the dataset including landsize, bedroom, bathroom, carspace" on 10 April), up to 15 months after the sale; from the sheet of 22 April 2017 on, the uploader's weekly runs looked them up. We blank the six attributes of the 7,578 sales before 10 April 2017 (6,065 had them), so a missing value follows the date, not a change to the house. Bedroom2 equals Rooms in 84-88% of the sales of each month from April to September 2016, against 99.2-100% of each month from November 2016 on and 98.9-100% of each test window; the September 2017 snapshot holds the same values for the 2,728 test rows up to 23 September 2017. Blanking raises the RMSE by 0.0011 to 0.0016 over 3 seeds (mean 0.1813 to 0.1826, 6-7 of 9 windows worse; LightGBM with fixed parameters). A sale with a construction year after its sale year (a later building; six sales of 2016) also loses the six. The test rows keep the values of the weekly runs, recorded days or weeks after the sale; only Bedroom2 is checked against a value from the sale. The coordinates stay for every row, as a location does not change.
         - Impossible values to missing: YearBuilt before 1835, the founding of Melbourne, and BuildingArea, Bathroom and Bedroom2 of 0. Landsize 0 stays, as most of these rows are units without land of their own.
-        - Anomaly: 92 sales give a BuildingArea of 1-29 square metres; kept.
-        - Anomaly: the uploader's processing changed with the sheet of 27 May 2017, and Distance differs before and after for 140 of the 142 suburbs in both periods. Kept: setting each suburb's Distance to its later value changes the RMSE by -0.0004.
+        - BuildingArea to missing where it cannot be (86 of 8,285 values): below 10 square metres (47), above 1,000 where it also exceeds the lot or 200 per room (7), and a house's area equal to its land size (32). Anomaly: 45 values of 10-29 may be in squares (9.29 square metres, an Australian unit); circumstantial, kept.
+        - One Distance per suburb: the uploader's suburb table changed with the sheet of 27 May 2017 (140 of the 142 suburbs in both periods get a new value, Airport West 13.5 to 10.4 km), so each suburb gets the later value, the one every test window uses. The two rows without a suburb lookup (the "Fawkner Lot" row and one Footscray row) get their suburb's postcode, council area, region and property count.
+        - Anomaly: 11 sheet dates (1,907 sales) are not a Saturday: nine lie 1-3 days after one, two are Thursdays (28 January and 4 February 2016); the other file has the same dates. Kept, as the windows count sheets, not days.
         - Spelling variants of a suburb or agency get the file's most frequent spelling.
         - Renamed: SellerG to Agent, Lattitude and Longtitude to Latitude and Longitude. The Type codes become the data card's words (house, unit, townhouse). Postcode is a category, Address text and Date a date. The target is log_price, the natural log of the price in Australian dollars.
         - Note: melbourne_housing_snapshot is a September 2017 subset of this file.
@@ -177,6 +203,11 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
     # Task
     target = "log_price"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A Kaggle dataset without a task or metric. For a sale price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
+    )
 
     # Splits: 9 windows of 3 weekly result sheets (the 3 x 3 an IID task of this size would get).
     temporal = Temporal(
@@ -186,7 +217,7 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         horizon_unit="weeks",
     )
     splits_comment = """
-        A price model refit after every three weekly result sheets predicts the sales of the next three: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550.
+        Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as house_prices_nominal did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
@@ -201,13 +232,27 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         # A sale reported twice: keep the first report; drop both reports when their prices differ.
         flags = _repeated_reports(df)
         df = df[~(flags["again"] | flags["conflict"])]
-        # The scraped attributes of a building finished after the sale describe a later building.
-        later_building = df["YearBuilt"] > df["Date"].dt.year
-        df.loc[later_building, SCRAPED_ATTRIBUTES] = np.nan
+        # One Distance per suburb: the table the file uses from 27 May 2017, in every test window.
+        later_table = df[df["Date"] >= FULL_COVERAGE_FROM].groupby("Suburb")["Distance"].first()
+        df["Distance"] = df["Suburb"].map(later_table)
+        assert df["Distance"].notna().all(), "every suburb has a Distance from 27 May 2017 on"
+        # The two rows without a suburb lookup get their suburb's values.
+        without_lookup = df[SUBURB_LOOKUPS].isna().any(axis=1)
+        assert without_lookup.sum() == ROWS_WITHOUT_LOOKUP, "expected the Fawkner Lot and the Footscray row"
+        for col in SUBURB_LOOKUPS:
+            df[col] = df[col].fillna(df.groupby("Suburb")[col].transform("first"))
+        # The scraped attributes of the sales looked up in the batch of April 2017, months after the sale, and of a
+        # building finished after the sale (a later building).
+        looked_up_late = (df["Date"] < BATCH_LOOKUP) | (df["YearBuilt"] > df["Date"].dt.year)
+        df.loc[looked_up_late, SCRAPED_ATTRIBUTES] = np.nan
         # Impossible values that stand for missing ones.
         df.loc[df["YearBuilt"] < FOUNDING_YEAR, "YearBuilt"] = np.nan
         for col in ("BuildingArea", "Bathroom", "Bedroom2"):
             df.loc[df[col] == 0, col] = np.nan
+        area = df["BuildingArea"]
+        too_large = (area > MAX_BUILDING_AREA) & ((area > df["Landsize"]) | (area / df["Rooms"] > MAX_AREA_PER_ROOM))
+        lot_copied = (df["Type"] == "h") & (area == df["Landsize"])
+        df.loc[(area < MIN_BUILDING_AREA) | too_large | lot_copied, "BuildingArea"] = np.nan
         # Readable names and labels.
         df["Type"] = df["Type"].map(TYPE_LABELS)
         df["Postcode"] = df["Postcode"].astype("Int64").astype("string")

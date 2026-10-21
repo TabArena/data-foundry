@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""
@@ -49,6 +49,7 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/mahreen/sato2015"
     license = "CC0-1.0"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the Kaggle dataset mahreen/sato2015, uploaded on 2017-10-11 by the Kaggle user mahreen (OpenML
         lists the creator as MAHREENAHMED), whose data card cites the paper that introduced the data. It holds one
@@ -78,6 +79,7 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
         - Potential leak, kept on purpose (Lennart, 2026-10-15): this task may be problematic. When the churn was observed is not documented; neither paper says (IntelliSys 2017, Sec. III; Neural Computing and Applications 2020, Sec. 3.1). If the churners left inside August-September, the two months' totals end at the outcome and a model detects leaving instead of predicting it, the reason iranian_churn was retired. We keep it for now and read the churn as after the window: the near-inactive subscribers are almost all churners, but a random forest reaches ROC AUC 0.805 on those with more than 5 calls (0.815 on all). Revisit if the authors or the operator date the churn.
         - Cohort: 1,000 churners and 1,000 active subscribers by design, so the 50% base rate is artificial; ROC AUC, the metric here, does not depend on it.
         - IID split: each row is a different subscriber over the same two months; the file holds no time index or id, and no two rows share a feature vector.
+        - The split is forced (ForcedIIDFromTemporal, SPLIT-8): the operator would train on subscribers of an earlier window, whose churn is known, and score the next, but the release holds one window of two usage months. A dated earlier window would test whether a model still ranks churners after usage and the network mix shift (the September move to ufone below); the cost cannot be measured here. Recover further windows if the authors release them.
         - Target: Class renamed churn_status (Churned, Active).
         - aug_user_type, sep_user_type (2G, 3G, Other), aug_fav_a and sep_fav_a (the other network called most in each month) are categorical; the other nine columns stay numeric.
         - Anomaly: Aggregate_ONNET_REV plus Aggregate_OFFNET_REV is a median 22 times Aggregate_Total_Rev, so their unit is not rupees and is not documented; kept as published. Every complaint count is at least 1 (an offset or the cohort; kept).
@@ -92,6 +94,13 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
     # Task
     target = "churn_status"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The first publication (closed access, abstract elided) could not be read; no metric "
+            "verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close"
+            " in spirit, but AUC is insensitive to the artificial base rate as the curation notes say."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)

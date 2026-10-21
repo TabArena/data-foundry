@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 
 class LendingClub(AbstractCuratedDataset):
@@ -85,6 +93,14 @@ class LendingClub(AbstractCuratedDataset):
     # Task
     target = "Default"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test"
+            " AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for "
+            "approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback"
+            " (the paper's tested metric)."
+        ),
+    )
 
     # Splits
     splits_comment = """
@@ -95,6 +111,13 @@ class LendingClub(AbstractCuratedDataset):
         all loans issued before the quarter as training data. The outcome of a loan issued shortly before a
         window was only known later (by 2018), so the train side holds labels a deployed model would not have
         had yet; a gap of a full 36-month term would remove this but leave too little data.
+
+        Exception to SPLIT-10 (2026-10-21, Lennart): a loan's outcome is known only when it ends, up to 36 months after
+        issue, and the data has no outcome dates; a 36-month gap leaves 5-9% of the rows for training in the three
+        windows and a 12-month gap 33-46%, below the 50% floor (even a 6-month gap leaves 46% for the oldest window).
+        Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that tell a
+        test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
+        Tensions).
     """
     temporal = Temporal(
         on="issue_d",

@@ -26,9 +26,9 @@ Two modes:
 |---|---|
 | all | [principles.md](../knowledge-curation/references/principles.md): rank, strengths, the remedy ladder, the judgment record |
 | 0 | [records.md](../knowledge-data-foundry/references/records.md) (claims, pointers); for a batch [agent_runs.md](../knowledge-data-foundry/references/agent_runs.md) |
-| 1 | [use_case.md](../knowledge-curation/references/use_case.md), [provenance.md](../knowledge-curation/references/provenance.md) |
+| 1 | [use_case.md](../knowledge-curation/references/use_case.md), [provenance.md](../knowledge-curation/references/provenance.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-1 to MET-3) |
 | 1-3 | [definitions.md](../knowledge-data-foundry/references/definitions.md): the folder, the class, the field mapping, the recipe, the split declarations, the reference definitions |
-| 3 | [cleaning_features.md](../knowledge-curation/references/cleaning_features.md), [splits.md](../knowledge-curation/references/splits.md) |
+| 3 | [cleaning_features.md](../knowledge-curation/references/cleaning_features.md), [splits.md](../knowledge-curation/references/splits.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-11 to MET-13) and definitions.md, "Metrics" |
 | 5 | [leak_checks.md](../knowledge-curation/references/leak_checks.md), [task_probes.md](../knowledge-curation/references/task_probes.md), [evidence.md](../knowledge-curation/references/evidence.md) (reading a probe), [checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md) |
 | 6 | [verification.md](../knowledge-curation/references/verification.md) |
 | 7 | [review_panel.md](references/review_panel.md) |
@@ -67,6 +67,15 @@ when, the decision it informs, what one row is, what is predicted and what is kn
 the first `curation_comments` bullet; every later choice is checked against it. Then map the fields (definitions.md,
 "Field mapping"); for a grouped task note what one real-world prediction is and what is known about a new group.
 
+Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
+tab or the API's `evaluationMetric`, Zindi, DrivenData, a challenge page), the task description, the evaluation section
+of the paper that defined the task (which may be later than the data). Start from the record's `Metric:` screening
+line. Decide by MET-4 to MET-10 whether to keep it: a competition's metric, yes; a paper's only when it is one
+deliberate choice; a threshold metric only with the threshold, k or cost matrix the source fixes. Then check on the
+data that it fits (MET-2: its unit exists, every input it needs ships and the test folds hold it, the task still means
+what the source's meant) and that the target is on the scale the source scored (MET-3). Note where you looked, for the
+reason of a fallback.
+
 ## Step 2: Scaffold
 
 Read the closest reference definition in full (definitions.md, "Reference definitions"), then:
@@ -86,8 +95,19 @@ domain and source from the record.
    `_feature_types(self, df)` for the dtypes.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
    saying why this window (and any gap, sub-sampling or trimming).
-5. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug.
-6. `_decisions` and `_extra_checks` only when there is something to show or test.
+5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
+   `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
+   which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
+   for a standard metric, a general one for a custom metric (MET-12). Every column the metric reads (a group, a time,
+   a weight) stays in the frame and is declared in `scoring_columns = (ScoringColumn(column=..., role=..., used_by=...,
+   description=...),)`; it is never a feature. A custom metric that is not yet in `METRICS` is added to
+   `src/data_foundry/v2/metrics.py` in the same change (MET-13, definitions.md, "Metrics"): the fastest well-tested
+   implementation (scikit-learn or scipy, otherwise vectorised numpy; for a competition whose official code is slow,
+   look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
+   `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
+   on 1M rows. Never `Metric.local` in the working copy.
+6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug.
+7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
 Leave `explore.ipynb` as the template made it; it is the curator's space. Then point the record at the definition:
 `.venv/bin/python -m data_foundry.curation.cli sync-notebooks` (`--check` must stay clean).
@@ -120,7 +140,10 @@ task-probe flag is answered by the rules of [task_probes.md](../knowledge-curati
 ## Step 6: The checklist
 
 Run every check of [verification.md](../knowledge-curation/references/verification.md) marked "add", in its rank order,
-with evidence and the rule IDs. Fix what can be fixed now (re-run `dataset check` after each fix); everything else
+with evidence and the rule IDs. The "Metric" row checks the declared spec against the source: open the `reference`
+and confirm it names this metric (the `original`) with these params; for a fallback, that the reason says where we
+looked; that the `task_metric_*` checks are clean (the metric computes on every fold, its inputs are scoring columns,
+not features); and that a custom metric's tests against the official code pass. Fix what can be fixed now (re-run `dataset check` after each fix); everything else
 becomes a draft issue for step 8.
 
 ## Step 7: The review panel

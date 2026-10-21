@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa
+checksum: v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -29,6 +29,8 @@ task:
   target: NSP
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: NSP
   time_on: null
@@ -49,6 +51,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1285
     max: 1520
@@ -73,7 +77,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,6 +144,15 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | NSP |
 | task.group_on | patient_id |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | UCI page defines no task metric; the SisPorto 2.0 paper describes the analysis program and expert agreement, not a prediction benchmark. |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
@@ -252,7 +265,7 @@ One group is a patient, as far as the file names identify one; its rows are segm
 | nearest neighbour in the same group | 66.6% of the rows (chance: 0.8%) |
 | label variance explained by the group | 0.50 (shuffled groups: 0.08) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -362,4 +375,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a9fb562907169f1db8a0efd69675084dc02d134aca2d212f4598b5b53bfba1aa` |
+| stale | yes: the definition now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f` |

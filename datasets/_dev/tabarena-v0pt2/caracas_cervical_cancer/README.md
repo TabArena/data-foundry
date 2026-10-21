@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: caracas_cervical_cancer
 container_format: 2
-checksum: v2:0470a3b99e960404e537839a4d5169fcf6fbaac7fb604e5db662d4265e16a516
+checksum: v2:0dbdec862dcdd2e7332637df02afb7283a8e35fca519a4d78750754304e6afd2
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: biopsy
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: biopsy
   time_on: null
@@ -30,6 +32,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 500
     max: 500
@@ -59,7 +63,7 @@ decisions:
 
 Binary classification of `biopsy`, scored with `roc_auc` on IID splits. 750 rows and 30 features. Source: UCI (2017).
 
-Not built yet. The current definition gives checksum `v2:0470a3b99e960404e537839a4d5169fcf6fbaac7fb604e5db662d4265e16a516`.
+Not built yet. The current definition gives checksum `v2:0dbdec862dcdd2e7332637df02afb7283a8e35fca519a4d78750754304e6afd2`.
 
 ## In brief
 
@@ -130,6 +134,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | biopsy |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC (area under the ROC curve) |
+| reference | Fernandes, Chicco, Cardoso & Fernandes 2018, 'Supervised deep learning embeddings for the prediction of cervical cancer diagnosis', PeerJ Computer Science 4:e154, doi:10.7717/peerj-cs.154 (abstract: 'top AUC ~0.69' for the biopsy); first use Fernandes, Cardoso & Fernandes, IbPRIA 2017, doi:10.1007/978-3-319-58838-4_27 |
+| definition | ROC AUC of the predicted probability of a positive biopsy |
 
 <details>
 <summary>Feature types: 19 categorical, 0 string, 0 datetime</summary>

@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -37,11 +38,11 @@ class Kick(AbstractCuratedDataset):
             "We split by purchase date instead of the competition's random split, in which both sides cover the same "
             "two years."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "Everything else is known at the auction, but a missing wheel type marks 25% of the bad buys and 1.5% of "
-            "the others and may be filled in after a car is returned. It is kept as the company released it (ROC AUC "
-            "0.757 with it, 0.691 without)."
+            "The cars, the features known at the auction and the split by purchase date mirror the dealer's decision. "
+            "A missing wheel type, which may be filled in after a car is returned, is a potential leak kept as the "
+            "company released it and named in the notes."
         ),
     )
 
@@ -79,6 +80,12 @@ class Kick(AbstractCuratedDataset):
     # Task
     target = "IsBadBuy"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Gini index (Kaggle normalized Gini)",
+        reference="https://www.kaggle.com/competitions/DontGetKicked/overview/evaluation",
+        definition="Normalized Gini = 2 x ROC AUC - 1 for a binary target; ranks models identically to ROC AUC.",
+    )
 
     # Splits: 9 equal windows of purchase dates (the 3x3 an IID dataset of this size would get), keeping at
     # least half of all dates for training.
@@ -117,6 +124,7 @@ class Kick(AbstractCuratedDataset):
                 "Model",
                 "VNST",
                 "IsBadBuy",
+                "IsOnlineSale",  # a 0/1 flag (CLEAN-14)
             ),
             datetime=("PurchDate",),
         )

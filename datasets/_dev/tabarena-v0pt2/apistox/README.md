@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
+checksum: v2:738217c88897e0e8eb20604a07265dafeab73b11c55889442eb6bcca6f54de11
 build:
   uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
   checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
@@ -17,19 +17,21 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1035
   n_features: 204
   dtypes:
-    category: 1
-    float64: 203
+    category: 5
+    float64: 199
     int64: 1
   n_test_dataset_rows: null
 task:
   target: toxic_to_bees
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: toxic_to_bees
   time_on: first_publication_year
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: 10
   time_horizon_unit: years
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 584
     max: 981
@@ -67,7 +71,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 204 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14. See [Build](#build).
+Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:738217c88897e0e8eb20604a07265dafeab73b11c55889442eb6bcca6f54de11`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | Other: https://doi.org/10.5281/zenodo.11062076 |
 | year | 2024 |
-| domain | biology & life sciences |
+| domain | chemistry & material science |
 | license | CC BY-NC 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | adamczyk2025apistox |
@@ -141,10 +145,19 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | toxic_to_bees |
 | task.time_on | first_publication_year |
 
-<details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+**Metric**
 
-- categorical (1): `toxic_to_bees`
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the binary fallback and the paper's threshold-free metric. |
+
+<details>
+<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
+
+- categorical (5): `herbicide`, `fungicide`, `insecticide`, `other_agrochemical`, `toxic_to_bees`
 - string (0): none
 - datetime (0): none
 
@@ -175,9 +188,9 @@ The first 5 of 1,035 rows of the final frame (the oldest rows: the frame is sort
 | toxic_to_bees | first_publication_year | herbicide | fungicide | insecticide | other_agrochemical | rdkit_MaxAbsEStateIndex | rdkit_MaxEStateIndex | rdkit_MinAbsEStateIndex | rdkit_MinEStateIndex | rdkit_qed | rdkit_SPS |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | No | 1832 | nan | nan | nan | nan | 9.09954 | 9.09954 | 1.82407 | -1.82407 | 0.379949 | 7.33333 |
+| No | 1833 | 1 | 1 | 1 | 0 | 10.2009 | 10.2009 | 0.331019 | -0.879074 | 0.610604 | 8.88889 |
 | No | 1833 | 0 | 0 | 0 | 1 | 2.21296 | 2.21296 | 0.653333 | 0.653333 | 0.553258 | 10.4 |
 | No | 1833 | nan | nan | nan | nan | 8.40278 | 8.40278 | 1.41667 | -1.41667 | 0.349091 | 2.66667 |
-| No | 1833 | 1 | 1 | 1 | 0 | 10.2009 | 10.2009 | 0.331019 | -0.879074 | 0.610604 | 8.88889 |
 | Yes | 1836 | 0 | 0 | 0 | 1 | 12.4002 | 12.4002 | 0.0179167 | -3.75934 | 0.699226 | 11.5789 |
 
 ## Curation notes
@@ -255,59 +268,59 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| herbicide | category | 55 | 5.31 | 2 | 0.0, 1.0 |
+| fungicide | category | 55 | 5.31 | 2 | 0.0, 1.0 |
+| insecticide | category | 55 | 5.31 | 2 | 0.0, 1.0 |
+| other_agrochemical | category | 55 | 5.31 | 2 | 0.0, 1.0 |
 | toxic_to_bees | category | 0 | 0 | 2 | No, Yes |
-| rdkit_BCUT2D_MWHI | float64 | 107 | 10.34 | 928 | 15.3367, 35.4957, 16.6426, 35.5391, 35.499, 79.9198, 35.4957, 35.4957, 32.1335,… |
-| rdkit_BCUT2D_MWLOW | float64 | 107 | 10.34 | 927 | 9.9344, 10.3006, 9.7559, 10.0632, 9.9323, 10.1739, 10.1324, 9.9648, 10.2686, 10… |
-| rdkit_BCUT2D_CHGHI | float64 | 107 | 10.34 | 928 | 2.1231, 2.2822, 2.3507, 2.4394, 2.1792, 2.3002, 2.2175, 2.3653, 2.351, 2.911 |
-| rdkit_BCUT2D_CHGLO | float64 | 107 | 10.34 | 928 | -2.1091, -2.1856, -2.2792, -2.1828, -2.0443, -2.1709, -2.2666, -2.1431, -2.3084… |
-| rdkit_BCUT2D_LOGPHI | float64 | 107 | 10.34 | 928 | 2.1986, 2.432, 2.3788, 2.6004, 2.3355, 2.3424, 2.1903, 2.2653, 2.3519, 2.8045 |
-| rdkit_BCUT2D_LOGPLOW | float64 | 107 | 10.34 | 927 | -2.2246, -1.9898, -2.4477, -2.0503, -2.5193, -1.8865, -2.4185, -2.3946, -2.36, … |
-| rdkit_BCUT2D_MRHI | float64 | 107 | 10.34 | 928 | 5.4903, 6.3179, 6.2245, 6.5598, 6.455, 9.1047, 6.3088, 6.3175, 7.095, 5.9024 |
-| rdkit_BCUT2D_MRLOW | float64 | 107 | 10.34 | 928 | 0.6052, 0.1026, -0.1243, 0.1006, 0.0691, 0.0936, 0.2293, -0.1447, -0.1419, -0.3… |
-| herbicide | float64 | 55 | 5.31 | 2 | 0.0, 1.0 |
-| fungicide | float64 | 55 | 5.31 | 2 | 0.0, 1.0 |
-| insecticide | float64 | 55 | 5.31 | 2 | 0.0, 1.0 |
-| other_agrochemical | float64 | 55 | 5.31 | 2 | 0.0, 1.0 |
-| rdkit_MaxPartialCharge | float64 | 20 | 1.93 | 874 | 1.0, 2.0, 3.0, 0.3366, 0.416, 0.3387, 0.0, 0.3557, 0.3326, 0.4174 |
-| rdkit_MinPartialCharge | float64 | 20 | 1.93 | 910 | -0.4808, -1.0, -0.4574, -0.7588, 1.0, -0.4803, -0.4776, -0.4765, -0.4667, -0.46… |
-| rdkit_MaxAbsPartialCharge | float64 | 20 | 1.93 | 857 | 1.0, 2.0, 0.4808, 3.0, 0.4574, 0.4657, 0.4667, 0.4803, 0.4776, 0.4765 |
-| rdkit_MinAbsPartialCharge | float64 | 20 | 1.93 | 930 | 0.7588, 1.0, 0.3557, 0.4116, 0.0, 0.3387, 2.0, 0.416, 0.3326, 0.3366 |
-| rdkit_MaxAbsEStateIndex | float64 | 0 | 0 | 977 | 0.0, 8.5208, 10.5333, 9.9406, 4.5916, 10.0518, 12.3406, 9.0, 2.3186, 13.0048 |
-| rdkit_MaxEStateIndex | float64 | 0 | 0 | 977 | 0.0, 8.5208, 10.5333, 9.9406, 4.5916, 10.0518, 12.3406, 9.0, 2.3186, 13.0048 |
-| rdkit_MinAbsEStateIndex | float64 | 0 | 0 | 909 | 0.0, 0.0448, 0.3309, 0.2027, 0.7928, 0.0634, 1.25, 0.1849, 0.0363, 0.4394 |
-| rdkit_MinEStateIndex | float64 | 0 | 0 | 964 | 0.0, -5.1667, -4.0964, -1.3099, -0.1516, -0.8333, -4.3464, -5.3889, -4.5964, -0… |
-| rdkit_qed | float64 | 0 | 0 | 1029 | 0.5403, 0.2634, 0.5514, 0.8116, 0.449, 0.6594, 0.8482, 0.7605, 0.7347, 0.7349 |
-| rdkit_SPS | float64 | 0 | 0 | 746 | 11.5, 0.0, 10.0, 12.0, 9.8333, 11.5625, 13.5, 11.25, 9.0, 11.6667 |
-| rdkit_MolWt | float64 | 0 | 0 | 1011 | 154.253, 136.238, 225.296, 241.364, 354.491, 381.37, 333.863, 209.293, 221.039,… |
-| rdkit_HeavyAtomMolWt | float64 | 0 | 0 | 932 | 136.109, 120.11, 152.108, 283.184, 164.119, 128.086, 160.131, 319.154, 213.587,… |
-| rdkit_ExactMolWt | float64 | 0 | 0 | 998 | 154.1358, 136.1252, 150.1045, 229.1094, 203.1344, 225.159, 205.965, 256.2402, 3… |
+| rdkit_BCUT2D_MWHI | float64 | 107 | 10.34 | 928 | 35.499, 15.3367, 16.4845, 19.4132, 35.4957, 35.4968, 35.4957, 35.4957, 16.7245,… |
+| rdkit_BCUT2D_MWLOW | float64 | 107 | 10.34 | 927 | 9.9344, 10.2686, 10.0692, 9.9648, 10.0147, 10.266, 9.7559, 9.9341, 9.8668, 10.0… |
+| rdkit_BCUT2D_CHGHI | float64 | 107 | 10.34 | 928 | 2.1792, 2.1231, 2.2126, 2.4526, 2.2822, 2.2066, 2.2175, 2.3653, 2.5376, 2.911 |
+| rdkit_BCUT2D_CHGLO | float64 | 107 | 10.34 | 928 | -2.0443, -2.1091, -2.1836, -2.21, -2.1856, -2.1131, -2.2666, -2.1431, -2.4429, … |
+| rdkit_BCUT2D_LOGPHI | float64 | 107 | 10.34 | 928 | 2.3355, 2.1986, 2.2459, 2.4194, 2.432, 2.3579, 2.1903, 2.2653, 2.5662, 2.8045 |
+| rdkit_BCUT2D_LOGPLOW | float64 | 107 | 10.34 | 927 | -2.2246, -2.36, -2.2332, -2.3946, -2.3827, -2.306, -2.4477, -2.2059, -2.3576, -… |
+| rdkit_BCUT2D_MRHI | float64 | 107 | 10.34 | 928 | 6.455, 5.4903, 5.8186, 6.2728, 6.3179, 6.3544, 6.3088, 6.3175, 5.9862, 5.9024 |
+| rdkit_BCUT2D_MRLOW | float64 | 107 | 10.34 | 928 | 0.0691, 0.6052, -0.1305, -0.1411, 0.1026, 0.0594, 0.2293, -0.1447, -0.3166, -0.… |
+| rdkit_MaxPartialCharge | float64 | 20 | 1.93 | 874 | 1.0, 2.0, 3.0, 0.416, 0.3326, 0.3557, 0.3366, 0.0, 0.3387, 0.2997 |
+| rdkit_MinPartialCharge | float64 | 20 | 1.93 | 910 | -0.4808, -1.0, -0.4574, -0.7588, 1.0, -0.4116, -0.4776, -0.4803, -0.4657, -0.47… |
+| rdkit_MaxAbsPartialCharge | float64 | 20 | 1.93 | 857 | 1.0, 2.0, 0.4808, 3.0, 0.4574, 0.4765, 0.4776, 0.4667, 0.4803, 0.4657 |
+| rdkit_MinAbsPartialCharge | float64 | 20 | 1.93 | 930 | 1.0, 0.7588, 0.3326, 0.416, 0.3557, 2.0, 0.3366, 0.0, 0.4116, 0.3387 |
+| rdkit_MaxAbsEStateIndex | float64 | 0 | 0 | 977 | 0.0, 8.5208, 10.5333, 10.0518, 9.9406, 4.5916, 12.3406, 9.0, 2.3186, 9.1649 |
+| rdkit_MaxEStateIndex | float64 | 0 | 0 | 977 | 0.0, 8.5208, 10.5333, 10.0518, 9.9406, 4.5916, 12.3406, 9.0, 2.3186, 9.1649 |
+| rdkit_MinAbsEStateIndex | float64 | 0 | 0 | 909 | 0.0, 0.0448, 0.4168, 0.0708, 0.2998, 0.0634, 0.0363, 0.4394, 0.7928, 0.1849 |
+| rdkit_MinEStateIndex | float64 | 0 | 0 | 964 | 0.0, -5.1667, -1.3099, -4.0964, -0.8333, -0.1516, -4.3464, -4.625, -1.0856, -0.… |
+| rdkit_qed | float64 | 0 | 0 | 1029 | 0.5403, 0.2634, 0.5514, 0.6594, 0.449, 0.8116, 0.6982, 0.8073, 0.9413, 0.5813 |
+| rdkit_SPS | float64 | 0 | 0 | 746 | 11.5, 0.0, 10.0, 12.0, 9.8333, 11.5625, 9.0, 13.5, 11.25, 10.8571 |
+| rdkit_MolWt | float64 | 0 | 0 | 1011 | 154.253, 136.238, 381.37, 354.491, 209.293, 333.863, 304.352, 225.296, 221.039,… |
+| rdkit_HeavyAtomMolWt | float64 | 0 | 0 | 932 | 136.109, 120.11, 152.108, 283.184, 213.587, 206.144, 319.154, 128.086, 224.174,… |
+| rdkit_ExactMolWt | float64 | 0 | 0 | 998 | 154.1358, 136.1252, 150.1045, 229.1094, 300.111, 205.965, 203.1344, 225.0823, 2… |
 | rdkit_NumValenceElectrons | float64 | 0 | 0 | 132 | 82.0, 70.0, 108.0, 76.0, 84.0, 64.0, 124.0, 106.0, 90.0, 102.0 |
 | rdkit_NumRadicalElectrons | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 4.0, 3.0 |
 | rdkit_FpDensityMorgan1 | float64 | 0 | 0 | 289 | 1.0, 1.5, 1.25, 1.1667, 1.3333, 1.2, 1.2857, 1.1429, 1.4, 1.1875 |
-| rdkit_FpDensityMorgan2 | float64 | 0 | 0 | 343 | 2.0, 1.75, 1.6667, 1.8571, 1.8, 1.7857, 1.8333, 1.5, 1.0, 1.875 |
-| rdkit_FpDensityMorgan3 | float64 | 0 | 0 | 378 | 2.0, 2.5, 2.3333, 2.25, 2.6667, 2.4, 2.4286, 2.6, 2.625, 2.5714 |
-| rdkit_AvgIpc | float64 | 0 | 0 | 870 | 0.7219, 0.0, 0.8113, 0.9183, 1.8845, 2.8971, 1.9901, 1.5929, 1.3788, 2.0206 |
-| rdkit_BalabanJ | float64 | 0 | 0 | 939 | 0.0, 3.0638, 3.7768, 3.4721, 3.5224, 0.0, 2.2981, 1.9747, 0.0, 2.7297 |
-| rdkit_BertzCT | float64 | 0 | 0 | 991 | 2.7549, 145.7286, 53.6837, 29.8743, 2.0, 0.0, 311.6636, 90.7165, 306.6978, 313.… |
-| rdkit_Chi0 | float64 | 0 | 0 | 607 | 4.5, 12.1818, 11.2591, 11.4223, 8.4307, 9.9663, 3.5774, 0.0, 10.552, 15.5791 |
-| rdkit_Chi0n | float64 | 0 | 0 | 990 | 6.2661, 8.3688, 7.6098, 7.7232, 9.024, 15.4054, 13.0584, 11.2022, 10.7756, 8.25… |
-| rdkit_Chi0v | float64 | 0 | 0 | 1018 | 7.7232, 12.4865, 9.8228, 10.9537, 12.5917, 11.2148, 14.0794, 10.8352, 7.1463, 1… |
-| rdkit_Chi1 | float64 | 0 | 0 | 848 | 2.0, 1.7321, 0.0, 1.4142, 4.4165, 5.1471, 7.4148, 4.6984, 9.376, 7.0922 |
-| rdkit_Chi1n | float64 | 0 | 0 | 980 | 0.0, 0.6667, 0.6124, 3.9726, 2.5236, 4.795, 3.6199, 2.7104, 4.7011, 8.7845 |
-| rdkit_Chi1v | float64 | 0 | 0 | 1001 | 0.0, 2.0, 4.1566, 4.9234, 4.1325, 8.5382, 4.7182, 4.1848, 7.0751, 5.9115 |
-| rdkit_Chi2n | float64 | 0 | 0 | 981 | 0.0, 0.4082, 2.6004, 1.8425, 1.4285, 0.25, 1.8808, 2.3129, 3.5046, 4.5191 |
-| rdkit_Chi2v | float64 | 0 | 0 | 1001 | 0.0, 1.2247, 0.25, 3.5783, 6.336, 7.263, 3.5585, 3.2072, 3.2889, 4.9263 |
-| rdkit_Chi3n | float64 | 0 | 0 | 945 | 0.0, 0.594, 1.1274, 1.6322, 0.6637, 1.2556, 0.5878, 1.1284, 1.4881, 1.0798 |
-| rdkit_Chi3v | float64 | 0 | 0 | 962 | 0.0, 1.2295, 1.2111, 1.241, 1.67, 3.2382, 2.73, 2.7255, 1.4887, 2.4099 |
-| rdkit_Chi4n | float64 | 0 | 0 | 930 | 0.0, 0.3085, 0.7804, 0.8438, 0.5323, 0.3291, 0.3041, 0.6244, 0.2535, 5.5972 |
-| rdkit_Chi4v | float64 | 0 | 0 | 948 | 0.0, 0.7116, 0.6985, 0.7374, 2.6791, 3.0219, 1.1409, 1.2621, 2.3974, 0.3586 |
+| rdkit_FpDensityMorgan2 | float64 | 0 | 0 | 343 | 2.0, 1.75, 1.6667, 1.8571, 1.8, 1.7857, 1.8333, 1.0, 1.5, 2.25 |
+| rdkit_FpDensityMorgan3 | float64 | 0 | 0 | 378 | 2.0, 2.5, 2.3333, 2.25, 2.6667, 2.4, 2.4286, 2.6, 2.125, 2.625 |
+| rdkit_AvgIpc | float64 | 0 | 0 | 870 | 0.7219, 0.8113, 0.0, 0.9183, 1.9901, 1.5929, 1.8845, 2.8971, 1.6503, 1.3143 |
+| rdkit_BalabanJ | float64 | 0 | 0 | 939 | 0.0, 3.0638, 3.4721, 3.7768, 0.0, 3.5224, 3.8925, 3.7911, 2.5875, 2.945 |
+| rdkit_BertzCT | float64 | 0 | 0 | 991 | 2.7549, 2.0, 90.7165, 53.6837, 0.0, 29.8743, 311.6636, 145.7286, 265.1595, 435.… |
+| rdkit_Chi0 | float64 | 0 | 0 | 607 | 4.5, 12.1818, 11.2591, 11.4223, 9.9663, 8.4307, 10.552, 0.0, 3.5774, 12.3449 |
+| rdkit_Chi0n | float64 | 0 | 0 | 990 | 7.6098, 8.3688, 9.024, 6.2661, 7.7232, 5.9806, 1.378, 5.9814, 12.0435, 13.3235 |
+| rdkit_Chi0v | float64 | 0 | 0 | 1018 | 7.7232, 7.9814, 10.1372, 13.7545, 11.2148, 12.5917, 9.8228, 12.4865, 10.9537, 1… |
+| rdkit_Chi1 | float64 | 0 | 0 | 848 | 2.0, 1.7321, 0.0, 1.4142, 4.6984, 9.376, 7.4148, 4.4165, 5.1471, 4.0 |
+| rdkit_Chi1n | float64 | 0 | 0 | 980 | 0.0, 0.6667, 2.5236, 4.795, 2.7104, 3.9726, 0.6124, 3.6199, 4.9234, 4.161 |
+| rdkit_Chi1v | float64 | 0 | 0 | 1001 | 0.0, 2.0, 4.1566, 4.1848, 4.7182, 4.9234, 3.149, 4.8679, 5.9115, 8.2727 |
+| rdkit_Chi2n | float64 | 0 | 0 | 981 | 0.0, 0.4082, 2.6004, 1.8425, 1.4285, 0.25, 2.3129, 1.8808, 3.5046, 4.5191 |
+| rdkit_Chi2v | float64 | 0 | 0 | 1001 | 0.0, 1.2247, 0.25, 3.5783, 3.2889, 3.5585, 3.0, 4.2052, 7.263, 3.2072 |
+| rdkit_Chi3n | float64 | 0 | 0 | 945 | 0.0, 0.594, 1.6322, 0.6637, 1.1274, 1.2556, 0.5878, 1.1284, 1.4881, 1.7307 |
+| rdkit_Chi3v | float64 | 0 | 0 | 962 | 0.0, 1.2295, 1.2111, 1.241, 2.7255, 3.8916, 4.1121, 0.903, 1.7232, 1.67 |
+| rdkit_Chi4n | float64 | 0 | 0 | 930 | 0.0, 0.3085, 0.3291, 0.7804, 0.6244, 0.8438, 0.5323, 0.3041, 2.6791, 0.6301 |
+| rdkit_Chi4v | float64 | 0 | 0 | 948 | 0.0, 0.7116, 0.7374, 0.6985, 0.3586, 0.9675, 2.0231, 1.2621, 3.0219, 5.1597 |
 | rdkit_HallKierAlpha | float64 | 0 | 0 | 707 | -1.06, -0.79, -1.04, -0.08, -0.53, -1.51, -1.22, -1.1, -1.59, -0.18 |
-| rdkit_Ipc | float64 | 0 | 0 | 870 | 3.6096, 0.0, 3.2451, 2.7549, 180.9125, 34289.728, 286.5687, 81.2384, 9.6515, 70… |
-| rdkit_Kappa1 | float64 | 0 | 0 | 943 | 11.9719, 17.5424, 11.3652, 13.0268, 10.44, 12.82, 20.9657, 16.9028, 18.9478, 14… |
-| rdkit_Kappa2 | float64 | 0 | 0 | 1001 | 14.5307, 8.7261, 5.9206, 4.0029, 6.1245, 7.3912, 3.4993, 6.1147, 7.2484, 6.7803 |
-| rdkit_Kappa3 | float64 | 0 | 0 | 1012 | 3.8784, 4.2197, 15.47, 1.593, 4.9942, 3.2387, 4.4113, 5.9679, 2.7868, 5.0091 |
-| rdkit_LabuteASA | float64 | 0 | 0 | 1017 | 63.6387, 69.4388, 107.2327, 86.0682, 136.7347, 76.7263, 95.8582, 119.5108, 100.… |
-| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 210 | 0.0, 4.7369, 9.4737, 5.1065, 5.3168, 4.8999, 14.2106, 9.8434, 10.0537, 4.5237 |
+| rdkit_Ipc_log10 | float64 | 0 | 0 | 870 | 0.6637, 0.6279, 0.0, 0.5746, 2.4587, 1.9151, 2.2599, 4.5352, 1.7811, 1.2573 |
+| rdkit_Kappa1 | float64 | 0 | 0 | 943 | 11.9719, 11.3652, 17.5424, 13.0268, 10.44, 9.4356, 20.9025, 11.29, 11.4349, 14.… |
+| rdkit_Kappa2 | float64 | 0 | 0 | 1001 | 8.4197, 5.7993, 4.0078, 5.8421, 14.5307, 4.6129, 9.8001, 4.5299, 4.0029, 6.6362 |
+| rdkit_Kappa3 | float64 | 0 | 0 | 1012 | 4.2992, 3.2736, 5.1462, 1.5956, 4.9942, 2.8789, 1.593, 15.47, 5.9679, 5.0992 |
+| rdkit_LabuteASA | float64 | 0 | 0 | 1017 | 63.6387, 69.4388, 95.8582, 76.7263, 107.2327, 136.7347, 132.7839, 86.0682, 105.… |
+| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 210 | 0.0, 4.7369, 9.4737, 5.1065, 5.3168, 4.8999, 14.2106, 10.0537, 9.8434, 4.5237 |
 | rdkit_PEOE_VSA10 | float64 | 0 | 0 | 250 | 0.0, 5.7495, 11.499, 4.8955, 5.6939, 5.0226, 5.1531, 6.104, 5.5635, 5.6011 |
 | rdkit_PEOE_VSA11 | float64 | 0 | 0 | 130 | 0.0, 6.6069, 5.7832, 11.499, 6.104, 5.7495, 11.5665, 5.6874, 5.6939, 5.1564 |
 | rdkit_PEOE_VSA12 | float64 | 0 | 0 | 90 | 0.0, 5.9072, 5.88, 5.9483, 5.6935, 6.104, 11.8967, 17.7083, 3.7925, 5.6011 |
@@ -330,15 +343,11 @@ New compounds are few in recent years, so ten years is the shortest window that 
 ### Numeric features
 
 <details>
-<summary>Show the table (204 rows)</summary>
+<summary>Show the table (200 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | first_publication_year | 1035 | 1969.23 | 39.4181 | 1832 | 2023 |
-| herbicide | 980 | 0.361224 | 0.480601 | 0 | 1 |
-| fungicide | 980 | 0.20102 | 0.400968 | 0 | 1 |
-| insecticide | 980 | 0.231633 | 0.422091 | 0 | 1 |
-| other_agrochemical | 980 | 0.220408 | 0.414734 | 0 | 1 |
 | rdkit_MaxAbsEStateIndex | 1035 | 10.5568 | 3.00253 | 0 | 15.2818 |
 | rdkit_MaxEStateIndex | 1035 | 10.5557 | 3.00256 | 0 | 15.2818 |
 | rdkit_MinAbsEStateIndex | 1035 | 0.221001 | 0.354345 | 0 | 5.66667 |
@@ -381,7 +390,7 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | rdkit_Chi4n | 1035 | 1.96197 | 1.85694 | 0 | 24.3886 |
 | rdkit_Chi4v | 1035 | 2.92584 | 3.82994 | 0 | 74.7875 |
 | rdkit_HallKierAlpha | 1035 | -1.3311 | 1.41581 | -6.24 | 4.2561 |
-| rdkit_Ipc | 1035 | 2.54379e+35 | 8.18374e+36 | 0 | 2.63282e+38 |
+| rdkit_Ipc_log10 | 1035 | 4.44934 | 2.58236 | 0 | 38.4204 |
 | rdkit_Kappa1 | 1035 | 16.7174 | 9.18026 | 1.35 | 105.976 |
 | rdkit_Kappa2 | 1035 | 7.30873 | 4.87237 | 0.00658496 | 77.4572 |
 | rdkit_Kappa3 | 1035 | 43.2652 | 619.11 | 0.00146362 | 16139.5 |
@@ -394,17 +403,38 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | rdkit_PEOE_VSA14 | 1035 | 10.5881 | 22.7679 | 0 | 396.56 |
 | rdkit_PEOE_VSA2 | 1035 | 4.93712 | 5.67831 | 0 | 36.9056 |
 | rdkit_PEOE_VSA3 | 1035 | 5.37763 | 6.78602 | 0 | 39.1141 |
+| rdkit_PEOE_VSA4 | 1035 | 4.3695 | 8.12727 | 0 | 74.6371 |
+| rdkit_PEOE_VSA5 | 1035 | 2.33527 | 7.80429 | 0 | 92.8075 |
+| rdkit_PEOE_VSA6 | 1035 | 23.7195 | 21.5076 | 0 | 166.906 |
+| rdkit_PEOE_VSA7 | 1035 | 25.5428 | 19.379 | 0 | 224.032 |
 
-(144 more rows not shown)
+(140 more rows not shown)
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (14 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| fungicide | 1 | 0.0 | 783 | 75.65 |
+| fungicide | 2 | 1.0 | 197 | 19.03 |
+| fungicide | 3 | &lt;NA> | 55 | 5.31 |
+| herbicide | 1 | 0.0 | 626 | 60.48 |
+| herbicide | 2 | 1.0 | 354 | 34.2 |
+| herbicide | 3 | &lt;NA> | 55 | 5.31 |
+| insecticide | 1 | 0.0 | 753 | 72.75 |
+| insecticide | 2 | 1.0 | 227 | 21.93 |
+| insecticide | 3 | &lt;NA> | 55 | 5.31 |
+| other_agrochemical | 1 | 0.0 | 764 | 73.82 |
+| other_agrochemical | 2 | 1.0 | 216 | 20.87 |
+| other_agrochemical | 3 | &lt;NA> | 55 | 5.31 |
 | toxic_to_bees | 1 | No | 739 | 71.4 |
 | toxic_to_bees | 2 | Yes | 296 | 28.6 |
+
+</details>
 
 ## Build
 
@@ -417,3 +447,4 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:738217c88897e0e8eb20604a07265dafeab73b11c55889442eb6bcca6f54de11` |

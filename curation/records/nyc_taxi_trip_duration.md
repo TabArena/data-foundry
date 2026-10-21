@@ -27,7 +27,7 @@ source_links:
 - https://www.kaggle.com/datasets/wol4aravio/ny-taxi-trip-duration-enriched-by-mathematica
 - https://www.openml.org/d/42729
 - https://www.kaggle.com/datasets/diishasiing/revenue-for-cab-drivers
-v2_path: datasets/_dev/tabarena-v0pt2/nyc_taxi_trip_duration/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/nyc_taxi_trip_duration_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -65,3 +65,17 @@ read Kaggle: the sample first appeared there (as sdss_17).
 Related work, not a source: the PKDD-15 Porto taxi trip-time competition (https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii), which has its own record (pkdd_15_taxi_trip_time_prediction_ii).
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. A large, well-sourced temporal ETA regression; which source copy to ship and the row filters that select on the target are still open.
+
+**Assessment (AI, 2026-10-20):** Review panel (full tier): ship after changes, applied in the definition (a rebuild is due). The 2026-09-21 CC's statement that the TLC Parquet files hold coordinates up to mid-2016 does not hold: the 2016 files hold zone IDs only (yellow_tripdata_2016-06 read); NYC Open Data uacg-pexx serves the coordinates, and 13 of 13 sampled training rows match it. The definition drops the 4,539 trips whose drop-off coordinates equal the pickup coordinates (USE-7: no destination; mean target 6.04 against 6.47), sets passenger_count 0, 8 and 9 to missing (CLEAN-10/11), adds a one-day gap before each weekly window (SPLIT-9: 77/119/127 train trips per window ended after the window start) and rates the fit approximate (USE-8: the drop-off point stands in for the named destination, as in pkdd_15). LightGBM RMSE 0.373/0.357/0.381 on the weekly windows with the hour kept, 0.429/0.414/0.441 with AutoGluon's date parts; a random hold-out of the same size is optimistic by 0.013-0.029, mostly from distance in time. Open: the row budget (rename to _1m or amend the house rule) and the datetime encoding of v0.2 (cross-dataset). Priority 3: gap - (no thin domain, problem type or regime), use case - (fit approximate, use case written by the curation), source + (TLC records, rows verified), shape + (1.45M trips, categorical and datetime, temporal), risk 0 (the open issue is a house rule, no leak or unclear target).
+
+CC (2026-10-21, Lennart): Cite the original publisher, the NYC Taxi and Limousine Commission trip records, as house_sales does (PROV-10).
+
+**Assessment (AI, 2026-10-21):** bibtex now cites the TLC Trip Record Data first, next to the Kaggle competition that published the sample. Dataset check: 0 errors, 0 warnings.
+
+CC (2026-10-21, Lennart): ok on creating the _1m version (`nyc_taxi_trip_duration_1m`): every train side is over the 1M-row budget.
+
+**Assessment (AI, 2026-10-21):** the folder is renamed to `nyc_taxi_trip_duration_1m` (`version_of = "nyc_taxi_trip_duration"`, `subsample_to_budget = True`, as delivery_eta_1m; the full version is not kept in the working copy, as for the other `_1m` datasets). Same three weekly test windows (52,779 / 52,949 / 54,532 trips, newest first) and one-day gap; each train side is a random 1M of the 1.28M-1.39M earlier trips, drawn in one order so the sides overlap; the frame keeps the 1,166,477 trips a split uses (of 1,447,167 after cleaning), so the accepted `splits_rows_unused` warning is gone. Dataset check: 0 errors, 0 warnings. Not built.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the competition's RMSLE, as RMSE on the shipped log1p_trip_duration (Kaggle evaluation page).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the trip duration in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.

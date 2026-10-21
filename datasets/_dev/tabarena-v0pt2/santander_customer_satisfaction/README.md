@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_satisfaction
 container_format: 2
-checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
+checksum: v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca
 build:
   uuid: 01a111fc-12c0-72fc-95ab-3a7ad03daa2b
   checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
@@ -17,19 +17,21 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 71080
   n_features: 307
   dtypes:
-    category: 1
+    category: 57
     float64: 111
-    int64: 196
+    int64: 140
   n_test_dataset_rows: null
 task:
   target: TARGET
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: TARGET
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 47386
     max: 47387
@@ -65,7 +69,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 rows and 307 features. Source: Kaggle (2016).
 
-Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -134,10 +138,20 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | TARGET |
 
-<details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+**Metric**
 
-- categorical (1): `TARGET`
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under Receiver Operating Characteristic Curve |
+| reference | https://www.kaggle.com/competitions/santander-customer-satisfaction (Kaggle API evaluationMetric) |
+| definition | Area under the ROC curve of TARGET = 1. |
+
+<details>
+<summary>Feature types: 57 categorical, 0 string, 0 datetime</summary>
+
+- categorical (57): `ind_var1_0`, `ind_var1`, `ind_var5_0`, `ind_var5`, `ind_var6_0`, `ind_var6`, `ind_var8_0`, `ind_var8`, `ind_var12_0`, `ind_var12`, `ind_var13_0`, `ind_var13_corto_0`, `ind_var13_corto`, `ind_var13_largo_0`, `ind_var13_largo`, `ind_var13_medio_0`, `ind_var13`, `ind_var14_0`, `ind_var14`, `ind_var17_0`, `ind_var17`, `ind_var18_0`, `ind_var19`, `ind_var20_0`, `ind_var20`, `ind_var24_0`, `ind_var24`, `ind_var25_cte`, `ind_var26_0`, `ind_var26_cte`, `ind_var25_0`, `ind_var30_0`, `ind_var30`, `ind_var31_0`, `ind_var31`, `ind_var32_cte`, `ind_var32_0`, `ind_var33_0`, `ind_var33`, `ind_var34_0`, `ind_var37_cte`, `ind_var37_0`, `ind_var39_0`, `ind_var40_0`, `ind_var40`, `ind_var41_0`, `ind_var44_0`, `ind_var44`, `ind_var7_emit_ult1`, `ind_var7_recib_ult1`, `ind_var10_ult1`, `ind_var10cte_ult1`, `ind_var9_cte_ult1`, `ind_var9_ult1`, `ind_var43_emit_ult1`, `ind_var43_recib_ult1`, `TARGET`
 - string (0): none
 - datetime (0): none
 
@@ -214,66 +228,66 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| ind_var1_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var5_0 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var5 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var6_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var6 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var8_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var8 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var12_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var12 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_corto_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_corto | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_largo_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_largo | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13_medio_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var13 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var14_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var14 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var17_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var17 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var18_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var19 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var20_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var20 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var24_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var24 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var25_cte | category | 0 | 0 | 2 | 0, 1 |
+| ind_var26_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var26_cte | category | 0 | 0 | 2 | 0, 1 |
+| ind_var25_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var30_0 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var30 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var31_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var31 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var32_cte | category | 0 | 0 | 2 | 0, 1 |
+| ind_var32_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var33_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var33 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var34_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var37_cte | category | 0 | 0 | 2 | 0, 1 |
+| ind_var37_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var39_0 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var40_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var40 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var41_0 | category | 0 | 0 | 2 | 1, 0 |
+| ind_var44_0 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var44 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var7_emit_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var7_recib_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var10_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var10cte_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var9_cte_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var9_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var43_emit_ult1 | category | 0 | 0 | 2 | 0, 1 |
+| ind_var43_recib_ult1 | category | 0 | 0 | 2 | 0, 1 |
 | TARGET | category | 0 | 0 | 2 | 0, 1 |
 | var3 | float64 | 107 | 0.15 | 207 | 2.0, 8.0, 9.0, 3.0, 1.0, 13.0, 7.0, 4.0, 12.0, 6.0 |
 | imp_ent_var16_ult1 | float64 | 0 | 0 | 596 | 0.0, 300.0, 150.0, 600.0, 900.0, 3.0, 450.0, 60.0, 1500.0, 90.0 |
 | imp_op_var39_comer_ult1 | float64 | 0 | 0 | 7551 | 0.0, 30.0, 60.0, 15.0, 90.0, 45.0, 4.5, 150.0, 120.0, 2.67 |
-| imp_op_var39_comer_ult3 | float64 | 0 | 0 | 9099 | 0.0, 30.0, 60.0, 4.5, 15.0, 90.0, 45.0, 150.0, 2.67, 120.0 |
-| imp_op_var40_comer_ult1 | float64 | 0 | 0 | 293 | 0.0, 396.0, 30.0, 180.0, 2570.76, 1555.53, 979.95, 990.75, 1170.6, 440.28 |
-| imp_op_var40_comer_ult3 | float64 | 0 | 0 | 346 | 0.0, 30.0, 4.5, 1555.53, 979.95, 1636.53, 420.0, 1601.31, 440.28, 284.67 |
-| imp_op_var40_efect_ult1 | float64 | 0 | 0 | 23 | 0.0, 900.0, 1800.0, 600.0, 60.0, 300.0, 450.0, 270.0, 120.0, 330.0 |
-| imp_op_var40_efect_ult3 | float64 | 0 | 0 | 29 | 0.0, 900.0, 120.0, 1800.0, 450.0, 600.0, 960.0, 330.0, 300.0, 60.0 |
-| imp_op_var40_ult1 | float64 | 0 | 0 | 224 | 0.0, 600.0, 900.0, 270.0, 450.0, 1800.0, 567.0, 149.07, 717.81, 149.7 |
-| imp_op_var41_comer_ult1 | float64 | 0 | 0 | 7421 | 0.0, 30.0, 60.0, 15.0, 90.0, 4.5, 45.0, 120.0, 150.0, 300.0 |
-| imp_op_var41_comer_ult3 | float64 | 0 | 0 | 8961 | 0.0, 30.0, 60.0, 4.5, 15.0, 90.0, 45.0, 150.0, 120.0, 2.67 |
-| imp_op_var41_efect_ult1 | float64 | 0 | 0 | 331 | 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 210.0, 600.0 |
-| imp_op_var41_efect_ult3 | float64 | 0 | 0 | 454 | 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 150.0, 360.0, 420.0, 210.0 |
-| imp_op_var41_ult1 | float64 | 0 | 0 | 8032 | 0.0, 60.0, 120.0, 30.0, 300.0, 180.0, 150.0, 240.0, 90.0, 420.0 |
-| imp_op_var39_efect_ult1 | float64 | 0 | 0 | 336 | 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 420.0, 360.0, 210.0, 600.0 |
-| imp_op_var39_efect_ult3 | float64 | 0 | 0 | 462 | 0.0, 60.0, 120.0, 180.0, 240.0, 300.0, 150.0, 360.0, 420.0, 210.0 |
-| imp_op_var39_ult1 | float64 | 0 | 0 | 8149 | 0.0, 60.0, 120.0, 30.0, 300.0, 180.0, 150.0, 240.0, 90.0, 420.0 |
-| imp_sal_var16_ult1 | float64 | 0 | 0 | 66 | 0.0, 3000.0, 1500.0, 600.0, 150.0, 450.0, 750.0, 30.0, 12000.0, 45.0 |
-| saldo_var1 | float64 | 0 | 0 | 285 | 0.0, 4035.0, 900.0, 1015.5, 180.0, 1781.31, 440.28, 210.39, 192.24, 1623.36 |
-| saldo_var5 | float64 | 0 | 0 | 11642 | 0.0, 3.0, 90.0, 30.0, 15.0, 6.0, 150.0, 60.0, 300.0, 120.0 |
-| saldo_var6 | float64 | 0 | 0 | 3 | 0.0, 19531.8, 11976.6 |
-| saldo_var8 | float64 | 0 | 0 | 1989 | 0.0, 3.0, 30.0, 15.0, 150.0, 750.0, 60.0, 1500.0, 900.0, 300.0 |
-| saldo_var12 | float64 | 0 | 0 | 3059 | 0.0, 3000.0, 3.0, 150392.37, 300.0, 30000.0, 60000.0, 600.0, 300000.0, 300385.68 |
-| saldo_var13_corto | float64 | 0 | 0 | 730 | 0.0, 90000.0, 30000.0, 60000.0, 150000.0, 300000.0, 45000.0, 120000.0, 180000.0… |
-| saldo_var13_largo | float64 | 0 | 0 | 229 | 0.0, 75000.0, 90000.0, 150000.0, 300000.0, 120000.0, 180000.0, 36000.0, 15000.0… |
-| saldo_var13 | float64 | 0 | 0 | 859 | 0.0, 90000.0, 150000.0, 300000.0, 30000.0, 60000.0, 75000.0, 120000.0, 180000.0… |
-| saldo_var14 | float64 | 0 | 0 | 345 | 0.0, 3000.0, 3.0, 600.0, 1200.0, 30.0, 300.0, 450.0, 1500.0, 900.0 |
-| saldo_var17 | float64 | 0 | 0 | 111 | 0.0, 395817.69, 16689.48, 62965.17, 9194.4, 19970.76, 606.33, 60991.2, 69639.96… |
-| saldo_var20 | float64 | 0 | 0 | 176 | 0.0, 90.06, 300.12, 60.0, 300.0, 150.0, 900.36, 450.15, 1200.39, 750.3 |
-| saldo_var24 | float64 | 0 | 0 | 2614 | 0.0, 150392.37, 30000.0, 300385.68, 300000.0, 90000.0, 60000.0, 300784.74, 1500… |
-| saldo_var26 | float64 | 0 | 0 | 1592 | 0.0, 1278.0, 761.64, 1065.0, 3000.0, 2700.0, 1500.0, 1745.73, 300.0, 1643.64 |
-| saldo_var25 | float64 | 0 | 0 | 1524 | 0.0, 1278.0, 1065.0, 761.64, 3000.0, 2700.0, 1500.0, 1745.73, 900.0, 1643.64 |
-| saldo_var30 | float64 | 0 | 0 | 16940 | 0.0, 3.0, 90.0, 30.0, 15.0, 6.0, 150.0, 60.0, 300.0, 120.0 |
-| saldo_var31 | float64 | 0 | 0 | 278 | 0.0, 65439.45, 15156.66, 37820.37, 156413.58, 60851.22, 86832.0, 3.87, 6228.84,… |
-| saldo_var32 | float64 | 0 | 0 | 75 | 0.0, 1898.7, 436.5, 218.25, 579.9, 2043.45, 5016.27, 1492.74, 5191.71, 7341.51 |
-| saldo_var33 | float64 | 0 | 0 | 48 | 0.0, 15156.66, 4696.11, 53762.76, 8788.98, 12218.61, 180.27, 279.72, 3027.66, 6… |
-| saldo_var37 | float64 | 0 | 0 | 4041 | 0.0, 159.21, 30.0, 160.77, 120.12, 25.38, 60.0, 90.0, 15.0, 45.0 |
-| saldo_var40 | float64 | 0 | 0 | 282 | 0.0, 4035.0, 900.0, 1015.5, 180.0, 1781.31, 440.28, 210.39, 192.24, 979.95 |
-| saldo_var42 | float64 | 0 | 0 | 15730 | 0.0, 3.0, 90.0, 30.0, 15.0, 6.0, 150.0, 60.0, 300.0, 120.0 |
-| saldo_var44 | float64 | 0 | 0 | 129 | 0.0, 65439.45, 8657.28, 20640.87, 3688.14, 33955.38, 29714.49, 18075.48, 21090.… |
-| delta_imp_aport_var13_1y3 | float64 | 0 | 0 | 27 | 0.0, -1.0, 9999999999.0, -0.3333, 4.0, -0.5, -0.7603, -0.9038, 0.1538, 1.2222 |
-| delta_imp_aport_var17_1y3 | float64 | 0 | 0 | 7 | 0.0, 9999999999.0, -1.0, 1.0001, -0.75, 1.5, 0.6853 |
-| delta_imp_aport_var33_1y3 | float64 | 0 | 0 | 9 | 0.0, -1.0, -0.6667, -0.5, 9999999999.0, -0.916, -0.7, -0.9405, -0.95 |
-| delta_imp_compra_var44_1y3 | float64 | 0 | 0 | 17 | 0.0, 9999999999.0, -1.0, -0.9504, -0.4757, 2.6505, -0.9788, -0.934, 6.2676, -0.… |
-| delta_imp_venta_var44_1y3 | float64 | 0 | 0 | 5 | 0.0, 9999999999.0, -0.5058, 5.4171, -1.0 |
-| delta_num_aport_var13_1y3 | float64 | 0 | 0 | 6 | 0.0, -1.0, 9999999999.0, 1.0, -0.3333, -0.5 |
-| delta_num_aport_var17_1y3 | float64 | 0 | 0 | 6 | 0.0, 9999999999.0, -1.0, 1.0, -0.3333, 2.0 |
-| delta_num_aport_var33_1y3 | float64 | 0 | 0 | 4 | 0.0, -1.0, 9999999999.0, -0.5 |
-| delta_num_compra_var44_1y3 | float64 | 0 | 0 | 9 | 0.0, 9999999999.0, -1.0, 1.0, 4.0, 0.5, 2.5, -0.6667, -0.3333 |
-| delta_num_venta_var44_1y3 | float64 | 0 | 0 | 5 | 0.0, 9999999999.0, -0.5, 8.0, -1.0 |
-| imp_amort_var18_ult1 | float64 | 0 | 0 | 3 | 0.0, 15691.8, 1883.22 |
-| imp_amort_var34_ult1 | float64 | 0 | 0 | 3 | 0.0, 1096.02, 276.24 |
-| imp_aport_var13_hace3 | float64 | 0 | 0 | 425 | 0.0, 90000.0, 150000.0, 30000.0, 300000.0, 60000.0, 75000.0, 120000.0, 180000.0… |
-| imp_aport_var13_ult1 | float64 | 0 | 0 | 182 | 0.0, 90000.0, 300000.0, 150000.0, 75000.0, 180000.0, 15000.0, 36000.0, 60000.0,… |
-| imp_aport_var17_hace3 | float64 | 0 | 0 | 20 | 0.0, 3000.0, 120000.0, 30000.0, 45741.48, 600.0, 1815.0, 174000.0, 96781.44, 74… |
-| imp_aport_var17_ult1 | float64 | 0 | 0 | 42 | 0.0, 30000.0, 3000.0, 7383.6, 33008.28, 60000.57, 2877.0, 60036.09, 14356.26, 1… |
-| imp_var7_emit_ult1 | float64 | 0 | 0 | 4 | 0.0, 43500.0, 18000.0, 145384.92 |
-| imp_var7_recib_ult1 | float64 | 0 | 0 | 184 | 0.0, 3000.0, 75000.0, 900.0, 210000.0, 45000.0, 90000.0, 600.0, 60000.0, 30000.0 |
-| imp_compra_var44_hace3 | float64 | 0 | 0 | 33 | 0.0, 12669.0, 861.09, 210001.35, 13568.4, 19308.24, 18203.52, 128874.51, 17113.… |
 
 (248 more rows not shown)
 
@@ -289,7 +303,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (307 rows)</summary>
+<summary>Show the table (251 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -312,58 +326,123 @@ Default splits.
 | imp_op_var39_efect_ult3 | 71080 | 121.701 | 985.671 | 0 | 131100 |
 | imp_op_var39_ult1 | 71080 | 150.161 | 736.125 | 0 | 47598.1 |
 | imp_sal_var16_ult1 | 71080 | 5.85837 | 481.29 | 0 | 105000 |
-| ind_var1_0 | 71080 | 0.0122538 | 0.110017 | 0 | 1 |
-| ind_var1 | 71080 | 0.00402364 | 0.0633048 | 0 | 1 |
-| ind_var5_0 | 71080 | 0.955431 | 0.206358 | 0 | 1 |
-| ind_var5 | 71080 | 0.67998 | 0.466487 | 0 | 1 |
-| ind_var6_0 | 71080 | 0.000112549 | 0.0106084 | 0 | 1 |
-| ind_var6 | 71080 | 2.81373e-05 | 0.00530442 | 0 | 1 |
-| ind_var8_0 | 71080 | 0.0348481 | 0.183396 | 0 | 1 |
-| ind_var8 | 71080 | 0.0305853 | 0.172192 | 0 | 1 |
-| ind_var12_0 | 71080 | 0.0721581 | 0.258751 | 0 | 1 |
-| ind_var12 | 71080 | 0.0485791 | 0.214988 | 0 | 1 |
-| ind_var13_0 | 71080 | 0.0558807 | 0.229693 | 0 | 1 |
-| ind_var13_corto_0 | 71080 | 0.0459201 | 0.209313 | 0 | 1 |
-| ind_var13_corto | 71080 | 0.0443585 | 0.205892 | 0 | 1 |
-| ind_var13_largo_0 | 71080 | 0.0108751 | 0.103716 | 0 | 1 |
-| ind_var13_largo | 71080 | 0.0106922 | 0.102849 | 0 | 1 |
-| ind_var13_medio_0 | 71080 | 2.81373e-05 | 0.00530442 | 0 | 1 |
-| ind_var13 | 71080 | 0.0543894 | 0.226786 | 0 | 1 |
-| ind_var14_0 | 71080 | 0.0252954 | 0.157022 | 0 | 1 |
-| ind_var14 | 71080 | 0.00566967 | 0.075084 | 0 | 1 |
-| ind_var17_0 | 71080 | 0.00192741 | 0.0438602 | 0 | 1 |
-| ind_var17 | 71080 | 0.00154755 | 0.0393088 | 0 | 1 |
-| ind_var18_0 | 71080 | 2.81373e-05 | 0.00530442 | 0 | 1 |
-| ind_var19 | 71080 | 0.0044879 | 0.0668418 | 0 | 1 |
-| ind_var20_0 | 71080 | 0.00382667 | 0.0617421 | 0 | 1 |
-| ind_var20 | 71080 | 0.00284187 | 0.0532337 | 0 | 1 |
-| ind_var24_0 | 71080 | 0.0453151 | 0.207996 | 0 | 1 |
-| ind_var24 | 71080 | 0.0405177 | 0.197171 | 0 | 1 |
-| ind_var25_cte | 71080 | 0.0282639 | 0.165727 | 0 | 1 |
-| ind_var26_0 | 71080 | 0.0263506 | 0.160177 | 0 | 1 |
-| ind_var26_cte | 71080 | 0.0294738 | 0.169132 | 0 | 1 |
-| ind_var25_0 | 71080 | 0.0252814 | 0.15698 | 0 | 1 |
-| ind_var30_0 | 71080 | 0.995174 | 0.0692988 | 0 | 1 |
-| ind_var30 | 71080 | 0.753813 | 0.430792 | 0 | 1 |
-| ind_var31_0 | 71080 | 0.00457231 | 0.0674646 | 0 | 1 |
-| ind_var31 | 71080 | 0.00392515 | 0.0625284 | 0 | 1 |
-| ind_var32_cte | 71080 | 0.00129432 | 0.0359536 | 0 | 1 |
-| ind_var32_0 | 71080 | 0.00115363 | 0.0339458 | 0 | 1 |
-| ind_var33_0 | 71080 | 0.000801913 | 0.0283069 | 0 | 1 |
-| ind_var33 | 71080 | 0.000675295 | 0.0259779 | 0 | 1 |
-| ind_var34_0 | 71080 | 2.81373e-05 | 0.00530442 | 0 | 1 |
-| ind_var37_cte | 71080 | 0.0773213 | 0.267102 | 0 | 1 |
+| num_var1_0 | 71080 | 0.0368458 | 0.331192 | 0 | 6 |
+| num_var1 | 71080 | 0.0121131 | 0.190909 | 0 | 6 |
+| num_var4 | 71080 | 1.12451 | 0.914608 | 0 | 7 |
+| num_var5_0 | 71080 | 2.88744 | 0.675802 | 0 | 15 |
+| num_var5 | 71080 | 2.04838 | 1.415 | 0 | 15 |
+| num_var6_0 | 71080 | 0.000337648 | 0.0318252 | 0 | 3 |
+| num_var6 | 71080 | 8.44119e-05 | 0.0159133 | 0 | 3 |
+| num_var8_0 | 71080 | 0.104586 | 0.550526 | 0 | 6 |
+| num_var8 | 71080 | 0.0917558 | 0.516577 | 0 | 3 |
+| num_var12_0 | 71080 | 0.22576 | 0.918615 | 0 | 111 |
+| num_var12 | 71080 | 0.147468 | 0.657696 | 0 | 15 |
+| num_var13_0 | 71080 | 0.179375 | 0.769947 | 0 | 18 |
+| num_var13_corto_0 | 71080 | 0.139364 | 0.638983 | 0 | 6 |
+| num_var13_corto | 71080 | 0.13316 | 0.618272 | 0 | 6 |
+| num_var13_largo_0 | 71080 | 0.0399268 | 0.418529 | 0 | 18 |
+| num_var13_largo | 71080 | 0.0376899 | 0.394286 | 0 | 18 |
+| num_var13_medio_0 | 71080 | 8.44119e-05 | 0.0159133 | 0 | 3 |
+| num_var13 | 71080 | 0.170934 | 0.736095 | 0 | 18 |
+| num_var14_0 | 71080 | 0.0777434 | 0.631373 | 0 | 111 |
+| num_var14 | 71080 | 0.0172622 | 0.231881 | 0 | 12 |
+| num_var17_0 | 71080 | 0.012704 | 0.374851 | 0 | 36 |
+| num_var17 | 71080 | 0.00949634 | 0.298625 | 0 | 27 |
+| num_var18_0 | 71080 | 8.44119e-05 | 0.0159133 | 0 | 3 |
+| num_var20_0 | 71080 | 0.01148 | 0.185226 | 0 | 3 |
+| num_var20 | 71080 | 0.0085256 | 0.159701 | 0 | 3 |
+| num_var24_0 | 71080 | 0.136536 | 0.628308 | 0 | 9 |
+| num_var24 | 71080 | 0.12168 | 0.592451 | 0 | 6 |
+| num_var26_0 | 71080 | 0.0955965 | 0.649616 | 0 | 33 |
+| num_var25_0 | 71080 | 0.0910805 | 0.632597 | 0 | 33 |
+| num_op_var40_hace2 | 71080 | 0.0216517 | 0.92827 | 0 | 117 |
+| num_op_var40_hace3 | 71080 | 0.00109736 | 0.186938 | 0 | 48 |
+| num_op_var40_ult1 | 71080 | 0.0609876 | 1.88974 | 0 | 234 |
+| num_op_var40_ult3 | 71080 | 0.0837366 | 2.64553 | 0 | 351 |
+| num_op_var41_hace2 | 71080 | 1.71242 | 7.55958 | 0 | 249 |
+| num_op_var41_hace3 | 71080 | 0.10045 | 1.25648 | 0 | 81 |
+| num_op_var41_ult1 | 71080 | 3.05753 | 11.2312 | 0 | 468 |
+| num_op_var41_ult3 | 71080 | 4.8704 | 17.4248 | 0 | 468 |
+| num_op_var39_hace2 | 71080 | 1.73407 | 7.62922 | 0 | 249 |
+| num_op_var39_hace3 | 71080 | 0.101548 | 1.27022 | 0 | 81 |
+| num_op_var39_ult1 | 71080 | 3.11851 | 11.4651 | 0 | 468 |
+| num_op_var39_ult3 | 71080 | 4.95414 | 17.7178 | 0 | 468 |
 
-(247 more rows not shown)
+(191 more rows not shown)
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (114 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | TARGET | 1 | 0 | 68368 | 96.18 |
 | TARGET | 2 | 1 | 2712 | 3.82 |
+| ind_var1 | 1 | 0 | 70794 | 99.6 |
+| ind_var1 | 2 | 1 | 286 | 0.4 |
+| ind_var10_ult1 | 1 | 0 | 64932 | 91.35 |
+| ind_var10_ult1 | 2 | 1 | 6148 | 8.65 |
+| ind_var10cte_ult1 | 1 | 0 | 64074 | 90.14 |
+| ind_var10cte_ult1 | 2 | 1 | 7006 | 9.86 |
+| ind_var12 | 1 | 0 | 67627 | 95.14 |
+| ind_var12 | 2 | 1 | 3453 | 4.86 |
+| ind_var12_0 | 1 | 0 | 65951 | 92.78 |
+| ind_var12_0 | 2 | 1 | 5129 | 7.22 |
+| ind_var13 | 1 | 0 | 67214 | 94.56 |
+| ind_var13 | 2 | 1 | 3866 | 5.44 |
+| ind_var13_0 | 1 | 0 | 67108 | 94.41 |
+| ind_var13_0 | 2 | 1 | 3972 | 5.59 |
+| ind_var13_corto | 1 | 0 | 67927 | 95.56 |
+| ind_var13_corto | 2 | 1 | 3153 | 4.44 |
+| ind_var13_corto_0 | 1 | 0 | 67816 | 95.41 |
+| ind_var13_corto_0 | 2 | 1 | 3264 | 4.59 |
+| ind_var13_largo | 1 | 0 | 70320 | 98.93 |
+| ind_var13_largo | 2 | 1 | 760 | 1.07 |
+| ind_var13_largo_0 | 1 | 0 | 70307 | 98.91 |
+| ind_var13_largo_0 | 2 | 1 | 773 | 1.09 |
+| ind_var13_medio_0 | 1 | 0 | 71078 | 100 |
+| ind_var13_medio_0 | 2 | 1 | 2 | 0 |
+| ind_var14 | 1 | 0 | 70677 | 99.43 |
+| ind_var14 | 2 | 1 | 403 | 0.57 |
+| ind_var14_0 | 1 | 0 | 69282 | 97.47 |
+| ind_var14_0 | 2 | 1 | 1798 | 2.53 |
+| ind_var17 | 1 | 0 | 70970 | 99.85 |
+| ind_var17 | 2 | 1 | 110 | 0.15 |
+| ind_var17_0 | 1 | 0 | 70943 | 99.81 |
+| ind_var17_0 | 2 | 1 | 137 | 0.19 |
+| ind_var18_0 | 1 | 0 | 71078 | 100 |
+| ind_var18_0 | 2 | 1 | 2 | 0 |
+| ind_var19 | 1 | 0 | 70761 | 99.55 |
+| ind_var19 | 2 | 1 | 319 | 0.45 |
+| ind_var1_0 | 1 | 0 | 70209 | 98.77 |
+| ind_var1_0 | 2 | 1 | 871 | 1.23 |
+| ind_var20 | 1 | 0 | 70878 | 99.72 |
+| ind_var20 | 2 | 1 | 202 | 0.28 |
+| ind_var20_0 | 1 | 0 | 70808 | 99.62 |
+| ind_var20_0 | 2 | 1 | 272 | 0.38 |
+| ind_var24 | 1 | 0 | 68200 | 95.95 |
+| ind_var24 | 2 | 1 | 2880 | 4.05 |
+| ind_var24_0 | 1 | 0 | 67859 | 95.47 |
+| ind_var24_0 | 2 | 1 | 3221 | 4.53 |
+| ind_var25_0 | 1 | 0 | 69283 | 97.47 |
+| ind_var25_0 | 2 | 1 | 1797 | 2.53 |
+| ind_var25_cte | 1 | 0 | 69071 | 97.17 |
+| ind_var25_cte | 2 | 1 | 2009 | 2.83 |
+| ind_var26_0 | 1 | 0 | 69207 | 97.36 |
+| ind_var26_0 | 2 | 1 | 1873 | 2.64 |
+| ind_var26_cte | 1 | 0 | 68985 | 97.05 |
+| ind_var26_cte | 2 | 1 | 2095 | 2.95 |
+| ind_var30 | 1 | 1 | 53581 | 75.38 |
+| ind_var30 | 2 | 0 | 17499 | 24.62 |
+| ind_var30_0 | 1 | 1 | 70737 | 99.52 |
+| ind_var30_0 | 2 | 0 | 343 | 0.48 |
+
+(54 more rows not shown)
+
+</details>
 
 ## Build
 
@@ -376,3 +455,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca` |

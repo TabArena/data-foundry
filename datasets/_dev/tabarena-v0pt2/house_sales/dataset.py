@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -20,8 +21,10 @@ from data_foundry.v2 import (
 SALES_FILE = "kc_house_data.csv"
 CHANGE_LOG_ZIP = "Change History Detail.zip"
 BUILDINGS_ZIP = "Residential Building.zip"
+SALES_ZIP = "Real Property Sales.zip"
 CHANGES_FILE = "house_sales_changes.csv"  # prepared: the change log of the file's parcels, for the attributes below
 BATHS_FILE = "house_sales_bath_counts.csv"  # prepared: today's bathroom counts of building 1 of the file's parcels
+WARNINGS_FILE = "house_sales_sale_warnings.csv"  # prepared: the county's sale warnings of the file's parcels, 2014-15
 
 # The sales of May 2015 are incomplete: the sales list was extracted in mid-May 2015.
 FIRST_INCOMPLETE_MONTH = "20150501"
@@ -39,7 +42,20 @@ CHANGED_COLUMNS = {
     ("Bldg 1", "YrBuilt"): "yr_built",
     ("Bldg 1", "YrRenovated"): "yr_renovated",
     ("Land", "SqFtLot"): "sqft_lot",
+    ("LandFootage", "SqFtLot"): "sqft_lot",  # the lot size changes are logged under this record
 }
+REBUILT_COLUMNS = list(dict.fromkeys(CHANGED_COLUMNS.values()))
+# The county's sale warnings (lookup type 7 of EXTR_LookUp) that mark a sale as not at market value
+NON_MARKET_WARNINGS = {
+    "15": "no market exposure",
+    "46": "non-representative sale",
+    "60": "short sale",
+    "51": "related party, friend, or neighbor",
+    "23": "forced sale",
+    "13": "bankruptcy - receiver or trustee",
+}
+# Living areas under this many sq ft with bedrooms recorded are placeholders of houses under construction
+MIN_LIVING_AREA = 250
 # `bathrooms` counts a full bath as 1, a three-quarter bath as 0.75 and a half bath as 0.5
 BATH_WEIGHTS = {"BathFullCount": 1.0, "Bath3qtrCount": 0.75, "BathHalfCount": 0.5}
 CONDITION = {"Poor": 1, "Fair": 2, "Average": 3, "Good": 4, "Very Good": 5}
@@ -70,6 +86,27 @@ def _first_changes(changes: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     """The earliest change per group of ``keys`` (by update time, then event)."""
     order = changes.sort_values([*keys, "updated", "event"], kind="stable")
     return order.groupby(keys, sort=False).head(1)
+
+
+def _sale_codes(sales: pd.DataFrame, warnings: pd.DataFrame) -> pd.Series:
+    """The county's sale warning codes of each sale (a set; empty when unflagged or unmatched).
+
+    A sale matches the county's sales on parcel, deed date and price; a sale with several matching county records takes
+    the codes of all of them.
+    """
+    keys = pd.DataFrame(
+        {"row": np.arange(len(sales)), "id": sales["id"].to_numpy(), "date": sales["date"].str[:8].to_numpy()}
+    )
+    keys["price"] = sales["price"].round().astype("int64").to_numpy()
+    matched = keys.merge(warnings, on=["id", "date", "price"])
+    codes = matched.groupby("row")["warning"].agg(lambda w: set(" ".join(w).split()))
+    return codes.reindex(np.arange(len(sales))).apply(lambda c: c if isinstance(c, set) else set())
+
+
+def _market_sales(sales: pd.DataFrame, warnings: pd.DataFrame) -> pd.DataFrame:
+    """The sales without a county warning that marks them as not at market value (`NON_MARKET_WARNINGS`)."""
+    non_market = _sale_codes(sales, warnings).apply(lambda c: bool(c & set(NON_MARKET_WARNINGS))).to_numpy()
+    return sales[~non_market]
 
 
 def _as_of_sale(sales: pd.DataFrame, changes: pd.DataFrame, bath_counts: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -126,8 +163,8 @@ def _as_of_sale(sales: pd.DataFrame, changes: pd.DataFrame, bath_counts: pd.Data
     out["sqft_above"] = out["sqft_living"] - out["sqft_basement"]
     stats["rows"] = int(
         (
-            out[[*CHANGED_COLUMNS.values(), "bathrooms"]].fillna(-1).to_numpy()
-            != sales.reset_index(drop=True)[[*CHANGED_COLUMNS.values(), "bathrooms"]].fillna(-1).to_numpy()
+            out[[*REBUILT_COLUMNS, "bathrooms"]].fillna(-1).to_numpy()
+            != sales.reset_index(drop=True)[[*REBUILT_COLUMNS, "bathrooms"]].fillna(-1).to_numpy()
         )
         .any(axis=1)
         .sum()
@@ -139,32 +176,37 @@ class HouseSales(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a house in King County, Washington, sell for?",
         use_case=(
-            "An automated valuation model, as lenders or property sites run, estimates a house's price on the day it "
-            "sells from the county assessor's record and its location, trained on all earlier sales."
+            "The county assessor's mass appraisal, or an automated valuation model that works from public records, "
+            "estimates the price a house sells for from the assessor's record of the house on the sale day and its "
+            "location, before the sale is recorded, trained on the sales recorded earlier."
         ),
         row=(
-            "One sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 (20,967 sales)."
+            "One market sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 "
+            "(19,906 sales)."
         ),
         predicted="The sale price, on a log scale; prices range from $75,000 to $7.7 million.",
         known=(
             "The sale date, the location (coordinates and ZIP code) and the assessor's record of the house on the "
             "sale day: living, basement and lot area, bedrooms, bathrooms, floors, year built and renovated, grade "
-            "and condition. A view index, waterfront and the neighbours' areas are as of July 2015."
+            "and condition. A view index, waterfront and the neighbours' areas are as of July 2015. The assessed "
+            "value and the house's previous sale price are not included."
         ),
         split=(
             "Each test window is three weeks of sales, nine windows from late October 2014 to April 2015, newest "
-            "first; training is all earlier sales."
+            "first; training is all sales up to a week before the window."
         ),
         changes=(
             "The file holds the assessor's record of July 2015, after every sale; we rebuild each house as of its "
-            "sale day from the county's change log. We drop May 2015, which the extract cut short, and split by sale "
-            "date."
+            "sale day from the county's change log. We drop the 1,061 sales the county flags as not at market value "
+            "(such as short sales and sales between relatives) and May 2015, which the extract cut short, and split "
+            "by sale date with a one-week gap for the recording of a sale."
         ),
         fit="direct",
         fit_reason=(
-            "The features describe the house as it was sold, and the windows follow a model refit every three weeks. "
-            "A few values (view, waterfront, neighbours' areas) are still from July 2015, and the 1,225 sales the "
-            "county flags as changed since the sale stay as noise."
+            "The features are the assessor's record on the sale day, which a mass appraisal works from. A small "
+            "remnant from July 2015 stays: view, waterfront and the neighbours' areas changed after the sale for "
+            "about 145 rows (masking them: RMSE 0.2147 against 0.2132), and the 1,073 sales the county flags as "
+            "changed since the sale stay as noise."
         ),
     )
 
@@ -180,9 +222,9 @@ class HouseSales(AbstractCuratedDataset):
         kc_house_data.csv is a cut of the sales and property records of the King County Department of Assessments
         (21,386 of its 21,613 rows match a recorded sale on parcel, date and price), first distributed with the
         University of Washington's Machine Learning Specialization on Coursera (2015; course-2/kc_house_data.gl.zip in
-        https://github.com/learnml/machine-learning-specialization holds the same table).
+        https://github.com/learnml/machine-learning-specialization is dated 2015-11-06; its contents not checked).
 
-        We download kc_house_data.csv from Kaggle (21,613 rows; md5 b1e7bdf4f3e61792c0979a5697dc7145) and two extracts of the King County Department of Assessments (https://info.kingcounty.gov/assessor/DataDownload/default.aspx): the change log of the property records (1.8 GB) and the residential building file. The county updates both every week; the definition reads the changes of 2014 and later for the file's parcels, and today's bathroom counts only where no later change records them.
+        We download kc_house_data.csv from Kaggle (21,613 rows; md5 b1e7bdf4f3e61792c0979a5697dc7145) and three extracts of the King County Department of Assessments (https://info.kingcounty.gov/assessor/DataDownload/default.aspx): the change log of the property records (1.8 GB), the residential building file and the real property sales (150 MB). The county updates them every week; the definition reads the changes of 2014 and later for the file's parcels, today's bathroom counts only where no later change records them, and the 2014-2015 sales of the file's parcels (parcel, deed date, price and sale warnings; no names).
 
         mkdir -p local-data-warehouse/house_sales
         kaggle datasets download harlfoxem/housesalesprediction -p local-data-warehouse/house_sales
@@ -190,46 +232,62 @@ class HouseSales(AbstractCuratedDataset):
         rm local-data-warehouse/house_sales/housesalesprediction.zip
         wget -O "local-data-warehouse/house_sales/Change History Detail.zip" "https://aqua.kingcounty.gov/extranet/assessor/Change%20History%20Detail.zip"
         wget -O "local-data-warehouse/house_sales/Residential Building.zip" "https://aqua.kingcounty.gov/extranet/assessor/Residential%20Building.zip"
+        wget -O "local-data-warehouse/house_sales/Real Property Sales.zip" "https://aqua.kingcounty.gov/extranet/assessor/Real%20Property%20Sales.zip"
 
-        The first build filters the change log to house_sales_changes.csv and house_sales_bath_counts.csv in the same folder.
+        The first build filters the extracts to three files in the same folder. With the downloads of 2026-10-07 (change log, building file) and 2026-10-19 (sales) their md5 are: house_sales_changes.csv 06491065b3ddbc8b0d9d20fb82444cad, house_sales_bath_counts.csv dc04ef1d66b0f1374a5b541bfb76c9ea, house_sales_sale_warnings.csv 06e45bc786381590dfcf24822e1ce221. A different md5 after a new download means the county changed its 2014-2015 records.
     """
     bibtex = r"""
-        @misc{harlfoxem2016housesales,
-          author = {harlfoxem},
-          title = {House Sales in King County, USA},
-          year = {2016},
-          howpublished = {\url{https://www.kaggle.com/datasets/harlfoxem/housesalesprediction}},
-          note = {Kaggle dataset; first distributed as kc\_house\_data with the University of Washington's Machine Learning Specialization on Coursera (2015)}
+        @misc{fox2015kchousedata,
+          author = {Fox, Emily and Guestrin, Carlos},
+          title = {kc\_house\_data: House sales in King County, Washington},
+          year = {2015},
+          howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
+          note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
+        }
+        @misc{kingcounty2015assessor,
+          author = {{King County Department of Assessments}},
+          title = {Assessor data download: real property sales, residential building and change history extracts},
+          year = {2015},
+          howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
         }
     """
     curation_comments = """
-        We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Two extracts of the King County Department of Assessments give the house as it stood at each sale.
+        We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
 
-        - Prediction point: a house sells, and we predict its price from the assessor's record on the day of the sale and its location, with a model trained on all earlier sales (an automated valuation model).
-        - The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,151 of the 20,967 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scores better on these rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale). These values are recorded after the outcome, so we rebuild each row as of its sale day.
-        - The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement`, as in every row of the file. `_prepare_raw_files` cuts the two extracts down to the file's parcels.
-        - We leave `view`, `waterfront` (the file's 0-4 view index is not a county attribute), `sqft_living15`, `sqft_lot15` (the neighbours' areas in July 2015) and the 10 values whose old value is blank as in the file.
-        - Anomaly: the record at the sale describes what was sold, so `yr_built` is rebuilt for 24 rows, mostly teardowns, and 6 houses under construction carry a placeholder living area of 8 to 200 sq ft. We keep the 1,225 rows the county flags with sale warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", as noise.
-        - We drop the 646 sales of May 2015 (3.0%): the sales list was extracted in mid-May 2015, so the month is incomplete, and its quickly recorded sales are cheaper (decision table).
-        - We keep the repeated sales of one house (159 houses sold twice and one three times): under the temporal split the earlier sale is in the past, and LightGBM predicts resales worse than the other test rows (RMSE 0.36 against 0.17).
+        - Prediction point: a house sells, and the assessor's mass appraisal or a public-record valuation model estimates its price from the assessor's record on the sale day and its location, trained on the sales recorded earlier. The assessed value and the previous sale price are not in the file.
+        - We drop the 1,061 sales (5.1%) whose county record carries a warning for a sale not at market value: 15 no market exposure, 46 non-representative, 60 short sale, 51 related party, 23 forced sale, 13 bankruptcy (`_market_sales`, decision table). Sales are matched on parcel, deed date and price (20,742 of the 20,967 sales before May 2015; the other 225 stay). These sales sat 0.14 to 0.23 below an untuned LightGBM on the log scale; teardowns (10) and segregations (29) did not (-0.02 and +0.05), so they stay.
+        - The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,188 of the 19,906 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
+        - The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` (logged under the `Land` and `LandFootage` records) whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement` (the finished basement), as in every row of the file. `_prepare_raw_files` cuts the extracts down to the file's parcels.
+        - Potential leak, kept on purpose: `view` (the file's 0-4 index, not a county attribute), `waterfront`, `sqft_living15` and `sqft_lot15` (the neighbours' areas) are as of July 2015. About 145 rows had a view or waterfront rating changed after the sale (39 gained a view); masking their `view` gives RMSE 0.2147 against 0.2132 kept, and dropping the neighbours' areas changes the changed rows by 0.004. Blanking them would make the missing value mark a change after the sale, so they stay, as do the 11 values whose old value is blank, the 5 bathroom rows and about 24 rows whose building record was entered in full after the sale. Revisit if a county view rating history becomes usable.
+        - The 1,073 kept sales the county flags with warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", stay as noise: 944 of them are not rebuilt because their changes come after July 2015, and they sell below the model (-0.12), so the file holds the record at the sale.
+        - Anomaly: the record at the sale describes what was sold, so `yr_built` is rebuilt for 22 rows, mostly teardowns. 5 houses under construction carry a placeholder living area of 8 to 200 sq ft with bedrooms recorded; we set their `sqft_living` and `sqft_above` to missing and keep the rows (the 290 sq ft house without bedrooms stays).
+        - We drop the 646 sales of May 2015 (3.0%): the bulk of the sales list stops on 15 May 2015 (5 sales recorded up to 2 June), so the month is incomplete, and its quickly recorded sales are cheaper (decision table).
+        - We keep the repeated sales of one house (120 houses sold twice): under the temporal split the earlier sale is in the past, and LightGBM predicted resales worse than the other test rows (RMSE 0.27 against 0.17, measured before the non-market filter).
         - We drop `id`, the parcel number. `_load_raw` reads it and `zipcode` as text to keep the leading zeros.
-        - `yr_renovated` = 0 (GeoDa: "'0' if never renovated") and 0 bedrooms or 0 bathrooms at the sale are unrecorded values; we set them to missing.
+        - `yr_renovated` = 0 means never renovated (GeoDa: "'0' if never renovated"); we set it to missing, so missing means "never renovated". 0 bedrooms or 0 bathrooms at the sale are unrecorded values; we set them to missing.
         - Target: `log_price`, the log of the sale price ($75,000 to $7.7M).
         - `zipcode` is categorical, and `date` (the sale date) is a datetime and the time column.
-        - No duplicate rows. 9 pairs of different parcels share every feature (townhouses built together), one of them sold on the same day at two prices (the conflicting duplicate the checks report); we keep them.
+        - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
     """
 
     # Task
     target = "log_price"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Neither the King County assessor extracts nor the Kaggle dataset card define a task metric (the Coursera course that first distributed kc_house_data used RSS/RMSE on the raw price as a teaching exercise, not a benchmark definition). For a sale price the error that matters is relative to the price (prices range from $75,000 to $7.7 million), so RMSLE on the price.",
+        target_transform="log",
+    )
 
     # Splits
-    temporal = Temporal(on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5))
+    temporal = Temporal(
+        on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5, gap=1)
+    )
     splits_comment = """
-        A price model refit every three weeks predicts the sales of the next three weeks: 9 test windows of 21 days, from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on all earlier sales. Nine windows are the 3 x 3 splits an IID task of this size gets; they hold 659 to 1,565 sales each, and the oldest trains on 54% of the rows. Calendar months (a monthly refit) would give 6 windows of 978 to 2,231 sales.
+        9 test windows of three weeks (21 days), from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on the sales up to one week before the window. The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 617 to 1,458 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 911 to 2,084 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
     """
 
-    prepared_raw_files = (CHANGES_FILE, BATHS_FILE)
+    prepared_raw_files = (CHANGES_FILE, BATHS_FILE, WARNINGS_FILE)
 
     def _prepare_raw_files(self, raw_dir: Path) -> None:
         ids = set(pd.read_csv(raw_dir / SALES_FILE, usecols=["id"], dtype=str)["id"])
@@ -279,6 +337,29 @@ class HouseSales(AbstractCuratedDataset):
         buildings = buildings.drop_duplicates("id")[["id", *BATH_WEIGHTS]].sort_values("id", kind="stable")
         buildings.to_csv(raw_dir / BATHS_FILE, index=False)
 
+        # the county's sales of the file's parcels in 2014-2015: parcel, deed date, price and sale warnings only
+        with zipfile.ZipFile(raw_dir / SALES_ZIP) as archive, archive.open("EXTR_RPSale.csv") as handle:
+            county = pd.read_csv(
+                handle,
+                dtype=str,
+                keep_default_na=False,
+                encoding="latin-1",
+                usecols=["Major", "Minor", "DocumentDate", "SalePrice", "SaleWarning"],
+            ).apply(lambda s: s.str.strip())
+        county["id"] = county["Major"].str.zfill(6) + county["Minor"].str.zfill(4)
+        county = county[county["id"].isin(ids) & county["DocumentDate"].str[-4:].isin(["2014", "2015"])]
+        deed = pd.to_datetime(county["DocumentDate"], format="%m/%d/%Y")
+        warnings = pd.DataFrame(
+            {
+                "id": county["id"],
+                "date": deed.dt.strftime("%Y%m%d"),
+                "price": county["SalePrice"].astype("int64"),
+                "warning": county["SaleWarning"],
+            }
+        )
+        warnings = warnings.sort_values(["id", "date", "price", "warning"], kind="stable")
+        warnings.to_csv(raw_dir / WARNINGS_FILE, index=False)
+
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         # The parcel number and the ZIP code are codes: read them as text to keep the leading zeros.
         sales = pd.read_csv(raw_dir / SALES_FILE, dtype={"id": str, "zipcode": str})
@@ -288,16 +369,24 @@ class HouseSales(AbstractCuratedDataset):
             keep_default_na=False,
         )
         bath_counts = pd.read_csv(raw_dir / BATHS_FILE, dtype={"id": str})
-        return {"sales": sales, "changes": changes, "bath_counts": bath_counts}
+        warnings = pd.read_csv(
+            raw_dir / WARNINGS_FILE, dtype={"id": str, "date": str, "warning": str}, keep_default_na=False
+        )
+        return {"sales": sales, "changes": changes, "bath_counts": bath_counts, "warnings": warnings}
 
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         # The sales of May 2015 are incomplete (the sales list was extracted mid-month); dates read YYYYMMDDT000000.
         df = raw["sales"][raw["sales"]["date"] < FIRST_INCOMPLETE_MONTH]
+        # The target is a market price: drop the sales the county flags as not at market value.
+        df = _market_sales(df, raw["warnings"])
         # The house features as the assessor's record stood on the day of each sale (see `_as_of_sale`).
         df, _ = _as_of_sale(df, _parse_changes(raw["changes"]), raw["bath_counts"])
-        # Proxy missing values: 0 bedrooms or bathrooms are unrecorded; a renovation year of 0 means none recorded.
+        # Proxy missing values: 0 bedrooms or bathrooms are unrecorded; a renovation year of 0 means never renovated.
         for col in ("bedrooms", "bathrooms", "yr_renovated"):
             df[col] = df[col].replace({0: np.nan})
+        # A living area of a few sq ft with bedrooms recorded is the placeholder of a house under construction.
+        placeholder = (df["sqft_living"] < MIN_LIVING_AREA) & df["bedrooms"].notna()
+        df[["sqft_living", "sqft_above"]] = df[["sqft_living", "sqft_above"]].astype(float).mask(placeholder)
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"price": "log_price"})
         df["log_price"] = np.log(df["log_price"])
@@ -305,15 +394,28 @@ class HouseSales(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["zipcode"],
+            categorical=["zipcode", "waterfront"],  # waterfront is a 0/1 flag (CLEAN-14)
             datetime={"date": "%Y%m%dT%H%M%S"},
         )
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         sales = raw["sales"]
         changes = _parse_changes(raw["changes"])
-        kept = sales[sales["date"] < FIRST_INCOMPLETE_MONTH].reset_index(drop=True)
+        before_may = sales[sales["date"] < FIRST_INCOMPLETE_MONTH].reset_index(drop=True)
+        kept = _market_sales(before_may, raw["warnings"]).reset_index(drop=True)
         rebuilt, stats = _as_of_sale(kept, changes, raw["bath_counts"])
+
+        # 0. the sales per county warning: dropped when the warning marks a sale not at market value
+        codes = _sale_codes(before_may, raw["warnings"])
+        flagged = pd.Series([c for row in codes for c in row]).value_counts()
+        dropped = codes.apply(lambda c: bool(c & set(NON_MARKET_WARNINGS)))
+        per_code = pd.DataFrame(
+            {
+                "sales": flagged,
+                "dropped": flagged.index.isin(list(NON_MARKET_WARNINGS)),
+            }
+        ).rename_axis("county sale warning")
+        per_code = per_code.sort_values("sales", ascending=False, kind="stable")
 
         # 1. the file's features are the record of mid-July 2015: changes dated before then are in the file (their
         # old value differs from it), changes dated after are not (their old value is the file's value)
@@ -331,7 +433,7 @@ class HouseSales(AbstractCuratedDataset):
         )
 
         # 2. the values rebuilt as of the sale, by column
-        columns = [*CHANGED_COLUMNS.values(), "bathrooms", "sqft_above"]
+        columns = [*REBUILT_COLUMNS, "bathrooms", "sqft_above"]
         file_values = kept[columns].astype(float)
         sale_values = rebuilt[columns].astype(float)
         differs = file_values.fillna(-1) != sale_values.fillna(-1)
@@ -365,6 +467,15 @@ class HouseSales(AbstractCuratedDataset):
                 "resales of a house sold before": int(kept.loc[in_window, "id"].isin(earlier).sum()),
             }
         return [
+            Decision(
+                "Sales the county flags as not at market value dropped",
+                f"We match each sale to the county's sales on parcel, deed date and price and drop the "
+                f"{int(dropped.sum()):,} sales with a warning for a sale not at market value ("
+                + ", ".join(f"{k} {v}" for k, v in NON_MARKET_WARNINGS.items())
+                + "). The other warnings stay: a teardown (10) or a segregation (29) is sold at a market price for "
+                "the land or the changed lot, and 26 is the county's note that the house changed after the sale.",
+                per_code,
+            ),
             Decision(
                 "House features rebuilt as of each sale from the assessor's change log",
                 f"The file shows each house as the assessor recorded it in mid-July 2015, after every sale. For "

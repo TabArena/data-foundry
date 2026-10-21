@@ -39,6 +39,10 @@ CC (2026-10-06, Lennart): Kept after the task-probe review (flag `no_spread`). A
 
 **Assessment (AI, 2026-10-14):** No leak in `ca` or `thal`: `ca` counts major coronary arteries with calcium on cardiac cinefluoroscopy and `thal` is an exercise thallium scan, noninvasive tests done before the angiography that sets the label (Detrano et al. 1986, Circulation 73:970, PMID 3698241; Detrano et al. 1986, Am J Cardiol 57:1041, PMID 3706156). The data reproduces their sensitivity and specificity (`ca` >= 1: 66.7% / 80.7%).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Detrano et al. 1989 score reliability (calibration) and percent correctly classified, no threshold or costs for the hard call; percent correctly classified rejected (MET-6, MET-8).
+
+CC (2026-10-21, Lennart): proposal accepted: roc_auc (fallback) for the heart_disease_* datasets, not log_loss.
+
 ## Reference
 
 @article{detrano1989international,

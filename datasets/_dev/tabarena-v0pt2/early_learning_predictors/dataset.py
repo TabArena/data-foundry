@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
 
 
 class EarlyLearningPredictors(AbstractCuratedDataset):
@@ -105,6 +105,14 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
     # Task
     target = "child_total_elom"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="Root Mean Squared Error (Zindi error_metric root_mean_squared_error)",
+        reference=(
+            "https://zindi.africa/competitions/datadrive2030-early-learning-predictors-challenge (API field error_metric)"
+        ),
+        definition="RMSE of the child's total ELOM score.",
+    )
     grouping = Grouping(
         on="id_facility",
         labels="per_sample",
@@ -706,6 +714,10 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_emotional_met",
                 "teacher_selfcare_met",
                 "teacher_social_met",
+                # yes/no questions by their name (CLEAN-14)
+                "pra_breadwinner",
+                "pra_letcee_club",
+                "pri_funding_subsidy",
             ),
             datetime={"child_dob": "%d%b%Y"},
         )

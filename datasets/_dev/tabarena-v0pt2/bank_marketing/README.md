@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
+checksum: v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 45211
   n_features: 13
@@ -29,6 +29,8 @@ task:
   target: SubscribeTermDeposit
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: SubscribeTermDeposit
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 30140
     max: 30141
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +137,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | SubscribeTermDeposit |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC (area under the ROC curve), with ALIFT (area under the cumulative lift curve) as second metric |
+| reference | Moro, Cortez, Rita 2014, A data-driven approach to predict the success of bank telemarketing, Decision Support Systems 62:22-31 (also Moro, Laureano, Cortez 2011, ESM, on the bank-full data) |
+| definition | ROC AUC of term-deposit subscription. |
 
 <details>
 <summary>Feature types: 11 categorical, 0 string, 0 datetime</summary>
@@ -302,3 +316,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f` |

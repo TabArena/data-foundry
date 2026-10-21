@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: electric_motor_temperature_prediction
 container_format: 2
-checksum: v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd
+checksum: v2:d51f02b1752505297e4a587feeabb8e3fee1983afeaf2bd0bc0829329e6cd45a
 build:
   uuid: 01a111fb-0e27-7b57-8daa-3b40b8ba0e11
   checksum: v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1296316
   n_features: 109
@@ -29,7 +29,9 @@ data:
 task:
   target: permanent_magnet_temperature
   problem_type: regression
-  metric: rmse
+  metric: mse
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -50,6 +52,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 839652
     max: 899567
@@ -70,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `permanent_magnet_temperature`, scored with `rmse` on grouped splits by `profile_id`. 1,296,316 rows and 109 features. Source: Kaggle (2021).
+Regression of `permanent_magnet_temperature`, scored with `mse` on grouped splits by `profile_id`. 1,296,316 rows and 109 features. Source: Kaggle (2021).
 
-Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d51f02b1752505297e4a587feeabb8e3fee1983afeaf2bd0bc0829329e6cd45a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -134,11 +138,21 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,296,316 x 111 |
 | task.target | permanent_magnet_temperature |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mse |
 | task.split_regime | grouped_non_iid |
 | task.group_on | profile_id |
 | task.group_labels | per_sample |
 | task.group_time_on | profile_time_index |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | mean squared error (MSE in K^2 / degC^2); also MAE, R2 and the l-infinity norm (max abs error) reported |
+| reference | Kirchgaessner, Wallscheid, Boecker 2021, 'Data-Driven Permanent Magnet Temperature Estimation in Synchronous Motors with Supervised Machine Learning', IEEE Trans. Energy Conversion, arXiv:2001.06246 (Sec. IV, Table III; HPO objective is the average MSE over group-3-fold CV); the cited TPEL 2020 paper also ranks by MSE |
+| definition | mean over samples of (predicted - measured permanent magnet temperature)^2, in K^2 |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -222,7 +236,7 @@ One group is a measurement session (profile) of the test bench; its rows are its
 | nearest neighbour in the same group | 99.4% of the rows (chance: 1.8%) |
 | label variance explained by the group | 0.60 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -403,3 +417,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:d51f02b1752505297e4a587feeabb8e3fee1983afeaf2bd0bc0829329e6cd45a` |

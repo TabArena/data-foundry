@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -217,7 +218,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         - The weather is in UTC and the readings in local time (p. 8): we shift it by the 1st place solution's offsets and join it on site and hour. Daylight saving time at 8 sites changed RMSE by -0.007 to +0.005 per window, so we keep standard time.
         - Recording errors, removed as all top five teams did: site 0's electricity before 2016-05-21, electricity at 0, chilled water at 0 for 48 hours or more in May-October and steam or hot water in November-April, readings stuck for a week or more (site 5's electricity, March-November 2017), and building 1099's steam unit error (above 10 times its median, January-June 2016). 1.70M hours (4.2%, decision table).
         - 94.5% of the 2016 hours we drop are on the 1st place team's hand-made list of bad readings, and they cover 64% of that list. Zeros of heating and cooling meters outside their season stay: a plant switched off, which a model can learn.
-        - The target is log1p of kWh, so RMSE is the competition's RMSLE, in one unit for all meters.
+        - The target is log1p of kWh, in one unit for all meters; the metric is the competition's RMSLE on kWh, computed after the inverse (`target_transform="log1p"`).
         - building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
         - precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
     """
@@ -225,6 +226,16 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
     # Task
     target = "log1p_meter_reading"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmsle",
+        original="RMSLE (Root Mean Squared Logarithmic Error)",
+        reference="https://www.kaggle.com/competitions/ashrae-energy-prediction/overview/evaluation",
+        definition=(
+            "sqrt(mean((log1p(pred) - log1p(actual))^2)) of kWh over all meter-hours, computed after the inverse of "
+            "our log1p_meter_reading target."
+        ),
+        target_transform="log1p",
+    )
 
     # Splits: three 4-month windows tile 2017, the competition's public test year.
     temporal = Temporal(

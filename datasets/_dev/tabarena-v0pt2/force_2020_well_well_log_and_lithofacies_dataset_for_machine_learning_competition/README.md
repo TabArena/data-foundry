@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 container_format: 2
-checksum: v2:f0aa6ed77377c284624211049a86e319660fa29599b7d37d337a467884ecd54b
+checksum: v2:9efe3da341d972550b568fb00a545e58dabc92e98a87b46b5f3d2a98d8fa67e0
 build: null
 build_stale: false
 data:
@@ -15,13 +15,15 @@ data:
 task:
   target: lithology
   problem_type: multiclass_classification
-  metric: log_loss
+  metric: cost_matrix
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: lithology
   time_on: null
   group_on: WELL
   group_labels: per_sample
-  group_time_on: null
+  group_time_on: DEPTH_MD
   grouping:
     prediction_unit: row
     aggregation: null
@@ -36,6 +38,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 931093
     max: 973462
@@ -51,27 +55,27 @@ bundle_checks:
     splits_test_class_missing: Halite occurs in 4 wells (14,711 rows) and Anhydrite
       in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests
       none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite
-      wells, and every train side holds both classes. Log loss is defined on the classes
-      a fold holds.
+      wells, and every train side holds both classes. The mean penalty is defined
+      on the classes a fold holds.
 decisions:
 - All 118 wells in one frame, split by well
 - 'Basement dropped: one well'
-- LAS null values set to missing
+- LAS null values and impossible readings set to missing
 ---
 
 # force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `lithology`, scored with `log_loss` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
+Multiclass classification of `lithology`, scored with `cost_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
 
-Not built yet. The current definition gives checksum `v2:f0aa6ed77377c284624211049a86e319660fa29599b7d37d337a467884ecd54b`.
+Not built yet. The current definition gives checksum `v2:9efe3da341d972550b568fb00a545e58dabc92e98a87b46b5f3d2a98d8fa67e0`.
 
 ## In brief
 
-**Question.** Which rock type lies at each depth of a newly drilled well, judging from its well logs?
+**Question.** Which rock type lies at each depth of a newly drilled or a released well, judging from its well logs?
 
-**Use case.** After a well has been drilled and logged, a geologist interprets the rock type along the whole well from its wireline logs, its position and the official stratigraphic picks (the FORCE 2020 competition's task).
+**Use case.** After a well has been drilled and logged, or once it is released to the public, a geologist interprets the rock type along the whole well from its wireline logs, its position and the official stratigraphic picks (the FORCE 2020 competition's task, whose labels cover 118 released wells).
 
 **One row.** One depth sample (every 0.152 m) of one of 118 wells in the Norwegian North Sea.
 
@@ -79,11 +83,11 @@ Not built yet. The current definition gives checksum `v2:f0aa6ed77377c2846242110
 
 **Known at prediction time.** The well's logs at that depth (gamma ray, resistivity, density, neutron, sonic, caliper and others, some missing), the depth and position, drilling data (bit size, mud weight, rate of penetration) and the stratigraphic group and formation; the same well's other depths may be used.
 
-**What the test data stands for.** Whole wells are held out in three folds, so the test data stands for wells never interpreted.
+**What the test data stands for.** Whole wells are held out in three folds, so the test data stands for newly drilled or released wells never interpreted.
 
 **Our changes to the source.** We pool the competition's training, open-test and blind wells and split by well across all 118; we drop the interpreter's confidence in the label and the basement class, found in one well only.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once a well is logged, and a held-out well is a new well. The stratigraphic picks come from the national register (NPD) rather than the interpreters, as the competition gave them.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once a well is logged and released, and a held-out well is a new well; the stratigraphic picks are the national register's (NPD), published for released wells. The known gap: the interpreters also drew on mud logs, completion logs and in-house data the model does not get, which the organisers say caps the reachable accuracy near 80%.
 
 ## Files in this folder
 
@@ -91,6 +95,7 @@ Not built yet. The current definition gives checksum `v2:f0aa6ed77377c2846242110
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition.md`](../../../../curation/records/force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition.md)
@@ -130,18 +135,30 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | GitHub: https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition |
 | year | 2020 |
-| domain | chemistry & material science |
+| domain | environmental science & climate |
 | license | CC BY 4.0 (Zenodo record); the original well logs: NLOD 2.0 |
-| data_tags | Non-IID, Grouped, Spatial |
+| data_tags | Non-IID, GroupedTemporal, Spatial |
 | reference | bormann2020force |
 | rows x columns | 1,429,591 x 28 |
 | task.target | lithology |
 | task.problem_type | multiclass_classification |
-| task.metric | log_loss |
+| task.metric | cost_matrix |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | lithology |
 | task.group_on | WELL |
 | task.group_labels | per_sample |
+| task.group_time_on | DEPTH_MD |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `cost_matrix` (custom; takes label; lower is better) |
+| origin | source: the source's metric |
+| original | penalty matrix score S = -(1/N) sum_i A[y_true_i, y_pred_i] |
+| reference | FORCE 2020 starter notebook, https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition/blob/master/lithology_competition/data/starter_notebook.ipynb |
+| definition | mean over depth samples of the competition's penalty A[true, predicted] on hard labels (the competition's score is its negative); 11 x 11 sub-matrix of penalty_matrix.npy after Basement was dropped, symmetric, zero diagonal, order of the starter notebook's lithology_numbers |
+| params | {'labels': ['Sandstone', 'Sandstone/Shale', 'Shale', 'Marl', 'Dolomite', 'Limestone', 'Chalk', 'Halite', 'Anhydrite', 'Tuff', 'Coal'], 'matrix': [[0.0, 2.0, 3.5, 3.0, 3.75, 3.5, 3.5, 4.0, 4.0, 2.5, 3.875], [2.0, 0.0, 2.375, 2.75, 4.0, 3.75, 3.75, 3.875, 4.0, 3.0, 3.75], [3.5, 2.375, 0.0, 2.0, 3.5, 3.5, 3.75, 4.0, 4.0, 2.75, 3.25], [3.0, 2.75, 2.0, 0.0, 2.5, 2.0, 2.25, 4.0, 4.0, 3.375, 3.75], [3.75, 4.0, 3.5, 2.5, 0.0, 2.625, 2.875, 3.75, 3.25, 3.0, 4.0], [3.5, 3.75, 3.5, 2.0, 2.625, 0.0, 1.375, 4.0, 3.75, 3.5, 4.0], [3.5, 3.75, 3.75, 2.25, 2.875, 1.375, 0.0, 4.0, 3.75, 3.125, 4.0], [4.0, 3.875, 4.0, 4.0, 3.75, 4.0, 4.0, 0.0, 2.75, 3.75, 3.75], [4.0, 4.0, 4.0, 4.0, 3.25, 3.75, 3.75, 2.75, 0.0, 4.0, 4.0], [2.5, 3.0, 2.75, 3.375, 3.0, 3.5, 3.125, 3.75, 4.0, 0.0, 2.5], [3.875, 3.75, 3.25, 3.75, 4.0, 4.0, 4.0, 3.75, 4.0, 2.5, 0.0]]} |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
@@ -175,11 +192,11 @@ The first 5 of 1,429,591 rows of the final frame (random rows: the frame is shuf
 
 | lithology | WELL | DEPTH_MD | X_LOC | Y_LOC | Z_LOC | GROUP | FORMATION | CALI | RSHA | RMED | RDEP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Shale | 16/8-1 | 2131.34 | 466874 | 6.47987e+06 | -2105.91 | VIKING GP. | Smith Bank Fm. | 13.268 | 1.21198 | 1.19823 | 1.40532 |
-| Sandstone/Shale | 34/10-35 | 1156.05 | 463377 | 6.77106e+06 | -1132.98 | HORDALAND GP. | Utsira Fm. | 17.6 | nan | 0.972549 | 1.24939 |
-| Shale | 31/3-3 | 2422.14 | 545915 | 6.74482e+06 | -2394.22 | DUNLIN GP. | Johansen Fm. | nan | 6.78283 | 6.78323 | 6.17015 |
-| Sandstone/Shale | 34/2-4 | 2096.63 | 482080 | 6.84717e+06 | -2063.57 | SHETLAND GP. | Jorsalfare Fm. | 20.7582 | nan | 1.16737 | 1.22059 |
-| Shale | 35/11-12 | 1590.87 | 520561 | 6.77735e+06 | -1566.82 | HORDALAND GP. | Utsira Fm. | nan | nan | 0.54376 | 0.547617 |
+| Shale | 25/5-3 | 1476.83 | 479084 | 6.60546e+06 | -1454.76 | HORDALAND GP. | Grid Fm. | 12.1438 | nan | 0.844066 | 0.833696 |
+| Shale | 16/10-3 | 2386.7 | 460443 | 6.45374e+06 | -2346.35 | CROMER KNOLL GP. | Sola Fm. | 8.92856 | 1.48426 | 1.47794 | 1.87302 |
+| Shale | 34/3-3 A | 3019.41 | 485334 | 6.8519e+06 | -2848.07 | SHETLAND GP. | Kyrre Fm. | 12.4201 | nan | 1.87896 | 1.977 |
+| Shale | 31/3-2 | 651.209 | 536838 | 6.74864e+06 | -626.18 | HORDALAND GP. | nan | nan | nan | 1.56795 | 1.50001 |
+| Shale | 34/11-2 S | 2040.23 | 466833 | 6.78824e+06 | -2014.98 | SHETLAND GP. | Jorsalfare Fm. | 17.6425 | nan | 1.28306 | 1.56104 |
 
 ## Curation notes
 
@@ -187,21 +204,26 @@ We start with the four files of the FORCE 2020 lithology competition on GitHub: 
 
 - Prediction point: a well has been drilled and logged, and its lithology is interpreted from the wireline logs, the NPD lithostratigraphy (GROUP, FORMATION) and the well position (GitHub readme). Every feature is known then, for every depth of the well.
 - We stack the three files (1,429,694 rows), joining the open-test features to their labels row by row after checking that both list the same WELL and DEPTH_MD.
-- Grouped cross-validation by well over all 118 wells replaces the competition's 98 / 10 / 10 split, whose blind set the organisers found too small to represent the lithologies. Neighbouring depths of a well are nearly identical, so a row-random split would let a model recognise the well (random forest log loss 0.31 on row-random folds against 0.78 on grouped folds).
+- Grouped cross-validation by well over all 118 wells replaces the competition's 98 / 10 / 10 split, whose blind set the organisers found too small to represent the lithologies (see the splits comment). Neighbouring depths of a well are nearly identical, so a row-random split would let a model recognise the well (a random forest of 150 trees on every 10th depth sample: log loss 0.315 on row-random folds against 0.763 on the grouped folds, 3 folds each).
 - We drop FORCE_2020_LITHOFACIES_CONFIDENCE, the interpreter's confidence in the label: it is recorded with the label and is missing for the open-test wells.
 - Target: FORCE_2020_LITHOFACIES_LITHOLOGY, mapped to the names of the starter notebook and renamed lithology. We drop the Basement class, whose 103 rows are all in well 16/4-1, so no grouped split can both train and test it; 11 classes remain.
-- Proxy missing values: the LAS null values -999.0, -999.25 and -999.9 become missing in RXO, SP and ROPA. Interpolated values and spikes stay ("slightly cleaned up and partially despiked", Zenodo), as do missing curves: only WELL, DEPT and GR are guaranteed (starter notebook).
-- WELL (the group of the split), GROUP and FORMATION are categorical.
-- Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD), and only 10% of the 574 group boundaries fall on a lithology change at the same sample. The competition gave them as features, so we keep them; without both the random forest's log loss rises from 0.78 to 0.84.
-- Note: 34/5-1 A and 34/5-1 S, two wellbores of one well, share no depth sample and lie 1.1-1.9 km apart where their depths overlap, so the group stays the wellbore, as in the competition.
-- Note: the task probes flag no_spread because untuned LightGBM diverges here with its default min_child_weight of 0.001 (log loss 2.77). The random forest (0.744, class shares 1.284) and the linear model (0.989) differ by 0.19 skill, so the families spread.
-- Anomaly: MUDWEIGHT is on three scales (per-well medians of 0.13-0.17, 1.08-1.80 and 156) with no unit in any LAS header; we leave it, as a conversion would rest on guessed units.
+- Proxy missing values: values below -900 in the 20 log curves become missing. They are the LAS null values -999.0, -999.25 and -999.9 (in RXO, SP and ROPA) and interpolation ramps from them (RXO -995.9 and -968.1, ROPA -965.9 and -948.9, DRHO -7,429.3). Z_LOC is not masked: it is the true vertical depth, below -900 m on most rows.
+- Impossible values become missing: negative readings of the resistivity, gamma-ray and penetration-rate curves (RMED 7, RXO 131, SGR 39, ROP 52 and ROPA 20 rows; SGR down to -778) and DCAL above 100 inches (2 rows, one of 10,006.8).
+- DRHO becomes missing in two wells where it holds another curve: in 36/7-3 it equals RHOB on all 3,474 rows, in 31/4-10 it is a bulk density (median 2.38 g/cm3, 2,208 rows); a density correction is normally within about 0.2 g/cm3. We mask by well, not by a threshold: |DRHO| > 1 would also take 3,339 rows of 28 other wells (median -1.16), unusual bad-hole readings that stay.
+- Off-scale wells become missing per curve (Lennart, 2026-10-21): ROP in 25/6-2 (median 17,778 against 0.6-365 in the other 66 wells, 2,925 rows), ROPA in 34/4-10 R (median 0.099 against 10-82; 1/87 of its own ROP, no unit factor), SGR in 34/12-1 and 35/11-15 S (medians 0.012 and 0.020 against 46-106; GR is 5,283 and 3,323 times SGR there, no unit factor) and MUDWEIGHT above 100 (a third scale of about 156: all 1,275 rows of 16/10-2 and 281 of 15/9-14). No training side shares these scales, and the LAS headers give no other unit (ROP m/h, SGR gAPI in every well).
+- Interpolated values and spikes otherwise stay ("slightly cleaned up and partially despiked", Zenodo), as do missing curves: only WELL, DEPT and GR are guaranteed (starter notebook).
+- WELL (the group of the split), GROUP and FORMATION are categorical. Three rock units appear under two FORMATION codes, ranked as a formation or as a member, never in the same well and always in the same group: Grid Mb. (2 wells) becomes Grid Fm. (15), Skade Mb. (4) Skade Fm. (20) and Ty Mb. (2) Ty Fm. (13), one code per unit (CLEAN-14; Lennart, 2026-10-21).
+- Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD; the deepest top above each sample reproduces GROUP on 100% and FORMATION on 99.95% of the rows). They are not independent of the label: lithostratigraphic units are defined by their rock, the labels and the NPD tops draw on the same post-well material (completion and mud logs), 14,709 of 14,711 Halite rows lie in the Zechstein group, four formation names state a lithology ("Intra ... Fm. Sst.", "Ran Sst Mb."; 0.66% of the rows), and within 0.76 m (NPD's whole-metre rounding) 65.7% of group and 62.8% of formation boundaries sit on a lithology change, against 23.4% of random samples (4x). The competition gave them as features, so we keep them; without both, a random forest's log loss rises from 0.764 to 0.809 (100 trees, 200k training rows per grouped fold). NPD publishes its picks for released wells, the wells the labels were built for; at the first interpretation of a newly drilled well the interpreter would have the operator's own tops, so the use case names both (USE-9; Lennart, 2026-10-21).
+- Note: 34/5-1 A and 34/5-1 S, two wellbores of one well, share 2,273 measured depths but no identical readings and lie 1.5-1.9 km apart at equal measured depth, so the group stays the wellbore, as in the competition; both are in one fold of the shipped splits.
+- Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
+- Units converted where the data give the factor (CLEAN-21; Lennart, 2026-10-21). The curves of each rig's mud-logging system were joined by name without a unit, and the LAS headers give none for MUDWEIGHT and ROPA (ROP says m/h in every well, also where it is not). ROP is in ft/h in 32/2-1 and 16/10-5 (5,814 rows): the same well's ROPA is 0.31 and 0.30 times ROP there (1/3.28 = 0.305) against 0.83-1.08 in the 26 other wells with both curves, and the per-well ROP medians of 101 and 67 become 31 and 20 m/h, the ROPA medians there, so ROP is multiplied by 0.3048. MUDWEIGHT is on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9; the lower one is a pressure gradient in bar/m, and divided by 0.0980665 (the gradient of 1 g/cm3) its per-well medians become 1.34-1.77 g/cm3, the range of the g/cm3 wells. The unit is inferred from the two clusters, not stated: between 1.5 and 2.5 km the converted wells sit higher (median 1.53 against 1.34 g/cm3), which may be their fields. The rule is per row (below 0.5 is bar/m), so 16/7-4 and 25/3-1, which hold both scales, are converted where needed (225,528 rows in all). After the conversion the 28 wells with MUDWEIGHT have per-well medians of 1.08-1.80 g/cm3.
 - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
-- Note: we score log loss, not the competition's penalty matrix. No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
+- Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
+- No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
 
 ## Splits
 
-Default splits.
+Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole wells per test fold, one repeat) replaces the competition's 98 training, 10 open-test and 10 blind wells: the organisers found the blind set too small to represent the lithologies ("With hindsight we should have chosen a larger blind dataset", blog post, p. 3). Test wells have drilled neighbours, as the competition's held-out wells had (14 of its 20 share a licence block with a training well): the median distance from a test well to the nearest training well is 8 km and 55-76% share a licence block, so the score stands for new wells in explored areas, not frontier wells (random forest log loss 0.763 grouped by well, 0.814 by licence block, 1.015 by quadrant). Halite (4 wells) and Anhydrite (10) are absent from one test fold.
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 931,093 to 973,462 rows, test 456,129 to 498,498 rows.
 
@@ -213,13 +235,13 @@ Default splits.
 
 ## Group structure
 
-One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders. The use case is to interpret the lithology of a new well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
+One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders (`time_on`: the order inside a well, for a method that reads the neighbouring depths; it does not change the split, and the dataset ships no window features). The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
 
 | field | value |
 |---|---|
 | group column | `WELL` |
 | labels | per_sample |
-| order inside a group | none |
+| order inside a group | `DEPTH_MD` |
 | prediction unit | row |
 | known about a group when predicting | all_rows |
 
@@ -230,10 +252,10 @@ One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the
 | largest group | 1.8% of the rows |
 | test groups per fold | 37 to 41 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 95.5% of the rows (chance: 1.1%) |
+| nearest neighbour in the same group | 96.2% of the rows (chance: 1.1%) |
 | label variance explained by the group | 0.10 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
@@ -266,15 +288,21 @@ A class that occurs in a single well cannot be in the train and the test side of
 | Anhydrite | 1807 | 10 |
 | Basement | 103 | 1 |
 
-### 3. LAS null values set to missing
+### 3. LAS null values and impossible readings set to missing
 
-The values -999.0, -999.25 and -999.9 (stored as float32) are the null values of the LAS format, not readings.
+Values below -900 are the LAS null values -999.0, -999.25 and -999.9 (stored as float32) or interpolation ramps from them. Resistivity, gamma ray and penetration rate cannot be negative, a differential caliper above 100 inches is impossible, and DRHO holds a bulk density in 36/7-3 and 31/4-10. ROP, ROPA and SGR in single wells and MUDWEIGHT above 100 are on a scale no other well shares. Rows masked per curve and reason (Basement rows dropped):
 
-| index | rows | wells |
-|---|---|---|
-| SP | 402 | 1 |
-| ROPA | 24 | 1 |
-| RXO | 34481 | 3 |
+| index | below -900 (LAS null or ramp) | negative | DCAL above 100 | DRHO holds a density | off-scale well |
+|---|---|---|---|---|---|
+| RMED | 0 | 7 | 0 | 0 | 0 |
+| SGR | 0 | 39 | 0 | 0 | 8716 |
+| SP | 402 | 0 | 0 | 0 | 0 |
+| ROP | 0 | 52 | 0 | 0 | 2925 |
+| DCAL | 0 | 0 | 2 | 0 | 0 |
+| DRHO | 1 | 0 | 0 | 5682 | 0 |
+| MUDWEIGHT | 0 | 0 | 0 | 0 | 1556 |
+| ROPA | 26 | 18 | 0 | 0 | 3880 |
+| RXO | 34483 | 129 | 0 | 0 | 0 |
 
 ## Bundle checks
 
@@ -283,7 +311,7 @@ The values -999.0, -999.25 and -999.9 (stored as float32) are the null values of
 
 Accepted on purpose:
 
-- `splits_test_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. Log loss is defined on the classes a fold holds.
+- `splits_test_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. The mean penalty is defined on the classes a fold holds.
 
 ## Data checks
 
@@ -294,34 +322,34 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| FORMATION | category | 152217 | 10.65 | 70 | Utsira Fm., Kyrre Fm., Lista Fm., Heather Fm., Skade Fm., Statfjord Fm., Vaale … |
+| FORMATION | category | 152217 | 10.65 | 67 | Utsira Fm., Kyrre Fm., Lista Fm., Heather Fm., Skade Fm., Grid Fm., Statfjord F… |
 | GROUP | category | 1278 | 0.09 | 14 | HORDALAND GP., SHETLAND GP., ROGALAND GP., VIKING GP., DUNLIN GP., NORDLAND GP.… |
-| WELL | category | 0 | 0 | 118 | 34/10-16 R, 25/2-7, 29/6-1, 35/11-6, 29/3-1, 25/7-2, 34/2-4, 25/4-5, 34/11-2 S,… |
+| WELL | category | 0 | 0 | 118 | 34/10-16 R, 25/2-7, 29/3-1, 29/6-1, 25/7-2, 34/2-4, 25/4-5, 34/11-2 S, 35/11-6,… |
 | lithology | category | 0 | 0 | 11 | Shale, Sandstone, Sandstone/Shale, Limestone, Marl, Tuff, Halite, Chalk, Coal, … |
-| SGR | float64 | 1.3591e+06 | 95.07 | 69888 | 72.381, 0.0152, 0.0062, 0.0057, 60.031, 65.1634, 0.0215, 0.0083, 0.0082, 88.7575 |
-| RMIC | float64 | 1.22693e+06 | 85.82 | 201811 | 1.5, 2000.0, 7.136, 0.204, 21.2762, 5.4442, 0.088, 0.2063, 1.8671, 0.3437 |
-| DTS | float64 | 1.13889e+06 | 79.67 | 286788 | 168.0, 172.0, 180.0, 194.6611, 179.6846, 385.2354, 196.7576, 180.3262, 163.5254… |
-| ROPA | float64 | 1.11728e+06 | 78.15 | 302762 | 16.4, 5.0, 14.3, 51.1, 16.3, 16.0, 24.29, 14.7, 15.4, 3.49 |
-| RXO | float64 | 1.0979e+06 | 76.8 | 327845 | 2000.0, 0.17, 0.571, 1.381, 15.648, 2.143, 7.012, 2.354, 7.136, 4.063 |
-| MUDWEIGHT | float64 | 1.09327e+06 | 76.47 | 567 | 0.1522, 0.1558, 0.1498, 0.1366, 0.1438, 0.1618, 0.1354, 0.1486, 0.1402, 1.1983 |
-| DCAL | float64 | 1.07424e+06 | 75.14 | 319108 | 1.5, -0.25, 0.156, -0.0938, 0.832, 0.453, -0.1875, -0.0234, 0.356, 0.5938 |
-| ROP | float64 | 735157 | 51.42 | 601140 | 183.0769, 30.0, 0.6, 50.0, 20.0, 100.0, 45.508, 169.2308, 194.0298, 12.395 |
-| RSHA | float64 | 734161 | 51.35 | 682498 | 0.2, 2000.0, 1999.8, 0.5708, 0.1982, 0.1943, 0.2024, 1.3809, 2.1426, 7.0117 |
+| SGR | float64 | 1.36785e+06 | 95.68 | 61491 | 60.031, 65.1634, 89.6772, 69.632, 83.8457, 161.4161, 85.7195, 11.1882, 61.593, … |
+| RMIC | float64 | 1.22693e+06 | 85.82 | 201811 | 1.5, 2000.0, 0.204, 7.136, 0.315, 4.715, 2.6636, 1.6387, 1.56, 0.5365 |
+| DTS | float64 | 1.13889e+06 | 79.67 | 286788 | 172.0, 176.0, 168.0, 184.0, 194.6611, 152.0368, 216.8315, 192.6964, 339.1577, 1… |
+| ROPA | float64 | 1.12118e+06 | 78.43 | 299347 | 16.4, 5.0, 3.49, 14.3, 15.4, 14.7, 16.3, 51.1, 14.8, 15.8 |
+| RXO | float64 | 1.09803e+06 | 76.81 | 327714 | 2000.0, 15.648, 0.571, 0.17, 1.381, 2.354, 3.135, 8.813, 11.367, 0.738 |
+| MUDWEIGHT | float64 | 1.09483e+06 | 76.58 | 284 | 1.5518, 1.5885, 1.5274, 1.4663, 1.6496, 1.393, 1.3807, 1.5151, 1.4296, 1.1983 |
+| DCAL | float64 | 1.07424e+06 | 75.14 | 319106 | -0.25, 1.5, 0.156, -0.0938, 0.356, 0.832, 0.453, 0.1641, 0.297, 0.2578 |
+| ROP | float64 | 738134 | 51.63 | 598200 | 183.0769, 169.2308, 30.0, 0.6, 20.0, 62.5, 50.0, 194.0298, 386.3636, 45.508 |
+| RSHA | float64 | 734161 | 51.35 | 682498 | 0.2, 2000.0, 0.5708, 1999.8, 0.2024, 0.1943, 1.3809, 2.3535, 3.1348, 8.813 |
 | BS | float64 | 605576 | 42.36 | 176 | 12.25, 8.5, 17.5, 8.375, 14.75, 12.5, 6.0, 9.875, 26.0, 9.87 |
-| PEF | float64 | 543957 | 38.05 | 861960 | 3.7441, 4.4258, 6.16, 0.1, 3.8344, 4.3502, 4.9328, 3.9056, 4.7334, 4.4974 |
-| NPHI | float64 | 463682 | 32.43 | 926790 | 0.39, 0.4, 0.31, 0.35, 0.32, 0.33, 0.38, 0.41, 0.42, 0.36 |
-| SP | float64 | 452497 | 31.65 | 937347 | 0.0, -400.0, 179.986, -14.8, 18.075, 16.2, 16.075, 184.5, 45.5, 61.4 |
-| DRHO | float64 | 218014 | 15.25 | 1.14703e+06 | 0.0, -0.002, 0.001, 0.002, -0.003, 0.003, 0.004, -0.001, -0.006, 0.005 |
-| RHOB | float64 | 187748 | 13.13 | 1.04175e+06 | 2.5568, 1.852, 1.853, 1.95, 1.851, 2.0547, 2.1973, 2.6055, 2.459, 2.0156 |
-| CALI | float64 | 96957 | 6.78 | 1.0535e+06 | 12.0, 8.4297, 12.1953, 8.25, 8.4648, 23.2656, 8.6797, 19.0, 22.8125, 8.5391 |
-| DTC | float64 | 85782 | 6 | 1.25219e+06 | 160.2191, 69.0, 38.2344, 67.2589, 143.8441, 98.6411, 157.9879, 143.9759, 143.56… |
-| RMED | float64 | 49394 | 3.46 | 1.3423e+06 | 1950.0, 0.2, 5.7578, 0.2185, 0.6142, 0.2119, 0.6787, 0.7966, 0.636, 1.2425 |
-| RDEP | float64 | 11085 | 0.78 | 1.37838e+06 | 0.541, 0.7187, 0.972, 0.419, 0.36, 1.15, 1.0332, 1755.531, 0.8734, 0.952 |
-| X_LOC | float64 | 10845 | 0.76 | 219874 | 454469.5312, 520153.1875, 515574.4375, 437780.3438, 475895.8438, 455758.2812, 4… |
-| Y_LOC | float64 | 10845 | 0.76 | 23191 | 6603730.0, 6452287.5, 6495507.0, 6791573.5, 6593126.5, 6560993.0, 6523588.5, 67… |
-| Z_LOC | float64 | 10845 | 0.76 | 1.3705e+06 | -2779.4385, -2289.4309, -2817.6182, -1981.2181, -2115.2932, -2863.4761, -1451.5… |
-| DEPTH_MD | float64 | 0 | 0 | 1.38714e+06 | 664.464, 848.84, 1405.464, 569.008, 1499.704, 638.624, 959.344, 1077.296, 1629.… |
-| GR | float64 | 0 | 0 | 1.37604e+06 | 55.1676, 70.9154, 71.3653, 54.7434, 87.0801, 101.674, 93.8013, 113.8536, 55.961… |
+| PEF | float64 | 543957 | 38.05 | 861960 | 3.7441, 4.4258, 6.16, 5.6809, 0.1, 1.0557, 4.9707, 4.0669, 6.9804, 4.1457 |
+| NPHI | float64 | 463682 | 32.43 | 926790 | 0.31, 0.34, 0.4, 0.38, 0.32, 0.39, 0.36, 0.3, 0.37, 0.41 |
+| SP | float64 | 452497 | 31.65 | 937347 | 0.0, 179.986, -400.0, 18.2, 14.0, -14.8, 22.63, 44.5, 47.0, 17.075 |
+| DRHO | float64 | 223697 | 15.65 | 1.14136e+06 | 0.0, -0.002, -0.001, -0.004, 0.001, 0.002, 0.004, 0.005, -0.006, -0.003 |
+| RHOB | float64 | 187748 | 13.13 | 1.04175e+06 | 2.5568, 1.853, 1.852, 1.95, 2.041, 2.043, 2.0391, 2.5781, 2.0371, 2.061 |
+| CALI | float64 | 96957 | 6.78 | 1.0535e+06 | 12.0, 8.4297, 12.1953, 8.25, 8.2734, 8.6797, 8.4648, 17.3906, 17.5313, 19.0 |
+| DTC | float64 | 85782 | 6 | 1.25219e+06 | 160.2191, 38.2344, 69.0, 147.7926, 142.8057, 69.4, 86.7303, 154.1539, 76.9273, … |
+| RMED | float64 | 49401 | 3.46 | 1.34229e+06 | 1950.0, 0.2, 5.7578, 0.2185, 0.2119, 1.82, 1.9546, 0.585, 0.708, 2.0 |
+| RDEP | float64 | 11085 | 0.78 | 1.37838e+06 | 0.75, 0.8268, 0.7012, 1.1462, 0.8057, 0.938, 1.3574, 0.6564, 0.822, 0.777 |
+| X_LOC | float64 | 10845 | 0.76 | 219874 | 454469.5312, 520153.1875, 437780.3438, 515574.4375, 475895.8438, 455758.2812, 4… |
+| Y_LOC | float64 | 10845 | 0.76 | 23191 | 6603730.0, 6452287.5, 6791573.5, 6495507.0, 6593126.5, 6560993.0, 6773610.0, 65… |
+| Z_LOC | float64 | 10845 | 0.76 | 1.3705e+06 | -2469.2126, -1282.442, -3687.2102, -2583.4355, -1800.1747, -1984.5592, -2566.43… |
+| DEPTH_MD | float64 | 0 | 0 | 1.38714e+06 | 958.584, 906.448, 1368.376, 1290.248, 1815.56, 1114.688, 620.08, 1173.968, 864.… |
+| GR | float64 | 0 | 0 | 1.37604e+06 | 55.1676, 70.3098, 80.3497, 78.6622, 104.9291, 81.7881, 94.4005, 45.7408, 91.771… |
 
 </details>
 
@@ -353,30 +381,30 @@ Accepted on purpose:
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| DEPTH_MD | 142959 | 2216.65 | 991.775 | 136.39 | 5434.96 |
-| X_LOC | 141875 | 484795 | 35210.4 | 423238 | 572633 |
-| Y_LOC | 141875 | 6.68039e+06 | 131602 | 6.40664e+06 | 6.85666e+06 |
-| Z_LOC | 141875 | -2166.48 | 957.744 | -5393.92 | -111.39 |
-| CALI | 133218 | 13.0885 | 3.7067 | 3.04185 | 28.279 |
-| RSHA | 69432 | 11.1677 | 105.257 | 0.0578767 | 2043.11 |
-| RMED | 137927 | 4.734 | 49.9262 | -0.00253414 | 1988.62 |
-| RDEP | 141851 | 11.0785 | 106.043 | 0.0543837 | 1999.84 |
-| RHOB | 124114 | 2.29297 | 0.248832 | 0.839637 | 3.31455 |
-| GR | 142959 | 70.4763 | 34.1243 | 0.228061 | 1076.96 |
-| SGR | 6931 | 64.7531 | 39.9018 | -777.986 | 963.609 |
-| NPHI | 96815 | 0.32827 | 0.128588 | -0.0191675 | 0.99787 |
-| PEF | 88463 | 6.2121 | 10.3673 | 0.1 | 372.848 |
-| DTC | 134413 | 112.504 | 29.744 | 8.27737 | 279.738 |
-| SP | 97277 | 57.7864 | 71.8916 | -400 | 526.149 |
-| BS | 82510 | 11.7783 | 3.15529 | 6 | 26 |
-| ROP | 69631 | 109.137 | 1343.53 | -0.021297 | 43065.4 |
-| DTS | 29433 | 210.049 | 78.1953 | 79.4859 | 604.36 |
-| DCAL | 35471 | 0.806912 | 1.59744 | -11.4053 | 15.1542 |
-| DRHO | 121053 | 0.0189342 | 0.190642 | -5.71267 | 2.77671 |
-| MUDWEIGHT | 33659 | 1.51839 | 15.8612 | 0.125818 | 426.903 |
-| RMIC | 20228 | 7.20076 | 73.9573 | 0.0576523 | 5828.44 |
-| ROPA | 31343 | 26.0383 | 24.8258 | -414.617 | 631.396 |
-| RXO | 32785 | 13.6882 | 137.772 | -59.2107 | 9714.85 |
+| DEPTH_MD | 142959 | 2213.84 | 992.202 | 138.214 | 5434.66 |
+| X_LOC | 141861 | 484788 | 35280.1 | 423238 | 572633 |
+| Y_LOC | 141861 | 6.68088e+06 | 131290 | 6.40664e+06 | 6.85666e+06 |
+| Z_LOC | 141861 | -2164.43 | 958.507 | -5393.62 | -113.214 |
+| CALI | 133115 | 13.0946 | 3.70272 | 2.344 | 28.279 |
+| RSHA | 69344 | 10.884 | 102.932 | 0.0001 | 2046.36 |
+| RMED | 138017 | 4.71921 | 50.6392 | 0.0450603 | 1950 |
+| RDEP | 141830 | 11.1276 | 107.263 | 0.0409401 | 1999.84 |
+| RHOB | 124107 | 2.29279 | 0.249027 | 0.791735 | 3.26204 |
+| GR | 142959 | 70.4664 | 34.221 | 0.514754 | 865.501 |
+| SGR | 6286 | 74.5369 | 33.808 | 9.97597 | 891.336 |
+| NPHI | 96535 | 0.328278 | 0.129084 | -0.0156121 | 0.993587 |
+| PEF | 88398 | 6.26289 | 10.3911 | 0.1 | 360.854 |
+| DTC | 134434 | 112.564 | 29.8057 | 7.96786 | 305.903 |
+| SP | 97808 | 57.5631 | 71.3663 | -400 | 525.97 |
+| BS | 82180 | 11.7916 | 3.15083 | 6 | 26 |
+| ROP | 68804 | 33.1113 | 86.808 | 0 | 2771.34 |
+| DTS | 28953 | 209.978 | 78.323 | 80.7244 | 676.578 |
+| DCAL | 35304 | 0.806404 | 1.58216 | -11.7413 | 14.4194 |
+| DRHO | 120658 | 0.00784388 | 0.0878457 | -2.82726 | 1.94756 |
+| MUDWEIGHT | 33080 | 1.46814 | 0.252247 | 0.599132 | 3.66567 |
+| RMIC | 20190 | 6.91389 | 63.107 | 0.0586104 | 2841.07 |
+| ROPA | 30807 | 26.2823 | 24.011 | 0.597691 | 732.237 |
+| RXO | 32954 | 13.0063 | 124.992 | 0.0026843 | 2027.53 |
 
 </details>
 
@@ -387,26 +415,26 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| FORMATION | 1 | Utsira Fm. | 20670 | 14.46 |
-| FORMATION | 2 | &lt;NA> | 15225 | 10.65 |
-| FORMATION | 3 | Kyrre Fm. | 13143 | 9.19 |
-| FORMATION | 4 | Lista Fm. | 8300 | 5.81 |
-| FORMATION | 5 | Heather Fm. | 7344 | 5.14 |
-| GROUP | 1 | HORDALAND GP. | 34750 | 24.31 |
-| GROUP | 2 | SHETLAND GP. | 30610 | 21.41 |
-| GROUP | 3 | ROGALAND GP. | 15837 | 11.08 |
-| GROUP | 4 | VIKING GP. | 15300 | 10.7 |
-| GROUP | 5 | DUNLIN GP. | 14137 | 9.89 |
-| WELL | 1 | 34/10-16 R | 2501 | 1.75 |
-| WELL | 2 | 25/2-7 | 2451 | 1.71 |
-| WELL | 3 | 29/6-1 | 2409 | 1.69 |
-| WELL | 4 | 35/11-6 | 2385 | 1.67 |
-| WELL | 5 | 29/3-1 | 2370 | 1.66 |
-| lithology | 1 | Shale | 87556 | 61.25 |
-| lithology | 2 | Sandstone | 20871 | 14.6 |
-| lithology | 3 | Sandstone/Shale | 18113 | 12.67 |
-| lithology | 4 | Limestone | 6941 | 4.86 |
-| lithology | 5 | Marl | 4036 | 2.82 |
+| FORMATION | 1 | Utsira Fm. | 20702 | 14.48 |
+| FORMATION | 2 | &lt;NA> | 15327 | 10.72 |
+| FORMATION | 3 | Kyrre Fm. | 13197 | 9.23 |
+| FORMATION | 4 | Lista Fm. | 8332 | 5.83 |
+| FORMATION | 5 | Heather Fm. | 7424 | 5.19 |
+| GROUP | 1 | HORDALAND GP. | 34786 | 24.33 |
+| GROUP | 2 | SHETLAND GP. | 30751 | 21.51 |
+| GROUP | 3 | ROGALAND GP. | 15715 | 10.99 |
+| GROUP | 4 | VIKING GP. | 15421 | 10.79 |
+| GROUP | 5 | DUNLIN GP. | 14043 | 9.82 |
+| WELL | 1 | 34/10-16 R | 2540 | 1.78 |
+| WELL | 2 | 25/2-7 | 2524 | 1.77 |
+| WELL | 3 | 29/3-1 | 2500 | 1.75 |
+| WELL | 4 | 29/6-1 | 2441 | 1.71 |
+| WELL | 5 | 25/7-2 | 2382 | 1.67 |
+| lithology | 1 | Shale | 87457 | 61.18 |
+| lithology | 2 | Sandstone | 20726 | 14.5 |
+| lithology | 3 | Sandstone/Shale | 18091 | 12.65 |
+| lithology | 4 | Limestone | 7073 | 4.95 |
+| lithology | 5 | Marl | 4133 | 2.89 |
 
 </details>
 

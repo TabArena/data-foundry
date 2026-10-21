@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -242,6 +243,12 @@ class CollegeScorecard(AbstractCuratedDataset):
     # Task
     target = "completion_rate_150pct"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and "
+            "scores accuracy, a different target from ours."
+        ),
+    )
 
     # Splits
     splits_comment = """
@@ -304,7 +311,8 @@ class CollegeScorecard(AbstractCuratedDataset):
         return drop_columns(df, ["UNITID", "D150_4"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["STABBR", *LABELS])
+        # MAIN and DISTANCEONLY are 0/1 flags (CLEAN-14)
+        return FeatureTypes(categorical=["STABBR", *LABELS, "MAIN", "DISTANCEONLY"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         rows = cohort_rows(raw)

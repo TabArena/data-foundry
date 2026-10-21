@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989
+checksum: v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217
 build:
   uuid: 01a111fc-aabc-7a8e-a658-bf88e5751de1
   checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
@@ -30,6 +30,8 @@ task:
   target: DEATH_EVENT
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: DEATH_EVENT
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 199
     max: 200
@@ -64,7 +68,7 @@ decisions: []
 
 Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299 rows and 11 features. Source: Other (2017).
 
-Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989`, so the build is stale. See [Build](#build).
+Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | DEATH_EVENT |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Ahmad et al. 2017 (first publication) score a Cox model by time-dependent ROC AUC, which needs the follow-up time we drop (leak); Chicco & Jurman 2020 (the binary task we ship) rank by MCC at threshold 0.5, a default threshold, not a decision (MET-6). roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
@@ -332,4 +345,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989` |
+| stale | yes: the definition now gives checksum `v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217` |

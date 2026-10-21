@@ -45,10 +45,11 @@ a temporal task. Do not fall back to an IID split for a non-stationary sequence 
 alternative to try (SPLIT-17; [splits.md](splits.md), "How many windows"). Marker: `Too Small`. Cases: seismic_bumps (49
 positives in the newest half, 0-5 per window; Lennart, 2026-09-30).
 
-**TP-6 (Must).** Keep two questions apart: is the task valid, and is it the best version? A valid task stays. A
-better version the source itself defines (a stage it describes, the scoring it uses) replaces the current one:
-eryhemato before the biopsy (features from a later stage: USE-4 in [use_case.md](use_case.md)). A fix of our own
-invention (dropping near-ties, a label merge made from names) is not a better version.
+**TP-6 (Must; amended 2026-10-21, Lennart).** Keep two questions apart: is the task valid, and is it the best
+version? A valid task stays. A better version the source itself defines (a stage it describes) replaces the current
+one: eryhemato before the biopsy (features from a later stage: USE-4 in [use_case.md](use_case.md)). A fix of our own
+invention (dropping near-ties, a label merge made from names) is not a better version. Which metric scores the task,
+and how the data is matched to it, is [metrics.md](metrics.md) (MET).
 
 **TP-7 (Must).** When the definition builds the target itself (merged or dropped classes), use an established
 convention, test each candidate (classes per test fold after dropping duplicates, signal, how rule-like the label
@@ -136,11 +137,13 @@ window.
 
 The rule for a hit (a question, decided by the context and the use case, never by the gap alone) is SPLIT-30, with
 SPLIT-29 and SPLIT-31, in [splits.md](splits.md), "Hidden groups in an IID task". The probe ranks columns with repeated
-values by how much a row's label follows from the other rows with that value, beyond what the value says about unseen
-values. Among those that look like an entity (attributes that stay fixed within a value, or a label the value nearly
-fixes) it measures untuned LightGBM on a random split against a split by the column. It tests the same way keys of all
-columns but one (composite keys) and clusters of rows that agree on almost every column (near copies). Its docstring has
-the thresholds.
+values (categorical, text and numeric; since 2026-10-21 floats too, not only whole numbers, so a value computed once per
+entity, such as a wind-tunnel run's boundary-layer thickness, is a candidate) by how much a row's label follows from the
+other rows with that value, beyond what the value says about unseen values. Among those that look like an entity
+(attributes that stay fixed within a value, or a label the value nearly fixes) it measures untuned LightGBM on a random
+split against a split by the column. It tests the same way keys of all columns but one (composite keys), clusters of
+rows that agree on almost every column (near copies) and an exact key on each normalised text column (text keys). Its
+docstring has the thresholds.
 
 **Near copies cover a group that no single column holds, in a wide table.** Each row becomes a set of tokens (a
 quantile bin or a value per column, without the values most rows have), and two rows are near copies when their
@@ -151,7 +154,31 @@ the same random folds with each cluster moved into one fold. Read a near-copy hi
 what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
 invoices) and take the group key from there, never from the clusters (SPLIT-24 in [splits.md](splits.md) bars
 similarity clusters).
-A table with fewer than 10 informative columns has no near copies.
+When no row has 10 informative columns the check does not run, and the output says `not run` (before 2026-10-21 it
+read 0.0%): no evidence either way, as on huntprohibited_1m (9 features), where exact keys on the description later
+found a copy in train for 1.4-4.9% of the test ads. A text column is one token, so an edited copy of a text never
+counts here; the text keys cover it.
+
+**Text keys cover a text posted again.** For each string column whose values have a median of at least 3 words, the
+probe normalises the text (NFKC, lower case, every run of characters other than letters and digits as one space) and
+groups the rows with the same text: an exact key from the data, which SPLIT-24 allows. Texts held by more than 100 rows
+(boilerplate) are left single. The output (`(text: <column>)`) gives the keys, the rows that share one, `s_id` and, for
+an IID task, the gap against the random folds with each key moved into one fold (the gap models read no text, so the
+gap comes from the other columns of the repeated rows); for a temporal task, the test rows whose text is on the training
+side. A text key catches a copy with other capitals, punctuation or spacing, not one with a word changed. A string
+column that is a candidate of its own (a title, a company profile) is left to the column check.
+
+Sweep of 2026-10-21 (173 built containers, the grouped ones as if IID), before and after floats became candidates (a
+candidate now also needs 20 values held by two rows or more, so a sparse spectrum bin with one repeated 0 is none) and
+the text keys came in. New hits: airfoil_self_noise `suction-side-displacement-thickness` (105 values for 106 runs;
+gap 0.123, next to its known `run`), drug_induced_autoimmunity_prediction `SMR_VSA10` and `SMR_VSA7` (IID, 587
+molecules; gaps 0.172 and 0.112 of a random-split skill of 0.657), and in grouped datasets early_learning_predictors
+`pri_fees_amount_pv`, force_2020 `FORMATION` and `Y_LOC` (a well's location) and sepsis_prediction_1m `Age` and
+`HospAdmTime` (constant per patient). lgd stays without a candidate: its loan-to-value ratio has 1.3 rows per value. No
+text key is a hit: emscad's `description`, `requirements` and `benefits` keys hold 17-29% of the rows with gaps of
+0.019-0.032 (its known group already holds them out), huntprohibited_1m's `description` 3.3% (gap 0.001),
+mercari_price_suggestion's `name` 28% (gap 0.000); consumer_complaints_1m's narrative is a column candidate. The
+near-copy check does not run on 32 of the 173 datasets (airfoil_self_noise, lgd, huntprohibited_1m, mercari among them).
 
 **Composite keys cover an entity measured more than once.** Rows identical in every column but one are one entity at
 another age, dose, time or frequency. concrete_compressive_strength's 1,030 tests are 428 mixes (the seven ingredient
@@ -280,7 +307,7 @@ through `check_frame`).
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
 The rows come from the v0.2 review of the flagged datasets (from 2026-10-05) and the reviews since; Flags are the
-task-probe flags the decision answers.
+task-probe flags the decision answers. The decisions on metrics (2026-10-21) are in [metrics.md](metrics.md), Cases.
 
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|

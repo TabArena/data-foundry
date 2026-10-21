@@ -2,20 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: sarcoma
 container_format: 2
-checksum: v2:d6e7dbbcc07620c9d3088ec5d80d2792d2ade070786e88b380dc660bd24dcc4d
+checksum: v2:d8d523d1cb4c4818844429389078b7c1569a73db84536379e926b7822f100c33
 build: null
 build_stale: false
 data:
   n_rows: 201
-  n_features: 25971
+  n_features: 25910
   dtypes:
     category: 1
-    float64: 25971
+    float64: 25910
   n_test_dataset_rows: null
 task:
   target: histological_type
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: histological_type
   time_on: null
@@ -29,6 +31,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 134
     max: 134
@@ -43,34 +47,34 @@ bundle_checks:
   accepted: {}
 decisions:
 - 'Target: the type confirmed by TCGA''s expert pathology review'
-- Constant and duplicated columns are dropped
+- Genotype probes, constant and duplicated columns are dropped
 ---
 
 # sarcoma
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `histological_type`, scored with `log_loss` on IID splits. 201 rows and 25,971 features. Source: Other (2018).
+Multiclass classification of `histological_type`, scored with `log_loss` on IID splits. 201 rows and 25,910 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:d6e7dbbcc07620c9d3088ec5d80d2792d2ade070786e88b380dc660bd24dcc4d`.
+Not built yet. The current definition gives checksum `v2:d8d523d1cb4c4818844429389078b7c1569a73db84536379e926b7822f100c33`.
 
 ## In brief
 
 **Question.** Which type of soft-tissue sarcoma is this tumour, judged from its molecular profiles?
 
-**Use case.** For example, a molecular pathology lab types a sarcoma from the tumour's expression and methylation profiles, to support or check a hard diagnosis; TabPFN-Wide uses the task as a benchmark.
+**Use case.** A molecular pathology lab types a sarcoma from the tumour's methylation or expression profile, to support or check a hard diagnosis, as the DNA-methylation sarcoma classifier of Koelsche et al. (2021) does; TabPFN-Wide uses the task as a benchmark.
 
 **One row.** The primary tumour of one patient of the TCGA sarcoma study whose type expert pathologists confirmed (201 patients; period not stated).
 
 **Predicted.** The reviewed histological type: leiomyosarcoma (40%), dedifferentiated liposarcoma, undifferentiated pleomorphic sarcoma, myxofibrosarcoma or synovial sarcoma (5%).
 
-**Known at prediction time.** 25,971 measurements of the tumour: gene expression, DNA methylation and microRNA expression.
+**Known at prediction time.** 25,910 measurements of the tumour: gene expression, DNA methylation and microRNA expression.
 
-**What the test data stands for.** Random patients, so the test data stands for new patients' tumours.
+**What the test data stands for.** Random patients, so the test data stands for new patients' tumours; one hospital gives half the rows, so the scores are optimistic for a lab whose patients come from elsewhere.
 
-**Our changes to the source.** The source is a clustering benchmark without a label; we add the expert-reviewed type of the TCGA study instead of the submitted diagnosis, and drop the 5 nerve-sheath tumours.
+**Our changes to the source.** The source is a clustering benchmark without a label; we add the expert-reviewed type of the TCGA study instead of the submitted diagnosis, merge the two leiomyosarcoma sites, and drop the 5 nerve-sheath tumours and the array's genotype probes.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The profiles exist before the typing, and the label is the reviewed pathology diagnosis. The study left out uncertain cases, so the test tumours are cleaner than a lab's, and few labs measure all three profiles.
+> **Use case fit: approximate (a stand-in with a known gap).** A closed set of five expert-confirmed types, profiled on three omics, stands in for a classifier that faces every referred sarcoma: the review left out uncertain cases and rarer types, so the test tumours are cleaner than a lab's, and a lab mostly has one methylation array. The source's preprocessing over all patients is a weak potential leak kept on purpose (curation notes), not a reason for the fit.
 
 ## Files in this folder
 
@@ -78,6 +82,7 @@ Not built yet. The current definition gives checksum `v2:d6e7dbbcc07620c9d3088ec
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/sarcoma.md`](../../../../curation/records/sarcoma.md)
@@ -122,12 +127,21 @@ Only curators run `build`, when the dataset ships.
 | license | TCGA open-access data (NCI GDC open tier); the benchmark page's footer reads 'All rights reserved'; the reviewed histology is a supplement of the TCGA publication on the GDC |
 | data_tags | IID |
 | reference | rappoport2018multi,tcga2017sarcoma |
-| rows x columns | 201 x 25,972 |
+| rows x columns | 201 x 25,911 |
 | task.target | histological_type |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
 | task.split_regime | iid |
 | task.stratify_on | histological_type |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The source (Rappoport & Shamir 2018) is a clustering benchmark without a label, and the TCGA study (Cell 2017) defines no prediction metric. The task paper the definition cites, TabPFN-Wide (Kolberg et al. 2025, arXiv 2510.06162), reports AUROC and accuracy on COAD/LGG/BRCA/GBM/OV, but SARC 'is only used for attention analysis' (Table 1 caption), so no metric is defined for this task. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -168,34 +182,34 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 201 rows of the final frame (random rows: the frame is shuffled); 12 of 25,972 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 201 rows of the final frame (random rows: the frame is shuffled); 12 of 25,911 columns, the target first. Cells are cut at 40 characters.
 
 | histological_type | mRNA_X..100130426 | mRNA_X..100133144 | mRNA_X..100134869 | mRNA_X..10357 | mRNA_X..10431 | mRNA_X..155060 | mRNA_X..26823 | mRNA_X..280660 | mRNA_X..340602 | mRNA_X..388795 | mRNA_X..390284 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Synovial sarcoma | 0.5614 | 4.7828 | 14.3034 | 145.044 | 938.593 | 797.692 | 0 | 0 | 2.2454 | 0.5614 | 5.6136 |
-| Leiomyosarcoma | 0 | 12.1092 | 5.9133 | 67.0875 | 1408.19 | 174.38 | 0 | 68.6803 | 138.822 | 0 | 9.2548 |
-| Myxofibrosarcoma | 0 | 0.4469 | 0 | 199.053 | 648.866 | 229.695 | 0.8938 | 0 | 0 | 0.8938 | 4.9157 |
-| Undifferentiated pleomorphic sarcoma | 0 | 5.4679 | 3.5878 | 74.1699 | 617.508 | 65.5455 | 0 | 0 | 0 | 0 | 3.881 |
-| Leiomyosarcoma | 0 | 2.4556 | 1.0968 | 111.949 | 496.448 | 190.941 | 2.6643 | 0 | 0.8881 | 0 | 3.1083 |
+| Leiomyosarcoma | 0 | 0.7539 | 0.6337 | 124.066 | 521.739 | 189.177 | 1.3876 | 0 | 0 | 1.3876 | 8.7882 |
+| Myxofibrosarcoma | 0 | 0.8482 | 0 | 120.628 | 910.517 | 568.702 | 0.8482 | 0 | 0 | 1.6964 | 1.2723 |
+| Undifferentiated pleomorphic sarcoma | 0 | 1.1422 | 0 | 75.0942 | 1396.34 | 36.5505 | 0 | 0 | 0 | 0 | 3.4266 |
+| Dedifferentiated liposarcoma | 0 | 1.209 | 2.1147 | 101.591 | 510.594 | 218.529 | 0.8309 | 0 | 0 | 2.4927 | 3.3236 |
+| Undifferentiated pleomorphic sarcoma | 0 | 2.1713 | 3.458 | 215.617 | 961.801 | 142.34 | 0.4021 | 65.5408 | 1.2063 | 6.8355 | 0.4021 |
 
 ## Curation notes
 
 We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport & Shamir (2018): gene expression (`exp`), DNA methylation (`methy`, 450k array) and miRNA expression (`mirna`), plus the clinical file `clinical/sarcoma`. The label comes from the master patient table of the TCGA sarcoma study (`SARC_Master_Patient_Table.xlsx`, GDC publication page).
 
-- Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles. The label is the expert pathology diagnosis, made from the tissue; no clinical column enters.
-- Task: multiclass classification of the histological type, as in TabPFN-Wide (Kolberg et al. 2025, Sec. 5). The source is a clustering benchmark without a target. We use log loss, the collection's metric for a multiclass task.
-- Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table).
+- Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles; no clinical column enters.
+- Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target.
+- Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table). For dedifferentiated liposarcoma the review also required a 12q15 copy-number gain in the study's own data (Cell 2017, Methods), and all 8 relabels into or out of that class follow it. The copy number is not shipped.
 - Rows: the primary tumours (TCGA sample type 01) of the 257 patients with all three omics, restricted to the 206 reviewed patients, one row per patient; the barcode is not a feature. We drop the 5 MPNST (fewer than 10), which leaves 201 rows.
-- Target: leiomyosarcoma 80 (soft-tissue and uterine as one type, as in the clinical file), dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold).
-- Note: the study finds "MFS and UPS to be largely indistinguishable across multiple platforms"; we keep the two diagnoses apart, as the pathologists do.
-- Features: the three omic blocks side by side, each column prefixed with its omic (`mRNA_`, `Methy_`, `miRNA_`), with the gene names as the source wrote them through R's `make.names` and the values as shipped. We drop the columns that are constant over the 201 rows and those that copy an earlier column (decision table).
-- Note: the benchmark's own preprocessing (dropping patients and features with over 20% missing values, k-nearest-neighbour imputation, the 5,000 probes of highest variance) uses all patients but no label.
-- Split: IID over patients, as in TabPFN-Wide. One tissue source site holds 101 of the 201 rows, but holding out whole sites moves a random forest only from macro ROC AUC 0.954 to 0.947 (log loss 0.66 to 0.76), so we keep the split by patient, the unit of the use case.
-- Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma. The review typed these tumours by "focal chromosome 12q~15 amplification", the amplicon of MDM2, and `mRNA_MDM2.4193` alone separates them (ROC AUC 1.000). The class is defined by the amplification and the data are TCGA measurements, so we keep it.
+- Target: leiomyosarcoma 80, dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold). Soft-tissue and uterine leiomyosarcoma are one type, as in the clinical file: whether the tumour sits in the uterus is known before profiling, so nobody predicts it.
+- Note: the study finds "MFS and UPS to be largely indistinguishable across multiple platforms" and analyses them as one spectrum; we keep the two reviewed diagnoses apart, as the label does. From these inputs they barely separate (ROC AUC 0.60-0.66 within the pair, three runs), and the pair carries about half of a random forest's log loss with 30% of the rows.
+- Features: the three omic blocks side by side, each column prefixed with its omic (`mRNA_`, `Methy_`, `miRNA_`), with the gene names as the source wrote them through R's `make.names` and the values as shipped (mRNA and miRNA normalised per sample). We drop the 61 `Methy_rs*` columns, the array's SNP genotyping probes: the patient's germline genotype, not methylation, with no class signal (best one-vs-rest ROC AUC 0.77 among 305 tests). We drop the columns that are constant over the 201 rows and those that copy an earlier column (decision table).
+- Potential leak, kept on purpose: the benchmark's preprocessing ran over all patients, test rows included: it removed patients and features with over 20% missing values and imputed the rest by k-nearest neighbours on every omic, and kept the 5,000 methylation probes of highest variance over all 269 samples (Rappoport & Shamir 2018, Suppl. File 1). The share of imputed values is not known. Kept (Lennart, 2026-10-19) until the rebuild from the GDC's per-sample values, which should cover every block the imputation touched and drop the genotype probes too.
+- Split: IID over patients, one row each, since a lab types the tumours of new patients (splits comment). One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and holding out whole sites raises a random forest's log loss from 0.64 to 0.77: a known optimism for a new lab.
+- Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.05 over 30 splits), so the column stays (SEL-5).
 
 ## Splits
 
-Default splits.
+IID over patients, stratified on the type: each patient is one row, and a lab types the tumours of new patients. One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and the features carry the site weakly within a type (that site against the rest among dedifferentiated liposarcomas: ROC AUC 0.69-0.73, against 0.65 for the 95th percentile of shuffled labels). Holding out whole sites raises a random forest's log loss from 0.64 to 0.77 (mean of three seeds), so the scores are optimistic for a lab whose patients come from elsewhere.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 134 rows, test 67 rows.
 
@@ -303,15 +317,16 @@ The clinical file holds the submitted diagnosis. The TCGA sarcoma study confirme
 | Undifferentiated Pleomorphic Sarcoma (UPS) | MFS | Myxofibrosarcoma | 1 |
 | Undifferentiated Pleomorphic Sarcoma (UPS) | DDLPS | Dedifferentiated liposarcoma | 1 |
 
-### 2. Constant and duplicated columns are dropped
+### 2. Genotype probes, constant and duplicated columns are dropped
 
-Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds nothing.
+The `rs` probes of the methylation array measure the patient's germline genotype, not the tumour's methylation, and carry no class signal. Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds nothing.
 
 | step | columns |
 |---|---|
 | omic features in the source files | 26577 |
+| SNP genotyping probes (`Methy_rs*`), dropped | 61 |
 | constant or duplicated, dropped | 606 |
-| features kept | 25971 |
+| features kept | 25910 |
 
 ## Bundle checks
 
@@ -323,72 +338,72 @@ Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds not
 ### Feature summary
 
 <details>
-<summary>Show the table (25,972 rows)</summary>
+<summary>Show the table (25,911 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | histological_type | category | 0 | 0 | 5 | Leiomyosarcoma, Dedifferentiated liposarcoma, Undifferentiated pleomorphic sarc… |
-| mRNA_X..100130426 | float64 | 0 | 0 | 9 | 0.0, 0.5614, 0.4969, 1.1841, 0.6619, 0.9213, 0.44, 0.5216, 0.4137 |
-| mRNA_X..100133144 | float64 | 0 | 0 | 173 | 0.0, 12.1092, 0.4469, 5.4679, 4.7828, 3.8053, 6.9243, 9.3212, 1.209, 2.3748 |
-| mRNA_X..100134869 | float64 | 0 | 0 | 182 | 0.0, 14.3034, 5.9133, 3.5878, 1.0968, 2.2031, 9.5937, 9.9792, 2.1147, 1.5112 |
-| mRNA_X..10357 | float64 | 0 | 0 | 201 | 145.044, 67.0875, 199.0526, 74.1699, 111.9494, 49.4993, 113.6174, 158.2893, 101… |
-| mRNA_X..10431 | float64 | 0 | 0 | 201 | 938.5929, 1408.19, 648.866, 617.5075, 496.4476, 787.6026, 884.7043, 765.4348, 5… |
-| mRNA_X..155060 | float64 | 0 | 0 | 201 | 797.6917, 174.3798, 229.695, 65.5455, 190.9414, 135.1893, 141.7245, 107.0293, 2… |
-| mRNA_X..26823 | float64 | 0 | 0 | 110 | 0.0, 0.8938, 2.6643, 0.8309, 1.4118, 0.3883, 0.3766, 0.9862, 0.7719, 1.8536 |
-| mRNA_X..280660 | float64 | 0 | 0 | 33 | 0.0, 68.6803, 8.1553, 0.4233, 4.1152, 12.4041, 0.3717, 3.2483, 0.3611, 65.5408 |
-| mRNA_X..340602 | float64 | 0 | 0 | 85 | 0.0, 2.2454, 138.8219, 0.8881, 0.4386, 1.165, 2.963, 1.9585, 33.8747, 1.2063 |
-| mRNA_X..388795 | float64 | 0 | 0 | 155 | 0.0, 0.4735, 0.5614, 0.5007, 0.6607, 2.4927, 0.8636, 1.165, 1.1299, 6.9034 |
-| mRNA_X..390284 | float64 | 0 | 0 | 201 | 5.6136, 9.2548, 4.9157, 3.881, 3.1083, 4.0056, 3.634, 4.3864, 3.3236, 8.2038 |
-| mRNA_X..391343 | float64 | 0 | 0 | 67 | 0.0, 0.5614, 5.8451, 2.9732, 0.4318, 0.7767, 0.9862, 0.4825, 5.0794, 3.2642 |
-| mRNA_X..391714 | float64 | 0 | 0 | 39 | 0.0, 3.3682, 0.9742, 0.4155, 0.8466, 0.6528, 0.9276, 0.5485, 1.2526, 0.8068 |
-| mRNA_X..404770 | float64 | 0 | 0 | 8 | 0.0, 0.3721, 1.2463, 0.6619, 0.3155, 0.4005, 1.1162, 0.7388 |
+| mRNA_X..100130426 | float64 | 0 | 0 | 9 | 0.0, 0.5614, 0.4969, 0.44, 0.4137, 0.5216, 0.9213, 1.1841, 0.6619 |
+| mRNA_X..100133144 | float64 | 0 | 0 | 173 | 0.0, 0.8482, 1.1422, 1.209, 0.7539, 2.1713, 0.8185, 2.5839, 5.0595, 18.3593 |
+| mRNA_X..100134869 | float64 | 0 | 0 | 182 | 0.0, 0.6337, 2.1147, 3.458, 4.502, 4.0182, 9.6126, 12.7976, 33.6844, 9.8942 |
+| mRNA_X..10357 | float64 | 0 | 0 | 201 | 124.0657, 120.6277, 75.0942, 101.5912, 215.6172, 164.2093, 62.9709, 138.1412, 1… |
+| mRNA_X..10431 | float64 | 0 | 0 | 201 | 521.7391, 910.5174, 1396.3449, 510.5941, 961.8014, 969.049, 798.0653, 866.4032,… |
+| mRNA_X..155060 | float64 | 0 | 0 | 201 | 189.1767, 568.7023, 36.5505, 218.5293, 142.3402, 101.8571, 255.2321, 312.5918, … |
+| mRNA_X..26823 | float64 | 0 | 0 | 110 | 0.0, 1.3876, 0.8482, 0.8309, 0.4021, 1.0823, 1.8587, 0.5094, 0.5595, 0.8081 |
+| mRNA_X..280660 | float64 | 0 | 0 | 33 | 0.0, 65.5408, 2.8846, 12.4041, 0.52, 68.6803, 0.9629, 1.0381, 6.7981, 0.7905 |
+| mRNA_X..340602 | float64 | 0 | 0 | 85 | 0.0, 1.2063, 0.3721, 3.6138, 1.8587, 1.9585, 1.119, 2.0801, 0.4386, 0.8081 |
+| mRNA_X..388795 | float64 | 0 | 0 | 155 | 0.0, 0.4735, 1.3876, 2.4927, 6.8355, 1.6882, 0.3721, 0.9034, 0.9294, 1.9231 |
+| mRNA_X..390284 | float64 | 0 | 0 | 201 | 8.7882, 1.2723, 3.4266, 3.3236, 0.4021, 10.6922, 2.6044, 8.5827, 3.2468, 3.2527 |
+| mRNA_X..391343 | float64 | 0 | 0 | 67 | 0.0, 0.4021, 1.5283, 0.5163, 3.2642, 5.8451, 0.4202, 0.346, 0.8857, 1.6502 |
+| mRNA_X..391714 | float64 | 0 | 0 | 39 | 0.0, 0.4155, 0.5411, 2.3234, 0.6528, 0.9742, 0.8969, 0.4815, 3.3682, 1.7683 |
+| mRNA_X..404770 | float64 | 0 | 0 | 8 | 0.0, 0.3721, 1.1162, 0.7388, 0.3155, 0.6619, 0.4005, 1.2463 |
 | mRNA_X..442388 | float64 | 0 | 0 | 2 | 0.0, 1.442 |
-| mRNA_X..553137 | float64 | 0 | 0 | 29 | 0.0, 2.9226, 0.8881, 0.8309, 0.4233, 0.6528, 0.7435, 0.721, 0.3281, 1.1377 |
-| mRNA_X..57714 | float64 | 0 | 0 | 201 | 117.3241, 310.7662, 797.2294, 208.2794, 338.3659, 380.032, 334.6548, 370.216, 3… |
-| mRNA_X..645851 | float64 | 0 | 0 | 190 | 0.0, 0.5614, 6.7032, 5.6059, 4.4405, 1.4613, 0.9911, 7.457, 15.3718, 7.772 |
-| mRNA_X..652919 | float64 | 0 | 0 | 116 | 0.0, 28.4929, 6.2938, 43.4258, 131.8238, 41.7789, 30.5035, 85.838, 64.5957, 28.… |
-| mRNA_X..653553 | float64 | 0 | 0 | 201 | 449.0875, 424.2593, 295.386, 1031.0479, 1940.9414, 2556.5792, 250.0826, 603.136… |
+| mRNA_X..553137 | float64 | 0 | 0 | 29 | 0.0, 1.8501, 0.8309, 0.6528, 0.52, 1.0215, 2.9226, 0.9488, 0.346, 0.8881 |
+| mRNA_X..57714 | float64 | 0 | 0 | 201 | 228.9547, 492.7905, 242.7184, 361.4458, 67.9534, 418.6832, 167.4263, 533.9356, … |
+| mRNA_X..645851 | float64 | 0 | 0 | 190 | 0.0, 4.6253, 8.0577, 15.3718, 2.4125, 5.6275, 3.3485, 4.9689, 4.329, 28.3452 |
+| mRNA_X..652919 | float64 | 0 | 0 | 116 | 0.0, 48.0527, 2.5445, 131.8238, 5.6275, 5.4283, 23.2095, 0.119, 7.3465, 1.9709 |
+| mRNA_X..653553 | float64 | 0 | 0 | 201 | 704.4403, 317.6421, 1988.578, 169.9211, 301.1661, 248.1711, 1228.5369, 1545.341… |
 | mRNA_X..728045 | float64 | 0 | 0 | 2 | 0.0, 0.6619 |
-| mRNA_X..728603 | float64 | 0 | 0 | 3 | 0.0, 0.721, 1.3552 |
-| mRNA_X..728788 | float64 | 0 | 0 | 107 | 0.0, 18.0225, 3.0185, 0.8881, 2.1932, 2.0773, 0.8636, 3.7647, 0.3883, 0.386 |
-| mRNA_X..729884 | float64 | 0 | 0 | 59 | 0.0, 67.219, 1.5021, 0.3883, 0.7435, 4.1763, 3.2167, 0.721, 1.3454, 1.2526 |
-| mRNA_X..8225 | float64 | 0 | 0 | 201 | 2234.2104, 1159.7718, 516.1434, 1201.8111, 1463.5879, 563.7893, 528.2458, 829.0… |
-| mRNA_X..90288 | float64 | 0 | 0 | 192 | 0.0, 5.1195, 3.7911, 3.575, 1.3321, 3.5049, 2.3125, 5.6136, 2.4927, 2.5907 |
-| mRNA_A1BG.1 | float64 | 0 | 0 | 201 | 507.2836, 10.7161, 57.6114, 170.332, 120.1288, 12.5175, 376.7559, 35.5302, 6.64… |
-| mRNA_A1CF.29974 | float64 | 0 | 0 | 43 | 0.0, 0.5614, 1.9484, 0.8309, 0.4825, 0.4233, 0.721, 0.5485, 0.5921, 0.4034 |
-| mRNA_A2BP1.54715 | float64 | 0 | 0 | 112 | 0.0, 116.2014, 0.4871, 0.5007, 0.3304, 0.4386, 36.1446, 0.4318, 23.6686, 20.4554 |
-| mRNA_A2LD1.87769 | float64 | 0 | 0 | 201 | 137.5611, 81.223, 149.4582, 33.411, 59.9467, 59.979, 48.8107, 83.496, 33.4649, … |
-| mRNA_A2ML1.144568 | float64 | 0 | 0 | 108 | 0.0, 1.1227, 0.8881, 2.1932, 1.6618, 0.4706, 2.3301, 0.4931, 14.6662, 0.4805 |
-| mRNA_A2M.2 | float64 | 0 | 0 | 201 | 3447.948, 2685.751, 38525.6619, 79361.091, 81605.0, 12500.9814, 3460.5154, 1506… |
-| mRNA_A4GALT.53947 | float64 | 0 | 0 | 201 | 90.9402, 458.3559, 620.7128, 2104.3553, 3153.6412, 3063.7893, 65.7417, 583.3973… |
-| mRNA_A4GNT.51146 | float64 | 0 | 0 | 138 | 0.0, 0.4871, 3.575, 0.4312, 1.0014, 1.7546, 1.2464, 9.8824, 1.5534, 1.5066 |
-| mRNA_AAA1.404744 | float64 | 0 | 0 | 15 | 0.0, 1.2953, 0.4021, 0.3845, 0.404, 2.7042, 0.3757, 0.6619, 1.0152, 0.593 |
-| mRNA_AAAS.8086 | float64 | 0 | 0 | 201 | 1568.9995, 1069.1723, 593.0064, 713.6697, 410.302, 823.6531, 609.184, 1050.5538… |
-| mRNA_AACSL.729522 | float64 | 0 | 0 | 92 | 0.0, 5.6136, 37.5063, 1.3321, 2.0028, 6.6019, 0.3766, 1.1579, 3.3772, 74.9206 |
-| mRNA_AACS.65985 | float64 | 0 | 0 | 201 | 561.9207, 700.4418, 579.6, 388.5295, 353.4636, 1733.9275, 522.2993, 1096.6115, … |
-| mRNA_AADACL2.344752 | float64 | 0 | 0 | 61 | 0.0, 0.4312, 1.0014, 0.8309, 6.6019, 56.5338, 28.8323, 0.4638, 0.721, 143.9632 |
-| mRNA_AADACL3.126767 | float64 | 0 | 0 | 24 | 0.0, 0.4871, 2.5035, 3.7391, 0.9268, 0.7232, 1.3057, 0.721, 0.4185, 1.0971 |
-| mRNA_AADACL4.343066 | float64 | 0 | 0 | 63 | 0.0, 0.5614, 0.7767, 0.4825, 0.8466, 1.0834, 2.3191, 2.5144, 2.0925, 0.4757 |
-| mRNA_AADAC.13 | float64 | 0 | 0 | 101 | 0.0, 0.9742, 3.5092, 4.9855, 0.7767, 1.8832, 2.7804, 1.4416, 0.4825, 0.8466 |
-| mRNA_AADAT.51166 | float64 | 0 | 0 | 201 | 51.0837, 150.0251, 140.7664, 53.9025, 93.6945, 132.6858, 65.0809, 101.3269, 242… |
-| mRNA_AAGAB.79719 | float64 | 0 | 0 | 201 | 729.2058, 1500.2509, 768.6292, 809.4006, 689.6092, 944.8228, 947.4727, 1681.763… |
-| mRNA_AAK1.22848 | float64 | 0 | 0 | 201 | 612.4431, 814.909, 826.2764, 865.4592, 962.6998, 1080.5127, 1447.6379, 875.5346… |
-| mRNA_AAMP.14 | float64 | 0 | 0 | 201 | 3103.7561, 3164.1654, 1904.5917, 2726.6063, 2211.8117, 1632.2852, 2449.9504, 16… |
-| mRNA_AANAT.15 | float64 | 0 | 0 | 117 | 0.0, 7.2977, 0.9742, 0.4469, 0.444, 0.5007, 0.9911, 0.4155, 0.3883, 1.5066 |
-| mRNA_AARS2.57505 | float64 | 0 | 0 | 201 | 701.688, 2268.3744, 555.0128, 458.3872, 468.9121, 583.8173, 418.5596, 381.1778,… |
-| mRNA_AARSD1.80755 | float64 | 0 | 0 | 201 | 1747.5118, 836.8282, 249.8045, 1355.3256, 703.3748, 391.0475, 386.5213, 311.437… |
-| mRNA_AARS.16 | float64 | 0 | 0 | 201 | 3963.7586, 2332.6952, 2654.452, 6347.1324, 2432.5044, 5759.5634, 4334.6548, 104… |
-| mRNA_AASDHPPT.60496 | float64 | 0 | 0 | 201 | 382.2857, 846.083, 477.712, 400.1725, 508.881, 577.8089, 748.2656, 289.9441, 57… |
-| mRNA_AASDH.132949 | float64 | 0 | 0 | 201 | 271.6979, 122.7478, 240.8669, 246.2268, 154.0853, 168.7362, 265.6095, 343.0201,… |
-| mRNA_AASS.10157 | float64 | 0 | 0 | 201 | 335.6929, 578.6682, 334.7112, 445.8818, 404.9734, 221.8105, 12.884, 487.3341, 1… |
-| mRNA_AATF.26574 | float64 | 0 | 0 | 201 | 1776.7025, 3365.8225, 979.1085, 1764.5537, 973.8011, 1475.0651, 1242.8147, 785.… |
-| mRNA_AATK.9625 | float64 | 0 | 0 | 201 | 189.7395, 20.458, 50.4972, 18.1113, 105.2398, 76.1065, 57.1523, 42.1099, 95.554… |
-| mRNA_ABAT.18 | float64 | 0 | 0 | 201 | 124.0604, 77.448, 114.4006, 89.2626, 315.7194, 273.8834, 21.8038, 109.2225, 111… |
-| mRNA_ABCA10.10349 | float64 | 0 | 0 | 195 | 0.0, 3.4097, 20.7703, 179.6447, 6.0371, 8.5119, 11.1012, 26.3187, 59.8255, 5.61… |
-| mRNA_ABCA11P.79963 | float64 | 0 | 0 | 201 | 105.3447, 164.3798, 52.593, 41.3195, 53.357, 25.711, 51.4205, 34.2055, 344.4703… |
-| mRNA_ABCA12.26154 | float64 | 0 | 0 | 157 | 0.0, 0.9742, 3.575, 6.4683, 2.8068, 11.5453, 1.9822, 10.9661, 14.1255, 18.1347 |
+| mRNA_X..728603 | float64 | 0 | 0 | 3 | 0.0, 1.3552, 0.721 |
+| mRNA_X..728788 | float64 | 0 | 0 | 107 | 0.0, 3.2377, 2.0773, 0.4021, 0.4996, 0.593, 2.1932, 3.0185, 1.7024, 18.0225 |
+| mRNA_X..729884 | float64 | 0 | 0 | 59 | 0.0, 3.2167, 1.9709, 2.7975, 22.2222, 0.681, 67.219, 0.4988, 3.4602, 1.9934 |
+| mRNA_X..8225 | float64 | 0 | 0 | 201 | 683.6263, 726.8872, 2430.04, 1171.5829, 906.3128, 531.2324, 1013.1151, 914.2857… |
+| mRNA_X..90288 | float64 | 0 | 0 | 192 | 0.0, 3.7911, 5.1195, 0.9251, 8.846, 0.5627, 3.9977, 1.6964, 4.8701, 2.7881 |
+| mRNA_A1BG.1 | float64 | 0 | 0 | 201 | 134.1998, 37.2689, 166.1907, 6.6473, 714.5718, 147.4676, 62.5133, 413.2851, 10.… |
+| mRNA_A1CF.29974 | float64 | 0 | 0 | 43 | 0.0, 1.3876, 0.8309, 0.657, 0.5094, 0.5595, 1.6162, 1.9484, 11.3852, 0.4988 |
+| mRNA_A2BP1.54715 | float64 | 0 | 0 | 112 | 0.0, 2.3127, 0.4241, 36.1446, 0.8042, 0.5627, 344.5261, 4.329, 9.2935, 4.4961 |
+| mRNA_A2LD1.87769 | float64 | 0 | 0 | 201 | 43.1175, 127.5912, 99.446, 33.4649, 107.3945, 129.2009, 81.2799, 52.716, 19.285… |
+| mRNA_A2ML1.144568 | float64 | 0 | 0 | 108 | 0.0, 18.0389, 1.6618, 2.4125, 0.9034, 0.5411, 10.2229, 53.0421, 2.1932, 0.404 |
+| mRNA_A2M.2 | float64 | 0 | 0 | 201 | 107914.2692, 31740.8609, 72884.2262, 15733.469, 51592.4085, 44331.3956, 33970.5… |
+| mRNA_A4GALT.53947 | float64 | 0 | 0 | 201 | 1332.5624, 1122.5615, 1375.7853, 640.6315, 1518.6972, 454.6989, 3322.4816, 735.… |
+| mRNA_A4GNT.51146 | float64 | 0 | 0 | 138 | 0.0, 1.3876, 0.4241, 1.2464, 1.1255, 0.3721, 0.5411, 0.9294, 0.9615, 0.4996 |
+| mRNA_AAA1.404744 | float64 | 0 | 0 | 15 | 0.0, 0.4021, 1.394, 0.593, 0.404, 1.2953, 0.3845, 2.2749, 1.0152, 2.7042 |
+| mRNA_AAAS.8086 | float64 | 0 | 0 | 201 | 609.1582, 796.0136, 1095.9452, 993.3527, 1433.454, 682.0484, 681.611, 865.4997,… |
+| mRNA_AACSL.729522 | float64 | 0 | 0 | 92 | 0.0, 0.8042, 0.7441, 2.2586, 1.394, 0.4996, 2.5816, 5.8756, 0.5595, 1.5601 |
+| mRNA_AACS.65985 | float64 | 0 | 0 | 201 | 400.555, 1158.1849, 264.4203, 761.1134, 875.3518, 370.8497, 1081.2017, 549.7459… |
+| mRNA_AADACL2.344752 | float64 | 0 | 0 | 61 | 0.0, 0.4241, 12.5642, 0.8309, 4.8368, 1.0823, 0.657, 8.6602, 0.4312, 2.6906 |
+| mRNA_AADACL3.126767 | float64 | 0 | 0 | 24 | 0.0, 3.7391, 0.5411, 1.3057, 0.4871, 0.7232, 0.9268, 0.4185, 1.1673, 2.8736 |
+| mRNA_AADACL4.343066 | float64 | 0 | 0 | 63 | 0.0, 0.4625, 0.4517, 0.5411, 0.9294, 3.0565, 7.2734, 4.6802, 0.404, 0.9488 |
+| mRNA_AADAC.13 | float64 | 0 | 0 | 101 | 0.0, 1.2723, 6.2821, 4.9855, 1.2063, 115.363, 2.6044, 0.4517, 0.9615, 1.9983 |
+| mRNA_AADAT.51166 | float64 | 0 | 0 | 201 | 78.1684, 86.514, 21.7019, 242.6257, 68.7575, 84.9747, 57.6691, 125.127, 114.177… |
+| mRNA_AAGAB.79719 | float64 | 0 | 0 | 201 | 628.5846, 1464.3766, 933.7521, 536.7678, 1657.4186, 898.1429, 718.8169, 801.806… |
+| mRNA_AAK1.22848 | float64 | 0 | 0 | 201 | 1261.3321, 840.1187, 662.4786, 1317.823, 993.9686, 1267.8672, 675.6581, 2292.03… |
+| mRNA_AAMP.14 | float64 | 0 | 0 | 201 | 2464.8474, 2536.8957, 1795.5454, 1267.9684, 3202.2517, 1770.3995, 2252.8137, 15… |
+| mRNA_AANAT.15 | float64 | 0 | 0 | 117 | 0.0, 0.4241, 0.4155, 0.8042, 0.3721, 0.4517, 1.394, 0.593, 1.6785, 1.04 |
+| mRNA_AARS2.57505 | float64 | 0 | 0 | 201 | 518.8945, 425.3562, 973.7293, 6219.248, 277.0326, 378.1654, 728.8513, 299.4918,… |
+| mRNA_AARSD1.80755 | float64 | 0 | 0 | 201 | 830.7123, 510.1781, 1440.3198, 658.0806, 1037.7965, 486.7755, 631.3831, 1741.84… |
+| mRNA_AARS.16 | float64 | 0 | 0 | 201 | 1889.4542, 2353.6896, 2531.1251, 1759.0361, 9436.2686, 2180.6415, 3004.7437, 58… |
+| mRNA_AASDHPPT.60496 | float64 | 0 | 0 | 201 | 680.8511, 404.1561, 255.2827, 577.4699, 419.3808, 598.762, 350.107, 358.6674, 3… |
+| mRNA_AASDH.132949 | float64 | 0 | 0 | 201 | 236.8178, 206.955, 99.9429, 414.624, 211.4998, 230.7259, 194.5866, 102.9927, 37… |
+| mRNA_AASS.10157 | float64 | 0 | 0 | 201 | 293.7095, 650.5513, 93.0897, 1276.2775, 402.8951, 520.5402, 407.0319, 259.7403,… |
+| mRNA_AATF.26574 | float64 | 0 | 0 | 201 | 1351.9889, 1750.212, 2083.952, 997.0918, 1680.7398, 861.5644, 1552.2277, 1789.2… |
+| mRNA_AATK.9625 | float64 | 0 | 0 | 201 | 11.5634, 139.525, 65.1057, 95.5546, 94.4914, 144.063, 100.4558, 60.5308, 30.844… |
+| mRNA_ABAT.18 | float64 | 0 | 0 | 201 | 124.8844, 123.8338, 59.3946, 111.3419, 65.1387, 286.4378, 224.7233, 75.8893, 13… |
+| mRNA_ABCA10.10349 | float64 | 0 | 0 | 195 | 0.0, 104.3257, 7.4006, 58.8235, 59.8255, 1.1255, 0.8042, 149.9395, 15.3586, 450… |
+| mRNA_ABCA11P.79963 | float64 | 0 | 0 | 201 | 80.7909, 40.0679, 58.7264, 344.4703, 33.9968, 83.4947, 60.9171, 75.4647, 94.312… |
+| mRNA_ABCA12.26154 | float64 | 0 | 0 | 157 | 0.0, 1.8501, 1.2723, 14.1255, 1.6882, 0.4517, 11.6169, 0.5163, 0.6528, 3.3569 |
 
-(25,912 more rows not shown)
+(25,851 more rows not shown)
 
 </details>
 
@@ -405,7 +420,7 @@ Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds not
 ### Numeric features
 
 <details>
-<summary>Show the table (25,971 rows)</summary>
+<summary>Show the table (25,910 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -470,7 +485,7 @@ Zero-only genes and miRNAs carry nothing, and an exact copy of a column adds not
 | mRNA_ABCA12.26154 | 201 | 6.89777 | 37.583 | 0 | 522.985 |
 | mRNA_ABCA13.154664 | 201 | 22.5814 | 97.4975 | 0 | 1224.37 |
 
-(25,911 more rows not shown)
+(25,850 more rows not shown)
 
 </details>
 

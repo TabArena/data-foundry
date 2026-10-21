@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class Bioresponse(AbstractCuratedDataset):
@@ -38,7 +38,7 @@ class Bioresponse(AbstractCuratedDataset):
     # Dataset
     unique_name = "bioresponse"
     year = "2012"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/c/bioresponse"
     license = "Public Domain"
@@ -65,6 +65,12 @@ class Bioresponse(AbstractCuratedDataset):
     # Task
     target = "MoleculeElicitsResponse"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "log_loss",
+        original="Log Loss",
+        reference="https://www.kaggle.com/c/bioresponse (Evaluation; Kaggle API evaluationMetric 'Log Loss', per the record's 2026-10-21 assessment)",
+        definition="mean binary cross-entropy of the predicted probability that the molecule elicits a response",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/train.csv")

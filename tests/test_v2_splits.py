@@ -25,7 +25,7 @@ from data_foundry.v2.splits import (
     subsample_frame,
 )
 
-from tests.test_bundle_checks import make_container, make_iid_frame
+from tests.test_bundle_checks import make_container, make_iid_frame, make_spec
 
 
 class Sized:
@@ -223,7 +223,7 @@ def test_temporal_sampling_within_budget_changes_nothing() -> None:
 V2_TASK = PredictiveMLTaskMetadataV2(
     target_column_name="target",
     problem_type="binary_classification",
-    objective_metric_name="roc_auc",
+    objective_metric=make_spec(),
     stratify_on="target",
 )
 
@@ -277,7 +277,7 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
     df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=n_windows)
     task = PredictiveMLTaskMetadataV2(
-        target_column_name="target", problem_type="binary_classification", objective_metric_name="roc_auc", time_on="t"
+        target_column_name="target", problem_type="binary_classification", objective_metric=make_spec(), time_on="t"
     )
     container = make_container(
         df,

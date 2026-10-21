@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
+checksum: v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8
 build:
   uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 191769
   n_features: 477
@@ -32,6 +32,8 @@ task:
   target: TARGET_B
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: iid
   stratify_on: TARGET_B
   time_on: null
@@ -45,6 +47,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 127846
     max: 127846
@@ -71,7 +75,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,6 +142,17 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | TARGET_B |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | Net revenue of the mailing: sum over mailed donors of (TARGET_D - 0.68) |
+| reference | https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt |
+| definition | Original: total net profit = sum_{i mailed}(donation_i - $0.68), mailing decided by the model; stand-in: ROC AUC of TARGET_B (responded). |
+| reason | The original scores the donation amount (TARGET_D) and a mail/no-mail decision; our task is changed to the binary response and TARGET_D is dropped. Closest computable stand-in is roc_auc on response. |
 
 <details>
 <summary>Feature types: 51 categorical, 27 string, 53 datetime</summary>
@@ -459,3 +474,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8` |

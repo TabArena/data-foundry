@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94
+checksum: v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8
 build:
   uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
   checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
@@ -32,6 +32,8 @@ task:
   target: Default
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: Default
   time_on: issue_d
@@ -45,6 +47,8 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 383088
     max: 520877
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94`, so the build is stale. See [Build](#build).
+Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,6 +149,15 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | Default |
 | task.time_on | issue_d |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric). |
+
 <details>
 <summary>Feature types: 5 categorical, 5 string, 2 datetime</summary>
 
@@ -205,6 +218,13 @@ that is refit every quarter: 3 test windows, the quarters 2015 Q2, Q3 and Q4 (ne
 all loans issued before the quarter as training data. The outcome of a loan issued shortly before a
 window was only known later (by 2018), so the train side holds labels a deployed model would not have
 had yet; a gap of a full 36-month term would remove this but leave too little data.
+
+Exception to SPLIT-10 (2026-10-21, Lennart): a loan's outcome is known only when it ends, up to 36 months after
+issue, and the data has no outcome dates; a 36-month gap leaves 5-9% of the rows for training in the three
+windows and a 12-month gap 33-46%, below the 50% floor (even a 6-month gap leaves 46% for the oldest window).
+Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that tell a
+test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
+Tensions).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 383,088 to 520,877 rows, test 64,222 to 88,667 rows. Prediction horizon: 3 months.
 
@@ -446,4 +466,4 @@ had yet; a gap of a full 36-month term would remove this but leave too little da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7c09d49fd96a68adfa6b252ef7bd382519a8e0d850c057de9325826e4b776a94` |
+| stale | yes: the definition now gives checksum `v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8` |

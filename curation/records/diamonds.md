@@ -35,6 +35,14 @@ Lennart: We can likely ignore the impact of time for the task
 
 Andrej: Fulfills requirements
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — a ggplot2 teaching dataset; the source defines no task or score.
+
+CC (2026-10-21, Lennart): diamonds ships the price in dollars and is scored by RMSLE, a metric obvious from the task (new origin `context`: a price's error matters relative to the price).
+
+**Assessment (AI, 2026-10-21):** the price ships on a log scale again (`np.log` in `_clean`, as before today's change) and is scored by RMSLE on the dollar price after the inverse (`Metric.from_context("rmsle", target_transform="log")`, MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 Ggplot2: Elegant Graphics for Data Analysis

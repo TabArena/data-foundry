@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094
+checksum: v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -22,8 +22,7 @@ data:
   n_rows: 1224927
   n_features: 710
   dtypes:
-    bool: 1
-    category: 112
+    category: 113
     datetime64[ns]: 1
     float32: 537
     float64: 38
@@ -35,6 +34,8 @@ task:
   target: target
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: target
   time_on: date_decision
@@ -48,6 +49,8 @@ splits:
   random_state: 4267
   time_horizon: 2
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1000000
     max: 1000000
@@ -76,7 +79,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,10 +152,21 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | target |
 | task.time_on | date_decision |
 
-<details>
-<summary>Feature types: 112 categorical, 0 string, 1 datetime</summary>
+**Metric**
 
-- categorical (112): `cardtype_51L`, `credtype_322L`, `disbursementtype_67L`, `equalitydataagreement_891L`, `inittransactioncode_186L`, `lastapprcommoditycat_1041M`, `lastapprcommoditytypec_5251766M`, `lastcancelreason_561M`, `lastrejectcommoditycat_161M`, `lastrejectcommodtypec_5251769M`, `lastrejectreason_759M`, `lastrejectreasonclient_4145040M`, `lastst_736L`, `opencred_647L`, `previouscontdistrict_112M`, `twobodfilling_608L`, `description_5085714M`, `education_1103M`, `education_88M`, `maritalst_385M`, `maritalst_893M`, `requesttype_4525192L`, `max_isbidproduct_390L`, `max_isdebitcard_527L`, `min_isdebitcard_527L`, `last_cancelreason_3545846M`, `first_cancelreason_3545846M`, `last_credacc_status_367L`, `last_credtype_587L`, `first_credtype_587L`, `last_district_544M`, `first_district_544M`, `last_education_1138M`, `first_education_1138M`, `last_familystate_726L`, `first_familystate_726L`, `last_inittransactioncode_279L`, `first_inittransactioncode_279L`, `last_postype_4733339M`, `first_postype_4733339M`, `last_profession_152M`, `first_profession_152M`, `last_rejectreason_755M`, `first_rejectreason_755M`, `last_rejectreasonclient_4145042M`, `first_rejectreasonclient_4145042M`, `last_status_219L`, `first_status_219L`, `last_classificationofcontr_13M`, `first_classificationofcontr_13M`, `last_classificationofcontr_400M`, `first_classificationofcontr_400M`, `last_contractst_545M`, `first_contractst_545M`, `last_contractst_964M`, `first_contractst_964M`, `last_description_351M`, `first_description_351M`, `last_financialinstitution_382M`, `first_financialinstitution_382M`, `last_financialinstitution_591M`, `first_financialinstitution_591M`, `last_purposeofcred_426M`, `first_purposeofcred_426M`, `last_purposeofcred_874M`, `first_purposeofcred_874M`, `first_subjectrole_182M`, `first_subjectrole_93M`, `max_contaddr_smempladdr_334L`, `max_safeguarantyflag_411L`, `last_contaddr_district_15M`, `first_contaddr_district_15M`, `last_contaddr_zipcode_807M`, `first_contaddr_zipcode_807M`, `last_education_927M`, `first_education_927M`, `first_empl_employedtotal_800L`, `first_empl_industry_691L`, `last_empladdr_district_926M`, `first_empladdr_district_926M`, `last_empladdr_zipcode_114M`, `first_empladdr_zipcode_114M`, `first_familystate_447L`, `first_housetype_905L`, `last_incometype_1044T`, `first_incometype_1044T`, `last_language1_981M`, `first_language1_981M`, `last_registaddr_district_1083M`, `first_registaddr_district_1083M`, `last_registaddr_zipcode_184M`, `first_registaddr_zipcode_184M`, `last_relationshiptoclient_415T`, `last_relationshiptoclient_642T`, `last_role_1084L`, `first_role_1084L`, `last_sex_738L`, `first_sex_738L`, `last_type_25L`, `first_type_25L`, `last_collater_typofvalofguarant_298M`, `first_collater_typofvalofguarant_298M`, `last_collater_typofvalofguarant_407M`, `first_collater_typofvalofguarant_407M`, `last_collaterals_typeofguarante_359M`, `first_collaterals_typeofguarante_359M`, `last_collaterals_typeofguarante_669M`, `first_collaterals_typeofguarante_669M`, `last_subjectroles_name_541M`, `first_subjectroles_name_541M`, `first_subjectroles_name_838M`, `target`
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | Home Credit 2023 - Gini Stability: mean weekly Gini + 88 * min(0, slope) - 0.5 * std(residuals) |
+| reference | https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/overview/evaluation |
+| definition | Per test week (WEEK_NUM) gini_w = 2*AUC_w - 1; fit gini_w = a*week + b by least squares; score = mean(gini_w) + 88*min(0, a) - 0.5*std(residuals). |
+| reason | Our test windows hold 5, 9 and 10 weeks (week 78 split between two windows, week 69 partial); the weekly Gini has SE about 0.04, so the 88 x slope term has SE about 1.2 / 0.5 / 0.43, larger than the Gini differences between methods: per window the score is noise (MET-2). ROC AUC per window is the per-week building block. |
+
+<details>
+<summary>Feature types: 113 categorical, 0 string, 1 datetime</summary>
+
+- categorical (113): `cardtype_51L`, `credtype_322L`, `disbursementtype_67L`, `equalitydataagreement_891L`, `inittransactioncode_186L`, `lastapprcommoditycat_1041M`, `lastapprcommoditytypec_5251766M`, `lastcancelreason_561M`, `lastrejectcommoditycat_161M`, `lastrejectcommodtypec_5251769M`, `lastrejectreason_759M`, `lastrejectreasonclient_4145040M`, `lastst_736L`, `opencred_647L`, `previouscontdistrict_112M`, `twobodfilling_608L`, `description_5085714M`, `education_1103M`, `education_88M`, `maritalst_385M`, `maritalst_893M`, `requesttype_4525192L`, `max_isbidproduct_390L`, `max_isdebitcard_527L`, `min_isdebitcard_527L`, `last_cancelreason_3545846M`, `first_cancelreason_3545846M`, `last_credacc_status_367L`, `last_credtype_587L`, `first_credtype_587L`, `last_district_544M`, `first_district_544M`, `last_education_1138M`, `first_education_1138M`, `last_familystate_726L`, `first_familystate_726L`, `last_inittransactioncode_279L`, `first_inittransactioncode_279L`, `last_postype_4733339M`, `first_postype_4733339M`, `last_profession_152M`, `first_profession_152M`, `last_rejectreason_755M`, `first_rejectreason_755M`, `last_rejectreasonclient_4145042M`, `first_rejectreasonclient_4145042M`, `last_status_219L`, `first_status_219L`, `last_classificationofcontr_13M`, `first_classificationofcontr_13M`, `last_classificationofcontr_400M`, `first_classificationofcontr_400M`, `last_contractst_545M`, `first_contractst_545M`, `last_contractst_964M`, `first_contractst_964M`, `last_description_351M`, `first_description_351M`, `last_financialinstitution_382M`, `first_financialinstitution_382M`, `last_financialinstitution_591M`, `first_financialinstitution_591M`, `last_purposeofcred_426M`, `first_purposeofcred_426M`, `last_purposeofcred_874M`, `first_purposeofcred_874M`, `first_subjectrole_182M`, `first_subjectrole_93M`, `max_contaddr_smempladdr_334L`, `max_safeguarantyflag_411L`, `last_contaddr_district_15M`, `first_contaddr_district_15M`, `last_contaddr_zipcode_807M`, `first_contaddr_zipcode_807M`, `last_education_927M`, `first_education_927M`, `first_empl_employedtotal_800L`, `first_empl_industry_691L`, `last_empladdr_district_926M`, `first_empladdr_district_926M`, `last_empladdr_zipcode_114M`, `first_empladdr_zipcode_114M`, `first_familystate_447L`, `first_housetype_905L`, `last_incometype_1044T`, `first_incometype_1044T`, `last_language1_981M`, `first_language1_981M`, `last_registaddr_district_1083M`, `first_registaddr_district_1083M`, `last_registaddr_zipcode_184M`, `first_registaddr_zipcode_184M`, `last_relationshiptoclient_415T`, `last_relationshiptoclient_642T`, `last_role_1084L`, `first_role_1084L`, `last_sex_738L`, `first_sex_738L`, `last_type_25L`, `first_type_25L`, `last_collater_typofvalofguarant_298M`, `first_collater_typofvalofguarant_298M`, `last_collater_typofvalofguarant_407M`, `first_collater_typofvalofguarant_407M`, `last_collaterals_typeofguarante_359M`, `first_collaterals_typeofguarante_359M`, `last_collaterals_typeofguarante_669M`, `first_collaterals_typeofguarante_669M`, `last_subjectroles_name_541M`, `first_subjectroles_name_541M`, `first_subjectroles_name_838M`, `isbidproduct_1095L`, `target`
 - string (0): none
 - datetime (1): `date_decision (%Y-%m-%d)`
 
@@ -190,6 +204,7 @@ The first 5 of 1,224,927 rows of the final frame (the oldest rows: the frame is 
 We start with the data from Kaggle and follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20), which in turn follows two Kaggle solutions (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/discussion/507946, https://www.kaggle.com/code/yuuniekiri/fork-of-home-credit-catboost-inference).
 
 - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
+- Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows (Lennart, 2026-10-21).
 - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
 - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
 - We drop case_id as it is already collapsed and thus does not contain extra information.
@@ -230,7 +245,6 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| isbidproduct_1095L | bool | 0 | 0 | 2 | False, True |
 | last_credacc_status_367L | category | 1.16268e+06 | 94.92 | 6 | AC, CL, CA, PCL, PO, CR |
 | equalitydataagreement_891L | category | 1.1623e+06 | 94.89 | 2 | True, False |
 | first_housetype_905L | category | 1.12411e+06 | 91.77 | 6 | OWNED, PARENTAL, FLAT, COMPANY_FLAT, STATE_FLAT, COOP_FLAT |
@@ -290,6 +304,7 @@ Accepted on purpose:
 | last_contractst_964M | category | 109839 | 8.97 | 55 | a55475b1, 7241344e, 181f7276, 0bc37630, b2f1bf5c, 89c856d6, 06bb8bb0, 8ff23ce1,… |
 | first_contractst_964M | category | 109839 | 8.97 | 193 | 7241344e, a55475b1, 8f3a197f, d7416962, 8260bab9, b83056f9, 4476359f, 89721976,… |
 | last_description_351M | category | 109839 | 8.97 | 10 | a55475b1, f8e51f8d, 0349102c, 6da7c7ed, 53179c19, 1d89fa48, 18e98e64, 0cb4d552,… |
+| first_description_351M | category | 109839 | 8.97 | 11 | a55475b1, 95decc86, 6da7c7ed, 53179c19, f8e51f8d, 1d89fa48, 0cb4d552, 18e98e64,… |
 
 (651 more rows not shown)
 
@@ -305,7 +320,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (598 rows)</summary>
+<summary>Show the table (597 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -362,22 +377,22 @@ Accepted on purpose:
 | firstdatedue_489D | 84323 | -1845.44 | 1455.25 | -5360 | 45 |
 | homephncnt_628L | 122493 | 0.639441 | 0.850101 | 0 | 14 |
 | inittransactionamount_650A | 15312 | 32650.4 | 32894.8 | 0 | 200000 |
-| isbidproduct_1095L | 122493 | 0.11626 | 0.320537 | 0 | 1 |
 | lastactivateddate_801D | 86649 | -630.563 | 901.961 | -5279 | 14 |
 | lastapplicationdate_877D | 98583 | -467.463 | 740.278 | -5279 | 14 |
 | lastapprcredamount_781A | 87589 | 36686 | 36956.4 | 0 | 400000 |
 | lastapprdate_640D | 87589 | -610.01 | 886 | -5283 | 14 |
 | lastdelinqdate_224D | 44474 | -539.056 | 648.265 | -4826 | 13 |
 | lastrejectcredamount_222A | 61280 | 51168.4 | 53852.9 | 0 | 1e+06 |
+| lastrejectdate_50D | 61280 | -831.368 | 994 | -5241 | 14 |
 
-(538 more rows not shown)
+(537 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (512 rows)</summary>
+<summary>Show the table (514 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -442,7 +457,7 @@ Accepted on purpose:
 | first_collaterals_typeofguarante_359M | 2 | a55475b1 | 29184 | 23.83 |
 | first_collaterals_typeofguarante_359M | 3 | 3cbe86ba | 17208 | 14.05 |
 
-(452 more rows not shown)
+(454 more rows not shown)
 
 </details>
 
@@ -457,4 +472,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2c6651c3b4ef96cd6b11a33e99543bac866bf9fa375afbb1750135f455285094` |
+| stale | yes: the definition now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95` |

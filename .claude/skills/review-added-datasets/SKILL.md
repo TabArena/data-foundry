@@ -17,8 +17,8 @@ reasonable: [principles.md](../knowledge-curation/references/principles.md). The
 the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files live
 and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
-The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; the
-tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
+The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then the
+declared metric with its origin, original, reference and reason; the tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
 disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the
 record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
 recommendation and the verdict box. Other views: the issues that span datasets, and a summary
@@ -135,7 +135,7 @@ register's report on the decisions of the day (`decision_register.py --since <da
 
 ## Step 5: Update the page
 
-Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Then
+Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Copy each note you acted on into the file first, as `**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with `if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then
 rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what is
 still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are
 stored under them. A new issue takes the next number after the highest its file has had.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b
+checksum: v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -30,6 +30,8 @@ task:
   target: Severity
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Severity
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 508
     max: 509
@@ -64,7 +68,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +137,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Severity |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 33 categorical, 3 string, 0 datetime</summary>
@@ -412,4 +425,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9d8019569dc622a477b77bc9bee6f12f1d17892132f33337c6f855a1e09bab3b` |
+| stale | yes: the definition now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4` |

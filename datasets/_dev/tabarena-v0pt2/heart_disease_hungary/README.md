@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease_hungary
 container_format: 2
-checksum: v2:2c0afcff708bf310c7fb50586a677a9e71c2dd3cb0eaeeec030e1f727dacf430
+checksum: v2:87189a5ae6d6d33671c8a0a34bc1100592a9203aade4deb9915b8a56979cbb76
 build:
   uuid: 01a111fc-a844-7407-8ace-a685fd00b279
   checksum: v2:62291e446a9fb6d02717255556a6f480d6bca591e3a36ac12c2a0ec0f664e626
@@ -30,6 +30,8 @@ task:
   target: heart_disease_diagnosis
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: heart_disease_diagnosis
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 196
     max: 196
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on IID splits. 294 rows and 13 features. Source: UCI (1988).
 
-Built as `01a111fc-a844-7407-8ace-a685fd00b279` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c0afcff708bf310c7fb50586a677a9e71c2dd3cb0eaeeec030e1f727dacf430`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a844-7407-8ace-a685fd00b279` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87189a5ae6d6d33671c8a0a34bc1100592a9203aade4deb9915b8a56979cbb76`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +137,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | heart_disease_diagnosis |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Detrano et al. 1989 score reliability (calibration in the large) and clinical utility (percent correctly classified): two criteria, one of them about probabilities; no threshold or costs for the hard call. Original rejected: percent correctly classified. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
@@ -353,4 +366,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2c0afcff708bf310c7fb50586a677a9e71c2dd3cb0eaeeec030e1f727dacf430` |
+| stale | yes: the definition now gives checksum `v2:87189a5ae6d6d33671c8a0a34bc1100592a9203aade4deb9915b8a56979cbb76` |

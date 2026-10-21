@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6
+checksum: v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a
 build:
   uuid: 01a111fc-cedf-7a16-9575-fb28a8d57db5
   checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
@@ -30,6 +30,8 @@ task:
   target: A16
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: A16
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 460
     max: 460
@@ -64,7 +68,7 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 15 features. Source: UCI (1987).
 
-Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | A16 |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Quinlan 1987 and the Statlog Australian credit study score error rate without a cost matrix or threshold; the approve / decline use case gives no equal-cost hard-label decision. Original rejected: error rate (accuracy). roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
@@ -354,4 +367,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4cbaa458c1876ebede15b43a839310fc1bfe22b988fa93490c8b637c0854b0c6` |
+| stale | yes: the definition now gives checksum `v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a` |

@@ -38,6 +38,12 @@ CC (2026-10-19, Lennart): for the next pass, rebuild the methylation block from 
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (problem_type multiclass_classification), use case -, source +, shape -, no known risk. A very wide (26k features), tiny (201 patients) multiclass omics task that covers the wide-data regime; its use case is invented.
 
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes; applied: the 61 `Methy_rs*` SNP genotype probes dropped, fit set to approximate (five confirmed types stand in for every referred sarcoma), the label note says the review required 12q15 copy-number gain for DDLPS (not shipped, so SEL-5 is not triggered), the source's all-patient preprocessing written as a kept potential leak, and a `splits_comment` added. The use case is real (molecular sarcoma typing, Koelsche et al. 2021), not invented. Open: merge MFS and UPS, and IID or site-grouped split (REVIEW.md issues 3 and 4). Priority 3: gap +, use case -, source +, shape -, risk 0 (gap: multiclass; use case: fit approximate; shape: 201 patients; risk: the leak is weak and kept by the curator, and the open issues are weighing calls, not a leak or an unclear target).
+
+CC (2026-10-21, Lennart): "let us stay with direct fit if the task (without leakage) would be a direct fit and only move to approximate fit if we had to change a lot to avoid the leak"; USE-8 amended. The fit stays approximate for the closed set of five confirmed types; the kept preprocessing over all patients is no longer a reason for it.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source (Rappoport & Shamir 2018) is a clustering benchmark without a label, and the TCGA study (Cell 2017) defines no prediction metric. The task paper the definition cites, TabPFN-Wide (Kolberg et al. 2025, arXiv 2510.06162), reports AUROC and accuracy on COAD/LGG/BRCA/GBM/OV, but SARC 'is only used for attention analysis' (Table 1 caption), so no metric is defined for this task.
+
 ## Reference
 
 N. Rappoport and R. Shamir. Multi-omic and multi-view clustering algorithms: review and cancer benchmark. Nucleic Acids Research, 46(20):10546–10562, Oct 2018. URL https://doi. org/10.1093/nar/gky889.

@@ -46,6 +46,12 @@ Basic preprocessing: https://github.com/CarolaHeinzel/BGA-Classification/blob/ma
 
 Relevant classes we should have: 09. Russia - Russian        British in England and Scotland        Finnish in Finland        France        Iberian population in Spain        Italy        Turkey        Utah Residents (CEPH) with N & W European ancestry
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Heinzel et al. 2025 compare models by ROC AUC, accuracy and log loss (repository README); which one decides was not verified (full text not read). log_loss is the multiclass fallback and one of the reported metrics.
+
+CC (2026-10-21, Lennart): biogeographical_ancestry: roc_auc stays (the paper's metric); declared as the source's metric, one-vs-rest macro ROC AUC over the populations.
+
+CC (2026-10-21, Lennart): correction to the line above: log loss stays; ROC AUC does not make sense as a good metric for this multiclass task.
+
 ## Reference
 
 @article{heinzel2025advancing,

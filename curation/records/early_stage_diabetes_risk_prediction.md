@@ -33,6 +33,8 @@ type_adapter_id: curation-record-v1
 
 Looks good
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Islam et al. 2019 report accuracy with precision, recall and F-measure, no unique metric and no threshold or costs (MET-5, MET-6).
+
 ## Reference
 
 @inproceedings{islam2019likelihood,

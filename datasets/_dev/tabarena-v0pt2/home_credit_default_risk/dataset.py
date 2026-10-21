@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -118,6 +118,12 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
     # Task
     target = "TARGET"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under Receiver Operating Characteristic Curve (Kaggle API evaluationMetric)",
+        reference="https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation",
+        definition="ROC AUC between predicted probability and TARGET",
+    )
     accepted_check_warnings = {
         "dataset_missing_value_sentinel": "POS_MONTHS_BALANCE_MAX = -1 is a real value: MONTHS_BALANCE counts months "
         "relative to the application, so -1 is a POS/cash loan still reported in the month before it.",
@@ -156,7 +162,37 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         return df.drop(columns=_copies(df.drop(columns=self.target)))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=CATEGORICAL)
+        # the FLAG_ and REG_/LIVE_ ..._NOT_... columns are yes/no flags by the codebook: categorical (CLEAN-14); the
+        # aggregates stay numeric even where only 0 and 1 occur
+        del df
+        flags = [
+            "FLAG_MOBIL",
+            "FLAG_EMP_PHONE",
+            "FLAG_CONT_MOBILE",
+            "FLAG_EMAIL",
+            "REG_REGION_NOT_LIVE_REGION",
+            "REG_REGION_NOT_WORK_REGION",
+            "LIVE_REGION_NOT_WORK_REGION",
+            "REG_CITY_NOT_WORK_CITY",
+            "FLAG_DOCUMENT_2",
+            "FLAG_DOCUMENT_4",
+            "FLAG_DOCUMENT_5",
+            "FLAG_DOCUMENT_6",
+            "FLAG_DOCUMENT_7",
+            "FLAG_DOCUMENT_9",
+            "FLAG_DOCUMENT_10",
+            "FLAG_DOCUMENT_11",
+            "FLAG_DOCUMENT_12",
+            "FLAG_DOCUMENT_13",
+            "FLAG_DOCUMENT_14",
+            "FLAG_DOCUMENT_15",
+            "FLAG_DOCUMENT_16",
+            "FLAG_DOCUMENT_17",
+            "FLAG_DOCUMENT_19",
+            "FLAG_DOCUMENT_20",
+            "FLAG_DOCUMENT_21",
+        ]
+        return FeatureTypes(categorical=[*CATEGORICAL, *flags])
 
 
 def _copies(df: pd.DataFrame) -> list[str]:

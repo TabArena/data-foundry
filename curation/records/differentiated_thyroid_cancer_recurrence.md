@@ -41,6 +41,12 @@ Performance in paper is already very high, likely trivial
 
 **Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source +, shape -, risk - (Issue 2: label definition unverified, 'Recurred' may include persistent disease (paper paywalled)). Tiny clinical cohort (383 patients) predicting recurrence at staging; beats ATA risk alone, but the label definition is unverified.
 
+**Assessment (AI, 2026-10-20):** Review panel (re-check): ship after changes, made in the definition. The fit is approximate: `M` is kept although 2 of the 18 M1 patients are ATA intermediate risk (a potential leak kept on purpose, +0.001 ROC AUC), the label's breadth is unverified and the data come from one clinic. `Risk` gets a potential-leak note (a crude ATA rule agrees in 337 of 383 rows; at most +0.010 ROC AUC), the use case names the decisions taken at staging (radioiodine, the TSH target, the initial follow-up schedule), and the follow-up is written as the source's claim, which conflicts with the 2008-2023 cohort period. Recurrence is 4.8% / 62.7% / 100% by ATA risk class against about 3% / 21% / 68% in Tuttle 2010, so the label probably counts persistent disease; all 34 high-risk or M1 patients recurred (ROC AUC 0.928 with them, 0.901 without, as for any equally easy positives). `Trivial` is refuted (TP-4: a random forest beats `Risk` alone, 0.896, on 59 of 60 splits). Open for Lennart (REVIEW.md): the label and the paper's cohort from the PDF (issue 2), drop or keep `Hx Radiothreapy` (issue 6), and two rule questions in the Across datasets view (USE-8 and an unverified label; thyroid_discordant's `Trivial`). Priority 1: gap -, use case - (the fit is approximate), source +, shape - (383 patients), risk - (the label's definition and the cohort are unverified).
+
+CC (2026-10-21, Lennart): an unverified label definition makes the fit approximate ("yea it does"), and a potential leak kept on purpose does not by itself ("stay with direct fit if the task (without leakage) would be a direct fit"); USE-8 amended. The fit stays approximate, now for the unverified label (breadth and follow-up); the kept `M` is no longer a reason for it.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Borzooei et al. 2023 report AUC, sensitivity and specificity, none named as the criterion.
+
 ## Reference
 
 @article{borzooei2024machine,

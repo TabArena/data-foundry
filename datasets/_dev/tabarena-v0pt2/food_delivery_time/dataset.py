@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class FoodDeliveryTime(AbstractCuratedDataset):
@@ -70,6 +70,12 @@ class FoodDeliveryTime(AbstractCuratedDataset):
     # Task
     target = "Time_taken(min)"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Kaggle dataset without a competition or paper; the data card states the task ('Predict the time taken ...') "
+            "but no metric"
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/deliverytime.csv")

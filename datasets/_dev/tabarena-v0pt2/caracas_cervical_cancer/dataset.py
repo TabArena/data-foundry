@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 SCREENING_TESTS = ["Hinselmann", "Schiller", "Citology"]
 """The three screening results besides the biopsy: outcomes of the same work-up, not features."""
@@ -149,6 +149,17 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
     # Task
     target = "biopsy"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference=(
+            "Fernandes, Chicco, Cardoso & Fernandes 2018, 'Supervised deep learning embeddings for the "
+            "prediction of cervical cancer diagnosis', PeerJ Computer Science 4:e154, "
+            "doi:10.7717/peerj-cs.154 (abstract: 'top AUC ~0.69' for the biopsy); first use Fernandes, "
+            "Cardoso & Fernandes, IbPRIA 2017, doi:10.1007/978-3-319-58838-4_27"
+        ),
+        definition="ROC AUC of the predicted probability of a positive biopsy",
+    )
 
     accepted_check_warnings = {
         "dataset_duplicate_rows": "The 21 exact copies (2.8%) are coarse answer profiles of young patients with "

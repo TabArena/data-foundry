@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -68,6 +68,19 @@ class MicroMass(AbstractCuratedDataset):
     # Task
     target = "Species"
     problem_type = "multiclass_classification"
+    metric = Metric.source(
+        "hierarchical_balanced_accuracy",
+        original="Accuracy averaged per strain, then per species (Vervier et al. 2015)",
+        reference=(
+            "Vervier, Mahé, Veyrieras, Vert 2015, Benchmark of structured machine learning methods for microbial "
+            "identification from mass-spectrometry data, arXiv:1506.07251; Mahé et al. 2014 Bioinformatics 30(9)"
+        ),
+        inputs={"group": "Strain"},
+        definition=(
+            "accuracy of the spectra of each strain, averaged over the strains of each true species, then over "
+            "species (Vervier et al. 2015)"
+        ),
+    )
     grouping = Grouping(
         on="Strain",
         labels="per_group",

@@ -41,6 +41,8 @@ CC (2026-10-01, Lennart): Leak audit: deduplicated to be on the safe side. 25% o
 
 **Assessment (AI, 2026-10-14), source URL and download:** The source URL http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff is the right page and still serves the file over plain http (Last-Modified 2005-03-02); over https it gives 404, which is what a browser or fetch tool that upgrades to https sees. The Wayback Machine holds captures from 2022-01-19 to 2026-10-10, all with the same content digest (https://web.archive.org/web/20240126152134id_/http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff). The PROMISE file, its Wayback copy and OpenML 1053's ARFF (https://api.openml.org/data/v1/download/53936/jm1.arff) are byte-identical (md5 0c19aefce52ccb955d0de57e4c0fe8bf, the checksum OpenML lists), and the parquet that `_load_raw` reads through openml-python holds the same 10,885 x 22 values. The file names NASA and the NASA Metrics Data Program (mdp.ivv.nasa.gov) as creators and Tim Menzies as donor (2004-12-02). The definition keeps `source` and `source_url`, and its download description now gives the openml-python command and these copies.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Menzies & Di Stefano 2004 report probability of detection (PD) and of false alarm (PF) at operating points, a trade-off with no fixed threshold or combined score; the ROC curve is PD against PF. roc_auc is the binary fallback.
+
 ## Reference
 
 https://openscience.us/repo/defect/

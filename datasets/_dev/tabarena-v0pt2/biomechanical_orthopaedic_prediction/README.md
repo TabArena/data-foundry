@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: biomechanical_orthopaedic_prediction
 container_format: 2
-checksum: v2:532d97c66abd597faf3a0214502ccd468c34f930c9c0eee6ab824426111f07d0
+checksum: v2:bd33cb42a1daf4997b08da858999f4a27dc73de196770f453bb672a768521962
 build:
   uuid: 01a111fc-c9b3-7a87-ad18-98510a3fb2b1
   checksum: v2:499c8a9b3e03e898bc19fc529188962781881ea897a43e0024713197d18f9d24
@@ -29,6 +29,8 @@ task:
   target: class
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: class
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 206
     max: 207
@@ -63,7 +67,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 310 rows and 6 features. Source: Other (2006).
 
-Built as `01a111fc-c9b3-7a87-ad18-98510a3fb2b1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:532d97c66abd597faf3a0214502ccd468c34f930c9c0eee6ab824426111f07d0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c9b3-7a87-ad18-98510a3fb2b1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bd33cb42a1daf4997b08da858999f4a27dc73de196770f453bb672a768521962`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -128,6 +132,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | log_loss |
 | task.split_regime | iid |
 | task.stratify_on | class |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | da Rocha Neto 2006 / 2011 report the classification (hit) rate, and a reject-option error-reject trade-off on the 2-class version; no threshold or costs for the 3-class diagnosis, and the full texts could not be opened. Original rejected: accuracy. log_loss is the multiclass fallback. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -302,4 +315,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:532d97c66abd597faf3a0214502ccd468c34f930c9c0eee6ab824426111f07d0` |
+| stale | yes: the definition now gives checksum `v2:bd33cb42a1daf4997b08da858999f4a27dc73de196770f453bb672a768521962` |

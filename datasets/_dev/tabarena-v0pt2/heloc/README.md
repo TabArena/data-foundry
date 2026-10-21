@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949
+checksum: v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c
 build:
   uuid: 01a111fc-afbf-7df2-bc38-76e6a79a64eb
   checksum: v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba
@@ -29,6 +29,8 @@ task:
   target: RiskPerformance
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: RiskPerformance
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 6972
     max: 6973
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 10,459 rows and 23 features. Source: Other (2018).
 
-Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949`, so the build is stale. See [Build](#build).
+Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | RiskPerformance |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The challenge defined no predictive scoring rule: judging criteria were not announced in advance and mixed an empirical evaluation with qualitative judging of explanations; only accuracy figures (~72-74%) were reported for entries. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -294,4 +307,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:277290bcecb34934b4087997b64b052e34001291c718f9a83129049a21536949` |
+| stale | yes: the definition now gives checksum `v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c` |

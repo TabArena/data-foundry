@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: corporate_credit_rating_cat_data_set_ratings_raitings
 container_format: 2
-checksum: v2:2c17de69a7583f3e2c8c067204c3f65a9950f1c07f393bc9542b17ed9e8642f1
+checksum: v2:3f673859dc63b5a96617dd83038c79d406d891840aa928e2453a69c909160792
 build: null
 build_stale: false
 data:
@@ -15,7 +15,9 @@ data:
 task:
   target: rating_notch
   problem_type: regression
-  metric: rmse
+  metric: mae
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -29,6 +31,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 131
     max: 132
@@ -42,11 +46,12 @@ bundle_checks:
   infos: []
   accepted:
     task_target_low_cardinality: The target is a rating code on a 10-notch scale (1
-      = AAA). The R Companion's chapter 8 code (a reader's transcription; the book
-      text was not read) scores the ordinal rating model by the notch difference between
-      the actual and the predicted rating, so regression keeps the order and the distance
-      (as wine_quality does for its 0-10 grade); as 10 classes, three codes would
-      hold 3-5 rows.
+      = AAA; the book's chapter 1 gives no more). The R Companion's chapter 8 code
+      (a reader's transcription) fits an ordered logit and scores it by the notch
+      difference between the actual and the predicted rating, so regression keeps
+      the order and the distance the source scores; as 10 classes, three codes would
+      hold 3-5 rows. wine_quality (a 0-10 grade as regression) supports the distance
+      metric, not the model class.
 decisions:
 - The rating code is a regression target, not 10 classes
 ---
@@ -55,27 +60,27 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `rating_notch`, scored with `rmse` on IID splits. 197 rows and 6 features. Source: Other (2016).
+Regression of `rating_notch`, scored with `mae` on IID splits. 197 rows and 6 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:2c17de69a7583f3e2c8c067204c3f65a9950f1c07f393bc9542b17ed9e8642f1`.
+Not built yet. The current definition gives checksum `v2:3f673859dc63b5a96617dd83038c79d406d891840aa928e2453a69c909160792`.
 
 ## In brief
 
 **Question.** Which credit rating would a financial institution get, judged from its financial ratios?
 
-**Use case.** For example, a bank or investor estimates the agency rating of an institution that has none from its financial statements, as the book's chapter on low-default portfolios does.
+**Use case.** For example, a bank or investor estimates the agency rating of an institution that has none from its financial statements, as the R Companion's code for the book's chapter on low-default portfolios does.
 
 **One row.** One rated financial institution, most likely a bank, from the book Credit Risk Analytics (197 institutions, 2016); the agency, the years and the country are not stated.
 
 **Predicted.** The rating code from 1 (AAA) to 10, read as notches of the agency's scale and predicted as a number.
 
-**Known at prediction time.** Six ratios from the financial statements: equity to assets, loan-loss provisions to loans, costs to income, return on equity, liquid assets to assets, and size (log of total assets).
+**Known at prediction time.** Six ratios from the financial statements: equity to assets, loan-loss provisions to loans, costs to income, return on equity, liquid assets to assets, and size (log of total assets). No country or support input; size partly stands in for support.
 
 **What the test data stands for.** Random institutions, so the test data stands for other institutions of the same unknown period.
 
 **Our changes to the source.** We use the book's 197 rows, not the 5,000-row OpenML version generated from them, and predict the code as a number instead of 10 classes.
 
-> **Use case fit: approximate (a stand-in with a known gap).** It is unknown whether the statements precede the rating, and reading the codes as notches rather than letter grades is not verified: the data page gives only "1 = AAA".
+> **Use case fit: approximate (a stand-in with a known gap).** It is unknown whether the statements precede the rating, and which rating (issuer or other) is not stated. Reading the codes as notches rather than letter grades is not verified: the data page and the book's chapter 1 give only "1 = AAA, and so on". There is no country or support input, and size partly stands in for support.
 
 ## Files in this folder
 
@@ -83,6 +88,7 @@ Not built yet. The current definition gives checksum `v2:2c17de69a7583f3e2c8c067
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/corporate_credit_rating_cat_data_set_ratings_raitings.md`](../../../../curation/records/corporate_credit_rating_cat_data_set_ratings_raitings.md)
@@ -105,7 +111,7 @@ wget -O local-data-warehouse/corporate_credit_rating_cat_data_set_ratings_raitin
 
 sha256 of ratings.csv: 7cabb6bbad6eecba5af853f878f465298815affcbcc866b094c524799f06cfcc
 
-Not OpenML 46372 (the record's first link, 5,000 rows, uploaded 2024 from a Medium article's GitHub
+Not OpenML 46372 (linked in the record, 5,000 rows, uploaded 2024 from a Medium article's GitHub
 repository Polanitz/Multiclass-Classification-for-Corporate-Credit-Ratings): its rows are generated from these
 197 (see curation_comments).
 ```
@@ -132,8 +138,19 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 197 x 7 |
 | task.target | rating_notch |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mae |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mae` (standard; takes value; lower is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | distribution of the absolute notch difference \|rating - predicted rating\| (frequency / cumulative percent per error band) |
+| reference | Baesens, Roesch, Scheule, Credit Risk Analytics (Wiley 2016), R Companion Ch08_LowDefaultPortfolios.R lines 62-80 (local copy: local-data-warehouse/_runs/2026-10-07_backlog/evidence/corporate_credit_rating_cat_data_set_ratings_raitings/Ch08_LowDefaultPortfolios.R) |
+| definition | mean(\|y - yhat\|) in notches; the source tabulates \|y - yhat\| per band rather than one scalar |
+| reason | The source tabulates the distribution of the absolute notch difference \|rating - predicted\| per error band, not one scalar; MAE is its mean, so it ranks models by the same notion of error. |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -175,19 +192,19 @@ The first 5 of 197 rows of the final frame (random rows: the frame is shuffled).
 
 ## Curation notes
 
-We start with ratings.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): 197 rated institutions, one row each, with an anonymised id (`spid`), the rating "numerically encoded (1 = AAA, etc.)" and six financial ratios.
+We start with ratings.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): 197 rated institutions, one row each, with an anonymised id (`spid`), the rating "numerically encoded (1 = AAA, and so on)" (the book, chapter 1, p. 14) and six financial ratios.
 
-- Prediction point: an institution whose financial statements are known but whose agency rating is not; we map it to the agency's scale from the six ratios, as the R Companion's code for chapter 8 ("Low Default Portfolios") does with an ordered logit. The data page names no agency, years or country, so how the statement date relates to the rating date is unknown.
-- Not OpenML 46372 (the record's first link): its 5,000 rows are generated from these 197, each value drawn uniformly between the minimum and maximum of the book's rows with the same rating (all 30,000 values lie inside those ranges; none is a book row).
-- Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression with RMSE. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task; as 10 classes, three codes would hold 3-5 rows (decision table).
-- We drop `spid`, an anonymised id with no documented meaning. Its values sit in two ranges, and a flag for the range lifts ridge R^2 from 0.286 to 0.299; we drop it anyway, since no source says what the ranges are.
+- Prediction point: an institution whose financial statements are known but whose agency rating is not; we map it to the agency's scale from the six ratios, as the R Companion's code for chapter 8 ("Low Default Portfolios") does with an ordered logit (the book's Exhibit 1.4 lists the data under chapter 5, credit scoring). Neither the data page nor the book's chapter 1 names the agency, years, country or provider, so how the statement date relates to the rating date is unknown.
+- Not OpenML 46372 (linked in the record): its 5,000 rows are generated from these 197, each value drawn uniformly between the minimum and maximum of the book's rows with the same rating (all 30,000 values lie inside those ranges; none is a book row).
+- Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task (scored by MAE, Lennart 2026-10-21); as 10 classes, three codes would hold 3-5 rows (decision table).
+- We drop `spid`, an anonymised id with no documented meaning. Its values sit in two ranges (130 and 67 rows); a flag for the range lifts ridge R^2 from 0.283 to 0.296 (alpha 1, 60 splits), and within a code the two ranges differ on costs to income (p 0.004). We drop it anyway, since no source says what the ranges are.
 - The six ratios are renamed after the data page's definitions (`RATIOS`).
 - No missing values and no duplicate rows. Negative loan-loss provisions (released provisions) and negative returns on equity (loss years) are real values.
-- Anomaly: the file is two blocks of 98 and 99 rows, each sorted by rating, with no institution in both. A random forest cannot tell the blocks apart (ROC AUC 0.52), so we read them as two halves of one cross-section; the base class shuffles the rows.
+- Anomaly: the file is two blocks of 98 and 99 rows, each sorted by rating, with no institution in both. A random forest cannot tell the blocks apart from the ratios (ROC AUC about 0.43-0.48), and the codes differ only a little between them (Mann-Whitney p 0.049), so we read them as two halves of one cross-section; the base class shuffles the rows.
 - Anomaly: one institution (code 8) has `log_total_assets` 10.59, against 15.33 for the next smallest. We keep it: ridge fits it, and read as a unit slip it would fit worse.
-- Note: we read the codes as notches (AAA to BBB-). As letter grades, the 57 institutions with codes 7-10 would be rated CCC or worse, while codes 7, 8 and 9 have median ROE of 11%, 8% and 10%. The data page gives only "1 = AAA", so this reading is not verified.
-- Note: the rated entities are banks, although the data page says "corporate ratings": loan-loss provisions to loans and liquid assets to total assets are bank ratios.
-- Note: the closest tenth of the test rows shares its nearest training row's code in 25.5% of cases, against 22.4% for all rows, so there are no clusters of near-copies, the artefact for which the same book's HMEQ data was retired.
+- Note: we read the codes as notches (AAA to BBB-). As letter grades, the 57 institutions with codes 7-10 would be rated CCC or worse, while codes 7, 8 and 9 have median ROE of 11%, 8% and 10%. The data page and the book's chapter 1 give only "1 = AAA, and so on", so this reading is not verified.
+- Note: the book files the data under its "Corporate" risk segment (chapter 1, Exhibit 1.4) and says "corporate ratings" (p. 14), but loan-loss provisions to loans and liquid assets to total assets are bank ratios. The book's Basel text lists banks and corporates as separate exposure classes, so "Corporate" reads as the non-retail segment.
+- Note: the closest tenth of the test rows shares its nearest training row's code in 25.5% of cases, against 22.4% for all rows, so there are no clusters of near-copies, the artefact for which the same book's HMEQ data was retired. The generated-data test for values drawn uniformly within a code cannot run here (no code has 50 rows); the case that the rows are real rests on the ratios moving together within a code (mean |rho| 0.21-0.29) and on the absence of near-copies.
 
 ## Splits
 
@@ -267,7 +284,7 @@ Default splits.
 
 ### 1. The rating code is a regression target, not 10 classes
 
-The R Companion's chapter 8 code (a reader's transcription) scores the rating model by the notch difference between the actual and the predicted rating, and the ratios move with the code as a 1 = AAA scale should (Spearman with the code: log_total_assets -0.50, liquid assets -0.39, equity +0.26, loan-loss provisions +0.20, return on equity -0.17, costs to income +0.10). As classes, codes 1, 2 and 10 would hold 3, 5 and 4 institutions.
+The R Companion's chapter 8 code (a reader's transcription) scores the rating model by the notch difference between the actual and the predicted rating, and the ratios move with the code as a 1 = AAA scale should (Spearman with the code: log_total_assets -0.50, liquid assets -0.38, equity +0.26, loan-loss provisions +0.20, return on equity -0.17, costs to income +0.10). As classes, codes 1, 2 and 10 would hold 3, 5 and 4 institutions.
 
 | rating code (1 = AAA) | rows | median log_total_assets | median common_equity_to_total_assets | median liquid_assets_to_total_assets | median loan_loss_provision_to_total_loans | median return_on_equity |
 |---|---|---|---|---|---|---|
@@ -289,7 +306,7 @@ The R Companion's chapter 8 code (a reader's transcription) scores the rating mo
 
 Accepted on purpose:
 
-- `task_target_low_cardinality`: The target is a rating code on a 10-notch scale (1 = AAA). The R Companion's chapter 8 code (a reader's transcription; the book text was not read) scores the ordinal rating model by the notch difference between the actual and the predicted rating, so regression keeps the order and the distance (as wine_quality does for its 0-10 grade); as 10 classes, three codes would hold 3-5 rows.
+- `task_target_low_cardinality`: The target is a rating code on a 10-notch scale (1 = AAA; the book's chapter 1 gives no more). The R Companion's chapter 8 code (a reader's transcription) fits an ordered logit and scores it by the notch difference between the actual and the predicted rating, so regression keeps the order and the distance the source scores; as 10 classes, three codes would hold 3-5 rows. wine_quality (a 0-10 grade as regression) supports the distance metric, not the model class.
 
 ## Data checks
 

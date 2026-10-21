@@ -44,6 +44,8 @@ Andrej: use UCI versionNeeds some preprocessing and is rather small, but otherwi
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Thromboembolism (lethal outcome 5) has 12 rows, 4 in every test fold of about 567. They are 0.7% of the test rows and 4.8% of a random forest's log loss (0.58 against 0.71 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The deposit lists prediction problems and time points but no evaluation metric; the GigaScience paper studies trajectories, not prediction scores.
+
 ## Reference
 
 Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data

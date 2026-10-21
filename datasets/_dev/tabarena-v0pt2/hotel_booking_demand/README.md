@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004
+checksum: v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -22,15 +22,17 @@ data:
   n_rows: 81418
   n_features: 28
   dtypes:
-    category: 12
+    category: 13
     datetime64[ns]: 2
     float64: 2
-    int64: 13
+    int64: 12
   n_test_dataset_rows: null
 task:
   target: IsCanceled
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: IsCanceled
   time_on: arrival_date
@@ -44,6 +46,8 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 35860
     max: 60693
@@ -72,7 +76,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,10 +146,19 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | IsCanceled |
 | task.time_on | arrival_date |
 
-<details>
-<summary>Feature types: 12 categorical, 0 string, 2 datetime</summary>
+**Metric**
 
-- categorical (12): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `DepositType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsCanceled`
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric. |
+
+<details>
+<summary>Feature types: 13 categorical, 0 string, 2 datetime</summary>
+
+- categorical (13): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `DepositType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsRepeatedGuest`, `IsCanceled`
 - string (0): none
 - datetime (2): `arrival_date`, `booking_date`
 
@@ -246,6 +259,7 @@ Accepted on purpose:
 | Meal | category | 0 | 0 | 5 | BB , HB , SC , Undefined, FB |
 | MarketSegment | category | 0 | 0 | 8 | Online TA, Offline TA/TO, Direct, Groups, Corporate, Complementary, Aviation, U… |
 | DistributionChannel | category | 0 | 0 | 5 | TA/TO, Direct, Corporate, GDS, Undefined |
+| IsRepeatedGuest | category | 0 | 0 | 2 | 0, 1 |
 | ReservedRoomType | category | 0 | 0 | 8 | A , D , E , F , G , B , C , H |
 | DepositType | category | 0 | 0 | 3 | No Deposit , Non Refund , Refundable |
 | CustomerType | category | 0 | 0 | 4 | Transient, Transient-Party, Contract, Group |
@@ -262,7 +276,6 @@ Accepted on purpose:
 | StaysInWeekNights | int64 | 0 | 0 | 35 | 2, 1, 3, 5, 4, 0, 6, 10, 7, 8 |
 | Adults | int64 | 0 | 0 | 14 | 2, 1, 3, 0, 4, 26, 20, 27, 5, 40 |
 | Babies | int64 | 0 | 0 | 5 | 0, 1, 2, 9, 10 |
-| IsRepeatedGuest | int64 | 0 | 0 | 2 | 0, 1 |
 | PreviousCancellations | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 11, 4, 5, 6, 13, 24 |
 | PreviousBookingsNotCanceled | int64 | 0 | 0 | 70 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | DaysInWaitingList | int64 | 0 | 0 | 128 | 0, 63, 87, 44, 15, 122, 58, 48, 38, 77 |
@@ -280,7 +293,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -293,7 +306,6 @@ Accepted on purpose:
 | Adults | 81418 | 1.89394 | 0.627429 | 0 | 55 |
 | Children | 81414 | 0.143305 | 0.462743 | 0 | 10 |
 | Babies | 81418 | 0.0110418 | 0.115231 | 0 | 10 |
-| IsRepeatedGuest | 81418 | 0.0285686 | 0.166592 | 0 | 1 |
 | PreviousCancellations | 81418 | 0.0296126 | 0.367328 | 0 | 26 |
 | PreviousBookingsNotCanceled | 81418 | 0.155604 | 1.62128 | 0 | 71 |
 | DaysInWaitingList | 81418 | 0.804601 | 10.3748 | 0 | 391 |
@@ -305,7 +317,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (61 rows)</summary>
+<summary>Show the table (63 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -343,6 +355,8 @@ Accepted on purpose:
 | DistributionChannel | 5 | Undefined | 5 | 0.01 |
 | IsCanceled | 1 | 0 | 57746 | 70.93 |
 | IsCanceled | 2 | 1 | 23672 | 29.07 |
+| IsRepeatedGuest | 1 | 0 | 79092 | 97.14 |
+| IsRepeatedGuest | 2 | 1 | 2326 | 2.86 |
 | MarketSegment | 1 | Online TA | 49614 | 60.94 |
 | MarketSegment | 2 | Offline TA/TO | 13503 | 16.58 |
 | MarketSegment | 3 | Direct | 9183 | 11.28 |
@@ -367,10 +381,8 @@ Accepted on purpose:
 | booking_date | 2 | 2016-02-03 00:00:00 | 308 | 0.38 |
 | booking_date | 3 | 2015-10-14 00:00:00 | 289 | 0.35 |
 | booking_date | 4 | 2016-01-06 00:00:00 | 275 | 0.34 |
-| booking_date | 5 | 2017-01-16 00:00:00 | 272 | 0.33 |
-| hotel | 1 | city | 50527 | 62.06 |
 
-(1 more rows not shown)
+(3 more rows not shown)
 
 </details>
 
@@ -385,4 +397,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:271c0a020414e7373f9f4a81f1937e9c2335dca127e82cb5171aa2f13a693004` |
+| stale | yes: the definition now gives checksum `v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255` |

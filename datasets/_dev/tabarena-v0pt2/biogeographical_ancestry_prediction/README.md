@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: v2:686c57e890dd4b71963efb146e80d9cad94dec2ee0a85778dccd10ae3ef027ad
+checksum: v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d
 build:
   uuid: 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
   checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
@@ -28,6 +28,8 @@ task:
   target: Population
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Population
   time_on: null
@@ -41,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 404
     max: 405
@@ -62,7 +66,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: Other (2023).
 
-Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:686c57e890dd4b71963efb146e80d9cad94dec2ee0a85778dccd10ae3ef027ad`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | log_loss |
 | task.split_regime | iid |
 | task.stratify_on | Population |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | Heinzel et al. 2025 report ROC AUC, accuracy and log loss, with none named as the criterion (MET-5); log loss scores the class probabilities over all populations (Lennart, 2026-10-21: ROC AUC is not a good metric for this multiclass task). |
 
 <details>
 <summary>Feature types: 103 categorical, 0 string, 0 datetime</summary>
@@ -449,4 +462,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:686c57e890dd4b71963efb146e80d9cad94dec2ee0a85778dccd10ae3ef027ad` |
+| stale | yes: the definition now gives checksum `v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d` |

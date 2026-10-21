@@ -2,21 +2,23 @@
 report_format: data-foundry-report-v2
 unique_name: breast_cancer_prediction
 container_format: 2
-checksum: v2:6bf39845b391725b9c68069cbc17ec84d8c61290143dd7e255a66a3121e85ae4
+checksum: v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e
 build: null
 build_stale: false
 data:
   n_rows: 36714
   n_features: 10
   dtypes:
-    category: 3
-    float64: 6
+    category: 8
+    float64: 1
     int64: 2
   n_test_dataset_rows: null
 task:
   target: cancer_within_one_year
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: cancer_within_one_year
   time_on: null
@@ -30,6 +32,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 24476
     max: 24476
@@ -63,7 +67,7 @@ decisions:
 
 Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 36,714 rows and 10 features. Source: GOV Website (2014).
 
-Not built yet. The current definition gives checksum `v2:6bf39845b391725b9c68069cbc17ec84d8c61290143dd7e255a66a3121e85ae4`.
+Not built yet. The current definition gives checksum `v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e`.
 
 ## In brief
 
@@ -146,10 +150,19 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | cancer_within_one_year |
 
-<details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+**Metric**
 
-- categorical (3): `birads_assessment`, `mammogram_type`, `cancer_within_one_year`
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'. |
+
+<details>
+<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
+
+- categorical (8): `birads_assessment`, `mammogram_type`, `comparison_mammogram_available`, `current_hormone_therapy`, `prior_breast_biopsy`, `prior_mammogram`, `family_history_breast_cancer`, `cancer_within_one_year`
 - string (0): none
 - datetime (0): none
 
@@ -179,11 +192,11 @@ The first 5 of 36,714 rows of the final frame (random rows: the frame is shuffle
 
 | cancer_within_one_year | age | birads_assessment | comparison_mammogram_available | birads_breast_density | family_history_breast_cancer | current_hormone_therapy | prior_mammogram | prior_breast_biopsy | mammogram_type | bmi |
 |---|---|---|---|---|---|---|---|---|---|---|
-| No | 76 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | digital | nan |
-| No | 60 | 2: Benign finding(s) | 1 | 2 | 0 | 0 | 1 | 0 | film | nan |
-| No | 64 | 0: Needs additional imaging | 1 | 3 | 1 | 0 | 1 | 1 | digital | nan |
-| No | 73 | 0: Needs additional imaging | 0 | 4 | 1 | nan | 1 | 0 | film | 23.9139 |
-| No | 64 | 1: Negative | 1 | 2 | 0 | 1 | 1 | 0 | film | nan |
+| No | 65 | 2: Benign finding(s) | 1 | 3 | 0 | 0 | 1 | 0 | digital | nan |
+| No | 62 | 1: Negative | 1 | 2 | 1 | 0 | 1 | 1 | digital | 26.6251 |
+| No | 67 | 1: Negative | nan | 2 | 0 | 0 | 1 | 0 | digital | nan |
+| No | 69 | 1: Negative | 1 | 3 | 0 | 1 | 1 | 1 | film | nan |
+| No | 65 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | film | 22.2735 |
 
 ## Curation notes
 
@@ -263,15 +276,15 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| comparison_mammogram_available | category | 4306 | 11.73 | 2 | 1.0, 0.0 |
+| current_hormone_therapy | category | 1629 | 4.44 | 2 | 0.0, 1.0 |
+| prior_breast_biopsy | category | 783 | 2.13 | 2 | 0.0, 1.0 |
+| prior_mammogram | category | 578 | 1.57 | 2 | 1.0, 0.0 |
+| family_history_breast_cancer | category | 217 | 0.59 | 2 | 0.0, 1.0 |
 | birads_assessment | category | 0 | 0 | 6 | 1: Negative, 2: Benign finding(s), 0: Needs additional imaging, 3: Probably ben… |
 | cancer_within_one_year | category | 0 | 0 | 2 | No, Yes |
 | mammogram_type | category | 0 | 0 | 2 | film, digital |
 | bmi | float64 | 21371 | 58.21 | 1850 | 25.606, 24.7996, 27.4636, 29.2641, 25.7471, 27.435, 23.777, 28.3424, 23.1724, 2… |
-| comparison_mammogram_available | float64 | 4306 | 11.73 | 2 | 1.0, 0.0 |
-| current_hormone_therapy | float64 | 1629 | 4.44 | 2 | 0.0, 1.0 |
-| prior_breast_biopsy | float64 | 783 | 2.13 | 2 | 0.0, 1.0 |
-| prior_mammogram | float64 | 578 | 1.57 | 2 | 1.0, 0.0 |
-| family_history_breast_cancer | float64 | 217 | 0.59 | 2 | 0.0, 1.0 |
 | age | int64 | 0 | 0 | 30 | 60, 61, 62, 65, 63, 64, 66, 67, 68, 69 |
 | birads_breast_density | int64 | 0 | 0 | 4 | 2, 3, 1, 4 |
 
@@ -289,15 +302,13 @@ Accepted on purpose:
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | age | 36714 | 69.4393 | 7.22546 | 60 | 89 |
-| comparison_mammogram_available | 32408 | 0.96075 | 0.194191 | 0 | 1 |
 | birads_breast_density | 36714 | 2.23179 | 0.717032 | 1 | 4 |
-| family_history_breast_cancer | 36497 | 0.167219 | 0.373177 | 0 | 1 |
-| current_hormone_therapy | 35085 | 0.112584 | 0.316088 | 0 | 1 |
-| prior_mammogram | 36136 | 0.991809 | 0.0901355 | 0 | 1 |
-| prior_breast_biopsy | 35931 | 0.265314 | 0.441506 | 0 | 1 |
 | bmi | 15343 | 26.89 | 5.6539 | 15.0478 | 71.7213 |
 
 ### Categorical features
+
+<details>
+<summary>Show the table (24 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -308,8 +319,25 @@ Accepted on purpose:
 | birads_assessment | 5 | 4: Suspicious abnormality | 54 | 0.15 |
 | cancer_within_one_year | 1 | No | 36475 | 99.35 |
 | cancer_within_one_year | 2 | Yes | 239 | 0.65 |
+| comparison_mammogram_available | 1 | 1.0 | 31136 | 84.81 |
+| comparison_mammogram_available | 2 | &lt;NA> | 4306 | 11.73 |
+| comparison_mammogram_available | 3 | 0.0 | 1272 | 3.46 |
+| current_hormone_therapy | 1 | 0.0 | 31135 | 84.8 |
+| current_hormone_therapy | 2 | 1.0 | 3950 | 10.76 |
+| current_hormone_therapy | 3 | &lt;NA> | 1629 | 4.44 |
+| family_history_breast_cancer | 1 | 0.0 | 30394 | 82.79 |
+| family_history_breast_cancer | 2 | 1.0 | 6103 | 16.62 |
+| family_history_breast_cancer | 3 | &lt;NA> | 217 | 0.59 |
 | mammogram_type | 1 | film | 18720 | 50.99 |
 | mammogram_type | 2 | digital | 17994 | 49.01 |
+| prior_breast_biopsy | 1 | 0.0 | 26398 | 71.9 |
+| prior_breast_biopsy | 2 | 1.0 | 9533 | 25.97 |
+| prior_breast_biopsy | 3 | &lt;NA> | 783 | 2.13 |
+| prior_mammogram | 1 | 1.0 | 35840 | 97.62 |
+| prior_mammogram | 2 | &lt;NA> | 578 | 1.57 |
+| prior_mammogram | 3 | 0.0 | 296 | 0.81 |
+
+</details>
 
 ## Build
 

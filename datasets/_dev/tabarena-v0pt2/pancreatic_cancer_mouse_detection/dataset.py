@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class PancreaticCancerMouseDetection(AbstractCuratedDataset):
@@ -78,6 +78,9 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
     # Task
     target = "HasPanIN"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The paper reports sensitivity and specificity at its classifier's operating point, a pair with no single threshold-free metric; roc_auc summarises both over thresholds."
+    )
     grouping = Grouping(
         on="mouse_id",
         labels="per_group",

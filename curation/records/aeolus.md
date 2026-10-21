@@ -7,7 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -40,6 +40,10 @@ Quite extensive. Could be the best flight data there is
 CC (2026-10-12, Lennart): Target `ARR_DEL15` (arrival 15+ minutes late, ROC AUC), the weather as released, the flight number as a categorical. Two-week test windows (2024-12-18..31, 12-04..17, 11-20..12-03) instead of the three newest weeks, two of which fall in the holiday peak (25.1-26.5% late against 20.8% for 2024). History from 2023 on: TabReD's random sample of all nine years put only about 11.5% of each train side in 2024 and mixed in COVID-19 (2020: 9.7% late), while a model refit every two weeks trains on recent data with the previous holidays; the authors' own benchmarks use 2024 alone. The test-week comparison of history pools (each pool best in one week) did not decide it. The release's data problems are noted only, not reported.
 
 **Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap -, use case -, source +, shape +, no known risk. Large temporal flight-delay task from a documented NeurIPS release, mixed features, direct fit; only licence and version notes remain open.
+
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes, provided the curator confirms keeping the release's mis-timed weather under PROV-13 (else retire for a rebuild from BTS and Meteostat as a new record); mask the weather read after the departure (LEAK-6, against the CC of 2026-10-12, open). Applied: fit `approximate` (weather 3.5-11.4 h old, a day for the 3.6% overnight arrivals; no inbound aircraft; operated flights only), impossible temperatures and wind speeds to missing, Guam and Pago Pago coordinate signs repaired, domain `industry & manufacturing` in the definition, notes corrected (paper's > 15 threshold, paper's June 2024 split, probes `no_spread`, LightGBM 0.612 and linear 0.594 on 50k rows, LightGBM 0.629-0.630 with 1M; the 2026-10-07 "0.64-0.67" is the superseded all-years set-up, the earlier "direct fit" is stale). Priority 2: gap -, use case - (fit approximate), source +, shape +, risk - (open PROV-13 damage that may need a rebuild, and a confirmed small leak).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC and ACC for the delay-occurrence classification task (Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 (Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics')).
 
 ## Reference
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81
+checksum: v2:5005a898bdeed7c026c518106b1158e39f374aa3c6277837b2246a3ea6ac5397
 build:
   uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
   checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
@@ -30,7 +30,9 @@ data:
 task:
   target: NonCompliance
   problem_type: binary_classification
-  metric: roc_auc
+  metric: precision_at_k
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: NonCompliance
   time_on: null
@@ -44,6 +46,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 42422
     max: 42423
@@ -66,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `NonCompliance`, scored with `roc_auc` on IID splits. 63,634 rows and 376 features. Source: Other (2022).
+Binary classification of `NonCompliance`, scored with `precision_at_k` on IID splits. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5005a898bdeed7c026c518106b1158e39f374aa3c6277837b2246a3ea6ac5397`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,9 +136,20 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 63,634 x 377 |
 | task.target | NonCompliance |
 | task.problem_type | binary_classification |
-| task.metric | roc_auc |
+| task.metric | precision_at_k |
 | task.split_regime | iid |
 | task.stratify_on | NonCompliance |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `precision_at_k` (custom; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | precision at the median prediction score (with balanced accuracy, accuracy, recall and AUC) |
+| reference | Flogard & Mengshoel 2022, NeurIPS Datasets and Benchmarks, Sec. 6.4-6.5 |
+| definition | share of non-compliant inspections among the half of the test fold with the highest scores (threshold at the median score) |
+| params | {'k_fraction': 0.5} |
 
 <details>
 <summary>Feature types: 6 categorical, 4 string, 0 datetime</summary>
@@ -181,6 +196,7 @@ We start with the data from dataverse. We create a task for the Non-compliance C
 - The data has spatial information (County).
 - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
 - The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
+- Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
 
 ## Splits
 
@@ -425,4 +441,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:621c4cc6364284ad25532d7efca8fe3ad48d8dde459451448b491fdc16867c81` |
+| stale | yes: the definition now gives checksum `v2:5005a898bdeed7c026c518106b1158e39f374aa3c6277837b2246a3ea6ac5397` |

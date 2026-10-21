@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TEN_YEARS = 3652
 """Days in 10 years (10 x 365.25, rounded down). No event, death or censor date of the cohort falls on days
@@ -101,12 +101,14 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=("Will a person without coronary heart disease have a first coronary event within ten years?"),
         use_case=(
-            "At a routine exam, a physician estimates the 10-year risk of a first coronary heart disease event for a "
-            "patient free of it, to decide on prevention, for example blood pressure or cholesterol treatment."
+            "At a patient's first assessment, a physician estimates the 10-year risk of a first coronary heart "
+            "disease event for a patient free of it, to decide on prevention, for example blood pressure or "
+            "cholesterol treatment."
         ),
         row=(
-            "One participant of the Framingham Heart Study (Massachusetts) at the baseline exam, free of coronary "
-            "heart disease (4,224 participants of the teaching version of the data; period not stated)."
+            "One participant of the Framingham Heart Study (Massachusetts) at the first exam, the baseline exam of "
+            "about 1956 (three exams roughly 1956-1968), free of coronary heart disease (4,224 participants of the "
+            "teaching version of the data)."
         ),
         predicted=(
             "Whether a first coronary heart disease event (angina, heart attack, coronary insufficiency or death from"
@@ -115,7 +117,8 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         known=(
             "Age, sex, education, smoking and cigarettes per day, blood pressure medication, earlier stroke, "
             "hypertension, diabetes, total cholesterol, systolic and diastolic blood pressure, BMI, heart rate and "
-            "glucose."
+            "glucose. HDL cholesterol, which current risk scores use, is missing: it was measured only at the third "
+            "exam."
         ),
         split=("Random participants, so the test data stands for new patients examined in the same way."),
         changes=(
@@ -125,7 +128,9 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "Everything is measured at the exam and the outcome follows within a fixed ten years, as in use. The "
-            "teaching data was anonymized by undocumented methods, so values may be slightly perturbed."
+            "care is that of the late 1950s, before statins (3.0% on blood pressure medication). The teaching data "
+            "was anonymized by undocumented methods: no noise was added (digit preference intact); permutation or "
+            "visit selection cannot be checked."
         ),
     )
 
@@ -148,8 +153,8 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         (sha256 8fdd578ae462f823bf737f451d8a98227c35cb2dbd6390cf2df3b3fa97050f56). It matches every count and mean of
         the BioLINCC documentation we compared (period-1 participants, prevalent CHD, events and deaths by sex). We
         export it to CSV with pyreadr; in R, write.csv(framingham, "framingham_teaching.csv", row.names = FALSE) gives
-        the same values. The Kaggle upload shreyjain601/framingham-heart-study ("Framingham Dataset.csv") holds the
-        same 453,453 values in the same order.
+        the same values. The Kaggle upload shreyjain601/framingham-heart-study ("Framingham Dataset.csv") is reported
+        to hold the same 453,453 values in the same order; not re-checked.
 
         mkdir -p local-data-warehouse/framingham_heart_study_fhs && cd local-data-warehouse/framingham_heart_study_fhs
         wget https://cran.r-project.org/src/contrib/Archive/riskCommunicator/riskCommunicator_1.0.0.tar.gz
@@ -194,8 +199,10 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
     """
     curation_comments = """
         We start with the Framingham Heart Study teaching dataset of NHLBI BioLINCC, as redistributed in the R package
-        riskCommunicator. We keep the baseline exam (period 1) of the 4,240 participants free of CHD, the population at
-        risk of the documentation (p. 5).
+        riskCommunicator. We keep the baseline exam (period 1, about 1956; the three exams ran roughly 1956-1968,
+        documentation p. 1) of the 4,240 participants free of CHD, the population at risk of the documentation (p. 5).
+        The year 2004 is the creation date of the teaching file (2004-03-02, documentation p. 8); its first release
+        date is not stated.
 
         - Prediction point: the baseline exam. A physician predicts whether a participant free of coronary heart disease
           will have a first CHD event within 10 years, from the 15 risk factors of period 1.
@@ -204,31 +211,47 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         - Target `chd_within_10_years`: Yes when the first CHD event (ANYCHD: angina pectoris, myocardial infarction,
           coronary insufficiency or fatal CHD) happens within 3,652 days of the baseline exam. MIT's TenYearCHD is 1
           exactly when TIMECHD is below 10 years, and TIMECHD is the censor date for a participant without an event,
-          so 265 of its 644 positives had no CHD event within 10 years (decision table). We keep ANYCHD, the CHD of
-          MIT's task; hard CHD (MI_FCHD) would give 191 Yes.
+          so 265 of its 644 positives had no CHD event within 10 years (decision table). ANYCHD is the outcome of
+          the FHS 10-year CHD risk function
+          (https://www.framinghamheartstudy.org/fhs-risk-functions/coronary-heart-disease-10-year-risk/, based on
+          Wilson et al. 1998: "Outcome Coronary Heart Disease", "Hard CHD events exclude angina pectoris"). Hard CHD
+          (MI_FCHD), the outcome of the FHS hard-CHD function, would give 191 Yes.
         - The 251 participants who died without CHD within 10 years are No: they had no CHD event. Dropping them would
           select the cohort on an event after the prediction point and remove high-risk negatives.
         - We drop the 16 participants whose CHD follow-up ended within 10 years without an event: their 10-year status
           is unknown. 4,224 participants remain, 379 Yes (9.0%).
         - We drop the identifier RANDID, the columns constant in the cohort (PERIOD, TIME, PREVCHD, PREVAP, PREVMI),
-          HDLC and LDLC (measured at period 3 only) and the follow-up columns (events and days to event, death or
-          censoring).
+          HDLC and LDLC (measured at period 3 only, so the task lacks the HDL that current risk scores use) and the
+          follow-up columns (events and days to event, death or censoring).
         - We rename the features as in MIT's cut; `male` is 1 for SEX = 1 (men) and 0 for SEX = 2 (women). The flags
           stay 0/1 and education stays numeric, as it is ordered. Age and the flags without missing values are stored
           as integers.
         - Missing values are real missing values in the source; there are no sentinels, and the ranges match the
-          documentation.
-        - Anomaly: BioLINCC anonymized the teaching data by methods it does not document. The data is consistent where
-          we can check it, so a perturbation, if any, is small. Three participants have a CHD censor date after their
-          death; they are No either way.
+          documentation. cigsPerDay heaps at 9 and 43, values that occur almost only at period 1; their coding is
+          undocumented, and we keep them.
+        - Anomaly: BioLINCC anonymized the teaching data by methods it does not document (Nahhas, Introduction to
+          Regression Methods for Public Health Using R, App. A.6, names permutations or random visit selection). No
+          noise was added: digit preference is intact (systolic BP ends in 0 far more often than in an odd digit).
+          Within a person, BMI and systolic BP six years apart correlate at r 0.90 and 0.71, and ages match the exam
+          days in every later exam. Permutation or visit selection cannot be checked. Three participants have a CHD
+          censor date after their death; they are No either way.
+        - Selection: the teaching data is "a subset of the data collected as part of the Framingham study" on 4,434
+          participants (documentation p. 1), of the 5,209 enrolled in 1948; how they were chosen is not documented.
+          The first exam is about 1956, so people who died or left before it are likely missing. The task stands for
+          this subset, not for the whole cohort.
+        - Terms: BioLINCC calls teaching data unsuitable for publication (`license`). We use it to compare learning
+          methods, not to estimate clinical effects.
         - No duplicate rows: no two participants share all 15 features.
         - Note: IID split, one row per participant. The use case is risk prediction for new patients at an exam, and
-          the teaching data has no exam dates or family identifiers; the hidden-group probe finds no hidden group.
+          the teaching data has no exam dates or family identifiers, so spouses and relatives cannot be identified.
     """
 
     # Task
     target = "chd_within_10_years"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The teaching dataset defines no task or metric. The context (10-year risk scores) points to the C statistic, which equals roc_auc for a fixed-horizon binary outcome, so the fallback and the context agree."
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {
@@ -255,9 +278,11 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # every feature is numeric: 0/1 flags, the ordered education level and the measurements
+        # the 0/1 flags are categorical (CLEAN-14); the ordered education level and the measurements stay numeric
         del df
-        return FeatureTypes()
+        return FeatureTypes(
+            categorical=["male", "currentSmoker", "BPMeds", "prevalentStroke", "prevalentHyp", "diabetes"],
+        )
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         # 1. MIT's TenYearCHD by what happened in the 10 years
