@@ -50,6 +50,8 @@ the incomplete July 2010 and his three partial-sale outliers), the log price and
 
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes. For the curator (REVIEW.md issues 7, 4, 3, 9, 10): drop the 82 Family, Alloca and AdjLand sales by USE-5 (34 of them scored; mean scored RMSE -0.0051, SE 0.0029, lower in 8 of 13 windows); keep no gap as an exception to SPLIT-10 that rests on the mechanism (the short June 2010's normal sales show no price selection, mean residual -0.001); remove `Trivial` (`Overall Qual` alone R² 0.682 against 0.911 for a linear model, worse in 13 of 13 windows); map the text codes (CLEAN-12); keep the name. Applied: the city assessor as the actor (direct fit), the remodel year after the sale and the one before construction set missing, the three `Exterior 2nd` spellings mapped (225 rows), the outlier drop written as an exception to CLEAN-11 via CLEAN-1 (the third target-outlier drop; amendment proposed in the working copy's REVIEW.md), the `PID` drop measured (block prefix -0.0005 RMSE, SE 0.0005), stale numbers updated; the data change, so the container needs a rebuild. Priority 3: gap -, use case + (the codebook names the assessor's valuation of sold homes; direct fit), source + (De Cock's paper and codebook), shape +, risk - (non-market prices scored as the target until issue 7 is decided).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE between the logarithm of the predicted and the observed sale price (https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview/evaluation).
+
 ## Reference
 
 @article{de2011ames,

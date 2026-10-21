@@ -45,16 +45,11 @@ a temporal task. Do not fall back to an IID split for a non-stationary sequence 
 alternative to try (SPLIT-17; [splits.md](splits.md), "How many windows"). Marker: `Too Small`. Cases: seismic_bumps (49
 positives in the newest half, 0-5 per window; Lennart, 2026-09-30).
 
-**TP-6 (Must; amended 2026-10-21, Lennart, on the metrics of zillow_prize, numerai_v5_2_1m and force_2020).** Keep
-two questions apart: is the task valid, and is it the best version? A valid task stays. A better version the source
-itself defines (a stage it describes) replaces the current one: eryhemato before the biopsy (features from a later
-stage: USE-4 in [use_case.md](use_case.md)). A fix of our own invention (dropping near-ties, a label merge made from
-names) is not a better version. The declared metric documents the original use case: it is the metric the source's
-competition or paper scored. It is overruled only on evidence that it is biased or wrong for the use case (from the
-source, or measured on the shipped splits), written in the notes with its numbers. Whenever the declared metric is not
-exactly the original, the notes name the original. How to declare an original the schema does not list:
-[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Field mapping". The benchmark ignores the
-declared metric for now, so the field records the use case and changes no score.
+**TP-6 (Must; amended 2026-10-21, Lennart).** Keep two questions apart: is the task valid, and is it the best
+version? A valid task stays. A better version the source itself defines (a stage it describes) replaces the current
+one: eryhemato before the biopsy (features from a later stage: USE-4 in [use_case.md](use_case.md)). A fix of our own
+invention (dropping near-ties, a label merge made from names) is not a better version. Which metric scores the task,
+and how the data is matched to it, is [metrics.md](metrics.md) (MET).
 
 **TP-7 (Must).** When the definition builds the target itself (merged or dropped classes), use an established
 convention, test each candidate (classes per test fold after dropping duplicates, signal, how rule-like the label
@@ -312,7 +307,7 @@ through `check_frame`).
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
 The rows come from the v0.2 review of the flagged datasets (from 2026-10-05) and the reviews since; Flags are the
-task-probe flags the decision answers.
+task-probe flags the decision answers. The decisions on metrics (2026-10-21) are in [metrics.md](metrics.md), Cases.
 
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|
@@ -350,12 +345,6 @@ task-probe flags the decision answers.
 | TP-8, TP-1 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (2026-10-12) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) | applied |
 | TP-3 | hr_analytics | no_spread | kept (2026-10-14) | rebuilt from the hackathon's own train file (Kaggle's copy added 2,623 test rows labelled 1 and gave 0.80); the real labels give ROC AUC 0.62-0.63 for every family (LightGBM +0.012 over random forest, paired SE 0.006): a real signal with a low ceiling | applied |
 | TP-10 | ashrae_great_energy_predictor_iii | none (a forecasting-like panel) | in scope as one task (2026-10-15) | RMSE on log kWh per window: the best naive forecast 1.393 / 1.273 / 1.372; default LightGBM (100 trees) loses to it, 1.444 / 1.403 / 1.448; LightGBM with 1,000 trees wins, 1.261 / 1.176 / 1.223; models per site do about the same as one model; the top five teams used no lagged readings | applied |
-| TP-6 | zillow_prize | none (metric) | `mae`, the competition's metric (2026-10-21) | Kaggle scored MAE on logerror; RMSE had been kept as the house default; 0.38% of the rows (absolute logerror above 1) hold 49.9% of the squared error | applied |
-| TP-6 | numerai_v5_2_1m | none (metric) | `pearsonr`, standing for Numerai's per-era CORR (2026-10-21) | CORR is not a listed name; pooled Pearson tracks it within 0.0002 per model (every era's target mean is 0.5) and agrees with its model ranking at Kendall tau 0.89-0.93, RMSE at -0.11 to 0.39 | applied |
-| TP-6 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | none (metric) | `force_2020_penalty_matrix`, the competition's score (2026-10-21) | a published 12 x 12 penalty matrix over hard labels; no listed metric ranks the same; log loss had been kept as the house default | applied |
-| TP-6 | african_credit_scoring_challenge | none (metric) | `f1`, the competition's metric (2026-10-21) | Zindi scored F1; ROC AUC had been kept as the house default | applied |
-| TP-6 | digicow_farmer_training_adoption_challenge | none (metric) | `log_loss` (2026-10-21) | Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) is no listed metric and scores targets the task does not ship; on the shipped 7-day target log loss carries 0.65 of 0.80 | applied |
-| TP-6 | porto_seguro | none (metric) | `roc_auc`, standing for the normalized Gini (2026-10-21) | for a binary target the normalized Gini is 2 x ROC AUC - 1, so the two rank models the same | applied |
 | TP-9 | seismic_bumps | none (temporal windows) | retired, `Too Small` (2026-09-30, Lennart) | the honest split is temporal; the test windows come from the newest half, which holds 49 of the 170 positives: 30 windows of 43 shifts have 0-5 positives each (6 have none), and 3 or 2 windows (14-26 positives each) still give ROC AUC intervals of about ±0.1 to ±0.14 per window | applied |
 
 ## In Data Foundry

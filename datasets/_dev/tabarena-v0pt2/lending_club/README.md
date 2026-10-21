@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766
+checksum: v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8
 build:
   uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
   checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
@@ -32,6 +32,8 @@ task:
   target: Default
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: Default
   time_on: issue_d
@@ -68,7 +70,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766`, so the build is stale. See [Build](#build).
+Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,6 +148,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | Default |
 | task.time_on | issue_d |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric). |
 
 <details>
 <summary>Feature types: 5 categorical, 5 string, 2 datetime</summary>
@@ -455,4 +466,4 @@ Tensions).
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f6448f0eefd649402e619b1f873beea48b9318daefc30734488ea63a4a12e766` |
+| stale | yes: the definition now gives checksum `v2:cfd7f2549beccc1fc29d7c79dcfa3bcc43a5855eb351c369ec0793f700f178a8` |

@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric of numerai_v5_2_1m set to `pearsonr` (was RMSE): Numerai's per-era CORR is no listed metric name; pooled Pearson tracks it within 0.0002 per model on the shipped windows (every era's target mean is 0.5) and agrees with its model ranking at Kendall tau 0.89-0.93, RMSE at -0.11 to 0.39. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mean_group_pearsonr {"method": "numerai_corr"} — Numerai's CORR, the per-era numerai_corr averaged over eras (docs.numer.ai, Correlation (CORR)), with `era` (the time column) as its group input; scored metric changed from pooled pearsonr.
+
 ## Reference
 
 Website https://numer.ai/data/v5.2

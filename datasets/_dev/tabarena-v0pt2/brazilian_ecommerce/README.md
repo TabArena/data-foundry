@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: brazilian_ecommerce
 container_format: 2
-checksum: v2:5e1ee3972e813b04922506338f41bf55285982afd186d1ced925733cd7471d39
+checksum: v2:39cb5916d4dda650e2af8bdf42002fc9e0df4c413159dd455f48f522c5d88b2e
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: log_delivery_days
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: order_purchase_timestamp
@@ -31,6 +33,8 @@ splits:
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: months
+  time_gap: 1
+  time_gap_unit: months
   n_train:
     min: 49981
     max: 76876
@@ -59,7 +63,7 @@ decisions:
 
 Regression of `log_delivery_days`, scored with `rmse` on temporal splits by `order_purchase_timestamp`. 88,721 rows and 24 features. Source: Kaggle (2018).
 
-Not built yet. The current definition gives checksum `v2:5e1ee3972e813b04922506338f41bf55285982afd186d1ced925733cd7471d39`.
+Not built yet. The current definition gives checksum `v2:39cb5916d4dda650e2af8bdf42002fc9e0df4c413159dd455f48f522c5d88b2e`.
 
 ## In brief
 
@@ -135,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | order_purchase_timestamp |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own. |
+
 <details>
 <summary>Feature types: 7 categorical, 0 string, 1 datetime</summary>
 
@@ -196,7 +209,7 @@ We start with olist_orders_dataset.csv of the Kaggle release by Olist (version 2
 
 A model refit at the start of each month predicts the delivery time of the orders placed during that month. It trains on the orders placed at least one month before the refit whose delivery is known by then. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
 
-5 repeat(s) x 1 fold(s) with seed 4267; train 49,981 to 76,876 rows, test 5,828 to 6,913 rows. Prediction horizon: 1 months.
+5 repeat(s) x 1 fold(s) with seed 4267; train 49,981 to 76,876 rows, test 5,828 to 6,913 rows. Prediction horizon: 1 months. Gap between train and test: 1 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|

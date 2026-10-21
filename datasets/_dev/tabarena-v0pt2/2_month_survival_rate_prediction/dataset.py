@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 # Columns of support2.csv that are not features at the prediction point (study day 3), with the reason.
 DROPPED_COLUMNS = {
@@ -288,6 +288,12 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
     # Task
     target = "death_within_2_months"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="ROC area (C index) of the SUPPORT prognostic model for 2- and 6-month survival",
+        reference="Knaus et al. 1995, Ann Intern Med 122(3):191-203, The SUPPORT prognostic model",
+        definition="Area under the ROC curve of the predicted probability of death within 2 months",
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {

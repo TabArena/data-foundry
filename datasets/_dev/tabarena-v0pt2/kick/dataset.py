@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -70,7 +71,6 @@ class Kick(AbstractCuratedDataset):
         - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.
         - The data is temporal and also grouped by auction location. Locations reappear over time, so a grouped split would test unseen auctions, which does not match deployment; a model is deployed on future purchases at mostly known auctions. Therefore, we use temporal evaluation.
         - The test features from the Kaggle competition are available and could be used for unsupervised approaches.
-        - Metric: the competition scored the Gini index (Kaggle's evaluation metric), which for a binary target is a linear function of ROC AUC (normalized: 2 x ROC AUC - 1), so we keep ROC AUC, which ranks models the same (TP-6).
         - We transform "PurchDate" to datetime.
         - We drop the "RefId" column, as it is just an identifier and not useful for modeling.
         - We assign the categorical features "WheelTypeID", "BYRNO", and "VNZIP1" to category dtype, as they are given as numbers.
@@ -80,6 +80,12 @@ class Kick(AbstractCuratedDataset):
     # Task
     target = "IsBadBuy"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Gini index (Kaggle normalized Gini)",
+        reference="https://www.kaggle.com/competitions/DontGetKicked/overview/evaluation",
+        definition="Normalized Gini = 2 x ROC AUC - 1 for a binary target; ranks models identically to ROC AUC.",
+    )
 
     # Splits: 9 equal windows of purchase dates (the 3x3 an IID dataset of this size would get), keeping at
     # least half of all dates for training.

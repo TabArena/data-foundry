@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f
+checksum: v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d
 build:
   uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
   checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
@@ -30,6 +30,8 @@ task:
   target: critical_temp
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -50,6 +52,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 14016
     max: 14333
@@ -74,7 +78,7 @@ decisions:
 
 Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
 
-Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f`, so the build is stale. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,6 +146,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | grouped_non_iid |
 | task.group_on | composition |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | out-of-sample RMSE (with R2) |
+| reference | Hamidieh 2018, Computational Materials Science 154:346-354, doi:10.1016/j.commatsci.2018.07.052 |
+| definition | RMSE of the critical temperature in K (paper: about 9.5 K for XGBoost; R2 about 0.92 reported alongside) |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -226,7 +240,7 @@ One group is a composition: the share of each element in the chemical formula, f
 | nearest neighbour in the same group | 39.3% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.98 (shuffled groups: 0.71) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
@@ -424,4 +438,4 @@ The features come from the composition alone, so the entries of one composition 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fb1f0e1e3f2b7dd390a39f25b89cad31d8aa27dfab71fbd8c3a3d4bd3047366f` |
+| stale | yes: the definition now gives checksum `v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d` |

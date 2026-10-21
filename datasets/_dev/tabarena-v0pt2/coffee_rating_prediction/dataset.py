@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class CoffeeRatingPrediction(AbstractCuratedDataset):
@@ -78,6 +78,9 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
     # Task
     target = "rating"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Scraped Kaggle dataset with no task, competition or paper; no metric defined.",
+    )
 
     # Splits
     splits_comment = """

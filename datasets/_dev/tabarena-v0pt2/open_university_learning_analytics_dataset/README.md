@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: open_university_learning_analytics_dataset
 container_format: 2
-checksum: v2:e51c311e950522b93d2c990a3c48ffd55cf94e702600db2b9b21352b4a968d1a
+checksum: v2:e50413e2625ace982d19721e7a2c7bd3b4a7e74abc6b3bc95e5d385ded45cc50
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: final_result
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: final_result
   time_on: null
@@ -70,7 +72,7 @@ decisions:
 
 Multiclass classification of `final_result`, scored with `log_loss` on grouped splits by `module_presentation`. 26,395 rows and 40 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:e51c311e950522b93d2c990a3c48ffd55cf94e702600db2b9b21352b4a968d1a`.
+Not built yet. The current definition gives checksum `v2:e50413e2625ace982d19721e7a2c7bd3b4a7e74abc6b3bc95e5d385ded45cc50`.
 
 ## In brief
 
@@ -154,6 +156,15 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | final_result |
 | task.group_on | module_presentation |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The source is a data descriptor (OU Analyse open dataset) with no prediction task or metric; our day-60 four-class task is our construction. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>

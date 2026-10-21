@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a
+checksum: v2:468c9788d57c284983c6fc073a1b9742bbfd68b6ecf5e9985016fea10e119c53
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -29,6 +29,8 @@ task:
   target: VCF0702
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: VCF0702
   time_on: VCF0004
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: years
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 19455
     max: 43633
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:468c9788d57c284983c6fc073a1b9742bbfd68b6ecf5e9985016fea10e119c53`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,6 +141,15 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | VCF0702 |
 | task.time_on | VCF0004 |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. 2023), which defined the voting task, scores accuracy for every task of its benchmark, a house convention, not a choice from the decision; our task differs (temporal year splits, pre-election items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift accuracy. roc_auc is the binary fallback. |
+
 <details>
 <summary>Feature types: 245 categorical, 0 string, 0 datetime</summary>
 
@@ -179,6 +192,7 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - We remove all samples with missing pre-election data, missing post-election data or a missing target.
 - We drop 327 that are missing from the last 9 years, which will be used for the test splits.
 - We drop all columns with questions that appear only in one year.
+- These column choices look at every election year, the test years included: a pipeline choice that approximates the task (the questions of an election year are known before its vote), not a value computed from test rows; kept (Lennart, 2026-10-19).
 - The question columns partially stem from post-election interviews. However, there is no simple way to tell which is post-election. We therefore drop all questions for which "no Post IW" or "no post data" is listed as a reason for missing values in the codebook (February 5, 2026 version), and VCF1005, which is built from the post-election House vote ("R Voted" / "R did not vote"). Some additional questions are dropped based on common sense.
 - We encode gender as a categorical variable, because Other was introduced in 2016. However there are very few of these samples. This would actually require split-specific preprocessing.
 - For all features, we assign " " as missing values. Most features have additional types of missingness with own codes. We keep them as categories. That means NA only is assigned if a question was missing in a survey.
@@ -189,6 +203,7 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
 - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
 - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
+- Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
 
 ## Splits
 
@@ -407,4 +422,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7d13bdd0dc948427dfaed0c81415aa9104867eb4bf008f642b0e6ab91964506a` |
+| stale | yes: the definition now gives checksum `v2:468c9788d57c284983c6fc073a1b9742bbfd68b6ecf5e9985016fea10e119c53` |

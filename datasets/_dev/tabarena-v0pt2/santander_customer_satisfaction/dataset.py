@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class SantanderCustomerSatisfaction(AbstractCuratedDataset):
@@ -70,6 +70,12 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
     # Task
     target = "TARGET"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under Receiver Operating Characteristic Curve",
+        reference=("https://www.kaggle.com/competitions/santander-customer-satisfaction (Kaggle API evaluationMetric)"),
+        definition="Area under the ROC curve of TARGET = 1.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

@@ -49,6 +49,8 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag 
 
 CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use case fit more or less"); the tag is retired from new definitions.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Scraped Kaggle dataset with no task, competition or paper; no metric defined.
+
 ## Reference
 
 Kaggle

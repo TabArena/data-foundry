@@ -24,7 +24,8 @@ import pandas as pd
 import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
-from data_foundry.schema import as_column_list, resolve_warehouse_dir
+from data_foundry.curation_container import feature_columns
+from data_foundry.schema import resolve_warehouse_dir
 from data_foundry.v2 import group_checks
 from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
 
@@ -139,15 +140,17 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         "build_stale": bool(build) and build.get("checksum") != container.checksum,
         "data": {
             "n_rows": len(df),
-            # the target and the group columns are not features
-            "n_features": int(df.shape[1] - 1 - len(as_column_list(task.group_on))),
+            # the target, the group and the scoring columns are not features
+            "n_features": len(feature_columns(container)),
             "dtypes": {str(k): int(v) for k, v in df.dtypes.astype(str).value_counts().sort_index().items()},
             "n_test_dataset_rows": None if container.test_dataset is None else len(container.test_dataset),
         },
         "task": {
             "target": task.target_column_name,
             "problem_type": task.problem_type,
-            "metric": task.objective_metric_name,
+            "metric": task.objective_metric.name,
+            "metric_origin": task.objective_metric.origin,
+            "scoring_columns": [c.column for c in task.scoring_columns] or None,
             "split_regime": task.split_regime,
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
@@ -354,8 +357,10 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if meta.version_from_unique_name:
         rows.append(("version of", meta.version_from_unique_name))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
-    rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k != "grouping"]
+    skip = ("grouping", "metric_origin", "scoring_columns")
+    rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k not in skip]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
+    out += _metric_block(container.task_metadata)
 
     # the types the standard steps applied to the cleaned frame; asked again of the cast frame, a `_feature_types`
     # that reads dtypes (object columns as categorical) would find none
@@ -372,6 +377,56 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     counts = ", ".join(f"{len(cols)} {kind}" for kind, cols in groups)
     out += _details(f"Feature types: {counts}", "\n".join(lines))
     out += _details("BibTeX", _fence(meta.academic_reference_bibtex, "bibtex"))
+    return out
+
+
+METRIC_ORIGINS = {
+    "source": "the source's metric",
+    "stand_in": "a stand-in for the source's metric, which cannot be computed",
+    "context": "obvious from the task: the source defines no metric",
+    "fallback": "the default for the problem type: the source defines no metric",
+}
+
+
+def _metric_block(task: Any) -> list[str]:
+    """The metric spec (name, origin, original, reference, definition) and the scoring columns."""
+    spec = task.objective_metric
+    better = "higher" if spec.greater_is_better else "lower"
+    rows = [
+        ("name", f"`{spec.name}` ({spec.kind}; takes {spec.prediction}; {better} is better)"),
+        ("origin", f"{spec.origin}: {METRIC_ORIGINS.get(spec.origin, spec.origin)}"),
+    ]
+    rows += [
+        (label, value)
+        for label, value in (
+            ("original", spec.original),
+            ("reference", spec.reference),
+            ("definition", spec.definition),
+            ("reason", spec.reason),
+            ("params", spec.params or None),
+            ("inputs", ", ".join(f"{role}: `{column}`" for role, column in spec.inputs.items()) or None),
+        )
+        if value
+    ]
+    out = ["**Metric**", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
+    if task.scoring_columns:
+        table = pd.DataFrame(
+            [
+                (f"`{c.column}`", c.role, f"{c.used_by}: {c.description}", "never a feature")
+                for c in task.scoring_columns
+            ],
+            columns=["column", "role", "how the metric uses it", "model input"],
+        )
+        out += [
+            "**Scoring columns**",
+            "",
+            "Kept in the frame for the metric; do not use them as features. Drop them from the inputs "
+            "(`feature_columns(container)`), then pass the test rows' values to the scorer "
+            "(`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).",
+            "",
+            _table(table, full=True),
+            "",
+        ]
     return out
 
 

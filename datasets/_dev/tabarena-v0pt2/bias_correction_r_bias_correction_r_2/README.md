@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bias_correction_r_bias_correction_r_2
 container_format: 2
-checksum: v2:07d8e9f7f0e78bead778bb27fae7fe339f8c3cebd4d58cec83eb786ada0d771c
+checksum: v2:bf6a3f5523bdd6b38f6d229786f898d13b7f913a60388f1dce3a6130d281955e
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: Next_Tmin
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Date
@@ -30,6 +32,8 @@ splits:
   random_state: 4267
   time_horizon: 7
   time_horizon_unit: days
+  time_gap: 1
+  time_gap_unit: days
   n_train:
     min: 6110
     max: 7452
@@ -56,7 +60,7 @@ decisions:
 
 Regression of `Next_Tmin`, scored with `rmse` on temporal splits by `Date`. 7,648 rows and 23 features. Source: UCI (2020).
 
-Not built yet. The current definition gives checksum `v2:07d8e9f7f0e78bead778bb27fae7fe339f8c3cebd4d58cec83eb786ada0d771c`.
+Not built yet. The current definition gives checksum `v2:bf6a3f5523bdd6b38f6d229786f898d13b7f913a60388f1dce3a6130d281955e`.
 
 ## In brief
 
@@ -127,6 +131,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics). |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
@@ -210,7 +223,6 @@ targets, the next day's minimum (`Next_Tmin`) and maximum (`Next_Tmax`) air temp
   that tuned single models beat the per-station MOS.
 - Anomaly: UCI and the paper's Table 1 give `LDAPS_CC1`-`LDAPS_CC4` (cloud cover) and `LDAPS_PPT1`-`LDAPS_PPT4`
   (precipitation) in "%", but the cloud covers lie between 0 and 0.98. We keep the values as published.
-- Note: the paper scores with R^2, bias and RMSE (Sec. 3.3); we keep the default RMSE.
 
 ## Splits
 
@@ -223,7 +235,7 @@ midnight, after the first prediction that evening. Each window holds 149-175 sta
 stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2
 protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 6,110 to 7,452 rows, test 149 to 175 rows. Prediction horizon: 7 days.
+9 repeat(s) x 1 fold(s) with seed 4267; train 6,110 to 7,452 rows, test 149 to 175 rows. Prediction horizon: 7 days. Gap between train and test: 1 days.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|

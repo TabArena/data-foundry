@@ -74,6 +74,8 @@ CC (2026-10-21, Lennart): We want to keep real repeats, as houses can be sold se
 
 **Assessment (AI, 2026-10-21):** Of the 63 homes that appear more than once (130 rows), 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice; the newest entry stays. The other 28 rows (sales at another price, some of them other units at an address without a unit number) now stay instead of only the newest entry; 39,060 rows. The split also violated SPLIT-14 (Must): with min_train_fraction=0.25 the oldest of the three quarter-size windows trained on 25% of the rows. Now three windows of a sixth of the rows (6,510) from the newest half, training on 50%, 67% and 83%. Dataset check: 0 errors, 0 warnings.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE, the competition's evaluation metric, as RMSE on log1p(Sold Price).
+
 ## Reference
 
 Kaggle

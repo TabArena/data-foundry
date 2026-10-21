@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -115,6 +116,13 @@ class Apistox(AbstractCuratedDataset):
     # Task
     target = "toxic_to_bees"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no "
+            "single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the "
+            "binary fallback and the paper's threshold-free metric."
+        ),
+    )
 
     # Splits: four ten-year windows of first publication years (every year from 1950 on is in the data, so ten
     # distinct years are ten calendar years).

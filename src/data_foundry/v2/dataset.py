@@ -53,9 +53,9 @@ import pandas as pd
 
 from data_foundry.bundle_checks import (
     SEVERITY_ORDER,
-    TABARENA_DEFAULT_METRICS,
     BundleCheckReport,
     CheckResult,
+    metric_computes_findings,
     run_bundle_checks,
     verify_saved_container,
 )
@@ -65,8 +65,10 @@ from data_foundry.schema import (
     RETIRED_DATA_TAGS,
     DatasetMetadata,
     Grouping,
+    MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
+    ScoringColumn,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -75,6 +77,7 @@ from data_foundry.v2 import (
     splits as protocol,
     task_checks,
 )
+from data_foundry.v2.metrics import Metric
 from data_foundry.v2.preprocessing import (
     PANDAS_3,
     SHUFFLE_RANDOM_STATE,
@@ -304,8 +307,15 @@ class AbstractCuratedDataset(ABC):
     """The target column."""
     problem_type: ClassVar[str]
     """``binary_classification``, ``multiclass_classification`` or ``regression``."""
-    metric: ClassVar[str | None] = None
-    """The objective metric; None is the default for the problem type (roc_auc / log_loss / rmse)."""
+    metric: ClassVar[Metric]
+    """Required: the metric that scores the task (:class:`~data_foundry.v2.metrics.Metric`). The source's metric
+    when it defines one (``Metric.source("rmse", original="RMSE", reference=...)``), the closest computable one to an
+    original that cannot be computed (``Metric.stand_in(...)``), else ``Metric.fallback(reason=...)`` (roc_auc /
+    log_loss / rmse by problem type, and where we looked)."""
+    scoring_columns: ClassVar[tuple[ScoringColumn, ...]] = ()
+    """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
+    Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
+    an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -532,6 +542,8 @@ class AbstractCuratedDataset(ABC):
         if self.grouping is not None:
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
+        declared["scoring_columns"] = [c.column for c in task.scoring_columns]
+        declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
             if missing:
@@ -787,13 +799,22 @@ class AbstractCuratedDataset(ABC):
             self._write_report(result)
         return result
 
-    def build(self, *, verbose: bool = True) -> CurationResult:
+    def build(self, *, verbose: bool = True, allow_local_metric: bool = False) -> CurationResult:
         """Run :meth:`check`, fail on bundle-check errors, save the container and verify the export.
 
-        This is the only step that mints a UUID. The report records the UUID, checksum and provenance.
+        This is the only step that mints a UUID. The report records the UUID, checksum and provenance. A local
+        metric (``Metric.local``: code only this definition holds) is refused unless ``allow_local_metric`` is True,
+        which only a user's own, never shipped, dataset should pass: a reader of the container could not compute it.
         """
         from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
 
+        if _declared_metric(type(self)).is_local and not allow_local_metric:
+            msg = (
+                f"{type(self).__name__}: the metric is local (`Metric.local`), so a reader of the container cannot "
+                "compute it. A shipped dataset adds its metric to data_foundry.v2.metrics under a general name; for "
+                "your own unshipped dataset, pass `build(allow_local_metric=True)`."
+            )
+            raise DatasetDefinitionError(msg)
         result = self.check(write_report=False, verbose=verbose)
         result.bundle_report.raise_if_errors()
         reviewed = read_report(self.report_path).get("checksum")
@@ -826,8 +847,10 @@ class AbstractCuratedDataset(ABC):
         report = run_bundle_checks(container, verbose=False)  # a format-2 container: the v2 protocol checks included
         shared = report.results
         own: list[CheckResult] = []
+        metric = _declared_metric(type(self))
         for name, run in (
             ("definition", self._definition_checks),
+            ("metric", lambda: metric_computes_findings(container, metric) if metric.is_local else []),
             ("group", lambda: group_checks.group_findings(container, group_stats)),
             ("task", lambda: task_checks.task_findings(container)),
             ("extra", lambda: self._extra_checks(container)),
@@ -852,6 +875,7 @@ class AbstractCuratedDataset(ABC):
         report.results = sorted([r for r in found if r.slug not in accepted], key=lambda r: SEVERITY_ORDER[r.severity])
         report.ignored = accepted
         if verbose:
+            print("\n".join(["Metric:", *container.task_metadata.objective_metric.describe_lines()]))
             print(report.summary())
         return report
 
@@ -1179,12 +1203,26 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
     task = PredictiveMLTaskMetadataV2(
         target_column_name=cls.target,
         problem_type=cls.problem_type,
-        objective_metric_name=cls.metric or TABARENA_DEFAULT_METRICS.get(cls.problem_type, ""),
+        objective_metric=metric_spec(_declared_metric(cls), cls.problem_type),
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         grouping=grouping,
+        scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
     )
     return dataset, task
+
+
+def metric_spec(metric: Metric, problem_type: str) -> MetricSpec:
+    """The container's spec of ``metric`` for ``problem_type`` (a fallback resolved to roc_auc / log_loss / rmse)."""
+    spec = metric.spec(problem_type)
+    for key in ("original", "reference", "definition", "reason"):
+        spec[key] = clean_text(spec[key]) if spec[key] else spec[key]
+    return MetricSpec(**spec)
+
+
+def _declared_metric(cls: type[AbstractCuratedDataset]) -> Metric:
+    """The definition's ``metric`` (required; :func:`_validate_definition` checks it is a :class:`Metric`)."""
+    return cls.metric
 
 
 _FLAT_REGIME_ATTRIBUTES = (
@@ -1209,7 +1247,9 @@ _REQUIRED = (
     "license",
     "target",
     "problem_type",
+    "metric",
 )
+"""The attributes a definition must declare."""
 
 
 def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C901, PLR0912 - a flat list of rules
@@ -1256,6 +1296,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         )
     if cls.grouping is not None and not isinstance(cls.grouping, Grouping):
         fail("`grouping` must be a `Grouping(...)`.")
+    metric = getattr(cls, "metric", None)
+    if metric is not None and not isinstance(metric, Metric):
+        fail("`metric` must be a `Metric` (`Metric.source(...)`, `Metric.stand_in(...)` or `Metric.fallback(...)`).")
+    if isinstance(cls.scoring_columns, ScoringColumn) or not all(
+        isinstance(c, ScoringColumn) for c in cls.scoring_columns
+    ):
+        fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 RAW_FILE = "train_ajEneEa.csv"
 """The contest's training file: 43,400 patients, 783 of them with a stroke."""
@@ -100,13 +100,19 @@ class StrokePrediction(AbstractCuratedDataset):
         - Missing values: smoking_status is blank for 30.6% of the rows, all children under 10 among them. It is missing independently of the stroke (odds ratio 0.96), so it stays missing (the Kaggle cut writes "Unknown").
         - Anomaly: ages under 2 are years plus 0.08 per month, and ages 78 to 82 hold more patients per year than 70 to 77, as if older ages were folded in. Kept as published.
         - Duplicates: on the six shipped features, 198 rows repeat an earlier row, none with a stroke, and one pair of 76-year-old men shares every feature with different labels. No two rows of the raw file are the same beyond the id, so they are different patients and stay.
-        - IID split: one row per patient, and a model is used for new patients. The contest also scored ROC AUC.
+        - IID split: one row per patient, and a model is used for new patients.
         - Note: age alone scores ROC AUC 0.840 and a regularised LightGBM 0.850, above age on 9 of 9 splits (+0.010 on average). The untuned task probe (5 of the 9 splits) has its LightGBM at 0.823, below age alone at 0.832, and its linear model at 0.850; no task-probe flag.
     """
 
     # Task
     target = "stroke"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC-ROC",
+        reference="https://www.analyticsvidhya.com/datahack/contest/mckinsey-analytics-online-hackathon/ (McKinsey Analytics Online Hackathon - Healthcare Analytics, 2018-04-14)",
+        definition="area under the ROC curve of stroke (Yes positive)",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)

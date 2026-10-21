@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -559,6 +560,15 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
     # Task
     target = "default"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="ROC AUC",
+        reference=(
+            "https://boosters.pro/championship/alfabattle2/overview (record's competition-page excerpt: 'ROC "
+            "AUC'); habr.com/ru/companies/alfa/articles/551130"
+        ),
+        definition="ROC AUC of the default flag per product (loan)",
+    )
 
     # Splits
     splits_comment = """

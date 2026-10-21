@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: infrared_thermography_temperature
 container_format: 2
-checksum: v2:719e2bb621f71bdc89045006b423014fc5982c38da853cf31d77c21375f2a6a0
+checksum: v2:298da9a1d2dff61c3cfb828f0cd0bd7a7e2153c178d7d2bcca7ce2969f24fa6a
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: aveOralM
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -56,7 +58,7 @@ decisions:
 
 Regression of `aveOralM`, scored with `rmse` on IID splits. 1,001 rows and 35 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:719e2bb621f71bdc89045006b423014fc5982c38da853cf31d77c21375f2a6a0`.
+Not built yet. The current definition gives checksum `v2:298da9a1d2dff61c3cfb828f0cd0bd7a7e2153c178d7d2bcca7ce2969f24fa6a`.
 
 ## In brief
 
@@ -125,6 +127,16 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | root-mean-square difference A_rms (with clinical bias and its SD) |
+| reference | Wang et al. 2022, Sensors 22(1):215, Sec. 2.5-2.6 (PMC8749858) |
+| definition | A_rms = sqrt(mean((T_oral_estimated - T_ref)^2)) in degrees C; the paper reports it and the clinical bias per T_ref interval (<37, 37-38, >38 C). |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>

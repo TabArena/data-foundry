@@ -58,6 +58,8 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 
 **Assessment (AI, 2026-10-21):** REVIEW.md issue 3 settled and removed; the keep still depends on the PROV-3 standard (issue 1).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — a Kaggle dataset without a competition; no metric named, the LEAPS case material is offline.
+
 ## Reference
 
 Kaggle / Broken Website

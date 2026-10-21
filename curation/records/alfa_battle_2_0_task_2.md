@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10
 
 CC (2026-10-21, Lennart): on CLEAN-19: "Okay, we here the case is that we want to take the best of both, or a reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does that make sense?" (CLEAN-19, amended). The top solutions' shared aggregates stay: they are the better of the two sets (untuned LightGBM 0.787 / 0.771 / 0.772 against the organizers' 0.774 / 0.757 / 0.763); the CLEAN-19 Cases row gained this reason.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — ROC AUC (https://boosters.pro/championship/alfabattle2/overview (record's competition-page excerpt: 'ROC AUC'); habr.com/ru/companies/alfa/articles/551130).
+
 ## Reference
 
 Booster

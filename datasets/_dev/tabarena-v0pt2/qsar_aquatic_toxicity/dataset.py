@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class QsarAquaticToxicity(AbstractCuratedDataset):
@@ -67,6 +67,9 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Cassotti et al. 2014 report Q2 (cv and external) with RMSE; r2 and rmse rank models the same within a fold. rmse is the regression fallback."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = ["TPSA", "SAacc", "H-050", "MLOGP", "RDCHI", "GATS1p", "nN", "C-040", "LC50"]

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bioresponse
 container_format: 2
-checksum: v2:50769b402a8cd7595b68983a7f4a16c6c962e2828669dfc10d6b340a5e0265da
+checksum: v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310
 build:
   uuid: 01a111fc-4c0b-76f4-b01d-a4db8e120e35
   checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
@@ -30,6 +30,8 @@ task:
   target: MoleculeElicitsResponse
   problem_type: binary_classification
   metric: log_loss
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: MoleculeElicitsResponse
   time_on: null
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `MoleculeElicitsResponse`, scored with `log_loss` on IID splits. 3,751 rows and 1,776 features. Source: Kaggle (2012).
 
-Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:50769b402a8cd7595b68983a7f4a16c6c962e2828669dfc10d6b340a5e0265da`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,6 +134,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | MoleculeElicitsResponse |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | source: the source's metric |
+| original | Log Loss |
+| reference | https://www.kaggle.com/c/bioresponse (Evaluation; Kaggle API evaluationMetric 'Log Loss', per the record's 2026-10-21 assessment) |
+| definition | mean binary cross-entropy of the predicted probability that the molecule elicits a response |
+
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
@@ -173,7 +185,6 @@ The first 5 of 3,751 rows of the final frame (random rows: the frame is shuffled
 - We changed the name of the target and mapped it to yes/no
 - Anomaly: Only train data is used, since test data is empty for target
 - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
-- Metric: the competition scored log loss (Kaggle's evaluation metric for bioresponse), which we declare (TP-6).
 
 ## Splits
 
@@ -369,4 +380,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:50769b402a8cd7595b68983a7f4a16c6c962e2828669dfc10d6b340a5e0265da` |
+| stale | yes: the definition now gives checksum `v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310` |

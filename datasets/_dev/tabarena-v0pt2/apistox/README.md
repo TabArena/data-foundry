@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e
+checksum: v2:cb98599609e3ac8659e74f10ab8365e025749069ac6bd56bd8c62e223b6c8f5e
 build:
   uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
   checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
@@ -30,6 +30,8 @@ task:
   target: toxic_to_bees
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: toxic_to_bees
   time_on: first_publication_year
@@ -69,7 +71,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 204 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:cb98599609e3ac8659e74f10ab8365e025749069ac6bd56bd8c62e223b6c8f5e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,6 +144,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | toxic_to_bees |
 | task.time_on | first_publication_year |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the binary fallback and the paper's threshold-free metric. |
 
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
@@ -436,4 +447,4 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6212233198683f055d663ccc045d26efbb13a438887902a34bdd37d54edf636e` |
+| stale | yes: the definition now gives checksum `v2:cb98599609e3ac8659e74f10ab8365e025749069ac6bd56bd8c62e223b6c8f5e` |

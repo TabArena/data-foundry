@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Grouping,
+    Metric,
     TaskSummary,
     anonymize_ids,
     drop_columns,
@@ -109,7 +110,7 @@ class Lgd(AbstractCuratedDataset):
         We start with lgd.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): 2,545 loans of a European bank, "slightly modified and anonymized" (chapter 1, p. 14).
 
         - Prediction point: a loan has just defaulted, and the bank estimates the share of the amount outstanding it will lose. The loan-to-value ratio and the purpose are known then.
-        - Target: `lgd` (the source's `lgd_time`), a share from 0 to 1, as regression with RMSE, the book's own task in chapter 10. No log transform: the share has mass points at both bounds. The record asks for binary classification, but the only binary column, `event`, is part of this target.
+        - Target: `lgd` (the source's `lgd_time`), a share from 0 to 1, as regression, the book's own task in chapter 10. No log transform: the share has mass points at both bounds. The record asks for binary classification, but the only binary column, `event`, is part of this target.
         - We drop `Recovery_rate`, `y_logistic`, `lnrr` and `Y_probit`, transformations of the LGD.
         - We drop `event`: it is 0 for exactly the 728 loans at the floor, so it says whether there was a loss (decision table).
         - We keep the source's target bounds: an LGD of zero is stored as 0.00001 (28.6% of the loans) and a total loss as 0.99999 (5.6%).
@@ -125,6 +126,13 @@ class Lgd(AbstractCuratedDataset):
     # Task
     target = "lgd"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Baesens, Roesch & Scheule 2016 (ch. 10) evaluate LGD models by MSE/RMSE, R^2 and "
+            "Pearson/Spearman/Kendall correlations, with no declared winner metric. rmse is the regression "
+            "fallback."
+        ),
+    )
     grouping = Grouping(
         on="borrower_block",
         labels="per_sample",

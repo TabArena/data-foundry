@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_satisfaction
 container_format: 2
-checksum: v2:0eb272e1a863d288d82fc66b46e95c9536f59f9187c1159eb53c4de72a393e06
+checksum: v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca
 build:
   uuid: 01a111fc-12c0-72fc-95ab-3a7ad03daa2b
   checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
@@ -30,6 +30,8 @@ task:
   target: TARGET
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: TARGET
   time_on: null
@@ -67,7 +69,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 rows and 307 features. Source: Kaggle (2016).
 
-Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0eb272e1a863d288d82fc66b46e95c9536f59f9187c1159eb53c4de72a393e06`, so the build is stale. See [Build](#build).
+Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,6 +137,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | TARGET |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under Receiver Operating Characteristic Curve |
+| reference | https://www.kaggle.com/competitions/santander-customer-satisfaction (Kaggle API evaluationMetric) |
+| definition | Area under the ROC curve of TARGET = 1. |
 
 <details>
 <summary>Feature types: 57 categorical, 0 string, 0 datetime</summary>
@@ -443,4 +455,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0eb272e1a863d288d82fc66b46e95c9536f59f9187c1159eb53c4de72a393e06` |
+| stale | yes: the definition now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca` |

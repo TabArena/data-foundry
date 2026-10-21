@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -189,6 +190,12 @@ class RainInAustralia(AbstractCuratedDataset):
     # Task
     target = "RainTomorrow"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The data is a Kaggle dataset / rattle example file built from BoM observations with no task "
+            "description or metric; no paper defines one. Binary fallback roc_auc."
+        ),
+    )
 
     # Splits
     temporal = Temporal(on="Date", splits=TemporalSplits(window=14, unit="days", n_windows=9, step=42))

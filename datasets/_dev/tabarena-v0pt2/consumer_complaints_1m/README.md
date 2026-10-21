@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb
+checksum: v2:ffef23ec582d5bbb67b4df102ea2f81503339d385735ff09e0d9aa50d7314599
 build:
   uuid: 01a111fc-f194-75a8-92f0-489647625f28
   checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
@@ -30,6 +30,8 @@ task:
   target: Company response to consumer
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: Company response to consumer
   time_on: Date received
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1000000
     max: 1000000
@@ -67,7 +71,7 @@ decisions: []
 
 Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2026).
 
-Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ffef23ec582d5bbb67b4df102ea2f81503339d385735ff09e0d9aa50d7314599`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -143,6 +147,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | Company response to consumer |
 | task.time_on | Date received |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The CFPB database is a public register with no prediction task; the task is our adaptation following a benchmark paper, not an original task with a defined metric. |
 
 <details>
 <summary>Feature types: 9 categorical, 3 string, 1 datetime</summary>
@@ -348,4 +361,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:980b43f7f4adf086da8687acea38247ba836692bcca42dbc8533f470073f81fb` |
+| stale | yes: the definition now gives checksum `v2:ffef23ec582d5bbb67b4df102ea2f81503339d385735ff09e0d9aa50d7314599` |

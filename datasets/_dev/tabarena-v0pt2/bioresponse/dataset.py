@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class Bioresponse(AbstractCuratedDataset):
@@ -60,13 +60,17 @@ class Bioresponse(AbstractCuratedDataset):
         - We changed the name of the target and mapped it to yes/no
         - Anomaly: Only train data is used, since test data is empty for target
         - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
-        - Metric: the competition scored log loss (Kaggle's evaluation metric for bioresponse), which we declare (TP-6).
     """
 
     # Task
     target = "MoleculeElicitsResponse"
     problem_type = "binary_classification"
-    metric = "log_loss"  # the competition's metric
+    metric = Metric.source(
+        "log_loss",
+        original="Log Loss",
+        reference="https://www.kaggle.com/c/bioresponse (Evaluation; Kaggle API evaluationMetric 'Log Loss', per the record's 2026-10-21 assessment)",
+        definition="mean binary cross-entropy of the predicted probability that the molecule elicits a response",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/train.csv")

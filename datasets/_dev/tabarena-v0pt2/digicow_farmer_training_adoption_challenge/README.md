@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: digicow_farmer_training_adoption_challenge
 container_format: 2
-checksum: v2:f7b131ca399fcb7f69b271340aabd056c57211a549f914181f8891e858a37bbc
+checksum: v2:273e108035005ae00a54d6155c44782a1c904eda30962f69ad46b7b49a7d0606
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: adopted_within_07_days
   problem_type: binary_classification
   metric: log_loss
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: adopted_within_07_days
   time_on: training_day
@@ -73,7 +75,7 @@ decisions:
 
 Binary classification of `adopted_within_07_days`, scored with `log_loss` on temporal splits by `training_day`. 13,536 rows and 11 features. Source: Zindi (2026).
 
-Not built yet. The current definition gives checksum `v2:f7b131ca399fcb7f69b271340aabd056c57211a549f914181f8891e858a37bbc`.
+Not built yet. The current definition gives checksum `v2:273e108035005ae00a54d6155c44782a1c904eda30962f69ad46b7b49a7d0606`.
 
 ## In brief
 
@@ -158,6 +160,17 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | adopted_within_07_days |
 | task.time_on | training_day |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | Zindi weighted rubric: 0.75 log loss + 0.25 ROC AUC over three targets (7-day logloss 0.65, 7-day AUC 0.15, 90- and 120-day logloss 0.05 and AUC 0.05 each) |
+| reference | https://zindi.africa/competitions/digicow-farmer-training-adoption-challenge (Evaluation page) |
+| definition | Binary log loss of P(adopted within 7 days). |
+| reason | false for the original: the 90- and 120-day targets are dropped (they contain the 7-day label) and Zindi's rubric is a weighted mix of two metrics; log loss carries 0.65 of the 7-day target's 0.80 weight |
+
 <details>
 <summary>Feature types: 10 categorical, 1 string, 1 datetime</summary>
 
@@ -204,7 +217,7 @@ We start with Train.csv of the Zindi DigiCow Farmer Training Adoption Challenge 
 - Dates: `training_day` is stored with the day in the month field. We swap them back; then Sundays are rare and 42.7% of a group's date gaps are whole weeks (first decision). The day is never above 12, so the release holds days 1-12 of each month only. Zindi cut Train/Test in stored-date order, so Train.csv holds days 1-4 of each 2025 month and days 5-12 went to the unlabelled Test.csv.
 - We do not use Prior.csv, the farmers' other trainings. As stored, 20.3% of its rows for Train.csv farmers fall after the farmer's Train.csv row in true dates; a history of the earlier rows only is legal (LEAK-34) and is the first fix to try if the task is revived. It stays out because the task is not shipped, and it carries the same recording waves.
 - Target: `adopted_within_07_days`, the challenge's main target. It belongs to the row's own training: the codebook says "first training", but 2,540 rows (18.8%) are not the farmer's first training in true dates. We drop `adopted_within_90_days` and `adopted_within_120_days`: later outcomes that contain the 7-day label in every row.
-- Metric: Zindi scored log loss 0.75 and ROC AUC 0.25 (7-day log loss 0.65, 7-day ROC AUC 0.15, the 90- and 120-day log loss and ROC AUC 0.05 each). The rubric is no listed metric and scores targets this task does not ship, so we declare log loss, which carries 0.65 of the 0.80 weight of the 7-day target (TP-6).
+- Metric: a stand-in, 7-day log loss for Zindi's weighted rubric of log loss and ROC AUC over three targets, two of which this task does not ship (the metric spec has the weights).
 - We drop `has_topic_trained_on`: a flag of 0 never adopts, and where the flag is mostly 0 (TRA_szrwyfzz and TRA_hyodnntj; TRA_twwcfcum's one flagged row is its one adopter) the flagged farmers hold all the adopters (second decision).
 - Potential leak, kept on purpose: `topics_list`, the day's topics, known at the prediction point (LEAK-37). In TRA_szrwyfzz's and TRA_hyodnntj's rows it predicts the dropped flag with ROC AUC 0.885-0.902 (5-fold, grouped by session), and within their 82 sessions that mix flagged and unflagged farmers it predicts adoption with 0.649; adopters have 4.71 topics against 3.22. Two readings: more sessions attended, or the flag carried over. Revisit if the topics are shown to be recorded at follow-up.
 - We drop `ID` (row id) and `farmer_name` (one row per farmer). `trainer` (a list of ids) and `topics_list` are written as text, topics joined by "; " within a session and sessions by " | ". Topic spellings vary by trainer (141 spellings, 123 after case and punctuation), kept as released. Gender, registration, age band, group, county, subcounty, ward and trainer are categoricals; `belong_to_cooperative` stays 0/1.

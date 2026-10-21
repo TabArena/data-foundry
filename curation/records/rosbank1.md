@@ -47,6 +47,8 @@ Might be streaming event data (?), need to figure out when looking at the data
 
 CC (2026-10-21, Lennart): on CLEAN-19: "Okay, we here the case is that we want to take the best of both, or a reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does that make sense?" (CLEAN-19, amended). The CoLES aggregates are a published baseline; the open question (REVIEW.md issue 5) is now whether a 2018 top solution's features are better, else CoLES stays.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC - Area Under the ROC Curve (task 1, churn); task 2 POS spend used RMSE (https://boosters.pro/api/champ/champ?champname=rosbank1 (metric: 'AUC', checked 2026-10-21)).
+
 ## Reference
 
 Booster

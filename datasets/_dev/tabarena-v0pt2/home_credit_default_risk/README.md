@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150
+checksum: v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -30,6 +30,8 @@ task:
   target: TARGET
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: TARGET
   time_on: null
@@ -71,7 +73,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -139,6 +141,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | TARGET |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under Receiver Operating Characteristic Curve (Kaggle API evaluationMetric) |
+| reference | https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation |
+| definition | ROC AUC between predicted probability and TARGET |
 
 <details>
 <summary>Feature types: 49 categorical, 0 string, 0 datetime</summary>
@@ -454,4 +466,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ae9f73b997fc938635b192e6bec236414fd714aadf0c0bc714e634d122f83150` |
+| stale | yes: the definition now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde` |

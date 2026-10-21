@@ -47,3 +47,7 @@ CC (2026-10-01, Lennart): The Zenodo file (Sanz-Guerrero et al.) holds only loan
 CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10 exception (cross-dataset item, ok).
 
 **Exception to SPLIT-10 (2026-10-21, Lennart):** a loan's outcome is known only when it ends, up to 36 months after issue, with no outcome dates: a 36-month gap leaves 5-9% of the rows for training in the three windows, a 12-month gap 33-46%, below the 50% floor. Serves SPLIT-14 (Must) (principles.md, Tensions).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric).
+
+CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's balanced accuracy.

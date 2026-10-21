@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: asp_potassco_classification
 container_format: 2
-checksum: v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5
+checksum: v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a
 build:
   uuid: 01a111fc-9534-79ba-a1c0-efe7268f38e0
   checksum: v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3
@@ -29,6 +29,8 @@ task:
   target: algorithm
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: algorithm
   time_on: null
@@ -75,7 +77,7 @@ decisions: []
 
 Multiclass classification of `algorithm`, scored with `log_loss` on grouped splits by `task_id`. 1,212 rows and 136 features. Source: ASlib (2014).
 
-Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,6 +148,17 @@ Only curators run `build`, when the dataset ships.
 | task.group_on | task_id |
 | task.group_labels | per_sample |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | PAR10 (penalized average runtime, timeouts counted as 10 x cutoff) of the selected algorithm (ASlib) |
+| reference | Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237; https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO (cutoff 600 s) |
+| definition | Original: mean over instances of the runtime of the chosen configuration, with a timeout scored 6000 s (10 x 600 s cutoff); stand-in: multiclass log loss on the fastest-configuration label. |
+| reason | ASlib scores PAR10 of the selected configuration, which needs the 11 runtimes per instance; they are not shipped (only the fastest configuration's label), and instances no configuration solved are dropped. Log loss on the fastest-configuration label is the closest computable score. |
+
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
@@ -200,6 +213,7 @@ We get the data from ASlib and merge them into one file.
 - We treat it as a multiclass classification task to solve the algorithm selection task as in the OpenML version (https://openml.org/d/41705).
 - We drop all cases where no algorithm was able to finish before the timeout as these are essentially random labels.
 - We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the best configuration for a problem class not seen in training (the `definition` of the grouping).
+- Metric: log loss stands in for ASlib's PAR10, which needs the runtimes of all 11 configurations; only the fastest configuration ships (metric spec).
 
 ## Splits
 
@@ -478,4 +492,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5feaad76d69ac2c069ea34e6bf9e41e6bf84d5168ddfe150069b7a53e5e0b1b5` |
+| stale | yes: the definition now gives checksum `v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a` |

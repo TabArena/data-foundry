@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: perth_house_prices
 container_format: 2
-checksum: v2:3c04ca8745d28cd94f5a9aef9be741e567bdd972d055c6ec5f0a21d26a5d6263
+checksum: v2:e1682441456a40e6918b4dc68c6b9eaf965506e17597e05a2a10c8e3405c101c
 build: null
 build_stale: false
 data:
@@ -19,6 +19,8 @@ task:
   target: log_PRICE
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: DATE_SOLD
@@ -64,7 +66,7 @@ decisions:
 
 Regression of `log_PRICE`, scored with `rmse` on temporal splits by `DATE_SOLD`. 33,090 rows and 18 features. Source: Kaggle (2021).
 
-Not built yet. The current definition gives checksum `v2:3c04ca8745d28cd94f5a9aef9be741e567bdd972d055c6ec5f0a21d26a5d6263`.
+Not built yet. The current definition gives checksum `v2:e1682441456a40e6918b4dc68c6b9eaf965506e17597e05a2a10c8e3405c101c`.
 
 ## In brief
 
@@ -137,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | DATE_SOLD |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Kaggle dataset (scraped listings), no task or metric defined by the source; regression default rmse on the log target. |
 
 <details>
 <summary>Feature types: 4 categorical, 1 string, 1 datetime</summary>

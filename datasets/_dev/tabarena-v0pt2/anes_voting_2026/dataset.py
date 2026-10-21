@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, object_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    object_columns,
+)
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -81,11 +89,21 @@ class AnesVoting2026(AbstractCuratedDataset):
         - We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
+        - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
     """
 
     # Task
     target = "VCF0702"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. "
+            "2023), which defined the voting task, scores accuracy for every task of its benchmark, a house "
+            "convention, not a choice from the decision; our task differs (temporal year splits, pre-election"
+            " items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift "
+            "accuracy. roc_auc is the binary fallback."
+        ),
+    )
 
     # Splits
     splits_comment = "We use each of the last 9 years once as test data, using all prior data as train data."

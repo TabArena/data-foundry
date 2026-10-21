@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4
+checksum: v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e
 build:
   uuid: 01a111fc-1005-78e7-8906-36e684a9081e
   checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
@@ -31,6 +31,8 @@ task:
   target: state
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: state
   time_on: created_at
@@ -44,6 +46,8 @@ splits:
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: years
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 131836
     max: 166292
@@ -65,7 +69,7 @@ decisions: []
 
 Binary classification of `state`, scored with `roc_auc` on temporal splits by `created_at`. 187,117 rows and 12 features. Source: Other (2026).
 
-Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | state |
 | task.time_on | created_at |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Web Robots publishes a scraped snapshot with no task; the Kaggle copy is a dataset, not a competition, so no metric is defined. |
 
 <details>
 <summary>Feature types: 5 categorical, 4 string, 3 datetime</summary>
@@ -326,4 +339,4 @@ The official data is updated monthly but has not enough data per month to create
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:605c9895f4e43cbf79c4e6d6abac1e1b5600a3a4361b6716597503c2ecc214d4` |
+| stale | yes: the definition now gives checksum `v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e` |

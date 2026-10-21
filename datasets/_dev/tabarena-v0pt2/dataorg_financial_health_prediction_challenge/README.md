@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dataorg_financial_health_prediction_challenge
 container_format: 2
-checksum: v2:84c15fdcab4f1fb7eadd16e86bc2dd7cdb42f2fb4dc959596e473a565f95304f
+checksum: v2:bd0e37bc7ae9a4860841ff8ac8586904100a3573e63aa360d009fae305b6a652
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: financial_health
   problem_type: multiclass_classification
   metric: f1_weighted
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: financial_health
   time_on: null
@@ -54,7 +56,7 @@ decisions:
 
 Multiclass classification of `financial_health`, scored with `f1_weighted` on IID splits. 7,674 rows and 26 features. Source: Zindi (2025).
 
-Not built yet. The current definition gives checksum `v2:84c15fdcab4f1fb7eadd16e86bc2dd7cdb42f2fb4dc959596e473a565f95304f`.
+Not built yet. The current definition gives checksum `v2:bd0e37bc7ae9a4860841ff8ac8586904100a3573e63aa360d009fae305b6a652`.
 
 ## In brief
 
@@ -135,6 +137,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | financial_health |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `f1_weighted` (standard; takes label; higher is better) |
+| origin | source: the source's metric |
+| original | F1 (Zindi API error_metric 'f1_multiclass') |
+| reference | https://zindi.africa/competitions/dataorg-financial-health-prediction-challenge (Evaluation); api.zindi.world/v1/competitions/dataorg-financial-health-prediction-challenge error_metric=f1_multiclass (checked 2026-10-21); Zindi discussion 29971 |
+| definition | support-weighted mean of per-class F1 over Low / Medium / High |
+
 <details>
 <summary>Feature types: 21 categorical, 0 string, 0 datetime</summary>
 
@@ -176,7 +188,8 @@ The first 5 of 7,674 rows of the final frame (random rows: the frame is shuffled
 We start with Train.csv of the Zindi competition "data.org Financial Health Prediction Challenge" (2025): 9,618 small businesses in Eswatini, Lesotho, Malawi and Zimbabwe from FinMark Trust's FinScope MSME surveys, with the country, 36 survey answers and the class of the business's Financial Health Index (FHI): Low, Medium or High.
 
 - Prediction point: a development partner or government agency screens a small business from one interview with its owner, to target support (the competition page names this use and lenders' credit risk; no source shows a lender acting on the class). The index describes the business at the same interview, so no column is recorded after the label. The page says the challenge "introduces a data-driven Financial Health Index"; its formula and author are not published.
-- Target: `Target` renamed to `financial_health`. The competition scored F1 (Zindi evaluation page; API `f1_multiclass`); the page does not say how the three classes are averaged. Participants who submitted single-class files found the leaderboard scores fit weighted F1, not macro or micro F1 (Zindi discussion 29971, "Which F1-score ?"; not confirmed by the host), so we declare `f1_weighted` (TP-6).
+- Target: `Target` renamed to `financial_health`.
+- Metric: the evaluation page does not say how F1 averages the three classes; participants who submitted single-class files found the leaderboard fits weighted F1, not macro or micro F1 (Zindi discussion 29971; not confirmed by the host).
 - We drop Lesotho's 1,944 rows: its label runs against the index's own dimensions and the other three countries, and its answers are damaged too (decision 1), a recording problem we cannot repair. In Lesotho every formal-finance answer goes with a lower class, elsewhere with a higher one. LightGBM trained on the other countries ranks Lesotho at ROC AUC 0.43 to 0.50, against 0.62 to 0.95 for the other countries, and swapping Low and Medium in Lesotho's labels does not repair it (ROC AUC 0.54). Revisit if data.org or FinMark Trust explain how Lesotho's FHI was computed.
 - We drop the 11 answers on financial products held (`PRODUCTS`: insurance, cards, loan and other accounts, mobile money, informal sources): the page names "access to credit and financial services" as one of the FHI's four dimensions, so these answers are parts of the target (LEAK-10), although the owner gives them at the interview. None of the 1,896 businesses with an insurance product is Low. With the same LightGBM, country and the 11 answers reach log loss 0.255 against 0.266 for all columns (better on 9 of 9 splits); the 26 remaining columns reach 0.694 (macro ROC AUC 0.756) against 0.796 for the class shares, better on 9 of 9. Dropping only the 8 formal products would leave 0.678; mobile money and the informal sources go too, as they likely feed the access or debt dimensions.
 - Anomaly: the competition merged surveys with different questionnaires, and we keep the answers as released. Columns a country did not ask are missing for all its rows. In Zimbabwe (motivation_make_more_money, current_problem_cash_flow) and Eswatini (problem_sourcing_money, marketing_word_of_mouth) the answer is "Yes" or missing, and missing means not ticked; we keep it missing, as the questionnaires are not at hand.

@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -160,6 +161,15 @@ class Aeolus1m(AbstractCuratedDataset):
     # Task
     target = "ARR_DEL15"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC and ACC for the delay-occurrence classification task",
+        reference=(
+            "Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 "
+            "(Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics')"
+        ),
+        definition="ROC AUC of the probability of an arrival delay of 15+ minutes",
+    )
 
     # Splits
     splits_comment = """

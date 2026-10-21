@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:b0b9fd4c8346fc73ad5683aa6bce05bca4e8b6799150ce27410ed01db931f1a3
+checksum: v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293
 build:
   uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
   checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
@@ -30,7 +30,9 @@ data:
 task:
   target: Sales
   problem_type: regression
-  metric: rmse
+  metric: rmspe
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Date
@@ -65,9 +67,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Sales`, scored with `rmse` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
+Regression of `Sales`, scored with `rmspe` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b0b9fd4c8346fc73ad5683aa6bce05bca4e8b6799150ce27410ed01db931f1a3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,9 +135,19 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 844,392 x 16 |
 | task.target | Sales |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmspe |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmspe` (custom; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Square Percentage Error (RMSPE) |
+| reference | https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API evaluationMetric: 'Root Mean Square Percentage Error') |
+| definition | sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales |
 
 <details>
 <summary>Feature types: 9 categorical, 0 string, 1 datetime</summary>
@@ -305,4 +317,4 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b0b9fd4c8346fc73ad5683aa6bce05bca4e8b6799150ce27410ed01db931f1a3` |
+| stale | yes: the definition now gives checksum `v2:7f0b41d4c74ecc938d6be4362390e94c2f234b4cfcf2d6d21cdf0165775b6293` |

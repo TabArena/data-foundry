@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class MapsRouterEta1m(AbstractCuratedDataset):
@@ -70,6 +70,12 @@ class MapsRouterEta1m(AbstractCuratedDataset):
     # Task
     target = "target_log_spkm"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE (TabReD's regression metric)",
+        reference="Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380)",
+        definition="Root mean squared error of the log seconds-per-km target, as TabReD scores its regression tasks",
+    )
 
     # Splits
     splits_comment = """

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f
+checksum: v2:5eb7b20f8e70b65915f3e6bdec56d60a5d724daf1081e5501189d16b5b3951c7
 build:
   uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
   checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
@@ -23,12 +23,15 @@ data:
   n_features: 9
   dtypes:
     category: 3
-    float64: 7
+    float64: 6
+    int64: 1
   n_test_dataset_rows: null
 task:
   target: price
   problem_type: regression
-  metric: rmse
+  metric: rmsle
+  metric_origin: context
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -42,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 35960
     max: 35960
@@ -63,9 +68,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `price`, scored with `rmse` on IID splits. 53,940 rows and 9 features. Source: Other (2007).
+Regression of `price`, scored with `rmsle` on IID splits. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5eb7b20f8e70b65915f3e6bdec56d60a5d724daf1081e5501189d16b5b3951c7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -75,7 +80,7 @@ Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` 
 
 **One row.** One diamond with its price, from the diamonds data of the ggplot2 R package (53,940 stones); the seller and the date of the prices are not stated.
 
-**Predicted.** The price in US dollars, on a log scale.
+**Predicted.** The price in US dollars.
 
 **Known at prediction time.** Weight in carats, cut quality, colour grade, clarity grade, total depth and table width in percent, and length, width and depth in millimetres.
 
@@ -127,8 +132,17 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 53,940 x 10 |
 | task.target | price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A teaching dataset of the ggplot2 package defines no task or score; for a price the error that matters is relative to the price (a $500 miss means more on a $1,000 stone than on a $15,000 one), so RMSLE. |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
@@ -161,15 +175,16 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
 
 | price | carat | cut | color | clarity | depth | table | x | y | z |
 |---|---|---|---|---|---|---|---|---|---|
-| 8.7397 | 1.56 | Good | I | SI1 | 64 | 57 | 7.32 | 7.28 | 4.67 |
-| 6.92461 | 0.4 | Very Good | E | VVS2 | 60.3 | 59 | 4.74 | 4.78 | 2.87 |
-| 6.32794 | 0.25 | Very Good | E | VVS1 | 61.5 | 56 | 4.06 | 4.08 | 2.5 |
-| 6.95273 | 0.53 | Ideal | I | VS2 | 62.1 | 54 | 5.2 | 5.24 | 3.24 |
-| 8.42134 | 1 | Very Good | D | SI2 | 61.6 | 58 | 6.37 | 6.45 | 3.95 |
+| 1046 | 0.31 | Premium | G | VVS1 | 61.4 | 58 | 4.35 | 4.32 | 2.66 |
+| 12809 | 1.57 | Ideal | H | VS2 | 61.5 | 54 | 7.47 | 7.5 | 4.61 |
+| 9167 | 1.61 | Premium | H | SI2 | 60.3 | 60 | 7.66 | 7.57 | 4.59 |
+| 2911 | 1.05 | Premium | I | SI2 | 58.3 | 57 | 6.72 | 6.67 | 3.9 |
+| 4643 | 0.9 | Very Good | E | VS2 | 63 | 57 | 6.07 | 6.15 | 3.85 |
 
 ## Curation notes
 
-- Unlike TabArena, we log scale the target as it is a price and hence log scaling is generally recommended.
+- The price ships in US dollars and is scored by RMSLE (Lennart, 2026-10-21): a price's error matters relative
+  to the price, which an earlier version got by log-scaling the target.
 
 ## Splits
 
@@ -208,16 +223,16 @@ Default splits.
 | carat | float64 | 0 | 0 | 273 | 0.3, 0.31, 1.01, 0.7, 0.32, 1.0, 0.9, 0.41, 0.4, 0.71 |
 | depth | float64 | 0 | 0 | 184 | 62.0, 61.9, 61.8, 62.2, 62.1, 61.6, 62.3, 61.7, 62.4, 61.5 |
 | table | float64 | 0 | 0 | 127 | 56.0, 57.0, 58.0, 59.0, 55.0, 60.0, 54.0, 61.0, 62.0, 63.0 |
-| price | float64 | 0 | 0 | 11602 | 6.4052, 6.6871, 6.4378, 6.719, 6.6542, 6.5482, 6.6708, 6.2989, 6.5013, 6.3135 |
 | x | float64 | 0 | 0 | 554 | 4.37, 4.34, 4.33, 4.38, 4.32, 4.35, 4.39, 4.31, 4.36, 4.4 |
 | y | float64 | 0 | 0 | 552 | 4.34, 4.37, 4.35, 4.33, 4.32, 4.39, 4.38, 4.4, 4.31, 4.41 |
 | z | float64 | 0 | 0 | 375 | 2.7, 2.69, 2.71, 2.68, 2.72, 2.67, 2.73, 2.66, 2.74, 4.02 |
+| price | int64 | 0 | 0 | 11602 | 605, 802, 625, 828, 776, 698, 789, 544, 666, 552 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.115 | -0.056 | 1.03 | 0.017 | log | 494817 | 163682 | lognormal |
+| 0 | 0 | 0 | 1.618 | 0.115 | 1.59156e+07 | 1.03 | log | 1.00123e+06 | 1.00241e+06 | exponential |
 
 ### Numeric features
 
@@ -226,7 +241,7 @@ Default splits.
 | carat | 53940 | 0.79794 | 0.474011 | 0.2 | 5.01 |
 | depth | 53940 | 61.7494 | 1.43262 | 43 | 79 |
 | table | 53940 | 57.4572 | 2.23449 | 43 | 95 |
-| price | 53940 | 7.78677 | 1.01465 | 5.7869 | 9.84283 |
+| price | 53940 | 3932.8 | 3989.44 | 326 | 18823 |
 | x | 53940 | 5.73116 | 1.12176 | 0 | 10.74 |
 | y | 53940 | 5.73453 | 1.14213 | 0 | 58.9 |
 | z | 53940 | 3.53873 | 0.705699 | 0 | 31.8 |
@@ -267,4 +282,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c897d085bd726f77c5f0b227ed3ad1a4a488d21de233de56ae53230d1f35e72f` |
+| stale | yes: the definition now gives checksum `v2:5eb7b20f8e70b65915f3e6bdec56d60a5d724daf1081e5501189d16b5b3951c7` |

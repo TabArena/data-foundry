@@ -48,6 +48,8 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: urban, keraunic_criticality, removable_connectors, overhead_lv_network, circuit_end.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — a data article with no prediction benchmark or score.
+
 ## Reference
 
 [1] L. Alvarez, Predictive Maintenance of Distributions. Transformers. Case Study: Department of Cauca (Colombia), first ed., Our Knowledge Publishing, 2021. ISBN 978-620-3-93390-1

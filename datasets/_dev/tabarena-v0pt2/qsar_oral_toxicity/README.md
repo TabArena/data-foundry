@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_oral_toxicity
 container_format: 2
-checksum: v2:b9a747a2b9159b74e731ef4c51f2b388f2e24c9b7b20d4d8d7fda3cf7009cedb
+checksum: v2:d0ffada285296335a94d0d2987f526cd9c314fd89352f87e18b0f4291772bb1f
 build: null
 build_stale: false
 data:
@@ -15,6 +15,8 @@ task:
   target: very_toxic
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: very_toxic
   time_on: null
@@ -54,7 +56,7 @@ decisions:
 
 Binary classification of `very_toxic`, scored with `roc_auc` on IID splits. 8,484 rows and 1,024 features. Source: UCI (2019).
 
-Not built yet. The current definition gives checksum `v2:b9a747a2b9159b74e731ef4c51f2b388f2e24c9b7b20d4d8d7fda3cf7009cedb`.
+Not built yet. The current definition gives checksum `v2:d0ffada285296335a94d0d2987f526cd9c314fd89352f87e18b0f4291772bb1f`.
 
 ## In brief
 
@@ -126,6 +128,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | very_toxic |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 25% very toxic. Original rejected: NER. roc_auc is the binary fallback. |
+
 <details>
 <summary>Feature types: 1025 categorical, 0 string, 0 datetime</summary>
 
@@ -180,7 +191,7 @@ The first 5 of 8,484 rows of the final frame (random rows: the frame is shuffled
 We start with qsar_oral_toxicity.csv from UCI 508: 8,992 chemicals, 1,024 binary fingerprint bits and the class (no header, no identifiers). It is the very toxic (VT) endpoint of the calibration set of the ICCVAM "Predictive Models for Acute Oral Systemic Toxicity" project (rat oral LD50 data; its consensus models became CATMoS), with fingerprints computed by Ballabio et al. (2019).
 
 - Prediction point: a chemical without an acute oral toxicity test, before any animal test. Every feature is computed from its QSAR-ready structure (salts, solvents and stereochemistry removed), so all of them exist at prediction time.
-- Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the file's "positive"), else "No" (paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). The 44 chemicals at exactly 50 mg/kg are positive, and the label is the top regulatory hazard category on every row: 2,258 rows (25%) carry that category without a point LD50. The paper scores the non-error rate; we keep the collection's ROC AUC.
+- Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the file's "positive"), else "No" (paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). The 44 chemicals at exactly 50 mg/kg are positive, and the label is the top regulatory hazard category on every row: 2,258 rows (25%) carry that category without a point LD50.
 - Features: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment (ECFP_1024_02 or _02R of Table 2; the file does not say which), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal. 97 of the project's QSAR-ready structures still carry stereo markers, which the fingerprint ignores.
 - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (406 repeated vectors, 894 rows; by InChIKey the project's training file has 405 repeated parents over 891 rows, which agrees with the vectors on 394 of them, and 12 of the repeated vectors are hash collisions of different chemicals rather than one parent). We drop the 477 exact copies and then every row of the 11 bit vectors that occur with both classes (22 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 8,484 chemicals remain (708 very toxic, 8.3%; decision tables). The source kept the copies.
 - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.

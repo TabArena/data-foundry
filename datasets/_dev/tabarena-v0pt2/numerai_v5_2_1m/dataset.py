@@ -9,7 +9,15 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from data_foundry.v2 import AbstractCuratedDataset, Decision, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 FEATURE_SET = "medium"
 """Numerai's feature set in features.json: 780 basic features of the 2,748 in v5.2."""
@@ -50,8 +58,8 @@ class NumeraiV521m(AbstractCuratedDataset):
         fit="approximate",
         fit_reason=(
             "Numerai designed some features with the targets of the test years (75 released at era 1192). The "
-            "score is the Pearson correlation over all test rows, which stands for Numerai's per-week correlation "
-            "(within 0.0002 per model on the shipped windows). Everything else is known on the Friday."
+            "score is Numerai's own: the per-week correlation, averaged over the weeks of the test window. "
+            "Everything else is known on the Friday."
         ),
     )
 
@@ -103,7 +111,7 @@ class NumeraiV521m(AbstractCuratedDataset):
         - Missing values: Numerai sets every value of a feature-era without data to 2 (hello_numerai.ipynb of v5.2); we set such feature-eras to missing (decision table). Elsewhere each bin holds 20% of an era's stocks, so no single stock is filled with 2. No duplicate rows.
         - Anomaly: the universe grows from 2,314 stocks in era 1 to 6,057-7,231 per era since era 1100.
         - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2, TP-2): on the shipped splits, LightGBM like Numerai's example model (600 trees) correlates with the target at 0.0071, 0.0142 and 0.0154 per era, newest window first (t = 3.3, 7.7 and 8.1). The newest window is fragile: one of five other random 1M train samples gives ridge a t of 0.8 there. Tuned results are pending; if tuned methods do not beat the constant 0.5 window by window under the metric that scores, the dataset goes to `TBD -> 2nd Tier` (as zillow_prize).
-        - Metric: Numerai scores CORR, the mean over eras of the per-era correlation of the predictions with the target, which no listed metric names; we declare pooled `pearsonr`, which tracks CORR within 0.0002 per model here because every era's target mean is 0.5 (TP-6). RMSE, declared before, ranks the scale of the predictions, not the ranking of the stocks within each era. Over the constant 0.5, the train mean, ridge and LightGBM fits and copies of one LightGBM's predictions scaled by 0.3 and 3 (same ranking), RMSE's model ranking agrees with per-era CORR at Kendall tau -0.11, 0.11 and 0.39 in the three windows, pooled Pearson correlation at 0.89 to 0.93; the copy scaled by 3 loses to the constant in every window, and on the newest window the constant 0.5 beats ridge and LightGBM as fitted.
+        - Metric: Numerai's CORR, computed per era and averaged over the 52 eras of a test window (the spec). Pooled `pearsonr`, declared before, tracked it within 0.0002 per model because every era's target mean is 0.5. RMSE, declared before that, ranks the scale of the predictions, not the ranking of the stocks within each era: its model ranking agreed with per-era CORR at Kendall tau -0.11, 0.11 and 0.39 in the three windows, and a copy of one LightGBM's predictions scaled by 3 lost to the constant 0.5 in every window.
         - Potential leak, kept on purpose: Numerai designs features to predict the target and released the 75 `faith` features of `medium` at era 1192, so test eras 1080-1191 lie in their design period. On the shipped splits, ridge with them gains +0.0043 ± 0.0006 per-era correlation in 1080-1131 (about 28% of the signal there), +0.0013 ± 0.0007 in 1132-1183, +0.0056 ± 0.0018 in 1184-1191 and +0.0010 ± 0.0006 after the release. The 122 `midnight` features (released about era 1098) show no gain before their release (-0.0005 ± 0.0011 in 1080-1097). LEAK-31 says to remove a selection made with test labels when we can (dropping the 75 leaves 705); they stay for now as the source's own published inputs, and the curator decides. Revisit once v5.2 has a year of eras after the release.
         - History: each train side is a random 1M of all earlier eras (TabReD's convention); Numerai's example models train on all eras, so the whole history is what a participant trains on.
         - Note: feature neutralization post-processes predictions per era, so it belongs to a model or a scorer and is not applied.
@@ -113,7 +121,17 @@ class NumeraiV521m(AbstractCuratedDataset):
     # Task
     target = "target_ender_20"
     problem_type = "regression"
-    metric = "pearsonr"  # stands for Numerai's per-era CORR (curation comments)
+    metric = Metric.source(
+        "mean_group_pearsonr",
+        original="CORR (numerai_corr), the per-era correlation averaged over eras",
+        reference="https://docs.numer.ai/numerai-tournament/scoring/correlation-corr",
+        params={"method": "numerai_corr"},
+        inputs={"group": "era"},
+        definition=(
+            "per era: rank-gaussianize the predictions, signed power 1.5; centre the target, signed power 1.5; "
+            "Pearson correlation; mean over eras (numerai_tools numerai_corr)"
+        ),
+    )
 
     # Splits: three windows of 52 weekly eras, 4 embargoed eras between train and test.
     temporal = Temporal(

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: framingham_heart_study_fhs
 container_format: 2
-checksum: v2:9bb6d28a79ec857e1d5f60ae01bc212e6a07a03cb71b7d5e532f8b71f693cb2e
+checksum: v2:c8c6c71066ad103e4d7c4a874e01af9165347c5445ebfbcfc5af4720f2382a9b
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: chd_within_10_years
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: chd_within_10_years
   time_on: null
@@ -56,7 +58,7 @@ decisions:
 
 Binary classification of `chd_within_10_years`, scored with `roc_auc` on IID splits. 4,224 rows and 15 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:9bb6d28a79ec857e1d5f60ae01bc212e6a07a03cb71b7d5e532f8b71f693cb2e`.
+Not built yet. The current definition gives checksum `v2:c8c6c71066ad103e4d7c4a874e01af9165347c5445ebfbcfc5af4720f2382a9b`.
 
 ## In brief
 
@@ -145,6 +147,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | chd_within_10_years |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The teaching dataset defines no task or metric. The context (10-year risk scores) points to the C statistic, which equals roc_auc for a fixed-horizon binary outcome, so the fallback and the context agree. |
 
 <details>
 <summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>

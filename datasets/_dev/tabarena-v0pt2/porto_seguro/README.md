@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed
+checksum: v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b
 build:
   uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
   checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
@@ -30,6 +30,8 @@ task:
   target: target
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: target
   time_on: null
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed`, so the build is stale. See [Build](#build).
+Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,6 +137,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | target |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Normalized Gini Coefficient |
+| reference | https://www.kaggle.com/competitions/porto-seguro-safe-driver-prediction/overview/evaluation |
+| definition | Normalized Gini = 2*AUC - 1 for a binary target; ranks models identically to ROC AUC. |
+
 <details>
 <summary>Feature types: 26 categorical, 0 string, 0 datetime</summary>
 
@@ -181,7 +193,6 @@ We start with the train.csv from Kaggle.
 - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
 - We drop the index as it seems to be uninformative for this dataset.
 - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
-- Metric: the competition scored the normalized Gini coefficient, which for a binary target is 2 x ROC AUC - 1, so we keep ROC AUC, which ranks models the same (TP-6).
 
 ## Splits
 
@@ -362,4 +373,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6c4c2150bd400683378d5fb39d38065c0b26a8e2d23ed10d2111dd4fc1f5e1ed` |
+| stale | yes: the definition now gives checksum `v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b` |

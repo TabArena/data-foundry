@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 RAW_FILE = "all_perth_310121.csv"
 COORDINATE_COLUMNS = ["LATITUDE", "LONGITUDE", "NEAREST_SCH_DIST"]  # the school distance is computed from them
@@ -132,6 +140,9 @@ class PerthHousePrices(AbstractCuratedDataset):
     # Task
     target = "log_PRICE"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Kaggle dataset (scraped listings), no task or metric defined by the source; regression default rmse on the log target."
+    )
 
     # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), April to December 2020.
     temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9))

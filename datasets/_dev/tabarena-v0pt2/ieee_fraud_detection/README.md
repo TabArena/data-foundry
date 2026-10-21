@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c
+checksum: v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -31,6 +31,8 @@ task:
   target: isFraud
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: isFraud
   time_on: Transaction_date
@@ -69,7 +71,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 435 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,6 +140,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | isFraud |
 | task.time_on | Transaction_date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area under the ROC curve |
+| reference | https://www.kaggle.com/competitions/ieee-fraud-detection/overview/evaluation |
+| definition | Area under the ROC curve between predicted probability and isFraud, per transaction. |
 
 <details>
 <summary>Feature types: 51 categorical, 0 string, 0 datetime</summary>
@@ -446,4 +458,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f746803ddd9b28aedcc0670fdf9bd97df9463a0db147139a0ac04d4adf78d29c` |
+| stale | yes: the definition now gives checksum `v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847` |

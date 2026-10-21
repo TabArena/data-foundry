@@ -46,6 +46,8 @@ CC (2026-10-21, Lennart): Stay with direct fit if the task (without leakage) wou
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: waterfront.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Neither the King County assessor extracts nor the Kaggle dataset card define a task metric; the Coursera course that first distributed kc_house_data used RSS/RMSE on raw price as a teaching exercise, not a benchmark definition. RMSE on the log price is the obvious choice for a price model.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

@@ -41,6 +41,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: the 11 descriptors holding only 0 and 1 (E-state and atom counts such as nsBr, khs.dS, LipinskiFailures) stay numeric.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Gul et al. 2021 compare classifiers by 10-fold CV accuracy only (Table 2), without a threshold or costs, on 171 molecules (33% toxic). Original rejected: accuracy (MET-6, coarse on 171 rows). roc_auc is the binary fallback.
+
 ## Reference
 
 @article{gul2021structure,

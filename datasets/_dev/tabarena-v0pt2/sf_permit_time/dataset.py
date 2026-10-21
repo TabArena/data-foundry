@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     Splits,
     TaskSummary,
     Temporal,
@@ -139,6 +140,9 @@ class SfPermitTime(AbstractCuratedDataset):
     # Task
     target = "DaysToIssue"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="The source is the City of San Francisco's open-data Building Permits table (DataSF), with no prediction task or metric; the task (time to issue at filing) is ours. RMSE on the log target scores relative error, the natural choice for waiting times.",
+    )
 
     # Splits
     splits_comment = """

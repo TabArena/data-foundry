@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: the 834 anonymized descriptors (D1...) that hold only 0 and 1 stay numeric (no semantic context).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source log_loss — Log Loss, the competition's evaluation metric (kaggle.com/c/bioresponse).
+
 ## Reference
 
 https://www.kaggle.com/c/bioresponse

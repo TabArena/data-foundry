@@ -38,6 +38,8 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Complain.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset card states a goal (maximise the next campaign's profit) but no evaluation metric.
+
 ## Reference
 
 https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign

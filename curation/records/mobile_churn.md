@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: user_intake, user_has_outgoing_calls, user_has_outgoing_sms, user_use_gprs, user_does_reload.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset with unknown origin (no paper, no operator); no task or metric defined.
+
 ## Reference
 
 Kaggle

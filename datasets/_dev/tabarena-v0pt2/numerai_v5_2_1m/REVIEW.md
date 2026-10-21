@@ -5,33 +5,33 @@ era is one Friday; Numerai publishes no dates), the target is the stock's 20-day
 780 features are Numerai's disguised `medium` set, and three test years of 52 eras follow a 4-era gap. The data, the
 split and the use case hold; the review panel recommends shipping after the text changes it asked for, which are in
 the definition. The Faith features (75 features Numerai designed with the targets of test eras), the version and `medium`
-against `all` are yours to decide; the metric is settled by the amended TP-6 (`pearsonr`).
+against `all` are yours to decide; the metric is Numerai's per-era CORR (`mean_group_pearsonr`, MET-4, 2026-10-21).
 
 ```text
 Verdict: ship after changes.
 Validity: SEL-11 holds and TP-10 does not apply (the stock id changes every era, so there is no series per stock;
   a stock's newest known target correlates about 0 with its target; whether some features are trailing returns
   cannot be tested). USE-5 holds (target_ender_20 equals Numerai's `target` on 100% of rows). USE-8 approximate
-  (the Faith features and the metric gap, both in fit_reason). SPLIT-9/SPLIT-10 hold (the 4-era gap covers the
+  (the Faith features, in fit_reason). SPLIT-9/SPLIT-10 hold (the 4-era gap covers the
   3-era overlap of the 20-day targets); inner validation (tuning, early stopping) must hold out a block of later
   eras after a 4-era gap, not random rows (a note in splits_comment). LEAK-31 triggered by the 75 Faith features
   (issue 3). LEAK-27 not triggered (largest single-feature correlation 0.0076). PROV holds (SHA-256 of the three
   files match, 6,881,281 rows, 0 duplicate rows).
 Value: TP-2, a small real signal (per-era correlation 0.0071 / 0.0142 / 0.0154, t 3.3 / 7.7 / 8.1); TP-1 open
-  until tuned results (as zillow_prize: tuned methods must beat 0.5 window by window); TP-6: `pearsonr` declared (amended TP-6, 2026-10-21).
+  until tuned results (as zillow_prize: tuned methods must beat 0.5 window by window); the metric: Numerai's per-era CORR declared (`mean_group_pearsonr`, MET-4, 2026-10-21).
 Quality: CLEAN-22: the reason given for `medium` is not admissible (issue 4); CLEAN-10 holds (Numerai's fill of a
   feature-era without data set to missing).
 Weighed: source +, size +, realness +, signal - (tiny, fragile on the newest window), leak - (Faith).
 For the curator: issue 3 (Faith: drop, or keep through the LEAK-31 item across datasets), issue 7 (v5.2 or v5.3), issue 4 (`medium` or `all`).
 ```
 
-**Main points:** Drop the 75 Faith features or keep them (issue 3, recommended drop); `pearsonr` is declared (settled by
-the amended TP-6); keep v5.2 or also open v5.3 (issue 7); measure near-copies and keep
+**Main points:** Drop the 75 Faith features or keep them (issue 3, recommended drop); Numerai's per-era CORR is declared
+(`mean_group_pearsonr`, MET-4); keep v5.2 or also open v5.3 (issue 7); measure near-copies and keep
 `medium`, or ship `all` (issue 4).
 
 **Record judgment:** valid with concerns. Numerai's own data and use case, first-hand: each Friday a tournament
 participant scores every stock, and Numerai trades on the combined scores. A ranking of the stocks within each week,
-not forecasting of a series. Concerns: the Faith features (issue 3) and the metric (now `pearsonr`). Licence: Numerai's
+not forecasting of a series. Concerns: the Faith features (issue 3) and the metric (now Numerai's per-era CORR). Licence: Numerai's
 Terms of Service, section 4.2, limit the data to tournament use and forbid redistribution; the terms are in `license`
 and are no verdict reason (EV-4, as lucas_topsoil).
 

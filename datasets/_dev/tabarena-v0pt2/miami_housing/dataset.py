@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class MiamiHousing(AbstractCuratedDataset):
@@ -76,6 +76,12 @@ class MiamiHousing(AbstractCuratedDataset):
     # Task
     target = "SALE_PRC"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. rmse on "
+            "the log sale price is the regression fallback."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(f"{raw_dir}/miami2016.arff") as f:

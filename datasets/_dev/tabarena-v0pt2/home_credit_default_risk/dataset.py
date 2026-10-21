@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -118,6 +118,12 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
     # Task
     target = "TARGET"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under Receiver Operating Characteristic Curve (Kaggle API evaluationMetric)",
+        reference="https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation",
+        definition="ROC AUC between predicted probability and TARGET",
+    )
     accepted_check_warnings = {
         "dataset_missing_value_sentinel": "POS_MONTHS_BALANCE_MAX = -1 is a real value: MONTHS_BALANCE counts months "
         "relative to the application, so -1 is a POS/cash loan still reported in the month before it.",

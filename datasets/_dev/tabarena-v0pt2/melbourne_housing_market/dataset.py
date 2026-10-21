@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -202,6 +203,11 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
     # Task
     target = "log_price"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Kaggle dataset without a task or metric; regression fallback rmse (on the log target, close to RMSLE)."
+        ),
+    )
 
     # Splits: 9 windows of 3 weekly result sheets (the 3 x 3 an IID task of this size would get).
     temporal = Temporal(

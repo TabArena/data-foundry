@@ -35,6 +35,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric `normalized_gini_coefficient` replaced by the default `roc_auc`: for a binary target the normalized Gini is 2 x ROC AUC - 1, so both rank models the same, and a listed name is scored downstream while an unlisted one falls back to the default. The notes name the Gini. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — the competition's normalized Gini coefficient, 2 x AUC - 1 for a binary target, which ranks models the same as ROC AUC (Kaggle evaluation page).
+
 ## Reference
 
 Addison Howard, Adriano Moala, and Walter Reade. Porto Seguro’s Safe Driver Prediction. https://kaggle.com/competitions/porto-seguro-safe-driver-prediction, 2017. Kaggle.

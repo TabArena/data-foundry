@@ -54,6 +54,8 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 
 **Assessment (AI, 2026-10-21):** tagged `ForcedGroupedFromTemporal`. Cost: on the one valid window (test 2014J) untuned LightGBM log loss 1.205 grouped against 1.185 temporal, same ranking of three model families (review panel, 2026-10-20, before the train filter and the weight-0 change). REVIEW.md issue 1 settled.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source is a data descriptor (OU Analyse open dataset) with no prediction task or metric; our day-60 four-class task is our construction.
+
 ## Reference
 
 Kuzilek J., Hlosta M., Zdrahal Z. Open University Learning Analytics dataset Sci. Data 4:170171 doi: 10.1038/sdata.2017.171 (2017).

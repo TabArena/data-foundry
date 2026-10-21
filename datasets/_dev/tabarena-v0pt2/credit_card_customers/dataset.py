@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 RAW_FILE = "BankChurners.csv"
 """The one file of the Kaggle dataset sakshigoyal7/credit-card-customers (version 1, 2020-11-19)."""
@@ -107,6 +107,12 @@ class CreditCardCustomers(AbstractCuratedDataset):
     # Task
     target = "Attrition_Flag"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Kaggle dataset, not a competition; the description names no metric and the LEAPS case material (Naive "
+            "Bayes classification) is offline"
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)

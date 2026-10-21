@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -65,12 +65,17 @@ class PortoSeguro(AbstractCuratedDataset):
         - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
         - We drop the index as it seems to be uninformative for this dataset.
         - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
-        - Metric: the competition scored the normalized Gini coefficient, which for a binary target is 2 x ROC AUC - 1, so we keep ROC AUC, which ranks models the same (TP-6).
     """
 
     # Task
     target = "target"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Normalized Gini Coefficient",
+        reference="https://www.kaggle.com/competitions/porto-seguro-safe-driver-prediction/overview/evaluation",
+        definition="Normalized Gini = 2*AUC - 1 for a binary target; ranks models identically to ROC AUC.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

@@ -43,3 +43,5 @@ Some scraping and minor issues: https://www.kaggle.com/datasets/syuzai/perth-hou
 CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
 
 **Assessment (AI, 2026-10-21):** fit stays `approximate` for the truncation at $2.44M and the attributes as of the January 2021 scrape; the school rank left `fit_reason` (its potential-leak note stays); REVIEW.md issue 1 settled and removed.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset of scraped listings; the source defines no task or metric (rmse on the log price).

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: airfoil_self_noise
 container_format: 2
-checksum: v2:bfd9799838459a6866f5cb69f59db3bceb8062941ee3fb5861aab883a1797233
+checksum: v2:7d46beb5437e173c1ce366958f31febd5d355fd9703558d2da406d61365c6084
 build:
   uuid: 01a11312-37c8-7cae-b6c8-c0b883fea348
   checksum: v2:a162061916938036dec19e0d9bf672e606b8f921b8e9178d1917b62a3bca1a5f
@@ -30,6 +30,8 @@ task:
   target: scaled-sound-pressure
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -79,7 +81,7 @@ decisions: []
 
 Regression of `scaled-sound-pressure`, scored with `rmse` on grouped splits by `setup`. 1,503 rows and 5 features. Source: Other (1989).
 
-Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bfd9799838459a6866f5cb69f59db3bceb8062941ee3fb5861aab883a1797233`, so the build is stale. See [Build](#build).
+Built as `01a11312-37c8-7cae-b6c8-c0b883fea348` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d46beb5437e173c1ce366958f31febd5d355fd9703558d2da406d61365c6084`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,6 +148,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | grouped_non_iid |
 | task.group_on | setup |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | The NASA report builds semi-empirical prediction methods and compares spectra visually; neither it nor the UCI page defines an evaluation metric |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -322,4 +333,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bfd9799838459a6866f5cb69f59db3bceb8062941ee3fb5861aab883a1797233` |
+| stale | yes: the definition now gives checksum `v2:7d46beb5437e173c1ce366958f31febd5d355fd9703558d2da406d61365c6084` |

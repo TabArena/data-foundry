@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: glioma_grading_clinical_and_mutation_features
 container_format: 2
-checksum: v2:c6caff3bd9a74684f3579551b2b6080d37e0779e405c5b7caf505fbec14b5e05
+checksum: v2:dee682418ba61386221a8fc91c8e3bdc3f896555698c89c4bcac8e3e8a40c368
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: Grade
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Grade
   time_on: null
@@ -54,7 +56,7 @@ decisions:
 
 Binary classification of `Grade`, scored with `roc_auc` on IID splits. 862 rows and 23 features. Source: UCI (2022).
 
-Not built yet. The current definition gives checksum `v2:c6caff3bd9a74684f3579551b2b6080d37e0779e405c5b7caf505fbec14b5e05`.
+Not built yet. The current definition gives checksum `v2:dee682418ba61386221a8fc91c8e3bdc3f896555698c89c4bcac8e3e8a40c368`.
 
 ## In brief
 
@@ -126,6 +128,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Grade |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Tasci et al. 2022 select preprocessing by accuracy and also report AUC, F1, precision, recall, specificity; accuracy is a threshold metric with no threshold or costs fixed for LGG vs GBM. Original rejected: accuracy. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 23 categorical, 0 string, 0 datetime</summary>

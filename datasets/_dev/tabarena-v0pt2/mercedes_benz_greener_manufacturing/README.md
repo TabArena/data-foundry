@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7
+checksum: v2:f832970d71e39aae87bfc9fdb74fe7b0de3ff306fb62dbdee18c82b3b295d6de
 build:
   uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
   checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
@@ -30,6 +30,8 @@ task:
   target: y
   problem_type: regression
   metric: r2
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: time_index
@@ -68,7 +70,7 @@ decisions: []
 
 Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:f832970d71e39aae87bfc9fdb74fe7b0de3ff306fb62dbdee18c82b3b295d6de`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | time_index |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `r2` (standard; takes value; higher is better) |
+| origin | source: the source's metric |
+| original | R^2 score (coefficient of determination) |
+| reference | https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing/overview/evaluation |
+| definition | Coefficient of determination of the test time y |
+
 <details>
 <summary>Feature types: 370 categorical, 0 string, 0 datetime</summary>
 
@@ -186,7 +198,6 @@ We start with the train.csv from Kaggle.
 - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
 - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
 - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
-- Metric: the competition scored R² (Kaggle's evaluation metric), which we declare (TP-6); within one test fold it ranks models as RMSE does.
 
 ## Splits
 
@@ -383,4 +394,4 @@ This is a small temporal dataset. Thus, we could refit often and we could simula
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e660c41c9515b777f47d5d192c365c393ab36d4e91eb319e0ffb7eac9aab4ef7` |
+| stale | yes: the definition now gives checksum `v2:f832970d71e39aae87bfc9fdb74fe7b0de3ff306fb62dbdee18c82b3b295d6de` |

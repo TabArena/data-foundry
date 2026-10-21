@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
+checksum: v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1840
   n_features: 169
@@ -28,7 +28,9 @@ data:
 task:
   target: runtime
   problem_type: regression
-  metric: rmse
+  metric: par_k
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -63,6 +65,7 @@ bundle_checks:
   warnings:
   - dataset_constant_column
   infos:
+  - task_metric_input_is_model_input
   - meta_bibtex_fields_missing
   accepted: {}
 decisions: []
@@ -72,9 +75,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `runtime`, scored with `rmse` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
+Regression of `runtime`, scored with `par_k` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -136,10 +139,22 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,840 x 171 |
 | task.target | runtime |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | par_k |
 | task.split_regime | grouped_non_iid |
 | task.group_on | instance_id |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `par_k` (custom; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | PAR10 (penalized average runtime, factor 10) of the selected algorithm; also reported as the fraction of the single-best to virtual-best gap closed |
+| reference | Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237:41-58; Pulatov et al. 2022 (PMLR v188) |
+| definition | per instance select the algorithm with the lowest predicted runtime; its true runtime in seconds (exp of the log target), a timeout (runtime >= 5,000 x (1 - 1e-4)) counted as 50,000 s; mean over instances |
+| params | {'cutoff': 5000, 'k': 10, 'target_transform': 'log', 'timeout_rel_tol': 0.0001} |
+| inputs | group: `instance_id` |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -274,9 +289,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 3 constant column(s) (1 distinct non-null value): ['POSNEG_RATIO_CLAUSE_max', 'UNARY', 'clustering_max']. (hint: Drop them unless the constant is meaningful for the task.)
+- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['instance_id'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
 - **info** `meta_bibtex_fields_missing`: BibTeX entries miss recommended fields — xu-sat12a: year.
 
 ## Data checks
@@ -452,3 +468,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:3660cea5afa980983b80f2aebc5b90e5fa52c0ca3c12ca7da7bed1187ae1999c` |

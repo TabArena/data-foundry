@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
 
 # The file's headers and the names we give them, in the file's column order. The names spell out the authors' own
 # headers in the 2002 version of the file (age sex bmi map tc ldl hdl tch tg glu y), checked in `_decisions`.
@@ -97,7 +97,7 @@ class Diabetes3(AbstractCuratedDataset):
         - The source does not say which `sex` code (1 or 2) is which; we keep the two codes as categories.
         - Anomaly: the cholesterol ratio is given with decimals in 62 rows and the blood pressure in thirds in 42; in the other rows both are whole numbers, which may mark two recording batches. The format does not carry the target (decision table), so we keep the values as written.
         - Anomaly, cohort: the paper names no clinic, inclusion rule or units, and the data does not look like its "442 diabetes patients": read as fasting plasma glucose in mg/dL, `glucose` (58 to 124) stays below the diabetes threshold of 126. Without units the data cannot settle it; we keep it with this note, as the source is a named paper and the authors' page.
-        - The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which the default RMSE matches.
+        - The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which RMSE matches.
         - IID: one row per patient, no visit dates and no time trend in the file order. No missing values or duplicate rows.
         - Not trivial, despite the record's `Trivial` marker: on all 60 shipped splits, the best of least squares, ridge and a random forest (R^2 0.49) beats the best single feature (0.30) by at least 0.08.
     """
@@ -105,6 +105,12 @@ class Diabetes3(AbstractCuratedDataset):
     # Task
     target = "disease_progression_one_year"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The LARS paper uses the data to illustrate variable selection (in-sample R^2 / Cp risk estimate along "
+            "the path), not a held-out prediction task with a named score."
+        )
+    )
 
     accepted_check_warnings = {
         "meta_license_unknown": (

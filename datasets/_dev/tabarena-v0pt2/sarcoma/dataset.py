@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary
 
 OMICS = {"exp": "mRNA", "methy": "Methy", "mirna": "miRNA"}
 """The omic files of the benchmark (features x samples) and the prefix their columns get."""
@@ -146,7 +146,7 @@ class Sarcoma(AbstractCuratedDataset):
         We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport & Shamir (2018): gene expression (`exp`), DNA methylation (`methy`, 450k array) and miRNA expression (`mirna`), plus the clinical file `clinical/sarcoma`. The label comes from the master patient table of the TCGA sarcoma study (`SARC_Master_Patient_Table.xlsx`, GDC publication page).
 
         - Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles; no clinical column enters.
-        - Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target. We use log loss, the collection's metric for a multiclass task.
+        - Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target.
         - Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table). For dedifferentiated liposarcoma the review also required a 12q15 copy-number gain in the study's own data (Cell 2017, Methods), and all 8 relabels into or out of that class follow it. The copy number is not shipped.
         - Rows: the primary tumours (TCGA sample type 01) of the 257 patients with all three omics, restricted to the 206 reviewed patients, one row per patient; the barcode is not a feature. We drop the 5 MPNST (fewer than 10), which leaves 201 rows.
         - Target: leiomyosarcoma 80, dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold). Soft-tissue and uterine leiomyosarcoma are one type, as in the clinical file: whether the tumour sits in the uterus is known before profiling, so nobody predicts it.
@@ -163,6 +163,15 @@ class Sarcoma(AbstractCuratedDataset):
     # Task
     target = "histological_type"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source (Rappoport & Shamir 2018) is a clustering benchmark without a label, and the TCGA "
+            "study (Cell 2017) defines no prediction metric. The task paper the definition cites, TabPFN-Wide"
+            " (Kolberg et al. 2025, arXiv 2510.06162), reports AUROC and accuracy on COAD/LGG/BRCA/GBM/OV, "
+            "but SARC 'is only used for attention analysis' (Table 1 caption), so no metric is defined for "
+            "this task."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         raw = {file: pd.read_csv(raw_dir / file, sep=" ", index_col=0) for file in OMICS}

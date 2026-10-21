@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_customer_churn
 container_format: 2
-checksum: v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f
+checksum: v2:bec35a429e8018589793aa9bf78f3bb7307528229ba25bd9218359bc4847dcbd
 build:
   uuid: 01a111fc-c45b-7b5e-b6fe-7f527899d692
   checksum: v2:1703b7f4a38b7109605f2b97ca8075373a43410976595504bc7b5bc820c07e2b
@@ -30,6 +30,8 @@ task:
   target: churn
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: churn
   time_on: null
@@ -68,7 +70,7 @@ decisions: []
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 10,000 rows and 10 features. Source: Kaggle (2022).
 
-Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c45b-7b5e-b6fe-7f527899d692` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bec35a429e8018589793aa9bf78f3bb7307528229ba25bd9218359bc4847dcbd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | churn |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Kaggle dataset (likely a course dataset) with no stated task metric; no first publication |
 
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
@@ -275,4 +286,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cc071800b93beaa2192ffa196402997bb2d4b73297e8960f14e94780e404f68f` |
+| stale | yes: the definition now gives checksum `v2:bec35a429e8018589793aa9bf78f3bb7307528229ba25bd9218359bc4847dcbd` |

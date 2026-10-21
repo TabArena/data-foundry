@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: account_debt_south_africa
 container_format: 2
-checksum: v2:fe9d8e926864aa7fb6b001f8f9fc6b217685c5b47a5ae7aca48a172a6161c50c
+checksum: v2:2e6c60a670e40d70d6a38cb702fb56c764240d00ad493bcdd2d8149f0e1b5466
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: BadDebt
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: BadDebt
   time_on: null
@@ -63,7 +65,7 @@ decisions:
 
 Binary classification of `BadDebt`, scored with `roc_auc` on IID splits. 101,686 rows and 7 features. Source: Kaggle (2020).
 
-Not built yet. The current definition gives checksum `v2:fe9d8e926864aa7fb6b001f8f9fc6b217685c5b47a5ae7aca48a172a6161c50c`.
+Not built yet. The current definition gives checksum `v2:2e6c60a670e40d70d6a38cb702fb56c764240d00ad493bcdd2d8149f0e1b5466`.
 
 ## In brief
 
@@ -134,6 +136,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | BadDebt |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Kaggle dataset upload without a task or evaluation metric; no paper defines one |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 RAW_FILE = "mobile-churn-data.xlsx"
 """The one file of the Kaggle dataset dimitaryanev/mobilechurndataxlsx; one sheet, "Churn prediction data"."""
@@ -126,6 +126,9 @@ class MobileChurn(AbstractCuratedDataset):
     # Task
     target = "churn"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Kaggle dataset with unknown origin (no paper, no operator); no task or metric defined."
+    )
 
     accepted_check_warnings = {
         "meta_license_unknown": (

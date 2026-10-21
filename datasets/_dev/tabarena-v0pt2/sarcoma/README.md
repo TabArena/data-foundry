@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sarcoma
 container_format: 2
-checksum: v2:850e0ab2870960caaa34a217d820d97e04e98b035353ec037dc009a000cb4c78
+checksum: v2:d8d523d1cb4c4818844429389078b7c1569a73db84536379e926b7822f100c33
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: histological_type
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: histological_type
   time_on: null
@@ -54,7 +56,7 @@ decisions:
 
 Multiclass classification of `histological_type`, scored with `log_loss` on IID splits. 201 rows and 25,910 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:850e0ab2870960caaa34a217d820d97e04e98b035353ec037dc009a000cb4c78`.
+Not built yet. The current definition gives checksum `v2:d8d523d1cb4c4818844429389078b7c1569a73db84536379e926b7822f100c33`.
 
 ## In brief
 
@@ -132,6 +134,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | histological_type |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The source (Rappoport & Shamir 2018) is a clustering benchmark without a label, and the TCGA study (Cell 2017) defines no prediction metric. The task paper the definition cites, TabPFN-Wide (Kolberg et al. 2025, arXiv 2510.06162), reports AUROC and accuracy on COAD/LGG/BRCA/GBM/OV, but SARC 'is only used for attention analysis' (Table 1 caption), so no metric is defined for this task. |
+
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
@@ -186,7 +197,7 @@ The first 5 of 201 rows of the final frame (random rows: the frame is shuffled);
 We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport & Shamir (2018): gene expression (`exp`), DNA methylation (`methy`, 450k array) and miRNA expression (`mirna`), plus the clinical file `clinical/sarcoma`. The label comes from the master patient table of the TCGA sarcoma study (`SARC_Master_Patient_Table.xlsx`, GDC publication page).
 
 - Prediction point: a primary soft-tissue sarcoma has been profiled on the three platforms, and the model assigns its histological type from these profiles; no clinical column enters.
-- Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target. We use log loss, the collection's metric for a multiclass task.
+- Task: multiclass classification of the histological type, the subtype classification of TabPFN-Wide (Kolberg et al. 2025, Sec. 5, Table A1); typing sarcomas from molecular profiles is a diagnostic practice (Koelsche et al. 2021). The source is a clustering benchmark without a target.
 - Label: the reviewed type (`short_histo`) instead of the clinical file's submitted `histological_type`. The TCGA study confirmed 206 sarcomas by expert pathology review, excluded the others (QC failures, non-sarcomas, uncertain types) and reclassified 20 (decision table). For dedifferentiated liposarcoma the review also required a 12q15 copy-number gain in the study's own data (Cell 2017, Methods), and all 8 relabels into or out of that class follow it. The copy number is not shipped.
 - Rows: the primary tumours (TCGA sample type 01) of the 257 patients with all three omics, restricted to the 206 reviewed patients, one row per patient; the barcode is not a feature. We drop the 5 MPNST (fewer than 10), which leaves 201 rows.
 - Target: leiomyosarcoma 80, dedifferentiated liposarcoma 50, undifferentiated pleomorphic sarcoma 44, myxofibrosarcoma 17 and synovial sarcoma 10 (3-4 per test fold). Soft-tissue and uterine leiomyosarcoma are one type, as in the clinical file: whether the tumour sits in the uterus is known before profiling, so nobody predicts it.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mortgage
 container_format: 2
-checksum: v2:14bbea5af8e82aae54f514095bceb7c52656c649b4d211adc7aa07553d230d40
+checksum: v2:acedcc76145df002a3b56efdd4079bd17bbe57f3f8fa4c7a01ddc08f5f07583a
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: status
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: status
   time_on: time
@@ -58,7 +60,7 @@ decisions:
 
 Multiclass classification of `status`, scored with `log_loss` on temporal splits by `time`. 621,653 rows and 18 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:14bbea5af8e82aae54f514095bceb7c52656c649b4d211adc7aa07553d230d40`.
+Not built yet. The current definition gives checksum `v2:acedcc76145df002a3b56efdd4079bd17bbe57f3f8fa4c7a01ddc08f5f07583a`.
 
 ## In brief
 
@@ -137,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | status |
 | task.time_on | time |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The book uses the data for many PD/LGD examples with assorted diagnostics (ROC/AUC for binary default, calibration plots), not one metric for this three-outcome task. |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>

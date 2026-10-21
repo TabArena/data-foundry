@@ -64,6 +64,8 @@ same STEG data.
 
 **Assessment (AI, 2026-10-20):** review panel (re-check): ship after changes, once the curator amends LEAK-25 (REVIEW.md issue 2: the clients whose labels look unrecorded are located by their last invoice and dropped, as for caracas_cervical_cancer and account_debt_south_africa). Applied in the definition, which changes the data: only clients still billed from 2015 on (the fraud rate by year of last invoice is 4.0% for 2013 and 5.5% for 2014, 7.1-9.3% from 2015 to 2019 with no trend; 81,531 clients, 7.8% frauds), the use case as a screen of the clients not yet inspected (the labels are undated 2013-2019 findings; a 0 means no fraud was found), a splits comment, `counter_number` dropped (no meaning: fraud rate 7.3-9.5% across its deciles in no order), 15 shifted invoices, `counter_statue` A, `counter_coefficient` 0 and `months_number` above 120 set to missing, a note that the client record is one snapshot of unknown date (category 51 keeps its tariff mix across 2013), the reason for keeping the invoice rows (0.682 against 0.675 for per-client aggregates). Client-level LightGBM: ROC AUC 0.848 with the full history, 0.688 with the cut; task probe per client 0.633-0.686, no flag; leak probe no flag. The year is 2019 (first run 20-22 Sep 2019), not 2020. This supersedes the earlier figures of 83,874 clients and 0.61-0.69. Priority 2: gap -, use case - (fit approximate: undated labels, cut date read off the data), source +, shape +, risk - (the LEAK-25 reading is open and the rule as written would retire the dataset).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Zindi's evaluation: AUC over clients.
+
 ## Reference
 
 Zindi main source

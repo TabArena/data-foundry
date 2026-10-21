@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 # Salt forms of a compound that is also in the data (LEAK-19). The raw file has no structures, so the ids come from
 # ChEMBL's molecule_hierarchy (API, 2026-10-21) for the rows in repeated fingerprint vectors: 37 groups of two
@@ -139,6 +139,15 @@ class QsarTid11(AbstractCuratedDataset):
     # Task
     target = "MEDIAN_PXC50"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="Average root mean squared error (RMSE) with 10-fold cross-validation",
+        reference=(
+            "Olier et al. 2018, Meta-QSAR, Machine Learning 107:285-311, doi:10.1007/s10994-017-5685-x, Sec. "
+            "2.3 (arXiv:1709.03854)"
+        ),
+        definition="RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale).",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(raw_dir / "11.arff") as f:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 # Entries of one sale scraped twice: the same home (address, ZIP code, year built) with the same sold price, a median
 # 61 Kaggle IDs apart (51 pairs).
@@ -74,7 +74,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
         We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
-        - We log scale the target variable (log1p), so RMSE on it is the competition's metric, RMSLE (Kaggle's evaluation metric).
+        - We log scale the target variable (log1p), so the declared RMSE on it is the competition's RMSLE.
         - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
         - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
         - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
@@ -94,6 +94,12 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
     # Task
     target = "Sold Price"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSLE (root mean squared logarithmic error)",
+        reference="https://www.kaggle.com/competitions/california-house-prices (Evaluation; Kaggle API, per the record's 2026-10-21 assessment)",
+        definition="RMSE on log1p(Sold Price), equal to RMSLE on the raw price",
+    )
 
     # Splits
     splits_comment = """

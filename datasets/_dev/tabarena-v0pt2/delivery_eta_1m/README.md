@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43
+checksum: v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32
 build:
   uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
   checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
@@ -30,6 +30,8 @@ task:
   target: delivery_eta_minutes
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: timestamp
@@ -67,7 +69,7 @@ decisions: []
 
 Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +135,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | timestamp |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSE (TabReD regression tasks) |
+| reference | Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE for regression, ROC AUC for classification |
+| definition | sqrt(mean((y - yhat)^2)) on the natural-log minutes target |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
@@ -389,4 +401,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9cdc8b8466f546b50783b0fb97a160e8492b08ef96672468048e41e927484b43` |
+| stale | yes: the definition now gives checksum `v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32` |

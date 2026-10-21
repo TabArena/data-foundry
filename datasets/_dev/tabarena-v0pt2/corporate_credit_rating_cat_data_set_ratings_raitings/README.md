@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: corporate_credit_rating_cat_data_set_ratings_raitings
 container_format: 2
-checksum: v2:e32447a8f36aa4afd294511e629a0a15815bdad2f8b51c5678024aae353b5804
+checksum: v2:3f673859dc63b5a96617dd83038c79d406d891840aa928e2453a69c909160792
 build: null
 build_stale: false
 data:
@@ -15,7 +15,9 @@ data:
 task:
   target: rating_notch
   problem_type: regression
-  metric: rmse
+  metric: mae
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -58,9 +60,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `rating_notch`, scored with `rmse` on IID splits. 197 rows and 6 features. Source: Other (2016).
+Regression of `rating_notch`, scored with `mae` on IID splits. 197 rows and 6 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:e32447a8f36aa4afd294511e629a0a15815bdad2f8b51c5678024aae353b5804`.
+Not built yet. The current definition gives checksum `v2:3f673859dc63b5a96617dd83038c79d406d891840aa928e2453a69c909160792`.
 
 ## In brief
 
@@ -136,8 +138,19 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 197 x 7 |
 | task.target | rating_notch |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mae |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mae` (standard; takes value; lower is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | distribution of the absolute notch difference \|rating - predicted rating\| (frequency / cumulative percent per error band) |
+| reference | Baesens, Roesch, Scheule, Credit Risk Analytics (Wiley 2016), R Companion Ch08_LowDefaultPortfolios.R lines 62-80 (local copy: local-data-warehouse/_runs/2026-10-07_backlog/evidence/corporate_credit_rating_cat_data_set_ratings_raitings/Ch08_LowDefaultPortfolios.R) |
+| definition | mean(\|y - yhat\|) in notches; the source tabulates \|y - yhat\| per band rather than one scalar |
+| reason | The source tabulates the distribution of the absolute notch difference \|rating - predicted\| per error band, not one scalar; MAE is its mean, so it ranks models by the same notion of error. |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -183,7 +196,7 @@ We start with ratings.csv from the data page of the book Credit Risk Analytics (
 
 - Prediction point: an institution whose financial statements are known but whose agency rating is not; we map it to the agency's scale from the six ratios, as the R Companion's code for chapter 8 ("Low Default Portfolios") does with an ordered logit (the book's Exhibit 1.4 lists the data under chapter 5, credit scoring). Neither the data page nor the book's chapter 1 names the agency, years, country or provider, so how the statement date relates to the rating date is unknown.
 - Not OpenML 46372 (linked in the record): its 5,000 rows are generated from these 197, each value drawn uniformly between the minimum and maximum of the book's rows with the same rating (all 30,000 values lie inside those ranges; none is a book row).
-- Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression with RMSE. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task; as 10 classes, three codes would hold 3-5 rows (decision table).
+- Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task (scored by MAE, Lennart 2026-10-21); as 10 classes, three codes would hold 3-5 rows (decision table).
 - We drop `spid`, an anonymised id with no documented meaning. Its values sit in two ranges (130 and 67 rows); a flag for the range lifts ridge R^2 from 0.283 to 0.296 (alpha 1, 60 splits), and within a code the two ranges differ on costs to income (p 0.004). We drop it anyway, since no source says what the ranges are.
 - The six ratios are renamed after the data page's definitions (`RATIOS`).
 - No missing values and no duplicate rows. Negative loan-loss provisions (released provisions) and negative returns on equity (loss years) are real values.

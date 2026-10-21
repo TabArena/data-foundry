@@ -33,6 +33,8 @@ CC: "From Kaggle competition. Original task was rather time-series & some weird 
 
 Follow preprocessing of Tschalzev et al. and check if splits are usable as IID
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — Root Mean Squared Logarithmic Error (RMSLE) (https://www.kaggle.com/competitions/santander-value-prediction-challenge/overview/evaluation).
+
 ## Reference
 
 https://www.kaggle.com/competitions/santander-value-prediction-challenge

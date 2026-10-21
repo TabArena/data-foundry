@@ -216,7 +216,9 @@ and within one priority the fewest open decisions (open issues and record-field 
 problem type, rows and build state, its name and its links, then (for a record decided in triage) the triage box.
 Its tabs, in this order:
 
-1. Use case: the definition's `task_summary` (or a `--tldr` entry).
+1. Use case: the definition's `task_summary` (or a `--tldr` entry), then its metric: name, origin, original,
+   reference, definition, reason, params, inputs and scoring columns, from `metric` in `dataset.py` (for a retired
+   definition: name and origin from the README frontmatter).
 2. Decisions: the numbered issues and the record-field table, with their marks.
 3. Panel: the review panel's recommendation and summary, then one collapsible section per role, closed except the
    Mediator's ("No review panel" for a record without one).

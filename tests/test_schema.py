@@ -14,6 +14,8 @@ from data_foundry.schema import (
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
 
+from tests.test_bundle_checks import make_spec
+
 
 @pytest.fixture
 def base_dataset_metadata_kwargs() -> dict:
@@ -497,7 +499,7 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     task = PredictiveMLTaskMetadataV2(
         target_column_name="y",
         problem_type="binary_classification",
-        objective_metric_name="metric",
+        objective_metric=make_spec(),
         grouping=Grouping(on=["a", "b"], labels="per_sample", time_on="t"),
     )
     assert (task.group_on, task.group_labels, task.group_time_on) == (["a", "b"], "per_sample", "t")

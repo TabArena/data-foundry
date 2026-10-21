@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 container_format: 2
-checksum: v2:f6b704179dfb6ddc002438f6ab5673d254aee9ba542bb8f29c9f19beb55115e2
+checksum: v2:c3bba85bd4b92f0c2a17230d75d44efedc3331dd861764309ae07c8184805026
 build: null
 build_stale: false
 data:
@@ -15,7 +15,9 @@ data:
 task:
   target: lithology
   problem_type: multiclass_classification
-  metric: force_2020_penalty_matrix
+  metric: cost_matrix
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: lithology
   time_on: null
@@ -48,14 +50,13 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - task_metric_unknown
+  infos: []
   accepted:
     splits_test_class_missing: Halite occurs in 4 wells (14,711 rows) and Anhydrite
       in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests
       none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite
-      wells, and every train side holds both classes. Log loss is defined on the classes
-      a fold holds.
+      wells, and every train side holds both classes. The mean penalty is defined
+      on the classes a fold holds.
 decisions:
 - All 118 wells in one frame, split by well
 - 'Basement dropped: one well'
@@ -66,9 +67,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `lithology`, scored with `force_2020_penalty_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
+Multiclass classification of `lithology`, scored with `cost_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
 
-Not built yet. The current definition gives checksum `v2:f6b704179dfb6ddc002438f6ab5673d254aee9ba542bb8f29c9f19beb55115e2`.
+Not built yet. The current definition gives checksum `v2:c3bba85bd4b92f0c2a17230d75d44efedc3331dd861764309ae07c8184805026`.
 
 ## In brief
 
@@ -141,11 +142,22 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,429,591 x 28 |
 | task.target | lithology |
 | task.problem_type | multiclass_classification |
-| task.metric | force_2020_penalty_matrix |
+| task.metric | cost_matrix |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | lithology |
 | task.group_on | WELL |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `cost_matrix` (custom; takes label; lower is better) |
+| origin | source: the source's metric |
+| original | penalty matrix score S = -(1/N) sum_i A[y_true_i, y_pred_i] |
+| reference | FORCE 2020 starter notebook, https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition/blob/master/lithology_competition/data/starter_notebook.ipynb |
+| definition | mean over depth samples of the competition's penalty A[true, predicted] on hard labels (the competition's score is its negative); 11 x 11 sub-matrix of penalty_matrix.npy after Basement was dropped, symmetric, zero diagonal, order of the starter notebook's lithology_numbers |
+| params | {'labels': ['Sandstone', 'Sandstone/Shale', 'Shale', 'Marl', 'Dolomite', 'Limestone', 'Chalk', 'Halite', 'Anhydrite', 'Tuff', 'Coal'], 'matrix': [[0.0, 2.0, 3.5, 3.0, 3.75, 3.5, 3.5, 4.0, 4.0, 2.5, 3.875], [2.0, 0.0, 2.375, 2.75, 4.0, 3.75, 3.75, 3.875, 4.0, 3.0, 3.75], [3.5, 2.375, 0.0, 2.0, 3.5, 3.5, 3.75, 4.0, 4.0, 2.75, 3.25], [3.0, 2.75, 2.0, 0.0, 2.5, 2.0, 2.25, 4.0, 4.0, 3.375, 3.75], [3.75, 4.0, 3.5, 2.5, 0.0, 2.625, 2.875, 3.75, 3.25, 3.0, 4.0], [3.5, 3.75, 3.5, 2.0, 2.625, 0.0, 1.375, 4.0, 3.75, 3.5, 4.0], [3.5, 3.75, 3.75, 2.25, 2.875, 1.375, 0.0, 4.0, 3.75, 3.125, 4.0], [4.0, 3.875, 4.0, 4.0, 3.75, 4.0, 4.0, 0.0, 2.75, 3.75, 3.75], [4.0, 4.0, 4.0, 4.0, 3.25, 3.75, 3.75, 2.75, 0.0, 4.0, 4.0], [2.5, 3.0, 2.75, 3.375, 3.0, 3.5, 3.125, 3.75, 4.0, 0.0, 2.5], [3.875, 3.75, 3.25, 3.75, 4.0, 4.0, 4.0, 3.75, 4.0, 2.5, 0.0]]} |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
@@ -204,7 +216,7 @@ We start with the four files of the FORCE 2020 lithology competition on GitHub: 
 - Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
 - Anomaly: MUDWEIGHT is on three scales (per-well medians of 0.13-0.17 in 19 wells, 1.08-1.80 in 9 and 156 in 16/10-2) with no unit in the competition files; we leave it, as a conversion would rest on guessed units. Other curves have wells on another scale: ROP in 25/6-2 (median 17,778 against 0.6-150 elsewhere, 2,925 rows), SGR in 34/12-1 and 35/11-15 S (medians about 0.01 against 46-106, 8,731 rows) and ROPA in 34/4-10 R (median 0.099 against 10-82). The scale is constant within a well.
 - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
-- Metric: the competition's penalty matrix (12 x 12, a cost per pair of true and predicted lithology, averaged over the hard predicted labels), declared as `force_2020_penalty_matrix` (TP-6); no listed metric ranks models the same. It is not registered downstream, where the default, log loss, scores instead. The top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
+- Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
 - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
 
 ## Splits
@@ -291,13 +303,12 @@ Values below -900 are the LAS null values -999.0, -999.25 and -999.9 (stored as 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **info** `task_metric_unknown`: Metric 'force_2020_penalty_matrix' is not one of the standard names for multiclass_classification. (hint: Fine for a custom competition metric, but it has to be registered on the consumer side — TabArena otherwise silently falls back to 'log_loss'.)
 
 Accepted on purpose:
 
-- `splits_test_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. Log loss is defined on the classes a fold holds.
+- `splits_test_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. The mean penalty is defined on the classes a fold holds.
 
 ## Data checks
 

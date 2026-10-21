@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4
+checksum: v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61
 build:
   uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
   checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
@@ -31,6 +31,8 @@ task:
   target: Energy
   problem_type: regression
   metric: mape
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -74,7 +76,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,6 +148,17 @@ Only curators run `build`, when the dataset ships.
 | task.group_on | BS |
 | task.group_labels | per_sample |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mape` (standard; takes value; lower is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | Weighted MAPE (WMAPE), Zindi private leaderboard |
+| reference | https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling |
+| definition | Mean absolute percentage error of energy per row; the original weights each test row by whether its base station / configuration is new |
+| reason | false: the per-row WMAPE weights come with the test file and are not published; every test station here is new, so unweighted mape is the closest stand-in |
+
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
@@ -189,7 +202,7 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
 - With this setup, the task is development of predictive models for network optimization where models need to generalize to new unseen base station configurations and estimate their energy consumption under similar conditions (during the same time period).
 - For preprocessing, we orient on a top solution from the Zindi challenge: https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main.
 - Note that the competition also used mostly samples from the known BS as the test set, but weighted unknown base stations higher in evaluation.
-- Metric: the challenge ranked the private leaderboard by weighted MAPE (WMAPE), with a larger weight per test row for a new base station or configuration, given in its test file (Zindi evaluation page). Every test station here is new and the weights are not published with the training data, so we declare unweighted `mape` (TP-6).
+- Metric: unweighted `mape` stands in for the challenge's WMAPE, whose per-row weights come with the unpublished test file (metric spec).
 - The data itself is time-series. However, because we predict entirely unseen base stations in a per-sample fashion, the row-wise dependencies resulting from the temporal components cannot be used to improve performance unless the task is treated as transductive learning.
 - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
 - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
@@ -347,4 +360,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2612d8c5bd58a8b3f31580c774fd2c7f0747a2030154c599cd7059c22e38c5e4` |
+| stale | yes: the definition now gives checksum `v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61` |

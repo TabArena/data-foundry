@@ -1,6 +1,6 @@
 # force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 
-**Outcome:** added. The lithology (11 classes, log loss) of each depth sample in 118 North Sea wells, from all
+**Outcome:** added. The lithology (11 classes, scored by the competition's penalty matrix as `cost_matrix`) of each depth sample in 118 North Sea wells, from all
 three competition files stacked and split by well; GROUP and FORMATION stay as features, as the competition gave
 them. Review panel: full tier, 2026-10-20. The AI recommends shipping after changes; the changes that needed no
 decision (masks for sentinel remnants and impossible readings, a splits comment, reworded notes) are made.
@@ -13,7 +13,7 @@ Validity: SEL-13 holds (well logs are sensor readings per depth, not an image); 
   row-random folds against 0.763 grouped); SPLIT-19 departure kept with its reason, now in the splits comment; PROV
   holds (md5, pinned commit, CC BY 4.0).
 Value: TP-1/TP-3 real signal (random forest 0.742 against class shares 1.288, LightGBM 0.872, linear 0.886); no_spread
-  gone after the masks; TP-8 fold gap accepted (CC 2026-10-12); TP-6 the penalty matrix declared (amended TP-6).
+  gone after the masks; TP-8 fold gap accepted (CC 2026-10-12); MET-4: the competition's penalty matrix declared as `cost_matrix` (11 x 11, Basement dropped).
 Quality: CLEAN-10/CLEAN-11 fixed by masking; CLEAN-21 curves on a second scale, kept with a note (issue 8); CLEAN-14
   duplicate formation codes (issue 9).
 Weighed: source +, size +, gap + (grouped multiclass), label noise - (reachable accuracy near 80%).
@@ -22,8 +22,8 @@ For the curator: issue 2 (a released-well use case or an approximate fit), issue
 ```
 
 **Main points:** Restate the use case as "a newly drilled or a released well" (keeps the fit direct) or mark the fit
-approximate (issue 2); the competition's penalty matrix is declared (amended
-TP-6); keep, mask or convert the curves on a
+approximate (issue 2); the competition's penalty matrix is declared as `cost_matrix`
+(MET-4); keep, mask or convert the curves on a
 second scale (issue 8); merge the duplicate formation codes (issue 9); confirm the Basement drop (issue 10) and no
 depth-window features (issue 1).
 

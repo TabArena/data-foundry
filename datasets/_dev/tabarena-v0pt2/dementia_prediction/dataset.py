@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class DementiaPrediction(AbstractCuratedDataset):
@@ -78,6 +78,12 @@ class DementiaPrediction(AbstractCuratedDataset):
     # Task
     target = "CDR"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The OASIS-2 paper describes the data and reports group analyses, no prediction task or metric; the "
+            "Mendeley copy's paper is a later reuse, not the first publication"
+        )
+    )
     grouping = Grouping(
         on="Subject ID",
         labels="per_sample",

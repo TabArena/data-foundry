@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:ea5f4f5305b0417a6404ac4bc3e513e07bd81d22f86ffdf19af535a856567eaa
+checksum: v2:1e3ec35d2e20c8c981c3f97f43e33500345e38caef6f3b42754521195223127e
 build:
   uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
   checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
@@ -32,6 +32,8 @@ task:
   target: rating
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: review_date
@@ -69,7 +71,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,369 rows and 12 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ea5f4f5305b0417a6404ac4bc3e513e07bd81d22f86ffdf19af535a856567eaa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1e3ec35d2e20c8c981c3f97f43e33500345e38caef6f3b42754521195223127e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | review_date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Scraped Kaggle dataset with no task, competition or paper; no metric defined. |
 
 <details>
 <summary>Feature types: 2 categorical, 6 string, 1 datetime</summary>
@@ -325,4 +336,4 @@ RMSE noise; 2-month windows keep at least ~50 test rows each.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ea5f4f5305b0417a6404ac4bc3e513e07bd81d22f86ffdf19af535a856567eaa` |
+| stale | yes: the definition now gives checksum `v2:1e3ec35d2e20c8c981c3f97f43e33500345e38caef6f3b42754521195223127e` |

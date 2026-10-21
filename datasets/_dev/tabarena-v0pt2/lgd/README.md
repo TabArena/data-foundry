@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lgd
 container_format: 2
-checksum: v2:75fe3fdbe45a4e8ffc13b27e1fbcbb18516e775ee14414af06f0539b95875457
+checksum: v2:fed069704cd9fc6e147e47e184fe2d8761d9729a70d65d4c855c939c210fa958
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: lgd
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -70,7 +72,7 @@ decisions:
 
 Regression of `lgd`, scored with `rmse` on grouped splits by `borrower_block`. 2,545 rows and 2 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:75fe3fdbe45a4e8ffc13b27e1fbcbb18516e775ee14414af06f0539b95875457`.
+Not built yet. The current definition gives checksum `v2:fed069704cd9fc6e147e47e184fe2d8761d9729a70d65d4c855c939c210fa958`.
 
 ## In brief
 
@@ -152,6 +154,15 @@ Only curators run `build`, when the dataset ships.
 | task.group_on | borrower_block |
 | task.group_labels | per_sample |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Baesens, Roesch & Scheule 2016 (ch. 10) evaluate LGD models by MSE/RMSE, R^2 and Pearson/Spearman/Kendall correlations, with no declared winner metric. rmse is the regression fallback. |
+
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
@@ -195,7 +206,7 @@ The first 5 of 2,545 rows of the final frame (random rows: the frame is shuffled
 We start with lgd.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): 2,545 loans of a European bank, "slightly modified and anonymized" (chapter 1, p. 14).
 
 - Prediction point: a loan has just defaulted, and the bank estimates the share of the amount outstanding it will lose. The loan-to-value ratio and the purpose are known then.
-- Target: `lgd` (the source's `lgd_time`), a share from 0 to 1, as regression with RMSE, the book's own task in chapter 10. No log transform: the share has mass points at both bounds. The record asks for binary classification, but the only binary column, `event`, is part of this target.
+- Target: `lgd` (the source's `lgd_time`), a share from 0 to 1, as regression, the book's own task in chapter 10. No log transform: the share has mass points at both bounds. The record asks for binary classification, but the only binary column, `event`, is part of this target.
 - We drop `Recovery_rate`, `y_logistic`, `lnrr` and `Y_probit`, transformations of the LGD.
 - We drop `event`: it is 0 for exactly the 728 loans at the floor, so it says whether there was a loss (decision table).
 - We keep the source's target bounds: an LGD of zero is stored as 0.00001 (28.6% of the loans) and a total loss as 0.99999 (5.6%).

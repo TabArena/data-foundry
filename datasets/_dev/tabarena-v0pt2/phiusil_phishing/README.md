@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: phiusil_phishing
 container_format: 2
-checksum: v2:fc5ced2b00c04a1011e7fa06855527ea581ed0eb2702f12226c686084f55bafc
+checksum: v2:b573a0a4f822901849db4e1a75d85300c26c5a60a046175c1166a98a7943c901
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: label
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: label
   time_on: null
@@ -72,7 +74,7 @@ decisions:
 
 Binary classification of `label`, scored with `roc_auc` on IID splits. 235,370 rows and 49 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:fc5ced2b00c04a1011e7fa06855527ea581ed0eb2702f12226c686084f55bafc`.
+Not built yet. The current definition gives checksum `v2:b573a0a4f822901849db4e1a75d85300c26c5a60a046175c1166a98a7943c901`.
 
 ## In brief
 
@@ -145,6 +147,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | label |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The first publication reports several classification scores (accuracy, precision, recall, F1) for its framework without one task metric; no competition. Not verified in the full text (paywalled). |
 
 <details>
 <summary>Feature types: 19 categorical, 1 string, 0 datetime</summary>

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: clock_protein_toxicity
 container_format: 2
-checksum: v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698
+checksum: v2:516307ca1db3eaff79b8d3d3f5e8ca1cbadc0fe7d08c6d30cfb59ef9ca1f6143
 build:
   uuid: 01a111fc-9673-778e-85dd-8d3026178022
   checksum: v2:2545d315149a15a38ee10c492f668176970f4b456866ffeddf502498bd67b4a2
@@ -30,6 +30,8 @@ task:
   target: Toxic
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Toxic
   time_on: null
@@ -66,7 +68,7 @@ decisions: []
 
 Binary classification of `Toxic`, scored with `roc_auc` on IID splits. 171 rows and 1,117 features. Source: UCI (2022).
 
-Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9673-778e-85dd-8d3026178022` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:516307ca1db3eaff79b8d3d3f5e8ca1cbadc0fe7d08c6d30cfb59ef9ca1f6143`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Toxic |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Gul et al. 2021 compare classifiers by 10-fold CV accuracy only (Table 2), without a threshold or costs, on 171 molecules (33% toxic). Original rejected: accuracy (MET-6, coarse on 171 rows). roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -425,4 +436,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:31b9aebe0b645326e17ce17841e6b8e0a8587b1407d87826d2b8652d16d3d698` |
+| stale | yes: the definition now gives checksum `v2:516307ca1db3eaff79b8d3d3f5e8ca1cbadc0fe7d08c6d30cfb59ef9ca1f6143` |

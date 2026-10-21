@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class BankCustomerChurn(AbstractCuratedDataset):
@@ -70,6 +70,9 @@ class BankCustomerChurn(AbstractCuratedDataset):
     # Task
     target = "churn"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Kaggle dataset (likely a course dataset) with no stated task metric; no first publication",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "Bank Customer Churn Prediction.csv")

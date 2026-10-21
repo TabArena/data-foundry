@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_breast_cancer
 container_format: 2
-checksum: v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725
+checksum: v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2
 build:
   uuid: 01a111fc-e2f6-79bc-bc94-8e4779cb09a2
   checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
@@ -30,6 +30,8 @@ task:
   target: Class
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Class
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 190
     max: 191
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows and 9 features. Source: UCI (1988).
 
-Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Class |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Every 1986-1988 paper on the data (Michalski et al., Clark & Niblett, Cestnik et al.) reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows. Original rejected: accuracy. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
@@ -328,4 +341,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:dcfda637aac894e84f8212d03e7793e15ecb8e62278aac3afb07e94e45528725` |
+| stale | yes: the definition now gives checksum `v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2` |

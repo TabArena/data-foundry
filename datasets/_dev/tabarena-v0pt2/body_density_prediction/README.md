@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: body_density_prediction
 container_format: 2
-checksum: v2:af8b7dec4ed75e31a4974e0ec15e63898d2face9bb0c1d157c7c65206eb07403
+checksum: v2:87d5732a3ffecda4c82110e3a1e23dc457187458f6541e7335eda393c3615d42
 build:
   uuid: 01a111fc-caac-7d14-8929-e266415ab9cf
   checksum: v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7
@@ -29,6 +29,8 @@ task:
   target: Density
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 168
     max: 168
@@ -63,7 +67,7 @@ decisions: []
 
 Regression of `Density`, scored with `rmse` on IID splits. 252 rows and 13 features. Source: Other (1995).
 
-Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:af8b7dec4ed75e31a4974e0ec15e63898d2face9bb0c1d157c7c65206eb07403`, so the build is stale. See [Build](#build).
+Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87d5732a3ffecda4c82110e3a1e23dc457187458f6541e7335eda393c3615d42`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -130,6 +134,16 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | standard error of estimate (SEE) of the prediction equation, with R / R^2 |
+| reference | Penrose, Nelson & Fisher 1985, Med Sci Sports Exerc 17(2):189; Johnson 1996, 'Fitting Percentage of Body Fat to Simple Body Measurements', Journal of Statistics Education 4(1) (StatLib bodyfat) |
+| definition | root mean squared error of the predicted body density (g/cm3) |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -326,4 +340,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:af8b7dec4ed75e31a4974e0ec15e63898d2face9bb0c1d157c7c65206eb07403` |
+| stale | yes: the definition now gives checksum `v2:87d5732a3ffecda4c82110e3a1e23dc457187458f6541e7335eda393c3615d42` |

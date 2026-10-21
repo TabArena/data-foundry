@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: give_me_some_credit
 container_format: 2
-checksum: v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd
+checksum: v2:53dcbf6c911a6d96b0d903a0686a7f0d22887961efeac45e1f52ba7fe31785de
 build:
   uuid: 01a111fc-8c6a-7513-9b7c-cd856ad168b6
   checksum: v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 150000
   n_features: 10
@@ -30,6 +30,8 @@ task:
   target: FinancialDistressNextTwoYears
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: FinancialDistressNextTwoYears
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 100000
     max: 100000
@@ -66,7 +70,7 @@ decisions: []
 
 Binary classification of `FinancialDistressNextTwoYears`, scored with `roc_auc` on IID splits. 150,000 rows and 10 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8c6a-7513-9b7c-cd856ad168b6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-8c6a-7513-9b7c-cd856ad168b6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:53dcbf6c911a6d96b0d903a0686a7f0d22887961efeac45e1f52ba7fe31785de`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +135,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | FinancialDistressNextTwoYears |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC |
+| reference | https://www.kaggle.com/competitions/GiveMeSomeCredit/overview/evaluation |
+| definition | ROC AUC of the probability of 90+ days delinquency within two years. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -260,3 +274,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:53dcbf6c911a6d96b0d903a0686a7f0d22887961efeac45e1f52ba7fe31785de` |

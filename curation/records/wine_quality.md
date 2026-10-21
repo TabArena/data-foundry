@@ -38,6 +38,8 @@ Lennart: use UCI version with indicator
 
 Andrej: Add red/white wine indicator
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — MAD of Cortez et al. 2009 (scored metric changed from rmse to mae).
+
 ## Reference
 
 Modeling wine preferences by data mining from physicochemical properties

@@ -38,6 +38,10 @@ CC: "Real data, preprocessed, information about decoding videos, the same video 
 
 Valid metadata use case / problem!
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the paper's R2 on the raw time is known only from a dissertation abstract and is not computable on the shipped log target; rmse on log time.
+
+CC (2026-10-21, Lennart): proposal accepted: the fallback rmse on the log transcoding time, not r2 on the raw time.
+
 ## Reference
 
 @inproceedings{deneke2014video,

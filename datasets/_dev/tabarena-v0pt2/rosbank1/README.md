@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rosbank1
 container_format: 2
-checksum: v2:c97ed495c58d59ffad04fd4a46d789c7a08ffa0078f56e2d5c75cf82584c2d16
+checksum: v2:40666a6693c4cea2d6c91a2eb03b735719c32ccdecb75d1ee18cfc5e00cc3009
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: churn
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: churn
   time_on: period_end
@@ -65,7 +67,7 @@ decisions:
 
 Binary classification of `churn`, scored with `roc_auc` on temporal splits by `period_end`. 4,791 rows and 347 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:c97ed495c58d59ffad04fd4a46d789c7a08ffa0078f56e2d5c75cf82584c2d16`.
+Not built yet. The current definition gives checksum `v2:40666a6693c4cea2d6c91a2eb03b735719c32ccdecb75d1ee18cfc5e00cc3009`.
 
 ## In brief
 
@@ -137,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | churn |
 | task.time_on | period_end |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC - Area Under the ROC Curve (task 1, churn); task 2 POS spend used RMSE |
+| reference | https://boosters.pro/api/champ/champ?champname=rosbank1 (metric: 'AUC', checked 2026-10-21) |
+| definition | Area under the ROC curve; our label churn = target_flag 0 is the competition label flipped, and AUC is unchanged under the flip of both label and score. |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 3 datetime</summary>

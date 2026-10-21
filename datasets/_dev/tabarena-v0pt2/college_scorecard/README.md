@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: college_scorecard
 container_format: 2
-checksum: v2:6bda1ff081e9bdb8c33d4b3fc4543437b8e12d79175f6445c633a591557c4dce
+checksum: v2:6ab6ba7fb4afcb3a9d9334d5ea7be773988099aa69f5528519cc139a655a3e35
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: completion_rate_150pct
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: cohort_year
@@ -60,7 +62,7 @@ decisions:
 
 Regression of `completion_rate_150pct`, scored with `rmse` on temporal splits by `cohort_year`. 34,431 rows and 92 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:6bda1ff081e9bdb8c33d4b3fc4543437b8e12d79175f6445c633a591557c4dce`.
+Not built yet. The current definition gives checksum `v2:6ab6ba7fb4afcb3a9d9334d5ea7be773988099aa69f5528519cc139a655a3e35`.
 
 ## In brief
 
@@ -146,6 +148,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | cohort_year |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>

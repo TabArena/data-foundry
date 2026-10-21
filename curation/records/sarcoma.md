@@ -42,6 +42,8 @@ CC (2026-10-19, Lennart): for the next pass, rebuild the methylation block from 
 
 CC (2026-10-21, Lennart): "let us stay with direct fit if the task (without leakage) would be a direct fit and only move to approximate fit if we had to change a lot to avoid the leak"; USE-8 amended. The fit stays approximate for the closed set of five confirmed types; the kept preprocessing over all patients is no longer a reason for it.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source (Rappoport & Shamir 2018) is a clustering benchmark without a label, and the TCGA study (Cell 2017) defines no prediction metric. The task paper the definition cites, TabPFN-Wide (Kolberg et al. 2025, arXiv 2510.06162), reports AUROC and accuracy on COAD/LGG/BRCA/GBM/OV, but SARC 'is only used for attention analysis' (Table 1 caption), so no metric is defined for this task.
+
 ## Reference
 
 N. Rappoport and R. Shamir. Multi-omic and multi-view clustering algorithms: review and cancer benchmark. Nucleic Acids Research, 46(20):10546–10562, Oct 2018. URL https://doi. org/10.1093/nar/gky889.

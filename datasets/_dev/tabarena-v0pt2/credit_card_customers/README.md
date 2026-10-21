@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_customers
 container_format: 2
-checksum: v2:cb46df713e3f932ad04c57b8403dd8a0437e5f1b5c5e4510a24be1f519388f5c
+checksum: v2:56b99612ba387247490344fa7a4fcc7d20befc5b834e36c6a58c15c98324c3dd
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: Attrition_Flag
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Attrition_Flag
   time_on: null
@@ -55,7 +57,7 @@ decisions:
 
 Binary classification of `Attrition_Flag`, scored with `roc_auc` on IID splits. 10,127 rows and 19 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:cb46df713e3f932ad04c57b8403dd8a0437e5f1b5c5e4510a24be1f519388f5c`.
+Not built yet. The current definition gives checksum `v2:56b99612ba387247490344fa7a4fcc7d20befc5b834e36c6a58c15c98324c3dd`.
 
 ## In brief
 
@@ -135,6 +137,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Attrition_Flag |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Kaggle dataset, not a competition; the description names no metric and the LEAPS case material (Naive Bayes classification) is offline |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>

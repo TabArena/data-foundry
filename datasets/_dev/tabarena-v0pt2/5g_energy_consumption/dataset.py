@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class Dataset5gEnergyConsumption(AbstractCuratedDataset):
@@ -78,7 +78,7 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         - With this setup, the task is development of predictive models for network optimization where models need to generalize to new unseen base station configurations and estimate their energy consumption under similar conditions (during the same time period).
         - For preprocessing, we orient on a top solution from the Zindi challenge: https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main.
         - Note that the competition also used mostly samples from the known BS as the test set, but weighted unknown base stations higher in evaluation.
-        - Metric: the challenge ranked the private leaderboard by weighted MAPE (WMAPE), with a larger weight per test row for a new base station or configuration, given in its test file (Zindi evaluation page). Every test station here is new and the weights are not published with the training data, so we declare unweighted `mape` (TP-6).
+        - Metric: unweighted `mape` stands in for the challenge's WMAPE, whose per-row weights come with the unpublished test file (metric spec).
         - The data itself is time-series. However, because we predict entirely unseen base stations in a per-sample fashion, the row-wise dependencies resulting from the temporal components cannot be used to improve performance unless the task is treated as transductive learning.
         - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
         - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
@@ -91,7 +91,19 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
     # Task
     target = "Energy"
     problem_type = "regression"
-    metric = "mape"
+    metric = Metric.stand_in(
+        "mape",
+        original="Weighted MAPE (WMAPE), Zindi private leaderboard",
+        reason=(
+            "false: the per-row WMAPE weights come with the test file and are not published; every test "
+            "station here is new, so unweighted mape is the closest stand-in"
+        ),
+        reference="https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling",
+        definition=(
+            "Mean absolute percentage error of energy per row; the original weights each test row by whether "
+            "its base station / configuration is new"
+        ),
+    )
     grouping = Grouping(
         on="BS",
         labels="per_sample",

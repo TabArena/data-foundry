@@ -42,6 +42,8 @@ Discussion: I think this is grouped, subject ID is not unique but counts up with
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Cosmetics.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — root-mean-square difference A_rms (with clinical bias and its SD) (Wang et al. 2022, Sensors 22(1):215, Sec. 2.5-2.6 (PMC8749858)).
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

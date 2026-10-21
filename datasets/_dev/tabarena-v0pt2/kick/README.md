@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88
+checksum: v2:5ea7f52cd8875e5f1583a6080977e4c6f05cc5b43335ab22d44b0659634d10e2
 build:
   uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
   checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
@@ -31,6 +31,8 @@ task:
   target: IsBadBuy
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: IsBadBuy
   time_on: PurchDate
@@ -69,7 +71,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 32 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5ea7f52cd8875e5f1583a6080977e4c6f05cc5b43335ab22d44b0659634d10e2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,6 +142,16 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | IsBadBuy |
 | task.time_on | PurchDate |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Gini index (Kaggle normalized Gini) |
+| reference | https://www.kaggle.com/competitions/DontGetKicked/overview/evaluation |
+| definition | Normalized Gini = 2 x ROC AUC - 1 for a binary target; ranks models identically to ROC AUC. |
+
 <details>
 <summary>Feature types: 19 categorical, 0 string, 1 datetime</summary>
 
@@ -181,7 +193,6 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.
 - The data is temporal and also grouped by auction location. Locations reappear over time, so a grouped split would test unseen auctions, which does not match deployment; a model is deployed on future purchases at mostly known auctions. Therefore, we use temporal evaluation.
 - The test features from the Kaggle competition are available and could be used for unsupervised approaches.
-- Metric: the competition scored the Gini index (Kaggle's evaluation metric), which for a binary target is a linear function of ROC AUC (normalized: 2 x ROC AUC - 1), so we keep ROC AUC, which ranks models the same (TP-6).
 - We transform "PurchDate" to datetime.
 - We drop the "RefId" column, as it is just an identifier and not useful for modeling.
 - We assign the categorical features "WheelTypeID", "BYRNO", and "VNZIP1" to category dtype, as they are given as numbers.
@@ -386,4 +397,4 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:79bd3d458f44912d70a483491ad479cca0700c88af3985e9f20e6eab324e2e88` |
+| stale | yes: the definition now gives checksum `v2:5ea7f52cd8875e5f1583a6080977e4c6f05cc5b43335ab22d44b0659634d10e2` |

@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -69,48 +70,26 @@ DEFAULT_HEAVY_CELL_BUDGET = 50_000_000
 Skipped checks are reported as ``info`` findings — never silently dropped.
 """
 
-KNOWN_METRICS: dict[str, set[str]] = {
-    "binary_classification": {
-        "roc_auc",
-        "average_precision",
-        "log_loss",
-        "accuracy",
-        "balanced_accuracy",
-        "f1",
-        "mcc",
-        "precision",
-        "recall",
-    },
-    "multiclass_classification": {
-        "log_loss",
-        "accuracy",
-        "balanced_accuracy",
-        "f1_macro",
-        "f1_micro",
-        "f1_weighted",
-        "mcc",
-        "roc_auc_ovo_macro",
-        "roc_auc_ovr_macro",
-    },
-    "regression": {
-        "rmse",
-        "mae",
-        "mse",
-        "r2",
-        "rmsle",
-        "mape",
-        "median_absolute_error",
-        "pearsonr",
-        "spearmanr",
-    },
-}
-"""The canonical metric names per problem type (short, lower-case, as TabArena spells them).
 
-An unrecognized name is not an error — custom competition metrics (e.g.
-``amex_metric``) are intentional — but it must be registered on the consumer side,
-so it is surfaced as an ``info``. A known metric spelled another way (an alias in
-:data:`METRIC_ALIASES`, or different casing) is an error: every dataset uses one name.
-"""
+def known_metric_names() -> dict[str, set[str]]:
+    """The canonical metric names per problem type (short, lower-case, as TabArena spells them): the registry of
+    :mod:`data_foundry.v2.metrics`, the one list of metric names.
+
+    Format 2: a name outside the registry is an error (a custom metric is added to the registry under a general
+    name). Format 1 (BeyondArena): an unrecognized name is an info, a known metric spelled another way (an alias in
+    :data:`METRIC_ALIASES`, or different casing) an error.
+    """
+    from data_foundry.v2.metrics import known_metrics  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    return known_metrics()
+
+
+def __getattr__(name: str) -> object:
+    """``KNOWN_METRICS``: :func:`known_metric_names`, computed when first read (the registry imports this module)."""
+    if name == "KNOWN_METRICS":
+        return known_metric_names()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 METRIC_ALIASES: dict[str, str] = {
     "root_mean_squared_error": "rmse",
@@ -129,10 +108,11 @@ TABARENA_DEFAULT_METRICS: dict[str, str] = {
     "multiclass_classification": "log_loss",
     "regression": "rmse",
 }
-"""The default metric per problem type, and the one TabArena falls back to when it does not accept
-``objective_metric_name``.
+"""The default metric per problem type (:meth:`data_foundry.v2.metrics.Metric.fallback`), and the one TabArena
+falls back to when it does not accept the task's metric.
 
-Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS``.
+Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS`` and
+:data:`data_foundry.v2.metrics.FALLBACK_METRICS`.
 """
 
 
@@ -140,7 +120,7 @@ def canonical_metric_name(metric: str) -> str:
     """Map a metric name to its canonical spelling (aliases and casing); unknown names are returned stripped."""
     name = metric.strip()
     lowered = METRIC_ALIASES.get(name.lower(), name.lower())
-    if any(lowered in metrics for metrics in KNOWN_METRICS.values()):
+    if any(lowered in metrics for metrics in known_metric_names().values()):
         return lowered
     return name
 
@@ -861,8 +841,14 @@ def _check_target(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_metric(ctx: _Ctx) -> Iterator[CheckResult]:
-    """``objective_metric_name`` must be set and fit the problem type."""
+    """The task's metric: format 1's ``objective_metric_name``, or format 2's ``objective_metric`` spec and
+    ``scoring_columns``.
+    """
+    if ctx.container.format_version >= 2:
+        yield from _metric_spec_findings(ctx)
+        return
     task = ctx.task
+    known_names = known_metric_names()
     metric = (task.objective_metric_name or "").strip()
     if not metric:
         yield CheckResult(
@@ -882,10 +868,10 @@ def _check_metric(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Metric {metric!r} is spelled differently from the canonical name {canonical!r}.",
             hint=f"Set `objective_metric_name={canonical!r}`: every dataset uses one spelling per metric.",
         )
-    known = KNOWN_METRICS[task.problem_type]
+    known = known_names[task.problem_type]
     if canonical in known:
         return
-    other_problem_types = [p for p, metrics in KNOWN_METRICS.items() if canonical in metrics]
+    other_problem_types = [p for p, metrics in known_names.items() if canonical in metrics]
     if other_problem_types:
         yield CheckResult(
             "task_metric_problem_type_mismatch",
@@ -900,6 +886,218 @@ def _check_metric(ctx: _Ctx) -> Iterator[CheckResult]:
         hint="Fine for a custom competition metric, but it has to be registered on the consumer side — TabArena "
         f"otherwise silently falls back to {TABARENA_DEFAULT_METRICS[task.problem_type]!r}.",
     )
+
+
+METRIC_CHECK_TEST_ROWS = 100_000
+"""The computes check scores at most this many test rows of each split (a seeded sample)."""
+
+
+def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912 - a flat list of rules
+    """Format 2: the spec names a registry metric of the problem type, carries its origin's evidence, finds its
+    inputs among the scoring columns, and computes on every split.
+    """
+    from data_foundry.v2.metrics import METRICS  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    task = ctx.task
+    spec = task.objective_metric
+    name = (spec.name or "").strip()
+    if spec.origin == "fallback" and not (spec.reason or "").strip():
+        yield CheckResult(
+            "task_metric_undeclared",
+            "error",
+            f"No metric is declared (the task is scored with the default {name!r}, without a reason).",
+            hint="Look for the metric the source defines (the competition's evaluation page, the paper, the task "
+            'description) and declare it, e.g. `metric = Metric.source("rmse", original="RMSE", reference=...)`; '
+            'when it defines none, `metric = Metric.fallback(reason="...")` with where you looked.',
+        )
+    if not name:
+        yield CheckResult("task_metric_empty", "error", "`objective_metric.name` is empty.")
+        return
+    if spec.kind == "local":
+        yield CheckResult(
+            "task_metric_local",
+            "warning",
+            f"Metric {name!r} is local: its code is only in the definition, so a reader of the container cannot "
+            "compute it and `build` refuses it.",
+            hint="For a shipped dataset, add the metric to data_foundry.v2.metrics under a general name.",
+        )
+    elif name not in METRICS:
+        canonical = canonical_metric_name(name)
+        if canonical != name and canonical in METRICS:
+            yield CheckResult(
+                "task_metric_not_canonical",
+                "error",
+                f"Metric {name!r} is spelled differently from the canonical name {canonical!r}.",
+                hint=f'Declare `Metric.source("{canonical}", ...)`: every dataset uses one spelling per metric.',
+            )
+        else:
+            yield CheckResult(
+                "task_metric_unknown",
+                "error",
+                f"Metric {name!r} is not in the registry of data_foundry.v2.metrics.",
+                hint="Use a standard name, or add the custom metric to the registry under a general name.",
+            )
+        return
+    else:
+        definition = METRICS[name]
+        if task.problem_type not in definition.problem_types:
+            yield CheckResult(
+                "task_metric_problem_type_mismatch",
+                "error",
+                f"Metric {name!r} scores {list(definition.problem_types)} but `problem_type` is {task.problem_type!r}.",
+            )
+            return
+        if (spec.kind, spec.prediction, spec.greater_is_better) != (
+            definition.kind,
+            definition.prediction_for(spec.params),
+            definition.greater_is_better,
+        ):
+            yield CheckResult(
+                "task_metric_spec_mismatch",
+                "error",
+                f"The spec of {name!r} says kind={spec.kind!r}, prediction={spec.prediction!r}, "
+                f"greater_is_better={spec.greater_is_better}; the registry says {definition.kind!r}, "
+                f"{definition.prediction_for(spec.params)!r}, {definition.greater_is_better}.",
+                hint="Rebuild the container with the current data_foundry.",
+            )
+        unknown_params = sorted(set(spec.params) - set(definition.params))
+        if unknown_params:
+            yield CheckResult(
+                "task_metric_unknown_param",
+                "error",
+                f"Metric {name!r} takes the params {sorted(definition.params)}, not {unknown_params}.",
+            )
+        missing_roles = [role for role in definition.inputs if role not in spec.inputs]
+        extra_roles = [role for role in spec.inputs if role not in definition.inputs]
+        if missing_roles or extra_roles:
+            yield CheckResult(
+                "task_metric_input_missing",
+                "error",
+                f"Metric {name!r} needs the input role(s) {list(definition.inputs)}; the spec maps "
+                f"{dict(spec.inputs)}.",
+            )
+    if spec.origin in ("source", "stand_in") and not (spec.reference or "").strip():
+        yield CheckResult(
+            "task_metric_reference_missing",
+            "error",
+            f"The metric is the source's ({spec.origin}) but names no `reference`.",
+            hint="Link where the source defines the metric (the evaluation page, the paper's section).",
+        )
+    if spec.origin == "context" and not (spec.reason or "").strip():
+        yield CheckResult(
+            "task_metric_context_unexplained",
+            "error",
+            "A metric taken from the task's context needs the `reason` that makes it the obvious one.",
+        )
+    if spec.origin == "stand_in" and not ((spec.original or "").strip() and (spec.reason or "").strip()):
+        yield CheckResult(
+            "task_metric_stand_in_incomplete",
+            "error",
+            "A stand-in metric needs the `original` it stands in for and the `reason` the original cannot be computed.",
+        )
+
+    yield from _scoring_column_findings(ctx)
+    yield from _metric_computes_findings(ctx)
+
+
+def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
+    task = ctx.task
+    spec = task.objective_metric
+    scoring = {c.column: c for c in task.scoring_columns}
+    missing = sorted({*scoring, *spec.inputs.values()} - set(ctx.df.columns))
+    if missing:
+        yield CheckResult(
+            "task_scoring_column_missing",
+            "error",
+            f"Scoring or metric input column(s) {missing} are not in the frame.",
+        )
+    # An input may also be a column the task already gives the models (a feature, the group or the time column, e.g.
+    # sat11's instance id or a stay's hour); only a column that exists for scoring alone is a scoring column.
+    model_inputs = sorted({c for c in spec.inputs.values() if c not in scoring and c in ctx.df.columns})
+    if model_inputs:
+        yield CheckResult(
+            "task_metric_input_is_model_input",
+            "info",
+            f"The metric's input column(s) {model_inputs} are also given to the models (a feature, the group or the "
+            "time column); they are not scoring columns.",
+            hint="Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a "
+            "feature.",
+        )
+    as_features = sorted(c for c in scoring if c == task.time_on or c in ctx.columns_of(task.stratify_on))
+    if as_features:
+        yield CheckResult(
+            "task_scoring_column_is_feature",
+            "error",
+            f"Scoring column(s) {as_features} are also the time or stratification column, which models use.",
+        )
+    undocumented = sorted(
+        c.column for c in scoring.values() if not (c.role.strip() and c.description.strip() and c.used_by.strip())
+    )
+    if undocumented:
+        yield CheckResult(
+            "task_scoring_column_undocumented",
+            "error",
+            f"Scoring column(s) {undocumented} lack a role, a description or the metric that uses them.",
+        )
+    used = {column: role for role, column in spec.inputs.items()}
+    unused = sorted(c.column for c in scoring.values() if used.get(c.column) != c.role or c.used_by != spec.name)
+    if unused:
+        yield CheckResult(
+            "task_scoring_column_unused",
+            "error",
+            f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
+            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature).",
+        )
+
+
+def metric_computes_findings(container: CuratedContainer, metric: object) -> list[CheckResult]:
+    """Whether ``metric`` (a :class:`~data_foundry.v2.metrics.Metric`, e.g. a local one, or a spec) computes a finite
+    value on a random prediction of each split's test side of a format-2 ``container``.
+    """
+    return list(_metric_computes_findings(_Ctx(container=container, heavy_cell_budget=0), metric))
+
+
+def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterator[CheckResult]:
+    """The metric computes a finite value on a random prediction of each split's test side."""
+    from data_foundry.v2.metrics import METRICS, dummy_prediction, is_finite, score  # noqa: PLC0415
+
+    task = ctx.task
+    spec = task.objective_metric if metric is None else metric
+    if metric is None and (spec.kind == "local" or spec.name not in METRICS):
+        return
+    if any(c not in ctx.df.columns for c in [ctx.target, *spec.inputs.values()]):
+        return
+    target = ctx.df[ctx.target]
+    labels = list(target.cat.categories) if isinstance(target.dtype, pd.CategoricalDtype) else None
+    prediction = spec.prediction
+    y = target.to_numpy()
+    failures = []
+    for repeat, fold, train_idx, test_idx in ctx.flat_splits:
+        if not len(test_idx) or not len(train_idx):
+            continue
+        rows = test_idx
+        if len(rows) > METRIC_CHECK_TEST_ROWS:
+            rows = np.sort(np.random.default_rng(0).choice(rows, METRIC_CHECK_TEST_ROWS, replace=False))
+        try:
+            y_pred = dummy_prediction(prediction, y[train_idx], len(rows), labels=labels, seed=repeat * 1000 + fold)
+            inputs = {role: ctx.df[column].to_numpy()[rows] for role, column in spec.inputs.items()}
+            with warnings.catch_warnings():  # an undefined score (one class in the test side) is the finding
+                warnings.simplefilter("ignore")
+                value = score(spec, y[rows], y_pred, labels=labels, **inputs)
+        except Exception as error:  # noqa: BLE001 - any failure to compute is the finding
+            failures.append(f"r{repeat}/f{fold}: {type(error).__name__}: {error}")
+            continue
+        if not is_finite(value):
+            failures.append(f"r{repeat}/f{fold}: {value}")
+    if failures:
+        yield CheckResult(
+            "task_metric_not_computable",
+            "error",
+            f"Metric {spec.name!r} gives no finite value on a random prediction of {len(failures)} split(s): "
+            f"{'; '.join(failures[:3])}.",
+            hint="A test side with a single class, a negative target for rmsle, or a constant group breaks the "
+            "metric on that split.",
+        )
 
 
 @_check
@@ -1663,7 +1861,7 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
         "curation_comments": metadata.curation_comments,
         "version_comment": metadata.version_comment,
         "target_column_name": ctx.task.target_column_name,
-        "objective_metric_name": ctx.task.objective_metric_name,
+        **_metric_text_fields(ctx.task),
         "splits_comment": ctx.splits_metadata.splits_comment,
     }
     placeholders = {
@@ -1680,6 +1878,18 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scaffolding placeholders left in metadata: {placeholders}.",
             hint="Fill in the template TODOs before exporting.",
         )
+
+
+def _metric_text_fields(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2) -> dict[str, str | None]:
+    """The metric's text fields that a placeholder may hide in, by name."""
+    spec = getattr(task, "objective_metric", None)
+    if spec is None:
+        return {"objective_metric_name": task.objective_metric_name}
+    fields = {f"objective_metric.{k}": getattr(spec, k) for k in ("name", "original", "reference", "definition")}
+    fields["objective_metric.reason"] = spec.reason
+    for column in task.scoring_columns:
+        fields[f"scoring_columns.{column.column}"] = f"{column.role} {column.used_by} {column.description}"
+    return fields
 
 
 # --- 5. Optional test dataset --------------------------------------------------------

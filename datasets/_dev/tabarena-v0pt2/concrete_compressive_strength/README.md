@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
+checksum: v2:6b60b80f836ef4d570093878bb71fdfdacd2c9015e3197d4b994faec560910e1
 build:
   uuid: 01a13a7d-c2ed-79de-abb8-3476f95e6667
   checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1030
   n_features: 8
@@ -30,6 +30,8 @@ task:
   target: ConcreteCompressiveStrength
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -50,6 +52,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 652
     max: 731
@@ -73,7 +77,7 @@ decisions: []
 
 Regression of `ConcreteCompressiveStrength`, scored with `rmse` on grouped splits by `mix`. 1,030 rows and 8 features. Source: UCI (2007).
 
-Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6b60b80f836ef4d570093878bb71fdfdacd2c9015e3197d4b994faec560910e1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,6 +145,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | grouped_non_iid |
 | task.group_on | mix |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Yeh 1998 (closed access) is cited for R^2 of predicted vs measured strength (about 0.91-0.92 for the ANN) by secondary sources; not read, and R^2 ranks models as RMSE does within a fold. rmse is the regression fallback. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -254,7 +267,7 @@ One group is a concrete mix: one set of amounts of the seven ingredients (kg per
 | nearest neighbour in the same group | 45.9% of the rows (chance: 0.3%) |
 | label variance explained by the group | 0.65 (shuffled groups: 0.44) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -321,3 +334,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:6b60b80f836ef4d570093878bb71fdfdacd2c9015e3197d4b994faec560910e1` |

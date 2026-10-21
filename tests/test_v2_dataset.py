@@ -18,6 +18,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
     Grouping,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -43,7 +44,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
 
 
 class Toy(AbstractCuratedDataset):
@@ -78,6 +79,7 @@ class Toy(AbstractCuratedDataset):
 
     target = "y"
     problem_type = "binary_classification"
+    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "toy.csv")
@@ -138,7 +140,7 @@ def test_flat_attributes_build_the_metadata() -> None:
     assert meta.academic_reference_bibtex.startswith("@misc{toy2024,\n  author")
     assert meta.academic_reference_bibtex_key == "toy2024"
     assert meta.data_tags == ["IID"]
-    assert task.objective_metric_name == "roc_auc"
+    assert (task.objective_metric.name, task.objective_metric.origin) == ("roc_auc", "fallback")
     assert task.stratify_on == "y"
 
 
@@ -323,6 +325,7 @@ BASE = {
     "bibtex": "@misc{toy2024,\n  title = {Toy}\n}",
     "target": "y",
     "problem_type": "regression",
+    "metric": Metric.fallback(reason="the toy data has no source metric"),
 }
 
 
@@ -678,9 +681,9 @@ def temporal_version_body() -> str:
     return (
         DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, "
-            "drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, "
+            "TemporalSplits, drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -737,8 +740,9 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
     body = (
         DEFINITION.format(name="toy_ds", comment="x")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, "
+            "drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -1115,3 +1119,128 @@ def test_summary_findings(tmp_path: Path, warehouse: Path, replace: tuple[str, s
 def test_class_validation_checks_the_summary(summary: object, match: str) -> None:
     with pytest.raises(DatasetDefinitionError, match=match):
         _define(task_summary=summary)
+
+
+# --- the metric ---------------------------------------------------------------------------------------------------
+FALLBACK_LINE = '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+
+
+def _with_metric(line: str, name: str = "toy_ds") -> str:
+    return DEFINITION.format(name=name, comment="x").replace(FALLBACK_LINE, line)
+
+
+@pytest.mark.parametrize("line", ["", '    metric = "f1"\n'])
+def test_a_definition_without_a_metric_fails_validation(line: str) -> None:
+    match = "missing required attribute" if not line else "`metric` must be a `Metric`"
+    with pytest.raises(DatasetDefinitionError, match=match):
+        load_definition_from_text(_with_metric(line, "toy_no_metric"), "toy_no_metric")
+
+
+def test_a_metric_of_another_type_fails_validation() -> None:
+    with pytest.raises(DatasetDefinitionError, match="`metric` must be a `Metric`"):
+        load_definition_from_text(_with_metric("    metric = 3\n", "toy_bad_metric"), "toy_bad_metric")
+
+
+def test_a_source_metric_is_written_into_the_spec_and_the_readme(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    line = '    metric = Metric.source("log_loss", original="LogLoss", reference="https://example.org/eval")\n'
+    folder = write_definition(tmp_path / "datasets", body=_with_metric(line))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    spec = result.container.task_metadata.objective_metric
+    assert (spec.name, spec.origin, spec.original, spec.prediction) == ("log_loss", "source", "LogLoss", "proba")
+    text = (folder / "README.md").read_text()
+    assert "**Metric**" in text
+    assert "| reference | https://example.org/eval |" in text
+    assert read_report(folder / "README.md")["task"]["metric_origin"] == "source"
+
+
+LOCAL_LINE = """    metric = Metric.local(
+        lambda y, p, **_: float((y == p).mean()),
+        name="hit_rate",
+        prediction="label",
+        greater_is_better=True,
+        reference="https://example.org/our-own-metric",
+    )
+"""
+
+
+def test_a_local_metric_is_warned_and_refused_by_build(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", body=_with_metric(LOCAL_LINE))
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    result = ds.check(verbose=False)
+    assert "task_metric_local" in [r.slug for r in result.bundle_report.warnings]
+    assert not [r for r in result.bundle_report.results if r.slug == "task_metric_not_computable"]
+    with pytest.raises(DatasetDefinitionError, match="allow_local_metric=True"):
+        ds.build(verbose=False)
+    assert ds.build(verbose=False, allow_local_metric=True).saved
+
+
+@pytest.fixture
+def era_metric(monkeypatch: pytest.MonkeyPatch) -> str:
+    from data_foundry.v2.metrics import METRICS, MetricDef
+
+    def mean_group_accuracy(y_true, y_pred, *, group, **_):
+        frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
+        return float(frame.groupby("g")["hit"].mean().mean())
+
+    definition = MetricDef(
+        name="test_mean_group_accuracy",
+        problem_types=("binary_classification",),
+        prediction="label",
+        greater_is_better=True,
+        fn=mean_group_accuracy,
+        implementation="test",
+        definition="mean over groups of the accuracy",
+        kind="custom",
+        inputs=("group",),
+    )
+    monkeypatch.setitem(METRICS, definition.name, definition)
+    return definition.name
+
+
+SCORING = """    metric = Metric.source("{metric}", reference="https://example.org/eval", inputs={{"group": "era"}})
+    scoring_columns = (
+        ScoringColumn(column="era", role="group", used_by="{metric}", description="the toy week of a row"),
+    )
+"""
+
+
+def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse: Path, era_metric: str) -> None:
+    del warehouse
+    body = (
+        _with_metric(SCORING.format(metric=era_metric))
+        .replace("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,")
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["era"] = df["row_id"] % 6\n        return drop_columns(df, ["row_id"])',
+        )
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    result = ds.check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    from data_foundry.curation_container import feature_columns
+    from data_foundry.v2.metrics import scorer
+
+    assert feature_columns(result.container) == ["x1", "colour"]
+    text = (folder / "README.md").read_text()
+    assert "**Scoring columns**" in text
+    assert "| `era` | group | test_mean_group_accuracy: the toy week of a row | never a feature |" in text
+    assert "and 2 features" in text
+    assert "scoring column:        era" in result.container.describe()
+    container = result.container
+    _, test_idx = container.experiment_metadata.splits[0][0]
+    y = container.dataset["y"].to_numpy()[test_idx]
+    assert scorer(container)(y, y, test_idx) == 1.0
+
+    missing = body.replace('        df["era"] = df["row_id"] % 6\n', "")
+    write_definition(tmp_path / "datasets", body=missing)
+    with pytest.raises(DatasetDefinitionError, match="`scoring_columns` names"):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
+    template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
+    assert 'metric = Metric.fallback(reason="TODO(verify):' in template

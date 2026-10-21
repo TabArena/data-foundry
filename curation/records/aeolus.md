@@ -43,6 +43,8 @@ CC (2026-10-12, Lennart): Target `ARR_DEL15` (arrival 15+ minutes late, ROC AUC)
 
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes, provided the curator confirms keeping the release's mis-timed weather under PROV-13 (else retire for a rebuild from BTS and Meteostat as a new record); mask the weather read after the departure (LEAK-6, against the CC of 2026-10-12, open). Applied: fit `approximate` (weather 3.5-11.4 h old, a day for the 3.6% overnight arrivals; no inbound aircraft; operated flights only), impossible temperatures and wind speeds to missing, Guam and Pago Pago coordinate signs repaired, domain `industry & manufacturing` in the definition, notes corrected (paper's > 15 threshold, paper's June 2024 split, probes `no_spread`, LightGBM 0.612 and linear 0.594 on 50k rows, LightGBM 0.629-0.630 with 1M; the 2026-10-07 "0.64-0.67" is the superseded all-years set-up, the earlier "direct fit" is stale). Priority 2: gap -, use case - (fit approximate), source +, shape +, risk - (open PROV-13 damage that may need a rebuild, and a confirmed small leak).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC and ACC for the delay-occurrence classification task (Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 (Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics')).
+
 ## Reference
 
 @article{xu2025aeolus,

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TEMPLATE_URL = r"https://www\.[^/?#]+"
 """The form of every legitimate URL in the file: a ranked domain written as ``https://www.<host>``, without a path."""
@@ -176,6 +176,9 @@ class PhiusilPhishing(AbstractCuratedDataset):
     # Task
     target = "label"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The first publication reports several classification scores (accuracy, precision, recall, F1) for its framework without one task metric; no competition. Not verified in the full text (paywalled)."
+    )
     accepted_check_warnings = {
         "dataset_identifier_column": "URL is the address the detector classifies, the input of the task, not a row "
         "id; it is unique per row because the 425 repeated URLs are dropped.",

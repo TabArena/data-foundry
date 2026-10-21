@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_bioconcentration
 container_format: 2
-checksum: v2:526bff1bbfd6f1c4f3850b7d3906a877f6aeba7c1ee6ee09b34ca406737e5d1c
+checksum: v2:35ebf1cc0522f49b4aad1412dd15edb29aed60e138e41ca2cdf97338e6312c9c
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: bioconcentration_mechanism
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: bioconcentration_mechanism
   time_on: null
@@ -56,7 +58,7 @@ decisions:
 
 Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on IID splits. 776 rows and 202 features. Source: UCI (2016).
 
-Not built yet. The current definition gives checksum `v2:526bff1bbfd6f1c4f3850b7d3906a877f6aeba7c1ee6ee09b34ca406737e5d1c`.
+Not built yet. The current definition gives checksum `v2:35ebf1cc0522f49b4aad1412dd15edb29aed60e138e41ca2cdf97338e6312c9c`.
 
 ## In brief
 
@@ -127,6 +129,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | log_loss |
 | task.split_regime | iid |
 | task.stratify_on | bioconcentration_mechanism |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback. |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>

@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -129,6 +130,9 @@ class BrazilianEcommerce(AbstractCuratedDataset):
     # Task
     target = "log_delivery_days"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own.",
+    )
 
     # Splits
     splits_comment = """

@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 
 class LendingClub(AbstractCuratedDataset):
@@ -85,6 +93,14 @@ class LendingClub(AbstractCuratedDataset):
     # Task
     target = "Default"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test"
+            " AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for "
+            "approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback"
+            " (the paper's tested metric)."
+        ),
+    )
 
     # Splits
     splits_comment = """

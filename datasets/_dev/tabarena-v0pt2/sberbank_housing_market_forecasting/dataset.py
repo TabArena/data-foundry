@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -191,9 +191,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
         - The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
-          after the first-place solution). The competition scored RMSLE on `price_doc`, the price of the whole flat; this task
-          ships the price per square metre, so we keep RMSE, which on the log target is the competition's metric up to the
-          division by `full_sq` (TP-6).
+          after the first-place solution); RMSE on it is the competition's RMSLE on `price_doc` (TP-6).
         - Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
           smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
           (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
@@ -217,6 +215,16 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     # Task
     target = "price_doc"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="Root Mean Squared Logarithmic Error (RMSLE) on price_doc",
+        reference="https://www.kaggle.com/competitions/sberbank-russian-housing-market/overview/evaluation",
+        definition=(
+            "RMSE on log(price_doc / full_sq); since full_sq is known per row, log(price/sq) - "
+            "log(price_hat/sq) = log(price) - log(price_hat), so this is the competition's RMSLE on the sale "
+            "price up to log vs log1p (negligible at prices of 10^5 to 10^8 RUB)"
+        ),
+    )
 
     # Splits
     splits_comment = """

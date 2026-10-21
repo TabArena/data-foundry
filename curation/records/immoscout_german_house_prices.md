@@ -37,6 +37,8 @@ Moreover, this is not sold prices (as immoscout shows only prices you can ask to
 
 **Assessment (AI, 2026-10-14):** the data first appeared on Kaggle as the dataset `german-house-prices` (the 2020 notebook above reads `/kaggle/input/german-house-prices/germany_housing_data_14.07.2020.csv`). It is deleted and its owner could not be found, so the source stays Kaggle and the download stays the OpenML copy (43342, collection date 14-07-2020, the Kaggle card's text). The year is now 2020, the scrape date, instead of 2019.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. RMSE on the log price is the obvious choice for price prediction.
+
 ## Reference
 
 Kaggle / OpenML

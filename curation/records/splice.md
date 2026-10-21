@@ -38,6 +38,8 @@ Lennart: preprocssed duplicate
 
 Andrej: Duplicate
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Towell, Shavlik & Noordewier report test error rates without costs between the site types; error rate rejected.
+
 ## Reference
 
 10.24432/C5M888; Originally from the StatLog project.; https://www.rdocumentation.org/packages/mlbench/versions/2.1-1/topics/DNA

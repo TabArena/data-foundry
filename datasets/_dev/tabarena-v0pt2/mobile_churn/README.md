@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mobile_churn
 container_format: 2
-checksum: v2:6835e41387775ee4dd3464e1e65652955e9b6a496cfd162d7f1e97061b3bfa6b
+checksum: v2:5e7c690d2cb64c33b97f5bef819037dcc2e49088d9f76c8ae548ee7b1514cad7
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: churn
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: churn
   time_on: null
@@ -59,7 +61,7 @@ decisions:
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 54,207 rows and 57 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:6835e41387775ee4dd3464e1e65652955e9b6a496cfd162d7f1e97061b3bfa6b`.
+Not built yet. The current definition gives checksum `v2:5e7c690d2cb64c33b97f5bef819037dcc2e49088d9f76c8ae548ee7b1514cad7`.
 
 ## In brief
 
@@ -134,6 +136,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | churn |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Kaggle dataset with unknown origin (no paper, no operator); no task or metric defined. |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>

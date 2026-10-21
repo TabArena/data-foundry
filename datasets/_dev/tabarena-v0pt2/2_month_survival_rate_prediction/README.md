@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 2_month_survival_rate_prediction
 container_format: 2
-checksum: v2:046ef4e67638ec741f5798a655b9284255d77171821688bcb223bd70f298803f
+checksum: v2:a97708a43e94319fcd6ab1888e28e99b5ef031c4ec10b6aad30e953870a00090
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: death_within_2_months
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: death_within_2_months
   time_on: null
@@ -60,7 +62,7 @@ decisions:
 
 Binary classification of `death_within_2_months`, scored with `roc_auc` on IID splits. 8,967 rows and 25 features. Source: Other (2000).
 
-Not built yet. The current definition gives checksum `v2:046ef4e67638ec741f5798a655b9284255d77171821688bcb223bd70f298803f`.
+Not built yet. The current definition gives checksum `v2:a97708a43e94319fcd6ab1888e28e99b5ef031c4ec10b6aad30e953870a00090`.
 
 ## In brief
 
@@ -133,6 +135,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | death_within_2_months |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | ROC area (C index) of the SUPPORT prognostic model for 2- and 6-month survival |
+| reference | Knaus et al. 1995, Ann Intern Med 122(3):191-203, The SUPPORT prognostic model |
+| definition | Area under the ROC curve of the predicted probability of death within 2 months |
 
 <details>
 <summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>

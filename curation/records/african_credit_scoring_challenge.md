@@ -49,3 +49,5 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
 
 **Assessment (AI, 2026-10-21):** fit stays `approximate` for the label-only history and the unstated sampling; the funded-amount columns left `fit_reason` (their potential-leak note stays).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source f1 — F1 Score (https://zindi.africa/competitions/african-credit-scoring-challenge (evaluation section)).

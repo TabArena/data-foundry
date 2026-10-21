@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 DEMOGRAPHICS = ("Gender", "Age_at_diagnosis", "Race")
 """The three clinical columns of the file; the 20 gene columns follow them."""
@@ -106,6 +106,9 @@ class GliomaGradingClinicalAndMutationFeatures(AbstractCuratedDataset):
     # Task
     target = "Grade"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Tasci et al. 2022 select preprocessing by accuracy and also report AUC, F1, precision, recall, specificity; accuracy is a threshold metric with no threshold or costs fixed for LGG vs GBM. Original rejected: accuracy. roc_auc is the binary fallback."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # the file starts with a byte-order mark

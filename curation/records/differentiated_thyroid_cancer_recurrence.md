@@ -45,6 +45,8 @@ Performance in paper is already very high, likely trivial
 
 CC (2026-10-21, Lennart): an unverified label definition makes the fit approximate ("yea it does"), and a potential leak kept on purpose does not by itself ("stay with direct fit if the task (without leakage) would be a direct fit"); USE-8 amended. The fit stays approximate, now for the unverified label (breadth and follow-up); the kept `M` is no longer a reason for it.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Borzooei et al. 2023 report AUC, sensitivity and specificity, none named as the criterion.
+
 ## Reference
 
 @article{borzooei2024machine,

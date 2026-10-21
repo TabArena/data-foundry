@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -136,7 +137,7 @@ class ZillowPrize(AbstractCuratedDataset):
         We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, Orange and Ventura counties) and properties_2016.csv and properties_2017.csv (one row per parcel) from round 1 of the Kaggle competition Zillow Prize.
 
         - Prediction point: the first day of the sale month, since Zillow pairs each sale with the Zestimate of that day (FAQ). `transaction_month` replaces `transactiondate`.
-        - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page. The competition scored MAE, which we declare (task_probes.md, rule 6, TP-6).
+        - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page.
         - Extreme values, kept: 2.1% of the rows have an absolute logerror above 0.4 and hold 74% of the squared error (decision table). Zillow traces them mostly to data errors such as miskeyed prices; the competition's test kept them.
         - Small signal (task probes no_signal, drift_baseline, unstable), kept: untuned LightGBM with an absolute-error loss (100 trees, row and column subsampling 0.8) beats the train mean in 8 or 9 of the 9 windows, depending on the seed (R^2 about 0.001 to 0.012); squared-error fits do not (3 or 4 of 9). A constant train median loses to the mean in 9 of 9, so the gain comes from the features (task_probes.md, rule 2). Tuned results are pending.
         - Each sale gets its parcel's row from the property file of its year, which keeps the 2016 sale reassessments of properties_2017 out of the 2016 rows. Neither file predates its sales: properties_2016 is a snapshot of about September 2016 and properties_2017 was released in October 2017. Building facts differ between the files for 1.4-2.3% of the parcels sold January to May 2016 (about 1.1% for later 2016 sales) and for 3.2-3.7% of the parcels sold only in 2017, flat by sale month in 2017; the share of 2017 parcels whose tax value moved shows no jump at the sale (0.204-0.217 in every month). So the facts kept are almost always the ones on file before the sale (as in melbourne_housing_market).
@@ -159,7 +160,12 @@ class ZillowPrize(AbstractCuratedDataset):
     # Task
     target = "logerror"
     problem_type = "regression"
-    metric = "mae"  # the competition's metric
+    metric = Metric.source(
+        "mae",
+        original="Mean Absolute Error between predicted and actual logerror",
+        reference="https://www.kaggle.com/competitions/zillow-prize-1/overview/evaluation",
+        definition="MAE of logerror = log(Zestimate) - log(SalePrice) over all scored sales",
+    )
 
     # Splits: monthly windows, train ending one month before each window.
     splits_comment = """

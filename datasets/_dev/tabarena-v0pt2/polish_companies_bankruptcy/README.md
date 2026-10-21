@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: polish_companies_bankruptcy
 container_format: 2
-checksum: v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94
+checksum: v2:5cc670c8ab89a878a2fb42877647213d283ec0dcbc86c18824d0c551672ab9fd
 build:
   uuid: 01a111fc-ea70-7bb1-9ee9-8875a112b674
   checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
@@ -29,6 +29,8 @@ task:
   target: company_bankrupt
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: company_bankrupt
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 3860
     max: 3860
@@ -63,7 +67,7 @@ decisions: []
 
 Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2016).
 
-Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5cc670c8ab89a878a2fb42877647213d283ec0dcbc86c18824d0c551672ab9fd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -130,6 +134,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | company_bankrupt |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC (area under the ROC curve) |
+| reference | Zieba, Tomczak & Tomczak, Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction, Expert Systems with Applications 58 (2016) 93-101 |
+| definition | ROC AUC of bankrupt vs not, per forecasting-year file. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -370,4 +384,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9ea66f1219957cc2ec5a792fdab38c74c2f3a1a92374da927ffc782f5a7f5c94` |
+| stale | yes: the definition now gives checksum `v2:5cc670c8ab89a878a2fb42877647213d283ec0dcbc86c18824d0c551672ab9fd` |

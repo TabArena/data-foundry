@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6
+checksum: v2:7b7f068f32a5e022c219579e0a79c331fa2d751e0a72e527c277eec9708900bc
 build:
   uuid: 01a13a7d-c2b9-7b23-b0e5-6674aebfe128
   checksum: v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1434
   n_features: 7
@@ -30,6 +30,8 @@ task:
   target: price
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 956
     max: 956
@@ -64,7 +68,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,434 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7b7f068f32a5e022c219579e0a79c331fa2d751e0a72e527c277eec9708900bc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -128,6 +132,15 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Kaggle dataset without a competition or paper; the data card says only 'to train myself and test regression algorithms', no metric named |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -276,3 +289,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:7b7f068f32a5e022c219579e0a79c331fa2d751e0a72e527c277eec9708900bc` |

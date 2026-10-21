@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class QsarBiodeg(AbstractCuratedDataset):
@@ -67,6 +67,9 @@ class QsarBiodeg(AbstractCuratedDataset):
     # Task
     target = "Biodegradable"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Mansouri et al. 2013 report error rate / NER with sensitivity and specificity, the group's house measure, without a decision threshold or costs. Original rejected: NER (balanced accuracy). roc_auc is the binary fallback."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/biodeg.csv", sep=";", header=None)  # no header row; names set in `_clean`

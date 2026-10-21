@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 
 **Assessment (AI, 2026-10-21):** tagged `ForcedGroupedFromTemporal`. Cost: the one valid window (train 2016-18, test 2018-19) scores untuned LightGBM R^2 0.745 against 0.744 grouped (0.766 against 0.760 with prev_score), same order of model families. REVIEW.md issue 2 settled.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A Kaggle dataset upload with no task or metric; the All-Star score target is our construction from the NBA's weighting of the fan, player and media vote ranks, so no source metric exists; a continuous score gives rmse.
+
 ## Reference
 
 Kaggle

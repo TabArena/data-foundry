@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class HivaAgnostic(AbstractCuratedDataset):
@@ -68,6 +68,12 @@ class HivaAgnostic(AbstractCuratedDataset):
     # Task
     target = "CompoundActive"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "balanced_accuracy",
+        original="BER (balanced error rate) = 0.5*(b/(a+b) + c/(c+d)); final ranking by test BER; AUC also reported (= 1-BER for hard predictions)",
+        reference="https://www.agnostic.inf.ethz.ch/evaluation.php ; Guyon et al. 2007 IJCNN, doi 10.1109/IJCNN.2007.4371065",
+        definition="mean of per-class recall on active vs inactive (balanced_accuracy = 1 - BER), on hard predictions",
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         # The challenge's training and validation compounds; it never released the test labels

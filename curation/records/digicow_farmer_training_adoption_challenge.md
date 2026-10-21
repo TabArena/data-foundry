@@ -54,3 +54,5 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 **Assessment (AI, 2026-10-21):** metric set to `log_loss` (was ROC AUC): Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) is no listed metric and scores targets the task does not ship; log loss carries 0.65 of the 7-day target's 0.80. Moot while the dataset is recommended No.
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: belong_to_cooperative.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in log_loss — for Zindi's rubric of 0.75 log loss + 0.25 ROC AUC over three targets; two targets are dropped, and log loss carries 0.65 of the 7-day target's 0.80 weight.

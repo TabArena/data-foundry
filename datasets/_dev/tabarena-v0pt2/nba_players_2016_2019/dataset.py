@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Grouping,
+    Metric,
     TaskSummary,
     anonymize_ids,
     drop_columns,
@@ -182,6 +183,13 @@ class NbaPlayers20162019(AbstractCuratedDataset):
     # Task
     target = TARGET
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "A Kaggle dataset upload with no task or metric; the All-Star score target is our construction from the "
+            "NBA's weighting of the fan, player and media vote ranks, so no source metric exists; a continuous score "
+            "gives rmse."
+        )
+    )
     grouping = Grouping(
         on="player_id",
         labels="per_sample",

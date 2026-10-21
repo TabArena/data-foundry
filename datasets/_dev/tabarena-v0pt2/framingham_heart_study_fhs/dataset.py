@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TEN_YEARS = 3652
 """Days in 10 years (10 x 365.25, rounded down). No event, death or censor date of the cohort falls on days
@@ -249,6 +249,9 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
     # Task
     target = "chd_within_10_years"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The teaching dataset defines no task or metric. The context (10-year risk scores) points to the C statistic, which equals roc_auc for a fixed-horizon binary outcome, so the fallback and the context agree."
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {

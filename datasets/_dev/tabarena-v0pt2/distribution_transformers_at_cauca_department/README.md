@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: distribution_transformers_at_cauca_department
 container_format: 2
-checksum: v2:2e8086127a1193a5bff49d85223ebaf003fc47d8cfc4bacfd480981c6d11c0bb
+checksum: v2:29cf06b167eca9d3c6d6c16225d6e70b284ab42f4536dd0837e3454262dad8a8
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: burned
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: burned
   time_on: null
@@ -64,7 +66,7 @@ decisions:
 
 Binary classification of `burned`, scored with `roc_auc` on IID splits. 15,873 rows and 12 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:2e8086127a1193a5bff49d85223ebaf003fc47d8cfc4bacfd480981c6d11c0bb`.
+Not built yet. The current definition gives checksum `v2:29cf06b167eca9d3c6d6c16225d6e70b284ab42f4536dd0837e3454262dad8a8`.
 
 ## In brief
 
@@ -138,6 +140,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | burned |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | A data article: describes the inventory and burn labels without a prediction benchmark or score; the companion book (Alvarez 2021) was not checked and is not openly available. |
 
 <details>
 <summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>

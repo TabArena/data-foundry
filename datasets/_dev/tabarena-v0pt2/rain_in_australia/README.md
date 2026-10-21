@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rain_in_australia
 container_format: 2
-checksum: v2:7a7e67cda17b9b85c766bec62038af066ece2a0d0df31e4de72877bfe52e0d07
+checksum: v2:432e4a4de91617ee829cac3e3c4e8a1d5ab1ff095bbf4e6ad4c4a910f88c4018
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: RainTomorrow
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: RainTomorrow
   time_on: Date
@@ -58,7 +60,7 @@ decisions:
 
 Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal splits by `Date`. 264,562 rows and 22 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:7a7e67cda17b9b85c766bec62038af066ece2a0d0df31e4de72877bfe52e0d07`.
+Not built yet. The current definition gives checksum `v2:432e4a4de91617ee829cac3e3c4e8a1d5ab1ff095bbf4e6ad4c4a910f88c4018`.
 
 ## In brief
 
@@ -142,6 +144,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | RainTomorrow |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The data is a Kaggle dataset / rattle example file built from BoM observations with no task description or metric; no paper defines one. Binary fallback roc_auc. |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 1 datetime</summary>

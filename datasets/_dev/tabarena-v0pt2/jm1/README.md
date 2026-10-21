@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: jm1
 container_format: 2
-checksum: v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be
+checksum: v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14
 build:
   uuid: 01a111fc-b2fb-721e-9fd2-4f7373b53bca
   checksum: v2:bc8ba9ad339045c44c01315e91b4c963a87914574576a3c1bd368d478f4efd5e
@@ -30,6 +30,8 @@ task:
   target: defects
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: defects
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 5824
     max: 5824
@@ -64,7 +68,7 @@ decisions: []
 
 Binary classification of `defects`, scored with `roc_auc` on IID splits. 8,736 rows and 21 features. Source: Other (2004).
 
-Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -139,6 +143,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | defects |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Menzies & Di Stefano 2004 report probability of detection (PD) and of false alarm (PF) at operating points, a trade-off with no fixed threshold or combined score; the ROC curve is PD against PF. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -296,4 +309,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:21b39368980c1275c6b7a71e4b44f57e108a3ca6ae380a386c0c64b1c668b1be` |
+| stale | yes: the definition now gives checksum `v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14` |

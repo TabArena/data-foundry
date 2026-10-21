@@ -10,7 +10,7 @@ PROV-14 were amended on 2026-10-21 and now answer issues 3 and 7 (kept, a repair
 ROC AUC 0.739, age alone 0.640, 126 positives per test fold). Quality: CLEAN-12 departure for `education` (issue 8).
 Weighed: source +, use case + (the classic FHS risk score), label repair +, anonymisation -, era and no HDL -. Left for
 you: the endpoint (issue 1), competing deaths (issue 2), then
-`education` and the options (issues 8, 9, 10).
+`education` and the option (issues 8, 9); the metric is settled (2026-10-21): `roc_auc` as the declared fallback.
 
 **Main points:** Choose the endpoint (any CHD or hard CHD); confirm competing deaths as No. The anonymised
 teaching data (issue 3) and the record (issue 7) are settled by the amended PROV-3 and PROV-14.
@@ -146,13 +146,6 @@ p. 8), its first release date is not stated.
    - Recommendation: keep one row per participant.
    - Decision: keep, or add every exam with a split grouped by participant.
 
-10. **`roc_auc` or `log_loss`?**
-   - The physician treats above a risk threshold, so `log_loss` (scores calibrated probabilities) would mirror the
-     decision more closely than `roc_auc` (scores the ranking only), the practitioner says; no brief argued it.
-   - Implemented: `roc_auc`, the default for a binary task.
-   - Recommendation: keep `roc_auc`.
-   - Decision: `roc_auc` or `log_loss`.
-
 **Review panel:** ship after changes (mediator; full panel). Claim audit: about 50 claims; 2 refuted (the row's "period
 not stated", fixed; the record's `year` 2013, a field row), the Kaggle copies untested. Blind review: include with
 changes; it found the label rebuild on its own (249 MIT positives No here, 16 dropped). Agreed by advocate and critic:
@@ -160,7 +153,7 @@ the rebuilt label, the 16 lost dropped, competing deaths as No, the IID split wi
 `direct` with the era named, and the text fixes (applied: first exam, about 1956, no HDL, the anonymisation stated as
 measured, the terms sentence, relatives cannot be identified, cigsPerDay heaping). Settled by the mediator: the
 endpoint's reason is the FHS 10-year CHD page, not MIT's course (applied). To the curator: the mediator's issues 1-6
-are this file's 3, 7, 1, 2, 8, and 9 and 10; the critic's points 1, 4, 5, 6 are issues 1, 3, 7, 8.
+are this file's 3, 7, 1, 2, 8, and 9 and 10 (10, the metric, settled 2026-10-21 by the metric rules); the critic's points 1, 4, 5, 6 are issues 1, 3, 7, 8.
 
 <details><summary>Mediator</summary>
 

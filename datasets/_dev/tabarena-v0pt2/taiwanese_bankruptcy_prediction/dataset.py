@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
@@ -76,6 +76,9 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
     # Task
     target = "Bankrupt"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Liang et al. 2016 report average accuracy and Type I / II errors on a 1:1 sample (the release is 3.2% bankrupt, MET-2), and a cost with ratios 1 to 5: no single matrix (MET-7). roc_auc is the binary fallback (also reported).",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/data.csv")

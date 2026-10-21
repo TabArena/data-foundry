@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:a1b56728f9c8ddae86f181ef31f9a08d38ca4167ef15ec708307c411bf1b1715
+checksum: v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -29,6 +29,8 @@ task:
   target: AcceptCoupon
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: AcceptCoupon
   time_on: null
@@ -49,6 +51,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 8390
     max: 8503
@@ -72,7 +76,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a1b56728f9c8ddae86f181ef31f9a08d38ca4167ef15ec708307c411bf1b1715`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,6 +146,16 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | AcceptCoupon |
 | task.group_on | respondent |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC (out-of-sample, 5-fold, Table 3) |
+| reference | Wang et al. (2017), A Bayesian framework for learning rule sets for interpretable classification, JMLR 18(70), Sec. 6.2 and Table 3 |
+| definition | Area under the ROC curve on AcceptCoupon. |
 
 <details>
 <summary>Feature types: 24 categorical, 0 string, 0 datetime</summary>
@@ -233,7 +247,7 @@ One group is a survey respondent; its rows are the coupon offers in about 20 dri
 | nearest neighbour in the same group | 0.2% of the rows (chance: 0.2%) |
 | label variance explained by the group | 0.16 (shuffled groups: 0.05) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
@@ -377,4 +391,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a1b56728f9c8ddae86f181ef31f9a08d38ca4167ef15ec708307c411bf1b1715` |
+| stale | yes: the definition now gives checksum `v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e` |

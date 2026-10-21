@@ -40,6 +40,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: FLAG_MOBIL, FLAG_EMP_PHONE, FLAG_CONT_MOBILE, FLAG_EMAIL, the four REG_/LIVE_..._NOT_... flags and 17 FLAG_DOCUMENT columns (explicit list). Reverted: the 10 CC_NAME_CONTRACT_STATUS min/max aggregates stay numeric.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (Kaggle API evaluationMetric) (https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation).
+
 ## Reference
 
 Anna Montoya, inversion, KirillOdintsov, and Martin Kotek. Home Credit Default Risk. https://kaggle.com/competitions/home-credit-default-risk, 2018. Kaggle.

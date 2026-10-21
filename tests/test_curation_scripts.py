@@ -18,6 +18,7 @@ import pandas as pd
 import pytest
 from data_foundry.curation.record import CurationRecord
 from data_foundry.curation.store import save_record
+from data_foundry.schema import ScoringColumn
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
@@ -221,6 +222,21 @@ def test_task_markdown_holds_only_the_facts(clean_room):
     assert "temporal on `x`" in temporal
     assert "6 test windows" in temporal
     assert "holds every row" in temporal
+
+
+def test_probe_input_drops_the_scoring_columns(clean_room):
+    """The probes never see a scoring column as a feature; one that is also the group or time column stays."""
+    df = pd.DataFrame({"y": [1.0, 2.0], "x": [0, 1], "era": ["a", "b"], "g": ["u", "v"]})
+    scoring = [
+        ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the era"),
+        ScoringColumn(column="g", role="group", used_by="par_k", description="the instance"),
+    ]
+    task = SimpleNamespace(target_column_name="y", group_on="g", time_on=None, scoring_columns=scoring)
+    out, dropped = clean_room.dataset_io._without_scoring_columns(df, task)
+    assert list(out.columns) == ["y", "x", "g"]
+    assert dropped == ("era",)
+    plain = SimpleNamespace(target_column_name="y", group_on=None, time_on=None)  # format 1: no scoring columns
+    assert clean_room.dataset_io._without_scoring_columns(df, plain)[0] is df
 
 
 def test_source_links_drop_the_notes(clean_room, tmp_path):
@@ -495,7 +511,11 @@ def test_register_main(register, tmp_path, capsys):
 
 @pytest.fixture(scope="module")
 def task_probe():
-    """curation_probes.task, imported through task_probes.py (which puts the probe library on the path)."""
+    """curation_probes.task, imported through task_probes.py (which puts the probe library on the path).
+
+    The task probes need LightGBM, which the CI environment does not install; the tests skip without it.
+    """
+    pytest.importorskip("lightgbm")
     return _import("task_probes").task
 
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class Kickstarter(AbstractCuratedDataset):
@@ -91,6 +91,12 @@ class Kickstarter(AbstractCuratedDataset):
     # Task
     target = "state"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Web Robots publishes a scraped snapshot with no task; the Kaggle copy is a dataset, not a "
+            "competition, so no metric is defined."
+        ),
+    )
 
     # Splits
     splits_comment = """

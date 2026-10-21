@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    TaskSummary,
+    drop_columns,
+)
 
 LABEL = "FORCE_2020_LITHOFACIES_LITHOLOGY"
 """The lithology code of the competition files."""
@@ -26,6 +34,36 @@ LITHOLOGY = {
     93000: "Basement",
 }
 """The lithology names of the codes, from the competition's starter notebook."""
+
+PENALTY_LABELS = [
+    "Sandstone",
+    "Sandstone/Shale",
+    "Shale",
+    "Marl",
+    "Dolomite",
+    "Limestone",
+    "Chalk",
+    "Halite",
+    "Anhydrite",
+    "Tuff",
+    "Coal",
+]
+"""The lithologies in the order of the starter notebook's ``lithology_numbers``, without Basement."""
+
+PENALTY_MATRIX = [
+    [0.0, 2.0, 3.5, 3.0, 3.75, 3.5, 3.5, 4.0, 4.0, 2.5, 3.875],
+    [2.0, 0.0, 2.375, 2.75, 4.0, 3.75, 3.75, 3.875, 4.0, 3.0, 3.75],
+    [3.5, 2.375, 0.0, 2.0, 3.5, 3.5, 3.75, 4.0, 4.0, 2.75, 3.25],
+    [3.0, 2.75, 2.0, 0.0, 2.5, 2.0, 2.25, 4.0, 4.0, 3.375, 3.75],
+    [3.75, 4.0, 3.5, 2.5, 0.0, 2.625, 2.875, 3.75, 3.25, 3.0, 4.0],
+    [3.5, 3.75, 3.5, 2.0, 2.625, 0.0, 1.375, 4.0, 3.75, 3.5, 4.0],
+    [3.5, 3.75, 3.75, 2.25, 2.875, 1.375, 0.0, 4.0, 3.75, 3.125, 4.0],
+    [4.0, 3.875, 4.0, 4.0, 3.75, 4.0, 4.0, 0.0, 2.75, 3.75, 3.75],
+    [4.0, 4.0, 4.0, 4.0, 3.25, 3.75, 3.75, 2.75, 0.0, 4.0, 4.0],
+    [2.5, 3.0, 2.75, 3.375, 3.0, 3.5, 3.125, 3.75, 4.0, 0.0, 2.5],
+    [3.875, 3.75, 3.25, 3.75, 4.0, 4.0, 4.0, 3.75, 4.0, 2.5, 0.0],
+]
+"""The competition's penalty A[true, predicted] (penalty_matrix.npy), the 11 x 11 sub-matrix without Basement."""
 
 LOGS = [
     "CALI",
@@ -163,14 +201,27 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
         - Anomaly: MUDWEIGHT is on three scales (per-well medians of 0.13-0.17 in 19 wells, 1.08-1.80 in 9 and 156 in 16/10-2) with no unit in the competition files; we leave it, as a conversion would rest on guessed units. Other curves have wells on another scale: ROP in 25/6-2 (median 17,778 against 0.6-150 elsewhere, 2,925 rows), SGR in 34/12-1 and 35/11-15 S (medians about 0.01 against 46-106, 8,731 rows) and ROPA in 34/4-10 R (median 0.099 against 10-82). The scale is constant within a well.
         - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
-        - Metric: the competition's penalty matrix (12 x 12, a cost per pair of true and predicted lithology, averaged over the hard predicted labels), declared as `force_2020_penalty_matrix` (TP-6); no listed metric ranks models the same. It is not registered downstream, where the default, log loss, scores instead. The top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
+        - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
         - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
     """
 
     # Task
     target = "lithology"
     problem_type = "multiclass_classification"
-    metric = "force_2020_penalty_matrix"  # penalty_matrix.npy and score() in the competition repository
+    metric = Metric.source(
+        "cost_matrix",
+        original="penalty matrix score S = -(1/N) sum_i A[y_true_i, y_pred_i]",
+        reference=(
+            "FORCE 2020 starter notebook, https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition/blob/"
+            "master/lithology_competition/data/starter_notebook.ipynb"
+        ),
+        params={"labels": PENALTY_LABELS, "matrix": PENALTY_MATRIX},
+        definition=(
+            "mean over depth samples of the competition's penalty A[true, predicted] on hard labels (the competition's "
+            "score is its negative); 11 x 11 sub-matrix of penalty_matrix.npy after Basement was dropped, symmetric, "
+            "zero diagonal, order of the starter notebook's lithology_numbers"
+        ),
+    )
     grouping = Grouping(
         on="WELL",
         labels="per_sample",
@@ -186,8 +237,8 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
     accepted_check_warnings = {
         "splits_test_class_missing": "Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The "
         "grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells "
-        "and 6 and 4 anhydrite wells, and every train side holds both classes. Log loss is defined on the classes a "
-        "fold holds.",
+        "and 6 and 4 anhydrite wells, and every train side holds both classes. The mean penalty is defined on the "
+        "classes a fold holds.",
     }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

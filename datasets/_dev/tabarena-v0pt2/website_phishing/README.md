@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
+checksum: v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8
 build:
   uuid: 01a13a7d-c2c0-77e5-80e6-a355a6e11902
   checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1250
   n_features: 9
@@ -28,6 +28,8 @@ task:
   target: is_phishing
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: is_phishing
   time_on: null
@@ -41,6 +43,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 833
     max: 834
@@ -68,7 +72,7 @@ decisions: []
 
 Binary classification of `is_phishing`, scored with `roc_auc` on IID splits. 1,250 rows and 9 features. Source: UCI (2016).
 
-Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14. See [Build](#build).
+Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | is_phishing |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Abdelhamid, Ayesh & Thabtah 2014 compare associative classifiers by 3-class accuracy; we dropped the suspicious class (binary since 2026-10-14), so the task changed (MET-2), and no costs are fixed. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
@@ -319,3 +332,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8` |

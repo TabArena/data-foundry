@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 
 class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
@@ -93,6 +93,12 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
     # Task
     target = "Recurred"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Borzooei et al. 2023 report AUC with sensitivity and specificity (abstract; full text paywalled), none "
+            "named as the criterion. roc_auc is the binary fallback and the paper's threshold-free metric."
+        )
+    )
     accepted_check_warnings = {
         "dataset_duplicate_rows": (
             "Kept on purpose: the 383 rows are the paper's 383 patients, and the 26 copies (22 profiles) are women with "

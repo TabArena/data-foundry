@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_1m
 container_format: 2
-checksum: v2:82a6d1ccdf31935a87887be0c3f8c99937d94c3ab941f904f98be8ed2f6e186d
+checksum: v2:61b3958bc09accc0d1cc8ca5ca78447e300060d2f381b70cd8d1985b81b3bb7b
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: ARR_DEL15
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: ARR_DEL15
   time_on: FL_DATE
@@ -57,7 +59,7 @@ decisions:
 
 Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,785,316 rows and 18 features. Source: Kaggle (2025).
 
-Not built yet. The current definition gives checksum `v2:82a6d1ccdf31935a87887be0c3f8c99937d94c3ab941f904f98be8ed2f6e186d`.
+Not built yet. The current definition gives checksum `v2:61b3958bc09accc0d1cc8ca5ca78447e300060d2f381b70cd8d1985b81b3bb7b`.
 
 ## In brief
 
@@ -138,6 +140,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | ARR_DEL15 |
 | task.time_on | FL_DATE |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC and ACC for the delay-occurrence classification task |
+| reference | Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 (Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics') |
+| definition | ROC AUC of the probability of an arrival delay of 15+ minutes |
 
 <details>
 <summary>Feature types: 5 categorical, 0 string, 1 datetime</summary>

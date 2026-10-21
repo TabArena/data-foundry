@@ -46,6 +46,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric set to `average_precision` (was the default ROC AUC) for the competition's AP@k (Kaggle API: "AP@{K}"; k = 32,500 per the participants). On fold 0 of the shipped splits, over eight pipelines (LightGBM on the structured columns, TF-IDF logistic regressions, two blends; AP 0.51 to 0.95), average precision ranks them as AP@k at k = 12,000 and at k = 34,324 (the fold's blocked ads), Kendall tau 1.0, and at k = 17,162 with tau 0.93; ROC AUC ranks them the same way. The notes name AP@k. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source average_precision_at_k k=12500 — AP@{K} (https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation).
+
 ## Reference
 
 Kaggle

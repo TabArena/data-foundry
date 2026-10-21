@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 **Assessment (AI, 2026-10-21):** fit set to `direct`; the authors' selection of the eight descriptors by their fit to the toxicity is named in `fit_reason` as a kept potential leak.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cassotti et al. (2014) report Q2 with RMSE, no single task metric; r2 and rmse rank models the same within a fold.
+
 ## Reference
 
 @article{cassotti2014prediction,

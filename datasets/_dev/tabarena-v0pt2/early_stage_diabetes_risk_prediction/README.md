@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_stage_diabetes_risk_prediction
 container_format: 2
-checksum: v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30
+checksum: v2:1770748bd5661755c70999280a33754cb19c8dda1d2001eb3ae5e99b7974b2c0
 build:
   uuid: 01a111fc-d514-780d-9d44-d5ec9c6d44d3
   checksum: v2:0b8f6e7383d176e7de0df96ac97ce13cd123e9a0727212f315d38b92a3a72b2a
@@ -29,6 +29,8 @@ task:
   target: class
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: class
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 167
     max: 168
@@ -63,7 +67,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 251 rows and 16 features. Source: UCI (2020).
 
-Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d514-780d-9d44-d5ec9c6d44d3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1770748bd5661755c70999280a33754cb19c8dda1d2001eb3ae5e99b7974b2c0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -130,6 +134,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | class |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Islam et al. 2019 report accuracy with precision, recall and F-measure (no unique metric, MET-5); no threshold or costs; 251 deduplicated rows, 69% positive. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 16 categorical, 0 string, 0 datetime</summary>
@@ -348,4 +361,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:49aab9f17d9cb4b5dde16dd71a7306f87defca766a98525c2f43f784dc68dd30` |
+| stale | yes: the definition now gives checksum `v2:1770748bd5661755c70999280a33754cb19c8dda1d2001eb3ae5e99b7974b2c0` |

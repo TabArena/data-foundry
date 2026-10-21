@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: alfa_battle_2_0_task_2
 container_format: 2
-checksum: v2:e83dff9dc8691261d718f6a54b75251aeecab805452a032908480dab00a3a9bc
+checksum: v2:765d6d849f8c43c1eb304e232c0210f6d5accd42178518d7a3b92273cb1394e6
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: default
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: default
   time_on: issue_month
@@ -61,7 +63,7 @@ decisions:
 
 Binary classification of `default`, scored with `roc_auc` on temporal splits by `issue_month`. 963,811 rows and 510 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:e83dff9dc8691261d718f6a54b75251aeecab805452a032908480dab00a3a9bc`.
+Not built yet. The current definition gives checksum `v2:765d6d849f8c43c1eb304e232c0210f6d5accd42178518d7a3b92273cb1394e6`.
 
 ## In brief
 
@@ -137,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | default |
 | task.time_on | issue_month |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | ROC AUC |
+| reference | https://boosters.pro/championship/alfabattle2/overview (record's competition-page excerpt: 'ROC AUC'); habr.com/ru/companies/alfa/articles/551130 |
+| definition | ROC AUC of the default flag per product (loan) |
 
 <details>
 <summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>

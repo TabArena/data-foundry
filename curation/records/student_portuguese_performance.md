@@ -39,6 +39,8 @@ We can treat the g3 as the prediction target and use g1 and g2 or drop it and ju
 
 We use the port data and ignore the math data, as it is more or less a different version/target (382 students overlap) and the port data is larger. We only predict G3
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE of G3 in regression setup C of Cortez & Silva 2008.
+
 ## Reference
 
 Cortez, P., & Silva, A. M. G. (2008). Using data mining to predict secondary school student performance.

@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -205,6 +206,15 @@ class Rosbank1(AbstractCuratedDataset):
     # Task
     target = "churn"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC - Area Under the ROC Curve (task 1, churn); task 2 POS spend used RMSE",
+        reference="https://boosters.pro/api/champ/champ?champname=rosbank1 (metric: 'AUC', checked 2026-10-21)",
+        definition=(
+            "Area under the ROC curve; our label churn = target_flag 0 is the competition label flipped, and "
+            "AUC is unchanged under the flip of both label and score."
+        ),
+    )
 
     # Splits: monthly windows of the period end after a 3-month gap (the label window), down to half of the clients.
     temporal = Temporal(

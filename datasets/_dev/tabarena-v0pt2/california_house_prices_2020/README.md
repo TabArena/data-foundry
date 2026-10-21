@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186
+checksum: v2:8ca3d26e5764f7e6469c12a6cf0b010461c600bbd1606d8465b73c8ceba24795
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -32,6 +32,8 @@ task:
   target: Sold Price
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: time_index
@@ -68,7 +70,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmse` on temporal splits by `time_index`. 39,060 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8ca3d26e5764f7e6469c12a6cf0b010461c600bbd1606d8465b73c8ceba24795`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | time_index |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSLE (root mean squared logarithmic error) |
+| reference | https://www.kaggle.com/competitions/california-house-prices (Evaluation; Kaggle API, per the record's 2026-10-21 assessment) |
+| definition | RMSE on log1p(Sold Price), equal to RMSLE on the raw price |
+
 <details>
 <summary>Feature types: 1 categorical, 19 string, 3 datetime</summary>
 
@@ -179,7 +191,7 @@ We follow some common preprocessing steps from Kaggle and enhance features as mu
 
 We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
-- We log scale the target variable (log1p), so RMSE on it is the competition's metric, RMSLE (Kaggle's evaluation metric).
+- We log scale the target variable (log1p), so the declared RMSE on it is the competition's RMSLE.
 - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
 - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
 - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
@@ -384,4 +396,4 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:338af86dc2a54fad2c172bc11f34e83a7ede944c783f8ca10dec64d2841c2186` |
+| stale | yes: the definition now gives checksum `v2:8ca3d26e5764f7e6469c12a6cf0b010461c600bbd1606d8465b73c8ceba24795` |

@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -156,6 +157,12 @@ class Mortgage(AbstractCuratedDataset):
     # Task
     target = "status"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The book uses the data for many PD/LGD examples with assorted diagnostics (ROC/AUC for binary default, "
+            "calibration plots), not one metric for this three-outcome task."
+        )
+    )
 
     # Splits
     splits_comment = """

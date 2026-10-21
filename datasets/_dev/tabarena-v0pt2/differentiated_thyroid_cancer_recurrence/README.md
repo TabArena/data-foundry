@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: differentiated_thyroid_cancer_recurrence
 container_format: 2
-checksum: v2:3132707a1a659bc4719d66a3dc591270eee657e16763f01ec769bf7e7e86141e
+checksum: v2:13eb6a966a2470c558fb71b7f47b341675dbb0b22d51edc2103d237346c64221
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: Recurred
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Recurred
   time_on: null
@@ -63,7 +65,7 @@ decisions:
 
 Binary classification of `Recurred`, scored with `roc_auc` on IID splits. 383 rows and 14 features. Source: UCI (2023).
 
-Not built yet. The current definition gives checksum `v2:3132707a1a659bc4719d66a3dc591270eee657e16763f01ec769bf7e7e86141e`.
+Not built yet. The current definition gives checksum `v2:13eb6a966a2470c558fb71b7f47b341675dbb0b22d51edc2103d237346c64221`.
 
 ## In brief
 
@@ -133,6 +135,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Recurred |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Borzooei et al. 2023 report AUC with sensitivity and specificity (abstract; full text paywalled), none named as the criterion. roc_auc is the binary fallback and the paper's threshold-free metric. |
 
 <details>
 <summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>

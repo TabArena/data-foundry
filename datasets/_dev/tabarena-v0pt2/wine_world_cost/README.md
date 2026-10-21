@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d
+checksum: v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -30,6 +30,8 @@ task:
   target: Price
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 852
     max: 853
@@ -64,7 +68,7 @@ decisions: []
 
 Regression of `Price`, scored with `rmse` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Scraped Kaggle dataset with no competition, paper or stated metric |
 
 <details>
 <summary>Feature types: 3 categorical, 8 string, 0 datetime</summary>
@@ -344,4 +357,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6bec3e15d88553ddc15ff718f6c871e97a4cfdb9bd70915e5706fda826f5d74d` |
+| stale | yes: the definition now gives checksum `v2:51bab8b091977db6f4d1ce2768d60689a553d9cab7d836a368041b5e33d58ef3` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fraud_detection_in_electricity_and_gas_consumption_1m
 container_format: 2
-checksum: v2:4019e785104c4b5739d1e046a8bb108a6a760b52954db586fc0f1fb30d77f809
+checksum: v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: fraud
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: fraud
   time_on: null
@@ -67,7 +69,7 @@ decisions:
 
 Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 17 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:4019e785104c4b5739d1e046a8bb108a6a760b52954db586fc0f1fb30d77f809`.
+Not built yet. The current definition gives checksum `v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5`.
 
 ## In brief
 
@@ -151,6 +153,16 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | fraud |
 | task.group_on | client_id |
 | task.group_labels | per_group |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under the Curve (AUC) |
+| reference | https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge (evaluation) |
+| definition | ROC AUC over clients, one fraud probability per client. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 2 datetime</summary>

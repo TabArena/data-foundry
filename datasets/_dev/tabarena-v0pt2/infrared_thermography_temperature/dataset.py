@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
 
 FACIAL = (
     "Max1R13_",
@@ -180,6 +180,15 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
     # Task
     target = "aveOralM"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="root-mean-square difference A_rms (with clinical bias and its SD)",
+        reference="Wang et al. 2022, Sensors 22(1):215, Sec. 2.5-2.6 (PMC8749858)",
+        definition=(
+            "A_rms = sqrt(mean((T_oral_estimated - T_ref)^2)) in degrees C; the paper reports it and the "
+            "clinical bias per T_ref interval (<37, 37-38, >38 C)."
+        ),
+    )
 
     # Splits
     splits_comment = """

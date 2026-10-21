@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
 
 
 class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
@@ -94,6 +94,13 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
     # Task
     target = "Population"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Heinzel et al. 2025 report ROC AUC, accuracy and log loss, with none named as the criterion (MET-5); "
+            "log loss scores the class probabilities over all populations (Lennart, 2026-10-21: ROC AUC is not a "
+            "good metric for this multiclass task)."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_excel(f"{raw_dir}/filter_population.xlsx")

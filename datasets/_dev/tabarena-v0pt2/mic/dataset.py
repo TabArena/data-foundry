@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Mic(AbstractCuratedDataset):
@@ -73,6 +73,12 @@ class Mic(AbstractCuratedDataset):
     # Task
     target = "LET_IS"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The deposit lists prediction problems and time points but no evaluation metric; the GigaScience paper "
+            "studies trajectories, not prediction scores."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # the file has no header row: without header=None the first patient became the header

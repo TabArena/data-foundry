@@ -39,3 +39,5 @@ Evaluation: F1
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
 **Assessment (AI, 2026-10-21):** metric set to `f1_weighted` (was the default log loss). Zindi's evaluation page says "F1 score" (API `f1_multiclass`) without the averaging; participants who submitted single-class files found the leaderboard fits weighted F1 (Zindi discussion 29971, not confirmed by the host), and a 47th-place entry's cross-validated weighted F1 of 0.878 sits closer to its private score of 0.884 than its macro F1 of 0.819 (discussion 31245). The notes name the source of the averaging. Needs a rebuild to reach the container.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source f1_weighted — Zindi's F1 (API f1_multiclass); weighted per the participants' probe in Zindi discussion 29971.

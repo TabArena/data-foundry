@@ -17,7 +17,7 @@ data, that is worth benchmarking, and that is cleaned the way an expert would sh
 | P3 | **A real use case.** An actor, a moment and a decision: the prediction point and the real-world target. | validity | 2, [use_case.md](use_case.md) | `USE` |
 | P4 | **Honest evaluation.** Only what is known at the prediction point, and a split that mirrors the application. | validity | 3, [leak_checks.md](leak_checks.md); 4, [splits.md](splits.md) | `LEAK`, `SPLIT` |
 | P5 | **Faithful, unique data.** The data is what it claims to be, from its first publication, in one copy, repaired from its origin. | validity | 5, [provenance.md](provenance.md) | `PROV` |
-| P6 | **Worth benchmarking.** Not trivial, not too small, every fold can be scored. | value | 6, [task_probes.md](task_probes.md) | `TP` |
+| P6 | **Worth benchmarking.** Not trivial, not too small, every fold can be scored, by the metric the real task would use. | value | 6, [task_probes.md](task_probes.md); 6b, [metrics.md](metrics.md) | `TP`, `MET` |
 | P7 | **The expert state.** Cleaned as an expert would ship it: minimal and documented. | quality | 7, [cleaning_features.md](cleaning_features.md) | `CLEAN` |
 
 Outside the ranking, because they apply at every rank:
@@ -94,6 +94,7 @@ stops, and the case that set it. A new decision on a tension not listed becomes 
 | The right split against the score (P4 over P6; SPLIT-4, TP-2) | the split follows the application; a small signal under it is no reason to retire | | forest_fires; "the split follows what the task does in reality, not the size of the gap" |
 | Temporal against grouped (within P4; SPLIT-3, USE-10) | one regime, the one the use case implies | | Lennart, 2026-10-12 |
 | Unmatured training labels against the training floor (within P4; SPLIT-9, SPLIT-10 against SPLIT-14) | SPLIT-9 is met by removing the measurable shortcut (training labels shown to tell a test row's outcome); the diffuse rest of unmatured labels falls under SPLIT-10 (Should), departed from for SPLIT-14's 50% floor and recorded as an exception | a shortcut that can be measured is always removed, whatever it costs the floor | alfa_battle_2_0_task_2 (products of the test window's clients dropped), lending_club (Lennart, 2026-10-21) |
+| The source's metric against a better metric for the same goal (within P6; MET-4 to MET-9) | the source's metric when it is a competition's or one deliberate choice that suits the decision; otherwise the fallback on probabilities (roc_auc, log_loss, rmse) | we never invent a cost or threshold the source did not fix; the metric never changes the split against the use case (P4 over P6, MET-2) | zillow_prize `mae` kept; accuracy-only papers (ljubljana_breast_cancer) and multi-metric papers (gallstone_disease) to the fallback (Lennart, 2026-10-21) |
 | A better version against our own fix (P5 over P6; TP-6, USE-4) | a version the source defines replaces ours; a fix of our own invention does not | | eryhemato |
 | Repair against cleaning around damage (P5 over P7; PROV-13, CLEAN-1) | repair or rebuild from the origin first | when the origin cannot be reached, keep with a note or retire | coad, corporate_credit_rating, SUPPORT2, ashrae units |
 | The real-world target against a convenient label (P3; USE-5) | predict what the actor acts on | | corporate_credit_rating retired, rebuilt as corporate_issuer_credit_rating |

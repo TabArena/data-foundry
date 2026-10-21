@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Grouping,
+    Metric,
     TaskSummary,
     drop_columns,
     murcko_scaffolds,
@@ -82,6 +83,12 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
     # Task
     target = "Label"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; "
+            "no unique metric. roc_auc is the binary fallback."
+        ),
+    )
     grouping = Grouping(
         on="scaffold",
         labels="per_sample",

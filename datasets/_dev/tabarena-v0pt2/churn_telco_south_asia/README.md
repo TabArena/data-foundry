@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: churn_telco_south_asia
 container_format: 2
-checksum: v2:eb9d7cc7fb9d2aa8e8514030e07b9d548843ac89d92b57475eff80b265e659c5
+checksum: v2:47ff4763ccb15842bcfd0cdda555e76b53b79b1feee48929c85472e5d3553e31
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: churn_status
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: churn_status
   time_on: null
@@ -54,7 +56,7 @@ decisions:
 
 Binary classification of `churn_status`, scored with `roc_auc` on IID splits. 2,000 rows and 13 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:eb9d7cc7fb9d2aa8e8514030e07b9d548843ac89d92b57475eff80b265e659c5`.
+Not built yet. The current definition gives checksum `v2:47ff4763ccb15842bcfd0cdda555e76b53b79b1feee48929c85472e5d3553e31`.
 
 ## In brief
 
@@ -125,6 +127,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | churn_status |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The first publication (closed access, abstract elided) could not be read; no metric verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close in spirit, but AUC is insensitive to the artificial base rate as the curation notes say. |
 
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>

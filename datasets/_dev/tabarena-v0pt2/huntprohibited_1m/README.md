@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: huntprohibited_1m
 container_format: 2
-checksum: v2:0f0ee565af8a10162eafaa75f476dad041fb87987544a3d1df5fa554a48d5db1
+checksum: v2:e50511c9ea40359e790287cad3755507477fe54ea062798c847bb1c05b38e935
 build: null
 build_stale: false
 data:
@@ -16,7 +16,9 @@ data:
 task:
   target: is_blocked
   problem_type: binary_classification
-  metric: average_precision
+  metric: average_precision_at_k
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: is_blocked
   time_on: null
@@ -59,9 +61,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `is_blocked`, scored with `average_precision` on IID splits. 1,500,000 rows and 9 features. Source: Kaggle (2014).
+Binary classification of `is_blocked`, scored with `average_precision_at_k` on IID splits. 1,500,000 rows and 9 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:0f0ee565af8a10162eafaa75f476dad041fb87987544a3d1df5fa554a48d5db1`.
+Not built yet. The current definition gives checksum `v2:e50511c9ea40359e790287cad3755507477fe54ea062798c847bb1c05b38e935`.
 
 ## In brief
 
@@ -130,9 +132,20 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,500,000 x 10 |
 | task.target | is_blocked |
 | task.problem_type | binary_classification |
-| task.metric | average_precision |
+| task.metric | average_precision_at_k |
 | task.split_regime | iid |
 | task.stratify_on | is_blocked |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `average_precision_at_k` (custom; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AP@{K} |
+| reference | https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation |
+| definition | AP@k: sum over ranks i <= k of precision@i x rel_i, over min(k, #blocked), k = 12,500 per 500,000-ad test fold (the competition's 32,500 of about 1.3M, 2.5%) |
+| params | {'k': 12500} |
 
 <details>
 <summary>Feature types: 3 categorical, 3 string, 0 datetime</summary>
@@ -188,7 +201,7 @@ We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibit
 - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.
 - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
 - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
-- Metric: the competition scored AP@k, the average precision over the k highest-scored test ads (k = 32,500 per the participants). No listed metric has a cut-off, so we declare `average_precision` (TP-6): on fold 0, over eight pipelines (LightGBM on the structured columns, TF-IDF logistic regressions, two blends), it ranks them as AP@k does at k = 12,000 and at k = 34,324, the fold's blocked ads (Kendall tau 1.0), and at k = 17,162 with tau 0.93 (ROC AUC ranks them the same way). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
+- Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
 
 Version of `huntprohibited`: We sub-sample the frame (3,963,488 ads after dropping duplicates) to 1.5M ads, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k ads (v2 split protocol).
 

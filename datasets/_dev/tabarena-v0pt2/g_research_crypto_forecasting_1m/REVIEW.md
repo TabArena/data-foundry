@@ -25,7 +25,7 @@ For the curator: issue 1, retire, or keep by amending TP-10 (the rule item acros
 
 **Main points:** Retire as time-series forecasting (issue 1, recommended), or keep it by amending TP-10; only if it
 stays, decide the training history (issue 6) and the source of the features (issue 2). The metric is settled
-(2026-10-21): `pearsonr` for the competition's weighted correlation.
+(2026-10-21): the competition's `weighted_pearsonr`, with the asset `Weight` as a scoring column.
 
 **Record judgment:** valid as a record of a real task, out of scope. G-Research's own competition data and use case
 (first-hand source); time-series forecasting under SEL-10. The 2026-10-07 assessment's signal numbers were not

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:a236b4919048d65f8b304b78bd882157feecb18c0c29dd908998adad681e3062
+checksum: v2:f815b8d313e6fae297ea10cf4a722e114af409eeddfee266a17170c9456c41c7
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: log_price
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: date
@@ -60,7 +62,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmse` on temporal splits by `date`. 19,906 rows and 19 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:a236b4919048d65f8b304b78bd882157feecb18c0c29dd908998adad681e3062`.
+Not built yet. The current definition gives checksum `v2:f815b8d313e6fae297ea10cf4a722e114af409eeddfee266a17170c9456c41c7`.
 
 ## In brief
 
@@ -143,6 +145,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Neither the King County assessor extracts nor the Kaggle dataset card define a task metric; the Coursera course that first distributed kc_house_data used RSS/RMSE on raw price as a teaching exercise, not a benchmark definition. RMSE on the log price is the obvious choice for a price model. |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 1 datetime</summary>

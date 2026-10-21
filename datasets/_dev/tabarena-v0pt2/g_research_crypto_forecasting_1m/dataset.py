@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    ScoringColumn,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 LAGS = (60, 300, 900)
 """The look-back windows (minutes) of the 3rd-place solution's features."""
@@ -79,7 +88,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
             "Everything the model sees is known at the minute and the target covers the next 15 minutes, as in "
             "trading. The signal is tiny: one LightGBM configuration reaches R² +0.0006, +0.0013 and +0.0004 in the "
             "three windows, none outside the day-to-day noise, while its daily correlation with the target is "
-            "positive on 70-74 of 91 days. The declared metric is Pearson correlation, for the competition's weighted correlation."
+            "positive on 70-74 of 91 days. The declared metric is the competition's asset-weighted Pearson correlation."
         ),
     )
 
@@ -118,20 +127,37 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         - History features (`history_features`): a row's own bar carries no signal for the next 15 minutes (a LightGBM prediction from the bar correlates -0.002, 0.005 and 0.010 with the target in the three test windows), so we add the features of the public notebook "Training 3rd place solution" (sugghi) cited in the record. For 60, 300 and 900 minutes: the log of Close over its trailing mean and the log return, their mean over the assets (`market_*`) and the asset's difference from it (`*_minus_market`). With them the correlation is 0.026, 0.059 and 0.049. The features come from this one notebook; that it is the 3rd-place team's code is not verified, and no other solution was compared.
         - We compute the features on the full minute grid before dropping rows. A missing minute takes the asset's last Close for at most 100 minutes (as in the notebook). A trailing mean reaching into a longer gap or before the asset's first minute is missing; a log return checks only its end point, so 193, 1,804 and 9,370 values (60, 300 and 900 minutes) span a longer gap, as in the notebook.
         - We drop the 750,338 rows (3.1%) without a target: Close(t+1) or Close(t+16) is missing (37% lack only Close(t+1)), and the competition does not score them. Their bars still enter the history features.
-        - We replace `Asset_ID` by the asset's name from asset_details.csv (`Asset_Name`, category); its `Weight`, the asset's weight in the metric, is not a feature.
+        - We replace `Asset_ID` by the asset's name from asset_details.csv (`Asset_Name`, category); its `Weight` in asset_details.csv, the asset's weight in the metric, ships as a scoring column and is not a feature.
         - `VWAP` is a positive price and `Volume` a traded amount: we set the infinite and negative VWAP values (13 rows of the frame, 15 of the raw file, all Maker, June 2020) and the negative Volume values (2 rows of the frame, 3 raw, Maker) to missing.
         - We convert `timestamp` (Unix seconds) to a datetime.
         - Anomaly: 16 bars of the frame (18 raw) have a `Low` below half of their open and close and 3 raw bars a `High` above twice, and 266 targets exceed 0.2 in absolute value (mostly Bitcoin Cash around its November 2018 fork). We keep them as unusual but real. No (timestamp, asset) pair repeats.
         - Temporal, not grouped by asset: the competition forecasts the same 14 assets on later data; a split by asset would only test a shift between 14 assets (decision table).
         - History: each train side is a random 1M of all earlier rows back to 2018, TabReD's convention; no use-case reason is recorded for the whole history against a recent one. The test windows from 2020-12-22 to 2021-06-21 fall in the 2021 high-volatility regime (median absolute 900-minute return 0.029-0.036, against 0.013-0.022 in every quarter of 2019-2020).
-        - Metric: the competition scored a weighted Pearson correlation over all test rows, each row weighted by its asset's `Weight` in asset_details.csv (Bitcoin 6.78, Ethereum 5.89, Cardano 4.41, Binance Coin 4.30, Dogecoin 3.56, Bitcoin Cash and Litecoin 2.40, Ethereum Classic and Stellar 2.08, TRON 1.79, Monero 1.61, EOS.IO 1.39, IOTA and Maker 1.10). No listed metric weighs rows, so we declare pooled `pearsonr` (TP-6): over seven predictions per window (ridge with two penalties, four LightGBM sizes, one raw feature), it ranks them as the weighted correlation does in all three windows (Kendall tau 1.0), within 0.008 of it. RMSE, declared before, ranks mostly how close predictions stay to the mean.
+        - Metric: the competition's weighted Pearson correlation, each row weighted by its asset's `Weight` (Bitcoin 6.78 ... IOTA and Maker 1.10). It replaces the pooled `pearsonr` declared before as its stand-in, which ranked seven predictions per window as the weighted correlation does (Kendall tau 1.0).
         - Note: the task probes flag no_signal, drift_baseline and unstable (untuned models). LightGBM (learning rate 0.05, 31 leaves, at least 200 rows per leaf) early-stopped on the newest 10% of each train side reaches R^2 +0.0006, +0.0013 and +0.0004 in one refit (+0.0007, +0.0012 and -0.0003 in an earlier run, so the sign of the third window is unstable); no window's 95% day-block interval excludes 0. Its daily correlation with the target is positive on 71, 70 and 74 of 91 days. The signal is small and real under correlation and not separable from the noise under RMSE; drift_baseline comes from a target centred on zero.
     """
 
     # Task
     target = "Target"
     problem_type = "regression"
-    metric = "pearsonr"  # stands for the competition's asset-weighted correlation (curation comments)
+    metric = Metric.source(
+        "weighted_pearsonr",
+        original="weighted version of the Pearson correlation coefficient",
+        reference="https://www.kaggle.com/competitions/g-research-crypto-forecasting/overview/evaluation",
+        inputs={"weight": "Weight"},
+        definition="Pearson correlation of Target and the prediction over all test rows, each row weighted by its asset's Weight",
+    )
+    scoring_columns = (
+        ScoringColumn(
+            column="Weight",
+            role="weight",
+            used_by="weighted_pearsonr",
+            description=(
+                "the asset's weight from asset_details.csv (Bitcoin 6.78 ... IOTA and Maker 1.10), mapped from "
+                "Asset_Name; each row is weighted by it in the Pearson correlation. Asset_Name stays a feature."
+            ),
+        ),
+    )
 
     # Splits
     temporal = Temporal(
@@ -161,6 +187,8 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         df.loc[df["Volume"] < 0, "Volume"] = np.nan
         # The asset's name instead of its id (same position).
         df["Asset_ID"] = df["Asset_ID"].map(assets.set_index("Asset_ID")["Asset_Name"])
+        # The asset's weight in the metric (asset_details.csv, exact values): a scoring column, not a feature.
+        df["Weight"] = df["Asset_ID"].map(assets.set_index("Asset_Name")["Weight"])
         df = df.rename(columns={"Asset_ID": "Asset_Name"})
         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
         return df
@@ -179,7 +207,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         )
         coverage["first_minute"] = pd.to_datetime(coverage["first_minute"], unit="s")
         coverage.index = coverage.index.map(names).rename("asset")
-        numeric = [c for c in df.columns if c not in ("timestamp", "Asset_Name", self.target)]
+        numeric = [c for c in df.columns if c not in ("timestamp", "Asset_Name", "Weight", self.target)]
         correlation = pd.DataFrame(
             {
                 "pearson_r_with_target": df[numeric].corrwith(df[self.target]),

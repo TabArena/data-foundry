@@ -46,6 +46,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: the 20 anonymized features that hold only 0 and 1 stay numeric (no semantic context).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source gini_top_capture {"top_fraction": 0.04, "negative_weight": 20} — AmEx competition metric M = 0.5*(G + D) (https://www.kaggle.com/competitions/amex-default-prediction/overview/evaluation).
+
 ## Reference
 
 Kaggle

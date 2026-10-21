@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:67c30a3547f98e96c6ff8b0a8e04d04deb51de68b110bb8c5f571f34f978eda6
+checksum: v2:8812338d8470ec5e6e442949c5180ef7f873848637c1bed6675477575c0cd6d1
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: log1p_meter_reading
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: timestamp
@@ -31,6 +33,8 @@ splits:
   random_state: 4267
   time_horizon: 4
   time_horizon_unit: months
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1000000
     max: 1000000
@@ -56,7 +60,7 @@ decisions:
 
 Regression of `log1p_meter_reading`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:67c30a3547f98e96c6ff8b0a8e04d04deb51de68b110bb8c5f571f34f978eda6`.
+Not built yet. The current definition gives checksum `v2:8812338d8470ec5e6e442949c5180ef7f873848637c1bed6675477575c0cd6d1`.
 
 ## In brief
 
@@ -134,6 +138,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | timestamp |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSLE (Root Mean Squared Logarithmic Error) |
+| reference | https://www.kaggle.com/competitions/ashrae-energy-prediction/overview/evaluation |
+| definition | sqrt(mean((log1p(pred) - log1p(actual))^2)) over all meter-hours; our target is log1p_meter_reading, so RMSE on it equals the competition's RMSLE. |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>

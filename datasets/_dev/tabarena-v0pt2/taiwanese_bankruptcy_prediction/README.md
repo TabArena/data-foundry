@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a
+checksum: v2:6fdc1785e80d6e769f802cd7512e6e69628437ffe7aefe3a7009b6b944589585
 build:
   uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
   checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
@@ -29,6 +29,8 @@ task:
   target: Bankrupt
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Bankrupt
   time_on: null
@@ -65,7 +67,7 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6fdc1785e80d6e769f802cd7512e6e69628437ffe7aefe3a7009b6b944589585`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -130,6 +132,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Bankrupt |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Liang et al. 2016 report average accuracy and Type I / II errors on a 1:1 sample (the release is 3.2% bankrupt, MET-2), and a cost with ratios 1 to 5: no single matrix (MET-7). roc_auc is the binary fallback (also reported). |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
@@ -378,4 +389,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:075377a752719111b13619ddfd24df7f64b3b968985e4d20dd33288bb627a14a` |
+| stale | yes: the definition now gives checksum `v2:6fdc1785e80d6e769f802cd7512e6e69628437ffe7aefe3a7009b6b944589585` |

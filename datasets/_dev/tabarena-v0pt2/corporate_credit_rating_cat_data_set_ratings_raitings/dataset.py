@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary, drop_columns
 
 RATIOS = {
     "COMMEQTA": "common_equity_to_total_assets",
@@ -95,7 +95,7 @@ class CorporateCreditRatingCatDataSetRatingsRaitings(AbstractCuratedDataset):
 
         - Prediction point: an institution whose financial statements are known but whose agency rating is not; we map it to the agency's scale from the six ratios, as the R Companion's code for chapter 8 ("Low Default Portfolios") does with an ordered logit (the book's Exhibit 1.4 lists the data under chapter 5, credit scoring). Neither the data page nor the book's chapter 1 names the agency, years, country or provider, so how the statement date relates to the rating date is unknown.
         - Not OpenML 46372 (linked in the record): its 5,000 rows are generated from these 197, each value drawn uniformly between the minimum and maximum of the book's rows with the same rating (all 30,000 values lie inside those ranges; none is a book row).
-        - Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression with RMSE. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task; as 10 classes, three codes would hold 3-5 rows (decision table).
+        - Target: `rating_notch`, the book's rating code from 1 (AAA) to 10, as regression. The R Companion's chapter 8 code scores the model by the notch difference between the actual and the predicted rating, so the order and the distance carry the task (scored by MAE, Lennart 2026-10-21); as 10 classes, three codes would hold 3-5 rows (decision table).
         - We drop `spid`, an anonymised id with no documented meaning. Its values sit in two ranges (130 and 67 rows); a flag for the range lifts ridge R^2 from 0.283 to 0.296 (alpha 1, 60 splits), and within a code the two ranges differ on costs to income (p 0.004). We drop it anyway, since no source says what the ranges are.
         - The six ratios are renamed after the data page's definitions (`RATIOS`).
         - No missing values and no duplicate rows. Negative loan-loss provisions (released provisions) and negative returns on equity (loss years) are real values.
@@ -109,6 +109,24 @@ class CorporateCreditRatingCatDataSetRatingsRaitings(AbstractCuratedDataset):
     # Task
     target = "rating_notch"
     problem_type = "regression"
+    metric = Metric.stand_in(
+        "mae",
+        original=(
+            "distribution of the absolute notch difference |rating - predicted rating| (frequency / "
+            "cumulative percent per error band)"
+        ),
+        reason=(
+            "The source tabulates the distribution of the absolute notch difference |rating - predicted| "
+            "per error band, not one scalar; MAE is its mean, so it ranks models by the same notion of "
+            "error."
+        ),
+        reference=(
+            "Baesens, Roesch, Scheule, Credit Risk Analytics (Wiley 2016), R Companion "
+            "Ch08_LowDefaultPortfolios.R lines 62-80 (local copy: "
+            "local-data-warehouse/_runs/2026-10-07_backlog/evidence/corporate_credit_rating_cat_data_set_ratings_raitings/Ch08_LowDefaultPortfolios.R)"
+        ),
+        definition="mean(|y - yhat|) in notches; the source tabulates |y - yhat| per band rather than one scalar",
+    )
     accepted_check_warnings = {
         "task_target_low_cardinality": (
             "The target is a rating code on a 10-notch scale (1 = AAA; the book's chapter 1 gives no more). The R "

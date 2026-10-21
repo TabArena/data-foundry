@@ -44,6 +44,8 @@ temporal windows.
 
 **Assessment (AI, 2026-10-20):** The review panel recommends shipping after changes. On the 9 shipped 14-day windows LightGBM reaches ROC AUC 0.849, against 0.902 with the ten after-9 am columns of the same day put back (what the D-1 lag removes). The location's 9 am rain reading (Rainfall, RainToday; the label of the day before) adds 0.0027 (0.8495 against 0.8467), and the model beats persistence (0.661) and the location-by-month climatology (0.672) in 9 of 9 windows, so the skill does not come from the lagged target (SEL-11, TP-10 leg 1 holds; the wording of leg 2 is open in REVIEW.md). A blank Cloud9am is mostly a clear sky at 9 am, not a later fill. The fit is approximate (no weather-model forecast, USE-8); calm wind and RH 0% are now cleaned. The original publisher is rattle's weatherAUS from BoM's Daily Weather Observations (links added); Kaggle is the 2017 snapshot. Priority 3: gap -, use case -, source +, shape +, risk 0 (gap: no thin domain, problem type or regime; use case: written by the curation and the fit is approximate; risk: the scope question is the wording of a rule, the measured facts show no leak).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The data is a Kaggle dataset / rattle example file built from BoM observations with no task description or metric; no paper defines one. Binary fallback roc_auc.
+
 ## Reference
 
 Kaggle

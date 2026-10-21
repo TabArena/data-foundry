@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:5da6783e10fba4c9c7bd490769d3faab2296ff031d3e922ec4ed51b88f57a728
+checksum: v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -34,6 +34,8 @@ task:
   target: target
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: stand_in
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: target
   time_on: date_decision
@@ -77,7 +79,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5da6783e10fba4c9c7bd490769d3faab2296ff031d3e922ec4ed51b88f57a728`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,6 +152,17 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | target |
 | task.time_on | date_decision |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
+| original | Home Credit 2023 - Gini Stability: mean weekly Gini + 88 * min(0, slope) - 0.5 * std(residuals) |
+| reference | https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/overview/evaluation |
+| definition | Per test week (WEEK_NUM) gini_w = 2*AUC_w - 1; fit gini_w = a*week + b by least squares; score = mean(gini_w) + 88*min(0, a) - 0.5*std(residuals). |
+| reason | Our test windows hold 5, 9 and 10 weeks (week 78 split between two windows, week 69 partial); the weekly Gini has SE about 0.04, so the 88 x slope term has SE about 1.2 / 0.5 / 0.43, larger than the Gini differences between methods: per window the score is noise (MET-2). ROC AUC per window is the per-week building block. |
+
 <details>
 <summary>Feature types: 113 categorical, 0 string, 1 datetime</summary>
 
@@ -191,7 +204,7 @@ The first 5 of 1,224,927 rows of the final frame (the oldest rows: the frame is 
 We start with the data from Kaggle and follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20), which in turn follows two Kaggle solutions (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/discussion/507946, https://www.kaggle.com/code/yuuniekiri/fork-of-home-credit-catboost-inference).
 
 - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
-- Metric: the competition scored "Gini Stability": the mean over the test weeks (`WEEK_NUM`) of each week's Gini (2 x ROC AUC - 1), plus 88 times the slope of a line fitted to the weekly Gini when it falls (min(0, slope)), minus 0.5 times the standard deviation of that line's residuals. It needs the week of each row and is no listed metric, so we keep ROC AUC, the per-week score it is built from (TP-6).
+- Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows (Lennart, 2026-10-21).
 - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
 - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
 - We drop case_id as it is already collapsed and thus does not contain extra information.
@@ -459,4 +472,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5da6783e10fba4c9c7bd490769d3faab2296ff031d3e922ec4ed51b88f57a728` |
+| stale | yes: the definition now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95` |

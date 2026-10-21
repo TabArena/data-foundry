@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is bi
 
 **Assessment (AI, 2026-10-21):** on the 23 repeated descriptor vectors (crosscut item x2-1, Lennart: "IF the copies dont make any sense from a task use case, we should drop them"). The challenge's prior-knowledge release gives the same 4,229 compounds as structures with NCI NSC numbers: every NSC number is distinct, so no compound is entered twice. Of the 4,156 structures RDKit reads, 7 repeat another's exact structure, 9 ignoring stereochemistry, 19 counting salt forms of one parent; fewer than 23, so at least 4 of the copies are different compounds the descriptors cannot tell apart. The two releases share no key, so the copies cannot be matched one by one. Kept, with this reason in curation_comments; the curator has the call.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source balanced_accuracy — BER (balanced error rate) = 0.5*(b/(a+b) + c/(c+d)); final ranking by test BER; AUC also reported (= 1-BER for hard predictions) (https://www.agnostic.inf.ethz.ch/evaluation.php ; Guyon et al. 2007 IJCNN, doi 10.1109/IJCNN.2007.4371065).
+
 ## Reference
 
 Datasets from the Agnostic Learning vs. Prior Knowledge Challenge (http://www.agnostic.inf.ethz.ch)

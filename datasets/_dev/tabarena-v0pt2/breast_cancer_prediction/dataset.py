@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TARGET = "cancer_within_one_year"
 
@@ -155,6 +155,9 @@ class BreastCancerPrediction(AbstractCuratedDataset):
     # Task
     target = TARGET
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "mammography.csv")

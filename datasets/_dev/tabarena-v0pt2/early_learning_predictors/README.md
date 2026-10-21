@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:3eb346922144c988fb02e492b7045accf6f64cb2aad396ea0e64dc6dedcccd0f
+checksum: v2:42aca5ca00893f95589c6cb9af5c322a31a83277b2917ca3c9ba1c6a3628d3f0
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -30,6 +30,8 @@ task:
   target: child_total_elom
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -76,7 +78,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3eb346922144c988fb02e492b7045accf6f64cb2aad396ea0e64dc6dedcccd0f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:42aca5ca00893f95589c6cb9af5c322a31a83277b2917ca3c9ba1c6a3628d3f0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,6 +152,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | grouped_non_iid |
 | task.group_on | id_facility |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Squared Error (Zindi error_metric root_mean_squared_error) |
+| reference | https://zindi.africa/competitions/datadrive2030-early-learning-predictors-challenge (API field error_metric) |
+| definition | RMSE of the child's total ELOM score. |
 
 <details>
 <summary>Feature types: 514 categorical, 0 string, 1 datetime</summary>
@@ -500,4 +512,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3eb346922144c988fb02e492b7045accf6f64cb2aad396ea0e64dc6dedcccd0f` |
+| stale | yes: the definition now gives checksum `v2:42aca5ca00893f95589c6cb9af5c322a31a83277b2917ca3c9ba1c6a3628d3f0` |

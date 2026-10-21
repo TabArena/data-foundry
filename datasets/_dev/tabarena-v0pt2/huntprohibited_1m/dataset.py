@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TARGET = "is_blocked"
 
@@ -89,13 +89,19 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.
         - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
         - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
-        - Metric: the competition scored AP@k, the average precision over the k highest-scored test ads (k = 32,500 per the participants). No listed metric has a cut-off, so we declare `average_precision` (TP-6): on fold 0, over eight pipelines (LightGBM on the structured columns, TF-IDF logistic regressions, two blends), it ranks them as AP@k does at k = 12,000 and at k = 34,324, the fold's blocked ads (Kendall tau 1.0), and at k = 17,162 with tau 0.93 (ROC AUC ranks them the same way). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
+        - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
     """
 
     # Task
     target = TARGET
     problem_type = "binary_classification"
-    metric = "average_precision"  # stands for the competition's AP@k (curation comments)
+    metric = Metric.source(
+        "average_precision_at_k",
+        original="AP@{K}",
+        reference="https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation",
+        definition="AP@k: sum over ranks i <= k of precision@i x rel_i, over min(k, #blocked), k = 12,500 per 500,000-ad test fold (the competition's 32,500 of about 1.3M, 2.5%)",
+        params={"k": 12500},
+    )
 
     # Splits: IID (no time index survives); the `_1m` version sub-samples the frame to the 1.5M-row budget.
     subsample_to_budget = True

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""
@@ -94,6 +94,13 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
     # Task
     target = "churn_status"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The first publication (closed access, abstract elided) could not be read; no metric "
+            "verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close"
+            " in spirit, but AUC is insensitive to the artificial base rate as the curation notes say."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)

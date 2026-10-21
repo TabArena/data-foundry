@@ -32,6 +32,8 @@ Awesome dataset, even the forecast horizon is given.
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Promo, SchoolHoliday, Promo2.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmspe — Root Mean Square Percentage Error (RMSPE) (https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API evaluationMetric: 'Root Mean Square Percentage Error')).
+
 ## Reference
 
 FlorianKnauer and Will Cukierski. Rossmann Store Sales. https://kaggle.com/competitions/rossmann-store-sales, 2015. Kaggle.

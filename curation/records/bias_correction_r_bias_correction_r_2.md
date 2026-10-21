@@ -41,6 +41,8 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
 **Assessment (AI, 2026-10-19):** Multi-target removed: one target; the rule from caracas_cervical_cancer (2026-10-15) removes tags that do not apply.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics).
+
 ## Reference
 
 Cho, D., Yoo, C., & Im, J. (2020). Comparative Assessment of Various Machine Learning-Based Bias Correction Methods for Numerical Weather Prediction Model Forecasts of Extreme Air Temperatures in Urban Areas. Earth and Space Science, 7(4), e2019EA000740. DOI: 10.1029/2019EA000740.

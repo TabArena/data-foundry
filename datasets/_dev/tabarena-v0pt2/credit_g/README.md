@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
+checksum: v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa
 build:
   uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
   checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1000
   n_features: 20
@@ -28,7 +28,9 @@ data:
 task:
   target: good_or_bad_customer
   problem_type: binary_classification
-  metric: roc_auc
+  metric: cost_matrix
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: good_or_bad_customer
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 666
     max: 667
@@ -61,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `good_or_bad_customer`, scored with `roc_auc` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
+Binary classification of `good_or_bad_customer`, scored with `cost_matrix` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -125,9 +129,20 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,000 x 21 |
 | task.target | good_or_bad_customer |
 | task.problem_type | binary_classification |
-| task.metric | roc_auc |
+| task.metric | cost_matrix |
 | task.split_regime | iid |
 | task.stratify_on | good_or_bad_customer |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `cost_matrix` (custom; takes proba; lower is better) |
+| origin | source: the source's metric |
+| original | Statlog German credit cost matrix (average misclassification cost) |
+| reference | UCI Statlog (German Credit Data) page https://doi.org/10.24432/C5NC77 (german.doc); Michie, Spiegelhalter & Taylor 1994, Statlog book, Ch. 9 (German credit, average cost) |
+| definition | mean cost per applicant: 5 for a bad customer predicted good, 1 for a good customer predicted bad; from probabilities, predicted bad when p(bad) > 1/6 |
+| params | {'labels': ['good', 'bad'], 'matrix': [[0, 1], [5, 0]], 'prediction': 'proba'} |
 
 <details>
 <summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
@@ -168,7 +183,7 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
 ## Curation notes
 
 - We reversed the original ordinal encoding.
-- Anomaly: the original task used a cost matrix for evaluation.
+- Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
 
 ## Splits
 
@@ -343,3 +358,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa` |

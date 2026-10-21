@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: stroke_prediction
 container_format: 2
-checksum: v2:801883d013178cc257fcc58daf3041abe9eba23738ab2375ad2d5aabaf0d6aed
+checksum: v2:bbf5e3820ae0919df3b43f382500b96243d4312f28823a89177d70744b5a053c
 build: null
 build_stale: false
 data:
@@ -16,6 +16,8 @@ task:
   target: stroke
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: stroke
   time_on: null
@@ -57,7 +59,7 @@ decisions:
 
 Binary classification of `stroke`, scored with `roc_auc` on IID splits. 43,400 rows and 6 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:801883d013178cc257fcc58daf3041abe9eba23738ab2375ad2d5aabaf0d6aed`.
+Not built yet. The current definition gives checksum `v2:bbf5e3820ae0919df3b43f382500b96243d4312f28823a89177d70744b5a053c`.
 
 ## In brief
 
@@ -138,6 +140,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | iid |
 | task.stratify_on | stroke |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AUC-ROC |
+| reference | https://www.analyticsvidhya.com/datahack/contest/mckinsey-analytics-online-hackathon/ (McKinsey Analytics Online Hackathon - Healthcare Analytics, 2018-04-14) |
+| definition | area under the ROC curve of stroke (Yes positive) |
+
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 
@@ -195,7 +207,7 @@ We start with train_ajEneEa.csv, the training file of the McKinsey Analytics Onl
 - Missing values: smoking_status is blank for 30.6% of the rows, all children under 10 among them. It is missing independently of the stroke (odds ratio 0.96), so it stays missing (the Kaggle cut writes "Unknown").
 - Anomaly: ages under 2 are years plus 0.08 per month, and ages 78 to 82 hold more patients per year than 70 to 77, as if older ages were folded in. Kept as published.
 - Duplicates: on the six shipped features, 198 rows repeat an earlier row, none with a stroke, and one pair of 76-year-old men shares every feature with different labels. No two rows of the raw file are the same beyond the id, so they are different patients and stay.
-- IID split: one row per patient, and a model is used for new patients. The contest also scored ROC AUC.
+- IID split: one row per patient, and a model is used for new patients.
 - Note: age alone scores ROC AUC 0.840 and a regularised LightGBM 0.850, above age on 9 of 9 splits (+0.010 on average). The untuned task probe (5 of the 9 splits) has its LightGBM at 0.823, below age alone at 0.832, and its linear model at 0.850; no task-probe flag.
 
 ## Splits

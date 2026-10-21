@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** metric set to `pearsonr` (was the default RMSE) for the competition's "Weighted Correlation Coefficient" (Kaggle API), a Pearson correlation with each row weighted by its asset's `Weight` (1.10 to 6.78). On the shipped windows, over seven predictions per window (ridge with two penalties, four LightGBM sizes, one raw feature), pooled Pearson ranks them as the weighted correlation in all three windows (Kendall tau 1.0), within 0.008 of it. The notes name the original and its weights. Moot if the dataset is retired (REVIEW.md issue 1). Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source weighted_pearsonr inputs weight=Weight — the Kaggle evaluation's weighted Pearson correlation, each row weighted by its asset's Weight from asset_details.csv, now a scoring column (replaces the pooled pearsonr stand-in). Needs a rebuild to reach the container.
+
 ## Reference
 
 Alessandro Ticchi, Andrew Scherer, Carla McIntyre, Carlos Stein N Brito, Derek Snow, Develra, dstern, James Colless, Kieran Garvey, Maggie, Maria Perez Ortiz, Ryan Lynch, and Sohier Dane. G-Research Crypto Forecasting . https://kaggle.com/competitions/g-research-crypto-forecasting, 2021. Kaggle.

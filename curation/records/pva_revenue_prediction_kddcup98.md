@@ -40,6 +40,8 @@ other, never both at once. After investigation we shipped the classification ver
 `problem_type` records `Binary Classification` and the curated dataset comes from
 `pva_revenue_prediction_kddcup98_clf.ipynb`, not from the regression notebook next to it.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in roc_auc — the KDD Cup 98 net revenue of the mailing (sum of TARGET_D - $0.68 over mailed donors) needs the donation amount, which our binary-response task drops (cup98doc.txt).
+
 ## Reference
 
 Website / readme

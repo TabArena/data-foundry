@@ -247,11 +247,19 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
     assert added["summary"]["question"] == expected["question"]
     assert added["summary"]["fields"]["use_case"] == expected["use_case"]
 
+    # The metric comes from the definition's declared Metric, resolved for its problem type.
+    cls = brp.load_definition(ROOT / "airfoil_self_noise" / "dataset.py")
+    if isinstance(getattr(cls, "metric", None), brp.Metric):
+        spec = cls.metric.spec(cls.problem_type)
+        assert added["metric"]["source"] == "definition"
+        assert (added["metric"]["name"], added["metric"]["origin"]) == (spec["name"], spec["origin"])
+        assert added["metric"]["reason"] == spec["reason"]
+
     # Not added: no folder, no definition. A record that triage has since set to No is shown as "decided".
     record = (RECORDS / "churn_telco_south_asia_duplicate.md").read_text().split("---")[1]
     suggestion = str(yaml.safe_load(record).get("suggestion") or "")
     assert other["cat"] == ("decided" if suggestion.startswith("No") else "notadded")
-    assert (other["folder"], other["code"], other["summary"]) == (None, None, None)
+    assert (other["folder"], other["code"], other["summary"], other["metric"]) == (None, None, None, None)
     assert [(it["n"], it["resolved"]) for it in other["items"]] == [(1, False)]
 
     assert [[it["id"] for it in s["items"]] for s in data["crosscut"]] == [["x0-0"]]
@@ -343,6 +351,30 @@ def test_template_has_the_panel_tab_and_keeps_the_store():
     assert '<li class="grp" aria-hidden="true">' in page
     assert '["reviews", "crosscut"].forEach((coll) => {' in page
     assert "const S = { reviews: {}, crosscut: {} };" in page
+    # The Use case tab shows the declared metric under the task summary.
+    assert 'panel("usecase", useCaseHtml(d) + metricHtml(d))' in page
+
+
+def test_metric_from_the_definition_and_the_readme(brp):
+    """The metric spec comes from the definition's Metric (all fields) or, failing that, the README frontmatter."""
+
+    class Definition:
+        problem_type = "binary_classification"
+        metric = brp.Metric.fallback(reason="the paper reports accuracy, precision and recall side by side")
+        scoring_columns = ()
+
+    got = brp._metric_from_class(Definition)
+    assert (got["name"], got["origin"], got["source"]) == ("roc_auc", "fallback", "definition")
+    assert got["reason"].startswith("the paper reports")
+    assert got["scoring_columns"] == []
+
+    Definition.metric = "roc_auc"  # not a Metric: nothing from the class
+    assert brp._metric_from_class(Definition) is None
+
+    front = brp._metric_from_front({"metric": "mae", "metric_origin": "source", "scoring_columns": ["era"]})
+    assert (front["name"], front["origin"], front["source"]) == ("mae", "source", "readme")
+    assert front["scoring_columns"] == [{"column": "era"}]
+    assert brp._metric_from_front({}) is None
 
 
 def test_shared_notes_follow_the_records_line(brp, tmp_path):

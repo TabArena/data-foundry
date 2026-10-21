@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -74,6 +74,12 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
     # Task
     target = "QuoteConversion_Flag"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference="https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation",
+        definition="Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

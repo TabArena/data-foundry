@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: climate_model_weather_forecasting_1m
 container_format: 2
-checksum: v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86
+checksum: v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba
 build:
   uuid: 01a111fb-bc63-7614-a137-a3fd390bc4f1
   checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
@@ -32,6 +32,8 @@ task:
   target: fact_temperature
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: fact_time
@@ -45,6 +47,8 @@ splits:
   random_state: 4267
   time_horizon: 7
   time_horizon_unit: days
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 1000000
     max: 1000000
@@ -67,7 +71,7 @@ decisions: []
 
 Regression of `fact_temperature`, scored with `rmse` on temporal splits by `fact_time`. 2,115,283 rows and 99 features. Source: Kaggle (2024).
 
-Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86`, so the build is stale. See [Build](#build).
+Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,6 +139,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | fact_time |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSE |
+| reference | Rubachev et al. 2025, TabReD (ICLR), https://arxiv.org/abs/2406.19380; Shifts weather (Malinin et al. 2021) also uses RMSE |
+| definition | Root mean squared error of fact_temperature. |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>
@@ -390,4 +404,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cb1b2b4cabe0c58b4f35d9183ff69533c32d8f8821a8952ca08307badb8f4c86` |
+| stale | yes: the definition now gives checksum `v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba` |

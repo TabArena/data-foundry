@@ -51,3 +51,5 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 **Assessment (AI, 2026-10-21):** fit stays `approximate` for the inputs Zillow never released; the facts that may postdate the sale left `fit_reason` (the split text still names them).
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the presence flags hashottuborspa, fireplaceflag, poolcnt, pooltypeid10, pooltypeid2, pooltypeid7, decktypeid, storytypeid (booleans) and taxdelinquencyflag (1.0 / 0.0).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — MAE of logerror on the Zillow Prize evaluation page.

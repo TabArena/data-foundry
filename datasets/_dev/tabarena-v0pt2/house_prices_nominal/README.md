@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: house_prices_nominal
 container_format: 2
-checksum: v2:32ab4c7303f6c00ba36fc2b1a9cb1df4b37945036b8d6e8171a7e1d7116e7466
+checksum: v2:7dfdec52fe0180d21cd2bdebc4f4f8afcc25407bc6c2732118332b65f1b09f78
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: log_SalePrice
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Month Sold
@@ -58,7 +60,7 @@ decisions:
 
 Regression of `log_SalePrice`, scored with `rmse` on temporal splits by `Month Sold`. 2,919 rows and 78 features. Source: Other (2011).
 
-Not built yet. The current definition gives checksum `v2:32ab4c7303f6c00ba36fc2b1a9cb1df4b37945036b8d6e8171a7e1d7116e7466`.
+Not built yet. The current definition gives checksum `v2:7dfdec52fe0180d21cd2bdebc4f4f8afcc25407bc6c2732118332b65f1b09f78`.
 
 ## In brief
 
@@ -133,6 +135,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | Month Sold |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | RMSE between the logarithm of the predicted and the observed sale price |
+| reference | https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview/evaluation |
+| definition | RMSE on log_SalePrice (= RMSE of log predicted vs log observed SalePrice, RMSLE-like on the raw price). |
+
 <details>
 <summary>Feature types: 44 categorical, 0 string, 1 datetime</summary>
 
@@ -185,7 +197,7 @@ We start with AmesHousing.txt, the data file of De Cock (2011): 2,930 sales of r
 - `MS SubClass` codes ("020", ...) become the documentation's labels. We strip the trailing blank of `Sale Type` "WD ". `Exterior 2nd` spells three materials unlike the documentation and `Exterior 1st` (`Brk Cmn`, `CmentBd`, `Wd Shng`, 225 rows); we use the documentation's codes `BrkComm`, `CemntBd`, `WdShing`.
 - `Garage Yr Blt` = 2207 (a house built in 2006 and sold new in 2007) is a typo; we set it to missing.
 - The 23 nominal and 21 text-coded ordinal variables are categorical and keep the source's codes, apart from the relabelling above; the rest is numeric. Total and part areas are kept as published.
-- The target is the natural log of `SalePrice`, renamed to `log_SalePrice`; RMSE on it is the competition's metric.
+- The target is the natural log of `SalePrice`, renamed to `log_SalePrice`, the scale the competition scored on.
 - CLEAN-11 as amended (Lennart, 2026-10-21: a row whose target the source names as not the task's quantity may leave, with the source's words): we drop De Cock's three "true outliers" (p. 4), partial sales of new houses over 4,000 sq ft that "likely don't represent actual market values" ($28-$40 per sq ft against a median of $150 for partial sales), and keep his two other houses over 4,000 sq ft (decision table). The three would only train, yet without them the task probe's linear model goes from RMSE 0.125 to 0.119 (13 windows). It was the third drop of target-outlier rows, after mercedes_benz_greener_manufacturing and qsar_tid_11, and prompted that amendment.
 - The records describe the house at the sale: no house built two or more years before its sale has a remodel year after it. One new house (built 2007, sold in June 2007) shows a remodel in 2008, a value from after the sale, and one house shows a remodel in 2001 before it was built in 2002, impossible by the documentation; both remodel years become missing. Whether the grades were revised after a sale cannot be checked from the file.
 - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.

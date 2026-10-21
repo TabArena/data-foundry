@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class ConsumerComplaints1m(AbstractCuratedDataset):
@@ -121,6 +121,12 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
     # Task
     target = "Company response to consumer"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The CFPB database is a public register with no prediction task; the task is our adaptation "
+            "following a benchmark paper, not an original task with a defined metric."
+        ),
+    )
 
     # Splits
     splits_comment = """

@@ -33,3 +33,5 @@ Potential issue: ? potential user groups
 Lennart: No objection, but need to check data for IDs and maybe preprocess (remove some features) following the description
 
 Andrej: Not in TabRepo, but seems like a good task
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve), per task; the ranking averaged churn, appetency and up-selling AUC (Guyon et al. 2009, Analysis of the KDD Cup 2009, JMLR W&CP 7; https://kdd.org/kdd-cup/view/kdd-cup-2009).

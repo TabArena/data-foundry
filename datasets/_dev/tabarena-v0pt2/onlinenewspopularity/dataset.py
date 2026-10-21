@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -173,6 +174,12 @@ class Onlinenewspopularity(AbstractCuratedDataset):
     # Task
     target = "log_shares"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The paper scores a binary task (shares >= 1,400 threshold) with accuracy/F1/AUC; we ship a regression on "
+            "log shares, so the original target is not ours; rmse on the log target is the regression fallback."
+        )
+    )
 
     # Splits: nine two-week windows, the size of the paper's rolling test sets, with a one-week gap.
     temporal = Temporal(

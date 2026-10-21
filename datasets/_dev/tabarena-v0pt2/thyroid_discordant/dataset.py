@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class ThyroidDiscordant(AbstractCuratedDataset):
@@ -74,6 +74,9 @@ class ThyroidDiscordant(AbstractCuratedDataset):
     # Task
     target = "discordant"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The cited paper scores test error rate (accuracy) on the Garvan hypothyroid domain; no publication defines a task or metric for the 'dis' (discordant) file, and accuracy is uninformative at about 1.6% positives",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

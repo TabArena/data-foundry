@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
@@ -71,13 +71,17 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
         - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
         - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
-        - Metric: the competition scored R² (Kaggle's evaluation metric), which we declare (TP-6); within one test fold it ranks models as RMSE does.
     """
 
     # Task
     target = "y"
     problem_type = "regression"
-    metric = "r2"  # the competition's metric
+    metric = Metric.source(
+        "r2",
+        original="R^2 score (coefficient of determination)",
+        reference="https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing/overview/evaluation",
+        definition="Coefficient of determination of the test time y",
+    )
 
     # Splits
     splits_comment = """

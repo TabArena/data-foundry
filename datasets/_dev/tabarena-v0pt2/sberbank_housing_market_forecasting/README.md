@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad
+checksum: v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -32,6 +32,8 @@ task:
   target: price_doc
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: timestamp
@@ -70,7 +72,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,6 +142,16 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.time_on | timestamp |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Squared Logarithmic Error (RMSLE) on price_doc |
+| reference | https://www.kaggle.com/competitions/sberbank-russian-housing-market/overview/evaluation |
+| definition | RMSE on log(price_doc / full_sq); since full_sq is known per row, log(price/sq) - log(price_hat/sq) = log(price) - log(price_hat), so this is the competition's RMSLE on the sale price up to log vs log1p (negligible at prices of 10^5 to 10^8 RUB) |
+
 <details>
 <summary>Feature types: 23 categorical, 0 string, 0 datetime</summary>
 
@@ -181,9 +193,7 @@ The first 5 of 28,321 rows of the final frame (the oldest rows: the frame is sor
 We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).
 
 - The target is log(price_doc / full_sq), the log of the sale price per square metre of total area (TabReD,
-  after the first-place solution). The competition scored RMSLE on `price_doc`, the price of the whole flat; this task
-  ships the price per square metre, so we keep RMSE, which on the log target is the competition's metric up to the
-  division by `full_sq` (TP-6).
+  after the first-place solution); RMSE on it is the competition's RMSLE on `price_doc` (TP-6).
 - Address fix: 603 sales whose address could not be located carry the distances of central Moscow (the
   smallest `kremlin_km`). The hosts posted location features for 550 of them in Kaggle discussion 34364
   (BAD_ADDRESS_FIX.xlsx, taken from the nearest known building); we apply them and drop the other 53.
@@ -459,4 +469,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8a1556369ca3669eb676ffa56595f3ab181c177d667f1d659d4e187400a80bad` |
+| stale | yes: the definition now gives checksum `v2:9ef7bc2e4f4096e9cce149ba32ab1f6e45ea8bf2912483645b8848a46ae473d2` |

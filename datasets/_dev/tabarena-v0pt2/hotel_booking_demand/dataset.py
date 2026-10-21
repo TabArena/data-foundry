@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, SplitPlan, TaskSummary, Temporal
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal
 
 
 class HotelBookingDemand(AbstractCuratedDataset):
@@ -88,6 +88,9 @@ class HotelBookingDemand(AbstractCuratedDataset):
     # Task
     target = "IsCanceled"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric.",
+    )
 
     # Splits
     splits_comment = r"""

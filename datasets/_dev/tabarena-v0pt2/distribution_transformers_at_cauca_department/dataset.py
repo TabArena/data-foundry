@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 YEARS = (2019, 2020)
 """One file per year: the same 15,873 transformers in the same row order, labelled with that year's burns."""
@@ -172,9 +172,15 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         - The lightning densities (one value per area) are features, not groups, as a transformer's area is known. A same-year area effect, which the random split could reward, is absent: last year's burn rate of the area predicts the 2020 burns better than the same year's.
     """
 
-    # Task (the metric defaults to roc_auc; stratified on the target)
+    # Task (stratified on the target)
     target = "burned"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "A data article: describes the inventory and burn labels without a prediction benchmark or score; the "
+            "companion book (Alvarez 2021) was not checked and is not openly available."
+        )
+    )
     accepted_check_warnings = {
         "dataset_pure_feature_value": (
             "client_type = STRATUM 3 (1 of 427 burned in 2020, 2 in 2019) is a category effect on a 96% base rate: "

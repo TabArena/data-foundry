@@ -44,6 +44,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: isbidproduct_1095L (explicit). Reverted: posfpd10lastmonth_333P, posfpd30lastmonth_3976960P, posfstqpd30lastmonth_3976962P, mean_contaddr_smempladdr_334L, mean_safeguarantyflag_411L (aggregates) stay numeric.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in roc_auc — stands in for Home Credit 2023 - Gini Stability: mean weekly Gini + 88 * min(0, slope) - 0.5 * std(residuals): Our test windows hold 5, 9 and 10 weeks (week 78 split between two windows, week 69 partial); the weekly Gini has SE about 0.04, so the 88 x slope term has SE about 1.2 / 0.5 / 0.43, larger than the Gini differences between methods: per window the score is noise (MET-2). ROC AUC per window is the per-week building block. (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/overview/evaluation).
+
+CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows.
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

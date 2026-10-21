@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: expresso_churn_prediction_1m
 container_format: 2
-checksum: v2:13a47e189867778905ca81e673f66e0864fb41b7675a13c1e34ec5abe7da8d17
+checksum: v2:8a1b617337f9bb0806257ce0ebe2f499fcaad9a68a8d3743d972cfb093c9222a
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: CHURN
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: CHURN
   time_on: null
@@ -63,7 +65,7 @@ decisions:
 
 Binary classification of `CHURN`, scored with `roc_auc` on IID splits. 1,500,000 rows and 15 features. Source: Zindi (2020).
 
-Not built yet. The current definition gives checksum `v2:13a47e189867778905ca81e673f66e0864fb41b7675a13c1e34ec5abe7da8d17`.
+Not built yet. The current definition gives checksum `v2:8a1b617337f9bb0806257ce0ebe2f499fcaad9a68a8d3743d972cfb093c9222a`.
 
 ## In brief
 
@@ -143,6 +145,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | CHURN |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under the Curve (AUC) |
+| reference | https://zindi.africa/competitions/expresso-churn-prediction (now zindi.world), Evaluation section: 'The evaluation metric for this challenge is Area Under the Curve (AUC).' |
+| definition | ROC AUC of the churn probability against CHURN |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>

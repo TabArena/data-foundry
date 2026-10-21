@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: gallstone_disease
 container_format: 2
-checksum: v2:1ed77d9939cb7907364bf7c588617819e9be9dec2a9ceaa782b252b0acd60c8c
+checksum: v2:f9996e10119b1075cecff307465c36e3d3bdff48dc9dae713ca1c0302b8f6387
 build:
   uuid: 01a111fc-d8af-7a12-816b-905e5085bf7f
   checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
@@ -30,6 +30,8 @@ task:
   target: Gallstone Status
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: Gallstone Status
   time_on: null
@@ -43,6 +45,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 212
     max: 213
@@ -64,7 +68,7 @@ decisions: []
 
 Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits. 319 rows and 38 features. Source: UCI (2025).
 
-Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1ed77d9939cb7907364bf7c588617819e9be9dec2a9ceaa782b252b0acd60c8c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f9996e10119b1075cecff307465c36e3d3bdff48dc9dae713ca1c0302b8f6387`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -129,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | Gallstone Status |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC; accuracy is the headline, none is named as the criterion (MET-5). roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>
@@ -389,4 +402,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1ed77d9939cb7907364bf7c588617819e9be9dec2a9ceaa782b252b0acd60c8c` |
+| stale | yes: the definition now gives checksum `v2:f9996e10119b1075cecff307465c36e3d3bdff48dc9dae713ca1c0302b8f6387` |

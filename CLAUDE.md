@@ -69,8 +69,12 @@ both container formats.
   `examples/data_foundry_data_regimes.py`.
 * **Fit a model:** iterate `container.experiment_metadata.splits` as `{repeat: {fold: (train_idx,
   test_idx)}}` and never re-split or shuffle; the splits encode the regime (IID / temporal / grouped).
-  Score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
+  Format 2 (`container.format_version == 2`): score by the spec `task_metadata.objective_metric` with
+  `data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
+  `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
+  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Format 1
+  (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
   categorical, string or datetime, so pick a model that takes mixed dtypes. See
-  `examples/benchmark_on_beyond_arena.py`.
+  `examples/benchmark_on_beyond_arena.py`; without Data Foundry, `examples/read_metric_without_data_foundry.py`.
 
 See [AGENTS.md](AGENTS.md) for the long form.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TARGET = "CHURN"
 
@@ -121,6 +121,15 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
     # Task
     target = TARGET
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under the Curve (AUC)",
+        reference=(
+            "https://zindi.africa/competitions/expresso-churn-prediction (now zindi.world), Evaluation section: 'The "
+            "evaluation metric for this challenge is Area Under the Curve (AUC).'"
+        ),
+        definition="ROC AUC of the churn probability against CHURN",
+    )
 
     # Splits: IID (one snapshot, no time index); the `_1m` version sub-samples the frame to the 1.5M-row budget.
     subsample_to_budget = True

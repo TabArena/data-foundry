@@ -17,8 +17,8 @@ reasonable: [principles.md](../knowledge-curation/references/principles.md). The
 the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files live
 and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
-The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; the
-tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
+The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then the
+declared metric with its origin, original, reference and reason; the tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
 disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the
 record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
 recommendation and the verdict box. Other views: the issues that span datasets, and a summary

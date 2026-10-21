@@ -43,6 +43,8 @@ study"
 
 CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task after the task-probe review. The probe flagged `no_signal` (the untuned linear model, random forest and LightGBM all score below the train mean), but tuned methods find a small, consistent signal: on BeyondArena, TabPFN-3.5 reaches RMSE 1.390 on `log1p(area)` against 1.399 for the train mean (R^2 0.013) and beats the mean on 26 of 32 folds, TabDPT on 43 of 60, while random forest, ExtraTrees and LimiX-2 lose to the mean on almost every fold. 48% of the fires burned 0 ha; knowing which ones would give R^2 0.58, but whether a fire burns more than 0 ha is predicted at ROC AUC 0.51-0.58 and the size of a burned fire not at all (R^2 below 0 against the burned fires' mean), so a hurdle model (P(area > 0) times the expected log area of a burned fire) reaches R^2 0.002 on the 60 shipped splits. A small signal is not a reason to retire; the ranking on this dataset mostly rewards methods that do not overfit noise.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — Cortez & Morais 2007 rank models by MAD of the burned area on the raw scale (RMSE also reported); the target now ships in hectares, the log1p transform is dropped (MET-3, MET-5). Needs a rebuild to reach the container.
+
 ## Reference
 
 @article{cortez2007data,

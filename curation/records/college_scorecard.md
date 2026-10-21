@@ -36,3 +36,5 @@ Data looks good, but the group split is synthetically created and not part of th
 CC (2026-10-19, Lennart): ship. The Department of Education's files, not OpenML 46674; one row per four-year institution and entering cohort, target C150_4 six files later (regression), the institution's published completion and retention rates as features, cohorts of 30 or more, temporal by cohort with a five-year label gap; SAT math and average converted to the old scale from 2017 on, the reading percentiles left out.
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: MAIN, DISTANCEONLY.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours.

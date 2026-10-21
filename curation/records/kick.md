@@ -56,6 +56,8 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: IsOnlineSale.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Gini index (Kaggle normalized Gini) (https://www.kaggle.com/competitions/DontGetKicked/overview/evaluation).
+
 ## Reference
 
 faysal, Will Adams, and Will Cukierski. Don't Get Kicked!. https://kaggle.com/competitions/DontGetKicked, 2011. Kaggle.

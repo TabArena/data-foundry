@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -272,6 +273,9 @@ class HouseSales(AbstractCuratedDataset):
     # Task
     target = "log_price"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Neither the King County assessor extracts nor the Kaggle dataset card define a task metric; the Coursera course that first distributed kc_house_data used RSS/RMSE on raw price as a teaching exercise, not a benchmark definition. RMSE on the log price is the obvious choice for a price model.",
+    )
 
     # Splits
     temporal = Temporal(

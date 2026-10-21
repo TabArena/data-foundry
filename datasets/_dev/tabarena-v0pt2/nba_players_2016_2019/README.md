@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nba_players_2016_2019
 container_format: 2
-checksum: v2:60afa2c6decf72ca9b1c2437326ed3f3946568e0f6fc4648fc30aae877d46c2b
+checksum: v2:f8511737d278c0d494996e62abd1700c446da80a547334b55b664121b12bea80
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: all_star_score
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -63,7 +65,7 @@ decisions:
 
 Regression of `all_star_score`, scored with `rmse` on grouped splits by `player_id`. 1,408 rows and 35 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:60afa2c6decf72ca9b1c2437326ed3f3946568e0f6fc4648fc30aae877d46c2b`.
+Not built yet. The current definition gives checksum `v2:f8511737d278c0d494996e62abd1700c446da80a547334b55b664121b12bea80`.
 
 ## In brief
 
@@ -137,6 +139,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | grouped_non_iid |
 | task.group_on | player_id |
 | task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | A Kaggle dataset upload with no task or metric; the All-Star score target is our construction from the NBA's weighting of the fan, player and media vote ranks, so no source metric exists; a continuous score gives rmse. |
 
 <details>
 <summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_3
 container_format: 2
-checksum: v2:f8b53eb2e5b4478e518d6a66986878bf3c9e06f5b3cc951ee126887375c01b8b
+checksum: v2:7f590a0f65e76d233268cd781b80d0ff24e4753e9eea3921a33399627f4f92a6
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: disease_progression_one_year
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -58,7 +60,7 @@ decisions:
 
 Regression of `disease_progression_one_year`, scored with `rmse` on IID splits. 442 rows and 10 features. Source: Other (2002).
 
-Not built yet. The current definition gives checksum `v2:f8b53eb2e5b4478e518d6a66986878bf3c9e06f5b3cc951ee126887375c01b8b`.
+Not built yet. The current definition gives checksum `v2:7f590a0f65e76d233268cd781b80d0ff24e4753e9eea3921a33399627f4f92a6`.
 
 ## In brief
 
@@ -132,6 +134,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | iid |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | The LARS paper uses the data to illustrate variable selection (in-sample R^2 / Cp risk estimate along the path), not a held-out prediction task with a named score. |
+
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
 
@@ -183,7 +194,7 @@ We start with `diabetes.data` from Trevor Hastie's LARS page at Stanford: the un
 - The source does not say which `sex` code (1 or 2) is which; we keep the two codes as categories.
 - Anomaly: the cholesterol ratio is given with decimals in 62 rows and the blood pressure in thirds in 42; in the other rows both are whole numbers, which may mark two recording batches. The format does not carry the target (decision table), so we keep the values as written.
 - Anomaly, cohort: the paper names no clinic, inclusion rule or units, and the data does not look like its "442 diabetes patients": read as fasting plasma glucose in mg/dL, `glucose` (58 to 124) stays below the diabetes threshold of 126. Without units the data cannot settle it; we keep it with this note, as the source is a named paper and the authors' page.
-- The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which the default RMSE matches.
+- The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which RMSE matches.
 - IID: one row per patient, no visit dates and no time trend in the file order. No missing values or duplicate rows.
 - Not trivial, despite the record's `Trivial` marker: on all 60 shipped splits, the best of least squares, ridge and a random forest (R^2 0.49) beats the best single feature (0.30) by at least 0.08.
 

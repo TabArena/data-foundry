@@ -189,6 +189,10 @@ dl.fields { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: .
 dl.fields dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); padding-top: .2rem; }
 dl.fields dd { margin: 0; max-width: 68ch; }
 dt.usecase + dd { font-weight: 500; }
+.metricbox { margin-top: 1.6rem; max-width: 820px; }
+.metricbox h3 { margin: 0 0 .6rem; font: 600 .78rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.metricbox dd code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+.metricbox dd a { overflow-wrap: anywhere; }
 .judge { margin-top: 1.6rem; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface); padding: .8rem 1rem; border-radius: 0 6px 6px 0; }
 .judge.direct { border-color: var(--direct); } .judge.approximate { border-color: var(--approx); } .judge.none { border-color: var(--none); }
 .judge p { margin: .3rem 0 0; max-width: 68ch; }
@@ -735,6 +739,35 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     out.push('<span class="jump"><button class="linkbtn" data-act="jump">Skip to your verdict ↓</button></span>');
     return '<div class="links">' + out.join("") + "</div>";
   }
+  // The declared metric (metrics.md, MET-11): origin, name, original, reference, reason, and the scoring columns.
+  const METRIC_ORIGIN = {
+    source: "the source's metric",
+    stand_in: "a stand-in for the source's metric, which cannot be computed",
+    fallback: "the default for the problem type: the source defines no unique metric",
+  };
+  function metricHtml(d) {
+    const m = d.metric;
+    if (!m) return d.folder ? '<p class="missing-note">No metric: the definition declares none and its README names none.</p>' : "";
+    const link = (v) => /^https?:\/\//.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(v) + "</a>" : escCode(v);
+    const json = (v) => "<code>" + esc(JSON.stringify(v)) + "</code>";
+    const rows = [
+      ["Metric", "<code>" + esc(m.name) + "</code>"],
+      ["Origin", m.origin ? esc(m.origin) + (METRIC_ORIGIN[m.origin] ? ": " + esc(METRIC_ORIGIN[m.origin]) : "") : ""],
+      ["Original", m.original ? escCode(m.original) : ""],
+      ["Reference", m.reference ? link(m.reference) : ""],
+      ["Definition", m.definition ? escCode(m.definition) : ""],
+      ["Reason", m.reason ? escCode(m.reason) : ""],
+      ["Params", m.params && Object.keys(m.params).length ? json(m.params) : ""],
+      ["Inputs", m.inputs && Object.keys(m.inputs).length ? Object.entries(m.inputs).map(([r, c]) => esc(r) + ": <code>" + esc(c) + "</code>").join(", ") : ""],
+      ["Scoring columns", (m.scoring_columns || []).map((c) => "<code>" + esc(c.column) + "</code>" +
+        (c.role ? " (" + esc(c.role) + (c.description ? ": " + esc(c.description) : "") + ")" : "")).join("; ")],
+    ].filter(([, v]) => v);
+    const src = m.source === "readme"
+      ? "From the frontmatter of the generated <code>README.md</code> (name and origin only)."
+      : "From <code>metric</code> and <code>scoring_columns</code> in <code>dataset.py</code>, as of this page’s snapshot (" + esc(DATA.snapshot) + ").";
+    return '<section class="metricbox" aria-labelledby="mh"><h3 id="mh">Metric</h3><dl class="fields">' +
+      rows.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>").join("") + '</dl><p class="srcnote">' + src + "</p></section>";
+  }
   function useCaseHtml(d) {
     const s = d.summary;
     if (!s) {
@@ -923,7 +956,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     rec += '<div class="md">' + d.record.html + "</div>";
 
     const panel = (k, inner) => '<div class="cpanel" id="cp-' + k + '" role="tabpanel" aria-labelledby="ct-' + k + '"' + (ui.ctab === k ? "" : " hidden") + ">" + inner + "</div>";
-    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
+    h += panel("usecase", useCaseHtml(d) + metricHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
 
     // 3. Your verdict: below the tabs, whichever tab is open.
     h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + "</h3>" +

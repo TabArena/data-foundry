@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class QsarFishToxicity(AbstractCuratedDataset):
@@ -67,6 +67,12 @@ class QsarFishToxicity(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the "
+            "regression fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/qsar_fish_toxicity.csv", sep=";", header=None)

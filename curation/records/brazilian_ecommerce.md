@@ -37,6 +37,8 @@ Contains text fields (reviews)
 
 CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run) as implemented: the delivery time promised at checkout is the use case (a late-delivery flag would be a variant of it, the review score a satisfaction task); the one-month gap keeps the labels a refit would have; Olist's promised date stays an input known at checkout; the selection on answered reviews stays an anomaly note.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own.
+
 ## Reference
 
 ?

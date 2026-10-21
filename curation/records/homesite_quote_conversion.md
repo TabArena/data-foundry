@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: SalesField3, SalesField9, PersonalField1, PersonalField2, PersonalField6, PropertyField8, PropertyField29 stay numeric (anonymized fields).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve) (https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation).
+
 ## Reference
 
 Darrel, Stephen D Stayton, and Will Cukierski. Homesite Quote Conversion. https://kaggle.com/competitions/homesite-quote-conversion, 2015. Kaggle.

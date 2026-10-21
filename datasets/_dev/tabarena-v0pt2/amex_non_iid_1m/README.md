@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: amex_non_iid_1m
 container_format: 2
-checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
+checksum: v2:21e916fab98b9ba32d9447af64c8a96a5b0633da25fe71895b1641b6cb02ea36
 build:
   uuid: 01a111fb-d73e-711b-a490-c684c5c4635d
   checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 1500000
   n_features: 189
@@ -31,7 +31,9 @@ data:
 task:
   target: target
   problem_type: binary_classification
-  metric: amex_metric
+  metric: gini_top_capture
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: target
   time_on: null
@@ -68,7 +70,6 @@ bundle_checks:
   infos:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
-  - task_metric_unknown
   accepted:
     splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
       grouped folds of the 1.5M-row frame overshoot by whole groups, so 325 rows (0.02%)
@@ -80,9 +81,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `target`, scored with `amex_metric` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 189 features. Source: Kaggle (2022).
+Binary classification of `target`, scored with `gini_top_capture` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 189 features. Source: Kaggle (2022).
 
-Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06. See [Build](#build).
+Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21e916fab98b9ba32d9447af64c8a96a5b0633da25fe71895b1641b6cb02ea36`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,12 +150,23 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 1,500,000 x 191 |
 | task.target | target |
 | task.problem_type | binary_classification |
-| task.metric | amex_metric |
+| task.metric | gini_top_capture |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | target |
 | task.group_on | customer_ID |
 | task.group_labels | per_group |
 | task.group_time_on | S_2 |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `gini_top_capture` (custom; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | AmEx competition metric M = 0.5*(G + D) |
+| reference | https://www.kaggle.com/competitions/amex-default-prediction/overview/evaluation |
+| definition | Mean of the normalized Gini (G) and the default rate captured in the top 4% of predictions (D), both with negatives weighted 20x for the competition's 5% subsampling of non-defaults. |
+| params | {'top_fraction': 0.04, 'negative_weight': 20} |
 
 <details>
 <summary>Feature types: 13 categorical, 0 string, 0 datetime</summary>
@@ -213,7 +225,7 @@ Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every spli
 
 ## Group structure
 
-One group is a customer; its rows are its monthly statements (1 to 13). The task is "to predict, for each customer_ID, the probability of a future payment default", with the label "calculated by observing 18 months performance window after the latest credit card statement" (AmEx Default Prediction, Kaggle). So one prediction per customer, made at its latest statement (`S_2`) from all its statements, which are all in the past at that point; the Kaggle test customers are disjoint from the training customers. The competition scores `amex_metric` per customer.
+One group is a customer; its rows are its monthly statements (1 to 13). The task is "to predict, for each customer_ID, the probability of a future payment default", with the label "calculated by observing 18 months performance window after the latest credit card statement" (AmEx Default Prediction, Kaggle). So one prediction per customer, made at its latest statement (`S_2`) from all its statements, which are all in the past at that point; the Kaggle test customers are disjoint from the training customers. The competition scores its metric (`gini_top_capture`) per customer.
 
 | field | value |
 |---|---|
@@ -237,12 +249,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_missing_value_sentinel`: 11 numeric column(s) are dominated by a sentinel-looking value: D_49=-1 (90.1%), R_9=-1 (94.4%), D_82=-1 (73.5%), D_106=-1 (90.2%), R_26=-1 (89.0%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
-- **info** `task_metric_unknown`: Metric 'amex_metric' is not one of the standard names for binary_classification. (hint: Fine for a custom competition metric, but it has to be registered on the consumer side — TabArena otherwise silently falls back to 'roc_auc'.)
 
 Accepted on purpose:
 
@@ -479,3 +490,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:21e916fab98b9ba32d9447af64c8a96a5b0633da25fe71895b1641b6cb02ea36` |

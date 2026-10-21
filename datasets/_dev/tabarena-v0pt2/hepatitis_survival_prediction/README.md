@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10
+checksum: v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0
 build:
   uuid: 01a111fc-dbca-7d8e-ab0c-322d3d816ede
   checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
@@ -29,6 +29,8 @@ task:
   target: class
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: class
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 103
     max: 104
@@ -63,7 +67,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1988).
 
-Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10`, so the build is stale. See [Build](#build).
+Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -128,6 +132,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | class |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | Efron & Gong 1981/1986 study how to estimate the error rate of Gregory's logistic rule on these 155 patients: a statistics-methods paper, not a decision; 32 deaths, so accuracy is coarse. Original rejected: error rate. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
@@ -363,4 +376,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:94be71972172e830e13c40909bad3787719c6edbee9e76a92cc726d8c08cff10` |
+| stale | yes: the definition now gives checksum `v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0` |

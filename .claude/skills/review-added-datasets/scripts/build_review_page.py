@@ -7,10 +7,11 @@ Usage, from the repository root::
         [--tldr <yaml>] [--extra-crosscut <yaml>]
 
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
-Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary`` and generated
-``README.md`` (for a retired definition: from the last commit that still had it) and the curation record, as they
-are at build time. The report format is ``references/review_file_format.md``; a report that does not follow it stops
-the build with the section and the line.
+Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
+``metric`` (with its scoring columns; the Use case tab shows it) and generated ``README.md`` (for a retired
+definition: from the last commit that still had it) and the curation record, as they are at build time. The report
+format is ``references/review_file_format.md``; a report that does not follow it stops the build with the section
+and the line.
 
 The page lists the records in review order (``review_order``): the record's ``priority`` from 5 down to 1, records
 without one last, then the fewest open marks first, then the name.
@@ -55,6 +56,7 @@ except ImportError:  # pragma: no cover - depends on the environment
     )
 
 from data_foundry.v2.dataset import TaskSummary
+from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
 
@@ -825,6 +827,37 @@ def _summary_from_source(code: str) -> dict | None:
     return None
 
 
+METRIC_KEYS = ("name", "origin", "original", "reference", "definition", "reason", "params", "inputs")
+"""The fields of a metric spec the Use case tab shows."""
+
+
+def _metric_from_class(cls: Any) -> dict | None:
+    """The definition's declared metric as the container's spec would hold it, with its scoring columns."""
+    metric = getattr(cls, "metric", None)
+    if not isinstance(metric, Metric):
+        return None
+    try:
+        spec = metric.spec(cls.problem_type)
+    except ValueError:
+        return None
+    out = {k: spec.get(k) for k in METRIC_KEYS}
+    out["scoring_columns"] = [
+        {"column": c.column, "role": c.role, "used_by": c.used_by, "description": c.description}
+        for c in getattr(cls, "scoring_columns", ()) or ()
+    ]
+    return {**out, "source": "definition"}
+
+
+def _metric_from_front(task: dict) -> dict | None:
+    """The metric of a README's frontmatter (``task.metric``, ``task.metric_origin``, ``task.scoring_columns``)."""
+    if not task.get("metric"):
+        return None
+    out: dict[str, Any] = dict.fromkeys(METRIC_KEYS)
+    out.update(name=task["metric"], origin=task.get("metric_origin"))
+    out["scoring_columns"] = [{"column": c} for c in task.get("scoring_columns") or ()]
+    return {**out, "source": "readme"}
+
+
 def _sentence(text: str) -> str:
     return text[:1].upper() + text[1:]
 
@@ -919,10 +952,12 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     if cls.dataset_metadata.unique_name != folder:
         raise BuildError(f"{where.wc}/{folder}/dataset.py names `{cls.dataset_metadata.unique_name}`, not `{folder}`")
     regime = "grouped" if cls.grouping is not None else "temporal" if cls.temporal is not None else "iid"
+    front = read_report(where.root / folder / "README.md")
     return {
         "code": definition.read_text(),
         "summary": _summary_from_class(cls),
-        "meta": _meta(regime, cls.problem_type, read_report(where.root / folder / "README.md"), retired=False),
+        "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
+        "meta": _meta(regime, cls.problem_type, front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
 
@@ -948,6 +983,7 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     return {
         "code": code,
         "summary": _summary_from_source(code) if code else None,
+        "metric": _metric_from_front(task),
         "meta": meta,
         "retiredCommit": _git(where.repo, "rev-parse", "--short", commit).stdout.strip(),
         "retiredDate": removed_on,
@@ -976,7 +1012,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if not record_path.is_file():
         raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
     retired = bool(folder) and not (where.root / folder).is_dir()
-    files: dict[str, Any] = {"code": None, "summary": None, "meta": None, "readme": None}
+    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "meta": None, "readme": None}
     if folder:
         files.update(_retired_definition(where, name, folder) if retired else _live_definition(where, name, folder))
     if files["summary"] is None and name in tldr:
@@ -1013,6 +1049,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "record": _record(record_path),
         "decided": decided,
         "summary": files["summary"],
+        "metric": files["metric"],
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),

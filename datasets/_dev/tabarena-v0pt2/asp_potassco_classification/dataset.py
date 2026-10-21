@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 
 class AspPotasscoClassification(AbstractCuratedDataset):
@@ -84,11 +84,31 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         - We treat it as a multiclass classification task to solve the algorithm selection task as in the OpenML version (https://openml.org/d/41705).
         - We drop all cases where no algorithm was able to finish before the timeout as these are essentially random labels.
         - We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the best configuration for a problem class not seen in training (the `definition` of the grouping).
+        - Metric: log loss stands in for ASlib's PAR10, which needs the runtimes of all 11 configurations; only the fastest configuration ships (metric spec).
     """
 
     # Task
     target = "algorithm"
     problem_type = "multiclass_classification"
+    metric = Metric.stand_in(
+        "log_loss",
+        original=(
+            "PAR10 (penalized average runtime, timeouts counted as 10 x cutoff) of the selected algorithm (ASlib)"
+        ),
+        reason=(
+            "ASlib scores PAR10 of the selected configuration, which needs the 11 runtimes per instance; they"
+            " are not shipped (only the fastest configuration's label), and instances no configuration solved"
+            " are dropped. Log loss on the fastest-configuration label is the closest computable score."
+        ),
+        reference=(
+            "Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence "
+            "237; https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO (cutoff 600 s)"
+        ),
+        definition=(
+            "Original: mean over instances of the runtime of the chosen configuration, with a timeout scored "
+            "6000 s (10 x 600 s cutoff); stand-in: multiclass log loss on the fastest-configuration label."
+        ),
+    )
     grouping = Grouping(
         on="task_id",
         labels="per_sample",

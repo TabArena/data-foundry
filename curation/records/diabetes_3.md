@@ -47,6 +47,8 @@ The original source of the data is supposedly from the same group as the referen
 
 CC (2026-10-21, Lennart): on the USE-5 question (REVIEW.md issue 1): "In general, I would like to keep the data and just mark it as approximate, and we can case-by-case decide the details." USE-5 amended: a label from a named publication whose construction is undocumented may ship with fit approximate and a note naming the gap; kept as defined.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the LARS paper illustrates variable selection, no held-out score.
+
 ## Reference
 
 @article{efron2004least,

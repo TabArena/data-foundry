@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: african_credit_scoring_challenge
 container_format: 2
-checksum: v2:ce2bf2e2e4d01e49c2cc2a9920af6c019b6250daf0591bbeb2426d01254317f2
+checksum: v2:188e9986e1a3b48a37eb9894d6bbf35273ee2f4c53243cf45e5385f4e1341546
 build: null
 build_stale: false
 data:
@@ -18,6 +18,8 @@ task:
   target: default
   problem_type: binary_classification
   metric: f1
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: default
   time_on: disbursement_date
@@ -75,7 +77,7 @@ decisions:
 
 Binary classification of `default`, scored with `f1` on temporal splits by `disbursement_date`. 58,953 rows and 10 features. Source: Zindi (2024).
 
-Not built yet. The current definition gives checksum `v2:ce2bf2e2e4d01e49c2cc2a9920af6c019b6250daf0591bbeb2426d01254317f2`.
+Not built yet. The current definition gives checksum `v2:188e9986e1a3b48a37eb9894d6bbf35273ee2f4c53243cf45e5385f4e1341546`.
 
 ## In brief
 
@@ -154,6 +156,16 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | default |
 | task.time_on | disbursement_date |
 
+**Metric**
+
+| field | value |
+|---|---|
+| name | `f1` (standard; takes label; higher is better) |
+| origin | source: the source's metric |
+| original | F1 Score |
+| reference | https://zindi.africa/competitions/african-credit-scoring-challenge (evaluation section) |
+| definition | Binary F1 of hard 0/1 predictions with default (Target=1) the positive class |
+
 <details>
 <summary>Feature types: 5 categorical, 0 string, 2 datetime</summary>
 
@@ -195,7 +207,7 @@ The first 5 of 58,953 rows of the final frame (the oldest rows: the frame is sor
 We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.
 
 - Prediction point: when a loan is disbursed, with the customer's settled earlier loans known.
-- We rename target to default. The competition scored F1, which we declare (TP-6).
+- We rename target to default.
 - We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for decision table 2.
 - We drop ID and tbl_loan_id (identifiers) and country_id (Kenya in every row).
 - We drop Total_Amount_to_Repay and Lender_portion_to_be_repaid: recorded at the data pull, they grow with a defaulted loan's days past due (decision table).

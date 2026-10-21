@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -164,6 +165,15 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
     # Task
     target = "log1p_trip_duration"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSLE (Root Mean Squared Logarithmic Error)",
+        reference="https://www.kaggle.com/competitions/nyc-taxi-trip-duration/overview/evaluation",
+        definition=(
+            "sqrt(mean((log(p+1) - log(a+1))^2)) on trip_duration in seconds; equals rmse on our log1p_trip_duration "
+            "target."
+        ),
+    )
 
     # Splits
     temporal = Temporal(on="pickup_datetime", splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1))

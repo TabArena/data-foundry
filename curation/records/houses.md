@@ -35,6 +35,8 @@ Lennart: In a task like this, I think it would count as IID as spatial informati
 
 Andrej: non-iid. Currently, we do not include spatial data as non-iid. Might change that. Temporal split required but not possible (see TabRed)
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The paper is a spatial-econometrics estimation paper: it models ln(median house value) by least squares / spatial autoregression and compares fits, without a prediction metric. RMSE on the log target follows from its least-squares setup.
+
 ## Reference
 
 Pace and Barry (1997), "Sparse Spatial Autoregressions", Statistics and Probability Letters.

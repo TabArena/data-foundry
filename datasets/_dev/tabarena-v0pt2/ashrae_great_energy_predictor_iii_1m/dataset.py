@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -225,6 +226,15 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
     # Task
     target = "log1p_meter_reading"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSLE (Root Mean Squared Logarithmic Error)",
+        reference="https://www.kaggle.com/competitions/ashrae-energy-prediction/overview/evaluation",
+        definition=(
+            "sqrt(mean((log1p(pred) - log1p(actual))^2)) over all meter-hours; our target is "
+            "log1p_meter_reading, so RMSE on it equals the competition's RMSLE."
+        ),
+    )
 
     # Splits: three 4-month windows tile 2017, the competition's public test year.
     temporal = Temporal(

@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Grouping,
+    Metric,
     SplitPlan,
     TaskSummary,
     drop_columns,
@@ -192,6 +193,12 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
     # Task
     target = "final_result"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source is a data descriptor (OU Analyse open dataset) with no prediction task or metric; our day-60 "
+            "four-class task is our construction."
+        )
+    )
     grouping = Grouping(
         on="module_presentation",
         labels="per_sample",

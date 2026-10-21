@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: edge_sa and edge_sl (edge counts of the solver's code graph) stay numeric.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source par_k {"cutoff": 5000, "k": 10, "target_transform": "log", "timeout_rel_tol": 0.0001} — PAR10 (penalized average runtime, factor 10) of the selected algorithm; also reported as the fraction of the single-best to virtual-best gap closed (Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237:41-58; Pulatov et al. 2022 (PMLR v188)); inputs {"group": "instance_id"}.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

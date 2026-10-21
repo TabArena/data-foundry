@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc
+checksum: v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260
 build:
   uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
   checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
@@ -29,6 +29,8 @@ task:
   target: LC50
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -67,7 +69,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on IID splits. 908 rows and 6 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,6 +133,15 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the regression fallback. |
 
 <details>
 <summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
@@ -275,4 +286,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1c57f953e1f73999321343d2e7b73dbad626877bfcee97df3c0d6fc4ebf563cc` |
+| stale | yes: the definition now gives checksum `v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260` |

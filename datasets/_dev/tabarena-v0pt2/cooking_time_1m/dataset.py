@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class CookingTime1m(AbstractCuratedDataset):
@@ -77,6 +77,15 @@ class CookingTime1m(AbstractCuratedDataset):
     # Task
     target = "cooking_time_minutes"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE (TabReD regression tasks)",
+        reference=(
+            "Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE "
+            "for regression, ROC AUC for classification"
+        ),
+        definition="sqrt(mean((y - yhat)^2)) on the natural-log minutes target",
+    )
 
     # Splits
     splits_comment = """

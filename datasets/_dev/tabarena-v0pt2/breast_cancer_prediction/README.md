@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: breast_cancer_prediction
 container_format: 2
-checksum: v2:e00dae999c6cf6bc265dc81241ac45196ccba004b9c76f538d35e27a4585bc6e
+checksum: v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: cancer_within_one_year
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: cancer_within_one_year
   time_on: null
@@ -65,7 +67,7 @@ decisions:
 
 Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 36,714 rows and 10 features. Source: GOV Website (2014).
 
-Not built yet. The current definition gives checksum `v2:e00dae999c6cf6bc265dc81241ac45196ccba004b9c76f538d35e27a4585bc6e`.
+Not built yet. The current definition gives checksum `v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e`.
 
 ## In brief
 
@@ -147,6 +149,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | roc_auc |
 | task.split_regime | iid |
 | task.stratify_on | cancer_within_one_year |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'. |
 
 <details>
 <summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>

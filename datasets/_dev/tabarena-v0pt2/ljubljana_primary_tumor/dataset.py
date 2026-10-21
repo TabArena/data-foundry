@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class LjubljanaPrimaryTumor(AbstractCuratedDataset):
@@ -70,6 +70,12 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The 1986-1987 papers report accuracy only; we drop the classes with fewer than 10 rows "
+            "(MET-2). Original rejected: accuracy. log_loss is the multiclass fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

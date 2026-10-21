@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:7fd0651d4b56b8bdd256326a77962103a427269ccf8dcd4ca4cd1805eeb8f39a
+checksum: v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -31,6 +31,8 @@ task:
   target: IsCanceled
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: IsCanceled
   time_on: arrival_date
@@ -74,7 +76,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7fd0651d4b56b8bdd256326a77962103a427269ccf8dcd4ca4cd1805eeb8f39a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -143,6 +145,15 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | IsCanceled |
 | task.time_on | arrival_date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric. |
 
 <details>
 <summary>Feature types: 13 categorical, 0 string, 2 datetime</summary>
@@ -386,4 +397,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7fd0651d4b56b8bdd256326a77962103a427269ccf8dcd4ca4cd1805eeb8f39a` |
+| stale | yes: the definition now gives checksum `v2:db7cdfc088bcd57602065bee5fa297d852a6ab4f199e979190de0a54f6e58255` |

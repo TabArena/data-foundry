@@ -4,6 +4,42 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (every dataset declares its metric)
+
+Lennart decided that a dataset is scored by the metric its original task defines (the competition's evaluation page,
+the task description or the paper), with an explicit fallback (roc_auc / log_loss / rmse) when none is defined.
+Nothing was rebuilt; every container needs a rebuild, because the task metadata changed.
+
+- **Format 2 task metadata, changed in place:** `objective_metric_name` is replaced by the spec `objective_metric`
+  (name, kind, prediction, origin `source` / `stand_in` / `fallback`, original, reference, definition, reason, params,
+  inputs) and `scoring_columns` (columns kept for scoring only, never features). An older format-2 file stops loading
+  with a "rebuild" message; format 1 (BeyondArena) is unchanged.
+- **`data_foundry.v2.metrics`:** `Metric.source / stand_in / fallback / local`, the registry of 23 standard metrics
+  (scikit-learn names) and 11 custom ones with general names (`cost_matrix`, `precision_at_k`,
+  `average_precision_at_k`, `rmspe`, `gini_top_capture`, `weighted_pearsonr`, `mean_group_pearsonr`,
+  `hierarchical_balanced_accuracy`, `gini_stability`, `par_k`, `normalized_early_detection_utility`), each tested
+  equal to its official implementation and timed on 1M rows; `scorer(container)` (inputs by row index, per-group
+  aggregation) and `feature_columns(container)`. The module imports nothing else from Data Foundry.
+- **Definitions:** `metric` is a required attribute. All 173 definitions declare one, from a sweep of their sources
+  and the new rules MET-1..13 (`knowledge-curation/references/metrics.md`): 67 source, 6 stand-in, 1 from the task's context, 99 fallback.
+  The scored metric changes for 18: allstate_claims_severity (`mae` on the raw loss), aps_failure and credit_g
+  (`cost_matrix` on probabilities), coil_2000 and labour_inspection_compliance (`precision_at_k`),
+  corporate_credit_rating_cat (`mae`, stand-in), electric_motor_temperature_prediction (`mse`), force_2020
+  (`cost_matrix`, the competition's penalty matrix), forest_fires (`mae` on the raw area), g_research
+  (`weighted_pearsonr`), hiva_agnostic (`balanced_accuracy`), huntprohibited_1m (`average_precision_at_k`),
+  micro_mass (`hierarchical_balanced_accuracy`), numerai_v5_2_1m (`mean_group_pearsonr`, Numerai CORR),
+  rossmann_store_sales (`rmspe`), sat11_hand_algo_runtime (`par_k`), wine_quality (`mae`), diamonds (`rmsle` on
+  the price in dollars, the new origin `context`: no source metric, but the task makes one obvious). amex and
+  sepsis_prediction_1m keep their metric under a general name (`gini_top_capture`,
+  `normalized_early_detection_utility`). forest_fires, allstate and diamonds ship the raw target (MET-3). Each record has an
+  `Assessment (AI, 2026-10-21)` line; Lennart's calls (home_credit stand-in, labour_inspection, covertype and the
+  threshold metrics left out, the accepted proposals) are `CC` lines.
+- **Skills and docs:** TP-6 points to `metrics.md`; `/screen-candidates`, `/add-dataset`, the claim auditor and the
+  domain practitioner check the metric; the review page shows each dataset's metric; the probes drop scoring columns;
+  `examples/read_metric_without_data_foundry.py` reads a container's metric with plain json; `BENCHMARK_CHANGES_TODO.md`
+  lists what the TabArena adapter has to change (read the spec, register the custom scorers, pass scoring columns,
+  no silent fallback, threshold tuning for threshold metrics).
+
 ## 2026-10-21 (the curator's third round on the cross-dataset items)
 
 Lennart replied on the page; his notes are now dated turns in the working copy's `REVIEW.md`, and the page shows each

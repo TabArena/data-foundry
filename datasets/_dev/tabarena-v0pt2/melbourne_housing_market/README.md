@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: melbourne_housing_market
 container_format: 2
-checksum: v2:cf3dd9f1fe2d7199c77aed1d32a06de67d34e08c5347d3fdc5d0d46d5d5585c4
+checksum: v2:bb22c0cab16be4c7f5838735ae51369d155f5a47e812c18088ae183e49aaf19f
 build: null
 build_stale: false
 data:
@@ -19,6 +19,8 @@ task:
   target: log_price
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Date
@@ -60,7 +62,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmse` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2018).
 
-Not built yet. The current definition gives checksum `v2:cf3dd9f1fe2d7199c77aed1d32a06de67d34e08c5347d3fdc5d0d46d5d5585c4`.
+Not built yet. The current definition gives checksum `v2:bb22c0cab16be4c7f5838735ae51369d155f5a47e812c18088ae183e49aaf19f`.
 
 ## In brief
 
@@ -135,6 +137,15 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Kaggle dataset without a task or metric; regression fallback rmse (on the log target, close to RMSLE). |
 
 <details>
 <summary>Feature types: 6 categorical, 1 string, 1 datetime</summary>

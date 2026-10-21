@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708
+checksum: v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -29,6 +29,8 @@ task:
   target: MEDIAN_PXC50
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -67,7 +69,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,704 rows and 1,024 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,6 +135,16 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Average root mean squared error (RMSE) with 10-fold cross-validation |
+| reference | Olier et al. 2018, Meta-QSAR, Machine Learning 107:285-311, doi:10.1007/s10994-017-5685-x, Sec. 2.3 (arXiv:1709.03854) |
+| definition | RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale). |
 
 <details>
 <summary>Feature types: 1024 categorical, 0 string, 0 datetime</summary>
@@ -392,4 +404,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:399687f14eb65e4c5986590c0f2770c8aeda03617fce9bafa56e309f419e4708` |
+| stale | yes: the definition now gives checksum `v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47` |

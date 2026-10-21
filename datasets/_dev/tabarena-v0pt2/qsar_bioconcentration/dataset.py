@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     drop_columns,
     rdkit_descriptors,
@@ -135,6 +136,9 @@ class QsarBioconcentration(AbstractCuratedDataset):
     # Task
     target = "bioconcentration_mechanism"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # UTF-8 with a byte-order mark and CRLF line ends; a CAS cell can hold several numbers in quotes

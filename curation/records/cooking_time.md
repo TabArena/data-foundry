@@ -44,6 +44,8 @@ CC (2026-10-21, Lennart): check SPLIT-9 on the weekly test windows and add a gap
 
 **Assessment (AI, 2026-10-21):** SPLIT-9 late labels in cooking_time_1m (order time + cooking time, from the raw file after the under-one-minute filter): without a gap 172, 126 and 108 train orders per weekly window (newest first; starts 2023-12-28, 12-21, 12-14) end after the window start; with a gap of one day (TemporalSplits(..., gap=1)) none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%); each train side is still a random 1M. Gap set in dataset.py, counts in splits_comment; script local-data-warehouse/_runs/2026-10-21_crosscut/x21-0/late_labels.py.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE (TabReD regression tasks), Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE for regression, ROC AUC for classification.
+
 ## Reference
 
 TabRed

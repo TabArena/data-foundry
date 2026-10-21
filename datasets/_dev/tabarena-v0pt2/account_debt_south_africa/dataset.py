@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 # The columns the bad-debt label is set from: debt aged 90 days or more, write-offs, and their ratio to the billing.
 DEBT_COLUMNS = ["total90debt", "totalwriteoff", "debtbillingratio"]
@@ -141,6 +141,9 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
     # Task
     target = "BadDebt"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Kaggle dataset upload without a task or evaluation metric; no paper defines one",
+    )
 
     accepted_check_warnings = {
         "dataset_duplicate_rows": (

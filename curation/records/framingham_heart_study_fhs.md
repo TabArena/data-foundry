@@ -48,6 +48,8 @@ CC (2026-10-21, Lennart): agree to amend PROV-3 (values the owner perturbed for 
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: male, currentSmoker, BPMeds, prevalentStroke, prevalentHyp, diabetes.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the teaching dataset defines no task or metric; the 10-year risk context points to the C statistic, which equals roc_auc here.
+
 ## Reference
 
 https://www.nhlbi.nih.gov/sites/default/files/media/docs/risk-assessment.pdf

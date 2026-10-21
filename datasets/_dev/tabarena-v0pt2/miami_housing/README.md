@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d
+checksum: v2:79854e1f966d6a7068e905174ca6ab676249bbfc94043a1329024db6687096e7
 build:
   uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
   checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
@@ -29,6 +29,8 @@ task:
   target: SALE_PRC
   problem_type: regression
   metric: rmse
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -42,6 +44,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 9184
     max: 9184
@@ -63,7 +67,7 @@ decisions: []
 
 Regression of `SALE_PRC`, scored with `rmse` on IID splits. 13,776 rows and 15 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:79854e1f966d6a7068e905174ca6ab676249bbfc94043a1329024db6687096e7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -125,6 +129,15 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | sqrt(mean((y - p)^2)) |
+| reason | Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. rmse on the log sale price is the regression fallback. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -282,4 +295,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5d03fca15800ed74a74313f876d85c22c0c62add2abda15840a3579b0f530b0d` |
+| stale | yes: the definition now gives checksum `v2:79854e1f966d6a7068e905174ca6ab676249bbfc94043a1329024db6687096e7` |

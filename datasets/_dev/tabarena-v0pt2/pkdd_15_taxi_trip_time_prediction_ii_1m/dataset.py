@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -158,6 +159,12 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     # Task
     target = "log1p_travel_time"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="Root Mean Squared Logarithmic Error (RMSLE)",
+        reference="https://www.kaggle.com/competitions/pkdd-15-taxi-trip-time-prediction-ii/overview/evaluation",
+        definition="sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds; equals RMSE on the shipped log1p_travel_time target.",
+    )
 
     # Splits
     temporal = Temporal(

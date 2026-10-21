@@ -63,6 +63,8 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 **Assessment (AI, 2026-10-21):** fit set to `direct`; the two kept crawl-time leaks (R² 0.158 with both, 0.135 and 0.143 without each) are named in `fit_reason` as kept; REVIEW.md outcome and issue 5 updated.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The paper scores a binary task (shares >= 1,400 threshold) with accuracy/F1/AUC; we ship a regression on log shares, so the original target is not ours; rmse on the log target is the regression fallback.
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

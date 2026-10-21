@@ -44,6 +44,8 @@ The data looks reasonable to use, is used a lot, and might be real. We can use i
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: hypertension, heart_disease.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC-ROC of the McKinsey Analytics Online Hackathon (Healthcare Analytics, 2018).
+
 ## Reference
 
 Kaggle

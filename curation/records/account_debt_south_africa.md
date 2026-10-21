@@ -45,6 +45,8 @@ CC (2026-10-12, Lennart): Kept `TotalElectricityBill`: its signal is mostly whet
 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: HasIDNo.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset upload without a task or evaluation metric; no paper defines one.
+
 ## Reference
 
 Kaggle

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class RossmannStoreSales(AbstractCuratedDataset):
@@ -74,6 +74,15 @@ class RossmannStoreSales(AbstractCuratedDataset):
     # Task
     target = "Sales"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmspe",
+        original="Root Mean Square Percentage Error (RMSPE)",
+        reference=(
+            "https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API "
+            "evaluationMetric: 'Root Mean Square Percentage Error')"
+        ),
+        definition="sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales",
+    )
 
     # Splits
     splits_comment = """

@@ -31,7 +31,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, drop_columns,
+)
 
 
 class MyDataset(AbstractCuratedDataset):
@@ -61,7 +63,8 @@ class MyDataset(AbstractCuratedDataset):
 
     # Task
     target = "y"
-    problem_type = "binary_classification"   # metric -> roc_auc, stratify_on -> target by default
+    problem_type = "binary_classification"   # stratify_on -> target by default
+    metric = Metric.source("roc_auc", original="AUC", reference="https://...")  # required (metrics.md)
 
     # Splits: a temporal task; a grouped one declares `grouping = Grouping(...)` instead, an IID one neither
     temporal = Temporal(on="date", splits=TemporalSplits(window=7, unit="days", n_windows=3))
@@ -118,8 +121,8 @@ Do not re-implement any of this.
   text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is indented like
   code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must differ). The
   regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the task.
-* Defaults: `metric` is the one for the problem type (`roc_auc`, `log_loss`, `rmse`); `stratify_on` is the target for
-  classification. Set them only to deviate.
+* Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
+  required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
   removed; a classification target becomes a category without being listed), then fixes the row order: the rows in
   the order of their content (a hash of each row, so the order `_clean` returns does not matter), then a stable sort by
@@ -189,28 +192,41 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
   `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, and the record's `problem_type` follows the one that
   ships.
-* `metric`: the original use case's metric, the one the source's competition or paper scored (TP-6 in
-  [task_probes.md](../../knowledge-curation/references/task_probes.md); amended 2026-10-21). Overrule it only on
-  evidence that it is biased or wrong for the use case, written in the notes with its numbers. Leave the attribute
-  unset when the metric is the problem type's default (`rmse`, `roc_auc`, `log_loss`). The bundle checks know these
-  names (`KNOWN_METRICS` in `src/data_foundry/bundle_checks.py`): binary `roc_auc`, `average_precision`, `log_loss`,
-  `accuracy`, `balanced_accuracy`, `f1`, `mcc`, `precision`, `recall`; multiclass `log_loss`, `accuracy`,
-  `balanced_accuracy`, `f1_macro`, `f1_micro`, `f1_weighted`, `mcc`, `roc_auc_ovo_macro`, `roc_auc_ovr_macro`;
-  regression `rmse`, `mae`, `mse`, `r2`, `rmsle`, `mape`, `median_absolute_error`, `pearsonr`, `spearmanr`. An alias
-  is an error (`task_metric_not_canonical`); any other string passes as an info (`task_metric_unknown`), must be
-  registered downstream, and until then TabArena scores the default instead. Take the first that applies:
-  1. The original is a listed name: declare it (zillow_prize `mae`, african_credit_scoring_challenge `f1`).
-  2. A listed metric ranks models as the original does, by identity or measured on the shipped splits: declare it
-     (porto_seguro `roc_auc`: the normalized Gini is 2 x ROC AUC - 1; numerai_v5_2_1m `pearsonr`: pooled Pearson
-     within 0.0002 of Numerai's per-era CORR).
-  3. The original is a published metric with a reference implementation that scores the shipped target and
-     predictions as they are: declare it under that name, with the link in a comment (amex_non_iid_1m `amex_metric`,
-     sepsis_prediction_1m's PhysioNet 2019 utility, force_2020's `force_2020_penalty_matrix`).
-  4. Otherwise (a rubric over several targets, or targets the task does not ship): the listed metric the original
-     weighs most on the shipped target (digicow_farmer_training_adoption_challenge: Zindi's 7-day log loss).
+* `metric` (required): a `Metric` from `data_foundry.v2.metrics`; which one is decided by
+  [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
+  * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
+    scored (zillow_prize `Metric.source("mae", original="MAE of logerror", reference=<the evaluation page>)`). A
+    metric equal to the original by identity is a source too, with the identity in `definition` (RMSLE as `rmse` on
+    a log1p target; ROC AUC for a binary normalized Gini).
+  * `Metric.stand_in(name, original=..., reason=..., reference=...)`: the closest computable metric to a unique
+    original that cannot be computed on our data; `original` and `reason` are required.
+  * `Metric.from_context(name, reason=...)`: the source defines no metric, but the task makes one obvious (diamonds:
+    `rmsle` on the price in dollars, since a price's error matters relative to the price); `reason` is required.
+  * `Metric.fallback(reason=...)`: no metric of the source the task would use (none defined, several reported, a
+    threshold metric without a threshold or costs); `roc_auc`, `log_loss` or `rmse` by problem type at build. The
+    reason says where we looked and which source metric was rejected and why.
 
-  Whenever the declared metric is not exactly the original, the notes name the original (and its weights, for a
-  rubric).
+  `name` is a key of `METRICS` (standard scikit-learn style names, or a custom metric under a general name, MET-12);
+  an unknown name or param is refused when `dataset.py` is imported, with the close names. `params` holds JSON values
+  only (a cost matrix, k, weights); `inputs` maps each role the metric needs (`group`, `weight`, `time`) to a column.
+  Each such column is a **scoring column**: it stays in the frame, is never a feature, and is declared as
+  `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
+  row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
+  model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
+  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. Before declaring a metric
+  with inputs, check on the data that every test fold holds what it needs (MET-2).
+
+  The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
+  `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
+  `reference`, `definition` (a one-line formula) and `reason`; a reader without Data Foundry can implement the metric
+  from these fields. `describe()` and the README show it with the scoring columns. The bundle checks:
+  `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
+  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
+  metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or the time column, which is allowed),
+  `task_metric_reference_missing` (a source or stand-in without a link), `task_metric_stand_in_incomplete`,
+  `task_metric_not_computable` (no finite score of a random prediction on some fold) and `task_metric_local`.
+  `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
+  user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
@@ -454,7 +470,7 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
 | `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
-| `task_metric_empty`, `task_metric_problem_type_mismatch`, `task_metric_not_canonical` | leave `metric` unset, or use the canonical short name |
+| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
@@ -519,6 +535,44 @@ column's ROC AUC for the rain before 9 am on day D against the label's window).
 * An accepted bundle-check warning keeps its reason in `accepted_check_warnings` (emscad accepts
   `dataset_pure_feature_value` for large legitimate clients).
 
+## Metrics
+
+Which metric a dataset declares is decided by [metrics.md](../../knowledge-curation/references/metrics.md); this is
+how a custom one gets into the library. The registry is `METRICS` in `src/data_foundry/v2/metrics.py`; it is also the
+list of names the bundle checks know. The module imports only numpy, pandas, scikit-learn and scipy (a test refuses any
+other Data Foundry import), so it can be copied out on its own.
+
+A custom metric is added in the same change as the dataset that needs it (MET-13), under a general name (MET-12):
+
+1. Write `fn(y_true, y_pred, *, labels=None, params, **inputs) -> float`. `y_pred` follows the module's conventions
+   (`proba`: the positive class's probability or one column per class in `labels` order; `label`; `value`); `params`
+   holds the JSON values of the spec (a matrix, `k`, weights); each input role (`group`, `weight`, `time`) arrives as
+   an array aligned with `y_true`. Use the fastest well-tested code: scikit-learn or scipy where they cover the metric,
+   otherwise vectorised numpy (a per-group metric through `np.unique(..., return_inverse=True)` and `np.bincount`, or
+   a pandas `groupby`, never a Python loop over rows); for a competition whose official code is slow, start from the
+   faster versions posted in its discussions or notebooks and check them.
+2. Register a `MetricDef` with `kind="custom"`: `name`, `problem_types`, `prediction`, `greater_is_better`, `fn`,
+   `implementation` (what it calls), `definition` (one line a reader can implement from), `inputs` (the roles it
+   needs), `params` (each param with a short description), `predictions` (other prediction kinds a param may choose,
+   such as a cost matrix scored on probabilities), `check_params` (raises a `ValueError` on a missing matrix or a bad
+   `k`, so a wrong definition fails when `dataset.py` is imported) and `reference` (where the metric is defined and the
+   official code it is tested against).
+3. Test it in `tests/test_v2_metrics.py`:
+   * equal to the official implementation on random inputs, to 1e-9 or exactly, over several seeds and sizes, with ties
+     and with a class missing from a fold where the metric allows it; when the official code cannot run in the test
+     environment, a faithful transcription of it in the test file, with its link;
+   * one case computed by hand, with the arithmetic in a comment;
+   * a fold it cannot score (a single class, an empty group): a clear `ValueError` or a non-finite value, which
+     `task_metric_not_computable` reports;
+   * its time on 1M rows (with a realistic number of groups), reported in the test's output or the PR, and fast
+     enough to score every fold of a benchmark run.
+4. In the definition, declare it (`Metric.source("cost_matrix", params={...}, reference=...)`), declare every input
+   column as a `ScoringColumn`, and run `dataset check`: `task_metric_not_computable` scores a random prediction on
+   every split, so a test fold that lacks what the metric needs shows up there (MET-2).
+
+`Metric.local(fn, ...)` runs code that only the definition holds. It is for a user's own dataset that is never
+shipped; the working copy never uses it.
+
 ## Reference definitions
 
 Read the closest one in full before writing (paths under `datasets/_dev/tabarena-v0pt2/`):
@@ -539,5 +593,8 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 * A group column is split and scoring metadata, never a feature; the harness drops it before fitting
   (`datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md` lists what the harness still needs, such as per-group
   scoring and custom metrics).
+* The declared metric changes no score yet: TabArena's adapter scores only `roc_auc`, `log_loss` and `rmse` and does
+  not read the `objective_metric` spec; supporting it, the custom metrics and the scoring columns is an entry of
+  `BENCHMARK_CHANGES_TODO.md`.
 * String columns are embedded by the pipeline, so a definition ships text as `string`, and molecules as RDKit
   descriptors.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pkdd_15_taxi_trip_time_prediction_ii_1m
 container_format: 2
-checksum: v2:5ea3b81cf22ca6e5250131eadee0341784f698fea03241623d744c5cd2eb6076
+checksum: v2:11c789249f6554c5c3083565d73d689a32052b9a4f9e9822777cac635786e2f8
 build: null
 build_stale: false
 data:
@@ -17,6 +17,8 @@ task:
   target: log1p_travel_time
   problem_type: regression
   metric: rmse
+  metric_origin: source
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: start_time
@@ -56,7 +58,7 @@ decisions:
 
 Regression of `log1p_travel_time`, scored with `rmse` on temporal splits by `start_time`. 1,434,291 rows and 8 features. Source: Kaggle (2015).
 
-Not built yet. The current definition gives checksum `v2:5ea3b81cf22ca6e5250131eadee0341784f698fea03241623d744c5cd2eb6076`.
+Not built yet. The current definition gives checksum `v2:11c789249f6554c5c3083565d73d689a32052b9a4f9e9822777cac635786e2f8`.
 
 ## In brief
 
@@ -135,6 +137,16 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | start_time |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmse` (standard; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | Root Mean Squared Logarithmic Error (RMSLE) |
+| reference | https://www.kaggle.com/competitions/pkdd-15-taxi-trip-time-prediction-ii/overview/evaluation |
+| definition | sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds; equals RMSE on the shipped log1p_travel_time target. |
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>

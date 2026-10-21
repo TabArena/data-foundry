@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -122,7 +123,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.
 
         - Prediction point: when a loan is disbursed, with the customer's settled earlier loans known.
-        - We rename target to default. The competition scored F1, which we declare (TP-6).
+        - We rename target to default.
         - We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for decision table 2.
         - We drop ID and tbl_loan_id (identifiers) and country_id (Kenya in every row).
         - We drop Total_Amount_to_Repay and Lender_portion_to_be_repaid: recorded at the data pull, they grow with a defaulted loan's days past due (decision table).
@@ -144,7 +145,12 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
     # Task
     target = "default"
     problem_type = "binary_classification"
-    metric = "f1"  # the competition's metric
+    metric = Metric.source(
+        "f1",
+        original="F1 Score",
+        reference="https://zindi.africa/competitions/african-credit-scoring-challenge (evaluation section)",
+        definition="Binary F1 of hard 0/1 predictions with default (Target=1) the positive class",
+    )
 
     # Splits: the end of the Type_1 lending and the newest 90 days (`_make_splits`)
     splits_comment = """

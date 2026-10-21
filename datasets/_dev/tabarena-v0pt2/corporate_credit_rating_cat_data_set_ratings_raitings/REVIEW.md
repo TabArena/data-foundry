@@ -2,7 +2,7 @@
 
 **Outcome:** added. The book's own `ratings.csv` (197 rated institutions, most likely banks, each with six
 financial ratios), not the generated OpenML 46372, as a regression on the rating code from 1 (AAA) to 10 with random
-(IID) folds, scored with RMSE. The review panel recommends shipping after changes.
+(IID) folds, scored with MAE (Lennart, 2026-10-21; RMSE before). The review panel recommends shipping after changes.
 
 ```text
 Verdict: ship. Left: issues 2, 3 and 4 are open; the record's `problem_type` follows issue 2, and `source_links`
@@ -43,7 +43,8 @@ links and recommended exclusion, so the links mislead (the `source_links` row mo
 2. **Regression on the 1-10 code (implemented), or 7 classes without codes 1, 2 and 10?** A consistency check. Your
    corporate_credit_rating framing, carried into corporate_issuer_credit_rating (CC 2026-10-16), uses letter
    classes with the rare grades merged or dropped, and your note on this record says "likely classification".
-   - Implemented: regression on the 1-10 code, scored with RMSE; the accepted warning records the reason.
+   - Implemented: regression on the 1-10 code, scored with MAE since 2026-10-21 (RMSE before; the curator's
+     metric decision); the accepted warning records the reason.
    - Effect: regression scores how many notches a prediction is off; classes score only whether the exact code is
      hit, with no credit for one notch off. Option (b) also drops the top of the scale (AAA and AA+ under the notch
      reading) and the bottom code, so the 12 institutions at the ends are not rated.

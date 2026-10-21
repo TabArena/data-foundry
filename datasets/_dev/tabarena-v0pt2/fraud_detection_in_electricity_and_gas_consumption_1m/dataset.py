@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
 
 CUT = "2013-01-01"
 """The prediction date: the features are the invoices before it, and the fraud labels look recorded from it on."""
@@ -194,6 +194,12 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
     # Task
     target = "fraud"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under the Curve (AUC)",
+        reference="https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge (evaluation)",
+        definition="ROC AUC over clients, one fraud probability per client.",
+    )
     grouping = Grouping(
         on="client_id",
         labels="per_group",

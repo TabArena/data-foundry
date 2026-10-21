@@ -51,6 +51,8 @@ CC (2026-10-21, Lennart): make this dataset grouped here as well ("we want to ha
 
 **Assessment (AI, 2026-10-21):** PR #15's scaffold grouping is now in the working copy: the split groups on the Bemis-Murcko scaffold (`murcko_scaffolds` in `data_foundry.v2.chemistry`; 443 groups, a drug without a ring its own group), `dataset check` 0 errors and 0 warnings. Measured on the 587 drugs, untuned LightGBM ROC AUC 0.771 grouped against 0.826 random; the hidden-group probe's SMR_VSA10/SMR_VSA7 groups do not follow the scaffolds (adjusted Rand 0.04 and 0.08) and need no split of their own. Andrej's question on MACCS keys stays open on PR #15. Needs a rebuild.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side, no unique metric (MET-5).
+
 ## Reference
 
 @article{huang2025interdia,

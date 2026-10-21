@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: micro_mass
 container_format: 2
-checksum: v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2
+checksum: v2:205bc274124f33657166311d3491b18e7ff9f71a5d567099d91a88789dd9a4fc
 build:
   uuid: 01a111fc-8b57-73f7-bb59-b6d7ab7a6881
   checksum: v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
   n_rows: 571
   n_features: 1082
@@ -28,7 +28,9 @@ data:
 task:
   target: Species
   problem_type: multiclass_classification
-  metric: log_loss
+  metric: hierarchical_balanced_accuracy
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: Species
   time_on: null
@@ -49,6 +51,8 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 366
     max: 401
@@ -59,7 +63,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - task_metric_input_is_model_input
   accepted: {}
 decisions: []
 ---
@@ -68,9 +73,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Species`, scored with `log_loss` on grouped splits by `Strain`. 571 rows and 1,082 features. Source: UCI (2013).
+Multiclass classification of `Species`, scored with `hierarchical_balanced_accuracy` on grouped splits by `Strain`. 571 rows and 1,082 features. Source: UCI (2013).
 
-Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06. See [Build](#build).
+Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:205bc274124f33657166311d3491b18e7ff9f71a5d567099d91a88789dd9a4fc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,11 +137,22 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 571 x 1,084 |
 | task.target | Species |
 | task.problem_type | multiclass_classification |
-| task.metric | log_loss |
+| task.metric | hierarchical_balanced_accuracy |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | Species |
 | task.group_on | Strain |
 | task.group_labels | per_group |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `hierarchical_balanced_accuracy` (custom; takes label; higher is better) |
+| origin | source: the source's metric |
+| original | Accuracy averaged per strain, then per species (Vervier et al. 2015) |
+| reference | Vervier, Mahé, Veyrieras, Vert 2015, Benchmark of structured machine learning methods for microbial identification from mass-spectrometry data, arXiv:1506.07251; Mahé et al. 2014 Bioinformatics 30(9) |
+| definition | accuracy of the spectra of each strain, averaged over the strains of each true species, then over species (Vervier et al. 2015) |
+| inputs | group: `Strain` |
 
 <details>
 <summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
@@ -280,12 +296,13 @@ One group is a bacterial strain; its rows are technical replicate MALDI-TOF spec
 | nearest neighbour in the same group | 37.1% of the rows (chance: 0.4%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.37) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
+- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['Strain'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
 
 ## Data checks
 
@@ -489,3 +506,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:205bc274124f33657166311d3491b18e7ff9f71a5d567099d91a88789dd9a4fc` |
