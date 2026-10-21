@@ -2,14 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_oral_toxicity
 container_format: 2
-checksum: v2:60ede6e226abf2a1e2a1885d7bbdbe7abe929692644c13d9a90e76ca4a523109
+checksum: v2:16b70574f873ecbcc95a3514a96c1fd114e2ea23f0825841548bafa3cf244ca8
 build: null
 build_stale: false
 data:
-  n_rows: 8484
-  n_features: 1024
+  n_rows: 11105
+  n_features: 1232
   dtypes:
     category: 1025
+    float64: 208
   n_test_dataset_rows: null
 task:
   target: very_toxic
@@ -33,30 +34,34 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 5656
-    max: 5656
+    min: 7403
+    max: 7404
   n_test:
-    min: 2828
-    max: 2828
+    min: 3701
+    max: 3702
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    dataset_pure_feature_value: 'rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid
+      group) marks 212 chemicals, 1 of them very toxic: a fragment count of the QSAR-ready
+      structure, computed before any animal test, so it cannot carry the outcome;
+      aromatic acids are rarely acutely lethal (Lennart, 2026-10-21).'
 decisions:
+- The package's three sets, of which UCI holds two
 - Copies of a parent structure dropped
-- Nine parents that survive twice reduced to one row
-- The file's order is the authors' split; we use cross-validation
+- Parents that survive twice reduced to one row
 ---
 
 # qsar_oral_toxicity
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `very_toxic`, scored with `roc_auc` on IID splits. 8,484 rows and 1,024 features. Source: UCI (2019).
+Binary classification of `very_toxic`, scored with `roc_auc` on IID splits. 11,105 rows and 1,232 features. Source: Other (2019).
 
-Not built yet. The current definition gives checksum `v2:60ede6e226abf2a1e2a1885d7bbdbe7abe929692644c13d9a90e76ca4a523109`.
+Not built yet. The current definition gives checksum `v2:16b70574f873ecbcc95a3514a96c1fd114e2ea23f0825841548bafa3cf244ca8`.
 
 ## In brief
 
@@ -64,17 +69,17 @@ Not built yet. The current definition gives checksum `v2:60ede6e226abf2a1e2a1885
 
 **Use case.** A regulator or a chemical maker screens chemicals without animal test data and flags the very toxic ones, to set priorities and labels without new animal tests (the US ICCVAM project behind the CATMoS models).
 
-**One row.** One chemical of the calibration set of the US ICCVAM acute oral toxicity project, with rat test data (8,484 chemicals after removing salt forms and copies).
+**One row.** One chemical of the calibration and evaluation sets of the US ICCVAM acute oral toxicity project, with rat test data (11,105 chemicals after removing salt forms and copies).
 
 **Predicted.** Whether the swallowed dose that kills half of the rats is 50 mg per kg of body weight or less, the top acute oral hazard category (8% are very toxic). A quarter of the chemicals carry that category without a measured dose.
 
-**Known at prediction time.** 1,024 on/off fingerprint bits computed from the chemical's structure, with salts, solvents and stereochemistry removed.
+**Known at prediction time.** The chemical's structure, with salts, solvents and stereochemistry removed, as 1,024 on/off fingerprint bits and 208 descriptors computed from it.
 
-**What the test data stands for.** Random chemicals; salt forms and hydrates of one compound share a fingerprint and are kept once, so a test chemical never has its parent structure in training. The rows carry no identifier, but they can be linked to the project's structure file by their order, which is how we checked this.
+**What the test data stands for.** Random chemicals; salt forms and hydrates of one compound share the structure and are kept once, so a test chemical never has its parent structure in training (checked on the structure keys the source gives).
 
-**Our changes to the source.** We drop exact copies of a fingerprint, the 22 rows of fingerprints that occur with both classes, and nine rows whose parent structure is already in another row; the source kept them and fixed one training and test set.
+**Our changes to the source.** We add the project's evaluation set to the calibration set UCI holds, compute descriptors from the structure in place of its text, and drop exact copies, the fingerprints that occur with both classes and second rows of a parent structure; the source fixed one training, test and evaluation set.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The screening is simulated: the test rows are random tested chemicals, closer to the training chemicals than the untested ones a screener faces (19.7% against 9.3% have a close analog, Tanimoto 0.7 or more). The score follows that distance (random forest ROC AUC 0.681 for distant chemicals, 0.954 for close ones).
+> **Use case fit: approximate (a stand-in with a known gap).** The screening is simulated: the test rows are random tested chemicals, closer to the training chemicals than the untested ones a screener faces (24.5% against 11.0% have a close analog, Tanimoto 0.7 or more). The score follows that distance (random forest ROC AUC 0.715 for distant chemicals, 0.945 for close ones).
 
 ## Files in this folder
 
@@ -86,7 +91,7 @@ Not built yet. The current definition gives checksum `v2:60ede6e226abf2a1e2a1885
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/qsar_oral_toxicity.md`](../../../../curation/records/qsar_oral_toxicity.md)
-- The original source: <https://doi.org/10.24432/C5PS4J>
+- The original source: <https://michem.unimib.it/download/data/acute-oral-systemic-toxicity/>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -94,13 +99,27 @@ Not built yet. The current definition gives checksum `v2:60ede6e226abf2a1e2a1885
 `dataset.py` reads its raw files from `local-data-warehouse/qsar_oral_toxicity/`. To get them:
 
 ```text
-We download the data from the UCI repository (dataset 508, donated by the Milano Chemometrics and QSAR
-Research Group in 2019) and unzip it to a predefined folder.
+The data comes from the Milano Chemometrics and QSAR Research Group's package of Ballabio et al. (2019):
+download form on their site (source_url; freeware, cite the paper). The package is a RAR archive of MATLAB
+code and data; we use only vt_data.mat, the very toxic endpoint. Ours is a copy the curator provided.
+Extract vt_data.mat into local-data-warehouse/qsar_oral_toxicity/ (any RAR tool, for example
+`unrar e oral_toxicity_data.rar vt_data.mat local-data-warehouse/qsar_oral_toxicity/`).
 
-mkdir -p local-data-warehouse/qsar_oral_toxicity && wget -P local-data-warehouse/qsar_oral_toxicity/ https://archive.ics.uci.edu/static/public/508/qsar+oral+toxicity.zip && unzip local-data-warehouse/qsar_oral_toxicity/qsar+oral+toxicity.zip -d local-data-warehouse/qsar_oral_toxicity/ && rm local-data-warehouse/qsar_oral_toxicity/qsar+oral+toxicity.zip
+sha256 of oral_toxicity_data.rar: 27ef3dffd32c515ba0963fdced5fb27d57d2547f2bffb2770cacda9240769a68
+sha256 of vt_data.mat: 2c0b1e35a05781ac0e181134e22a7008a20726c945e8f9a3e0cba3c4ba6e7f57
+
+The decision tables also read the UCI copy of the training and test sets (dataset 508, donated by the same
+group in 2019, CC BY 4.0):
+
+wget -P local-data-warehouse/qsar_oral_toxicity/ https://archive.ics.uci.edu/static/public/508/qsar+oral+toxicity.zip && unzip local-data-warehouse/qsar_oral_toxicity/qsar+oral+toxicity.zip -d local-data-warehouse/qsar_oral_toxicity/ && rm local-data-warehouse/qsar_oral_toxicity/qsar+oral+toxicity.zip
 
 sha256 of qsar_oral_toxicity.csv: c8ec16179f505370c13491a2c98e0918aae3680270aad0a6f95de3aeb300c874
+
+On first use, `_prepare_raw_files` decodes the three sets of vt_data.mat (bits, classes and the text fields,
+which MATLAB stores as string objects) into vt_data_02.csv.
 ```
+
+On first use, `_prepare_raw_files` writes `vt_data_02.csv` into the same folder.
 
 Then, from the repository root:
 
@@ -115,13 +134,13 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| source | UCI: https://doi.org/10.24432/C5PS4J |
+| source | Other: https://michem.unimib.it/download/data/acute-oral-systemic-toxicity/ |
 | year | 2019 |
 | domain | chemistry & material science |
-| license | CC BY 4.0 |
+| license | Freeware, to be used with a reference to the paper (the package's readme); the UCI copy is CC BY 4.0 |
 | data_tags | IID |
 | reference | ballabio2019integrated,mansouri2021catmos |
-| rows x columns | 8,484 x 1,025 |
+| rows x columns | 11,105 x 1,233 |
 | task.target | very_toxic |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -135,7 +154,7 @@ Only curators run `build`, when the dataset ships.
 | name | `roc_auc` (standard; takes proba; higher is better) |
 | origin | fallback: the default for the problem type: the source defines no metric |
 | definition | area under the ROC curve |
-| reason | Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 8.3% very toxic. Original rejected: NER. roc_auc is the binary fallback. |
+| reason | Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 8.4% very toxic. Original rejected: NER. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 1025 categorical, 0 string, 0 datetime</summary>
@@ -176,98 +195,110 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 8,484 rows of the final frame (random rows: the frame is shuffled); 12 of 1,025 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 11,105 rows of the final frame (random rows: the frame is shuffled); 12 of 1,233 columns, the target first. Cells are cut at 40 characters.
 
 | very_toxic | ecfp_1 | ecfp_2 | ecfp_3 | ecfp_4 | ecfp_5 | ecfp_6 | ecfp_7 | ecfp_8 | ecfp_9 | ecfp_10 | ecfp_11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Yes | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
-| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| Yes | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
-We start with qsar_oral_toxicity.csv from UCI 508: 8,992 chemicals, 1,024 binary fingerprint bits and the class (no header, no identifiers). It is the very toxic (VT) endpoint of the calibration set of the ICCVAM "Predictive Models for Acute Oral Systemic Toxicity" project (rat oral LD50 data; its consensus models became CATMoS), with fingerprints computed by Ballabio et al. (2019).
+We start with vt_data.mat of the authors' package: the very toxic (VT) endpoint of the ICCVAM "Predictive Models for Acute Oral Systemic Toxicity" project (rat oral LD50 data; its consensus models became CATMoS) with the fingerprints of Ballabio et al. (2019). It holds the project's three sets, 11,886 chemicals (6,744 training, 2,248 test, 2,894 evaluation), each with 1,024 ECFP bits in two variants, the class, and the chemical's CASRN, name, QSAR-ready SMILES and InChIKey. UCI 508 is the ECFP_1024_02 block of the first two sets: its 8,992 rows and classes equal them row by row (decision table), so the dataset UCI gives is this one without the evaluation set (Lennart, 2026-10-21: extend, and use the further feature data).
 
 - Prediction point: a chemical without an acute oral toxicity test, before any animal test. Every feature is computed from its QSAR-ready structure (salts, solvents and stereochemistry removed), so all of them exist at prediction time.
-- Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the file's "positive"), else "No" (paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). The 44 chemicals at exactly 50 mg/kg are positive, and the label is the top regulatory hazard category on every row: 2,258 rows (25%) carry that category without a point LD50.
-- Features: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment (ECFP_1024_02 of Table 2: the file equals that block of the authors' package bit for bit, all 8,992 rows), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal. 97 of the project's QSAR-ready structures still carry stereo markers, which the fingerprint ignores.
-- Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (406 repeated vectors, 894 rows; by InChIKey the project's training file has 405 repeated parents over 891 rows, which agrees with the vectors on 394 of them, and 12 of the repeated vectors are hash collisions of different chemicals rather than one parent). We drop the 477 exact copies and then every row of the 11 bit vectors that occur with both classes (22 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 8,484 chemicals remain (708 very toxic, 8.3%; decision tables). The source kept the copies.
+- Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the package's class 1, the UCI file's "positive"; paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). On the evaluation set the label equals the project's EPA category 1 on all 2,894 rows and `LD50 <= 50` on every row that carries a dose; 2,845 of the kept chemicals (26%) carry the category without a point LD50.
+- Reading the raw file: MATLAB stores the text fields as `string` objects, which `scipy.io.loadmat` leaves undecoded, so `_prepare_raw_files` reads them out of the file's subsystem data (the decoder is documented in `_matlab_strings`) and writes bits, class and text per chemical into vt_data_02.csv. Checks of that step: the decoded "very toxic" field agrees with the `class_*` vectors on all 11,886 rows; the InChIKey has the right shape on every row and is reproduced by RDKit from the row's own SMILES for 99.8% of rows (99.99% on the skeleton, the one exception being the repaired silicon carbide below), so the SMILES is the structure the row is about; the evaluation rows match the project's public `validationset.txt` by its RowID on all 2,894 rows, with the same InChIKey, class and QSAR-ready SMILES, and the calibration rows match `trainingset_171130.txt` by CASRN (8,837) or, where a CASRN was mangled into a date by spreadsheet software, by InChIKey (155), with 100% class agreement.
+- Features, the fingerprint: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment, the package's ECFP_1024_02 block (the variant its models use for this endpoint), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal.
+- Features, the structure: RDKit's 2D descriptors of the QSAR-ready SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 208 of the 217, the others constant here or copies; values RDKit cannot compute (partial charges and BCUT descriptors of 12 chemicals) are missing. They decide: default LightGBM's ROC AUC over the 9 shipped splits is 0.885 on the bits alone and 0.901 with the descriptors added (better on 9 of 9 splits); the descriptors alone give 0.897, a random forest (500 trees) on repeat 0 0.901 against 0.912.
+- `rdkit_Ipc_log10`: RDKit's information content of the molecular graph grows exponentially with the molecule (five chemicals above 1e38, the largest 6e166), beyond any float32 pipeline, so `rdkit_descriptors` ships it as log10(1 + Ipc) for every SMILES dataset (Lennart, 2026-10-21); a tree model sees the same order.
+- `smiles` dropped, as in every SMILES dataset (2026-10-14).
+- Repaired row, 1: the QSAR-ready SMILES of silicon carbide (CASRN 409-21-2) gives silicon five bonds and no toolkit reads it; we use PubChem's structure for that CASRN. Its bits stay the package's.
+- 122 of the kept QSAR-ready structures still carry stereo markers, which the fingerprint ignores (two stereo forms can share a vector).
+- Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (594 repeated vectors over 1,314 rows; a few are hash collisions of different chemicals rather than one parent). We drop the 732 exact copies and then every row of the 20 bit vectors that occur with both classes (52 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,105 chemicals remain (931 very toxic, 8.4%; decision tables). The source kept the copies: 237 evaluation rows repeat a calibration vector (236 repeat a calibration InChIKey).
 - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
-- IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. The source splits at random: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the file stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The split rests on the use case, a new chemical each time with no entity that recurs, and on these structure-blind source protocols; the file carries no identifier, but its rows can be linked to the project's structure file by order, so a scaffold key could be reconstructed.
-- Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.681 below a Tanimoto similarity of 0.5 to the nearest training chemical, 0.954 above 0.85). Near copies carry little of it (at Tanimoto 0.9 only 456 rows, 5.4%, have any analog, the near-copy gap is 0.006), but chemotypes do: held out by structure clusters (Butina, Tanimoto 0.5) a random forest falls from 0.882 to 0.842, and on the reconstructed Murcko scaffolds from 0.887 to 0.843, with the model ranking unchanged.
-- Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The random test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have half the share of close analogs (9.3% against 19.7% at Tanimoto 0.7 or more; median nearest similarity 0.474 against 0.553).
-- Grouped variant: a scaffold-grouped split on the structures linked by row order stays a listed candidate (SPLIT-31; Lennart, 2026-10-21), not built: its key would be our reconstruction, not a field of the source.
-- Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest (ROC AUC 0.883) and LightGBM (0.869) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (0.877).
+- IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. All three source sets are random draws: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the package stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The split rests on the use case, a new chemical each time with no entity that recurs, and on these structure-blind source protocols.
+- Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.715 below a Tanimoto similarity of 0.5 to the nearest training chemical, 9.6% of test rows, and 0.945 above 0.7). Chemotypes carry part of that: held out by their Murcko scaffold (5,506 scaffolds, 2,577 acyclic chemicals each its own group) a random forest falls from 0.900 to 0.852 over 2 x 3 folds, with the model ranking unchanged.
+- Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The random test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have less than half the share of close analogs (11.0% against 24.5% at Tanimoto 0.7 or more; median nearest similarity 0.486 against 0.576).
+- Grouped variant: a scaffold-grouped split stays a listed candidate (SPLIT-31; Lennart, 2026-10-21), not built: the scaffolds are our reconstruction from the structures, not a field of the source.
+- Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest on the bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
+- Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 5,656 rows, test 2,828 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 7,403 to 7,404 rows, test 3,701 to 3,702 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 5656 | 2828 |
-| 0 | 1 | 5656 | 2828 |
-| 0 | 2 | 5656 | 2828 |
-| 1 | 0 | 5656 | 2828 |
-| 1 | 1 | 5656 | 2828 |
-| 1 | 2 | 5656 | 2828 |
-| 2 | 0 | 5656 | 2828 |
-| 2 | 1 | 5656 | 2828 |
-| 2 | 2 | 5656 | 2828 |
+| 0 | 0 | 7403 | 3702 |
+| 0 | 1 | 7403 | 3702 |
+| 0 | 2 | 7404 | 3701 |
+| 1 | 0 | 7403 | 3702 |
+| 1 | 1 | 7403 | 3702 |
+| 1 | 2 | 7404 | 3701 |
+| 2 | 0 | 7403 | 3702 |
+| 2 | 1 | 7403 | 3702 |
+| 2 | 2 | 7404 | 3701 |
 
 ## Decisions
 
-### 1. Copies of a parent structure dropped
+### 1. The package's three sets, of which UCI holds two
 
-The bits are computed from the QSAR-ready parent structure, so salts, hydrates and stereoisomers of one compound share the bit vector (12 of the repeated vectors are hash collisions of different chemicals instead). One row per vector is kept, and vectors with both classes are dropped, which leaves 8,493 chemicals before the nine rows of the next decision.
+The training and test sets of the package's ECFP_1024_02 block equal the UCI file row by row; the validation set is the project's evaluation set, which UCI lacks. Both were drawn at random, so the recommended IID cross-validation runs over all three.
 
-| UCI rows | rows | distinct bit vectors | very toxic rows | rows kept |
-|---|---|---|---|---|
-| bit vector occurs once | 8098 | 8098 | 693 | 8098 |
-| repeated bit vector, one class | 865 | 395 | 33 | 395 |
-| repeated bit vector, both classes | 29 | 11 | 15 | 0 |
-| total | 8992 | 8504 | 741 | 8493 |
-
-### 2. Nine parents that survive twice reduced to one row
-
-Linking the rows to the project's structure file by order shows nine parent structures in two kept rows each (a free acid and its salt or tautomer under two CASRNs, all not very toxic), whose bits differ. We keep the first row of each pair, so 8,484 chemicals remain.
-
-| row kept | row dropped | bits in common | very toxic |
+| set of the package | rows | very toxic | rows equal to the UCI file |
 |---|---|---|---|
-| 3238 | 6358 | 16 | False |
-| 3952 | 7628 | 34 | False |
-| 3785 | 8179 | 70 | False |
-| 6671 | 6689 | 128 | False |
-| 6675 | 8967 | 97 | False |
-| 2900 | 5706 | 69 | False |
-| 4384 | 4996 | 62 | False |
-| 4538 | 7203 | 26 | False |
-| 6672 | 6690 | 122 | False |
+| train | 6744 | 556 | 6744 |
+| test | 2248 | 185 | 2248 |
+| validation | 2894 | 243 | not in UCI |
 
-### 3. The file's order is the authors' split; we use cross-validation
+### 2. Copies of a parent structure dropped
 
-The first 6,744 rows are the authors' stratified random training set and the last 2,248 their test set (Ballabio et al. 2019, Table 1: 556 and 185 very toxic). Both were drawn at random, so the recommended IID cross-validation replaces them.
+The bits are computed from the QSAR-ready parent structure, so salts, hydrates and stereoisomers of one compound share the bit vector (a few repeated vectors are hash collisions of different chemicals instead). One row per vector is kept, and vectors with both classes are dropped, which leaves 11,114 chemicals before the rows of the next decision.
 
-| position in the UCI file | rows | very toxic |
-|---|---|---|
-| authors' training set | 6744 | 556 |
-| authors' test set | 2248 | 185 |
+| rows of the package | rows | distinct bit vectors | distinct InChIKeys | very toxic rows | rows kept |
+|---|---|---|---|---|---|
+| bit vector occurs once | 10520 | 10520 | 10515 | 908 | 10520 |
+| repeated bit vector, one class | 1314 | 594 | 606 | 49 | 594 |
+| repeated bit vector, both classes | 52 | 20 | 20 | 27 | 0 |
+| total | 11886 | 11134 | 11141 | 984 | 11114 |
+
+### 3. Parents that survive twice reduced to one row
+
+The InChIKeys of the QSAR-ready structures show parents in two kept rows whose bits differ (a free acid and its salt or tautomer under two CASRNs). We keep the first row of each, so 11,105 chemicals remain.
+
+| InChIKey | row kept | row dropped | bits in common | very toxic |
+|---|---|---|---|---|
+| BGRDGMRNKXEXQD-UHFFFAOYSA-N | train 123-33-1 | validation 5716-15-4 | 22 | False |
+| ZFSLODLOARCGLH-UHFFFAOYSA-N | train 3047-33-4 | validation 108-80-5 | 0 | False |
+| KQPKPCNLIDLUMF-UHFFFAOYSA-N | train 309-43-3 | train 76-73-3 | 69 | False |
+| AWYFNIZYMPNGAI-UHFFFAOYSA-N | train 07/10/3566 | train 9006-42-2 | 16 | False |
+| DDBREPKUVSBGFI-UHFFFAOYSA-N | train 50-06-6 | test 57-30-7 | 70 | False |
+| CEJLBZWIKQJOAT-UHFFFAOYSA-N | train 51580-86-0 | test 2893-78-9 | 34 | False |
+| NXFQHRVNIOXGAQ-UHFFFAOYSA-N | train 54-87-5 | validation 67-20-9 | 71 | False |
+| VIROVYVQCGLCII-UHFFFAOYSA-N | train 57-43-2 | train 64-43-7 | 62 | False |
+| YXIWHUQXZSMYRE-UHFFFAOYSA-N | train 5902-85-2 | test 149-30-4 | 26 | False |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 
+Accepted on purpose:
+
+- `dataset_pure_feature_value`: rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid group) marks 212 chemicals, 1 of them very toxic: a fragment count of the QSAR-ready structure, computed before any animal test, so it cannot carry the outcome; aromatic acids are rarely acutely lethal (Lennart, 2026-10-21).
+
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (1,025 rows)</summary>
+<summary>Show the table (1,233 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -332,7 +363,7 @@ The first 6,744 rows are the authors' stratified random training set and the las
 | ecfp_59 | category | 0 | 0 | 2 | 0, 1 |
 | ecfp_60 | category | 0 | 0 | 2 | 0, 1 |
 
-(965 more rows not shown)
+(1,173 more rows not shown)
 
 </details>
 
@@ -340,12 +371,80 @@ The first 6,744 rows are the authors' stratified random training set and the las
 
 | very_toxic | count | pct |
 |---|---|---|
-| No | 7776 | 91.65 |
-| Yes | 708 | 8.35 |
+| No | 10174 | 91.62 |
+| Yes | 931 | 8.38 |
 
 ### Numeric features
 
-No numeric features to summarize.
+<details>
+<summary>Show the table (208 rows)</summary>
+
+| index | count | mean | std | min | max |
+|---|---|---|---|---|---|
+| rdkit_MaxAbsEStateIndex | 11105 | 9.86588 | 3.00929 | 0 | 17.4275 |
+| rdkit_MinAbsEStateIndex | 11105 | 0.310024 | 0.395217 | 0 | 7.90275 |
+| rdkit_MinEStateIndex | 11105 | -0.877695 | 1.54113 | -9.81028 | 2.83333 |
+| rdkit_qed | 11105 | 0.559213 | 0.190438 | 0.00728333 | 0.946515 |
+| rdkit_SPS | 11105 | 15.467 | 8.78447 | 0 | 80.9524 |
+| rdkit_MolWt | 11105 | 275.975 | 158.738 | 16.043 | 6045.77 |
+| rdkit_HeavyAtomMolWt | 11105 | 258.461 | 149.952 | 12.011 | 5661.72 |
+| rdkit_ExactMolWt | 11105 | 275.542 | 158.524 | 16.0313 | 6041.59 |
+| rdkit_NumValenceElectrons | 11105 | 100.358 | 58.862 | 8 | 2314 |
+| rdkit_MaxPartialCharge | 11093 | 0.248563 | 0.128282 | -0.0775579 | 1.05205 |
+| rdkit_MinPartialCharge | 11093 | -0.389276 | 0.100126 | -0.754004 | -0.0148265 |
+| rdkit_MaxAbsPartialCharge | 11093 | 0.400532 | 0.0986519 | 0.029653 | 1.05205 |
+| rdkit_MinAbsPartialCharge | 11093 | 0.23815 | 0.113701 | 3.30088e-05 | 0.576052 |
+| rdkit_FpDensityMorgan1 | 11105 | 1.15312 | 0.328615 | 0.134146 | 2 |
+| rdkit_FpDensityMorgan2 | 11105 | 1.73509 | 0.423728 | 0.243902 | 2.78571 |
+| rdkit_FpDensityMorgan3 | 11105 | 2.21371 | 0.522889 | 0.333333 | 3.45455 |
+| rdkit_BCUT2D_MWHI | 11093 | 25.8792 | 15.4806 | 12.011 | 126.932 |
+| rdkit_BCUT2D_MWLOW | 11093 | 10.165 | 0.33273 | 8.813 | 15.8173 |
+| rdkit_BCUT2D_CHGHI | 11093 | 2.17991 | 0.221362 | -0.0775579 | 3.32332 |
+| rdkit_BCUT2D_CHGLO | 11093 | -2.13977 | 0.182426 | -2.81161 | -0.0775579 |
+| rdkit_BCUT2D_LOGPHI | 11093 | 2.23667 | 0.228179 | 0.1441 | 3.1257 |
+| rdkit_BCUT2D_LOGPLOW | 11093 | -2.18429 | 0.240592 | -3.61277 | 0.1441 |
+| rdkit_BCUT2D_MRHI | 11093 | 6.4396 | 1.3317 | 2.503 | 14.2817 |
+| rdkit_BCUT2D_MRLOW | 11093 | 0.12933 | 0.45663 | -1.11299 | 4.82616 |
+| rdkit_AvgIpc | 11105 | 2.36992 | 0.483459 | 0 | 4.31947 |
+| rdkit_BalabanJ | 11105 | 2.58105 | 0.773314 | 0 | 8.21094 |
+| rdkit_BertzCT | 11105 | 489.187 | 453.091 | 0 | 18664.9 |
+| rdkit_Chi0 | 11105 | 13.5985 | 7.85967 | 0 | 313.87 |
+| rdkit_Chi0n | 11105 | 10.7432 | 6.35201 | 0 | 232.295 |
+| rdkit_Chi0v | 11105 | 11.4979 | 6.46083 | 0 | 238.478 |
+| rdkit_Chi1 | 11105 | 8.76152 | 5.21224 | 0 | 198.197 |
+| rdkit_Chi1n | 11105 | 6.0786 | 3.83517 | 0 | 131.692 |
+| rdkit_Chi1v | 11105 | 6.83725 | 4.04223 | 0 | 136.881 |
+| rdkit_Chi2n | 11105 | 4.50999 | 3.14643 | 0 | 98.546 |
+| rdkit_Chi2v | 11105 | 5.44377 | 3.54506 | 0 | 101.722 |
+| rdkit_Chi3n | 11105 | 2.97948 | 2.32404 | 0 | 62.2678 |
+| rdkit_Chi3v | 11105 | 3.73173 | 2.76058 | 0 | 64.987 |
+| rdkit_Chi4n | 11105 | 1.99706 | 1.76856 | 0 | 39.9574 |
+| rdkit_Chi4v | 11105 | 2.56965 | 2.26484 | 0 | 41.879 |
+| rdkit_HallKierAlpha | 11105 | -1.3483 | 1.34175 | -42.39 | 4.43 |
+| rdkit_Ipc_log10 | 11105 | 4.13929 | 2.95799 | 0 | 166.767 |
+| rdkit_Kappa1 | 11105 | 14.1523 | 8.57706 | 0 | 354.649 |
+| rdkit_Kappa2 | 11105 | 6.49011 | 4.7883 | 0 | 180.464 |
+| rdkit_Kappa3 | 11105 | 8.7413 | 202.655 | -322.836 | 17602.1 |
+| rdkit_LabuteASA | 11105 | 112.563 | 63.6249 | 8.73925 | 2440.89 |
+| rdkit_PEOE_VSA1 | 11105 | 9.62454 | 11.3969 | 0 | 452.57 |
+| rdkit_PEOE_VSA10 | 11105 | 5.81893 | 9.19182 | -0.0619016 | 291.564 |
+| rdkit_PEOE_VSA11 | 11105 | 2.62922 | 5.51821 | 0 | 155.946 |
+| rdkit_PEOE_VSA12 | 11105 | 2.00715 | 5.77998 | 0 | 300.804 |
+| rdkit_PEOE_VSA13 | 11105 | 1.73091 | 4.21583 | 0 | 60.7088 |
+| rdkit_PEOE_VSA14 | 11105 | 3.72868 | 5.74882 | 0 | 96.4035 |
+| rdkit_PEOE_VSA2 | 11105 | 4.88219 | 6.48372 | 0 | 212.175 |
+| rdkit_PEOE_VSA3 | 11105 | 3.0044 | 5.38426 | 0 | 259.399 |
+| rdkit_PEOE_VSA4 | 11105 | 2.26353 | 6.38458 | 0 | 118.541 |
+| rdkit_PEOE_VSA5 | 11105 | 1.94347 | 5.88638 | 0 | 92.8075 |
+| rdkit_PEOE_VSA6 | 11105 | 25.5628 | 25.2461 | 0 | 290.446 |
+| rdkit_PEOE_VSA7 | 11105 | 26.6409 | 21.665 | 0 | 444.882 |
+| rdkit_PEOE_VSA8 | 11105 | 12.5725 | 12.3901 | 0 | 228.584 |
+| rdkit_PEOE_VSA9 | 11105 | 9.77776 | 11.3846 | 0 | 303.917 |
+| rdkit_SMR_VSA1 | 11105 | 12.687 | 13.1523 | 0 | 421.034 |
+
+(148 more rows not shown)
+
+</details>
 
 ### Categorical features
 
@@ -354,66 +453,66 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ecfp_1 | 1 | 0 | 6659 | 78.49 |
-| ecfp_1 | 2 | 1 | 1825 | 21.51 |
-| ecfp_10 | 1 | 0 | 8333 | 98.22 |
-| ecfp_10 | 2 | 1 | 151 | 1.78 |
-| ecfp_100 | 1 | 0 | 8314 | 98 |
-| ecfp_100 | 2 | 1 | 170 | 2 |
-| ecfp_1000 | 1 | 0 | 8211 | 96.78 |
-| ecfp_1000 | 2 | 1 | 273 | 3.22 |
-| ecfp_1001 | 1 | 0 | 7407 | 87.31 |
-| ecfp_1001 | 2 | 1 | 1077 | 12.69 |
-| ecfp_1002 | 1 | 0 | 8287 | 97.68 |
-| ecfp_1002 | 2 | 1 | 197 | 2.32 |
-| ecfp_1003 | 1 | 0 | 8097 | 95.44 |
-| ecfp_1003 | 2 | 1 | 387 | 4.56 |
-| ecfp_1004 | 1 | 0 | 8028 | 94.63 |
-| ecfp_1004 | 2 | 1 | 456 | 5.37 |
-| ecfp_1005 | 1 | 0 | 7771 | 91.6 |
-| ecfp_1005 | 2 | 1 | 713 | 8.4 |
-| ecfp_1006 | 1 | 0 | 8311 | 97.96 |
-| ecfp_1006 | 2 | 1 | 173 | 2.04 |
-| ecfp_1007 | 1 | 0 | 8162 | 96.2 |
-| ecfp_1007 | 2 | 1 | 322 | 3.8 |
-| ecfp_1008 | 1 | 0 | 6282 | 74.05 |
-| ecfp_1008 | 2 | 1 | 2202 | 25.95 |
-| ecfp_1009 | 1 | 0 | 6993 | 82.43 |
-| ecfp_1009 | 2 | 1 | 1491 | 17.57 |
-| ecfp_101 | 1 | 0 | 7694 | 90.69 |
-| ecfp_101 | 2 | 1 | 790 | 9.31 |
-| ecfp_1010 | 1 | 0 | 7996 | 94.25 |
-| ecfp_1010 | 2 | 1 | 488 | 5.75 |
-| ecfp_1011 | 1 | 0 | 7839 | 92.4 |
-| ecfp_1011 | 2 | 1 | 645 | 7.6 |
-| ecfp_1012 | 1 | 0 | 8189 | 96.52 |
-| ecfp_1012 | 2 | 1 | 295 | 3.48 |
-| ecfp_1013 | 1 | 0 | 8113 | 95.63 |
-| ecfp_1013 | 2 | 1 | 371 | 4.37 |
-| ecfp_1014 | 1 | 0 | 8099 | 95.46 |
-| ecfp_1014 | 2 | 1 | 385 | 4.54 |
-| ecfp_1015 | 1 | 0 | 8150 | 96.06 |
-| ecfp_1015 | 2 | 1 | 334 | 3.94 |
-| ecfp_1016 | 1 | 0 | 7961 | 93.84 |
-| ecfp_1016 | 2 | 1 | 523 | 6.16 |
-| ecfp_1017 | 1 | 0 | 8338 | 98.28 |
-| ecfp_1017 | 2 | 1 | 146 | 1.72 |
-| ecfp_1018 | 1 | 0 | 7129 | 84.03 |
-| ecfp_1018 | 2 | 1 | 1355 | 15.97 |
-| ecfp_1019 | 1 | 0 | 6486 | 76.45 |
-| ecfp_1019 | 2 | 1 | 1998 | 23.55 |
-| ecfp_102 | 1 | 0 | 5484 | 64.64 |
-| ecfp_102 | 2 | 1 | 3000 | 35.36 |
-| ecfp_1020 | 1 | 0 | 8295 | 97.77 |
-| ecfp_1020 | 2 | 1 | 189 | 2.23 |
-| ecfp_1021 | 1 | 0 | 8292 | 97.74 |
-| ecfp_1021 | 2 | 1 | 192 | 2.26 |
-| ecfp_1022 | 1 | 0 | 8296 | 97.78 |
-| ecfp_1022 | 2 | 1 | 188 | 2.22 |
-| ecfp_1023 | 1 | 0 | 8292 | 97.74 |
-| ecfp_1023 | 2 | 1 | 192 | 2.26 |
-| ecfp_1024 | 1 | 0 | 8337 | 98.27 |
-| ecfp_1024 | 2 | 1 | 147 | 1.73 |
+| ecfp_1 | 1 | 0 | 8709 | 78.42 |
+| ecfp_1 | 2 | 1 | 2396 | 21.58 |
+| ecfp_10 | 1 | 0 | 10907 | 98.22 |
+| ecfp_10 | 2 | 1 | 198 | 1.78 |
+| ecfp_100 | 1 | 0 | 10881 | 97.98 |
+| ecfp_100 | 2 | 1 | 224 | 2.02 |
+| ecfp_1000 | 1 | 0 | 10747 | 96.78 |
+| ecfp_1000 | 2 | 1 | 358 | 3.22 |
+| ecfp_1001 | 1 | 0 | 9716 | 87.49 |
+| ecfp_1001 | 2 | 1 | 1389 | 12.51 |
+| ecfp_1002 | 1 | 0 | 10852 | 97.72 |
+| ecfp_1002 | 2 | 1 | 253 | 2.28 |
+| ecfp_1003 | 1 | 0 | 10578 | 95.25 |
+| ecfp_1003 | 2 | 1 | 527 | 4.75 |
+| ecfp_1004 | 1 | 0 | 10528 | 94.8 |
+| ecfp_1004 | 2 | 1 | 577 | 5.2 |
+| ecfp_1005 | 1 | 0 | 10162 | 91.51 |
+| ecfp_1005 | 2 | 1 | 943 | 8.49 |
+| ecfp_1006 | 1 | 0 | 10872 | 97.9 |
+| ecfp_1006 | 2 | 1 | 233 | 2.1 |
+| ecfp_1007 | 1 | 0 | 10680 | 96.17 |
+| ecfp_1007 | 2 | 1 | 425 | 3.83 |
+| ecfp_1008 | 1 | 0 | 8266 | 74.43 |
+| ecfp_1008 | 2 | 1 | 2839 | 25.57 |
+| ecfp_1009 | 1 | 0 | 9154 | 82.43 |
+| ecfp_1009 | 2 | 1 | 1951 | 17.57 |
+| ecfp_101 | 1 | 0 | 10084 | 90.81 |
+| ecfp_101 | 2 | 1 | 1021 | 9.19 |
+| ecfp_1010 | 1 | 0 | 10460 | 94.19 |
+| ecfp_1010 | 2 | 1 | 645 | 5.81 |
+| ecfp_1011 | 1 | 0 | 10262 | 92.41 |
+| ecfp_1011 | 2 | 1 | 843 | 7.59 |
+| ecfp_1012 | 1 | 0 | 10717 | 96.51 |
+| ecfp_1012 | 2 | 1 | 388 | 3.49 |
+| ecfp_1013 | 1 | 0 | 10600 | 95.45 |
+| ecfp_1013 | 2 | 1 | 505 | 4.55 |
+| ecfp_1014 | 1 | 0 | 10592 | 95.38 |
+| ecfp_1014 | 2 | 1 | 513 | 4.62 |
+| ecfp_1015 | 1 | 0 | 10677 | 96.15 |
+| ecfp_1015 | 2 | 1 | 428 | 3.85 |
+| ecfp_1016 | 1 | 0 | 10439 | 94 |
+| ecfp_1016 | 2 | 1 | 666 | 6 |
+| ecfp_1017 | 1 | 0 | 10900 | 98.15 |
+| ecfp_1017 | 2 | 1 | 205 | 1.85 |
+| ecfp_1018 | 1 | 0 | 9329 | 84.01 |
+| ecfp_1018 | 2 | 1 | 1776 | 15.99 |
+| ecfp_1019 | 1 | 0 | 8467 | 76.24 |
+| ecfp_1019 | 2 | 1 | 2638 | 23.76 |
+| ecfp_102 | 1 | 0 | 7134 | 64.24 |
+| ecfp_102 | 2 | 1 | 3971 | 35.76 |
+| ecfp_1020 | 1 | 0 | 10862 | 97.81 |
+| ecfp_1020 | 2 | 1 | 243 | 2.19 |
+| ecfp_1021 | 1 | 0 | 10852 | 97.72 |
+| ecfp_1021 | 2 | 1 | 253 | 2.28 |
+| ecfp_1022 | 1 | 0 | 10868 | 97.87 |
+| ecfp_1022 | 2 | 1 | 237 | 2.13 |
+| ecfp_1023 | 1 | 0 | 10861 | 97.8 |
+| ecfp_1023 | 2 | 1 | 244 | 2.2 |
+| ecfp_1024 | 1 | 0 | 10917 | 98.31 |
+| ecfp_1024 | 2 | 1 | 188 | 1.69 |
 
 (1,990 more rows not shown)
 

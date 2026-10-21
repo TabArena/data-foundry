@@ -107,6 +107,17 @@ OFF_SCALE_WELLS = {"ROP": ["25/6-2"], "ROPA": ["34/4-10 R"], "SGR": ["34/12-1", 
 MUDWEIGHT_MAX = 100.0
 """MUDWEIGHT above this is a third scale (about 156, in 16/10-2 and 281 rows of 15/9-14) that no training side shares."""
 
+ROP_IN_FT_PER_H = ["32/2-1", "16/10-5"]
+"""Wells whose ROP is in ft/h: their ROPA is 0.31 and 0.30 times ROP, against 0.83-1.08 in the 26 other wells."""
+
+FT_TO_M = 0.3048
+
+MUDWEIGHT_BAR_PER_M_BELOW = 0.5
+"""MUDWEIGHT below this is a pressure gradient in bar/m (per-well medians 0.13-0.17), not a density in g/cm3."""
+
+BAR_PER_M_PER_G_CM3 = 0.0980665
+"""The pressure gradient of a column of 1 g/cm3 under standard gravity, in bar/m."""
+
 FORMATION_MERGE = {"Grid Mb.": "Grid Fm.", "Skade Mb.": "Skade Fm.", "Ty Mb.": "Ty Fm."}
 """One rock unit under two FORMATION codes (ranked as a member or a formation), never in the same well."""
 
@@ -217,7 +228,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD; the deepest top above each sample reproduces GROUP on 100% and FORMATION on 99.95% of the rows). They are not independent of the label: lithostratigraphic units are defined by their rock, the labels and the NPD tops draw on the same post-well material (completion and mud logs), 14,709 of 14,711 Halite rows lie in the Zechstein group, four formation names state a lithology ("Intra ... Fm. Sst.", "Ran Sst Mb."; 0.66% of the rows), and within 0.76 m (NPD's whole-metre rounding) 65.7% of group and 62.8% of formation boundaries sit on a lithology change, against 23.4% of random samples (4x). The competition gave them as features, so we keep them; without both, a random forest's log loss rises from 0.764 to 0.809 (100 trees, 200k training rows per grouped fold). NPD publishes its picks for released wells, the wells the labels were built for; at the first interpretation of a newly drilled well the interpreter would have the operator's own tops, so the use case names both (USE-9; Lennart, 2026-10-21).
         - Note: 34/5-1 A and 34/5-1 S, two wellbores of one well, share 2,273 measured depths but no identical readings and lie 1.5-1.9 km apart at equal measured depth, so the group stays the wellbore, as in the competition; both are in one fold of the shipped splits.
         - Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
-        - Anomaly: MUDWEIGHT stays on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9 (16/7-4 and 25/3-1 hold both), with no unit in the competition files or the LAS headers; both scales occur on every training side, so a model can learn them (CLEAN-21 departure, Lennart, 2026-10-21). The 0.13-0.17 wells fit bar/m (divided by 0.0981 they give per-well medians of 1.34-1.77 g/cm3), but no header confirms it. ROPA is in ft/h in 32/2-1 and 16/10-5 (ROP / ROPA 0.31 and 0.30 there, about 1 in the other wells) and stays as published.
+        - Units converted where the data give the factor (CLEAN-21; Lennart, 2026-10-21). The curves of each rig's mud-logging system were joined by name without a unit, and the LAS headers give none for MUDWEIGHT and ROPA (ROP says m/h in every well, also where it is not). ROP is in ft/h in 32/2-1 and 16/10-5 (5,814 rows): the same well's ROPA is 0.31 and 0.30 times ROP there (1/3.28 = 0.305) against 0.83-1.08 in the 26 other wells with both curves, and the per-well ROP medians of 101 and 67 become 31 and 20 m/h, the ROPA medians there, so ROP is multiplied by 0.3048. MUDWEIGHT is on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9; the lower one is a pressure gradient in bar/m, and divided by 0.0980665 (the gradient of 1 g/cm3) its per-well medians become 1.34-1.77 g/cm3, the range of the g/cm3 wells. The unit is inferred from the two clusters, not stated: between 1.5 and 2.5 km the converted wells sit higher (median 1.53 against 1.34 g/cm3), which may be their fields. The rule is per row (below 0.5 is bar/m), so 16/7-4 and 25/3-1, which hold both scales, are converted where needed (225,528 rows in all). After the conversion the 28 wells with MUDWEIGHT have per-well medians of 1.08-1.80 g/cm3.
         - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
         - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
         - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
@@ -245,8 +256,9 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         labels="per_sample",
         prediction_unit="row",
         context="all_rows",
+        time_on="DEPTH_MD",
         definition="""
-            One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders. The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
+            One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders (`time_on`: the order inside a well, for a method that reads the neighbouring depths; it does not change the split, and the dataset ships no window features). The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
         """,
     )
     splits_comment = """
@@ -285,6 +297,11 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         # 5. LAS null values, their interpolation ramps, impossible readings and off-scale wells are missing values
         masks = impossible_values(df)
         df[LOGS] = df[LOGS].mask(np.logical_or.reduce([mask.to_numpy() for mask in masks.values()]))
+        # 6. One unit per curve where the data give the factor: ROP in ft/h becomes m/h, MUDWEIGHT in bar/m g/cm3
+        ft_per_h = df["WELL"].isin(ROP_IN_FT_PER_H)
+        df.loc[ft_per_h, "ROP"] = df.loc[ft_per_h, "ROP"] * FT_TO_M
+        bar_per_m = df["MUDWEIGHT"] < MUDWEIGHT_BAR_PER_M_BELOW
+        df.loc[bar_per_m, "MUDWEIGHT"] = df.loc[bar_per_m, "MUDWEIGHT"] / BAR_PER_M_PER_G_CM3
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

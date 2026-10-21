@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 container_format: 2
-checksum: v2:a69b3dee8900b5b4caea70777262d62bce0156d64b9c58069977c7dd54d73638
+checksum: v2:9efe3da341d972550b568fb00a545e58dabc92e98a87b46b5f3d2a98d8fa67e0
 build: null
 build_stale: false
 data:
@@ -23,7 +23,7 @@ task:
   time_on: null
   group_on: WELL
   group_labels: per_sample
-  group_time_on: null
+  group_time_on: DEPTH_MD
   grouping:
     prediction_unit: row
     aggregation: null
@@ -69,7 +69,7 @@ decisions:
 
 Multiclass classification of `lithology`, scored with `cost_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
 
-Not built yet. The current definition gives checksum `v2:a69b3dee8900b5b4caea70777262d62bce0156d64b9c58069977c7dd54d73638`.
+Not built yet. The current definition gives checksum `v2:9efe3da341d972550b568fb00a545e58dabc92e98a87b46b5f3d2a98d8fa67e0`.
 
 ## In brief
 
@@ -137,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | environmental science & climate |
 | license | CC BY 4.0 (Zenodo record); the original well logs: NLOD 2.0 |
-| data_tags | Non-IID, Grouped, Spatial |
+| data_tags | Non-IID, GroupedTemporal, Spatial |
 | reference | bormann2020force |
 | rows x columns | 1,429,591 x 28 |
 | task.target | lithology |
@@ -147,6 +147,7 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | lithology |
 | task.group_on | WELL |
 | task.group_labels | per_sample |
+| task.group_time_on | DEPTH_MD |
 
 **Metric**
 
@@ -191,11 +192,11 @@ The first 5 of 1,429,591 rows of the final frame (random rows: the frame is shuf
 
 | lithology | WELL | DEPTH_MD | X_LOC | Y_LOC | Z_LOC | GROUP | FORMATION | CALI | RSHA | RMED | RDEP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Shale | 34/8-1 | 896.001 | 469665 | 6.80372e+06 | -872.983 | NORDLAND GP. | nan | nan | nan | 2.28463 | 2.54072 |
-| Shale | 34/10-21 | 993.658 | 454126 | 6.77726e+06 | -964.579 | NORDLAND GP. | Utsira Fm. | 17.3044 | 1.0998 | 0.931764 | 0.956055 |
-| Sandstone/Shale | 35/9-7 | 2877.23 | 536101 | 6.79303e+06 | -2847.65 | VIKING GP. | Heather Fm. | 8.65794 | nan | 5.56925 | 5.25901 |
-| Shale | 34/2-4 | 760.545 | 482074 | 6.84717e+06 | -727.522 | NORDLAND GP. | nan | 17.5037 | nan | 3.48001 | 3.88237 |
-| Shale | 34/7-21 | 1298.18 | 450300 | 6.796e+06 | -1272.14 | HORDALAND GP. | Utsira Fm. | 17.9703 | nan | 0.896098 | 0.837962 |
+| Shale | 25/5-3 | 1476.83 | 479084 | 6.60546e+06 | -1454.76 | HORDALAND GP. | Grid Fm. | 12.1438 | nan | 0.844066 | 0.833696 |
+| Shale | 16/10-3 | 2386.7 | 460443 | 6.45374e+06 | -2346.35 | CROMER KNOLL GP. | Sola Fm. | 8.92856 | 1.48426 | 1.47794 | 1.87302 |
+| Shale | 34/3-3 A | 3019.41 | 485334 | 6.8519e+06 | -2848.07 | SHETLAND GP. | Kyrre Fm. | 12.4201 | nan | 1.87896 | 1.977 |
+| Shale | 31/3-2 | 651.209 | 536838 | 6.74864e+06 | -626.18 | HORDALAND GP. | nan | nan | nan | 1.56795 | 1.50001 |
+| Shale | 34/11-2 S | 2040.23 | 466833 | 6.78824e+06 | -2014.98 | SHETLAND GP. | Jorsalfare Fm. | 17.6425 | nan | 1.28306 | 1.56104 |
 
 ## Curation notes
 
@@ -215,7 +216,7 @@ We start with the four files of the FORCE 2020 lithology competition on GitHub: 
 - Note: GROUP and FORMATION are NPD's lithostratigraphy picks, not the FORCE interpreters' (every top in the Zenodo record's NPD files has Interpreter NPD; the deepest top above each sample reproduces GROUP on 100% and FORMATION on 99.95% of the rows). They are not independent of the label: lithostratigraphic units are defined by their rock, the labels and the NPD tops draw on the same post-well material (completion and mud logs), 14,709 of 14,711 Halite rows lie in the Zechstein group, four formation names state a lithology ("Intra ... Fm. Sst.", "Ran Sst Mb."; 0.66% of the rows), and within 0.76 m (NPD's whole-metre rounding) 65.7% of group and 62.8% of formation boundaries sit on a lithology change, against 23.4% of random samples (4x). The competition gave them as features, so we keep them; without both, a random forest's log loss rises from 0.764 to 0.809 (100 trees, 200k training rows per grouped fold). NPD publishes its picks for released wells, the wells the labels were built for; at the first interpretation of a newly drilled well the interpreter would have the operator's own tops, so the use case names both (USE-9; Lennart, 2026-10-21).
 - Note: 34/5-1 A and 34/5-1 S, two wellbores of one well, share 2,273 measured depths but no identical readings and lie 1.5-1.9 km apart at equal measured depth, so the group stays the wellbore, as in the competition; both are in one fold of the shipped splits.
 - Note: the task probes show a real signal that the model families spread over: random forest log loss 0.742, untuned LightGBM 0.872, the linear model 0.886, the class shares 1.288 (3 grouped folds). Before the impossible values were masked, untuned LightGBM diverged (2.68) and the probes flagged no_spread.
-- Anomaly: MUDWEIGHT stays on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9 (16/7-4 and 25/3-1 hold both), with no unit in the competition files or the LAS headers; both scales occur on every training side, so a model can learn them (CLEAN-21 departure, Lennart, 2026-10-21). The 0.13-0.17 wells fit bar/m (divided by 0.0981 they give per-well medians of 1.34-1.77 g/cm3), but no header confirms it. ROPA is in ft/h in 32/2-1 and 16/10-5 (ROP / ROPA 0.31 and 0.30 there, about 1 in the other wells) and stays as published.
+- Units converted where the data give the factor (CLEAN-21; Lennart, 2026-10-21). The curves of each rig's mud-logging system were joined by name without a unit, and the LAS headers give none for MUDWEIGHT and ROPA (ROP says m/h in every well, also where it is not). ROP is in ft/h in 32/2-1 and 16/10-5 (5,814 rows): the same well's ROPA is 0.31 and 0.30 times ROP there (1/3.28 = 0.305) against 0.83-1.08 in the 26 other wells with both curves, and the per-well ROP medians of 101 and 67 become 31 and 20 m/h, the ROPA medians there, so ROP is multiplied by 0.3048. MUDWEIGHT is on two scales, per-well medians of 0.13-0.17 in 19 wells and 1.08-1.80 in 9; the lower one is a pressure gradient in bar/m, and divided by 0.0980665 (the gradient of 1 g/cm3) its per-well medians become 1.34-1.77 g/cm3, the range of the g/cm3 wells. The unit is inferred from the two clusters, not stated: between 1.5 and 2.5 km the converted wells sit higher (median 1.53 against 1.34 g/cm3), which may be their fields. The rule is per row (below 0.5 is bar/m), so 16/7-4 and 25/3-1, which hold both scales, are converted where needed (225,528 rows in all). After the conversion the 28 wells with MUDWEIGHT have per-well medians of 1.08-1.80 g/cm3.
 - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
 - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
 - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
@@ -234,13 +235,13 @@ Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole wells
 
 ## Group structure
 
-One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders. The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
+One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the depth samples of its logs, which DEPTH_MD orders (`time_on`: the order inside a well, for a method that reads the neighbouring depths; it does not change the split, and the dataset ships no window features). The use case is to interpret the lithology of a newly drilled or a released well from its logs, and the organisers held out whole wells: "We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants" (blog post in the repository, p. 3). Each depth sample is one prediction, scored per sample as in the competition. The whole log of a new well is known when it is interpreted, so a model may use the well's other depths: the starter notebook keeps WELL "so the data can be separated per well. This will be necessary for any 'windowed' approaches where we use non-local information in the ML features".
 
 | field | value |
 |---|---|
 | group column | `WELL` |
 | labels | per_sample |
-| order inside a group | none |
+| order inside a group | `DEPTH_MD` |
 | prediction unit | row |
 | known about a group when predicting | all_rows |
 
@@ -251,7 +252,7 @@ One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the
 | largest group | 1.8% of the rows |
 | test groups per fold | 37 to 41 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 96.1% of the rows (chance: 1.1%) |
+| nearest neighbour in the same group | 96.2% of the rows (chance: 1.1%) |
 | label variance explained by the group | 0.10 (shuffled groups: 0.00) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -322,33 +323,33 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | FORMATION | category | 152217 | 10.65 | 67 | Utsira Fm., Kyrre Fm., Lista Fm., Heather Fm., Skade Fm., Grid Fm., Statfjord F… |
-| GROUP | category | 1278 | 0.09 | 14 | HORDALAND GP., SHETLAND GP., VIKING GP., ROGALAND GP., DUNLIN GP., NORDLAND GP.… |
-| WELL | category | 0 | 0 | 118 | 34/10-16 R, 25/2-7, 29/6-1, 34/2-4, 29/3-1, 35/11-6, 25/7-2, 34/10-21, 34/11-2 … |
+| GROUP | category | 1278 | 0.09 | 14 | HORDALAND GP., SHETLAND GP., ROGALAND GP., VIKING GP., DUNLIN GP., NORDLAND GP.… |
+| WELL | category | 0 | 0 | 118 | 34/10-16 R, 25/2-7, 29/3-1, 29/6-1, 25/7-2, 34/2-4, 25/4-5, 34/11-2 S, 35/11-6,… |
 | lithology | category | 0 | 0 | 11 | Shale, Sandstone, Sandstone/Shale, Limestone, Marl, Tuff, Halite, Chalk, Coal, … |
-| SGR | float64 | 1.36785e+06 | 95.68 | 61491 | 72.381, 60.031, 93.6497, 65.1634, 115.4102, 56.1076, 31.488, 92.4699, 96.3119, … |
-| RMIC | float64 | 1.22693e+06 | 85.82 | 201811 | 1.5, 2000.0, 7.136, 0.5683, 0.288, 0.791, 1.5004, 1.0781, 0.2, 0.088 |
-| DTS | float64 | 1.13889e+06 | 79.67 | 286788 | 172.0, 180.0, 192.0, 155.9659, 145.1151, 199.7641, 151.099, 331.9698, 197.1294,… |
-| ROPA | float64 | 1.12118e+06 | 78.43 | 299347 | 16.4, 5.0, 14.3, 3.49, 16.3, 15.4, 16.0, 16.1, 3.23, 51.1 |
-| RXO | float64 | 1.09803e+06 | 76.81 | 327714 | 2000.0, 0.571, 0.17, 15.648, 4.063, 7.012, 2.354, 8.813, 0.221, 1.381 |
-| MUDWEIGHT | float64 | 1.09483e+06 | 76.58 | 284 | 0.1522, 0.1558, 0.1498, 0.1438, 0.1618, 0.1366, 0.1354, 0.1486, 0.1402, 1.1983 |
-| DCAL | float64 | 1.07424e+06 | 75.14 | 319106 | -0.25, 0.156, 1.5, -0.0938, 0.1641, 0.453, 0.356, 0.832, -0.1875, -0.0234 |
-| ROP | float64 | 738134 | 51.63 | 598163 | 50.0, 20.0, 30.0, 183.0769, 169.2308, 0.6, 78.9916, 99.5798, 62.5, 50.4167 |
-| RSHA | float64 | 734161 | 51.35 | 682498 | 0.2, 2000.0, 0.5708, 1999.8, 0.1943, 7.0117, 4.0625, 0.2024, 0.529, 2.3535 |
+| SGR | float64 | 1.36785e+06 | 95.68 | 61491 | 60.031, 65.1634, 89.6772, 69.632, 83.8457, 161.4161, 85.7195, 11.1882, 61.593, … |
+| RMIC | float64 | 1.22693e+06 | 85.82 | 201811 | 1.5, 2000.0, 0.204, 7.136, 0.315, 4.715, 2.6636, 1.6387, 1.56, 0.5365 |
+| DTS | float64 | 1.13889e+06 | 79.67 | 286788 | 172.0, 176.0, 168.0, 184.0, 194.6611, 152.0368, 216.8315, 192.6964, 339.1577, 1… |
+| ROPA | float64 | 1.12118e+06 | 78.43 | 299347 | 16.4, 5.0, 3.49, 14.3, 15.4, 14.7, 16.3, 51.1, 14.8, 15.8 |
+| RXO | float64 | 1.09803e+06 | 76.81 | 327714 | 2000.0, 15.648, 0.571, 0.17, 1.381, 2.354, 3.135, 8.813, 11.367, 0.738 |
+| MUDWEIGHT | float64 | 1.09483e+06 | 76.58 | 284 | 1.5518, 1.5885, 1.5274, 1.4663, 1.6496, 1.393, 1.3807, 1.5151, 1.4296, 1.1983 |
+| DCAL | float64 | 1.07424e+06 | 75.14 | 319106 | -0.25, 1.5, 0.156, -0.0938, 0.356, 0.832, 0.453, 0.1641, 0.297, 0.2578 |
+| ROP | float64 | 738134 | 51.63 | 598200 | 183.0769, 169.2308, 30.0, 0.6, 20.0, 62.5, 50.0, 194.0298, 386.3636, 45.508 |
+| RSHA | float64 | 734161 | 51.35 | 682498 | 0.2, 2000.0, 0.5708, 1999.8, 0.2024, 0.1943, 1.3809, 2.3535, 3.1348, 8.813 |
 | BS | float64 | 605576 | 42.36 | 176 | 12.25, 8.5, 17.5, 8.375, 14.75, 12.5, 6.0, 9.875, 26.0, 9.87 |
-| PEF | float64 | 543957 | 38.05 | 861960 | 3.7441, 4.4258, 0.1, 6.16, 3.8344, 0.9487, 10.0, 6.5738, 4.834, 5.6071 |
-| NPHI | float64 | 463682 | 32.43 | 926790 | 0.39, 0.4, 0.38, 0.33, 0.31, 0.32, 0.36, 0.3, 0.37, 0.34 |
-| SP | float64 | 452497 | 31.65 | 937347 | 0.0, 179.986, 17.825, 46.0, -400.0, 55.0, 57.9, 57.0, 184.5, 18.325 |
-| DRHO | float64 | 223697 | 15.65 | 1.14136e+06 | 0.0, 0.001, -0.002, 0.003, -0.004, 0.004, -0.001, 0.002, -0.003, -0.006 |
-| RHOB | float64 | 187748 | 13.13 | 1.04175e+06 | 2.5568, 1.853, 1.852, 1.95, 2.459, 2.1562, 2.168, 2.4629, 2.0352, 2.1699 |
-| CALI | float64 | 96957 | 6.78 | 1.0535e+06 | 12.0, 8.4297, 12.1953, 8.25, 8.4648, 23.2656, 8.6797, 17.3906, 12.406, 12.4062 |
-| DTC | float64 | 85782 | 6 | 1.25219e+06 | 160.2191, 38.2344, 69.0, 75.3, 138.7251, 135.0, 140.1511, 69.6, 88.3259, 147.18… |
-| RMED | float64 | 49401 | 3.46 | 1.34229e+06 | 1950.0, 0.2, 0.2185, 5.7578, 1.884, 1573.656, 0.759, 2.3889, 2.0, 0.7085 |
-| RDEP | float64 | 11085 | 0.78 | 1.37838e+06 | 1755.531, 0.747, 1996.0081, 0.7881, 0.7368, 0.8068, 5.3949, 1.2148, 0.8389, 0.7… |
-| X_LOC | float64 | 10845 | 0.76 | 219874 | 454469.5312, 520153.1875, 515574.4375, 437780.3438, 475895.8438, 455758.2812, 4… |
-| Y_LOC | float64 | 10845 | 0.76 | 23191 | 6603730.0, 6452287.5, 6495507.0, 6791573.5, 6593126.5, 6773610.0, 6560993.0, 65… |
-| Z_LOC | float64 | 10845 | 0.76 | 1.3705e+06 | -2796.8035, -2178.9351, -1763.4071, -2125.7986, -1819.9714, -1405.6777, -2191.8… |
-| DEPTH_MD | float64 | 0 | 0 | 1.38714e+06 | 1488.456, 561.408, 1359.408, 1131.104, 1180.048, 1777.712, 912.832, 1260.456, 1… |
-| GR | float64 | 0 | 0 | 1.37604e+06 | 55.1676, 92.13, 66.258, 83.4515, 81.405, 48.0707, 77.6022, 45.9094, 70.0853, 55… |
+| PEF | float64 | 543957 | 38.05 | 861960 | 3.7441, 4.4258, 6.16, 5.6809, 0.1, 1.0557, 4.9707, 4.0669, 6.9804, 4.1457 |
+| NPHI | float64 | 463682 | 32.43 | 926790 | 0.31, 0.34, 0.4, 0.38, 0.32, 0.39, 0.36, 0.3, 0.37, 0.41 |
+| SP | float64 | 452497 | 31.65 | 937347 | 0.0, 179.986, -400.0, 18.2, 14.0, -14.8, 22.63, 44.5, 47.0, 17.075 |
+| DRHO | float64 | 223697 | 15.65 | 1.14136e+06 | 0.0, -0.002, -0.001, -0.004, 0.001, 0.002, 0.004, 0.005, -0.006, -0.003 |
+| RHOB | float64 | 187748 | 13.13 | 1.04175e+06 | 2.5568, 1.853, 1.852, 1.95, 2.041, 2.043, 2.0391, 2.5781, 2.0371, 2.061 |
+| CALI | float64 | 96957 | 6.78 | 1.0535e+06 | 12.0, 8.4297, 12.1953, 8.25, 8.2734, 8.6797, 8.4648, 17.3906, 17.5313, 19.0 |
+| DTC | float64 | 85782 | 6 | 1.25219e+06 | 160.2191, 38.2344, 69.0, 147.7926, 142.8057, 69.4, 86.7303, 154.1539, 76.9273, … |
+| RMED | float64 | 49401 | 3.46 | 1.34229e+06 | 1950.0, 0.2, 5.7578, 0.2185, 0.2119, 1.82, 1.9546, 0.585, 0.708, 2.0 |
+| RDEP | float64 | 11085 | 0.78 | 1.37838e+06 | 0.75, 0.8268, 0.7012, 1.1462, 0.8057, 0.938, 1.3574, 0.6564, 0.822, 0.777 |
+| X_LOC | float64 | 10845 | 0.76 | 219874 | 454469.5312, 520153.1875, 437780.3438, 515574.4375, 475895.8438, 455758.2812, 4… |
+| Y_LOC | float64 | 10845 | 0.76 | 23191 | 6603730.0, 6452287.5, 6791573.5, 6495507.0, 6593126.5, 6560993.0, 6773610.0, 65… |
+| Z_LOC | float64 | 10845 | 0.76 | 1.3705e+06 | -2469.2126, -1282.442, -3687.2102, -2583.4355, -1800.1747, -1984.5592, -2566.43… |
+| DEPTH_MD | float64 | 0 | 0 | 1.38714e+06 | 958.584, 906.448, 1368.376, 1290.248, 1815.56, 1114.688, 620.08, 1173.968, 864.… |
+| GR | float64 | 0 | 0 | 1.37604e+06 | 55.1676, 70.3098, 80.3497, 78.6622, 104.9291, 81.7881, 94.4005, 45.7408, 91.771… |
 
 </details>
 
@@ -380,30 +381,30 @@ Accepted on purpose:
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| DEPTH_MD | 142959 | 2217.53 | 990.97 | 136.542 | 5436.33 |
-| X_LOC | 141878 | 484870 | 35260.1 | 423238 | 572633 |
-| Y_LOC | 141878 | 6.68068e+06 | 131911 | 6.40664e+06 | 6.85666e+06 |
-| Z_LOC | 141878 | -2167.07 | 956.866 | -5395.27 | -111.542 |
-| CALI | 133351 | 13.0807 | 3.68718 | 2.94 | 28.279 |
-| RSHA | 69566 | 10.1886 | 96.2756 | 0.0001 | 2061.33 |
-| RMED | 137993 | 4.89883 | 53.1041 | 0.0525042 | 1950 |
-| RDEP | 141855 | 11.3367 | 108.248 | 0.032695 | 1999.64 |
-| RHOB | 124218 | 2.29346 | 0.249464 | 1.0585 | 3.34278 |
-| GR | 142959 | 70.4606 | 33.8551 | 0.91606 | 1037.99 |
-| SGR | 6194 | 74.3797 | 29.8399 | 10.565 | 420.74 |
-| NPHI | 96753 | 0.328225 | 0.128466 | -0.0254335 | 0.997506 |
-| PEF | 88561 | 6.15556 | 10.2013 | 0.1 | 356.82 |
-| DTC | 134300 | 112.504 | 29.7229 | 10.208 | 302.988 |
-| SP | 97656 | 57.7218 | 71.7337 | -400 | 526.547 |
-| BS | 82540 | 11.7778 | 3.1331 | 6 | 26 |
-| ROP | 69284 | 33.8405 | 92.9492 | 0 | 4837.95 |
-| DTS | 29168 | 210.186 | 78.093 | 80.863 | 600.933 |
-| DCAL | 35350 | 0.807658 | 1.58342 | -11.3664 | 15.1542 |
-| DRHO | 120606 | 0.00754798 | 0.090251 | -2.70586 | 1.94185 |
-| MUDWEIGHT | 33417 | 0.552019 | 0.606511 | 0.125818 | 2.75601 |
-| RMIC | 20226 | 7.56205 | 88.2481 | 0.0567757 | 6138.56 |
-| ROPA | 30985 | 26.5199 | 24.5466 | 0.11586 | 374.413 |
-| RXO | 33212 | 13.4722 | 138.699 | 0.0031 | 8148.1 |
+| DEPTH_MD | 142959 | 2213.84 | 992.202 | 138.214 | 5434.66 |
+| X_LOC | 141861 | 484788 | 35280.1 | 423238 | 572633 |
+| Y_LOC | 141861 | 6.68088e+06 | 131290 | 6.40664e+06 | 6.85666e+06 |
+| Z_LOC | 141861 | -2164.43 | 958.507 | -5393.62 | -113.214 |
+| CALI | 133115 | 13.0946 | 3.70272 | 2.344 | 28.279 |
+| RSHA | 69344 | 10.884 | 102.932 | 0.0001 | 2046.36 |
+| RMED | 138017 | 4.71921 | 50.6392 | 0.0450603 | 1950 |
+| RDEP | 141830 | 11.1276 | 107.263 | 0.0409401 | 1999.84 |
+| RHOB | 124107 | 2.29279 | 0.249027 | 0.791735 | 3.26204 |
+| GR | 142959 | 70.4664 | 34.221 | 0.514754 | 865.501 |
+| SGR | 6286 | 74.5369 | 33.808 | 9.97597 | 891.336 |
+| NPHI | 96535 | 0.328278 | 0.129084 | -0.0156121 | 0.993587 |
+| PEF | 88398 | 6.26289 | 10.3911 | 0.1 | 360.854 |
+| DTC | 134434 | 112.564 | 29.8057 | 7.96786 | 305.903 |
+| SP | 97808 | 57.5631 | 71.3663 | -400 | 525.97 |
+| BS | 82180 | 11.7916 | 3.15083 | 6 | 26 |
+| ROP | 68804 | 33.1113 | 86.808 | 0 | 2771.34 |
+| DTS | 28953 | 209.978 | 78.323 | 80.7244 | 676.578 |
+| DCAL | 35304 | 0.806404 | 1.58216 | -11.7413 | 14.4194 |
+| DRHO | 120658 | 0.00784388 | 0.0878457 | -2.82726 | 1.94756 |
+| MUDWEIGHT | 33080 | 1.46814 | 0.252247 | 0.599132 | 3.66567 |
+| RMIC | 20190 | 6.91389 | 63.107 | 0.0586104 | 2841.07 |
+| ROPA | 30807 | 26.2823 | 24.011 | 0.597691 | 732.237 |
+| RXO | 32954 | 13.0063 | 124.992 | 0.0026843 | 2027.53 |
 
 </details>
 
@@ -414,26 +415,26 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| FORMATION | 1 | Utsira Fm. | 20780 | 14.54 |
-| FORMATION | 2 | &lt;NA> | 15120 | 10.58 |
-| FORMATION | 3 | Kyrre Fm. | 13366 | 9.35 |
-| FORMATION | 4 | Lista Fm. | 8310 | 5.81 |
-| FORMATION | 5 | Heather Fm. | 7563 | 5.29 |
-| GROUP | 1 | HORDALAND GP. | 34479 | 24.12 |
-| GROUP | 2 | SHETLAND GP. | 30771 | 21.52 |
-| GROUP | 3 | VIKING GP. | 15703 | 10.98 |
-| GROUP | 4 | ROGALAND GP. | 15674 | 10.96 |
-| GROUP | 5 | DUNLIN GP. | 14033 | 9.82 |
-| WELL | 1 | 34/10-16 R | 2533 | 1.77 |
-| WELL | 2 | 25/2-7 | 2473 | 1.73 |
-| WELL | 3 | 29/6-1 | 2405 | 1.68 |
-| WELL | 4 | 34/2-4 | 2372 | 1.66 |
-| WELL | 5 | 29/3-1 | 2341 | 1.64 |
-| lithology | 1 | Shale | 87729 | 61.37 |
-| lithology | 2 | Sandstone | 20745 | 14.51 |
-| lithology | 3 | Sandstone/Shale | 18012 | 12.6 |
-| lithology | 4 | Limestone | 6813 | 4.77 |
-| lithology | 5 | Marl | 4095 | 2.86 |
+| FORMATION | 1 | Utsira Fm. | 20702 | 14.48 |
+| FORMATION | 2 | &lt;NA> | 15327 | 10.72 |
+| FORMATION | 3 | Kyrre Fm. | 13197 | 9.23 |
+| FORMATION | 4 | Lista Fm. | 8332 | 5.83 |
+| FORMATION | 5 | Heather Fm. | 7424 | 5.19 |
+| GROUP | 1 | HORDALAND GP. | 34786 | 24.33 |
+| GROUP | 2 | SHETLAND GP. | 30751 | 21.51 |
+| GROUP | 3 | ROGALAND GP. | 15715 | 10.99 |
+| GROUP | 4 | VIKING GP. | 15421 | 10.79 |
+| GROUP | 5 | DUNLIN GP. | 14043 | 9.82 |
+| WELL | 1 | 34/10-16 R | 2540 | 1.78 |
+| WELL | 2 | 25/2-7 | 2524 | 1.77 |
+| WELL | 3 | 29/3-1 | 2500 | 1.75 |
+| WELL | 4 | 29/6-1 | 2441 | 1.71 |
+| WELL | 5 | 25/7-2 | 2382 | 1.67 |
+| lithology | 1 | Shale | 87457 | 61.18 |
+| lithology | 2 | Sandstone | 20726 | 14.5 |
+| lithology | 3 | Sandstone/Shale | 18091 | 12.65 |
+| lithology | 4 | Limestone | 7073 | 4.95 |
+| lithology | 5 | Marl | 4133 | 2.89 |
 
 </details>
 

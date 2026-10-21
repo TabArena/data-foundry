@@ -22,6 +22,15 @@ def test_descriptors_keep_the_index_and_leave_out_constant_and_copied_columns() 
     assert not out.T.duplicated().any()
 
 
+def test_ipc_ships_on_a_log_scale() -> None:
+    """``Ipc`` overflows float32 for large molecules, so it is replaced by log10(1 + Ipc)."""
+    smiles = pd.Series(["CCO", "c1ccccc1", "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)O"])
+    out = rdkit_descriptors(smiles)
+
+    assert "rdkit_Ipc" not in out.columns
+    assert out["rdkit_Ipc_log10"].between(0, 38).all()
+
+
 def test_prefix_names_the_columns() -> None:
     """The prefix is put before each descriptor name."""
     out = rdkit_descriptors(pd.Series(["CCO", "c1ccccc1"]), prefix="")

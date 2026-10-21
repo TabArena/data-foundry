@@ -13,7 +13,7 @@ tags:
 - Many features
 collections:
 - New (BeyondArena)
-original_source: UCI
+original_source: Other
 year: '2019'
 domain: chemistry & material science
 required_split:
@@ -49,6 +49,14 @@ CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is bi
 CC (2026-10-21, Lennart): keep the scaffold-grouped variant a listed candidate (SPLIT-31), no re-split; IID stays.
 
 CC (2026-10-21, Lennart): fit `approximate`: "this is a more simulated use case than a direct real case". The fit_reason names the gap: the random test chemicals are closer to training than the untested chemicals a screener faces (19.7% against 9.3% with a close analog at Tanimoto 0.7 or more).
+
+CC (2026-10-21, Lennart): Extend with the package's validation set and use the further feature data, preprocessing the SMILES as for the other SMILES datasets.
+
+**Assessment (AI, 2026-10-21):** Extended and re-featured. The definition now reads the authors' package (vt_data.mat, a copy the curator provided; public route: the group's download form, freeware with the paper cited) instead of the UCI file, which equals its ECFP_1024_02 training and test blocks row by row (8,992 of 8,992, classes too). With the project's evaluation set the source has 11,886 chemicals (984 very toxic); after the same deduplication (732 exact copies, 20 both-class vectors over 52 rows, 9 parents kept twice by InChIKey) 11,105 remain, 931 very toxic (8.4%), up from 8,484 and 708. `_prepare_raw_files` decodes the MATLAB string objects of the package, so the build reproduces from the original file; the decoded rows were checked against the project's public structure files (evaluation set by RowID on all 2,894 rows, calibration by CASRN or InChIKey, 100% class agreement) and the SMILES reproduces its row's InChIKey for 99.8% of rows. Features: the 1,024 bits plus 207 RDKit 2D descriptors of the QSAR-ready SMILES, which decide (default LightGBM over the 9 shipped splits: 0.885 bits only, 0.901 with the descriptors, better on 9 of 9; random forest 0.901 to 0.912); the SMILES is dropped as in every SMILES dataset, `rdkit_Ipc` with it (it overflows float32; open for the curator). Metric unchanged (roc_auc fallback; 8.4% very toxic). Fit stays approximate with re-measured numbers (close analogs 24.5% of test rows against 11.0% of the project's untested prediction set; random forest 0.715 for distant chemicals against 0.945 for close ones), and the scaffold-grouped cost is now 0.900 to 0.852.
+
+CC (2026-10-21, Lennart): `rdkit_Ipc`: fix it by scaling rather than dropping it. Accept the `dataset_pure_feature_value` warning (rdkit_fr_Ar_COO) with its reason. `original_source`: take the definition's value (Other).
+
+**Assessment (AI, 2026-10-21):** Applied. `rdkit_descriptors` (data_foundry.v2.chemistry) now ships Ipc as `rdkit_Ipc_log10` = log10(1 + Ipc) for every SMILES dataset, so the definition keeps it (208 descriptors; maximum 166.8 here instead of 6e166). apistox and qsar_bioconcentration change with it: apistox's Ipc reached 2.6e38, just below the float32 limit, now 38.4; qsar_bioconcentration's 7.7e9, now 9.9. The warning is accepted in `accepted_check_warnings`; `original_source` is Other. dataset check: 0 errors, 0 warnings on all three. Not rebuilt.
 
 ## Reference
 

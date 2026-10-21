@@ -4,6 +4,31 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (force_2020 units and depth order; qsar_oral_toxicity extended; RDKit Ipc on a log scale)
+
+Lennart's second round of marks on these two datasets. Each record carries his decisions as `CC (2026-10-21, Lennart)` lines. Nothing was rebuilt; both checksums change.
+
+- **force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition:**
+  - `Grouping(time_on="DEPTH_MD")` records the order inside a well, with no window features (issue 1). The split is unchanged, and the derived regime tag becomes `GroupedTemporal`.
+  - `_clean` converts two curves to one unit where the data give the factor (issue 8, CLEAN-21):
+    - ROP in 32/2-1 and 16/10-5, from ft/h to m/h (x 0.3048, 5,814 rows). ROPA / ROP was 0.31 there and is 1.00 now.
+    - MUDWEIGHT below 0.5, from bar/m to g/cm3 (/ 0.0980665, 225,528 rows). The 28 wells' medians now span 1.08-1.80 g/cm3.
+  - Correction: the answer on the review page named ROPA as the curve in ft/h, but the curve is ROP.
+  - The other off-scale curves stay masked. A CLEAN-21 case row records the conversion, and `REVIEW.md` is removed (nothing left open).
+- **qsar_oral_toxicity:**
+  - Extended with the project's evaluation set from the authors' package (`vt_data.mat`, a copy the curator provided; the public route is the group's download form). The definition reads the package instead of the UCI file.
+  - The same deduplication as before gives 11,105 chemicals with 931 very toxic, against 8,484 and 708 before.
+  - Added 207 RDKit descriptors of the package's QSAR-ready SMILES next to the 1,024 ECFP bits, as in the other SMILES datasets. The SMILES are then dropped.
+  - Default LightGBM ROC AUC over the 9 splits: 0.885 with the bits alone, 0.901 with the descriptors added (better on 9 of 9).
+  - Two more changes:
+    - one unreadable SMILES (silicon carbide) is replaced by PubChem's structure;
+    - `rdkit_Ipc` is dropped (it overflows float32).
+  - Issue 3 is settled. The questions it raised are settled too (Lennart):
+    - `rdkit_descriptors` ships Ipc as `rdkit_Ipc_log10` = log10(1 + Ipc) for every SMILES dataset, instead of dropping it here. This also changes apistox (Ipc up to 2.6e38, just below the float32 limit) and qsar_bioconcentration.
+    - The `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` is accepted with its reason.
+    - The record's `original_source` is now `Other`.
+  - `REVIEW.md` is removed (nothing left open).
+
 ## 2026-10-21 (the curator's marks on force_2020, infrared_thermography and qsar_oral_toxicity)
 
 Lennart marked these three datasets on the review page; each record has his decisions as `CC (2026-10-21, Lennart)`
