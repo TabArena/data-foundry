@@ -4,6 +4,27 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (heart_disease: three Detrano hospitals in one dataset, split by hospital; the three sites retired)
+
+- `heart_disease` (new): the processed UCI files of three hospitals of Detrano et al. (1989), Cleveland, Budapest
+  and VA Long Beach, in one table of 797 patients with the binary angiography label. The hospital is the group column,
+  not a feature, and a custom `_make_splits` leaves one hospital out (three splits, one repeat): the source built its
+  model at one hospital and applied it at the others, and a random split would compare patients of two hospitals in
+  68% of its positive-negative pairs. The Swiss file is left out: it keeps only 8 of the paper's 23 Swiss patients
+  without disease, so its disease rate is the release's, and it would be a test fold of 8 negatives. `dataset check`:
+  0 errors; 4 warnings that follow from the three hospitals (`task_group_count_low`,
+  `splits_dimensions_off_protocol`, `groups_test_groups_few`, `groups_largest_share_high`), accepted with reasons; one
+  info (2 duplicate rows, kept). Task probes flag `unstable` (the linear model beats the class shares on 3 of 3
+  hospitals, ROC AUC 0.838; the spread is between hospitals), answered in `curation_comments`. Not built.
+- Removed `heart_disease_cleveland`, `heart_disease_hungary` and `heart_disease_va_long_beach`: retired as duplicates
+  of `heart_disease` (`No (Retired)`, marker `Duplicate`). They were one task of one study counted three times: a
+  model trained on the other hospitals ranks each site's patients nearly as well as one trained there (TabPFN 3.5 ROC
+  AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
+  collection pins are unchanged, and their containers and raw files stay in the warehouse.
+- Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
+  `~/claude_jobs/heart_pool/`.
+
 ## 2026-10-20 (eight shipped datasets are `DF: Yes`)
 
 The review work reached `main` with PR #11, so the records of the eight datasets Lennart shipped on the review page of
