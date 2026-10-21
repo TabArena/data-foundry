@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989
+checksum: v2:6101d73d57a59d6263d6f4f6afb85441c67843a2784023b0b72e8e917433f2ec
 build:
   uuid: 01a111fc-aabc-7a8e-a658-bf88e5751de1
   checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
@@ -19,19 +19,19 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 299
+  n_rows: 291
   n_features: 11
   dtypes:
     category: 6
-    float64: 3
-    int64: 3
+    float64: 4
+    int64: 2
   n_test_dataset_rows: null
 task:
-  target: DEATH_EVENT
+  target: death_within_60_days
   problem_type: binary_classification
   metric: roc_auc
   split_regime: iid
-  stratify_on: DEATH_EVENT
+  stratify_on: death_within_60_days
   time_on: null
   group_on: null
   group_labels: null
@@ -44,45 +44,47 @@ splits:
   time_horizon: null
   time_horizon_unit: null
   n_train:
-    min: 199
-    max: 200
+    min: 194
+    max: 194
   n_test:
-    min: 99
-    max: 100
+    min: 97
+    max: 97
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
   accepted: {}
-decisions: []
+decisions:
+- Death within 60 days, not death at any time during follow-up
+- Filled-in lab values set back to missing
 ---
 
 # heart_failure_followup_survival
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299 rows and 11 features. Source: Other (2017).
+Binary classification of `death_within_60_days`, scored with `roc_auc` on IID splits. 291 rows and 11 features. Source: Other (2017).
 
-Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989`, so the build is stale. See [Build](#build).
+Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6101d73d57a59d6263d6f4f6afb85441c67843a2784023b0b72e8e917433f2ec`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** Will a patient with heart failure die during follow-up?
+**Question.** Will a patient with heart failure die within 60 days?
 
-**Use case.** For example, a cardiologist estimates a heart-failure patient's risk of dying in the coming months from routine findings and blood tests, to decide on closer follow-up or treatment.
+**Use case.** For example, a cardiologist estimates a heart-failure patient's risk of dying in the next two months from routine findings and blood tests, to decide on closer follow-up or treatment.
 
-**One row.** One patient with heart failure, aged 40 or older, at the Faisalabad Institute of Cardiology or the Allied Hospital in Faisalabad, Pakistan, April-December 2015 (299 patients).
+**One row.** One patient with heart failure, aged 40 or older, at the Faisalabad Institute of Cardiology or the Allied Hospital in Faisalabad, Pakistan, April-December 2015 (291 of the 299 patients).
 
-**Predicted.** Whether the patient died during a follow-up of 4 to 285 days that differs by patient (32% did).
+**Predicted.** Whether the patient died within 60 days of the start of follow-up: 54 of 291 did (19%).
 
-**Known at prediction time.** Age, sex, smoking, anaemia, diabetes, high blood pressure, the heart's ejection fraction, and blood values (creatinine phosphokinase, platelets, serum creatinine, serum sodium).
+**Known at prediction time.** Age, sex, smoking, anaemia, diabetes, high blood pressure, the heart's ejection fraction, and blood values (creatinine phosphokinase, platelets, serum creatinine, serum sodium). The first three are missing where the source filled in a mean.
 
 **What the test data stands for.** Random patients, so the test data stands for new patients of the same hospitals and year.
 
-**Our changes to the source.** We drop the length of follow-up: it ends at death, so a short follow-up gives the outcome away.
+**Our changes to the source.** The source is a survival study with a follow-up of 4 to 285 days that differs by patient. We turn it into a 60-day outcome: we drop the 8 survivors followed less than 60 days, and the follow-up time and status. We set 91 lab values that the source filled in back to missing; the creatinine ones had been filled with the mean of the patient's own outcome group.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The outcome has no fixed horizon: a patient whose follow-up ended early counts as a survivor, and some may have died later. Whether follow-up ended on one date for all is not stated (the censored times fit mid-January 2016). When the measurements were taken is not stated.
+> **Use case fit: approximate (a stand-in with a known gap).** The outcome, a fixed horizon and the findings match the decision, but heart-failure mortality is usually judged at 30 days or 1 year; here 30 days leaves 35 deaths, and 90 days would drop 45 survivors. Where follow-up starts and when the measurements were taken is not stated.
 
 ## Files in this folder
 
@@ -124,18 +126,18 @@ Only curators run `build`, when the dataset ships.
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
 | data_tags | IID |
-| reference | chicco2020machine |
-| rows x columns | 299 x 12 |
-| task.target | DEATH_EVENT |
+| reference | ahmad2017survival |
+| rows x columns | 291 x 12 |
+| task.target | death_within_60_days |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
 | task.split_regime | iid |
-| task.stratify_on | DEATH_EVENT |
+| task.stratify_on | death_within_60_days |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
 
-- categorical (6): `anaemia`, `diabetes`, `high_blood_pressure`, `sex`, `smoking`, `DEATH_EVENT`
+- categorical (6): `anaemia`, `diabetes`, `high_blood_pressure`, `sex`, `smoking`, `death_within_60_days`
 - string (0): none
 - datetime (0): none
 
@@ -145,15 +147,16 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
-@article{chicco2020machine,
-  title={Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone},
-  author={Chicco, Davide and Jurman, Giuseppe},
-  journal={BMC medical informatics and decision making},
-  volume={20},
-  number={1},
-  pages={16},
-  year={2020},
-  publisher={Springer}
+@article{ahmad2017survival,
+  title={Survival analysis of heart failure patients: A case study},
+  author={Ahmad, Tanvir and Munir, Assia and Bhatti, Sajjad Haider and Aftab, Muhammad and Raza, Muhammad Ali},
+  journal={PLOS ONE},
+  volume={12},
+  number={7},
+  pages={e0181001},
+  year={2017},
+  publisher={Public Library of Science},
+  doi={10.1371/journal.pone.0181001}
 }
 ```
 
@@ -161,96 +164,124 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 299 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 291 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| DEATH_EVENT | age | anaemia | creatinine_phosphokinase | diabetes | ejection_fraction | high_blood_pressure | platelets | serum_creatinine | serum_sodium | sex | smoking |
+| death_within_60_days | age | anaemia | creatinine_phosphokinase | diabetes | ejection_fraction | high_blood_pressure | platelets | serum_creatinine | serum_sodium | sex | smoking |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 60 | 0 | 320 | 0 | 35 | 0 | 133000 | 1.4 | 139 | 1 | 0 |
-| 1 | 45 | 0 | 2442 | 1 | 30 | 0 | 334000 | 1.1 | 139 | 1 | 0 |
-| 0 | 55 | 0 | 1820 | 0 | 38 | 0 | 270000 | 1.2 | 139 | 0 | 0 |
-| 1 | 80 | 0 | 805 | 0 | 38 | 0 | 263358 | 1.1 | 134 | 1 | 0 |
-| 0 | 70 | 0 | 93 | 0 | 35 | 0 | 185000 | 1.1 | 134 | 1 | 1 |
+| 0 | 45 | 0 | 615 | 1 | 55 | 0 | 222000 | 0.8 | 141 | 0 | 0 |
+| 0 | 65 | 1 | 305 | 0 | 25 | 0 | 298000 | 1.1 | 141 | 1 | 0 |
+| 1 | 85 | 0 | 23 | 0 | 45 | 0 | 360000 | 3 | 132 | 1 | 0 |
+| 0 | 45 | 0 | nan | 0 | 35 | 0 | 385000 | 1 | 145 | 1 | 0 |
+| 0 | 68 | 1 | 157 | 1 | 60 | 0 | 208000 | 1 | 140 | 0 | 0 |
 
 ## Curation notes
 
-We use the data as is from UCI.
+We start with the UCI copy (519) of the S1 data of Ahmad et al. 2017 (PLoS ONE 12:e0181001); the two files hold the same rows. UCI names Chicco & Jurman 2020 (BMC Med Inform Decis Mak 20:16) as its introductory paper, a later re-analysis.
 
-- We keep all features of the dataset. The study that introduced the dataset also curated a subset of features. We leave it to the pipeline to select the relevant features for the task.
-- We drop the "time" feature. It is the follow-up period in days (4-285; Chicco & Jurman 2020, Table 1: "Follow-up period"), and DEATH_EVENT is "If the patient died during the follow-up period". Follow-up ends at death or at censoring, so a short follow-up means an early death: the value is only known after the outcome (alone it gives ROC AUC 0.84). The paper's analysis that includes it is not a prediction-time setup.
+- The source is a survival study: `time` is the follow-up in days (4-285), ending at death or censoring, and DEATH_EVENT says which. The label is death within 60 days (day 60 or earlier) against being alive at day 60. Until 2026-10-21 the label was death at any time during follow-up, so a survivor followed 12 days counted the same as one followed 285 days; a Kaplan-Meier estimate puts about 31 deaths within 285 days among those 203 survivors.
+- We drop the 8 survivors followed less than 60 days, whose 60-day status is unknown. If follow-up ended on one date for all (the censored times fit mid-January 2016), these are patients admitted late, and the late admissions who died early stay in; a Kaplan-Meier estimate puts that at about 1 death.
+- 60 days keeps all but 8 patients. 30 days, the usual short-term horizon in heart failure, leaves 35 deaths; 90 days would drop 45 survivors.
+- We drop `time` and DEATH_EVENT, which define the label.
+- The source filled in missing lab values without saying so (neither Ahmad et al. 2017 nor Chicco & Jurman 2020 mentions missing data). We set them back to missing: creatinine phosphokinase 582 (the column mean, 47 rows), platelets 263358.03 (the column mean, 25 rows), and serum creatinine 1.18 (11 rows, all survivors) and 1.83 (8 rows, all deaths). The creatinine values are the survivor and death means in Ahmad et al. Table 1, so they were filled from the outcome; apart from one 0.75 they are the only creatinine values with two decimals.
+- Anaemia among deaths: 46 in the file, 54 in Ahmad et al. Table 1; we keep the file's values.
+- We keep the other features as they are. The study that introduced the dataset also curated a subset of features. We leave it to the pipeline to select the relevant features for the task.
 
 ## Splits
 
 Default splits.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 199 to 200 rows, test 99 to 100 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 194 rows, test 97 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 199 | 100 |
-| 0 | 1 | 199 | 100 |
-| 0 | 2 | 200 | 99 |
-| 1 | 0 | 199 | 100 |
-| 1 | 1 | 199 | 100 |
-| 1 | 2 | 200 | 99 |
-| 2 | 0 | 199 | 100 |
-| 2 | 1 | 199 | 100 |
-| 2 | 2 | 200 | 99 |
-| 3 | 0 | 199 | 100 |
-| 3 | 1 | 199 | 100 |
-| 3 | 2 | 200 | 99 |
-| 4 | 0 | 199 | 100 |
-| 4 | 1 | 199 | 100 |
-| 4 | 2 | 200 | 99 |
-| 5 | 0 | 199 | 100 |
-| 5 | 1 | 199 | 100 |
-| 5 | 2 | 200 | 99 |
-| 6 | 0 | 199 | 100 |
-| 6 | 1 | 199 | 100 |
-| 6 | 2 | 200 | 99 |
-| 7 | 0 | 199 | 100 |
-| 7 | 1 | 199 | 100 |
-| 7 | 2 | 200 | 99 |
-| 8 | 0 | 199 | 100 |
-| 8 | 1 | 199 | 100 |
-| 8 | 2 | 200 | 99 |
-| 9 | 0 | 199 | 100 |
-| 9 | 1 | 199 | 100 |
-| 9 | 2 | 200 | 99 |
-| 10 | 0 | 199 | 100 |
-| 10 | 1 | 199 | 100 |
-| 10 | 2 | 200 | 99 |
-| 11 | 0 | 199 | 100 |
-| 11 | 1 | 199 | 100 |
-| 11 | 2 | 200 | 99 |
-| 12 | 0 | 199 | 100 |
-| 12 | 1 | 199 | 100 |
-| 12 | 2 | 200 | 99 |
-| 13 | 0 | 199 | 100 |
-| 13 | 1 | 199 | 100 |
-| 13 | 2 | 200 | 99 |
-| 14 | 0 | 199 | 100 |
-| 14 | 1 | 199 | 100 |
-| 14 | 2 | 200 | 99 |
-| 15 | 0 | 199 | 100 |
-| 15 | 1 | 199 | 100 |
-| 15 | 2 | 200 | 99 |
-| 16 | 0 | 199 | 100 |
-| 16 | 1 | 199 | 100 |
-| 16 | 2 | 200 | 99 |
-| 17 | 0 | 199 | 100 |
-| 17 | 1 | 199 | 100 |
-| 17 | 2 | 200 | 99 |
-| 18 | 0 | 199 | 100 |
-| 18 | 1 | 199 | 100 |
-| 18 | 2 | 200 | 99 |
-| 19 | 0 | 199 | 100 |
-| 19 | 1 | 199 | 100 |
-| 19 | 2 | 200 | 99 |
+| 0 | 0 | 194 | 97 |
+| 0 | 1 | 194 | 97 |
+| 0 | 2 | 194 | 97 |
+| 1 | 0 | 194 | 97 |
+| 1 | 1 | 194 | 97 |
+| 1 | 2 | 194 | 97 |
+| 2 | 0 | 194 | 97 |
+| 2 | 1 | 194 | 97 |
+| 2 | 2 | 194 | 97 |
+| 3 | 0 | 194 | 97 |
+| 3 | 1 | 194 | 97 |
+| 3 | 2 | 194 | 97 |
+| 4 | 0 | 194 | 97 |
+| 4 | 1 | 194 | 97 |
+| 4 | 2 | 194 | 97 |
+| 5 | 0 | 194 | 97 |
+| 5 | 1 | 194 | 97 |
+| 5 | 2 | 194 | 97 |
+| 6 | 0 | 194 | 97 |
+| 6 | 1 | 194 | 97 |
+| 6 | 2 | 194 | 97 |
+| 7 | 0 | 194 | 97 |
+| 7 | 1 | 194 | 97 |
+| 7 | 2 | 194 | 97 |
+| 8 | 0 | 194 | 97 |
+| 8 | 1 | 194 | 97 |
+| 8 | 2 | 194 | 97 |
+| 9 | 0 | 194 | 97 |
+| 9 | 1 | 194 | 97 |
+| 9 | 2 | 194 | 97 |
+| 10 | 0 | 194 | 97 |
+| 10 | 1 | 194 | 97 |
+| 10 | 2 | 194 | 97 |
+| 11 | 0 | 194 | 97 |
+| 11 | 1 | 194 | 97 |
+| 11 | 2 | 194 | 97 |
+| 12 | 0 | 194 | 97 |
+| 12 | 1 | 194 | 97 |
+| 12 | 2 | 194 | 97 |
+| 13 | 0 | 194 | 97 |
+| 13 | 1 | 194 | 97 |
+| 13 | 2 | 194 | 97 |
+| 14 | 0 | 194 | 97 |
+| 14 | 1 | 194 | 97 |
+| 14 | 2 | 194 | 97 |
+| 15 | 0 | 194 | 97 |
+| 15 | 1 | 194 | 97 |
+| 15 | 2 | 194 | 97 |
+| 16 | 0 | 194 | 97 |
+| 16 | 1 | 194 | 97 |
+| 16 | 2 | 194 | 97 |
+| 17 | 0 | 194 | 97 |
+| 17 | 1 | 194 | 97 |
+| 17 | 2 | 194 | 97 |
+| 18 | 0 | 194 | 97 |
+| 18 | 1 | 194 | 97 |
+| 18 | 2 | 194 | 97 |
+| 19 | 0 | 194 | 97 |
+| 19 | 1 | 194 | 97 |
+| 19 | 2 | 194 | 97 |
 
 </details>
+
+## Decisions
+
+### 1. Death within 60 days, not death at any time during follow-up
+
+Follow-up runs 4 to 285 days and differs by patient, so 'survived' often meant 'not followed long enough'. A fixed horizon gives every kept patient a known label.
+
+| 60-day label | censored | died | All |
+|---|---|---|---|
+| alive at day 60 | 195 | 42 | 237 |
+| died within 60 days | 0 | 54 | 54 |
+| survivor followed < 60 days (dropped) | 8 | 0 | 8 |
+| All | 203 | 96 | 299 |
+
+### 2. Filled-in lab values set back to missing
+
+The source filled missing values with a mean without saying so; for serum creatinine it used the mean of the patient's own outcome group (1.18 survivors, 1.83 deaths), which leaks the label.
+
+| column | filled value | rows | died (source) | censored (source) |
+|---|---|---|---|---|
+| creatinine_phosphokinase | 582 | 47 | 17 | 30 |
+| platelets | 263358 | 25 | 10 | 15 |
+| serum_creatinine | (1.18, 1.83) | 19 | 8 | 11 |
 
 ## Bundle checks
 
@@ -271,33 +302,33 @@ Default splits.
 | high_blood_pressure | category | 0 | 0 | 2 | 0, 1 |
 | sex | category | 0 | 0 | 2 | 1, 0 |
 | smoking | category | 0 | 0 | 2 | 0, 1 |
-| DEATH_EVENT | category | 0 | 0 | 2 | 0, 1 |
+| death_within_60_days | category | 0 | 0 | 2 | 0, 1 |
+| creatinine_phosphokinase | float64 | 47 | 16.15 | 200 | 129.0, 66.0, 47.0, 69.0, 68.0, 59.0, 115.0, 84.0, 64.0, 231.0 |
+| platelets | float64 | 25 | 8.59 | 174 | 237000.0, 255000.0, 226000.0, 235000.0, 228000.0, 271000.0, 279000.0, 221000.0,… |
+| serum_creatinine | float64 | 19 | 6.53 | 38 | 1.0, 1.1, 0.9, 0.8, 1.2, 1.3, 0.7, 1.4, 1.7, 1.6 |
 | age | float64 | 0 | 0 | 47 | 60.0, 50.0, 65.0, 70.0, 45.0, 55.0, 75.0, 58.0, 53.0, 63.0 |
-| platelets | float64 | 0 | 0 | 176 | 263358.03, 305000.0, 235000.0, 279000.0, 221000.0, 228000.0, 255000.0, 226000.0… |
-| serum_creatinine | float64 | 0 | 0 | 40 | 1.0, 1.1, 0.9, 1.2, 0.8, 1.3, 0.7, 1.18, 1.7, 1.4 |
-| creatinine_phosphokinase | int64 | 0 | 0 | 208 | 582, 129, 66, 84, 231, 47, 68, 115, 60, 69 |
-| ejection_fraction | int64 | 0 | 0 | 17 | 35, 38, 40, 25, 30, 60, 50, 45, 20, 55 |
-| serum_sodium | int64 | 0 | 0 | 27 | 136, 137, 140, 134, 138, 139, 135, 132, 141, 142 |
+| ejection_fraction | int64 | 0 | 0 | 17 | 35, 38, 40, 25, 30, 60, 45, 50, 20, 55 |
+| serum_sodium | int64 | 0 | 0 | 27 | 136, 137, 140, 134, 139, 138, 135, 132, 141, 142 |
 
 </details>
 
 ### Target distribution
 
-| DEATH_EVENT | count | pct |
+| death_within_60_days | count | pct |
 |---|---|---|
-| 0 | 203 | 67.89 |
-| 1 | 96 | 32.11 |
+| 0 | 237 | 81.44 |
+| 1 | 54 | 18.56 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| age | 299 | 60.8339 | 11.8948 | 40 | 95 |
-| creatinine_phosphokinase | 299 | 581.839 | 970.288 | 23 | 7861 |
-| ejection_fraction | 299 | 38.0836 | 11.8348 | 14 | 80 |
-| platelets | 299 | 263358 | 97804.2 | 25100 | 850000 |
-| serum_creatinine | 299 | 1.39388 | 1.03451 | 0.5 | 9.4 |
-| serum_sodium | 299 | 136.625 | 4.41248 | 113 | 148 |
+| age | 291 | 60.8603 | 11.9794 | 40 | 95 |
+| creatinine_phosphokinase | 244 | 585.234 | 1063.43 | 23 | 7861 |
+| ejection_fraction | 291 | 38.0997 | 11.852 | 14 | 80 |
+| platelets | 266 | 262500 | 102852 | 25100 | 850000 |
+| serum_creatinine | 272 | 1.39062 | 1.07475 | 0.5 | 9.4 |
+| serum_sodium | 291 | 136.619 | 4.46622 | 113 | 148 |
 
 ### Categorical features
 
@@ -306,18 +337,18 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| DEATH_EVENT | 1 | 0 | 203 | 67.89 |
-| DEATH_EVENT | 2 | 1 | 96 | 32.11 |
-| anaemia | 1 | 0 | 170 | 56.86 |
-| anaemia | 2 | 1 | 129 | 43.14 |
-| diabetes | 1 | 0 | 174 | 58.19 |
-| diabetes | 2 | 1 | 125 | 41.81 |
-| high_blood_pressure | 1 | 0 | 194 | 64.88 |
-| high_blood_pressure | 2 | 1 | 105 | 35.12 |
-| sex | 1 | 1 | 194 | 64.88 |
-| sex | 2 | 0 | 105 | 35.12 |
-| smoking | 1 | 0 | 203 | 67.89 |
-| smoking | 2 | 1 | 96 | 32.11 |
+| anaemia | 1 | 0 | 167 | 57.39 |
+| anaemia | 2 | 1 | 124 | 42.61 |
+| death_within_60_days | 1 | 0 | 237 | 81.44 |
+| death_within_60_days | 2 | 1 | 54 | 18.56 |
+| diabetes | 1 | 0 | 170 | 58.42 |
+| diabetes | 2 | 1 | 121 | 41.58 |
+| high_blood_pressure | 1 | 0 | 189 | 64.95 |
+| high_blood_pressure | 2 | 1 | 102 | 35.05 |
+| sex | 1 | 1 | 189 | 64.95 |
+| sex | 2 | 0 | 102 | 35.05 |
+| smoking | 1 | 0 | 197 | 67.7 |
+| smoking | 2 | 1 | 94 | 32.3 |
 
 </details>
 
@@ -332,4 +363,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2f6f3d5981f9bf59fac824d226f2fb7b9c3d5f9066c4f6c257e5c08391927989` |
+| stale | yes: the definition now gives checksum `v2:6101d73d57a59d6263d6f4f6afb85441c67843a2784023b0b72e8e917433f2ec` |

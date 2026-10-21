@@ -133,7 +133,7 @@ not accepted in the definition.
 | [`heart_disease_cleveland`](heart_disease_cleveland/) | IID | 303 | 13 | 20 x 3 | not built |  |
 | [`heart_disease_hungary`](heart_disease_hungary/) | IID | 294 | 13 | 20 x 3 | not built | `dataset_constant_column` |
 | [`heart_disease_va_long_beach`](heart_disease_va_long_beach/) | IID | 200 | 13 | 20 x 3 | `01a13a7d-c2bc-7803-9ff6-e0e192d554de` | `dataset_constant_column` |
-| [`heart_failure_followup_survival`](heart_failure_followup_survival/) | IID | 299 | 11 | 20 x 3 | not built |  |
+| [`heart_failure_followup_survival`](heart_failure_followup_survival/) | IID | 291 | 11 | 20 x 3 | not built |  |
 | [`heloc`](heloc/) | IID | 10,459 | 23 | 3 x 3 | not built | `dataset_missing_value_sentinel`, `dataset_duplicate_rows` |
 | [`hepatitis_c_prediction`](hepatitis_c_prediction/) | IID | 608 | 11 | 20 x 3 | not built |  |
 | [`hepatitis_survival_prediction`](hepatitis_survival_prediction/) | IID | 155 | 19 | 20 x 3 | not built |  |

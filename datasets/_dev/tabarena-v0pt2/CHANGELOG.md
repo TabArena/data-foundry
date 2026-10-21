@@ -4,6 +4,22 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-21 (heart_failure_followup_survival: 60-day outcome, filled-in lab values back to missing)
+
+- `heart_failure_followup_survival`: the target is `death_within_60_days` instead of `DEATH_EVENT` (death at any
+  time during a follow-up of 4-285 days that differs by patient). The 8 survivors followed less than 60 days are
+  dropped (299 -> 291 rows, 54 deaths); `time` and `DEATH_EVENT` define the label and are dropped. With no fixed
+  horizon, a Kaplan-Meier estimate put about 31 deaths among the 203 labelled survivors.
+- `heart_failure_followup_survival`: 91 lab values that the source filled in without saying so are set back to
+  missing: creatinine phosphokinase 582 (column mean, 47 rows), platelets 263358.03 (column mean, 25 rows) and serum
+  creatinine 1.18 / 1.83 (19 rows). The creatinine values are the survivor and death means of Ahmad et al. 2017,
+  Table 1, so they were filled from the outcome. Follows Andrej's review in the record
+  [`curation/records/heart_failure_followup_survival.md`](../../../curation/records/heart_failure_followup_survival.md);
+  evidence in `~/claude_jobs/hf_review/` (TabPFN 3.5 ROC AUC about 0.72, logistic regression about 0.68, 20 x 3 splits).
+  `dataset check` clean. Not built.
+- `heart_failure_followup_survival`: BibTeX cites Ahmad et al. 2017 (PLOS ONE), which published the data, instead of
+  Chicco & Jurman 2020, the re-analysis that UCI names as its introductory paper (verify-dataset, 2026-10-21).
+
 ## 2026-10-20 (forensic_glass_identification: duplicate dropped, origin, use-case fit)
 
 - `forensic_glass_identification`: fit `approximate` instead of `direct`. `fit_reason` says the features and glass
