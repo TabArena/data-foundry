@@ -122,7 +122,7 @@ not accepted in the definition.
 | [`force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`](force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/) | grouped | 1,429,591 | 26 | 1 x 3 | not built |  |
 | [`forensic_glass_identification`](forensic_glass_identification/) | IID | 214 | 9 | 20 x 3 | not built |  |
 | [`forest_fires`](forest_fires/) | IID | 517 | 12 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
-| [`framingham_heart_study_fhs`](framingham_heart_study_fhs/) | IID | 4,224 | 15 | 3 x 3 | not built |  |
+| [`framingham_heart_study_fhs`](framingham_heart_study_fhs/) | IID | 4,199 | 14 | 3 x 3 | not built |  |
 | [`fraud_detection_in_electricity_and_gas_consumption_1m`](fraud_detection_in_electricity_and_gas_consumption_1m/) | grouped (per group: mean) | 1,500,000 | 17 | 1 x 3 | not built |  |
 | [`g_research_crypto_forecasting_1m`](g_research_crypto_forecasting_1m/) | temporal | 2,499,998 | 27 | 3 x 1 | not built |  |
 | [`gallstone_disease`](gallstone_disease/) | IID | 319 | 38 | 20 x 3 | not built |  |
@@ -176,6 +176,7 @@ not accepted in the definition.
 | [`musk`](musk/) | grouped (per group: any) | 6,598 | 166 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`naticusdroid_android_permissions_dataset`](naticusdroid_android_permissions_dataset/) | IID | 7,491 | 85 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows`, `dataset_pure_feature_value` |
 | [`nba_players_2016_2019`](nba_players_2016_2019/) | grouped | 1,408 | 35 | 10 x 3 | not built |  |
+| [`numerai28_6`](numerai28_6/) | IID | 96,320 | 21 | 3 x 3 | not built |  |
 | [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 781 | 3 x 1 | not built |  |
 | [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,166,477 | 7 | 3 x 1 | not built |  |
 | [`obesity_estimation`](obesity_estimation/) | IID | 488 | 14 | 20 x 3 | not built |  |

@@ -4,6 +4,17 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-22 (numerai28_6 added as forced IID)
+
+- New folder `numerai28_6` (Lennart, 2026-10-22: add as forced IID). It is Numerai's 2016 Kaggle training sample, CC0: 96,320 rows, 21 encrypted features and a binary target.
+  - Random 3 x 3 stratified splits tagged `ForcedIIDFromTemporal`, because the release has no era, date or id.
+  - The metric is the 2016 tournament's log loss.
+  - The folder was built by `/add-dataset` and attacked by the focused review panel (claim audit, split audit):
+    - no validity claim was refuted, and four tests find no hidden weekly group;
+    - the panel's text fixes are made.
+  - `REVIEW.md` asks whether to keep log loss: the models sit within 0.002 of the dummy, and untuned tree models lose to it.
+- The README table lists 173 datasets. Not built yet.
+
 ## 2026-10-22 (fourth round: framingham to hard ASCVD, sarcoma 4 classes, dataorg retired; last notebooks removed)
 
 Lennart's marks of the late afternoon; records carry them as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
