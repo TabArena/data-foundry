@@ -42,6 +42,16 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The book uses the data for many PD/LGD examples with assorted diagnostics (ROC/AUC for binary default, calibration plots), not one metric for this three-outcome task.
 
+CC (2026-10-22, Lennart): issue 2: keep the 3 classes; a binary default-only companion might be reasonable in the future. Issue 10: (a), reword the use case: a loan is also scored in the quarter it joins the book. Issue 11: add the ratio of the two lagged balances. Issue 12: amend CLEAN-13. Issue 14: add the market mortgage rate ("this sounds like a good way to make the data better"). Issue 13: keep both conflicting copies as real data noise we may want to simulate. Issue 15: keep the LTVs above 300% as real data noise of unclear origin.
+
+**Assessment (AI, 2026-10-22):** applied issues 2, 10, 11, 12, 14: `use_case`/`known`/`fit_reason` reworded (8,132 origination-quarter rows kept, 24 in test); `balance_ratio_lag_1_to_2` added; FRED MORTGAGE30US (Freddie Mac, "Copyrighted: Citation Required") averaged per calendar quarter and lagged one quarter as `market_rate_30y_lag_1`, with `rate_minus_market_rate_lag_1`; CLEAN-13 amended for a reference level. Untuned LightGBM, periods 60/59/58: log loss 0.1180/0.1274/0.1293 (0.1201/0.1327/0.1364 without the ratio), default ROC AUC 0.75/0.84/0.81; the market-rate columns move the log loss by under 0.001. dataset check: 0 errors, 0 warnings. Issues 13 and 15 depart from LEAK-20 (jm1) and CLEAN-11 (caracas_cervical_cancer, melbourne) without a fact that sets them apart, so they are back on the review page as consistency checks and not applied yet. Not built yet.
+
+CC (2026-10-22, Lennart): issue 13: (b), keep the payoff copy of the 7 doubled period-51 loans, as implemented. Issue 15: (a), make the LTVs above 300% and the conflicting balances missing.
+
+**Exception to LEAK-20 (2026-10-22, Lennart):** for 7 loans period 51 is doubled with only the status differing (active and payoff); the payoff copy is kept instead of dropping both, because all 7 loans end at period 51, so the active copy is damage to the file (PROV-13), not an ambiguous label. Serves P5 (faithful data: the file repaired toward what was recorded).
+
+**Assessment (AI, 2026-10-22):** issue 15 applied: the 38 source balances that put the source's LTV above 300% become missing before lagging, so no `LTV_time_lag_1` above 300% is left (highest 261.4%). Issue 13 as implemented, with the exception recorded. REVIEW.md removed (nothing left open). Not built yet.
+
 ## Reference
 
 @book{baesens2016credit,

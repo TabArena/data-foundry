@@ -215,6 +215,7 @@ external sources). The two load-bearing claims hold under refutation attempts: P
 beyond age) and the missing-BMI leak (OR 3.68). New finding: missing BMI is a row-counter pattern among non-strokes only.
 
 **Table**
+
 | # | Claim (short) | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
 | 1 | question: has the patient had a stroke | DS task_summary | label vs data dictionary | holds | dictionary "1 - suffered stroke" | USE-1 |
@@ -263,6 +264,7 @@ beyond age) and the missing-BMI leak (OR 3.68). New finding: missing BMI is a ro
 | 59 | precedents (churn, airline retired; AV siblings 2nd tier) | REVIEW | precedent-checker's remit | untested | - | - |
 
 **Implied claims (not written down)**
+
 | Implied claim | Test | Result | Evidence | Rule |
 |---|---|---|---|---|
 | Every shipped feature is known at the prediction point | needs dates | untested (cannot be) | no time column; hypertension, heart disease, glucose, smoking may be post-stroke; disclosed in fit_reason | LEAK-1, USE-3 (Must) |
@@ -314,6 +316,7 @@ page no longer shows its data dictionary; meanings are from the Kaggle cut's cod
 same columns.
 
 **Column table**
+
 | column | meaning | known at prediction? | dtype and cleaning | verdict | rule |
 |---|---|---|---|---|---|
 | `id` (raw) | patient id, unique per row | n/a | dropped; AUC vs label 0.506 | fine | CLEAN-3 |

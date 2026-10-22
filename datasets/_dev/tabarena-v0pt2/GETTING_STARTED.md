@@ -83,9 +83,9 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
-Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `explore.ipynb` (the
-workbench: `ds = workbench()`) and `README.md` (generated: the dataset page with sample rows, checks, splits and the
-build record).
+Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `README.md` (generated: the
+dataset page with sample rows, checks, splits and the build record) and, while the dataset is reviewed, `REVIEW.md`
+(the open questions for the curator).
 
 ## 4. The curation log
 

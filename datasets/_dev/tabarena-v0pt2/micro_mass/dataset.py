@@ -63,6 +63,7 @@ class MicroMass(AbstractCuratedDataset):
 
         - We drop columns with the same value across all samples.
         - We drop constant columns (all 0).
+        - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
     """
 
     # Task

@@ -50,6 +50,12 @@ The Azubian (1,077,024 rows) and DSN (400,000 rows) cuts are rows of this Train.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — the Zindi challenge's evaluation metric, Area Under the Curve (AUC).
 
+CC (2026-10-22, Lennart): issue 5: keep ARPU_SEGMENT as released (CLEAN-5 not triggered, as `dzclass`). Issue 6: ships with the start of the 90-day churn period as a stated risk (inferred, the other reading named in the notes).
+
+CC (2026-10-22, Lennart): issue 1: confirm the REGION drop (LEAK-10).
+
+**Assessment (AI, 2026-10-22):** all issues settled (REGION dropped, ARPU_SEGMENT kept, churn timing a stated risk); REVIEW.md removed. kick's `WheelType`, marked keep the same day on the same test, is put back to the curator as a consistency check in kick's REVIEW.md; if it is kept by an amendment, REGION is reopened. Not built yet.
+
 ## Reference
 
 Zindi

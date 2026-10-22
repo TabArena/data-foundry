@@ -82,7 +82,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   | `r2` | standard, value | mercedes_benz_greener_manufacturing |
   | `mape` | standard, value | 5g_energy_consumption (stand-in for the Zindi WMAPE, whose weights are not published) |
   | `f1` | standard, label | african_credit_scoring_challenge |
-  | `f1_weighted` | standard, label | dataorg_financial_health_prediction_challenge |
+  | `f1_weighted` | standard, label | none since dataorg_financial_health_prediction_challenge was retired (2026-10-22) |
   | `balanced_accuracy` | standard, label | hiva_agnostic |
   | `cost_matrix` | custom, label or proba (`params.prediction`) | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition (label, the 11 x 11 penalty matrix); `*` aps_failure (proba, false alarm 10, miss 500), `*` credit_g (proba, Statlog's 5:1) |
   | `precision_at_k` | custom, proba | coil_2000 (`k_fraction` 0.2); `*` labour_inspection_compliance (`k_fraction` 0.5) |

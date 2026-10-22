@@ -3,13 +3,12 @@ unique_name: dataorg_financial_health_prediction_challenge
 name: dataorg-financial-health-prediction-challenge
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 3
+suggestion: 'No'
+decision_markers:
+- No Good Target  / Scientific Discovery
 tags:
 - New IID
+- 2nd Tier / Scientfic Discovery
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -21,7 +20,6 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/dataorg-financial-health-prediction-challenge/data
-v2_path: datasets/_dev/tabarena-v0pt2/dataorg_financial_health_prediction_challenge/dataset.py
 source_row: 680
 type_adapter_id: curation-record-v1
 ---
@@ -41,3 +39,7 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 **Assessment (AI, 2026-10-21):** metric set to `f1_weighted` (was the default log loss). Zindi's evaluation page says "F1 score" (API `f1_multiclass`) without the averaging; participants who submitted single-class files found the leaderboard fits weighted F1 (Zindi discussion 29971, not confirmed by the host), and a 47th-place entry's cross-validated weighted F1 of 0.878 sits closer to its private score of 0.884 than its macro F1 of 0.819 (discussion 31245). The notes name the source of the averaging. Needs a rebuild to reach the container.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source f1_weighted — Zindi's F1 (API f1_multiclass); weighted per the participants' probe in Zindi discussion 29971.
+
+CC (2026-10-22, Lennart): verdict don't ship. Too risky a dataset: we have no information on the target and what we are predicting, and it is survey data; tag it 2nd tier / scientific discovery; it should not be part of TabArena v0.2.
+
+**Assessment (AI, 2026-10-22):** `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientfic Discovery`; the claim is released and the folder `datasets/_dev/tabarena-v0pt2/dataorg_financial_health_prediction_challenge/` with its REVIEW.md removed from the working copy (v2_path cleared). The definition stays in git history (commit before this change).

@@ -48,6 +48,14 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source average_precision_at_k k=12500 — AP@{K} (https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation).
 
+CC (2026-10-22, Lennart): issue 4: (a), keep the random split by ad (exact copies dropped; the per-ad label and the grouped run are the fact that sets it apart from emscad). Issue 9: (a), no `Spatial` tag, with the reason in the notes (the addresses sit inside one category's form text; no geographic column).
+
+**Assessment (AI, 2026-10-22):** date check (Lennart's note): no per-ad date or order; `itemid` is random (April ids spread evenly over train ids, KS p = 0.17). A used-car form change during December-March bounds the cost of the random split at about 0.002 ROC AUC and 0.02 AP (old form to new, TF-IDF logistic regression, 4 seeds). The competition validated at random and local scores tracked the leaderboard. The notes give the bounded cost; issue 10 asks to confirm the random split. Scripts: local-data-warehouse/_runs/2026-10-22_marks/huntprohibited/.
+
+CC (2026-10-22, Lennart): issue 10: keep the random split (no date recoverable).
+
+**Assessment (AI, 2026-10-22):** all issues settled; REVIEW.md removed. Not built yet.
+
 ## Reference
 
 Kaggle

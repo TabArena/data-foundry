@@ -14,7 +14,7 @@ collections:
 - New (BeyondArena)
 original_source: GOV Website
 year: '2016'
-domain: Other
+domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -79,3 +79,7 @@ CC (2026-10-21, Lennart): ok on creating the _1m version (`nyc_taxi_trip_duratio
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the competition's RMSLE, as RMSE on the shipped log1p_trip_duration (Kaggle evaluation page).
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the trip duration in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+CC (2026-10-22, Lennart): verdict ship. Record field `domain` takes the definition's value (industry & manufacturing).
+
+**Assessment (AI, 2026-10-22):** ships as `nyc_taxi_trip_duration_1m`; REVIEW.md removed (nothing left open). Not built yet.

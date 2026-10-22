@@ -15,6 +15,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: Kaggle
+year: '2017'
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -51,3 +52,7 @@ CC (2026-10-21, Lennart): Blank the attributes looked up after the sale for the 
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+CC (2026-10-22, Lennart): verdict ship. Issue 9: use 2017.
+
+**Assessment (AI, 2026-10-22):** `year` is 2017, the Kaggle upload's first version; PROV-9 now says a Kaggle upload that grew over its versions is one publication and takes its first version's year (the growing-source clause covers registers and archives we snapshot). The BibTeX keeps the version we use (2018). REVIEW.md removed (nothing left open). Not built yet.

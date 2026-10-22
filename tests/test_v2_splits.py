@@ -210,6 +210,57 @@ def test_temporal_sampling_draws_overlapping_train_sides() -> None:
     assert {p for p in newest if p < oldest_window_start} <= oldest
 
 
+def test_temporal_sampling_by_whole_time_values() -> None:
+    df = daily_frame()  # 50 rows a day
+    windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
+    out, splits, trimmed = sample_temporal_splits(df, windows, whole_values_of="t", train_cap=1_020, test_cap=120)
+    assert trimmed
+    assert (out["t"].value_counts() == 50).all()  # a kept day keeps every row
+    for folds in splits.values():
+        train, test = folds[0]
+        assert (len(train), len(test)) == (1_000, 100)  # the day that would cross the cap is dropped
+        assert out["t"].iloc[train].max() < out["t"].iloc[test].min()
+    assert out["pos"].is_monotonic_increasing
+    again, same, _ = sample_temporal_splits(df, windows, whole_values_of="t", train_cap=1_020, test_cap=120)
+    assert again.equals(out)  # deterministic
+    assert same == splits
+    newest, oldest = set(out["t"].iloc[splits[0][0][0]]), set(out["t"].iloc[splits[2][0][0]])
+    oldest_start = df["t"].iloc[windows[2][0][1]].min()
+    assert {t for t in newest if t < oldest_start} <= oldest  # one order of the days for all windows
+
+
+def test_temporal_sampling_by_time_refuses_stratification_and_oversized_values() -> None:
+    df = daily_frame()
+    windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
+    with pytest.raises(ValueError, match="does not stratify"):
+        sample_temporal_splits(df, windows, whole_values_of="t", stratify_on="y", train_cap=1_000, test_cap=120)
+    with pytest.raises(ValueError, match="single time value"):
+        sample_temporal_splits(df, windows, whole_values_of="t", train_cap=1_000, test_cap=40)
+
+
+def test_temporal_windows_gap_in_its_own_unit() -> None:
+    minutes = pd.DataFrame({"t": pd.date_range("2024-01-01", periods=10 * 24 * 60, freq="min")})
+    splits = protocol.temporal_window_splits(
+        minutes, time_on="t", window=2, unit="days", n_windows=3, gap=15, gap_unit="minutes"
+    )
+    for folds in splits.values():
+        train, test = folds[0]
+        assert minutes["t"].iloc[test].min() - minutes["t"].iloc[train].max() == pd.Timedelta(minutes=16)
+        assert len(test) == 2 * 24 * 60
+    days = protocol.temporal_window_splits(minutes, time_on="t", window=2, unit="days", n_windows=3, gap=1)
+    assert (
+        days[0][0][0]
+        == protocol.temporal_window_splits(
+            minutes, time_on="t", window=2, unit="days", n_windows=3, gap=1, gap_unit="days"
+        )[0][0][0]
+    )  # gap_unit equal to the window's unit changes nothing
+    assert len(splits[0][0][0]) == len(days[0][0][0]) + 24 * 60 - 15
+    with pytest.raises(ValueError, match="needs a calendar unit"):
+        protocol.temporal_window_splits(
+            minutes, time_on="t", window=2, unit="rows", n_windows=3, gap=1, gap_unit="days"
+        )
+
+
 def test_temporal_sampling_within_budget_changes_nothing() -> None:
     df = daily_frame(n_days=20)
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)

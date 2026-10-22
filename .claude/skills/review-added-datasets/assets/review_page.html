@@ -836,6 +836,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
         (m.problem ? "<span>" + esc(PROBLEM[m.problem] || m.problem) + "</span>" : "") +
         (m.rows ? "<span>" + Number(m.rows).toLocaleString("en-US") + " rows</span>" : "") +
+        (m.features ? "<span>" + Number(m.features).toLocaleString("en-US") + " features</span>" : "") +
         "<span>" + (m.retired ? "retired" : m.built ? "built" : "not built") + "</span></span>";
     }
     h += "</div>";

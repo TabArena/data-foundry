@@ -51,6 +51,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset with unknown origin (no paper, no operator); no task or metric defined.
 
+CC (2026-10-22, Lennart): issue 2: confirm the drop of the SIM cards never activated, in every month ("looks good to me").
+
+**Assessment (AI, 2026-10-22):** settled as implemented; REVIEW.md removed (nothing left open). Not built yet.
+
 ## Reference
 
 Kaggle

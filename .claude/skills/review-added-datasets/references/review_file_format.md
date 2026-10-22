@@ -57,7 +57,8 @@ the issue. Write the curator's note that prompted it just before, at the start o
 conversation: the original text, then one box per turn, each starting at a line that opens with one of these labels:
 `**Answer (AI, <date>):**`, `**Consistency check (AI, <date>):**`, `**<curator> (<date>[, <mark>]):**`,
 `**Resolved (<date>[, <who>]):**` or `**Deferred (<date>):**`. An open item whose last turn is the AI's is marked
-"Your turn".
+"Your turn". A table inside an issue or a turn needs a blank line before and after it; without one, the lines
+around it render as table rows.
 
 The number is the key of the curator's mark (`items.<N>` on the page). Numbers are unique in the file and never
 change; gaps are fine. A new issue takes the next number after the highest the file has had, so an old mark never

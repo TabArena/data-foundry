@@ -77,7 +77,8 @@ the publication's own formulas compute from them: a file digitised from it later
 publication as its source and year. Not the collection period, not the year of a paper
 that only analysed the data, not the BibTeX year of a later citation, not the date of the copy we download (Lennart,
 2026-10-12 and 2026-10-14; figures: Lennart, 2026-10-20, airfoil_self_noise). A source that grows over time (a public
-register, a scraped site, a monthly archive) takes the year of the snapshot we pin.
+register, a scraped site, a monthly archive) takes the year of the snapshot we pin. A Kaggle upload that grew over its versions
+is one publication and takes the year of its first version (melbourne_housing_market, 2017; Lennart, 2026-10-22).
 
 **PROV-10 (Must).** The citation is the work that published the data, not a paper that used it.
 

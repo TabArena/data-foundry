@@ -23,6 +23,7 @@ implements. The overview for people is the [skills README](../README.md).
 | Rebuilding the working copy and verifying the build (only when the curator asks) | [rebuild.md](references/rebuild.md) | the curator asks for a rebuild |
 | Reaching sources: the Kaggle command line, PubChem, Zindi, SEC EDGAR, paywalls | [sources_access.md](references/sources_access.md) | a page does not load |
 | Batch runs with several agents and the machine's limits | [agent_runs.md](references/agent_runs.md) | planning a run of more than a few datasets |
+| Exploring a dataset in a notebook: an optional starting point (`ds = workbench()`), not part of a dataset folder | [explore_notebook_reference.ipynb](references/explore_notebook_reference.ipynb) | you want a notebook to look at a dataset; copy it next to `dataset.py`, do not commit the copy |
 
 The scripts are in [scripts/](scripts/):
 

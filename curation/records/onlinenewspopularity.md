@@ -69,6 +69,8 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-22):** CLEAN-13 was amended on mortgage's issue 12 (Lennart, 2026-10-22): a block with at most one flag set merges with a reference level, so `data_channel` (`other` when no flag is set) now meets the rule as written; a Cases row names both datasets.
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

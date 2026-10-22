@@ -13,7 +13,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: GOV Website
-year: '2013'
+year: '2004'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -49,6 +49,14 @@ CC (2026-10-21, Lennart): agree to amend PROV-3 (values the owner perturbed for 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: male, currentSmoker, BPMeds, prevalentStroke, prevalentHyp, diabetes.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the teaching dataset defines no task or metric; the 10-year risk context points to the C statistic, which equals roc_auc here.
+
+CC (2026-10-22, Lennart): issue 2: participants who died of other causes within 10 years stay No. Issues 3 and 7: as the amended PROV-3 and PROV-14 say (kept, a repair under this record). Issue 8: `education` is a categorical code and is encoded as such (its labels). Issue 9: keep one row per participant, with a note that every exam could make a grouped task in the future. Record field `year` takes the definition's value (2004). Issue 1 asked: is MI_FCHD closer to the real task?
+
+**Assessment (AI, 2026-10-22):** applied issues 2, 3, 7, 8, 9: `education` mapped to its four labels as a category; the grouped-variant note added; LEAK-22 now names a competing death after the prediction point as no excluded row (this case). Issue 1 answered on the review page: hard ASCVD (MI_FCHD or stroke, 301 Yes, logistic regression ROC AUC 0.795) is the outcome of today's treatment thresholds, hard CHD (191 Yes, 0.785) that of ATP III, ANYCHD (379 Yes, 0.743) that of the classic FHS score. dataset check: 0 errors, 0 warnings. Not built yet.
+
+CC (2026-10-22, Lennart): issue 1: (a), hard ASCVD within 10 years, as it matches real-world use now.
+
+**Assessment (AI, 2026-10-22):** target `ascvd_within_10_years`: a first hospitalised myocardial infarction or CHD death, or a stroke, within 10 years (the pooled cohort equations' outcome). The 25 participants with a prior stroke are excluded, as the pooled cohort equations exclude prior ASCVD (all 25 carry STROKE = 1 at day 0, so kept they would be Yes by definition); `prevalentStroke` is then constant and dropped. 4,199 rows and 14 features, 276 Yes (6.6%; 92 per test fold), 218 competing deaths stay No. Logistic regression ROC AUC 0.779 (0.739 for any CHD); task probe linear 0.779, random forest 0.763, LightGBM 0.722, no flags; leak probe clean. dataset check: 0 errors, 0 warnings. REVIEW.md removed (nothing left open). Not built yet.
 
 ## Reference
 

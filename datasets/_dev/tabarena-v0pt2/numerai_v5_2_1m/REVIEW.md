@@ -306,20 +306,24 @@ is badly optimistic, measured below.
    similarity cluster).
 2. **The gap covers the label overlap (SPLIT-9, SPLIT-10).** Matching each stock of era T to its 1-NN in era T-k on the
    780 features (L1; a clear match when d1 < 0.5 d2) and correlating the targets, at T = 1184 / 1132 / 1210:
+
    | lag k | 1 | 2 | 3 | 4 | 5 | 6-10 |
    |---|---|---|---|---|---|---|
    | target corr | 0.60 / 0.61 / 0.62 | 0.42 / 0.36 / 0.39 | 0.20 / 0.14 / 0.21 | 0.01 / -0.03 / 0.02 | 0.01 / -0.00 / -0.01 | within +-0.04 |
    | clear-match share | 98-99% | 92-97% | 81-94% | 68-88% | 56-75% | 21-58% |
+
    The 20-day targets of a stock overlap for 3 eras, as 15/20, 10/20, 5/20 days would predict. Train ends at T-5 for
    the first test era (the newest target known then, matching eras 1236-1240 unresolved in the download): the 4-era gap
    removes every overlapping row with one era to spare. No training row has a label unknown at the prediction point.
 3. **IID alternative (SPLIT-29, SPLIT-1).** Same 72,342 test rows (20% of eras 1184-1235), same train size 289,370;
    per-era Pearson correlation (mean, t):
+
    | model | shipped temporal | IID within the same eras |
    |---|---|---|
    | LightGBM (600 trees, Numerai-like) | -0.0007 (t -0.2), R^2 vs 0.5 -0.001 | 0.261 (t 53), R^2 +0.026 |
    | 1-NN (10k test rows) | -0.011 | 0.618 |
    | 20-NN | -0.003 | 0.279 |
+
    An IID split rewards recognising a stock next to its own overlapping label; the hidden-group probe's 12.8% near-copy
    share (14 coarse columns) understates it: on all 780 features 98% of stocks have a clear match one era back.
 4. **Windows and training history (SPLIT-11, SPLIT-12, SPLIT-14, SPLIT-20).** Expanding train side; train-side share of
