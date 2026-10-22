@@ -6,7 +6,6 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - No Good Target  / Scientific Discovery
-- Not Representative
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -24,6 +23,16 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
+
+**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): an OTU abundance table cut from the Australian Microbiome monitoring data; the source publishes sequence data for monitoring, with no predictive task, and the record names no target.
+- Source: Brown et al., "Systematic, continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative", Scientific Data 5:180130, 2018 (doi 10.1038/sdata.2018.130); the data from Bioplatforms Australia (https://data.bioplatforms.com/bpa/otu, accessed 04.10.22 per the record), subset 27f519r bacteria, marine, coastal/pelagic/surface water.
+- Use case: none stated: "provides methodologically standardized, continental scale, temporal phylogenetic amplicon sequencing data"; a target (an oceanographic variable) would be ours (SEL-8). Samples are monthly to seasonal at fixed sites, so any task would be grouped or temporal.
+- Siblings and duplicates: the same microbiome group as atl_ocean_transect (see there); none verified by a curator.
+- Metric: none (no task).
+- The old `Not Representative` marker is dropped: it is not the reason; the missing task is.
+- Doubt for the reject-checker: eDNA monitoring can predict water-quality indicators (Bell et al. 2026, bioRxiv), so a target could be defined; the source does not.
+- Reject check (AI, 2026-10-22): stands. The microbiome family does have a collection: Zschaubitz, ..., Sperlea 2025, 'A benchmark analysis of feature selection and machine learning methods for environmental metabarcoding datasets', CSBJ (doi 10.1016/j.csbj.2025.04.017, https://pmc.ncbi.nlm.nih.gov/articles/PMC12049816/), Table 1, with targets fixed per dataset; but its Methods say 'The choice of target variable was based on an expectation that there is a correlation': chosen to benchmark feature selection, not for a decision, and the first source is a discovery study (SEL-8). Here the target is phosphate (2,620 samples); the collection's intro gives only the general 'bioindicators of environmental states or levels of potential pollution', and AMMBI measures phosphate with each sample (Brown et al. 2018, https://www.nature.com/articles/sdata2018130). This is the weakest of the three: a curator could argue for eDNA nutrient monitoring. Correct the block: a target exists in the collection.
+- Collection (AI, 2026-10-22): this record is one of the environmental-metabarcoding datasets of Zschaubitz et al. 2025, "A benchmark analysis of feature selection and machine learning methods for environmental metabarcoding datasets" (CSBJ, doi 10.1016/j.csbj.2025.04.017), whose Table 1 fixes one target per dataset (a measured environmental variable such as depth, pH, temperature or a nutrient). The collection picked targets "based on an expectation that there is a correlation" to benchmark feature selection, not for a decision, and the targets are measured at sampling anyway; so the reject holds under SEL-3 and SEL-8 (reject check 6).
 
 A subset of Australian Microbiome Initiative 16S amplicon (27f519r bacteria, marine) sequencing data with an OTU abundance table, tagged 'Many features'. This is microbiome OTU data for ecological/scientific discovery, not a published real-world predictive classification/regression task, and OTU matrices (huge sparse feature space, no clear target) are not representative of tabular ML. There is no well-defined predictive target in the record. Excluded; a human would need to invent a target to make it usable, which is out of scope.
 
