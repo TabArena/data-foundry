@@ -798,8 +798,9 @@ class PredictiveMLSplitsMetadata:
     known yet when the model is refit (a completion rate published six years after entry). ``None`` when the splits
     leave no gap, and for splits recorded before this field existed.
     """
-    time_gap_unit: Literal["steps", "days", "weeks", "months", "years"] | None = None
-    """The unit of ``time_gap``, read as ``time_horizon_unit`` is."""
+    time_gap_unit: Literal["steps", "minutes", "hours", "days", "weeks", "months", "years"] | None = None
+    """The unit of ``time_gap``, read as ``time_horizon_unit`` is; a gap can also be in ``"minutes"`` or ``"hours"``
+    (a label known minutes after its row)."""
 
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""

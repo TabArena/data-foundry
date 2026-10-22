@@ -4,6 +4,75 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-22 (second round: kick, mortgage, house_sales, huntprohibited, g_research; time-sampled splits)
+
+Lennart answered the consistency checks and the open questions of the first round. Each record carries his decisions
+as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **kick:** `WheelType`, `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` are dropped under LEAK-10, consistent with
+  expresso's REGION. LEAK-38's scope is amended: the rule covers only fields whose timing cannot be tested, and a
+  LEAK-10 mechanisms row names both datasets. `REVIEW.md` is removed.
+- **mortgage:**
+  - The payoff copy of the 7 doubled period-51 loans stays, recorded as an exception to LEAK-20.
+  - The 38 balances that put the source's LTV above 300% become missing before lagging (CLEAN-11). The highest lagged
+    LTV is now 261.4%.
+  - `REVIEW.md` is removed.
+- **house_sales (issue 8, option c):**
+  - Only the appraiser's judgment codes (46, 7, 8; 360 sales) are dropped; the frame has 20,607 rows.
+  - New categorical `sale_condition` from the warnings known before the price.
+  - RMSE on log price .1662 overall, .2552 on the flagged sales.
+  - New issue 10: 23 sales whose price covers more or less than the house.
+- **huntprohibited_1m:** the random split stays (issue 10). `REVIEW.md` is removed.
+- **g_research_crypto_forecasting_1m** is kept under an amended TP-10: leg 1 is measured by the declared metric, and leg
+  2 now reads "no lag of the target column itself".
+  - New framework options in `src/data_foundry/v2/splits.py`:
+    - `TemporalSplits(sample_by="time")` sub-samples whole time values to the row budget;
+    - `gap_unit` gives the gap its own unit, and the schema's `time_gap_unit` accepts minutes and hours.
+  - The definition samples whole minutes over all history, with a 15-minute gap.
+  - Its notes give the CLEAN-19 comparison with the other top solutions and no longer recommend `No`.
+  - `REVIEW.md` is removed.
+  - stock and appliances_energy_prediction are listed in the working copy's `REVIEW.md` for a re-check under the
+    amended rule.
+- **Review page:** tables in `REVIEW.md` answers now have blank lines around them; they rendered as broken tables
+  before. The review file format says so.
+
+## 2026-10-22 (the curator's marks on eight datasets)
+
+Lennart marked eight datasets on the review page. Each record carries his decisions as `CC (2026-10-22, Lennart)`
+lines. Marks that depart from a rule or precedent without a fact that sets them apart went back to him as
+consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing was rebuilt.
+
+- **Settled, `REVIEW.md` removed:**
+  - `nyc_taxi_trip_duration_1m`: verdict ship; the record's `domain` takes the definition's value.
+  - `open_university_learning_analytics_dataset`: the 14-day TMA marking delay and the weight-0 TMA rule stay; kept
+    despite `no_spread`, to be re-checked with the first tuned run (a TP-3 cases row and a note).
+  - `expresso_churn_prediction_1m`: REGION stays dropped, ARPU_SEGMENT stays, the churn timing ships as a stated risk.
+- **mortgage:**
+  - Issues 2, 10, 11, 12 and 14 applied:
+    - the use case now covers a loan scored from the quarter it joins the book;
+    - new `balance_ratio_lag_1_to_2`;
+    - Freddie Mac's 30-year rate (FRED MORTGAGE30US, a new raw file) as `market_rate_30y_lag_1`, with
+      `rate_minus_market_rate_lag_1`;
+    - a note on a possible default-only companion.
+  - Log loss 0.1180 / 0.1274 / 0.1293 in periods 60 / 59 / 58, against 0.1201 / 0.1327 / 0.1364 without the ratio.
+  - CLEAN-13 is amended for a flag block with a reference level (mortgage, onlinenewspopularity). A CLEAN-19 case row
+    records the first column joined from outside a source.
+  - Issues 13 and 15 are open as consistency checks.
+- **house_sales:** `yr_renovated` = 0 stays missing, as an exception to CLEAN-10 (a cases row). The record's `year` is
+  now 2015. Issue 8 has an answer with measurements: keep the sales with codes known before the price, add an
+  indicator for them, and drop only the appraiser's judgment codes.
+- **huntprohibited_1m:**
+  - The split stays by ad, with no `Spatial` tag (the reason is in the notes).
+  - No date can be recovered (`itemid` is random). A used-car form change bounds the cost of the random split at
+    about 0.002 ROC AUC; the notes give it instead of "cannot be measured". New issue 10 asks to confirm.
+- **kick:** the marks to keep `WheelType` and `PRIMEUNIT`/`AUCGUART` went back to the curator as a consistency check
+  against expresso's REGION. The conditional test now also covers PRIMEUNIT/AUCGUART and shows the same signature.
+- **g_research_crypto_forecasting_1m:** answers only, the definition is unchanged:
+  - TP-10 leg 1 holds under weighted Pearson;
+  - no feature from the other top solutions helps in all three windows;
+  - whole-minute sampling over all history is proposed;
+  - new issue 7 on a 15-minute gap.
+
 ## 2026-10-21 (force_2020 units and depth order; qsar_oral_toxicity extended; RDKit Ipc on a log scale)
 
 Lennart's second round of marks on these two datasets. Each record carries his decisions as `CC (2026-10-21, Lennart)` lines. Nothing was rebuilt; both checksums change.

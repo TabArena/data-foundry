@@ -14,7 +14,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 original_source: GOV Website
-year: '2016'
+year: '2015'
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -51,6 +51,14 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+CC (2026-10-22, Lennart): issue 9 as implemented: `yr_renovated` = 0 stays missing. Record field `year` takes the definition's value (2015).
+
+**Exception to CLEAN-10 (2026-10-22, Lennart):** `yr_renovated` = 0 means "never renovated" and is set to missing instead of kept as a code; what sets it apart from bank_marketing and house_prices_nominal: a 0 in a year column reads as a year to a linear model, and after the as-of-sale rebuild missing has no other meaning in the column. Serves P7 (cleaning to the expert state: the column means what a model reads from it, CLEAN-1).
+
+CC (2026-10-22, Lennart): issue 8: (c), keep the sales with codes known before the price and add an indicator; drop only the appraiser's judgment codes (46, 7, 8).
+
+**Assessment (AI, 2026-10-22):** applied: 360 sales dropped (code 46: 357; code 8: 4), 20,607 rows; new categorical `sale_condition` (none 19,847; no market exposure 473; short sale 129; related party 85; other pre-price code 33; estate 32; bankruptcy or forced sale 8). Untuned LightGBM on the 9 windows, RMSE on log price all / unflagged / flagged: .1662 / .1613 / .2552, against .1682 / .1611 / .2875 when the old six codes are dropped; the short-sale mean residual moves from -0.23 to -0.04. dataset check: 0 errors, 0 warnings. New issue 10: codes 45, 5 and 1 (23 sales) whose price is not the house's alone.
 
 ## Reference
 

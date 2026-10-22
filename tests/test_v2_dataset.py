@@ -358,6 +358,10 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             "grouped or temporal, not both",
         ),
         ({"subsample_to_budget": True}, "version_of"),
+        (
+            {"temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3, sample_by="time"))},
+            "needs `subsample_to_budget = True`",
+        ),
         ({"version_of": "toy"}, "version_comment"),
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
         ({"categorical_features": ("a",)}, "`_feature_types`"),
@@ -420,6 +424,25 @@ def test_temporal_gap_is_stated_by_the_windows_or_declared() -> None:
     assert _gap(_define(temporal=declared)) == (5, "years")
     custom = Temporal(on="t", horizon=1, horizon_unit="months", gap=1, gap_unit="months")  # `_make_splits`
     assert custom.resolved_gap == (1, "months")
+    minutes = TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes")  # its own unit
+    assert _gap(_define(temporal=Temporal(on="t", splits=minutes))) == (15, "minutes")
+    assert "up to a gap of 15 minutes" in minutes.describe(3)
+    assert _horizon(_define(temporal=Temporal(on="t", splits=minutes))) == (91, "days")
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"unit": "unique", "gap": 2, "gap_unit": "days"}, "needs a calendar unit"),
+        ({"unit": "rows", "gap": 2, "gap_unit": "minutes"}, "needs a calendar unit"),
+        ({"unit": "days", "gap_unit": "minutes"}, "no gap"),
+        ({"unit": "days", "gap": 1, "gap_unit": "seconds"}, "is not one of"),
+        ({"unit": "days", "sample_by": "groups"}, "sample_by"),
+    ],
+)
+def test_temporal_splits_reject_a_bad_gap_unit_or_sampling(kwargs: dict, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        TemporalSplits(window=7, n_windows=3, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -675,9 +698,9 @@ def test_a_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path)
         get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
 
 
-def temporal_version_body() -> str:
+def temporal_version_body(windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)') -> str:
     """A temporal ``toy_ds_1m``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
-    extra = '    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3))\n'
+    extra = f'    temporal = Temporal(on="t", splits={windows})\n'
     return (
         DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
         .replace(
@@ -726,6 +749,25 @@ def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(
         train, test = folds[0]
         assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
     assert "the frame keeps only the rows a split uses" in plan.comment
+
+
+def test_a_temporal_version_sampled_by_time_keeps_whole_days(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # 9 whole days of 20 rows fit, the 10th would cross it
+    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 60)  # 3 of a window's 5 days
+    windows = 'TemporalSplits(window=5, unit="days", n_windows=3, sample_by="time")'
+    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body(windows))
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+    full_days = plan.df["t"].value_counts()
+    assert (full_days == 20).all()  # every kept day keeps all its rows
+    for folds in plan.splits.values():
+        train, test = folds[0]
+        assert (len(train), len(test)) == (180, 60)  # at most the budget: the day crossing it is dropped
+        assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
+    assert "drawn as whole values of `t`" in plan.comment
 
 
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:

@@ -338,8 +338,8 @@ class AbstractCuratedDataset(ABC):
     subsample_to_budget: ClassVar[bool] = False
     """``True`` for a ``_1m`` version. IID / grouped: sub-sample a frame above 1.5M rows to 1.5M (whole groups,
     stratified) before splitting, so every fold trains on at most 1M and tests on at most 500k rows. Temporal: sample
-    per window (each test window up to 500k rows, each train side a random 1M of all earlier rows) and keep only the
-    rows a split uses (:mod:`data_foundry.v2.splits`)."""
+    per window (each test window up to 500k rows, each train side a random 1M of all earlier rows; whole time values
+    with ``TemporalSplits(sample_by="time")``) and keep only the rows a split uses (:mod:`data_foundry.v2.splits`)."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -659,8 +659,13 @@ class AbstractCuratedDataset(ABC):
             protocol.rows_text(protocol.TEST_ROW_BUDGET),
         )
         if self.subsample_to_budget and temporal:
+            by_time = self.temporal.splits.sample_by == "time"
             df, splits, trimmed = protocol.sample_temporal_splits(
-                df, splits, stratify_on=task.stratify_on, random_state=self.SPLIT_RANDOM_STATE
+                df,
+                splits,
+                stratify_on=None if by_time else task.stratify_on,
+                whole_values_of=task.time_on if by_time else None,
+                random_state=self.SPLIT_RANDOM_STATE,
             )
             if not trimmed:
                 msg = (
@@ -668,11 +673,19 @@ class AbstractCuratedDataset(ABC):
                     "test rows). Take the dataset fully: drop `subsample_to_budget` and the `_1m` version."
                 )
                 raise DatasetDefinitionError(msg)
-            comment += (
-                f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
-                f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the rows "
-                "a split uses."
-            )
+            if by_time:
+                comment += (
+                    f" Each test window keeps at most {test_budget} of its rows and each train side at most "
+                    f"{train_budget} of all earlier rows, drawn as whole values of `{task.time_on}` (every row of a "
+                    "drawn value kept; one random order of the values for all windows); the frame keeps only the rows "
+                    "a split uses."
+                )
+            else:
+                comment += (
+                    f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
+                    f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the "
+                    "rows a split uses."
+                )
             return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
 
         splits, capped = protocol.cap_splits(
@@ -1351,6 +1364,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             )
     if custom_splits and cls.temporal is not None and cls.temporal.splits is not None:
         fail("`Temporal(splits=...)` is ignored when the class implements `_make_splits`; declare one of them.")
+    if (
+        cls.temporal is not None
+        and cls.temporal.splits is not None
+        and cls.temporal.splits.sample_by != "rows"
+        and not cls.subsample_to_budget
+    ):
+        fail("`TemporalSplits(sample_by=...)` sets how a `_1m` version samples; it needs `subsample_to_budget = True`.")
     if custom_splits and cls.subsample_to_budget:
         fail("`subsample_to_budget` is ignored when the class implements `_make_splits`; sample there instead.")
     if cls.subsample_to_budget and cls.version_of is None:

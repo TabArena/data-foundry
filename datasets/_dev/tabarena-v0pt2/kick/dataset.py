@@ -27,7 +27,7 @@ class Kick(AbstractCuratedDataset):
         row="One car bought at a US auction in 2009-2010.",
         predicted="Whether the purchase turned out to be a bad buy.",
         known=(
-            "The car (age, make, model, trim, mileage, colour, wheel type), its auction and retail price guides, the "
+            "The car (age, make, model, trim, mileage, colour), its auction and retail price guides, the "
             "purchase price, the auction, the buyer and the warranty cost."
         ),
         split=(
@@ -41,8 +41,8 @@ class Kick(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The cars, the features known at the auction and the split by purchase date mirror the dealer's decision. "
-            "A missing wheel type, which may be filled in after a car is returned, is a potential leak kept as the "
-            "company released it and named in the notes."
+            "Four fields that were filled in after the outcome (WheelType, WheelTypeID, PRIMEUNIT, AUCGUART) are "
+            "dropped."
         ),
     )
 
@@ -73,8 +73,10 @@ class Kick(AbstractCuratedDataset):
         - The test features from the Kaggle competition are available and could be used for unsupervised approaches.
         - We transform "PurchDate" to datetime.
         - We drop the "RefId" column, as it is just an identifier and not useful for modeling.
-        - We assign the categorical features "WheelTypeID", "BYRNO", and "VNZIP1" to category dtype, as they are given as numbers.
-        - Potential leak, kept on purpose: missing "WheelType" may be filled in (blanked) when a car is kicked back. It is missing for about 25% of bad buys in every month but for only 1.5% of good cars, erratically (Sep-Oct 2010: 1 good vs 218 bad cars). Dropping WheelType and WheelTypeID lowers LightGBM ROC AUC on our temporal splits from 0.757 to 0.691. We keep both because this is how the company released the data for the competition (WheelType is missing in 4.5% of the Kaggle test rows vs 4.3% of train) and the field's recording process is not documented.
+        - We assign the categorical features "BYRNO" and "VNZIP1" to category dtype, as they are given as numbers.
+        - Leak, dropped (LEAK-10; Lennart, 2026-10-22, consistent with expresso_churn_prediction's REGION): "WheelType" and "WheelTypeID" were most likely filled in after the outcome. WheelType is missing for 24.9% of bad buys and 1.5% of good ones, in every band of vehicle age, odometer and price; a model of the missingness from the auction covariates, fit on good buys, predicts 1.2% missing for the bad buys; within auction and purchase date the missing flag alone still separates bad buys (ROC AUC 0.572), while the missing flags of the other columns stay at 0.49-0.54. Its whole value is the flag: LightGBM on the 9 temporal windows (300 trees, mean ROC AUC) 0.750 with the columns, 0.677 without.
+        - Leak, dropped (LEAK-10; same decision): "PRIMEUNIT" and "AUCGUART" (filled on the same rows, about 95% missing). From October 2010 they are filled for 32.7% of good buys and 7.8% of bad ones; a model of the fill from the auction covariates, fit on good buys, predicts 42.3% filled for the bad buys; within auction and purchase date the flag gives ROC AUC 0.632. These months fall in the last test windows.
+        - The host's test file carries all four fields the same way (WheelType missing for 4.5% of the Kaggle test rows against 4.3% of train; PRIMEUNIT filled for 46.0% in December 2010), so the competition's task had them. We drop them anyway because that test file is a holdout from the same snapshot, taken after the outcomes; at a real auction no car has been kicked back yet. If the recording process is ever documented as known at the auction, they can come back.
     """
 
     # Task
@@ -100,18 +102,15 @@ class Kick(AbstractCuratedDataset):
         return pd.read_csv(raw_dir / "training.csv")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        return drop_columns(raw, ["RefId"])
+        # WheelType, WheelTypeID, PRIMEUNIT and AUCGUART were filled in after the outcome (LEAK-10, notes)
+        return drop_columns(raw, ["RefId", "WheelType", "WheelTypeID", "PRIMEUNIT", "AUCGUART"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=(
                 # given as numbers
-                "WheelTypeID",
                 "BYRNO",
                 "VNZIP1",
-                "PRIMEUNIT",
-                "AUCGUART",
-                "WheelType",
                 "Trim",
                 "SubModel",
                 "Color",

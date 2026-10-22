@@ -383,7 +383,10 @@ out of the checksum while unset): the `gap` of a calendar or row window states i
 (`unit="unique"`: college_scorecard's cohorts, numerai's weekly eras) or one built in `_make_splits`
 (brazilian_ecommerce, sf_permit_time) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique` window with a
 gap and no declared unit does not import, nor does a declared gap the windows already state or do not leave
-(Lennart, 2026-10-16).
+(Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
+(`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
+gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
+Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
 
 The data arrives sorted by the time column, and `TemporalSplits` builds the convention the bundle checks verify: one
 repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is the newest window, the rest walk back
@@ -399,6 +402,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
+| A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 The number of windows follows `recommended_dimensions` (20, 10, 3 or 1 times 3), never fewer than 3 (`splits_too_few`)
@@ -428,7 +432,12 @@ with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment
 * Temporal data: the frame is not sampled. The windows (at least 3) are built on the full data, then
   `sample_temporal_splits` keeps at most 500k rows of each test window and a random 1M of all earlier rows for each
   train side, drawn in one random order so the train sides overlap; the frame keeps only the rows a split uses. A
-  temporal `_1m` version whose windows all fit is an error.
+  temporal `_1m` version whose windows all fit is an error. When the rows of one time value form a cross-section the
+  target or the features are relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws
+  whole time values instead of rows: one random order of the values, each side taking whole values while it stays
+  within its budget (the value that would cross it is dropped), without stratification
+  (g_research_crypto_forecasting_1m; Lennart, 2026-10-22). Random rows would leave about one coin per minute.
+  `sample_by` without `subsample_to_budget` is an error.
 
 A dataset that sets `splits_comment` itself states the sub-sampling there.
 

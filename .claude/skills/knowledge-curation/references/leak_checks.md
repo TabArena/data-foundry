@@ -119,7 +119,9 @@ wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings a
 ids).
 
 **LEAK-20 (Should).** Feature vectors that occur with both labels: drop every copy, unless they are genuine label
-ambiguity the task has. Cases: jm1 (176 rows); consumer_complaints.
+ambiguity the task has. Cases: jm1 (176 rows); consumer_complaints. Exception: mortgage (7 loans, Lennart, 2026-10-22)
+keeps the payoff copy where period 51 is doubled, because every such loan ends at period 51: the other copy is damage
+to the file (PROV-13), not an ambiguous label.
 
 **LEAK-21 (Should).** Reposts identical except an id or a location: drop them, as the source paper did. Cases: emscad
 (Vidros et al. 2017, Sec. 5).
@@ -196,10 +198,15 @@ feature leak. Cases: diabetes "Expired".
 company computed itself (the promised delivery date, the forecast being corrected): USE-6 in [use_case.md](use_case.md).
 Such an input that tracks a dropped post-outcome column stays with a note (Mechanisms table: digicow `topics_list`).
 
-**LEAK-38 (Should; narrows LEAK-10).** Anonymised fields that may be post-outcome, in data a company released for its
-own competition, stay, with a `Potential leak, kept on purpose:` note giving the mechanism, the numbers, why they stay
-and when to revisit. Why: removing an unverified signal from host-designed data is arbitrary. Cases: homesite
-(`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915) and kick (`WheelType`, 0.757 to 0.691).
+**LEAK-38 (Should; narrows LEAK-10; scope amended 2026-10-22, Lennart, on kick and expresso_churn_prediction).**
+Anonymised fields that may be post-outcome, in data a company released for its own competition, stay, with a
+`Potential leak, kept on purpose:` note giving the mechanism, the numbers, why they stay and when to revisit. Why:
+removing an unverified signal from host-designed data is arbitrary. The rule covers only fields whose timing cannot be
+tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known
+at the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
+carries it the same way: that file is a holdout of the same snapshot, not deployment data. Cases: homesite
+(`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915, kept); kick's `WheelType` was kept here on 2026-10-01 and
+dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way).
 
 Also not a leak, with their home elsewhere:
 
@@ -296,6 +303,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10, LEAK-7 | An aggregate that may include the row's own outcome | keep only the period where it behaves like history, and call the evidence circumstantial | online_shoppers `PageValues`: Feb-May every buyer has PV > 0 (AUC 0.974), Jun-Dec 27% of buyers have PV = 0 (0.814); Feb-May dropped |
 | LEAK-10 | Fitted from the same measurement that gives the label | drop it for the task we frame | sdss_17 `redshift` (photometric task) |
 | LEAK-10 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |
+| LEAK-10, LEAK-38 (precedent, Lennart, 2026-10-22) | A named field whose missingness or fill, given the covariates known at the prediction point, differs by outcome (a conditional test), although the host's test file carries it the same way | drop it | expresso_churn_prediction REGION (flag AUC 0.936 among customers active all 62 days); kick `WheelType`/`WheelTypeID` (1.2% predicted missing for bad buys, 24.9% observed) and `PRIMEUNIT`/`AUCGUART` (42.3% predicted filled, 7.8% observed) |
 | LEAK-11 | Measured after the outcome, but it weakens the signal | keep it and note it | south_africa_coronary_heart_disease (ESL Sec. 5.2.2, p. 148; dropping `sbp`, `obesity`: AUC 0.774 to 0.778) |
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |

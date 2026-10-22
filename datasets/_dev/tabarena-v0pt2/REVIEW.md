@@ -940,3 +940,13 @@
   other 16 typed only real flags. Two open doubts: home_credit_default_risk's `CC_NAME_CONTRACT_STATUS_*` min/max
   aggregates (reverted; a max of a one-hot reads as "ever had this status") and early_learning_predictors'
   `practitioner` and `quintile_used` (reverted for lack of a codebook).
+
+### Follow-ups from the marks of 2026-10-22
+
+- **Re-check stock and appliances_energy_prediction under the amended TP-10?** TP-10 now measures leg 1 by the
+  task's declared metric and allows trailing summaries of the series as features, only no lag of the target column
+  itself (Lennart, 2026-10-22, on g_research_crypto_forecasting). Both datasets were retired as `No` + `Time-series
+  (Forecasting)` under the earlier wording (stock: an undated CC; appliances_energy_prediction: 2026-07-27), and both
+  records also carry `Wrong Domain / Source Modality`, which the amendment does not touch. Ways out: (a) re-run the
+  two legs on both and reopen any that passes; (b) leave both retired on their other marker. Nothing changes until you
+  mark it.

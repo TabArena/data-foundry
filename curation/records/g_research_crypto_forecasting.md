@@ -51,6 +51,10 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source weighted_pearsonr inputs weight=Weight — the Kaggle evaluation's weighted Pearson correlation, each row weighted by its asset's Weight from asset_details.csv, now a scoring column (replaces the pooled pearsonr stand-in). Needs a rebuild to reach the container.
 
+CC (2026-10-22, Lennart): verdict ship after changes. Issue 1: (a), amend TP-10 and keep the dataset. Issue 2: keep the 18 features. Issue 6: (a), all history sampled as whole minutes. Issue 7: a 15-minute gap, with the framework change.
+
+**Assessment (AI, 2026-10-22):** applied. TP-10 amended (leg 1 by the declared metric, leg 2: no lag of the target column itself), with a cases row. Framework: `TemporalSplits(sample_by="time")` draws whole time values to the row budget, and `gap_unit` gives the gap its own unit (minutes, hours, ...); tests added. The definition uses `gap=15, gap_unit="minutes", sample_by="time"`: train sides of about 1M rows over 84-87k whole minutes (11.5-11.9 coins per minute) from 2018-01-01, test sides of 500k rows (14 coins per minute). The notes give the CLEAN-19 comparison with the other top solutions and the SPLIT-20 reason; no text recommends `No`. The weighted Pearson figures were measured on the earlier random-row, 1-day-gap splits. stock and appliances_energy_prediction are listed for a re-check under the amended TP-10 (working copy REVIEW.md). REVIEW.md removed. Not built yet.
+
 ## Reference
 
 Alessandro Ticchi, Andrew Scherer, Carla McIntyre, Carlos Stein N Brito, Derek Snow, Develra, dstern, James Colless, Kieran Garvey, Maggie, Maria Perez Ortiz, Ryan Lynch, and Sohier Dane. G-Research Crypto Forecasting . https://kaggle.com/competitions/g-research-crypto-forecasting, 2021. Kaggle.

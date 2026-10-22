@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: huntprohibited_1m
 container_format: 2
-checksum: v2:e50511c9ea40359e790287cad3755507477fe54ea062798c847bb1c05b38e935
+checksum: v2:ab88905803d8848d3f3203d2c290cb96c66a6f8e70f7145f814800cd56be20db
 build: null
 build_stale: false
 data:
@@ -63,7 +63,7 @@ decisions:
 
 Binary classification of `is_blocked`, scored with `average_precision_at_k` on IID splits. 1,500,000 rows and 9 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:e50511c9ea40359e790287cad3755507477fe54ea062798c847bb1c05b38e935`.
+Not built yet. The current definition gives checksum `v2:ab88905803d8848d3f3203d2c290cb96c66a6f8e70f7145f814800cd56be20db`.
 
 ## In brief
 
@@ -191,11 +191,12 @@ We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibit
 - We drop `close_hours`, how long the ad was live: it is known only after the moderation decision (the hosts: "not available at scoring phase").
 - We drop `is_proved`, which is set only for blocked ads: a component of the target, "not to be used as a direct modeling attribute" (data page).
 - We drop `itemid`: the ids "have been randomly assigned" (Kaggle discussion 9554).
-- IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks, seasonal items (New Year, 8 March) and shifts in the category mix; the cost cannot be measured, because the April labels were never published, and the time axis should be recovered if Avito or Kaggle releases the dates.
+- IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks, seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates. One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe random holdouts and K-fold, and local scores tracked the leaderboard).
 - We drop exact copies of an ad (reposts with the same features and label) and every ad whose features occur with both labels (decision table).
 - Note: edited reposts stay and sellers are not grouped, because the label is per ad: the data page speaks of ads "blocked for illicit content". This is the source's wording; it cannot be checked against a seller key, as the file has none. By exact description keys, 1.4-4.9% of the test ads have a near copy in train, and 99.5% of those share its label; grouping on such a key (GroupKFold, fold 0, a logistic regression on word n-grams) gives ROC AUC 0.99384 and 0.99386 against 0.99390 for the random split, and AP within 0.002. In the 2026-10-07 run, 0.50% of the April test ads shared a 30+ character description with a training ad (not re-measured: the test file is not in the warehouse). A seller who rewrites every ad is not covered by any of these measurements.
 - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked are numeric. The counts are Avito's own and mostly match the masks in the description: `phones_cnt` is higher on 0.92% of ads, which are blocked less often than the rest.
 - We keep `attrs`, the ad's form fields for its category, as the released JSON text: unpacking it would give 72 mostly empty columns with Russian names, and the winning solutions treated it as text (Kaggle discussion 10178).
+- Tags: no `Spatial` tag (Lennart, 2026-10-22). 901,011 real-estate ads (22.5% of the file) hold a street address inside the `attrs` form text, but the dataset has no geographic column of its own.
 - Anomaly: 6,004 `attrs` strings are not valid JSON, the description writes line breaks as "^p", and `price` is 0 for 12.4% of the ads (no price given, or free). We keep all of these as released.
 - Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file (14 in this version), 65.5% of them blocked; `price` = 1 on 3,962 ads of this version, 19.0% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
 - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.

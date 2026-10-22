@@ -215,12 +215,14 @@ The frame is loaded from the definition.
   0.0% of temporal test rows have a session-mate in train. Under a random split it is 97.5%.
 
 **Windows, gap, late labels (SPLIT-9..12, SPLIT-14..17): hold, with one open question**
+
 | window | test rows | test adopters | adopter sessions / trainers | train rows (share) | train adopters | gap (days) |
 |---|---|---|---|---|---|---|
 | Sep-Dec 2025 | 718 | 9 | 3 / 1 | 12,818 (94.7%) | 144 | 28 |
 | May-Aug 2025 | 773 | 5 | 3 / 1 | 12,045 (89.0%) | 139 | 27 |
 | Feb-Apr 2025 | 727 | 19 | 8 / 2 | 11,318 (83.6%) | 120 | 51 |
 | Sep-Dec 2024 | 4,264 | 103 | 52 / 7 | 7,054 (52.1%) | 17 | 20 |
+
 - The true day is never above 12. The train side ends 20-51 days before each test start, and 0 train rows fall within
   7 days of a test start, so every training row's 7-day label has matured (SPLIT-9/10 met for the stated horizon).
   The expanding train side starts from the newest window (SPLIT-11). Four windows with at least 50% train (SPLIT-14).
@@ -248,6 +250,7 @@ The frame is loaded from the definition.
    If confirmed, keep each farmer's first training, or date the row by it.
 
 **Alternative splits (quick fits: one-hot logistic plus topics, untuned LightGBM; ROC AUC)**
+
 | split | linear | LightGBM |
 |---|---|---|
 | temporal, shipped 4 windows | 0.810 (0.88 / 0.93 / 0.94 / 0.49) | 0.751 |
@@ -257,6 +260,7 @@ The frame is loaded from the definition.
 | grouped by session + month | 0.932 | 0.886 |
 | grouped by group_name | 0.803 | 0.688 |
 | trainer x month lookup, random 5-fold | 0.937 | |
+
 Under a random split, a lookup of who recorded in which month reaches 0.937. With 97.5% of test rows having a
 session-mate in train, an IID split rewards recognising the recording wave (SPLIT-29). The grouped splits reach 20-52
 adopters per fold, but group/session is not the entity of the use case (the trainer and group recur in new data,

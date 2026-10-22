@@ -56,6 +56,10 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source is a data descriptor (OU Analyse open dataset) with no prediction task or metric; our day-60 four-class task is our construction.
 
+CC (2026-10-22, Lennart): issue 4: keep the 14-day TMA marking delay with its note. Issue 9: leave only the weight-0 TMA marks out of the scores; FFF's graded quizzes stay. Issue 12: keep the dataset despite `no_spread` and mark it for later: re-check with the first tuned run (TP-3).
+
+**Assessment (AI, 2026-10-22):** all three issues settled as implemented; a `Spread (TP-3)` bullet in the notes and a TP-3 cases row in task_probes.md mark the re-check with the first tuned run. REVIEW.md removed (nothing left open). Not built yet.
+
 ## Reference
 
 Kuzilek J., Hlosta M., Zdrahal Z. Open University Learning Analytics dataset Sci. Data 4:170171 doi: 10.1038/sdata.2017.171 (2017).

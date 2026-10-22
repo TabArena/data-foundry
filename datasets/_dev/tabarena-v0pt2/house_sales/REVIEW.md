@@ -1,84 +1,40 @@
 # house_sales
 
 **Outcome:** added. King County house sales of May 2014 to April 2015, each house rebuilt as the assessor recorded it
-on the sale day, the sales the county flags as not at market value dropped, 9 three-week windows after a one-week gap;
+on the sale day, the appraiser's non-market judgments (codes 46, 7, 8) dropped and the declared sale conditions kept as `sale_condition`, 9 three-week windows after a one-week gap;
 the AI recommends shipping it. Validity: SEL holds; USE-1 holds with the actor reworded (the assessor's mass appraisal
-or a valuation model working from public records); USE-5 triggered, fixed (1,061 non-market sales dropped; the
-borderline codes are issue 8); LEAK-10 triggered, fixed (the as-of-sale rebuild, including the lot size); LEAK-11: the
+or a valuation model working from public records); USE-5 triggered, fixed (the sale warnings: 360 judgment-coded sales dropped, `sale_condition` added; the
+price-not-the-house codes are issue 10); LEAK-10 triggered, fixed (the as-of-sale rebuild, including the lot size); LEAK-11: the
 few values still from July 2015 are kept with a note (masking them changes no score measurably); the fit is `direct`
 with the remnant named in `fit_reason` (the curator, 2026-10-21: direct when the task without the leak would be
 direct, approximate only when avoiding the leak needed large changes; USE-8); SPLIT-10 triggered, fixed (one-week gap); PROV-13 holds (repaired from the county's records); PROV-10 fixed
 (cites the 2015 course release and the county). Value: TP holds (no probe flag; on the data after this review's changes, untuned LightGBM and a linear model remove
 90% and 86% of the squared error of a dummy that predicts the training mean, skill +0.90 and +0.86 on 5 of the 9
 windows).
-Quality: CLEAN-11 fixed (5 placeholder living areas set to missing); CLEAN-10 departure on `yr_renovated` (issue 9).
+Quality: CLEAN-11 fixed (5 placeholder living areas set to missing); CLEAN-10 exception on `yr_renovated` (0 kept missing; Lennart, 2026-10-22).
 Weighed: county source +, repair from the origin +, size +, one year of data -. Left for the
-curator: issues 8 and 9 (the family's fit label and window length were settled on 2026-10-21).
+curator: issue 10 (the family's fit label and window length were settled on 2026-10-21).
 
-**Main points:** Which county sale warnings mark a sale as not at market value (issue 8), and whether `yr_renovated` = 0
-stays missing (issue 9). The fit label is settled (2026-10-21, the curator): `direct`, with the
+**Main points:** Drop the 23 sales whose price covers more or less than the house (issue 10)? Settled 2026-10-22:
+the sale warnings (issue 8: keep the sales with a `sale_condition` column, drop codes 46, 7 and 8);
+`yr_renovated` = 0 stays missing (an exception to CLEAN-10). The fit label is settled (2026-10-21, the curator): `direct`, with the
 measured-harmless July-2015 remnant named in `fit_reason`. The window length is settled too: the house-price datasets
 keep their own horizons (no family-wide window).
-
-**Record fields that disagree with the definition:**
-
-- `year`: record `2016`, definition `2015`.
 
 **Record judgment:** valid. King County's recorded sales with the assessor's record rebuilt as of each sale; the county's
 own sale warnings remove the sales that are not at market value.
 
 **Issues for Lennart:**
 
-8. **Which county sale warnings mark a sale as not at market value?** The county attaches warning codes to each recorded
-   sale, such as a short sale (the bank accepts less than the loan) or a sale between relatives. A valuation model is
-   meant to predict the market price, so a sale under such a code is a different target.
-   - Effect on the task: these sales sell below what the house is worth, so the model overestimates them and no input
-     explains the error; keeping them adds noise to the low end of the target and rewards nothing a valuer needs.
-   - Evidence: the panel matched 20,742 of the 20,967 sales before May 2015 to the county's sales on parcel, deed date
-     and price, and measured the error of an untuned LightGBM per code (residual = log price minus the prediction, on
-     the test rows; "sales" counts all matched sales; unflagged sales: +0.03):
-
-     | code | meaning | sales | mean residual |
-     |---|---|---|---|
-     | 15 | no market exposure | 654 | -0.14 |
-     | 46 | non-representative sale | 357 | -0.23 |
-     | 60 | short sale | 199 | -0.23 |
-     | 51 | related party | 91 | -0.20 |
-     | 23, 13 | forced sale, bankruptcy | 23 | -0.22, -0.23 |
-     | 12 | estate administrator | 43 | -0.06 |
-     | 54 | affordable housing | 22 | -0.17 |
-     | 10, 29 | teardown, segregation or merger | 426 | -0.02, +0.05 |
-     | 22, 8, 32, 14, 16, 18 | partial interest, questionable, $1,000 or less, sheriff, government, quit claim | 14 | not measured |
-
-   - Implemented: drop the 1,061 sales (5.1%) with code 15, 46, 60, 51, 23 or 13; keep every other code. Teardowns and
-     segregations are priced like market sales of the land or the changed lot (measured), so they stay either way.
-     Code 26 (improvements changed since the sale; 1,073 kept sales, mean residual -0.12) also stays. It flags a house
-     that changed after the sale, not a price below market. 944 of these rows are not rebuilt because their changes
-     come after July 2015, so the features are the record at the sale, and the low residual is a house bought to be
-     improved later. This departs from california_house_prices_2020 (CC 2026-10-14, rows whose listing described
-     another state of the house dropped); what sets it apart is that here the features hold the record at the sale.
-   - Alternative: (a) also drop 54 and the rare codes 22, 8, 32, 14, 16, 18 (about 36 more sales), which the county's
-     own names describe as non-market; codes with 1 to 4 sales have no measured residual, so (a) drops them on the
-     county's wording alone. (b) Also drop 12 (estates,
-     43 sales, -0.06), as the critic proposed. Either changes the score little; the list becomes the rule for the other
-     house-price datasets, since no precedent on sale warnings exists yet.
-   - Rule: USE-5 (P3, Must; the target is what the actor acts on). The filter itself is settled (the critic and the
-     advocate agree, the mediator ruled a note would not resolve a Must); the scope is a weighing call.
-   - Recommendation: (a), keep 12. Decision: the list of codes to drop.
-
-9. **Keep a renovation year of 0 as missing?** In the source, `yr_renovated` = 0 means "never renovated", not an
-   unknown year. The definition turns 0 into missing (19,087 of 19,906 rows, 95.9%), so a missing value means "never
-   renovated".
-   - Effect on the task: none for tree models; a linear model that read 0 as a year would fit a slope through it, while
-     missing asks it to impute. After the rebuild nothing else is missing in the column, so the meaning stays clear.
-   - Implemented: missing; the note says missing means "never renovated".
-   - Alternative: keep 0 as published, or add a 0/1 `renovated` column and leave the year missing (one more column).
-   - Rule: CLEAN-10 (P7, Should) converts placeholder codes for missing values but keeps a code that means something
-     and says why. Precedents keep such codes: bank_marketing keeps `pdays = -1` ("not contacted"), house_prices_nominal
-     keeps its no-remodel coding. The fact that sets this case apart: a 0 in a year column misleads a linear model, and
-     missing has no other meaning here.
-   - Recommendation: keep it missing and record an exception to CLEAN-10 with that fact. Decision: the exception, or
-     keep 0, or the flag.
+10. **Sales whose recorded price is not this house's alone: drop codes 45, 5 and 1?** Under issue 8 (c) the
+   definition keeps every sale except the appraiser's judgment codes (46, 7, 8) and adds `sale_condition`. Three codes
+   outside the WAC list now count as "none": 45 multi-parcel sale, 5 full price not reported, 1 personal property
+   included (23 sales; code 45's 9 test sales have a mean residual of -0.06, untuned LightGBM). Each says the price on
+   the deed covers more or less than this house, so the target is not this house's price (USE-5).
+   - Implemented: kept, as "none".
+   - Alternative: drop the 23 sales (a filter in `_clean`), or pool them into "other pre-price code".
+   - Recommendation: drop them; the price is not the house's, and no input can explain the difference.
+   - Decision: drop, pool, or keep as "none".
 
 **Review panel:** ship after changes (mediator). Full tier: claim, column and split audits, domain practitioner, blind
 review, precedent check, advocate and critic with one rebuttal each, mediator; their numbers are on the 20,967 rows

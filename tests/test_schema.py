@@ -362,6 +362,14 @@ def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_u
     assert b"time_gap" not in encode_pydantic_metadata(plain)
 
 
+def test_predictive_splits_metadata_time_gap_in_minutes():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    sm = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="minutes")
+    assert (sm.time_gap, sm.time_gap_unit) == (15, "minutes")
+    with pytest.raises(pydantic.ValidationError):
+        PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="seconds")
+
+
 def test_predictive_splits_metadata_multi_fold():
     splits = {
         0: {0: ([0, 1, 2], [3, 4]), 1: ([0, 3, 4], [1, 2])},
