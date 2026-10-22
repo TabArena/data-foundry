@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class, explore.ipynb, a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
+description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
 argument-hint: "<unique_name | dashboard filter> [--panel full|focused]"
 user-invocable: true
 ---
@@ -84,7 +84,7 @@ Read the closest reference definition in full (definitions.md, "Reference defini
 .venv/bin/python -m data_foundry.curation.cli dataset new <unique_name> --root datasets/_dev/tabarena-v0pt2
 ```
 
-It copies `datasets/_template/{dataset.py,explore.ipynb}`, names the class and pre-fills year, link, problem type,
+It copies `datasets/_template/dataset.py`, names the class and pre-fills year, link, problem type,
 domain and source from the record.
 
 ## Step 3: Fill `dataset.py`
@@ -109,7 +109,7 @@ domain and source from the record.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug.
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
-Leave `explore.ipynb` as the template made it; it is the curator's space. Then point the record at the definition:
+Then point the record at the definition:
 `.venv/bin/python -m data_foundry.curation.cli sync-notebooks` (`--check` must stay clean).
 
 ## Step 4: Validate the scaffold
@@ -128,7 +128,7 @@ uvx ruff@0.15.15 check --fix datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.
 ```
 
 runs the pipeline, the checks and `_decisions` without saving, and writes `README.md`. Resolve the TODOs, look at the
-data in `explore.ipynb`, re-run, read the README diff. Stop when there are no errors and every warning is fixed or
+data (`ds = workbench()` in a scratch notebook or script, never committed), re-run, read the README diff. Stop when there are no errors and every warning is fixed or
 proposed for acceptance with a reason. Run `dataset check` again after every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task and the hidden-group probe for an

@@ -135,6 +135,7 @@ class SfPermitTime(AbstractCuratedDataset):
         - Location (WKT "POINT (lon lat)") becomes longitude and latitude. DescriptionIsStandardPhrase marks descriptions filed more than 100 times before 2020, the start of the oldest test window, so it counts no filing of a test window (until 2026-10-19 it counted the whole table). Nearly empty columns (some with 20 values) stay for the pipeline to handle.
         - Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
         - Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
+        - Permits per filing year in the cleaned data (from the v1 exploration, counted 2026-10-22): 11,958 (2015), 11,840 (2016), 12,006 (2017), 12,786 (2018), 12,194 (2019), 10,636 (2020), 9,915 (2021), 9,449 (2022), 9,063 (2023).
     """
 
     # Task

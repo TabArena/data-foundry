@@ -14,7 +14,7 @@ the definition's group columns left out of the features. ``--out DIR`` also writ
 ``DIR/<unique_name>.json``. The numbers are indicative (untuned models, a few splits) and meant for comparing the
 shipped data with a suspected fix. How to read them: ``.claude/skills/knowledge-curation/references/leak_checks.md``.
 The probes use the shipped target; when the definition changed the target (merged, dropped or binned classes), run
-the same checks on the source's labels in ``explore.ipynb`` as well (section 1 of that file).
+the same checks on the source's labels in a scratch notebook as well (section 1 of that file).
 """
 
 from __future__ import annotations

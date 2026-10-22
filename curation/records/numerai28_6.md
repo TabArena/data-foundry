@@ -37,6 +37,24 @@ eras.
    binary, 96,320 x 21, ROC AUC about 0.53). A random split there mixes rows of the same unknown weeks, which share
    the market state.
 
+   **Lennart (2026-10-22, discuss):** Is this a duplicate? It is different data from a different release and likely a
+   somewhat different task? Can you double check and see if we cannot add it? In general the source data from that
+   point in time is good and likely still cool to add, and as far as I recall different enough.
+   **Answer (AI, 2026-10-22):** checked: not a duplicate under the rules; it can be added as a forced-IID task. It is
+   Numerai's 2016 Kaggle sample (owner `numerai`, CC0-1.0; OpenML 23517 is a re-upload): 96,320 rows, 21 encrypted
+   continuous features in [0, 1], a binary target, no era, id or date column. numerai_v5_2 differs in features (780
+   of 2,748 five-level bins), target (20-day return ranked within each week) and shape, and no row can be matched,
+   so PROV-6 (a cut or version of one table with no distinct task) does not apply; it is a distinct task from the
+   same source (PROV-7). The risk was hidden weeks, which inflated numerai_v5_2's IID scores; none shows here: the
+   file order is shuffled (block target means 0.494-0.521, lag-1 autocorrelation of every feature at most 0.007, a
+   row's position block predicted at chance 0.1005), 1-NN target agreement 0.501 against 0.502 at random (v5.2:
+   0.618), the hidden-group probe finds nothing, and grouping by k-means clusters as stand-in weeks moves LightGBM's
+   ROC AUC by at most 0.0055. The signal is small but real: ROC AUC 0.531 (logistic regression) and 0.524 (LightGBM)
+   on 5 random folds (fold SD about 0.003), the same on file-order blocks. Proposal: add it as an IID binary task
+   tagged `ForcedIIDFromTemporal`, scored by ROC AUC, the unmeasurable shared weekly market state named in the notes.
+   Alternative: keep `No` + `Duplicate` if one Numerai use case should enter once. Decision: add (it goes to
+   /add-dataset), or keep `No`.
+
 2. **Noted only (a licence is never a verdict reason):** the 2016 Kaggle sample is CC0-1.0, while v5.2 falls under
    Numerai's Terms of Service, section 4.2 (see `numerai_v5_2`, issue 1).
 

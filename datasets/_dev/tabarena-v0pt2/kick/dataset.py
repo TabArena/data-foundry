@@ -146,7 +146,28 @@ class Kick(AbstractCuratedDataset):
         ax.hist(dates_per_location, bins=40)
         ax.set_xlabel("distinct purchase dates per auction location")
         ax.set_ylabel("locations")
+        # The competition's own test file (unlabelled): the same period, and mostly the same locations
+        test = pd.read_csv(self.raw_dir / "test.csv", usecols=["Auction", "VNZIP1", "PurchDate"])
+        test_location = test["Auction"].astype(str) + test["VNZIP1"].astype(str)
+        train_dates, test_dates = pd.to_datetime(raw["PurchDate"]), pd.to_datetime(test["PurchDate"])
+        kaggle_split = pd.Series(
+            {
+                "train purchase dates": f"{train_dates.min():%Y-%m-%d} to {train_dates.max():%Y-%m-%d}",
+                "test purchase dates": f"{test_dates.min():%Y-%m-%d} to {test_dates.max():%Y-%m-%d}",
+                "auction locations in train / test / both": (
+                    f"{location.nunique()} / {test_location.nunique()} / {len(set(location) & set(test_location))}"
+                ),
+                "test rows at a location also in train": f"{test_location.isin(set(location)).mean():.1%}",
+            },
+            name="value",
+        )
         return [
+            Decision(
+                "The competition's split is neither temporal nor grouped",
+                "The Kaggle train and test files cover the same two years, and most test rows are at an auction "
+                "location that is also in train, so we do not reuse that split.",
+                kaggle_split,
+            ),
             Decision(
                 "Temporal split, not grouped by auction location",
                 "Auction locations (auction and ZIP code) reappear over time, so a grouped split would not match "

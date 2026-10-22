@@ -154,7 +154,7 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "melbourne_housing_market"
-    year = "2018"  # the snapshot we pin (version 27); the source grew with each version from 2017 to 2018
+    year = "2017"  # the Kaggle upload's first version (public by March 2017); it grew to version 27 in 2018 (PROV-9)
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market"

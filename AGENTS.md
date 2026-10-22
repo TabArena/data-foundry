@@ -50,7 +50,7 @@ Data Foundry is the data-layer toolkit behind
   so editing a record and merging to `main` is what updates the public site.
 
 The actual curation work happens in `datasets/` ([`datasets/README.md`](datasets/README.md) maps it): every new
-dataset is a v2 folder (`dataset.py` + `explore.ipynb` + a generated `README.md`), and the TabArena v0.2 working copy
+dataset is a v2 folder (`dataset.py` + a generated `README.md`, + `REVIEW.md` while open), and the TabArena v0.2 working copy
 is `datasets/_dev/tabarena-v0pt2/` — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md). The shipped
 BeyondArena datasets were built with Data Foundry v1 (notebooks under `datasets/beyond_iid/`). **Never add or
 re-curate a dataset with v1**; [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md) is the one page about v1 (reading,
@@ -148,7 +148,7 @@ bump versions or publish without explicit human authorization.
   asked. The repo intentionally has very few `.md` files.
 * **Don't add comments that describe what the code does** — only *why*,
   when the why is non-obvious.
-* **Notebooks must stay valid JSON** (the `explore.ipynb` workbenches and the v1 notebooks). Edit them with
+* **Notebooks must stay valid JSON** (the v1 notebooks). Edit them with
   `nbformat` or as structured data; do not hand-edit the cell `source` array without verifying the result parses.
 * **Prose you write is held to the style rules in
   [AI Writing Tropes to Avoid](#ai-writing-tropes-to-avoid)** at the bottom of

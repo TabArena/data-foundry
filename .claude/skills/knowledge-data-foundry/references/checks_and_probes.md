@@ -35,7 +35,7 @@ The probe methods are the general library in
 [`../../knowledge-curation/scripts/`](../../knowledge-curation/scripts/); the command-line entry points here, in
 [`../scripts/`](../scripts/), load a Data Foundry dataset (its definition, or with `--built` the built container named
 in the README's build record) through `dataset_io.py` and call it. The probes use the shipped target and splits; when
-the definition changed the target, run the same checks on the source's labels in `explore.ipynb`.
+the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts

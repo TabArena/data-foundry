@@ -563,7 +563,7 @@ def test_cli_new_scaffolds_from_the_template(tmp_path: Path) -> None:
     text = (tmp_path / "datasets" / "fresh_ds" / "dataset.py").read_text()
     assert 'unique_name = "fresh_ds"' in text
     assert "class FreshDs(AbstractCuratedDataset):" in text
-    assert (tmp_path / "datasets" / "fresh_ds" / "explore.ipynb").is_file()
+    assert sorted(p.name for p in (tmp_path / "datasets" / "fresh_ds").iterdir()) == ["dataset.py"]
 
 
 def test_decisions_are_rendered_into_the_report(tmp_path: Path, warehouse: Path) -> None:

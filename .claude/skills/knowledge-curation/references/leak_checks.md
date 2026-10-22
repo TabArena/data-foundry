@@ -129,7 +129,9 @@ to the file (PROV-13), not an ambiguous label.
 ### Selection and censoring
 
 **LEAK-22 (Must).** When the cohort holds rows that cannot have the outcome, follow the paper's cohort. Cases:
-diabetes_130_us.
+diabetes_130_us. A competing event after the prediction point (a death from another cause within the horizon) is no such row:
+the row stays with the label it had, No, since the risk a patient faces includes it; dropping it selects the cohort
+on the future (framingham_heart_study_fhs, 251 deaths, Lennart, 2026-10-22).
 
 **LEAK-23 (Must).** A target over only the rows with the event, with follow-up ending on one date (right truncation),
 becomes an outcome within a fixed horizon, over the rows followed that long. Cases:

@@ -99,6 +99,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - Note: The enumerator_id is a control variable of the data collection rather than a factor that should be used for prediction. However, it is predictive and explains noise in the target, so we keep it as a feature.
         - Note: There are strong patterns of missingness within the data, due to different uses of various tools and measurements across subgroups
         - Anomaly: Many missing values
+        - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
         - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
     """
 

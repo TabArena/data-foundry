@@ -14,7 +14,6 @@ copy, [working_copy.md](working_copy.md)):
 | File | Written by | Role |
 |---|---|---|
 | `dataset.py` | the curator or the agent | The only definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
-| `explore.ipynb` | the template, then whoever explores | The workbench: `ds = workbench()` loads this folder's dataset and picks up every edit to `dataset.py`. Committed without outputs. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
 | `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
 
@@ -108,8 +107,8 @@ key in `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with 
 `TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is missing,
 or a group or time column with missing values, stops the run with the attribute's name.
 
-Keep `print` diagnostics out of the definition: `README.md` records split sizes and time ranges, and `explore.ipynb`
-or `_decisions` is the place for evidence. Keep the `assert`s that guard custom logic. Run `ruff check --fix` and
+Keep `print` diagnostics out of the definition: `README.md` records split sizes and time ranges, and `_decisions`
+(or `ds = workbench()` in an uncommitted scratch notebook) is the place for evidence. Keep the `assert`s that guard custom logic. Run `ruff check --fix` and
 `ruff format` on the file (double quotes, import order), then `dataset check` again: a fix can change behaviour (rule
 C416 once rewrote a dict comprehension and broke a repair; it is now in ruff's ignore list).
 

@@ -60,6 +60,10 @@ CC (2026-10-22, Lennart): issue 8: (c), keep the sales with codes known before t
 
 **Assessment (AI, 2026-10-22):** applied: 360 sales dropped (code 46: 357; code 8: 4), 20,607 rows; new categorical `sale_condition` (none 19,847; no market exposure 473; short sale 129; related party 85; other pre-price code 33; estate 32; bankruptcy or forced sale 8). Untuned LightGBM on the 9 windows, RMSE on log price all / unflagged / flagged: .1662 / .1613 / .2552, against .1682 / .1611 / .2875 when the old six codes are dropped; the short-sale mean residual moves from -0.23 to -0.04. dataset check: 0 errors, 0 warnings. New issue 10: codes 45, 5 and 1 (23 sales) whose price is not the house's alone.
 
+CC (2026-10-22, Lennart): issue 10: drop the sales with warning 45, 5 or 1 (the recorded price is not this house's alone).
+
+**Assessment (AI, 2026-10-22):** applied: 23 sales dropped (`PRICE_NOT_THE_HOUSE`), 20,584 rows and 20 features. dataset check: 0 errors, 0 warnings. REVIEW.md removed (nothing left open). Not built yet.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

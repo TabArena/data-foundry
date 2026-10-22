@@ -71,8 +71,8 @@ source scores one); (2) the source's top solutions are tabular models on point-i
 lag of the target column itself (trailing returns or other summaries of the series up to the prediction point are
 allowed). Such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it:
 Methods, "A forecasting-like task". Cases: ashrae_great_energy_predictor_iii (2026-10-15),
-g_research_crypto_forecasting (2026-10-22). stock and appliances_energy_prediction were retired under the earlier
-wording and are to be re-checked under this one.
+g_research_crypto_forecasting (2026-10-22). stock and appliances_energy_prediction stay retired: their context and
+data show forecasting tasks (Lennart, 2026-10-22).
 
 ## Methods
 

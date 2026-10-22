@@ -784,11 +784,12 @@ def _decided(path: Path) -> dict | None:
 
 
 def _meta(regime: str | None, problem: str | None, report: dict, *, retired: bool) -> dict:
-    """The facts the eyebrow shows: split regime, problem type, rows, whether the definition is built or retired."""
+    """The facts the eyebrow shows: split regime, problem type, rows, features, whether it is built or retired."""
     return {
         "regime": regime,
         "problem": problem,
         "rows": (report.get("data") or {}).get("n_rows"),
+        "features": (report.get("data") or {}).get("n_features"),
         "built": bool((report.get("build") or {}).get("uuid")),
         "retired": retired,
     }

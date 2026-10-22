@@ -950,3 +950,6 @@
   records also carry `Wrong Domain / Source Modality`, which the amendment does not touch. Ways out: (a) re-run the
   two legs on both and reopen any that passes; (b) leave both retired on their other marker. Nothing changes until you
   mark it.
+  **Lennart (2026-10-22, leave):** leave both retired, we know from the context and data state that these are indeed
+  forecasting tasks.
+  **Resolved (2026-10-22, Lennart):** both stay retired as `No` + `Time-series (Forecasting)`; no re-check.

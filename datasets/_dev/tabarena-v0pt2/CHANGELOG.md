@@ -4,6 +4,58 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-22 (fourth round: framingham to hard ASCVD, sarcoma 4 classes, dataorg retired; last notebooks removed)
+
+Lennart's marks of the late afternoon; records carry them as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **framingham_heart_study_fhs:** the target is now `ascvd_within_10_years`: a first hospitalised myocardial infarction
+  or CHD death, or a stroke, within 10 years (the outcome of the pooled cohort equations).
+  - The 25 participants with a prior stroke are excluded, so `prevalentStroke` is dropped as constant.
+  - 4,199 rows, 276 Yes; logistic regression ROC AUC 0.779.
+  - `REVIEW.md` is removed.
+- **sarcoma:** myxofibrosarcoma and undifferentiated pleomorphic sarcoma are merged, which leaves 4 classes. The IID
+  split by patient stays. Random forest log loss goes from 0.650 to 0.469. `problem_type` in the record is now
+  multiclass. `REVIEW.md` is removed.
+- **dataorg_financial_health_prediction_challenge:** retired, because nothing is known about the target and it is
+  survey data. The record is `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientfic Discovery`,
+  with its claim released. The folder is removed and the README table now lists 172 datasets.
+- **melbourne_housing_market:** ships. `year` is 2017, the first version of the Kaggle upload. PROV-9 now says a Kaggle
+  upload that grew over its versions takes its first year. `REVIEW.md` is removed.
+- **thyroid_discordant:** ships. `Trivial` is removed (TP-4). `REVIEW.md` is removed.
+- **mobile_churn:** the drop of never-activated SIM cards is confirmed. `REVIEW.md` is removed.
+- **Records without a folder:**
+  - sasol_customer_retention_recruitment_competition is `No` + `Duplicate` (of expresso).
+  - water_quality_and_potability stays `No`, with `AHDS` added.
+  - numerai28_6 got an answer: not a duplicate under PROV-6/7, and no hidden-week leak was found. Adding it as
+    forced IID waits for the curator's call.
+- **The 11 remaining `explore.ipynb` notebooks are removed.** Their findings now sit in the definitions:
+  - dated bullets in anes_voting_2026, consumer_complaints_1m, early_learning_predictors, hotel_booking_demand,
+    lending_club, micro_mass, rossmann_store_sales and sf_permit_time;
+  - a new `Decision` in kick showing that the competition's split is neither temporal nor grouped (the v1 notebook's
+    "proof" of a grouped split came from a buggy check).
+  - The two lung_cancer notebooks held no usable findings.
+
+## 2026-10-22 (third round: framingham, house_sales; explore.ipynb dropped)
+
+Lennart's marks of the afternoon; records carry them as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **framingham_heart_study_fhs:**
+  - Applied:
+    - `education` now holds its four labels as a category (CLEAN-12).
+    - Competing deaths stay No, now a LEAK-22 case.
+    - A note names every exam, split by participant, as a possible grouped variant.
+    - The record's `year` is 2004.
+  - Issue 1 (the endpoint) stays open with an answer: hard ASCVD (heart attack, CHD death or stroke) is the outcome of today's treatment thresholds.
+- **house_sales:** the 23 sales with warning 45, 5 or 1 are dropped, because their recorded price is not the house's alone. 20,584 rows. `REVIEW.md` is removed.
+- **stock and appliances_energy_prediction** stay retired; the item across datasets is resolved.
+- **`explore.ipynb` is no longer part of a v2 dataset folder (Lennart):**
+  - `dataset new` scaffolds only `dataset.py`.
+  - The template moved to `.claude/skills/knowledge-data-foundry/references/explore_notebook_reference.ipynb` as an optional reference.
+  - 162 notebooks that were unchanged from the template are removed.
+  - 11 that hold exploration migrated from v1 stay until the curator decides: anes_voting_2026, consumer_complaints_1m, early_learning_predictors, hotel_booking_demand, kick, lending_club, lung_cancer, lung_cancer_epithelial_genexp, micro_mass, rossmann_store_sales, sf_permit_time.
+  - The docs and the add-dataset skill describe a folder as `dataset.py`, the generated `README.md`, and `REVIEW.md` while issues are open.
+- **Review page:** the header of each dataset shows its feature count next to the row count.
+
 ## 2026-10-22 (second round: kick, mortgage, house_sales, huntprohibited, g_research; time-sampled splits)
 
 Lennart answered the consistency checks and the open questions of the first round. Each record carries his decisions

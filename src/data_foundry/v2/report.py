@@ -39,7 +39,7 @@ FIGURE_DIR = "figures"
 """Folder next to ``README.md`` that holds the decision figures."""
 
 WORKBENCH_FILENAME = "explore.ipynb"
-"""The workbench notebook of a dataset folder."""
+"""An optional notebook next to the definition (not scaffolded; listed in the README when present)."""
 
 REVIEW_FILENAME = "REVIEW.md"
 """The open questions for the curator, kept next to the definition while the dataset is reviewed."""
