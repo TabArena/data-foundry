@@ -32,6 +32,10 @@ gotchas that look like blockers but aren't — lives in
   * the curator reviews what was added — `/review-added-datasets`
     ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)): the review
     page from the `REVIEW.md` files; the curator's decisions are checked for consistency and applied.
+* **Claims (who works on what):** a live board on the remote's `claims` branch, pushed directly
+  (`data-foundry-curation claims list|claim|release`,
+  [`claims.md`](.claude/skills/knowledge-data-foundry/references/claims.md)). Claim records before working on them
+  and leave the ones another curator holds alone; the SessionStart hook lists the board, a PreToolUse hook warns.
 * **Builds** happen only on the curator's ask
   ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)). Otherwise you touch code to extend
   the package (`src/data_foundry/`) and update examples (`examples/`) when an API changes.

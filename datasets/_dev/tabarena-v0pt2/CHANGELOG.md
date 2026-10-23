@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-23 (claims move to a live board)
+
+- `GETTING_STARTED.md` (section 7) describes the new claims: a branch `claims` of the repository that every curator
+  pushes to directly, one file per claimed dataset, so a claim shows within seconds instead of after a claim PR to
+  `main`. The tooling is `data-foundry-curation claims` (`src/data_foundry/curation/claims.py`), the dashboard's
+  Claimed by column, and a Claude Code hook that warns before an agent edits a dataset another curator holds; see
+  `.claude/skills/knowledge-data-foundry/references/claims.md`. The records keep `claimed_by` and the WIP value as a
+  mirror of the board.
+
 ## 2026-10-22 (numerai28_6 added as forced IID)
 
 - New folder `numerai28_6` (Lennart, 2026-10-22: add as forced IID). It is Numerai's 2016 Kaggle training sample, CC0: 96,320 rows, 21 encrypted features and a binary target.

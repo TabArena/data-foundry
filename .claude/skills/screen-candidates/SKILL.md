@@ -31,8 +31,10 @@ $ARGUMENTS
 ## Step 1: List the records
 
 Resolve the input to records under `curation/records/`; create a record for a new link (`unique_name` in snake_case,
-`name`, the link in `source_links`) through the store API. Skip every record claimed by another curator. A record that
-already has a screening block is screened again only when the curator asks.
+`name`, the link in `source_links`) through the store API. Claim the records for the run (`claims claim <names>
+--stage triage --note "screening"`, [claims.md](../knowledge-data-foundry/references/claims.md)) and skip every one
+the command skips: another curator holds it. Release them when the screening is written (`claims release <names>`).
+A record that already has a screening block is screened again only when the curator asks.
 
 A batch runs on the `candidate-screener` agent, about 10 records per agent, all in one message; the main session keeps
 the coverage snapshot, the reject check and the report. Mind the limits in
