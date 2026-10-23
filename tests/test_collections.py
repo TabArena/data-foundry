@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from data_foundry.collections import (
     BEYOND_ARENA,
+    SELECT_ARENA,
     DATA_FOUNDRY_CACHE_ENV,
     DEFAULT_CACHE_DIR,
     CollectionEntry,
@@ -141,12 +142,16 @@ def test_resolve_cache_dir_default(monkeypatch):
 
 
 # --- Registry contents ---
-def test_only_beyond_arena_is_registered():
-    assert list_collections() == ["BeyondArena"]
+def test_registered_collections():
+    assert list_collections() == ["BeyondArena", "SelectArena"]
 
 
 def test_get_collection_returns_beyond_arena():
     assert get_collection("BeyondArena") is BEYOND_ARENA
+
+
+def test_get_collection_returns_select_arena():
+    assert get_collection("SelectArena") is SELECT_ARENA
 
 
 def test_get_collection_unknown_name():
@@ -666,6 +671,14 @@ def test_beyond_arena_names_its_versions_and_pins_the_revision():
     assert all(e.dataset_name == f"{e.unique_name}_1m" for e in versions)
     assert BEYOND_ARENA.find_entry("cooking_time_1m").unique_name == "cooking_time"
     assert len(BEYOND_ARENA.source.revision) == 40  # a commit, not a branch
+
+
+def test_select_arena_reads_a_pinned_hf_revision():
+    assert isinstance(SELECT_ARENA.source, HuggingFaceSource)
+    assert SELECT_ARENA.source.repo_id == "SelectArena/SelectArena"
+    assert len(SELECT_ARENA.source.revision) == 40  # a commit, not a branch
+    assert len(SELECT_ARENA) == 71
+    assert len(set(SELECT_ARENA.uuids)) == len(SELECT_ARENA.uuids)
 
 
 def test_get_dataset_verify_rejects_a_changed_container(tmp_path):
