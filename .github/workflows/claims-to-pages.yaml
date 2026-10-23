@@ -1,0 +1,15 @@
+# Lives on the claims branch only: every push of a claim asks the Pages workflow on main to rebuild the
+# read-only dashboard, so its Claimed by column follows the board. Written by `data-foundry-curation claims init`.
+name: Claims to Pages
+on:
+  push:
+    branches: [claims]
+permissions:
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run pages.yaml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
