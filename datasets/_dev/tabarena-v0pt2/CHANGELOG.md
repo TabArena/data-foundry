@@ -20,6 +20,27 @@ record, audit or PR that motivated it.
 - `heart_failure_followup_survival`: BibTeX cites Ahmad et al. 2017 (PLOS ONE), which published the data, instead of
   Chicco & Jurman 2020, the re-analysis that UCI names as its introductory paper (verify-dataset, 2026-10-21).
 
+## 2026-10-21 (gallstone_disease: second recording route and hyperlipidemia dropped, measured precision)
+
+- `gallstone_disease`: three changes to the data, each removing something that lets a model tell the groups apart
+  for reasons other than gallstones. (1) The 77 rows (72 with gallstones, 5 without) recorded through a second
+  route are dropped (`second_route`): models recognise them (TabPFN 3.5 separates them from the controls at ROC AUC
+  0.993, the other cases at 0.842) and they cannot be aligned with only 5 controls. (2) `Hyperlipidemia` is dropped:
+  set for 8 people with gallstones and nobody without, although high cholesterol is as common without. (3) GFR,
+  vitamin D, visceral muscle area, CRP and creatinine are written at the precision of their measured values
+  (`MEASURED_PRECISION`): the filled cells and GFR's decimals marked the group (number format alone 0.947 on the
+  UCI file, 0.557 now). 319 -> 242 rows (86 with gallstones), 38 -> 37 features. TabPFN 3.5 ROC AUC 0.913 -> 0.838,
+  logistic regression 0.857 -> 0.762 (3-fold x 20).
+- `gallstone_disease`: kept and documented: 134 cells filled with straight lines down the class-sorted file (they do
+  not leak: re-imputed without the label inside each fold, TabPFN 3.5 reaches 0.864), the fatty-liver grade from
+  ultrasound, and data-entry errors. Task text: `predicted` says coded 1, 86 of 242 (UCI's page has the coding
+  reversed); `row` names the 134 of 454 the study left out and the dropped route; `known` names the ultrasound
+  grade; fit `approximate`. Task probes flag `no_spread`; TabPFN 3.5 beats the untuned families by 0.06-0.08 on
+  92-93% of the splits. From Andrej's review on the disputed-keeps review page (2026-10-19 run) and in the record
+  [`curation/records/gallstone_disease.md`](../../../curation/records/gallstone_disease.md); evidence in
+  `~/claude_jobs/gallstone_review/`. `dataset check` clean. Not built.
+
+
 ## 2026-10-20 (forensic_glass_identification: duplicate dropped, origin, use-case fit)
 
 - `forensic_glass_identification`: fit `approximate` instead of `direct`. `fit_reason` says the features and glass
