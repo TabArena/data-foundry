@@ -114,15 +114,16 @@ Apply that mark only once the curator has answered; apply the others now. Never 
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **ship:** the definition stays; apply the item marks; the dataset joins the accepted set and is built later. The
-  record keeps its claim until the work reaches `main`; that PR sets `DF: Yes` and clears `WIP (DF)` and
-  `claimed_by`.
+  claim stays until the work goes to `main`: the PR that takes it there sets `DF: Yes`, and `claims release <name>`
+  ([claims.md](../knowledge-data-foundry/references/claims.md)) clears the board and the record's `WIP (DF)` and
+  `claimed_by` in that PR.
 * **changes:** apply the changes, run `dataset check` and the probes they touch
   ([verification.md](../knowledge-curation/references/verification.md)), and put the record back to the curator with
   what changed: the issues that stay open stay in the `REVIEW.md`.
 * **dont:** retire it as [records.md](../knowledge-data-foundry/references/records.md) says (duplicates and
   retirements): the record gets `No` (or `No (Retired)` for a shipped dataset) with the reason as a marker and a CC
-  line, its claim is released, and the folder, its `REVIEW.md` with it, leaves the working copy (`v2_path` cleared,
-  `sync-notebooks --check` clean).
+  line, its claim is released (`claims release <name>`), and the folder, its `REVIEW.md` with it, leaves the working
+  copy (`v2_path` cleared, `sync-notebooks --check` clean).
 * **discuss:** answer on the page and wait for the curator's next mark.
 * **Cross-dataset items:** `ok` means go ahead as the item proposes, `leave` means no change. While the page is in
   use, close a settled item in the working copy's `REVIEW.md` with a `**Resolved (<date>):**` label instead of

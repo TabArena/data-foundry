@@ -22,7 +22,7 @@ Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each recor
 4. Write each non-rejected record through the store API right after reloading it (`records.md`): links, metadata only
    where the source states it, `priority`, `AI (UNVERIFIED)` in `checked_by`, `AI-Filled (Verify)` in `tags`, the
    disclaimer and the screening block at the top of the comments, every existing note kept. Skip a record another
-   curator has claimed.
+   curator holds on the claims board (`claims check <names>`; the main session claims the batch before it starts).
 
 Never commit, never build, never delete a comment, never name company code repositories, never send personal data to
 an outside service. Cap the threads of any Python run (`OMP_NUM_THREADS=2` and the like).

@@ -301,6 +301,7 @@
   <div class="search-wrap"><input type="text" id="search" placeholder="Search… (all terms must match · !word excludes)"
     title="Searches every field of every dataset. Several words = ALL must match (AND); !word excludes; &quot;quote&quot; for a phrase. A search deliberately spans all datasets, ignoring the pills / status / column filters." /></div>
   <span class="hint" id="count"></span>
+  <span class="hint" id="claimsInfo"></span>
   <span id="clearFilters" title="Clear search, status filter, pills, and all column filters">✕ Clear filters</span>
   <span id="shareLink" title="Copy a link that reopens this exact view (pill, status, search, column filters, sort)">🔗 Copy link</span>
   <div class="pills">
@@ -687,7 +688,13 @@ function linksFmt(cell) {
 // the (AI-supplied) suggestion as if it were settled.
 function rowStatus(d) {
   const st = rowStatusOf(d);
-  // A WIP claim names its holder in the tooltip: others leave the record alone until it is released.
+  // A claim names its holder in the tooltip: others leave the dataset alone until it is released. The live
+  // board's claim (live_claim) carries the stage, the expiry and the note.
+  const lc = d.live_claim;
+  if (lc) {
+    const until = lc.expired ? `expired ${lc.expires_at.slice(0, 10)}` : `until ${lc.expires_at.slice(0, 10)}`;
+    return { ...st, t: `${st.t} · claimed by ${lc.holder} (${lc.stage}, ${until})` + (lc.note ? `: ${lc.note}` : "") };
+  }
   return d.claimed_by ? { ...st, t: st.t + " · claimed by " + d.claimed_by } : st;
 }
 function rowStatusOf(d) {
@@ -1364,6 +1371,7 @@ async function refreshRecords() {
   } finally { refreshInFlight = false; }
 }
 async function pollVersion() {
+  refreshClaimsInfo();
   try {
     const v = await fetchVersion();
     if (lastVersion === null) lastVersion = v;
@@ -1503,6 +1511,7 @@ async function onEdit(cell) {
     cell.restoreOldValue();
     return;
   }
+  if (f === "claimed_by") return claimEdit(cell, value);  // a claim goes to the live board, not only the record
   try {
     if (spec.kind !== "number") await registerNew(spec.vocab, asArray(value));  // a number has no vocabulary
     const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
@@ -1513,6 +1522,54 @@ async function onEdit(cell) {
     updateCount();
     toast("Saved");
   } catch (e) { toast("Save failed: " + e.message, true); cell.restoreOldValue(); }
+}
+
+// ---- claims (the live board) --------------------------------------------------
+// The Claimed by column shows the live claims board (a git branch every curator pushes to), refreshed by the
+// server every 20 s. Picking your own name claims the dataset, emptying the cell releases it; the server pushes the
+// change to the board and mirrors it into the record. Someone else's name cannot be picked: they claim for themselves.
+let CLAIMS = { me: null };
+async function refreshClaimsInfo() {
+  try { CLAIMS = await (await fetch(STATIC ? "./claims.json" : "/api/claims", { cache: "no-store" })).json(); }
+  catch (e) { return; }
+  const el = document.getElementById("claimsInfo");
+  const where = `${CLAIMS.remote}/${CLAIMS.branch}`;
+  if (!CLAIMS.fetched_at) {
+    el.textContent = "🔒 claims: no board";
+    el.title = `The claims board (${where}) has not been fetched yet.` + (CLAIMS.error ? `\nLast fetch failed: ${CLAIMS.error}` : "");
+    return;
+  }
+  const age = Math.max(0, Math.round(Date.now() / 1000 - CLAIMS.fetched_at));
+  const ago = age < 120 ? `${age} s` : age < 7200 ? `${Math.round(age / 60)} min` : `${Math.round(age / 3600)} h`;
+  el.textContent = `🔒 ${CLAIMS.count} claims` + (CLAIMS.error ? " ⚠" : "");
+  el.title = `Claimed by shows the live claims board (${where}), fetched ${ago} ago.`
+    + (STATIC ? "" : CLAIMS.me ? `\nYou are ${CLAIMS.me}: pick your name in a Claimed by cell to claim, empty it to release.`
+      : "\nSet your curator name to claim here: git config data-foundry.curator <Name>, then restart the server.")
+    + (CLAIMS.error ? `\nLast fetch failed: ${CLAIMS.error}` : "");
+}
+async function claimEdit(cell, value) {
+  const id = cell.getRow().getData().unique_name;
+  let action;
+  if (!value) action = "release";
+  else if (value === CLAIMS.me) action = "claim";
+  else {
+    cell.restoreOldValue();
+    toast(CLAIMS.me ? `You claim as ${CLAIMS.me}; ${value} claims for themselves.`
+      : "Set your curator name first: git config data-foundry.curator <Name>", true);
+    return;
+  }
+  try {
+    const res = await fetch("/api/claims/" + encodeURIComponent(id), {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    cell.getRow().update(toRow(data));
+    cell.getRow().reformat();
+    syncVersion();  // our own push and record write moved the token
+    updateCount(); applyFilters(); refreshClaimsInfo();
+    toast(action === "claim" ? `Claimed ${id}: on the board for everyone` : `Released ${id}`);
+  } catch (e) { cell.restoreOldValue(); toast((action === "claim" ? "Claim" : "Release") + " failed: " + e.message, true); }
 }
 
 // ---- modal (extra fields) --------------------------------------------------
@@ -1837,6 +1894,7 @@ async function boot() {
   table.on("dataSorted", () => syncShareLink());  // a sort alone makes the view worth a link
   table.on("tableBuilt", () => { applyFiltersFromHash(); applyFilters(); updateCount(); forwardFrozenRowScroll(); });
   startLiveRefresh();  // pick up records written outside this tab (agent, other tab, git pull)
+  refreshClaimsInfo();
 
   watchEditLists();
   document.getElementById("search").addEventListener("input", applyFilters);

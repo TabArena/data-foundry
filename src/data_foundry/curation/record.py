@@ -142,7 +142,8 @@ AI_FILLED_TAG: str = "AI-Filled (Verify)"
 COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 """``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
 WIP_STATUSES: tuple[str, ...] = ("WIP (DF)", "WIP (Triage)")
-"""``data_foundry_status`` values that claim a record: someone is working on it, named in ``claimed_by``."""
+"""``data_foundry_status`` values that claim a record: someone is working on it, named in ``claimed_by`` (a mirror of
+the claims board, :mod:`data_foundry.curation.claims`)."""
 ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
 """``suggestion`` values that count as "accepted for inclusion".
 
@@ -180,7 +181,8 @@ class CurationRecord:
     data_foundry_status: list[str] = pydantic.Field(default_factory=list)
     claimed_by: str | None = None
     """The curator who holds the record's WIP claim (:data:`WIP_STATUSES`). Set and cleared together with the WIP
-    state; it reaches the main branch on its own, ahead of the work, so other curators see the claim."""
+    state, as a mirror of the live claims board (:mod:`data_foundry.curation.claims`), which is where other curators
+    see the claim at once; the record carries it to ``main`` with the work."""
     suggestion: str | None = None
     priority: int | None = pydantic.Field(default=None, ge=1, le=5)
     """How urgently a curator should verify the screening and send the record to ``/add-dataset``: 5 first, 1 last.

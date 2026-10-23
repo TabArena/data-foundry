@@ -25,7 +25,7 @@ Two modes:
 | Step | Read |
 |---|---|
 | all | [principles.md](../knowledge-curation/references/principles.md): rank, strengths, the remedy ladder, the judgment record |
-| 0 | [records.md](../knowledge-data-foundry/references/records.md) (claims, pointers); for a batch [agent_runs.md](../knowledge-data-foundry/references/agent_runs.md) |
+| 0 | [claims.md](../knowledge-data-foundry/references/claims.md), [records.md](../knowledge-data-foundry/references/records.md) (pointers); for a batch [agent_runs.md](../knowledge-data-foundry/references/agent_runs.md) |
 | 1 | [use_case.md](../knowledge-curation/references/use_case.md), [provenance.md](../knowledge-curation/references/provenance.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-1 to MET-3) |
 | 1-3 | [definitions.md](../knowledge-data-foundry/references/definitions.md): the folder, the class, the field mapping, the recipe, the split declarations, the reference definitions |
 | 3 | [cleaning_features.md](../knowledge-curation/references/cleaning_features.md), [splits.md](../knowledge-curation/references/splits.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-11 to MET-13) and definitions.md, "Metrics" |
@@ -52,8 +52,10 @@ errors, and `dataset build` refuses to save while any remains.
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
 source, the use case, the regime, the risks). Verify its claims as you go instead of redoing its research; a
 measurement on the data supersedes what screening read from the page. No record: stop and point to
-`/screen-candidates`. Never work on a record another curator has claimed; the records you take get `WIP (DF)` and the
-curator's name in `claimed_by` first, and the claim goes to `main` in its own small PR.
+`/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add --note
+"add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and
+writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command
+skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
