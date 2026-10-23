@@ -3,6 +3,7 @@ unique_name: pancreatic_cancer_mouse_detection
 name: NCI Pancreatic
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
