@@ -110,7 +110,7 @@ Side-by-side regime printout (one IID, two grouped variants — `per_group` vs `
 <details>
 <summary><b>🗂️ Use a collection of datasets</b> — pre-download all of BeyondArena</summary>
 
-A collection pins its datasets by `(unique_name, uuid)` and resolves them against a source (Hugging Face, or a local warehouse); `list_collections()` and `get_collection(name)` find the registered ones. `BEYOND_ARENA` is the first, `SELECT_ARENA` (the datasets of the [SelectArena](https://github.com/schaeferbasti/SelectArena) feature selection benchmark, on [Hugging Face](https://huggingface.co/datasets/SelectArena/SelectArena)) the second, and the TabArena v0.2 collection will be registered the same way. `BEYOND_ARENA.prefetch(...)` batches every container into a single Hugging Face `snapshot_download` call (one network round-trip for the whole collection). On a warm cache it skips importing `huggingface_hub` entirely.
+A collection pins its datasets by `(unique_name, uuid)` and resolves them against a source (Hugging Face, or a local warehouse); `list_collections()` and `get_collection(name)` find the registered ones. `BEYOND_ARENA` is the first and the TabArena v0.2 collection will be registered the same way. `BEYOND_ARENA.prefetch(...)` batches every container into a single Hugging Face `snapshot_download` call (one network round-trip for the whole collection). On a warm cache it skips importing `huggingface_hub` entirely.
 
 ```python
 from data_foundry.collections import BEYOND_ARENA
