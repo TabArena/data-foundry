@@ -2,18 +2,16 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 11:34 UTC: 51 claim(s) (Lennart 38, Myunghwan 13).
+As of 2026-10-26 13:07 UTC: 48 claim(s) (Lennart 35, Myunghwan 13).
 
 ## Lennart
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
-| `2_month_survival_rate_prediction` | add | 2026-10-23 | 2026-10-30 |  |
 | `account_debt_south_africa` | add | 2026-10-23 | 2026-10-30 |  |
 | `aeolus` | add | 2026-10-23 | 2026-10-30 |  |
 | `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
 | `alfa_battle_2_0_task_2` | add | 2026-10-23 | 2026-10-30 |  |
-| `ames_housing` | add | 2026-10-26 | 2026-11-02 | house_prices_nominal copied forward (review marks of 2026-10-26) |
 | `corporate_credit_rating_cat_data_set_ratings_raitings` | add | 2026-10-23 | 2026-10-30 |  |
 | `credit_card_customers` | add | 2026-10-23 | 2026-10-30 |  |
 | `diabetes_3` | add | 2026-10-23 | 2026-10-30 |  |
@@ -41,7 +39,6 @@ As of 2026-10-26 11:34 UTC: 51 claim(s) (Lennart 38, Myunghwan 13).
 | `pkdd_15_taxi_trip_time_prediction_ii` | add | 2026-10-23 | 2026-10-30 |  |
 | `qsar_bioconcentration` | add | 2026-10-23 | 2026-10-30 |  |
 | `qsar_oral_toxicity` | add | 2026-10-23 | 2026-10-30 |  |
-| `rain_in_australia` | add | 2026-10-23 | 2026-10-30 |  |
 | `rosbank1` | add | 2026-10-23 | 2026-10-30 |  |
 | `sarcoma` | add | 2026-10-23 | 2026-10-30 |  |
 | `stroke_prediction` | add | 2026-10-23 | 2026-10-30 |  |
