@@ -9,7 +9,7 @@ decision_markers:
 - No Good Target (yet)
 - Not Representative
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject

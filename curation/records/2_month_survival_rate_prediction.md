@@ -4,8 +4,7 @@ name: 2 Month survival rate prediction
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -15,7 +14,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: Other
-year: '2000'
+year: '2003'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -58,6 +57,24 @@ CC (2026-10-12, Lennart): Drop adls and adlsc, keep adlp, edu and income: the su
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes. For the curator (REVIEW.md issues 5, 7, 8, 9): frame the use case as the source's objective estimate or keep the physicians' estimates and DNR; drop adlp, whose gaps hold 475 patients with interview status "Pt Death" (all positive, 0.0035 ROC AUC), against CC 2026-10-12; the year 2000 has no source (2001 or 2003); a pafi cut. Applied: prediction point named study day 3, alb above 6 g/dL set missing, wblc 0 noted, the split note and four inexact sentences corrected with the measured numbers. The earlier "no known risk" no longer holds. Priority 3: gap -, use case +, source +, shape +, risk - (adlp's gaps encode deaths after day 3, a confirmed leak open in issue 7).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — ROC area (C index) of the SUPPORT prognostic model for 2- and 6-month survival (Knaus et al. 1995, Ann Intern Med 122(3):191-203, The SUPPORT prognostic model).
+
+CC (2026-10-26, Lennart): issue 7: drop adlp, "as recommended, that makes sense to me". This replaces the CC of 2026-10-12 for adlp: its gaps hold the 475 patients whose ICPSR interview status is "Pt Death", all of whom die within 2 months.
+
+CC (2026-10-26, Lennart): issue 10: drop edu and income, "it is also better for fairness maybe". This replaces CC 2026-10-12 for edu and income: both come from the interview of days 2-7 and are missing more often among the deaths on days 4-7 (edu 31.4% against 16.3%, income 43.0% against 31.5%; LEAK-10).
+
+CC (2026-10-26, Lennart): issue 9: set pafi above 713 missing, "this makes sense to me"; the values from 650 to 713 stay.
+
+CC (2026-10-26, Lennart): issue 8: the year is 2003, the date of Vanderbilt's support2 extract (2003-06-23 inside hbiostat's zip), the first publication of the rows we ship (PROV-9). ICPSR 2957 V1 (January 2001) holds the study data in another form (race blanked, missing physiology filled with normal values, follow-up to 1997), so it does not hold every value we ship, and only places rows.
+
+**Assessment (AI, 2026-10-26):** the marks of 2026-10-26 applied: adlp, edu and income dropped (22 features, all interview fields gone), pafi above 713 set missing (9 patients, 714-890, 4 of them deaths within 2 months), year 2003. `dataset check` clean; task probes: random forest ROC AUC 0.802 (0.806 before), linear 0.784, no flag. Issue 5 was settled later the same day (below).
+
+CC (2026-10-26, Lennart): issue 5: "do (a)": the use case is SUPPORT's objective estimate of 2-month survival, set beside the physician's own estimate (Knaus et al. 1995, "Objective estimates of survival"; the physicians were interviewed on day 3 as the comparator). The physicians' estimates prg2m and prg6m and the DNR fields stay out by the use case. This differs from breast_cancer_prediction (BI-RADS kept, CC 2026-10-15), where the reading is the actor's own input.
+
+CC (2026-10-26, Lennart): the declared metric, ROC AUC (the source's ROC area of the SUPPORT prognostic model), is checked as declared.
+
+**Assessment (AI, 2026-10-26):** `use_case`, `changes`, the notes and the decision table now say why the physicians' estimates and DNR are not inputs; `dataset check` clean. No open issue is left in the folder's REVIEW.md, which is removed; the record keeps `WIP (DF)` until the curator's ship verdict.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

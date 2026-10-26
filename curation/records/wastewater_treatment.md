@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): a global microbiome survey of wastewater plants published to explain diversity and biogeography, with no prediction target.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a global microbiome survey of wastewater plants published to explain diversity and biogeography, with no prediction target.
 - Source: Wu et al. (Global Water Microbiome Consortium), "Global diversity and biogeography of bacterial communities in wastewater treatment plants", Nature Microbiology, 13 May 2019 (doi 10.1038/s41564-019-0426-5); as published: 16S rRNA OTU tables "from ~1,200 activated sludge samples taken from 269 WWTPs in 23 countries on 6 continents" (http://gwmc.ou.edu/data-disclose.html) and plant metadata in SI Table 1, to be joined.
 - The task: none. The abstract frames the study as discovery: "the diversity of microorganisms and the factors that control it are poorly understood"; it reports a core community "strongly linked to activated sludge performance" and that turnover "appears to be largely driven by stochastic processes"; "Our findings enhance our mechanistic understanding of the global diversity and biogeography of activated sludge bacterial communities within a theoretical ecology framework". No target, no prediction.
 - Siblings and duplicates: none in `curation/records/`.

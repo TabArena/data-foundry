@@ -5,10 +5,10 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 - Use case: none in the source; the CC line's only conceivable task (status type and date to an engagement count) would be engagement prediction, close to SEL-9 and outside what the data was published for (SEL-3, SEL-8). Regime would be temporal (`status_published`).
 - Siblings and duplicates: `facebook_comment_volume` is a different dataset (comment-volume regression on other pages). External collections: none checked beyond UCI.
 - Metric: none (no task in the source).
-- Markers: `No Good Target  / Scientific Discovery` fits UCI's "Clustering"; `Out-of-scope Task (CTR/RecSys/Ranking)` rests on a hypothetical framing, not on the source, and could be dropped; the curator has the call.
+- Markers: `No Good Target / Scientific Discovery` fits UCI's "Clustering"; `Out-of-scope Task (CTR/RecSys/Ranking)` rests on a hypothetical framing, not on the source, and could be dropped; the curator has the call.
 
 UCI dataset of Facebook Live-seller posts (video/photo/status/link) with reaction/engagement counts, published for scientific discovery of engagement patterns rather than a defined predictive task. As the comment notes, the only conceivable target would be mapping status type and date to engagement features, which is essentially an engagement/CTR-style descriptive problem, not a clean tabular classification/regression. It is already a TabArena Reject. Excluded on no-good-target / out-of-scope grounds; a human need only confirm no usable predictive target exists.
 

@@ -132,7 +132,7 @@ class PerthHousePrices(AbstractCuratedDataset):
         - `NEAREST_STN` `Vic` names two stations 14 km apart; we split it by longitude into Victoria Street (Mosman Park, west of 115.8° E, 98 rows) and Victoria Park (198 rows).
         - `ADDRESS` stays as text (string), as in melbourne_housing_market: unit numbers and lettered lots are the only trace of the property type the upload dropped (decision table).
         - Categorical: `SUBURB`, `POSTCODE`, `NEAREST_STN` and `NEAREST_SCH`.
-        - Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and house_prices_nominal).
+        - Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and ames_housing).
         - Note: December 2020 is short (0.71 of November's sales, 0.83-1.04 in 2013-2019; some sales were not yet on the site), but its prices are in line, so it stays the newest test window (decision table).
         - Licence: CC BY-NC-SA 4.0 (Kaggle data card); the terms of the scraped site are not stated.
     """

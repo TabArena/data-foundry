@@ -6,9 +6,9 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 **Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: a one-off scrape of Amazon laptop listings with a price target; real data, but no decision and messy text fields; follows the curators' call on `laptops`.
 - Source: Kaggle upload by talhabarkaatahmad, 2023-10-09, "scraped from Amazon.com"; as published: about 4.5K listings x 14 columns (brand, model, screen size, colour, disk, CPU, RAM, OS, special features, graphics, CPU rating, rating, price in USD "as of October 2023"), one file `amazon_laptop_prices_v01.csv`, CC0.
 - Use case: a seller or buyer judges a listing's price from its specification; nobody named in the source, fit approximate; regime IID (one snapshot).
-- Siblings and duplicates: `laptops` (Lennart, Mustafa: `TBD -> 2nd Tier`, `No Good Target  / Scientific Discovery`, another Kaggle scrape, "requires a lot of preprocessing to figure out a task") is the precedent; not the same rows. Other product-price records such as 1000_cameras (Lennart, 2nd Tier). External collections: none found.
+- Siblings and duplicates: `laptops` (Lennart, Mustafa: `TBD -> 2nd Tier`, `No Good Target / Scientific Discovery`, another Kaggle scrape, "requires a lot of preprocessing to figure out a task") is the precedent; not the same rows. Other product-price records such as 1000_cameras (Lennart, 2nd Tier). External collections: none found.
 - Papers and pages: the Kaggle page only (https://www.kaggle.com/datasets/talhabarkaatahmad/laptop-prices-dataset-october-2023).
 - Metric: none found (Kaggle dataset page, no competition), so the fallback `rmse` (MET-1, MET-8).
 - Risks for /add-dataset: repeated listings of the same model (the CC note), free-text fields (title-like model, special features) to parse (CLEAN, SEL-12), `rating` measured after listing. The old `Data Quality Issue` marker is dropped: no irreversible damage is shown; duplicates can be removed.

@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 2
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - AI-Filled (Verify)
 collections:

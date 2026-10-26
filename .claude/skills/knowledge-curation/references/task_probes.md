@@ -63,15 +63,18 @@ class of the source's own labels whose rows carry about their share of the loss 
 4.8% of a random forest's log loss). A class that a grouped split leaves out of a fold because few groups hold it is
 not a small class (force_2020: Halite, 14,711 rows in 4 wells). Marker: `Too Small`.
 
-**TP-10 (Must; amended 2026-10-22, Lennart, on g_research_crypto_forecasting).** A panel with one series per entity
+**TP-10 (Must; amended 2026-10-22, Lennart, on g_research_crypto_forecasting, and 2026-10-26, on rain_in_australia).** A panel with one series per entity
 (a meter, a store, a station, a coin) can look like time-series forecasting, which is out of scope (SEL-10,
 [selection.md](selection.md)). It is a tabular task when both legs hold: (1) a model on the features clearly beats each
 entity's naive forecast on the shipped windows, measured by the task's declared metric (a correlation metric where the
 source scores one); (2) the source's top solutions are tabular models on point-in-time features, and no feature is a
-lag of the target column itself (trailing returns or other summaries of the series up to the prediction point are
-allowed). Such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it:
+lag of the target column itself, apart from its last observation when it is known at the prediction point and the
+actor reads it (trailing returns or other summaries of the series up to the prediction point are allowed). Amended
+2026-10-26 (Lennart, on rain_in_australia's 9 am rain reading, the label of the day before): "we are allowed to keep
+this if we can compute it and it makes sense to know the last observation". Leg 1 then carries the test: the model
+must clearly beat the forecasts built from the series itself. Such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it:
 Methods, "A forecasting-like task". Cases: ashrae_great_energy_predictor_iii (2026-10-15),
-g_research_crypto_forecasting (2026-10-22). stock and appliances_energy_prediction stay retired: their context and
+g_research_crypto_forecasting (2026-10-22), rain_in_australia (2026-10-26). stock and appliances_energy_prediction stay retired: their context and
 data show forecasting tasks (Lennart, 2026-10-22).
 
 ## Methods
@@ -352,6 +355,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-3 | open_university_learning_analytics_dataset | no_spread | kept pending tuned results (2026-10-22, Lennart) | after the weight-0 TMA change, default models on all 9 grouped splits reach log-loss skill 0.173 (random forest), 0.170 (LightGBM), 0.162 (logistic regression); random forest leads by 0.011 (paired SE 0.009); every family beats the class shares on every split | re-check with the first tuned run |
 | TP-10 | ashrae_great_energy_predictor_iii | none (a forecasting-like panel) | in scope as one task (2026-10-15) | RMSE on log kWh per window: the best naive forecast 1.393 / 1.273 / 1.372; default LightGBM (100 trees) loses to it, 1.444 / 1.403 / 1.448; LightGBM with 1,000 trees wins, 1.261 / 1.176 / 1.223; models per site do about the same as one model; the top five teams used no lagged readings | applied |
 | TP-10 | g_research_crypto_forecasting | none (a forecasting-like panel) | in scope as one task (2026-10-22, Lennart; the rule amended) | weighted Pearson per window +0.040 / +0.052 / +0.045, every 95% day-block interval above the coin's mean (-0.002 / +0.007 / +0.008); the top three solutions were LightGBM on the coins' trailing 60-900-minute returns against the market, no lag of the target column | applied |
+| TP-10 | rain_in_australia | none (a forecasting-like panel) | in scope as one task, the 9 am rain reading kept (2026-10-26, Lennart; leg 2 amended) | ROC AUC on the 9 windows then shipped: all features 0.849; the best forecast from the location's own rain series 0.752 (a regression of the amount with a > 1 mm rule), its classifier 0.754, persistence 0.661; the full model ahead in 9 of 9 windows; without Rainfall and RainToday 0.847 | applied |
 | TP-9 | seismic_bumps | none (temporal windows) | retired, `Too Small` (2026-09-30, Lennart) | the honest split is temporal; the test windows come from the newest half, which holds 49 of the 170 positives: 30 windows of 43 shifts have 0-5 positives each (6 have none), and 3 or 2 windows (14-26 positives each) still give ROC AUC intervals of about ±0.1 to ±0.14 per window | applied |
 
 ## In Data Foundry

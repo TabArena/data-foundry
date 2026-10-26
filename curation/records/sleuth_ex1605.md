@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 - Use case: none: the exercise asks "whether child's intelligence related to intelligence of the biological mother and the intelligence of the adoptive mother", a discovery question on a 1949 cohort; no actor decides on a predicted IQ at 13 (SEL-3, USE-2; `Outdated` would also apply).
 - Siblings and duplicates: `sleuth_case1202`, `sleuth_case2002` (Lennart: "a real study but for scientific discovery", `TBD -> 2nd Tier`), `sleuth_ex1714`. External collections: OpenML.
 - Metric: none; the fallback.
-- **Counter-argument (AI):** the stronger reason is SEL-3 (`No Good Target  / Scientific Discovery`), not size alone; with 62 rows the size is borderline as well (TP-5 counts the spread per test fold). Treated like `sleuth_case2002` it stays `TBD -> 2nd Tier`. The curator has the call.
+- **Counter-argument (AI):** the stronger reason is SEL-3 (`No Good Target / Scientific Discovery`), not size alone; with 62 rows the size is borderline as well (TP-5 counts the spread per test fold). Treated like `sleuth_case2002` it stays `TBD -> 2nd Tier`. The curator has the call.
 - Priority: gap -, use case -, source + (textbook, StatLib, the 1949 study), shape - (62 rows), risk - (target picked by the uploader).
 
 

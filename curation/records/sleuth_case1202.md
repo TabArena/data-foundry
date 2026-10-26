@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 - Use case: none: the source asks whether women were paid less at hire, a discovery question; no actor predicts an employee's prior experience, and predicting salary from sex would encode the bias under study (SEL-3, USE-2).
 - Siblings and duplicates: `sleuth_case2002`, `sleuth_ex1605`, `sleuth_ex1714` (the same book); Lennart kept `sleuth_case2002` at `TBD -> 2nd Tier` as "a real study but for scientific discovery". External collections: OpenML.
 - Metric: none (a textbook regression analysis); the fallback.
-- **Counter-argument (AI):** the stronger reason is SEL-3 (`No Good Target  / Scientific Discovery`), not size: under TP-5 a 93-row regression is a tiny-data task, not `Too Small` by itself. By SEL-3 the verdict would be `No`; treated like `sleuth_case2002` it stays `TBD -> 2nd Tier`. The curator has the call.
+- **Counter-argument (AI):** the stronger reason is SEL-3 (`No Good Target / Scientific Discovery`), not size: under TP-5 a 93-row regression is a tiny-data task, not `Too Small` by itself. By SEL-3 the verdict would be `No`; treated like `sleuth_case2002` it stays `TBD -> 2nd Tier`. The curator has the call.
 - Priority: gap -, use case -, source + (textbook, StatLib), shape - (93 rows), risk - (arbitrary target).
 
 

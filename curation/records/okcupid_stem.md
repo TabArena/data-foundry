@@ -8,7 +8,7 @@ decision_markers:
 - Not Representative
 - Ethical Issue
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -33,8 +33,8 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-10-22):** agrees with the curator's `No` (the CC line: "not a meaningful task ... ethical concerns ... meme dataset"; also in `TabArena Reject`); no priority on a `No`.
 - Source: Kim and Escobedo-Land, "OkCupid Profile Data for Introductory Statistics and Data Science Courses", Journal of Statistics Education 23(2), 2015 (revised 2021); github.com/rudeboybert/JSE_OkCupid: 59,946 San Francisco profiles; "Permission to use this data set was explicitly granted by OkCupid"; the 2021 revision "Removed the exact date the data was collected". Published for teaching statistics, not for a prediction task. The `okcupid-stem` task (job in STEM, open-text essays dropped) is a later re-framing on OpenML, carried by TabSTAR.
-- Use case: none; nobody decides anything from whether a dating-profile user works in STEM (SEL-3, USE-1). This alone decides the `No`; the marker `No Good Target  / Scientific Discovery` would name it better than `Not Representative`.
-- Siblings: `okcupid` (Alex, Mustafa, Lennart: `No`, `No Good Target  / Scientific Discovery`, `Ethical Issue`): the same data, decided the same way.
+- Use case: none; nobody decides anything from whether a dating-profile user works in STEM (SEL-3, USE-1). This alone decides the `No`; the marker `No Good Target / Scientific Discovery` would name it better than `Not Representative`.
+- Siblings: `okcupid` (Alex, Mustafa, Lennart: `No`, `No Good Target / Scientific Discovery`, `Ethical Issue`): the same data, decided the same way.
 - Counter-point on the ethics marker only: the JSE data was released with OkCupid's explicit permission for teaching, so `Ethical Issue` rests on the use (inferring a person's occupation from a dating profile), not on objecting subjects (SEL-1); the verdict stands on SEL-3 either way.
 - Metric: none defined by the source (JSE paper, repo); not needed for a `No`.
 

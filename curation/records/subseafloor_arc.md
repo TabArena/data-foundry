@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the Archaea amplicon table of a census of marine-sediment microbial diversity; the source publishes no predictive task and the record names no target.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the Archaea amplicon table of a census of marine-sediment microbial diversity; the source publishes no predictive task and the record names no target.
 - Source: Hoshino et al., "Global diversity of microbial communities in marine sediment", PNAS 2020 (https://doi.org/10.1073/pnas.1919139117); as published: 16S amplicon sequence variants (Archaea and Bacteria) from "40 globally distributed sampling locations, spanning sediment depths of 0.1 to 678 m", sample metadata in SI Tables 1 and 2 (PDF); the record's OTU-table link is empty.
 - Use case: none; the paper's aim is descriptive ("the global taxonomic diversity ... remain unclear. We investigated microbial composition", Significance), and its finding is which environmental factors explain composition. A target such as oxygen presence or organic carbon is measured on the core, not predicted from sequencing; fit none.
 - Siblings and duplicates: `subseafloor_arc_2` is the Bacteria table of the same study (its `name` field also says `subseafloor_arc`); the other microbiome records of this set (`bog_lakes`, `bedford_basin_*`, `boso_fish`, `nz_springs` proposed `No` in this re-screen; `australia`, `atl_ocean_transect`, `wastewater_treatment` `No` (AI)). External collections: none found.

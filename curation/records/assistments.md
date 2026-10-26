@@ -6,10 +6,10 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 3
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Time-series (Classification)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 - AI-Filled (Verify)
@@ -42,7 +42,7 @@ type_adapter_id: curation-record-v1
 - Siblings and duplicates: none in `curation/records/`; external collections: TableShift (`assistments`), knowledge-tracing benchmarks (ASSIST2012 in DKT, SAKT and pyKT).
 - Papers and pages: Feng, Heffernan, Koedinger (2009), UMUAI 19:243-266 (the platform); Wang, Heffernan, Heffernan (2015), LAK (the affect detectors); Pardos et al. (2013), LAK (the record's reference); Gardner, Popovic, Schmidt (2023), TableShift, NeurIPS D&B.
 - Metric: none deliberate found; TableShift reports accuracy (in-domain and out-of-domain) for every task, a habit (MET-6), and knowledge tracing reports AUC; so the fallback `roc_auc`.
-- Risks for /add-dataset: `attempt_count`, `hint_count`, `bottom_hint`, `first_action`, `ms_first_response`, `end_time` describe the same attempt and leak `correct` (LEAK); the affect columns are detector outputs over the same clip; the target needs binarising (the site: "1 = correct, <1 = Incorrect"); 2.7M rows of a sequence (`Time-series (Classification)` stays as a concern); the old `No Good Target  / Scientific Discovery` marker stays until the curator settles the task.
+- Risks for /add-dataset: `attempt_count`, `hint_count`, `bottom_hint`, `first_action`, `ms_first_response`, `end_time` describe the same attempt and leak `correct` (LEAK); the affect columns are detector outputs over the same clip; the target needs binarising (the site: "1 = correct, <1 = Incorrect"); 2.7M rows of a sequence (`Time-series (Classification)` stays as a concern); the old `No Good Target / Scientific Discovery` marker stays until the curator settles the task.
 - Priority: gap + (education and grouped regime thin), use case - (approximate), source + (ASSISTments documents the columns), shape + (2.7M rows, mixed types, grouped), risk - (leaking per-attempt columns, unclear target).
 
 ASSISTments skill-builder data (2009-2010), used in TableShift/Gardner for knowledge-tracing / affect-to-outcome prediction. The record itself flags an 'unclear predictive task' and uncertainty over whether grouped, temporal, or custom split is correct, and existing tags mark it 2nd Tier / Scientific Discovery. It is a real education dataset but the target definition and split regime are genuinely ambiguous (student-grouped, sequence/time-ordered logs). A human must pin down the exact target (e.g. end-of-year outcome vs next-correct), the correct split, and possibly recreate the table before it can be a Yes.

@@ -8,7 +8,7 @@ decision_markers:
 - Duplicate
 tags:
 - Tiny Data
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - TabArena Reject
 year: '2008'

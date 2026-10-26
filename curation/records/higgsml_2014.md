@@ -9,7 +9,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - AI-Filled (Verify)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 original_source: Kaggle
 year: '2014'
 domain: physics & astronomy

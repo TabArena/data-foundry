@@ -9,7 +9,7 @@ decision_markers:
 - No Good Target (yet)
 - Needs extensive data wrangling
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 **Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 2: New York City's yearly property assessment roll; the only target is the assessor's own market value, a model output, so no real task yet (as the CC says); the sale-price task belongs to `nyc_property_sales`.
 - Source: NYC Department of Finance, "Property Valuation and Assessment Data" on NYC Open Data (dataset yjxr-fw8i, attribution "Department of Finance (DOF)", created 2019, rows updated 2020; the data.gov page in the links mirrors it): "The Department of Finance values properties every year as one step in calculating property tax bills". As published (portal metadata, read 2026-10-22): 9,845,857 rows over several rolls (`year`, `period`, `valtype`), about 40 columns: lot keys (`bble`, `boro`, `block`, `lot`), `owner`, building and tax class, lot and building dimensions, `stories`, `fullval` (market value), assessed and exempt values (`avland`, `avtot`, `exland`, `extot` and their `2` versions), exemption codes, address, zip, coordinates and admin areas; the column descriptions are empty.
-- Use case: none in the source. Predicting `fullval` copies the DOF's mass appraisal, not an observed outcome (SEL-3), and the assessed values are fixed shares of it by tax class (SEL-5); the outcome an actor acts on is a sale price (`nyc_property_sales`, Lennart: `TBD -> 2nd Tier`, `No Good Target (yet)`), so the marker is aligned to it (`No Good Target  / Scientific Discovery` replaced). Regime temporal (yearly rolls; the record's `Custom` kept) or grouped by lot.
+- Use case: none in the source. Predicting `fullval` copies the DOF's mass appraisal, not an observed outcome (SEL-3), and the assessed values are fixed shares of it by tax class (SEL-5); the outcome an actor acts on is a sale price (`nyc_property_sales`, Lennart: `TBD -> 2nd Tier`, `No Good Target (yet)`), so the marker is aligned to it (`No Good Target / Scientific Discovery` replaced). Regime temporal (yearly rolls; the record's `Custom` kept) or grouped by lot.
 - Siblings and duplicates: `nyc_property_sales` (DOF rolling sales; a join by `bble` could give a sale-price task with the roll as features). External collections: none found.
 - Papers and pages: none; the NYC Open Data page and the DOF property assessment page.
 - Metric: none found (NYC Open Data page, DOF assessment page), so the fallback (rmse).

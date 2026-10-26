@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Too Small
 - Outdated
 tags:
@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 **Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: the proposed fast reject (SEL-3 (with the curators' workbook verdict; TP-5 not measured)) did not hold in the reject check, so it stays a candidate with the doubt listed.
-- Proposed reject (refuted): `No` (`No Good Target  / Scientific Discovery`, SEL-3): the source names no target, OpenML's default target is the season year of a mis-parsed table of NFL games, and the curators already judged it too small and too thin on information; this restores the workbook verdict that an AI policy note had turned into `TBD -> 2nd Tier`.
+- Proposed reject (refuted): `No` (`No Good Target / Scientific Discovery`, SEL-3): the source names no target, OpenML's default target is the season year of a mis-parsed table of NFL games, and the curators already judged it too small and too thin on information; this restores the workbook verdict that an AI policy note had turned into `TBD -> 2nd Tier`.
 - Source: file `foot.dat` of the StatLib `chscase` collection from Chatterjee, Handcock & Simonoff, "A Casebook for a First Course in Statistics and Data Analysis" (Wiley, 1995); OpenML 703 (uploaded 2014): "attribute names were generated automatically since there was no information in the data itself", "CLASSTYPE: numeric / CLASSINDEX: none specific"; default target `col_6`. As published on OpenML: 526 rows x 6 columns; preview rows read `BUF__MIA,-1,0,0,1,89`: col_1 a game (visitor__home NFL teams), col_2 a mix of -1/0/1 and team codes (the parse is shifted on some rows, e.g. `GB`, `KC`, `NE` alone in col_1), col_6 = 89, the season.
 - Use case: none recorded; the casebook case is a teaching example on football games (likely point spreads), and the OpenML target is a constant-like year, not an outcome (SEL-3).
 - Siblings and duplicates: `chscase_geyser1` (Lennart `No`: "outdated, trivial and not useful for our purpose"), same casebook. The workbook import on this record: "TabArena curation verdict: Tiny data", "Lennart: too small", "Andrej: Insufficient information".

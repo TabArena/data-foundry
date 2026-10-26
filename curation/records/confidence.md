@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 **Assessment (AI, 2026-10-22):** the workbook verdict (Tiny data; Lennart and Andrej: too small) stands, priority 1;
-recommend `No` with `Too Small` and `No Good Target  / Scientific Discovery` (TP-5, SEL-3); the curator has the call.
+recommend `No` with `Too Small` and `No Good Target / Scientific Discovery` (TP-5, SEL-3); the curator has the call.
 - Source: StatLib, consumer-confidence items given by Gordon Bechtel (Univ. of Florida) with permission of the Conference
   Board and the Michigan Survey Research Center, "1992 DATA" (OpenML 468, "Source: Unknown - Date unknown"); PMLB copies
   it. As published: 72 rows x 3 numeric features `P`, `N`, `O` (share of pessimistic, neutral, optimistic answers) and

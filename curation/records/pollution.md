@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: 60 US metropolitan areas from a 1973 study of regression instability, an explanatory table with the workbook's "Tiny data" by Lennart and Andrej; a curator may well reject it (`Too Small`, TP-5, or `No Good Target  / Scientific Discovery`, SEL-3).
+**Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: 60 US metropolitan areas from a 1973 study of regression instability, an explanatory table with the workbook's "Tiny data" by Lennart and Andrej; a curator may well reject it (`Too Small`, TP-5, or `No Good Target / Scientific Discovery`, SEL-3).
 - Source: McDonald, G.C. and Schwing, R.C. (1973), "Instabilities of regression estimates relating air pollution to mortality", Technometrics 15, 463-; served by StatLib and OpenML 542 ("the pollution data so loved by writers of papers on ridge regression"); as published: 60 rows (SMSAs, 1959-1961) x 15 numeric predictors (climate, demography, HC, NOX, SO2 potentials), target `MORT` (age-adjusted mortality per 100,000).
 - Use case: none the source states: the paper estimates the effect of pollution on mortality across cities, a look at the coefficients, not a decision on a new city; fit none or approximate at best; regime IID (one row per metropolitan area, no time).
 - Siblings and duplicates: none found (grep McDonald, Schwing, 542); other pollution records are different data; external collections: OpenML, StatLib.

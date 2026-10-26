@@ -25,10 +25,13 @@ DROPPED_COLUMNS = {
     "surv2m": "SUPPORT model 2-month survival estimate (fit on phase I survival)",
     "surv6m": "SUPPORT model 6-month survival estimate (fit on phase I survival)",
     "aps": "APACHE III physiology score (phase I with imputed BUN and urine output)",
-    "prg2m": "physician's 2-month survival estimate",
-    "prg6m": "physician's 6-month survival estimate",
+    "prg2m": "physician's 2-month survival estimate: the comparator of the objective estimate (use case)",
+    "prg6m": "physician's 6-month survival estimate: the comparator of the objective estimate (use case)",
     "adls": "surrogate ADL interview (days 2-7): missing when the stay ended before the interview",
     "adlsc": "adls, else calibrated adlp, else imputed with the interview status (which records a death or discharge)",
+    "adlp": "patient ADL interview (days 2-7): its gaps hold the 475 patients with interview status 'Pt Death'",
+    "edu": "demographic interview (days 2-7): missing more often among the deaths on days 4-7",
+    "income": "demographic interview (days 2-7): missing more often among the deaths on days 4-7",
 }
 
 
@@ -198,8 +201,10 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a seriously ill hospital patient die within two months?",
         use_case=(
-            "On the third day after study entry, the care team estimates a patient's chance of dying within two months, to "
-            "discuss prognosis and the goals of care."
+            "On the third day after study entry, an objective estimate of the patient's chance of dying within two "
+            "months, from the day-3 physiology, the diagnosis and the patient's background, is set beside the "
+            "physician's own estimate to inform the discussion of prognosis and the goals of care, as the SUPPORT "
+            "prognostic model was (Knaus et al. 1995)."
         ),
         row=(
             "One adult patient of five US teaching hospitals (1989-1994) with one of eight serious diagnoses, such as"
@@ -207,14 +212,15 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         ),
         predicted="Whether the patient dies within 60 days of study entry (33% do).",
         known=(
-            "Age, sex, diagnosis, other illnesses, the day-3 vital signs and lab values, and a few background facts "
-            "(education, income, function before admission)."
+            "Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs "
+            "and lab values."
         ),
         split=("Random patients, so the test data stands for new patients of the same hospitals and years."),
         changes=(
             "In the public file the day-3 measurements of most phase II patients belong to other patients; we moved "
-            "them back to their own rows with the study's archive. We drop the scores, physician estimates and orders"
-            " made from or after these values."
+            "them back to their own rows with the study's archive. We drop the earlier models' scores and, since the "
+            "task is the objective estimate set beside the physician's, the physicians' own estimates and the DNR "
+            "orders."
         ),
         fit="direct",
         fit_reason=(
@@ -225,7 +231,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "2_month_survival_rate_prediction"
-    year = "2000"
+    year = "2003"
     domain = "medical & healthcare"
     source = "Other"
     source_url = "https://hbiostat.org/data/repo/supportdesc"
@@ -275,10 +281,13 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         - Both phases, IID split over patients: the use case is new patients of the same hospitals and years. The phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal Investigators 1995, JAMA, abstract). The entry date can be recovered (a survivor entered on 31 Dec 1994 minus d.time, and within each of the file's ten blocks the rows are in entry order, Spearman 1.000), but it changes no score (LightGBM ROC AUC, review panel 2026-10-20): IID 0.818 (9 splits), three temporal windows over phase II 0.824, phase I to phase II 0.820. The ten blocks form five phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair out scores 0.815 (0.793-0.831), so we do not group by them.
         - Target `death_within_2_months`: `death` = 1 and `d.time` < 60, the cut-off of the source's sfdm2 level 5. Survivors were followed at least 344 days, so no label is censored. 2,993 of 8,967 (33.4%).
         - We drop the 138 patients who died on day 3: they are dead at the prediction point, and their values include values at death (heart rate 0 in 38% of them).
-        - Dropped as the source advises (supportdesc): the model outputs sps, surv2m, surv6m and aps, the physicians' estimates prg2m and prg6m, and dnr and dnrday (dnrday equals slos for every patient without an order, and 1,659 of the 2,956 orders written after study entry are dated after day 3).
+        - Dropped: the outputs of earlier models, sps, surv2m, surv6m and aps (supportdesc also advises against them).
+        - Dropped by the use case: the physicians' day-3 estimates prg2m and prg6m and the DNR fields dnr and dnrday. SUPPORT built "objective estimates of survival" and interviewed the physicians on day 3 for their own estimates as its comparator (Knaus et al. 1995, title and abstract), so the task is the estimate set beside the physician's, and the physician's estimate is not an input (CC 2026-10-26). This differs from breast_cancer_prediction, which keeps the radiologist's BI-RADS reading: there the actor's own reading is the input of the task. On our cohort prg2m alone scores ROC AUC 0.801. dnrday also equals slos for every patient without an order, and 1,659 of the 2,956 orders written after study entry are dated after day 3.
         - Dropped as outcomes or fields recorded after day 3: death, d.time, sfdm2, hospdead, slos, charges, totcst, totmcst and avtisst.
         - Dropped: bun, glucose and urine, which phase I did not measure.
-        - Dropped: adls and adlsc. The ADL answers describe function two weeks before admission, but the interviews took place on days 2-7 (median day 4), and adls is missing for 46% of the patients whose stay ended by day 7 against 24% of longer stays. adlsc is adls, or calibrated adlp, or an imputation that used the interview status ("Pt Death", "Pt Discharged"; codebook Appendix A). We keep adlp, edu and income (CC 2026-10-12). adlp is missing mostly when the patient cannot answer (coma, intubation), but its gaps also hold the 475 patients whose interview status in ICPSR part 10 is "Pt Death", all of whom die within 2 months: 95.4% of the 767 deaths on days 4-7 lack adlp against 58.2% of the other patients, worth 0.0035 ROC AUC. edu and income are missing about as often for short as for long stays, but more often among the deaths on days 4-7 (edu 31.4% against 16.3%, income 43.0% against 31.5%), with no measurable effect (dropping both changes ROC AUC by 0.0001). Decision table.
+        - Dropped: the interview fields adls, adlsc, adlp, edu and income. The interviews took place on study days 2-7 (median day 4), after the prediction point for many patients, and their gaps record what happened by then. adls is missing for 46% of the patients whose stay ended by day 7 against 24% of longer stays; adlsc is adls, or calibrated adlp, or an imputation that used the interview status ("Pt Death", "Pt Discharged"; codebook Appendix A). adlp is missing mostly when the patient cannot answer (coma, intubation), but its gaps also hold the 475 patients whose interview status in ICPSR part 10 is "Pt Death", all of whom die within 2 months: 95.4% of the 767 deaths on days 4-7 lack adlp against 58.2% of the other patients, worth 0.0035 ROC AUC (CC 2026-10-26, which replaces CC 2026-10-12 for adlp). edu and income are missing more often among the deaths on days 4-7 (edu 31.4% against 16.3%, income 43.0% against 31.5%), with no measurable effect (dropping both changes ROC AUC by 0.0001); dropping them keeps the fit direct (CC 2026-10-26). Decision table.
+        - pafi, the day-3 ratio of arterial oxygen to inspired oxygen fraction, above 713 is set missing (9 patients, 714 to 890): by the alveolar gas equation at sea level PaO2 stays below FiO2 x 713 minus PaCO2/0.8, so such ratios cannot occur and likely hold a mis-recorded FiO2. The 5 values from 650 to 713 are unusual but possible and stay.
+        - Year 2003: the rows we ship are Vanderbilt's support2 extract (follow-up cut at the end of 1994, its own derived columns), dated 2003-06-23 inside hbiostat's zip. ICPSR 2957 V1 (January 2001) holds the study data in another form (follow-up to 1997) and serves here only to place rows.
         - We rename num.co to num_co.
         - Anomaly: heart rate 0 (30 patients), mean blood pressure 0 (16) and respiration rate 0 (30) remain among the patients alive after day 3. Most of them die within 2 months, so these look like arrests on day 3; we keep them. wblc 0 (9 patients, 8 with MOSF w/Malig) stays too: the smallest non-zero values are 0.05, 0.07 and 0.08, so 0 reads as a count below the lab's resolution in profound neutropenia.
         - alb above 6 g/dL (4 patients: 6.3, 8.6, 10.9 and 29.0) is set missing: serum albumin does not reach such values (29.0 reads as g/L).
@@ -311,6 +320,8 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         df = _restored(support2, source)
         # serum albumin above 6 g/dL is impossible (4 patients; 29.0 reads as g/L)
         df["alb"] = df["alb"].mask(df["alb"].gt(6))
+        # a PaO2/FiO2 ratio above 713 is impossible at sea level (9 patients; likely a mis-recorded FiO2)
+        df["pafi"] = df["pafi"].mask(df["pafi"].gt(713))
         # 2. the patients alive at the prediction point, the end of study day 3
         df = df[_alive_after_day_3(df)]
         # 3. death before day 60 after study entry, the cut-off of the source's sfdm2 level 5
@@ -323,7 +334,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["sex", "dzgroup", "dzclass", "income", "race", "diabetes", "dementia", "ca"],
+            categorical=["sex", "dzgroup", "dzclass", "race", "diabetes", "dementia", "ca"],
         )
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
@@ -439,7 +450,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             .round(3)
             .rename_axis("missing share")
         )
-        interviews["kept"] = ["yes", "no", "no", "yes", "yes"]
+        interviews["kept"] = ["no"] * len(interviews)
 
         # 6. the candidate targets on the cohort
         cohort = restored[_alive_after_day_3(restored)]
@@ -490,12 +501,13 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             Decision(
                 "Outcomes, model outputs, estimates and fields recorded after day 3 are dropped",
                 "The prediction point is the end of study day 3. Outcomes, costs and scores of the whole stay come "
-                "later; sps, surv2m and surv6m are outputs of the SUPPORT model fit on phase I survival, and the "
-                "source advises against aps, prg2m, prg6m, dnr and dnrday (supportdesc).",
+                "later; sps, surv2m, surv6m and aps are outputs of earlier models (the SUPPORT model fit on phase I "
+                "survival, APACHE III), and the physicians' estimates and DNR orders are the comparator of the "
+                "objective estimate the task makes (Knaus et al. 1995).",
                 dropped,
             ),
             Decision(
-                "Surrogate interview dropped, patient interview and demographics kept",
+                "Interview fields dropped",
                 "The ADL answers describe function two weeks before admission, but the interviews took place on study "
                 "days 2-7 (median day 4). A surrogate answer is missing far more often when the stay ended by day 7, "
                 "so its gaps record events after the prediction point. The patient's answer is missing mostly when the "

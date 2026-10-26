@@ -8,7 +8,7 @@ decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 - NLP (Text)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)

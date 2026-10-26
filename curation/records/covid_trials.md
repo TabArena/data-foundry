@@ -7,7 +7,7 @@ checked_by:
 - Lennart
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Free Text (Sentences)
 collections:

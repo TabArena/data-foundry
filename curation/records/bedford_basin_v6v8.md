@@ -7,7 +7,7 @@ data_foundry_status:
 - 'DF: Suspended'
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - '?'
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the V6-V8 16S table of the same Bedford Basin study as `bedford_basin_v4v5`, published for a descriptive study of community dynamics, with no target named.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the V6-V8 16S table of the same Bedford Basin study as `bedford_basin_v4v5`, published for a descriptive study of community dynamics, with no target named.
 - Source: Robicheau et al., ISME Communications 2022, doi 10.1038/s43705-022-00119-2 (SI table of the V6-V8 amplicon, which the paper also used for the Scotian Shelf samples); metadata from the Bedford Basin Monitoring Program.
 - Use case: none; the study describes seasonal and interannual shifts and indicator taxa, without a prediction (USE-1, USE-2).
 - Siblings and duplicates: a second amplicon of the same samples as `bedford_basin_v4v5` (PROV-6; it would be a duplicate even if a target were defined). `DF: Suspended` kept.

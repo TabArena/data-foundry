@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the North Temperate Lakes bog-lake 16S OTU table (R package OTUtable) is published to describe bacterial community composition over five years, not for a prediction; no target is named.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the North Temperate Lakes bog-lake 16S OTU table (R package OTUtable) is published to describe bacterial community composition over five years, not for a prediction; no target is named.
 - Source: Linz, Crary, Shade, Owens, Gilbert, Knight and McMahon, "Bacterial Community Composition and Dynamics Spanning Five Years in Freshwater Bog Lakes", mSphere 2017, doi 10.1128/mSphere.00169-17 (PMC5489657); 1,387 16S amplicon samples from eight lakes and two thermal layers near Minocqua, Wisconsin; data and scripts in the R package OTUtable (https://amlinz.r-universe.dev/OTUtable) and the McMahon Lab GitHub repository.
 - Use case: none; the paper reports year-to-year shifts, a core community and lake-specific communities; any target (lake, layer, year from the OTUs) would be our own and partly a look back at the sampling design (USE-1, USE-2).
 - Siblings and duplicates: the other microbiome records of the same import (all AI-screened). External collections: none found.

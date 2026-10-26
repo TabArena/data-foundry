@@ -9,7 +9,7 @@ data_foundry_status:
 suggestion: No (Retired)
 decision_markers:
 - Wrong Domain / Source Modality
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 - Non-IID (Grouped)

@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> Yes
 priority: 3
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
 - AI-Filled (Verify)
 collections:

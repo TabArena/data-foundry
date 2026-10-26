@@ -5,9 +5,9 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 - Use case: none. Every column is answered by the student in the one post-course form, so predicting `difficulty`, `attendance` or the instructor from the other answers is a look at the survey, not a decision (SEL-3, SEL-7: answers of the same interview); the record's CC says the same. Regime would be grouped by instructor and course (only 3 and 13).
 - Siblings and duplicates: none among `curation/records/` (grep Turkiye, student evaluation).
 - Metric: none found (UCI page), so the fallback would apply.
-- Counterpoint checked: education is thin (3 accepted), so a target here would fill a gap, but no candidate column is observed after or apart from the survey, so the gap does not change the verdict. The marker `No Good Target  / Scientific Discovery` fits; `problem_type` `Other` matches.
+- Counterpoint checked: education is thin (3 accepted), so a target here would fill a gap, but no candidate column is observed after or apart from the survey, so the gap does not change the verdict. The marker `No Good Target / Scientific Discovery` fits; `problem_type` `Other` matches.
 
 UCI Turkiye Student Evaluation: ~5820 course evaluations with 28 Likert survey items plus instructor/course/attendance fields. As the CC comment notes, most features were collected in the same post-course survey as any plausible target, making it a scientific-discovery / no-clear-supervised-target dataset (it is commonly used for clustering, not prediction). It is also clustered/grouped by instructor and course. Given the lack of a meaningful, non-leaky predictive target, this should be rejected; a human could confirm there is no defensible target.
 

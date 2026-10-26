@@ -6,9 +6,9 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Data Quality Issue
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -36,7 +36,7 @@ type_adapter_id: curation-record-v1
 - Use case: none from the source. The PUF is a published statistical summary. Payments under IPPS follow the DRG weight and the hospital's rates, and "Average Medicare Payments" is a component of the total payment ("The Total Payment Amount includes the DRG amount, ...", CMS catalog), so the 44146 cut is close to an identity.
 - Siblings and duplicates: `medicare_inpatient_cost` is the same CMS release series under its current name ("Medicare Inpatient Hospitals - by Provider and Service", data years 2013-2023 in the CMS catalog). The two records should be decided together; under PROV-6 only one cut could enter. External collections: Grinsztajn et al. 2022 benchmark, TabSTAR.
 - Metric: none (the benchmark copies score R2 or RMSE by habit).
-- Counter-check of the markers: the curator's notes (inference-time availability, string address features, grouping by provider) support `No Good Target  / Scientific Discovery`. `Data Quality Issue` (damage that cannot be repaired) is not shown: the payment leak is removable by dropping columns, so that marker could go. No change to the verdict recommended.
+- Counter-check of the markers: the curator's notes (inference-time availability, string address features, grouping by provider) support `No Good Target / Scientific Discovery`. `Data Quality Issue` (damage that cannot be repaired) is not shown: the payment leak is removable by dropping columns, so that marker could go. No change to the verdict recommended.
 
 OpenML medical-charges dataset (d/42130, 44146), used in Grinsztajn's benchmark in a trivially preprocessed numeric form. The curator notes most available features would not be available at inference time, many are string/address features needing special preprocessing, and the data is likely grouped by hospital/provider, with leakage risk. It is already in TabArena Reject. The combination of inference-time-unavailable features, leakage, and a listing/analytics rather than genuine predictive framing makes it a poor candidate. A human could revisit a leakage-cleaned version, but on current evidence this is a No.
 

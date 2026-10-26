@@ -9,7 +9,7 @@ decision_markers:
 - Not Representative
 tags:
 - AI-Filled (Verify)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 original_source: Website
 year: '2015'
 domain: physics & astronomy

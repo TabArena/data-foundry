@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): taxonomic profiles of Tara Oceans samples joined to their metadata, published to describe ocean-microbiome structure and its ecological determinants; no predictive task, no target in the record.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): taxonomic profiles of Tara Oceans samples joined to their metadata, published to describe ocean-microbiome structure and its ecological determinants; no predictive task, no target in the record.
 - Source: Sunagawa et al., "Structure and function of the global ocean microbiome", Science 2015 (https://doi.org/10.1126/science.1261359); companion site http://ocean-microbiome.embl.de/companion.html (Tables W1 and W8, miTAG.taxonomic.profiles.release.tsv); 243 samples from 68 locations, 139 prokaryote-enriched.
 - Use case: none; the abstract's aim is "a global picture of ... microbial community structure, and their ecological determinants". Depth, temperature or region are measured at sampling, not predicted from sequencing; fit none. About 140-240 samples would also be small.
 - Siblings and duplicates: the microbiome set (`subseafloor_arc`, `subseafloor_arc_2`, `bog_lakes`, `bedford_basin_*`, `boso_fish`, `nz_springs` proposed `No` in this re-screen; `australia`, `atl_ocean_transect` `No` (AI)). External collections: none found.

@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Too Small
 tags:
 - AI-Filled (Verify)
@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 **Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: the proposed fast reject (SEL-3 (with SEL-8; Lennart and Andrej's 'too small' supports, TP-5)) did not hold in the reject check, so it stays a candidate with the doubt listed.
-- Proposed reject (refuted): `No` (`No Good Target  / Scientific Discovery`, SEL-3): a textbook table from a civil-rights inquiry into insurance redlining, 47 Chicago zip codes; no predictive task, and the OpenML target `income` was picked by default.
+- Proposed reject (refuted): `No` (`No Good Target / Scientific Discovery`, SEL-3): a textbook table from a civil-rights inquiry into insurance redlining, 47 Chicago zip codes; no predictive task, and the OpenML target `income` was picked by default.
 - Source: Ramsey and Schafer, The Statistical Sleuth (2nd ed., Duxbury 2002), exercise 17.14 (R package Sleuth2, `ex1714`); the data from Andrews and Herzberg, Data (1985): Illinois Department of Insurance counts of homeowner policies by zip code, December 1977 to February 1978, fire and theft from 1975. As published: 47 x 8 (Zip, Fire, Theft, Age, Income, Race, Vol, Invol). OpenML 659 (StatLib upload) sets `income` as target with "CLASSINDEX: none specific".
 - Use case: none. Sleuth2: "In the 1970's the U.S. Commission on Civil Rights investigated charges that insurance companies were attempting to redefine Chicago 'neighborhoods' in order to cancel existing homeowner insurance policies or refuse to issue new ones": the question is whether involuntary (FAIR plan) policies relate to the minority share after adjusting for fire, theft and housing age, an inference on 47 areas (SEL-3, SEL-8). Median family income per zip code as a target has no actor.
 - Siblings and duplicates: the same data is faraway's `chredlin` (no record); `sleuth_case2002`, `sleuth_ex1605`, `sleuth_case1202` are other Sleuth tables (Lennart kept sleuth_case2002 as `TBD -> 2nd Tier`, `Outdated`). External collections: OpenML 659.

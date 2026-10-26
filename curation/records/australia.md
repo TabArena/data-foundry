@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): an OTU abundance table cut from the Australian Microbiome monitoring data; the source publishes sequence data for monitoring, with no predictive task, and the record names no target.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): an OTU abundance table cut from the Australian Microbiome monitoring data; the source publishes sequence data for monitoring, with no predictive task, and the record names no target.
 - Source: Brown et al., "Systematic, continental scale temporal monitoring of marine pelagic microbiota by the Australian Marine Microbial Biodiversity Initiative", Scientific Data 5:180130, 2018 (doi 10.1038/sdata.2018.130); the data from Bioplatforms Australia (https://data.bioplatforms.com/bpa/otu, accessed 04.10.22 per the record), subset 27f519r bacteria, marine, coastal/pelagic/surface water.
 - Use case: none stated: "provides methodologically standardized, continental scale, temporal phylogenetic amplicon sequencing data"; a target (an oceanographic variable) would be ours (SEL-8). Samples are monthly to seasonal at fixed sites, so any task would be grouped or temporal.
 - Siblings and duplicates: the same microbiome group as atl_ocean_transect (see there); none verified by a curator.

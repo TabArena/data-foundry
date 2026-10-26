@@ -63,7 +63,7 @@ heart_disease_cleveland (SEL-14).
 **SEL-3 (Must).** The dataset is published for a predictive task: explicitly a classification or regression task,
 simulating a decision someone makes with the prediction (USE-1, [use_case.md](use_case.md)). The target is an observed
 outcome or an expert annotation. A table without a genuine predictive target, such as a scientific-discovery or survey
-table, is out. Marker: `No Good Target  / Scientific Discovery`.
+table, is out. Marker: `No Good Target / Scientific Discovery`.
 
 **SEL-4 (Must; narrows SEL-3).** A label from unsupervised learning is no real predictive task: a molecular subtype
 defined by clustering (PAM50, expression subtypes, NMF clusters). Cases: brca_breast_cancer, glioblastoma,
@@ -76,7 +76,7 @@ central_international_medical_college_and_hospital_health_risk_prediction (NEWS2
 
 **SEL-6 (Must; narrows SEL-3).** A label counted over one calendar window shared by all rows, instead of a fixed time
 after each row, supports only a look back at which rows drew the outcome. Marker:
-`No Good Target  / Scientific Discovery`. Cases: analcatdata_supreme (Lennart, 2026-10-14).
+`No Good Target / Scientific Discovery`. Cases: analcatdata_supreme (Lennart, 2026-10-14).
 
 **SEL-7 (Must; narrows SEL-3).** A label the respondent already knows, asked in the same interview as the features (a
 past diagnosis), is predicted by nobody. A screening task needs positives that do not know yet, found by an
@@ -236,7 +236,7 @@ the IID and grouped versions of one competition).
 
 ### Survey and discovery tables
 
-A table without a genuine predictive target is `No Good Target  / Scientific Discovery`, `No` or `TBD -> 2nd Tier`
+A table without a genuine predictive target is `No Good Target / Scientific Discovery`, `No` or `TBD -> 2nd Tier`
 (SEL-3).
 
 ### Trivial, too small, empty
@@ -336,7 +336,7 @@ marker records where a record stands, not an issue of the data.
 | `Time-series (Classification)` | classification of a series or signal (readings over time, a recording), where time-series models are the tool | none (SEL-12 on vectorized time-series data) |
 | `Outdated` | an old dataset or experiment: today the task would use other data, features or models | none |
 | `No Good Target (yet)` | real data without a predictive target so far (a listing, a survey, a table built for another purpose); one may be defined later, and such records mostly wait as `TBD -> 2nd Tier` | none |
-| `No Good Target  / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
+| `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
 | `Data Quality Issue` | damage that cannot be undone or repaired: a supervised transform fit on the whole labelled set, a manipulated real table | LEAK-27 ([leak_checks.md](leak_checks.md)); PROV-3 ([provenance.md](provenance.md)) |
 | `Trivial` | one feature or a simple rule matches the best methods, or the task is solved perfectly | TP-4; SEL-5 |
 | `Image` | an image or video task, including features computed from an image to describe its content | SEL-12, SEL-13 |
@@ -363,7 +363,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-4 | brca_breast_cancer, glioblastoma, ov_ovarian_cancer | labels are molecular subtypes defined by clustering: no real predictive task (2026-10-12, Lennart) | applied |
 | SEL-5 | account_debt_south_africa | the deterministic rule's inputs dropped; the rest still makes a real task | applied |
 | SEL-5 | central_international_medical_college_and_hospital_health_risk_prediction | the label is NEWS2, and its inputs are the whole task: `Trivial` | applied |
-| SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target  / Scientific Discovery` (2026-10-14, Lennart) | applied |
+| SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target / Scientific Discovery` (2026-10-14, Lennart) | applied |
 | SEL-7 | cdc_diabetes_health_indicators | "ever told you have diabetes", told a median of 10 years earlier, with the undiagnosed in the negative class (2026-10-15, Lennart) | applied |
 | SEL-8, SEL-9 | yearprediction_the_million_song_dataset | the Million Song Dataset Challenge, a song-recommendation task, though OpenML 4352 serves it as a regression; the regression re-framings are duplicates | applied |
 | SEL-13 | internet_advertisements, breast_w | image descriptors with a few non-visual columns, and a pathologist's grades of a slide: `No` | applied |

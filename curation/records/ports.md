@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3, USE-2): microbial communities sampled in shipping ports, published for a biogeography study; the classifiers of port or region serve to find which taxa differ between places, not a decision.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3, USE-2): microbial communities sampled in shipping ports, published for a biogeography study; the classifiers of port or region serve to find which taxa differ between places, not a decision.
 - Source: Ghannam, Schaerer, Butler, Techtmann (2020), "Biogeographic Patterns in Members of Globally Distributed and Dominant Taxa Found in Port Microbial Communities", mSphere (10.1128/mSphere.00481-19), with the companion Schaerer et al. (2019), "Global Comparison of the Bacterial Communities of Bilge Water, Boat Surfaces, and External Port Water", AEM (10.1128/AEM.01804-19); data on GitHub rghannam/portmicrobes (GPL-3.0): ASV count and taxonomy tables as R .rds files and pm_metadata.csv (port, region, season, water chemistry); a few hundred samples from 20 ports in five regions (not counted).
 - Use case: none the source states: "Here, we display how supervised machine learning approaches can be useful to understand microbial biodiversity and biogeography using microbes from globally distributed shipping ports. Our findings indicate that the members of globally dominant phyla are important for differentiating locations". The repository's random-forest port classifiers reach 0.98 to 0.995 accuracy from genus or ASV counts (data/machine_learning/model_stats/localstats.csv), near `Trivial` as well.
 - Siblings and duplicates: none in `curation/records/`; external collections: none known.

@@ -8,7 +8,7 @@ decision_markers:
 - NLP (Text)
 - Needs extensive data wrangling
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
 - AI-Filled (Verify)
 collections:

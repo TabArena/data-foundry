@@ -5,10 +5,10 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Missing source information
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabSTAR
@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, `Missing source information`; SEL-3, PROV-1): the source publishes a
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, `Missing source information`; SEL-3, PROV-1): the source publishes a
 segmentation case with no predictive target, from an untraced "sample Dataset".
 - Source: Kaggle arjunbhasin2013/ccdata ("Credit Card Dataset for Clustering"), CC0; OpenML 43618 is a copy. As
   published: about 9,000 active card holders x 18 behavioural variables over 6 months (`BALANCE`, `PURCHASES`,
