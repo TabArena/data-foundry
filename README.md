@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 14:20 UTC: 48 claim(s) (Lennart 35, Myunghwan 13).
+As of 2026-10-26 14:50 UTC: 47 claim(s) (Lennart 34, Myunghwan 13).
 
 ## Lennart
 
@@ -13,7 +13,6 @@ As of 2026-10-26 14:20 UTC: 48 claim(s) (Lennart 35, Myunghwan 13).
 | `aeolus_rebuilt` | add | 2026-10-26 | 2026-11-02 | rebuild of aeolus from BTS and Meteostat (marks of 2026-10-26) |
 | `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
 | `alfa_battle_2_0_task_2` | add | 2026-10-23 | 2026-10-30 |  |
-| `corporate_credit_rating_cat_data_set_ratings_raitings` | add | 2026-10-23 | 2026-10-30 |  |
 | `credit_card_customers` | add | 2026-10-23 | 2026-10-30 |  |
 | `diabetes_3` | add | 2026-10-23 | 2026-10-30 |  |
 | `differentiated_thyroid_cancer_recurrence` | add | 2026-10-23 | 2026-10-30 |  |
