@@ -57,7 +57,6 @@ not accepted in the definition.
 | [`5g_energy_consumption`](5g_energy_consumption/) | grouped | 92,629 | 20 | 3 x 3 | not built |  |
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,686 | 7 | 3 x 3 | not built |  |
 | [`acquire_valued_shoppers_challenge`](acquire_valued_shoppers_challenge/) | temporal | 160,057 | 111 | 5 x 1 | not built |  |
-| [`aeolus_1m`](aeolus_1m/) | temporal | 1,785,314 | 18 | 3 x 1 | not built |  |
 | [`aeolus_rebuilt_1m`](aeolus_rebuilt_1m/) | temporal | 1,799,254 | 34 | 3 x 1 | not built |  |
 | [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 52,826 | 7 | 6 x 1 | not built |  |
 | [`airfoil_self_noise`](airfoil_self_noise/) | grouped | 1,503 | 5 | 10 x 3 | not built |  |
@@ -100,7 +99,6 @@ not accepted in the definition.
 | [`covertype`](covertype/) | IID | 581,012 | 14 | 1 x 3 | not built |  |
 | [`credit_approval`](credit_approval/) | IID | 690 | 15 | 20 x 3 | not built |  |
 | [`credit_card_clients_default`](credit_card_clients_default/) | IID | 30,000 | 23 | 3 x 3 | not built |  |
-| [`credit_card_customers`](credit_card_customers/) | IID | 10,127 | 19 | 3 x 3 | not built |  |
 | [`credit_g`](credit_g/) | IID | 1,000 | 20 | 10 x 3 | not built |  |
 | [`delivery_eta_1m`](delivery_eta_1m/) | temporal | 2,500,000 | 221 | 3 x 1 | not built |  |
 | [`dementia_prediction`](dementia_prediction/) | grouped | 370 | 8 | 20 x 3 | not built |  |
@@ -108,7 +106,6 @@ not accepted in the definition.
 | [`diabetes_3`](diabetes_3/) | IID | 442 | 10 | 20 x 3 | not built |  |
 | [`diamonds`](diamonds/) | IID | 53,940 | 9 | 3 x 3 | not built |  |
 | [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
-| [`digicow_farmer_training_adoption_challenge`](digicow_farmer_training_adoption_challenge/) | temporal | 13,536 | 11 | 4 x 1 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 12 | 3 x 3 | not built |  |
 | [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | grouped | 587 | 176 | 20 x 3 | not built |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
@@ -157,7 +154,6 @@ not accepted in the definition.
 | [`kickstarter`](kickstarter/) | temporal | 187,117 | 12 | 3 x 1 | not built |  |
 | [`labour_inspection_compliance`](labour_inspection_compliance/) | IID | 63,634 | 376 | 3 x 3 | not built | `dataset_constant_column` |
 | [`lending_club`](lending_club/) | temporal | 609,544 | 81 | 3 x 1 | not built |  |
-| [`lgd`](lgd/) | grouped | 2,545 | 2 | 10 x 3 | not built |  |
 | [`ljubljana_breast_cancer`](ljubljana_breast_cancer/) | IID | 286 | 9 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`ljubljana_primary_tumor`](ljubljana_primary_tumor/) | IID | 302 | 17 | 20 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`lung_cancer`](lung_cancer/) | IID | 197 | 12,600 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
@@ -175,7 +171,7 @@ not accepted in the definition.
 | [`musk`](musk/) | grouped (per group: any) | 6,598 | 166 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`naticusdroid_android_permissions_dataset`](naticusdroid_android_permissions_dataset/) | IID | 7,491 | 85 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows`, `dataset_pure_feature_value` |
 | [`numerai28_6`](numerai28_6/) | IID | 96,320 | 21 | 3 x 3 | not built |  |
-| [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 781 | 3 x 1 | not built |  |
+| [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 2,377 | 3 x 1 | not built |  |
 | [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,166,477 | 7 | 3 x 1 | not built |  |
 | [`obesity_estimation`](obesity_estimation/) | IID | 488 | 14 | 20 x 3 | not built |  |
 | [`online_shoppers_purchasing_intention_dataset`](online_shoppers_purchasing_intention_dataset/) | IID | 6,875 | 16 | 3 x 3 | not built |  |
@@ -211,7 +207,6 @@ not accepted in the definition.
 | [`sf_permit_time`](sf_permit_time/) | temporal | 99,847 | 37 | 8 x 1 | not built |  |
 | [`south_africa_coronary_heart_disease`](south_africa_coronary_heart_disease/) | IID | 462 | 9 | 20 x 3 | not built |  |
 | [`splice`](splice/) | IID | 3,190 | 60 | 10 x 3 | not built | `dataset_duplicate_rows` |
-| [`stroke_prediction`](stroke_prediction/) | IID | 43,400 | 6 | 3 x 3 | not built |  |
 | [`student_portuguese_performance`](student_portuguese_performance/) | IID | 649 | 30 | 20 x 3 | not built |  |
 | [`superconductivity`](superconductivity/) | grouped | 21,263 | 81 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`taiwanese_bankruptcy_prediction`](taiwanese_bankruptcy_prediction/) | IID | 6,819 | 92 | 3 x 3 | not built |  |
@@ -222,5 +217,5 @@ not accepted in the definition.
 | [`wids_diabetes_mellitus`](wids_diabetes_mellitus/) | IID | 127,358 | 181 | 3 x 3 | not built |  |
 | [`wine_quality`](wine_quality/) | IID | 5,320 | 12 | 3 x 3 | not built |  |
 | [`wine_world_cost`](wine_world_cost/) | IID | 1,279 | 14 | 10 x 3 | not built |  |
-| [`zillow_prize`](zillow_prize/) | temporal | 153,108 | 56 | 9 x 1 | not built |  |
+| [`zillow_prize`](zillow_prize/) | temporal | 153,108 | 55 | 9 x 1 | not built |  |
 <!-- datasets:end -->

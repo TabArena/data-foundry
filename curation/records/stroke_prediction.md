@@ -3,15 +3,13 @@ unique_name: stroke_prediction
 name: Stroke Prediction
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
 decision_markers:
-- Missing source information
+- No Good Target / Scientific Discovery
+- Data Quality Issue
 tags:
 - New IID
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -24,7 +22,6 @@ original_data_state: One Table
 source_links:
 - https://www.analyticsvidhya.com/datahack/contest/mckinsey-analytics-online-hackathon/
 - https://doi.org/10.17632/x8ygrw87jw.1
-v2_path: datasets/_dev/tabarena-v0pt2/stroke_prediction/dataset.py
 source_row: 669
 type_adapter_id: curation-record-v1
 ---
@@ -50,6 +47,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-26, Lennart): the record's year (2018) and source links (the contest page and the Mendeley Data deposit) take the definition's values; the Kaggle link it had, https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset, is a cut of the contest file.
 
 CC (2026-10-26, Lennart): the declared metric is checked as declared.
+
+CC (2026-10-26, Lennart): "This looks too bad, dont ship it" (verdict on the page).
+
+**Assessment (AI, 2026-10-26):** retired under SEL-7 as cdc_diabetes_health_indicators: the label is a stroke already had, undated, so no decision is made with the prediction (issue 5); three columns carry nothing beyond age and look generated, and glucose and age show marks a real record would not (issue 1). `No` + `No Good Target / Scientific Discovery` and `Data Quality Issue` (replacing `Missing source information`). A screening task would need a first stroke within a horizon, from dated records. The folder left the working copy (in git history before this change).
 
 ## Reference
 

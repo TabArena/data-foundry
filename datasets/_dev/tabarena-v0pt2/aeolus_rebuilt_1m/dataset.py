@@ -427,7 +427,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         - Not read (`BTS_COLUMNS`): what is recorded at or after the departure (actual times, taxi and air times, delay causes, gate returns, diversions), copies (state, city, market, time blocks, groups) and constants. The tail number only links the aircraft's flights: as an id it would add nothing BTS describes.
         - Times: BTS clock times are local. Each airport's IANA time zone is its station's in Meteostat (timezonefinder on the BTS coordinates gives the same offsets for all 359 airports); departure plus scheduled block time then matches the local arrival clock on all but 0.03% of the flights (second decision). Scheduled times also ship as local minutes after midnight (`CRS_DEP_TIME_MIN`, `CRS_ARR_TIME_MIN`; BTS's 2400 is 1440).
         - Weather: each airport's nearest station with hourly observations through 2023-2024 (first decision; 353 of 359 within 2.5 km, at most 10.6 km), read at the prediction point's hour at both airports: 8 Meteostat parameters, the condition code as a category. ISD-Lite, the source of most readings, takes each value from the ten minutes up to the full hour (ISD-Lite Technical Document, 2006: "observation minute greater than or equal to ten minutes before the top of the hour up to and including the top of the hour"), so no reading is from after the prediction point. A wind direction of 0 is calm, 360 north. Peak gust and snow depth are empty and not kept. The 2025 files give the readings of the 2024-12-31 flights whose hour falls in 2025 in UTC.
-        - Note: Meteostat fills missing observations with model forecasts for the hour: 0.2% of the origin temperatures, 5.9% of the precipitation, 41% of the cloud cover and 97% of the condition codes (third decision). A forecast for an hour is issued before it, so it is known at the prediction point; the issue times are not in the files. Kept as Meteostat publishes them, as Aeolus did.
+        - Note: Meteostat fills missing observations with model forecasts for the hour: 0.2% of the origin temperatures, 5.9% of the precipitation, 41% of the cloud cover and 97% of the condition codes (third decision). A forecast for an hour is issued before it, so it is known at the prediction point; the issue times are not in the files. Kept as Meteostat publishes them, as Aeolus did (CC 2026-10-26). Remark for users: part of the weather inputs, most of the condition code and cloud cover, are the output of a weather model, not observations, so a score on these columns depends on that model; a study of the weather's value should read them apart from the observed temperature and precipitation.
         - Impossible weather becomes missing (`MIN_TEMPERATURE_C`, `MAX_WIND_KMH`, a humidity of 0%): 4 readings of -60.6 C at Sarasota, 45 mean winds of 121-232 km/h, most in clear or fair weather, and 11 humidities of 0% at Lihue and Jackson Hole. Precipitation up to 96.5 mm in an hour (Gulf and Florida storms) stays.
         - Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows).
         - Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the shipped splits these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
@@ -441,14 +441,12 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
     # Task
     target = "ARR_DEL15"
     problem_type = "binary_classification"
-    metric = Metric.source(
-        "roc_auc",
-        original="AUC and ACC for the delay-occurrence classification task",
-        reference=(
-            "Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 "
-            "(Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics')"
+    metric = Metric.fallback(
+        reason=(
+            "Xu et al., Aeolus: A Multi-structural Flight Delay Dataset (NeurIPS 2025 D&B, arXiv:2510.26616, Sec. 4 "
+            "and Appendix) report AUC and accuracy side by side for the delay classification, no single criterion "
+            "(MET-5). roc_auc is the binary fallback (CC 2026-10-26)."
         ),
-        definition="ROC AUC of the probability of an arrival delay of 15+ minutes",
     )
 
     # Splits

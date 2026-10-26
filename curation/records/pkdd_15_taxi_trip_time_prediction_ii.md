@@ -14,7 +14,7 @@ tags:
 - Review Prio 1 (Atlas)
 original_source: Kaggle
 year: '2015'
-domain: Other
+domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -86,3 +86,7 @@ the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the travel time in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
 CC (2026-10-26, Lennart): the declared metric is checked as declared.
+
+CC (2026-10-26, Lennart): issue 1: (a), "which is also more correct nowadays, where one would add it in an app. I think it is fine to use the destination as well for now and work on that": an ETA once the passenger names the destination, `fit="approximate"`, as nyc_taxi_trip_duration.
+
+CC (2026-10-26, Lennart): the record's domain takes the definition's value (industry & manufacturing).

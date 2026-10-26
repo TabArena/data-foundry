@@ -10,7 +10,7 @@ families). Quality: the features are a published baseline, which CLEAN-19 as ame
 mixed currencies (issue 7), CLEAN-8 accepted (Lennart, 2026-10-19). Weighed: source +, real use case +, drift +, small
 test windows -, card transactions only -. For the curator: issue 1, the target; issues 5 and 7, two quality calls.
 
-**Main points:** Keep churn as the only target (issue 1)? Keep the CoLES baseline features, or take a 2018 top
+**Main points:** Keep the temporal split (issue 8, your question)? Keep churn as the only target (issue 1)? Keep the CoLES baseline features, or take a 2018 top
 solution's features if they are better (issue 5)? Keep, filter or convert the mixed currencies (issue 7)?
 
 **Issues for Lennart:**
@@ -62,6 +62,27 @@ solution's features if they are better (issue 5)? Keep, filter or convert the mi
    rate of the transaction date (cost: data from outside the source and a pinned rate file).
    Recommendation: (b), a cheap and safe fix of a P7 problem (principles, "How to decide", step 3). Decision: (a), (b)
    or (c)?
+
+8. **The split: temporal, or random?** Your verdict note asks whether a random split would serve as well.
+
+   **Lennart (2026-10-26, discuss, on the verdict):** Why this not a random split? does the temporal split really make more
+   sense? it seems the random set could be good for the customers as well so to say
+
+   **Answer (AI, 2026-10-26):** keep the temporal split; a random one buys nothing here.
+   - The use case is temporal: the bank refits a churn model and scores the clients whose three-month period ends
+     that month, and it knows a client's label only three months after the period. The temporal windows train on the
+     clients whose label was known by then (SPLIT-1, SPLIT-9); a random split would also train on clients whose
+     periods end after the test clients', with labels not known yet at that time.
+   - One row is one client, so a random split leaks no client across sides; the difference is only time. Measured on
+     the same rows (LightGBM, 300 trees, 3 seeds): the temporal windows score ROC AUC 0.848 / 0.873 / 0.839 (December,
+     November, October 2017; 63, 123 and 515 test clients), a random stratified 5-fold split 0.819 ± 0.012 (3 x 5).
+     The random split is not easier here, and the period end alone ranks churn at ROC AUC 0.57, so the churn rate
+     drifts with time, which only the temporal split tests.
+   - The weak point is the size of the newest windows (63 and 123 clients). If you want steadier scores, the windows
+     could hold equal numbers of clients (about 230 each over October to December) instead of calendar months, still
+     temporal (SPLIT-16, SPLIT-17).
+   - Recommendation: keep temporal; optionally switch to equal-size windows. Decision: keep, equal-size temporal
+     windows, or random.
 
 **Review panel:** ship after changes (mediator). Claim audit: most claims hold; refuted were the label
 timing for the newest clients, two source attributions (the label quote and the meaning of `channel_type` come from a

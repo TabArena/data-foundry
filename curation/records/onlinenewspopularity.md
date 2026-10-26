@@ -4,8 +4,7 @@ name: OnlineNewsPopularity
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -76,6 +75,14 @@ CC (2026-10-26, Lennart): issue 8: keep the `Wrong Domain / Source Modality` and
 CC (2026-10-26, Lennart): issue 9: keep `data_channel` merged; CLEAN-13 as amended on 2026-10-22 (mortgage's issue 12: exactly one flag, or at most one with a reference level) covers it.
 
 **Assessment (AI, 2026-10-26):** issues 8 and 9 are settled. Issue 5 waits for the wording of a LEAK-10 amendment (consistency check); issue 10 answers the question on the target: the source's decision acts on a score, its 1,400-share cut was set for class balance, and the regression ranks the articles as well as a classifier (ROC AUC 0.727 against 0.730 on the paper's label). The texts now say more than 1,400 shares, as the paper does.
+
+CC (2026-10-26, Lennart): issue 5: "go with (a)": LEAK-10 and LEAK-6 amended for values read at a later pull whose late cells cannot be located row by row: they stay with a note only when the traceable part shows no gain; located cells are blanked.
+
+CC (2026-10-26, Lennart): issue 10: "oke keep regression": the share count stays the target, RMSLE as declared.
+
+**Assessment (AI, 2026-10-26):** both settled; no open issue is left, so the folder's REVIEW.md is removed.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

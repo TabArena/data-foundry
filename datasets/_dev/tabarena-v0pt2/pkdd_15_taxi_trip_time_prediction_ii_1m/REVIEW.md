@@ -16,45 +16,10 @@ source -, no routing estimate -, one year of history -.
 Open: the reason for the destination framing (issue 1; the AI and both sides of the panel recommend keeping it, as
 approximate like nyc) and the short-trip cut (issue 2; the panel left it open, the AI recommends 45 s).
 
-**Main points:** Keep the destination as a feature for a reason the rules accept, and choose the short-trip cut (60,
-45 or 30 s). The hour-of-day encoding is decided in the cross-dataset item "Which datetime encoding the v0.2 runs
-use".
-
-**Record fields that disagree with the definition:**
-
-- `domain`: record `Other`, definition `industry & manufacturing`.
+**Main points:** Drop the trips that end within 100 m of their start, with only a 30-s time cut (issue 2)? Settled on
+2026-10-26: the framing (an ETA once the passenger names the destination, issue 1) and the domain.
 
 **Issues for Lennart:**
-
-1. **Framing: the reason for keeping the destination as a feature.**
-   - Problem: the task predicts the travel time at pickup from the start, the destination and the time. The
-     destination is the trip's last GPS point, recorded when the trip ends. The source says the drivers do not enter
-     the destination in the dispatch system: the challenge overview (geolink.pt) says "In most cases, taxi drivers
-     operating through an electronic dispatch system do not indicate the final destination of the ride"; that wording
-     could not be re-fetched in this review, but Lam et al. 2015 (https://arxiv.org/abs/1509.05257), Sec. 1, confirm
-     the meaning: "busy taxi drivers do not report the final destination of the ride".
-   - Effect: the task stands for an ETA once the passenger names the destination (an app booking, a quote at
-     pickup). The realised drop-off is more exact than a named one, so the scores are somewhat optimistic for that
-     use. The definition marks the fit `approximate` and names this gap (USE-8, Must).
-   - Rule: your CC of 2026-09-21 kept the destination because the pickup-only task has a weak signal (R² 0.14). TP-2
-     (Should, 2026-10-06) no longer accepts a weak signal as a reason to choose a framing. TP-6 (Must) says a version
-     the source itself defines replaces ours; the source defines only partial-trajectory tasks, so TP-6 does not force
-     pickup-only.
-   - Evidence: LightGBM (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per
-     split) reaches R² 0.54 / 0.51 / 0.53 with the destination and 0.13 / 0.12 / 0.15 without it (June / May / April
-     windows).
-   - Implemented: (a) your framing, `fit="approximate"`, with the gap as the reason and the pickup-only score as a
-     stated fact. `nyc_taxi_trip_duration` ships the same framing as `approximate` (its review panel of 2026-10-20,
-     not yet decided by you). Cost: the scores rest on a destination more exact than a named one.
-   - Alternatives: (b) pickup-only for pkdd, and reopen nyc, since both rest on the same fact; cost: `end_lon` and
-     `end_lat` go, R² falls to 0.12 to 0.15, nyc must be decided again, and the dropped ORIGIN_CALL comes back into
-     question (pickup-only it adds +0.005 to +0.007 R², same setup). (c) pickup-only for pkdd alone; cost: it needs
-     a fact that sets pkdd apart from nyc, and none is known. (d) amend USE-8 or TP-6; cost: a rule change for every
-     dataset.
-   - The advocate and the critic both say keep the framing; the blind reviewer, who had no notes, read the task as a
-     real origin-destination ETA.
-   - Recommendation: (a), with the reason "an ETA once the passenger names the destination, approximate as nyc".
-   - Decision: the framing and its reason, (a), (b), (c) or (d).
 
 2. **Short trips: cut at 60 s, 45 s or 30 s?**
    - Problem: trips whose recorded travel time is under 60 s are dropped, in test too, as a meter switched on and off
@@ -91,6 +56,34 @@ use".
      trips that did not move, and the first bin with a majority of moving trips stays. Its weak point is the 30-s
      bin, where only 53% end within 100 m, so about 2,000 real short rides may still leave test.
    - Decision: the threshold, (a) 60 s, (b) 45 s or (c) 30 s.
+
+   **Lennart (2026-10-26, discuss):** Should we maybe cut more and do it based on distance? if we know the start and end
+   point, do we even need to use an estimator for it? we can just blanket state 3-5 minutes in pratices, what do you
+   think?
+
+   **Answer (AI, 2026-10-26):** a distance cut fits your app framing, but not as "short trips": trips that end near their
+   start are mostly long round trips. All other filters on, without the time cut (1,670,475 trips):
+
+   | Start to end | Trips | Median time | 25-75% | Under 60 s | Over 5 min |
+   |---|---|---|---|---|---|
+   | under 100 m | 32,195 (1.9%) | 555 s | 45-1,350 s | 27% | 57% |
+   | 100-250 m | 16,253 (1.0%) | 375 s | 60-1,140 s | 22% | 53% |
+   | 250-500 m | 30,922 (1.9%) | 330 s | 180-720 s | 5% | 52% |
+   | 0.5-1 km | 135,066 (8.1%) | 330 s | 240-480 s | 0.5% | 56% |
+   | 1-2 km | 402,414 (24%) | 420 s | 315-555 s | 0% | 78% |
+
+   - A blanket 3-5 minutes would be wrong for the trips that end within 100 m: half take over 9 minutes (a tour back to
+     the stand, a passenger who returns, a meter left on). They also weigh heavily: 17% of the target's squared spread
+     sits on them, and a destination a few metres from the start tells a model nothing about the route.
+   - But in your framing (an app booking with a named destination) nobody books a ride to their own pickup point, so
+     these rows are no task rows (USE-7), and the cut is a rule on inputs the app has, so it can be applied in use,
+     unlike the current cut on the recorded time. It extends the rule the definition already has (end point identical
+     to the start: dropped).
+   - Proposal: drop the trips that end within 100 m of their start (1.9%; it removes 59% of the trips the 60-s cut
+     drops), and keep only a minimal time cut for meter on/off artefacts among the rest, at 30 s (one GPS step,
+     option (c)). The 250 m variant drops 2.9% and 24% of the spread. No score decides it (TP-2).
+   - Decision: the 100 m distance cut with the 30-s time cut, a 250 m distance cut, or the time cut alone (60, 45 or
+     30 s).
 
 **Review panel:** ship after changes (mediator). Claim audit: 45 claims, 2 refuted (the destination is recorded after the trip,
 disclosed, issue 1; the taxi_id score, now corrected), 2 record counts that do not reproduce, 4 untested (the zip

@@ -3,13 +3,10 @@ unique_name: aeolus
 name: Aeolus
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
 decision_markers:
-- Needs extensive data wrangling
+- Data Quality Issue
+- Duplicate
 tags:
 - Non-IID (Temporal)
 collections:
@@ -24,7 +21,6 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/datasets/flnny123/mfddmulti-modal-flight-delay-dataset
 - https://github.com/Flnny/Delay-data
-v2_path: datasets/_dev/tabarena-v0pt2/aeolus_1m/dataset.py
 source_row: 733
 type_adapter_id: curation-record-v1
 ---
@@ -54,6 +50,10 @@ CC (2026-10-26, Lennart): issue 8: "Can you rebuild this please, but keep it aeo
 CC (2026-10-26, Lennart): the declared metric, ROC AUC, is checked as declared.
 
 **Assessment (AI, 2026-10-26):** the mask is applied: each airport's time zone from its coordinates (`AIRPORT_TIME_ZONES`, 312 airports), the scheduled departure in UTC, and every weather reading whose hour (the release's local clock read as UTC) falls after it set missing. `dataset check` clean; task probes (3 windows): LightGBM ROC AUC 0.632, linear 0.611, no flag.
+
+CC (2026-10-26, Lennart): "retire aeolus now" (issue 8): the rebuild aeolus_rebuilt replaces it.
+
+**Assessment (AI, 2026-10-26):** retired for the rebuild, as corporate_credit_rating for corporate_issuer_credit_rating (PROV-14): the release's weather is joined at the wrong hour (local clock read as UTC; 3.5-11 hours early, a day early for overnight arrivals) and it lacks March 2024 and 43 airports; aeolus_rebuilt takes the same BTS on-time table and Meteostat's weather at the right hour, so the two are one dataset (PROV-6). The folder aeolus_1m left the working copy (in git history before this change).
 
 ## Reference
 

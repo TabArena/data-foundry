@@ -4,6 +4,37 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26, evening (LEAK-10 amended; aeolus_1m, lgd, stroke, credit_card_customers, digicow out; numerai all features)
+
+Lennart's evening marks of 2026-10-26 on the Open Datasets Review page; records carry them as
+`CC (2026-10-26, Lennart)` lines. Nothing was built.
+
+- LEAK-10 amended (and LEAK-6 narrowed for one case), each clause a case-by-case judgment of the curator: a window sum
+  stays when the data shows it does not move with the outcome given the covariates known at the prediction point
+  (account_debt_south_africa's billing totals); values read at a later pull are blanked where their late cells can be
+  located, and stay with a note only when they cannot be located and the traceable part shows no gain
+  (onlinenewspopularity). Both datasets have no open issue left.
+- Out of the working copy (folders removed): `aeolus_1m` (replaced by `aeolus_rebuilt_1m`), `lgd` (`Not
+  Representative`), `stroke_prediction` (`No Good Target / Scientific Discovery`, `Data Quality Issue`),
+  `credit_card_customers` (`AHDS`, `Missing source information`: calibrated marks of constructed data, a PROV-3 Cases
+  row) and `digicow_farmer_training_adoption_challenge` (`Data Quality Issue`, `Too Small`).
+- New records, not screened: `numerai_classic_v6` (Numerai Classic v6.0, released 2026-10-16) and
+  `freddie_mac_single_family_lgd` (a real loss-given-default source to replace lgd).
+- `numerai_v5_2_1m`: Numerai's `all` features without the 372 Faith features (2,376, exactly v5.0's `all`; LEAK-31,
+  CLEAN-22); the download notes say Numerai retired the v5 downloads and that no community mirror matches our files.
+- `numerai28_6` keeps log loss; `aeolus_rebuilt_1m` keeps its choices, remarks the model-filled weather and declares
+  ROC AUC as the fallback (MET-5); `pkdd_15_taxi_trip_time_prediction_ii_1m` takes the app-booking framing (issue 1).
+  numerai28_6, aeolus_rebuilt, numerai_v5_2, account_debt_south_africa and onlinenewspopularity have no open issue left.
+- Answers on the review page: pkdd's distance cut (issue 2), rosbank1's split (issue 8).
+- `zillow_prize`: the prediction point confirmed by Zillow's FAQ (discussion 33899); `buildingqualitytypeid` mapped onto
+  the 2016 scale as an exception to CLEAN-21 (confirmed on all 1.94M parcels by a crosstab in discussion 40453) and made
+  categorical; the census tract-and-block columns replaced by one categorical `census_tract` (3,030 tracts). No open
+  issue left.
+- Ship (Lennart, 2026-10-26; `DF: Yes`, claims released, not built yet): numerai28_6, numerai_v5_2_1m,
+  account_debt_south_africa, onlinenewspopularity, zillow_prize, aeolus_rebuilt_1m.
+- `african_credit_scoring_challenge` issue 8 answered: tuned CatBoost reaches ROC AUC 0.65 and TabPFN v2 0.59 on the
+  Type_1 windows; the count of a customer's earlier loans alone reaches 0.72; the temporal split stays.
+
 ## 2026-10-26, later (aeolus rebuilt from BTS and Meteostat; six datasets out; credit cut to one product)
 
 Lennart's later marks of 2026-10-26 on the Open Datasets Review page; records carry them as `CC (2026-10-26, Lennart)`

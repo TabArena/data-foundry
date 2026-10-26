@@ -4,8 +4,7 @@ name: numerai28.6
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -44,6 +43,12 @@ CC (2026-10-22, Lennart): add as forced IID. Not a duplicate of numerai_v5_2: a 
 **Assessment (AI, 2026-10-22):** tag `Non-IID (Temporal)` replaced by `New IID`, following the decision to add it as forced IID (the definition carries `ForcedIIDFromTemporal`).
 
 CC (2026-10-26, Lennart): the record's year takes the definition's value (2016).
+
+CC (2026-10-26, Lennart): issue 1: "keep log loss": Numerai's 2016 tournament ranked and paid on log loss, so calibration was part of the source's decision.
+
+**Assessment (AI, 2026-10-26):** no open issue is left (the year is 2016, log loss stays), so the folder's REVIEW.md is removed; the verdict was "ship after changes".
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

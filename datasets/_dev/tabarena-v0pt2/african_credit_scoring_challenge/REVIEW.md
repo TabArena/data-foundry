@@ -51,6 +51,38 @@ Zindi's F1, the lender-amount drop, and the country test noted as not reproduced
      usable task.
    - Decision: ship with the flags noted, or don't ship.
 
+   **Lennart (2026-10-26, discuss):** can you check a tuned model and a TFM (run on a rtx gpu node as needed) for this? it
+   would worry me if that happens now? Otherwise is the date split still correct or should we use random?
+
+   **Answer (AI, 2026-10-26):** mostly the task, with one model gap; keep the temporal split. ROC AUC per window (newest
+   first) on the shipped windows:
+
+   | Model | 11-21 | 11-14 | 11-04 | 10-27 | 10-21 | 10-15 | Mean ± SE |
+   |---|---|---|---|---|---|---|---|
+   | LightGBM, untuned (probe settings) | .563 | .668 | .502 | .602 | .614 | .553 | .584 ± .023 |
+   | LightGBM, tuned (100 Optuna trials per window) | .597 | .673 | .529 | .678 | .628 | .691 | .633 ± .025 |
+   | CatBoost, tuned | .539 | .717 | .511 | .653 | .705 | .782 | .651 ± .043 |
+   | CatBoost, default | .729 | .603 | .536 | .633 | .694 | .735 | .655 ± .032 |
+   | TabPFN v2 (public weights, RTX PRO 6000, 10k-row training sample) | .576 | .586 | .540 | .662 | .581 | .616 | .594 ± .017 |
+
+   - Each window has 18-22 defaults, so its AUC alone carries about ±0.065 of test noise: differences under about
+     0.05 are noise, and the windows cannot rank close methods. Tuning lifts LightGBM (+0.049 ± 0.020) and adds nothing
+     to CatBoost; nothing passes about 0.66 on the shipped features.
+   - The one real gap: the signal is the customer's history, which the models reach only through `customer_id`
+     (without it CatBoost falls to 0.550). The count of the customer's earlier loans, known at disbursement and built
+     without labels, scores 0.719 ± 0.032 alone, above every model.
+   - The split: a random split of the same rows scores 0.78 (CatBoost; 0.92 pooled over all rows), but only because
+     98.3% of defaults fall on the customer's last loan in the data, so a random split shows a model whether the
+     customer borrowed again later (the count of later loans alone reaches 0.95). Grouped by customer it falls to
+     0.556. The lender scores at disbursement and trains on settled loans, so the temporal split stays (SPLIT-9; a
+     validity reason, not a score).
+   - Options: (a) ship it with a history feature a data scientist would build: the customer's number of earlier loans
+     (and of earlier settled defaults) at disbursement (CLEAN-19, a history aggregated per prediction; the probe
+     numbers above would move toward 0.72); (b) ship it as it is, with the flags noted; (c) don't ship (`Too Small`:
+     18-22 defaults per window rank methods poorly).
+   - Recommendation: (a), then re-run the probes; (c) if you read 18-22 defaults per window as too few even with the
+     feature.
+
 **Review panel:** ship after changes (mediator). Claim audit: 74 claims, 59 hold, 3 refuted, 11 untested, 1 not
 reproduced; corrected in the definition: "no link to the outcome" for the count of a loan's other lenders (the count
 is dropped), the period "2022 to 2024" (39 rows are from 2021) and the 0.98% default rate of July-November 2022 (the

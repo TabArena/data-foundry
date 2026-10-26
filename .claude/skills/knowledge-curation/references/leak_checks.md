@@ -49,7 +49,9 @@ each test fold's mean of every feature, so each split hands the model the test p
 2026-10-16).
 
 **LEAK-6 (Must).** Measure before acting. A slight optimism with a known cause can stay with a note; a confirmed leak
-goes even when small. Cases: santander `has_*` (+0.003 AUC).
+goes even when small. Cases: santander `has_*` (+0.003 AUC). One narrowing (amended 2026-10-26, Lennart, with LEAK-10):
+late values that cannot be located row by row stay with a note when the part that can be traced shows no gain
+(LEAK-10, second clause below).
 
 **LEAK-7 (Should).** The smallest fix that keeps a valid signal beats dropping the column. Cases: lag `incentive`
 (garments), drop the months where `PageValues` misbehaves (online_shoppers), cut the censored years (sf_permit_time),
@@ -72,12 +74,24 @@ Repair or rebuild damaged data from its origin before keeping it: PROV-13 in [pr
 **LEAK-10 (Must).** A feature holds only what existed at the prediction point (LEAK-1) and never gives the target away.
 Out: a column recorded after the outcome; attributes looked up after the outcome (a property's current record for a
 past sale), unless the data shows they did not change; a part, a consequence or another encoding of the target; a
-feature computed from the window that defines the target, even when its value is known at snapshot time; a value fitted
+feature computed from the window that defines the target, even when its value is known at snapshot time, unless the
+data shows the window's values do not move with the outcome given the covariates known at the prediction point; a value fitted
 from the same measurement that gives the label; targeting or pointing ids that encode pre-selection or the observation
 date; a same-day value that depends on the day's outcome; missingness that encodes the outcome; an aggregate that may
 include the row's own outcome. Fix it in the definition the smallest way (LEAK-7), else drop it; when the features
 summarise a window that ends at the outcome and no common prediction point can be rebuilt, retire. Test: the codebook
 (LEAK-2) and probes 1 to 4. Cases: the Mechanisms table under Cases.
+Two clauses, amended 2026-10-26 (Lennart), each a case-by-case judgment of the curator, never a default:
+* A window sum stays when the data shows it does not move with the outcome once the covariates known at the
+  prediction point are accounted for (account_debt_south_africa's billing totals; "keep them, amend it but make clear
+  this needs case by case curator judgement"). A value that encodes the target's own quantity, or that falls in the
+  outcome's period, still goes (mutual_funds_india, iranian_churn).
+* A value read at a later pull goes where its late cells can be located: they are blanked (zillow_prize,
+  melbourne_housing_market, aeolus_1m's weather after departure); where they cannot be located row by row, the values
+  go when they may carry a gain (distribution_transformers_at_cauca_department) and stay with a note only when the
+  part that can be traced shows none (onlinenewspopularity's keyword and self-reference counts, "go with (a)"). This
+  narrows LEAK-6 for that one case; a "removing it changes no score" test alone is still no reason to keep
+  (2026-10-21).
 
 **LEAK-11 (Should; narrows LEAK-10).** A value measured after the outcome that weakens the signal stays, with a note.
 Cases: south_africa_coronary_heart_disease.
@@ -302,6 +316,8 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10, LEAK-7 | Missingness that encodes the outcome | move the prediction point earlier and drop the columns that do not exist yet | mic: the day-1..3 ICU columns are blank for patients who died earlier; now an admission-time task |
 | LEAK-10 | Features summarise a window that ends at the outcome | retire when no common prediction point can be rebuilt | iranian_churn (Keramati & Ardabili 2011, Sec. 4.1; AUC 0.986) |
 | LEAK-10 | Snapshot data: a feature computed from the window that defines the target | drop it, even though its value is known at snapshot time | mutual_funds_india `rating` (60% 5-year and 40% 3-year risk-adjusted return; the target is the 3-year return) |
+| LEAK-10 (amended 2026-10-26, Lennart) | Snapshot data: a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point | keep it with a note, case by case | account_debt_south_africa `TotalBilling`, `AverageBilling`: within file blocks and property-value bins their residuals separate the classes at ROC AUC 0.509 / 0.501 / 0.496 |
+| LEAK-10, LEAK-6 (amended 2026-10-26, Lennart) | Values read at a later pull whose late cells cannot be located row by row | keep them with a note only when the traceable part shows no gain; blank located cells; drop when a gain may sit on them | onlinenewspopularity `kw_*`, `self_reference_*` (crawl-time share counts: only counts unique above 5,000 can be traced; masking the traced young cells changes R^2 by -0.0004) |
 | LEAK-10, LEAK-7 | An aggregate that may include the row's own outcome | keep only the period where it behaves like history, and call the evidence circumstantial | online_shoppers `PageValues`: Feb-May every buyer has PV > 0 (AUC 0.974), Jun-Dec 27% of buyers have PV = 0 (0.814); Feb-May dropped |
 | LEAK-10 | Fitted from the same measurement that gives the label | drop it for the task we frame | sdss_17 `redshift` (photometric task) |
 | LEAK-10 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |

@@ -19,8 +19,11 @@ from data_foundry.v2 import (
     drop_columns,
 )
 
-FEATURE_SET = "medium"
-"""Numerai's feature set in features.json: 780 basic features of the 2,748 in v5.2."""
+FEATURE_SET = "all"
+"""Numerai's feature set in features.json: all 2,748 features of v5.2, less the EXCLUDED_FEATURE_SET."""
+
+EXCLUDED_FEATURE_SET = "faith"
+"""The 372 Faith features, which Numerai chose with the targets of the test eras and released at era 1192 (LEAK-31)."""
 
 LAST_ERA = 1235
 """The newest era whose target had resolved in the download of 2026-10-06; later downloads add newer eras."""
@@ -44,20 +47,21 @@ class NumeraiV521m(AbstractCuratedDataset):
             "from 0 to 1; it is known about five weeks later."
         ),
         known=(
-            "780 disguised features of the stock as of that Friday (Numerai's medium set), each binned into five "
-            "levels within the week."
+            "2,376 disguised features of the stock as of that Friday (Numerai's full set without its Faith family), "
+            "each binned into five levels within the week."
         ),
         split=(
             "Three test years of 52 weekly eras, the newest first. Training is a random 1M rows of the earlier eras, "
             "leaving out the last four before the test year, whose targets are not yet known."
         ),
         changes=(
-            "We set the values Numerai fills in for a feature without data in a week to missing, and use the medium "
-            "feature set (780 of 2,748)."
+            "We set the values Numerai fills in for a feature without data in a week to missing, and use all "
+            "features but the 372 that Numerai chose with the targets of our test years."
         ),
         fit="approximate",
         fit_reason=(
-            "Numerai designed some features with the targets of the test years (75 released at era 1192). The "
+            "Numerai's features are designed to predict the target, and the set we use dates from July 2024, within "
+            "the oldest test year. The "
             "score is Numerai's own: the per-week correlation, averaged over the weeks of the test window. "
             "Everything else is known on the Friday."
         ),
@@ -84,6 +88,8 @@ class NumeraiV521m(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/numerai_v5_2 && cd local-data-warehouse/numerai_v5_2
         uvx --from numerapi==3.1.1 python -c "from numerapi import NumerAPI; api = NumerAPI(); [api.download_dataset(f'v5.2/{f}', f) for f in ('features.json', 'train.parquet', 'validation.parquet')]"
 
+        Retired at the source: on 2026-10-16 Numerai released Classic v6.0 and retired the public v5.0-v5.3 training and validation downloads (docs; forum thread 8367: "The v5.x data is no longer available"), so the command above no longer serves train.parquet or validation.parquet. We keep v5.2 as a frozen release: our local files, pinned by the SHA-256 below, are the only exact copy. No community mirror matches them: the Hugging Face upload Mcdonald82/numerai-v5.2 (2026-02-23) holds the same train.parquet re-saved (same rows, schema and column statistics) but validation only to era 1206; Kaggle uploads are older snapshots or v5.3. Numerai's terms of service (4.2) forbid passing the data on, so no mirror is a sanctioned download route.
+
         The API serves only the current weekly snapshot of each file, with no versioned URL. Ours came from the S3 folder 20261005: features.json (323,414 bytes), train.parquet (2,597,791,287 bytes, eras 1-574) and validation.parquet (4,417,740,944 bytes, eras 575-1240). Numerai adds new eras to validation.parquet as their targets resolve, so the definition keeps eras 1-1235; a later download gives the same rows as long as Numerai does not revise past eras. SHA-256 of our files:
 
         64cd254cba63c0966eeeb71c7c83c99cacb81d4acd8b36524195d20c92dd5c35  features.json
@@ -100,19 +106,19 @@ class NumeraiV521m(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with train.parquet and validation.parquet of the Numerai tournament data v5.2 ("Faith2"), with the medium feature set of features.json.
+        We start with train.parquet and validation.parquet of the Numerai tournament data v5.2 ("Faith2"), with all features of features.json except the Faith family.
 
         - Prediction point: every Friday after the market close (one era), a model scores each stock from its features as of that day; the target is the stock's return over the next 20 market days, known about 5 weeks later (at era T the newest resolved target is that of era T - 5).
-        - Scope: a ranking of the stocks within each week, not forecasting of a series. `id` is unique across all 6.88M rows, so the data holds no series per stock, and a stock's newest known target (matched by its nearest neighbour on the 780 features five eras back) correlates 0.01, -0.00 and -0.01 with its target at three test eras. Whether some disguised features are trailing returns cannot be tested.
+        - Scope: a ranking of the stocks within each week, not forecasting of a series. `id` is unique across all 6.88M rows, so the data holds no series per stock, and a stock's newest known target (matched by its nearest neighbour on the 780 `medium` features five eras back) correlates 0.01, -0.00 and -0.01 with its target at three test eras. Whether some disguised features are trailing returns cannot be tested.
         - Target: `target_ender_20`, equal to the main target `target` of v5.2: a stock-specific return, ranked within each era and binned into 0, 0.25, 0.5, 0.75 and 1, so every era has a mean of 0.5. The other 40 target columns are future returns and are not read.
-        - Features: the 780 features of Numerai's `medium` set, of the 2,748 in v5.2, each an integer bin 0-4 within its era with an obfuscated name; Numerai describes `medium` as features "each unique in some way". On the newest test window `medium` and `all` cannot be told apart: their order flips with the random 1M train sample (LightGBM per-era correlation 0.0006-0.0088 for `medium` over four samples, 0.0044-0.0060 for `all` over two). Whether the other 1,968 features are near-copies of the 780 is not measured.
+        - Features: the 2,376 features of Numerai's `all` set without its 372 `faith` features (exactly v5.0's `all`, unchanged since July 2024), each an integer bin 0-4 within its era with an obfuscated name (CC 2026-10-26: "yes ship all"; CLEAN-22, no task reason leaves the other features out). With Numerai's own example and deep LightGBM settings, `medium` and `all` cannot be told apart on the test windows (the sign of the difference follows the training sample; on the full history they tie), and training on more rows helps more than either set.
         - Rows: we keep data_type `train` and `validation` up to era 1235 and drop data_type `test` (eras 1236-1240), whose targets had not resolved on 2026-10-06.
         - `era` (one per week; Numerai publishes no dates) becomes an integer and the time column. `id` is unique per stock per era (docs), so it identifies no stock and is not read.
         - Missing values: Numerai sets every value of a feature-era without data to 2 (hello_numerai.ipynb of v5.2); we set such feature-eras to missing (decision table). Elsewhere each bin holds 20% of an era's stocks, so no single stock is filled with 2. No duplicate rows.
         - Anomaly: the universe grows from 2,314 stocks in era 1 to 6,057-7,231 per era since era 1100.
-        - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2, TP-2): on the shipped splits, LightGBM like Numerai's example model (600 trees) correlates with the target at 0.0071, 0.0142 and 0.0154 per era, newest window first (t = 3.3, 7.7 and 8.1). The newest window is fragile: one of five other random 1M train samples gives ridge a t of 0.8 there. Tuned results are pending; if tuned methods do not beat the constant 0.5 window by window under the metric that scores, the dataset goes to `TBD -> 2nd Tier` (as zillow_prize).
+        - Note: the task probes flag no_signal, drift_baseline and unstable. We keep the task (task_probes.md, rule 2, TP-2): on the shipped splits, with the 2,376 features, Numerai's example LightGBM (2,000 trees, learning rate 0.01, depth 5, column sample 0.1) correlates with the target at 0.0094 ± 0.0021, 0.0127 and 0.0127 per era, newest window first, and its deep benchmark settings at 0.0108 and 0.0173 (newest and oldest windows); the probes score R², under which no model beats the mean (2026-10-26). With the 780 `medium` features, before, a 600-tree LightGBM gave 0.0071, 0.0142 and 0.0154. The newest window is fragile: one of five other random 1M train samples gives ridge a t of 0.8 there. Tuned results are pending; if tuned methods do not beat the constant 0.5 window by window under the metric that scores, the dataset goes to `TBD -> 2nd Tier` (as zillow_prize).
         - Metric: Numerai's CORR, computed per era and averaged over the 52 eras of a test window (the spec). Pooled `pearsonr`, declared before, tracked it within 0.0002 per model because every era's target mean is 0.5. RMSE, declared before that, ranks the scale of the predictions, not the ranking of the stocks within each era: its model ranking agreed with per-era CORR at Kendall tau -0.11, 0.11 and 0.39 in the three windows, and a copy of one LightGBM's predictions scaled by 3 lost to the constant 0.5 in every window.
-        - Potential leak, kept on purpose: Numerai designs features to predict the target and released the 75 `faith` features of `medium` at era 1192, so test eras 1080-1191 lie in their design period. On the shipped splits, ridge with them gains +0.0043 ± 0.0006 per-era correlation in 1080-1131 (about 28% of the signal there), +0.0013 ± 0.0007 in 1132-1183, +0.0056 ± 0.0018 in 1184-1191 and +0.0010 ± 0.0006 after the release. The 122 `midnight` features (released about era 1098) show no gain before their release (-0.0005 ± 0.0011 in 1080-1097). LEAK-31 says to remove a selection made with test labels when we can (dropping the 75 leaves 705); they stay for now as the source's own published inputs, and the curator decides. Revisit once v5.2 has a year of eras after the release.
+        - We drop the 372 `faith` features (LEAK-31, CC 2026-10-26): Numerai engineers features "to be predictive of the target" and released the Faith family at era 1192 (Faith I) and about era 1198 (Faith II) because they predicted the target over past eras, our test eras 1080-1191 among them. Every value may be point-in-time, but the choice of features was made with our test labels. On the shipped splits, ridge with the 75 Faith features of `medium` gained +0.0043 ± 0.0006 per-era correlation in 1080-1131 (about 28% of the signal there), +0.0013 ± 0.0007 in 1132-1183, +0.0056 ± 0.0018 in 1184-1191 and +0.0010 ± 0.0006 after the release. The `midnight` features (244 in `all`, released about era 1098) stay: the 122 of them in `medium` showed no gain before their release (-0.0005 ± 0.0011 in 1080-1097). Note: Numerai's v5.0 rebuild (July 2024, about era 1125) also falls within the oldest test window; not measured.
         - History: each train side is a random 1M of all earlier eras (TabReD's convention); Numerai's example models train on all eras, so the whole history is what a participant trains on.
         - Note: feature neutralization post-processes predictions per era, so it belongs to a model or a scorer and is not applied.
         - Note: numerai28_6 (OpenML 23517), an older sample of this data, is not added separately.
@@ -154,7 +160,9 @@ class NumeraiV521m(AbstractCuratedDataset):
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        features = json.loads((raw_dir / "features.json").read_text())["feature_sets"][FEATURE_SET]
+        sets = json.loads((raw_dir / "features.json").read_text())["feature_sets"]
+        excluded = set(sets[EXCLUDED_FEATURE_SET])
+        features = [f for f in sets[FEATURE_SET] if f not in excluded]
         columns = ["era", "data_type", self.target, *features]
         tables = [pq.read_table(raw_dir / f"{name}.parquet", columns=columns) for name in ("train", "validation")]
         return pa.concat_tables(tables).to_pandas()
