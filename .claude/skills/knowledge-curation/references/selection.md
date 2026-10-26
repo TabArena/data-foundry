@@ -347,6 +347,7 @@ marker records where a record stands, not an issue of the data.
 | `Ethical Issue` | an ethical concern, such as subjects or creators who object to ML use | SEL-1 |
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
 | `Not Representative` | the data or its setup does not represent the real application (a selective sample, features practitioners no longer use for the task) | none |
+| `Class-dependent Recording` | the classes were measured, formatted or filled differently, so the recording can give the label away; on kept datasets once fixed, as on retired ones | LEAK-13 to LEAK-15, LEAK-39, LEAK-40 ([leak_checks.md](leak_checks.md)) |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
