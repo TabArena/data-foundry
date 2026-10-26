@@ -84,6 +84,8 @@ the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the travel time in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
+CC (2026-10-21, Lennart): the datetime encoding of v0.2 (cross-dataset item from the nyc_taxi_trip_duration review): nothing to change while the v0.2 runs encode datetimes with the hour; the definition adds no hour column (CLEAN-2).
+
 CC (2026-10-26, Lennart): the declared metric is checked as declared.
 
 CC (2026-10-26, Lennart): issue 1: (a), "which is also more correct nowadays, where one would add it in an app. I think it is fine to use the destination as well for now and work on that": an ETA once the passenger names the destination, `fit="approximate"`, as nyc_taxi_trip_duration.
@@ -95,3 +97,5 @@ CC (2026-10-26, Lennart): issue 2: drop the trips that end within 100 m of their
 **Assessment (AI, 2026-10-26):** issue 2 applied: `MIN_STRAIGHT_LINE_KM = 0.1` replaces the identical-end-point rule and `MIN_TRAVEL_TIME_S` falls from 60 to 30 s; 1,636,276 trips after the filters (1,655,893 before). The trips within 100 m are no short rides (median 555 s, 57% over 5 min, 17% of the target's squared spread): in the app framing nobody books them. dataset check: 0 errors, 0 warnings. No open issue left.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-26):** what the encoding is worth here, from the review panel of 2026-10-20 (before the 100 m cut): LightGBM (300 trees, learning rate 0.1, 63 leaves, one fit per split) scored R^2 0.503 / 0.482 / 0.498 on the June / May / April windows with the local hour, weekday and day of year, and 0.483 / 0.452 / 0.462 with AutoGluon's date parts.

@@ -272,7 +272,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | EV-3 | forest_fires | `no_signal` (R² 0.013) answered by tuned results: TabPFN-3.5 beats the mean on 26 of 32 folds; kept (2026-10-06) | applied |
 | EV-3 | mercari_price_suggestion | `no_spread` came from the probe leaving the text out: R² 0.06 without, 0.67 with; kept (2026-10-06) | applied |
 | EV-3 | kickstarter | the written prediction point ("predict at launch") found `staff_pick`, which no probe flagged | applied |
-| EV-3 | airfoil_self_noise | the wind-tunnel runs were found by reading the source; the probe had no hit until composite keys were added (2026-10-14), and its single-column check skips non-integer floats, so the thickness column that alone separates 104 of 106 runs was never a candidate (review panel, 2026-10-19) | applied |
+| EV-3 | airfoil_self_noise | the wind-tunnel runs were found by reading the source; the probe had no hit until composite keys were added (2026-10-14), and its single-column check skips non-integer floats, so the thickness column that alone separates 104 of 106 runs was never a candidate (review panel, 2026-10-19); since 2026-10-21 the check takes floats and the thickness is a hit (105 values for 106 runs, gap 0.123) | applied |
 | EV-3 | concrete_compressive_strength | 428 mixes behind 1,030 tests, missed by the column and near-copy checks until 2026-10-14 | applied |
 | EV-4 | lucas_topsoil | JRC's terms forbid redistribution; the record is triaged on what the survey measures (licence rule: 2026-09-23, Lennart) | applied |
 | EV-4 | numerai_v5_2, aeolus, corporate_credit_rating_cat, african_credit_scoring_challenge | earlier reviews raised the licence as an issue; it is a one-line note, and the Zindi "private property of the client" and the Credit Risk Analytics terms are release-checklist items (2026-10-21, Lennart) | applied |
@@ -287,7 +287,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | EV-6 | coad_colon_adenocarcinoma | z-scores over all patients first called harmless (no labels, tree predictions unchanged); the training rows alone give each test fold's mean of every feature (2026-10-16, Lennart) | applied |
 | EV-6 | fitness_club | `Trivial` proven: `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; retired (2026-10-05) | applied |
 | EV-8 | breast_cancer_prediction | before 2026-10-15 the linear probe read categories as integer codes: ROC AUC 0.80 with codes, 0.92 one-hot | applied |
-| EV-8 | mortgage | the class shares matched untuned models on 50k sampled rows; on the full training side LightGBM beats them in 3 of 3 quarters; kept (2026-10-07) | applied |
+| EV-8 | mortgage | the class shares matched untuned models on 50k sampled rows; on the full training side LightGBM beats them in 3 of 3 quarters; kept (2026-10-07). At the 50,000-row random cap LightGBM (+0.113) fell below `time` alone (+0.123) and raised `one_feature`; on the newest 200,000 rows of each train side no flag (LightGBM +0.151, drift +0.122, one feature +0.117; 2026-10-21) | applied |
 | EV-9 | heart_failure | the label-free distance score is 0.64 on this ordinary data: read against the full model's 0.73, not against 0.5 | applied |
 | EV-9 | santander_customer_transaction_prediction, homesite_quote_conversion | one independence statistic alone is common in real data: 5.4% of pairs dependent but no uniform column; 13 of 42 columns uniform but 45% of pairs dependent | applied |
 

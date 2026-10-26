@@ -29,20 +29,20 @@ data looks good enough even without a good source but there is a source, we want
 this widens the amendment of the same day for a named platform). Cases: bad_customer_detection (Lennart, 2026-10-14),
 tour_travels_churn, mobile_churn, credit_card_customers, bank_customer_churn.
 
-**PROV-3 (Must).** The data is real: not generated, and not a real table someone reworked (relabelled, columns
-renamed, values replaced). A table that looks clean and scores well can still be either. Generated data is `No`; the
-scope rule is SEL-16 in [selection.md](selection.md), the detection is the seven tests under Methods, "Is the data
-generated?". Marker: `AHDS`, usually with `Missing source information`, and `Data Quality Issue` when a real
-table was manipulated. Values the data owner perturbed for privacy (disclosure control on a real cohort) are no
-rework when no test under Methods measures damage: the data stays, with a note saying what was checked and what cannot
-be (Lennart, 2026-10-21; framingham_heart_study_fhs). Without a source statement or a generator, measured marks are
-judged case by case: either calibrated marks from at least two of the tests under Methods, or marks linked to the label
-(test 5 or 7), can be strong enough. The marks count on the columns we ship; marks found on the file as published
-count when they extend to the shipped version, which is again case by case (amended 2026-10-21, Lennart: "either
-might be strong enough; on the columns we ship, and if the marks on the published file leak/extend to the shipped
-version (which is again case-by-case)"; prompted by credit_card_customers, stroke_prediction and hepatitis_c_egypt).
-Cases: customer_satisfaction_in_airline, ecommerce_shipping, homeq_default_prediction, video_game_fps_prediction,
-framingham_heart_study_fhs.
+**PROV-3 (Must).** The data is real: not generated, and not a real table someone reworked (relabelled, columns renamed,
+values replaced). A table that looks clean and scores well can still be either. Generated data is `No`; the scope rule
+is SEL-16 in [selection.md](selection.md), the detection is the seven tests under Methods, "Is the data generated?".
+Marker: `AHDS`, usually with `Missing source information`, and `Data Quality Issue` when a real table was manipulated.
+Values the data owner perturbed for privacy (disclosure control on a real cohort) are no rework when no test under
+Methods measures damage: the data stays, with a note saying what was checked and what cannot be (Lennart, 2026-10-21;
+framingham_heart_study_fhs). Without a source statement or a generator, measured marks are judged case by case: either
+calibrated marks from at least two of the tests under Methods, or marks linked to the label (test 5 or 7), can be strong
+enough. The marks count on the columns we ship; marks found on the file as published count when they extend to the
+shipped version, which is again case by case (amended 2026-10-21, Lennart: "either might be strong enough; on the
+columns we ship, and if the marks on the published file leak/extend to the shipped version (which is again
+case-by-case)"; prompted by credit_card_customers, stroke_prediction and hepatitis_c_egypt). Cases:
+customer_satisfaction_in_airline, ecommerce_shipping, homeq_default_prediction, video_game_fps_prediction,
+framingham_heart_study_fhs, water_quality_and_potability, credit_card_customers, hepatitis_c_egypt.
 
 ### Duplicates
 
@@ -214,18 +214,20 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
-| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source"). water_quality_and_potability was rejected in the v1 workbook for the source alone (the curator then judged its features free of group or time structure), with no PROV-3 test on record; under PROV-2 as amended (2026-10-21) no recorded fact sets it apart from mobile_churn, so it is due a re-check; re-checked 2026-10-21: the first upload (adityakadiwal, 2021) calls itself "Synthetically generated" and TDS is about 50 times the conductivity, so the AI recommends keeping `No` with `AHDS`; open in its record | applied |
+| PROV-1 | water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow | every link ends at an anonymous re-upload: `Missing source information`, `No` ([selection.md](selection.md), "Unknown or unclear source"). water_quality_and_potability was rejected in the v1 workbook for the source alone (the curator then judged its features free of group or time structure), with no PROV-3 test on record; under PROV-2 as amended (2026-10-21) no recorded fact sets it apart from mobile_churn, so it is due a re-check; re-checked 2026-10-21: the first upload (adityakadiwal, 2021) calls itself "Synthetically generated" and TDS is about 50 times the conductivity, so it stays `No`, with `AHDS` added (2026-10-22, Lennart) | applied |
 | PROV-2 | bad_customer_detection | a plausible source unclear in a detail: kept, with a note of what to clarify (2026-10-14, Lennart) | applied |
-| PROV-2 | credit_card_customers, bank_customer_churn | a named first platform (Analyttica's LEAPS teaching case 11, offline; a named data-science course) counts as a known source when the data shows no PROV-3 marks; PROV-2 amended (2026-10-21, Lennart). credit_card_customers stays open on whether its measured marks count (its issue 1) | applied |
+| PROV-2 | credit_card_customers, bank_customer_churn | a named first platform (Analyttica's LEAPS teaching case 11, offline; a named data-science course) counts as a known source when the data shows no PROV-3 marks; PROV-2 amended (2026-10-21, Lennart); credit_card_customers was later retired under PROV-3 (2026-10-26, row below) | applied |
 | PROV-2 | tour_travels_churn | a bare Kaggle upload with no named origin, kept for now: the data passes PROV-3 and the upload is the source to point to; the gap is in the approximate fit (2026-10-21, Lennart; PROV-2 amended) | applied |
 | PROV-2 | mobile_churn | every link ends at an anonymous Kaggle upload (2019, empty description); no PROV-3 flag and the data look like a system export: kept, with the unknown operator and churn rule in the approximate fit (2026-10-21, Lennart; PROV-2 amended) | applied |
-| PROV-2 | credit_card_customers, bank_customer_churn | covered by the wider amendment as well (a named platform is a source to point to); credit_card_customers' keep still depends on its PROV-3 question (its issue 1) (2026-10-21, Lennart) | applied |
+| PROV-2 | credit_card_customers, bank_customer_churn | covered by the wider amendment as well (a named platform is a source to point to) (2026-10-21, Lennart); credit_card_customers was later retired under PROV-3 (2026-10-26) | applied |
 | PROV-3 | customer_satisfaction_in_airline | tests 1, 3 and 6: a derived file with rating columns under the wrong name, replaced distances and 14,659 labels flipped by a rule; the passenger part is synthetic, the route distances real; retired | applied |
 | PROV-3 | ecommerce_shipping | tests 2 and 4: `Warehouse_block` is the id modulo 6, `Mode_of_Shipment` a 137-id cycle, 1,833 rows per warehouse block; retired | applied |
 | PROV-3 | homeq_default_prediction | test 5: near-copy clusters pure in the label, distance alone AUC 0.92; retired | applied |
 | PROV-3 | credit_card_customers | calibrated marks without a label link (a 12-month count that equals Q4 + Q1 in 10,127 of 10,127 rows, spend and inactivity unrelated as in no real credit table, a profile column a classifier cannot tell from a shuffle) and an offline source: enough to retire as `AHDS` (2026-10-26, Lennart) | applied |
+| PROV-3 | hepatitis_c_egypt | marks without a label link: the columns are independent (21 of 406 pairs pass the 95% noise band, 20 by chance; AST-ALT r 0.04, the same HGB in men and women) and the stage is not predictable (macro ROC AUC 0.48-0.50 with all 28 features): left out with `AHDS` and `Data Quality Issue` (2026-10-26, Lennart) | applied |
+| PROV-3 | water_quality_and_potability | the first upload (adityakadiwal, 2021) names its source "Synthetically generated"; TDS about 50 times the conductivity (Spearman 0.021), 1,277 of 1,278 potable rows above 1,000 mg/l: `No`, with `AHDS` added to `Missing source information`; PROV-2 as amended does not keep it (2026-10-22, Lennart) | applied |
 | PROV-3 | video_game_fps_prediction | test 7: log FPS = game + CPU + GPU, R^2 0.99998, `Trivial` and often `AHDS`; retired | applied |
-| PROV-3 | framingham_heart_study_fhs | BioLINCC's teaching data, anonymised by undocumented methods ("permutations and/or random visit selection", Nahhas, App. A.6): no test fires (digit preference intact, systolic BP ends in 0 for 22.5% of readings; within-person r 0.90 and 0.71 six years apart; per-sex baseline tables match the documentation); kept with a note of what was checked; PROV-3 amended (2026-10-21, Lennart). stroke_prediction may be a second case (about 1,029 more patients aged 78 to 82 than the trend gives); not decided | applied |
+| PROV-3 | framingham_heart_study_fhs | BioLINCC's teaching data, anonymised by undocumented methods ("permutations and/or random visit selection", Nahhas, App. A.6): no test fires (digit preference intact, systolic BP ends in 0 for 22.5% of readings; within-person r 0.90 and 0.71 six years apart; per-sex baseline tables match the documentation); kept with a note of what was checked; PROV-3 amended (2026-10-21, Lennart). stroke_prediction, the other candidate (about 1,029 more patients aged 78 to 82 than the trend gives), was retired on its label (SEL-7, 2026-10-26) with `Data Quality Issue`, so it is no case | applied |
 | PROV-4, PROV-5 | colleges (OpenML 42727) | marked a duplicate of college_scorecard only after its named original (a Colleges.txt file, still online) proved to be the College Scorecard file of 2013-14: all 7,804 institution ids in it, and faculty salary, size and admission rate agreeing for 97-99% of the colleges (2026-10-12; Lennart asked for that check) | applied |
 | PROV-6 | arsenic_male_lung | the lung-cancer version of the same exposure data as arsenic_male_bladder: a duplicate ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |

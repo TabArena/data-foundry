@@ -47,6 +47,10 @@ CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is bi
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source balanced_accuracy — BER (balanced error rate) = 0.5*(b/(a+b) + c/(c+d)); final ranking by test BER; AUC also reported (= 1-BER for hard predictions) (https://www.agnostic.inf.ethz.ch/evaluation.php ; Guyon et al. 2007 IJCNN, doi 10.1109/IJCNN.2007.4371065).
 
+CC (2026-10-21, Lennart): the 23 repeated descriptor vectors stay: they are distinct screened compounds (every NSC number distinct), not copies of one compound ("IF the copies dont make any sense from a task use case, we should drop them"); LEAK-19 as written.
+
+CC (2026-10-21, Lennart): the declared metric stays as it is (`balanced_accuracy`; the challenge most likely ranked by the balanced error rate, not verified; cross-dataset item "Metrics still to settle").
+
 ## Reference
 
 Datasets from the Agnostic Learning vs. Prior Knowledge Challenge (http://www.agnostic.inf.ethz.ch)

@@ -79,6 +79,8 @@ CC (2026-10-21, Lennart): ok on creating the _1m version (`nyc_taxi_trip_duratio
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the trip duration in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
+CC (2026-10-21, Lennart): the datetime encoding of v0.2 (the cross-dataset item from this review): nothing to change while the v0.2 runs encode datetimes with the hour ("we will always run with datetime encoding in v0.2, most likely some evolution of tabarena_default"); the definition adds no hour column (CLEAN-2). This closes the second open point of the assessment of 2026-10-20.
+
 CC (2026-10-22, Lennart): verdict ship. Record field `domain` takes the definition's value (industry & manufacturing).
 
 **Assessment (AI, 2026-10-22):** ships as `nyc_taxi_trip_duration_1m`; REVIEW.md removed (nothing left open). Not built yet.

@@ -4,6 +4,26 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
+
+- `REVIEW.md` (the working copy's cross-dataset items, 61, of which 58 resolved and kept only because the review page
+  stored its marks by position) is deleted. Every decision in it, with its reason and the deciding numbers, now lives
+  where it belongs: the rules and Cases tables of the knowledge files (CLEAN-2, LEAK-19, LEAK-31, LEAK-38, PROV-3,
+  SEL-7, SPLIT-9/10/12/14/29, TP-4, TP-10, USE-5, USE-8, MET-4 and others; `definitions.md` for the v0.2 datetime
+  encoding and the domain of molecule datasets; `checks_and_probes.md` for the task probe's row cap), dated CC and
+  Assessment lines in 18 records, and `BENCHMARK_CHANGES_TODO.md` (a guard for correlation metrics on a constant
+  prediction; the LightGBM default on force_2020, left for later). Stale lines in the knowledge files that the file
+  had superseded were corrected (credit_card_customers, stroke_prediction and water_quality_and_potability, all
+  decided; credit_g's and aps_failure's metric rows, decided on 2026-10-21).
+- Still open, now in the knowledge files as rows of kind `proposed`: the amendment of SPLIT-10 for a delay shorter
+  than the time column's resolution (ames_housing and perth_house_prices are its two exceptions; due at the third),
+  and the fit label of qsar_fish_toxicity and qsar_aquatic_toxicity (USE-8).
+- `thyroid_discordant`: `fit_reason` no longer says the curators found the task close to trivial (refuted under TP-4
+  on 2026-10-21; `Trivial` removed on 2026-10-22).
+- `alfa_battle_2_0_task_2`: its notes say the gap is 0 (Lennart, 2026-10-26) instead of pointing to a settled issue.
+- `README.md`: the dataset table and the state of the last rebuild are removed (Lennart); each folder's `README.md`
+  keeps its build record.
+
 ## 2026-10-26, last round (SPLIT-31 amended: molecules group on the scaffold)
 
 - SPLIT-31 amended (Lennart): a molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold;

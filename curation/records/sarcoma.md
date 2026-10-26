@@ -49,6 +49,8 @@ CC (2026-10-22, Lennart): issue 3: merge myxofibrosarcoma and undifferentiated p
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-26):** the reason behind issue 4, from the cross-dataset item on TCGA tissue sites: the site is weakly visible from the features (one site against the rest ROC AUC 0.70-0.75, 0.69-0.73 within dedifferentiated liposarcoma), so IID by patient rests on the use case (a lab types new patients' tumours), not on a null gap; one site holds 101 of the 201 rows. In glioma_grading the features did not predict the site. Cases row in splits.md (SPLIT-29, SPLIT-31).
+
 ## Reference
 
 N. Rappoport and R. Shamir. Multi-omic and multi-view clustering algorithms: review and cancer benchmark. Nucleic Acids Research, 46(20):10546–10562, Oct 2018. URL https://doi. org/10.1093/nar/gky889.

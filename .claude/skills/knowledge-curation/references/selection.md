@@ -79,8 +79,9 @@ after each row, supports only a look back at which rows drew the outcome. Marker
 `No Good Target / Scientific Discovery`. Cases: analcatdata_supreme (Lennart, 2026-10-14).
 
 **SEL-7 (Must; narrows SEL-3).** A label the respondent already knows, asked in the same interview as the features (a
-past diagnosis), is predicted by nobody. A screening task needs positives that do not know yet, found by an
-independent measurement such as a lab test. Cases: cdc_diabetes_health_indicators (Lennart, 2026-10-15).
+past diagnosis), is predicted by nobody. A screening task needs positives that do not know yet, found by an independent
+measurement such as a lab test. Cases: cdc_diabetes_health_indicators (Lennart, 2026-10-15), stroke_prediction (an
+undated stroke the patient already had; 2026-10-26).
 
 ### The original task
 
@@ -365,6 +366,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-5 | central_international_medical_college_and_hospital_health_risk_prediction | the label is NEWS2, and its inputs are the whole task: `Trivial` | applied |
 | SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target / Scientific Discovery` (2026-10-14, Lennart) | applied |
 | SEL-7 | cdc_diabetes_health_indicators | "ever told you have diabetes", told a median of 10 years earlier, with the undiagnosed in the negative class (2026-10-15, Lennart) | applied |
+| SEL-7 | stroke_prediction | a stroke the patient already had, undated, in a hackathon release rather than an interview: retired as cdc_diabetes_health_indicators, since no decision is made with it (a screening task would need a first stroke within a horizon, from dated records); with `Data Quality Issue` for the columns that look generated; SEL-7 not amended (2026-10-26, Lennart: "This looks too bad, dont ship it") | applied |
 | SEL-8, SEL-9 | yearprediction_the_million_song_dataset | the Million Song Dataset Challenge, a song-recommendation task, though OpenML 4352 serves it as a regression; the regression re-framings are duplicates | applied |
 | SEL-13 | internet_advertisements, breast_w | image descriptors with a few non-visual columns, and a pathologist's grades of a slide: `No` | applied |
 | SEL-14 (SEL-2) | breast_cancer_prediction, heart_disease_cleveland | the BI-RADS assessment and density, and the thallium-scan result, stay inputs: tabular models use them in practice | applied |
