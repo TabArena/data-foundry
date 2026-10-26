@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 14:50 UTC: 47 claim(s) (Lennart 34, Myunghwan 13).
+As of 2026-10-26 15:27 UTC: 45 claim(s) (Lennart 32, Myunghwan 13).
 
 ## Lennart
 
@@ -12,7 +12,6 @@ As of 2026-10-26 14:50 UTC: 47 claim(s) (Lennart 34, Myunghwan 13).
 | `aeolus` | add | 2026-10-23 | 2026-10-30 |  |
 | `aeolus_rebuilt` | add | 2026-10-26 | 2026-11-02 | rebuild of aeolus from BTS and Meteostat (marks of 2026-10-26) |
 | `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
-| `alfa_battle_2_0_task_2` | add | 2026-10-23 | 2026-10-30 |  |
 | `credit_card_customers` | add | 2026-10-23 | 2026-10-30 |  |
 | `diabetes_3` | add | 2026-10-23 | 2026-10-30 |  |
 | `differentiated_thyroid_cancer_recurrence` | add | 2026-10-23 | 2026-10-30 |  |
@@ -34,7 +33,6 @@ As of 2026-10-26 14:50 UTC: 47 claim(s) (Lennart 34, Myunghwan 13).
 | `nyc_taxi_trip_duration` | add | 2026-10-23 | 2026-10-30 |  |
 | `onlinenewspopularity` | add | 2026-10-23 | 2026-10-30 |  |
 | `open_university_learning_analytics_dataset` | add | 2026-10-23 | 2026-10-30 |  |
-| `perth_house_prices` | add | 2026-10-23 | 2026-10-30 |  |
 | `pkdd_15_taxi_trip_time_prediction_ii` | add | 2026-10-23 | 2026-10-30 |  |
 | `qsar_bioconcentration` | add | 2026-10-23 | 2026-10-30 |  |
 | `qsar_oral_toxicity` | add | 2026-10-23 | 2026-10-30 |  |
