@@ -129,8 +129,11 @@ keeps 110,204 rows over 975 distinct feature rows: three features, real patients
 source's question.
 
 **LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. Cases:
-wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on different patient
-ids).
+wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on different patient ids).
+Copies of one compound go (qsar_oral_toxicity's 477 exact copies; qsar_tid_11's 37 salt forms of one ChEMBL parent);
+distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes (hiva_agnostic: 23 repeated
+vectors, every NSC number distinct; qsar_tid_11: stereoisomers and analogs with their own measured potency) (Lennart,
+2026-10-21).
 
 **LEAK-20 (Should).** Feature vectors that occur with both labels: drop every copy, unless they are genuine label
 ambiguity the task has. Cases: jm1 (176 rows); consumer_complaints. Exception: mortgage (7 loans, Lennart, 2026-10-22)
@@ -190,7 +193,9 @@ Cases: coad_colon_adenocarcinoma (rebuilt); bioresponse and the others kept with
 keep with a note when small, remove it when we can. A selection the source published (the authors' descriptors, a
 feature set the host released) is decided case by case (Lennart, 2026-10-21). Cases: home_credit_default_risk
 (2026-10-19), qsar_bioconcentration (the authors' 9 Dragon descriptors dropped: RDKit's descriptors of the same
-structures and the measured logKOW carry the signal, and the 9 add 0.002 macro ROC AUC; 2026-10-26).
+structures and the measured logKOW carry the signal, and the 9 add 0.002 macro ROC AUC; 2026-10-26), numerai_v5_2_1m
+(Numerai's 372 Faith features, chosen with the targets of test eras 1080-1191, dropped: they carried about 28% of the
+signal in eras 1080-1131; 2026-10-26).
 
 **LEAK-32 (Should).** Masked or anonymised features that may hide such a transform are a known risk of anonymised
 data, covered by its tag: no action. Cases: ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19).
@@ -219,11 +224,13 @@ Such an input that tracks a dropped post-outcome column stays with a note (Mecha
 Anonymised fields that may be post-outcome, in data a company released for its own competition, stay, with a
 `Potential leak, kept on purpose:` note giving the mechanism, the numbers, why they stay and when to revisit. Why:
 removing an unverified signal from host-designed data is arbitrary. The rule covers only fields whose timing cannot be
-tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known
-at the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
+tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known at
+the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
 carries it the same way: that file is a holdout of the same snapshot, not deployment data. Cases: homesite
 (`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915, kept); kick's `WheelType` was kept here on 2026-10-01 and
-dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way).
+dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way);
+fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01 on the same kind of
+measured step (2026-10-26, Lennart).
 
 Also not a leak, with their home elsewhere:
 
@@ -314,6 +321,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 | A part, a consequence or another encoding of the target: sub-scores that add up to it, weight and height when the target is body mass, earlier grades not yet known at the prediction point when the target is the final grade (amended 2026-10-21, Lennart), a current-status column, award notes inside a description | drop it | the UCI student performance data: G1 and G2 are the period grades of the final grade G3, not yet known at its prediction point |
 | LEAK-10 | Earlier grades known at the prediction point, when the target is the final grade, and the actor acts on them | keep them | predict_students_dropout_and_academic_success: the first-year grades (Lennart and Andrej, TabArena v0.1); open_university_learning_analytics_dataset: the assessment marks returned by day 60, 10-30% of the continuous-assessment weight of the final result (Lennart, 2026-10-21) |
 | LEAK-10, LEAK-7 | A same-day value that depends on the day's outcome | lag it by one period when the earlier value is known at prediction time (shift within each entity in time order), else drop it | garments `incentive`: within teams its daily changes follow the same day's productivity (Spearman 0.53), not the previous day's (0.07); `incentive_lag_1` per team |
+| LEAK-10, LEAK-7 (Lennart, 2026-10-21) | Official statistics joined to a row by the period they describe, published after it | lag each series to its release; when the release dates are unknown, by one period of its own frequency; daily market prices keep the row's date | mortgage (each macro series lagged to its release); sberbank_housing_market_forecasting (its monthly, quarterly and yearly series one period back; RMSE 0.2528 to 0.2520 over its 5 windows) |
 | LEAK-10, LEAK-7 | Missingness that encodes the outcome | move the prediction point earlier and drop the columns that do not exist yet | mic: the day-1..3 ICU columns are blank for patients who died earlier; now an admission-time task |
 | LEAK-10 | Features summarise a window that ends at the outcome | retire when no common prediction point can be rebuilt | iranian_churn (Keramati & Ardabili 2011, Sec. 4.1; AUC 0.986) |
 | LEAK-10 | Snapshot data: a feature computed from the window that defines the target | drop it, even though its value is known at snapshot time | mutual_funds_india `rating` (60% 5-year and 40% 3-year risk-adjusted return; the target is the 3-year return) |
@@ -339,7 +347,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-28 | Label-aware features computed over all rows, test folds included | drop them; recommend the technique inside a pipeline, per fold | santander_customer_transaction_prediction `has_one`, `has_zero` (+0.003-0.004 AUC), the #1 solution's features |
 | LEAK-29 (CLEAN-7) | Our own cleaning computes a feature value from statistics over all rows | compute it from the history before the oldest test window, or drop it | sf_permit_time `DescriptionIsStandardPhrase` (counted before 2020, the history before the oldest test window); home_credit_default_risk `NEW_INC_BY_ORG` and a mean fill (dropped) (2026-10-19, Lennart) |
 | LEAK-30 | Features the source transformed with statistics over all rows, test rows included (z-scores, min-max, quantile bins, ranks, PCA, batch correction, a variance filter): a transductive leak, labels or not | rebuild from unprocessed values when the source has them; otherwise keep with a `Potential leak, kept on purpose:` note; `No` only for a strong suspected leak (Lennart, 2026-10-19). Per-row transforms and fixed published scales are fine | rebuilt: coad_colon_adenocarcinoma (MLOmics z-scores over the 260 patients; retired 2026-10-16 for tcga_coad_molecular_subtype), sarcoma's methylation (next pass). Kept with a note: bioresponse, taiwanese_bankruptcy_prediction, credit_card_customers, cooking_time_1m, delivery_eta_1m, maps_router_eta_1m, lung_cancer_epithelial_genexp (RMA), home_credit_default_risk's building columns |
-| LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19); qsar_bioconcentration (the authors' 9 Dragon descriptors removed, 2026-10-26) |
+| LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19); qsar_bioconcentration (the authors' 9 Dragon descriptors removed, 2026-10-26); numerai_v5_2_1m (the 372 Faith features removed, 2026-10-26) |
 | LEAK-32 | Masked or anonymised features that may hide such a transform | a known risk of anonymised data, covered by its tag; no action | ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19) |
 | LEAK-37, LEAK-10 (precedent, Lennart, 2026-10-21) | A known input that tracks a dropped post-outcome column | kept, with a `Potential leak, kept on purpose:` note in LEAK-38's format (the mechanism, the numbers, why it stays, when to revisit) | digicow_farmer_training_adoption_challenge `topics_list` (the day's topics) predicts the dropped `has_topic_trained_on` at ROC AUC 0.885-0.902 |
 | [task_probes.md](task_probes.md), TP-4 | The target is a lookup of the inputs | retire (`Trivial`, often `AHDS`) | video_game_fps_prediction |

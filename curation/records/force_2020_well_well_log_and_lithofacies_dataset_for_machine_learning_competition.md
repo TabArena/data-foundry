@@ -69,6 +69,8 @@ CC (2026-10-21, Lennart): Depth context: declare the depth order (`Grouping(time
 
 **Assessment (AI, 2026-10-21):** Applied. `Grouping.time_on="DEPTH_MD"` records the order inside a well (it does not change the split; the derived regime tag becomes GroupedTemporal). `_clean` converts ROP in 32/2-1 and 16/10-5 from ft/h to m/h (x 0.3048, 5,814 rows; ROPA / ROP 0.31 and 0.30 before, 1.00 and 1.00 after) and MUDWEIGHT below 0.5 from bar/m to g/cm3 (/ 0.0980665, 225,528 rows; the 28 wells' per-well medians are now 1.08-1.80 g/cm3). Correction to the review-page answer of 2026-10-21: the ft/h curve in those two wells is ROP, not ROPA (the ratio there is ROPA / ROP = 0.31). The other off-scale curves stay masked. A CLEAN-21 case row records the conversion. dataset check: 0 errors, 0 warnings. Not rebuilt.
 
+CC (2026-10-21, Lennart): the benchmark's LightGBM default is checked on this dataset later, not now ("we dont need to check the benchmark case, we can do that later, it is fine as is for now"): untuned LightGBM with `min_child_weight` 0.001 diverged here before the impossible readings were masked (test log loss 14-15 on grouped fold 0, 0.81 with `min_child_weight=1`). Tracked in the working copy's BENCHMARK_CHANGES_TODO.md (Model defaults).
+
 CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference

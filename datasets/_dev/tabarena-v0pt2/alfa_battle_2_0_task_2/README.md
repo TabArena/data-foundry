@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: alfa_battle_2_0_task_2
 container_format: 2
-checksum: v2:17cd4c19d00ba7e02483d18efd1d193de6ea7ff56f92bfa6439116a709d65f6f
+checksum: v2:c66192b95bd2f218d26f78fe431d0f74326504c0b97b78644772785ea08daa27
 build: null
 build_stale: false
 data:
@@ -63,7 +63,7 @@ decisions:
 
 Binary classification of `default`, scored with `roc_auc` on temporal splits by `issue_month`. 963,811 rows and 510 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:17cd4c19d00ba7e02483d18efd1d193de6ea7ff56f92bfa6439116a709d65f6f`.
+Not built yet. The current definition gives checksum `v2:c66192b95bd2f218d26f78fe431d0f74326504c0b97b78644772785ea08daa27`.
 
 ## In brief
 
@@ -202,7 +202,7 @@ We start with train_target.csv and the 50 train transaction files of AlfaBattle 
 
 A scoring model is refit on all products issued so far and used for the next two months. We use 3 test windows of two issue months each, newest first: months 22-23, 20-21 and 18-19, each training on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130); its test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53%. At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window, an upper bound on that optimism (it mixes in the cost of older training data).
 
-Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). The length of the gap (0 or 1 month) is open in REVIEW.md issue 3.
+Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 581,221 to 804,162 rows, test 107,844 to 121,390 rows. Prediction horizon: 2 months.
 

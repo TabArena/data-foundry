@@ -93,11 +93,12 @@ ashrae_great_energy_predictor_iii_1m, santander_transaction_value, california_ho
 
 **MET-4 (Should).** A competition's leaderboard metric is the source's metric: declare it. The organisers chose it for
 their decision and every team optimised it (Kaggle, Zindi, DrivenData, PhysioNet/CinC, KDD Cup, an industrial
-challenge). It is overruled only by MET-2 or on evidence that it is biased or wrong for the use case, from the source
-(a metric the forum shows was gamed) or measured on the shipped splits, written in the notes with its numbers. A
+challenge). It is overruled only by MET-2 or on evidence that it is biased or wrong for the use case, from the source (a
+metric the forum shows was gamed) or measured on the shipped splits, written in the notes with its numbers. A
 competition that scored hard labels has fixed that the decision is a hard label, so its threshold metric (F1, a cost
 matrix) is kept: methods choose their threshold on the training side. Cases: zillow_prize, mercari_price_suggestion,
-amex_non_iid_1m, force_2020; overruled: african_credit_scoring_challenge (2026-10-26).
+amex_non_iid_1m, force_2020, g_research_crypto_forecasting_1m, numerai_v5_2_1m, rossmann_store_sales; overruled:
+african_credit_scoring_challenge (2026-10-26).
 
 **MET-5 (Should).** A paper's metric is the source's metric only when it is one deliberate choice: the paper names it
 as the criterion it ranks, tunes or selects models by, or argues why it fits the decision. A paper that reports
@@ -218,22 +219,28 @@ and wait for the curator; the others are decided.
 | Rule | Dataset | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|
 | MET-4 | zillow_prize | `mae`, the competition's metric (2026-10-21) | Kaggle scored MAE on logerror; RMSE had been kept as the house default; 0.38% of the rows (absolute logerror above 1) hold 49.9% of the squared error | applied |
+| MET-4, MET-12 | g_research_crypto_forecasting_1m | `weighted_pearsonr`, each row weighted by its asset's `Weight` (a scoring column), the competition's metric (2026-10-21) | Kaggle scored a Pearson correlation weighted by asset; under RMSE more signal can lose (on the splits of 2026-10-20 a model correlating 0.058 scored R^2 -0.0090, one correlating 0.049 +0.0004) | applied |
 | MET-4, MET-12 | amex_non_iid_1m | `gini_top_capture` (top 4%, negatives weighted 20), per customer | the competition's M = 0.5 (G + D); the dataset-named `amex_metric` renamed; the official pandas code is slow on 460k customers | proposed |
 | MET-4, MET-10 | african_credit_scoring_challenge | fallback `roc_auc`, Zindi's F1 overruled (2026-10-26, Lennart; `f1` declared 2026-10-21) | the host asked for "the probability of loan default" and had its top 10 bin "model outputs and probabilities" into risk categories, so the decision is a risk grade; the forum shows the F1 gamed by a hand-written rule (+0.07-0.10); with about 20 defaults per window one default moves F1 by about 0.05 | overrule |
 | MET-4, MET-7, MET-12 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | `cost_matrix` with the competition's penalty matrix (2026-10-21) | a published 12 x 12 penalty matrix over hard labels (11 x 11 after Basement was dropped); no standard metric ranks the same | applied, renamed from `force_2020_penalty_matrix` |
 | MET-4 | digicow_farmer_training_adoption_challenge | `log_loss` (2026-10-21) | Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) scores targets the task does not ship; on the shipped 7-day target log loss carries 0.65 of 0.80 | applied |
 | MET-11 | porto_seguro | `roc_auc` for the normalized Gini (2026-10-21) | for a binary target the normalized Gini is 2 x ROC AUC - 1, so the two rank models the same | applied |
-| MET-2, MET-11 | numerai_v5_2_1m | `pearsonr` standing for per-era CORR (2026-10-21); `mean_group_pearsonr` on the `era` scoring column proposed | pooled Pearson within 0.0002 of CORR per model, Kendall tau 0.89-0.93 with its ranking; `era` ships, so the original is computable | applied, proposed |
+| MET-4, MET-11 | numerai_v5_2_1m | `mean_group_pearsonr` on the `era` scoring column, Numerai's CORR per era (2026-10-21); it replaces the pooled `pearsonr` declared first the same day | RMSE ranked nine untuned models against CORR at Kendall tau -0.11, 0.11 and 0.39, and one LightGBM's predictions stretched by 3 lost to the constant 0.5 in every window: for a standardised target MSE = 1 - 2 s rho + s^2 for predictions of correlation rho and spread s, so on a low-signal panel RMSE rewards shrinkage, not signal; pooled Pearson was within 0.0002 of CORR per model | applied |
 | MET-3, MET-11 | mercari_price_suggestion | `rmsle` on the price, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Kaggle scored RMSLE on the price | applied |
 | MET-3, MET-5 | forest_fires | `mae` on the burned area in hectares, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Cortez & Morais 2007 fit on log1p(area), report MAD and RMSE on the area and rank by MAD (SVM with 4 weather inputs, MAD 12.71; the mean predictor has the best RMSE); MAE on the shipped log1p values would be another metric | applied |
 | MET-5 | gallstone_disease | fallback `roc_auc` | Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC; accuracy is the headline, none is named as the criterion | proposed |
 | MET-6 | ljubljana_breast_cancer | fallback `roc_auc` | every 1986-1988 paper reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows | proposed |
 | MET-6, MET-8 | heart_disease_cleveland (and _hungary, _va_long_beach) | fallback `roc_auc` | Detrano 1989 scores reliability (calibration in the large) and percent correctly classified: two criteria, one of them about probabilities | proposed |
-| MET-7 | credit_g | `cost_matrix` (bad as good costs 5, good as bad costs 1) | Statlog's cost matrix in german.doc and the Statlog book's average cost; from probabilities, the Bayes decision is p(bad) > 1/6 | proposed |
-| MET-7 | aps_failure | `cost_matrix` (false alarm 10, missed failure 500), mean per row | the IDA 2016 challenge scored total cost on its 16,000-row test file; ROC AUC is at 0.99 | proposed |
+| MET-7 | credit_g | `cost_matrix` (bad as good costs 5, good as bad costs 1), scored from probabilities by the least expected cost (2026-10-21, Lennart) | Statlog's cost matrix in german.doc and the Statlog book's average cost; from probabilities, the Bayes decision is p(bad) > 1/6 | applied |
+| MET-7 | aps_failure | `cost_matrix` (false alarm 10, missed failure 500), mean per row, kept (2026-10-21, Lennart) | the IDA 2016 challenge scored total cost on its 16,000-row test file; ROC AUC is at 0.99 | applied |
 | MET-2, MET-7 | taiwanese_bankruptcy_prediction | fallback `roc_auc` | Liang et al. 2016: average accuracy on a 1:1 sample (the release is 3.2% bankrupt) and a cost with ratios 1 to 5: no single matrix | proposed |
 | MET-9 | sepsis_survival_minimal_clinical_records | fallback `roc_auc`, PR AUC named as the original | Chicco & Jurman 2020's "principal indicator" is PR AUC with Alive (92.6%) as positive: floor 0.926, best 0.966 | proposed |
 | MET-2, MET-12 | sepsis_prediction_1m | `normalized_early_detection_utility` with `Patient_ID` and `Hour` as scoring columns, after the data checks | the PhysioNet/CinC 2019 utility is per patient and hour around onset; the 500k cap trims 3,371 rows from a test fold and can cut a stay: check every test stay is whole and the onset hour is derivable; renamed from `PhysioNet2019UtilityFunction` | proposed |
+| MET-4 | expresso_churn_prediction_1m | `roc_auc` kept (2026-10-21, Lennart) | the first competition (UmojaHack Ghana 2020) scored log loss, its 2021 re-run on the same files ROC AUC | applied |
+| MET-4, MET-6 | hiva_agnostic | `balanced_accuracy` kept (2026-10-21, Lennart) | the challenge most likely ranked by the balanced error rate on hard labels (not verified) | applied |
+| MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
+| MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
+| MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
 
 ## In Data Foundry
 
