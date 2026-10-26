@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Coil2000(AbstractCuratedDataset):
@@ -66,6 +66,19 @@ class Coil2000(AbstractCuratedDataset):
     # Task
     target = "MobileHomePolicy"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "precision_at_k",
+        original=("number of caravan policy owners among the 800 customers selected from the 4,000 test customers"),
+        reference=(
+            "https://kdd.ics.uci.edu/databases/tic/tic.task.html; van der Putten and van Someren 2000, "
+            "CoIL Challenge 2000 tech report"
+        ),
+        definition=(
+            "share of caravan policy owners among the 20% of the test fold with the highest scores (the "
+            "challenge's 800 of 4,000, scaled to the fold)"
+        ),
+        params={"k_fraction": 0.2},
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data = pd.read_csv(f"{raw_dir}/ticdata2000.txt", sep="\t", header=None)

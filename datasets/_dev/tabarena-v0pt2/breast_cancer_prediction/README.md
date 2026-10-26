@@ -2,75 +2,72 @@
 report_format: data-foundry-report-v2
 unique_name: breast_cancer_prediction
 container_format: 2
-checksum: v2:c3f56997e6423b1035adc7dc61e06bd75458b2e1e3134039505f7815f74a6244
+checksum: v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e
 build: null
 build_stale: false
 data:
-  n_rows: 39998
+  n_rows: 36714
   n_features: 10
   dtypes:
-    category: 3
-    float64: 6
-    int64: 3
+    category: 8
+    float64: 1
+    int64: 2
   n_test_dataset_rows: null
 task:
   target: cancer_within_one_year
   problem_type: binary_classification
   metric: roc_auc
-  split_regime: grouped_non_iid
+  metric_origin: fallback
+  scoring_columns: null
+  split_regime: iid
   stratify_on: cancer_within_one_year
   time_on: null
-  group_on: patient_id
-  group_labels: per_sample
+  group_on: null
+  group_labels: null
   group_time_on: null
-  grouping:
-    prediction_unit: row
-    aggregation: null
-    context: none
-    n_groups: 36714
-    test_groups_per_fold:
-      min: 12236
-      max: 12239
+  grouping: null
 splits:
   n_repeats: 3
   n_folds: 3
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 26634
-    max: 26689
+    min: 24476
+    max: 24476
   n_test:
-    min: 13309
-    max: 13364
+    min: 12238
+    max: 12238
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
-  - groups_not_clustered
+  - dataset_conflicting_duplicate_rows
   accepted:
-    dataset_pure_feature_value: 'BI-RADS 1 (Negative: 26,031 exams, 20 cancers), BI-RADS
-      2 (Benign finding(s): 10,717, 12) and density 1 (almost entirely fatty: 5,429)
+    dataset_pure_feature_value: 'BI-RADS 1 (Negative: 23,856 women, 15 cancers), BI-RADS
+      2 (Benign finding(s): 9,823, 12) and density 1 (almost entirely fatty: 4,961)
       are the low-risk results of the screening read, given at the exam before the
       outcome; at a 99.35% base rate of no cancer they are ordinary category effects,
       not a leak.'
-    groups_labels_constant: Labels are per exam by construction (a cancer diagnosis
-      within one year of that exam). The 20 women with two labels are the 20 women
-      with cancer and several exams, each with only her last exam positive; the other
-      3,113 women with several exams had no cancer.
+    dataset_duplicate_rows: Each row is a different woman (one exam per woman); the
+      ten features are coarse (age in years, BI-RADS categories, yes/no answers),
+      so many women share a profile; their outcomes are independent, so a copy in
+      train tells nothing about the test woman beyond her profile.
 decisions:
 - The radiologist's assessment is a feature and carries most of the signal
-- Grouped by woman
+- One exam per woman, her earliest
 ---
 
 # breast_cancer_prediction
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `cancer_within_one_year`, scored with `roc_auc` on grouped splits by `patient_id`. 39,998 rows and 10 features. Source: GOV Website (2014).
+Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 36,714 rows and 10 features. Source: GOV Website (2014).
 
-Not built yet. The current definition gives checksum `v2:c3f56997e6423b1035adc7dc61e06bd75458b2e1e3134039505f7815f74a6244`.
+Not built yet. The current definition gives checksum `v2:6ce6b835266fe800c3a5b3deac1fc9536466d6df6f5801738b1d839a1cdc329e`.
 
 ## In brief
 
@@ -78,24 +75,23 @@ Not built yet. The current definition gives checksum `v2:c3f56997e6423b1035adc7d
 
 **Use case.** Once a screening mammogram has been read, the screening programme estimates the woman's chance of a breast cancer diagnosis within a year from her risk factors and the radiologist's assessment (the source's own question), for example to decide on follow-up.
 
-**One row.** One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 to 2008 (39,998 exams of 36,714 women).
+**One row.** One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 to 2008: each of 36,714 women once, with her earliest exam in the sample.
 
-**Predicted.** Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.65% of the exams.
+**Predicted.** Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.65% of the women.
 
 **Known at prediction time.** Age, BMI, family history, earlier biopsy and mammogram, hormone therapy, whether an earlier mammogram was at hand for comparison, film or digital imaging, the breast density and the radiologist's assessment.
 
-**What the test data stands for.** Whole women are held out, so the test data stands for the exams of other women; 3,133 women have 2 to 4 exams.
+**What the test data stands for.** Random folds over the women: every row is a different woman, so the test data stands for other women's exams.
 
-**Our changes to the source.** We drop the cancer type, which is recorded at diagnosis and encodes the label, and hold out whole women.
+**Our changes to the source.** We drop the cancer type, which is recorded at diagnosis and encodes the label, and keep one exam per woman, her earliest (3,133 women have 2 to 4).
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once the mammogram is read, and the label covers a fixed year after it. The radiologist's assessment carries most of the signal (ROC AUC 0.907 alone, about 0.02 less than the models), as in screening.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known once the mammogram is read, and the label covers a fixed year after it. The radiologist's assessment carries most of the signal (ROC AUC 0.914 alone, about 0.015 less than the models), as in screening.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/breast_cancer_prediction.md`](../../../../curation/records/breast_cancer_prediction.md)
@@ -144,21 +140,28 @@ Only curators run `build`, when the dataset ships.
 | year | 2014 |
 | domain | medical & healthcare |
 | license | BCSC data terms: download after registration, citation of the BCSC required, 'recommended for use as a teaching tool only; they should not be used to conduct primary research'; no licence named (the Kaggle mirror states CC0-1.0) |
-| data_tags | Non-IID, Grouped |
+| data_tags | IID |
 | reference | bcsc2014digitalmammography |
-| rows x columns | 39,998 x 12 |
+| rows x columns | 36,714 x 11 |
 | task.target | cancer_within_one_year |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | grouped_non_iid |
+| task.split_regime | iid |
 | task.stratify_on | cancer_within_one_year |
-| task.group_on | patient_id |
-| task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'. |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `birads_assessment`, `mammogram_type`, `cancer_within_one_year`
+- categorical (8): `birads_assessment`, `mammogram_type`, `comparison_mammogram_available`, `current_hormone_therapy`, `prior_breast_biopsy`, `prior_mammogram`, `family_history_breast_cancer`, `cancer_within_one_year`
 - string (0): none
 - datetime (0): none
 
@@ -184,71 +187,47 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 39,998 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 36,714 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| cancer_within_one_year | age | birads_assessment | comparison_mammogram_available | birads_breast_density | family_history_breast_cancer | current_hormone_therapy | prior_mammogram | prior_breast_biopsy | mammogram_type | bmi | patient_id |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 67 | 2: Benign finding(s) | 1 | 2 | 0 | 0 | 1 | 0 | digital | 24.998 | 1780 |
-| No | 65 | 2: Benign finding(s) | 1 | 3 | 1 | 0 | 1 | 1 | film | nan | 21402 |
-| No | 70 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | film | nan | 36441 |
-| No | 61 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | digital | nan | 17968 |
-| No | 68 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 1 | film | 31.0682 | 26675 |
+| cancer_within_one_year | age | birads_assessment | comparison_mammogram_available | birads_breast_density | family_history_breast_cancer | current_hormone_therapy | prior_mammogram | prior_breast_biopsy | mammogram_type | bmi |
+|---|---|---|---|---|---|---|---|---|---|---|
+| No | 65 | 2: Benign finding(s) | 1 | 3 | 0 | 0 | 1 | 0 | digital | nan |
+| No | 62 | 1: Negative | 1 | 2 | 1 | 0 | 1 | 1 | digital | 26.6251 |
+| No | 67 | 1: Negative | nan | 2 | 0 | 0 | 1 | 0 | digital | nan |
+| No | 69 | 1: Negative | 1 | 3 | 0 | 1 | 1 | 1 | film | nan |
+| No | 65 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | film | 22.2735 |
 
 ## Curation notes
 
 We start with the BCSC Digital Mammography Dataset (`mammography.csv`, 40,000 rows) from the Breast Cancer Surveillance Consortium: a random sample of 20,000 digital and 20,000 film screening mammograms of women aged 60-89, January 2005 to December 2008.
 
 - Prediction point: the screening mammogram has just been read, so the radiologist's BI-RADS assessment and density, the intake answers and the exam facts are known. This is the source's own question (BCSC exam question 4): a model "to predict occurrence of any cancer using patient characteristics and mammography assessment".
-- Target: `cancer_c` as `cancer_within_one_year` (Yes / No), a breast cancer diagnosis (DCIS or invasive) within one year after the exam: 259 cancers in 39,998 exams (0.65%). We drop `CaTypeO` (cancer type), which is recorded at the diagnosis and encodes the label (8 = no cancer).
+- Target: `cancer_c` as `cancer_within_one_year` (Yes / No), a breast cancer diagnosis (DCIS or invasive) within one year after the exam: 239 cancers in 36,714 women (0.65%). We drop `CaTypeO` (cancer type), which is recorded at the diagnosis and encodes the label (8 = no cancer).
 - The BI-RADS assessment stays a feature: the radiologist gives it at the exam, and the source's question uses it as a predictor. It is categorical because assessment 0 (needs additional imaging) is a positive screen; its values are the codebook's labels prefixed with the BI-RADS number ("4: Suspicious abnormality").
-- The assessment carries most of the signal (task probe flag `one_feature`, decision table): alone it reaches ROC AUC 0.907. We keep it as the core of the task, and the task is not `Trivial`: regularised LightGBM, CatBoost and a random forest beat it on 9 of 9 splits, by 0.019-0.023 (task_probes.md, rule 4).
+- The assessment carries most of the signal (task probe flag `one_feature`, decision table): alone it reaches ROC AUC 0.914. We keep it as the core of the task, and the task is not `Trivial`: regularised LightGBM and a random forest beat it on 8 of 9 splits, by 0.015 and 0.013 (task_probes.md, rule 4). The readings are valid tabular inputs: screening programmes run tabular risk models on BI-RADS readings and risk factors (the BCSC Risk Calculator takes the BI-RADS density), so the image-scoring rule does not apply (Lennart, 2026-10-15).
 - `birads_breast_density` 1-4 stays numeric, since the order is the meaning (1 almost entirely fatty, 4 extremely dense).
 - The codebook's 9 = missing in the five yes/no answers and -99 = missing in `bmi` become NaN. `mammogram_type` 1 and 2 become film and digital. `RENAME` maps the codebook names to ours.
-- Duplicates: we drop the second of two exact copies, the woman's id included (`ptid` 19408 and 34035), as the Kaggle and OpenML copies did. The other repeated feature vectors (52.8% of the exams) stay: the features are coarse, and these are different women with the same profile.
-- Grouped by woman (`patient_id`, the BCSC's `ptid`): 3,133 of the 36,714 women contribute 2-4 exams. Rows are no closer to their own woman than chance (`groups_not_clustered`), so the use case decides: the model is used for other women (Grouping definition). Each label belongs to its exam: the 20 women with cancer and several exams have only their last exam positive.
+- One exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order), so the folds are IID (Lennart, 2026-10-15): 3,133 of the 36,714 women contribute 2-4 exams, and the use case is one woman's screening read. The 20 women with cancer and several exams are positive only on their last exam, so 20 of the 259 cancers go. Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped by woman). The file's two exact copies go with it.
+- Duplicates: repeated feature vectors (52.2% of the rows, the `dataset_duplicate_rows` warning) stay: the features are coarse, and these are different women with the same profile (49.6% of the test rows have a copy in train), whose outcomes are independent.
 - Anomaly: the BCSC recommends the data "for use as a teaching tool only; they should not be used to conduct primary research". We use it to compare learning methods, not to estimate clinical effects.
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 26,634 to 26,689 rows, test 13,309 to 13,364 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 24,476 rows, test 12,238 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 26676 | 13322 |
-| 0 | 1 | 26673 | 13325 |
-| 0 | 2 | 26647 | 13351 |
-| 1 | 0 | 26689 | 13309 |
-| 1 | 1 | 26644 | 13354 |
-| 1 | 2 | 26663 | 13335 |
-| 2 | 0 | 26634 | 13364 |
-| 2 | 1 | 26674 | 13324 |
-| 2 | 2 | 26688 | 13310 |
-
-## Group structure
-
-One group is a woman, identified by the BCSC's patient study id (`ptid`). The source says "Some women contribute multiple examinations to the data" and offers the data for "statistical methods for binary outcomes or correlated data" (BCSC, Digital Mammography Dataset page); its exam question adds that women "are recommended to undergo mammography screening annually or biennially, so some women have multiple mammograms included in the data set". 3,133 of the 36,714 women have 2-4 exams. The 40,000 exams are a random sample of the BCSC's screening mammograms, so a model built on them is used for the exams of other women: the test women are new. Each exam is one prediction, made from that exam alone.
-
-| field | value |
-|---|---|
-| group column | `patient_id` |
-| labels | per_sample |
-| order inside a group | none |
-| prediction unit | row |
-| known about a group when predicting | none |
-
-| statistic | value |
-|---|---|
-| groups | 36,714 |
-| rows per group (min / median / max) | 1 / 1.0 / 4 |
-| largest group | 0.0% of the rows |
-| test groups per fold | 12,236 to 12,239 |
-| groups of two or more rows with a single label | 99.4% |
-| nearest neighbour in the same group | 0.2% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.96 (shuffled groups: 0.91) |
-
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+| 0 | 0 | 24476 | 12238 |
+| 0 | 1 | 24476 | 12238 |
+| 0 | 2 | 24476 | 12238 |
+| 1 | 0 | 24476 | 12238 |
+| 1 | 1 | 24476 | 12238 |
+| 1 | 2 | 24476 | 12238 |
+| 2 | 0 | 24476 | 12238 |
+| 2 | 1 | 24476 | 12238 |
+| 2 | 2 | 24476 | 12238 |
 
 ## Decisions
 
@@ -258,56 +237,55 @@ It is given at the exam, and the source asks for a model 'using patient characte
 
 | birads_assessment | exams | cancers | cancer_rate |
 |---|---|---|---|
-| 0: Needs additional imaging | 3049 | 198 | 0.0649 |
-| 1: Negative | 26031 | 20 | 0.0008 |
-| 2: Benign finding(s) | 10717 | 12 | 0.0011 |
-| 3: Probably benign | 139 | 1 | 0.0072 |
-| 4: Suspicious abnormality | 57 | 24 | 0.4211 |
+| 0: Needs additional imaging | 2847 | 185 | 0.065 |
+| 1: Negative | 23856 | 15 | 0.0006 |
+| 2: Benign finding(s) | 9823 | 12 | 0.0012 |
+| 3: Probably benign | 129 | 1 | 0.0078 |
+| 4: Suspicious abnormality | 54 | 22 | 0.4074 |
 | 5: Highly suggestive of malignancy | 5 | 4 | 0.8 |
 
-### 2. Grouped by woman
+### 2. One exam per woman, her earliest
 
-Some women contribute several exams; the model is used for women outside the sample, and each woman with cancer has one positive exam, her last.
+Some women contribute several exams. Each woman counts once, with her earliest exam in the sample, so the folds are IID; the women with cancer and several exams are positive only on their last exam, so their cancers are not in the data. Women by number of exams in the file.
 
-| exams | women | women_with_cancer |
-|---|---|---|
-| 1 | 33581 | 239 |
-| 2 | 2983 | 19 |
-| 3 | 149 | 1 |
-| 4 | 1 | 0 |
+| exams | women | women_with_cancer | cancer_on_the_earliest_exam |
+|---|---|---|---|
+| 1 | 33581 | 239 | 239 |
+| 2 | 2983 | 19 | 0 |
+| 3 | 149 | 1 | 0 |
+| 4 | 1 | 0 | 0 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.2% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.96 vs 0.91). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/verify-dataset/scripts/group_probes.py`.)
+- **info** `dataset_conflicting_duplicate_rows`: 68 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
-- `dataset_pure_feature_value`: BI-RADS 1 (Negative: 26,031 exams, 20 cancers), BI-RADS 2 (Benign finding(s): 10,717, 12) and density 1 (almost entirely fatty: 5,429) are the low-risk results of the screening read, given at the exam before the outcome; at a 99.35% base rate of no cancer they are ordinary category effects, not a leak.
-- `groups_labels_constant`: Labels are per exam by construction (a cancer diagnosis within one year of that exam). The 20 women with two labels are the 20 women with cancer and several exams, each with only her last exam positive; the other 3,113 women with several exams had no cancer.
+- `dataset_pure_feature_value`: BI-RADS 1 (Negative: 23,856 women, 15 cancers), BI-RADS 2 (Benign finding(s): 9,823, 12) and density 1 (almost entirely fatty: 4,961) are the low-risk results of the screening read, given at the exam before the outcome; at a 99.35% base rate of no cancer they are ordinary category effects, not a leak.
+- `dataset_duplicate_rows`: Each row is a different woman (one exam per woman); the ten features are coarse (age in years, BI-RADS categories, yes/no answers), so many women share a profile; their outcomes are independent, so a copy in train tells nothing about the test woman beyond her profile.
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (11 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| comparison_mammogram_available | category | 4306 | 11.73 | 2 | 1.0, 0.0 |
+| current_hormone_therapy | category | 1629 | 4.44 | 2 | 0.0, 1.0 |
+| prior_breast_biopsy | category | 783 | 2.13 | 2 | 0.0, 1.0 |
+| prior_mammogram | category | 578 | 1.57 | 2 | 1.0, 0.0 |
+| family_history_breast_cancer | category | 217 | 0.59 | 2 | 0.0, 1.0 |
 | birads_assessment | category | 0 | 0 | 6 | 1: Negative, 2: Benign finding(s), 0: Needs additional imaging, 3: Probably ben… |
 | cancer_within_one_year | category | 0 | 0 | 2 | No, Yes |
-| mammogram_type | category | 0 | 0 | 2 | digital, film |
-| bmi | float64 | 23208 | 58.02 | 1896 | 25.606, 24.7996, 27.4636, 29.2641, 25.7471, 23.777, 28.3424, 27.435, 24.961, 23… |
-| comparison_mammogram_available | float64 | 4680 | 11.7 | 2 | 1.0, 0.0 |
-| current_hormone_therapy | float64 | 1772 | 4.43 | 2 | 0.0, 1.0 |
-| prior_breast_biopsy | float64 | 815 | 2.04 | 2 | 0.0, 1.0 |
-| prior_mammogram | float64 | 578 | 1.45 | 2 | 1.0, 0.0 |
-| family_history_breast_cancer | float64 | 228 | 0.57 | 2 | 0.0, 1.0 |
-| age | int64 | 0 | 0 | 30 | 60, 61, 62, 63, 65, 64, 66, 67, 68, 69 |
+| mammogram_type | category | 0 | 0 | 2 | film, digital |
+| bmi | float64 | 21371 | 58.21 | 1850 | 25.606, 24.7996, 27.4636, 29.2641, 25.7471, 27.435, 23.777, 28.3424, 23.1724, 2… |
+| age | int64 | 0 | 0 | 30 | 60, 61, 62, 65, 63, 64, 66, 67, 68, 69 |
 | birads_breast_density | int64 | 0 | 0 | 4 | 2, 3, 1, 4 |
-| patient_id | int64 | 0 | 0 | 36714 | 14556, 16784, 6518, 19594, 6167, 4095, 766, 32295, 33174, 33607 |
 
 </details>
 
@@ -315,36 +293,50 @@ Accepted on purpose:
 
 | cancer_within_one_year | count | pct |
 |---|---|---|
-| No | 39739 | 99.35 |
-| Yes | 259 | 0.65 |
+| No | 36475 | 99.35 |
+| Yes | 239 | 0.65 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| age | 39998 | 69.5557 | 7.20258 | 60 | 89 |
-| comparison_mammogram_available | 35318 | 0.963135 | 0.188433 | 0 | 1 |
-| birads_breast_density | 39998 | 2.22974 | 0.716371 | 1 | 4 |
-| family_history_breast_cancer | 39770 | 0.16955 | 0.375242 | 0 | 1 |
-| current_hormone_therapy | 38226 | 0.111155 | 0.314328 | 0 | 1 |
-| prior_mammogram | 39420 | 0.992491 | 0.0863289 | 0 | 1 |
-| prior_breast_biopsy | 39183 | 0.266697 | 0.442238 | 0 | 1 |
-| bmi | 16790 | 26.8656 | 5.64539 | 15.0478 | 71.7213 |
-| patient_id | 39998 | 18375.8 | 10602 | 1 | 36714 |
+| age | 36714 | 69.4393 | 7.22546 | 60 | 89 |
+| birads_breast_density | 36714 | 2.23179 | 0.717032 | 1 | 4 |
+| bmi | 15343 | 26.89 | 5.6539 | 15.0478 | 71.7213 |
 
 ### Categorical features
 
+<details>
+<summary>Show the table (24 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| birads_assessment | 1 | 1: Negative | 26031 | 65.08 |
-| birads_assessment | 2 | 2: Benign finding(s) | 10717 | 26.79 |
-| birads_assessment | 3 | 0: Needs additional imaging | 3049 | 7.62 |
-| birads_assessment | 4 | 3: Probably benign | 139 | 0.35 |
-| birads_assessment | 5 | 4: Suspicious abnormality | 57 | 0.14 |
-| cancer_within_one_year | 1 | No | 39739 | 99.35 |
-| cancer_within_one_year | 2 | Yes | 259 | 0.65 |
-| mammogram_type | 1 | digital | 20000 | 50 |
-| mammogram_type | 2 | film | 19998 | 50 |
+| birads_assessment | 1 | 1: Negative | 23856 | 64.98 |
+| birads_assessment | 2 | 2: Benign finding(s) | 9823 | 26.76 |
+| birads_assessment | 3 | 0: Needs additional imaging | 2847 | 7.75 |
+| birads_assessment | 4 | 3: Probably benign | 129 | 0.35 |
+| birads_assessment | 5 | 4: Suspicious abnormality | 54 | 0.15 |
+| cancer_within_one_year | 1 | No | 36475 | 99.35 |
+| cancer_within_one_year | 2 | Yes | 239 | 0.65 |
+| comparison_mammogram_available | 1 | 1.0 | 31136 | 84.81 |
+| comparison_mammogram_available | 2 | &lt;NA> | 4306 | 11.73 |
+| comparison_mammogram_available | 3 | 0.0 | 1272 | 3.46 |
+| current_hormone_therapy | 1 | 0.0 | 31135 | 84.8 |
+| current_hormone_therapy | 2 | 1.0 | 3950 | 10.76 |
+| current_hormone_therapy | 3 | &lt;NA> | 1629 | 4.44 |
+| family_history_breast_cancer | 1 | 0.0 | 30394 | 82.79 |
+| family_history_breast_cancer | 2 | 1.0 | 6103 | 16.62 |
+| family_history_breast_cancer | 3 | &lt;NA> | 217 | 0.59 |
+| mammogram_type | 1 | film | 18720 | 50.99 |
+| mammogram_type | 2 | digital | 17994 | 49.01 |
+| prior_breast_biopsy | 1 | 0.0 | 26398 | 71.9 |
+| prior_breast_biopsy | 2 | 1.0 | 9533 | 25.97 |
+| prior_breast_biopsy | 3 | &lt;NA> | 783 | 2.13 |
+| prior_mammogram | 1 | 1.0 | 35840 | 97.62 |
+| prior_mammogram | 2 | &lt;NA> | 578 | 1.57 |
+| prior_mammogram | 3 | 0.0 | 296 | 0.81 |
+
+</details>
 
 ## Build
 

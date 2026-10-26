@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import dataclasses
 import os
 import re
 from pathlib import Path
-from typing import Annotated, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal
 
 import pydantic
 
@@ -93,9 +94,14 @@ DataTags = Literal[
     # data that is IID by construction of the data.
     #   - e.g. temporal data that is missing the timestamp
     "ForcedIIDFromTemporal",
-    "2ndTierData",  # Data that is not of the highest quality but still a reasonable task
+    # a task temporal by its use case, split grouped because it has too few periods for three test windows
+    "ForcedGroupedFromTemporal",
+    # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
+    "2ndTierData",
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
+RETIRED_DATA_TAGS = ("2ndTierData",)
+"""Tags old containers may carry and loading accepts, but a new definition may not set."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",
@@ -177,6 +183,103 @@ class Grouping:
             raise ValueError("context='past_rows' needs time_on: the order that defines a row's earlier rows.")
         if self.time_on is not None and self.time_on in columns:
             raise ValueError(f"Grouping.time_on={self.time_on!r} is also a group column.")
+
+
+MetricKind = Literal["standard", "custom", "local"]
+MetricPrediction = Literal["proba", "label", "value"]
+MetricOrigin = Literal["source", "stand_in", "context", "fallback"]
+TargetTransform = Literal["identity", "log", "log1p", "log10"]
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class MetricSpec:
+    """The metric that scores a task, as data: a reader without Data Foundry can implement it from these fields.
+
+    Stored as :attr:`PredictiveMLTaskMetadataV2.objective_metric` (container format 2). The reference
+    implementations of every ``standard`` and ``custom`` name are in :mod:`data_foundry.v2.metrics`
+    (:func:`~data_foundry.v2.metrics.score`), a module that depends only on numpy, pandas, scikit-learn and scipy.
+    """
+
+    name: str
+    """A standard name for a standard metric (``rmse``, ``roc_auc``, ``log_loss``, ``f1_weighted``, ...), a general
+    one for a custom metric (``cost_matrix``, ``mean_group_pearsonr``); never a dataset's name."""
+    kind: MetricKind
+    """``standard`` (the name maps to a scikit-learn / scipy function), ``custom`` (Data Foundry ships the
+    implementation) or ``local`` (code only the definition holds: never in a shipped container)."""
+    prediction: MetricPrediction
+    """What the scorer takes: ``proba`` (class probabilities), ``label`` (predicted classes) or ``value``."""
+    greater_is_better: bool
+    """Whether a higher score is better."""
+    origin: MetricOrigin
+    """``source`` (what the competition or paper scored), ``stand_in`` (the closest computable metric to an original
+    that cannot be computed, named in ``original``), ``context`` (the source defines no metric, but the task makes one
+    obvious, e.g. a relative error for a price; why in ``reason``) or ``fallback`` (the source defines no metric and
+    none is obvious: roc_auc / log_loss / rmse by problem type, the reason in ``reason``)."""
+    params: dict[str, Any] = dataclasses.field(default_factory=dict)
+    """JSON values only: a cost matrix, ``k``, the shape of a transform."""
+    inputs: dict[str, str] = dataclasses.field(default_factory=dict)
+    """Each role the scorer needs (``group``, ``weight``, ``order``) mapped to a column of the frame; every such column
+    is a :class:`ScoringColumn`."""
+    original: str | None = None
+    """The original metric as the source names it (``"RMSE"``, ``"per-era CORR"``)."""
+    reference: str | None = None
+    """Where the source defines the metric: a link to the evaluation page or the paper."""
+    definition: str | None = None
+    """The metric as a one-line formula."""
+    reason: str | None = None
+    """Why the metric is a fallback (the source defines none) or a stand-in (why the original cannot be computed)."""
+    target_transform: TargetTransform = "identity"
+    """Regression only: the scale the target ships on. The target ships transformed for modelling (``log`` for a
+    price, ``log1p`` for a count); the metric is computed after the inverse (``exp``, ``expm1``, ``10**``) of both the
+    true values and the predictions, so the declared metric is the one on the original scale."""
+
+    def __post_init__(self):
+        if not (self.name or "").strip():
+            raise ValueError("MetricSpec.name must name the metric.")
+        if self.target_transform != "identity" and self.prediction != "value":
+            raise ValueError(
+                f"MetricSpec.target_transform={self.target_transform!r} is for a regression metric (prediction "
+                f"'value'), not one that takes {self.prediction!r}."
+            )
+
+    def describe_lines(self, indent: str = "  ") -> list[str]:
+        """The spec as ``describe()`` lines: name, kind, origin, original, reference, definition, reason."""
+        head = f"{self.name} ({self.kind}, {self.prediction}, {'higher' if self.greater_is_better else 'lower'} is "
+        lines = [f"{indent}objective_metric:      {head}better; origin: {self.origin})"]
+        for label, value in (
+            ("original", self.original),
+            ("reference", self.reference),
+            ("definition", self.definition),
+            ("reason", self.reason),
+            ("params", self.params or None),
+            ("inputs", self.inputs or None),
+            ("target_transform", self.target_transform if self.target_transform != "identity" else None),
+        ):
+            if value:
+                lines.append(f"{indent}  {label + ':':20s} {value}")
+        if self.target_transform != "identity":
+            lines[-1] += f" (the target ships on the {self.target_transform} scale; scored after the inverse)"
+        return lines
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class ScoringColumn:
+    """A column the metric needs to score a prediction (Numerai's ``era``, an asset weight): kept in the frame, never
+    a model feature.
+
+    Drop the scoring columns from the model's inputs (:func:`~data_foundry.curation_container.feature_columns`), then
+    pass the test rows' values to the scorer (:func:`data_foundry.v2.metrics.scorer` looks them up by row index).
+    """
+
+    column: str
+    """The column of the frame."""
+    role: str
+    """The role it plays for the metric: a key of :attr:`MetricSpec.inputs` (``group``, ``weight``, ``order``)."""
+    used_by: str
+    """The name of the metric that uses it."""
+    description: str
+    """What the column is and how the metric uses it, e.g. "the week a row belongs to; the metric is the mean of the
+    per-era correlations"."""
 
 
 # TODO: fields that might be cool to add in the future
@@ -528,8 +631,9 @@ class PredictiveMLTaskMetadataV2:
     """The name of the target column in the dataset file."""
     problem_type: ProblemType
     """The type of predictive problem."""
-    objective_metric_name: str
-    """The metric that scores the task: sklearn names where possible, the problem type's default otherwise."""
+    objective_metric: MetricSpec
+    """The metric that scores the task (:class:`MetricSpec`): the source's metric when it defines one, else the
+    declared fallback. Replaces format 1's ``objective_metric_name``; the name is ``objective_metric.name``."""
     stratify_on: str | None = None
     """The column the IID or grouped splits are stratified on (the target of a classification task by default)."""
     time_on: str | None = None
@@ -537,6 +641,8 @@ class PredictiveMLTaskMetadataV2:
     grouping: Grouping | None = None
     """How a grouped task is used (:class:`Grouping`): the group column, the labels, the order inside a group, the
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
+    scoring_columns: list[ScoringColumn] = dataclasses.field(default_factory=list)
+    """The columns the metric needs (:class:`ScoringColumn`): kept in the frame, never model features."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
@@ -557,6 +663,11 @@ class PredictiveMLTaskMetadataV2:
                 f"stratify_on names the target column ({self.target_column_name!r}) but problem_type is "
                 f"{self.problem_type!r}: a continuous target cannot be stratified on.",
             )
+        scoring = [c.column for c in self.scoring_columns]
+        if len(set(scoring)) != len(scoring):
+            raise ValueError(f"scoring_columns lists a column twice: {scoring}.")
+        if self.target_column_name in scoring:
+            raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
             raise ValueError(
@@ -603,10 +714,15 @@ class PredictiveMLTaskMetadataV2:
             "PredictiveMLTaskMetadataV2:",
             f"  target_column_name:    {self.target_column_name}",
             f"  problem_type:          {self.problem_type}",
-            f"  objective_metric_name: {self.objective_metric_name}",
+            *self.objective_metric.describe_lines(),
             f"  stratify_on:           {self.stratify_on}",
             f"  time_on:               {self.time_on}",
         ]
+        for scoring in self.scoring_columns:
+            lines.append(
+                f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; never a "
+                f"feature): {scoring.description}"
+            )
         grouping = self.grouping
         if grouping is not None:
             unit = grouping.prediction_unit + (f" ({grouping.aggregation})" if grouping.aggregation else "")
@@ -676,12 +792,22 @@ class PredictiveMLSplitsMetadata:
     splits were built with the default seed) and for splits not produced by those builders.
     """
 
+    time_gap: int | float | None = None
+    """The gap between the end of each training side and the start of its test window, for temporal splits: a
+    positive number of ``time_gap_unit``. No row of that span is in either side, usually because its labels were not
+    known yet when the model is refit (a completion rate published six years after entry). ``None`` when the splits
+    leave no gap, and for splits recorded before this field existed.
+    """
+    time_gap_unit: Literal["steps", "minutes", "hours", "days", "weeks", "months", "years"] | None = None
+    """The unit of ``time_gap``, read as ``time_horizon_unit`` is; a gap can also be in ``"minutes"`` or ``"hours"``
+    (a label known minutes after its row)."""
+
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state",)
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state", "time_gap", "time_gap_unit")
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
-    container saved before ``split_random_state`` existed keeps verifying."""
+    container saved before they existed keeps verifying."""
 
     def __post_init__(self):
         """Validate the shape of the splits container and the horizon fields.
@@ -726,6 +852,12 @@ class PredictiveMLSplitsMetadata:
                 ) from None
             if horizon <= 0:
                 raise ValueError(f"time_horizon must be positive, got {self.time_horizon!r}.")
+        if (self.time_gap is None) != (self.time_gap_unit is None):
+            raise ValueError(
+                f"time_gap ({self.time_gap!r}) and time_gap_unit ({self.time_gap_unit!r}) must be set together.",
+            )
+        if self.time_gap is not None and self.time_gap <= 0:
+            raise ValueError(f"time_gap must be positive (None for no gap), got {self.time_gap!r}.")
 
     def _check_split_ids(self) -> None:
         """Repeat ids ``0..R-1``, and fold ids ``0..F-1`` in every repeat (consumers index them by position)."""
@@ -761,6 +893,7 @@ class PredictiveMLSplitsMetadata:
             f"  total splits:        {total_splits}",
             f"  time_horizon:        {self.time_horizon}",
             f"  time_horizon_unit:   {self.time_horizon_unit}",
+            f"  time_gap:            {self.time_gap} {self.time_gap_unit or ''}".rstrip(),
             f"  splits_comment:      {self.splits_comment}",
         ]
 

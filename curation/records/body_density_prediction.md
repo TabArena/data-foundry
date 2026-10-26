@@ -48,6 +48,8 @@ Also, I think that the use from this is limited unless we actually embed the den
 1) NHANES https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2021/DataFiles/BMX_L.htm
 2) UK Biobank (restricted access): https://www.ukbiobank.ac.uk/about-our-data/types-of-data/physical-measurements/
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the standard error of estimate of the prediction equation in Penrose, Nelson & Fisher 1985 and Johnson 1996.
+
 ## Reference
 
 @article{penrose1985generalized,

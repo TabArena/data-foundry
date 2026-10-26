@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, object_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    object_columns,
+)
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -70,21 +78,34 @@ class AnesVoting2026(AbstractCuratedDataset):
         - We remove all samples with missing pre-election data, missing post-election data or a missing target.
         - We drop 327 that are missing from the last 9 years, which will be used for the test splits.
         - We drop all columns with questions that appear only in one year.
+        - Question availability in the test years (from the v1 exploration, counted 2026-10-22 on the cleaned data): of the 261 columns besides the year (target included), 33 vary (more than one distinct value) in all of the last nine studies, 115 in three of them and 13 in only one; most questions are asked in only some of the test years.
+        - These column choices look at every election year, the test years included: a pipeline choice that approximates the task (the questions of an election year are known before its vote), not a value computed from test rows; kept (Lennart, 2026-10-19).
         - The question columns partially stem from post-election interviews. However, there is no simple way to tell which is post-election. We therefore drop all questions for which "no Post IW" or "no post data" is listed as a reason for missing values in the codebook (February 5, 2026 version), and VCF1005, which is built from the post-election House vote ("R Voted" / "R did not vote"). Some additional questions are dropped based on common sense.
         - We encode gender as a categorical variable, because Other was introduced in 2016. However there are very few of these samples. This would actually require split-specific preprocessing.
         - For all features, we assign " " as missing values. Most features have additional types of missingness with own codes. We keep them as categories. That means NA only is assigned if a question was missing in a survey.
         - We transform only high-cardinality (>10) numeric features to numeric, and leave all other ordinal features as categorical, since they all include at least one value that is out-of-order (e.g., "Don't know", "Refused", "Not applicable", "Other", etc.).
         - Although there are several ways to further preprocess features, we leave the preprocessing minimal to enable the development of models that can handle even complex preprocessing on their own.
         - Note: Alternative target could be constructed using who the candidate voted for (VCF0704). This could be a multi-class target with [Democrat, Republican, Other Party, Did not vote, Voted but unknown who]. However, the last category is less useful to predict, and might introduce problems. We therefore stick to predicting whether someone voted or not.
+        - The alternative target in the kept rows (from the v1 exploration, counted 2026-10-22): of the 37,880 respondents who say they voted, VCF0704 gives 18,488 Democrat, 16,159 Republican and 687 other votes, and 2,546 have code 0 or a blank (no candidate recorded); of the 10,707 who say they did not vote, all but 4 have code 0 or a blank.
         - Note: While the data was also used in the TableShift benchmark, we define an entirely different task, with a temporal split and more features.
         - We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
+        - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
     """
 
     # Task
     target = "VCF0702"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. "
+            "2023), which defined the voting task, scores accuracy for every task of its benchmark, a house "
+            "convention, not a choice from the decision; our task differs (temporal year splits, pre-election"
+            " items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift "
+            "accuracy. roc_auc is the binary fallback."
+        ),
+    )
 
     # Splits
     splits_comment = "We use each of the last 9 years once as test data, using all prior data as train data."

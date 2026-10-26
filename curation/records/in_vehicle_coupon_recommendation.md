@@ -37,6 +37,8 @@ Lennart: Leaning towards yes, features seem time invariant; but data source migh
 
 Andrej: Need to test whether time-invariant; Mechanical turk data might be interesting to include
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (out-of-sample, 5-fold, Table 3) (Wang et al. (2017), A Bayesian framework for learning rule sets for interpretable classification, JMLR 18(70), Sec. 6.2 and Table 3).
+
 ## Reference
 
 A Bayesian framework for learning rule sets for interpretable classification By Wang, Tong, Cynthia Rudin, Finale Doshi-Velez, Yimin Liu, Erica Klampfl, and Perry MacNeille. 2017

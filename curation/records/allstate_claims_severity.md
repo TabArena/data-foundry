@@ -34,6 +34,12 @@ type_adapter_id: curation-record-v1
 
 CC: "Predict amount of insurance claims. Data anonymized. Unclear whether date is given or temporal split is required. Kaggle challenge; data does not allow us to remove/avoid temporal split or detect it from meta-data"
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — Mean Absolute Error (https://www.kaggle.com/competitions/allstate-claims-severity (Kaggle API evaluationMetric)).
+
+**Assessment (AI, 2026-10-21):** the loss ships on a log scale again (`np.log`, as before today's change) and is scored by the competition's MAE on the loss as published, after the inverse (`Metric.source("mae", target_transform="log")`, MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 https://www.kaggle.com/competitions/allstate-claims-severity

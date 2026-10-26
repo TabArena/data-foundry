@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class IndianLiverPatientDataset(AbstractCuratedDataset):
@@ -65,6 +65,13 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
     # Task
     target = "Selector"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The UCI page defines no task metric and the cited paper (Ramana et al. 2012) is a statistical "
+            "comparison of the USA and India patient groups, not a benchmark with a declared score; later "
+            "uses report accuracy only."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(

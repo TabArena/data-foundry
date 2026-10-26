@@ -34,6 +34,10 @@ Lennart: Likely include a version of the original data; likely time invariant
 
 Andrej: Use the most extensive data version
 
+**Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01 (no leak): 588 rows are -9 in every feature, the source's code for no bureau record; the open `dataset_missing_value_sentinel` warning comes from them. To decide in the next pass: keep them as applicants without a credit file (the real population) or drop them as empty records, and say which in the notes.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The challenge defined no predictive scoring rule: judging criteria were not announced in advance and mixed an empirical evaluation with qualitative judging of explanations; only accuracy figures (~72-74%) were reported for entries.
+
 ## Reference
 
 https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc

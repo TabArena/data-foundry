@@ -1,13 +1,13 @@
 # `datasets/`
 
-The dataset definitions of Data Foundry, by state. New datasets are v2 folders (one `dataset.py`, an
-`explore.ipynb` workbench and a generated `README.md`; [CONTRIBUTING_DATASETS.md](../CONTRIBUTING_DATASETS.md)).
+The dataset definitions of Data Foundry, by state. New datasets are v2 folders (one `dataset.py` and a
+generated `README.md`; [CONTRIBUTING_DATASETS.md](../CONTRIBUTING_DATASETS.md)).
 The notebooks in this tree are Data Foundry v1, kept as the record of what shipped
 ([DATA_FOUNDRY_V1.md](../DATA_FOUNDRY_V1.md)); never add a dataset as a notebook.
 
 ```
 datasets/
-├── _template/        # the v2 template `dataset new` copies: dataset.py + explore.ipynb
+├── _template/        # the v2 template `dataset new` copies: dataset.py
 ├── _dev/             # work in progress, one folder per collection being built
 │   ├── tabarena-v0pt2/      # the TabArena v0.2 working copy: 177 v2 definitions (start with its GETTING_STARTED.md)
 │   └── feature_selection/   # v1 notebooks of the feature-selection work (SelectArena)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
@@ -75,6 +75,14 @@ class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
     # Task
     target = "sepsis_outcome_after9pt5_days_in_hospital"  # we rename the target column during preprocessing
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Chicco & Jurman 2020 call PR AUC with Alive (92.6%) as positive their 'principal indicator', "
+            "with ROC AUC, MCC, F1 and others; on our folds PR AUC sits at its floor 0.926 with a best of "
+            "0.966, so it resolves models poorly (MET-9). Original rejected: PR AUC on the majority class. "
+            "roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "data_files" / "s41598-020-73558-3_sepsis_survival_primary_cohort.csv")

@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 
 class Sat11HandAlgoRuntime(AbstractCuratedDataset):
@@ -96,6 +96,25 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     # Task
     target = "runtime"
     problem_type = "regression"
+    metric = Metric.source(
+        "par_k",
+        original=(
+            "PAR10 (penalized average runtime, factor 10) of the selected algorithm; also reported as the "
+            "fraction of the single-best to virtual-best gap closed"
+        ),
+        reference=(
+            "Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence "
+            "237:41-58; Pulatov et al. 2022 (PMLR v188)"
+        ),
+        definition=(
+            "per instance select the algorithm with the lowest predicted runtime; its true runtime in seconds"
+            " (exp of the log target), a timeout (runtime >= 5,000 x (1 - 1e-4)) counted as 50,000 s; mean "
+            "over instances"
+        ),
+        params={"cutoff": 5000, "k": 10, "timeout_rel_tol": 0.0001},
+        inputs={"group": "instance_id"},
+        target_transform="log",
+    )
     grouping = Grouping(
         on="instance_id",
         labels="per_sample",

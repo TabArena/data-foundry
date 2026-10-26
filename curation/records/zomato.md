@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Free Text (Short)
 collections:

@@ -13,6 +13,8 @@ decision_markers:
 - Duplicate
 original_source: UCI
 year: '1992'
+required_split:
+- Random (IID)
 problem_type: Multiclass Classification
 source_links:
 - https://www.openml.org/search?type=data&id=40670
@@ -35,6 +37,8 @@ Potential issue: duplicate
 Lennart: preprocssed duplicate
 
 Andrej: Duplicate
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Towell, Shavlik & Noordewier report test error rates without costs between the site types; error rate rejected.
 
 ## Reference
 

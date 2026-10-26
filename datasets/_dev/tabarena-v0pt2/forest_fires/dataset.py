@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class ForestFires(AbstractCuratedDataset):
@@ -17,7 +17,10 @@ class ForestFires(AbstractCuratedDataset):
             "large it will grow, to decide where to send air tankers and ground crews (the paper's stated use)."
         ),
         row=("One forest fire in the Montesinho natural park in northeast Portugal, 2000-2003 (517 fires)."),
-        predicted="The burned area in hectares, on a log scale; 48% of the fires burned 0 ha.",
+        predicted=(
+            "The burned area in hectares, shipped on a log1p scale for modelling; scored by MAE on the area in "
+            "hectares. 48% of the fires burned 0 ha."
+        ),
         known=(
             "The fire's square on a grid map of the park, the month and weekday, four components of the Canadian fire"
             " weather index, and the temperature, humidity, wind and rain."
@@ -57,13 +60,20 @@ class ForestFires(AbstractCuratedDataset):
         We start with the data from UCI.
 
         - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
-        - We log1p scale the target as suggest by the authors.
+        - We log1p scale the target as suggested by the authors, and score it as they did: they fit on log1p(area) and computed MAD and RMSE on the raw area after back-transforming the predictions (Cortez and Morais 2007, Sec. 3-4), so the metric is MAE after the inverse (`target_transform="log1p"`, MET-3).
         - The data contains naturally occurring duplicates.
     """
 
     # Task
     target = "area"
     problem_type = "regression"
+    metric = Metric.source(
+        "mae",
+        original="MAD (mean absolute deviation) of the burned area; RMSE also reported, models ranked by MAD",
+        reference="Cortez & Morais 2007, A data mining approach to predict forest fires using meteorological data (EPIA 2007), Sec. 3-4; UCI forestfires.names",
+        definition="mean absolute error of the burned area in hectares, on the raw scale",
+        target_transform="log1p",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "forestfires.csv")

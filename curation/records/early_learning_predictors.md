@@ -10,7 +10,6 @@ suggestion: 'Yes'
 decision_markers:
 - Needs extensive data wrangling
 tags:
-- Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:
 - New (BeyondArena)
@@ -19,7 +18,6 @@ year: '2024'
 domain: education
 required_split:
 - Grouped (NON-IID)
-- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
@@ -36,6 +34,12 @@ type_adapter_id: curation-record-v1
 Very nice dataset. It was used in a Zindi challenge, where an additional focus next to predictive performance was on interpretability. I think they used random splits, but it should be either temporal or group based (by school). Needs some preprocessing since it doesn't make sense to use all ~1200 features. But we can follow the Zindi challenge, where a subset of features was provided
 
 predict whether a child thrives by five
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: count_staff_unpaid_managers, pra_breadwinner, pra_letcee_club, practitioner, pri_funding_subsidy, quintile_used.
+
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: pra_breadwinner, pra_letcee_club, pri_funding_subsidy (yes/no questions by name). Reverted: count_staff_unpaid_managers (a count), practitioner and quintile_used (meaning not documented).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the Zindi challenge's error metric, root mean squared error of the total ELOM score.
 
 ## Reference
 
