@@ -3,9 +3,9 @@ unique_name: microaggregation2
 name: microaggregation2
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 year: '2014'
 problem_type: Multiclass Classification
 source_links:

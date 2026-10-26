@@ -138,6 +138,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
 | USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
+| USE-1, USE-5 | nba_players_2016_2019 | `No` + `No Good Target / Scientific Discovery`, `Not Representative`: no actor, moment or decision fits (the prediction point moved twice to fit the data, 25 of 35 features are end-of-season values), and the score ranks the whole ballot where the actor acts on its 2 or 3 starters; more seasons would be a rebuild of our own and fix neither (2026-10-26, Lennart) | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
@@ -146,6 +147,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment, now that PROV-2 (amended 2026-10-21, Lennart) keeps a sound upload with a source to point to | applied |
 | USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |
 | USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
+| USE-6 | 2_month_survival_rate_prediction | the physicians' day-3 survival estimates and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart) | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
 | USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |

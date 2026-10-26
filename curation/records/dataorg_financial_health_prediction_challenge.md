@@ -5,10 +5,10 @@ checked_by:
 - Andrej
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - New IID
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -42,4 +42,4 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 CC (2026-10-22, Lennart): verdict don't ship. Too risky a dataset: we have no information on the target and what we are predicting, and it is survey data; tag it 2nd tier / scientific discovery; it should not be part of TabArena v0.2.
 
-**Assessment (AI, 2026-10-22):** `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientfic Discovery`; the claim is released and the folder `datasets/_dev/tabarena-v0pt2/dataorg_financial_health_prediction_challenge/` with its REVIEW.md removed from the working copy (v2_path cleared). The definition stays in git history (commit before this change).
+**Assessment (AI, 2026-10-22):** `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientific Discovery`; the claim is released and the folder `datasets/_dev/tabarena-v0pt2/dataorg_financial_health_prediction_challenge/` with its REVIEW.md removed from the working copy (v2_path cleared). The definition stays in git history (commit before this change).

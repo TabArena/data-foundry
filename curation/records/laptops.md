@@ -6,7 +6,7 @@ checked_by:
 - Mustafa
 suggestion: TBD -> 2nd Tier
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - New IID
 collections:

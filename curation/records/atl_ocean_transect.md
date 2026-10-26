@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 - AI-Filled (Verify)
@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): an OTU abundance table from a study of marine bacterial diversity patterns; no predictive task in the source and no target in the record.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): an OTU abundance table from a study of marine bacterial diversity patterns; no predictive task in the source and no target in the record.
 - Source: Milici et al., "Low diversity of planktonic bacteria in the tropical ocean", Scientific Reports 6:19054, 2016 (doi 10.1038/srep19054); as published: 16S V5-V6 OTU table and station metadata in the SI, 26 stations x 5 depths x 3 size fractions = 359 samples.
 - Use case: none stated; the paper's aim is a discovery ("revealed a clear biogeographic pattern with a double inverted latitudinal gradient"). A framing "predict an environmental variable from the community" would be ours, not the source's (SEL-8), and the variables (temperature, depth) are measured directly at sampling.
 - Siblings and duplicates: the microbiome group of records with "metadata source / otu table source" notes (australia, bedford_basin_v4v5, bedford_basin_v6v8, bog_lakes, boso_fish, wastewater_treatment: AI `No`; eu_lakes_allfeatures, eu_lakes_allsamples, nz_springs, ports, subseafloor_arc, subseafloor_arc_2, tara_oceans: AI `TBD -> 2nd Tier`; none verified by a curator). The collection that gathered them is not identified; the closest ML use (Sperlea et al. 2021, Mol Ecol, on EU lakes) quantifies "covariation", also a discovery framing.

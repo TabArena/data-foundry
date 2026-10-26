@@ -26,45 +26,14 @@ Value: TP-2, a small real signal; TP-9 holds (20-56 default rows per window); TP
 Quality: CLEAN-11, one impossible share set to missing.
 Weighed: real lender task +, size +, two product eras -, near-chance 2024 windows -, a 2024 window where untuned
   models do not beat a guess (the unstable flag) -.
-For the curator: issue 2 (the zero-share filter), issue 1 (the SPLIT-20 exception).
+For the curator: issue 1 (Type_1 only), issue 6 (the metric), issue 7. Issue 2 settled on 2026-10-26.
 ```
 
-**Main points:** Keep dropping the rows whose lender funds less than one unit (issue 2, recommended); record an
-exception for testing two product eras in one task, or cut the task to the 2022 product (issue 1, recommended the
-exception).
+**Main points:** Ship the Type_1 loans only (issue 1, recommended)? The metric: ROC AUC over Zindi's F1 (issue 6, a
+consistency check)? The country part of the original use case cannot be reproduced (issue 7). Settled on 2026-10-26:
+the rows whose lender funds less than one unit stay dropped (issue 2).
 
 **Issues for Lennart:**
-
-2. **Keep dropping the rows whose lender funds less than one unit?** A loan can be funded by one or two lenders, and
-   each lender has a row. In 8,899 rows the lender's funded amount (`Amount_Funded_By_Lender`) is below 0.5 (8,520 of
-   them exactly 0). None of these rows is labelled 1, so their label says nothing about the customer. But the funded
-   amount is a value at the data pull with no recording time, and lenders can buy each other out, so dropping on it
-   selects rows, including test rows, on a field recorded after the loan was paid out.
-   - Effect: kept, these rows put about 90-130 false "no default" labels into the data and teach a model that a tiny
-     lender amount means repayment. Dropped, the 2022 test windows lose 8.2-17.9% of the rows of their dates, rows a
-     lender would score at disbursement, so the test stands only for loans whose lender still holds a share of at
-     least 0.5 at the data pull.
-   - Evidence: 0 of 8,899 rows are labelled 1, where about 105 would be expected at the default rate of their months.
-     For the same customers and months, 1.04% of these rows carry a default-size repay charge (an amount to repay
-     more than 20% above the amount lent; it grows with penalties after a default), against 0.40% of the customers'
-     other loans, where such a charge means label 1 in 89% of cases. Kept rows with tiny amounts (0.5-10) default at
-     0.6-1.3%, like Type_1 loans (the main 7-day product) overall (1.0%), so the 0.5 threshold does not leave the
-     mechanism behind.
-   - Implemented: all 8,899 rows below 0.5 are dropped.
-   - Alternatives: (a) drop only the 8,520 zero-share rows (379 tiny-share rows stay, 56 of them in test windows);
-     (b) keep all rows and drop both share columns: about 90-130 defaults stay labelled 0; (c) keep the rows and the
-     columns: the false labels stay and a model learns them.
-   - Rule: LEAK-25 (Must): rows that mix "no event" with "not recorded" are fixed when the recording process can be
-     recovered, and here the field identifies the rows. Against: SPLIT-9 (a test row selected on a field recorded
-     later), and LEAK-22 (follow the source's cohort) has no source cohort to follow. Precedent: ghanas_indigenous_intel
-     was retired because its recording process could not be recovered; here it can. digicow (the same mechanism, no
-     field to find the rows) is recommended `No` (`Data Quality Issue`, `Too Small`). The critic and the advocate
-     agree it is a weighing call.
-   - What would settle it: the host's statement of when the shares are recorded.
-   - Recommendation: keep the drop (split auditor and advocate: the lesser harm; the mediator counts LEAK-25 as fixed
-     by it and leaves the weighing to you; the critic agrees it is your call).
-   - Decision: drop all rows below 0.5 (as implemented), only the zero-share rows, or keep the rows and drop both
-     share columns.
 
 1. **Test two product eras in one task?** Six test windows (5-10 days each, 2022-10-20 to 2022-12-01) score Type_1
    7-day loans to repeat customers; three 30-day windows (2024-07-11 to 2024-10-08) score Type_7 loans, a product first
@@ -88,6 +57,75 @@ exception).
    - Recommendation: record the exception (mediator).
    - Decision: record the exception to SPLIT-20, or ship "2022 Type_1 only"; decide on spans, rows and product
      coverage, not on model scores (SPLIT-21).
+
+   **Lennart (2026-10-26, discuss):** I think we should only ship type_1 here, the dataset seems anyhow very broken and we
+   need to just pull from the data the relevant task we think best matches what someone in reality would do / explore
+   / build to predict. Otherwise, it is just a very noisy data dump and weird competetion setup too. Also check what to
+   solution on Zinidi did, if you can read that
+
+   **Answer (AI, 2026-10-26):** I agree: ship the Type_1 loans only.
+   - Type_1 exists only from 2022-07-12 to 2022-12-01: 52,826 rows and 520 defaults (0.98%), none in 2023-2024, so a
+     Type_1 task ends with the 2022 windows. Within Type_1 the lender, the product and the duration (7 days) are
+     constant, and 99.6% of the rows are repeat customers: one lender scoring one product at disbursement.
+   - The six current 2022 windows, cut to Type_1, hold 1,821-2,446 test rows and 18-22 defaults each (122 in all),
+     above TP-9. Nine windows would leave some with 8 defaults, so six it is. No SPLIT-20 exception is needed, and the
+     2024 windows, which score near chance (ROC AUC 0.47-0.53), go.
+   - The current 2022 windows also hold 565 rows of other products, which default at about 10% and share 1.4% of
+     their customers with Type_1. Untuned LightGBM, as context only (SPLIT-21): mean ROC AUC 0.60 on Type_1 alone
+     (0.52-0.67 per window; 0.64 with the settled history added) against 0.68 for the mixed windows, so the mixed score
+     came from telling the products apart, not from ranking the customers of one product.
+   - What the Zindi solutions did ([discussions](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions)):
+     the leaderboard rewarded leaks and rules, not a credit model. A widely used "magic" rule set every Ghanaian (or
+     loan type 3) customer's last loan to 1, worth +0.07-0.10 F1 ([24427](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24427):
+     "It doesn't work with Kenya!"). The 3rd place used the repay amounts (recorded after the outcome), customer
+     aggregates over train and test together, random folds, and copied training labels onto test rows of the same loan
+     ([24855](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24855)); the 6th kept only
+     each customer's latest loans ([24860](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24860)).
+     Teams' cross-validation F1 of 0.84-0.99 against 0.62-0.73 on the leaderboard says the same. The 1st and 2nd places
+     never published their approach. No solution points to a real task other than scoring Kenyan repeat loans.
+   - What changes: the rows (Type_1 only), the six windows, and `row`, `use_case`, `changes` and the splits comment.
+     Mark "Change" and I make the cut.
+
+6. **Metric: ROC AUC instead of Zindi's F1?** The definition declares Zindi's leaderboard metric, F1 on hard 0/1
+   labels with default as the positive class (`Metric.source("f1")`, CC 2026-10-21; MET-4's Cases table names this
+   dataset as applied).
+
+   **Lennart (2026-10-26, discuss, on the verdict):** Here the metric choice is wrong, it should be ROC AUC, f1 is clearly
+   worse and maybe not well picked on the competition website. We will overrule this.
+
+   **Consistency check (AI, 2026-10-26):** this reverses your CC of 2026-10-21 for this dataset ("overrule it only when it is
+   biased or wrong") and MET-4's text, which keeps a competition's hard-label metric. MET-4 allows the overrule on
+   evidence from the source or measured on the shipped splits, and both exist here:
+   - From the source: Zindi's goal is a model that "accurately predicts the probability of loan default", and the top
+     10 had to build a "credit scoring function, using their model's outputs and probabilities ... binning model
+     outputs into risk categories" ([info](https://zindi.africa/competitions/african-credit-scoring-challenge)). The
+     lender's decision is a risk grade, not one hard label; F1 was only the leaderboard's scorer, with no threshold or
+     costs given.
+   - The forum shows the F1 was gamed: the "magic" rule above was worth +0.07-0.10 F1.
+   - On the shipped windows: untuned LightGBM scores F1 0.00-0.16 per window; with about 20 defaults per window one
+     more caught default moves F1 by about 0.05 (MET-10).
+   What sets it apart from your call of 2026-10-21? (a) these facts meet MET-4's overrule clause: declare ROC AUC,
+   keep F1 named as the original in the spec, change MET-4's Cases row to an overrule with these numbers, and check
+   hiva_agnostic, which declares a challenge's hard-label error rate the same way; (b) keep F1; (d) amend MET-4: a
+   competition's threshold metric without a fixed threshold or costs goes to ROC AUC. I recommend (a): the facts are
+   specific to this source.
+
+7. **The original use case: a model that generalises to a new country?** Zindi's test set held two parts: 15,069
+   Kenya rows, a random 18% of the same dates as the training file (98.4% of their customers are in it), and 3,525
+   Ghana rows (2021-11 to 2023-03, loan types 3, 2 and 8; types 3 and 8 never occur in training, no Ghana customer
+   does), "This split emphasises the need for models that generalise well." The test labels were never released.
+
+   **Lennart (2026-10-26, discuss, on the verdict):** Let me know if you need the original data from Zindi at all, I can
+   access it. Also note that the original use case was to generalize to another country? we dont really do that
+   anymore I guess, which is fine but weird. Let us think about this more.
+
+   **Answer (AI, 2026-10-26):** we cannot reproduce the country part, and I would not try. Ghana's rows have no public
+   labels (Zindi's files hold none; Zindi does not release test labels, so your access would not add them), and
+   their products are not in the training file. On Zindi that part was won by the hand-written rule above, not by a
+   model. Our task is the Kenyan half of Zindi's test, split by time instead of at random; with the Type_1 cut (issue
+   1) it also drops the 234 rows of new applicants. Both go into `changes` and `fit_reason` with the cut. We need
+   nothing more from Zindi: our Kaggle copy matches Zindi's file sizes, and only the sample submission and the starter
+   notebook are missing, neither with labels.
 
 **Review panel:** ship after changes (mediator). Claim audit: 74 claims, 59 hold, 3 refuted, 11 untested, 1 not
 reproduced; corrected in the definition: "no link to the outcome" for the count of a loan's other lenders (the count

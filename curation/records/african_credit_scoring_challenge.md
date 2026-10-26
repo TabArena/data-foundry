@@ -51,3 +51,7 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 **Assessment (AI, 2026-10-21):** fit stays `approximate` for the label-only history and the unstated sampling; the funded-amount columns left `fit_reason` (their potential-leak note stays).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source f1 — F1 Score (https://zindi.africa/competitions/african-credit-scoring-challenge (evaluation section)).
+
+CC (2026-10-26, Lennart): issue 2: keep dropping the 8,899 rows whose lender funds less than 0.5 (LEAK-25).
+
+**Assessment (AI, 2026-10-26):** answers on the review page. Type_1 exists only from 2022-07-12 to 2022-12-01 (52,826 rows, 520 defaults); the six 2022 windows cut to Type_1 hold 18-22 defaults each, and the mixed windows' higher ROC AUC (0.68 against 0.60 untuned) comes from telling products apart (issue 1). Zindi's leaderboard was won with leaks and a hand-written Ghana rule, and its goal asked for default probabilities binned into risk grades; F1 per shipped window is 0.00-0.16 with about 20 defaults (issue 6, a consistency check against CC 2026-10-21). Zindi's Ghana test part cannot be reproduced: no labels, products absent from training (issue 7).

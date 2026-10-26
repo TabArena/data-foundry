@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import datetime, time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -51,6 +54,97 @@ AFTER_9AM = (
     "Temp3pm",
 )
 
+# The 9 am readings of the other locations that each row also reads, from the same date (CLEAN-19 as amended on
+# 2026-10-26): a forecaster reads the weather upwind at 9 am.
+NEIGHBOUR_READINGS = ("Rainfall", "Pressure9am", "Humidity9am")
+
+# The time zone of each location (tz database), to tell whose 9 am comes before a row's own.
+LOCATION_TIME_ZONES = {
+    "Australia/Perth": ("Albany", "PearceRAAF", "Perth", "PerthAirport", "SalmonGums", "Walpole", "Witchcliffe"),
+    "Australia/Darwin": ("AliceSprings", "Darwin", "Katherine", "Uluru"),
+    "Australia/Adelaide": ("Adelaide", "MountGambier", "Nuriootpa", "Woomera"),
+    "Australia/Brisbane": ("Brisbane", "Cairns", "GoldCoast", "Townsville"),
+    "Australia/Sydney": (
+        "Albury",
+        "BadgerysCreek",
+        "Cobar",
+        "CoffsHarbour",
+        "Moree",
+        "Newcastle",
+        "NorahHead",
+        "Penrith",
+        "Richmond",
+        "Sydney",
+        "SydneyAirport",
+        "WaggaWagga",
+        "Williamtown",
+        "Wollongong",
+        "Canberra",
+        "Tuggeranong",
+        "MountGinini",
+    ),
+    "Australia/Melbourne": (
+        "Ballarat",
+        "Bendigo",
+        "Dartmoor",
+        "Melbourne",
+        "MelbourneAirport",
+        "Mildura",
+        "Nhil",
+        "Portland",
+        "Sale",
+        "Watsonia",
+    ),
+    "Australia/Hobart": ("Hobart", "Launceston"),
+    "Pacific/Norfolk": ("NorfolkIsland",),
+}
+
+
+def _utc_offsets_at_9am(dates: pd.DatetimeIndex, zone: str) -> tuple[np.ndarray, np.ndarray]:
+    """The UTC offset (hours) of 9 am on each date in a time zone: by the clock (daylight saving) and by standard time."""
+    tz = ZoneInfo(zone)
+    nine = [datetime.combine(d.date(), time(9), tzinfo=tz) for d in dates]
+    clock = np.array([t.utcoffset().total_seconds() / 3600 for t in nine])
+    standard = np.array([(t.utcoffset() - t.dst()).total_seconds() / 3600 for t in nine])
+    return clock, standard
+
+
+def _known_locations(dates: pd.DatetimeIndex, locations: list[str], rows: pd.DataFrame) -> np.ndarray:
+    """Rows x locations: whether the location's 9 am of the row's date is not later than the row's own 9 am.
+
+    Checked under both clock and standard time, since BoM's notes do not say which a station's 9 am follows; a
+    row's own location is excluded (its readings are its own columns).
+    """
+    zone = {loc: z for z, locs in LOCATION_TIME_ZONES.items() for loc in locs}
+    assert set(locations) <= set(zone), set(locations) - set(zone)
+    offsets = {z: _utc_offsets_at_9am(dates, z) for z in LOCATION_TIME_ZONES}
+    clock = np.column_stack([offsets[zone[loc]][0] for loc in locations])
+    standard = np.column_stack([offsets[zone[loc]][1] for loc in locations])
+    d = dates.get_indexer(rows["Date"])
+    own = pd.Index(locations).get_indexer(rows["Location"])
+    # 9 am at M is not later than 9 am at L when M's UTC offset is at least L's
+    known = (clock[d] >= clock[d, own][:, None]) & (standard[d] >= standard[d, own][:, None])
+    known[np.arange(len(rows)), own] = False
+    return known
+
+
+def _neighbour_readings(observations: pd.DataFrame, rows: pd.DataFrame) -> pd.DataFrame:
+    """For each row, the other locations' 9 am readings of its date (`<reading>_at_<Location>`), missing where that
+    location's 9 am is later than the row's own or it has no reading. A location that never records a reading (four
+    record no pressure) has no column for it.
+    """
+    locations = sorted(observations["Location"].unique())
+    dates = pd.DatetimeIndex(sorted(observations["Date"].unique()))
+    known = _known_locations(dates, locations, rows)
+    d = dates.get_indexer(rows["Date"])
+    wide = observations.pivot(index="Date", columns="Location", values=list(NEIGHBOUR_READINGS))
+    columns = {}
+    for reading in NEIGHBOUR_READINGS:
+        values = np.where(known, wide[reading].reindex(index=dates, columns=locations).to_numpy()[d], np.nan)
+        recorded = wide[reading].reindex(columns=locations).notna().any().to_numpy()
+        columns.update({f"{reading}_at_{loc}": values[:, j] for j, loc in enumerate(locations) if recorded[j]})
+    return pd.DataFrame(columns, index=rows.index)
+
 
 class RainInAustralia(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -67,17 +161,17 @@ class RainInAustralia(AbstractCuratedDataset):
         known=(
             "The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and "
             "evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust "
-            "and 3 pm observations, the location and the date."
+            "and 3 pm observations, the location and the date, and the rain, pressure and humidity read at 9 am that "
+            "day at the other locations whose 9 am comes no later."
         ),
         split=(
-            "Nine test windows of 14 days, one every six weeks from February 2025 to January 2026, newest first; each"
-            " trains on every earlier day, as for a model refit every two weeks."
+            "26 test windows of 14 days, one after the other from February 2025 to January 2026, newest first; "
+            "each trains on every earlier day, as for a model refit every two weeks."
         ),
         changes=(
-            "We replace the ten values recorded after 9 am (the afternoon readings, the day's maximum temperature, "
-            "sunshine and gust) by the previous day's, drop the rain amount that defines the label, drop rows "
-            "whose next record is more than a day later, and drop the rows without a label (8,076) or without their "
-            "own 9 am rain reading (2,571)."
+            "We replace the ten values recorded after 9 am by the previous day's, drop the rain amount behind the "
+            "label, drop rows whose next record is more than a day later or that lack a label (8,076) or their own "
+            "9 am rain reading (2,571), and add the other locations' 9 am rain, pressure and humidity of the day."
         ),
         fit="approximate",
         fit_reason=(
@@ -154,12 +248,22 @@ class RainInAustralia(AbstractCuratedDataset):
           The last row of each location keeps its label; it matches BoM's reading of the next day at the 7 locations
           checked.
         - We drop the rows without a label and the rows whose own 9 am rain reading is missing, since BoM's next value
-          can then be "accumulated over several days rather than the normal one day" (decision table).
+          can then be "accumulated over several days rather than the normal one day" (decision table). Both kinds of
+          dropped rows carry a label over 48 hours or more (42.6% rain days against 21.8%), another quantity than the
+          24-hour call of the task (USE-5; CC 2026-10-26).
         - Rainfall and RainToday (Rainfall > 1 mm in every row) are the location's 9 am gauge reading on D, i.e. the
           label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 shipped windows (LightGBM,
           0.8495 with them, 0.8467 without; log loss 0.3516 against 0.3549), and the features without the location's
           rain series beat persistence and the location-by-month climatology in 9 of 9 windows, so the skill does not
-          come from the lagged target. We keep both: the reading is an input the forecaster has at 9 am.
+          come from the lagged target. A forecast of the rain amount from the location's own rain series with a > 1 mm
+          rule reaches ROC AUC 0.75 against 0.849 (9 of 9 windows). We keep both: the reading is the last observation,
+          known at 9 am, and an input the forecaster has (TP-10 as amended 2026-10-26).
+        - CLEAN-19 as amended (Lennart, 2026-10-26): each row also reads the other locations' 9 am Rainfall, Pressure9am
+          and Humidity9am of the same day (`<reading>_at_<Location>`, 143 columns: four locations record no pressure), as a forecaster reads the weather
+          upwind. A location counts only when its 9 am comes no later than the row's own, under both clock and standard
+          time (`_known_locations`): Perth's 9 am is 11:00-11:30 in the east, so an eastern row cannot read it. A row
+          reads 32 other locations on average (decision table); the rest are missing by construction. On the 9 windows
+          shipped before (LightGBM, 400 trees) this lifts ROC AUC from 0.850 to 0.870 (paired SE 0.0045, better in 8 of 9).
         - The wind direction is blank in every row with a wind speed of 0; we set it to "Calm" there (WindDir9am,
           WindDir3pm before the lag; 15,003 and 1,609 rows of the cleaned data).
         - A relative humidity of 0% is impossible; we set it to missing (5 cells, all at Woomera).
@@ -198,17 +302,19 @@ class RainInAustralia(AbstractCuratedDataset):
     )
 
     # Splits
-    temporal = Temporal(on="Date", splits=TemporalSplits(window=14, unit="days", n_windows=9, step=42))
+    temporal = Temporal(on="Date", splits=TemporalSplits(window=14, unit="days", n_windows=26))
     splits_comment = """
         Weather models are refit often (one to two weeks, the horizon the curators set for
-        climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 9 test windows
-        of 14 days, one every 6 weeks from 2025-02-15 to 2026-01-30, newest first, so that the windows cover every
-        season of the last year; train is every earlier day (from 2007-11-01). Each window holds 622-642
-        location-days of 46 locations with 63-205 rain days. The 9 windows are the 9 splits the v2 protocol gives this
-        size. No gap: the label of the last training day is read at 9 am on the first test day, before the first
-        prediction. The history has a break (no rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are
-        missing far more often after it; training from 2017-03 gives ROC AUC 0.842 against 0.847 with the full
-        history, so the old years do no harm.
+        climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 26 test windows
+        of 14 days, one after the other from 2025-02-01 to 2026-01-30, newest first, so that the windows cover every
+        season of the last year (6-7 per season); train is every earlier day (from 2007-11-01), at least 93.8% of the
+        rows. Each window holds 619-642 location-days with 63-222 rain days, 16,457 test rows in all. The window AUCs
+        vary as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows sets how steady
+        the mean is: its standard error is 0.008 against 0.016 for 9 windows spaced six weeks apart (LightGBM; the
+        correlation of neighbouring windows, 0.24, makes it about 0.010) (CC 2026-10-26). No gap: the label of the last
+        training day is read at 9 am on the first test day, before the first prediction. The history has a break (no
+        rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are missing far more often after it; training
+        from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history, so the old years do no harm.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -221,6 +327,8 @@ class RainInAustralia(AbstractCuratedDataset):
             df[direction] = df[direction].mask(df[speed].eq(0), "Calm")
         for humidity in ("Humidity9am", "Humidity3pm"):
             df[humidity] = df[humidity].mask(df[humidity].eq(0))
+        # Every location's 9 am readings, before any row is dropped: the other locations read them (below).
+        observations = df[["Location", "Date", *NEIGHBOUR_READINGS]]
         # The columns recorded after 9 am on D, replaced by their values of D-1 at the same location.
         keys = ["Location", "Date"]
         previous = df[[*keys, *AFTER_9AM]].assign(Date=df["Date"] + pd.Timedelta(days=1))
@@ -234,7 +342,9 @@ class RainInAustralia(AbstractCuratedDataset):
         next_row_gap = df.groupby("Location", sort=False)["Date"].shift(-1) - df["Date"]
         df = df[~(next_row_gap > pd.Timedelta(days=1))]
         # No label, or no 9 am reading on D (the next reading may then cover several days).
-        return df[df["RainTomorrow"].notna() & df["Rainfall"].notna()]
+        df = df[df["RainTomorrow"].notna() & df["Rainfall"].notna()]
+        # The other locations' 9 am readings of the same day whose 9 am comes no later than the row's own.
+        return pd.concat([df, _neighbour_readings(observations, df)], axis=1)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
@@ -288,9 +398,10 @@ class RainInAustralia(AbstractCuratedDataset):
         )
 
         options = {
-            "14 days, every 6 weeks (shipped)": self.temporal.splits,
+            "14 days, contiguous, 26 windows (shipped)": self.temporal.splits,
+            "14 days, every 6 weeks, 9 windows": TemporalSplits(window=14, unit="days", n_windows=9, step=42),
+            "14 days, every 3 weeks, 18 windows": TemporalSplits(window=14, unit="days", n_windows=18, step=21),
             "7 days, every 6 weeks": TemporalSplits(window=7, unit="days", n_windows=9, step=42),
-            "14 days, contiguous": TemporalSplits(window=14, unit="days", n_windows=9),
             "1 month, contiguous": TemporalSplits(window=1, unit="months", n_windows=9),
             "12 months (train >= 50%)": TemporalSplits(window=12, unit="months", n_windows=9, min_train_fraction=0.5),
         }
@@ -304,6 +415,15 @@ class RainInAustralia(AbstractCuratedDataset):
                 "test rows": f"{min(map(len, tests)):,}-{max(map(len, tests)):,}",
                 "rain days": f"{min(rain):,}-{max(rain):,}",
             }
+        # The other locations a row reads, by the time zone of the row's location
+        zone = {loc: z for z, locs in LOCATION_TIME_ZONES.items() for loc in locs}
+        reads = df[[c for c in df.columns if c.startswith("Rainfall_at_")]].notna().sum(axis=1)
+        neighbours = (
+            reads.groupby(df["Location"].map(zone).rename("time zone of the row"))
+            .agg(rows="size", mean_other_locations_read="mean")
+            .round(1)
+        )
+
         return [
             Decision(
                 "Ten columns of day D are recorded inside the label's window and replaced by their values of D-1",
@@ -326,12 +446,19 @@ class RainInAustralia(AbstractCuratedDataset):
                 accumulated,
             ),
             Decision(
-                "Nine two-week test windows, one every six weeks",
+                "26 two-week test windows, one after the other over the last year",
                 "The source gives no refit cadence; for weather the curators set one to two weeks "
-                "(climate_model_weather_forecasting). Two-week windows hold over 600 station-days each, and spacing them "
-                "six weeks apart covers every season of the last year with the 9 splits of the protocol; contiguous "
-                "two-week windows cover only September to January, monthly ones May to January, and yearly windows stop "
-                "at 7 above the 50% train floor.",
+                "(climate_model_weather_forecasting). 26 contiguous two-week windows cover every season of the last "
+                "year with three times the test rows of 9 windows spaced six weeks apart, which halves the standard "
+                "error of the mean score (CC 2026-10-26).",
                 pd.DataFrame(rows).T,
+            ),
+            Decision(
+                "The other locations' 9 am readings a row reads",
+                "Rainfall, Pressure9am and Humidity9am of the same day at every other location whose 9 am comes no later "
+                "than the row's own, under both clock and standard time; a later location is missing. A western row "
+                "reads every other location, an eastern one only those east of it or in its own zone. Rows by the time "
+                "zone of their location, and the mean number of other locations with a 9 am rain reading they read.",
+                neighbours,
             ),
         ]

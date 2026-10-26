@@ -6,10 +6,10 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Missing source information
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -32,7 +32,7 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 **Screening (AI, 2026-10-22):** `TBD -> 2nd Tier`, priority 1: the proposed fast reject (SEL-3 (with SEL-5; PROV-1 supporting)) did not hold in the reject check, so it stays a candidate with the doubt listed.
-- Proposed reject (refuted): `No` (`No Good Target  / Scientific Discovery`, SEL-3; `Missing source information`, PROV-1): the source's own aim is feature importance, and its target is computed from the shipped columns.
+- Proposed reject (refuted): `No` (`No Good Target / Scientific Discovery`, SEL-3; `Missing source information`, PROV-1): the source's own aim is feature importance, and its target is computed from the shipped columns.
 - Source: OpenML 44311 `Job_Profitability`, uploaded 2022-11-03 by "Leon Gross", no origin, paper or citation; the Kaggle copy (ulrikthygepedersen, 2023-02-02) names "https://www.openml.org/" as its source. As published: 14,480 jobs x 31 columns (job number, revenue, cost and hours columns, lead source), target `Jobs_Gross_Margin_Percentage`.
 - Use case: none: the description is "Finding which features are most important to job profitability" (OpenML and Kaggle); every column is a closed job's revenue, cost or hours, known only after the job, so no decision before the outcome.
 - Deterministic target (SEL-5): on the preview rows `Jobs_Gross_Margin_Percentage` = (`Jobs_Total` - `Jobs_Total_Costs`) / `Jobs_Total` (360 - 105.87 = 254.13 = `Jobs_Gross_Margin`, / 360 = 0.7059; 289 - 137.17 = 151.83, / 289 = 0.5254; 49 - 81.15 = -32.15, / 49 = -0.6561), and the cost components add up to `Jobs_Total_Costs`; dropping the rule's inputs leaves hours and lead flags of a finished job.

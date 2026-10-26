@@ -6,10 +6,10 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Duplicate
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Outdated
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -35,7 +35,7 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-10-22):** the curator's `No` (CC line, TabArena Reject) stands on SEL-3 and USE grounds; one counter-argument on a marker: `Duplicate` does not fit.
 - Source: UCI Adult (doi 10.24432/C5XW20), donated in 1996 by Ronny Kohavi and Barry Becker, extracted by Becker from the 1994 Census database; 48,842 rows x 14 features (train 32,561, test 16,281), the target income above 50K dollars; first used in Kohavi (KDD 1996), see Reference.
-- Use case: none fits, as the CC says: no actor decides on whether income exceeds 50K, and the data was not collected for that decision (SEL-3; `No Good Target  / Scientific Discovery`). `Outdated`: 1994 data; Ding et al. (NeurIPS 2021, "Retiring Adult") rebuilt the task on American Community Survey data (Folktables, ACSIncome), for which no record exists.
+- Use case: none fits, as the CC says: no actor decides on whether income exceeds 50K, and the data was not collected for that decision (SEL-3; `No Good Target / Scientific Discovery`). `Outdated`: 1994 data; Ding et al. (NeurIPS 2021, "Retiring Adult") rebuilt the task on American Community Survey data (Folktables, ACSIncome), for which no record exists.
 - Siblings and duplicates: `census_income` (KDD 1994-95 CPS, 300k rows, `TBD -> 2nd Tier`, AI) is another extract of the same survey programme, not a copy of Adult, and Adult is the first publication; `income_prediction_challenge_for_azubian` and `predictive_insights_youth_income_prediction_challenge` are other populations. External collections: TabSTAR, OpenML 1590.
 - Metric: Kohavi 1996 reports accuracy (error rate) only, a habit (MET-6), so the fallback had it shipped.
 - Ethics: race and sex are features (noted by the curator); no objection from subjects or creators found (SEL-1 not triggered on the source's words).

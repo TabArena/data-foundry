@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the Bacteria amplicon table of the same marine-sediment diversity census as `subseafloor_arc`; no predictive task in the source.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the Bacteria amplicon table of the same marine-sediment diversity census as `subseafloor_arc`; no predictive task in the source.
 - Source: Hoshino et al., PNAS 2020 (https://doi.org/10.1073/pnas.1919139117); 40 sampling locations, sediment depths 0.1-678 m; metadata in SI Tables 1 and 2 (PDF), the record's OTU-table link is empty. The record's `name` reads `subseafloor_arc` though the note says Bacteria.
 - Use case: none; the paper describes composition and the environmental factors that explain it (Significance). Fit none.
 - Siblings and duplicates: `subseafloor_arc` (Archaea, same samples and metadata): a second cut of one study that adds no distinct task (PROV-6) even if a target were found.

@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Assessment (AI, 2026-10-22):** the workbook verdict stands: "Tiny data", "Lennart: too small", "Andrej: too small"; recommend restoring `No` with `Too Small` (and noting `No Good Target  / Scientific Discovery`); the curator has the call. The current `TBD -> 2nd Tier` came from an AI "policy" note, not from a curator.
+**Assessment (AI, 2026-10-22):** the workbook verdict stands: "Tiny data", "Lennart: too small", "Andrej: too small"; recommend restoring `No` with `Too Small` (and noting `No Good Target / Scientific Discovery`); the curator has the call. The current `TBD -> 2nd Tier` came from an AI "policy" note, not from a curator.
 - Source: OpenML 228 (uploaded 2014), "Dataset from Smoothing Methods in Statistics (ftp stat.cmu.edu/datasets) Simonoff, J.S. (1996)", the same book as `quake` (Lennart: `No`, Scientific Discovery). As published: 55 rows, 3 columns, target `average_electricity_usage` (monthly household electricity use against month and average temperature), no missing values.
 - Use case: none stated; a textbook smoothing example. A utility forecasting its load would use a series (SEL-10), not 55 monthly rows; fit none.
 - Siblings and duplicates: `quake` (same book, `No`); no copy found. External collections: OpenML only.

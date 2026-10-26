@@ -193,6 +193,9 @@ dt.usecase + dd { font-weight: 500; }
 .metricbox h3 { margin: 0 0 .6rem; font: 600 .78rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
 .metricbox dd code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
 .metricbox dd a { overflow-wrap: anywhere; }
+.metricmark { margin-top: 1rem; border-bottom: 0; }
+.metricmark .seg, .metricmark .note { margin-left: 0; }
+.metricmark .note { width: 100%; }
 .judge { margin-top: 1.6rem; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface); padding: .8rem 1rem; border-radius: 0 6px 6px 0; }
 .judge.direct { border-color: var(--direct); } .judge.approximate { border-color: var(--approx); } .judge.none { border-color: var(--none); }
 .judge p { margin: .3rem 0 0; max-width: 68ch; }
@@ -464,6 +467,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const CAT = { added: "To ship", noship: "Rec. not to ship", notadded: "Not added", decided: "Decided: verify" };
   const labelsFor = (d) => (d.cat === "decided" ? VLABEL_DEC : d.cat === "notadded" ? VLABEL_NA : VLABEL);
   const ITEM_OPTS = [["ok", "As implemented"], ["change", "Change"], ["discuss", "Discuss"]];
+  // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
+  const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
+  const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
+  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided";
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
@@ -550,6 +557,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       if (marked) done++;
     });
     d.fields.forEach((f) => { if (fields[f.key]) done++; });
+    if (hasMetricMark(d)) { total++; if (r.metric && r.metric.d) done++; }
     return { done, total };
   }
 
@@ -601,6 +609,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       });
     }
     if (out.fields) Object.keys(out.fields).forEach((k) => { if (!out.fields[k]) delete out.fields[k]; });
+    if (out.metric && !out.metric.d && !(out.metric.note || "").trim()) delete out.metric;
     return out;
   }
   async function persist(path) {
@@ -766,7 +775,20 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       ? "From the frontmatter of the generated <code>README.md</code> (name and origin only)."
       : "From <code>metric</code> and <code>scoring_columns</code> in <code>dataset.py</code>, as of this page’s snapshot (" + esc(DATA.snapshot) + ").";
     return '<section class="metricbox" aria-labelledby="mh"><h3 id="mh">Metric</h3><dl class="fields">' +
-      rows.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>").join("") + '</dl><p class="srcnote">' + src + "</p></section>";
+      rows.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>").join("") + '</dl><p class="srcnote">' + src + "</p>" +
+      metricMarkHtml(d) + "</section>";
+  }
+  // The curator's mark on the metric, like an issue's: as declared, change (say how in the note) or discuss.
+  function metricMarkHtml(d) {
+    if (!hasMetricMark(d)) return "";
+    const st = peekRev(d.name).metric || {};
+    const ro = mode === "readonly" ? " disabled" : "";
+    return '<div class="item metricmark" id="metric-mark"><h4>Your mark on the metric' +
+      (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(METRIC_LABEL[st.d]) + "</span>" : "") + "</h4>" +
+      '<div class="seg small">' + segHtml(METRIC_OPTS, st.d, "metric", ro) + "</div>" +
+      '<label class="visually-hidden" for="note-m-' + slug(d.name) + '">Note on the metric</label>' +
+      '<textarea class="note" rows="1" id="note-m-' + slug(d.name) + '" data-note="metric" placeholder="Note on the metric (optional)"' +
+      (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></div>";
   }
   function useCaseHtml(d) {
     const s = d.summary;
@@ -878,6 +900,11 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     det += "</section>";
     dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
     if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented: keep what the definition does now. Change: do what your note says. Discuss: Claude answers on the page first. Record fields are marked in their own table below.</p>';
+    if (hasMetricMark(d)) {
+      const mm = (r.metric && r.metric.d) ? METRIC_LABEL[r.metric.d] : "not marked yet";
+      dec += '<p class="intro">The metric (<code>' + esc(d.metric.name) + "</code>) is marked in the Use case tab, under Metric: " + esc(mm) +
+        '. <button class="linkbtn" data-act="ctab" data-c="usecase">Go there</button></p>';
+    }
     if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
     if (d.items.length && d.cat === "decided") dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
     if (nClosed) {
@@ -1055,6 +1082,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         }
       });
       d.fields.forEach((f) => { const v = r.fields && r.fields[f.key]; if (v) marks.push("- Field " + f.field + " (record " + f.record + ", definition " + f.definition + "): " + OPT_LABEL[v]); });
+      const mt = r.metric;
+      if (mt && (mt.d || (mt.note || "").trim())) marks.push("- Metric (" + (d.metric ? d.metric.name : "none") + "): " + (mt.d ? METRIC_LABEL[mt.d] : "no mark") + ((mt.note || "").trim() ? ". Note: " + mt.note.trim() : ""));
       if (!r.verdict && !(r.note || "").trim() && !marks.length) return;
       const vl = r.verdict ? labelsFor(d)[r.verdict] : "no verdict";
       lines.push("## " + d.name + ": " + vl);
@@ -1080,7 +1109,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     Object.keys(S.reviews).sort().forEach((name) => {
       if (!byName.has(name)) return;
       const doc = cleanDoc(S.reviews[name]);
-      if (doc.verdict || hasText(doc.note) || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
+      if (doc.verdict || hasText(doc.note) || doc.metric || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
     });
     XITEMS.forEach((_, id) => {
       const doc = S.crosscut[id] && cleanDoc(S.crosscut[id]);
@@ -1262,6 +1291,16 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       refreshAll();
       return;
     }
+    if (act === "metric") {
+      const r = rev(name);
+      const mt = r.metric || (r.metric = {});
+      mt.d = mt.d === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      updatePill(b, mt.d, METRIC_LABEL);
+      updateCount();
+      refreshAll();
+      return;
+    }
     if (act === "field") {
       const r = rev(name);
       const k = b.dataset.k;
@@ -1306,6 +1345,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const kind = t.dataset.note;
     if (kind === "verdict") { rev(ui.current).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "item") { const r = rev(ui.current); const n = t.dataset.n; (r.items[n] || (r.items[n] = {})).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "metric") { const r = rev(ui.current); (r.metric || (r.metric = {})).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
   });
   document.addEventListener("change", (ev) => {

@@ -1,6 +1,6 @@
 # stroke_prediction
 
-**Outcome:** added; recommended `No` (`No Good Target  / Scientific Discovery`). The label is a stroke the patient
+**Outcome:** added; recommended `No` (`No Good Target / Scientific Discovery`). The label is a stroke the patient
 has already had, at a time not stated, and no decision is made with that prediction (SEL-7 and SEL-3, both Must;
 issue 5); keeping the dataset needs an amendment of SEL-7. Validity otherwise: the source is traced, the training
 file of the 2018 McKinsey Analytics hackathon (43,400 patients, 783 strokes), of which the record's Kaggle file is a
@@ -49,7 +49,7 @@ which are dropped, and marks remain in glucose and age (issue 1); the label is a
      stated horizon approximate, but it cannot lift a Must, and here the label may come before the features.
    - No fix in the definition: the file has no dates to re-target the label on. Dated records would settle it.
    - Implemented: the folder stays, built as if kept.
-   - (a) Apply SEL-7 as written: `No` + `No Good Target  / Scientific Discovery` (replaces `Missing source
+   - (a) Apply SEL-7 as written: `No` + `No Good Target / Scientific Discovery` (replaces `Missing source
      information`), as cdc. Cost: a traced clinical file of 43,400 patients leaves.
    - (b) Amend SEL-7 to cover any past diagnosis known from the record. Same result, with the rule made explicit.
    - (c) Amend SEL-7 to exclude labels from clinical records in a contest framed as prediction. Keeps the dataset
@@ -106,7 +106,7 @@ the definition or the record-field rows.
 **Mediator: stroke_prediction**
 **Recommendation (judgment record)**
 ```text
-Verdict: don't ship (No + `No Good Target  / Scientific Discovery`), unless the curator amends SEL-7 (issue 1);
+Verdict: don't ship (No + `No Good Target / Scientific Discovery`), unless the curator amends SEL-7 (issue 1);
   in that case, ship after the changes below.
 Validity: SEL-1 holds. SEL-7 (Must, narrows SEL-3) triggered on its mechanism: a stroke the patient has already
   had, no stated time, positives already known (cdc). SEL-3 fails on its own (no decision is made with the
@@ -167,7 +167,7 @@ For the curator: issue 1 (apply SEL-7 or amend it); issue 2 (PROV-3 bar, only if
   - the BMI pattern (adjusted OR 3.68) points to records written at the stroke;
   - the practitioner rates the fit "at the border of none".
 - **Decision needed:**
-  - (b) treat like cdc: `No` + `No Good Target  / Scientific Discovery` (recommended);
+  - (b) treat like cdc: `No` + `No Good Target / Scientific Discovery` (recommended);
   - (d1) amend SEL-7 to cover any past diagnosis known from the record, however recorded (same result, rule made explicit);
   - (d2) amend SEL-7 to exclude labels from clinical records in a contest framed as prediction. The wording must also say how SEL-3's "decision someone makes" is met, and whether the same holds for other datasets with has-had labels;
   - (c) reopen cdc.

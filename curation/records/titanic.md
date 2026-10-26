@@ -8,7 +8,7 @@ decision_markers:
 - Trivial
 - Not Representative
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -38,7 +38,7 @@ type_adapter_id: curation-record-v1
 - Use case: none; the table is used to teach and to look back at who survived (SEL-3; `passenger_list_for_the_estonia_ferry_disaster` was judged the same way: "Like Titanic, a scientific discovery task", Lennart). Regime if kept: IID.
 - Siblings and duplicates: `passenger_list_for_the_estonia_ferry_disaster` (`TBD -> 2nd Tier`, Lennart). External collections: TabSTAR; TabArena Reject.
 - Metric: Kaggle's tutorial competition scores accuracy (a tutorial's habit, not a decision's metric).
-- Counter-argument (markers only): `Trivial` has no evidence from a task probe (TP-4); a sex-and-class rule is strong but not a perfect solve. `No Good Target  / Scientific Discovery` matches the stated reason better than `Trivial`; the curator has the call.
+- Counter-argument (markers only): `Trivial` has no evidence from a task probe (TP-4); a sex-and-class rule is strong but not a perfect solve. `No Good Target / Scientific Discovery` matches the stated reason better than `Trivial`; the curator has the call.
 
 The ubiquitous Titanic survival dataset, already in the TabArena Reject collection. The curator notes it is a toy/interpretability example with no real deployment value (a survival predictor for a sinking ship is not a meaningful predictive task), and it is one of thousands of re-uploaded copies. It is small, toy, and not representative of real-world tabular ML. Recommend reject, consistent with prior curation.
 

@@ -10,7 +10,8 @@ hold. Value: TP-4 not triggered. Quality: CLEAN-11 holds (all 862 rows kept). We
 label era -. For the curator: issues 5 and 1, and the tissue-site split, decided together with sarcoma's issue 4
 (cross-dataset item).
 
-**Main points:** Is a check of an existing histological grade against the mutations a use case (issue 5)? Keep a
+**Main points:** Ship it at all (issue 6: the AI agrees with your doubt and recommends `No`)? Is a check of an
+existing histological grade against the mutations a use case (issue 5)? Keep a
 grade label that was right in its era but is partly renamed by WHO 2021 (issue 1)?
 
 **Record judgment:** valid with concerns. The record's assessment of 2026-10-07 holds (a classification task, the
@@ -80,6 +81,32 @@ the use case (issue 5) and the label's era (issue 1).
    Recommendation: keep the label, and record the reading as a USE-5 Cases row ("a label correct under the criteria
    of its era, renamed later: kept with a note"), so the next TCGA-era label, such as tcga_kidney_cancers, is decided
    alike (cross-dataset item). Decision: confirm this reading of USE-5 and keep the label?
+
+6. **Ship it at all, or is the use case too weak?** Your verdict note doubts that the task stands for a real decision.
+
+   **Lennart (2026-10-26, discuss, on the verdict):** This use case seems too far-fetched to me. Is it really
+   appropriate? it seems weak at best and unclear if the original author just did to look at the data / see if ti
+   works, but not that it makes sense for ar eal task
+
+   **Answer (AI, 2026-10-26):** I agree: don't ship it.
+   - The label exists before the inputs. The grade is the pathologist's histological diagnosis, made from the tissue
+     before its DNA is sequenced (issue 5). No setting where the grade is unknown has a source: a biopsy too small to
+     grade and a registry with missing grades were named by the panel, but neither was found. What is left is the
+     cross-check, which is our wording; the practitioner on the panel called grading from mutations alone "not a
+     decision anyone makes, only a check".
+   - The source does not name a decision either. Tasci et al. (2022) motivate the work in one general sentence
+     ("Streamlined grading using molecular information has the potential to facilitate decision making in the
+     clinic", abstract) and then compare feature selection and ensembles under 10-fold cross-validation, with no
+     clinical setting, actor or moment: a methods exercise on a public cohort, as your note suspects.
+   - The label is of its era (issue 1): WHO 2021 grades gliomas with markers the data lacks, so part of the labels
+     is not today's diagnosis.
+   - Consistency: today's nba_players_2016_2019 and dataorg_financial_health_prediction_challenge (2026-10-22) went
+     `No` on a use case we had to construct. sarcoma differs on the fact that matters: its use case is a published
+     clinical tool, the DNA-methylation sarcoma classifier of Koelsche et al. (2021), used to type hard cases before
+     the final diagnosis. lung_cancer_epithelial_genexp predicts before the diagnosis exists. A "No" here also settles
+     the cross-dataset item "Is a cross-check of a label that already exists a use case (USE-1)?": no.
+   - Recommendation: `No` with `No Good Target / Scientific Discovery`, tag `2nd Tier / Scientific Discovery`;
+     issues 5 and 1 then fall away with the folder. Set the verdict to "Don't ship" and I retire it.
 
 **Review panel:** ship after changes (mediator). Claim audit: 44 claims; refuted the gene list ("the 20 genes mutated
 most often": they are the Cancer Gene Census genes, TTN ranks 4th overall) and the count of missing ages (5, not 4),

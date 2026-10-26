@@ -58,14 +58,14 @@ anes_voting_2026 (Lennart, 2026-10-19).
 real missing values when the encoding can be inferred from the description and the context. Keep a code and say why
 when it means something ("not previously contacted").
 
-**CLEAN-11 (Should; amended 2026-10-21, Lennart, on house_prices_nominal, mercedes_benz_greener_manufacturing and
+**CLEAN-11 (Should; amended 2026-10-21, Lennart, on ames_housing, mercedes_benz_greener_manufacturing and
 qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
 only when it is no task row (USE-7, [use_case.md](use_case.md)) or a copy ([leak_checks.md](leak_checks.md), Copies
 across the split (LEAK-16 to LEAK-21)). A row whose target the source names as not the task's quantity may leave, with
 the source's words. A single extreme target in the training period only may leave with the source's words or where
 experts of the field drop such a value by default, decided case by case. Rows that are a sentinel in every
 feature are a decision of their own (Weighed factors). Cases: caracas_cervical_cancer, churn_telco_south_asia,
-heart_disease_va_long_beach, thyroid_discordant, sdss_17, house_prices_nominal, mercedes_benz_greener_manufacturing,
+heart_disease_va_long_beach, thyroid_discordant, sdss_17, ames_housing, mercedes_benz_greener_manufacturing,
 qsar_tid_11.
 
 ### Undo destroyed meaning
@@ -119,8 +119,11 @@ convention of the field, with the merge tested (TP-7): [task_probes.md](task_pro
   the top solutions' features, or a reasonable combination of them, not their union (amended 2026-10-21, Lennart, on
   alfa_battle_2_0_task_2 and rosbank1: "we want to take the best of both, or a reasonable combination, and not a
   union. so here we take the best for alfa as it is the top-solution").
+* It is an input the actor reads at the prediction point from other rows of the same release, such as the other
+  stations' readings of the same morning, kept only where they are known by then (amended 2026-10-26, Lennart, on
+  rain_in_australia: "add the features to do this task as it looks good with only 9am is not later setting").
 
-Cases: alfa_battle_2_0_task_2 (Lennart, 2026-10-13; reason added 2026-10-21).
+Cases: alfa_battle_2_0_task_2 (Lennart, 2026-10-13; reason added 2026-10-21), rain_in_australia (2026-10-26).
 
 **CLEAN-20 (Must).** Copy the top solutions' preprocessing, not their exploits: no step that uses a test-set leak, a
 metric quirk or a feature computed over all rows with their labels (LEAK-28), even when it won the competition. Cases:
@@ -165,13 +168,13 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-1 | ashrae_great_energy_predictor_iii | the readings in kWh from the data owners' raw release (the competition kept each site's own unit); meters at 0 for 48 hours or more in their operating season and readings stuck for a week or more dropped; 94.5% of the 2016 rows dropped are on the first-place team's hand-made list of bad readings (2026-10-15) | applied |
 | CLEAN-7 | sf_permit_time, home_credit_default_risk | under LEAK-29 in [leak_checks.md](leak_checks.md), Cases | applied |
 | CLEAN-8 | rosbank1, alfa_battle_2_0_task_2, anes_voting_2026 | columns or categories kept by counts over the whole table, as ordinary cleaning (2026-10-19, Lennart) | applied |
-| CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and house_prices_nominal's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
+| CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and ames_housing's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
 | CLEAN-11 | heart_disease_va_long_beach | `chol == 0`: missing | applied |
 | CLEAN-11 | thyroid_discordant | `age = 455`: missing | applied |
 | CLEAN-11 | sdss_17 | `-9999`: missing | applied |
-| CLEAN-11 | house_prices_nominal | De Cock's three partial sales over 4,000 sq ft, which he calls "Partial Sales that likely don't represent actual market values" (2011, p. 4), all in the training rows: dropped with his words; the case that prompted the amendment (2026-10-21, Lennart) | applied |
+| CLEAN-11 | ames_housing (record ames_housing until 2026-10-26) | De Cock's three partial sales over 4,000 sq ft, which he calls "Partial Sales that likely don't represent actual market values" (2011, p. 4), all in the training rows: dropped with his words; the case that prompted the amendment (2026-10-21, Lennart) | applied |
 | CLEAN-11 | mercedes_benz_greener_manufacturing | one testing time of 265.3 s against a next highest of 169.9 s (mean 100.7, sd 12.7), car 883 of 4,209 in ID order, inside the first 1,000 cars that every window trains on: dropped as a single extreme target in the training period only; the competition host does not name it; it leaves as the field's default for a single extreme time (the curator's call; the competition's public exploration notebook points it out as the one outlier); the case that made the second clause "the source's words or the experts' default, case by case" (2026-10-21, Lennart) | applied |
 | CLEAN-11 | qsar_tid_11 | one pXC50 of -6.24, a half-effect concentration of about 1.7 million mol/L: impossible, so the target is missing and the row leaves by CLEAN-15; the training-period clause does not apply to a random split (2026-10-21, Lennart) | applied |
 | CLEAN-11 | mortgage | 38 balances that put the source's own LTV above 300% (570,000 on an original 60,495): impossible, missing before lagging, so the 37 lagged LTVs above 300% and the balances and ratios built from them are missing (2026-10-22, Lennart) | applied |
@@ -183,6 +186,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |
 | CLEAN-19 | mortgage | a column joined from outside the source: Freddie Mac's 30-year mortgage rate (FRED MORTGAGE30US), the mean of the previous calendar quarter, and the loan's lagged rate minus it (the refinance incentive a payoff model uses); dated periods make the join exact; the first such join, so siblings with dated periods take the same treatment (2026-10-22, Lennart) | applied |
+| CLEAN-19 | rain_in_australia | the other locations' 9 am Rainfall, Pressure9am and Humidity9am of the same day (143 columns), each kept only where that location's 9 am comes no later than the row's own under both clock and standard time; ROC AUC 0.850 to 0.870 on the 9 windows then shipped (paired SE 0.0045, better in 8 of 9) (2026-10-26, Lennart; the rule amended) | applied |
 | CLEAN-20 | santander_customer_transaction_prediction | `has_one` won the competition and is not copied | applied |
 | CLEAN-21 | college_scorecard | the SAT was redesigned in 2016, so from the 2017 cohort on an institution's scores jump while its students stay the same; the College Board's concordance tables put SATMT25, SATMT75 and SAT_AVG back on the old scale (median change 2016 to 2017 within an institution: 0 instead of +30); a section without a conversion table stays dropped (2026-10-16, Lennart) | applied |
 | CLEAN-21 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | no unit in the files or the LAS headers, so the conversion is inferred from the data and checked against a second curve or a second group of wells: ROP in ft/h in two wells (x 0.3048; ROPA / ROP 0.31 there, about 1 in 26 other wells, 1.0 after), MUDWEIGHT in bar/m in 19 wells (/ 0.0980665, per row below 0.5; per-well medians land in the range of the g/cm3 wells); curves without such a check are masked, not converted (2026-10-21, Lennart) | applied |

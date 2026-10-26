@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: perth_house_prices
 container_format: 2
-checksum: v2:51f8f98dc16e97c1a186c429bd3051cdd788ab747893d207a72b806c877483d5
+checksum: v2:558184ea3e4fce1a75c66cfeeab54bcfd88dcc53aa655311449563e7be774fc6
 build: null
 build_stale: false
 data:
@@ -66,7 +66,7 @@ decisions:
 
 Regression of `log_PRICE`, scored with `rmsle` on temporal splits by `DATE_SOLD`. 33,090 rows and 18 features. Source: Kaggle (2021).
 
-Not built yet. The current definition gives checksum `v2:51f8f98dc16e97c1a186c429bd3051cdd788ab747893d207a72b806c877483d5`.
+Not built yet. The current definition gives checksum `v2:558184ea3e4fce1a75c66cfeeab54bcfd88dcc53aa655311449563e7be774fc6`.
 
 ## In brief
 
@@ -206,7 +206,7 @@ We start with all_perth_310121.csv from the Kaggle dataset syuzai/perth-house-pr
 - `NEAREST_STN` `Vic` names two stations 14 km apart; we split it by longitude into Victoria Street (Mosman Park, west of 115.8° E, 98 rows) and Victoria Park (198 rows).
 - `ADDRESS` stays as text (string), as in melbourne_housing_market: unit numbers and lettered lots are the only trace of the property type the upload dropped (decision table).
 - Categorical: `SUBURB`, `POSTCODE`, `NEAREST_STN` and `NEAREST_SCH`.
-- Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and house_prices_nominal).
+- Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and ames_housing).
 - Note: December 2020 is short (0.71 of November's sales, 0.83-1.04 in 2013-2019; some sales were not yet on the site), but its prices are in line, so it stays the newest test window (decision table).
 - Licence: CC BY-NC-SA 4.0 (Kaggle data card); the terms of the scraped site are not stated.
 

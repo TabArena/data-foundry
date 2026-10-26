@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
 - AI-Filled (Verify)
 collections:
@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 - Use case: none from the source ("Learning With This Dataset" lists teaching skills); the CC's reading (did someone play on a given day) would need a temporal split, but nothing says the rows were observed.
 - Siblings and duplicates: none among the records; the classic 14-row golf/weather table and its Kaggle re-uploads (`priy998/golf-play-dataset`, `davorbudimir/golf-play`) have no records. External collections: none found.
 - Metric: none (no task).
-- Risks: the tags `2nd Tier / Scientfic Discovery` and `Non-IID (Temporal)` do not fit a `No`; left for the curator.
+- Risks: the tags `2nd Tier / Scientific Discovery` and `Non-IID (Temporal)` do not fit a `No`; left for the curator.
 - Priority: none (verdict `No`).
 
 Extended version of the classic 'play golf' teaching dataset, already in the TabArena Reject collection. The author describes it as a teaching tool made of many small handmade datasets, not an actual predictive task. It is artificial/handmade/toy data and tiny, so it fails the representativeness criterion. Confidently No.

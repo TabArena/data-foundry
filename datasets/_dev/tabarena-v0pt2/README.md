@@ -53,7 +53,7 @@ not accepted in the definition.
 <!-- datasets:start -->
 | dataset | regime | rows | features | splits | UUID | open warnings |
 |---|---|---|---|---|---|---|
-| [`2_month_survival_rate_prediction`](2_month_survival_rate_prediction/) | IID | 8,967 | 25 | 3 x 3 | not built |  |
+| [`2_month_survival_rate_prediction`](2_month_survival_rate_prediction/) | IID | 8,967 | 22 | 3 x 3 | not built |  |
 | [`5g_energy_consumption`](5g_energy_consumption/) | grouped | 92,629 | 20 | 3 x 3 | not built |  |
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,686 | 7 | 3 x 3 | not built |  |
 | [`acquire_valued_shoppers_challenge`](acquire_valued_shoppers_challenge/) | temporal | 160,057 | 111 | 5 x 1 | not built |  |
@@ -63,6 +63,7 @@ not accepted in the definition.
 | [`alfa_battle_2_0_task_2`](alfa_battle_2_0_task_2/) | temporal | 963,811 | 510 | 3 x 1 | not built |  |
 | [`allstate_claims_severity`](allstate_claims_severity/) | IID | 188,317 | 130 | 3 x 3 | not built |  |
 | [`amazon_employee_access`](amazon_employee_access/) | IID | 32,769 | 9 | 3 x 3 | not built | `dataset_pure_feature_value` |
+| [`ames_housing`](ames_housing/) | temporal | 2,837 | 78 | 13 x 1 | not built |  |
 | [`amex_non_iid_1m`](amex_non_iid_1m/) | grouped (per group: last) | 1,500,000 | 189 | 1 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`anes_voting_2026`](anes_voting_2026/) | temporal | 48,587 | 261 | 9 x 1 | not built |  |
 | [`apistox`](apistox/) | temporal | 1,035 | 204 | 4 x 1 | not built |  |
@@ -142,8 +143,7 @@ not accepted in the definition.
 | [`homesite_quote_conversion`](homesite_quote_conversion/) | IID | 260,753 | 295 | 3 x 3 | not built | `dataset_constant_column`, `dataset_missing_value_label` |
 | [`horse_colic_survival`](horse_colic_survival/) | IID | 344 | 20 | 20 x 3 | not built |  |
 | [`hotel_booking_demand`](hotel_booking_demand/) | temporal | 81,418 | 28 | 9 x 1 | not built |  |
-| [`house_prices_nominal`](house_prices_nominal/) | temporal | 2,919 | 78 | 13 x 1 | not built |  |
-| [`house_sales`](house_sales/) | temporal | 20,584 | 20 | 9 x 1 | not built |  |
+| [`house_sales`](house_sales/) | temporal | 20,499 | 20 | 9 x 1 | not built |  |
 | [`houses`](houses/) | IID | 19,675 | 8 | 3 x 3 | not built |  |
 | [`hr_analytics`](hr_analytics/) | IID | 18,359 | 12 | 3 x 3 | not built |  |
 | [`huntprohibited_1m`](huntprohibited_1m/) | IID | 1,500,000 | 9 | 1 x 3 | not built |  |
@@ -175,7 +175,6 @@ not accepted in the definition.
 | [`mortgage`](mortgage/) | temporal | 621,653 | 21 | 3 x 1 | not built |  |
 | [`musk`](musk/) | grouped (per group: any) | 6,598 | 166 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`naticusdroid_android_permissions_dataset`](naticusdroid_android_permissions_dataset/) | IID | 7,491 | 85 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows`, `dataset_pure_feature_value` |
-| [`nba_players_2016_2019`](nba_players_2016_2019/) | grouped | 1,408 | 35 | 10 x 3 | not built |  |
 | [`numerai28_6`](numerai28_6/) | IID | 96,320 | 21 | 3 x 3 | not built |  |
 | [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 781 | 3 x 1 | not built |  |
 | [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,166,477 | 7 | 3 x 1 | not built |  |
@@ -198,7 +197,7 @@ not accepted in the definition.
 | [`qsar_fish_toxicity`](qsar_fish_toxicity/) | IID | 908 | 6 | 10 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`qsar_oral_toxicity`](qsar_oral_toxicity/) | IID | 11,105 | 1,232 | 3 x 3 | not built |  |
 | [`qsar_tid_11`](qsar_tid_11/) | IID | 5,704 | 1,024 | 3 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
-| [`rain_in_australia`](rain_in_australia/) | temporal | 264,562 | 22 | 9 x 1 | not built |  |
+| [`rain_in_australia`](rain_in_australia/) | temporal | 264,562 | 165 | 26 x 1 | not built |  |
 | [`regensburg_pediatric_appendicitis`](regensburg_pediatric_appendicitis/) | IID | 763 | 51 | 10 x 3 | not built |  |
 | [`rosbank1`](rosbank1/) | temporal | 4,791 | 347 | 3 x 1 | not built |  |
 | [`rossmann_store_sales`](rossmann_store_sales/) | temporal | 844,392 | 15 | 3 x 1 | not built |  |

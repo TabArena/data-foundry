@@ -9,7 +9,7 @@ decision_markers:
 - No Good Target (yet)
 - Needs extensive data wrangling
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)
@@ -39,6 +39,6 @@ type_adapter_id: curation-record-v1
 - Papers and pages: the Kaggle page and the Open Food Facts data page; no paper defines a task.
 - Metric: none found (Kaggle dataset page, Open Food Facts data page), so the fallback for whichever target is chosen (MET-1, MET-11).
 - Risks for /add-dataset: Nutri-Score grade and points are a deterministic function of the nutrient columns (SEL-5, `Trivial`); NOVA is assigned by a rule on the ingredient list (text); the table is a moving snapshot of a living database; text-heavy columns.
-- Priority: gap 0, use case 0, source + (the organisation documents the data), shape + (millions of rows, mixed types), risk - (no target; the natural one is rule-computed). Markers: `No Good Target (yet)` replaces `No Good Target  / Scientific Discovery` (a database built for another purpose, waiting for a target, not a discovery table); `Needs extensive data wrangling` kept.
+- Priority: gap 0, use case 0, source + (the organisation documents the data), shape + (millions of rows, mixed types), risk - (no target; the natural one is rule-computed). Markers: `No Good Target (yet)` replaces `No Good Target / Scientific Discovery` (a database built for another purpose, waiting for a target, not a discovery table); `Needs extensive data wrangling` kept.
 
 Open Food Facts is a large crowdsourced product/nutrition database (Kaggle world-food-facts) rather than a dataset with a defined predictive target. It is multi-table/database-shaped with heavy missingness and would need extensive wrangling and a chosen target (e.g. nutri-score or food category). As-is it reads as a reference/scientific-discovery table. Suggest TBD -> 2nd Tier; a human must define a meaningful, non-leaking target (e.g. Nutri-Score prediction) and assess usable row count after cleaning.

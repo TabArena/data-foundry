@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Duplicate
 tags:
 - Tiny Data
@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, `Duplicate`; SEL-3, PROV-6): an OTU table of European lakes published for describing community structure, with no predictive target, and the all-samples cut of the same data as `eu_lakes_allfeatures`.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, `Duplicate`; SEL-3, PROV-6): an OTU table of European lakes published for describing community structure, with no predictive target, and the all-samples cut of the same data as `eu_lakes_allfeatures`.
 - Source: Boenigk et al., "Geographic distance and mountain ranges structure freshwater protist communities on a European scale", Metabarcoding and Metagenomics 2 (2018), doi 10.3897/mbmg.2.21519: "eukaryotic ribosomal amplicon diversity from 218 European freshwater lakes sampled in August 2012 to assess the effect of mountain ranges as biogeographic barriers". Metadata from Sperlea et al., Molecular Ecology 2021, doi 10.1111/mec.15872, which presents "a methodological framework to quantify the covariation of the microbial community of a habitat and environmental variables" (more than twenty physicochemical and geographic variables, used to identify bioindicators). OTU table from J. Boenigk (not public as a file). As published: about 218 lakes x thousands of OTUs; no target named.
 - Use case: none in the sources; the ML in Sperlea et al. measures explained variance per environmental variable (discovery), not a decision at a prediction point (SEL-3, USE-2).
 - Siblings and duplicates: `eu_lakes_allfeatures` is the same study and OTU table (another cut, PROV-6); the other OTU records of this list (`bog_lakes`, `bedford_basin_v4v5`, `bedford_basin_v6v8`, `atl_ocean_transect`) were proposed `No` on the same ground in this re-screen.

@@ -5,9 +5,9 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)
@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): a CSV conversion of the Ensembl GRCh38.92 genome annotation, published to "explore the structure within the annotations"; a reference listing with no target and no decision.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a CSV conversion of the Ensembl GRCh38.92 genome annotation, published to "explore the structure within the annotations"; a reference listing with no target and no decision.
 - Source: Ensembl release 92 GTF (2018), converted with the uploader's `gtf2csv` script and posted on Kaggle (dataset 31883, DbCL-1.0, one file `Homo_sapiens.GRCh38.92.csv`, 501 MB, 2019). As published: one row per annotated feature (gene, transcript, exon, CDS, UTR, ...) with chromosome, start, end, strand, source and the GTF attributes as columns.
 - Use case: none; the card's "Inspiration" is visualization and analysis. Any label (feature type, biotype) is the annotation itself, read off coordinates and attributes, not an outcome someone predicts.
 - Siblings and duplicates: none among `curation/records/`.

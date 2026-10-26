@@ -59,6 +59,9 @@ PRICE_NOT_THE_HOUSE = {
     "5": "full sales price not reported",
     "1": "personal property included",
 }
+# Related-party sales: a price between related parties is not a market price, so the sale is dropped, as the family
+# sales of ames_housing (Lennart, 2026-10-26, reopening option (c) of REVIEW issue 8 of 2026-10-22)
+RELATED_PARTY = {"51": "related party"}
 # `sale_condition`: the county's sale warnings that name a fact of the transaction the parties know before the price,
 # in priority order (a sale with several takes the first level that matches). The other pre-price codes are the
 # transactions WAC 458-53-080(2) lists as excluded from the ratio study, plus 54: 11 corporate affiliates, 14 sheriff
@@ -68,7 +71,6 @@ PRICE_NOT_THE_HOUSE = {
 SALE_CONDITIONS = {
     "short sale": {"60"},
     "bankruptcy or forced sale": {"13", "23"},
-    "related party": {"51"},
     "estate": {"12"},
     "other pre-price code": {"11", "14", "16", "17", "18", "19", "20", "21", "22", "24", "25", "33", "34", "36", "54"},
     "no market exposure": {"15"},
@@ -131,8 +133,11 @@ def _judged(codes: pd.Series) -> np.ndarray:
 
 
 def _dropped(codes: pd.Series) -> np.ndarray:
-    """Whether a sale is dropped: a judged warning, or a price that is not the house's (`PRICE_NOT_THE_HOUSE`)."""
-    return codes.apply(lambda c: bool(c & (set(JUDGED_WARNINGS) | set(PRICE_NOT_THE_HOUSE)))).to_numpy()
+    """Whether a sale is dropped: a judged warning, a price that is not the house's (`PRICE_NOT_THE_HOUSE`), or a
+    related-party sale (`RELATED_PARTY`).
+    """
+    dropped = set(JUDGED_WARNINGS) | set(PRICE_NOT_THE_HOUSE) | set(RELATED_PARTY)
+    return codes.apply(lambda c: bool(c & dropped)).to_numpy()
 
 
 def _sale_condition(codes: set[str]) -> str:
@@ -287,13 +292,14 @@ class HouseSales(AbstractCuratedDataset):
         We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
 
         - Prediction point: a house sells, and the assessor's mass appraisal or a public-record valuation model estimates its price from the assessor's record on the sale day and its location, trained on the sales recorded earlier. The assessed value and the previous sale price are not in the file; the conditions the parties declare at the sale are (`sale_condition`).
-        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of REVIEW.md issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), related party (51), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code, 52 of them 51), none. Counts: none 19,847, no market exposure 473, short sale 129, related party 85, other pre-price code 33, estate 32, bankruptcy or forced sale 8 (decision table).
+        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of REVIEW.md issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
+        - We drop the related-party sales (warning 51; Lennart, 2026-10-26): a price between related parties is not a market price, and the assessor's ratio study leaves them out (WAC 458-53-080). This reopens option (c) of REVIEW issue 8 (2026-10-22), which kept them with a `sale_condition` level, so that they are treated as the family sales of ames_housing.
         - The county sets every warning after the deed is recorded, while it verifies the sale, and codes only the sales it checks, so `none` is not proof of a market sale. Sales are matched on parcel, deed date and price (20,742 of the 20,967 sales before May 2015); the other 225 are `none`. The Kaggle file holds these sales without a warning column.
         - We drop the 360 sales (1.7%) with warning 46 (non-representative sale, 357) or 8 (questionable per appraisal, 4; 7, questionable per sales identification, has none). These are the appraiser's judgments, made with the price in view (46 has no WAC 458-53-080 category): the residuals of the 46 sales lie only on the low side (untuned LightGBM without an indicator: none above +0.3, 29% below -0.3), so as a feature 46 leaks the label (`_judged`).
         - Neither feature nor filter: 26 (below), 10 teardown and 29 segregation or merger (priced like market sales of the land or the changed lot: mean residual +0.00 and +0.05), 32 ($1,000 or less: defined by the price; its one sale is recorded at $385,000) and the codes outside the WAC list (56 builder sale 31 sales, 40 and 41 relocation 32, 3 contract or cash sale 10, and the rarer 2, 4, 30, 31, 44, 52).
         - We drop the sales whose recorded price covers more or less than the house (Lennart, 2026-10-22): warning 45 (multi-parcel sale), 5 (full sales price not reported) and 1 (personal property included). The target is the house's price, and no input can explain the difference (USE-5).
-        - Measured with this definition (RMSE on log price, untuned LightGBM, its 9 windows: 9,498 test sales, 391 of them with a code the earlier definition dropped; all / unflagged / flagged): drop the 1,061 sales with 15, 46, 60, 51, 23 or 13 and no indicator .1682 / .1611 / .2875; keep them without an indicator .1688 / .1622 / .2824; this definition .1662 / .1613 / .2552. With `sale_condition` the mean residual of a short sale moves from -0.23 to -0.04, related party from -0.16 to -0.03, no market exposure from -0.10 to +0.00.
-        - The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,210 of the 20,584 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
+        - Measured with this definition (RMSE on log price, untuned LightGBM, its 9 windows: 9,498 test sales, 391 of them with a code the earlier definition dropped; all / unflagged / flagged): drop the 1,061 sales with 15, 46, 60, 51, 23 or 13 and no indicator .1682 / .1611 / .2875; keep them without an indicator .1688 / .1622 / .2824; this definition .1662 / .1613 / .2552. With `sale_condition` the mean residual of a short sale moves from -0.23 to -0.04, related party (since dropped) from -0.16 to -0.03, no market exposure from -0.10 to +0.00.
+        - The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,210 of the 20,584 rows kept before the related-party sales were dropped, the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
         - The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` (logged under the `Land` and `LandFootage` records) whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement` (the finished basement), as in every row of the file. `_prepare_raw_files` cuts the extracts down to the file's parcels.
         - Potential leak, kept on purpose: `view` (the file's 0-4 index, not a county attribute), `waterfront`, `sqft_living15` and `sqft_lot15` (the neighbours' areas) are as of July 2015. About 145 rows had a view or waterfront rating changed after the sale (39 gained a view); masking their `view` gives RMSE 0.2147 against 0.2132 kept, and dropping the neighbours' areas changes the changed rows by 0.004. Blanking them would make the missing value mark a change after the sale, so they stay, as do the 11 values whose old value is blank, the 5 bathroom rows and about 24 rows whose building record was entered in full after the sale. Revisit if a county view rating history becomes usable.
         - The 1,206 kept sales the county flags with warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", stay as noise: 1,067 of them are not rebuilt because their changes come after July 2015, and they sell below the model (-0.10), so the file holds the record at the sale.
@@ -447,7 +453,10 @@ class HouseSales(AbstractCuratedDataset):
 
         # 0. the sales per county warning and what the definition does with it
         flagged = pd.Series([c for row in codes for c in row]).value_counts()
-        role = {code: f"dropped ({name})" for code, name in {**JUDGED_WARNINGS, **PRICE_NOT_THE_HOUSE}.items()}
+        role = {
+            code: f"dropped ({name})"
+            for code, name in {**JUDGED_WARNINGS, **PRICE_NOT_THE_HOUSE, **RELATED_PARTY}.items()
+        }
         role |= {
             code: f"sale_condition: {level}" for level, level_codes in SALE_CONDITIONS.items() for code in level_codes
         }
@@ -522,7 +531,8 @@ class HouseSales(AbstractCuratedDataset):
                 f"a feature they would carry the label. We also drop the {int((_dropped(codes) & ~_judged(codes)).sum()):,} "
                 "sales with warning "
                 + ", ".join(f"{k} ({v})" for k, v in PRICE_NOT_THE_HOUSE.items())
-                + ": the recorded price covers more or less than the house. The warnings that name a fact of the "
+                + ": the recorded price covers more or less than the house, and the related-party sales (51), whose "
+                "price is not a market price. The warnings that name a fact of the "
                 "transaction become "
                 "`sale_condition`; 26 (the house changed after the sale), 10 (teardown), 29 (segregation or merger) "
                 "and the other codes (such as 56 builder sale) are neither feature nor filter.",

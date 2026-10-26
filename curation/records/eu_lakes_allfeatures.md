@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 - Many features
@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): a microbial-ecology survey table: the study relates bacterial abundances to lake chemistry and geography and predicts nothing, and no target is defined for this record.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a microbial-ecology survey table: the study relates bacterial abundances to lake chemistry and geography and predicts nothing, and no target is defined for this record.
 - Source: the August 2012 sampling of European lakes by Jens Boenigk's group: metadata from Molecular Ecology (doi:10.1111/mec.15872), OTU table "from J. Boenigk"; the record's reference, Nuy, Hoetzinger, Hahn, Beisser and Boenigk 2020, "Ecological Differentiation in Two Major Freshwater Bacterial Taxa Along Environmental Gradients", Frontiers in Microbiology 11:154: "Sampling of 255 European freshwater lakes was conducted in August 2012", one sample per lake. As published: an OTU (16S V2-V3) abundance matrix plus pH, temperature, conductivity, lake area, elevation, latitude and longitude.
 - Use case: none: the paper's responses are OTU and subcluster abundances and diversity indices, explained by the abiotic factors through variation partitioning and rank correlations; no machine learning, no prediction. A target of our own (lake pH from the community) would be a task the source never posed (SEL-8), on about 255 rows with thousands of OTU columns.
 - Siblings and duplicates: `eu_lakes_allsamples` (the same sampling, another cut; `TBD -> 2nd Tier`, AI), and the other environmental OTU records of the same import (`bog_lakes` `No` by an AI, `tara_oceans`, `nz_springs`, `bedford_basin_*`, `subseafloor_arc*`), to be treated alike. External collections: none found.

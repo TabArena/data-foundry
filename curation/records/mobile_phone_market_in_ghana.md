@@ -6,10 +6,10 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - TBD
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - TabArena Reject
@@ -38,7 +38,7 @@ type_adapter_id: curation-record-v1
 - Papers and pages: none; the Kaggle keywords are "exploratory data analysis", "data cleaning", "gradient boosting".
 - Metric: none found (the Kaggle page; no competition, task or paper), so the fallback (rmse; the price likely on a log scale, MET-3).
 - Risks for /add-dataset: the first platform of the scrape (PROV-2, approximate fit at best); repeated listings of one model; the CC's concern that the price is set by model and storage (TP-4 to probe); the date and currency of the prices.
-- Markers: `Data Quality Issue` dropped (no irreparable damage is documented: that marker needs an undone supervised transform or a manipulated table); `No Good Target  / Scientific Discovery` kept as the curator's concern.
+- Markers: `Data Quality Issue` dropped (no irreparable damage is documented: that marker needs an undone supervised transform or a manipulated table); `No Good Target / Scientific Discovery` kept as the curator's concern.
 - Priority: gap 0 (technology & internet has 5 accepted), use case 0 (none stated), source 0 (an anonymous scrape), shape 0 (size not counted, mixed types), risk - (untraced source, a possibly near-trivial price).
 
 Scraped Kaggle data on phone models in Ghana with the nominal task of predicting price. As the curator notes, this is web-scraped data better suited to analysis/insights than predictive performance, where price is largely determined by the observed spec features, making it a weak/circular target. It is already in TabArena Reject. The scraping data-quality and weak-target concerns make it a poor benchmark candidate. On current evidence this is a No.

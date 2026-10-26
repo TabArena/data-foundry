@@ -8,7 +8,7 @@ decision_markers:
 - Data Quality Issue
 - Missing source information
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)

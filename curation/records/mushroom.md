@@ -6,7 +6,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Trivial
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 collections:
 - TabArena Reject
 - TabSTAR

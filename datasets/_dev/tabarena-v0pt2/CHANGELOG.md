@@ -4,6 +4,47 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26 (the curator's marks: nba retired, house_prices_nominal copied forward as ames_housing, rain neighbours)
+
+Lennart's marks of 2026-10-26 on the Open Datasets Review page, in two rounds; records carry them as
+`CC (2026-10-26, Lennart)` lines. Nothing was rebuilt.
+
+- `nba_players_2016_2019` is retired: `No` with `No Good Target / Scientific Discovery` and `Not Representative`
+  (no actor, moment or decision fits; the score ranks the whole ballot). The folder is removed; its claim released.
+- `house_prices_nominal` is copied forward as the new record and folder `ames_housing` (De Cock's full Ames file);
+  `house_prices_nominal`, the Kaggle competition's 1,460-row half (OpenML 42165), keeps its name as its `Duplicate`.
+  In `ames_housing`:
+  - the 82 sales between family members, allocations and adjoining-land purchases are dropped (USE-5): 2,837 sales;
+  - the text codes of 43 categorical columns become the labels of DataDocumentation.txt (CLEAN-12);
+  - no gap between training and test windows, an exception to SPLIT-10 (a Cases row in `splits.md`; this file's
+    `REVIEW.md` proposes amending SPLIT-10);
+  - the record's `Trivial` marker is removed.
+  - `perth_house_prices` and `melbourne_housing_market` now cite `ames_housing` (notes only).
+- `house_sales` drops its 85 related-party sales (warning 51), as `ames_housing` drops its family sales: 20,499
+  sales. This reopens option (c) of its issue 8 (2026-10-22).
+- `2_month_survival_rate_prediction`:
+  - adlp, edu and income are dropped (they come from the interview of days 2-7 and their gaps follow early deaths;
+    this replaces CC 2026-10-12): 22 features;
+  - pafi above 713 is set missing (9 patients);
+  - the year is 2003;
+  - the use case is SUPPORT's objective estimate set beside the physician's (Knaus et al. 1995), so the physicians'
+    estimates and DNR orders are not inputs (a USE-6 Cases row).
+- `rain_in_australia`:
+  - 26 contiguous 14-day test windows over the last year instead of 9 spaced six weeks apart (16,457 test rows);
+  - each row also reads the other locations' 9 am rain, pressure and humidity of the same day where their 9 am comes
+    no later than its own (143 columns; CLEAN-19 amended);
+  - Rainfall and RainToday stay (TP-10 leg 2 amended: the last observation of the target may stay when it is known
+    at the prediction point);
+  - rattle's file stays without a patch of the 2016-17 gap; the record's year is 2026.
+- `african_credit_scoring_challenge`: the drop of the rows whose lender funds less than 0.5 is confirmed. Open: Type_1
+  loans only (issue 1), ROC AUC over Zindi's F1 (issue 6, a consistency check against CC 2026-10-21), Zindi's
+  country test (issue 7).
+- `glioma_grading_clinical_and_mutation_features`: new issue 6 answers the verdict note; the AI recommends `No`.
+- The vocabulary's `No Good Target  / Scientific Discovery` (two spaces) and `2nd Tier / Scientfic Discovery` are
+  spelled `No Good Target / Scientific Discovery` and `2nd Tier / Scientific Discovery` in every record (199).
+- 2_month_survival_rate_prediction, ames_housing and rain_in_australia have no open issue left: their `REVIEW.md`
+  files are removed, and they ship (Lennart, 2026-10-26): `DF: Yes`, claims released. Not built yet.
+
 ## 2026-10-23 (claims move to a live board)
 
 - `GETTING_STARTED.md` (section 7) describes the new claims: a branch `claims` of the repository that every curator
@@ -37,7 +78,7 @@ Lennart's marks of the late afternoon; records carry them as `CC (2026-10-22, Le
   split by patient stays. Random forest log loss goes from 0.650 to 0.469. `problem_type` in the record is now
   multiclass. `REVIEW.md` is removed.
 - **dataorg_financial_health_prediction_challenge:** retired, because nothing is known about the target and it is
-  survey data. The record is `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientfic Discovery`,
+  survey data. The record is `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientific Discovery`,
   with its claim released. The folder is removed and the README table now lists 172 datasets.
 - **melbourne_housing_market:** ships. `year` is 2017, the first version of the Kaggle upload. PROV-9 now says a Kaggle
   upload that grew over its versions takes its first year. `REVIEW.md` is removed.

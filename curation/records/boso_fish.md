@@ -7,7 +7,7 @@ data_foundry_status:
 - 'DF: Suspended'
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - '?'
 - AI-Filled (Verify)
@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the Boso Peninsula fish eDNA metabarcoding series is published to infer fish-fish interaction strengths and their temperature sensitivity, not for a prediction; no target is named.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the Boso Peninsula fish eDNA metabarcoding series is published to infer fish-fish interaction strengths and their temperature sensitivity, not for a prediction; no target is named.
 - Source: Ushio, Sado, Fukuchi, Sasano, Masuda, Osada and Miya, "Temperature sensitivity of the interspecific interaction strength of coastal marine fish communities", eLife 12, RP85795 (2023), doi 10.7554/eLife.85795; 550 seawater samples, 11 sites, twice a month, 2017-08 to 2019-08, 1,130 MOTUs (top 50 species analysed), covariates water temperature, salinity, wave height, tide; data on Zenodo 7865959, reads in DDBJ DRA014111.
 - Use case: none; the study uses information-theoretic causality and the MDR S-map on the species series; a target (a species' abundance next sample) would be forecasting a series (SEL-10) and anything else our own (USE-1, USE-2).
 - Siblings and duplicates: the other microbiome records of the same import (all AI-screened). `DF: Suspended` kept.

@@ -472,6 +472,17 @@
   (265.3 s against a next highest of 169.9 s, a training row), qsar_tid_11's row now leaves as an impossible value
   (pXC50 -6.24, CLEAN-15), house_prices_nominal cites the amended rule.
 
+- **Say in SPLIT-10 when no gap is needed?** ames_housing's (until 2026-10-26 house_prices_nominal) issue 4 is decided
+  (2026-10-26, Lennart): no gap,
+  recorded as an exception to SPLIT-10 on the mechanism (the short last month's normal sales show no price selection)
+  and the month resolution (sales are dated by month, so the smallest gap is a whole month, longer than the delay).
+  perth_house_prices (its issue 7, also dated by month, the same test) would be the second exception of that reason.
+  SPLIT-10 then holds three exceptions (alfa_battle_2_0_task_2 and lending_club for SPLIT-14, ames_housing)
+  against two applied gaps; with perth it would be four, and principles.md asks for an amendment at the third
+  exception of one reason. Proposal: amend SPLIT-10 with "no gap when the delay is shorter than the time column's
+  resolution and the newest period shows no selection by the outcome", which perth would then follow without an
+  exception (ames_housing marks, consistency check, 2026-10-26).
+
 ### Rules from the zillow_prize review
 
 - **Keep a post-outcome lookup because removing it changes no score?** melbourne_housing_market (attributes scraped

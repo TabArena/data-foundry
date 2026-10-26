@@ -3,13 +3,13 @@ unique_name: nba_players_2016_2019
 name: NBA PLAYERS 2016-2019
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 3
+suggestion: 'No'
+decision_markers:
+- No Good Target / Scientific Discovery
+- Not Representative
 tags:
 - Tiny Data
+- 2nd Tier / Scientific Discovery
 collections:
 - TabSTAR
 original_source: Kaggle
@@ -22,7 +22,6 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/davra98/nba-players-20162019
 - https://www.openml.org/search?type=data&id=43653&sort=runs&status=active
-v2_path: datasets/_dev/tabarena-v0pt2/nba_players_2016_2019/dataset.py
 source_row: 789
 type_adapter_id: curation-record-v1
 ---
@@ -46,6 +45,10 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 **Assessment (AI, 2026-10-21):** tagged `ForcedGroupedFromTemporal`. Cost: the one valid window (train 2016-18, test 2018-19) scores untuned LightGBM R^2 0.745 against 0.744 grouped (0.766 against 0.760 with prev_score), same order of model families. REVIEW.md issue 2 settled.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A Kaggle dataset upload with no task or metric; the All-Star score target is our construction from the NBA's weighting of the fan, player and media vote ranks, so no source metric exists; a continuous score gives rmse.
+
+CC (2026-10-26, Lennart): don't ship, "Yes, make it no": a poor fit and not a real task, "very constructed from data that barely allows the current interpretation" (REVIEW issue 8).
+
+**Assessment (AI, 2026-10-26):** retired on the use case (P3), not the split. No actor, moment or decision fits (USE-1, USE-8): the actor was ours, the prediction point moved twice to fit the data (before the first fan returns; the vote's close), and 25 of 35 features are end-of-season values. The target ranks the whole ballot while the actor acts on its 2 or 3 starters (USE-5; 92% of the rows score above 10). Random splits leak the player (70.7% of test rows have him in training), but LightGBM differs by at most 0.015 across random, grouped and temporal splits. No published table has more seasons; the NBA's yearly ballot PDFs (2017-2025) would be a rebuild of our own (PROV-11, PROV-14). The SPLIT-8 amendment of 2026-10-21 stands on open_university_learning_analytics_dataset. The folder left the working copy; it is in git history before this change.
 
 ## Reference
 

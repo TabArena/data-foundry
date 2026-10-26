@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - AI-Filled (Verify)
 domain: Other
@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): a curated list of links to public data sources, not a dataset; there is no table, no target and no task to benchmark.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a curated list of links to public data sources, not a dataset; there is no table, no target and no task to benchmark.
 - Source: awesomedata/awesome-public-datasets on GitHub (incubated at OMNILab, Shanghai Jiao Tong University), generated from the apd-core metadata; as published: a README of topic-sorted links.
 - Use case: none; a dataset found through the list gets its own record from its own source (PROV-8).
 - The old markers `Missing source information` (the source is known) and `Not Representative` are dropped.

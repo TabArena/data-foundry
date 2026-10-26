@@ -5,7 +5,7 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Many features
 - AI-Filled (Verify)
@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): a microbial biogeography survey of 925 New Zealand geothermal springs, published to find what drives community composition; the candidate targets (temperature, pH) are measured on site with a probe, so no decision needs them predicted.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a microbial biogeography survey of 925 New Zealand geothermal springs, published to find what drives community composition; the candidate targets (temperature, pH) are measured on site with a probe, so no decision needs them predicted.
 - Source: Power et al., "Microbial biogeography of 925 geothermal springs in New Zealand", Nature Communications 9:2876, 2018 (doi 10.1038/s41467-018-05020-y), the 1000 Springs Project. As published: 1,019 water samples from 974 features in 18 fields, 925 springs after QC; 46 physicochemical parameters (ICP-MS metals, nitrogen species, H2S, sulfate, conductivity, DO, ORP, pH, turbidity, temperature in situ); 16S rRNA reads in ENA (PRJEB24353); metadata on 1000springs.org.nz; the record's OTU table and metadata came "via email from Matthew Stott".
 - Deciding words (paper, abstract and aim): "We measured bacterial and archaeal community composition, 46 physicochemical parameters"; "We determined that diversity is primarily influenced by pH at temperatures <70 °C"; the study's aim is "to determine factors that influence biogeographical patterns". The methods are correlational (Mantel, PERMANOVA, ANOSIM, constrained correspondence analysis, edgeR); no predictive model is trained or validated. The paper only remarks that geochemistry "could be predictive of community composition".
 - Use case: none; temperature and pH are read with a thermocouple and a handheld meter at sampling, and predicting a community from chemistry is the discovery question itself (SEL-3, USE-2).

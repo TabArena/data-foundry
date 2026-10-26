@@ -5,9 +5,9 @@ checked_by:
 - AI (UNVERIFIED)
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - AI-Filled (Verify)
 collections:
 - New (BeyondArena)
@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-22):** `No` (`No Good Target  / Scientific Discovery`, SEL-3): the example output of a CMS analysis tool that "computes the razor variables MR and Rsq" for real MultiJet events; no label and no task, and the computed variables are functions of the row's megajets.
+**Screening (AI, 2026-10-22):** `No` (`No Good Target / Scientific Discovery`, SEL-3): the example output of a CMS analysis tool that "computes the razor variables MR and Rsq" for real MultiJet events; no label and no task, and the computed variables are functions of the row's megajets.
 - Source: CERN Open Data Portal record 554, Javier Duarte, 2015 (data 2010 RunB, parent /MultiJet/Run2010B-Apr21ReReco-v1/AOD; good-run list record 1000), CC0: "Example CSV output file for SUSYBSMAnalysis-RazorFilter", "computes the razor variables MR and Rsq, used in supersymmetric particle searches", 21,726 events; the CSV "can be used in online applications" (a histogram tool). Columns Run, Lumi, Event, MR, Rsq, the four-vectors of two megajets, HT, MET, nJets, nBJets. Kaggle copy by fedesoriano (2020, "CERN Proton Collision Dataset") repeats it, no task. The record's second link (record 1000 / 553) is the good-run list and parent dataset, not this file.
 - Use case: none; real collision data has no truth label, and MR and Rsq are kinematic functions of the megajet four-vectors and MET (Phys. Rev. D 90, 112001), so a regression on them is close to a formula (SEL-5).
 - Siblings and duplicates: `cern_electron_collision_data` (same uploader, same verdict proposed); `higgs`, `susy`, `hepmass` are simulations, a different case.

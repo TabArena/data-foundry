@@ -6,9 +6,9 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Grouped)
 - AI-Filled (Verify)
 collections:
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-10-22):** the curator's `No` (CC line, TabArena Reject) stands on SEL-3; one counter-argument on a marker: the data is a real experiment, not a simulation.
 - Source: OpenML 546 (uploaded 2014), from Brien and Payne (1996), "Tiers, structure formulae and the analysis of complicated experiments"; 576 rows x 12 columns: 11 design factors (Occasion, Judges, Interval, Sittings, Position, Squares, Rows, Columns, Halfplot, Trellis, Method) and the response `Score`.
-- Use case: none. OpenML: a split-plot vineyard trial "to investigate the differences between 4 types of trellising and 2 methods of pruning", the 24 wines scored by 6 judges in a latinized design. The question is the treatment effects (an ANOVA of a designed experiment), a discovery question; predicting a judge's score from the layout of the design simulates no decision (SEL-3, USE-2: `No Good Target  / Scientific Discovery`). Regime would be grouped (judges, plots).
+- Use case: none. OpenML: a split-plot vineyard trial "to investigate the differences between 4 types of trellising and 2 methods of pruning", the 24 wines scored by 6 judges in a latinized design. The question is the treatment effects (an ANOVA of a designed experiment), a discovery question; predicting a judge's score from the layout of the design simulates no decision (SEL-3, USE-2: `No Good Target / Scientific Discovery`). Regime would be grouped (judges, plots).
 - Siblings and duplicates: none (`wine_quality` is other data). External collections: TabSTAR.
 - Metric: none (an ANOVA paper), so the fallback had it shipped.
 - **Counter-argument (AI):** `AHDS (Artifical/Handmade/Deterministic/Simulated)` (SEL-16, PROV-3) does not fit the source's words: the scores are real tastings of real wines from a field trial; only the allocation is designed. The verdict rests on SEL-3 alone; suggest dropping the AHDS marker. The curator has the call.
