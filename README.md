@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 22:16 UTC: 26 claim(s) (Lennart 13, Myunghwan 13).
+As of 2026-10-26 22:18 UTC: 23 claim(s) (Lennart 10, Myunghwan 13).
 
 ## Lennart
 
@@ -12,13 +12,10 @@ As of 2026-10-26 22:16 UTC: 26 claim(s) (Lennart 13, Myunghwan 13).
 | `expresso_churn_prediction` | add | 2026-10-23 | 2026-10-30 |  |
 | `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition` | add | 2026-10-23 | 2026-10-30 |  |
 | `framingham_heart_study_fhs` | add | 2026-10-23 | 2026-10-30 |  |
-| `g_research_crypto_forecasting` | add | 2026-10-23 | 2026-10-30 |  |
 | `house_sales` | add | 2026-10-23 | 2026-10-30 |  |
 | `huntprohibited` | add | 2026-10-23 | 2026-10-30 |  |
-| `melbourne_housing_market` | add | 2026-10-23 | 2026-10-30 |  |
 | `mobile_churn` | add | 2026-10-23 | 2026-10-30 |  |
 | `mortgage` | add | 2026-10-23 | 2026-10-30 |  |
-| `nyc_taxi_trip_duration` | add | 2026-10-23 | 2026-10-30 |  |
 | `open_university_learning_analytics_dataset` | add | 2026-10-23 | 2026-10-30 |  |
 | `sarcoma` | add | 2026-10-23 | 2026-10-30 |  |
 
