@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
@@ -85,6 +85,11 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
     # Task
     target = "LogPrice"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. For an asking price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(raw_dir / "dataset.arff") as f:

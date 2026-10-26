@@ -3,9 +3,9 @@ unique_name: quake
 name: quake
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 year: '1996'
 required_split:
 - Random (IID)

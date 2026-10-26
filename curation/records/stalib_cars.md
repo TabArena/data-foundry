@@ -7,7 +7,7 @@ suggestion: TBD -> 2nd Tier
 decision_markers:
 - Outdated
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - TabSTAR
 source_links:

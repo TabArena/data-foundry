@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -97,7 +97,21 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     # Task
     target = "SepsisLabel"
     problem_type = "binary_classification"
-    metric = "PhysioNet2019UtilityFunction"  # https://github.com/physionetchallenges/evaluation-2019/blob/master/evaluate_sepsis_score.py
+    metric = Metric.source(
+        "normalized_early_detection_utility",
+        original="PhysioNet/CinC Challenge 2019 normalized utility score",
+        reference=(
+            "Reyna et al. 2020, Early prediction of sepsis from clinical data: the PhysioNet/Computing in "
+            "Cardiology Challenge 2019, Crit Care Med 48(2):210-217; "
+            "https://physionet.org/content/challenge-2019/1.0.0/"
+        ),
+        definition=(
+            "sum over patient-hours of the PhysioNet/CinC 2019 utility of the hard alarm (TP rises 0 -> 1 "
+            "from t-12 h to t-6 h, falls to 0 at t+3 h; FN 0 -> -2 from t-6 h to t+3 h; FP -0.05; TN 0), "
+            "normalised as (U - U_no_alarm) / (U_best - U_no_alarm)"
+        ),
+        inputs={"group": "Patient_ID", "order": "Hour"},
+    )
     grouping = Grouping(
         on="Patient_ID",
         labels="per_sample",

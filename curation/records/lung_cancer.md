@@ -49,6 +49,8 @@ From the use case, it is unclear if this would really be done, as it is likely n
 
 **Assessment (AI, 2026-10-14):** the data first appeared as data set A in the supplement of Bhattacharjee et al. (PNAS 2001), which the v2 definition downloads; OpenML 45093 is a later copy. `original_source` is now Other, as in the definition.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source paper clusters the samples (hierarchical and probabilistic clustering) to find adenocarcinoma subclasses and declares no classification metric for predicting the class.
+
 ## Reference
 
 @article{bhattacharjee2001classification,

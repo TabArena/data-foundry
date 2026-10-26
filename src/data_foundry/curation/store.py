@@ -34,6 +34,7 @@ from pathlib import Path
 import yaml
 
 from data_foundry.curation._paths import records_dir
+from data_foundry.curation.claims import warn_if_claimed
 from data_foundry.curation.record import BODY_FIELDS, FIELDS, CurationRecord
 
 BODY_SECTION_TITLES: dict[str, str] = {"comments": "Comments", "reference": "Reference"}
@@ -96,8 +97,15 @@ def markdown_to_record(text: str) -> CurationRecord:
 
 
 def save_record(record: CurationRecord, directory: str | Path | None = None) -> Path:
-    """Write ``record`` to ``<directory>/<unique_name>.md`` and return the path."""
+    """Write ``record`` to ``<directory>/<unique_name>.md`` and return the path.
+
+    Writing a record of the standard records directory while another curator holds its claim (the cached claims board,
+    :mod:`data_foundry.curation.claims`) emits a :class:`~data_foundry.curation.claims.ClaimWarning`; the write still
+    happens, since claims are advisory.
+    """
     target_dir = Path(directory) if directory is not None else records_dir()
+    if target_dir.resolve() == records_dir().resolve():
+        warn_if_claimed(record.unique_name)
     target_dir.mkdir(parents=True, exist_ok=True)
     path = target_dir / f"{record.unique_name}.md"
     path.write_text(record_to_markdown(record))

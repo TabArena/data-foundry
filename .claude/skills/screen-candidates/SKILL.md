@@ -22,7 +22,7 @@ $ARGUMENTS
 | Step | Read |
 |---|---|
 | all | [principles.md](../knowledge-curation/references/principles.md): the ranking, strengths and the judgment record |
-| 3 | [provenance.md](../knowledge-curation/references/provenance.md), [use_case.md](../knowledge-curation/references/use_case.md), [splits.md](../knowledge-curation/references/splits.md), [sources_access.md](../knowledge-data-foundry/references/sources_access.md) |
+| 3 | [provenance.md](../knowledge-curation/references/provenance.md), [use_case.md](../knowledge-curation/references/use_case.md), [splits.md](../knowledge-curation/references/splits.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-1, MET-4 to MET-7), [sources_access.md](../knowledge-data-foundry/references/sources_access.md) |
 | 4 | [selection.md](../knowledge-curation/references/selection.md) (the scope rules and patterns, the markers), [evidence.md](../knowledge-curation/references/evidence.md) |
 | 5 | [selection.md](../knowledge-curation/references/selection.md), "Priority" |
 | 6 | [records.md](../knowledge-data-foundry/references/records.md): the store API, the `AI (UNVERIFIED)` convention, the screening block |
@@ -31,8 +31,10 @@ $ARGUMENTS
 ## Step 1: List the records
 
 Resolve the input to records under `curation/records/`; create a record for a new link (`unique_name` in snake_case,
-`name`, the link in `source_links`) through the store API. Skip every record claimed by another curator. A record that
-already has a screening block is screened again only when the curator asks.
+`name`, the link in `source_links`) through the store API. Claim the records for the run (`claims claim <names>
+--stage triage --note "screening"`, [claims.md](../knowledge-data-foundry/references/claims.md)) and skip every one
+the command skips: another curator holds it. Release them when the screening is written (`claims release <names>`).
+A record that already has a screening block is screened again only when the curator asks.
 
 A batch runs on the `candidate-screener` agent, about 10 records per agent, all in one message; the main session keeps
 the coverage snapshot, the reject check and the report. Mind the limits in
@@ -57,6 +59,13 @@ listing is fine; nothing is built. Collect, with links:
 * the original task and who solved it (competition pages and top solutions are claims, read them as such);
 * the use case: who acts, when, on which decision, and what is known then; how closely the data mirrors it;
 * the likely regime (IID, grouped, temporal) and why;
+* the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
+  `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
+  it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a
+  deliberate choice (a leaderboard metric, MET-4; a paper's one ranked criterion, MET-5) or one of several reported,
+  and for a threshold metric whether the source fixes the threshold, k or cost matrix (MET-6, MET-7). Note any extra
+  inputs it needs (a group such as a patient or an era, a time, a weight) and whether they ship. When nothing is
+  found, say where you looked;
 * the paper that published the data and papers that used it;
 * sibling records and duplicates (`grep -il` over `curation/records/` by name, source and links), and external
   collections that carry it;
@@ -100,6 +109,9 @@ screening block, every existing note kept below it:
 - Use case: <actor, moment, decision>; fit <direct | approximate>; regime <IID | grouped | temporal> because <...>.
 - Siblings and duplicates: <records checked, and what they decided>; external collections: <...>.
 - Papers and pages: <the paper that published the data, papers that used it, competition, top solutions>.
+- Metric: <the source's metric and where it is defined (link, section)>; <deliberate | one of several | habit>;
+  inputs <none | the columns it needs, and whether they ship> (MET-1, MET-5, MET-6). Or: none found (<where we
+  looked>), so the fallback.
 - Risks for /add-dataset: <columns to check, joins, the target> (rule IDs).
 - Priority: gap +, use case +, source +, shape - (<reason>).
 ```

@@ -44,6 +44,17 @@ included: generated or replaced data.
    2005, 2007). Alternative: add the checked definition that the run kept outside git to the working copy; it ships a
    task where every method ties with the class prior, which adds only noise to the rankings.
 
+   **Lennart (2026-10-21):** on the cross-dataset item "PROV-3 evidence standard": "either might be strong enough;
+   on the columns we ship, and if the marks on the published file leak/extend to the shipped version (which is
+   again case-by-case)".
+
+   **Answer (AI, 2026-10-21):** the standard is set (PROV-3 and EV-3 amended): without a source statement or a
+   generator, calibrated marks from two or more tests or marks linked to the label can each be enough, case by
+   case, counted on the columns a definition would ship. Here the marks (no dependence HCV data must show, flat
+   values, the stage unpredictable from any subset) were measured on all 28 features, which include the columns a
+   definition at the biopsy would keep; they count when they hold on those columns (to confirm if it is kept).
+   Still open: whether they are enough for `No` + `AHDS`.
+
 2. **The record's "ALT features are future follow-up measurements, temporal leakage" (from an LLM) is half right.**
    The columns are measured during and after treatment, so a definition at the biopsy drops them, but they do not
    leak. With all 28 features the models stay at macro AUC 0.48-0.50.

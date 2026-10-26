@@ -22,10 +22,10 @@ belong?") needs no command: answer it from knowledge-curation.
 | New candidate | empty | empty | empty | none | none | none |
 | Screened by the AI | `TBD -> Yes`, `TBD -> 2nd Tier` or `No` | 1-5 (none on `No`) | `AI (UNVERIFIED)` | none | none | the disclaimer and a `**Screening (AI, <date>):**` block |
 | Verified by the curator | `Yes` (accepted for adding), `TBD -> Yes` (later) or `No` | as the curator leaves it | the curator | none | none | `CC` lines for decisions given in chat |
-| Taken for adding | `Yes` | | | `WIP (DF)` and `claimed_by` (on `main` first) | none | |
+| Taken for adding | `Yes` | | | on the claims board; `WIP (DF)` and `claimed_by` mirrored | none | |
 | Added by the AI | `Yes` | 1-5 again, from what was measured | | kept | `v2_path`, the folder with `REVIEW.md` | `**Assessment (AI, <date>):**` |
 | Reviewed by the curator | `Yes`, or `No` / `No (Retired)` when retired | | | kept until the work reaches `main` | issues leave `REVIEW.md` as they settle; a retired folder goes | `CC` lines, `Exception to` lines |
-| On `main` | `Yes` | | | `DF: Yes`, claim cleared | | |
+| On `main` | `Yes` | | | `DF: Yes`, claim released | | |
 | Built (on request) | | | | | the README's build record, a CHANGELOG entry | |
 
 `AI (UNVERIFIED)` keeps a record in the review queue until a curator verifies it ([records.md](records.md)). The AI
@@ -36,8 +36,9 @@ never sets a plain `Yes` while screening; only a curator does.
 * **To screen:** records without a verdict, or a filter or list the curator names.
 * **Screening review:** the dashboard's Screening pill (AI-unverified records whose verdict is not `No`, highest
   priority first); confirmed rejections are found with the status funnel on 🤖 and ✗.
-* **To add:** `suggestion` `Yes`, no `DF: Yes`, no claim, not AI-unverified
-  (`#hf.suggestion=+Yes&hf.data_foundry_status=-DF: Yes&hf.claimed_by=+∅&hf.checked_by=-AI (UNVERIFIED)`).
+* **To add:** `suggestion` `Yes`, no `DF: Yes`, no claim on the board, not AI-unverified
+  (`#hf.suggestion=+Yes&hf.data_foundry_status=-DF: Yes&hf.claimed_by=+∅&hf.checked_by=-AI (UNVERIFIED)`; the
+  dashboard's Claimed by column shows the board, [claims.md](claims.md)).
 * **To review:** the folders of the working copy that have a `REVIEW.md`, and records with an `**Open issues (AI)**`
   block ([working_copy.md](working_copy.md)); the review page lists them by priority, highest first, and within one
   priority the fewest open decisions first. A record that is `WIP (DF)` with neither is reviewed and waits for the PR

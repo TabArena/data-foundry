@@ -12,7 +12,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2024'
-domain: biology & life sciences
+domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification
@@ -39,6 +39,14 @@ CC (2026-10-14, Lennart): Ship (review of the 2026-10-07 run).
 CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset; the structure ships as RDKit's 2D descriptors from one shared helper, the same tooling for all (review page, issue 1).
 
 **Assessment (AI, 2026-10-14):** Next to the descriptors the SMILES as character n-grams adds 0.010 ROC AUC to LightGBM over the 4 windows (standard error 0.023). The definition now drops it and keeps the 199 descriptors, computed by `data_foundry.v2.rdkit_descriptors` (CHANGELOG, 2026-10-14).
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: herbicide, fungicide, insecticide, other_agrochemical and the 14 RDKit fragment counts that hold only 0 and 1 (found on the data in `_feature_types`).
+
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: herbicide, fungicide, insecticide, other_agrochemical. Reverted: the 14 RDKit fragment counts that hold only 0 and 1 stay numeric.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the binary fallback and the paper's threshold-free metric.
 
 ## Reference
 

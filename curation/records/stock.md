@@ -9,7 +9,7 @@ decision_markers:
 - Time-series (Forecasting)
 tags:
 - Non-IID (Temporal)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - TabArena Reject
 - TabSTAR

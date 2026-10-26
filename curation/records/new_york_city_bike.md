@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target (yet)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Temporal)
 collections:

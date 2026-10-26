@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Review Prio 1 (Atlas)
 collections:
 - TableShift

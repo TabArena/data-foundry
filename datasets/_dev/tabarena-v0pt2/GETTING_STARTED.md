@@ -83,9 +83,9 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
-Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `explore.ipynb` (the
-workbench: `ds = workbench()`) and `README.md` (generated: the dataset page with sample rows, checks, splits and the
-build record).
+Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `README.md` (generated: the
+dataset page with sample rows, checks, splits and the build record) and, while the dataset is reviewed, `REVIEW.md`
+(the open questions for the curator).
 
 ## 4. The curation log
 
@@ -141,8 +141,8 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
 
 **Recommended: Claude adds a batch, you review it.**
 
-1. Claim the records first (section 7), then in Claude Code run `/add-dataset` on a dashboard filter, for example
-   "every record with `suggestion = Yes`, `data_foundry_status` without `DF: Yes`, claimed by me, `checked_by` without
+1. In Claude Code run `/add-dataset` on a dashboard filter (it claims the records first, section 7), for example
+   "every record with `suggestion = Yes`, `data_foundry_status` without `DF: Yes`, free or claimed by me, `checked_by` without
    `AI (UNVERIFIED)`" (only records you have checked).
    Per source one agent downloads the data, writes the definition, runs `dataset check` and the leak, task and group
    probes and the verification checklist; then a review panel of agents attacks the result (a claim auditor, column
@@ -185,18 +185,23 @@ definition (Workflow B). Each record's comments say what is open.
 
 Pick one, or a batch, and claim it before you start, so nobody else works on it:
 
-1. **Find what is free.** The *Claimed by* filter on *(empty)* shows the records nobody holds
-   ([the same view locally](http://127.0.0.1:8765/#hf.claimed_by=+%E2%88%85)). Leave a record claimed by someone
+0. **Once:** name yourself, `git config data-foundry.curator <Name>` (a name of `claimed_by` in
+   `curation/vocabularies.yaml`).
+1. **Find what is free.** Claims live on a branch of the repository that everyone pushes to directly, so they show
+   within seconds: [the board on GitHub](https://github.com/TabArena/data-foundry/blob/claims/README.md),
+   `.venv/bin/python -m data_foundry.curation.cli claims list`, or the dashboard's *Claimed by* column, whose filter
+   on *(empty)* shows the datasets nobody holds
+   ([the same view locally](http://127.0.0.1:8765/#hf.claimed_by=+%E2%88%85)). Leave a dataset claimed by someone
    else alone, or ask them.
-2. **Claim on `main`, ahead of the work.** Branch from `main`, set `WIP (Triage)` (verdict still open) or `WIP (DF)`
-   (a final `Yes`, definition to write) and your name in `claimed_by` on the records you take, and nothing else.
-   Open a small PR and merge it as soon as CI passes: the published log then shows your claim. Claude makes this
-   claim branch on request.
-3. **Work on your own branch.** Merge `main` into it after the claim PR (the claim lines are identical on both
-   sides, so nothing conflicts) and do the work there, as long as it takes.
-4. **Release.** The PR that brings the work to `main` sets the final state (`DF: Yes`, or the settled suggestion)
-   and clears `claimed_by`. Giving a record up without the work is another small PR on `main`.
+2. **Claim before you work.** `claims claim <names> --note "<what you do>"`, or pick your name in the dashboard's
+   *Claimed by* cell. It pushes the claim to the board (no PR) and writes `claimed_by` and the WIP value into the
+   records. The Claude commands claim their batch themselves, and a hook warns an agent before it edits a dataset
+   someone else holds. A claim lasts 7 days; `claims renew` extends yours.
+3. **Work on your own branch**, as long as it takes.
+4. **Release.** `claims release <names>` in the PR that brings the work to `main` (it sets the final state,
+   `DF: Yes` or the settled suggestion), or as soon as you give a dataset up.
 
-A WIP state without a name, or a name without a WIP state, puts the record in the Review queue. The record's
+How it works: [claims.md](../../../.claude/skills/knowledge-data-foundry/references/claims.md). A WIP state without a
+name, or a name without a WIP state, puts the record in the Review queue. The record's
 comments, the Guidelines tab and the definitions in this folder answer most questions; for the rest, ask the team
 (Lennart).

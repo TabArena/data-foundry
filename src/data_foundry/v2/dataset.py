@@ -53,19 +53,22 @@ import pandas as pd
 
 from data_foundry.bundle_checks import (
     SEVERITY_ORDER,
-    TABARENA_DEFAULT_METRICS,
     BundleCheckReport,
     CheckResult,
+    metric_computes_findings,
     run_bundle_checks,
     verify_saved_container,
 )
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
+    RETIRED_DATA_TAGS,
     DatasetMetadata,
     Grouping,
+    MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
+    ScoringColumn,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -74,6 +77,7 @@ from data_foundry.v2 import (
     splits as protocol,
     task_checks,
 )
+from data_foundry.v2.metrics import Metric
 from data_foundry.v2.preprocessing import (
     PANDAS_3,
     SHUFFLE_RANDOM_STATE,
@@ -303,8 +307,15 @@ class AbstractCuratedDataset(ABC):
     """The target column."""
     problem_type: ClassVar[str]
     """``binary_classification``, ``multiclass_classification`` or ``regression``."""
-    metric: ClassVar[str | None] = None
-    """The objective metric; None is the default for the problem type (roc_auc / log_loss / rmse)."""
+    metric: ClassVar[Metric]
+    """Required: the metric that scores the task (:class:`~data_foundry.v2.metrics.Metric`). The source's metric
+    when it defines one (``Metric.source("rmse", original="RMSE", reference=...)``), the closest computable one to an
+    original that cannot be computed (``Metric.stand_in(...)``), else ``Metric.fallback(reason=...)`` (roc_auc /
+    log_loss / rmse by problem type, and where we looked)."""
+    scoring_columns: ClassVar[tuple[ScoringColumn, ...]] = ()
+    """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
+    Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
+    an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -327,8 +338,8 @@ class AbstractCuratedDataset(ABC):
     subsample_to_budget: ClassVar[bool] = False
     """``True`` for a ``_1m`` version. IID / grouped: sub-sample a frame above 1.5M rows to 1.5M (whole groups,
     stratified) before splitting, so every fold trains on at most 1M and tests on at most 500k rows. Temporal: sample
-    per window (each test window up to 500k rows, each train side a random 1M of all earlier rows) and keep only the
-    rows a split uses (:mod:`data_foundry.v2.splits`)."""
+    per window (each test window up to 500k rows, each train side a random 1M of all earlier rows; whole time values
+    with ``TemporalSplits(sample_by="time")``) and keep only the rows a split uses (:mod:`data_foundry.v2.splits`)."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -531,6 +542,8 @@ class AbstractCuratedDataset(ABC):
         if self.grouping is not None:
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
+        declared["scoring_columns"] = [c.column for c in task.scoring_columns]
+        declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
             if missing:
@@ -646,8 +659,13 @@ class AbstractCuratedDataset(ABC):
             protocol.rows_text(protocol.TEST_ROW_BUDGET),
         )
         if self.subsample_to_budget and temporal:
+            by_time = self.temporal.splits.sample_by == "time"
             df, splits, trimmed = protocol.sample_temporal_splits(
-                df, splits, stratify_on=task.stratify_on, random_state=self.SPLIT_RANDOM_STATE
+                df,
+                splits,
+                stratify_on=None if by_time else task.stratify_on,
+                whole_values_of=task.time_on if by_time else None,
+                random_state=self.SPLIT_RANDOM_STATE,
             )
             if not trimmed:
                 msg = (
@@ -655,11 +673,19 @@ class AbstractCuratedDataset(ABC):
                     "test rows). Take the dataset fully: drop `subsample_to_budget` and the `_1m` version."
                 )
                 raise DatasetDefinitionError(msg)
-            comment += (
-                f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
-                f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the rows "
-                "a split uses."
-            )
+            if by_time:
+                comment += (
+                    f" Each test window keeps at most {test_budget} of its rows and each train side at most "
+                    f"{train_budget} of all earlier rows, drawn as whole values of `{task.time_on}` (every row of a "
+                    "drawn value kept; one random order of the values for all windows); the frame keeps only the rows "
+                    "a split uses."
+                )
+            else:
+                comment += (
+                    f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
+                    f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the "
+                    "rows a split uses."
+                )
             return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
 
         splits, capped = protocol.cap_splits(
@@ -786,13 +812,22 @@ class AbstractCuratedDataset(ABC):
             self._write_report(result)
         return result
 
-    def build(self, *, verbose: bool = True) -> CurationResult:
+    def build(self, *, verbose: bool = True, allow_local_metric: bool = False) -> CurationResult:
         """Run :meth:`check`, fail on bundle-check errors, save the container and verify the export.
 
-        This is the only step that mints a UUID. The report records the UUID, checksum and provenance.
+        This is the only step that mints a UUID. The report records the UUID, checksum and provenance. A local
+        metric (``Metric.local``: code only this definition holds) is refused unless ``allow_local_metric`` is True,
+        which only a user's own, never shipped, dataset should pass: a reader of the container could not compute it.
         """
         from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
 
+        if _declared_metric(type(self)).is_local and not allow_local_metric:
+            msg = (
+                f"{type(self).__name__}: the metric is local (`Metric.local`), so a reader of the container cannot "
+                "compute it. A shipped dataset adds its metric to data_foundry.v2.metrics under a general name; for "
+                "your own unshipped dataset, pass `build(allow_local_metric=True)`."
+            )
+            raise DatasetDefinitionError(msg)
         result = self.check(write_report=False, verbose=verbose)
         result.bundle_report.raise_if_errors()
         reviewed = read_report(self.report_path).get("checksum")
@@ -825,8 +860,10 @@ class AbstractCuratedDataset(ABC):
         report = run_bundle_checks(container, verbose=False)  # a format-2 container: the v2 protocol checks included
         shared = report.results
         own: list[CheckResult] = []
+        metric = _declared_metric(type(self))
         for name, run in (
             ("definition", self._definition_checks),
+            ("metric", lambda: metric_computes_findings(container, metric) if metric.is_local else []),
             ("group", lambda: group_checks.group_findings(container, group_stats)),
             ("task", lambda: task_checks.task_findings(container)),
             ("extra", lambda: self._extra_checks(container)),
@@ -851,6 +888,7 @@ class AbstractCuratedDataset(ABC):
         report.results = sorted([r for r in found if r.slug not in accepted], key=lambda r: SEVERITY_ORDER[r.severity])
         report.ignored = accepted
         if verbose:
+            print("\n".join(["Metric:", *container.task_metadata.objective_metric.describe_lines()]))
             print(report.summary())
         return report
 
@@ -1178,12 +1216,26 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
     task = PredictiveMLTaskMetadataV2(
         target_column_name=cls.target,
         problem_type=cls.problem_type,
-        objective_metric_name=cls.metric or TABARENA_DEFAULT_METRICS.get(cls.problem_type, ""),
+        objective_metric=metric_spec(_declared_metric(cls), cls.problem_type),
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         grouping=grouping,
+        scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
     )
     return dataset, task
+
+
+def metric_spec(metric: Metric, problem_type: str) -> MetricSpec:
+    """The container's spec of ``metric`` for ``problem_type`` (a fallback resolved to roc_auc / log_loss / rmse)."""
+    spec = metric.spec(problem_type)
+    for key in ("original", "reference", "definition", "reason"):
+        spec[key] = clean_text(spec[key]) if spec[key] else spec[key]
+    return MetricSpec(**spec)
+
+
+def _declared_metric(cls: type[AbstractCuratedDataset]) -> Metric:
+    """The definition's ``metric`` (required; :func:`_validate_definition` checks it is a :class:`Metric`)."""
+    return cls.metric
 
 
 _FLAT_REGIME_ATTRIBUTES = (
@@ -1208,7 +1260,9 @@ _REQUIRED = (
     "license",
     "target",
     "problem_type",
+    "metric",
 )
+"""The attributes a definition must declare."""
 
 
 def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C901, PLR0912 - a flat list of rules
@@ -1232,6 +1286,16 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             fail(f"`{attr}` must be a string.")
     if isinstance(cls.data_tags, str):
         fail("`data_tags` must be a tuple of tags, not one string.")
+    retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
+    if retired:
+        fail(
+            f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
+            "finding and its fit as `approximate` instead."
+        )
+    if "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
+        fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
+    if "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
+        fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]
@@ -1245,6 +1309,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         )
     if cls.grouping is not None and not isinstance(cls.grouping, Grouping):
         fail("`grouping` must be a `Grouping(...)`.")
+    metric = getattr(cls, "metric", None)
+    if metric is not None and not isinstance(metric, Metric):
+        fail("`metric` must be a `Metric` (`Metric.source(...)`, `Metric.stand_in(...)` or `Metric.fallback(...)`).")
+    if isinstance(cls.scoring_columns, ScoringColumn) or not all(
+        isinstance(c, ScoringColumn) for c in cls.scoring_columns
+    ):
+        fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:
@@ -1293,6 +1364,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             )
     if custom_splits and cls.temporal is not None and cls.temporal.splits is not None:
         fail("`Temporal(splits=...)` is ignored when the class implements `_make_splits`; declare one of them.")
+    if (
+        cls.temporal is not None
+        and cls.temporal.splits is not None
+        and cls.temporal.splits.sample_by != "rows"
+        and not cls.subsample_to_budget
+    ):
+        fail("`TemporalSplits(sample_by=...)` sets how a `_1m` version samples; it needs `subsample_to_budget = True`.")
     if custom_splits and cls.subsample_to_budget:
         fail("`subsample_to_budget` is ignored when the class implements `_make_splits`; sample there instead.")
     if cls.subsample_to_budget and cls.version_of is None:

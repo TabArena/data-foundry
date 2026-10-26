@@ -17,6 +17,11 @@ Start it with::
 
 The server is meant to run locally per curator (edit -> git commit -> PR); it is
 not hardened for multi-user or public exposure.
+
+Claims come from the live claims board (:mod:`data_foundry.curation.claims`), not from the records: a background
+thread fetches the board every :data:`CLAIMS_REFRESH_S` seconds, the records payload shows each record's live holder
+in ``claimed_by`` (with the details in ``live_claim``), and editing the Claimed by cell claims (your own name) or
+releases (empty) through ``POST /api/claims/<name>``, which also mirrors the claim into the record.
 """
 
 from __future__ import annotations
@@ -24,16 +29,21 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
+import time
+from dataclasses import asdict
 from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+from data_foundry.curation import claims
 from data_foundry.curation._paths import records_dir, resolve_curation_root, skills_dir, vocabularies_path
 from data_foundry.curation.notebooks import resolve_notebook
-from data_foundry.curation.record import FIELDS, load_vocabularies, save_vocabularies
+from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
     load_all,
+    load_record,
     record_from_dict,
     record_to_dict,
     save_record,
@@ -60,6 +70,9 @@ START_DOC: str = f"{START_SECTION}/README.md"
 START_REPO_PATH: str = ".claude/skills/README.md"
 """Where the Start here page lives in the repo; its relative links are resolved from here."""
 
+CLAIMS_REFRESH_S: float = 20.0
+"""How often the dashboard server fetches the claims board."""
+
 _FRONT_MATTER = re.compile(r"\A﻿?---[ \t]*\r?\n(?:.*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.DOTALL)
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _H1 = re.compile(r"^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$")
@@ -74,6 +87,57 @@ def _schema_payload() -> dict[str, object]:
     }
 
 
+class _ClaimsPoller:
+    """Fetches the claims board every :data:`CLAIMS_REFRESH_S` seconds in a daemon thread; keeps the last error."""
+
+    def __init__(self, interval: float = CLAIMS_REFRESH_S) -> None:
+        self.interval = interval
+        self.error: str | None = None
+
+    def start(self) -> None:
+        """Run the loop in a daemon thread (it dies with the server)."""
+        threading.Thread(target=self._loop, name="claims-poller", daemon=True).start()
+
+    def _loop(self) -> None:
+        while True:
+            try:
+                claims.fetch()
+                self.error = None
+            except claims.ClaimsError as exc:
+                self.error = str(exc).splitlines()[0]
+            time.sleep(self.interval)
+
+
+_POLLER: _ClaimsPoller | None = None
+
+
+def _claims_payload() -> dict[str, object]:
+    """The state of the claims board for the page: who you are, when it was fetched, the last error."""
+    board = claims.cached_board()
+    return {
+        "me": claims.configured_curator(),
+        "remote": claims.claims_remote(),
+        "branch": claims.claims_branch(),
+        "tip": board.tip if board else None,
+        "fetched_at": board.fetched_at if board else None,
+        "count": len(board.claims) if board else 0,
+        "error": _POLLER.error if _POLLER is not None else None,
+    }
+
+
+def _overlay_claim(row: dict[str, object], board: claims.Board | None) -> dict[str, object]:
+    """Show the live holder in ``claimed_by`` and the claim in ``live_claim``.
+
+    Without a board (none fetched, or no claims branch yet) the row keeps the record's own value.
+    """
+    if board is None or board.tip is None:
+        return row
+    claim = board.claims.get(str(row["unique_name"]))
+    row["claimed_by"] = claim.holder if claim else None
+    row["live_claim"] = {**asdict(claim), "expired": claim.expired()} if claim else None
+    return row
+
+
 def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     """Serialise every record, augmented with read-only *derived* link fields.
 
@@ -84,13 +148,15 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     pointing at its own markdown file
     (``curation/records/<name>.md``), so a record can be referenced directly from the UI. The
     ``*_url`` keys are not part of the record schema and are never written back — the
-    dashboard's per-row 📓 / 📄 buttons read them (live and on the static site).
+    dashboard's per-row 📓 / 📄 buttons read them (live and on the static site). With a cached
+    claims board, ``claimed_by`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
+    board = claims.cached_board()
     payload: list[dict[str, object]] = []
     for r in load_all(directory):
-        d = record_to_dict(r)
+        d = _overlay_claim(record_to_dict(r), board)
         rel = r.notebook_path or resolve_notebook(r)
         if rel:
             d["notebook_path"] = rel
@@ -128,7 +194,9 @@ def _version_payload(directory: Path | None) -> dict[str, object]:
     vocab = Path(vocabularies_path())
     if vocab.exists():
         newest = max(newest, vocab.stat().st_mtime_ns)
-    return {"version": f"{newest}-{count}", "records": count}
+    board = claims.cached_board()  # a claim pushed by anyone moves the token too
+    tip = (board.tip or "none")[:12] if board is not None else "-"
+    return {"version": f"{newest}-{count}-{tip}", "records": count}
 
 
 def start_readme_path() -> Path:
@@ -306,6 +374,8 @@ class CurationHandler(BaseHTTPRequestHandler):
                 self._send_json(_version_payload(self._records_dir))
             elif route == "/api/docs":
                 self._send_json(_docs_payload())
+            elif route == "/api/claims":
+                self._send_json(_claims_payload())
             elif route.startswith("/docs/"):
                 self._send_doc(unquote(route[len("/docs/") :]))
             else:
@@ -326,11 +396,13 @@ class CurationHandler(BaseHTTPRequestHandler):
             self._send_json({"error": str(exc)}, status=500)
 
     def do_POST(self) -> None:
-        """Add a new dropdown option to the vocabulary file."""
+        """Add a new dropdown option to the vocabulary file, or claim / release a dataset."""
         route = urlparse(self.path).path
         try:
             if route == "/api/vocab":
                 self._add_vocab_option()
+            elif route.startswith("/api/claims/"):
+                self._claim_action(unquote(route[len("/api/claims/") :]))
             else:
                 self._send_json({"error": "not found"}, status=404)
         except Exception as exc:  # noqa: BLE001
@@ -352,6 +424,36 @@ class CurationHandler(BaseHTTPRequestHandler):
         save_record(record, self._records_dir)
         self._send_json(record_to_dict(record))
 
+    def _claim_action(self, unique_name: str) -> None:
+        """Claim (``{"action": "claim"}``) or release a dataset on the board, mirror it into the record, return the row.
+
+        The stage follows the record: ``add`` for an accepted dataset, else ``triage``. A dataset another curator
+        holds, a missing curator name or an unreachable remote answer 409 with the reason.
+        """
+        body = self._read_json_body()
+        path = Path(self._records_dir) / f"{unique_name}.md"
+        if not path.exists():
+            self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
+            return
+        action = body.get("action")
+        try:
+            if action == "claim":
+                stage = "add" if load_record(path).suggestion in ACCEPTED_SUGGESTIONS else "triage"
+                outcome = claims.claim([unique_name], stage=stage, note=str(body.get("note") or ""))
+            elif action == "release":
+                outcome = claims.release([unique_name])
+            else:
+                self._send_json({"error": "action must be claim or release"}, status=400)
+                return
+        except claims.ClaimsError as exc:
+            self._send_json({"error": str(exc)}, status=409)
+            return
+        if unique_name in outcome.skipped:
+            self._send_json({"error": f"{unique_name}: {outcome.skipped[unique_name]}"}, status=409)
+            return
+        claims.mirror_to_records(outcome.board, [unique_name], self._records_dir)
+        self._send_json(_overlay_claim(record_to_dict(load_record(path)), outcome.board))
+
     def _add_vocab_option(self) -> None:
         body = self._read_json_body()
         field, value = body.get("field"), body.get("value")
@@ -368,7 +470,10 @@ class CurationHandler(BaseHTTPRequestHandler):
 
 def serve(host: str = "127.0.0.1", port: int = 8765, directory: str | Path | None = None) -> None:
     """Run the dashboard server until interrupted."""
+    global _POLLER  # noqa: PLW0603 - one poller per server process
     target = Path(directory) if directory is not None else records_dir()
+    _POLLER = _ClaimsPoller()
+    _POLLER.start()
     handler = partial(CurationHandler, directory=target)
     httpd = ThreadingHTTPServer((host, port), handler)
     n = len([p for p in target.glob("*.md") if not p.name.startswith("_")]) if target.exists() else 0

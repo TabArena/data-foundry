@@ -114,6 +114,17 @@ A full panel costs on the order of a million tokens per dataset; for a re-check 
 smaller one. In stage 1, two agents help: a screener for batches and a reject checker that argues against every quick
 `No`.
 
+## Who works on what
+
+A claim says "I am working on this dataset now" (its record and its folder). Claims live on the branch `claims` of
+the repository, pushed directly, so everyone sees them within seconds:
+[the board on GitHub](https://github.com/TabArena/data-foundry/blob/claims/README.md), the Claimed by column of the
+dashboard, and the agents (a hook lists the board at the start of each session and warns before an agent edits a
+dataset someone else holds). The commands claim before they work and skip what someone else holds. Set your name once
+with `git config data-foundry.curator <Name>`; to claim by hand, pick your name in the dashboard's Claimed by cell or
+run `data-foundry-curation claims claim <names>`. The details:
+[claims.md](knowledge-data-foundry/references/claims.md).
+
 ## Where the rules are
 
 * [knowledge-curation](knowledge-curation/SKILL.md): how we decide, independent of the tooling. Start with

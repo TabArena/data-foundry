@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class ClockProteinToxicity(AbstractCuratedDataset):
@@ -63,6 +63,13 @@ class ClockProteinToxicity(AbstractCuratedDataset):
     # Task
     target = "Toxic"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Gul et al. 2021 compare classifiers by 10-fold CV accuracy only (Table 2), without a "
+            "threshold or costs, on 171 molecules (33% toxic). Original rejected: accuracy (MET-6, coarse"
+            " on 171 rows). roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "data.csv")

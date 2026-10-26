@@ -103,7 +103,8 @@ def raw_feature(container, metric: str, folds: list[int], feature: str) -> tuple
     """The raw feature's error per fold (as 1 - AUC or RMSE) and the column chosen on each fold's train side."""
     df = container.dataset
     target = container.task_metadata.target_column_name
-    X = df.drop(columns=[target]).apply(
+    scoring = [c.column for c in getattr(container.task_metadata, "scoring_columns", None) or ()]
+    X = df.drop(columns=[target, *scoring]).apply(
         lambda s: s.cat.codes.where(s.cat.codes >= 0) if isinstance(s.dtype, pd.CategoricalDtype) else s
     )
     X = X.apply(pd.to_numeric, errors="coerce").select_dtypes("number")

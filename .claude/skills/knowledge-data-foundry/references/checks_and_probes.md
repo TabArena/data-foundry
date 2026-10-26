@@ -35,7 +35,7 @@ The probe methods are the general library in
 [`../../knowledge-curation/scripts/`](../../knowledge-curation/scripts/); the command-line entry points here, in
 [`../scripts/`](../scripts/), load a Data Foundry dataset (its definition, or with `--built` the built container named
 in the README's build record) through `dataset_io.py` and call it. The probes use the shipped target and splits; when
-the definition changed the target, run the same checks on the source's labels in `explore.ipynb`.
+the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts
@@ -58,13 +58,17 @@ K=.claude/skills/knowledge-data-foundry/scripts
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every
   shipped split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
   group-unit task with `mean`, `any` or `last`; the best single feature chosen per split; the flags `no_signal`,
-  `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. With `--out` it writes one JSON
-  per dataset (per-split skill and dummy loss included) and `summary.md`.
+  `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. Each train and test side is capped
+  at `--max-rows` (default 200,000): a temporal task's train side keeps its newest rows, any other side random rows;
+  the dummy uses the whole train side. With `--out` it writes one JSON per dataset (per-split skill and dummy loss
+  included) and `summary.md`.
 * `group_probes.py`, for a grouped task: the IID against grouped gap, several model families scored per group, and a
   permutation test across groups.
-* `hidden_groups.py`, for an IID task: entity-like columns, composite keys (all columns but one) and near-copy
-  clusters, each with how much a random split gains over a split by them; for a temporal task the share of test rows
-  whose entity is on the training side.
+* `hidden_groups.py`, for an IID task: entity-like columns (categorical, text and numeric, floats included), composite
+  keys (all columns but one), near-copy clusters and an exact key on each normalised text column (`(text: <column>)`),
+  each with how much a random split gains over a split by them; for a temporal task the share of test rows whose
+  entity is on the training side. When no row has 10 informative columns the near-copy line reads `not run`: no
+  evidence either way, not 0%.
 * `generated_probes.py`: the four marks of generated data (`formula`, `rule_leaves`, `independent_columns`,
   `uniform_within_class`).
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under

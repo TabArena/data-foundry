@@ -9,7 +9,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Free Text (Short)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Grouped)
 - New IID
 collections:

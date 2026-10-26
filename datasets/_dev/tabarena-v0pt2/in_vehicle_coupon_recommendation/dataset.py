@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -93,6 +93,15 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
     # Task
     target = "AcceptCoupon"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (out-of-sample, 5-fold, Table 3)",
+        reference=(
+            "Wang et al. (2017), A Bayesian framework for learning rule sets for interpretable "
+            "classification, JMLR 18(70), Sec. 6.2 and Table 3"
+        ),
+        definition="Area under the ROC curve on AcceptCoupon.",
+    )
     grouping = Grouping(
         on="respondent",
         labels="per_sample",

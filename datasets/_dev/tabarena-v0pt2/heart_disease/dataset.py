@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, SplitPlan, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, SplitPlan, TaskSummary
 
 COLUMNS = [
     "age",
@@ -112,6 +112,9 @@ class HeartDisease(AbstractCuratedDataset):
     # Task
     target = "heart_disease_diagnosis"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Detrano et al. 1989 score reliability (calibration in the large) and clinical utility (percent correctly classified): two criteria, one of them about probabilities; no threshold or costs for the hard call. Original rejected: percent correctly classified. roc_auc is the binary fallback."
+    )
     grouping = Grouping(
         on="hospital",
         labels="per_sample",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 
 class Musk(AbstractCuratedDataset):
@@ -68,6 +68,13 @@ class Musk(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Dietterich et al. 1997 report per-molecule accuracy (10-fold CV), as all multiple-instance work does: a "
+            "habit without costs; 34 molecules per test fold, so accuracy moves in steps of about 3% (MET-10). "
+            "Original rejected: accuracy. roc_auc is the binary fallback, per molecule (aggregation any)."
+        )
+    )
     grouping = Grouping(
         on="molecule_name",
         labels="per_group",

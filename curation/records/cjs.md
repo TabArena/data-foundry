@@ -5,7 +5,7 @@ checked_by:
 - Lennart
 suggestion: TBD -> Yes
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Grouped)
 collections:

@@ -36,6 +36,8 @@ Maybe not a super relevant task for tabular models.... need to make a judgment c
 
 TabRed uses 1 month refit horizon. For weather this is a bit much. I would argue for one or two weeks at most?
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE, Rubachev et al. 2025, TabReD (ICLR), https://arxiv.org/abs/2406.19380; Shifts weather (Malinin et al. 2021) also uses RMSE.
+
 ## Reference
 
 TabRed

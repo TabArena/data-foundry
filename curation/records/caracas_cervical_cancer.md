@@ -41,6 +41,8 @@ CC (2026-10-15, Lennart): No `Multi-target` tag: the four test results come from
 
 CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags stay one yes/no category each, impossible answers become missing.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve), Fernandes, Chicco, Cardoso & Fernandes 2018, 'Supervised deep learning embeddings for the prediction of cervical cancer diagnosis', PeerJ Computer Science 4:e154, doi:10.7717/peerj-cs.154 (abstract: 'top AUC ~0.69' for the biopsy); first use Fernandes, Cardoso & Fernandes, IbPRIA 2017, doi:10.1007/978-3-319-58838-4_27.
+
 ## Reference
 
 @inproceedings{fernandes2017transfer,

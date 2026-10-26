@@ -57,7 +57,15 @@ def main(path: Path) -> None:
     print(f"  container format:   {container.format_version}")  # 1: a v1 notebook, 2: a v2 definition
     print(f"  target_column_name: {tm.target_column_name}")
     print(f"  problem_type:       {tm.problem_type}")
-    print(f"  objective_metric:   {tm.objective_metric_name}")
+    # The metric: format 2 stores a spec (name, origin, reference, inputs) and the scoring columns it needs, which are
+    # never features; format 1 (BeyondArena) stores only the name.
+    if container.format_version >= 2:
+        spec = tm.objective_metric
+        print(f"  objective_metric:   {spec.name} ({spec.origin}; reference: {spec.reference})")
+        for scoring in tm.scoring_columns:
+            print(f"  scoring column:     {scoring.column} ({scoring.role}; never a feature)")
+    else:
+        print(f"  objective_metric:   {tm.objective_metric_name}")
     print(f"  stratify_on:        {tm.stratify_on}")
     print(f"  group_on:           {tm.group_on}")
     print(f"  time_on:            {tm.time_on}")

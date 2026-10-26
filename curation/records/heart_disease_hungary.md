@@ -46,6 +46,10 @@ CC (2026-10-20, Andrej): I disagree with keeping it as a separate task; suggest 
 
 CC (2026-10-21, Andrej): Retired as a duplicate of `heart_disease`, which holds this hospital's patients together with the other two of the Detrano study (Switzerland left out) and splits by hospital, as the source applied its model at other hospitals. The folder is removed from the v2 working copy; BeyondArena keeps the dataset as shipped.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Detrano et al. 1989 score reliability (calibration) and percent correctly classified, no threshold or costs for the hard call; percent correctly classified rejected (MET-6, MET-8).
+
+CC (2026-10-21, Lennart): proposal accepted: roc_auc (fallback) for the heart_disease_* datasets, not log_loss.
+
 ## Reference
 
 @article{detrano1989international,

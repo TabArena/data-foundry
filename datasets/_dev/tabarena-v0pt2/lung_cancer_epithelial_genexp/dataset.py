@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class LungCancerEpithelialGenexp(AbstractCuratedDataset):
@@ -76,6 +76,13 @@ class LungCancerEpithelialGenexp(AbstractCuratedDataset):
     # Task
     target = "DiagnosedCancer"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Spira et al. 2007 report accuracy with sensitivity and specificity of the 80-gene predictor "
+            "(83/80/84%); the clinical claim rests on sensitivity and NPV, no single metric or threshold. "
+            "roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "GSE4115_series_matrix.txt", sep="\t", comment="!", index_col=0).T

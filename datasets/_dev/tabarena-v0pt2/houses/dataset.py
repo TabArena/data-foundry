@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class Houses(AbstractCuratedDataset):
@@ -73,6 +73,11 @@ class Houses(AbstractCuratedDataset):
     # Task
     target = "LnMedianHouseValue"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="The paper is a spatial-econometrics estimation paper: it models ln(median house value) by least squares / spatial autoregression and compares fits, without a prediction metric. For a house value the error that matters is relative to the value (the paper's own log scale), so RMSLE on the median house value.",
+        target_transform="log",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/cadata_manual.txt", index_col=False, sep="  ")

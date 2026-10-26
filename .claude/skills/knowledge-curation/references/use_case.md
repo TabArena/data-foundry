@@ -36,8 +36,12 @@ Cases: eryhemato_squamous_disease.
 ### The real-world target
 
 **USE-5 (Must).** Predict what the actor would act on, at the resolution they act on it. Check how the source built
-its label before accepting it. A target the source defined badly can often be redefined into the real one. Cases:
-corporate_credit_rating, cirrhosis_patient_survival_prediction.
+its label before accepting it. A target the source defined badly can often be redefined into the real one. A label
+from a named publication whose construction is undocumented (the quantity, its scale or the rule that sets it) and
+cannot be checked may ship with `fit="approximate"` and a note naming the gap; decide the details case by case. A
+label checked and found to be another quantity than the one the actor acts on still fails (Lennart, 2026-10-21,
+diabetes_3). Cases: corporate_credit_rating, cirrhosis_patient_survival_prediction, diabetes_3,
+blood_tests_drink_prediction.
 
 ### Inputs known at prediction time
 
@@ -55,15 +59,24 @@ bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15).
 **USE-8 (Must).** Write how closely the data mirrors the use case, its fit:
 
 * Direct: the rows, the features, the label's timing and the split mirror the use case.
-* Approximate: a stand-in with a known gap, named as such: one snapshot standing in for a forecast, a potential leak
-  kept on purpose, a reconstructed time axis or a label without a stated horizon, one judge or rating service standing
-  for the rating a buyer meets.
+* Approximate: a stand-in with a known gap, named as such: one snapshot standing in for a forecast, a reconstructed
+  time axis, a label definition the sources do not settle (no stated horizon, or a breadth or horizon that cannot be
+  verified), one judge or rating service standing for the rating a buyer meets, a task changed a lot to avoid a leak.
 * None: no decision fits (USE-2). The dataset goes back to triage.
 
+A potential leak kept on purpose does not by itself make a fit approximate, however much signal it carries (a weak
+LEAK-30 keep, a remnant measured to carry no signal, or fields worth ROC AUC +0.066 as in kick): the fit is that of
+the task without the leak, and the leak is named in the notes ([leak_checks.md](leak_checks.md)) and in `fit_reason`
+as kept, not as a gap. The fit becomes approximate only when avoiding the leak needed a large change to the task
+(Lennart, 2026-10-21, sarcoma, house_sales; a strong kept leak: Lennart, 2026-10-21, kick,
+homesite_quote_conversion). An unverified label definition is a known gap and makes the fit
+approximate (Lennart, 2026-10-21, differentiated_thyroid_cancer_recurrence).
+
 Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise, superconductivity,
-2_month_survival_rate_prediction; approximate, account_debt_south_africa (one snapshot for a forecast), kick (a
-potential leak kept on purpose), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
-(one judge for the rating a buyer meets; Lennart, 2026-10-14).
+2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak); approximate, account_debt_south_africa
+(one snapshot for a forecast), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
+(one judge for the rating a buyer meets; Lennart, 2026-10-14), differentiated_thyroid_cancer_recurrence (an unverified
+label breadth), sarcoma (a closed set of types; its kept preprocessing does not count).
 
 **USE-9 (Should; narrows USE-8).** Before settling on approximate, ask whether the data as shipped mirrors another
 well-defined use case that practitioners have, where the features are known and the label is not. If it does, that is
@@ -125,17 +138,27 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
 | USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
+| USE-1, USE-5 | nba_players_2016_2019 | `No` + `No Good Target / Scientific Discovery`, `Not Representative`: no actor, moment or decision fits (the prediction point moved twice to fit the data, 25 of 35 features are end-of-season values), and the score ranks the whole ballot where the actor acts on its 2 or 3 starters; more seasons would be a rebuild of our own and fix neither (2026-10-26, Lennart) | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
+| USE-5 | diabetes_3 | Efron et al. (2004) describe the label only as "a quantitative measure of disease progression one year after baseline", with no measure, scale, clinic or inclusion rule: kept with fit approximate and a note (2026-10-21, Lennart; USE-5 amended) | applied |
+| USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate | applied |
+| USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment, now that PROV-2 (amended 2026-10-21, Lennart) keeps a sound upload with a source to point to | applied |
 | USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |
 | USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
+| USE-6 | 2_month_survival_rate_prediction | the physicians' day-3 survival estimates and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart) | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
 | USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
-| USE-8 | kick | approximate: a potential leak kept on purpose | applied |
+| USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate; now direct (next row) | applied |
+| USE-8 | kick, homesite_quote_conversion | a strong kept leak stays direct: kick's missing WheelType (ROC AUC +0.066) and homesite's two status-like fields (+0.050) are named in `fit_reason` as kept, not as a gap; qsar_aquatic_toxicity and onlinenewspopularity moved to direct the same way, and perth_house_prices, credit_card_customers, african_credit_scoring_challenge and zillow_prize stay approximate for their other gaps only (Lennart, 2026-10-21) | applied |
 | USE-8 | alfa_battle_2_0_task_2 | approximate: a reconstructed time axis or a label without a stated horizon | applied |
 | USE-8 | coffee_rating_prediction | approximate: one judge or rating service stands for the rating a buyer meets (2026-10-14, Lennart) | applied |
+| USE-8 | house_sales | a remnant kept from after the sale (view, waterfront, the neighbours' areas; about 145 rows changed, RMSE 0.2147 masked against 0.2132 kept) does not make the fit approximate: USE-8 amended (2026-10-21, Lennart) | applied |
+| USE-8 | sarcoma | approximate for the closed set of five confirmed types; the source's preprocessing over all patients, kept under LEAK-30, does not count toward the fit (2026-10-21, Lennart) | applied |
+| USE-8 | differentiated_thyroid_cancer_recurrence | approximate: what counts as recurrence is not verified (all 32 patients of the ATA high-risk class recurred, so it seems to include persistent disease), and the horizon differs between UCI and the cohort paper (2026-10-21, Lennart) | applied |
+| USE-8 | qsar_oral_toxicity | approximate: the screening is simulated; random tested chemicals stand in for the untested chemicals a screener faces, which have half the share of close analogs (9.3% against 19.7%) (2026-10-21, Lennart) | applied |
 | USE-9 | 5g_energy_consumption | direct: a split by station within one week fills the gap for stations without measurements, rather than standing in weakly for a forecast (2026-10-14, Lennart) | applied |
 | USE-10 | corporate_credit_rating | a known entity: 72% of the ratings with an earlier one repeat its class, and the previous rating lifts a random forest's skill from 0.285 to 0.460 | applied |
 | USE-10 | in_vehicle_coupon_recommendation | cold start: a recommender before it has data on a new respondent, tested by a grouped split | applied |

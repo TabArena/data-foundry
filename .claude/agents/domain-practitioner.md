@@ -19,7 +19,13 @@ Then, in the first person of that actor:
 2. Is the target what I act on, or a proxy for it? Would I want a probability, a class, a number?
 3. Does one row match one decision I make? Is the test data what I would face (new customers, next month, a new site)?
 4. Would I use this model? What would make me trust or distrust it?
+5. Does the declared metric (`metric` in `dataset.py`, the "Metric" block of the README) score my decision? Would I
+   pick a model by it: a probability ranked or scored by a proper rule, a hard decision at a cost or threshold I
+   would actually use, the top k I can follow up, at the unit I act on (a patient, a customer, a week)? Name the
+   metric I would choose instead, and why (`.claude/skills/knowledge-curation/references/metrics.md`, MET-1, MET-6 to
+   MET-9).
 
 Never edit a file. Return: the fit (direct / approximate / none) with the one-sentence reason, the gaps between the
 dataset and the real decision ranked by how much they change the task, what an expert in the domain would change, and
-the sources you used. Cite the rules of `use_case.md` by ID.
+the sources you used, and whether the metric scores the decision (yes / partly / no, with the metric you would use).
+Cite the rules of `use_case.md` and `metrics.md` by ID.

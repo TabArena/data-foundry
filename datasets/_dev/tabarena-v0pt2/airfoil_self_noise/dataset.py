@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class AirfoilSelfNoise(AbstractCuratedDataset):
@@ -79,6 +79,12 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
     # Task
     target = "scaled-sound-pressure"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The NASA report builds semi-empirical prediction methods and compares spectra visually; neither "
+            "it nor the UCI page defines an evaluation metric"
+        ),
+    )
     grouping = Grouping(
         on="setup",
         labels="per_sample",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class Heloc(AbstractCuratedDataset):
@@ -68,6 +68,9 @@ class Heloc(AbstractCuratedDataset):
     # Task
     target = "RiskPerformance"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The challenge defined no predictive scoring rule: judging criteria were not announced in advance and mixed an empirical evaluation with qualitative judging of explanations; only accuracy figures (~72-74%) were reported for entries.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/heloc_dataset_v1 (1).csv")

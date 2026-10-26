@@ -40,6 +40,10 @@ CC (2026-10-15, Lennart): The BI-RADS readings are valid tabular inputs: screeni
 
 CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: comparison_mammogram_available, current_hormone_therapy, prior_breast_biopsy, prior_mammogram, family_history_breast_cancer.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'.
+
 ## Reference
 
 Other

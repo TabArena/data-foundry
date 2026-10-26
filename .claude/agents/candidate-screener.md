@@ -11,7 +11,9 @@ Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each recor
 (start with `.claude/skills/knowledge-curation/references/principles.md`). In short:
 
 1. Research from the start link and the web only: the first publication and year, the data as published, the original
-   task, the use case (actor, moment, decision), the likely regime, papers, siblings and duplicates among
+   task, the use case (actor, moment, decision), the likely regime, the metric the source scored and where it is
+   defined (or "none found" with where you looked; any extra inputs it needs; MET-1, MET-5, MET-6 in
+   `.claude/skills/knowledge-curation/references/metrics.md`), papers, siblings and duplicates among
    `curation/records/`, external collections, risks for the add stage. No download beyond a preview; nothing is built.
 2. A Must rule that clearly fails from the source's own words gives a proposed reject: `No`, the marker, the rule ID.
    Do not write a reject yourself: return it to the main session, which has it checked first.
@@ -20,7 +22,7 @@ Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each recor
 4. Write each non-rejected record through the store API right after reloading it (`records.md`): links, metadata only
    where the source states it, `priority`, `AI (UNVERIFIED)` in `checked_by`, `AI-Filled (Verify)` in `tags`, the
    disclaimer and the screening block at the top of the comments, every existing note kept. Skip a record another
-   curator has claimed.
+   curator holds on the claims board (`claims check <names>`; the main session claims the batch before it starts).
 
 Never commit, never build, never delete a comment, never name company code repositories, never send personal data to
 an outside service. Cap the threads of any Python run (`OMP_NUM_THREADS=2` and the like).

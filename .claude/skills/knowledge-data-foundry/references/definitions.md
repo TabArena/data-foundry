@@ -14,7 +14,6 @@ copy, [working_copy.md](working_copy.md)):
 | File | Written by | Role |
 |---|---|---|
 | `dataset.py` | the curator or the agent | The only definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
-| `explore.ipynb` | the template, then whoever explores | The workbench: `ds = workbench()` loads this folder's dataset and picks up every edit to `dataset.py`. Committed without outputs. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
 | `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
 
@@ -31,7 +30,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, drop_columns,
+)
 
 
 class MyDataset(AbstractCuratedDataset):
@@ -61,7 +62,8 @@ class MyDataset(AbstractCuratedDataset):
 
     # Task
     target = "y"
-    problem_type = "binary_classification"   # metric -> roc_auc, stratify_on -> target by default
+    problem_type = "binary_classification"   # stratify_on -> target by default
+    metric = Metric.source("roc_auc", original="AUC", reference="https://...")  # required (metrics.md)
 
     # Splits: a temporal task; a grouped one declares `grouping = Grouping(...)` instead, an IID one neither
     temporal = Temporal(on="date", splits=TemporalSplits(window=7, unit="days", n_windows=3))
@@ -105,8 +107,8 @@ key in `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with 
 `TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is missing,
 or a group or time column with missing values, stops the run with the attribute's name.
 
-Keep `print` diagnostics out of the definition: `README.md` records split sizes and time ranges, and `explore.ipynb`
-or `_decisions` is the place for evidence. Keep the `assert`s that guard custom logic. Run `ruff check --fix` and
+Keep `print` diagnostics out of the definition: `README.md` records split sizes and time ranges, and `_decisions`
+(or `ds = workbench()` in an uncommitted scratch notebook) is the place for evidence. Keep the `assert`s that guard custom logic. Run `ruff check --fix` and
 `ruff format` on the file (double quotes, import order), then `dataset check` again: a fix can change behaviour (rule
 C416 once rewrote a dict comprehension and broke a repair; it is now in ruff's ignore list).
 
@@ -118,8 +120,8 @@ Do not re-implement any of this.
   text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is indented like
   code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must differ). The
   regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the task.
-* Defaults: `metric` is the one for the problem type (`roc_auc`, `log_loss`, `rmse`); `stratify_on` is the target for
-  classification. Set them only to deviate.
+* Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
+  required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
   removed; a classification target becomes a category without being listed), then fixes the row order: the rows in
   the order of their content (a hash of each row, so the order `_clean` returns does not matter), then a stable sort by
@@ -178,17 +180,63 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
-  when the task is temporal in nature but the release has no time index (SPLIT-8 in
-  [splits.md](../../knowledge-curation/references/splits.md)).
+  when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
+  (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
+  `temporal` refuses it, Lennart 2026-10-21); `"ForcedGroupedFromTemporal"` when such a
+  task ships grouped instead (SPLIT-8; the definition must declare a `grouping`). `"2ndTierData"` is retired
+  (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as a
+  finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
   `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, and the record's `problem_type` follows the one that
   ships.
-* `metric`: leave it unset for the three defaults (`rmse`, `roc_auc`, `log_loss`). Another metric is a deliberate
-  custom one that must be registered downstream, in its canonical short spelling (`mae`, `rmsle`, `mape`;
-  `task_metric_not_canonical` rejects aliases). A competition with its own metric keeps our default, and the notes name
-  the original metric.
+* `metric` (required): a `Metric` from `data_foundry.v2.metrics`; which one is decided by
+  [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
+  * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
+    scored (zillow_prize `Metric.source("mae", original="MAE of logerror", reference=<the evaluation page>)`). A
+    metric equal to the original by identity is a source too, with the identity in `definition` (ROC AUC for a binary
+    normalized Gini).
+  * `Metric.stand_in(name, original=..., reason=..., reference=...)`: the closest computable metric to a unique
+    original that cannot be computed on our data; `original` and `reason` are required.
+  * `Metric.from_context(name, reason=...)`: the source defines no metric, but the task makes one obvious (diamonds:
+    `rmsle` on the price in dollars, since a price's error matters relative to the price); `reason` is required.
+  * `Metric.fallback(reason=...)`: no metric of the source the task would use (none defined, several reported, a
+    threshold metric without a threshold or costs); `roc_auc`, `log_loss` or `rmse` by problem type at build. The
+    reason says where we looked and which source metric was rejected and why.
+
+  Every constructor takes `target_transform` (`"identity"` by default, `"log"`, `"log1p"`, `"log10"`; regression
+  only, MET-3): the target ships transformed for modelling, and the metric is computed after the inverse (`exp`,
+  `expm1`, `10**`) of both the true values and the predictions, on the original scale. Declare exactly what `_clean`
+  applies: `np.log(price)` is `"log"`, `np.log1p(area)` is `"log1p"`. So RMSLE on a log1p target is
+  `Metric.source("rmsle", ..., target_transform="log1p")`, the competition's MAE on a logged loss is
+  `Metric.source("mae", ..., target_transform="log")`, and a price shipped as its log with no source metric is
+  `Metric.from_context("rmsle", reason=..., target_transform="log")`. A custom metric never inverts the target
+  itself (par_k reads the runtime after the spec's inverse).
+
+  `name` is a key of `METRICS` (standard scikit-learn style names, or a custom metric under a general name, MET-12);
+  an unknown name or param is refused when `dataset.py` is imported, with the close names. `params` holds JSON values
+  only (a cost matrix, k, weights); `inputs` maps each role the metric needs (`group`, `weight`, `time`) to a column.
+  Each such column is a **scoring column**: it stays in the frame, is never a feature, and is declared as
+  `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
+  row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
+  model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
+  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. Before declaring a metric
+  with inputs, check on the data that every test fold holds what it needs (MET-2).
+
+  The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
+  `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
+  `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can implement the metric
+  from these fields. `describe()` and the README show it with the scoring columns. The bundle checks:
+  `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
+  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
+  metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or the time column, which is allowed),
+  `task_metric_reference_missing` (a source or stand-in without a link), `task_metric_stand_in_incomplete`,
+  `task_metric_not_computable` (no finite score of a random prediction on some fold), `task_metric_local`,
+  `task_metric_transform_not_regression` and `task_metric_transform_overflow` (the inverse of `target_transform`
+  overflows on a shipped value: the target is not on that scale).
+  `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
+  user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
@@ -334,7 +382,10 @@ out of the checksum while unset): the `gap` of a calendar or row window states i
 (`unit="unique"`: college_scorecard's cohorts, numerai's weekly eras) or one built in `_make_splits`
 (brazilian_ecommerce, sf_permit_time) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique` window with a
 gap and no declared unit does not import, nor does a declared gap the windows already state or do not leave
-(Lennart, 2026-10-16).
+(Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
+(`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
+gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
+Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
 
 The data arrives sorted by the time column, and `TemporalSplits` builds the convention the bundle checks verify: one
 repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is the newest window, the rest walk back
@@ -350,6 +401,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
+| A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 The number of windows follows `recommended_dimensions` (20, 10, 3 or 1 times 3), never fewer than 3 (`splits_too_few`)
@@ -366,10 +418,12 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
-The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows. A
-dataset that does not fit gets a sub-sampled version, its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of `<name>`. Set
-`subsample_to_budget = True`:
+The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows:
+the row budget (Lennart, 2026-10-21: at most 1M training rows). A dataset whose splits, before any cap, have a
+side over the budget ships only as a sub-sampled version, whatever the size of its frame (nyc_taxi_trip_duration:
+1.45M rows, train sides of 1.28M to 1.39M). The version has its own folder and class, `<unique_name>_1m/dataset.py`,
+with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of
+`<name>`. Set `subsample_to_budget = True`:
 
 * IID or grouped data: a frame of up to 1.5M rows is taken fully (3 folds of 2/3 train). A larger frame is sub-sampled
   to 1.5M rows before splitting (`subsample_frame`: rows stratified on the target, or whole groups), then the usual
@@ -377,7 +431,12 @@ dataset that does not fit gets a sub-sampled version, its own folder and class, 
 * Temporal data: the frame is not sampled. The windows (at least 3) are built on the full data, then
   `sample_temporal_splits` keeps at most 500k rows of each test window and a random 1M of all earlier rows for each
   train side, drawn in one random order so the train sides overlap; the frame keeps only the rows a split uses. A
-  temporal `_1m` version whose windows all fit is an error.
+  temporal `_1m` version whose windows all fit is an error. When the rows of one time value form a cross-section the
+  target or the features are relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws
+  whole time values instead of rows: one random order of the values, each side taking whole values while it stays
+  within its budget (the value that would cross it is dropped), without stratification
+  (g_research_crypto_forecasting_1m; Lennart, 2026-10-22). Random rows would leave about one coin per minute.
+  `sample_by` without `subsample_to_budget` is an error.
 
 A dataset that sets `splits_comment` itself states the sub-sampling there.
 
@@ -407,8 +466,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Cohort and selection, right truncation.
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
-  give_me_some_credit); a target stored as `log1p` with metric `rmsle`, which logs it again
-  (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
+  give_me_some_credit); a target stored as `log1p` with metric `rmsle` and no
+  `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
   `license` (cirrhosis: `"IID"`). Read the class attributes once more for these before handing off.
 
 ## Bundle checks and what to do at scaffold time
@@ -430,13 +489,13 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
 | `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
-| `task_metric_empty`, `task_metric_problem_type_mismatch`, `task_metric_not_canonical` | leave `metric` unset, or use the canonical short name |
+| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
 | `splits_rows_unused` | IID and grouped splits cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | more than 1M train / 500k test rows in a split: a `_1m` version for a frame above 1.5M rows, otherwise narrower windows |
+| `splits_train_over_budget`, `splits_test_over_budget` | a split side over the row budget: a `_1m` version with `subsample_to_budget` ("Larger than the row budget"); narrower windows do not shrink a train side |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |
@@ -495,6 +554,44 @@ column's ROC AUC for the rain before 9 am on day D against the label's window).
 * An accepted bundle-check warning keeps its reason in `accepted_check_warnings` (emscad accepts
   `dataset_pure_feature_value` for large legitimate clients).
 
+## Metrics
+
+Which metric a dataset declares is decided by [metrics.md](../../knowledge-curation/references/metrics.md); this is
+how a custom one gets into the library. The registry is `METRICS` in `src/data_foundry/v2/metrics.py`; it is also the
+list of names the bundle checks know. The module imports only numpy, pandas, scikit-learn and scipy (a test refuses any
+other Data Foundry import), so it can be copied out on its own.
+
+A custom metric is added in the same change as the dataset that needs it (MET-13), under a general name (MET-12):
+
+1. Write `fn(y_true, y_pred, *, labels=None, params, **inputs) -> float`. `y_pred` follows the module's conventions
+   (`proba`: the positive class's probability or one column per class in `labels` order; `label`; `value`); `params`
+   holds the JSON values of the spec (a matrix, `k`, weights); each input role (`group`, `weight`, `time`) arrives as
+   an array aligned with `y_true`. Use the fastest well-tested code: scikit-learn or scipy where they cover the metric,
+   otherwise vectorised numpy (a per-group metric through `np.unique(..., return_inverse=True)` and `np.bincount`, or
+   a pandas `groupby`, never a Python loop over rows); for a competition whose official code is slow, start from the
+   faster versions posted in its discussions or notebooks and check them.
+2. Register a `MetricDef` with `kind="custom"`: `name`, `problem_types`, `prediction`, `greater_is_better`, `fn`,
+   `implementation` (what it calls), `definition` (one line a reader can implement from), `inputs` (the roles it
+   needs), `params` (each param with a short description), `predictions` (other prediction kinds a param may choose,
+   such as a cost matrix scored on probabilities), `check_params` (raises a `ValueError` on a missing matrix or a bad
+   `k`, so a wrong definition fails when `dataset.py` is imported) and `reference` (where the metric is defined and the
+   official code it is tested against).
+3. Test it in `tests/test_v2_metrics.py`:
+   * equal to the official implementation on random inputs, to 1e-9 or exactly, over several seeds and sizes, with ties
+     and with a class missing from a fold where the metric allows it; when the official code cannot run in the test
+     environment, a faithful transcription of it in the test file, with its link;
+   * one case computed by hand, with the arithmetic in a comment;
+   * a fold it cannot score (a single class, an empty group): a clear `ValueError` or a non-finite value, which
+     `task_metric_not_computable` reports;
+   * its time on 1M rows (with a realistic number of groups), reported in the test's output or the PR, and fast
+     enough to score every fold of a benchmark run.
+4. In the definition, declare it (`Metric.source("cost_matrix", params={...}, reference=...)`), declare every input
+   column as a `ScoringColumn`, and run `dataset check`: `task_metric_not_computable` scores a random prediction on
+   every split, so a test fold that lacks what the metric needs shows up there (MET-2).
+
+`Metric.local(fn, ...)` runs code that only the definition holds. It is for a user's own dataset that is never
+shipped; the working copy never uses it.
+
 ## Reference definitions
 
 Read the closest one in full before writing (paths under `datasets/_dev/tabarena-v0pt2/`):
@@ -515,5 +612,8 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 * A group column is split and scoring metadata, never a feature; the harness drops it before fitting
   (`datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md` lists what the harness still needs, such as per-group
   scoring and custom metrics).
+* The declared metric changes no score yet: TabArena's adapter scores only `roc_auc`, `log_loss` and `rmse` and does
+  not read the `objective_metric` spec; supporting it, the custom metrics and the scoring columns is an entry of
+  `BENCHMARK_CHANGES_TODO.md`.
 * String columns are embedded by the pipeline, so a definition ships text as `string`, and molecules as RDKit
   descriptors.

@@ -42,6 +42,8 @@ From looking at the paper, data, and asking ChatGPT, I think we need to group by
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Six species fall below 5 spectra in some strain-grouped test folds (B. thuringiensis: 11 spectra from 8 strains, 2-6 per fold; C. difficile 14 from 7). The grouped split makes fold sizes uneven. The six are 18% of the test rows and 25% of a random forest's log loss (0.88 against 2.94 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source hierarchical_balanced_accuracy — accuracy averaged per strain, then per species (Vervier et al. 2015, arXiv:1506.07251), with `Strain` (the group column) as its group input; scored metric changed from log_loss.
+
 ## Reference
 
 Mahé et al. (2014). Automatic identification of mixed bacterial species fingerprints in a MALDI-TOF mass-spectrum. Bioinformatics.

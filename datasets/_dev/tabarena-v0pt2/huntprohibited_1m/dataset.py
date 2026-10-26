@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 TARGET = "is_blocked"
 
@@ -18,13 +18,13 @@ class Huntprohibited1m(AbstractCuratedDataset):
             "moderators check or block."
         ),
         row=(
-            "One closed ad posted on Avito.ru from December 2013 to March 2014; 1.5 million ads sampled from "
-            "3,963,488 after dropping duplicates."
+            "One closed ad posted on Avito.ru from December 2013 to March 2014, blocked for illicit content or never "
+            "blocked; 1.5 million ads sampled from 3,963,488 after dropping duplicates."
         ),
         predicted="Whether a moderator blocked the ad for illicit content.",
         known=(
             "The ad as posted: its title, description and form fields (Russian text), category and subcategory, "
-            "price, and the counts of phone numbers, e-mails and links masked in the description."
+            "price, and the counts of phone numbers, e-mails and links that Avito masked in the ad."
         ),
         split=(
             "Random ads of the same four months; the file has no dates, so the competition's split by month cannot be"
@@ -36,8 +36,10 @@ class Huntprohibited1m(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Everything the model sees is known when the ad is submitted, but the split is random over four months, "
-            "while moderation scores the next ads; the competition tested on the following month."
+            "Everything the model sees is known when the ad is submitted, as of its last version (the price is the "
+            "final price). Two gaps: the model sees only the ad's content, not the seller, region, posting time, "
+            "photos or raw contacts the site has; and the split is random over four months, while moderation scores "
+            "the next ads (the competition tested on the following month)."
         ),
     )
 
@@ -73,25 +75,34 @@ class Huntprohibited1m(AbstractCuratedDataset):
     curation_comments = """
         We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibited Content": 3,995,803 ads posted on Avito.ru from December 2013 to March 2014. The unlabelled test file (April 2014) is not used.
 
-        - Prediction point: an ad is scored when it is submitted (new or edited) and enters moderation, from its content as posted. The target `is_blocked` says whether a moderator blocked the ad for illicit content.
+        - Prediction point: an ad is scored when it is submitted (new or edited) and enters moderation, from its content as posted. The file holds each ad's last version, and `price` is the final price. The target `is_blocked` says whether a moderator blocked the ad for illicit content.
         - We drop `close_hours`, how long the ad was live: it is known only after the moderation decision (the hosts: "not available at scoring phase").
         - We drop `is_proved`, which is set only for blocked ads: a component of the target, "not to be used as a direct modeling attribute" (data page).
         - We drop `itemid`: the ids "have been randomly assigned" (Kaggle discussion 9554).
-        - IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table).
+        - IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks, seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates. One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe random holdouts and K-fold, and local scores tracked the leaderboard).
         - We drop exact copies of an ad (reposts with the same features and label) and every ad whose features occur with both labels (decision table).
-        - Note: edited reposts stay. 1.39% of the fold-0 test ads share a description of 30+ characters with a training ad (0.50% of the April test ads), dropping them changes ROC AUC by at most 0.002, and without a seller id they cannot be grouped.
-        - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked in the description are numeric.
+        - Note: edited reposts stay and sellers are not grouped, because the label is per ad: the data page speaks of ads "blocked for illicit content". This is the source's wording; it cannot be checked against a seller key, as the file has none. By exact description keys, 1.4-4.9% of the test ads have a near copy in train, and 99.5% of those share its label; grouping on such a key (GroupKFold, fold 0, a logistic regression on word n-grams) gives ROC AUC 0.99384 and 0.99386 against 0.99390 for the random split, and AP within 0.002. In the 2026-10-07 run, 0.50% of the April test ads shared a 30+ character description with a training ad (not re-measured: the test file is not in the warehouse). A seller who rewrites every ad is not covered by any of these measurements.
+        - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked are numeric. The counts are Avito's own and mostly match the masks in the description: `phones_cnt` is higher on 0.92% of ads, which are blocked less often than the rest.
         - We keep `attrs`, the ad's form fields for its category, as the released JSON text: unpacking it would give 72 mostly empty columns with Russian names, and the winning solutions treated it as text (Kaggle discussion 10178).
+        - Tags: no `Spatial` tag (Lennart, 2026-10-22). 901,011 real-estate ads (22.5% of the file) hold a street address inside the `attrs` form text, but the dataset has no geographic column of its own.
         - Anomaly: 6,004 `attrs` strings are not valid JSON, the description writes line breaks as "^p", and `price` is 0 for 12.4% of the ads (no price given, or free). We keep all of these as released.
-        - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked; `price` is the final price, so an edited ad may hold its last version.
-        - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994, so a pipeline that encodes Russian text poorly loses most of the task.
-        - Note: the hidden-group probe hits on subcategory and attrs, but every new ad has both, so the split stays IID.
-        - Note: the competition scored AP@32500; we use ROC AUC. The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
+        - Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file (14 in this version), 65.5% of them blocked; `price` = 1 on 3,962 ads of this version, 19.0% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
+        - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.
+        - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
+        - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
+        - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
     """
 
     # Task
     target = TARGET
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "average_precision_at_k",
+        original="AP@{K}",
+        reference="https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation",
+        definition="AP@k: sum over ranks i <= k of precision@i x rel_i, over min(k, #blocked), k = 12,500 per 500,000-ad test fold (the competition's 32,500 of about 1.3M, 2.5%)",
+        params={"k": 12500},
+    )
 
     # Splits: IID (no time index survives); the `_1m` version sub-samples the frame to the 1.5M-row budget.
     subsample_to_budget = True

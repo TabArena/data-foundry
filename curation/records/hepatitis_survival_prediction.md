@@ -34,6 +34,10 @@ type_adapter_id: curation-record-v1
 
 Already preprocessed data but otherwise looks like a good task, need to check group and cost files but would add!
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Efron & Gong 1981/1986 study how to estimate the error rate of Gregory's logistic rule on these 155 patients: a statistics-methods paper, not a decision; 32 deaths, so accuracy is coarse. Original rejected: error rate. roc_auc is the binary fallback.
+
+CC (2026-10-21, Lennart): the metric is the roc_auc fallback; Efron & Gong's error rate is the object of a resampling study on 155 patients, not the task's metric.
+
 ## Reference
 
 ?

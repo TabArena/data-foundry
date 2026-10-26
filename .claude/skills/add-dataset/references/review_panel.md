@@ -21,7 +21,8 @@ committed):
   It holds only `data.parquet` and `task.md` (target, problem type, size, regime column, source links): no task summary,
   no notes, no record.
 * the claims list: every statement the dataset makes about itself (the `task_summary`, each `curation_comments`
-  bullet, the `splits_comment`, each accepted warning, the record's assessments and the screening block).
+  bullet, the `splits_comment`, each accepted warning, the record's assessments and the screening block), and the
+  metric: the declared `Metric` with its origin, original and reference, and its scoring columns.
 
 Give every agent the paths, the unique name, the folder, the run folder for its scratch output and the thread caps of
 [agent_runs.md](../../knowledge-data-foundry/references/agent_runs.md). Name agents (`<role>-<unique_name>`) so the
@@ -31,10 +32,10 @@ advocate and the critic can be resumed for their rebuttals.
 
 | Agent | Its question | It returns |
 |---|---|---|
-| `claim-auditor` | Does each claim hold? It tries to refute every claim with a test on the data. | one row per claim: claim, source, the test run, holds / refuted / untested, the evidence, the rule |
+| `claim-auditor` | Does each claim hold? It tries to refute every claim with a test on the data, the metric claim included: does the source define this metric, is it computable on our data and its folds (MET-2)? | one row per claim: claim, source, the test run, holds / refuted / untested, the evidence, the rule |
 | `column-auditor` | Column by column: what it means (the codebook), whether it is known at the prediction point, whether its dtype and cleaning are right. | one row per column with its verdict; the problems ranked |
 | `split-auditor` | Does the split mirror the application: the regime, the windows, the gap and late labels, the training history, the group ids, hidden groups? It runs the alternatives it doubts. | the split's verdict, each problem with its evidence and rule |
-| `domain-practitioner` | Playing the actor of the use case: would I have these inputs then, is this the target I act on, would I use this model? | how real the task is (direct / approximate / none), the gaps, what an expert would change |
+| `domain-practitioner` | Playing the actor of the use case: would I have these inputs then, is this the target I act on, would I use this model, does the metric score my decision? | how real the task is (direct / approximate / none), the gaps, what an expert would change, the metric it would use |
 | `blind-reviewer` | With no notes and no rules, only the data and the source: what is this task, would I benchmark on it, what is wrong? | its verdict and its concerns, ranked, with evidence |
 | `precedent-checker` | How were similar cases decided before (the decision register, sibling records, the Cases tables)? Is this definition consistent with them? | the precedents, consistent / departs, and for a departure the fact that sets this case apart or its absence |
 
