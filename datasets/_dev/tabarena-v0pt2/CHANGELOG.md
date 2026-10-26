@@ -24,6 +24,10 @@ record, audit or PR that motivated it.
   qsar_oral_toxicity. No folder of the working copy has an open issue left.
 - Claims released and `DF: Yes` for the three datasets shipped on 2026-10-22 whose claims were still held:
   melbourne_housing_market, nyc_taxi_trip_duration and g_research_crypto_forecasting.
+- Shipped (`DF: Yes`, claims released; Lennart, 2026-10-26), all issues settled on 2026-10-21/22 (house_sales on
+  2026-10-26): distribution_transformers_at_cauca_department, expresso_churn_prediction,
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, framingham_heart_study_fhs,
+  house_sales, huntprohibited, mobile_churn, mortgage, open_university_learning_analytics_dataset and sarcoma.
 
 ## 2026-10-26, late night (african_credit shipped; rosbank1 time features; nyc and pkdd 100 m; thyroid keeps Hx Radiothreapy)
 

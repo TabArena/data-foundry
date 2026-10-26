@@ -4,8 +4,7 @@ name: expresso-churn-prediction
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -55,6 +54,8 @@ CC (2026-10-22, Lennart): issue 5: keep ARPU_SEGMENT as released (CLEAN-5 not tr
 CC (2026-10-22, Lennart): issue 1: confirm the REGION drop (LEAK-10).
 
 **Assessment (AI, 2026-10-22):** all issues settled (REGION dropped, ARPU_SEGMENT kept, churn timing a stated risk); REVIEW.md removed. kick's `WheelType`, marked keep the same day on the same test, is put back to the curator as a consistency check in kick's REVIEW.md; if it is kept by an amendment, REGION is reopened. Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

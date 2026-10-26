@@ -4,8 +4,7 @@ name: FORCE 2020 Well well log and lithofacies dataset for machine learning comp
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -69,6 +68,8 @@ CC (2026-10-21, Lennart): Basement drop confirmed (103 rows, all in 16/4-1); rec
 CC (2026-10-21, Lennart): Depth context: declare the depth order (`Grouping(time_on="DEPTH_MD")`) and ship no window features. Second scales: convert as the AI recommends.
 
 **Assessment (AI, 2026-10-21):** Applied. `Grouping.time_on="DEPTH_MD"` records the order inside a well (it does not change the split; the derived regime tag becomes GroupedTemporal). `_clean` converts ROP in 32/2-1 and 16/10-5 from ft/h to m/h (x 0.3048, 5,814 rows; ROPA / ROP 0.31 and 0.30 before, 1.00 and 1.00 after) and MUDWEIGHT below 0.5 from bar/m to g/cm3 (/ 0.0980665, 225,528 rows; the 28 wells' per-well medians are now 1.08-1.80 g/cm3). Correction to the review-page answer of 2026-10-21: the ft/h curve in those two wells is ROP, not ROPA (the ratio there is ROPA / ROP = 0.31). The other off-scale curves stay masked. A CLEAN-21 case row records the conversion. dataset check: 0 errors, 0 warnings. Not rebuilt.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 
