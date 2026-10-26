@@ -2,14 +2,13 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 15:27 UTC: 45 claim(s) (Lennart 32, Myunghwan 13).
+As of 2026-10-26 16:31 UTC: 42 claim(s) (Lennart 29, Myunghwan 13).
 
 ## Lennart
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `account_debt_south_africa` | add | 2026-10-23 | 2026-10-30 |  |
-| `aeolus` | add | 2026-10-23 | 2026-10-30 |  |
 | `aeolus_rebuilt` | add | 2026-10-26 | 2026-11-02 | rebuild of aeolus from BTS and Meteostat (marks of 2026-10-26) |
 | `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
 | `credit_card_customers` | add | 2026-10-23 | 2026-10-30 |  |
@@ -24,7 +23,6 @@ As of 2026-10-26 15:27 UTC: 45 claim(s) (Lennart 32, Myunghwan 13).
 | `g_research_crypto_forecasting` | add | 2026-10-23 | 2026-10-30 |  |
 | `house_sales` | add | 2026-10-23 | 2026-10-30 |  |
 | `huntprohibited` | add | 2026-10-23 | 2026-10-30 |  |
-| `lgd` | add | 2026-10-23 | 2026-10-30 |  |
 | `melbourne_housing_market` | add | 2026-10-23 | 2026-10-30 |  |
 | `mobile_churn` | add | 2026-10-23 | 2026-10-30 |  |
 | `mortgage` | add | 2026-10-23 | 2026-10-30 |  |
@@ -38,7 +36,6 @@ As of 2026-10-26 15:27 UTC: 45 claim(s) (Lennart 32, Myunghwan 13).
 | `qsar_oral_toxicity` | add | 2026-10-23 | 2026-10-30 |  |
 | `rosbank1` | add | 2026-10-23 | 2026-10-30 |  |
 | `sarcoma` | add | 2026-10-23 | 2026-10-30 |  |
-| `stroke_prediction` | add | 2026-10-23 | 2026-10-30 |  |
 | `zillow_prize` | add | 2026-10-23 | 2026-10-30 |  |
 
 ## Myunghwan
