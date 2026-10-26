@@ -52,7 +52,8 @@ brazilian_ecommerce, bias_correction_r_bias_correction_r_2.
 
 **USE-7 (Must).** A row that lacks the input the prediction acts on is no task row: drop it rather than keep it as
 missing. Missing values of the other inputs stay missing. Why: nobody corrects a forecast that does not exist. Cases:
-bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15).
+bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15), nyc_taxi_trip_duration_1m and
+pkdd_15_taxi_trip_time_prediction_ii_1m (a 100 m radius around the pickup, 2026-10-26).
 
 ### How closely the data mirrors the use case
 
@@ -139,6 +140,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 |---|---|---|---|
 | USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
 | USE-1, USE-5 | nba_players_2016_2019 | `No` + `No Good Target / Scientific Discovery`, `Not Representative`: no actor, moment or decision fits (the prediction point moved twice to fit the data, 25 of 35 features are end-of-season values), and the score ranks the whole ballot where the actor acts on its 2 or 3 starters; more seasons would be a rebuild of our own and fix neither (2026-10-26, Lennart) | applied |
+| USE-1 | glioma_grading_clinical_and_mutation_features | `No` + `No Good Target / Scientific Discovery`: the grade is the pathologist's diagnosis, made before the DNA is sequenced, so a model can only cross-check a label that already exists; a cross-check of a known label is no use case, and the source names no clinical setting (2026-10-26, Lennart) | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
@@ -149,6 +151,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
 | USE-6 | 2_month_survival_rate_prediction | the physicians' day-3 survival estimates and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart) | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
+| USE-7 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m | an ETA with the destination named at pickup: a recorded end within 100 m of the start is no destination anyone names, so those trips are dropped in both (nyc reopened to match pkdd, where a 15-second GPS clock turns a return to the start into an end within 100 m); the cut rests on the inputs, not on the travel time (2026-10-26, Lennart) | applied |
 | USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
 | USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate; now direct (next row) | applied |

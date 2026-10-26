@@ -4,8 +4,7 @@ name: Alfa Battle 2.0 (Task 2)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -54,6 +53,18 @@ CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10
 CC (2026-10-21, Lennart): on CLEAN-19: "Okay, we here the case is that we want to take the best of both, or a reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does that make sense?" (CLEAN-19, amended). The top solutions' shared aggregates stay: they are the better of the two sets (untuned LightGBM 0.787 / 0.771 / 0.772 against the organizers' 0.774 / 0.757 / 0.763); the CLEAN-19 Cases row gained this reason.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — ROC AUC (https://boosters.pro/championship/alfabattle2/overview (record's competition-page excerpt: 'ROC AUC'); habr.com/ru/companies/alfa/articles/551130).
+
+CC (2026-10-26, Lennart): issue 1: "Do (a) and keep it as is, IEEE is a slightly different case": the repeat-client filter stays. What sets it apart from ieee_fraud_detection: a later product defaults at 95.1% after a defaulted earlier one (2.3% otherwise), flat over lags of 1-10 months, while only 45.5% of later defaults had one, so the earlier flag was set after the later issue (SPLIT-9); ieee's carried labels follow the host's labelling rule (a chargeback marks the card's later transactions), read as known history (CC 2026-10-01).
+
+CC (2026-10-26, Lennart): issue 3: gap 0 with the recorded exception to SPLIT-10 (serves SPLIT-14).
+
+CC (2026-10-26, Lennart): issue 4: keep the newest months with the note on possible right-censoring.
+
+CC (2026-10-26, Lennart): the declared metric, ROC AUC, is checked as declared.
+
+**Assessment (AI, 2026-10-26):** the three issues are settled as implemented; a SPLIT-9 Cases row records issue 1 with the fact that sets it apart from ieee. One caveat from the precedent check: the timing test (95.1% / 45.5%) was never run on ieee_fraud_detection; if ieee shows the same timing, its keep would be the one to reopen. No open issue is left, so the folder's REVIEW.md is removed.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

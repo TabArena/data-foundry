@@ -4,8 +4,7 @@ name: Framingham Heart Study (FHS)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -57,6 +56,8 @@ CC (2026-10-22, Lennart): issue 2: participants who died of other causes within 
 CC (2026-10-22, Lennart): issue 1: (a), hard ASCVD within 10 years, as it matches real-world use now.
 
 **Assessment (AI, 2026-10-22):** target `ascvd_within_10_years`: a first hospitalised myocardial infarction or CHD death, or a stroke, within 10 years (the pooled cohort equations' outcome). The 25 participants with a prior stroke are excluded, as the pooled cohort equations exclude prior ASCVD (all 25 carry STROKE = 1 at day 0, so kept they would be Yes by definition); `prevalentStroke` is then constant and dropped. 4,199 rows and 14 features, 276 Yes (6.6%; 92 per test fold), 218 competing deaths stay No. Logistic regression ROC AUC 0.779 (0.739 for any CHD); task probe linear 0.779, random forest 0.763, LightGBM 0.722, no flags; leak probe clean. dataset check: 0 errors, 0 warnings. REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

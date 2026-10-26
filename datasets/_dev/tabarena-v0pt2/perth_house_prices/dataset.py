@@ -70,8 +70,8 @@ class PerthHousePrices(AbstractCuratedDataset):
             "(blank before they opened) with their distances, and that school's rank of 2019 or later."
         ),
         split=(
-            "Each test window is one month of April to December 2020, trained on all earlier sales, as for a model "
-            "refit at the start of each month."
+            "Each test window is one month, every third month from December 2018 to December 2020, trained on all "
+            "earlier sales, as for a model refit at the start of each month."
         ),
         changes=(
             "We drop 563 sales dated before the house was built (land or off-the-plan sales), blank the station or "
@@ -130,8 +130,8 @@ class PerthHousePrices(AbstractCuratedDataset):
         - Station and school as of the scrape: we blank `NEAREST_STN` and `NEAREST_STN_DIST` for the 147 sales (1988-2014) before their station opened (the opening months of 22 stations), and `NEAREST_SCH`, `NEAREST_SCH_DIST` and `NEAREST_SCH_RANK` for the 58 sales (1990-2014) that name Joseph Banks Secondary College, opened in 2015; all are training rows.
         - Potential leak, kept on purpose: `NEAREST_SCH_RANK` is one ranking per school, of 2019 or later (the 2015 school is ranked), so for most rows it postdates the sale and for the test rows its year is unknown and may follow the sale; the effect is nil (mean RMSE 0.1623 without it against 0.1622, one seed, 9 windows). Schools opened since 1988 other than Joseph Banks were not checked. Revisit if the ranking year is found. `NEAREST_SCH_RANK` is missing for unranked schools.
         - `NEAREST_STN` `Vic` names two stations 14 km apart; we split it by longitude into Victoria Street (Mosman Park, west of 115.8° E, 98 rows) and Victoria Park (198 rows).
-        - `ADDRESS` stays as text (string), as in melbourne_housing_market: unit numbers and lettered lots are the only trace of the property type the upload dropped (decision table).
-        - Categorical: `SUBURB`, `POSTCODE`, `NEAREST_STN` and `NEAREST_SCH`.
+        - `ADDRESS` stays as text (string), as in melbourne_housing_market: unit numbers and lettered lots are the only trace of the property type the upload dropped (decision table). `UNIT` states it: 1 when the address holds a unit number ("10/23 ..."), the first thing a valuer asks (CLEAN-12, CC 2026-10-26).
+        - Categorical: `SUBURB`, `POSTCODE`, `NEAREST_STN`, `NEAREST_SCH` and the 0/1 flag `UNIT` (CLEAN-14).
         - Note: we keep the 52 sales since 2012 below $120,000, probably transfers of a share or not at market: the file has no sale type to mark them, and a price floor of our own would filter on the target (as house_sales and ames_housing).
         - Note: December 2020 is short (0.71 of November's sales, 0.83-1.04 in 2013-2019; some sales were not yet on the site), but its prices are in line, so it stays the newest test window (decision table).
         - Licence: CC BY-NC-SA 4.0 (Kaggle data card); the terms of the scraped site are not stated.
@@ -146,10 +146,10 @@ class PerthHousePrices(AbstractCuratedDataset):
         target_transform="log",
     )
 
-    # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), April to December 2020.
-    temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9))
+    # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), every third month back from December 2020.
+    temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9, step=3))
     splits_comment = """
-        A price model refit at the start of every month predicts that month's sales: 9 test windows of one calendar month, December 2020 back to April 2020, newest first, each trained on all earlier sales (88-99% of the rows). The source dates sales by month only. An IID task of this size would get 3 x 3 splits; the windows hold 284-628 sales. No gap: many sales reach the site within days (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and a month after its end December 2020 held about 80% of its usual share of November's count. At the source's month resolution the smallest gap drops the whole previous month, more than the delay.
+        A price model refit at the start of every month predicts that month's sales: 9 test windows of one calendar month, every third month back from December 2020 (December, September, June and March of 2020 and 2019, and December 2018), newest first, each trained on all earlier sales (CC 2026-10-26, SPLIT-20). Nine contiguous windows would all fall in April-December 2020, the COVID months and the stale-record period, so the windows span two years with one-month windows and the monthly refit kept; 5 of the 9 lie before COVID. The source dates sales by month only. An IID task of this size would get 3 x 3 splits. All rows train, from 1988 on (CC 2026-10-26: the history a monthly refit would have). Exception to SPLIT-10 (2026-10-26, Lennart): no gap. The month resolution allows no gap shorter than the whole previous month, more than the real delay (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and the newest month present early (December 2020, 0.71 of November's count) shows no price selection (mean residual +0.017 against +0.003 to +0.025 in July-November); serves P4, as for ames_housing.
     """
     accepted_check_warnings = {
         "meta_time_horizon_mismatch": "`DATE_SOLD` holds the first day of the sale month (the source gives no day), "
@@ -189,6 +189,8 @@ class PerthHousePrices(AbstractCuratedDataset):
         df.loc[is_vic, "NEAREST_STN"] = np.where(
             df.loc[is_vic, "LONGITUDE"] < 115.8, "Victoria Street Station", "Victoria Park Station"
         )
+        # The property type the upload dropped: a unit number ("10/23 ...") in the address.
+        df["UNIT"] = df["ADDRESS"].astype(str).str.contains("/", regex=False).astype("int64")
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"PRICE": "log_PRICE"})
         df["log_PRICE"] = np.log(df["log_PRICE"])
@@ -196,7 +198,7 @@ class PerthHousePrices(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["SUBURB", "POSTCODE", "NEAREST_STN", "NEAREST_SCH"],
+            categorical=["SUBURB", "POSTCODE", "NEAREST_STN", "NEAREST_SCH", "UNIT"],
             string=["ADDRESS"],
             datetime={"DATE_SOLD": "%m-%Y"},
         )
@@ -323,9 +325,9 @@ class PerthHousePrices(AbstractCuratedDataset):
                 end_of_year,
             ),
             Decision(
-                "ADDRESS kept as text",
+                "ADDRESS kept as text, UNIT added",
                 "Unit numbers and lettered lots mark strata units and subdivided blocks, the property type the "
-                "upload dropped.",
+                "upload dropped; `UNIT` flags the unit numbers.",
                 address,
             ),
         ]

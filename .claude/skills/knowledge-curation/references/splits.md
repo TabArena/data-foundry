@@ -179,6 +179,12 @@ gap never decides (SPLIT-4).
 
 **SPLIT-31 (Should).** Over related entities, IID can match how a task is framed even when it is optimistic: such a
 task is a candidate for a grouped or temporal variant, not a fix. Cases: amazon_employee_access, bank_marketing.
+Molecules are the exception (amended 2026-10-26, Lennart, on qsar_bioconcentration: "in other cases, we also moved
+towards a scaffold split as is often correct for chemicals"): a molecule dataset whose rows carry exact structures
+groups on the Bemis-Murcko scaffold, as a new chemical under assessment often comes from a series not yet measured. A
+molecule without a ring is a group of its own, and so is each molecule of a scaffold that holds more than a tenth of
+the molecules, which is no series and would leave folds of very unequal size (`scaffold_groups` in
+`data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -218,15 +224,18 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-8 | nba_players_2016_2019, open_university_learning_analytics_dataset | too few periods (3 seasons; 4 start dates): stacked and grouped by player or by module-presentation, `ForcedGroupedFromTemporal`; on the one valid window R^2 0.745 against 0.744 grouped (nba), log loss 1.185 against 1.205 grouped (open_university) (2026-10-21, Lennart); nba retired on 2026-10-26 on its use case (USE-1, USE-5), not on the split | applied |
 | SPLIT-8 | distribution_transformers_at_cauca_department | two label years, one window: one year IID, `ForcedIIDFromTemporal`, not stacked, as the two files hold the same units with identical attributes; ROC AUC 0.648 trained on 2019 and tested on 2020 against 0.639 on the random folds (2026-10-21, Lennart) | applied |
 | SPLIT-9 | hotel_booking_demand | train kept bookings arriving after the prediction date that were already cancelled (100% positive), so the model learned "future arrival means cancelled"; filtering on the status date kept the shortcut, filtering on the arrival date removed it | applied |
+| SPLIT-9 | alfa_battle_2_0_task_2 | the training products of clients with a product in the test window are dropped (32,861-39,221 rows; 60-83% of each training side kept), standing in for the as-of filter on label dates the data lacks: a later product defaults at 95.1% after a defaulted earlier one (2.3% otherwise), flat over lags of 1-10 months, while 45.5% of later defaults had one, so the earlier flag was set after the later issue; without the filter the window's ROC AUC rises by 0.002-0.009. Differs from ieee_fraud_detection (LEAK-34, 2026-10-01), whose carried labels follow the host's labelling rule and are read as known history (2026-10-26, Lennart) | applied |
 | SPLIT-10 | brazilian_ecommerce | a gap of one month; R^2 0.353 with the gap, -0.054 without (2026-10-15, Lennart) | applied |
 | SPLIT-10 | sf_permit_time | a gap of 6 months, since a 1-month gap still censored the slow permits | applied |
 | SPLIT-10 | alfa_battle_2_0_task_2 | no label dates, a default flagged up to a year after issue: a 12-month gap leaves 13-27% of the rows for training, a 6-month gap 35-53%; SPLIT-9 met by dropping the products of the test window's clients. Serves SPLIT-14 (2026-10-21, Lennart) | exception |
 | SPLIT-10 | lending_club | outcomes known up to 36 months after issue, no outcome dates: a 36-month gap leaves 5-9% of the rows for training, a 12-month gap 33-46%. Serves SPLIT-14 (2026-10-21, Lennart) | exception |
 | SPLIT-10 | ames_housing | no gap: the extract's last month is short (June 2010, 78% of a usual June) but its normal sales show no price selection (mean residual -0.001), and sales are dated by month, so the smallest gap (a month) is longer than the delay. Serves P4: the windows train on every recorded sale before them, as a model refit each month would (2026-10-26, Lennart) | exception |
+| SPLIT-10 | perth_house_prices | no gap: sales are dated by month, so the smallest gap (a month) is longer than the delay, and the newest month present early (December 2020, 0.71 of November) shows no price selection (mean residual +0.017 against +0.003 to +0.025); the second exception of this reason (2026-10-26, Lennart) | exception |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |
 | SPLIT-20, SPLIT-21 | aeolus | flights from 2023 on rather than all of 2016-2024, two-week windows with one of three in the holiday peak (2026-10-12, Lennart) | applied |
+| SPLIT-20 | perth_house_prices | one-month windows every third month back from December 2020 (`step=3`) instead of nine contiguous months in 2020, so most windows fall outside the COVID months and the stale-record period; chosen from counts, not scores (2026-10-26, Lennart) | applied |
 | SPLIT-22 | seismic_bumps | the raw file order is the order of the mining shifts; kept as time | applied |
 | SPLIT-22 | california | the Kaggle id is the sale order; an index lookup sorted the rows by address, so the row-order time index is rebuilt after it | applied |
 | SPLIT-24 | emscad | grouped on identical profile text or a poster-specific masked contact (4,441 groups); the first suggestion, a TF-IDF cosine cluster at 0.95 or more, was barred | applied |
@@ -241,7 +250,10 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | Few groups (factor) | covertype | 3 wilderness areas: IID instead of grouped | applied |
 | SPLIT-31 | amazon_employee_access, bank_marketing | IID kept: optimistic, but it matches how the task is framed; candidates for a grouped or temporal variant | applied |
 | SPLIT-31 | infrared_thermography_temperature | IID kept over a measured year-to-year shift (a first-year calibration over-predicts the second year by 0.06-0.09 °C): the calibration is a function of the inputs that should not depend on the day, so no real signal across time; temporal is a candidate variant (2026-10-21, Lennart) | applied |
-| SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart) | applied |
+| SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart); superseded 2026-10-26 by the amendment below | applied |
+| SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
+| SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
+| SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
 
 ## In Data Foundry
 
