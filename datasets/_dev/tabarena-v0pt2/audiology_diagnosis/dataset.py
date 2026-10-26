@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class AudiologyDiagnosis(AbstractCuratedDataset):
@@ -77,6 +77,9 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
     # Task
     target = "diagnosis"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

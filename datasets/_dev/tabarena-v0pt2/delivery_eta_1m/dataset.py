@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class DeliveryEta1m(AbstractCuratedDataset):
@@ -66,6 +66,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
 
+        - Potential leak, kept on purpose: TabReD releases the 217 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 152 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a delivery time under one minute (386k of 17.0M, 2.3%), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
         - We drop a duplicated column `cat_2` in the preprocessing.
@@ -75,13 +76,20 @@ class DeliveryEta1m(AbstractCuratedDataset):
     # Task
     target = "delivery_eta_minutes"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE (TabReD regression tasks)",
+        reference=(
+            "Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE for "
+            "regression, ROC AUC for classification"
+        ),
+        definition="sqrt(mean((y - yhat)^2)) on the natural-log minutes target",
+    )
 
     # Splits
-    splits_comment = (
-        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
-    )
+    splits_comment = """
+        We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+    """
     temporal = Temporal(
         on="timestamp",
         splits=TemporalSplits(window=7, unit="days", n_windows=3),

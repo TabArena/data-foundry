@@ -125,6 +125,11 @@ button, input, textarea { font: inherit; color: inherit; }
 .legend span { display: inline-flex; align-items: center; gap: .3rem; }
 .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .list li + li { border-top: 1px solid var(--rule); }
+.list li.grp {
+  font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; color: var(--ink-3);
+  padding: .7rem .3rem .25rem; display: flex; justify-content: space-between;
+}
+.list li.grp .n { font-weight: 500; font-variant-numeric: tabular-nums; }
 .rowbtn {
   width: 100%; text-align: left; background: none; border: 0; padding: .45rem .3rem; cursor: pointer;
   display: grid; grid-template-columns: .75rem minmax(0, 1fr) auto; gap: .55rem; align-items: center;
@@ -148,6 +153,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .tag.notadded { background: var(--surface-2); color: var(--ink-2); }
 .tag.late { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .tag.decided { background: var(--surface-2); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.tag.prio { background: var(--accent-soft); color: var(--accent); }
+.tag.prio.none { background: transparent; color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--rule); }
 .readonly-items .item .seg, .readonly-items .item textarea { display: none; }
 
 /* Case file: the start mirrors the task-summary case view */
@@ -182,6 +189,13 @@ dl.fields { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: .
 dl.fields dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); padding-top: .2rem; }
 dl.fields dd { margin: 0; max-width: 68ch; }
 dt.usecase + dd { font-weight: 500; }
+.metricbox { margin-top: 1.6rem; max-width: 820px; }
+.metricbox h3 { margin: 0 0 .6rem; font: 600 .78rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.metricbox dd code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+.metricbox dd a { overflow-wrap: anywhere; }
+.metricmark { margin-top: 1rem; border-bottom: 0; }
+.metricmark .seg, .metricmark .note { margin-left: 0; }
+.metricmark .note { width: 100%; }
 .judge { margin-top: 1.6rem; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface); padding: .8rem 1rem; border-radius: 0 6px 6px 0; }
 .judge.direct { border-color: var(--direct); } .judge.approximate { border-color: var(--approx); } .judge.none { border-color: var(--none); }
 .judge p { margin: .3rem 0 0; max-width: 68ch; }
@@ -237,6 +251,19 @@ textarea.note.big { min-height: 4.2rem; }
 .statepill[data-v="change"], .statepill[data-v="leave"] { color: var(--change); }
 .statepill[data-v="discuss"] { color: var(--discuss); }
 .clamp { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+/* The conversation on an issue or item: the original text, then one turn per answer, note or closing label */
+.thread { list-style: none; margin: .7rem 0 0 2.4rem; padding: 0; display: grid; gap: .5rem; }
+.turn { border: 1px solid var(--rule); border-left-width: 4px; border-radius: 0 8px 8px 0; padding: .45rem .75rem .55rem; background: var(--surface); max-width: 78ch; }
+.turn.ai { border-left-color: var(--accent); background: var(--accent-soft); }
+.turn.curator { border-left-color: var(--discuss); background: var(--discuss-soft); margin-left: 1.5rem; }
+.turn.closed { border-left-color: var(--ok); background: var(--ok-soft); }
+.turn.closed.deferred { border-left-color: var(--ink-3); background: var(--surface-2); }
+.turn .who { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); margin-bottom: .15rem; display: flex; flex-wrap: wrap; gap: .2rem .6rem; }
+.turn .who .when { font-weight: 500; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
+.turn .md p { margin: .25rem 0; }
+.origlabel { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: .55rem 0 0 2.4rem; }
+.yourturn { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; background: var(--approx-soft); color: var(--approx); white-space: nowrap; }
+@media (max-width: 860px) { .thread, .origlabel { margin-left: 0; } .turn.curator { margin-left: .8rem; } }
 .more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
 .more[hidden] { display: none; }
 
@@ -314,6 +341,17 @@ details.block > summary::-webkit-details-marker { display: none; }
 details.block > summary::before { content: "+"; font-family: var(--font-mono); color: var(--ink-3); width: 1rem; }
 details.block[open] > summary::before { content: "\2212"; }
 details.block > .md { padding: 0 0 1rem 1.5rem; }
+
+/* The review panel (Panel tab) and its one line in the verdict box */
+.panelrec { margin: 0 0 .5rem; font: 500 1.08rem/1.4 var(--font-display); max-width: 820px; overflow-wrap: anywhere; }
+.panelrec .k { font: 600 .74rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin-right: .5rem; }
+.panelsum { max-width: 820px; margin-bottom: 1rem; }
+.roles { max-width: 820px; }
+.panelline { margin: 0 0 .65rem; font-size: .88rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.panelline .k { font-weight: 600; color: var(--ink); }
+.panelline .linkbtn { margin-left: .5rem; }
+.panelrec code, .panelline code, details.block > summary code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+.ctab { scroll-margin-top: calc(var(--hdr) + 1rem); }
 
 .pager { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
 .pager button { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: .35rem .8rem; cursor: pointer; font-weight: 500; font-size: .85rem; }
@@ -395,7 +433,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         <input class="search" id="search" type="search" placeholder="Search records" autocomplete="off">
         <div class="filters" id="filters"></div>
         <label class="toggle" for="hideReviewed"><input type="checkbox" id="hideReviewed"> Hide records with a verdict</label>
-        <p class="legend"><span><span class="vdot" aria-hidden="true"></span>your verdict</span><span><span class="fitmark direct" aria-hidden="true"></span><span class="fitmark approximate" aria-hidden="true"></span><span class="fitmark none" aria-hidden="true"></span>use-case fit</span><span>marks done/total</span></p>
+        <p class="legend"><span><span class="vdot" aria-hidden="true"></span>your verdict</span><span><span class="fitmark direct" aria-hidden="true"></span><span class="fitmark approximate" aria-hidden="true"></span><span class="fitmark none" aria-hidden="true"></span>use-case fit</span><span>marks done/total</span><span>by priority, 5 first; the quickest first within one</span></p>
         <ul class="list" id="list"></ul>
       </aside>
       <article class="case" id="case"></article>
@@ -428,10 +466,14 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const REC = { added: "ship", noship: "dont", notadded: "dont", decided: "correct" };
   const CAT = { added: "To ship", noship: "Rec. not to ship", notadded: "Not added", decided: "Decided: verify" };
   const labelsFor = (d) => (d.cat === "decided" ? VLABEL_DEC : d.cat === "notadded" ? VLABEL_NA : VLABEL);
-  const ITEM_OPTS = [["ok", "Keep as is"], ["change", "Change"], ["discuss", "Discuss"]];
+  const ITEM_OPTS = [["ok", "As implemented"], ["change", "Change"], ["discuss", "Discuss"]];
+  // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
+  const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
+  const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
+  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided";
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
-  const FIELD_OPTS = [["update", "Update record"], ["keep", "Keep record"]];
-  const OPT_LABEL = { ok: "Keep as is", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Update record", keep: "Keep record" };
+  const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
+  const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
   const X_LABEL = { ok: "Go ahead", leave: "Leave as is", discuss: "Discuss" };
   // The task summary, labelled and judged as on the TabArena Task Summaries page.
   const SUM_LABELS = [
@@ -446,7 +488,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   };
   const REGIME = { iid: "Random split", grouped: "Grouped split", temporal: "Temporal split" };
   const PROBLEM = { binary_classification: "Binary classification", multiclass_classification: "Multiclass classification", regression: "Regression" };
-  const CTABS = ["usecase", "decisions", "details", "code", "report", "record"];
+  const CTABS = ["usecase", "decisions", "panel", "details", "code", "report", "record"];
   const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
 
   const S = { reviews: {}, crosscut: {} };
@@ -470,6 +512,26 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   if (savedCurrent && byName.has(savedCurrent)) ui.current = savedCurrent;
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Plain text with `code` spans, such as the panel's recommendation and its role names.
+  const escCode = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+  // The conversation on an issue or item (from the builder's `thread`): who spoke, when, and what was said.
+  const fmtDay = (iso) => { const p = String(iso || "").split("-"); if (p.length !== 3) return esc(iso); const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1]; return (+p[2]) + " " + m + " " + p[0]; };
+  const TURN_WHO = { ai: "Claude", curator: "You", closed: "Closed" };
+  const TURN_KIND = { answer: "answer", "consistency check": "consistency check", note: "note", resolved: "resolved", deferred: "deferred" };
+  function threadHtml(it) {
+    const turns = it.thread || [];
+    if (!turns.length) return "";
+    return '<ol class="thread" aria-label="Conversation">' + turns.map((u) => {
+      let who = TURN_WHO[u.who] || u.who;
+      if (u.who === "closed") who = (u.kind === "deferred" ? "Deferred" : "Resolved") + (u.by ? " · " + esc(u.by) : "");
+      else who = (u.who === "curator" && u.by ? esc(u.by) : who) + " · " + esc(TURN_KIND[u.kind] || u.kind) + (u.mark ? " (" + esc(u.mark) + ")" : "");
+      return '<li class="turn ' + esc(u.who) + (u.kind === "deferred" ? " deferred" : "") + '"><div class="who"><span>' + who + '</span><span class="when">' + fmtDay(u.date) + "</span></div>" +
+        '<div class="md">' + u.html + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  const awaitsCurator = (it) => !it.resolved && (it.thread || []).length > 0 && it.thread[it.thread.length - 1].who === "ai";
+  const yourTurn = (it) => (awaitsCurator(it) ? '<span class="yourturn" title="Claude answered; your mark is next">Your turn</span>' : "");
+  const origLabel = (it) => ((it.thread || []).length ? '<p class="origlabel">The question</p>' : "");
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
 
   function rev(name) {
@@ -495,6 +557,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       if (marked) done++;
     });
     d.fields.forEach((f) => { if (fields[f.key]) done++; });
+    if (hasMetricMark(d)) { total++; if (r.metric && r.metric.d) done++; }
     return { done, total };
   }
 
@@ -546,6 +609,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       });
     }
     if (out.fields) Object.keys(out.fields).forEach((k) => { if (!out.fields[k]) delete out.fields[k]; });
+    if (out.metric && !out.metric.d && !(out.metric.note || "").trim()) delete out.metric;
     return out;
   }
   async function persist(path) {
@@ -639,10 +703,20 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const label = f ? "Use case fit: " + FIT[f] : "No task summary";
     return '<span class="fitmark ' + (f || "missing") + '" role="img" aria-label="' + esc(label) + '" title="' + esc(label) + '"></span>';
   }
+  const prioLabel = (p) => (p ? "Priority " + p : "No priority");
   function renderList() {
-    const rows = DS.filter(visible).map((d) => {
+    const shown = DS.filter(visible);
+    const perGroup = {};
+    shown.forEach((d) => { perGroup[d.priority || 0] = (perGroup[d.priority || 0] || 0) + 1; });
+    let group;
+    const rows = shown.map((d) => {
       const r = peekRev(d.name), c = counts(d);
-      return '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
+      let head = "";
+      if ((d.priority || 0) !== group) {
+        group = d.priority || 0;
+        head = '<li class="grp" aria-hidden="true"><span>' + prioLabel(d.priority) + '</span><span class="n">' + perGroup[group] + "</span></li>";
+      }
+      return head + '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
         '<span class="vdot"' + (r.verdict ? ' data-v="' + esc(r.verdict) + '"' : "") + '></span>' +
         '<span class="rowname">' + esc(d.name) + "</span>" +
         '<span class="rowmeta">' + fitMark(d) + c.done + "/" + c.total + "</span></button></li>";
@@ -674,6 +748,48 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     out.push('<span class="jump"><button class="linkbtn" data-act="jump">Skip to your verdict ↓</button></span>');
     return '<div class="links">' + out.join("") + "</div>";
   }
+  // The declared metric (metrics.md, MET-11): origin, name, original, reference, reason, and the scoring columns.
+  const METRIC_ORIGIN = {
+    source: "the source's metric",
+    stand_in: "a stand-in for the source's metric, which cannot be computed",
+    fallback: "the default for the problem type: the source defines no unique metric",
+  };
+  function metricHtml(d) {
+    const m = d.metric;
+    if (!m) return d.folder ? '<p class="missing-note">No metric: the definition declares none and its README names none.</p>' : "";
+    const link = (v) => /^https?:\/\//.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(v) + "</a>" : escCode(v);
+    const json = (v) => "<code>" + esc(JSON.stringify(v)) + "</code>";
+    const rows = [
+      ["Metric", "<code>" + esc(m.name) + "</code>"],
+      ["Origin", m.origin ? esc(m.origin) + (METRIC_ORIGIN[m.origin] ? ": " + esc(METRIC_ORIGIN[m.origin]) : "") : ""],
+      ["Original", m.original ? escCode(m.original) : ""],
+      ["Reference", m.reference ? link(m.reference) : ""],
+      ["Definition", m.definition ? escCode(m.definition) : ""],
+      ["Reason", m.reason ? escCode(m.reason) : ""],
+      ["Params", m.params && Object.keys(m.params).length ? json(m.params) : ""],
+      ["Inputs", m.inputs && Object.keys(m.inputs).length ? Object.entries(m.inputs).map(([r, c]) => esc(r) + ": <code>" + esc(c) + "</code>").join(", ") : ""],
+      ["Scoring columns", (m.scoring_columns || []).map((c) => "<code>" + esc(c.column) + "</code>" +
+        (c.role ? " (" + esc(c.role) + (c.description ? ": " + esc(c.description) : "") + ")" : "")).join("; ")],
+    ].filter(([, v]) => v);
+    const src = m.source === "readme"
+      ? "From the frontmatter of the generated <code>README.md</code> (name and origin only)."
+      : "From <code>metric</code> and <code>scoring_columns</code> in <code>dataset.py</code>, as of this page’s snapshot (" + esc(DATA.snapshot) + ").";
+    return '<section class="metricbox" aria-labelledby="mh"><h3 id="mh">Metric</h3><dl class="fields">' +
+      rows.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>").join("") + '</dl><p class="srcnote">' + src + "</p>" +
+      metricMarkHtml(d) + "</section>";
+  }
+  // The curator's mark on the metric, like an issue's: as declared, change (say how in the note) or discuss.
+  function metricMarkHtml(d) {
+    if (!hasMetricMark(d)) return "";
+    const st = peekRev(d.name).metric || {};
+    const ro = mode === "readonly" ? " disabled" : "";
+    return '<div class="item metricmark" id="metric-mark"><h4>Your mark on the metric' +
+      (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(METRIC_LABEL[st.d]) + "</span>" : "") + "</h4>" +
+      '<div class="seg small">' + segHtml(METRIC_OPTS, st.d, "metric", ro) + "</div>" +
+      '<label class="visually-hidden" for="note-m-' + slug(d.name) + '">Note on the metric</label>' +
+      '<textarea class="note" rows="1" id="note-m-' + slug(d.name) + '" data-note="metric" placeholder="Note on the metric (optional)"' +
+      (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></div>";
+  }
   function useCaseHtml(d) {
     const s = d.summary;
     if (!s) {
@@ -704,6 +820,25 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (src) h += '<p class="srcnote">' + src + "</p>";
     return h;
   }
+  // The review panel of /add-dataset: its recommendation, its summary, then one collapsible section per role, closed
+  // except the mediator's. Background for the verdict: nothing here is marked or stored.
+  function panelHtml(d) {
+    const p = d.panel;
+    if (!p) {
+      const why = d.folder
+        ? "the folder\u2019s <code>REVIEW.md</code> has no <code>**Review panel:**</code> block."
+        : "this record was not added, so it has no <code>REVIEW.md</code>.";
+      return '<p class="intro">No review panel: ' + why + "</p>";
+    }
+    let h = '<p class="panelrec"><span class="k">Panel</span>' + escCode(p.recommendation) + "</p>";
+    h += '<div class="md panelsum">' + p.summary + "</div>";
+    if (p.sections.length) {
+      h += '<div class="roles">' + p.sections.map((s) =>
+        '<details class="block"' + (/^mediator\b/i.test(s.title) ? " open" : "") + "><summary>" + escCode(s.title) + '</summary><div class="md">' + s.html + "</div></details>").join("") + "</div>";
+    }
+    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the folder\u2019s <code>REVIEW.md</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
+    return h;
+  }
   function renderCase() {
     const d = byName.get(ui.current);
     const el = document.getElementById("case");
@@ -716,12 +851,14 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     let h = '<button class="back" data-act="back">← All records</button>';
 
     // 1. The start, as on the task-summary page: eyebrow, name, links, then the run's outcome in two lines.
-    h += '<div class="eyebrow"><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
+    h += '<div class="eyebrow"><span class="tag prio' + (d.priority ? "" : " none") + '" title="The record\u2019s priority: 5 is reviewed first">' + prioLabel(d.priority) + "</span>" +
+      '<span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
     if (d.meta) {
       const m = d.meta;
       h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
         (m.problem ? "<span>" + esc(PROBLEM[m.problem] || m.problem) + "</span>" : "") +
         (m.rows ? "<span>" + Number(m.rows).toLocaleString("en-US") + " rows</span>" : "") +
+        (m.features ? "<span>" + Number(m.features).toLocaleString("en-US") + " features</span>" : "") +
         "<span>" + (m.retired ? "retired" : m.built ? "built" : "not built") + "</span></span>";
     }
     h += "</div>";
@@ -741,6 +878,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     h += '<div class="ctabs" role="tablist" aria-label="Use case, decisions and sources">' +
       ctab("usecase", "Use case", fitMark(d)) +
       ctab("decisions", "Decisions", '<span class="n" id="decCount">' + c.done + "/" + c.total + "</span>") +
+      ctab("panel", "Panel") +
       ctab("details", "Details") +
       ctab("code", '<span class="mono">dataset.py</span>') +
       ctab("report", '<span class="mono">README.md</span>') +
@@ -760,7 +898,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     });
     if (!d.blocks.length && !d.shared.length) det += '<p class="intro">The run report has no further details for this record.</p>';
     det += "</section>";
-    dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "keep, change or discuss each") + "</span></h3>";
+    dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
+    if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented: keep what the definition does now. Change: do what your note says. Discuss: Claude answers on the page first. Record fields are marked in their own table below.</p>';
+    if (hasMetricMark(d)) {
+      const mm = (r.metric && r.metric.d) ? METRIC_LABEL[r.metric.d] : "not marked yet";
+      dec += '<p class="intro">The metric (<code>' + esc(d.metric.name) + "</code>) is marked in the Use case tab, under Metric: " + esc(mm) +
+        '. <button class="linkbtn" data-act="ctab" data-c="usecase">Go there</button></p>';
+    }
     if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
     if (d.items.length && d.cat === "decided") dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
     if (nClosed) {
@@ -774,9 +918,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shownItems.forEach((it) => {
         const st = (r.items && r.items[it.n]) || {};
         dec += '<li class="item' + (it.resolved ? " resolved" : "") + '" id="item-' + it.n + '"><div class="item-top"><span class="num">' + it.n + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(ITEM_OPTS, st.d, "item", ' data-n="' + it.n + '"' + ro) + "</div>" +
-          '<div class="body md">' + it.html + "</div>" +
+          origLabel(it) + '<div class="body md">' + it.html + "</div>" + threadHtml(it) +
           '<label class="visually-hidden" for="note-i-' + slug(d.name) + "-" + it.n + '">Note on item ' + it.n + "</label>" +
           '<textarea class="note" rows="1" id="note-i-' + slug(d.name) + "-" + it.n + '" data-note="item" data-n="' + it.n + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
@@ -786,6 +930,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     }
     if (d.fields.length) {
       dec += '<h3 id="fld-h">Record fields that disagree <span class="count">record against definition</span></h3>';
+      dec += '<p class="intro">Take definition\'s value: the curation record is changed to the definition\'s value. Keep record\'s value: the record stays as it is (add a note if the definition should change instead).</p>';
       dec += '<div class="tablewrap"><table class="fieldtab"><thead><tr><th>Field</th><th>Record</th><th>Definition</th><th><span class="visually-hidden">Decision</span></th></tr></thead><tbody>';
       d.fields.forEach((f) => {
         dec += "<tr><td>" + esc(f.field) + '</td><td class="v">' + esc(f.record) + '</td><td class="v">' + esc(f.definition) + '</td><td><div class="seg small">' +
@@ -839,10 +984,12 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     rec += '<div class="md">' + d.record.html + "</div>";
 
     const panel = (k, inner) => '<div class="cpanel" id="cp-' + k + '" role="tabpanel" aria-labelledby="ct-' + k + '"' + (ui.ctab === k ? "" : " hidden") + ">" + inner + "</div>";
-    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
+    h += panel("usecase", useCaseHtml(d) + metricHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
 
     // 3. Your verdict: below the tabs, whichever tab is open.
-    h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + '</h3><div class="seg">' +
+    h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + "</h3>" +
+      (d.panel ? '<p class="panelline"><span class="k">Panel:</span> ' + escCode(d.panel.recommendation) + '<button class="linkbtn" data-act="openpanel">Read the panel</button></p>' : "") +
+      '<div class="seg">' +
       segHtml(opts, r.verdict, "verdict", ro, REC[d.cat]) + "</div>" +
       '<label class="notelabel" for="note-v-' + slug(d.name) + '">Note for Claude</label>' +
       '<textarea class="note big" id="note-v-' + slug(d.name) + '" data-note="verdict" placeholder="What should change, or why you overrule the recommendation"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(r.note || "") + "</textarea></section>";
@@ -894,7 +1041,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const el = document.getElementById("view-across");
     const ro = mode === "readonly" ? " disabled" : "";
     const nResolved = DATA.crosscut.reduce((n, s) => n + s.items.filter((it) => it.resolved).length, 0);
-    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes.</p>';
+    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes. Under each question, the conversation so far: your notes, Claude’s answers and the closing label, each with its date; "Your turn" marks an item Claude has answered and that waits for your mark.</p>';
     if (nResolved) {
       h += '<p class="jump"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide the " + nResolved + " resolved items" : "Show the " + nResolved + " resolved items") + "</button></p>";
     }
@@ -905,10 +1052,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shown.forEach((it) => {
         const st = S.crosscut[it.id] || {};
         h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
-          '<div class="body md clamp">' + it.html + "</div>" +
-          '<button class="more" data-act="more">Show all</button>' +
+          origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +
+          '<button class="more" data-act="more">Show all</button>' + threadHtml(it) +
           '<label class="visually-hidden" for="note-x-' + esc(it.id) + '">Note</label>' +
           '<textarea class="note" rows="1" id="note-x-' + esc(it.id) + '" data-note="x" data-id="' + esc(it.id) + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
@@ -935,6 +1082,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         }
       });
       d.fields.forEach((f) => { const v = r.fields && r.fields[f.key]; if (v) marks.push("- Field " + f.field + " (record " + f.record + ", definition " + f.definition + "): " + OPT_LABEL[v]); });
+      const mt = r.metric;
+      if (mt && (mt.d || (mt.note || "").trim())) marks.push("- Metric (" + (d.metric ? d.metric.name : "none") + "): " + (mt.d ? METRIC_LABEL[mt.d] : "no mark") + ((mt.note || "").trim() ? ". Note: " + mt.note.trim() : ""));
       if (!r.verdict && !(r.note || "").trim() && !marks.length) return;
       const vl = r.verdict ? labelsFor(d)[r.verdict] : "no verdict";
       lines.push("## " + d.name + ": " + vl);
@@ -960,7 +1109,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     Object.keys(S.reviews).sort().forEach((name) => {
       if (!byName.has(name)) return;
       const doc = cleanDoc(S.reviews[name]);
-      if (doc.verdict || hasText(doc.note) || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
+      if (doc.verdict || hasText(doc.note) || doc.metric || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
     });
     XITEMS.forEach((_, id) => {
       const doc = S.crosscut[id] && cleanDoc(S.crosscut[id]);
@@ -991,12 +1140,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       '<div class="stat"><div class="k">Triage verified</div><div class="v">' + tally.correct + "</div></div>" +
       '<div class="stat"><div class="k">No verdict yet</div><div class="v">' + tally.none + "</div></div>" +
       '<div class="stat"><div class="k">Agree with rec.</div><div class="v">' + agree + "/" + decided + "</div></div></div>";
-    h += '<div class="sumwrap"><table class="sumtab"><thead><tr><th>Record</th><th>Category</th><th>Use case fit</th><th>Recommendation</th><th>Your verdict</th><th>Marks</th><th>Note</th></tr></thead><tbody>';
+    h += '<div class="sumwrap"><table class="sumtab"><thead><tr><th>Record</th><th>Priority</th><th>Category</th><th>Use case fit</th><th>Recommendation</th><th>Your verdict</th><th>Marks</th><th>Note</th></tr></thead><tbody>';
     DS.forEach((d) => {
       const r = peekRev(d.name), c = counts(d);
       const labels = labelsFor(d);
       const f = fitOf(d);
       h += '<tr><td class="name"><button data-act="open" data-name="' + esc(d.name) + '">' + esc(d.name) + "</button></td>" +
+        '<td class="num">' + (d.priority || "–") + "</td>" +
         '<td><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span></td>" +
         "<td>" + (f ? '<span class="pill ' + f + '">' + esc(FIT[f]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
         "<td>" + esc(labels[REC[d.cat]]) + "</td>" +
@@ -1064,6 +1214,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "filter") { ui.filter = b.dataset.f; store("filter", ui.filter); renderFilters(); renderList(); return; }
     if (act === "back") { ui.detailOpen = false; document.getElementById("desk").classList.remove("detail-open"); window.scrollTo(0, 0); return; }
     if (act === "ctab") { showCtab(b.dataset.c); return; }
+    if (act === "openpanel") { showCtab("panel"); const t = document.getElementById("ct-panel"); if (t) t.scrollIntoView({ block: "start" }); return; }
     if (act === "toggleResolved") {
       ui.showResolved = !ui.showResolved;
       store("showResolved", ui.showResolved);
@@ -1140,6 +1291,16 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       refreshAll();
       return;
     }
+    if (act === "metric") {
+      const r = rev(name);
+      const mt = r.metric || (r.metric = {});
+      mt.d = mt.d === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      updatePill(b, mt.d, METRIC_LABEL);
+      updateCount();
+      refreshAll();
+      return;
+    }
     if (act === "field") {
       const r = rev(name);
       const k = b.dataset.k;
@@ -1184,6 +1345,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const kind = t.dataset.note;
     if (kind === "verdict") { rev(ui.current).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "item") { const r = rev(ui.current); const n = t.dataset.n; (r.items[n] || (r.items[n] = {})).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "metric") { const r = rev(ui.current); (r.metric || (r.metric = {})).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
   });
   document.addEventListener("change", (ev) => {

@@ -39,6 +39,8 @@ CC (2026-10-06, Lennart): Changed to the clinical features only after the task-p
 
 **Assessment (AI, 2026-10-14):** The count above is off by one: the clinical features are 10 findings graded 0 to 3 (erythema to scalp involvement), family history and age, the source's 12 clinical features (UCI variable list); the definition keeps exactly these.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Guevenir et al. 1998 report cross-validated accuracy of VFI5 without costs between the six diagnoses, and we use the 12 clinical features only (MET-6).
+
 ## Reference
 
 @article{guvenir1998learning,

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class IeeeFraudDetection(AbstractCuratedDataset):
@@ -52,6 +52,7 @@ class IeeeFraudDetection(AbstractCuratedDataset):
     domain = "finance"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/competitions/ieee-fraud-detection/overview"
+    data_tags = ("Anonymized",)
     license = "non-commercial purposes only, including academic research"
     download_description = r"""
         kaggle competitions download -c ieee-fraud-detection -p local-data-warehouse/ieee_fraud_detection \
@@ -86,6 +87,12 @@ class IeeeFraudDetection(AbstractCuratedDataset):
     # Task
     target = "isFraud"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area under the ROC curve",
+        reference="https://www.kaggle.com/competitions/ieee-fraud-detection/overview/evaluation",
+        definition="Area under the ROC curve between predicted probability and isFraud, per transaction.",
+    )
 
     # Splits
     splits_comment = """

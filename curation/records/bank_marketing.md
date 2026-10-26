@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 original_source: UCI
 year: '2011'
+required_split:
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1461
@@ -33,6 +35,8 @@ Potential issue: preprocssed date features
 Lennart: We can likely ignore the time impact but might need to restore the date features
 
 Andrej: Fits criteria
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (with ALIFT second) in Moro, Cortez & Rita 2014, Decision Support Systems 62:22-31.
 
 ## Reference
 

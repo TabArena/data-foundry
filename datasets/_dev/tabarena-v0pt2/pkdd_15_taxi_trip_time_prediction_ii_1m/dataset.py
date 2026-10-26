@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -66,6 +67,10 @@ def _row_filters(raw: pd.DataFrame) -> list[tuple[str, pd.Series]]:
             f"straight line from start to end faster than {MAX_STRAIGHT_LINE_KMH} km/h",
             distance <= MAX_STRAIGHT_LINE_KMH * travel_time / 3600,
         ),
+        (
+            "end point identical to the start point (no destination a passenger would name)",
+            ~(raw["end_lat"].eq(raw["start_lat"]) & raw["end_lon"].eq(raw["start_lon"])),
+        ),
         ("start on 2014-07-01 in Porto local time", _local_start_time(raw["TIMESTAMP"]) < LOCAL_END),
     ]
 
@@ -84,17 +89,19 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
             "(dispatch call, taxi stand or street), the stand, and the taxi."
         ),
         split=(
-            "Each of April, May and June 2014 is a test month; training is a random million earlier trips, as for a "
-            "model refit monthly."
+            "April, May and June 2014 are the test periods (30 days from the first of each month); training is a "
+            "random million trips that start at least one day earlier, as for a model refit monthly."
         ),
         changes=(
             "The challenge asked for the remaining time of a trip under way; we predict the whole trip at pickup with"
-            " its end point, and drop non-trips, GPS jumps, meters left running and the caller's phone number."
+            " its end point, and drop non-trips, trips that end where they start, GPS jumps, meters left running and the"
+            " caller's phone number."
         ),
         fit="approximate",
         fit_reason=(
-            "The challenge page says drivers do not enter the destination, so a destination known at pickup is our "
-            "assumption, read from the trip's last GPS point. Without it the signal is weak (R² 0.11 to 0.15)."
+            "Everything the model sees is known at pickup except the destination: the realised drop-off (the last GPS "
+            "point) stands in for a destination named at pickup, which the source's dispatch system did not record. "
+            "The task is framed without a routing estimate."
         ),
     )
 
@@ -102,7 +109,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     unique_name = "pkdd_15_taxi_trip_time_prediction_ii_1m"
     version_of = "pkdd_15_taxi_trip_time_prediction_ii"
     version_comment = """
-        The cleaned frame holds 1,655,983 trips, above the 1.5M-row budget, and the train side of every window holds more than 1M. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of all earlier trips, drawn in one random order for all windows; the frame keeps only the rows a split uses.
+        The cleaned frame holds 1,655,893 trips, above the 1.5M-row budget, and the train side of every window holds more than 1M. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the trips that start at least one day earlier, drawn in one random order for all windows; the frame keeps only the rows a split uses.
     """
     year = "2015"
     domain = "industry & manufacturing"
@@ -137,26 +144,36 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         We start with train.csv of the ECML/PKDD 2015 Discovery Challenge (UCI id 339): 1,710,670 Porto taxi trips from 2013-07-01 to 2014-06-30, each with its GPS trajectory (`POLYLINE`, one point every 15 s).
 
         - Prediction point: the start of the trip, when the meter is switched on. The task is the travel time from origin and destination, an ETA task like `nyc_taxi_trip_duration` (the challenge's Task II starts from a partial trajectory).
-        - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, so the task assumes it is entered at pickup, the curator's framing (record, CC 2026-09-21). Without it, LightGBM's R^2 is 0.11 to 0.15.
-        - Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; RMSE on it is the challenge's metric, RMSLE.
+        - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, a stand-in for a destination named at pickup (`fit="approximate"`, as `nyc_taxi_trip_duration`), the curator's framing (record, CC 2026-09-21). Without it, LightGBM's R^2 is 0.12 to 0.15 (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per split).
+        - Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; the metric is the challenge's RMSLE on the travel time in seconds, computed after the inverse (`target_transform="log1p"`).
         - `_prepare_raw_files` parses each polyline into its number of points and its first and last point; the route is known only after the trip and is not a feature.
         - `start_time`: TIMESTAMP is Unix time in UTC; the pickup profile by UTC hour shifts by one hour at both daylight-saving switches (decision table), so we convert it to Porto local time without a time zone.
-        - Rows dropped (counts in the decision table): under 2 GPS points; a TRIP_ID that occurs twice or more (we cannot tell which copy is right); a start outside Greater Porto (lat 41.0 to 41.3, lon -8.8 to -8.4); under 1 minute (a meter switched on and off without a ride) or over 3 hours (a meter left running); a straight line from start to end faster than 120 km/h (a GPS jump); and the last trips, which start on 1 July 2014 in local time. The 1-minute cut sits on a slope: 70% of 15-second trips end within 100 m of their start, 31% at 60 s, 7% at 120 s.
+        - Rows dropped (counts in the decision table): under 2 GPS points; a TRIP_ID that occurs twice or more (we cannot tell which copy is right); a start outside Greater Porto (lat 41.0 to 41.3, lon -8.8 to -8.4); under 1 minute (a meter switched on and off without a ride) or over 3 hours (a meter left running); a straight line from start to end faster than 120 km/h (a GPS jump); an end point identical to the start point (no destination a passenger would name, as in `nyc_taxi_trip_duration`); and the last trips, which start on 1 July 2014 in local time. The 1-minute cut sits on a slope (other filters on): 71% of 15-second trips end within 100 m of their start, 53% at 30 s, 41% at 45 s, 32% at 60 s and 7% at 120 s, against 1.9% of all trips.
         - We drop TRIP_ID (an id, the start second and the taxi), DAY_TYPE (constant "A"; the data page says it "has not been correctly calculated") and MISSING_DATA (erroneous per Lam et al. 2015, arXiv:1509.05257, and it describes the trajectory).
-        - We drop ORIGIN_CALL, the anonymised phone number of a dispatch-central customer: with the destination known it does not help LightGBM (R^2 -0.001 to +0.002).
+        - We drop ORIGIN_CALL, the anonymised phone number of a dispatch-central customer: an identifier redundant with the destination. With the destination known it changes LightGBM's R^2 by -0.004 to -0.001 (same setup).
         - `call_type` A, B and C become dispatch_central, taxi_stand and street. `origin_stand` is empty unless the taxi was hired at a stand; we set the empty strings missing.
-        - `taxi_id` stays a categorical feature, since the taxi is known at pickup. The fleet is the same in every month (decision table), so the split is temporal and not grouped by taxi.
-        - Anomaly: we keep the 1.2% of trips that jump more than 1 km between two GPS points (missing points, Lam et al. 2015), trips with a drive back on the meter, and the 65,708 (4.0%) that end within 500 m of their start: no filter on the end point.
+        - `taxi_id` stays a categorical feature, since the taxi is known at pickup; it adds 0.008 to 0.014 to LightGBM's R^2 (same setup) and is its top feature by gain. The fleet is the same in every month (decision table), so the split is temporal and not grouped by taxi.
+        - Anomaly: we keep the 1.2% of trips that jump more than 1 km between two GPS points (missing points, Lam et al. 2015), trips with a drive back on the meter, and the 65,618 (4.0%) that end within 500 m of their start but not at the same point: a meter left on or a round trip is unusual, not impossible.
     """
 
     # Task
     target = "log1p_travel_time"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmsle",
+        original="Root Mean Squared Logarithmic Error (RMSLE)",
+        reference="https://www.kaggle.com/competitions/pkdd-15-taxi-trip-time-prediction-ii/overview/evaluation",
+        definition="sqrt(mean((log(p+1)-log(a+1))^2)) of travel time in seconds, computed after the inverse of the shipped log1p_travel_time target.",
+        target_transform="log1p",
+    )
 
     # Splits
-    temporal = Temporal(on="start_time", splits=TemporalSplits(window=1, unit="months", n_windows=3))
+    temporal = Temporal(
+        on="start_time",
+        splits=TemporalSplits(window=30, unit="days", cutoffs=("2014-04-01", "2014-05-01", "2014-06-01"), gap=1),
+    )
     splits_comment = """
-        A model refit every month predicts the travel times of the next month's trips: 3 test windows of one calendar month (June, May and April 2014, newest first), and train is all earlier trips. Each window keeps all of its trips (131,659 to 156,990, under the 500k budget); each train side is a random 1M of all earlier trips (one random order for all windows). The challenge itself tested on 320 trips 1.5 to 6 months after its training year.
+        A model refit every month predicts the travel times of the next month's trips: 3 test windows of 30 days that start on 1 June, 1 May and 1 April 2014 (newest first; the May window leaves out 31 May), and train is the trips that start at least one day before the window. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 48, 36 and 8 train trips per window (June, May, April) would end after the window start, with it none. Each window keeps all of its trips (131,648 to 151,406, under the 500k budget); each train side is a random 1M of the eligible earlier trips (one random order for all windows). The monthly length follows the source: the challenge tested on 320 trips 1.5 to 6 months after its training year. The file covers one year, so the April to June test season has no earlier copy in train.
     """
     subsample_to_budget = True
 
@@ -187,7 +204,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         keep = np.logical_and.reduce([mask.to_numpy() for _, mask in _row_filters(df)])
         df = df[keep]
         # TRIP_ID is the start second and the taxi; DAY_TYPE is constant; MISSING_DATA is unreliable and post-trip;
-        # ORIGIN_CALL (57k phone ids) adds nothing once the destination is known (curation_comments).
+        # ORIGIN_CALL, the caller's phone id, is an identifier redundant with the destination (curation_comments).
         df = drop_columns(df, ["TRIP_ID", "ORIGIN_CALL", "DAY_TYPE", "MISSING_DATA"])
         df = df.assign(
             CALL_TYPE=df["CALL_TYPE"].map(CALL_TYPES),
@@ -264,8 +281,8 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         return [
             Decision(
                 "Rows dropped before the split",
-                "Trips without a travel time or a destination, duplicate ids, GPS errors and meter misuse go, and so "
-                "do the last trips of the file, which start on 1 July in local time.",
+                "Trips without a travel time or a destination, duplicate ids, GPS errors, meter misuse and trips that "
+                "end where they start go, and so do the last trips of the file, which start on 1 July in local time.",
                 filters,
             ),
             Decision(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class CreditCardClientsDefault(AbstractCuratedDataset):
@@ -65,6 +65,15 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
     # Task
     target = "DefaultOnPaymentNextMonth"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="area ratio of the lift (cumulative gains) chart; error rate reported alongside",
+        reference="Yeh & Lien 2009, Expert Systems with Applications 36(2):2473-2480",
+        definition=(
+            "area ratio = area between model gains curve and baseline / area between ideal curve and baseline = Gini "
+            "= 2*ROC AUC - 1, so ranking equals roc_auc"
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_excel(raw_dir / "default of credit card clients.xls", skiprows=[0])

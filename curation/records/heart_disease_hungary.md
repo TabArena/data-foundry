@@ -35,6 +35,10 @@ Consists of 4 datasets with similar features and low value counts depending on h
 
 We take all datasets from this repo as they all represent real tasks. We use the binary classification version of the datasets and the processed files.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Detrano et al. 1989 score reliability (calibration) and percent correctly classified, no threshold or costs for the hard call; percent correctly classified rejected (MET-6, MET-8).
+
+CC (2026-10-21, Lennart): proposal accepted: roc_auc (fallback) for the heart_disease_* datasets, not log_loss.
+
 ## Reference
 
 @article{detrano1989international,

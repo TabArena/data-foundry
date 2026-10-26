@@ -5,7 +5,7 @@
     data-foundry-curation dataset list  [--root DIR]
     data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes README.md
     data-foundry-curation dataset build <name-or-folder> [--root DIR]   # check + save + verify (mints the UUID)
-    data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py + explore.ipynb
+    data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py
 
 A dataset is given either as a folder holding ``dataset.py`` or as a name under ``--root`` (default:
 ``$DATA_FOUNDRY_DATASETS_ROOT``, else the current directory). From the repository, run the commands as
@@ -152,12 +152,10 @@ def _cmd_new(args: argparse.Namespace) -> int:
     text = (template / DEFINITION_FILENAME).read_text()
     text = text.replace("<unique_name>", name).replace("class ClassName(", f"class {_class_name(name)}(")
     (folder / DEFINITION_FILENAME).write_text(_prefill(text, record))
-    explore = (template / "explore.ipynb").read_text().replace("<unique_name>", name)
-    (folder / "explore.ipynb").write_text(explore)
     for extra in template.iterdir():
-        if extra.name not in (DEFINITION_FILENAME, "explore.ipynb") and extra.is_file():
+        if extra.name != DEFINITION_FILENAME and extra.is_file():
             shutil.copy(extra, folder / extra.name)
-    print(f"Scaffolded {folder}/ ({DEFINITION_FILENAME}, explore.ipynb). Fill in every TODO, then run:")
+    print(f"Scaffolded {folder}/{DEFINITION_FILENAME}. Fill in every TODO, then run:")
     print(f"  {CLI_COMMAND} dataset check {folder}")
     return 0
 

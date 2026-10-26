@@ -33,6 +33,8 @@ Has some minor classes that might not be dropped for proper validation setup. Mi
 
 need to check sequence names again
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Horton & Nakai 1996 report cross-validated accuracy over 8 sites, a field habit without costs, and we keep 5 of the 8 sites (MET-6, MET-2).
+
 ## Reference
 
 @inproceedings{horton1996probabilistic,

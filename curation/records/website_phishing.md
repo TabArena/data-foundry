@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: UCI
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5B301
@@ -38,6 +38,8 @@ Andrej: Following logic of other, more extensive phishing websites task (10.2443
 CC (2026-10-14, Lennart): Binary, Phishy against Legitimate: the Suspicious class is the donors' judgement of the same signals. Raw feature codes kept.
 
 CC (2026-10-14, Lennart): Accept `dataset_pure_feature_value` (all 167 sites with popUpWidnow = 1 are phishing): the same reversed coding as the other signals, a page property, not a leak.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Abdelhamid, Ayesh & Thabtah 2014 score 3-class accuracy; our task is binary (suspicious class dropped) and no costs are fixed.
 
 ## Reference
 

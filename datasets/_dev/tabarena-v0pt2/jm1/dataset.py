@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import openml
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -85,6 +85,13 @@ class Jm1(AbstractCuratedDataset):
     # Task
     target = "defects"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Menzies & Di Stefano 2004 report probability of detection (PD) and of false alarm (PF) at "
+            "operating points, a trade-off with no fixed threshold or combined score; the ROC curve is PD "
+            "against PF. roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = openml.datasets.get_dataset(1053).get_data()[0]

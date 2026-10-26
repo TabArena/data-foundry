@@ -35,6 +35,8 @@ Lennart: No objection
 
 Andrej: Need to clarify source
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset (not a competition) with no stated task metric; the original source is unknown (open item in the record).
+
 ## Reference
 
 https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer

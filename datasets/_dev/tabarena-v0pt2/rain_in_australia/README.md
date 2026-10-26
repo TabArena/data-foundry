@@ -2,21 +2,23 @@
 report_format: data-foundry-report-v2
 unique_name: rain_in_australia
 container_format: 2
-checksum: v2:db5fa75a51eb416242d14e0028986aea909f0a686686271a980328060361a087
+checksum: v2:a9dd162c15ceb997501f88eda6c2f19521b576877facfbd45ed68bd5b42adab3
 build: null
 build_stale: false
 data:
   n_rows: 264562
-  n_features: 22
+  n_features: 165
   dtypes:
     category: 6
     datetime64[ns]: 1
-    float64: 16
+    float64: 159
   n_test_dataset_rows: null
 task:
   target: RainTomorrow
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: RainTomorrow
   time_on: Date
@@ -25,16 +27,18 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 9
+  n_repeats: 26
   n_folds: 1
   random_state: 4267
   time_horizon: 14
   time_horizon_unit: days
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 248740
+    min: 248105
     max: 263940
   n_test:
-    min: 622
+    min: 619
     max: 642
 bundle_checks:
   ok: true
@@ -47,41 +51,41 @@ decisions:
   values of D-1
 - Rows labelled from a reading weeks or months later are dropped
 - Rows whose own 9 am rain reading is missing are dropped
-- Nine two-week test windows, one every six weeks
+- 26 two-week test windows, one after the other over the last year
+- The other locations' 9 am readings a row reads
 ---
 
 # rain_in_australia
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal splits by `Date`. 264,562 rows and 22 features. Source: GOV Website (2026).
+Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal splits by `Date`. 264,562 rows and 165 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:db5fa75a51eb416242d14e0028986aea909f0a686686271a980328060361a087`.
+Not built yet. The current definition gives checksum `v2:a9dd162c15ceb997501f88eda6c2f19521b576877facfbd45ed68bd5b42adab3`.
 
 ## In brief
 
-**Question.** Will it rain more than 1 mm at this Australian weather station in the next 24 hours?
+**Question.** Will it rain more than 1 mm at this Australian weather location in the next 24 hours?
 
-**Use case.** For example, each morning at 9 am a farmer or local forecaster estimates from a station's observations whether more than 1 mm of rain will fall there by 9 am the next day.
+**Use case.** For example, each morning at 9 am a farmer or local forecaster estimates from a location's observations whether more than 1 mm of rain will fall there by 9 am the next day.
 
-**One row.** One day at one of 49 Australian weather stations of the Bureau of Meteorology, November 2007 to January 2026 (264,562 station-days).
+**One row.** One day at one of 49 Australian locations of the Bureau of Meteorology (its Daily Weather Observations pages, some combining several stations), November 2007 to January 2026 (264,562 location-days).
 
 **Predicted.** Whether more than 1 mm of rain falls in the 24 hours from 9 am that day (22% of days).
 
-**Known at prediction time.** The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust and 3 pm observations, the station and the date.
+**Known at prediction time.** The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust and 3 pm observations, the location and the date, and the rain, pressure and humidity read at 9 am that day at the other locations whose 9 am comes no later.
 
-**What the test data stands for.** Nine test windows of 14 days, one every six weeks from February 2025 to January 2026, newest first; each trains on every earlier day, as for a model refit every two weeks.
+**What the test data stands for.** 26 test windows of 14 days, one after the other from February 2025 to January 2026, newest first; each trains on every earlier day, as for a model refit every two weeks.
 
-**Our changes to the source.** We replace the ten values recorded after 9 am (the afternoon readings, the day's maximum temperature, sunshine and gust) by the previous day's, drop the rain amount that defines the label, and drop rows whose next record is more than a day later.
+**Our changes to the source.** We replace the ten values recorded after 9 am by the previous day's, drop the rain amount behind the label, drop rows whose next record is more than a day later or that lack a label (8,076) or their own 9 am rain reading (2,571), and add the other locations' 9 am rain, pressure and humidity of the day.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Every input is read by 9 am, the label covers the next 24 hours, and each window follows its training days, as in daily use. A forecaster would also have weather-model output, which the data lack.
+> **Use case fit: approximate (a stand-in with a known gap).** A forecast from the location's own observations, standing in for the forecast-informed decision: a forecaster would also have weather-model output, which the data lack. Every input is read by 9 am, the label covers the next 24 hours, and each window follows its training days, as in daily use.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/rain_in_australia.md`](../../../../curation/records/rain_in_australia.md)
@@ -132,13 +136,22 @@ Only curators run `build`, when the dataset ships.
 | license | Copyright Commonwealth of Australia, Bureau of Meteorology; used with the Bureau's permission (rattle documentation of weatherAUS); rattle package GPL (>= 2) |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | williams2011rattle,williams2026weatheraus |
-| rows x columns | 264,562 x 23 |
+| rows x columns | 264,562 x 166 |
 | task.target | RainTomorrow |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | RainTomorrow |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The data is a Kaggle dataset / rattle example file built from BoM observations with no task description or metric; no paper defines one. Binary fallback roc_auc. |
 
 <details>
 <summary>Feature types: 6 categorical, 0 string, 1 datetime</summary>
@@ -175,7 +188,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 264,562 rows of the final frame (the oldest rows: the frame is sorted by `Date`); 12 of 23 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 264,562 rows of the final frame (the oldest rows: the frame is sorted by `Date`); 12 of 166 columns, the target first. Cells are cut at 40 characters.
 
 | RainTomorrow | Date | Location | MinTemp | Rainfall | Evaporation | WindDir9am | WindSpeed9am | Humidity9am | Pressure9am | Cloud9am | Temp9am |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -187,57 +200,114 @@ The first 5 of 264,562 rows of the final frame (the oldest rows: the frame is so
 
 ## Curation notes
 
-We start with weatherAUS.csv of the R package rattle: daily observations of 49 Australian weather stations from
-the Bureau of Meteorology (BoM), 2007-11-01 to 2026-01-30, with the target RainTomorrow.
+We start with weatherAUS.csv of the R package rattle: daily observations of 49 Australian locations (BoM Daily
+Weather Observations pages, some combining several stations) from the Bureau of Meteorology (BoM), 2007-11-01
+to 2026-01-30, with the target RainTomorrow.
 
-- Prediction point: the 9 am observation at a station on day D. The model predicts whether more than 1 mm of
+- Prediction point: the 9 am observation at a location on day D. The model predicts whether more than 1 mm of
   rain falls by 9 am on D+1 (RainTomorrow), from the observations up to 9 am on D and those recorded on D-1.
 - BoM records rainfall "in the 24 hours to 9am" (BoM notes), so the label's window starts at 9 am on D, and ten
   columns of day D are recorded inside it: MaxTemp (the label's own 24 hours), Sunshine and the wind gust (to
   midnight) and the six 3 pm observations. Five of them are tied more closely to the label than to the rain
   read at 9 am on D (Sunshine ROC AUC 0.805 against 0.733; decision table). We replace the ten columns by their
-  values of D-1 at the same station (`<column>_prev_day`, missing when the station has no row for D-1).
+  values of D-1 at the same location (`<column>_prev_day`, missing when the location has no row for D-1).
 - We drop RISK_MM, the label's rain amount: RainTomorrow is RISK_MM > 1 mm in every labelled row.
-- rattle takes RainTomorrow from the station's next row in the file, which before the periods missing from the
-  file is 29-401 days later. We drop every row whose next row is more than one day later (decision table). The
-  last row of each station keeps its label; it matches BoM's reading of the next day at the 15 stations checked.
+- rattle takes RainTomorrow from the location's next row in the file, which before the periods missing from the
+  file is 29-401 days later. We drop every row whose next row is more than one day later (decision table).
+  The last row of each location keeps its label; it matches BoM's reading of the next day at the 7 locations
+  checked.
 - We drop the rows without a label and the rows whose own 9 am rain reading is missing, since BoM's next value
-  can then be "accumulated over several days rather than the normal one day" (decision table).
-- RainToday is Rainfall > 1 mm in every row; we keep both, as the source ships them.
+  can then be "accumulated over several days rather than the normal one day" (decision table). Both kinds of
+  dropped rows carry a label over 48 hours or more (42.6% rain days against 21.8%), another quantity than the
+  24-hour call of the task (USE-5; CC 2026-10-26).
+- Rainfall and RainToday (Rainfall > 1 mm in every row) are the location's 9 am gauge reading on D, i.e. the
+  label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 shipped windows (LightGBM,
+  0.8495 with them, 0.8467 without; log loss 0.3516 against 0.3549), and the features without the location's
+  rain series beat persistence and the location-by-month climatology in 9 of 9 windows, so the skill does not
+  come from the lagged target. A forecast of the rain amount from the location's own rain series with a > 1 mm
+  rule reaches ROC AUC 0.75 against 0.849 (9 of 9 windows). We keep both: the reading is the last observation,
+  known at 9 am, and an input the forecaster has (TP-10 as amended 2026-10-26).
+- CLEAN-19 as amended (Lennart, 2026-10-26): each row also reads the other locations' 9 am Rainfall, Pressure9am
+  and Humidity9am of the same day (`<reading>_at_<Location>`, 143 columns: four locations record no pressure), as a forecaster reads the weather
+  upwind. A location counts only when its 9 am comes no later than the row's own, under both clock and standard
+  time (`_known_locations`): Perth's 9 am is 11:00-11:30 in the east, so an eastern row cannot read it. A row
+  reads 32 other locations on average (decision table); the rest are missing by construction. On the 9 windows
+  shipped before (LightGBM, 400 trees) this lifts ROC AUC from 0.850 to 0.870 (paired SE 0.0045, better in 8 of 9).
+- The wind direction is blank in every row with a wind speed of 0; we set it to "Calm" there (WindDir9am,
+  WindDir3pm before the lag; 15,003 and 1,609 rows of the cleaned data).
+- A relative humidity of 0% is impossible; we set it to missing (5 cells, all at Woomera).
 - `Location`, the wind directions and RainToday are categorical, `Date` a date.
-- Location stays a feature, and the split is temporal, not grouped by station: a model is used at the same
-  stations on later days (splits comment).
-- Anomaly: the file has no rows for any station in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
+- Location stays a feature, and the split is temporal, not grouped by location: a model is used at the same
+  locations on later days (splits comment).
+- Anomaly: the file has no rows for any location in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
   2017-02-28.
 - Anomaly: Evaporation is a multi-day total after days without a reading, and Cloud9am and Cloud3pm hold 9 (sky
   obscured) in 3 rows. We keep the values as recorded.
 - Anomaly: missing Sunshine and Evaporation grow from 34-46% of the rows in 2009-2013 to 66-79% in 2017-2025.
-- Anomaly: Cloud9am is missing more often on dry mornings. The report is made at 9 am, so we keep the missing
-  values as they are.
+- Anomaly: a blank Cloud9am is mostly a clear or near-clear sky at the time of the observation, mixed with
+  true gaps. Among the locations that record cloud, rain follows 11.7% of blank mornings against 24.7% of
+  mornings with a reading, and the gap holds within RainToday x humidity strata. Days with a blank Cloud3pm have
+  8.5 h of sunshine, against 10.5-11.2 h at 0-1 oktas and 4.8 h at 7 oktas, and the locations with the most
+  blanks record almost no 0 oktas (Uluru 76% blank, 0.1% zeros). The blank is set at 9 am, so we keep it
+  (effect 0.003 ROC AUC); a recode to 0 is not safe because true gaps are mixed in. Revisit if BoM states
+  otherwise. rattle's cloud values also differ from current BoM pages at Melbourne and Hobart (a revision
+  between versions).
+- Anomaly: paired locations (Perth and PerthAirport, Sydney and SydneyAirport, Melbourne and MelbourneAirport)
+  share Sunshine on 100% of their shared days. The split is unaffected, since a date is never on both sides.
+- Anomaly: in 2,648 kept rows the location's previous reading or row is missing, so Rainfall and RainToday may
+  be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
 - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
   use the data with BoM acknowledged as the source.
 
 ## Splits
 
 Weather models are refit often (one to two weeks, the horizon the curators set for
-climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 9 test windows
-of 14 days, one every 6 weeks from 2025-02-15 to 2026-01-30, newest first, so that the windows cover every
-season of the last year; train is every earlier day (from 2007-11-01). Each window holds 622-642 station-days
-of 46 stations with 63-205 rain days. The 9 windows are the 3 x 3 splits of the v2 protocol for this size.
+climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 26 test windows
+of 14 days, one after the other from 2025-02-01 to 2026-01-30, newest first, so that the windows cover every
+season of the last year (6-7 per season); train is every earlier day (from 2007-11-01), at least 93.8% of the
+rows. Each window holds 619-642 location-days with 63-222 rain days, 16,457 test rows in all. The window AUCs
+vary as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows sets how steady
+the mean is: its standard error is 0.008 against 0.016 for 9 windows spaced six weeks apart (LightGBM; the
+correlation of neighbouring windows, 0.24, makes it about 0.010) (CC 2026-10-26). No gap: the label of the last
+training day is read at 9 am on the first test day, before the first prediction. The history has a break (no
+rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are missing far more often after it; training
+from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history, so the old years do no harm.
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 248,740 to 263,940 rows, test 622 to 642 rows. Prediction horizon: 14 days.
+26 repeat(s) x 1 fold(s) with seed 4267; train 248,105 to 263,940 rows, test 619 to 642 rows. Prediction horizon: 14 days.
+
+<details>
+<summary>Show all 26 splits</summary>
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
 | 0 | 0 | 263940 | 622 | 2007-11-01 00:00:00 | 2026-01-16 00:00:00 | 2026-01-17 00:00:00 | 2026-01-30 00:00:00 |
-| 1 | 0 | 262058 | 627 | 2007-11-01 00:00:00 | 2025-12-05 00:00:00 | 2025-12-06 00:00:00 | 2025-12-19 00:00:00 |
-| 2 | 0 | 260171 | 633 | 2007-11-01 00:00:00 | 2025-10-24 00:00:00 | 2025-10-25 00:00:00 | 2025-11-07 00:00:00 |
-| 3 | 0 | 258259 | 642 | 2007-11-01 00:00:00 | 2025-09-12 00:00:00 | 2025-09-13 00:00:00 | 2025-09-26 00:00:00 |
-| 4 | 0 | 256352 | 632 | 2007-11-01 00:00:00 | 2025-08-01 00:00:00 | 2025-08-02 00:00:00 | 2025-08-15 00:00:00 |
-| 5 | 0 | 254450 | 627 | 2007-11-01 00:00:00 | 2025-06-20 00:00:00 | 2025-06-21 00:00:00 | 2025-07-04 00:00:00 |
-| 6 | 0 | 252536 | 639 | 2007-11-01 00:00:00 | 2025-05-09 00:00:00 | 2025-05-10 00:00:00 | 2025-05-23 00:00:00 |
-| 7 | 0 | 250639 | 631 | 2007-11-01 00:00:00 | 2025-03-28 00:00:00 | 2025-03-29 00:00:00 | 2025-04-11 00:00:00 |
-| 8 | 0 | 248740 | 625 | 2007-11-01 00:00:00 | 2025-02-14 00:00:00 | 2025-02-15 00:00:00 | 2025-02-28 00:00:00 |
+| 1 | 0 | 263321 | 619 | 2007-11-01 00:00:00 | 2026-01-02 00:00:00 | 2026-01-03 00:00:00 | 2026-01-16 00:00:00 |
+| 2 | 0 | 262685 | 636 | 2007-11-01 00:00:00 | 2025-12-19 00:00:00 | 2025-12-20 00:00:00 | 2026-01-02 00:00:00 |
+| 3 | 0 | 262058 | 627 | 2007-11-01 00:00:00 | 2025-12-05 00:00:00 | 2025-12-06 00:00:00 | 2025-12-19 00:00:00 |
+| 4 | 0 | 261432 | 626 | 2007-11-01 00:00:00 | 2025-11-21 00:00:00 | 2025-11-22 00:00:00 | 2025-12-05 00:00:00 |
+| 5 | 0 | 260804 | 628 | 2007-11-01 00:00:00 | 2025-11-07 00:00:00 | 2025-11-08 00:00:00 | 2025-11-21 00:00:00 |
+| 6 | 0 | 260171 | 633 | 2007-11-01 00:00:00 | 2025-10-24 00:00:00 | 2025-10-25 00:00:00 | 2025-11-07 00:00:00 |
+| 7 | 0 | 259541 | 630 | 2007-11-01 00:00:00 | 2025-10-10 00:00:00 | 2025-10-11 00:00:00 | 2025-10-24 00:00:00 |
+| 8 | 0 | 258901 | 640 | 2007-11-01 00:00:00 | 2025-09-26 00:00:00 | 2025-09-27 00:00:00 | 2025-10-10 00:00:00 |
+| 9 | 0 | 258259 | 642 | 2007-11-01 00:00:00 | 2025-09-12 00:00:00 | 2025-09-13 00:00:00 | 2025-09-26 00:00:00 |
+| 10 | 0 | 257622 | 637 | 2007-11-01 00:00:00 | 2025-08-29 00:00:00 | 2025-08-30 00:00:00 | 2025-09-12 00:00:00 |
+| 11 | 0 | 256984 | 638 | 2007-11-01 00:00:00 | 2025-08-15 00:00:00 | 2025-08-16 00:00:00 | 2025-08-29 00:00:00 |
+| 12 | 0 | 256352 | 632 | 2007-11-01 00:00:00 | 2025-08-01 00:00:00 | 2025-08-02 00:00:00 | 2025-08-15 00:00:00 |
+| 13 | 0 | 255719 | 633 | 2007-11-01 00:00:00 | 2025-07-18 00:00:00 | 2025-07-19 00:00:00 | 2025-08-01 00:00:00 |
+| 14 | 0 | 255077 | 642 | 2007-11-01 00:00:00 | 2025-07-04 00:00:00 | 2025-07-05 00:00:00 | 2025-07-18 00:00:00 |
+| 15 | 0 | 254450 | 627 | 2007-11-01 00:00:00 | 2025-06-20 00:00:00 | 2025-06-21 00:00:00 | 2025-07-04 00:00:00 |
+| 16 | 0 | 253817 | 633 | 2007-11-01 00:00:00 | 2025-06-06 00:00:00 | 2025-06-07 00:00:00 | 2025-06-20 00:00:00 |
+| 17 | 0 | 253175 | 642 | 2007-11-01 00:00:00 | 2025-05-23 00:00:00 | 2025-05-24 00:00:00 | 2025-06-06 00:00:00 |
+| 18 | 0 | 252536 | 639 | 2007-11-01 00:00:00 | 2025-05-09 00:00:00 | 2025-05-10 00:00:00 | 2025-05-23 00:00:00 |
+| 19 | 0 | 251899 | 637 | 2007-11-01 00:00:00 | 2025-04-25 00:00:00 | 2025-04-26 00:00:00 | 2025-05-09 00:00:00 |
+| 20 | 0 | 251270 | 629 | 2007-11-01 00:00:00 | 2025-04-11 00:00:00 | 2025-04-12 00:00:00 | 2025-04-25 00:00:00 |
+| 21 | 0 | 250639 | 631 | 2007-11-01 00:00:00 | 2025-03-28 00:00:00 | 2025-03-29 00:00:00 | 2025-04-11 00:00:00 |
+| 22 | 0 | 250001 | 638 | 2007-11-01 00:00:00 | 2025-03-14 00:00:00 | 2025-03-15 00:00:00 | 2025-03-28 00:00:00 |
+| 23 | 0 | 249365 | 636 | 2007-11-01 00:00:00 | 2025-02-28 00:00:00 | 2025-03-01 00:00:00 | 2025-03-14 00:00:00 |
+| 24 | 0 | 248740 | 625 | 2007-11-01 00:00:00 | 2025-02-14 00:00:00 | 2025-02-15 00:00:00 | 2025-02-28 00:00:00 |
+| 25 | 0 | 248105 | 635 | 2007-11-01 00:00:00 | 2025-01-31 00:00:00 | 2025-02-01 00:00:00 | 2025-02-14 00:00:00 |
+
+</details>
 
 ## Decisions
 
@@ -284,17 +354,33 @@ BoM: after a missing reading the next value can be accumulated over several days
 | 9 am reading on D missing | 2575 | 42.6% | 0.4 | 5.2 |
 | 9 am reading on D present | 264742 | 21.8% | 0 | 0.6 |
 
-### 4. Nine two-week test windows, one every six weeks
+### 4. 26 two-week test windows, one after the other over the last year
 
-The source gives no refit cadence; for weather the curators set one to two weeks (climate_model_weather_forecasting). Two-week windows hold over 600 station-days each, and spacing them six weeks apart covers every season of the last year with the 9 splits of the protocol; contiguous two-week windows cover only September to January, monthly ones May to January, and yearly windows stop at 7 above the 50% train floor.
+The source gives no refit cadence; for weather the curators set one to two weeks (climate_model_weather_forecasting). 26 contiguous two-week windows cover every season of the last year with three times the test rows of 9 windows spaced six weeks apart, which halves the standard error of the mean score (CC 2026-10-26).
 
 | index | windows | first test day | test rows | rain days |
 |---|---|---|---|---|
-| 14 days, every 6 weeks (shipped) | 9 | 2025-02-15 | 622-642 | 63-205 |
+| 14 days, contiguous, 26 windows (shipped) | 26 | 2025-02-01 | 619-642 | 63-222 |
+| 14 days, every 6 weeks, 9 windows | 9 | 2025-02-15 | 622-642 | 63-205 |
+| 14 days, every 3 weeks, 18 windows | 18 | 2025-01-25 | 622-642 | 63-205 |
 | 7 days, every 6 weeks | 9 | 2025-02-22 | 309-322 | 27-100 |
-| 14 days, contiguous | 9 | 2025-09-27 | 619-640 | 83-205 |
 | 1 month, contiguous | 9 | 2025-05-01 | 1,333-1,417 | 192-400 |
 | 12 months (train >= 50%) | 7 | 2019-02-01 | 16,044-17,134 | 3,050-4,422 |
+
+### 5. The other locations' 9 am readings a row reads
+
+Rainfall, Pressure9am and Humidity9am of the same day at every other location whose 9 am comes no later than the row's own, under both clock and standard time; a later location is missing. A western row reads every other location, an eastern one only those east of it or in its own zone. Rows by the time zone of their location, and the mean number of other locations with a 9 am rain reading they read.
+
+| time zone of the row | rows | mean_other_locations_read |
+|---|---|---|
+| Australia/Adelaide | 20593 | 34.8 |
+| Australia/Brisbane | 22539 | 31.4 |
+| Australia/Darwin | 17442 | 38.2 |
+| Australia/Hobart | 11632 | 29.3 |
+| Australia/Melbourne | 54656 | 29.7 |
+| Australia/Perth | 38736 | 44.9 |
+| Australia/Sydney | 93375 | 29.5 |
+| Pacific/Norfolk | 5589 | 0 |
 
 ## Bundle checks
 
@@ -306,33 +392,72 @@ The source gives no refit cadence; for weather the curators set one to two weeks
 ### Feature summary
 
 <details>
-<summary>Show the table (23 rows)</summary>
+<summary>Show the table (166 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| WindDir9am | category | 19760 | 7.47 | 16 | N, E, SSE, SE, S, SW, NW, W, NNE, ESE |
 | WindGustDir_prev_day | category | 18074 | 6.83 | 16 | W, SE, S, SSW, E, SSE, SW, WSW, N, ENE |
-| WindDir3pm_prev_day | category | 11472 | 4.34 | 16 | SE, W, S, WSW, SW, SSE, WNW, SSW, N, ESE |
+| WindDir3pm_prev_day | category | 9863 | 3.73 | 17 | SE, W, S, WSW, SW, SSE, WNW, SSW, N, ESE |
+| WindDir9am | category | 4757 | 1.8 | 17 | N, E, SSE, SE, S, SW, Calm, NW, W, NNE |
 | Location | category | 0 | 0 | 49 | Canberra, Sydney, Darwin, Hobart, Perth, Brisbane, PerthAirport, Launceston, Me… |
 | RainToday | category | 0 | 0 | 2 | No, Yes |
 | RainTomorrow | category | 0 | 0 | 2 | No, Yes |
 | Date | datetime64\[ns\] | 0 | 0 | 6174 | 2014-08-20 00:00:00, 2014-08-18 00:00:00, 2014-08-31 00:00:00, 2014-12-02 00:00… |
+| Humidity9am_at_Katherine | float64 | 246794 | 93.28 | 86 | 70.0, 71.0, 66.0, 69.0, 65.0, 64.0, 72.0, 67.0, 73.0, 74.0 |
+| Rainfall_at_Katherine | float64 | 245338 | 92.73 | 152 | 0.0, 0.8, 0.6, 0.2, 0.4, 1.0, 1.2, 6.0, 9.2, 8.0 |
+| Humidity9am_at_Witchcliffe | float64 | 233987 | 88.44 | 78 | 99.0, 100.0, 63.0, 64.0, 68.0, 69.0, 65.0, 66.0, 56.0, 70.0 |
+| Rainfall_at_Witchcliffe | float64 | 233693 | 88.33 | 202 | 0.0, 0.2, 0.4, 0.6, 1.0, 0.8, 1.2, 1.4, 1.8, 2.0 |
+| Pressure9am_at_Witchcliffe | float64 | 233433 | 88.23 | 393 | 1018.0, 1020.2, 1018.1, 1015.8, 1020.1, 1021.0, 1017.8, 1016.9, 1020.5, 1015.9 |
+| Rainfall_at_PearceRAAF | float64 | 233351 | 88.2 | 179 | 0.0, 0.2, 0.4, 0.8, 0.6, 1.0, 1.4, 1.2, 1.8, 2.0 |
+| Rainfall_at_Walpole | float64 | 233163 | 88.13 | 190 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 1.2, 1.6, 1.8 |
+| Humidity9am_at_Albany | float64 | 232781 | 87.99 | 79 | 81.0, 80.0, 84.0, 74.0, 72.0, 73.0, 82.0, 68.0, 87.0, 76.0 |
+| Rainfall_at_SalmonGums | float64 | 232365 | 87.83 | 118 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.8, 1.0, 1.2, 1.4, 1.6 |
+| Humidity9am_at_SalmonGums | float64 | 232159 | 87.75 | 91 | 59.0, 61.0, 49.0, 56.0, 62.0, 55.0, 66.0, 53.0, 51.0, 52.0 |
+| Rainfall_at_Albany | float64 | 232060 | 87.71 | 208 | 0.0, 0.2, 0.4, 0.8, 0.6, 1.2, 1.0, 1.4, 2.0, 2.2 |
+| Humidity9am_at_Walpole | float64 | 232013 | 87.7 | 77 | 100.0, 99.0, 69.0, 65.0, 70.0, 71.0, 72.0, 66.0, 67.0, 68.0 |
+| Rainfall_at_Perth | float64 | 231878 | 87.65 | 176 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.2 |
+| Pressure9am_at_Albany | float64 | 231828 | 87.63 | 416 | 1021.7, 1022.3, 1019.5, 1020.5, 1021.0, 1017.2, 1019.8, 1017.8, 1019.1, 1015.6 |
+| Pressure9am_at_PerthAirport | float64 | 231798 | 87.62 | 352 | 1016.0, 1013.8, 1017.8, 1016.7, 1013.6, 1015.9, 1017.6, 1014.7, 1014.6, 1018.6 |
+| Humidity9am_at_PerthAirport | float64 | 231804 | 87.62 | 92 | 54.0, 45.0, 44.0, 53.0, 52.0, 46.0, 47.0, 48.0, 51.0, 57.0 |
+| Rainfall_at_PerthAirport | float64 | 231787 | 87.61 | 171 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 1.2, 1.8, 1.6 |
+| Pressure9am_at_Perth | float64 | 231726 | 87.59 | 355 | 1016.8, 1017.3, 1013.7, 1019.2, 1015.7, 1016.1, 1015.0, 1022.0, 1015.4, 1018.1 |
+| Humidity9am_at_Perth | float64 | 231741 | 87.59 | 88 | 59.0, 51.0, 50.0, 48.0, 55.0, 58.0, 52.0, 56.0, 57.0, 53.0 |
+| Pressure9am_at_Walpole | float64 | 231579 | 87.53 | 412 | 1017.5, 1019.0, 1013.9, 1018.7, 1018.0, 1016.0, 1018.5, 1020.4, 1019.3, 1020.3 |
+| Humidity9am_at_PearceRAAF | float64 | 231438 | 87.48 | 90 | 44.0, 48.0, 57.0, 60.0, 45.0, 62.0, 43.0, 49.0, 61.0, 40.0 |
+| Pressure9am_at_PearceRAAF | float64 | 231414 | 87.47 | 346 | 1017.3, 1019.5, 1014.4, 1017.5, 1017.4, 1018.6, 1017.0, 1014.5, 1012.8, 1014.0 |
+| Pressure9am_at_Katherine | float64 | 220097 | 83.19 | 208 | 1014.4, 1016.2, 1015.5, 1016.5, 1015.9, 1015.3, 1014.8, 1016.9, 1015.7, 1015.6 |
+| Rainfall_at_Uluru | float64 | 218806 | 82.7 | 97 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.6, 1.2, 1.0, 1.4, 2.0 |
+| Humidity9am_at_Uluru | float64 | 218126 | 82.45 | 96 | 34.0, 29.0, 27.0, 31.0, 24.0, 23.0, 33.0, 35.0, 36.0, 28.0 |
+| Pressure9am_at_Uluru | float64 | 218067 | 82.43 | 314 | 1020.3, 1015.2, 1016.4, 1019.6, 1022.4, 1017.7, 1018.5, 1022.0, 1015.8, 1023.9 |
+| Rainfall_at_Adelaide | float64 | 217921 | 82.37 | 122 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 1.6, 1.2, 2.0 |
+| Pressure9am_at_Adelaide | float64 | 216789 | 81.94 | 368 | 1016.0, 1019.9, 1018.8, 1017.6, 1021.8, 1016.3, 1021.4, 1016.4, 1018.1, 1018.9 |
+| Humidity9am_at_Adelaide | float64 | 216761 | 81.93 | 96 | 57.0, 51.0, 55.0, 52.0, 61.0, 64.0, 54.0, 47.0, 56.0, 48.0 |
+| Rainfall_at_AliceSprings | float64 | 204532 | 77.31 | 149 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 2.2, 1.2, 1.6 |
+| Humidity9am_at_AliceSprings | float64 | 204148 | 77.16 | 100 | 25.0, 29.0, 24.0, 22.0, 23.0, 20.0, 28.0, 27.0, 34.0, 31.0 |
+| Pressure9am_at_AliceSprings | float64 | 204116 | 77.15 | 313 | 1021.0, 1019.8, 1022.1, 1022.4, 1016.8, 1019.9, 1023.6, 1020.7, 1021.7, 1022.5 |
+| Rainfall_at_Darwin | float64 | 203971 | 77.1 | 334 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.6, 1.2, 1.4, 1.0, 2.6 |
+| Pressure9am_at_Darwin | float64 | 203985 | 77.1 | 194 | 1014.6, 1014.1, 1014.7, 1014.3, 1013.1, 1013.9, 1014.8, 1013.3, 1014.5, 1014.9 |
+| Humidity9am_at_Darwin | float64 | 203983 | 77.1 | 89 | 73.0, 70.0, 71.0, 67.0, 76.0, 69.0, 77.0, 75.0, 68.0, 74.0 |
+| Rainfall_at_Nuriootpa | float64 | 195140 | 73.76 | 162 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.6, 1.2, 2.0, 1.4 |
+| Rainfall_at_Woomera | float64 | 194760 | 73.62 | 97 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.2, 1.0, 1.4, 1.8, 1.6 |
+| Rainfall_at_MountGambier | float64 | 194666 | 73.58 | 143 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 1.2, 1.6, 1.8 |
+| Humidity9am_at_Nuriootpa | float64 | 194502 | 73.52 | 96 | 100.0, 68.0, 97.0, 93.0, 81.0, 63.0, 91.0, 87.0, 69.0, 77.0 |
+| Humidity9am_at_Woomera | float64 | 194282 | 73.44 | 99 | 56.0, 58.0, 55.0, 61.0, 50.0, 60.0, 54.0, 57.0, 52.0, 47.0 |
+| Pressure9am_at_Woomera | float64 | 194235 | 73.42 | 353 | 1016.5, 1020.2, 1016.9, 1013.1, 1014.8, 1017.6, 1015.1, 1019.6, 1013.7, 1014.6 |
+| Pressure9am_at_Nuriootpa | float64 | 194122 | 73.37 | 379 | 1015.7, 1021.2, 1016.3, 1016.2, 1018.6, 1021.4, 1017.5, 1022.6, 1016.5, 1018.2 |
+| Pressure9am_at_MountGambier | float64 | 194060 | 73.35 | 435 | 1017.6, 1018.2, 1017.9, 1017.1, 1015.4, 1021.7, 1020.1, 1024.4, 1021.4, 1015.1 |
+| Humidity9am_at_MountGambier | float64 | 194060 | 73.35 | 89 | 97.0, 96.0, 93.0, 92.0, 94.0, 89.0, 98.0, 91.0, 95.0, 88.0 |
+| Pressure9am_at_Launceston | float64 | 183573 | 69.39 | 421 | 1019.0, 1014.5, 1014.1, 1016.5, 1011.5, 1016.7, 1020.8, 1017.8, 1018.9, 1016.2 |
 | Sunshine_prev_day | float64 | 162591 | 61.46 | 146 | 0.0, 11.0, 10.8, 10.7, 10.5, 10.9, 10.0, 10.6, 10.4, 11.1 |
 | Evaporation | float64 | 151354 | 57.21 | 392 | 4.0, 8.0, 2.2, 2.0, 2.8, 3.4, 2.4, 2.6, 3.2, 3.0 |
+| Pressure9am_at_Sale | float64 | 147675 | 55.82 | 391 | 1015.5, 1017.7, 1021.6, 1019.4, 1021.1, 1018.8, 1022.1, 1017.6, 1016.5, 1016.0 |
 | Cloud3pm_prev_day | float64 | 124928 | 47.22 | 10 | 7.0, 8.0, 1.0, 6.0, 2.0, 3.0, 5.0, 4.0, 0.0, 9.0 |
 | Cloud9am | float64 | 118426 | 44.76 | 10 | 7.0, 8.0, 1.0, 6.0, 0.0, 2.0, 3.0, 5.0, 4.0, 9.0 |
-| Pressure3pm_prev_day | float64 | 28657 | 10.83 | 564 | 1015.8, 1015.7, 1015.3, 1014.8, 1014.9, 1015.6, 1015.2, 1016.1, 1015.5, 1015.4 |
-| Pressure9am | float64 | 28416 | 10.74 | 570 | 1017.9, 1017.8, 1015.9, 1018.0, 1017.6, 1018.1, 1016.9, 1016.0, 1016.4, 1018.2 |
-| WindGustSpeed_prev_day | float64 | 17891 | 6.76 | 73 | 35.0, 39.0, 31.0, 37.0, 33.0, 41.0, 30.0, 43.0, 28.0, 44.0 |
-| WindSpeed3pm_prev_day | float64 | 9813 | 3.71 | 45 | 13.0, 17.0, 20.0, 15.0, 19.0, 11.0, 9.0, 24.0, 22.0, 28.0 |
-| Humidity3pm_prev_day | float64 | 8022 | 3.03 | 101 | 55.0, 53.0, 57.0, 59.0, 58.0, 52.0, 54.0, 60.0, 51.0, 56.0 |
-| Temp3pm_prev_day | float64 | 6579 | 2.49 | 513 | 18.5, 19.4, 18.4, 17.8, 20.0, 19.1, 19.0, 19.2, 18.7, 18.0 |
-| WindSpeed9am | float64 | 4703 | 1.78 | 44 | 9.0, 13.0, 11.0, 17.0, 7.0, 15.0, 6.0, 19.0, 0.0, 20.0 |
-| Humidity9am | float64 | 2481 | 0.94 | 101 | 100.0, 99.0, 69.0, 71.0, 68.0, 70.0, 67.0, 65.0, 64.0, 66.0 |
-| MaxTemp_prev_day | float64 | 1136 | 0.43 | 519 | 20.0, 20.4, 19.8, 19.5, 19.0, 19.4, 20.2, 18.8, 18.9, 19.9 |
-| MinTemp | float64 | 1006 | 0.38 | 404 | 10.2, 11.0, 9.6, 10.8, 10.5, 10.4, 11.2, 10.7, 9.7, 8.5 |
-| Temp9am | float64 | 942 | 0.36 | 452 | 17.0, 16.6, 14.8, 14.0, 14.9, 13.0, 15.0, 15.6, 15.4, 15.9 |
-| Rainfall | float64 | 0 | 0 | 830 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8 |
+| Rainfall_at_Cairns | float64 | 107540 | 40.65 | 361 | 0.0, 0.2, 0.4, 0.6, 1.0, 0.8, 1.2, 1.4, 2.2, 3.2 |
+| Rainfall_at_GoldCoast | float64 | 104553 | 39.52 | 282 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.2, 1.0, 2.0, 1.6, 2.2 |
+| Humidity9am_at_Newcastle | float64 | 103298 | 39.04 | 81 | 74.0, 73.0, 75.0, 71.0, 81.0, 69.0, 78.0, 65.0, 77.0, 97.0 |
+
+(106 more rows not shown)
 
 </details>
 
@@ -346,7 +471,7 @@ The source gives no refit cadence; for weather the curators set one to two weeks
 ### Numeric features
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (159 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -354,7 +479,7 @@ The source gives no refit cadence; for weather the curators set one to two weeks
 | Rainfall | 264562 | 2.32935 | 8.55522 | 0 | 474 |
 | Evaporation | 113208 | 5.49294 | 4.10891 | 0 | 138.7 |
 | WindSpeed9am | 259859 | 14.0328 | 8.82517 | 0 | 87 |
-| Humidity9am | 262081 | 69.0175 | 19.3961 | 0 | 100 |
+| Humidity9am | 262080 | 69.0177 | 19.3956 | 1 | 100 |
 | Pressure9am | 236146 | 1017.72 | 7.10757 | 978.6 | 1042.5 |
 | Cloud9am | 146136 | 4.76394 | 2.89703 | 0 | 9 |
 | Temp9am | 263620 | 16.9334 | 6.53046 | -6.2 | 41 |
@@ -362,10 +487,56 @@ The source gives no refit cadence; for weather the curators set one to two weeks
 | Sunshine_prev_day | 101971 | 7.63747 | 3.77268 | 0 | 14.5 |
 | WindGustSpeed_prev_day | 246671 | 39.9439 | 13.4982 | 2 | 154 |
 | WindSpeed3pm_prev_day | 254749 | 18.5424 | 8.68475 | 0 | 87 |
-| Humidity3pm_prev_day | 256540 | 51.3695 | 21.0059 | 0 | 100 |
+| Humidity3pm_prev_day | 256536 | 51.3703 | 21.0051 | 1 | 100 |
 | Pressure3pm_prev_day | 235905 | 1015.3 | 7.04819 | 972 | 1040.3 |
 | Cloud3pm_prev_day | 139634 | 4.7263 | 2.77168 | 0 | 9 |
 | Temp3pm_prev_day | 257983 | 21.7546 | 6.98799 | -5.1 | 48.2 |
+| Rainfall_at_Adelaide | 46641 | 1.40234 | 4.0704 | 0 | 75.2 |
+| Rainfall_at_Albany | 32502 | 2.3192 | 5.67823 | 0 | 126.4 |
+| Rainfall_at_Albury | 249699 | 1.86818 | 6.25405 | 0 | 132 |
+| Rainfall_at_AliceSprings | 60030 | 0.712415 | 4.23674 | 0 | 100.2 |
+| Rainfall_at_BadgerysCreek | 241882 | 2.28042 | 8.17818 | 0 | 200 |
+| Rainfall_at_Ballarat | 249765 | 1.69342 | 4.74443 | 0 | 95 |
+| Rainfall_at_Bendigo | 249422 | 1.49507 | 5.0368 | 0 | 91.8 |
+| Rainfall_at_Brisbane | 161573 | 2.30134 | 9.76074 | 0 | 275.2 |
+| Rainfall_at_Cairns | 157022 | 4.03577 | 15.8908 | 0 | 474 |
+| Rainfall_at_Canberra | 251967 | 1.74064 | 5.60228 | 0 | 87 |
+| Rainfall_at_Cobar | 249959 | 1.05832 | 4.32962 | 0 | 68 |
+| Rainfall_at_CoffsHarbour | 247462 | 5.12963 | 16.2725 | 0 | 371 |
+| Rainfall_at_Dartmoor | 245092 | 2.02003 | 4.54042 | 0 | 73.6 |
+| Rainfall_at_Darwin | 60591 | 4.19953 | 13.9127 | 0 | 367.6 |
+| Rainfall_at_GoldCoast | 160009 | 3.00549 | 11.0395 | 0 | 307.2 |
+| Rainfall_at_Hobart | 251731 | 1.55976 | 4.80264 | 0 | 129.2 |
+| Rainfall_at_Katherine | 19224 | 2.73422 | 10.7459 | 0 | 167 |
+| Rainfall_at_Launceston | 250740 | 1.8475 | 4.83626 | 0 | 60 |
+| Rainfall_at_Melbourne | 223488 | 1.75428 | 4.97454 | 0 | 82.2 |
+| Rainfall_at_MelbourneAirport | 250769 | 1.44905 | 4.56473 | 0 | 75.8 |
+| Rainfall_at_Mildura | 248205 | 0.801298 | 4.21344 | 0 | 155 |
+| Rainfall_at_Moree | 242357 | 1.59248 | 6.63163 | 0 | 150 |
+| Rainfall_at_MountGambier | 69896 | 2.00514 | 4.62744 | 0 | 84.6 |
+| Rainfall_at_MountGinini | 237400 | 3.25496 | 8.57085 | 0 | 107.6 |
+| Rainfall_at_Newcastle | 170703 | 3.11298 | 10.9651 | 0 | 240 |
+| Rainfall_at_Nhil | 184839 | 0.99496 | 3.36981 | 0 | 65.6 |
+| Rainfall_at_NorahHead | 245451 | 3.608 | 10.3144 | 0 | 129 |
+| Rainfall_at_NorfolkIsland | 252469 | 3.185 | 10.294 | 0 | 168.4 |
+| Rainfall_at_Nuriootpa | 69422 | 1.22669 | 3.78842 | 0 | 76.6 |
+| Rainfall_at_PearceRAAF | 31211 | 1.6524 | 5.09517 | 0 | 66.8 |
+| Rainfall_at_Penrith | 247413 | 2.27901 | 8.34538 | 0 | 167 |
+| Rainfall_at_Perth | 32684 | 1.86994 | 5.60469 | 0 | 96.2 |
+| Rainfall_at_PerthAirport | 32775 | 1.7696 | 5.3901 | 0 | 90.2 |
+| Rainfall_at_Portland | 247959 | 2.39161 | 5.08369 | 0 | 72 |
+| Rainfall_at_Richmond | 245184 | 2.24699 | 8.16734 | 0 | 181.4 |
+| Rainfall_at_Sale | 249393 | 1.53279 | 4.81763 | 0 | 99.2 |
+| Rainfall_at_SalmonGums | 32197 | 0.891878 | 3.16046 | 0 | 55.4 |
+| Rainfall_at_Sydney | 251896 | 3.52866 | 10.7158 | 0 | 164.8 |
+| Rainfall_at_SydneyAirport | 250109 | 3.14866 | 9.97526 | 0 | 161 |
+| Rainfall_at_Townsville | 161821 | 2.15058 | 12.4363 | 0 | 301.4 |
+| Rainfall_at_Tuggeranong | 249237 | 1.99941 | 6.92297 | 0 | 93 |
+| Rainfall_at_Uluru | 45756 | 0.522139 | 3.05239 | 0 | 65 |
+| Rainfall_at_WaggaWagga | 238317 | 1.67114 | 5.60406 | 0 | 110.8 |
+| Rainfall_at_Walpole | 31399 | 2.93155 | 6.46767 | 0 | 93.2 |
+
+(99 more rows not shown)
 
 </details>
 
@@ -396,10 +567,10 @@ The source gives no refit cadence; for weather the curators set one to two weeks
 | WindDir3pm_prev_day | 4 | WSW | 16983 | 6.42 |
 | WindDir3pm_prev_day | 5 | SW | 16463 | 6.22 |
 | WindDir9am | 1 | N | 20449 | 7.73 |
-| WindDir9am | 2 | &lt;NA> | 19760 | 7.47 |
-| WindDir9am | 3 | E | 17135 | 6.48 |
-| WindDir9am | 4 | SSE | 16972 | 6.42 |
-| WindDir9am | 5 | SE | 16967 | 6.41 |
+| WindDir9am | 2 | E | 17135 | 6.48 |
+| WindDir9am | 3 | SSE | 16972 | 6.42 |
+| WindDir9am | 4 | SE | 16967 | 6.41 |
+| WindDir9am | 5 | S | 15916 | 6.02 |
 | WindGustDir_prev_day | 1 | &lt;NA> | 18074 | 6.83 |
 | WindGustDir_prev_day | 2 | W | 17907 | 6.77 |
 | WindGustDir_prev_day | 3 | SE | 17196 | 6.5 |

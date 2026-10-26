@@ -35,6 +35,10 @@ CC (2026-09-30, Lennart): **Leak fixed: donor and patient rows use different rec
 
 Need to check label distribution of class and if multiple entries per patient ID
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Hoffmann et al. 2018 report overall and per-class accuracy under leave-one-out; 88% donors, so accuracy is dominated by donor vs patient; the suspect-donor class is dropped (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback.
+
+CC (2026-10-21, Lennart): the metric is the log_loss fallback, as proposed; balanced accuracy, a threshold metric the paper did not choose, is not used.
+
 ## Reference
 
 @article{hoffmann2018using,

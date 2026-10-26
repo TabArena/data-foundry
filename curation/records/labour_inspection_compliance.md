@@ -53,6 +53,10 @@ Data is missing timestamps, so it is a forced IID task
 
 **Assessment (AI, 2026-10-14):** The Dataverse description and 00Readme.txt (https://doi.org/10.18710/7U6TZP) say the 63,634 inspections were conducted between 2012-01-01 and 2019-06-01 (timePeriodCovered gives the same). LICD.csv has no date column ('Business Age' is the organisation's age in months), so the range cannot be checked from the data. The definition's note said 'from 2021 to 2019'; it now says January 2012 to June 2019.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source precision_at_k k_fraction=0.5 — precision at the median prediction score (with balanced accuracy, accuracy, recall and AUC) (Flogard & Mengshoel 2022, NeurIPS Datasets and Benchmarks, Sec. 6.4-6.5).
+
+CC (2026-10-21, Lennart): the metric is precision_at_k with k_fraction 0.5, precision at the median score as Flogard & Mengshoel 2022 report it.
+
 ## Reference
 
 A dataset for efforts towards achieving the sustainable development goal of safe working environments

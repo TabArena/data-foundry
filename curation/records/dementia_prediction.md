@@ -42,6 +42,8 @@ Grouped data
 
 AT: No objection, but we need to quickly talk about how we proceed with medical image data
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the OASIS-2 paper reports group analyses, no prediction metric.
+
 ## Reference
 
 Rel source paper: Open Access Series of Imaging Studies: Longitudinal MRI Data in Nondemented and Demented Older Adults  https://direct.mit.edu/jocn/article/22/12/2677/4983/Open-Access-Series-of-Imaging-Studies-Longitudinal

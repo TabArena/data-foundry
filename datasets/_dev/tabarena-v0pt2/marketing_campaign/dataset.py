@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class MarketingCampaign(AbstractCuratedDataset):
@@ -65,6 +65,9 @@ class MarketingCampaign(AbstractCuratedDataset):
     # Task
     target = "Response"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=("Kaggle dataset card states a goal (maximise the next campaign's profit) but no evaluation metric."),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/marketing_campaign.csv", sep=";")
@@ -89,6 +92,7 @@ class MarketingCampaign(AbstractCuratedDataset):
                 "AcceptedCmp3",
                 "AcceptedCmp4",
                 "AcceptedCmp5",
+                "Complain",  # a 0/1 flag (CLEAN-14)
                 "Marital_Status",
                 "Education",
             ],

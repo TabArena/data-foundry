@@ -7,6 +7,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 2
 tags:
 - New IID
 - Free Text (Short)
@@ -43,6 +44,18 @@ Super hard to parse if the dataset could be used but I think we can train a mode
 CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset, and add RDKit's 2D descriptors next to the 9 Dragon descriptors.
 
 **Assessment (AI, 2026-10-14):** LightGBM macro AUC 0.735 with the 9 descriptors, 0.752 with RDKit's 193 added (better on 13 of 15 splits), 0.723 with the SMILES as text instead. With RDKit's descriptors no two chemicals share their values; with the 9 alone 61 did, 14 of them with another class.
+
+**Assessment (AI, 2026-10-20):** priority 3 for the review of the added dataset: gap + (problem_type multiclass_classification), use case -, source +, shape -, no known risk. Small (776 chemicals) multiclass QSAR task with repaired rows and documented source; the use case is curated.
+
+**Assessment (AI, 2026-10-20):** review panel (full): ship after changes; add the logKOW the class is read against as an input or rewrite the use case, `approximate` unless that and a drop of the 9 selected Dragon descriptors remove both gaps, and drop the 9 by LEAK-31 (open issues 8, 9, 5 in REVIEW.md). Applied in the definition: the split text (the SMILES gives exact Murcko scaffolds; 34% of chemicals in 42 congener series, random forest 0.754 to 0.650 with them held out; a SPLIT-31 candidate), the selection note corrected (at most about 0.015 macro AUC is the selection; the home_credit citation removed), the label provenance (122 shipped chemicals have a predicted logKOW in the 2015 table, so the 2026-10-07 statement that the 779 all have an experimental KOW holds only for the 2016 re-curation), the LightGBM numbers as reproduced (0.745 / 0.757). TabSTAR's copy (OpenML 46585) swaps the names of classes 2 and 3, a problem of that copy; our labels follow the archived UCI page and the rule. The tag `Free Text (Short)` is stale (no string feature since 2026-10-14), and the open issues replace the 'no known risk' of the earlier 2026-10-20 line. Priority 2: gap +, use case -, source +, shape -, risk - (multiclass is thin; the use case is the curation's and its fit is contested; Grisoni et al. document the data; 776 chemicals; an input the actor holds is missing and a potential leak is kept).
+
+**Assessment (AI, 2026-10-20):** the 'no known risk' of the first 2026-10-20 line no longer holds: the open issues of REVIEW.md (the logKOW input, the fit label, the 9 selected descriptors) are the known risks. Evidence task, not an issue: read Grisoni et al. 2016 (Environment International 88) for the class thresholds, which are inferred from the data (600 of 607 chemicals with a logKOW of at least 1) and match the archived UCI page.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: B02(C-N) and the 24 RDKit fragment counts that hold only 0 and 1 (found on the data in `_feature_types`).
+
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: B02(C-N) (presence of a C-N pair at topological distance 2). Reverted: the 24 RDKit fragment counts that hold only 0 and 1.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Grisoni et al. (2016) report NER (balanced accuracy) with per-class rates at argmax, no costs. Original rejected: NER.
 
 ## Reference
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
@@ -67,6 +67,7 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         - We drop the constant column "Net_Income_Flag".
         - We drop two duplicated features (same values as other features).
         - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
+        - Potential leak, kept on purpose: 67 of the 91 non-binary numeric columns have a minimum of exactly 0 and a maximum of exactly 1 over the 6,819 companies, a min-max scaling over all rows that UCI does not document; the Taiwan Economic Journal's raw data are commercial. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if unscaled data appear.
         - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
         - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
           year, so the split stays random.
@@ -75,6 +76,9 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
     # Task
     target = "Bankrupt"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Liang et al. 2016 report average accuracy and Type I / II errors on a 1:1 sample (the release is 3.2% bankrupt, MET-2), and a cost with ratios 1 to 5: no single matrix (MET-7). roc_auc is the binary fallback (also reported).",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/data.csv")
@@ -189,3 +193,8 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
             ]
         )
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # Liability_Assets_Flag (1 when liabilities exceed assets) is a yes/no flag: categorical (CLEAN-14)
+        del df
+        return FeatureTypes(categorical=["Liability_Assets_Flag"])

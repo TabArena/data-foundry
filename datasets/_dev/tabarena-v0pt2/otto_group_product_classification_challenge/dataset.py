@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
@@ -63,6 +63,12 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
     # Task
     target = "target"
     problem_type = "multiclass_classification"
+    metric = Metric.source(
+        "log_loss",
+        original="Multi-class logarithmic loss",
+        reference="https://www.kaggle.com/competitions/otto-group-product-classification-challenge/overview/evaluation",
+        definition="-1/N sum_i sum_j y_ij log(p_ij), probabilities rescaled to sum 1 per row and clipped to [1e-15, 1-1e-15].",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

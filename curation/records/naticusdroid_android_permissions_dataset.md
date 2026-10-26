@@ -36,6 +36,8 @@ Andrej: Unclear whether temporal split
 
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (three untuned families at skill +0.962 to +0.968) does not hold for tuned methods. On BeyondArena the best (LimiX-2) reaches ROC AUC 0.989 and the median 0.986, with no other method within noise of the best (Kendall's W 0.96).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Mathur et al. 2021 report accuracy, precision, recall and F1 on a balanced set with 75% duplicates; after deduplication we ship 35% malware, so the paper's accuracy does not mean the same (MET-2). roc_auc is the binary fallback.
+
 ## Reference
 
 NATICUSdroid: A malware detection framework for Android using native and custom permissions

@@ -39,6 +39,8 @@ Weka dataset, unclear source or citation
 
 Discussion: Data uses extracted features, while for the actual task one would nowadays use MRI image data and likely many other clinical decision markers like symptoms. So this is more useful as toy data rather than for a real value-generating task.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — da Rocha Neto 2006 / 2011 report the classification (hit) rate, and a reject-option error-reject trade-off on the 2-class version; no threshold or costs for the 3-class diagnosis, and the full texts could not be opened. Original rejected: accuracy. log_loss is the multiclass fallback.
+
 ## Reference
 
 ?

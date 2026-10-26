@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class MiamiHousing(AbstractCuratedDataset):
@@ -76,6 +76,11 @@ class MiamiHousing(AbstractCuratedDataset):
     # Task
     target = "SALE_PRC"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. For a sale price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(f"{raw_dir}/miami2016.arff") as f:

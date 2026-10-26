@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class BankMarketing(AbstractCuratedDataset):
@@ -68,6 +68,12 @@ class BankMarketing(AbstractCuratedDataset):
     # Task
     target = "SubscribeTermDeposit"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve), with ALIFT (area under the cumulative lift curve) as second metric",
+        reference="Moro, Cortez, Rita 2014, A data-driven approach to predict the success of bank telemarketing, Decision Support Systems 62:22-31 (also Moro, Laureano, Cortez 2011, ESM, on the bank-full data)",
+        definition="ROC AUC of term-deposit subscription.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data = pd.read_csv(f"{raw_dir}/bank-full.csv", sep=";")

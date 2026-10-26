@@ -5,6 +5,7 @@ checked_by: []
 data_foundry_status: []
 claimed_by:
 suggestion:
+priority:
 decision_markers: []
 tags: []
 collections: []
@@ -29,7 +30,8 @@ omitted on save. Dropdown fields accept any value, but values outside the vocabu
 dashboard's ＋ header buttons rather than free-typing. Most curators edit records in the
 dashboard (`data-foundry-curation serve`); this file is the by-hand reference.
 
-Field-by-field:
+Field-by-field (the reference table is "The fields" in
+`.claude/skills/knowledge-data-foundry/references/records.md`):
 
 - **unique_name** — stable id and file stem; `snake_case`, globally unique. This is the
   dataset's canonical name (prefer the shipped dataset/notebook name where one exists).
@@ -59,6 +61,10 @@ Field-by-field:
   `No (Retired)` = *excluded now, but it shipped in a collection before the verdict changed* — keep
   the collection tag and record why in the comments. A dataset shipped in a collection must be
   `Yes`, `Yes (Disagreement)`, or `No (Retired)` (anything else is a `ship_conflict`).
+- **priority** — an integer from 1 to 5: how urgently a curator should verify the screening and send the
+  record to `/add-dataset` (5 first, 1 last). Set by `/screen-candidates`, changed by the curator; a
+  rejected record (a suggestion starting with `No`) has none. The dashboard's Screening pill lists the
+  screened records by it, highest first.
 - **decision_markers** — why / decision flags, e.g. `Duplicate`, `Trivial`, `Image`,
   `NLP (Text)`, `Out-of-scope Task (CTR/RecSys/Ranking)`, `Ethical Issue`, `Too Small`,
   `Data Quality Issue`, `Not Representative`, `TBD` (see vocab for the full list).

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 
 class Cardiotocography(AbstractCuratedDataset):
@@ -74,6 +74,12 @@ class Cardiotocography(AbstractCuratedDataset):
     # Task
     target = "NSP"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "UCI page defines no task metric; the SisPorto 2.0 paper describes the analysis program and "
+            "expert agreement, not a prediction benchmark."
+        ),
+    )
     grouping = Grouping(
         on="patient_id",
         labels="per_sample",

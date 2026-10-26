@@ -3,9 +3,9 @@ unique_name: travel_review_ratings
 name: Travel Review Ratings
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 original_source: UCI
 year: '2018'
 required_split:

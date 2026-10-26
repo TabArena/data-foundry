@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class ApsFailure(AbstractCuratedDataset):
@@ -75,12 +75,25 @@ class ApsFailure(AbstractCuratedDataset):
         - We converted "na" strings to real NaN/missing values, making the data numeric.
         - Anomaly: we cannot determine the data types of the features.
         - Anomaly: some features are bins of histograms (see original data description).
-        - Anomaly: the original task used a cost matrix for evaluation.
+        - Metric: the challenge's cost matrix, scored from probabilities by the least expected cost rather than on hard labels (AI choice, 2026-10-21).
     """
 
     # Task
     target = "AirPressureSystemFailure"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "cost_matrix",
+        original=("Total cost = Cost_1 * #false positives + Cost_2 * #false negatives (IDA 2016 Industrial Challenge)"),
+        reference=(
+            "https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/ ; UCI "
+            "https://doi.org/10.24432/C5V60Q (aps_failure_description.txt)"
+        ),
+        definition=(
+            "mean cost per truck: 10 per false alarm (needless check), 500 per missed APS failure; from "
+            "probabilities, predicted pos when p(pos) > 10/510"
+        ),
+        params={"labels": ["neg", "pos"], "matrix": [[0, 10], [500, 0]], "prediction": "proba"},
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # remove the leading text before the header form both the training and test data.

@@ -43,6 +43,12 @@ Unclear if the target makes for a relevant, real-world dataset but for now we ca
 Discussion: Task is to predict no. of drinks a person consumes as a proxy for liver diseases based on blood tests. This is not a meaningful task, e.g., what kind of decision would it motivate? If a doctor has the time to collect blood samples, asking for drinking behavior is simple.
 Also, there is selection bias as only drinking people are in the sample.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The source frames a classification of liver disorder (the selector column was misread as the label); McDermott & Forsyth say the intended label is drinks dichotomised, with no metric for a regression on the count. Our regression on drinks is our own task, so the regression fallback applies.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log1p")` instead of the fallback rmse on the log1p target: drinks per day is a right-skewed count whose error matters relative to the amount; the target still ships as log1p, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 ? (should be older than 1990 due being used before 1990....)

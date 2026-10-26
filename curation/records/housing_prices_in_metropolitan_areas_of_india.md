@@ -7,7 +7,7 @@ data_foundry_status:
 - 'DF: Suspended'
 suggestion: TBD -> 2nd Tier
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Data Quality Issue
 tags:
 - New IID
