@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 14:13 UTC: 49 claim(s) (Lennart 36, Myunghwan 13).
+As of 2026-10-26 14:20 UTC: 48 claim(s) (Lennart 35, Myunghwan 13).
 
 ## Lennart
 
@@ -24,7 +24,6 @@ As of 2026-10-26 14:13 UTC: 49 claim(s) (Lennart 36, Myunghwan 13).
 | `framingham_heart_study_fhs` | add | 2026-10-23 | 2026-10-30 |  |
 | `fraud_detection_in_electricity_and_gas_consumption` | add | 2026-10-23 | 2026-10-30 |  |
 | `g_research_crypto_forecasting` | add | 2026-10-23 | 2026-10-30 |  |
-| `glioma_grading_clinical_and_mutation_features` | add | 2026-10-23 | 2026-10-30 |  |
 | `house_sales` | add | 2026-10-23 | 2026-10-30 |  |
 | `huntprohibited` | add | 2026-10-23 | 2026-10-30 |  |
 | `lgd` | add | 2026-10-23 | 2026-10-30 |  |
