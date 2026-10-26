@@ -4,6 +4,20 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26 (drug_induced_autoimmunity_prediction: the SMILES stays in the data)
+
+- `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
+  features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
+  model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
+  the SMILES in every SMILES dataset.
+- `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
+  is the input of the task, not a row id, as for `phiusil_phishing`. The stereoisomer de-duplication still compares
+  the descriptors only, so the same 9 pairs are found. Follows Andrej's decision in the record
+  [`curation/records/drug_induced_autoimmunity_prediction.md`](../../../curation/records/drug_induced_autoimmunity_prediction.md).
+  `dataset check` clean. Not built.
+
 ## 2026-10-26 (the curator's marks: nba retired, house_prices_nominal copied forward as ames_housing, rain neighbours)
 
 Lennart's marks of 2026-10-26 on the Open Datasets Review page, in two rounds; records carry them as

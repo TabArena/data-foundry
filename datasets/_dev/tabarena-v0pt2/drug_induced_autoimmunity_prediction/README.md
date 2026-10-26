@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:66b4e5c697c24490563df64e90a777e1a62e93b984445bb4f16a27a34f24112b
+checksum: v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -20,12 +20,12 @@ build:
 build_stale: true
 data:
   n_rows: 587
-  n_features: 176
+  n_features: 177
   dtypes:
     category: 1
     float64: 82
     int64: 94
-    string: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: Label
@@ -66,7 +66,9 @@ bundle_checks:
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    dataset_identifier_column: SMILES is the drug's structure, the input of the task,
+      not a row id; it is unique per row because one drug appears once.
 decisions:
 - Stereoisomers that share every descriptor are kept once
 ---
@@ -75,9 +77,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 176 features. Source: UCI (2025).
+Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 177 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:66b4e5c697c24490563df64e90a777e1a62e93b984445bb4f16a27a34f24112b`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -89,11 +91,11 @@ Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` 
 
 **Predicted.** Whether the drug is labelled as causing drug-induced autoimmunity (23.85% are); how the positive and negative drugs were chosen is not stated in the definition.
 
-**Known at prediction time.** Descriptors computed from the structure with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
+**Known at prediction time.** The structure as a SMILES string, and descriptors computed from it with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
 
 **What the test data stands for.** Whole chemical scaffolds (a drug's ring skeleton) are held out, so the test data stands for drugs from chemical series not seen in training.
 
-**Our changes to the source.** We pool the source's training and test sets, split them by scaffold instead of at random and drop the structure's text, keeping the descriptors computed from it; a drug entered twice as two stereoisomers is kept once.
+**Our changes to the source.** We pool the source's training and test sets and split them by scaffold instead of at random; a drug entered twice as two stereoisomers is kept once.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, which is all a screen has before testing, and the test drugs come from scaffolds the model has not seen, as new candidates do. The set is small.
 
@@ -135,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped |
 | reference | huang2025interdia |
-| rows x columns | 587 x 178 |
+| rows x columns | 587 x 179 |
 | task.target | Label |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -154,10 +156,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; no unique metric. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 1 string, 0 datetime</summary>
 
 - categorical (1): `Label`
-- string (0): none
+- string (1): `SMILES`
 - datetime (0): none
 
 </details>
@@ -181,15 +183,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 587 rows of the final frame (random rows: the frame is shuffled); 12 of 178 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 587 rows of the final frame (random rows: the frame is shuffled); 12 of 179 columns, the target first. Cells are cut at 40 characters.
 
-| Label | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v | Chi3n |
+| Label | SMILES | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1.616 | 909.746 | 22.56 | 18.43 | 18.43 | 14.393 | 11.19 | 11.19 | 10.967 | 10.967 | 9.027 |
-| 0 | 3.265 | 111.625 | 7.276 | 5.209 | 5.209 | 4.164 | 2.764 | 2.764 | 1.832 | 1.832 | 0.994 |
-| 0 | 2.494 | 1158.25 | 29.922 | 19.434 | 21.884 | 17.775 | 10.033 | 14.128 | 7.634 | 10.796 | 5.098 |
-| 0 | 1.208 | 1306.55 | 20.665 | 16.605 | 17.361 | 14.597 | 10.397 | 10.775 | 7.987 | 8.423 | 6.138 |
-| 0 | 4.633 | 341.58 | 15.32 | 11.137 | 12.926 | 8.455 | 5.976 | 9.201 | 4.623 | 8.631 | 2.905 |
+| 1 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1.63 | 746.426 | 17.225 | 15.072 | 16.705 | 12.258 | 9.188 | 11.229 | 6.974 | 8.937 |
+| 0 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(… | 2.444 | 756.904 | 17.251 | 12.981 | 15.43 | 10.713 | 7.104 | 10.907 | 5.173 | 10.147 |
+| 0 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)… | 1.908 | 404.411 | 13.991 | 10.64 | 10.64 | 8.936 | 6.056 | 6.056 | 4.866 | 4.866 |
+| 0 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 2.396 | 529.714 | 13.665 | 10.36 | 11.177 | 9.182 | 5.936 | 7.318 | 4.193 | 5.714 |
+| 0 | CCC(=O)O\[C@@\]1(\[C@@H\](C)C\[C@H\]2\[C@@H\]3C… | 1.85 | 925.393 | 23.69 | 19.189 | 19.945 | 14.918 | 11.592 | 11.97 | 10.546 | 11.171 |
 
 ## Curation notes
 
@@ -197,9 +199,9 @@ We start with the dataset from UCI.
 
 - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
 - We drop the constant columns, and fr_Nhpyrrole, MaxEStateIndex and fr_benzene, which copy other descriptor columns in these drugs.
-- `SMILES` dropped, as in every SMILES dataset (2026-10-14): the source's RDKit descriptors carry the structure, and next to them the SMILES as text (character n-grams) lowers LightGBM's ROC AUC from 0.835 to 0.810, on 15 of 15 splits.
+- `SMILES` kept as a string feature (2026-10-26), unlike the other SMILES datasets: the source's 176 descriptors lose structure a model can use. Next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5 from 0.803 to 0.826 (better on 27 of 30 splits) and of a random forest from 0.770 to 0.795; the SMILES as plain character n-grams does not (LightGBM 0.835 -> 0.810 on the random splits of 2026-10-14). We ship the string rather than one chosen fingerprint, so a model can read the structure as it likes.
 - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925).
-- Duplicates dropped: without the SMILES, 9 pairs of rows share every descriptor, all stereoisomers, which 2D descriptors do not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
+- Duplicates dropped: 9 pairs of rows share every descriptor, all stereoisomers, which 2D descriptors do not tell apart (PubChem; their SMILES differ only in the stereo marks): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
 
 ## Splits
 
@@ -295,7 +297,7 @@ One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold
 | test groups per fold | 139 to 153 |
 | groups of two or more rows with a single label | 82.7% |
 | nearest neighbour in the same group | 19.8% of the rows (chance: 0.6%) |
-| label variance explained by the group | 0.87 (shuffled groups: 0.76) |
+| label variance explained by the group | 0.87 (shuffled groups: 0.78) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -303,7 +305,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### 1. Stereoisomers that share every descriptor are kept once
 
-2D descriptors carry no stereochemistry, so without the SMILES each pair is one feature vector. Quinine and quinidine are two drugs; the other pairs are one drug entered twice with other stereo marks. A pair with one label keeps one row, the pair with both labels (streptomycin) none.
+2D descriptors carry no stereochemistry, so each pair differs only in the stereo marks of its SMILES. Quinine and quinidine are two drugs; the other pairs are one drug entered twice with other stereo marks. A pair with one label keeps one row, the pair with both labels (streptomycin) none.
 
 | pair | SMILES | Label | kept |
 |---|---|---|---|
@@ -331,77 +333,81 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 
+Accepted on purpose:
+
+- `dataset_identifier_column`: SMILES is the drug's structure, the input of the task, not a row id; it is unique per row because one drug appears once.
+
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (178 rows)</summary>
+<summary>Show the table (179 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Label | category | 0 | 0 | 2 | 0, 1 |
-| BalabanJ | float64 | 0 | 0 | 486 | 1.838, 1.735, 2.195, 1.43, 2.218, 1.797, 1.85, 2.462, 1.384, 1.94 |
-| BertzCT | float64 | 0 | 0 | 574 | 42.913, 138.219, 400.94, 49.784, 393.569, 593.895, 804.749, 8.0, 677.309, 1136.… |
-| Chi0 | float64 | 0 | 0 | 448 | 10.836, 20.698, 13.828, 23.859, 16.397, 12.958, 11.707, 13.665, 6.975, 17.811 |
-| Chi0n | float64 | 0 | 0 | 569 | 16.613, 11.919, 4.331, 14.11, 13.404, 16.544, 2.439, 20.6, 12.893, 15.35 |
-| Chi0v | float64 | 0 | 0 | 570 | 13.404, 14.221, 12.893, 11.919, 13.542, 21.884, 20.6, 14.202, 15.35, 16.117 |
-| Chi1 | float64 | 0 | 0 | 514 | 12.963, 14.867, 9.075, 4.164, 4.877, 9.665, 11.952, 6.914, 4.5, 14.918 |
-| Chi1n | float64 | 0 | 0 | 569 | 9.823, 2.745, 9.912, 1.224, 10.142, 1.982, 3.857, 10.093, 8.304, 8.308 |
-| Chi1v | float64 | 0 | 0 | 577 | 9.298, 7.771, 9.973, 10.003, 3.683, 11.19, 9.128, 8.265, 9.912, 5.98 |
-| Chi2n | float64 | 0 | 0 | 564 | 7.441, 5.461, 5.397, 8.194, 7.094, 0.512, 1.254, 9.749, 8.304, 7.662 |
-| Chi2v | float64 | 0 | 0 | 575 | 8.484, 5.714, 7.441, 2.968, 7.094, 10.368, 6.101, 8.194, 4.764, 3.622 |
-| Chi3n | float64 | 0 | 0 | 562 | 0.0, 0.48, 2.097, 5.325, 2.054, 4.305, 5.766, 0.635, 3.86, 1.508 |
-| Chi3v | float64 | 0 | 0 | 566 | 0.0, 6.305, 7.048, 7.798, 5.911, 5.883, 5.216, 0.635, 3.925, 2.494 |
-| Chi4n | float64 | 0 | 0 | 556 | 0.0, 3.93, 1.131, 3.531, 1.838, 2.135, 3.866, 3.17, 1.645, 7.261 |
-| Chi4v | float64 | 0 | 0 | 553 | 0.0, 6.55, 1.131, 3.356, 2.883, 1.527, 3.409, 3.645, 5.598, 2.376 |
-| EState_VSA1 | float64 | 0 | 0 | 250 | 0.0, 6.104, 5.969, 5.601, 11.57, 30.064, 10.023, 24.095, 5.415, 11.939 |
+| BalabanJ | float64 | 0 | 0 | 486 | 1.838, 1.735, 2.195, 2.218, 2.462, 1.797, 1.384, 1.43, 1.85, 1.66 |
+| BertzCT | float64 | 0 | 0 | 574 | 49.784, 138.219, 8.0, 109.109, 593.895, 431.802, 42.913, 393.569, 400.94, 670.2… |
+| Chi0 | float64 | 0 | 0 | 448 | 10.836, 20.698, 11.707, 16.397, 23.859, 12.958, 13.828, 9.845, 18.656, 15.364 |
+| Chi0n | float64 | 0 | 0 | 569 | 2.439, 15.141, 20.6, 17.145, 3.602, 12.893, 13.404, 11.919, 15.3, 15.35 |
+| Chi0v | float64 | 0 | 0 | 570 | 13.404, 13.542, 20.6, 17.901, 3.602, 12.893, 15.141, 11.919, 15.35, 21.884 |
+| Chi1 | float64 | 0 | 0 | 514 | 12.963, 14.867, 4.5, 9.075, 14.918, 6.914, 9.665, 11.952, 4.877, 4.164 |
+| Chi1n | float64 | 0 | 0 | 569 | 8.308, 9.823, 5.936, 9.128, 1.224, 11.19, 6.728, 10.569, 7.049, 8.304 |
+| Chi1v | float64 | 0 | 0 | 577 | 9.912, 9.973, 3.683, 7.771, 9.298, 5.98, 8.265, 11.19, 10.003, 9.128 |
+| Chi2n | float64 | 0 | 0 | 564 | 5.461, 7.441, 5.49, 6.974, 7.094, 6.56, 7.4, 0.512, 7.662, 2.667 |
+| Chi2v | float64 | 0 | 0 | 575 | 7.441, 5.714, 3.622, 4.764, 6.863, 8.484, 6.101, 7.094, 8.194, 8.783 |
+| Chi3n | float64 | 0 | 0 | 562 | 0.0, 3.86, 5.325, 0.635, 2.029, 2.506, 1.508, 8.791, 4.305, 5.216 |
+| Chi3v | float64 | 0 | 0 | 566 | 0.0, 1.508, 4.229, 5.883, 5.911, 2.494, 2.029, 0.635, 5.216, 6.899 |
+| Chi4n | float64 | 0 | 0 | 556 | 0.0, 1.799, 6.96, 1.131, 1.838, 7.261, 2.405, 3.93, 3.531, 1.276 |
+| Chi4v | float64 | 0 | 0 | 553 | 0.0, 3.356, 3.831, 6.315, 3.409, 1.276, 5.685, 2.621, 4.132, 6.96 |
+| EState_VSA1 | float64 | 0 | 0 | 250 | 0.0, 6.104, 5.969, 5.601, 11.57, 30.064, 10.023, 12.011, 11.939, 5.415 |
 | EState_VSA10 | float64 | 0 | 0 | 121 | 0.0, 4.795, 9.589, 9.901, 5.107, 14.696, 19.49, 19.802, 24.597, 14.384 |
 | EState_VSA11 | float64 | 0 | 0 | 5 | 0.0, 4.39, 8.781, 13.575, 4.795 |
 | EState_VSA2 | float64 | 0 | 0 | 333 | 0.0, 5.907, 6.104, 6.607, 11.949, 6.421, 5.918, 6.042, 5.817, 5.559 |
-| EState_VSA3 | float64 | 0 | 0 | 291 | 0.0, 5.563, 6.421, 6.545, 19.262, 6.607, 5.918, 12.108, 12.463, 6.042 |
-| EState_VSA4 | float64 | 0 | 0 | 284 | 0.0, 5.563, 11.127, 25.683, 6.421, 19.262, 5.573, 6.076, 38.525, 12.842 |
-| EState_VSA5 | float64 | 0 | 0 | 208 | 0.0, 4.9, 5.563, 12.133, 11.127, 6.924, 6.066, 7.11, 12.152, 18.199 |
+| EState_VSA3 | float64 | 0 | 0 | 291 | 0.0, 5.563, 6.421, 6.545, 19.262, 6.607, 5.918, 12.108, 5.687, 12.463 |
+| EState_VSA4 | float64 | 0 | 0 | 284 | 0.0, 5.563, 11.127, 25.683, 6.421, 19.262, 6.076, 5.573, 12.842, 38.525 |
+| EState_VSA5 | float64 | 0 | 0 | 208 | 0.0, 4.9, 5.563, 12.133, 11.127, 6.066, 6.924, 7.11, 12.152, 6.421 |
 | EState_VSA6 | float64 | 0 | 0 | 147 | 0.0, 12.133, 6.924, 6.066, 24.265, 13.847, 7.11, 4.9, 18.199, 6.197 |
-| EState_VSA7 | float64 | 0 | 0 | 144 | 0.0, 30.332, 6.924, 13.847, 6.066, 12.133, 24.265, 6.076, 18.199, 20.771 |
+| EState_VSA7 | float64 | 0 | 0 | 144 | 0.0, 30.332, 13.847, 6.924, 6.066, 12.133, 24.265, 6.076, 18.199, 20.771 |
 | EState_VSA8 | float64 | 0 | 0 | 274 | 0.0, 5.317, 10.634, 6.924, 4.984, 10.301, 9.968, 13.847, 4.992, 4.9 |
 | EState_VSA9 | float64 | 0 | 0 | 147 | 0.0, 4.737, 9.474, 5.734, 5.107, 11.601, 16.338, 9.843, 14.211, 10.471 |
-| ExactMolWt | float64 | 0 | 0 | 569 | 259.157, 365.06, 300.067, 383.151, 434.21, 416.329, 314.225, 263.189, 392.21, 3… |
-| FractionCSP3 | float64 | 0 | 0 | 195 | 0.5, 1.0, 0.0, 0.333, 0.429, 0.4, 0.125, 0.294, 0.75, 0.667 |
-| HallKierAlpha | float64 | 0 | 0 | 278 | -1.59, -2.41, -2.33, -1.06, -2.62, -1.3, -1.26, -1.1, -1.51, -0.9 |
-| HeavyAtomMolWt | float64 | 0 | 0 | 506 | 320.215, 238.181, 266.191, 420.248, 290.213, 226.17, 314.235, 403.256, 282.19, … |
-| Ipc | float64 | 0 | 0 | 553 | 1500075.637, 271685.711, 78.513, 8427682.936, 88.552, 4163.247, 132503.362, 108… |
-| Kappa1 | float64 | 0 | 0 | 552 | 22.001, 11.813, 23.622, 24.309, 21.517, 5.11, 16.757, 25.482, 16.313, 23.757 |
-| Kappa2 | float64 | 0 | 0 | 567 | 6.893, 5.954, 8.434, 4.081, 9.303, 5.25, 1.065, 1.544, 5.098, 6.862 |
-| Kappa3 | float64 | 0 | 0 | 550 | 2.478, 4.535, 5.43, 3.286, 7.03, 3.081, 1512.242, 0.407, 2.332, 4.901 |
-| LabuteASA | float64 | 0 | 0 | 574 | 182.429, 28.307, 46.628, 159.078, 183.524, 181.029, 178.952, 110.0, 120.331, 89… |
-| MaxAbsEStateIndex | float64 | 0 | 0 | 557 | 12.341, 10.241, 12.305, 10.1, 12.866, 12.362, 12.399, 12.885, 11.547, 13.523 |
-| MaxAbsPartialCharge | float64 | 0 | 0 | 181 | 0.481, 0.508, 0.493, 0.48, 0.394, 0.504, 0.393, 0.39, 0.369, 0.507 |
-| MaxPartialCharge | float64 | 0 | 0 | 246 | 0.303, 0.326, 0.306, 0.119, 0.339, 0.224, 0.416, 0.336, 0.174, 0.407 |
-| MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.013, 0.004, 0.017, 0.008, 0.016, 0.054, 0.006, 0.045, 0.003, 0.007 |
-| MinAbsPartialCharge | float64 | 0 | 0 | 237 | 0.303, 0.306, 0.326, 0.119, 0.224, 0.339, 0.316, 0.255, 0.336, 0.407 |
-| MinEStateIndex | float64 | 0 | 0 | 538 | -1.299, -0.594, -0.598, -0.94, 0.497, -0.953, -0.474, 0.688, -0.485, -1.316 |
-| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.493, -0.508, -0.48, -0.394, -0.393, -0.504, -0.39, -0.507, -0.462 |
-| MolLogP | float64 | 0 | 0 | 564 | 3.036, 0.03, 1.396, 3.723, 4.03, 2.548, 1.418, 3.813, 3.194, 0.718 |
-| MolMR | float64 | 0 | 0 | 585 | 98.485, 23.325, 24.16, 56.441, 87.807, 134.083, 104.57, 118.854, 77.515, 114.112 |
-| MolWt | float64 | 0 | 0 | 569 | 259.349, 365.842, 300.745, 383.47, 434.504, 416.646, 314.469, 263.381, 392.499,… |
-| PEOE_VSA1 | float64 | 0 | 0 | 245 | 0.0, 5.317, 9.843, 5.107, 10.213, 14.743, 5.734, 9.637, 4.737, 4.9 |
+| ExactMolWt | float64 | 0 | 0 | 569 | 300.067, 376.205, 252.09, 443.145, 285.136, 434.21, 415.272, 352.225, 405.186, … |
+| FractionCSP3 | float64 | 0 | 0 | 195 | 0.5, 1.0, 0.0, 0.333, 0.429, 0.4, 0.125, 0.75, 0.294, 0.667 |
+| HallKierAlpha | float64 | 0 | 0 | 278 | -2.41, -1.59, -2.33, -1.06, -1.3, -2.62, -1.26, -1.51, -1.1, -0.9 |
+| HeavyAtomMolWt | float64 | 0 | 0 | 506 | 320.215, 238.181, 266.191, 420.248, 290.213, 403.256, 278.202, 372.294, 226.17,… |
+| Ipc | float64 | 0 | 0 | 553 | 1500075.637, 88.552, 78.513, 8427682.936, 271685.711, 527310.369, 18978.936, 6.… |
+| Kappa1 | float64 | 0 | 0 | 552 | 22.001, 11.813, 17.569, 21.519, 25.482, 18.922, 23.622, 18.626, 10.39, 21.517 |
+| Kappa2 | float64 | 0 | 0 | 567 | 6.893, 5.098, 4.112, 1.065, 4.081, 1.544, 6.725, 4.242, 5.954, 10.848 |
+| Kappa3 | float64 | 0 | 0 | 550 | 2.478, 3.398, 5.43, 1.868, 1.088, 2.02, 0.407, 1512.242, 2.913, 2.239 |
+| LabuteASA | float64 | 0 | 0 | 574 | 182.429, 159.078, 89.32, 183.524, 28.307, 156.137, 181.029, 110.0, 120.331, 46.… |
+| MaxAbsEStateIndex | float64 | 0 | 0 | 557 | 12.341, 13.683, 12.399, 13.523, 12.61, 11.547, 12.3, 12.866, 12.555, 13.144 |
+| MaxAbsPartialCharge | float64 | 0 | 0 | 181 | 0.481, 0.508, 0.493, 0.48, 0.394, 0.504, 0.393, 0.507, 0.462, 0.369 |
+| MaxPartialCharge | float64 | 0 | 0 | 246 | 0.326, 0.303, 0.306, 0.119, 0.224, 0.339, 0.416, 0.174, 0.255, 0.407 |
+| MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.013, 0.004, 0.008, 0.017, 0.016, 0.003, 0.054, 0.006, 0.022, 0.007 |
+| MinAbsPartialCharge | float64 | 0 | 0 | 237 | 0.303, 0.326, 0.306, 0.119, 0.224, 0.339, 0.255, 0.316, 0.336, 0.407 |
+| MinEStateIndex | float64 | 0 | 0 | 538 | -0.594, -1.299, -0.598, -0.816, -0.238, -1.362, -0.499, -0.953, 0.483, -0.94 |
+| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.493, -0.508, -0.48, -0.394, -0.504, -0.393, -0.507, -0.39, -0.462 |
+| MolLogP | float64 | 0 | 0 | 564 | 4.894, 2.548, 1.63, 0.03, 2.01, 0.718, 1.418, 2.44, 4.03, 3.036 |
+| MolMR | float64 | 0 | 0 | 585 | 98.485, 23.325, 156.91, 13.002, 22.752, 88.243, 135.483, 114.456, 118.471, 83.6… |
+| MolWt | float64 | 0 | 0 | 569 | 300.745, 376.468, 252.273, 443.432, 285.343, 434.504, 415.574, 352.471, 405.969… |
+| PEOE_VSA1 | float64 | 0 | 0 | 245 | 0.0, 5.317, 9.843, 5.107, 10.213, 9.637, 14.743, 4.737, 5.734, 15.32 |
 | PEOE_VSA10 | float64 | 0 | 0 | 178 | 0.0, 5.75, 6.104, 12.084, 6.607, 6.042, 5.601, 5.783, 18.46, 12.208 |
-| PEOE_VSA11 | float64 | 0 | 0 | 96 | 0.0, 11.499, 5.783, 5.96, 11.566, 6.104, 11.384, 23.386, 5.132, 5.647 |
-| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 10.023, 5.783, 5.948, 5.88, 5.429, 5.824, 5.601 |
-| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 5.559, 11.814, 5.687, 10.023, 5.083, 6.2, 11.69, 5.239 |
-| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 6.176, 5.69, 6.031, 15.192, 17.908, 12.146 |
-| PEOE_VSA2 | float64 | 0 | 0 | 104 | 0.0, 4.795, 9.589, 4.9, 14.384, 9.694, 14.906, 4.567, 9.779, 10.114 |
-| PEOE_VSA3 | float64 | 0 | 0 | 71 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 9.666, 13.575 |
-| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 8.418, 4.992, 12.629, 4.305, 21.952 |
-| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.423, 6.579, 23.202, 23.099 |
+| PEOE_VSA11 | float64 | 0 | 0 | 96 | 0.0, 11.499, 5.783, 5.96, 11.566, 6.104, 11.384, 23.386, 5.132, 5.694 |
+| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 5.783, 10.023, 5.948, 5.429, 5.601, 5.824, 5.88 |
+| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 5.559, 11.814, 5.687, 10.023, 5.083, 6.2, 17.722, 5.239 |
+| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 6.176, 5.69, 6.031, 15.192, 17.908, 12.063 |
+| PEOE_VSA2 | float64 | 0 | 0 | 104 | 0.0, 4.795, 9.589, 14.384, 4.9, 9.694, 14.906, 4.567, 9.779, 10.114 |
+| PEOE_VSA3 | float64 | 0 | 0 | 71 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 13.557, 9.666 |
+| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 12.629, 4.992, 8.418, 5.213, 9.968 |
+| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.423, 6.579, 23.099, 23.202 |
 | PEOE_VSA6 | float64 | 0 | 0 | 214 | 0.0, 12.133, 6.066, 30.332, 18.199, 11.601, 24.265, 42.465, 6.924, 13.847 |
-| PEOE_VSA7 | float64 | 0 | 0 | 375 | 0.0, 6.924, 12.133, 18.199, 17.696, 6.421, 12.842, 6.066, 30.332, 25.123 |
-| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 12.966, 5.563, 12.587 |
-| PEOE_VSA9 | float64 | 0 | 0 | 287 | 0.0, 6.607, 6.104, 12.208, 6.042, 6.545, 11.375, 5.918, 12.649, 5.694 |
-| SMR_VSA1 | float64 | 0 | 0 | 246 | 0.0, 4.795, 9.901, 14.638, 9.531, 9.589, 4.737, 24.597, 14.696, 9.843 |
+| PEOE_VSA7 | float64 | 0 | 0 | 375 | 0.0, 6.924, 12.133, 18.199, 6.421, 17.696, 12.842, 30.332, 6.066, 25.123 |
+| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 5.563, 12.966, 12.587 |
+| PEOE_VSA9 | float64 | 0 | 0 | 287 | 0.0, 6.607, 6.104, 12.208, 6.042, 6.545, 11.375, 12.649, 5.694, 13.214 |
+| SMR_VSA1 | float64 | 0 | 0 | 246 | 0.0, 4.795, 9.901, 14.638, 9.531, 4.737, 9.589, 24.597, 9.843, 14.696 |
 
-(118 more rows not shown)
+(119 more rows not shown)
 
 </details>
 
@@ -486,15 +492,25 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### Categorical features
 
+<details>
+<summary>Show the table (12 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Label | 1 | 0 | 447 | 76.15 |
 | Label | 2 | 1 | 140 | 23.85 |
+| SMILES | 1 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1 | 0.17 |
+| SMILES | 2 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(=O)(=O)N | 1 | 0.17 |
+| SMILES | 3 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)C2 | 1 | 0.17 |
+| SMILES | 4 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 1 | 0.17 |
+| SMILES | 5 | CCC(=O)O\[C@@\]1(\[C@@H\](C)C\[C@H\]2\[C@@H\]3CCC4=CC(=O)C=C\[C@\]4(C)\[C@@... | 1 | 0.17 |
 | scaffold | 1 | c1ccccc1 | 41 | 6.98 |
 | scaffold | 2 | O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21 | 12 | 2.04 |
 | scaffold | 3 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
-| scaffold | 4 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
-| scaffold | 5 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
+| scaffold | 4 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
+| scaffold | 5 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
+
+</details>
 
 ## Build
 
@@ -507,4 +523,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:66b4e5c697c24490563df64e90a777e1a62e93b984445bb4f16a27a34f24112b` |
+| stale | yes: the definition now gives checksum `v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3` |
