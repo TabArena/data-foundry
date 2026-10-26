@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class BiomechanicalOrthopaedicPrediction(AbstractCuratedDataset):
@@ -66,6 +66,9 @@ class BiomechanicalOrthopaedicPrediction(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="da Rocha Neto 2006 / 2011 report the classification (hit) rate, and a reject-option error-reject trade-off on the 2-class version; no threshold or costs for the 3-class diagnosis, and the full texts could not be opened. Original rejected: accuracy. log_loss is the multiclass fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # Read arff file

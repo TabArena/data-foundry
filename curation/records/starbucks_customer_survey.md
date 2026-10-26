@@ -8,7 +8,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Tiny Data
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 original_source: Kaggle

@@ -8,7 +8,7 @@ decision_markers:
 - Trivial
 - No Good Target (yet)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - TabArena Reject
 - TabSTAR

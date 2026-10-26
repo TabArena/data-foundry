@@ -3,9 +3,9 @@ unique_name: weather_izmir
 name: weather_izmir
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 year: older than 2000
 required_split:
 - Random (IID)

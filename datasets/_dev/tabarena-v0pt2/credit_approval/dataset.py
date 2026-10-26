@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class CreditApproval(AbstractCuratedDataset):
@@ -68,6 +68,13 @@ class CreditApproval(AbstractCuratedDataset):
     # Task
     target = "A16"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Quinlan 1987 and the Statlog Australian credit study score error rate without a cost matrix or "
+            "threshold; the approve / decline use case gives no equal-cost hard-label decision. Original rejected: "
+            "error rate (accuracy). roc_auc is the binary fallback."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

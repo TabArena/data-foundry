@@ -4,6 +4,772 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26 (the curator's marks: nba retired, house_prices_nominal copied forward as ames_housing, rain neighbours)
+
+Lennart's marks of 2026-10-26 on the Open Datasets Review page, in two rounds; records carry them as
+`CC (2026-10-26, Lennart)` lines. Nothing was rebuilt.
+
+- `nba_players_2016_2019` is retired: `No` with `No Good Target / Scientific Discovery` and `Not Representative`
+  (no actor, moment or decision fits; the score ranks the whole ballot). The folder is removed; its claim released.
+- `house_prices_nominal` is copied forward as the new record and folder `ames_housing` (De Cock's full Ames file);
+  `house_prices_nominal`, the Kaggle competition's 1,460-row half (OpenML 42165), keeps its name as its `Duplicate`.
+  In `ames_housing`:
+  - the 82 sales between family members, allocations and adjoining-land purchases are dropped (USE-5): 2,837 sales;
+  - the text codes of 43 categorical columns become the labels of DataDocumentation.txt (CLEAN-12);
+  - no gap between training and test windows, an exception to SPLIT-10 (a Cases row in `splits.md`; this file's
+    `REVIEW.md` proposes amending SPLIT-10);
+  - the record's `Trivial` marker is removed.
+  - `perth_house_prices` and `melbourne_housing_market` now cite `ames_housing` (notes only).
+- `house_sales` drops its 85 related-party sales (warning 51), as `ames_housing` drops its family sales: 20,499
+  sales. This reopens option (c) of its issue 8 (2026-10-22).
+- `2_month_survival_rate_prediction`:
+  - adlp, edu and income are dropped (they come from the interview of days 2-7 and their gaps follow early deaths;
+    this replaces CC 2026-10-12): 22 features;
+  - pafi above 713 is set missing (9 patients);
+  - the year is 2003;
+  - the use case is SUPPORT's objective estimate set beside the physician's (Knaus et al. 1995), so the physicians'
+    estimates and DNR orders are not inputs (a USE-6 Cases row).
+- `rain_in_australia`:
+  - 26 contiguous 14-day test windows over the last year instead of 9 spaced six weeks apart (16,457 test rows);
+  - each row also reads the other locations' 9 am rain, pressure and humidity of the same day where their 9 am comes
+    no later than its own (143 columns; CLEAN-19 amended);
+  - Rainfall and RainToday stay (TP-10 leg 2 amended: the last observation of the target may stay when it is known
+    at the prediction point);
+  - rattle's file stays without a patch of the 2016-17 gap; the record's year is 2026.
+- `african_credit_scoring_challenge`: the drop of the rows whose lender funds less than 0.5 is confirmed. Open: Type_1
+  loans only (issue 1), ROC AUC over Zindi's F1 (issue 6, a consistency check against CC 2026-10-21), Zindi's
+  country test (issue 7).
+- `glioma_grading_clinical_and_mutation_features`: new issue 6 answers the verdict note; the AI recommends `No`.
+- The vocabulary's `No Good Target  / Scientific Discovery` (two spaces) and `2nd Tier / Scientfic Discovery` are
+  spelled `No Good Target / Scientific Discovery` and `2nd Tier / Scientific Discovery` in every record (199).
+- 2_month_survival_rate_prediction, ames_housing and rain_in_australia have no open issue left: their `REVIEW.md`
+  files are removed, and they ship (Lennart, 2026-10-26): `DF: Yes`, claims released. Not built yet.
+
+## 2026-10-23 (claims move to a live board)
+
+- `GETTING_STARTED.md` (section 7) describes the new claims: a branch `claims` of the repository that every curator
+  pushes to directly, one file per claimed dataset, so a claim shows within seconds instead of after a claim PR to
+  `main`. The tooling is `data-foundry-curation claims` (`src/data_foundry/curation/claims.py`), the dashboard's
+  Claimed by column, and a Claude Code hook that warns before an agent edits a dataset another curator holds; see
+  `.claude/skills/knowledge-data-foundry/references/claims.md`. The records keep `claimed_by` and the WIP value as a
+  mirror of the board.
+
+## 2026-10-22 (numerai28_6 added as forced IID)
+
+- New folder `numerai28_6` (Lennart, 2026-10-22: add as forced IID). It is Numerai's 2016 Kaggle training sample, CC0: 96,320 rows, 21 encrypted features and a binary target.
+  - Random 3 x 3 stratified splits tagged `ForcedIIDFromTemporal`, because the release has no era, date or id.
+  - The metric is the 2016 tournament's log loss.
+  - The folder was built by `/add-dataset` and attacked by the focused review panel (claim audit, split audit):
+    - no validity claim was refuted, and four tests find no hidden weekly group;
+    - the panel's text fixes are made.
+  - `REVIEW.md` asks whether to keep log loss: the models sit within 0.002 of the dummy, and untuned tree models lose to it.
+- The README table lists 173 datasets. Not built yet.
+
+## 2026-10-22 (fourth round: framingham to hard ASCVD, sarcoma 4 classes, dataorg retired; last notebooks removed)
+
+Lennart's marks of the late afternoon; records carry them as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **framingham_heart_study_fhs:** the target is now `ascvd_within_10_years`: a first hospitalised myocardial infarction
+  or CHD death, or a stroke, within 10 years (the outcome of the pooled cohort equations).
+  - The 25 participants with a prior stroke are excluded, so `prevalentStroke` is dropped as constant.
+  - 4,199 rows, 276 Yes; logistic regression ROC AUC 0.779.
+  - `REVIEW.md` is removed.
+- **sarcoma:** myxofibrosarcoma and undifferentiated pleomorphic sarcoma are merged, which leaves 4 classes. The IID
+  split by patient stays. Random forest log loss goes from 0.650 to 0.469. `problem_type` in the record is now
+  multiclass. `REVIEW.md` is removed.
+- **dataorg_financial_health_prediction_challenge:** retired, because nothing is known about the target and it is
+  survey data. The record is `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientific Discovery`,
+  with its claim released. The folder is removed and the README table now lists 172 datasets.
+- **melbourne_housing_market:** ships. `year` is 2017, the first version of the Kaggle upload. PROV-9 now says a Kaggle
+  upload that grew over its versions takes its first year. `REVIEW.md` is removed.
+- **thyroid_discordant:** ships. `Trivial` is removed (TP-4). `REVIEW.md` is removed.
+- **mobile_churn:** the drop of never-activated SIM cards is confirmed. `REVIEW.md` is removed.
+- **Records without a folder:**
+  - sasol_customer_retention_recruitment_competition is `No` + `Duplicate` (of expresso).
+  - water_quality_and_potability stays `No`, with `AHDS` added.
+  - numerai28_6 got an answer: not a duplicate under PROV-6/7, and no hidden-week leak was found. Adding it as
+    forced IID waits for the curator's call.
+- **The 11 remaining `explore.ipynb` notebooks are removed.** Their findings now sit in the definitions:
+  - dated bullets in anes_voting_2026, consumer_complaints_1m, early_learning_predictors, hotel_booking_demand,
+    lending_club, micro_mass, rossmann_store_sales and sf_permit_time;
+  - a new `Decision` in kick showing that the competition's split is neither temporal nor grouped (the v1 notebook's
+    "proof" of a grouped split came from a buggy check).
+  - The two lung_cancer notebooks held no usable findings.
+
+## 2026-10-22 (third round: framingham, house_sales; explore.ipynb dropped)
+
+Lennart's marks of the afternoon; records carry them as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **framingham_heart_study_fhs:**
+  - Applied:
+    - `education` now holds its four labels as a category (CLEAN-12).
+    - Competing deaths stay No, now a LEAK-22 case.
+    - A note names every exam, split by participant, as a possible grouped variant.
+    - The record's `year` is 2004.
+  - Issue 1 (the endpoint) stays open with an answer: hard ASCVD (heart attack, CHD death or stroke) is the outcome of today's treatment thresholds.
+- **house_sales:** the 23 sales with warning 45, 5 or 1 are dropped, because their recorded price is not the house's alone. 20,584 rows. `REVIEW.md` is removed.
+- **stock and appliances_energy_prediction** stay retired; the item across datasets is resolved.
+- **`explore.ipynb` is no longer part of a v2 dataset folder (Lennart):**
+  - `dataset new` scaffolds only `dataset.py`.
+  - The template moved to `.claude/skills/knowledge-data-foundry/references/explore_notebook_reference.ipynb` as an optional reference.
+  - 162 notebooks that were unchanged from the template are removed.
+  - 11 that hold exploration migrated from v1 stay until the curator decides: anes_voting_2026, consumer_complaints_1m, early_learning_predictors, hotel_booking_demand, kick, lending_club, lung_cancer, lung_cancer_epithelial_genexp, micro_mass, rossmann_store_sales, sf_permit_time.
+  - The docs and the add-dataset skill describe a folder as `dataset.py`, the generated `README.md`, and `REVIEW.md` while issues are open.
+- **Review page:** the header of each dataset shows its feature count next to the row count.
+
+## 2026-10-22 (second round: kick, mortgage, house_sales, huntprohibited, g_research; time-sampled splits)
+
+Lennart answered the consistency checks and the open questions of the first round. Each record carries his decisions
+as `CC (2026-10-22, Lennart)` lines. Nothing was rebuilt.
+
+- **kick:** `WheelType`, `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` are dropped under LEAK-10, consistent with
+  expresso's REGION. LEAK-38's scope is amended: the rule covers only fields whose timing cannot be tested, and a
+  LEAK-10 mechanisms row names both datasets. `REVIEW.md` is removed.
+- **mortgage:**
+  - The payoff copy of the 7 doubled period-51 loans stays, recorded as an exception to LEAK-20.
+  - The 38 balances that put the source's LTV above 300% become missing before lagging (CLEAN-11). The highest lagged
+    LTV is now 261.4%.
+  - `REVIEW.md` is removed.
+- **house_sales (issue 8, option c):**
+  - Only the appraiser's judgment codes (46, 7, 8; 360 sales) are dropped; the frame has 20,607 rows.
+  - New categorical `sale_condition` from the warnings known before the price.
+  - RMSE on log price .1662 overall, .2552 on the flagged sales.
+  - New issue 10: 23 sales whose price covers more or less than the house.
+- **huntprohibited_1m:** the random split stays (issue 10). `REVIEW.md` is removed.
+- **g_research_crypto_forecasting_1m** is kept under an amended TP-10: leg 1 is measured by the declared metric, and leg
+  2 now reads "no lag of the target column itself".
+  - New framework options in `src/data_foundry/v2/splits.py`:
+    - `TemporalSplits(sample_by="time")` sub-samples whole time values to the row budget;
+    - `gap_unit` gives the gap its own unit, and the schema's `time_gap_unit` accepts minutes and hours.
+  - The definition samples whole minutes over all history, with a 15-minute gap.
+  - Its notes give the CLEAN-19 comparison with the other top solutions and no longer recommend `No`.
+  - `REVIEW.md` is removed.
+  - stock and appliances_energy_prediction are listed in the working copy's `REVIEW.md` for a re-check under the
+    amended rule.
+- **Review page:** tables in `REVIEW.md` answers now have blank lines around them; they rendered as broken tables
+  before. The review file format says so.
+
+## 2026-10-22 (the curator's marks on eight datasets)
+
+Lennart marked eight datasets on the review page. Each record carries his decisions as `CC (2026-10-22, Lennart)`
+lines. Marks that depart from a rule or precedent without a fact that sets them apart went back to him as
+consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing was rebuilt.
+
+- **Settled, `REVIEW.md` removed:**
+  - `nyc_taxi_trip_duration_1m`: verdict ship; the record's `domain` takes the definition's value.
+  - `open_university_learning_analytics_dataset`: the 14-day TMA marking delay and the weight-0 TMA rule stay; kept
+    despite `no_spread`, to be re-checked with the first tuned run (a TP-3 cases row and a note).
+  - `expresso_churn_prediction_1m`: REGION stays dropped, ARPU_SEGMENT stays, the churn timing ships as a stated risk.
+- **mortgage:**
+  - Issues 2, 10, 11, 12 and 14 applied:
+    - the use case now covers a loan scored from the quarter it joins the book;
+    - new `balance_ratio_lag_1_to_2`;
+    - Freddie Mac's 30-year rate (FRED MORTGAGE30US, a new raw file) as `market_rate_30y_lag_1`, with
+      `rate_minus_market_rate_lag_1`;
+    - a note on a possible default-only companion.
+  - Log loss 0.1180 / 0.1274 / 0.1293 in periods 60 / 59 / 58, against 0.1201 / 0.1327 / 0.1364 without the ratio.
+  - CLEAN-13 is amended for a flag block with a reference level (mortgage, onlinenewspopularity). A CLEAN-19 case row
+    records the first column joined from outside a source.
+  - Issues 13 and 15 are open as consistency checks.
+- **house_sales:** `yr_renovated` = 0 stays missing, as an exception to CLEAN-10 (a cases row). The record's `year` is
+  now 2015. Issue 8 has an answer with measurements: keep the sales with codes known before the price, add an
+  indicator for them, and drop only the appraiser's judgment codes.
+- **huntprohibited_1m:**
+  - The split stays by ad, with no `Spatial` tag (the reason is in the notes).
+  - No date can be recovered (`itemid` is random). A used-car form change bounds the cost of the random split at
+    about 0.002 ROC AUC; the notes give it instead of "cannot be measured". New issue 10 asks to confirm.
+- **kick:** the marks to keep `WheelType` and `PRIMEUNIT`/`AUCGUART` went back to the curator as a consistency check
+  against expresso's REGION. The conditional test now also covers PRIMEUNIT/AUCGUART and shows the same signature.
+- **g_research_crypto_forecasting_1m:** answers only, the definition is unchanged:
+  - TP-10 leg 1 holds under weighted Pearson;
+  - no feature from the other top solutions helps in all three windows;
+  - whole-minute sampling over all history is proposed;
+  - new issue 7 on a 15-minute gap.
+
+## 2026-10-21 (force_2020 units and depth order; qsar_oral_toxicity extended; RDKit Ipc on a log scale)
+
+Lennart's second round of marks on these two datasets. Each record carries his decisions as `CC (2026-10-21, Lennart)` lines. Nothing was rebuilt; both checksums change.
+
+- **force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition:**
+  - `Grouping(time_on="DEPTH_MD")` records the order inside a well, with no window features (issue 1). The split is unchanged, and the derived regime tag becomes `GroupedTemporal`.
+  - `_clean` converts two curves to one unit where the data give the factor (issue 8, CLEAN-21):
+    - ROP in 32/2-1 and 16/10-5, from ft/h to m/h (x 0.3048, 5,814 rows). ROPA / ROP was 0.31 there and is 1.00 now.
+    - MUDWEIGHT below 0.5, from bar/m to g/cm3 (/ 0.0980665, 225,528 rows). The 28 wells' medians now span 1.08-1.80 g/cm3.
+  - Correction: the answer on the review page named ROPA as the curve in ft/h, but the curve is ROP.
+  - The other off-scale curves stay masked. A CLEAN-21 case row records the conversion, and `REVIEW.md` is removed (nothing left open).
+- **qsar_oral_toxicity:**
+  - Extended with the project's evaluation set from the authors' package (`vt_data.mat`, a copy the curator provided; the public route is the group's download form). The definition reads the package instead of the UCI file.
+  - The same deduplication as before gives 11,105 chemicals with 931 very toxic, against 8,484 and 708 before.
+  - Added 207 RDKit descriptors of the package's QSAR-ready SMILES next to the 1,024 ECFP bits, as in the other SMILES datasets. The SMILES are then dropped.
+  - Default LightGBM ROC AUC over the 9 splits: 0.885 with the bits alone, 0.901 with the descriptors added (better on 9 of 9).
+  - Two more changes:
+    - one unreadable SMILES (silicon carbide) is replaced by PubChem's structure;
+    - `rdkit_Ipc` is dropped (it overflows float32).
+  - Issue 3 is settled. The questions it raised are settled too (Lennart):
+    - `rdkit_descriptors` ships Ipc as `rdkit_Ipc_log10` = log10(1 + Ipc) for every SMILES dataset, instead of dropping it here. This also changes apistox (Ipc up to 2.6e38, just below the float32 limit) and qsar_bioconcentration.
+    - The `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` is accepted with its reason.
+    - The record's `original_source` is now `Other`.
+  - `REVIEW.md` is removed (nothing left open).
+
+## 2026-10-21 (the curator's marks on force_2020, infrared_thermography and qsar_oral_toxicity)
+
+Lennart marked these three datasets on the review page; each record has his decisions as `CC (2026-10-21, Lennart)`
+lines, and the open questions keep his note and an answer as dated turns in the folder's `REVIEW.md`. Nothing was
+rebuilt.
+
+- `infrared_thermography_temperature`: the split stays IID over people; the calibration is a time-independent
+  function of the inputs (Lennart), so the measured shift between the study years (a first-year calibration
+  over-predicts the second year by 0.06-0.09 °C) is documented and a temporal split recorded as a candidate variant
+  (SPLIT-31). SEL-15 is amended: a physical quantity measured through an imaging device at defined sites, used by the
+  field as the instrument's reading, is a measurement, not an image descriptor (SEL-13); satimage and wilt are the
+  counter-cases. The `Wrong Domain / Source Modality` marker is removed and the folder's `REVIEW.md` with it (no issue
+  left).
+- `qsar_oral_toxicity`: fit `approximate` (Lennart: a simulated screening; random tested chemicals stand in for the
+  untested ones a screener faces, 19.7% against 9.3% with a close analog); IID stays, the scaffold-grouped variant a
+  listed candidate (SPLIT-31); the Features note names the fingerprint ECFP_1024_02 (the UCI file equals that block
+  of the authors' package bit for bit). Issue 3 (extending with the package's validation set or its non-toxic
+  endpoint) stays open. Data and splits unchanged.
+- `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`: the use case reads "a newly
+  drilled or a released well" (issue 2 (a)); off-scale curves masked per well (ROP in 25/6-2, ROPA in 34/4-10 R, SGR
+  in 34/12-1 and 35/11-15 S, MUDWEIGHT above 100 in 16/10-2 and 15/9-14); Grid, Skade and Ty Mb. merged into their
+  Fm. codes; the Basement drop confirmed as a CLEAN-17 case; the record's domain set to environmental science &
+  climate. Open: issue 8 (convert ROPA from ft/h in two wells and MUDWEIGHT from bar/m to g/cm3) and issue 1
+  (declare `time_on="DEPTH_MD"`; TabArena builds no depth context).
+
+## 2026-10-21 (every dataset declares its metric)
+
+Lennart decided that a dataset is scored by the metric its original task defines (the competition's evaluation page,
+the task description or the paper), with an explicit fallback (roc_auc / log_loss / rmse) when none is defined.
+Nothing was rebuilt; every container needs a rebuild, because the task metadata changed.
+
+- **Format 2 task metadata, changed in place:** `objective_metric_name` is replaced by the spec `objective_metric`
+  (name, kind, prediction, origin `source` / `stand_in` / `context` / `fallback`, original, reference, definition,
+  reason, params, inputs, target_transform) and `scoring_columns` (columns kept for scoring only, never features). An older format-2 file stops loading
+  with a "rebuild" message; format 1 (BeyondArena) is unchanged.
+- **`data_foundry.v2.metrics`:** `Metric.source / stand_in / fallback / local`, the registry of 23 standard metrics
+  (scikit-learn names) and 11 custom ones with general names (`cost_matrix`, `precision_at_k`,
+  `average_precision_at_k`, `rmspe`, `gini_top_capture`, `weighted_pearsonr`, `mean_group_pearsonr`,
+  `hierarchical_balanced_accuracy`, `gini_stability`, `par_k`, `normalized_early_detection_utility`), each tested
+  equal to its official implementation and timed on 1M rows; `scorer(container)` (inputs by row index, per-group
+  aggregation) and `feature_columns(container)`. The module imports nothing else from Data Foundry.
+- **Definitions:** `metric` is a required attribute. All 173 definitions declare one, from a sweep of their sources
+  and the new rules MET-1..13 (`knowledge-curation/references/metrics.md`): 67 source, 6 stand-in, 13 from the task's context, 87 fallback.
+  The scored metric changes for 18: allstate_claims_severity (`mae` on the raw loss), aps_failure and credit_g
+  (`cost_matrix` on probabilities), coil_2000 and labour_inspection_compliance (`precision_at_k`),
+  corporate_credit_rating_cat (`mae`, stand-in), electric_motor_temperature_prediction (`mse`), force_2020
+  (`cost_matrix`, the competition's penalty matrix), forest_fires (`mae` on the raw area), g_research
+  (`weighted_pearsonr`), hiva_agnostic (`balanced_accuracy`), huntprohibited_1m (`average_precision_at_k`),
+  micro_mass (`hierarchical_balanced_accuracy`), numerai_v5_2_1m (`mean_group_pearsonr`, Numerai CORR),
+  rossmann_store_sales (`rmspe`), sat11_hand_algo_runtime (`par_k`), wine_quality (`mae`), diamonds (`rmsle` on
+  the price in dollars, the new origin `context`: no source metric, but the task makes one obvious). amex and
+  sepsis_prediction_1m keep their metric under a general name (`gini_top_capture`,
+  `normalized_early_detection_utility`). Each record has an
+  `Assessment (AI, 2026-10-21)` line; Lennart's calls (home_credit stand-in, labour_inspection, covertype and the
+  threshold metrics left out, the accepted proposals) are `CC` lines.
+- **The shipped scale and the scored scale (`target_transform`, MET-3 rewritten; Lennart: "ship the target on the
+  modelling scale, score on the original scale"):** the spec field `target_transform` (`identity`, `log`, `log1p`,
+  `log10`; regression only) says how the target ships transformed for modelling; `score` / `scorer` apply the inverse
+  to the true values and the predictions before the metric, so the declared metric is the one on the original scale.
+  New checks `task_metric_transform_not_regression` and `task_metric_transform_overflow`; the README's metric table
+  has a "target scale" row. `par_k` loses its own `target_transform` param (no double inverse). Definitions:
+  - diamonds (log price again, `rmsle` on the dollar price), allstate_claims_severity (log loss again, `mae` on the
+    loss), forest_fires (log1p area again, `mae` in hectares): the targets ship as before today's change.
+  - From the fallback `rmse` on a log target to `Metric.from_context("rmsle", target_transform=...)`, the shipped
+    target unchanged: house_sales, houses, immoscout_german_house_prices, melbourne_housing_market, miami_housing,
+    perth_house_prices, wine_world_cost, brazilian_ecommerce, sf_permit_time, video_transcoding_time_prediction,
+    onlinenewspopularity (`log`) and blood_tests_drink_prediction (`log1p`).
+  - From `rmse` on a log1p target to the competition's `rmsle` with `target_transform="log1p"` (the same number):
+    mercari_price_suggestion, pkdd_15_taxi_trip_time_prediction_ii_1m, nyc_taxi_trip_duration_1m,
+    ashrae_great_energy_predictor_iii_1m, santander_transaction_value, california_house_prices_2020.
+  - sat11_hand_algo_runtime: par_k's log transform moved to the spec's `target_transform="log"` (the same score).
+  - sberbank_housing_market_forecasting keeps `rmse` on log(price / full_sq): the inverse is the price per square
+    metre, not the price the competition scored.
+- **Skills and docs:** TP-6 points to `metrics.md`; `/screen-candidates`, `/add-dataset`, the claim auditor and the
+  domain practitioner check the metric; the review page shows each dataset's metric; the probes drop scoring columns;
+  `examples/read_metric_without_data_foundry.py` reads a container's metric with plain json; `BENCHMARK_CHANGES_TODO.md`
+  lists what the TabArena adapter has to change (read the spec, register the custom scorers, pass scoring columns,
+  no silent fallback, threshold tuning for threshold metrics).
+
+## 2026-10-21 (the curator's third round on the cross-dataset items)
+
+Lennart replied on the page; his notes are now dated turns in the working copy's `REVIEW.md`, and the page shows each
+issue and item as a conversation. Each changed record got a `CC (2026-10-21, Lennart)` line. Nothing was rebuilt.
+
+Rules: CLEAN-14 (a 0/1 column is categorical only when its meaning says it is a flag; counts and opaque columns stay
+numeric; a constant column is no flag), CLEAN-19 (the best of a baseline and the top solutions' features, or a
+reasonable combination, not their union), PROV-3 and EV-3 (either calibrated or label-linked marks can be enough;
+they count on the shipped columns, and on the published file when they extend to the shipped version).
+
+Definitions:
+
+- `qsar_tid_11`: drops 37 salt-form copies of one ChEMBL parent (LEAK-19; `SALT_FORM_COPIES`), 5,741 to 5,704
+  rows; the repeated fingerprints of different compounds stay, with the decision in its notes.
+- CLEAN-14 by meaning: 19 of the 35 definitions typed this morning go back in part or whole to numeric (amex_non_iid_1m,
+  apistox, asp_potassco_classification, bioresponse, cardiotocography, clock_protein_toxicity, coil_2000,
+  drug_induced_autoimmunity_prediction, early_learning_predictors, home_credit_default_risk,
+  home_credit_default_stability_1m, homesite_quote_conversion, ieee_fraud_detection, phiusil_phishing,
+  qsar_bioconcentration, santander_customer_satisfaction, sat11_hand_algo_runtime, sberbank_housing_market_forecasting,
+  taiwanese_bankruptcy_prediction); the flags they keep are explicit lists.
+
+- `drug_induced_autoimmunity_prediction`: grouped on the Bemis-Murcko scaffold (443 groups), taken from Andrej's PR #15
+  with its `murcko_scaffolds` helper in `data_foundry.v2.chemistry` and its tests (Lennart: make it grouped here as
+  well); ROC AUC 0.771 grouped against 0.826 random (untuned LightGBM).
+
+Review files: `water_quality_and_potability` re-checked (it fails PROV-3) and given an open-issues block for the curator;
+`rosbank1` issue 5 reworded under CLEAN-19; `credit_card_customers` and `stroke_prediction` issue 1 and
+`hepatitis_c_egypt`'s block say what the PROV-3 standard means for them.
+
+## 2026-10-21 (the curator's marks on the follow-ups)
+
+Lennart marked the follow-up items of the working copy's `REVIEW.md`. Settled items are closed there; two new items
+ask about drug_induced_autoimmunity_prediction's descriptor groups, water_quality_and_potability and which 0/1
+columns are flags. Each changed record got a `CC (2026-10-21, Lennart)` line. Nothing was rebuilt.
+
+Rules: USE-8 (a strong kept leak still does not make a fit approximate), PROV-2 (a sound upload with a source to point
+to is kept for now, case by case, as an approximate fit), CLEAN-14 (every 0/1 flag, booleans included, is
+categorical), CLEAN-11 (a single extreme training target may leave where experts drop it by default). Code: a v2
+definition may no longer carry `ForcedIIDFromTemporal` with a grouping or temporal split, and the bundle check flags
+it. The hidden-group probe takes float columns (a candidate needs at least 20 values held by two or more rows),
+reports the near-copy check as not run below its token floor, and adds an exact key on each normalised text column.
+
+Definitions:
+
+- `nyc_taxi_trip_duration` is renamed `nyc_taxi_trip_duration_1m` (`version_of`, `subsample_to_budget`): 1,166,477
+  rows, 1M rows per train side, the same test windows; the `splits_rows_unused` acceptance is gone.
+- 0/1 flags made categorical in 35 definitions: account_debt_south_africa, amex_non_iid_1m, apistox,
+  asp_potassco_classification, bioresponse, breast_cancer_prediction, cardiotocography, clock_protein_toxicity,
+  coil_2000, college_scorecard, digicow_farmer_training_adoption_challenge,
+  distribution_transformers_at_cauca_department, drug_induced_autoimmunity_prediction, early_learning_predictors,
+  framingham_heart_study_fhs, home_credit_default_risk, home_credit_default_stability_1m, homesite_quote_conversion,
+  hotel_booking_demand, house_sales, ieee_fraud_detection, infrared_thermography_temperature, kick,
+  marketing_campaign, mobile_churn, mortgage, phiusil_phishing, qsar_bioconcentration, rossmann_store_sales,
+  santander_customer_satisfaction, sat11_hand_algo_runtime, sberbank_housing_market_forecasting, stroke_prediction,
+  taiwanese_bankruptcy_prediction, zillow_prize.
+- Fit `direct`: homesite_quote_conversion, qsar_aquatic_toxicity, onlinenewspopularity; the kept leak no longer
+  counts as a gap in perth_house_prices, credit_card_customers, african_credit_scoring_challenge and zillow_prize.
+- Notes: tour_travels_churn (its source under the amended PROV-2; the generated-data probes raise nothing),
+  mercedes_benz_greener_manufacturing (CLEAN-11 as amended), maps_router_eta_1m (`track_length` in metres; 31 of
+  13.6M rows implausible, none late, so the one-day gap stands).
+- Review files: settled issues removed from perth_house_prices (issue 1), mobile_churn (issue 1),
+  credit_card_customers (issue 3) and nyc_taxi_trip_duration_1m (issue 5).
+
+## 2026-10-21 (the curator's marks on the cross-dataset items)
+
+Lennart marked the cross-dataset items of the working copy's `REVIEW.md` on the review page. The settled items carry a
+`Resolved (2026-10-21, Lennart)` label there; the open ones an `Answer (AI, 2026-10-21)`; a new section lists the
+follow-ups. Each changed record got a `CC (2026-10-21, Lennart)` line and an `Assessment (AI, 2026-10-21)`. Nothing was
+rebuilt; every definition below whose data, split or metric changed needs a rebuild.
+
+Rules amended in place (knowledge-curation): LEAK-10 (grades row: only grades not yet known at the prediction point),
+LEAK-25 (unrecorded rows located by a rule that does not read the label, and dropped, count as recovered), USE-5 (an
+undocumented label from a named publication ships approximate with a note), USE-8 (a kept leak alone does not make a
+fit approximate; an unverified label definition does), PROV-2 (a named course or teaching platform is a known
+source), PROV-3 (an owner's disclosure control with no measured damage is kept with a note), PROV-14 (a repair stays
+under its record), SPLIT-8 (forced from temporal: no dates, one stock month, or too few periods), TP-6 (a definition
+declares its source's metric), CLEAN-11 (a target the source names as not the task's quantity, or one extreme training
+target, may leave), CLEAN-14 (a molecule's 0/1 flags are categorical). New Cases rows under LEAK-7, LEAK-10, LEAK-31,
+LEAK-37, SPLIT-10 (exceptions for alfa_battle_2_0_task_2 and lending_club), EV-4; a Tensions row in `principles.md`;
+`definitions.md` states the budget of at most 1M training rows and the metric order.
+
+Code: a new data tag `ForcedGroupedFromTemporal` (schema, v2 validation, bundle check); `2ndTierData` stays readable
+(a shipped BeyondArena container carries it) but a v2 definition may no longer set it. The task probe keeps a temporal
+task's newest train rows and caps at 200,000 rows (was 50,000 random rows).
+
+Data, split or metric changed:
+
+- `california_house_prices_2020`: keeps resales (only the 51 same-price copies of one sale keep their newest row;
+  39,060 rows); `min_train_fraction` 0.25 to 0.5 (SPLIT-14).
+- `cooking_time_1m`, `maps_router_eta_1m`: a one-day gap (108-172 and 578-656 late training labels per window, now 0).
+- `melbourne_housing_market`: the six scraped attributes blank for the 7,578 sales before the batch lookup of
+  10 April 2017.
+- `sberbank_housing_market_forecasting`: monthly, quarterly and yearly macro series lagged one period (LEAK-10).
+- `qsar_oral_toxicity`, `qsar_tid_11`: fingerprint bits categorical; `qsar_tid_11`'s impossible pXC50 row leaves as a
+  missing target (CLEAN-15).
+- Metric under TP-6: `zillow_prize` `mae`, `numerai_v5_2_1m` `pearsonr`, `african_credit_scoring_challenge` `f1`,
+  `force_2020...` its penalty matrix, `digicow...` `log_loss`, `porto_seguro` `roc_auc`,
+  `dataorg_financial_health_prediction_challenge` `f1_weighted`, `g_research_crypto_forecasting_1m` `pearsonr`,
+  `huntprohibited_1m` `average_precision`, `bioresponse` `log_loss`, `mercedes_benz_greener_manufacturing` `r2`.
+
+Labels, tags and notes only: domain `chemistry & material science` for `apistox`, `bioresponse`,
+`qsar_aquatic_toxicity`, `qsar_biodeg`, `qsar_fish_toxicity` (the other five QSAR siblings had it); fit `direct` for
+`house_sales` and `kick`; fit reasons of `sarcoma` and `differentiated_thyroid_cancer_recurrence`; tags
+`ForcedGroupedFromTemporal` (`nba_players_2016_2019`, `open_university_learning_analytics_dataset`) and
+`ForcedIIDFromTemporal` (`churn_telco_south_asia`, `bank_customer_churn`, `tour_travels_churn`; note on
+`distribution_transformers_at_cauca_department`); `2ndTierData` removed from `credit_card_customers` and
+`coffee_rating_prediction`; SPLIT-10 exceptions in `alfa_battle_2_0_task_2` and `lending_club`; notes in
+`framingham_heart_study_fhs` (selection), `hiva_agnostic` (its copies), `house_prices_nominal`, `delivery_eta_1m`,
+`nyc_taxi_trip_duration` (TLC cited), `5g_energy_consumption`, `home_credit_default_stability_1m`.
+
+Review files: new `REVIEW.md` for `kick` (keep or drop `WheelType`; `PRIMEUNIT`/`AUCGUART`) and `thyroid_discordant`
+(its `Trivial` marker, refuted under TP-4); settled issues removed from `diabetes_3`, `melbourne_housing_market`,
+`nba_players_2016_2019`, `mobile_churn`, `open_university_learning_analytics_dataset`, `zillow_prize`,
+`numerai_v5_2_1m` and `force_2020...`; `distribution_transformers_at_cauca_department` has no issue left and its
+`REVIEW.md` is removed.
+
+## 2026-10-20 (re-review of every folder with open issues)
+
+Every folder of the working copy with open review issues was re-checked with `/add-dataset` in re-check mode and the
+full review panel (`.claude/skills/add-dataset/references/review_panel.md`), in priority order. Each folder's
+`REVIEW.md` was rewritten in the current format with the panel reports, each record got an
+`Assessment (AI, 2026-10-20)` line and a priority, and the cross-dataset items went into the working copy's
+`REVIEW.md`. Nothing was rebuilt; the READMEs' build records name the earlier containers. 41 definitions changed, 27
+of them in their data. All 41 folders whose `REVIEW.md` was rewritten also had their `dataset.py` edited, and no
+`REVIEW.md` was deleted.
+
+Data changed (rows, columns, values, dtypes, splits or cleaning):
+
+- `2_month_survival_rate_prediction`: sets `alb` above 6 g/dL to missing (4 patients).
+- `account_debt_south_africa`: a no-debt run is now dropped when it holds at least 100 billed never-payers
+  (`NO_DEBT_RUN_BILLED_NEVER_PAID`, was 1,000 rows), which adds the 186-row run (eight runs, 28,124 rows); sets a
+  `PropertyValue` of 1 and a `PropertySize` of 10 m² or less to missing.
+- `aeolus_1m`: sets temperatures below -50 C and wind speeds above 120 km/h to missing; corrects the sign of Guam's
+  longitude and Pago Pago's latitude. Fit `direct` to `approximate`; domain `industry & manufacturing`.
+- `african_credit_scoring_challenge`: drops `other_lenders_on_loan` (Test.csv is now read only for a decision table);
+  sets the funded amount and share to missing in the one row that funds more than the loan.
+- `alfa_battle_2_0_task_2`: drops the four columns that copy another (`COPY_COLUMNS`), 508 aggregates left.
+- `dataorg_financial_health_prediction_challenge`: drops the 11 product answers (`PRODUCTS`), inputs of the index;
+  sets the business age to missing in the 6 rows where the business is older than its owner.
+- `distribution_transformers_at_cauca_department`: drops `power_kva` and `installation_type` (the inventory shows a
+  replacement's rating); replaces `energy_not_supplied_kwh` by `outage_hours` (EENS / (1.08 x kVA)); sets the
+  lightning densities of 0.0 in both columns to missing (487 rows).
+- `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition`: sets to missing the log
+  values below -900 (LAS nulls and their interpolation ramps) in all 20 curves, negative resistivity, gamma-ray and
+  penetration-rate readings, DCAL above 100 inches, and DRHO in wells 36/7-3 and 31/4-10; adds a splits comment.
+  Domain `environmental science & climate`.
+- `fraud_detection_in_electricity_and_gas_consumption_1m`: keeps only clients still billed from 2015 on (was from
+  2013 on; 81,531 clients); drops `counter_number`; sets the invoice fields of rows shifted by one column, undocumented
+  `counter_statue` codes, a `counter_coefficient` of 0 and `months_number` above 120 to missing; `counter_code` and
+  `reading_remarque` become nullable integers.
+- `g_research_crypto_forecasting_1m`: sets negative `Volume` to missing (2 rows).
+- `house_prices_nominal`: sets the two impossible remodel years to missing; writes three `Exterior 2nd` spellings as
+  the documentation's codes (225 rows).
+- `house_sales`: drops the 1,061 sales the county flags as not at market value (19,906 left), read from a new
+  prepared file of the county's sale warnings (`Real Property Sales.zip`, needed for a rebuild); rebuilds `sqft_lot`
+  also from the `LandFootage` log records; sets the placeholder living area of 5 houses under construction to missing;
+  adds a one-week gap to the temporal splits. Fit `direct` to `approximate`.
+- `infrared_thermography_temperature`: drops the 17 subjects without a complete round-1 image (1,001 left), who
+  until now took their round 2 or 3 image.
+- `lgd`: `purpose_renting` becomes categorical.
+- `melbourne_housing_market`: gives each suburb its `Distance` from 27 May 2017 on; fills the suburb lookups of the 2
+  rows without them; sets 86 impossible `BuildingArea` values to missing.
+- `mortgage`: drops the two ids that copy another id (23 rows) and the last row of the 501 loans that leave the data
+  early without an event; sets the current rate of 37.5% to missing (44 rows); adds `balance_time_lag_2`.
+- `nba_players_2016_2019`: adds `prev_score`, last season's score; sets the 185 page-view values that repeat an
+  earlier season's to missing.
+- `nyc_taxi_trip_duration`: drops the 4,539 trips whose drop-off equals the pickup point; sets passenger counts of 0
+  or above 6 to missing (23 trips); adds a one-day gap. Fit `direct` to `approximate`.
+- `onlinenewspopularity`: drops `rate_negative_words` (1 minus the positive rate); sets the share count 1.59 and the
+  averages that include it to missing (120 rows).
+- `open_university_learning_analytics_dataset`: leaves weight-0 TMAs out of `score_mean` and `score_min` (1,655
+  rows); each train side loses the test students' concurrent and later registrations (577-901 rows per split).
+- `perth_house_prices`: sets 19 floor areas and 2 bathroom counts to missing; blanks the station for 147 sales and
+  the school for 58 sales before they opened; splits `Vic` into Victoria Street and Victoria Park. Fit `direct` to
+  `approximate`.
+- `pkdd_15_taxi_trip_time_prediction_ii_1m`: drops the trips that end at their start point; test windows of 30 days
+  from 1 April, 1 May and 1 June 2014 with a one-day gap (were calendar months without a gap).
+- `qsar_oral_toxicity`: drops the second row of nine parent structures kept twice (8,484 chemicals).
+- `rain_in_australia`: sets a blank wind direction at a wind speed of 0 to "Calm"; sets a humidity of 0% to missing
+  (5 cells). Fit `direct` to `approximate`.
+- `sarcoma`: drops the 61 `Methy_rs*` genotype probes (25,910 features). Fit `direct` to `approximate`.
+- `stroke_prediction`: drops `ever_married`, `work_type` and `Residence_type`, and with them the accepted warning on
+  `work_type`.
+- `zillow_prize`: blanks `taxdelinquencyflag` and `taxdelinquencyyear` for sales before September 2016 (the flag
+  becomes 1.0 / 0.0 with missing values); sets a `garagetotalsqft` of 0 with a garage car count of 1 or more to
+  missing. Fit `direct` to `approximate`.
+
+Notes only (task summary, curation comments, splits comment, fit labels, accepted-warning reasons, metadata):
+`corporate_credit_rating_cat_data_set_ratings_raitings`, `credit_card_customers` (tag `ForcedIIDFromTemporal`),
+`diabetes_3` (fit `approximate`), `differentiated_thyroid_cancer_recurrence` (fit `approximate`),
+`digicow_farmer_training_adoption_challenge`, `expresso_churn_prediction_1m` (tag `ForcedIIDFromTemporal`; source the
+2020 UmojaHack Ghana hackathon, with its URL and BibTeX), `framingham_heart_study_fhs`,
+`glioma_grading_clinical_and_mutation_features` (fit `approximate`), `huntprohibited_1m`, `mobile_churn` (tag
+`ForcedIIDFromTemporal`), `numerai_v5_2_1m`, `phiusil_phishing`, `qsar_bioconcentration`, `rosbank1`. The
+`dataorg_financial_health_prediction_challenge` spellings dropped from `ANSWER_SPELLINGS` occur only in the dropped
+product columns.
+
+In `knowledge-curation`, `references/leak_checks.md` marks the melbourne_housing_market example of the LEAK-10 Cases
+row (attributes looked up after the outcome) as provisional, pending the curator. The README table, regenerated from
+the folders' READMEs, shows the new row and feature counts of 17 of these datasets.
+
+## 2026-10-20 (eight shipped datasets are `DF: Yes`)
+
+The review work reached `main` with PR #11, so the records of the eight datasets Lennart shipped on the review page of
+the 2026-10-07 run, with no issue left open, take their final state: `DF: Yes`, the `WIP (DF)` claim released. No
+definition changed; none is built yet. `apistox`, `ashrae_great_energy_predictor_iii` (folder `_1m`),
+`bias_correction_r_bias_correction_r_2`, `brazilian_ecommerce`, `breast_cancer_prediction`, `caracas_cervical_cancer`,
+`churn_telco_south_asia`, `college_scorecard`. Every other dataset of that run still has a `REVIEW.md` (or, without a
+folder, an open-issues block in its record).
+
+## 2026-10-20 (airfoil_self_noise grouped by setup, its year 1989)
+
+Lennart's marks on the review-panel pilot page, applied. The definition changed; not rebuilt (the README's build
+record names the container of 2026-10-06, marked stale).
+
+- `airfoil_self_noise` holds out whole setups, one chord length at one angle with all its speeds (`setup`, 33 groups,
+  11 per test fold; was the wind-tunnel run): under the run split 91.5% of the test runs had their chord and angle in
+  training at another speed, and a new angle or size is the query, as a new mix is for
+  `concrete_compressive_strength`. `attack-angle` is numeric (72% of the test runs now carry an angle absent from
+  training). On the shipped splits, untuned: LightGBM R² 0.727, random forest 0.717, linear 0.445; no task-probe
+  flags, no leak-probe hits; `groups_test_groups_few` accepted (the 33 setups are all the report has; R² 0.71 across
+  setups).
+- The scaled target stays as released and is named as the report's eq. 19 level, with its constants and the exact
+  conversion to the measured level. The notes now state the tripped set, the corrected angle, the truncated bands,
+  the source's prediction use and the reason for not grouping by chord; the 62% is 66.6%, and the BibTeX names
+  NASA RP-1218.
+- Year 1989 and source the NASA report (`source = "Other"`, `source_url` its NTRS page), not UCI 2014: the report's
+  figures show every measured value, and UCI's file was digitised from them. The year rule PROV-9 says so now (amended in
+  `knowledge-curation`), which corrects the reading in the entry below. The record's `original_source` is `Other`.
+- The folder's `REVIEW.md` is gone (no open issue left); the working copy's `REVIEW.md` keeps the hidden-group probe
+  item.
+- The README table, regenerated, also shows the current feature counts of `college_scorecard` (92) and
+  `home_credit_default_risk` (709), stale since their last definition changes.
+
+## 2026-10-19 (curation commands renamed and mirrored, a review panel, ranked rules)
+
+Lennart asked for descriptive commands for what curators use, documentation for people, a quick screening stage with a
+priority, an add stage that attacks each dataset before the curator sees it, and an order of importance for the rules.
+No definition or container changed and nothing was built.
+
+- The commands: two stages, in each the AI works and the curator verifies. `/screen-candidates` (was
+  `/triage-candidates`) makes a quick pass from the source, rejects the obvious cases after an agent argued against
+  each reject, and sets a new record field `priority` (1-5); `/review-screened-candidates` opens the dashboard's new
+  Screening queue. `/add-dataset` adds a review panel of agents after its checks (claim, column and split auditors, a
+  domain practitioner, a blind reviewer without our notes, a precedent checker, an advocate and a critic, a mediator,
+  an editor) and writes its reports into a `**Review panel:**` block of `REVIEW.md`, shown in a Panel tab of the
+  review page; it also re-checks an existing folder ("is X ready?"). `/review-added-datasets` checks every mark for
+  consistency with the rules and earlier decisions before applying it. `/check-candidate` is gone (its uses went to
+  the two AI commands), and `/rebuild-working-copy` became `knowledge-data-foundry/references/rebuild.md` with its
+  scripts in that skill's `scripts/`. The agents are in `.claude/agents/`; the overview for people is
+  `.claude/skills/README.md` ("Start here" on the dashboard's Guidelines page).
+- The rules: `knowledge-curation` is ordered like a law book. `principles.md` ranks seven principles (ethics, scope, a
+  real use case, honest evaluation, faithful and unique data, worth benchmarking, the expert state), defines the rule
+  strengths (Must, Should, Weigh), how to decide, the tensions between rules, exceptions and amendments, and the
+  consistency checks on every decision, the curator's included. Every rule has an ID (`SEL`, `USE`, `LEAK`, `SPLIT`,
+  `PROV`, `TP`, `CLEAN`; `task_probes.md` rule N is TP-N, so the citations in the definitions still hold);
+  `evidence.md` holds what counts as evidence and what each probe flag can mean. The task and generated-data probes
+  print the rule next to each flag (`flag_rules` in their JSON); their numbers are unchanged.
+- In this folder: the citations of the old selection criteria and of "leak_checks.md, section 5" in nine `REVIEW.md`
+  files name the rule IDs (e.g. LEAK-16 to LEAK-21 in `qsar_oral_toxicity`); `GETTING_STARTED.md` and the README
+  describe the new commands.
+- The first full review panel ran on `airfoil_self_noise` (a re-check; the definition is unchanged and not rebuilt).
+  Its new `REVIEW.md` holds two issues (hold out runs or setups of one airfoil size at one angle; keep the scaled
+  target or re-target to the measured level), the `year` field row and the panel's reports, and lists the changes
+  that need no decision: `attack-angle` numeric (categorical costs 0.02-0.04 R² on the shipped splits), the target
+  named as the source's eq. 19 scaled level, the 62% figure and the chord reason restated, the BibTeX completed. The
+  year stays 2014: the rows were digitised in 2006 from the NASA report's figures and first published by UCI. The
+  working copy's own `REVIEW.md` is back with one cross-dataset item: the hidden-group probe skips float columns that
+  are not whole numbers.
+
+## 2026-10-19 (one source for the curation knowledge; `LEAK_AUDIT.md` and `NEW_DATASETS_ISSUES.md` removed)
+
+Lennart asked for one source of truth for the curation knowledge, shared by all skills and the website, and for the
+two extra documents of this folder to go. No container changes and nothing was built.
+
+- The skills: two reference skills hold the knowledge, `.claude/skills/knowledge-curation/` (selection, use case,
+  splits, leaks, cleaning and features, task probes, provenance, the verification checklist, writing for the curator,
+  and the general probe library) and `.claude/skills/knowledge-data-foundry/` (records, dashboard, the `dataset.py`
+  API, the checks and probe commands, this working copy, source access, batch runs, house rules). The workflow skills
+  keep only their steps and link the file each step needs. `/verify-dataset` is gone: its checklist is
+  `verification.md`, which every workflow runs as its last step, and `/check-candidate` answers "is X ready?". The
+  move resolved the contradictions between the old copies (PCA and scaling over all rows, feature engineering,
+  impossible values, `Multi-target`, rare classes, where evidence goes) by Lennart's latest decisions, and added the
+  review lessons no skill held (the company's own estimate as an input, one scale for a feature whose scale changes,
+  the real-world target, cold start against recurring entities, multi-label flags, a rebuild's origin, and how to write
+  an issue for the curator).
+- The probes: the methods are now a library without Data Foundry imports
+  (`.claude/skills/knowledge-curation/scripts/curation_probes/`); the command-line entry points keep their names and
+  flags in `.claude/skills/knowledge-data-foundry/scripts/`. The READMEs that name the group-probe path keep the old
+  path until their next `dataset check` or build.
+- The website: the dashboard's Guidelines page (and the GitHub Pages copy) renders the two knowledge skills from their
+  .md files instead of the hand-written `guidelines.html`; `build-site` copies them, and Pages also redeploys when they
+  change.
+- `LEAK_AUDIT.md` removed: its general findings were already in `leak_checks.md`, its per-dataset findings in the
+  records' dated audit lines. Four open findings went into their records as dated assessments for the next pass:
+  `thyroid_discordant` (an `age` of 455), `heloc` (588 rows of -9 in every feature), `homesite_quote_conversion` (two
+  warnings without a decision), `online_shoppers_purchasing_intention_dataset` (40 exact duplicates).
+- `NEW_DATASETS_ISSUES.md` (the report of the 2026-10-07 run) removed. Its open issues are in a `REVIEW.md` in 41
+  dataset folders (264 issues, 22 record-field rows); the 6 records that were not added carry theirs in an
+  `**Open issues (AI, 2026-10-07):**` block. Settled issues and the run logs were left out; all 40 cross-dataset
+  items were closed. `/review-added-datasets` builds its page from these files (`collect_reviews.py`, format in
+  `references/review_file_format.md`). A folder's README lists its `REVIEW.md`.
+- `digicow_farmer_training_adoption_challenge`: the curation comments no longer cite the removed file (the evidence is
+  an assessment in the record); new checksum `v2:6e9e68dd...`, README refreshed, not built.
+- `bias_correction_r_bias_correction_r_2`: the record's `Multi-target` tag removed (one target).
+- Records (Lennart, 2026-10-19): `required_split` set to the definition's regime in the 34 records that disagreed
+  (several values, `?`, `Custom`, empty, or the regime before a re-split such as airfoil_self_noise, superconductivity
+  and lgd now grouped), and `Non-IID (Grouped)` / `Non-IID (Temporal)` tags that contradict the definition removed,
+  as well as `Larger IID Data` (force_2020, open_university_learning_analytics_dataset) and `New IID` (lgd) on grouped
+  datasets.
+  `african_credit_scoring_challenge` verified (the AI flag and tag removed, the disclaimer relabelled as an AI summary).
+
+## 2026-10-19 (scaling over all rows: two definitions fixed, the rest kept with notes)
+
+Lennart's marks on the scan of 2026-10-16 (review page, "Scaling over all rows"). A scaling over all rows is a weak
+leak: rebuild from unprocessed values when the source has them, otherwise keep with a `Potential leak, kept on
+purpose:` note; a reason for `No` only when a strong leak is suspected (rule in the curation guidelines, the leak checks
+and the add-dataset patterns). Edited definitions, not built: their READMEs are stale until the next build.
+
+- `sf_permit_time`: `DescriptionIsStandardPhrase` counts the descriptions filed before 2020, the start of the oldest
+  test window, instead of the whole table (0.66% of the rows flagged instead of 0.77%; `_make_splits` asserts the
+  cutoff). `dataset check`: 0 errors, 0 warnings.
+- `home_credit_default_risk`: no statistic over all rows. The kernel's `NEW_INC_BY_ORG` is dropped, `NEW_SCORES_STD`
+  stays missing instead of its mean, and the kernel's importance-based feature selection (LightGBM on all labelled
+  rows) is removed, so 709 features ship instead of 504. Constant columns and exact copies are dropped (mostly shares
+  of the one-hot "nan" category), min/max of one-hot flags become 0/1, inf becomes missing in every numeric column,
+  and `FLAG_OWN_CAR` is categorical. The kernel's transductive setting may be revisited. Its 43 normalised building
+  columns are kept with a note.
+- Kept with a `Potential leak, kept on purpose:` note: `bioresponse` and `taiwanese_bankruptcy_prediction` (min-max
+  over all rows), `credit_card_customers` (clipped at whole-file percentiles), `cooking_time_1m`, `delivery_eta_1m`
+  and `maps_router_eta_1m` (TabReD's quantile transform, fit rows undocumented), `lung_cancer_epithelial_genexp` (RMA).
+- `rosbank1`, `alfa_battle_2_0_task_2`, `anes_voting_2026`: the notes say that choosing codes or questions over all
+  rows is a pipeline choice that approximates the task.
+- `ieee_fraud_detection` and `kdd_cup_09_appetency` tagged `Anonymized` (their features are masked), as the other
+  datasets with undocumented transforms are.
+- `sarcoma` record: rebuild the methylation block from the GDC in the next pass.
+- `college_scorecard` ships (Lennart's verdict on the review page; record `CC` line). Not built yet.
+
+## 2026-10-16 (the gap between train and test is stored; coad, corporate_credit_rating and lgg retired; college_scorecard SAT back on one scale)
+
+- Split metadata: new `time_gap` / `time_gap_unit` next to the horizon (Lennart's mark on college_scorecard, issue 9).
+  A calendar or row window states its gap (`TemporalSplits(gap=...)`); a `unit="unique"` window or a gap built in
+  `_make_splits` declares it as `Temporal(gap=..., gap_unit=...)`. Unset fields stay out of the checksum and the saved
+  JSON, so containers without a gap keep their checksums; the README shows the gap with the horizon, and the bundle
+  check `meta_time_gap_without_time_on` refuses a gap without a time column. Declared on college_scorecard (5 years),
+  numerai_v5_2_1m (4 weeks), brazilian_ecommerce (1 month) and sf_permit_time (6 months); stated by their windows on
+  rosbank1 (3 months), ieee_fraud_detection and zillow_prize (1 month), onlinenewspopularity (1 week), aeolus_1m,
+  bias_correction_r_bias_correction_r_2, g_research_crypto_forecasting_1m and rossmann_store_sales (1 day). These 12
+  get new checksums at the next build; their rows and splits do not change.
+- Retired by Lennart (records `No`, `Data Quality Issue`; folders removed, `v2_path` cleared; the definitions stay in
+  git at 2475ea2; none was built). 173 definitions remain.
+  - `coad_colon_adenocarcinoma`: the MLOmics release z-scored every feature over all 260 patients, test rows
+    included, a transductive leak. New record `tcga_coad_molecular_subtype` for a rebuild from the GDC's per-sample
+    files with the same task decisions. The rule (source-side statistics over all rows are a leak, labels or not) is
+    in the leak checks and the add-dataset patterns.
+  - `corporate_credit_rating`: 17% of the labels that could be checked against the agencies' own histories are a
+    bond's or loan's rating, not the company's, and the uploader's build drops Moody's grades and delisted
+    companies. New record `corporate_issuer_credit_rating` for a rebuild from the agencies' Rule 17g-7(b) histories
+    and SEC EDGAR.
+  - `lgg_low_grade_glioma`: stays `No` as decided on 2026-10-12 (methylation of other patients, gene names that do
+    not describe the values); its expression values also look standardised across patients.
+- `college_scorecard`: SATMT25, SATMT75 and SAT_AVG are back (Lennart). From the 2017 cohort on they are on the
+  redesigned SAT; the College Board's concordance tables (`sat_concordance.csv`, May 2016) put them back on the old
+  scale. Untuned LightGBM R² on the 2018/2017 windows: 0.798/0.808 converted, 0.783/0.802 as published, 0.796/0.809
+  without SAT. Record: the `Non-IID (Grouped)` tag removed (the task is temporal). Not built; `dataset check` clean.
+
+## 2026-10-15 (coad_colon_adenocarcinoma: review marks; a feature-selection task probe)
+
+Lennart's marks on the review page of the 2026-10-07 run, verdict still open. No change to the definition.
+
+- Record: `problem_type` Multiclass Classification. The three blocks stay (36,355 features): every relevant feature is
+  kept however wide the table, and a model's feature cap is no argument (rule in the add-dataset patterns and the
+  run report format). The release's standardisation over all 260 patients cannot be undone from the release (open
+  on the review page).
+- `task_probes.py`: on more than 1,000 model inputs a fourth family, `selected_linear` (the linear model on the 500
+  inputs of the strongest univariate F-test, chosen inside each training fold). On coad it scores skill 0.381
+  against 0.111 for the linear model on all inputs (random forest 0.404); no flags.
+
+## 2026-10-15 (churn_telco_south_asia ships: impossible values missing; churn timing unknown)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1 and 6) and his verdict: ship. Edited `dataset.py`,
+not built (checksum `v2:4708a007…`); `dataset check` 0 errors, 0 warnings.
+
+- `network_age` is missing for the 5 churners with a negative value (-8 to -2 days), and `aug_fav_a` "0" (59
+  subscribers, an undocumented code absent in September) is missing. The undocumented on-net and off-net unit,
+  complaint counts from 1 and the September shift to ufone (it follows activity in both classes) stay as published.
+- Both papers of the authors (IntelliSys 2017, Neural Computing and Applications 2020) are read; neither says when
+  churn was observed. The task may be problematic and is kept for now: the notes state it as a potential leak kept on
+  purpose (churn inside August-September would make the usage totals end at the outcome, as in iranian_churn), the
+  task summary's fit stays `approximate`, and it is to be revisited if the churn can be dated.
+
+## 2026-10-15 (cdc_diabetes_health_indicators retired: wrong task)
+
+- `cdc_diabetes_health_indicators` retired (record `No`, `No Good Target / Scientific Discovery`; folder removed,
+  `v2_path` cleared; the definition stays in git history at bb3baa3; it was never built). The label is "ever told you
+  have diabetes", a diagnosis made a median of 10 years before the interview, predicted from answers of the same
+  interview: no decision is made with that prediction. The use the sources name is screening, which needs undiagnosed
+  adults as positives; BRFSS cannot identify them, so they sit in the negative class. The rule is now in criterion 3
+  of the curation guidelines. A screening task on NHANES, with lab-measured undiagnosed diabetes as the label, is
+  checked as the new candidate `nhanes_undiagnosed_diabetes`. 176 definitions remain.
+
+## 2026-10-15 (caracas_cervical_cancer and breast_cancer_prediction ship)
+
+Lennart's marks on the review page of the 2026-10-07 run. Not built.
+
+- `caracas_cervical_cancer` ships: impossible answers become missing, the rows stay (2 first intercourses
+  after the current age, 2 STD diagnoses longer ago than the patient's age); the other contradictions stay as
+  recorded. The STD flags stay one yes/no category each (multi-label; 9 patients have two or three types, not 43:
+  `std_condylomatosis` is the parent of two subtypes). Rows and splits unchanged; `dataset check` 0 errors,
+  0 warnings. The record loses the `Multi-target` tag.
+- `breast_cancer_prediction` ships.
+
+## 2026-10-15 (breast_cancer_prediction: one exam per woman, IID; probe fixes)
+
+Lennart's marks on the review page of the 2026-10-07 run (issues 1, 2, 3, 6 and 8), verdict still open. Edited
+`dataset.py`, not built (checksum changes); `dataset check` 0 errors, 0 warnings (two accepted), 1 info.
+
+- One exam per woman, her earliest in the sample, with IID folds instead of grouping by woman: 36,714 rows and 239
+  of the 259 cancers (the 20 women with cancer and several exams are positive only on their last exam). Untuned
+  LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped).
+  `dataset_duplicate_rows` (repeated coarse profiles of different women) is accepted with that reason.
+- The BI-RADS readings stay features: tabular risk models use them in practice. The curation guidelines (and
+  `guidelines.html`) now carry that exception to the image-scoring rule.
+- Record: `year` 2014; the dead datahub link replaced by the BCSC page.
+- Tooling: the leak, group and task probes load only the named folder (`--all` skips folders that do not import);
+  the linear models of the task and group probes one-hot encode categories. The review page labels its marks by what
+  they do, and record-field disagreements go only into its field table.
+
+## 2026-10-15 (review verdicts: bias_correction and brazilian_ecommerce ship; churn_telco_nigeria renamed)
+
+Lennart's verdicts on the review page of the 2026-10-07 run, none built yet:
+
+- `bias_correction_r_bias_correction_r_2` and `brazilian_ecommerce` ship. brazilian_ecommerce ships as implemented
+  (delivery time at checkout, a one-month label gap, Olist's promised date as an input); its record's year is now
+  2018.
+- `churn_telco_nigeria` is `No` + `Duplicate` (the DSN files are the SATO 2015 rows of `churn_telco_south_asia`) and
+  is renamed `churn_telco_south_asia_duplicate`; `churn_telco_south_asia`'s note names the new record (its checksum
+  changes, `v2:e7577332…`; not built). The local downloads of `churn_telco_nigeria` and `churn_telco_europa` (which
+  held customers' national ids and phone numbers) are deleted.
+- brca_breast_cancer, central_international_medical_college_and_hospital_health_risk_prediction and
+  churn_telco_europa: their `No` of 2026-10-12 is confirmed.
+
+## 2026-10-15 (bias_correction_r_bias_correction_r_2: rows without an LDAPS forecast dropped; probe and test fixes)
+
+Lennart's review of the 2026-10-07 run (issues 4, 6 and 7 of NEW_DATASETS_ISSUES.md). Edited `dataset.py`, not
+built (checksum `v2:07d8e9f7…`, was `v2:41fdfb3c…`); `dataset check` 0 errors, 0 warnings.
+
+- The 75 station-days of the three days without an LDAPS run (2013-08-10, 2016-07-31, 2016-08-20, all on the
+  training side) are dropped: the task corrects the LDAPS forecast, and without one there is nothing to correct.
+  7,648 rows remain. The mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on 7 of 9 windows
+  (RMSE 0.785 against 0.823); the decision text gives the new numbers.
+- `splits_comment` is a text block again (it was one string to avoid the dedent gap fixed on 2026-10-12).
+- The task probes flag `no_spread` and `unstable`: LightGBM falls just below the training mean in the oldest window
+  (skill -0.07) and beats it on the other 8; kept, as `curation_comments` says.
+- Tooling: `tests/test_v2_datasets.py` checks each folder's import in its own test, so a half-filled scaffold no
+  longer stops the collection of all; `task_probes.py` counts the standard-error part of `unstable` on a temporal
+  task only when the best family loses to the dummy on a window, and its JSON lists the skill and the dummy's loss
+  per split.
+
+## 2026-10-15 (ashrae_great_energy_predictor_iii_1m: readings in kWh, recording errors dropped)
+
+Lennart's review of the 2026-10-07 run (issues 2, 3, 4 and 8 of NEW_DATASETS_ISSUES.md): ship, as one temporal
+task, cleaned to the state an expert would ship. Edited `dataset.py`, not built (checksum `v2:67c30a35…`, was
+`v2:858c1cad…`); `dataset check` 0 errors, 0 warnings.
+
+- The readings come in kWh from BDG2's raw meter files (four new raw files and BDG2's building metadata, pinned to
+  the commit of kaggle.csv). The competition kept each site's own unit (ton-hours, pounds of steam, mmBTU, kBTU);
+  BDG2's values are the Kaggle reading over one constant factor per meter in 99.9% of the hours. Site 0's kBTU
+  conversion is part of it, so `KBTU_TO_KWH` is gone.
+- `recording_errors` drops, besides site 0's 2016 gap and the electricity zeros: a cooling or heating plant at 0 for
+  48 hours or more in its season (383,406 hours), the repeats of a reading stuck for a week or more (618,666 hours,
+  mostly site 5's electricity in March-November 2017) and building 1099's steam unit error (3,332 hours). 1,701,150
+  hours dropped (4.2%), 39,062,170 kept. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list
+  of bad readings. A decision table counts the meters per unit, another the hours per rule.
+- Issue 2 (scope): LightGBM with 1,000 trees beats the best naive forecast (each meter's hour-of-week profile from
+  the same month a year earlier) by 0.10-0.14 RMSE per window, and one model per site only matches one large model,
+  so the meter types and sites stay one task. The record holds the numbers.
+- The record lists only the temporal regime (`tags`, `required_split`). The suspended v1 notebook
+  (`datasets/_maintenance/_suspended/ashrae_energy_predictor/`) is removed; the definition here replaces it.
+
 ## 2026-10-14 (claims: `claimed_by` on WIP records)
 
 - A WIP record now names its holder in `claimed_by` (curation tooling, review reasons `wip_unclaimed` and
@@ -500,7 +1266,7 @@ Lennart's marks and notes on the review page (scope: the 125 built datasets and 
   - generated or injected data: `hepatitis_c_egypt`, `high_storage_system_data_for_energy_optimization`;
   - classes recorded differently, plus personal data in the files: `churn_telco_europa`;
   - a recommender task: `farm_to_feed_shopping_basket_recommendation_challenge`.
-- Every issue and open decision, per dataset and across datasets, is in [`NEW_DATASETS_ISSUES.md`](NEW_DATASETS_ISSUES.md).
+- Every issue and open decision, per dataset and across datasets, was in `NEW_DATASETS_ISSUES.md` (removed 2026-10-19; the open ones are now in the folders' `REVIEW.md` files).
   It includes two bugs in datasets already here: `mic` reads its file without `header=None` and so loses patient 1,
   and multi-line `splits_comment`s keep their code indentation.
 - The records of all 68 carry a dated AI assessment comment. The records with a folder have their `v2_path` and

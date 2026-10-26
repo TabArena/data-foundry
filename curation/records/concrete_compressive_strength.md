@@ -39,6 +39,8 @@ Andrej: Seems fine
 
 CC (2026-10-14, Lennart): Grouped by mix: a new prediction is for a mix not tested before.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Yeh 1998 (closed access) is cited for R^2 of predicted vs measured strength (about 0.91-0.92 for the ANN) by secondary sources; not read, and R^2 ranks models as RMSE does within a fold. rmse is the regression fallback.
+
 ## Reference
 
 Yeh, I-C. "Modeling of strength of high-performance concrete using artificial neural networks." Cement and Concrete research 28.12 (1998): 1797-1808.

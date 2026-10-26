@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class LungCancerEpithelialGenexp(AbstractCuratedDataset):
@@ -70,11 +70,19 @@ class LungCancerEpithelialGenexp(AbstractCuratedDataset):
     curation_comments = """
         - We start with an extended dataset of 192 patients. The original reference uses 129 samples as "Individuals without final diagnoses as of May 2005 were excluded from this primary dataset". We remove 5 samples without a clear label ("Smoker with suspect lung cancer Sample"), yielding a dataset of 187 samples.
         - We use "Sample_title" from the metadata as labels for the prediction task.
+        - Potential leak, kept on purpose: GSE4115 holds RMA values, which quantile-normalise all arrays processed together, so a sample's values depend on the others (per-sample medians vary by an SD of only 0.053 log2 over 187 samples); there are no CEL files to redo it per sample. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw arrays appear.
     """
 
     # Task
     target = "DiagnosedCancer"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Spira et al. 2007 report accuracy with sensitivity and specificity of the 80-gene predictor "
+            "(83/80/84%); the clinical claim rests on sensitivity and NPV, no single metric or threshold. "
+            "roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "GSE4115_series_matrix.txt", sep="\t", comment="!", index_col=0).T

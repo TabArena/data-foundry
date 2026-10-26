@@ -2,22 +2,23 @@
 report_format: data-foundry-report-v2
 unique_name: fraud_detection_in_electricity_and_gas_consumption_1m
 container_format: 2
-checksum: v2:6e92005ef1aa84f533f7cef708b3886f2f6448921a73f8526017ead1bd470318
+checksum: v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5
 build: null
 build_stale: false
 data:
   n_rows: 1500000
-  n_features: 18
+  n_features: 17
   dtypes:
     category: 10
     datetime64[ns]: 2
-    float64: 1
-    int64: 7
+    float64: 7
   n_test_dataset_rows: null
 task:
   target: fraud
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: fraud
   time_on: null
@@ -28,34 +29,37 @@ task:
     prediction_unit: group
     aggregation: mean
     context: all_rows
-    n_groups: 66014
+    n_groups: 65603
     test_groups_per_fold:
-      min: 21983
-      max: 22004
+      min: 21850
+      max: 21868
 splits:
   n_repeats: 1
   n_folds: 3
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 999406
+    min: 999577
     max: 1000000
   n_test:
-    min: 499145
-    max: 500000
+    min: 499629
+    max: 499993
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - dataset_duplicate_rows
   accepted:
     splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
-      grouped folds of the 1.5M-row frame overshoot by whole clients, so 860 rows
-      (0.06%, 31 clients) are trimmed from a test fold (2026-10-07).
+      grouped folds of the 1.5M-row frame overshoot by whole clients, so 430 rows
+      (0.03%, 18 clients) are trimmed from a test fold (2026-10-20).
 decisions:
 - The history is cut at 2013-01-01
-- Only clients billed both before and after the cut
+- Only clients billed before 2013 and still billed from 2015 on
 - 'One prediction per client: the mean of its invoice predictions'
 ---
 
@@ -63,34 +67,34 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 18 features. Source: Zindi (2019).
+Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 17 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:6e92005ef1aa84f533f7cef708b3886f2f6448921a73f8526017ead1bd470318`.
+Not built yet. The current definition gives checksum `v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5`.
 
 ## In brief
 
 **Question.** Will the Tunisian utility STEG find that this client commits electricity or gas meter fraud?
 
-**Use case.** On 2013-01-01, STEG scores each client from the client record and the invoices so far, to decide whom to inspect for meter fraud.
+**Use case.** STEG, having inspected part of its clients in 2013-2019, ranks the others from the client record and their invoices before 2013, to decide whom to inspect for meter fraud.
 
-**One row.** One invoice (2005-2012) of a STEG client billed both before and after 2013, joined with the client's record; the prediction is one per client, the mean over its invoices.
+**One row.** One invoice (2005-2012) of a STEG client billed before 2013 and still billed from 2015 on, joined with the client's record; the prediction is one per client, the mean over its invoices.
 
-**Predicted.** Whether STEG found the client fraudulent (7.8% of the clients billed before and after the cut); the finding falls in 2013-2019 without a date.
+**Predicted.** Whether STEG found the client fraudulent (7.8% of the clients kept); the finding falls in 2013-2019 without a date, and a 0 means no fraud was found, not a verified negative.
 
-**Known at prediction time.** The client's district, region, category and account creation date, and per invoice its date, tariff, meter number, status, code and type (electricity or gas), reading remarks, consumption by tier, meter readings and months covered.
+**Known at prediction time.** The client's district, region, category and account creation date, and per invoice its date, tariff, meter status, code and type (electricity or gas), reading remarks, consumption by tier, meter readings and months covered.
 
 **What the test data stands for.** Whole clients are held out in three folds, so the test data stands for other clients over the same years, as in the challenge.
 
-**Our changes to the source.** We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels, keep clients billed before and after that date, and sample 1.5M invoices by whole clients.
+**Our changes to the source.** We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels, keep the clients billed before that date and still billed from 2015 on, so that every client was followed long enough for a finding, and sample 1.5M invoices by whole clients.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The finding has no date or stated horizon, and the cut date is read off the data rather than documented by STEG or Zindi.
+> **Use case fit: approximate (a stand-in with a known gap).** The labels are findings of 2013-2019 without a date or a stated horizon, so the model learns from clients inspected over the same years, not from earlier campaigns: a screen of the uninspected clients rather than a forecast made in 2013. The cut date is read off the data, not documented by STEG or Zindi.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/fraud_detection_in_electricity_and_gas_consumption.md`](../../../../curation/records/fraud_detection_in_electricity_and_gas_consumption.md)
@@ -140,7 +144,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Grouped, Spatial |
 | reference | zindi2019stegfraud |
 | version of | fraud_detection_in_electricity_and_gas_consumption |
-| rows x columns | 1,500,000 x 20 |
+| rows x columns | 1,500,000 x 19 |
 | task.target | fraud |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -148,6 +152,16 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | fraud |
 | task.group_on | client_id |
 | task.group_labels | per_group |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under the Curve (AUC) |
+| reference | https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge (evaluation) |
+| definition | ROC AUC over clients, one fraud probability per client. |
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 2 datetime</summary>
@@ -175,66 +189,91 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,500,000 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,500,000 rows of the final frame (random rows: the frame is shuffled); 12 of 19 columns, the target first. Cells are cut at 40 characters.
 
-| fraud | client_id | invoice_date | tarif_type | counter_number | counter_statue | counter_code | reading_remarque | counter_coefficient | consommation_level_1 | consommation_level_2 | consommation_level_3 |
+| fraud | client_id | invoice_date | tarif_type | counter_statue | counter_code | reading_remarque | counter_coefficient | consommation_level_1 | consommation_level_2 | consommation_level_3 | old_index |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | train_Client_817 | 2007-11-06 00:00:00 | 11 | 1.00458e+06 | 1 | 207 | 6 | 1 | 6 | 0 | 0 |
-| No | train_Client_111429 | 2010-04-01 00:00:00 | 11 | 712419 | 0 | 207 | 8 | 1 | 384 | 0 | 0 |
-| No | train_Client_35526 | 2010-08-27 00:00:00 | 13 | 2728 | 0 | 420 | 9 | 1 | 17418 | 0 | 0 |
-| No | train_Client_55142 | 2008-12-06 00:00:00 | 10 | 276887 | 0 | 202 | 6 | 1 | 200 | 348 | 0 |
-| No | train_Client_108537 | 2007-05-23 00:00:00 | 11 | 185562 | 0 | 203 | 6 | 1 | 459 | 0 | 0 |
+| No | train_Client_127923 | 2011-03-16 00:00:00 | 11 | 0 | 413 | 6 | 1 | 509 | 0 | 0 | 8162 |
+| No | train_Client_90056 | 2010-07-14 00:00:00 | 11 | 0 | 203 | 8 | 1 | 488 | 0 | 0 | 22466 |
+| No | train_Client_70156 | 2006-10-26 00:00:00 | 40 | 0 | 5 | 6 | 1 | 60 | 0 | 0 | 788 |
+| No | train_Client_54772 | 2007-04-13 00:00:00 | 40 | 0 | 5 | 6 | 1 | 131 | 0 | 0 | 1149 |
+| No | train_Client_123511 | 2008-11-27 00:00:00 | 11 | 0 | 203 | 6 | 1 | 718 | 0 | 0 | 11717 |
 
 ## Curation notes
 
 We start with client_train.csv and invoice_train.csv of the Zindi challenge, from its Kaggle mirror.
 
-- Prediction point: on 2013-01-01, STEG scores each client from the client record and the invoices so far
-  (2005 to 2012) to decide whom to inspect for meter fraud, one prediction per client as in the challenge. The
-  label is STEG's per-client finding, which the data place in 2013-2019 without a date.
+- Prediction point: STEG, having inspected part of its clients in 2013-2019, ranks the others from the client
+  record and their invoices before 2013 (2005 to 2012) to decide whom to inspect for meter fraud, one
+  prediction per client as in the challenge. The label is STEG's per-client finding, which the data place in
+  2013-2019 without a date; a 0 means no fraud was found, not a verified negative.
 - We join every invoice with its client's record on `client_id` (the source's key): one row per invoice. Only
   the train files carry labels.
 - History cut at 2013-01-01: the invoices from 2013 on carry traces of the inspections that set the labels, so
   the features are the invoices before 2013. The fraud rate of clients whose second electricity meter first
   appears in a quarter is 7.4-11.9% for each quarter of 2012 and 23.8-25.9% for each quarter of 2013, while
-  the number of such events per quarter does not jump at 2013Q1 (decision table). A client-level LightGBM
-  scores ROC AUC 0.848 with the full history; with the invoices before 2013 the models score 0.66-0.69. The
-  cut date is read off the data; STEG and Zindi do not document it.
-- Cohort: the 83,874 clients billed both before and after the cut (6,504 frauds, 7.8%). We drop the 19,133
-  clients whose last invoice is before 2013 (21 frauds, 0.11%), whose labels look unrecorded (decision table),
-  and the 32,486 clients whose first invoice is from 2013 on, who have no history at the prediction point.
-- We drop the 9 exact duplicate invoices (double entries).
+  the number of such events per quarter does not jump at 2013Q1 (decision table). A client-level LightGBM on
+  per-client aggregates scores ROC AUC 0.848 with the full history and 0.688 with the invoices before 2013
+  (3 folds, the kept clients). The cut date is read off the data; STEG and Zindi do not document it.
+- Cohort: the 81,531 clients billed before 2013 and still billed from 2015 on (6,394 frauds, 7.8%). The label
+  counts the findings up to a client's last invoice, so a client who leaves early had less time to be found:
+  among the clients billed before 2013, the fraud rate by the year of the last invoice is at most 0.8% up to
+  2012, 4.0% for 2013, 5.5% for 2014 and 7.1-9.3% for each year from 2015 to 2019, with no trend (decision
+  table). We drop the 19,133 clients whose last invoice is before 2013 (21 frauds, 0.11%), whose labels look
+  unrecorded, the 2,343 whose last invoice is in 2013 or 2014 (110 frauds, 4.7%), whose follow-up is
+  shorter, and the 32,486 clients whose first invoice is from 2013 on, who have no history at the prediction
+  point.
+- Note: the cohort is chosen on billing after the prediction point. Of the 64,969 clients with an invoice in
+  the second half of 2012 it drops 2,411 (3.4% frauds), 779 of them never billed after 2012 (1.3% frauds),
+  against 7.8% for the 62,558 kept: the benchmark scores the clients STEG still bills, not every client it
+  could have inspected.
+- We drop the 8 exact duplicate invoices (double entries).
 - We drop `consommation_level_4`: the fourth consumption tier first appears in January 2014, so it is 0 on
   every invoice before the cut.
-- `counter_number` (the meter's serial number) is 0 on 12,555 invoices; we set it to missing. Serials repeat
-  across clients, but clients that share a serial do not share labels (ROC AUC 0.51 for the other clients'
-  label), so the column does not link clients across the split.
+- We drop `counter_number`, the meter's serial number: it carries no meaning as a number or a code (the fraud
+  rate is 7.3-9.5% across its deciles, in no order; Spearman -0.04 with the account creation year).
+  Serials repeat across clients, but clients that share a serial do not share labels (ROC AUC 0.50-0.51 for
+  the other clients' label), so the serial does not link clients across the split either. Without it, 57
+  rows of the shipped frame repeat another row of the same client (two meters with the same invoice); we
+  keep them.
+- Shifted rows: 15 invoices of 2 clients carry `reading_remarque` codes outside the documented 6-9 (203, 5)
+  and `counter_statue` codes outside the documented 0-5 (46, 420); their fields from `counter_statue` on sit
+  one column off (a meter reading stands in `months_number`), so we set those fields to missing. We also set
+  to missing `counter_statue` "A" (13 invoices of one client, its other fields normal), `counter_coefficient`
+  0 (46 invoices; the coefficient multiplies the consumption) and `months_number` above 120 (491 invoices of
+  16 clients, from 130 to 412,509, mostly meter-reading sized; no invoice covers 61 to 120 months).
 - We rename `disrict` to `district` and `target` to `fraud` ("Yes" / "No").
 - The codes (`tarif_type`, `counter_statue`, `counter_code`, `reading_remarque`, `counter_type`, `district`,
   `client_catg`, `region`) are categorical; `invoice_date` and `creation_date` are dates. `client_id` is the
   group column, never a feature.
 - Grouped split by `client_id`; the prediction per client is the mean of its invoices' predictions (see the
   grouping definition). Zindi also scores ROC AUC on one probability per client, but with the full history.
-- Anomaly: 34 invoices (4 clients) carry `counter_statue` codes outside the documented 0-5 and 21 (3 clients)
-  carry `reading_remarque` codes outside 6-9, mostly rows whose fields are shifted by one column.
-  `months_number` is above 24 on 806 invoices (up to 412,509). We keep them as the source has them.
+- Note: `client_catg`, `region` and `district` come from one client record of unknown date, constant per
+  client, so the data cannot show that they did not change after a finding. For the category, the dated
+  invoices show no reassignment: category 51 (758 clients, 24.5% frauds) bills 96.5-98.0% of its electricity
+  invoices on tariff 11 before and after 2013, for frauds and non-frauds alike, and categories 11 and 12 keep
+  their tariff mix across the cut. No mechanism is known by which a finding would change a region or district.
 - Anomaly: 29,121 train invoices are dated after the challenge first ran (20-22 September 2019), up to
   2019-12-07, so the dates may be shifted. The cut uses the data's dates.
 - Note: Zindi's rules forbid redistribution; the Kaggle mirror states "other".
 
-Version of `fraud_detection_in_electricity_and_gas_consumption`: We sub-sample the frame (1,907,490 invoices of 83,874 clients, all before 2013) to 1.5M rows by whole clients (66,014, stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
+Version of `fraud_detection_in_electricity_and_gas_consumption`: We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
 
 ## Splits
 
-Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every split trains on at most 1M and tests on at most 500k rows.
+Default grouped 3-fold cross-validation by client, on the frame sub-sampled to 1.5M rows by whole clients;
+every split trains on at most 1M and tests on at most 500k rows. The grouped cross-section stands in for a
+deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
+forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
+and train and test clients share the same years, as in the challenge.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 999,406 to 1,000,000 rows, test 499,145 to 500,000 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 999,577 to 1,000,000 rows, test 499,629 to 499,993 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 999739 | 499995 |
-| 0 | 1 | 999406 | 500000 |
-| 0 | 2 | 1000000 | 499145 |
+| 0 | 0 | 999577 | 499993 |
+| 0 | 1 | 999989 | 499629 |
+| 0 | 2 | 1000000 | 499948 |
 
 ## Group structure
 
@@ -242,14 +281,18 @@ One group is a client of STEG, the Tunisian electricity and gas utility; its row
 from 2005 to 2012 (1 to 234, median 21) with the client's record joined. The challenge asks, "Using the
 client's billing history, ... to detect and recognize clients involved in fraudulent activities", and
 scores one probability per client with ROC AUC on clients that are not in the training file (Zindi's test
-file holds 58,069 other clients over the same years). So one prediction per client, made on 2013-01-01
-from all of its invoices before that date. The group prediction is the mean of the invoices' predictions:
-the label belongs to the client, and every invoice is one observation of it. On the shipped folds,
-LightGBM fit on the training invoices scores per client ROC AUC 0.685 with the mean, 0.684 with the
-largest prediction and 0.682-0.684 with the latest date's (its ties broken by the largest or the mean),
-and the largest follows the number of invoices more (Spearman 0.31 against 0.24 for the mean, non-fraud
-clients). `last` would need a rule for ties: 50% of the clients have several invoices (electricity and
-gas) on their latest date.
+file holds 58,069 other clients over the same years). So one prediction per client, from all of its
+invoices before 2013. The group prediction is the mean of the invoices' predictions: the label belongs to
+the client and has no date, and every invoice is one observation of it. On the shipped folds, LightGBM fit
+on the training invoices scores per client ROC AUC 0.682 with the mean, 0.685 with the largest
+prediction and 0.681 with the latest date's (its ties broken by the largest or the mean), and the
+largest follows the number of invoices more (Spearman 0.29 against 0.23 for the mean, non-fraud
+clients). `last` would need a rule for ties: half of the clients have several invoices (electricity and
+gas) on their latest date. We keep the invoice rows rather than one row per client with the top
+solutions' aggregates: the rows are usable as they are (the row model averaged per client scores 0.682
+against 0.675 for a LightGBM on simple per-client aggregates, same folds), and the top solutions built
+their aggregates on the full history, which the cut removes. amex_non_iid_1m keeps its raw statements the
+same way.
 
 | field | value |
 |---|---|
@@ -261,21 +304,21 @@ gas) on their latest date.
 
 | statistic | value |
 |---|---|
-| groups | 66,014 |
+| groups | 65,603 |
 | rows per group (min / median / max) | 1 / 21.0 / 234 |
 | largest group | 0.0% of the rows |
-| test groups per fold | 21,983 to 22,004 |
+| test groups per fold | 21,850 to 21,868 |
 | groups of two or more rows with a single label | 100.0% |
-| nearest neighbour in the same group | 1.5% of the rows (chance: 0.0%) |
+| nearest neighbour in the same group | 0.5% of the rows (chance: 0.0%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.04) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/verify-dataset/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
 ### 1. The history is cut at 2013-01-01
 
-Second electricity meters and counter status 5 that first appear from 2013Q1 on go with fraud rates of 21-36% per quarter, against 4-12% for the same events up to 2012Q4: traces of the inspections that set the labels. The features are the invoices before 2013.
+In 2011-2014, second electricity meters and counter status 5 that first appear from 2013Q1 on go with fraud rates of 21-36% per quarter, against 4-12% for the same events up to 2012Q4: traces of the inspections that set the labels. The features are the invoices before 2013.
 
 | quarter first seen | second ELEC meter: clients | second ELEC meter: fraud_rate | counter status 5: clients | counter status 5: fraud_rate |
 |---|---|---|---|---|
@@ -296,9 +339,9 @@ Second electricity meters and counter status 5 that first appear from 2013Q1 on 
 | 2014Q3 | 378 | 0.347 | 176 | 0.301 |
 | 2014Q4 | 381 | 0.36 | 205 | 0.327 |
 
-### 2. Only clients billed both before and after the cut
+### 2. Only clients billed before 2013 and still billed from 2015 on
 
-Almost no client whose last invoice is before 2013 is a fraud, so their labels look unrecorded; a client whose first invoice is from 2013 on has no history at the prediction date.
+Clients billed before 2013, by the year of their last invoice. The label counts the findings up to the last invoice: almost no client who left before 2013 is a fraud, so their labels look unrecorded, and clients who left in 2013 or 2014 are frauds less often than those billed from 2015 on, whose yearly rates show no trend. A client whose first invoice is from 2013 on has no history at the prediction date.
 
 | last invoice year | clients | frauds | fraud_rate |
 |---|---|---|---|
@@ -338,58 +381,58 @@ Almost no client whose last invoice is before 2013 is a fraud, so their labels l
 | 2010 | 2010 | 3 | 0.0015 |
 | 2011 | 1411 | 2 | 0.0014 |
 | 2012 | 1567 | 13 | 0.0083 |
-| 2013 | 1403 | 55 | 0.0392 |
-| 2014 | 1447 | 68 | 0.047 |
-| 2015 | 1715 | 124 | 0.0723 |
-| 2016 | 2136 | 136 | 0.0637 |
-| 2017 | 4318 | 358 | 0.0829 |
-| 2018 | 9664 | 621 | 0.0643 |
-| 2019 | 95677 | 6183 | 0.0646 |
+| 2013 | 1246 | 50 | 0.0401 |
+| 2014 | 1097 | 60 | 0.0547 |
+| 2015 | 1249 | 100 | 0.0801 |
+| 2016 | 1515 | 108 | 0.0713 |
+| 2017 | 3143 | 291 | 0.0926 |
+| 2018 | 7044 | 527 | 0.0748 |
+| 2019 | 68580 | 5368 | 0.0783 |
 
 ### 3. One prediction per client: the mean of its invoice predictions
 
 The challenge scores one probability per client; the mean, the largest and the latest date's predictions score the same per client, and the latest date often holds two invoices.
 
-42,234 of 83,874 clients (50.4%) have several invoices on their latest date before the cut.
+41,253 of 81,531 clients (50.6%) have several invoices on their latest date before the cut.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
+- **info** `dataset_duplicate_rows`: 57 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 Accepted on purpose:
 
-- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole clients, so 860 rows (0.06%, 31 clients) are trimmed from a test fold (2026-10-07).
+- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole clients, so 430 rows (0.03%, 18 clients) are trimmed from a test fold (2026-10-20).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (20 rows)</summary>
+<summary>Show the table (19 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| client_id | category | 0 | 0 | 66014 | train_Client_130245, train_Client_116878, train_Client_71176, train_Client_6942… |
-| tarif_type | category | 0 | 0 | 13 | 11, 40, 10, 15, 45, 12, 13, 14, 29, 9 |
-| counter_statue | category | 0 | 0 | 9 | 0, 1, 5, 4, 3, 2, 420, 46, A |
-| counter_code | category | 0 | 0 | 35 | 203, 5, 202, 207, 413, 410, 420, 433, 10, 407 |
-| reading_remarque | category | 0 | 0 | 6 | 6, 8, 9, 5, 7, 203 |
+| client_id | category | 0 | 0 | 65603 | train_Client_9263, train_Client_89259, train_Client_122081, train_Client_76644,… |
+| tarif_type | category | 0 | 0 | 13 | 11, 40, 10, 15, 45, 13, 12, 14, 29, 9 |
+| counter_statue | category | 14 | 0 | 6 | 0, 1, 5, 4, 3, 2 |
+| counter_code | category | 14 | 0 | 32 | 203, 5, 202, 207, 413, 420, 410, 433, 10, 407 |
+| reading_remarque | category | 14 | 0 | 4 | 6, 8, 9, 7 |
 | counter_type | category | 0 | 0 | 2 | ELEC, GAZ |
 | district | category | 0 | 0 | 4 | 62, 60, 69, 63 |
 | client_catg | category | 0 | 0 | 3 | 11, 51, 12 |
 | region | category | 0 | 0 | 24 | 101, 311, 104, 301, 107, 103, 303, 310, 306, 304 |
 | fraud | category | 0 | 0 | 2 | No, Yes |
-| invoice_date | datetime64\[ns\] | 0 | 0 | 1762 | 2011-04-10 00:00:00, 2010-04-10 00:00:00, 2012-03-04 00:00:00, 2012-03-01 00:00… |
-| creation_date | datetime64\[ns\] | 0 | 0 | 5708 | 1997-11-20 00:00:00, 1980-10-13 00:00:00, 2004-12-31 00:00:00, 2002-05-28 00:00… |
-| counter_number | float64 | 10001 | 0.67 | 104827 | 84750400.0, 164019.0, 825628.0, 515491.0, 843934.0, 103130.0, 11410.0, 630317.0… |
-| counter_coefficient | int64 | 0 | 0 | 13 | 1, 2, 30, 3, 40, 5, 0 |
-| consommation_level_1 | int64 | 0 | 0 | 5607 | 0, 1200, 200, 300, 1, 600, 400, 2400, 2, 100 |
-| consommation_level_2 | int64 | 0 | 0 | 10281 | 0, 2, 16, 300, 15, 138, 108, 70, 189, 201 |
-| consommation_level_3 | int64 | 0 | 0 | 195 | 0, 8, 18294, 1052, 3505, 3688, 1562, 3973, 1442, 860 |
-| old_index | int64 | 0 | 0 | 95610 | 0, 1, 2, 3, 5, 4, 6, 7, 11, 13 |
-| new_index | int64 | 0 | 0 | 97005 | 0, 1, 2, 3, 5, 6, 8, 4, 9, 12 |
-| months_number | int64 | 0 | 0 | 458 | 4, 2, 8, 1, 12, 6, 10, 16, 3, 14 |
+| invoice_date | datetime64\[ns\] | 0 | 0 | 1765 | 2011-04-10 00:00:00, 2012-03-04 00:00:00, 2010-04-10 00:00:00, 2010-02-12 00:00… |
+| creation_date | datetime64\[ns\] | 0 | 0 | 5698 | 1997-11-20 00:00:00, 2004-12-31 00:00:00, 2002-05-28 00:00:00, 1996-11-20 00:00… |
+| months_number | float64 | 320 | 0.02 | 36 | 4.0, 2.0, 8.0, 1.0, 12.0, 6.0, 10.0, 16.0, 3.0, 14.0 |
+| counter_coefficient | float64 | 51 | 0 | 9 | 1.0, 2.0, 3.0, 30.0, 40.0 |
+| consommation_level_1 | float64 | 14 | 0 | 5551 | 0.0, 1200.0, 200.0, 300.0, 1.0, 600.0, 400.0, 2400.0, 100.0, 2.0 |
+| consommation_level_2 | float64 | 14 | 0 | 9892 | 0.0, 11.0, 70.0, 189.0, 138.0, 102.0, 300.0, 25.0, 77.0, 146.0 |
+| consommation_level_3 | float64 | 14 | 0 | 139 | 0.0, 3505.0, 4870.0, 5130.0, 13681.0, 960.0, 1065.0, 2859.0, 3968.0, 14712.0 |
+| old_index | float64 | 14 | 0 | 95157 | 0.0, 1.0, 2.0, 3.0, 4.0, 8.0, 5.0, 9.0, 6.0, 11.0 |
+| new_index | float64 | 14 | 0 | 96525 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 13.0, 9.0 |
 
 </details>
 
@@ -397,80 +440,78 @@ Accepted on purpose:
 
 | fraud | count | pct |
 |---|---|---|
-| No | 1372478 | 91.5 |
-| Yes | 127522 | 8.5 |
+| No | 1371689 | 91.45 |
+| Yes | 128311 | 8.55 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| counter_number | 148997 | 2.03354e+06 | 7.18831e+06 | 3 | 9.91336e+07 |
-| counter_coefficient | 150000 | 1.00329 | 0.304439 | 0 | 40 |
-| consommation_level_1 | 150000 | 420.98 | 604.97 | 0 | 71575 |
-| consommation_level_2 | 150000 | 158.484 | 1260.73 | 0 | 209952 |
-| consommation_level_3 | 150000 | 0.98502 | 120.28 | 0 | 25803 |
-| old_index | 150000 | 15889.3 | 34656.8 | 0 | 998284 |
-| new_index | 150000 | 16444.5 | 35136.7 | 0 | 998087 |
-| months_number | 150000 | 32.6272 | 2357.61 | 1 | 410431 |
+| counter_coefficient | 149996 | 1.00462 | 0.384487 | 1 | 40 |
+| consommation_level_1 | 150000 | 418.047 | 544.861 | 0 | 33132 |
+| consommation_level_2 | 150000 | 150.163 | 1104.16 | 0 | 135726 |
+| consommation_level_3 | 150000 | 0.588127 | 68.0982 | 0 | 14712 |
+| old_index | 150000 | 15599.6 | 32227.4 | 0 | 997517 |
+| new_index | 150000 | 16142.4 | 32701.9 | 0 | 982739 |
+| months_number | 149967 | 4.15553 | 1.55414 | 1 | 34 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (51 rows)</summary>
+<summary>Show the table (50 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| client_catg | 1 | 11 | 144935 | 96.62 |
-| client_catg | 2 | 51 | 2672 | 1.78 |
-| client_catg | 3 | 12 | 2393 | 1.6 |
-| client_id | 1 | train_Client_130245 | 23 | 0.02 |
-| client_id | 2 | train_Client_116878 | 23 | 0.02 |
-| client_id | 3 | train_Client_71176 | 21 | 0.01 |
-| client_id | 4 | train_Client_69426 | 21 | 0.01 |
-| client_id | 5 | train_Client_117629 | 21 | 0.01 |
-| counter_code | 1 | 203 | 58433 | 38.96 |
-| counter_code | 2 | 5 | 41735 | 27.82 |
-| counter_code | 3 | 202 | 13934 | 9.29 |
-| counter_code | 4 | 207 | 13582 | 9.05 |
-| counter_code | 5 | 413 | 12233 | 8.16 |
-| counter_statue | 1 | 0 | 146002 | 97.33 |
-| counter_statue | 2 | 1 | 2684 | 1.79 |
-| counter_statue | 3 | 5 | 1149 | 0.77 |
+| client_catg | 1 | 11 | 145100 | 96.73 |
+| client_catg | 2 | 51 | 2587 | 1.72 |
+| client_catg | 3 | 12 | 2313 | 1.54 |
+| client_id | 1 | train_Client_9263 | 30 | 0.02 |
+| client_id | 2 | train_Client_89259 | 22 | 0.01 |
+| client_id | 3 | train_Client_122081 | 21 | 0.01 |
+| client_id | 4 | train_Client_76644 | 21 | 0.01 |
+| client_id | 5 | train_Client_116878 | 21 | 0.01 |
+| counter_code | 1 | 203 | 58409 | 38.94 |
+| counter_code | 2 | 5 | 41894 | 27.93 |
+| counter_code | 3 | 202 | 13848 | 9.23 |
+| counter_code | 4 | 207 | 13642 | 9.09 |
+| counter_code | 5 | 413 | 12191 | 8.13 |
+| counter_statue | 1 | 0 | 145931 | 97.29 |
+| counter_statue | 2 | 1 | 2763 | 1.84 |
+| counter_statue | 3 | 5 | 1145 | 0.76 |
 | counter_statue | 4 | 4 | 156 | 0.1 |
-| counter_statue | 5 | 3 | 8 | 0.01 |
-| counter_type | 1 | ELEC | 106884 | 71.26 |
-| counter_type | 2 | GAZ | 43116 | 28.74 |
-| creation_date | 1 | 1997-11-20 00:00:00 | 422 | 0.28 |
-| creation_date | 2 | 1980-10-13 00:00:00 | 366 | 0.24 |
-| creation_date | 3 | 2004-12-31 00:00:00 | 343 | 0.23 |
-| creation_date | 4 | 2002-05-28 00:00:00 | 329 | 0.22 |
-| creation_date | 5 | 1996-11-20 00:00:00 | 326 | 0.22 |
-| district | 1 | 62 | 45263 | 30.18 |
-| district | 2 | 60 | 35484 | 23.66 |
-| district | 3 | 69 | 34646 | 23.1 |
-| district | 4 | 63 | 34607 | 23.07 |
-| fraud | 1 | No | 137098 | 91.4 |
-| fraud | 2 | Yes | 12902 | 8.6 |
-| invoice_date | 1 | 2011-04-10 00:00:00 | 233 | 0.16 |
-| invoice_date | 2 | 2010-04-10 00:00:00 | 209 | 0.14 |
-| invoice_date | 3 | 2012-03-04 00:00:00 | 209 | 0.14 |
-| invoice_date | 4 | 2012-03-01 00:00:00 | 208 | 0.14 |
-| invoice_date | 5 | 2011-03-01 00:00:00 | 195 | 0.13 |
-| reading_remarque | 1 | 6 | 118364 | 78.91 |
-| reading_remarque | 2 | 8 | 19164 | 12.78 |
-| reading_remarque | 3 | 9 | 12472 | 8.31 |
-| reading_remarque | 4 | 5 | 0 | 0 |
-| reading_remarque | 5 | 7 | 0 | 0 |
-| region | 1 | 101 | 38375 | 25.58 |
-| region | 2 | 311 | 17259 | 11.51 |
-| region | 3 | 104 | 13711 | 9.14 |
-| region | 4 | 301 | 11063 | 7.38 |
-| region | 5 | 107 | 9629 | 6.42 |
-| tarif_type | 1 | 11 | 90980 | 60.65 |
-| tarif_type | 2 | 40 | 42577 | 28.38 |
-| tarif_type | 3 | 10 | 11207 | 7.47 |
-| tarif_type | 4 | 15 | 3029 | 2.02 |
-| tarif_type | 5 | 45 | 539 | 0.36 |
+| counter_statue | 5 | 3 | 4 | 0 |
+| counter_type | 1 | ELEC | 106690 | 71.13 |
+| counter_type | 2 | GAZ | 43310 | 28.87 |
+| creation_date | 1 | 1997-11-20 00:00:00 | 434 | 0.29 |
+| creation_date | 2 | 2004-12-31 00:00:00 | 385 | 0.26 |
+| creation_date | 3 | 2002-05-28 00:00:00 | 350 | 0.23 |
+| creation_date | 4 | 1996-11-20 00:00:00 | 315 | 0.21 |
+| creation_date | 5 | 1980-10-13 00:00:00 | 309 | 0.21 |
+| district | 1 | 62 | 45195 | 30.13 |
+| district | 2 | 60 | 35216 | 23.48 |
+| district | 3 | 69 | 34935 | 23.29 |
+| district | 4 | 63 | 34654 | 23.1 |
+| fraud | 1 | No | 137126 | 91.42 |
+| fraud | 2 | Yes | 12874 | 8.58 |
+| invoice_date | 1 | 2011-04-10 00:00:00 | 222 | 0.15 |
+| invoice_date | 2 | 2012-03-04 00:00:00 | 208 | 0.14 |
+| invoice_date | 3 | 2010-04-10 00:00:00 | 198 | 0.13 |
+| invoice_date | 4 | 2010-02-12 00:00:00 | 196 | 0.13 |
+| invoice_date | 5 | 2012-08-29 00:00:00 | 196 | 0.13 |
+| reading_remarque | 1 | 6 | 118855 | 79.24 |
+| reading_remarque | 2 | 8 | 18889 | 12.59 |
+| reading_remarque | 3 | 9 | 12256 | 8.17 |
+| reading_remarque | 4 | 7 | 0 | 0 |
+| region | 1 | 101 | 37930 | 25.29 |
+| region | 2 | 311 | 17597 | 11.73 |
+| region | 3 | 104 | 13639 | 9.09 |
+| region | 4 | 301 | 11068 | 7.38 |
+| region | 5 | 107 | 9836 | 6.56 |
+| tarif_type | 1 | 11 | 90866 | 60.58 |
+| tarif_type | 2 | 40 | 42750 | 28.5 |
+| tarif_type | 3 | 10 | 11135 | 7.42 |
+| tarif_type | 4 | 15 | 3031 | 2.02 |
+| tarif_type | 5 | 45 | 560 | 0.37 |
 
 </details>
 

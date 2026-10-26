@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
@@ -81,6 +81,15 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
     # Task
     target = "fact_temperature"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE",
+        reference=(
+            "Rubachev et al. 2025, TabReD (ICLR), https://arxiv.org/abs/2406.19380; Shifts weather "
+            "(Malinin et al. 2021) also uses RMSE"
+        ),
+        definition="Root mean squared error of fact_temperature.",
+    )
 
     # Splits
     splits_comment = (

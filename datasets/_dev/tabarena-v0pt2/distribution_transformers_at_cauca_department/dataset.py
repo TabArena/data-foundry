@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 YEARS = (2019, 2020)
 """One file per year: the same 15,873 transformers in the same row order, labelled with that year's burns."""
@@ -40,7 +40,13 @@ INSTALLATION_TYPES = {
     "TORRE METALICA": "METAL TOWER",
     "CABINA": "CABIN",
 }
-"""The labels version 4 left in Spanish (or misspelt), in the words of the Data in Brief description (item L)."""
+"""The mounting labels version 4 left in Spanish (or misspelt), in the words of the Data in Brief (item L).
+
+Used only to check that the two yearly files hold the same transformers: the 2020 file misspells one category.
+"""
+
+EENS_PER_KVA_HOUR = 1.08
+"""energy_not_supplied_kwh = power_kva x 1.08 x outage hours (curation_comments, "Outage hours")."""
 
 
 def lv_network_km(km: pd.Series) -> pd.Series:
@@ -60,7 +66,8 @@ def lv_network_km(km: pd.Series) -> pd.Series:
 
 def failure_history(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Per transformer (row): failures 2015-2018 (the 2019 file's rate x 4), in 2019 and the two labels."""
-    # the files are aligned by row: every attribute column but the burning rate agrees (one label typo aside)
+    # the files are aligned by row: every attribute column but the burning rate agrees, once the 2020 file's
+    # misspelt mounting category (ANTI-FRAU) is corrected
     attributes = [c for c in COLUMNS if c != "Burning rate  [Failures/year]"]
     aligned = [raw[str(year)][attributes].replace(INSTALLATION_TYPES) for year in YEARS]
     if not aligned[0].equals(aligned[1]):
@@ -88,21 +95,23 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         ),
         row=(
             "One distribution transformer of the Cauca department (15,873 transformers), with the attributes of one "
-            "inventory taken after the 2020 burns."
+            "inventory taken during or after 2020."
         ),
         predicted="Whether the transformer burned during 2020 (629 did, 4%).",
         known=(
-            "Urban or rural, rated power, mounting, number and type of customers, the low-voltage network (length, "
-            "overhead or not, end of circuit), the area's lightning density and criticality, and the failure history "
-            "before 2020."
+            "Urban or rural, number and type of customers, the low-voltage network (length, overhead or not, end of "
+            "circuit), the planned outage hours after a failure, the area's lightning density and criticality, and the "
+            "failure history before 2020."
         ),
         split=("Random transformers of 2020; the 2019 file holds the same transformers and is not stacked."),
-        changes="We drop a self-protection flag that, in the data, marks units installed after a burn.",
+        changes=(
+            "We drop a self-protection flag that marks units installed after a burn, and the rated power and mounting, "
+            "which the inventory may show for a replacement unit; the energy not supplied is kept as outage hours."
+        ),
         fit="approximate",
         fit_reason=(
-            "The inventory postdates the 2020 burns, so rated power and mounting may show a replacement unit (power "
-            "raises the ROC AUC by 0.107 for the self-protected positives); both are kept on purpose. With one year, "
-            "the split is random rather than by time."
+            "With one year of labels the split is random rather than by time, and the training rows hold labels of "
+            "the year being predicted. Whether the 2020 label covers the whole year is not stated."
         ),
     )
 
@@ -147,22 +156,31 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
     curation_comments = """
         We start with Dataset_Year_2020.xlsx of version 4 of the Mendeley Data release by Bravo, Lozano and Alvarez (2021, Data in Brief). Dataset_Year_2019.xlsx, the same transformers labelled with the 2019 burns, is read only for the decision tables.
 
-        - Prediction point: the start of 2020, when the operator ranks its transformers by the risk that they burn during the year. Both files carry one inventory taken after the 2020 burns, so a transformer replaced in 2020 shows its replacement.
-        - One year, IID (tag ForcedIIDFromTemporal): the two files hold the same transformers, so stacking them would hold each twice, and two years cannot make three temporal windows. 2020 has the longer failure history and is less affected by the late inventory. The random split costs little: LightGBM reaches ROC AUC 0.699 within 2020 and 0.687 trained on 2019 and tested on 2020.
+        - Prediction point: the start of 2020, when the operator ranks its transformers by the risk that they burn during the year. Both files carry one inventory, identical in both, taken during or after 2020: both workbooks were created on 2020-08-05 (a template date, so circumstantial). A transformer replaced in 2020 may show its replacement. Whether the 2020 label covers the whole year is not stated; a question for the authors.
+        - One year, IID (tag ForcedIIDFromTemporal): the real use scores the known fleet one year ahead, which needs a temporal split, and two label years give one window, not three. The split follows SPLIT-8 as amended for a task with too few periods (Lennart, 2026-10-21). We keep one year rather than stacking two because the two files hold the same transformers with identical attributes, so stacking adds near-copies with a second label, and the 2019 rows are more affected by the later inventory (46% of their first burns self-protected, against 37%). The random split costs nothing measurable: LightGBM reaches ROC AUC 0.639 +- 0.012 on the 9 shipped folds and 0.648 trained on 2019 and tested on 2020; logistic regression is last under both splits, and random forest and LightGBM swap places within one standard deviation.
         - burn_rate is history: 5 x the 2020 rate - 4 x the 2019 rate equals each transformer's burns in 2019 (decision table), so the 2020 rate ends with 2019.
         - Dropped self_protected: in the data it marks a unit installed after a burn, set for 2.0% of the transformers that never burned in 2015-2020 and for 46% and 37% of those whose first burn was in 2019 and 2020 (decision table).
-        - Potential leak, kept on purpose: power_kva and installation_type come from the same inventory and may show a replacement's size and mounting; power_kva raises the ROC AUC by 0.107 for the self-protected positives and by 0.023 for the others. Both stay, as kVA follows the number of users alike in every failure group and small rural units burning more is the expected risk pattern. Revisit if the operator's replacement records become available.
-        - Anomaly, kept: removable_connectors and energy_not_supplied_kwh mark the 2015-2018 failures, history before the prediction point, and are not raised for the first burns of 2019 or 2020 (decision table).
+        - Dropped power_kva and installation_type (LEAK-10): they come from the same inventory, and the data shows the rating changed on replacement. Of the 163 self-protected first burns of 2020 none is 5 kVA and 68% are 10 kVA, against 9% and 31% of the 277 other first burns; self-protected units that never burned are 10% 5 kVA and 44% 10 kVA, so the units' make-up does not explain it (decision table). Revisit if the operator's replacement records or the inventory date become available.
+        - Outage hours: energy_not_supplied_kwh is power_kva x 1.08 x hours, so it carries the rating. We keep only the hours (EENS / (1.08 x kVA), computed before power_kva is dropped), as outage_hours.
+        - Anomaly, kept: removable_connectors and outage_hours mark the 2015-2018 failures (all units burned then have connectors; 15 h is the value for nearly all of them), history before the prediction point, and are not raised for the first burns of 2019 or 2020 (decision table).
+        - Lightning: one area has both densities at 0.0 (487 rows). Zero flashes is not credible there: 65.7% of these rows are rated keraunic-critical, more than in any band of non-zero densities (decision table). We set both to missing. Their burn rate is 2.9% against 4.0% elsewhere, so the zeros do not carry the label. The article does not say which years the densities cover.
         - Network length: lv_network_km lost its decimal point for lengths of 1.1 km and more, stored as integers of 4 to 6 digits (lengths stored with a decimal point are at most 3.56 km). We divide such an integer by 10 to the power of its number of digits minus one; the authors' MATLAB table of 2019 agrees for all 479 six-digit integers we can match.
         - Anomaly: the source also dropped the zeros right after the decimal point (1.04202 km is stored as 14202) for 178 of the 1,754 rows we match. This blurs the column without carrying the label and cannot be undone row by row.
-        - installation_type: the Spanish labels are translated as in the Data in Brief (Sec. 1, item L) and a typo is fixed. Columns are renamed to snake_case, and the label to burned (Yes / No).
-        - Duplicates kept: 80 rows repeat an earlier row, nearly all with one user and no low-voltage network: different transformers with identical coarse attributes.
-        - The lightning densities (one value per area) are features, not groups, as a transformer's area is known.
+        - Anomaly, kept: 1,008 transformers have lv_network_km = 0, most of them with one user and an overhead network. The article says the data has no missing values and does not say what 0 means, so the zeros stay.
+        - Columns are renamed to snake_case, and the label to burned (Yes / No).
+        - Duplicates kept: 140 rows repeat an earlier row once power and mounting are dropped, 86% with one user and 96% with no low-voltage network: different transformers with identical coarse attributes.
+        - The lightning densities (one value per area) are features, not groups, as a transformer's area is known. A same-year area effect, which the random split could reward, is absent: last year's burn rate of the area predicts the 2020 burns better than the same year's.
     """
 
-    # Task (the metric defaults to roc_auc; stratified on the target)
+    # Task (stratified on the target)
     target = "burned"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "A data article: describes the inventory and burn labels without a prediction benchmark or score; the "
+            "companion book (Alvarez 2021) was not checked and is not openly available."
+        )
+    )
     accepted_check_warnings = {
         "dataset_pure_feature_value": (
             "client_type = STRATUM 3 (1 of 427 burned in 2020, 2 in 2019) is a category effect on a 96% base rate: "
@@ -183,16 +201,23 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         # snake_case names in the source's order; the label "burned during 2020" as Yes / No
         df = df.rename(columns={**COLUMNS, label: self.target})
         df[self.target] = df[self.target].map({1: "Yes", 0: "No"})
-        # in the data a mark of units installed after a burn; the inventory postdates the 2020 burns
-        df = drop_columns(df, ["self_protected"])
-        # Spanish labels and a typo of version 4 in English
-        df["installation_type"] = df["installation_type"].replace(INSTALLATION_TYPES)
+        # the energy not supplied is rated power x 1.08 x outage hours; keep the hours, which do not carry the power
+        hours = df["energy_not_supplied_kwh"] / (EENS_PER_KVA_HOUR * df["power_kva"])
+        df["energy_not_supplied_kwh"] = hours.round(3)
+        df = df.rename(columns={"energy_not_supplied_kwh": "outage_hours"})
+        # from the inventory taken during or after 2020: a replacement mark, and the replacement's size and mounting
+        df = drop_columns(df, ["self_protected", "power_kva", "installation_type"])
+        # one area has densities of 0.0 in both columns: a proxy for a missing value
+        unknown = df["lightning_density_avg"].eq(0) & df["lightning_density_max"].eq(0)
+        df.loc[unknown, ["lightning_density_avg", "lightning_density_max"]] = np.nan
         # lengths of 1.1 km and more lost their decimal point
         df["lv_network_km"] = lv_network_km(df["lv_network_km"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["client_type", "installation_type"])
+        # 0/1 flags are categorical (CLEAN-14)
+        flags = ["urban", "keraunic_criticality", "removable_connectors", "overhead_lv_network", "circuit_end"]
+        return FeatureTypes(categorical=["client_type", *flags])
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         history = failure_history(raw)
@@ -209,18 +234,43 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
             ),
             name="failure record",
         )
-        factor_16_2 = (static["Electric power not supplied EENS [kWh] "] / static["POWER"]).round(4).eq(16.2)
+        hours = static["Electric power not supplied EENS [kWh] "] / (EENS_PER_KVA_HOUR * static["POWER"])
         markers = pd.DataFrame(
             {
                 "transformers": first_burn.value_counts(),
                 "self-protected": static["SELF-PROTECTION"].groupby(first_burn).mean().round(3),
                 "removable connectors": static["Removable connectors"].groupby(first_burn).mean().round(3),
-                "EENS = 16.2 x power": factor_16_2.groupby(first_burn).mean().round(3),
+                "outage hours = 15": hours.round(3).eq(15).groupby(first_burn).mean().round(3),
             }
         )
         rate_check = pd.crosstab(
             history["failures_2019"].rename("5 x rate 2020 - 4 x rate 2019"),
             history["burned_2019"].rename("burned in 2019"),
+        )
+        self_protected = static["SELF-PROTECTION"].map({1: "self-protected", 0: "not self-protected"})
+        not_before = first_burn.isin(["first burn in 2020", "no burn in 2015-2020"])
+        groups = (first_burn[not_before] + ", " + self_protected[not_before]).rename("failure record, protection")
+        rating = pd.DataFrame(
+            {
+                "transformers": groups.value_counts(),
+                "5 kVA": static["POWER"][not_before].eq(5).groupby(groups).mean().round(3),
+                "10 kVA": static["POWER"][not_before].eq(10).groupby(groups).mean().round(3),
+            }
+        )
+        density = static["Average earth discharge density DDT [Rays/km^2-año]"]
+        zero = density.eq(0) & static["Maximum ground discharge density DDT [Rays/km^2-año]"].eq(0)
+        band = pd.Series(
+            np.where(zero, "0.0 in both", pd.qcut(density.where(~zero), 5).astype(str)), name="average density"
+        )
+        lightning = pd.DataFrame(
+            {
+                "transformers": band.value_counts(),
+                "keraunic-critical": static["Criticality according to previous study for ceramics level"]
+                .groupby(band)
+                .mean()
+                .round(3),
+                "burned in 2020": static[f"Burned transformers {TASK_YEAR}"].groupby(band).mean().round(3),
+            }
         )
         stored = raw[TASK_YEAR]["km of network LT:"]
         repaired = lv_network_km(stored)  # in raw row order; `df` is already in its final order
@@ -246,8 +296,23 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
                 "self_protected is dropped: in the data it marks units installed after a burn",
                 "The share of self-protected transformers is highest among those whose first burn falls in the "
                 "labelled years, which fits an inventory taken after burned units were replaced. The connector and "
-                "EENS markers belong to the 2015-2018 failure record (history) and are not raised for later burns.",
+                "outage-hours markers belong to the 2015-2018 failure record (history) and are not raised for later "
+                "burns.",
                 markers,
+            ),
+            Decision(
+                "power_kva and installation_type are dropped: the rating changed on replacement",
+                "Among the first burns of 2020, the self-protected units (replacements) include no 5 kVA unit and "
+                "mostly 10 kVA units, unlike the other first burns and unlike self-protected units that never burned. "
+                "The inventory shows the replacement's rating, so the rating and the mounting are not known at the "
+                "start of 2020.",
+                rating,
+            ),
+            Decision(
+                "Lightning densities of 0.0 are set to missing",
+                "The one area with both densities at 0.0 is rated keraunic-critical more often than any band of "
+                "non-zero densities, so 0.0 stands for an unknown value; its burn rate is not higher than elsewhere.",
+                lightning,
             ),
             Decision(
                 "burn_rate counts the failures before the labelled year",

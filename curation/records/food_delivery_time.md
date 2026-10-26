@@ -10,12 +10,10 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
 - Random (IID)
 original_source: Kaggle
 year: '2023'
 required_split:
-- Temporal (NON-IID)
 - Random (IID)
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
@@ -52,6 +50,8 @@ split instead. The temporal tag reflects that open question, not the protocol th
 **Assessment (AI, 2026-10-14):** the delivery point is always the restaurant plus one of 12 equal offsets in latitude and longitude (0.01-0.14 degrees), so delivery addresses are synthetic. 424 rows (0.9%) have the restaurant latitude sign flipped (159 also the longitude); the same restaurants appear with positive coordinates. 3,630 rows (8%) have the restaurant at (0, 0), a missing code; their mean time is 26.1 min against 26.3. Blanking them costs about 0.09 RMSE, dropping them nothing.
 
 CC (2026-10-14, Lennart): Flip the signs, keep the (0, 0) rows and document the synthetic offsets.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset without a competition or paper; the data card states the task but no metric.
 
 ## Reference
 

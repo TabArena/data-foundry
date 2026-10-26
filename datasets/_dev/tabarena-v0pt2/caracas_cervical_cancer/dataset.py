@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 SCREENING_TESTS = ["Hinselmann", "Schiller", "Citology"]
 """The three screening results besides the biopsy: outcomes of the same work-up, not features."""
@@ -138,16 +138,28 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         - We set the values the source filled in before release (`SOURCE_FILLS`) to missing. They are the only answers with more than three decimals in their columns, all in rows that answered "yes": the answer is known, the duration is not.
         - `stds_number_of_diagnoses` is 0 for every patient who skipped the STD questions; we set it to missing for them.
         - We drop the flags for cervical condylomatosis and AIDS: no patient has either.
-        - The STD-type flags and the previous-diagnosis flags (`dx_*`) stay binary categorical columns: they are multi-label (43 patients have two to four STD types).
+        - The STD-type flags and the previous-diagnosis flags (`dx_*`) stay one yes/no category each: every flag is a question of the questionnaire, and they are multi-label (9 patients have two or three STD types). `std_condylomatosis` is the parent of the vaginal and vulvo-perineal types, so `stds_number` counts these patients' condylomatosis twice; kept as the source counts it.
         - We rename the columns without colons, spaces and brackets (LightGBM refuses colons in feature names). `dx` and the `dx_*` flags are the previous cervical diagnoses of the 2017 Table 1, history rather than the diagnosis of this work-up (12 of the 18 patients with `dx_cancer` have a negative biopsy).
         - We keep the 22 rows (2.9%) whose answers repeat another row's: coarse answer profiles of young patients, not adjacent in the file. Recombining the answers at random among patients of the same age and history gives 20 repeats on average, so they are different women (decision table).
         - Note: a label-free distance to the nearest other patient gives ROC AUC 0.70, above the untuned models (random forest 0.68). It follows the number of nonzero answers (Spearman 0.57), so we read it as the risk load of the questionnaire, not as generated data (the generated-data probe finds no rule leaves).
-        - Anomaly: a few answers contradict each other (2 patients report a first intercourse after their current age, 5 have a `dx_*` flag set while `dx` is 0). Kept as recorded: we cannot tell which answer is wrong.
+        - Impossible answers become missing: 2 first intercourses after the patient's current age and 2 STD diagnoses longer ago than her age (the age is the clinic's record).
+        - Anomaly: other answers contradict each other without being impossible and stay as recorded: 5 patients have a `dx_*` flag set while `dx` is 0, and 7 report an STD with no STD diagnosis counted (the questions may count different things).
     """
 
     # Task
     target = "biopsy"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference=(
+            "Fernandes, Chicco, Cardoso & Fernandes 2018, 'Supervised deep learning embeddings for the "
+            "prediction of cervical cancer diagnosis', PeerJ Computer Science 4:e154, "
+            "doi:10.7717/peerj-cs.154 (abstract: 'top AUC ~0.69' for the biopsy); first use Fernandes, "
+            "Cardoso & Fernandes, IbPRIA 2017, doi:10.1007/978-3-319-58838-4_27"
+        ),
+        definition="ROC AUC of the predicted probability of a positive biopsy",
+    )
 
     accepted_check_warnings = {
         "dataset_duplicate_rows": "The 21 exact copies (2.8%) are coarse answer profiles of young patients with "
@@ -164,6 +176,11 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         # values the source filled in before release: the answer is yes, the duration unknown
         for col, value in SOURCE_FILLS.items():
             df[col] = df[col].mask((df[col] - value).abs() < 1e-6)
+        # impossible answers: a first intercourse after the current age, an STD diagnosed longer ago than the patient
+        # is old; the age is the clinic's record, so the self-reported value becomes missing
+        df["First sexual intercourse"] = df["First sexual intercourse"].mask(df["First sexual intercourse"] > df["Age"])
+        for col in ["STDs: Time since first diagnosis", "STDs: Time since last diagnosis"]:
+            df[col] = df[col].mask(df[col] > df["Age"])
         # the count of STD diagnoses is 0 by default for patients who skipped the STD questions
         df["STDs: Number of diagnosis"] = df["STDs: Number of diagnosis"].astype(float).mask(df["STDs"].isna())
         # patients who skipped the contraceptive question: their test results look unrecorded, not negative

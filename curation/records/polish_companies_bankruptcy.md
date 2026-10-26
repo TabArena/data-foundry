@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: UCI
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 source_links:
 - https://doi.org/10.24432/C5F600
 notebook_path: datasets/beyond_iid/old_iid/polish_companies_bankruptcy/polish_companies_bankruptcy.ipynb
@@ -33,6 +33,8 @@ Potential issue: Temporal
 Lennart: Could be used without temporal connection
 
 Andrej: task can be conceptualized s.t. the features are time-invariant. Only need to think about whether it is feasible to combine the year datasets or to choose one. If the latter I would use the year with the most observations. Also might reverse the feature engineering.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC, as reported by Zieba, Tomczak & Tomczak (2016), Expert Systems with Applications 58, 93-101.
 
 ## Reference
 

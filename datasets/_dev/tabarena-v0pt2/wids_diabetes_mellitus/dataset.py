@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class WidsDiabetesMellitus(AbstractCuratedDataset):
@@ -73,6 +73,12 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
     # Task
     target = "diabetes_mellitus"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under the ROC Curve (AUC)",
+        reference="https://www.kaggle.com/competitions/widsdatathon2021/overview/evaluation",
+        definition="AUC between the predicted probability of diabetes_mellitus and the observed label",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "TrainingWiDS2021.csv")

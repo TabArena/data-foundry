@@ -9,7 +9,7 @@ decision_markers:
 tags:
 - Free Text (Short)
 - New IID
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - CARTE/TARTE
 source_links:

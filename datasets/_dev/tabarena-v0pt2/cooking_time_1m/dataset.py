@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class CookingTime1m(AbstractCuratedDataset):
@@ -69,6 +69,7 @@ class CookingTime1m(AbstractCuratedDataset):
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
 
+        - Potential leak, kept on purpose: TabReD releases the 186 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 155 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a cooking time under one minute (168 of 12.8M, 26 of them zero or negative), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
     """
@@ -76,16 +77,23 @@ class CookingTime1m(AbstractCuratedDataset):
     # Task
     target = "cooking_time_minutes"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="RMSE (TabReD regression tasks)",
+        reference=(
+            "Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE "
+            "for regression, ROC AUC for classification"
+        ),
+        definition="sqrt(mean((y - yhat)^2)) on the natural-log minutes target",
+    )
 
     # Splits
-    splits_comment = (
-        "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
-    )
+    splits_comment = """
+        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+    """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=7, unit="days", n_windows=3),
+        splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
     )
     subsample_to_budget = True
 

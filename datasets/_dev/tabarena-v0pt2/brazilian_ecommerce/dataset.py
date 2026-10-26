@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -111,7 +112,7 @@ class BrazilianEcommerce(AbstractCuratedDataset):
 
         - Prediction point: at checkout, from what is known when the customer places the order, including the delivery date Olist promises then.
         - Task choice: the uploader's notebook predicts the review score, but a low score reaches ROC AUC 0.60 from the checkout features alone. We take the delivery time, which the data card suggests.
-        - Target: the log of the days from order_purchase_timestamp to order_delivered_customer_date, because the durations are right-skewed. We keep RMSE (on the log days).
+        - Target: the log of the days from order_purchase_timestamp to order_delivered_customer_date, because the durations are right-skewed. The metric is RMSLE on the days, computed after the inverse (`target_transform="log"`; Lennart, 2026-10-21).
         - Cohort: the review sample ends with the surveys sent on 2018-08-31, and a survey goes out at delivery or at the promised date. We keep orders placed before 2018-08-01 and promised by 2018-08-24, so every kept order would be in the sample whatever its delivery time (decision table).
         - Cohort: delivered orders (status "delivered" with a delivery date) with one seller. The orders file has one delivery date per order, which mixes shipments when an order has several sellers.
         - We drop order_approved_at, order_delivered_carrier_date and order_status (constant after the cohort filter), all recorded after checkout, and do not take shipping_limit_date from the items file, which is set at payment approval.
@@ -129,12 +130,17 @@ class BrazilianEcommerce(AbstractCuratedDataset):
     # Task
     target = "log_delivery_days"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A Kaggle dataset, not a competition: the data card suggests the delivery-time question but defines no metric; the task is our own. For a delivery time the error that matters is relative to the time (two days late on a three-day delivery is worse than on a thirty-day one), so RMSLE on the days.",
+        target_transform="log",
+    )
 
     # Splits
     splits_comment = """
         A model refit at the start of each month predicts the delivery time of the orders placed during that month. It trains on the orders placed at least one month before the refit whose delivery is known by then. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
     """
-    temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months")
+    temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
     accepted_check_warnings = {
         "splits_rows_unused": "Four orders placed in January and February 2018 (148 to 208 days to delivery) are in no "
         "split: they were placed before the oldest test window and were still in transit when the newest one started.",

@@ -5,12 +5,11 @@ checked_by:
 - Alex
 - Gioia
 - AI (UNVERIFIED)
+- Myunghwan
 claimed_by:
 - Lennart
 - Andrej
-- Mustafa
-- Alex
-- Gioia
+- Myunghwan
 data_foundry_status:
 - 'DF: Yes'
 - WIP (DF)
@@ -35,7 +34,7 @@ decision_markers:
 - Time-series (Classification)
 - Outdated
 - No Good Target (yet)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Data Quality Issue
 - Trivial
 - Image
@@ -56,7 +55,7 @@ tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
 - Tiny Data
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - New IID
 - Non-IID (Grouped)
 - Random (IID)

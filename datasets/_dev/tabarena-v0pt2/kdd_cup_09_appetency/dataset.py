@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class KddCup09Appetency(AbstractCuratedDataset):
@@ -37,6 +37,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
     domain = "business & marketing"
     source = "Other"
     source_url = "https://kdd.org/kdd-cup/view/kdd-cup-2009/Data"
+    data_tags = ("Anonymized",)
     license = "Public Domain"
     download_description = """
         We download the data and the labels from the KDD challenge website:
@@ -64,6 +65,14 @@ class KddCup09Appetency(AbstractCuratedDataset):
     # Task
     target = "Appetency"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original=("AUC (area under the ROC curve), per task; the ranking averaged churn, appetency and up-selling AUC"),
+        reference=(
+            "Guyon et al. 2009, Analysis of the KDD Cup 2009, JMLR W&CP 7; https://kdd.org/kdd-cup/view/kdd-cup-2009"
+        ),
+        definition="ROC AUC of the appetency score on the test customers.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "orange_small_train.data", sep="\t")

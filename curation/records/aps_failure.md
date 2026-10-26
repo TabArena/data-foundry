@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: Other
 year: '2016'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/
@@ -40,6 +40,8 @@ Lennart: verify split
 Andrej: need to verify that original provided split was also random
 
 CC (2026-10-06, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `one_feature`: `ck_000` alone +0.944 skill against +0.982 for LightGBM). Not trivial: the best single feature chosen on each split's training side (`ci_000` or `aa_000`) ranks the test rows at ROC AUC 0.970, below all 20 BeyondArena configurations (TabPFN-3 0.994 to a default linear model 0.988) on every fold; the methods cut the remaining error (1 - AUC) from 0.031 to 0.006. The flag comes from AUC near its ceiling, where the methods differ in the third decimal; the original challenge scored a cost (500 per missed failure, 10 per false alarm). Still open from the earlier triage: the source ships a train/test split (the last 16,000 readings) that may be temporal; there are no timestamps to check it, so the random folds stay.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source cost_matrix {"labels": ["neg", "pos"], "matrix": [[0, 10], [500, 0]], "prediction": "proba"} — Total cost = Cost_1 * #false positives + Cost_2 * #false negatives (IDA 2016 Industrial Challenge) (https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/ ; UCI https://doi.org/10.24432/C5V60Q (aps_failure_description.txt)).
 
 ## Reference
 

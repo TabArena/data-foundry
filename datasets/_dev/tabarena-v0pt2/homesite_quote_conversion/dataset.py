@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -26,11 +26,12 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
             "Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by "
             "date instead."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% "
-            "buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC"
-            " AUC 0.965 with them, 0.915 without)."
+            "Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status "
+            "code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with "
+            "them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and "
+            "noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21)."
         ),
     )
 
@@ -73,6 +74,12 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
     # Task
     target = "QuoteConversion_Flag"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference="https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation",
+        definition="Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")
