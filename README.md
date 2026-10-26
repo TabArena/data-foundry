@@ -2,13 +2,12 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 17:32 UTC: 34 claim(s) (Lennart 21, Myunghwan 13).
+As of 2026-10-26 21:30 UTC: 33 claim(s) (Lennart 20, Myunghwan 13).
 
 ## Lennart
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
-| `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
 | `diabetes_3` | add | 2026-10-23 | 2026-10-30 |  |
 | `differentiated_thyroid_cancer_recurrence` | add | 2026-10-23 | 2026-10-30 |  |
 | `distribution_transformers_at_cauca_department` | add | 2026-10-23 | 2026-10-30 |  |
