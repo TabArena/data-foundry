@@ -4,6 +4,76 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26, last round (SPLIT-31 amended: molecules group on the scaffold)
+
+- SPLIT-31 amended (Lennart): a molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold;
+  a molecule without a ring, or of a scaffold that holds more than a tenth of the molecules (the bare benzene ring),
+  is a group of its own. New helper `scaffold_groups` in `data_foundry.v2.chemistry` (with tests); the module also
+  records why Mordred's descriptors are not used (measured on qsar_bioconcentration: -0.013 to -0.020 macro ROC AUC),
+  to revisit for all SMILES datasets at once.
+- `qsar_bioconcentration`: scaffold groups in place of IID (ring-less 104 and bare benzene 262 alone); fit `direct`;
+  RDKit's descriptors and the logKOW only (no Mordred). The task probes now flag `unstable` (random forest macro ROC
+  AUC 0.673, log-loss skill +0.068, beating the class shares on 77% of the splits). No open issue left.
+- `qsar_oral_toxicity` reopened under the amendment: scaffold groups in place of IID (ring-less 2,577 and bare benzene
+  1,969 alone); close training analogs of the test chemicals fall from 24.7% to 16.3%, against 11.0% for untested
+  chemicals, so the fit stays approximate. Random forest ROC AUC 0.864 (probe), no flag.
+- The records of the three molecule datasets (drug_induced_autoimmunity_prediction too, grouped since 2026-10-19) now
+  read `Grouped (NON-IID)`.
+- Shipped (`DF: Yes`, claims released): fraud_detection_in_electricity_and_gas_consumption, diabetes_3, rosbank1,
+  pkdd_15_taxi_trip_time_prediction_ii, differentiated_thyroid_cancer_recurrence, qsar_bioconcentration and
+  qsar_oral_toxicity. No folder of the working copy has an open issue left.
+- Claims released and `DF: Yes` for the three datasets shipped on 2026-10-22 whose claims were still held:
+  melbourne_housing_market, nyc_taxi_trip_duration and g_research_crypto_forecasting.
+
+## 2026-10-26, late night (african_credit shipped; rosbank1 time features; nyc and pkdd 100 m; thyroid keeps Hx Radiothreapy)
+
+Lennart's next marks on the review page. Nothing was built.
+
+- `african_credit_scoring_challenge`: shipped (`DF: Yes`, claim released) with `earlier_loans`.
+- `rosbank1`: issue 5, option (c): the 1st place's time block (Khrylchenko 2018: span, spread, position and gaps of
+  the active days, overall, per category and per direction of money, the last month, days per month), rewritten in
+  `time_features`, joins the CoLES aggregates (CLEAN-19 Cases row). Untuned LightGBM on the three windows 0.857 to
+  0.896; the task probes' `no_spread` flag is gone. Three columns that copy others in this data are dropped. No open
+  issue left.
+- `nyc_taxi_trip_duration_1m` reopened (from pkdd's issue 2, option (c)) and `pkdd_15_taxi_trip_time_prediction_ii_1m`:
+  trips whose end lies within 100 m of their start are dropped in both (USE-7 Cases row); pkdd's time cut falls from
+  60 to 30 s. nyc's frame: 1,165,967 rows (1,166,477); pkdd: 1,636,276 trips after the filters (1,655,893). No open
+  issue left for pkdd.
+- `differentiated_thyroid_cancer_recurrence`: `Hx Radiothreapy` is kept as an input (the paper dates it before
+  diagnosis), the 34 high-risk or M1 patients stay (the paper's cohort), the notes quote the paper. No open issue
+  left.
+- `qsar_bioconcentration`: the authors' 9 Dragon descriptors are dropped (LEAK-31 case; RDKit's descriptors and the
+  logKOW carry the signal, the 9 add 0.002); the class stays the target. Open on the page: Mordred's descriptors
+  (measured: they lower the scores by 0.013-0.020) and the scaffold split against qsar_oral_toxicity's IID.
+
+## 2026-10-26, night (african_credit earlier_loans; rosbank1 in rubles; qsar_bioconcentration logKOW)
+
+Lennart's night marks of 2026-10-26 on the Open Datasets Review page; records carry them as `CC (2026-10-26, Lennart)`
+lines. Nothing was built.
+
+- `african_credit_scoring_challenge`: adds `earlier_loans`, the customer's loans in the release disbursed on an
+  earlier day (Train.csv and the Kenyan rows of Test.csv, any product, no label read; CLEAN-19, issue 8 (a)). ROC AUC
+  over the six windows: the count alone 0.724, tuned LightGBM 0.698 (before 0.633), TabPFN v3.5 0.724; the task
+  probes' `unstable` flag is gone. Model checks run TabPFN v3.5 from now on (Lennart).
+- `rosbank1`: `amount` is converted to rubles at the Bank of Russia's official rate in force on the transaction's day
+  (issue 7 (c), CLEAN-21; 30 rate series pinned by checksum); the 1,466 transactions in 27 currencies the Bank did not
+  quote then keep their counts and leave the amount statistics, and `std_amount_trx_CASH_ADV`, now constant, is
+  dropped. Churn only (issue 1) and the temporal split (issue 8) settled. Issue 5: the 1st-place solution of the 2018
+  competition is published; CoLES plus its time features scores 0.893-0.900 against CoLES's 0.855 (untuned LightGBM),
+  a choice left to the curator.
+- `qsar_bioconcentration`: adds `logKOW` and `logKOW_type` from the authors' 2015 table (Chemosphere SI; issue 8 (a),
+  USE-6), 774 of 776 chemicals. The record's stale `Free Text (Short)` tag is removed.
+- `fraud_detection_in_electricity_and_gas_consumption_1m`: issues 1, 2, 4 and 8 confirmed as implemented, the invoice
+  rows an exception to CLEAN-19 (next to amex_non_iid, now on record too); year 2019; tagged `Revisit later` (new tag)
+  for the 2013 cut, to reopen if STEG publishes dated inspections. No open issue left.
+- `diabetes_3`: the record's source links are the paper's DOI and the authors' file, the `Trivial` marker removed.
+  No open issue left. `differentiated_thyroid_cancer_recurrence`: `Trivial` removed; the paper (the curator's PDF)
+  answers issues 2 and 6 on the page.
+- `pkdd_15_taxi_trip_time_prediction_ii_1m`: the 100 m cut is written but not applied; the page asks how it differs
+  from nyc_taxi_trip_duration's identical-point rule first.
+- Knowledge: CLEAN-19 Cases rows for african_credit (applied), fraud_detection and amex_non_iid (exceptions); a CLEAN-21
+  row for rosbank1 (applied).
+
 ## 2026-10-26, evening (LEAK-10 amended; aeolus_1m, lgd, stroke, credit_card_customers, digicow out; numerai all features)
 
 Lennart's evening marks of 2026-10-26 on the Open Datasets Review page; records carry them as

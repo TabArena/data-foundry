@@ -20,6 +20,9 @@ from data_foundry.v2 import (
 MIN_SECONDS = 30
 """Shorter records are not rides: most start and end at one point (the meter engaged and disengaged in place)."""
 
+MIN_STRAIGHT_LINE_KM = 0.1
+"""A trip that ends closer to its pickup has no destination a passenger would name (CC 2026-10-26, as in pkdd)."""
+
 MAX_SECONDS = 3 * 3600
 """Longer records have a broken clock: the trips per 20 minutes fall smoothly to 18 at 3 h, then a cluster just
 below 24 h follows (VeriFone meters) whose metered fares are those of trips of a few minutes."""
@@ -92,8 +95,8 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         ),
         changes=(
             "We split by week instead of the competition's random sample of the same days, drop a flag set only after"
-            " the trip, non-rides under 30 seconds, broken clocks over 3 hours and trips whose drop-off point equals "
-            "the pickup point, blank impossible passenger counts, and correct trips across the daylight-saving switch."
+            " the trip, non-rides under 30 seconds, broken clocks over 3 hours and trips whose drop-off lies within 100 "
+            "m of the pickup, blank impossible passenger counts, and correct trips across the daylight-saving switch."
         ),
         fit="approximate",
         fit_reason=(
@@ -154,9 +157,9 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         - We take 3,600 s off the trips picked up before 02:00 on 2016-03-13 and dropped off after the clocks jumped to 03:00. The times are wall-clock times, so these trips were recorded one hour too long (decision table).
         - We drop trips shorter than 30 s, which are not rides (most start and end at one point), and trips longer than 3 h, whose clock is broken (a cluster just below 24 h from VeriFone meters at walking speed; decision table). The two filters remove 0.47% of the trips.
         - We drop 38 trips with an end outside the box of longitude -75 to -72 and latitude 40 to 41.5: GPS errors on trips of a few minutes.
-        - We drop 4,539 trips (0.31%, 0.29-0.34% in every month, 73% VeriFone) whose drop-off coordinates equal the pickup coordinates to the last digit: a named destination is never the pickup point, so these rows lack the input the ETA acts on (decision table). Their mean target is 6.04 against 6.47 for the other trips.
+        - We drop the trips whose drop-off lies within 100 m of the pickup (Lennart, CC 2026-10-26, USE-7; the radius of pkdd_15_taxi_trip_time_prediction_ii_1m): nobody names a destination that close to where they are picked up, so these rows lack the input the ETA acts on. They are the 4,539 trips (0.31%, 0.29-0.34% in every month, 73% VeriFone) whose drop-off coordinates equal the pickup coordinates to the last digit, mean target 6.04 against 6.47 for the other trips, and about 4,500 more at other coordinates: 1,082 within 10 m (median 69 s) and 3,436 at 10 to 100 m (median 230 s) (decision table).
         - We set passenger_count to missing where it is 0 (the driver did not enter it) or above the 6 seats of a cab (8 and 9), 23 trips in all, and keep the trips.
-        - Anomaly: 1,082 kept trips start and end within 10 m but not at the same coordinates, and 46 imply more than 100 km/h. We keep them, as they cannot be told from real trips with certainty.
+        - Anomaly: 46 kept trips imply more than 100 km/h. We keep them, as they cannot be told from real trips with certainty.
         - Split: weekly test windows over the last 3 weeks of June 2016 (splits_comment). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
         - Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scores RMSE 0.373, 0.357 and 0.381 on the weekly windows (newest first) when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
         - Note: the Kaggle rules (Sec. 7) allow academic research and other non-commercial use and forbid redistribution; the TLC publishes the same records on NYC Open Data without an explicit licence.
@@ -196,8 +199,8 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         for c in COORDINATES:
             inside &= df[c].between(*(LONGITUDE if c.endswith("longitude") else LATITUDE))
         df = df[inside]
-        # no destination: the drop-off point is the pickup point to the last digit
-        df = df[~same_point(df)]
+        # no destination: the drop-off lies within 100 m of the pickup (a named destination is never there)
+        df = df[haversine_km(df) >= MIN_STRAIGHT_LINE_KM]
         # 0 (not entered) and more than the seats of a cab (8, 9) are not passenger counts
         count = df["passenger_count"]
         df["passenger_count"] = count.astype(float).mask(count.eq(0) | count.gt(PASSENGER_SEATS))
@@ -263,7 +266,9 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         # the trips of the duration window by how far the drop-off lies from the pickup
         trips = base[kept]
         distance = np.select(
-            [same_point(trips), km[kept] < 0.01], ["same coordinates", "within 10 m, not the same"], "10 m or more"
+            [same_point(trips), km[kept] < 0.01, km[kept] < MIN_STRAIGHT_LINE_KM],
+            ["same coordinates", "within 10 m, not the same", "10-100 m"],
+            "100 m or more",
         )
         points = (
             pd.DataFrame(
@@ -281,7 +286,7 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
                 median_seconds=("seconds", "median"),
                 share_verifone=("verifone", "mean"),
             )
-            .reindex(["same coordinates", "within 10 m, not the same", "10 m or more"])
+            .reindex(["same coordinates", "within 10 m, not the same", "10-100 m", "100 m or more"])
         )
 
         # trips picked up between 01:00 and 01:59 on the night of the switch and on the Sundays before and after
@@ -307,11 +312,11 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
                 by_band.round(3),
             ),
             Decision(
-                "Trips whose drop-off coordinates equal the pickup coordinates are dropped",
-                "The task takes the drop-off point as the destination named at pickup, and a named destination is "
-                "never the pickup point: these rows lack the input the ETA acts on (a failed GPS fix at the drop-off "
-                "or a ride that did not happen). Trips that end within 10 m at other coordinates are kept, as they "
-                "cannot be told from short real rides. Trips of 30 s to 3 h, before the box filter:",
+                "Trips whose drop-off lies within 100 m of the pickup are dropped",
+                "The task takes the drop-off point as the destination named at pickup, and nobody names a destination "
+                "within 100 m of where they are picked up: these rows lack the input the ETA acts on (a failed GPS fix "
+                "at the drop-off, a ride that did not happen, or a trip back to the start). The same radius serves "
+                "pkdd_15_taxi_trip_time_prediction_ii_1m. Trips of 30 s to 3 h, before the box filter:",
                 points.round(3),
             ),
             Decision(

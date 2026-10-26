@@ -2,16 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: african_credit_scoring_challenge
 container_format: 2
-checksum: v2:fecaa1d76e199971458ffe14a220a9d4c14e3ad33efb0f80b844923fdc057462
+checksum: v2:bd1df30cbe450966cf880437d48562907786bb48f81ad1daa2a314dbc9823431
 build: null
 build_stale: false
 data:
   n_rows: 52826
-  n_features: 7
+  n_features: 8
   dtypes:
     category: 3
     datetime64[ns]: 2
     float64: 3
+    int64: 1
   n_test_dataset_rows: null
 task:
   target: default
@@ -61,9 +62,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `default`, scored with `roc_auc` on temporal splits by `disbursement_date`. 52,826 rows and 7 features. Source: Zindi (2024).
+Binary classification of `default`, scored with `roc_auc` on temporal splits by `disbursement_date`. 52,826 rows and 8 features. Source: Zindi (2024).
 
-Not built yet. The current definition gives checksum `v2:fecaa1d76e199971458ffe14a220a9d4c14e3ad33efb0f80b844923fdc057462`.
+Not built yet. The current definition gives checksum `v2:bd1df30cbe450966cf880437d48562907786bb48f81ad1daa2a314dbc9823431`.
 
 ## In brief
 
@@ -75,11 +76,11 @@ Not built yet. The current definition gives checksum `v2:fecaa1d76e199971458ffe1
 
 **Predicted.** The loan's default, as it stood when the data was pulled in October 2024, long after every loan was due (about 1% of rows).
 
-**Known at prediction time.** The customer (as an id, so the same customer's settled earlier loans can be in training), new or repeat customer, the loan amount, the disbursement and due dates, the lender's funded amount and share.
+**Known at prediction time.** The customer (as an id, so the same customer's settled earlier loans can be in training), the number of the customer's earlier loans in the data, new or repeat customer, the loan amount, the disbursement and due dates, the lender's funded amount and share.
 
 **What the test data stands for.** Six test windows of 5-10 days at the end of the product's lending, October to December 2022. Each trains on the loans whose label had settled before the window starts.
 
-**Our changes to the source.** We keep only the main product, drop the amounts to repay, which grow after a default, and the rows of lenders funding less than one unit (labelled no default whatever happened), and split by disbursement date where the competition split rows at random and also tested a second country.
+**Our changes to the source.** We keep only the main product, add the customer's number of earlier loans, drop the amounts to repay, which grow after a default, and the rows of lenders funding less than one unit (labelled no default whatever happened), and split by disbursement date where the competition split rows at random and also tested a second country.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The customer's history is known only through labels settled before each window, while a lender learns of a repayment the day it is made. How the loans were sampled is not stated. The competition's test of a second country (Ghana, unlabelled) and of new applicants is not part of the task.
 
@@ -133,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | license | Zindi Competition Rules |
 | data_tags | Non-IID, Temporal |
 | reference | Zindi2024AfricanCreditScoringChallenge |
-| rows x columns | 52,826 x 8 |
+| rows x columns | 52,826 x 9 |
 | task.target | default |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -178,24 +179,25 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 52,826 rows of the final frame (the oldest rows: the frame is sorted by `disbursement_date`). Cells are cut at 40 characters.
 
-| default | customer_id | Total_Amount | disbursement_date | due_date | New_versus_Repeat | Amount_Funded_By_Lender | Lender_portion_Funded |
-|---|---|---|---|---|---|---|---|
-| No | 242020 | 6735 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 3367.5 | 0.5 |
-| No | 246079 | 510 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 255 | 0.5 |
-| No | 265893 | 3904 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 1952 | 0.5 |
-| No | 246758 | 5598 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 2799 | 0.5 |
-| No | 267694 | 9464 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 4732 | 0.5 |
+| default | customer_id | Total_Amount | disbursement_date | due_date | New_versus_Repeat | Amount_Funded_By_Lender | Lender_portion_Funded | earlier_loans |
+|---|---|---|---|---|---|---|---|---|
+| No | 245476 | 435 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 217.5 | 0.5 | 0 |
+| No | 252904 | 2250 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 1125 | 0.5 | 0 |
+| No | 251902 | 8697 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 4348.5 | 0.5 | 0 |
+| No | 259457 | 31397 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 15698.5 | 0.5 | 0 |
+| No | 253896 | 1199 | 2022-07-12 00:00:00 | 2022-07-19 00:00:00 | Repeat Loan | 599.5 | 0.5 | 0 |
 
 ## Curation notes
 
 We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.
 
-- Prediction point: when a loan is disbursed, with the customer's settled earlier loans known.
+- Prediction point: when a loan is disbursed, with the customer's earlier loans and their settled outcomes known.
 - We keep only the loans of the main product, Type_1 (Lennart, CC 2026-10-26): one lender's 7-day loans of 2022-07-12 to 2022-12-01, 52,826 rows after the lender-amount filter, 520 defaults (0.98%), 5,040 customers, 99.5% repeat loans. The file mixes this product with a few hundred loans a month of changing products (2021-2024) and a new product, Type_7, from July 2023; the other products default at about 10%, share 1.4% of their customers with Type_1, and are too few for test windows of their own. A mixed task would score telling the products apart rather than ranking the customers of one product (untuned LightGBM ROC AUC 0.68 on the mixed 2022 windows against 0.60 on Type_1 alone).
 - Not reproduced: the competition's test file also held 3,525 loans from Ghana (products absent from Train.csv, no labels released) and a random 18% of the Kenyan loans of the same dates; the competition's goal of models that "generalise well" to a new country cannot be tested here, and the Ghana part was won by a hand-written rule (issue 7 of the review, 2026-10-26).
 - Within Type_1, lender_id, loan_type and duration are constant, and we drop them.
 - We rename target to default.
-- We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for decision table 2.
+- We add earlier_loans, the number of the customer's loans in the release disbursed on an earlier day (Train.csv and the Kenyan rows of Test.csv, any product, one count per loan id), known at disbursement and built without labels (CLEAN-19, a history aggregated per prediction; Lennart, CC 2026-10-26). The models reach the customer's history only through customer_id otherwise (CatBoost falls from 0.66 to 0.55 ROC AUC without it); the count alone ranks defaults at 0.72 on the six windows (0.61-0.83 per window), above every model on the source's columns. It counts only loans in the release, so it grows over the first months of the data (median 9). A count of the customer's earlier defaults settled before disbursement is 0 in every row (a default ends the customer's history in the product), so it is not added.
+- We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for earlier_loans and decision table 2.
 - We drop ID and tbl_loan_id (identifiers) and country_id (Kenya in every row).
 - We drop Total_Amount_to_Repay and Lender_portion_to_be_repaid: recorded at the data pull, they grow with a defaulted loan's days past due (decision table).
 - We drop the 8,899 rows whose lender funds less than one unit (Amount_Funded_By_Lender below 0.5): none is labelled 1, where about 105 would be expected at the rate of their months, and for the same customers and months 1.04% of them carry a default-size repay charge against 0.40% of the customers' other loans. They are labelled 0 whatever the customer did and hide about 90-130 defaults (decision table).
@@ -301,7 +303,8 @@ Six windows of about equal numbers of rows run from the first day by which half 
 | due_date | datetime64\[ns\] | 0 | 0 | 133 | 2022-07-23 00:00:00, 2022-08-01 00:00:00, 2022-08-08 00:00:00, 2022-07-30 00:00… |
 | Total_Amount | float64 | 0 | 0 | 16700 | 1500.0, 2199.0, 4699.0, 2000.0, 4989.0, 6499.0, 2250.0, 599.0, 5249.0, 4949.0 |
 | Amount_Funded_By_Lender | float64 | 1 | 0 | 21467 | 450.0, 659.7, 600.0, 1496.7, 1949.7, 1409.7, 675.0, 1574.7, 179.7, 1649.7 |
-| Lender_portion_Funded | float64 | 1 | 0 | 10681 | 0.3, 0.5, 0.6, 0.015, 0.0008, 0.0032, 0.0055, 0.0008, 0.0244, 0.04 |
+| Lender_portion_Funded | float64 | 1 | 0 | 10681 | 0.3, 0.5, 0.6, 0.015, 0.18, 0.15, 0.1154, 0.0008, 0.0014, 0.04 |
+| earlier_loans | int64 | 0 | 0 | 202 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
 
 ### Target distribution
 
@@ -317,6 +320,7 @@ Six windows of about equal numbers of rows run from the first day by which half 
 | Total_Amount | 52826 | 9610.83 | 16129.1 | 100 | 711171 |
 | Amount_Funded_By_Lender | 52825 | 2273.66 | 4419.41 | 0.5 | 355586 |
 | Lender_portion_Funded | 52825 | 0.257122 | 0.0972311 | 7.92984e-06 | 0.6 |
+| earlier_loans | 52826 | 15.6867 | 20.5899 | 0 | 249 |
 
 ### Categorical features
 

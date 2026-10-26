@@ -30,6 +30,15 @@ PRODUCT = "Type_1"
 """The one product the task keeps: one lender's 7-day loans of July to December 2022 (CC 2026-10-26)."""
 
 
+def _earlier_loans(raw: dict[str, pd.DataFrame]) -> pd.Series:
+    """Per loan id: the customer's loans in the release disbursed on an earlier day, any product (no label read)."""
+    kenya = raw["test"][raw["test"]["country_id"] == "Kenya"]  # the competition's random 18% of the same dates
+    loans = pd.concat([raw["train"], kenya]).drop_duplicates("tbl_loan_id")  # a two-lender loan has two rows
+    date = pd.to_datetime(loans["disbursement_date"], format="%Y-%m-%d")
+    earlier = date.groupby(loans["customer_id"]).rank(method="min") - 1
+    return pd.Series(earlier.astype(int).to_numpy(), index=loans["tbl_loan_id"].to_numpy())
+
+
 def _labelled_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """The rows of Train.csv kept for the task, still with the loan id (`_clean` drops it)."""
     df = raw["train"].rename(columns={"target": "default"})
@@ -37,6 +46,9 @@ def _labelled_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
     for col in ("disbursement_date", "due_date"):
         df[col] = pd.to_datetime(df[col], format="%Y-%m-%d")
     pull = df["disbursement_date"].max()  # the data pull: the file ends with the loans of its last day
+
+    # The customer's history at disbursement, counted before any row is dropped (curation comments)
+    df["earlier_loans"] = df["tbl_loan_id"].map(_earlier_loans(raw))
 
     # Rows whose lender funds less than one unit of the loan are never labelled 1: they hide about 90-130 defaults
     # under the label 0 (curation comments)
@@ -70,17 +82,19 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             "(about 1% of rows)."
         ),
         known=(
-            "The customer (as an id, so the same customer's settled earlier loans can be in training), new or repeat "
-            "customer, the loan amount, the disbursement and due dates, the lender's funded amount and share."
+            "The customer (as an id, so the same customer's settled earlier loans can be in training), the number of "
+            "the customer's earlier loans in the data, new or repeat customer, the loan amount, the disbursement and "
+            "due dates, the lender's funded amount and share."
         ),
         split=(
             "Six test windows of 5-10 days at the end of the product's lending, October to December 2022. Each trains "
             "on the loans whose label had settled before the window starts."
         ),
         changes=(
-            "We keep only the main product, drop the amounts to repay, which grow after a default, and the rows of "
-            "lenders funding less than one unit (labelled no default whatever happened), and split by disbursement "
-            "date where the competition split rows at random and also tested a second country."
+            "We keep only the main product, add the customer's number of earlier loans, drop the amounts to repay, "
+            "which grow after a default, and the rows of lenders funding less than one unit (labelled no default "
+            "whatever happened), and split by disbursement date where the competition split rows at random and also "
+            "tested a second country."
         ),
         fit="approximate",
         fit_reason=(
@@ -123,12 +137,13 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
     curation_comments = """
         We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.
 
-        - Prediction point: when a loan is disbursed, with the customer's settled earlier loans known.
+        - Prediction point: when a loan is disbursed, with the customer's earlier loans and their settled outcomes known.
         - We keep only the loans of the main product, Type_1 (Lennart, CC 2026-10-26): one lender's 7-day loans of 2022-07-12 to 2022-12-01, 52,826 rows after the lender-amount filter, 520 defaults (0.98%), 5,040 customers, 99.5% repeat loans. The file mixes this product with a few hundred loans a month of changing products (2021-2024) and a new product, Type_7, from July 2023; the other products default at about 10%, share 1.4% of their customers with Type_1, and are too few for test windows of their own. A mixed task would score telling the products apart rather than ranking the customers of one product (untuned LightGBM ROC AUC 0.68 on the mixed 2022 windows against 0.60 on Type_1 alone).
         - Not reproduced: the competition's test file also held 3,525 loans from Ghana (products absent from Train.csv, no labels released) and a random 18% of the Kenyan loans of the same dates; the competition's goal of models that "generalise well" to a new country cannot be tested here, and the Ghana part was won by a hand-written rule (issue 7 of the review, 2026-10-26).
         - Within Type_1, lender_id, loan_type and duration are constant, and we drop them.
         - We rename target to default.
-        - We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for decision table 2.
+        - We add earlier_loans, the number of the customer's loans in the release disbursed on an earlier day (Train.csv and the Kenyan rows of Test.csv, any product, one count per loan id), known at disbursement and built without labels (CLEAN-19, a history aggregated per prediction; Lennart, CC 2026-10-26). The models reach the customer's history only through customer_id otherwise (CatBoost falls from 0.66 to 0.55 ROC AUC without it); the count alone ranks defaults at 0.72 on the six windows (0.61-0.83 per window), above every model on the source's columns. It counts only loans in the release, so it grows over the first months of the data (median 9). A count of the customer's earlier defaults settled before disbursement is 0 in every row (a default ends the customer's history in the product), so it is not added.
+        - We add no count of a loan's other lender rows: built from the rows present at the data pull, which buy-outs can change, it cannot be dated to disbursement. Test.csv (no labels) is read only for earlier_loans and decision table 2.
         - We drop ID and tbl_loan_id (identifiers) and country_id (Kenya in every row).
         - We drop Total_Amount_to_Repay and Lender_portion_to_be_repaid: recorded at the data pull, they grow with a defaulted loan's days past due (decision table).
         - We drop the 8,899 rows whose lender funds less than one unit (Amount_Funded_By_Lender below 0.5): none is labelled 1, where about 105 would be expected at the rate of their months, and for the same customers and months 1.04% of them carry a default-size repay charge against 0.40% of the customers' other loans. They are labelled 0 whatever the customer did and hide about 90-130 defaults (decision table).

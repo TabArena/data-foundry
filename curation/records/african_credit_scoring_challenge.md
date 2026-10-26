@@ -5,8 +5,7 @@ checked_by:
 - Andrej
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -63,3 +62,9 @@ CC (2026-10-26, Lennart): issue 6: "Yes do (a)": ROC AUC instead of Zindi's F1, 
 CC (2026-10-26, Lennart): issue 7 as implemented: the competition's Ghana test and its new applicants are not reproduced; `changes` and `fit_reason` say so.
 
 **Assessment (AI, 2026-10-26):** applied: Type_1 only (52,826 rows, 520 defaults, 5,040 customers), lender_id, loan_type and duration dropped (constant), six windows of 1,821-2,446 rows and 18-22 default rows (2022-10-15 to 2022-12-01), horizon 7 days, `Metric.fallback` with F1 named as the rejected original. `dataset check` clean. Task probes (5 of 6 windows): random forest ROC AUC 0.594, LightGBM 0.568, linear 0.522; flags no_spread, drift_baseline, unstable. New REVIEW issue 8 asks whether to ship it.
+
+CC (2026-10-26, Lennart): issue 8, option (a): add the history feature a data scientist would build, the customer's number of earlier loans at disbursement (CLEAN-19). "also remember to never run v2 again but v3.5 by default" (TabPFN).
+
+**Assessment (AI, 2026-10-26):** issue 8 (a) applied: `earlier_loans`, the customer's loans in the release disbursed on an earlier day (Train.csv and Test.csv's Kenyan rows, any product, no label read); a count of earlier settled defaults is 0 in every row and is not added. ROC AUC over the six windows: the count alone 0.724; tuned LightGBM 0.698 (before 0.633); CatBoost default 0.673 (0.655), tuned 0.655 (0.651); TabPFN v3.5 0.724 (0.675 without the feature). Task probes: linear 0.704, LightGBM 0.660, random forest 0.647; the `unstable` flag is gone, `no_spread` and `drift_baseline` remain. Leak probes: nothing new. Recommendation on the page: ship.
+
+CC (2026-10-26, Lennart): verdict ship (with earlier_loans, issue 8).

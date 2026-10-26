@@ -179,6 +179,12 @@ gap never decides (SPLIT-4).
 
 **SPLIT-31 (Should).** Over related entities, IID can match how a task is framed even when it is optimistic: such a
 task is a candidate for a grouped or temporal variant, not a fix. Cases: amazon_employee_access, bank_marketing.
+Molecules are the exception (amended 2026-10-26, Lennart, on qsar_bioconcentration: "in other cases, we also moved
+towards a scaffold split as is often correct for chemicals"): a molecule dataset whose rows carry exact structures
+groups on the Bemis-Murcko scaffold, as a new chemical under assessment often comes from a series not yet measured. A
+molecule without a ring is a group of its own, and so is each molecule of a scaffold that holds more than a tenth of
+the molecules, which is no series and would leave folds of very unequal size (`scaffold_groups` in
+`data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -244,7 +250,10 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | Few groups (factor) | covertype | 3 wilderness areas: IID instead of grouped | applied |
 | SPLIT-31 | amazon_employee_access, bank_marketing | IID kept: optimistic, but it matches how the task is framed; candidates for a grouped or temporal variant | applied |
 | SPLIT-31 | infrared_thermography_temperature | IID kept over a measured year-to-year shift (a first-year calibration over-predicts the second year by 0.06-0.09 °C): the calibration is a function of the inputs that should not depend on the day, so no real signal across time; temporal is a candidate variant (2026-10-21, Lennart) | applied |
-| SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart) | applied |
+| SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart); superseded 2026-10-26 by the amendment below | applied |
+| SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
+| SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
+| SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
 
 ## In Data Foundry
 

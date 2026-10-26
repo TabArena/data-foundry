@@ -4,8 +4,7 @@ name: 'ECML/PKDD 15: Taxi Trip Time Prediction (II)'
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -90,3 +89,9 @@ CC (2026-10-26, Lennart): the declared metric is checked as declared.
 CC (2026-10-26, Lennart): issue 1: (a), "which is also more correct nowadays, where one would add it in an app. I think it is fine to use the destination as well for now and work on that": an ETA once the passenger names the destination, `fit="approximate"`, as nyc_taxi_trip_duration.
 
 CC (2026-10-26, Lennart): the record's domain takes the definition's value (industry & manufacturing).
+
+CC (2026-10-26, Lennart): issue 2: drop the trips that end within 100 m of their start, with a time cut at 30 s, and reopen nyc_taxi_trip_duration_1m for the same radius (option (c): "we just forgot to check for this for nyc and for these cases it also does not matter much to do a taxi trip right?").
+
+**Assessment (AI, 2026-10-26):** issue 2 applied: `MIN_STRAIGHT_LINE_KM = 0.1` replaces the identical-end-point rule and `MIN_TRAVEL_TIME_S` falls from 60 to 30 s; 1,636,276 trips after the filters (1,655,893 before). The trips within 100 m are no short rides (median 555 s, 57% over 5 min, 17% of the target's squared spread): in the app framing nobody books them. dataset check: 0 errors, 0 warnings. No open issue left.
+
+CC (2026-10-26, Lennart): verdict ship.

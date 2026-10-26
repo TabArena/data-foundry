@@ -58,7 +58,7 @@ not accepted in the definition.
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,686 | 7 | 3 x 3 | not built |  |
 | [`acquire_valued_shoppers_challenge`](acquire_valued_shoppers_challenge/) | temporal | 160,057 | 111 | 5 x 1 | not built |  |
 | [`aeolus_rebuilt_1m`](aeolus_rebuilt_1m/) | temporal | 1,799,254 | 34 | 3 x 1 | not built |  |
-| [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 52,826 | 7 | 6 x 1 | not built |  |
+| [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 52,826 | 8 | 6 x 1 | not built |  |
 | [`airfoil_self_noise`](airfoil_self_noise/) | grouped | 1,503 | 5 | 10 x 3 | not built |  |
 | [`alfa_battle_2_0_task_2`](alfa_battle_2_0_task_2/) | temporal | 963,811 | 510 | 3 x 1 | not built |  |
 | [`allstate_claims_severity`](allstate_claims_severity/) | IID | 188,317 | 130 | 3 x 3 | not built |  |
@@ -105,7 +105,7 @@ not accepted in the definition.
 | [`diabetes_130_us`](diabetes_130_us/) | IID | 69,973 | 44 | 3 x 3 | not built |  |
 | [`diabetes_3`](diabetes_3/) | IID | 442 | 10 | 20 x 3 | not built |  |
 | [`diamonds`](diamonds/) | IID | 53,940 | 9 | 3 x 3 | not built |  |
-| [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
+| [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 15 | 20 x 3 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 12 | 3 x 3 | not built |  |
 | [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | grouped | 587 | 176 | 20 x 3 | not built |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
@@ -172,7 +172,7 @@ not accepted in the definition.
 | [`naticusdroid_android_permissions_dataset`](naticusdroid_android_permissions_dataset/) | IID | 7,491 | 85 | 3 x 3 | not built | `dataset_conflicting_duplicate_rows`, `dataset_pure_feature_value` |
 | [`numerai28_6`](numerai28_6/) | IID | 96,320 | 21 | 3 x 3 | not built |  |
 | [`numerai_v5_2_1m`](numerai_v5_2_1m/) | temporal | 2,025,745 | 2,377 | 3 x 1 | not built |  |
-| [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,166,477 | 7 | 3 x 1 | not built |  |
+| [`nyc_taxi_trip_duration_1m`](nyc_taxi_trip_duration_1m/) | temporal | 1,165,967 | 7 | 3 x 1 | not built |  |
 | [`obesity_estimation`](obesity_estimation/) | IID | 488 | 14 | 20 x 3 | not built |  |
 | [`online_shoppers_purchasing_intention_dataset`](online_shoppers_purchasing_intention_dataset/) | IID | 6,875 | 16 | 3 x 3 | not built |  |
 | [`onlinenewspopularity`](onlinenewspopularity/) | temporal | 39,643 | 39 | 9 x 1 | not built |  |
@@ -180,20 +180,20 @@ not accepted in the definition.
 | [`otto_group_product_classification_challenge`](otto_group_product_classification_challenge/) | IID | 61,878 | 93 | 3 x 3 | not built |  |
 | [`pancreatic_cancer_mouse_detection`](pancreatic_cancer_mouse_detection/) | grouped | 181 | 6,771 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
 | [`perth_house_prices`](perth_house_prices/) | temporal | 33,090 | 19 | 9 x 1 | not built |  |
-| [`pkdd_15_taxi_trip_time_prediction_ii_1m`](pkdd_15_taxi_trip_time_prediction_ii_1m/) | temporal | 1,434,291 | 8 | 3 x 1 | not built |  |
+| [`pkdd_15_taxi_trip_time_prediction_ii_1m`](pkdd_15_taxi_trip_time_prediction_ii_1m/) | temporal | 1,429,426 | 8 | 3 x 1 | not built |  |
 | [`polish_companies_bankruptcy`](polish_companies_bankruptcy/) | IID | 5,790 | 64 | 3 x 3 | not built |  |
 | [`porto_seguro`](porto_seguro/) | IID | 595,206 | 37 | 1 x 3 | not built |  |
 | [`predict_students_dropout_and_academic_success`](predict_students_dropout_and_academic_success/) | IID | 4,424 | 36 | 3 x 3 | not built |  |
 | [`pva_revenue_prediction_kddcup98`](pva_revenue_prediction_kddcup98/) | IID | 191,769 | 477 | 3 x 3 | not built | `dataset_constant_column`, `dataset_missing_value_label`, `meta_license_unknown` |
 | [`qsar_aquatic_toxicity`](qsar_aquatic_toxicity/) | IID | 546 | 8 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
-| [`qsar_bioconcentration`](qsar_bioconcentration/) | IID | 776 | 202 | 10 x 3 | not built |  |
+| [`qsar_bioconcentration`](qsar_bioconcentration/) | grouped | 776 | 195 | 10 x 3 | not built |  |
 | [`qsar_biodeg`](qsar_biodeg/) | IID | 1,055 | 41 | 10 x 3 | not built |  |
 | [`qsar_fish_toxicity`](qsar_fish_toxicity/) | IID | 908 | 6 | 10 x 3 | not built | `dataset_conflicting_duplicate_rows` |
-| [`qsar_oral_toxicity`](qsar_oral_toxicity/) | IID | 11,105 | 1,232 | 3 x 3 | not built |  |
+| [`qsar_oral_toxicity`](qsar_oral_toxicity/) | grouped | 11,105 | 1,232 | 3 x 3 | not built |  |
 | [`qsar_tid_11`](qsar_tid_11/) | IID | 5,704 | 1,024 | 3 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`rain_in_australia`](rain_in_australia/) | temporal | 264,562 | 165 | 26 x 1 | not built |  |
 | [`regensburg_pediatric_appendicitis`](regensburg_pediatric_appendicitis/) | IID | 763 | 51 | 10 x 3 | not built |  |
-| [`rosbank1`](rosbank1/) | temporal | 4,791 | 347 | 3 x 1 | not built |  |
+| [`rosbank1`](rosbank1/) | temporal | 4,791 | 695 | 3 x 1 | not built |  |
 | [`rossmann_store_sales`](rossmann_store_sales/) | temporal | 844,392 | 15 | 3 x 1 | not built |  |
 | [`santander_customer_satisfaction`](santander_customer_satisfaction/) | IID | 71,080 | 307 | 3 x 3 | not built | `dataset_pure_feature_value` |
 | [`santander_customer_transaction_prediction`](santander_customer_transaction_prediction/) | IID | 200,000 | 200 | 3 x 3 | not built |  |

@@ -52,7 +52,8 @@ brazilian_ecommerce, bias_correction_r_bias_correction_r_2.
 
 **USE-7 (Must).** A row that lacks the input the prediction acts on is no task row: drop it rather than keep it as
 missing. Missing values of the other inputs stay missing. Why: nobody corrects a forecast that does not exist. Cases:
-bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15).
+bias_correction_r_bias_correction_r_2 (Lennart, 2026-10-15), nyc_taxi_trip_duration_1m and
+pkdd_15_taxi_trip_time_prediction_ii_1m (a 100 m radius around the pickup, 2026-10-26).
 
 ### How closely the data mirrors the use case
 
@@ -150,6 +151,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-6 | bias_correction_r_bias_correction_r_2 | the LDAPS weather model's forecast, which the task corrects, is the input | applied |
 | USE-6 | 2_month_survival_rate_prediction | the physicians' day-3 survival estimates and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart) | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
+| USE-7 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m | an ETA with the destination named at pickup: a recorded end within 100 m of the start is no destination anyone names, so those trips are dropped in both (nyc reopened to match pkdd, where a 15-second GPS clock turns a return to the start into an end within 100 m); the cut rests on the inputs, not on the travel time (2026-10-26, Lennart) | applied |
 | USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
 | USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate; now direct (next row) | applied |

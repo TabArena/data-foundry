@@ -123,7 +123,9 @@ convention of the field, with the merge tested (TP-7): [task_probes.md](task_pro
   stations' readings of the same morning, kept only where they are known by then (amended 2026-10-26, Lennart, on
   rain_in_australia: "add the features to do this task as it looks good with only 9am is not later setting").
 
-Cases: alfa_battle_2_0_task_2 (Lennart, 2026-10-13; reason added 2026-10-21), rain_in_australia (2026-10-26).
+Cases: alfa_battle_2_0_task_2 (Lennart, 2026-10-13; reason added 2026-10-21), rain_in_australia (2026-10-26),
+african_credit_scoring_challenge and rosbank1 (2026-10-26). Exceptions (a per-entity history kept as rows that a row model uses):
+amex_non_iid (2026-10-02), fraud_detection_in_electricity_and_gas_consumption_1m (2026-10-26).
 
 **CLEAN-20 (Must).** Copy the top solutions' preprocessing, not their exploits: no step that uses a test-set leak, a
 metric quirk or a feature computed over all rows with their labels (LEAK-28), even when it won the competition. Cases:
@@ -131,7 +133,7 @@ santander_customer_transaction_prediction.
 
 **CLEAN-21 (Should).** One unit and one scale per column. When a feature's scale changes over time, put it on one
 scale the way an analyst would at the time, with the conversion the source or the measuring body publishes. Cases:
-college_scorecard (Lennart, 2026-10-16).
+college_scorecard (Lennart, 2026-10-16), rosbank1 (exchange rates of the central bank, 2026-10-26).
 
 ### Keep every relevant feature
 
@@ -189,10 +191,15 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |
 | CLEAN-19 | mortgage | a column joined from outside the source: Freddie Mac's 30-year mortgage rate (FRED MORTGAGE30US), the mean of the previous calendar quarter, and the loan's lagged rate minus it (the refinance incentive a payoff model uses); dated periods make the join exact; the first such join, so siblings with dated periods take the same treatment (2026-10-22, Lennart) | applied |
 | CLEAN-19 | rain_in_australia | the other locations' 9 am Rainfall, Pressure9am and Humidity9am of the same day (143 columns), each kept only where that location's 9 am comes no later than the row's own under both clock and standard time; ROC AUC 0.850 to 0.870 on the 9 windows then shipped (paired SE 0.0045, better in 8 of 9) (2026-10-26, Lennart; the rule amended) | applied |
+| CLEAN-19 | african_credit_scoring_challenge | `earlier_loans`, the customer's loans in the release disbursed on an earlier day (Train.csv and the Kenyan rows of Test.csv, any product), known at disbursement and built without labels; the models reached the customer's history only through `customer_id`, and the count alone ranks defaults at ROC AUC 0.72 on the six windows; the 6th-place solution builds a close variant (the rank of the loan's date among the customer's dates) (2026-10-26, Lennart) | applied |
+| CLEAN-19 | rosbank1 | the CoLES baseline aggregates plus the time block of the 1st place of task 1 (Khrylchenko 2018; active days: span, spread, position and gaps, overall and per category, the last month, days per month), rewritten from his code: untuned LightGBM 0.896 against 0.857 for CoLES alone on the three windows; his full set scored lower (0.882) and his money and MCC blocks added nothing, so the combination, not the union (2026-10-26, Lennart) | applied |
+| CLEAN-19 | fraud_detection_in_electricity_and_gas_consumption_1m | the invoice rows stay, one prediction per client (the mean of its invoice predictions), instead of one row per client with aggregates: each invoice is a full observation of the client (LightGBM on the invoices 0.682 against 0.675 on simple aggregates), and the top solutions' aggregates rest on the full history, which the 2013 cut removes (2026-10-26, Lennart) | exception |
+| CLEAN-19 | amex_non_iid | the raw statements stay, one prediction per customer from its latest statement with every statement available (`aggregation="last"`), although the top solutions aggregated (CC 2026-10-02, Lennart; recorded here 2026-10-26) | exception |
 | CLEAN-20 | santander_customer_transaction_prediction | `has_one` won the competition and is not copied | applied |
 | CLEAN-21 | college_scorecard | the SAT was redesigned in 2016, so from the 2017 cohort on an institution's scores jump while its students stay the same; the College Board's concordance tables put SATMT25, SATMT75 and SAT_AVG back on the old scale (median change 2016 to 2017 within an institution: 0 instead of +30); a section without a conversion table stays dropped (2026-10-16, Lennart) | applied |
 | CLEAN-21 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | no unit in the files or the LAS headers, so the conversion is inferred from the data and checked against a second curve or a second group of wells: ROP in ft/h in two wells (x 0.3048; ROPA / ROP 0.31 there, about 1 in 26 other wells, 1.0 after), MUDWEIGHT in bar/m in 19 wells (/ 0.0980665, per row below 0.5; per-well medians land in the range of the g/cm3 wells); curves without such a check are masked, not converted (2026-10-21, Lennart) | applied |
 | CLEAN-21 | zillow_prize | `buildingqualitytypeid` of 2017 mapped onto the 2016 scale with the map the data shows, confirmed on all 1.94M parcels with a code in both files; no published conversion exists (2026-10-26, Lennart) | exception |
+| CLEAN-21 | rosbank1 | amounts in each transaction's own currency (57 codes, up to 35.8 million dong) converted to rubles at the Bank of Russia's official rate in force on the transaction's day, the measuring body's conversion; the ISO numeric reading of the codes checked on the data (converted, the median POS purchase is 355-3,346 rubles in every currency, against 500 in rubles); the 0.3% of transactions in currencies the Bank did not quote then are masked, not converted from another source (2026-10-26, Lennart) | applied |
 | CLEAN-22 | coad_colon_adenocarcinoma | ships 36,355 features; its report had weighed one model's 50,000-feature cap (2026-10-15, Lennart) | applied |
 | CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration | the SMILES as text next to the descriptors: -0.025 to +0.010 ROC AUC; the string is dropped (2026-10-14) | applied |
 

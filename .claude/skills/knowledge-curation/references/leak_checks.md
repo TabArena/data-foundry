@@ -189,7 +189,8 @@ Cases: coad_colon_adenocarcinoma (rebuilt); bioresponse and the others kept with
 **LEAK-31 (Should; narrows LEAK-6 and LEAK-28).** Supervised feature selection on the full labelled set: measure it;
 keep with a note when small, remove it when we can. A selection the source published (the authors' descriptors, a
 feature set the host released) is decided case by case (Lennart, 2026-10-21). Cases: home_credit_default_risk
-(2026-10-19).
+(2026-10-19), qsar_bioconcentration (the authors' 9 Dragon descriptors dropped: RDKit's descriptors of the same
+structures and the measured logKOW carry the signal, and the 9 add 0.002 macro ROC AUC; 2026-10-26).
 
 **LEAK-32 (Should).** Masked or anonymised features that may hide such a transform are a known risk of anonymised
 data, covered by its tag: no action. Cases: ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19).
@@ -338,7 +339,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-28 | Label-aware features computed over all rows, test folds included | drop them; recommend the technique inside a pipeline, per fold | santander_customer_transaction_prediction `has_one`, `has_zero` (+0.003-0.004 AUC), the #1 solution's features |
 | LEAK-29 (CLEAN-7) | Our own cleaning computes a feature value from statistics over all rows | compute it from the history before the oldest test window, or drop it | sf_permit_time `DescriptionIsStandardPhrase` (counted before 2020, the history before the oldest test window); home_credit_default_risk `NEW_INC_BY_ORG` and a mean fill (dropped) (2026-10-19, Lennart) |
 | LEAK-30 | Features the source transformed with statistics over all rows, test rows included (z-scores, min-max, quantile bins, ranks, PCA, batch correction, a variance filter): a transductive leak, labels or not | rebuild from unprocessed values when the source has them; otherwise keep with a `Potential leak, kept on purpose:` note; `No` only for a strong suspected leak (Lennart, 2026-10-19). Per-row transforms and fixed published scales are fine | rebuilt: coad_colon_adenocarcinoma (MLOmics z-scores over the 260 patients; retired 2026-10-16 for tcga_coad_molecular_subtype), sarcoma's methylation (next pass). Kept with a note: bioresponse, taiwanese_bankruptcy_prediction, credit_card_customers, cooking_time_1m, delivery_eta_1m, maps_router_eta_1m, lung_cancer_epithelial_genexp (RMA), home_credit_default_risk's building columns |
-| LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19) |
+| LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19); qsar_bioconcentration (the authors' 9 Dragon descriptors removed, 2026-10-26) |
 | LEAK-32 | Masked or anonymised features that may hide such a transform | a known risk of anonymised data, covered by its tag; no action | ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19) |
 | LEAK-37, LEAK-10 (precedent, Lennart, 2026-10-21) | A known input that tracks a dropped post-outcome column | kept, with a `Potential leak, kept on purpose:` note in LEAK-38's format (the mechanism, the numbers, why it stays, when to revisit) | digicow_farmer_training_adoption_challenge `topics_list` (the day's topics) predicts the dropped `has_topic_trained_on` at ROC AUC 0.885-0.902 |
 | [task_probes.md](task_probes.md), TP-4 | The target is a lookup of the inputs | retire (`Trivial`, often `AHDS`) | video_game_fps_prediction |
