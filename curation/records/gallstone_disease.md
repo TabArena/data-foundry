@@ -10,6 +10,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - Tiny Data
 collections:
@@ -48,6 +49,7 @@ CC (2026-10-21, Andrej): Keep, with three changes to the data in `dataset.py` (n
 7. **Problem:** the use-case fit was rated "direct", although the groups were recorded apart and the liver grade needs an ultrasound. **Change:** rated "approximate", with both gaps named.
 8. **Problem:** none of this was documented. **Change:** the curation comments describe each problem with its effect on the scores, with a table of the second route and a figure of the filled cells.
 9. Record: Andrej added as reviewer (`checked_by`).
+10. **Problem:** no marker said that the classes were measured, formatted and filled differently (`Selection Bias` is about which rows were sampled). **Change:** new marker `Class-dependent Recording`.
 
 **Problems found, not changed** (they do not let a model tell the groups apart for reasons other than gallstones):
 - Filled-in cells: 134 of the remaining values were filled with straight lines between the rows above and below (e.g. CRP 5.2, 4.16, 3.12, 2.08, 1.04, 0), although UCI calls the file complete: vitamin D 77 (all without gallstones), visceral muscle area 35 (all with), GFR 13, CRP 6, creatinine 3. Not a leak: re-imputed from the other features inside each training fold, without the label, TabPFN 3.5 reaches 0.864 (0.838 with the fills). Set to missing they would mark the groups, since vitamin D was measured for all 86 with gallstones but only 79 of the 156 without.
@@ -57,7 +59,7 @@ CC (2026-10-21, Andrej): Keep, with three changes to the data in `dataset.py` (n
 - The fatty-liver grades look like two scales: no fatty liver about as common in both groups (41% without gallstones, 44% with), mild much rarer with gallstones (6% against 21%), moderate more common (38% against 29%). Small effect (TabPFN 3.5 0.834 without the column, 0.838 with it).
 - Task probes flag `no_spread` (untuned linear model, random forest, LightGBM 0.754-0.768), but methods spread: TabPFN 3.5 beats the other three by 0.06-0.08 on 92-93% of the splits.
 - Data access: the full data are not public (the paper: third-party data, shared on request); UCI lists the paper's authors as donors under CC BY 4.0.
-- No marker beyond `Selection Bias`: `Data Quality Issue` is for leaks, and the remaining artefacts do not leak.
+- Not `Data Quality Issue`, which is for damage that cannot be repaired: the remaining artefacts do not leak.
 
 Reference: Inker LA, Eneanya ND, Coresh J, et al. New creatinine- and cystatin C-based equations to estimate GFR without race. N Engl J Med. 2021;385(19):1737-1749. doi:10.1056/NEJMoa2102953.
 
