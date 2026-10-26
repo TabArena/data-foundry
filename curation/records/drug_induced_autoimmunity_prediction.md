@@ -86,6 +86,12 @@ CC (2026-10-21, Lennart): make this dataset grouped here as well ("we want to ha
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side, no unique metric (MET-5).
 
+CC (2026-10-26, Andrej): The SMILES is important for performance, so it stays in the data.
+- `dataset.py`: `SMILES` is no longer dropped; it ships as a string feature next to the source's 176 descriptors (177 features, 587 rows unchanged). This settles the MACCS question above by shipping the structure itself instead of one chosen fingerprint, so a model can read it as it likes.
+- Stereoisomer de-duplication is unchanged: it compares the descriptors only, not the SMILES, so the same 9 pairs are found (their SMILES differ only in the stereo marks) and the row count stays 587 with 140 positive.
+- The 2026-10-14 rule for every SMILES dataset (drop the string) is overridden here only; the `dataset_identifier_column` warning (one SMILES per row) is accepted in the definition, as for `phiusil_phishing`: the structure is the input of the task, not a row id.
+- Still to do: rebuild (the build is stale).
+
 ## Reference
 
 @article{huang2025interdia,

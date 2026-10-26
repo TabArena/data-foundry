@@ -110,7 +110,7 @@ not accepted in the definition.
 | [`differentiated_thyroid_cancer_recurrence`](differentiated_thyroid_cancer_recurrence/) | IID | 383 | 14 | 20 x 3 | not built |  |
 | [`digicow_farmer_training_adoption_challenge`](digicow_farmer_training_adoption_challenge/) | temporal | 13,536 | 11 | 4 x 1 | not built |  |
 | [`distribution_transformers_at_cauca_department`](distribution_transformers_at_cauca_department/) | IID | 15,873 | 12 | 3 x 3 | not built |  |
-| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | grouped | 587 | 176 | 20 x 3 | not built |  |
+| [`drug_induced_autoimmunity_prediction`](drug_induced_autoimmunity_prediction/) | grouped | 587 | 177 | 20 x 3 | not built |  |
 | [`early_learning_predictors`](early_learning_predictors/) | grouped | 18,874 | 743 | 3 x 3 | not built | `dataset_duplicate_columns` |
 | [`early_stage_diabetes_risk_prediction`](early_stage_diabetes_risk_prediction/) | IID | 251 | 16 | 20 x 3 | not built |  |
 | [`ecoli_proteins`](ecoli_proteins/) | IID | 327 | 6 | 20 x 3 | not built |  |
